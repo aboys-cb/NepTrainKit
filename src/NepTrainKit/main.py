@@ -17,7 +17,6 @@ from NepTrainKit.startup import load_config_class
 
 Config = load_config_class()
 
-import tempfile
 import traceback
 from dataclasses import replace
 from pathlib import Path
@@ -203,8 +202,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self._training_set_phase_result = None
         self._training_set_phase_token = None
         self._make_dataset_handoff_thread = None
-        self._make_dataset_handoff_dir = None
-        self._make_dataset_handoff_pending_dir = None
+        self._make_dataset_handoff_token = None
         self._connect_training_set_audit_signals()
         self.make_data_interface.finalOutputRequestedSignal.connect(
             self.open_make_dataset_output
@@ -372,47 +370,36 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             return
 
-        handoff_dir = tempfile.TemporaryDirectory(
-            prefix="neptrainkit-make-dataset-"
-        )
-        path = Path(handoff_dir.name) / "make_dataset.xyz"
-        self._make_dataset_handoff_pending_dir = handoff_dir
+        handoff_token = object()
+        self._make_dataset_handoff_token = handoff_token
         MessageManager.send_info_message(
             self.tr("Preparing the workflow output for display...")
         )
 
         source_structures = list(structures)
 
-        def _prepare_handoff() -> tuple[str, list]:
-            converted = [
+        def _prepare_handoff() -> list:
+            return [
                 ase_atoms_to_structure(atoms)
                 for atoms in source_structures
             ]
-            return str(path), converted
 
-        def _open_handoff(payload: tuple[str, list]) -> None:
-            if self._make_dataset_handoff_pending_dir is not handoff_dir:
-                handoff_dir.cleanup()
+        def _open_handoff(converted: list) -> None:
+            if self._make_dataset_handoff_token is not handoff_token:
                 return
-            result_path, converted = payload
             self._make_dataset_handoff_thread = None
-            previous_dir = self._make_dataset_handoff_dir
-            self._make_dataset_handoff_dir = handoff_dir
-            self._make_dataset_handoff_pending_dir = None
+            self._make_dataset_handoff_token = None
             self.switchTo(self.show_nep_interface)
             self.show_nep_interface.check_nep_result(
-                result_path,
                 structures=converted,
                 cache_outputs=False,
+                source_name=self.tr("Make Dataset output"),
             )
-            if previous_dir is not None:
-                previous_dir.cleanup()
 
         def _handoff_failed(message: str) -> None:
-            if self._make_dataset_handoff_pending_dir is handoff_dir:
-                self._make_dataset_handoff_pending_dir = None
+            if self._make_dataset_handoff_token is handoff_token:
+                self._make_dataset_handoff_token = None
                 self._make_dataset_handoff_thread = None
-            handoff_dir.cleanup()
             MessageManager.send_error_message(
                 self.tr("Failed to prepare workflow output: {message}").format(
                     message=message

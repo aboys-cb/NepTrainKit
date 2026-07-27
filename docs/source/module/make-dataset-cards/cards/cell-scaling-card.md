@@ -154,4 +154,4 @@ $$f_k\in[1-m,1+m],\quad a_i'=f_i a_i,\quad \theta_j'=g_j\theta_j$$
 
 ## 可复现性
 
-勾选 `use_seed` + 固定 `seed` → 相同输入可复现。注意 Sobol 引擎的 scramble 也受 seed 控制，给定 seed 后序列完全确定。
+勾选 `use_seed` + 固定 `seed` → 相同输入可复现。seed 会与单帧结构内容共同派生，因此几何或晶胞不同的帧不会机械复用同一组缩放因子，数据集重新排序也不改变单帧结果；完全相同的重复帧仍得到相同结果。Sobol 引擎的 scramble 同样受这个派生 seed 控制。

@@ -269,7 +269,8 @@ def simplex_sobol_points(
 
     engine = Sobol(d=order - 1, scramble=True, seed=seed)
     if min_fraction <= 0.0:
-        u = engine.random(n_points)
+        power = int(np.ceil(np.log2(n_points)))
+        u = engine.random_base2(power)[:n_points]
         max_draws = n_points
     else:
         requested_budget = max(4096, int(n_points) * 1024)

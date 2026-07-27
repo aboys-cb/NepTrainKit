@@ -254,13 +254,17 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/perturb-card.md:58
 #: 78a642aa56df4d1fb1db97003decd3bc
 msgid ""
-"Sobol 在少量样本（< 100）时位移方向分布更均匀，各向同性更好；Uniform 更快，样本数 ≥ 100 后两者差异很小。如果你只跑 20-50"
-" 个结构，建议用 Sobol；跑几百个以上，选哪个都行。"
+"Uniform 是面向通用输入的默认选择，生成快且没有 Sobol 维数上限。Sobol 在少量样本（< "
+"100）时位移方向分布更均匀、各向同性更好，但 `3 × 原子数` 不能超过 SciPy 的 21,201 "
+"维上限，因此最多支持 7,067 个原子；更大的结构必须使用 Uniform。只生成 20-50 "
+"个结构且希望改善方向覆盖时可选 Sobol，批量生成或大体系优先使用 Uniform。"
 msgstr ""
-"Sobol sampling distributes directions more evenly and isotropically for "
-"fewer than about 100 structures. Uniform sampling is faster, and the "
-"difference becomes small once the sample count exceeds 100. Prefer Sobol for"
-" 20–50 structures; either engine is suitable for several hundred."
+"Uniform is the general-purpose default: it is fast and has no Sobol "
+"dimensionality limit. Sobol gives more even and isotropic displacement "
+"directions for small designs (< 100), but `3 × atom count` must not exceed "
+"SciPy's 21,201-dimensional limit, so it supports at most 7,067 atoms. Larger "
+"structures must use Uniform. Choose Sobol for 20–50 structures when better "
+"directional coverage matters; prefer Uniform for batches or large systems."
 
 #: ../../source/module/make-dataset-cards/cards/perturb-card.md:60
 #: fe8970cebae146cd994b9425b986fde2
@@ -394,10 +398,18 @@ msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/perturb-card.md:96
 #: 25cc2405c62245ea8358da4c3768a5f4
-msgid "对比实验或者需要复现时打开，纯探索阶段可以关着。"
+msgid ""
+"对比实验或者需要复现时打开，纯探索阶段可以关着。seed "
+"会与单帧结构内容共同派生，因此几何不同的帧不会机械复用同一组位移；重新排列数据集不会改变某一帧自己的结果。完全相同的重复帧仍会得到相同扰动，若希望把重复帧扩成不同样本，应先去重或分批使用不同"
+" seed。"
 msgstr ""
 "Enable it for controlled comparisons or reproducibility; leave it off for "
-"unconstrained exploration."
+"unconstrained exploration. The seed is combined with each structure's "
+"content, so geometrically different frames do not reuse the same "
+"displacements, and reordering the dataset does not change a frame's result. "
+"Exactly duplicated frames still receive identical perturbations; deduplicate"
+" them or process batches with different seeds when distinct augmentation is "
+"wanted."
 
 #: ../../source/module/make-dataset-cards/cards/perturb-card.md:98
 #: 43b545ff46f446d7af7eb4af5efe4577
@@ -567,6 +579,16 @@ msgstr ""
 "sequences. Set `use_seed=true` for reproducible output."
 
 #: ../../source/module/make-dataset-cards/cards/perturb-card.md:174
+msgid ""
+"**Sobol 提示原子数超过 7,067。** 每个原子需要三个 Sobol 维度，已超过 SciPy "
+"支持的最大维数。改用默认的 Uniform；这不会改变每个原子的位移上限，只会改变随机点的抽样顺序。"
+msgstr ""
+"**Sobol reports more than 7,067 atoms.** Each atom consumes three Sobol "
+"dimensions, so the input exceeds SciPy's maximum dimensionality. Use the "
+"default Uniform engine. This keeps each atom's displacement limit unchanged "
+"and only changes how random points are sampled."
+
+#: ../../source/module/make-dataset-cards/cards/perturb-card.md:174
 #: 8ea418ab1db44126b6b5f0207ccb3a61
 msgid "输出标签"
 msgstr "Output labels"
@@ -584,7 +606,9 @@ msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/perturb-card.md:180
 #: 7b27ce7fbaea48b6bb17911361546426
-msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。"
+msgid ""
+"勾选 `use_seed` + 固定 `seed` → "
+"相同输入可复现；几何不同的输入帧使用不同但稳定的派生随机流。"
 msgstr ""
-"Enable `use_seed` and fix `seed` to reproduce the same result for the same "
-"input."
+"Enable `use_seed` and fix `seed` to reproduce the same input; geometrically "
+"different frames use distinct but stable derived random streams."

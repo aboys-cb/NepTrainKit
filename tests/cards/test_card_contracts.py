@@ -12,11 +12,23 @@ from NepTrainKit.core.cards.operation import (
     GeneratorOperation,
     StructureOperation,
 )
+from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.ui.threads import DataProcessingThread
 from NepTrainKit.ui.widgets import FilterDataCard
 
 
 class TestCardContracts(BaseCardTest):
+    def test_random_engine_defaults_avoid_sobol(self):
+        self.assertEqual(CellScalingParams().engine_type, 1)
+        self.assertEqual(PerturbParams().engine_type, 1)
+        self.assertEqual(VacancyDefectParams().engine_type, 1)
+        self.assertNotEqual(CompositionSweepParams().method, "Sobol")
+
+        self.assertEqual(CellScalingCard().get_params().engine_type, 1)
+        self.assertEqual(PerturbCard().get_params().engine_type, 1)
+        self.assertEqual(VacancyDefectCard().get_params().engine_type, 1)
+        self.assertNotEqual(CompositionSweepCard().get_params().method, "Sobol")
+
     def test_builtin_card_has_online_doc_url(self):
         card = StackingFaultCard()
 
@@ -99,6 +111,25 @@ class TestCardContracts(BaseCardTest):
 
         self.assertFalse(thread.isRunning())
         self.assertFalse(hasattr(card, "worker_thread"))
+
+    def test_card_worker_preserves_structured_operation_errors(self):
+        class FailingOperation(StructureOperation):
+            def run_structure(self, structure, params):
+                raise CardOperationError(
+                    "test.structured",
+                    "Structured failure for {count} atoms.",
+                    count=len(structure),
+                )
+
+        errors = []
+        thread = DataProcessingThread([self.structure.copy()], FailingOperation(), None)
+        thread.errorSignal.connect(errors.append)
+
+        thread.run()
+
+        self.assertEqual(len(errors), 1)
+        self.assertIsInstance(errors[0], CardOperationError)
+        self.assertEqual(errors[0].values, {"count": len(self.structure)})
 
     def test_card_drag_starts_only_after_drag_threshold(self):
         class FakeDrag:

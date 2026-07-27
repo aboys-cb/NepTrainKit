@@ -86,7 +86,7 @@ description: 设计、审查、实现和维护 NepTrainKit 的 Make Dataset 卡�
 实现规则：
 
 - operation 不导入 `PySide6`、`qfluentwidgets`、`MessageManager`。
-- 参数校验失败时抛出明确异常；UI 层负责展示错误。
+- 参数校验失败时抛出明确异常；UI 层负责展示错误。新增或修改的用户可见卡片错误优先使用 `core.cards.errors.CardOperationError(code, template, **values)`，不要继续扩充 `ui/messages.py` 的英文片段替换兼容表。
 - 结构变换后使用 `append_config_tag(...)` 写入可追溯标签。
 - 不做静默物理替换、降级模型或伪成功返回；unsupported 就明确失败。
 - 若需要序列化 dataclass，用 `params_to_dict(params)`；tuple 字段在 UI `to_dict()` 中按文档契约转成 list。

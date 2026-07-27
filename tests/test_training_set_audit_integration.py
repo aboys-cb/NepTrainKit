@@ -774,13 +774,12 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         self.assertFalse(window.save_dir_button.enabled)
         self.assertIn("not available", window.save_dir_button.tooltip)
 
-    def test_make_dataset_output_handoff_opens_temporary_dataset_directly(self):
+    def test_make_dataset_output_handoff_opens_in_memory_dataset_directly(self):
         window = main_module.NepTrainKitMainWindow.__new__(
             main_module.NepTrainKitMainWindow
         )
         window._make_dataset_handoff_thread = None
-        window._make_dataset_handoff_dir = None
-        window._make_dataset_handoff_pending_dir = None
+        window._make_dataset_handoff_token = None
         window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
         window.switchTo = MagicMock()
         callbacks = {}
@@ -800,20 +799,19 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 [Atoms("Fe", positions=[[0.0, 0.0, 0.0]])],
             )
 
-        result_path, converted = callbacks["func"]()
-        callbacks["finished"]((result_path, converted))
+        converted = callbacks["func"]()
+        callbacks["finished"](converted)
 
-        self.assertFalse(Path(result_path).exists())
         self.assertEqual(len(converted), 1)
         self.assertEqual(converted[0].elements.tolist(), ["Fe"])
         window.switchTo.assert_called_once_with(window.show_nep_interface)
         window.show_nep_interface.check_nep_result.assert_called_once_with(
-            result_path,
             structures=converted,
             cache_outputs=False,
+            source_name="Make Dataset output",
         )
         self.assertIsNone(window._make_dataset_handoff_thread)
-        window._make_dataset_handoff_dir.cleanup()
+        self.assertIsNone(window._make_dataset_handoff_token)
 
     def test_make_dataset_handoff_recovers_from_deleted_worker_wrapper(self):
         class DeletedThread:
@@ -824,8 +822,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             main_module.NepTrainKitMainWindow
         )
         window._make_dataset_handoff_thread = DeletedThread()
-        window._make_dataset_handoff_dir = None
-        window._make_dataset_handoff_pending_dir = None
+        window._make_dataset_handoff_token = None
         window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
         window.switchTo = MagicMock()
         replacement_thread = SimpleNamespace(isRunning=lambda: False)
@@ -840,7 +837,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
 
         run_mock.assert_called_once()
         self.assertIs(window._make_dataset_handoff_thread, replacement_thread)
-        window._make_dataset_handoff_pending_dir.cleanup()
+        self.assertIsNotNone(window._make_dataset_handoff_token)
 
     def test_shipped_chinese_catalog_translates_audit_integration_contexts(self):
         catalog = (

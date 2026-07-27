@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
@@ -21,6 +21,7 @@ from NepTrainKit.core.cards.structure import (
     OrganicMolConfigPBCParams,
 )
 from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -42,6 +43,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
     contributors = [
         {"name": "Chen Zherui", "role": "author", "email": "chenzherui0124@foxmail.com"},
     ]
+    _PREVIEW_DEBOUNCE_MS = 120
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
@@ -53,6 +55,15 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         """
         super().__init__(parent)
         self._input_structure = None
+        self._preview_generation = 0
+        self._preview_task: BackgroundTask | None = None
+        self._active_preview_generation: int | None = None
+        self._pending_preview = None
+        self._preview_closing = False
+        self._preview_timer = QTimer(self)
+        self._preview_timer.setSingleShot(True)
+        self._preview_timer.setInterval(self._PREVIEW_DEBOUNCE_MS)
+        self._preview_timer.timeout.connect(self._start_preview)
         self.setTitle(self.tr("Organic Conformer Sampling"))
         self._init_ui()
 
@@ -412,45 +423,128 @@ class OrganicMolConfigPBCCard(MakeDataCard):
     def _refresh_preview(self, *_args) -> None:
         if not hasattr(self, "preview_label"):
             return
+        self._preview_generation += 1
+        self._pending_preview = None
+        self._preview_timer.stop()
         if self._input_structure is None:
+            if self._preview_task is not None:
+                self._preview_task.stop_work()
             self.preview_label.setText(
                 self.tr(
                     "Load an upstream molecule to preview detected bonds and rotatable torsions."
                 )
             )
             return
-        try:
-            summary = self.create_operation().topology_summary(
-                self._input_structure,
-                self.get_params(),
-            )
-        except (TypeError, ValueError, IndexError) as exc:
-            self.preview_label.setText(
-                "⚠ "
-                + self.tr("Preview unavailable: {error}").format(
-                    error=translate_runtime_message(exc)
-                )
-            )
-            return
+        self.preview_label.setText(self.tr("Calculating topology preview in background…"))
+        self._preview_timer.start()
 
-        boundary = self.tr("3D periodic") if summary["pbc_active"] else self.tr("nonperiodic")
+    def _start_preview(self) -> None:
+        if self._preview_closing or self._input_structure is None:
+            return
+        request = (
+            self._preview_generation,
+            self._input_structure.copy(),
+            self.get_params(),
+        )
+        if self._preview_task is not None:
+            self._pending_preview = request
+            self._preview_task.stop_work()
+            return
+        self._start_preview_task(request)
+
+    def _start_preview_task(self, request) -> None:
+        request_id, structure, params = request
+        task = BackgroundTask(self, show_tip=False)
+        self._preview_task = task
+        self._active_preview_generation = request_id
+        task.succeeded.connect(self._on_preview_succeeded)
+        task.failed.connect(self._on_preview_failed)
+        task.finished.connect(self._on_preview_task_finished)
+        task.start_work(
+            self._calculate_preview,
+            request_id,
+            structure,
+            params,
+        )
+
+    @staticmethod
+    def _calculate_preview(request_id, structure, params):
+        summary = OrganicMolConfigPBCOperation.topology_summary(structure, params)
+        return request_id, summary
+
+    def _on_preview_succeeded(self, result) -> None:
+        request_id, summary = result
+        if self._preview_closing or request_id != self._preview_generation:
+            return
+        self._apply_preview_summary(summary)
+
+    def _on_preview_failed(self, message: str) -> None:
+        task = self._preview_task
+        if (
+            self._preview_closing
+            or task is None
+            or self._active_preview_generation != self._preview_generation
+            or self._pending_preview is not None
+        ):
+            return
+        self.preview_label.setText(
+            "⚠ "
+            + self.tr("Preview unavailable: {error}").format(
+                error=translate_runtime_message(message)
+            )
+        )
+
+    def _on_preview_task_finished(self) -> None:
+        task = self._preview_task
+        if task is None:
+            return
+        task.wait()
+        task.deleteLater()
+        self._preview_task = None
+        self._active_preview_generation = None
+        if self._preview_closing:
+            QTimer.singleShot(0, self.close)
+            return
+        pending = self._pending_preview
+        self._pending_preview = None
+        if pending is not None and pending[0] == self._preview_generation:
+            self._start_preview_task(pending)
+
+    def _apply_preview_summary(self, summary) -> None:
+        boundary = self.tr("3D periodic") if summary.pbc_active else self.tr("nonperiodic")
         message = self.tr(
             "First input: {atoms} atoms · {bonds} detected bonds / {torsions} rotatable · {components} molecular components · {boundary} · request {outputs} outputs"
         ).format(
-            atoms=summary["atom_count"],
-            bonds=summary["bond_count"],
-            torsions=summary["torsion_count"],
-            components=summary["component_count"],
+            atoms=summary.atom_count,
+            bonds=summary.bond_count,
+            torsions=summary.torsion_count,
+            components=summary.component_count,
             boundary=boundary,
-            outputs=summary["requested_outputs"],
+            outputs=summary.requested_outputs,
         )
-        if not summary["torsion_active"]:
+        if not summary.torsion_active:
             message += " · " + self.tr(
                 "no active torsion; outputs use Gaussian noise only"
             )
-        elif summary["local_mode"]:
+        elif summary.local_mode:
             message += " · " + self.tr("local subtree rotation is active")
         self.preview_label.setText(message)
+
+    def closeEvent(self, event) -> None:
+        self._preview_closing = True
+        self._preview_generation += 1
+        self._pending_preview = None
+        self._preview_timer.stop()
+        task = self._preview_task
+        if task is not None:
+            task.stop_work()
+            if task.isRunning() and not task.wait(200):
+                event.ignore()
+                return
+            task.deleteLater()
+            self._preview_task = None
+            self._active_preview_generation = None
+        super().closeEvent(event)
 
     def _update_tab_order(self) -> None:
         if not hasattr(self, "advanced_checkbox"):

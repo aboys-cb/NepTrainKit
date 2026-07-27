@@ -15,7 +15,9 @@ from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 
 from .geometry import wrapped_positions as fast_wrapped_positions
+from .errors import CardOperationError
 from .operation import StructureOperation
+from .sampling import derived_structure_seed
 
 
 def _scan_values(values, *, label: str) -> np.ndarray:
@@ -218,7 +220,11 @@ class CellScalingOperation(StructureOperation):
         max_scaling = float(params.max_scaling)
         if not np.isfinite(max_scaling) or max_scaling < 0.0:
             raise ValueError("CellScaling: max_scaling must be finite and non-negative.")
-        base_seed = int(params.seed) if params.use_seed else None
+        base_seed = (
+            derived_structure_seed(int(params.seed), structure)
+            if params.use_seed
+            else None
+        )
         rng = np.random.default_rng(base_seed)
         dim = 6 if params.perturb_angle else 3
 
@@ -405,6 +411,8 @@ class PerturbParams:
 class PerturbOperation(StructureOperation):
     """Apply random atomic displacements from explicit parameters."""
 
+    _MAX_SOBOL_ATOMS = Sobol.MAXDIM // 3
+
     @staticmethod
     def unit_ball_displacements(samples: np.ndarray, radii: np.ndarray) -> np.ndarray:
         """Map [0, 1]^3 samples to displacement vectors inside per-atom balls."""
@@ -447,6 +455,13 @@ class PerturbOperation(StructureOperation):
         if n_atoms == 0:
             return [structure.copy()]
         dim = n_atoms * 3
+        if engine_type == 0 and n_atoms > self._MAX_SOBOL_ATOMS:
+            raise CardOperationError(
+                "perturb.sobol_dimension_limit",
+                "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
+                "use Uniform sampling for larger structures.",
+                max_atoms=self._MAX_SOBOL_ATOMS,
+            )
         symbols = structure.get_chemical_symbols()
         element_scalings = params.element_scalings or {}
         per_atom_scaling = (
@@ -457,7 +472,11 @@ class PerturbOperation(StructureOperation):
         if not np.all(np.isfinite(per_atom_scaling)) or np.any(per_atom_scaling < 0.0):
             raise ValueError("Perturb: max_distance values must be finite and non-negative.")
 
-        base_seed = int(params.seed) if params.use_seed else None
+        base_seed = (
+            derived_structure_seed(int(params.seed), structure)
+            if params.use_seed
+            else None
+        )
         rng = np.random.default_rng(base_seed)
 
         if engine_type == 0:

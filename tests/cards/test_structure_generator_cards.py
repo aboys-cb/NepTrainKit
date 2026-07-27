@@ -1,4 +1,19 @@
 from .card_test_base import *
+import threading
+import time
+from types import SimpleNamespace
+from unittest.mock import patch
+
+
+def _wait_until(predicate, timeout: float = 3.0) -> bool:
+    deadline = time.perf_counter() + timeout
+    while time.perf_counter() < deadline:
+        QApplication.processEvents()
+        if predicate():
+            return True
+        time.sleep(0.01)
+    QApplication.processEvents()
+    return bool(predicate())
 
 
 class TestStructureGeneratorCards(BaseCardTest):
@@ -1088,21 +1103,95 @@ H 2.6700 0.5000 -0.8660
             pbc=False,
         )
         card = OrganicMolConfigPBCCard()
+        try:
+            self.assertTrue(card.bond_detect_frame.isHidden())
+            self.assertIn("Load an upstream molecule", card.preview_label.text())
+            card.set_dataset([molecule])
 
-        self.assertTrue(card.bond_detect_frame.isHidden())
-        self.assertIn("Load an upstream molecule", card.preview_label.text())
-        card.set_dataset([molecule])
+            self.assertIn("background", card.preview_label.text())
+            self.assertTrue(_wait_until(lambda: "4 atoms" in card.preview_label.text()))
+            self.assertIn("3 detected bonds / 1 rotatable", card.preview_label.text())
+            self.assertIn("1 molecular components", card.preview_label.text())
+            self.assertIn("nonperiodic", card.preview_label.text())
 
-        self.assertIn("4 atoms", card.preview_label.text())
-        self.assertIn("3 detected bonds / 1 rotatable", card.preview_label.text())
-        self.assertIn("1 molecular components", card.preview_label.text())
-        self.assertIn("nonperiodic", card.preview_label.text())
+            card.advanced_checkbox.setChecked(True)
+            self.assertFalse(card.bond_detect_frame.isHidden())
+            self.assertFalse(card.bond_max_frame.isEnabled())
+            card.bond_max_enable.setChecked(True)
+            self.assertTrue(card.bond_max_frame.isEnabled())
+        finally:
+            _wait_until(
+                lambda: card._preview_task is None
+                or not card._preview_task.isRunning()
+            )
+            card.close()
+            QApplication.processEvents()
 
-        card.advanced_checkbox.setChecked(True)
-        self.assertFalse(card.bond_detect_frame.isHidden())
-        self.assertFalse(card.bond_max_frame.isEnabled())
-        card.bond_max_enable.setChecked(True)
-        self.assertTrue(card.bond_max_frame.isEnabled())
+    def test_organic_configuration_preview_runs_in_background_and_uses_latest_request(self):
+        molecule = Atoms(
+            "C4",
+            positions=[
+                [0.0, 0.0, 0.0],
+                [1.4, 0.0, 0.0],
+                [2.8, 0.2, 0.0],
+                [4.1, 0.2, 1.0],
+            ],
+            pbc=False,
+        )
+        started = threading.Event()
+        release = threading.Event()
+        calls = []
+        main_thread_id = threading.get_ident()
+
+        def fake_summary(_structure, params):
+            calls.append((threading.get_ident(), params.bond_detect_factor))
+            if len(calls) == 1:
+                started.set()
+                release.wait(timeout=3.0)
+            bond_count = 4 if params.bond_detect_factor > 1.2 else 3
+            return SimpleNamespace(
+                atom_count=4,
+                bond_count=bond_count,
+                component_count=1,
+                torsion_count=1,
+                torsion_active=True,
+                pbc_active=False,
+                local_mode=False,
+                requested_outputs=params.perturb_per_frame,
+                gaussian_sigma=params.gaussian_sigma,
+            )
+
+        card = OrganicMolConfigPBCCard()
+        try:
+            with patch.object(
+                OrganicMolConfigPBCOperation,
+                "topology_summary",
+                side_effect=fake_summary,
+            ):
+                card.set_dataset([molecule])
+                self.assertTrue(_wait_until(started.is_set))
+                self.assertNotEqual(calls[0][0], main_thread_id)
+
+                card.bond_detect_frame.set_input_value([1.3])
+                self.assertIn("background", card.preview_label.text())
+                release.set()
+
+                self.assertTrue(
+                    _wait_until(
+                        lambda: len(calls) >= 2
+                        and "4 detected bonds" in card.preview_label.text()
+                    )
+                )
+                self.assertEqual(calls[1][1], 1.3)
+                self.assertNotEqual(calls[1][0], main_thread_id)
+        finally:
+            release.set()
+            _wait_until(
+                lambda: card._preview_task is None
+                or not card._preview_task.isRunning()
+            )
+            card.close()
+            QApplication.processEvents()
 
     def test_organic_configuration_operation_honors_boundary_state_and_guards(self):
         molecule = Atoms(
@@ -1144,8 +1233,8 @@ H 2.6700 0.5000 -0.8660
             ring,
             OrganicMolConfigPBCParams(gaussian_sigma=0.01),
         )
-        self.assertEqual(ring_summary["bond_count"], 6)
-        self.assertEqual(ring_summary["torsion_count"], 0)
+        self.assertEqual(ring_summary.bond_count, 6)
+        self.assertEqual(ring_summary.torsion_count, 0)
 
         no_bonds = operation.topology_summary(
             molecule,
@@ -1154,7 +1243,7 @@ H 2.6700 0.5000 -0.8660
                 bond_detect_factor=0.5,
             ),
         )
-        self.assertEqual(no_bonds["bond_count"], 0)
+        self.assertEqual(no_bonds.bond_count, 0)
 
         from NepTrainKit.core.torsion_guard_pbc import (
             bonds_within_range_nonpbc,
@@ -1257,8 +1346,8 @@ H 2.6700 0.5000 -0.8660
         self.assertEqual(settings["box_size"], 75.0)
         self.assertEqual(settings["bo_c"], 0.35)
         self.assertEqual(settings["bo_threshold"], 0.1)
-        self.assertTrue(summary["local_mode"])
-        self.assertEqual(summary["requested_outputs"], 3)
+        self.assertTrue(summary.local_mode)
+        self.assertEqual(summary.requested_outputs, 3)
 
         card = OrganicMolConfigPBCCard()
         card.set_params(params)

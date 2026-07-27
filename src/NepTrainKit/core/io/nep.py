@@ -322,10 +322,7 @@ class NepTrainResultData(ResultData):
         )
         inst.set_cache_outputs_override(cache_outputs)
         if structures is not None:
-            try:
-                inst.set_structures(structures)
-            except Exception:
-                pass
+            inst.set_structures(structures)
         return inst
 
     def _can_load_without_calculator(self) -> bool:

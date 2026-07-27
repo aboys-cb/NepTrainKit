@@ -1284,21 +1284,25 @@ class ShowNepWidget(QWidget):
 
     def check_nep_result(
         self,
-        path,
+        path=None,
         *,
         structures=None,
         cache_outputs: bool | None = None,
+        source_name: str | None = None,
     ):
         """Load NEP metadata and start the background loading thread.
 
         Parameters
         ----------
-        path : str
-            Source file or directory containing NEP outputs.
+        path : str, optional
+            Source file or directory containing NEP outputs. May be omitted
+            when ``structures`` provides an in-memory dataset.
         structures : list[Structure], optional
             Pre-converted in-memory structures that bypass file parsing.
         cache_outputs : bool, optional
             Per-load cache policy. ``None`` follows the global setting.
+        source_name : str, optional
+            User-facing label for an in-memory dataset.
 
         Returns
         -------
@@ -1311,25 +1315,41 @@ class ShowNepWidget(QWidget):
         self._initial_loading = True
         self._refresh_export_actions()
 
-        file_name = os.path.basename(path)
-        show_path = path if os.path.isdir(path) else os.path.dirname(path)
+        in_memory = structures is not None and path is None
+        if path is None and structures is None:
+            raise ValueError("path is required when structures are not provided")
+        logical_path = "make_dataset.xyz" if path is None else os.fspath(path)
+        file_name = source_name or os.path.basename(logical_path)
+        show_path = (
+            ""
+            if in_memory
+            else logical_path
+            if os.path.isdir(logical_path)
+            else os.path.dirname(logical_path)
+        )
 
         # Reset model cache when switching to a different working directory.
-        try:
-            resolved_dir = Path(show_path).resolve()
-        except Exception:
+        if in_memory:
             resolved_dir = None
+        else:
+            try:
+                resolved_dir = Path(show_path).resolve()
+            except Exception:
+                resolved_dir = None
         if resolved_dir is not None and resolved_dir != getattr(self, "_nep_cache_dir", None):
             self._nep_result_cache.clear()
             self._nep_cache_dir = resolved_dir
+        elif in_memory:
+            self._nep_result_cache.clear()
+            self._nep_cache_dir = None
         
         load_error = None
         try:
             if structures is None:
-                self.nep_result_data = load_result_data(path)  # type: ignore
+                self.nep_result_data = load_result_data(logical_path)  # type: ignore
             else:
                 self.nep_result_data = NepTrainResultData.from_path(
-                    path,
+                    logical_path,
                     structures=list(structures),
                     nep_txt_path=get_bundled_nep89_path(),
                     cache_outputs=cache_outputs,
@@ -1354,10 +1374,16 @@ class ShowNepWidget(QWidget):
             return
         self.nep_result_data.set_cache_outputs_override(cache_outputs)
 
-        self.path_label.setText(
-            self.tr("Current file: {file_name}").format(file_name=file_name)
-        )
-        self.path_label.setUrl(QUrl.fromLocalFile(show_path))
+        if in_memory:
+            self.path_label.setText(
+                self.tr("Current dataset: {name}").format(name=file_name)
+            )
+            self.path_label.setUrl(QUrl())
+        else:
+            self.path_label.setText(
+                self.tr("Current file: {file_name}").format(file_name=file_name)
+            )
+            self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         
         # Detect and populate NEP model files for combo box
         model_dir = show_path

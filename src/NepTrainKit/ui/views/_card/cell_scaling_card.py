@@ -50,7 +50,11 @@ class CellScalingCard(MakeDataCard):
         self.engine_type_combo.addItem(self.tr("Sobol"))
         self.engine_type_combo.addItem(self.tr("Uniform"))
         self.engine_type_combo.setCurrentIndex(1)
-        self.engine_label.setToolTip(self.tr("Select random engine"))
+        self.engine_label.setToolTip(
+            self.tr(
+                "Uniform is the general default; Sobol improves small-sample lattice coverage"
+            )
+        )
         self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
 
 

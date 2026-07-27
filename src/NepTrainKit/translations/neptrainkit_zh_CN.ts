@@ -2186,6 +2186,14 @@
     </message>
 </context>
 <context>
+    <name>CardOperationError</name>
+    <message>
+        <location filename="../ui/messages.py" line="328" />
+        <source>Perturb: Sobol sampling supports at most {max_atoms} atoms; use Uniform sampling for larger structures.</source>
+        <translation>原子扰动：Sobol 采样最多支持 {max_atoms} 个原子；更大的结构请使用 Uniform 采样。</translation>
+    </message>
+</context>
+<context>
     <name>CellScalingCard</name>
     <message>
         <location filename="../ui/views/_card/cell_scaling_card.py" line="38" />
@@ -2208,62 +2216,66 @@
         <translation>均匀随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="53" />
         <source>Select random engine</source>
-        <translation>选择随机引擎</translation>
+        <translation type="vanished">选择随机引擎</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="64" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="55" />
+        <source>Uniform is the general default; Sobol improves small-sample lattice coverage</source>
+        <translation>Uniform 是通用默认选项；Sobol 可改善少量样本的晶格覆盖</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="68" />
         <source>Max Scaling:</source>
         <translation>最大缩放：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="65" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="69" />
         <source>Maximum scaling factor</source>
         <translation>最大缩放因子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="74" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="78" />
         <source>Perturb angle</source>
         <translation>扰动角度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="76" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="80" />
         <source>Also perturb lattice angles</source>
         <translation>同时扰动晶格角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="80" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="84" />
         <source>Optional</source>
         <translation>可选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="81" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="85" />
         <source>Identify organic</source>
         <translation>识别有机分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="83" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="87" />
         <source>Treat organic molecules as rigid units</source>
         <translation>将有机分子作为刚体处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="92" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="96" />
         <source>Structures</source>
         <translation>结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="94" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="98" />
         <source>Number of scaled structures to generate</source>
         <translation>要生成的缩放结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="97" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="101" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="99" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="103" />
         <source>Enable reproducible random sampling</source>
         <translation>启用可复现的随机采样</translation>
     </message>
@@ -3495,7 +3507,7 @@
     </message>
     <message>
         <location filename="../ui/widgets/doping_rule.py" line="95" />
-        <location filename="../ui/widgets/doping_rule.py" line="162" />
+        <location filename="../ui/widgets/doping_rule.py" line="160" />
         <source>Atom ratio</source>
         <translation>原子比例</translation>
     </message>
@@ -3560,7 +3572,7 @@
         <translation>删除规则</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/doping_rule.py" line="160" />
+        <location filename="../ui/widgets/doping_rule.py" line="162" />
         <source>Mass ratio</source>
         <translation>质量比例</translation>
     </message>
@@ -6206,23 +6218,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="353" />
-        <location filename="../ui/messages.py" line="393" />
+        <location filename="../ui/messages.py" line="369" />
+        <location filename="../ui/messages.py" line="409" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="363" />
+        <location filename="../ui/messages.py" line="379" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="373" />
+        <location filename="../ui/messages.py" line="389" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="383" />
+        <location filename="../ui/messages.py" line="399" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -6667,17 +6679,17 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainKitMainWindow</name>
     <message>
-        <location filename="../main.py" line="132" />
+        <location filename="../main.py" line="131" />
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../main.py" line="138" />
+        <location filename="../main.py" line="137" />
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../main.py" line="162" />
+        <location filename="../main.py" line="161" />
         <source>NEP Dataset Display</source>
         <translation>NEP 数据集查看</translation>
     </message>
@@ -6690,57 +6702,62 @@ All child items will also be deleted.</source>
         <translation type="vanished">构建数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="172" />
+        <location filename="../main.py" line="171" />
         <source>Make Dataset</source>
         <translation>构建数据集</translation>
     </message>
     <message>
-        <location filename="../main.py" line="177" />
+        <location filename="../main.py" line="176" />
         <source>Data Management</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="../main.py" line="182" />
+        <location filename="../main.py" line="181" />
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../main.py" line="339" />
+        <location filename="../main.py" line="337" />
         <source>Open data for this page</source>
         <translation>打开当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="341" />
+        <location filename="../main.py" line="339" />
         <source>Open is not available on this page</source>
         <translation>当前页面不支持打开操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="344" />
+        <location filename="../main.py" line="342" />
         <source>Save data from this page</source>
         <translation>保存当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="346" />
+        <location filename="../main.py" line="344" />
         <source>Save is not available on this page</source>
         <translation>当前页面不支持保存操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="358" />
+        <location filename="../main.py" line="356" />
         <source>The workflow output is empty.</source>
         <translation>工作流输出为空。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="371" />
+        <location filename="../main.py" line="369" />
         <source>Dataset handoff is already in progress.</source>
         <translation>正在传递数据集，请稍候。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="381" />
+        <location filename="../main.py" line="376" />
         <source>Preparing the workflow output for display...</source>
         <translation>正在准备工作流输出以供查看...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="417" />
+        <location filename="../main.py" line="396" />
+        <source>Make Dataset output</source>
+        <translation>数据集生成输出</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="404" />
         <source>Failed to prepare workflow output: {message}</source>
         <translation>准备工作流输出失败：{message}</translation>
     </message>
@@ -6757,32 +6774,32 @@ All child items will also be deleted.</source>
         <translation type="vanished">训练集评估结果已过期，请针对当前数据集重新检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="167" />
+        <location filename="../main.py" line="166" />
         <source>Training Set Audit</source>
         <translation>训练集评估</translation>
     </message>
     <message>
-        <location filename="../main.py" line="465" />
+        <location filename="../main.py" line="452" />
         <source>Please load a dataset before running Training Set Audit.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="468" />
+        <location filename="../main.py" line="455" />
         <source>current dataset</source>
         <translation>当前数据集</translation>
     </message>
     <message>
-        <location filename="../main.py" line="518" />
+        <location filename="../main.py" line="505" />
         <source>Training Set Audit failed: {message}</source>
         <translation>训练集评估失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="543" />
+        <location filename="../main.py" line="530" />
         <source>Training Set Audit results are stale. Please rerun the audit for the current dataset.</source>
         <translation>训练集评估结果已过期，请针对当前数据集重新评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="711" />
+        <location filename="../main.py" line="698" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
     </message>
@@ -6790,17 +6807,17 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainResultData</name>
     <message>
-        <location filename="../core/io/nep.py" line="682" />
+        <location filename="../core/io/nep.py" line="679" />
         <source>Running NEP prediction: {done}/{total} structures</source>
         <translation>正在运行 NEP 预测：{done}/{total} 个结构</translation>
     </message>
     <message>
-        <location filename="../core/io/nep.py" line="727" />
+        <location filename="../core/io/nep.py" line="724" />
         <source>Generating NEP descriptors and predictions together to avoid duplicate work.</source>
         <translation>正在合并生成 NEP 描述符和预测结果，以避免重复计算。</translation>
     </message>
     <message>
-        <location filename="../core/io/nep.py" line="734" />
+        <location filename="../core/io/nep.py" line="731" />
         <source>Running combined NEP calculation: {done}/{total} structures</source>
         <translation>正在运行合并的 NEP 计算：{done}/{total} 个结构</translation>
     </message>
@@ -6976,7 +6993,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">Pauling c 常数：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="196" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="207" />
         <source>Bond order constant c in exp((r0-r)/c)</source>
         <translation>exp((r0-r)/c) 中的键级常数 c</translation>
     </message>
@@ -6997,7 +7014,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">成键距离上限；取消勾选表示禁用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="231" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="242" />
         <source>Enable upper bound</source>
         <translation>启用上限</translation>
     </message>
@@ -7034,218 +7051,223 @@ All child items will also be deleted.</source>
         <translation type="vanished">非周期输出的盒子边长（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="56" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="67" />
         <source>Organic Conformer Sampling</source>
         <translation>有机构象采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="72" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="83" />
         <source>Requested outputs per input</source>
         <translation>每个输入的请求输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="73" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="84" />
         <source>Failed geometry checks are skipped, so the actual count can be lower</source>
         <translation>未通过几何检查的候选会被跳过，因此实际输出数可能更少</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="84" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="95" />
         <source>Torsion angle increment</source>
         <translation>扭转角增量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="85" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="96" />
         <source>Random rotation added around each selected rotatable bond, in degrees</source>
         <translation>绕每条选中可旋转键附加的随机旋转角，单位为度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="98" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="109" />
         <source>Rotatable bonds per output</source>
         <translation>每个输出旋转的键数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="99" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="110" />
         <source>Maximum number of distinct rotatable bonds changed in one output</source>
         <translation>一个输出中最多改变的不同可旋转键数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="110" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="121" />
         <source>Gaussian coordinate noise</source>
         <translation>高斯坐标噪声</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="111" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="122" />
         <source>Independent Cartesian noise applied to every atom after torsion rotations</source>
         <translation>完成扭转旋转后，对每个原子施加独立的笛卡尔噪声</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="124" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="135" />
         <source>Boundary handling</source>
         <translation>边界处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="125" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="136" />
         <source>Auto follows full 3D input PBC; mixed periodic boundaries are not supported</source>
         <translation>自动模式跟随输入的全三维 PBC；暂不支持混合周期边界</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="143" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="154" />
         <source>Local rotation threshold</source>
         <translation>局部旋转阈值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="144" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="155" />
         <source>Use capped local subtrees when the input has more atoms than this value</source>
         <translation>输入原子数超过该值时，使用有原子数上限的局部子树</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="147" />
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="159" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="158" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="170" />
         <source>atoms</source>
         <translation>个原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="155" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="166" />
         <source>Local subtree atom cap</source>
         <translation>局部子树原子数上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="156" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="167" />
         <source>Maximum atoms rotated on one side of a bond in local mode</source>
         <translation>局部模式中，一条键一侧最多一起旋转的原子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="167" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="178" />
         <source>Bond detection factor</source>
         <translation>成键检测系数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="168" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="179" />
         <source>Maximum detected bond distance as a multiple of the covalent-radius sum</source>
         <translation>检测键的最大距离，以两原子共价半径之和的倍数表示</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="181" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="192" />
         <source>Minimum bond-length factor</source>
         <translation>最小键长系数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="182" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="193" />
         <source>Reject a candidate if an original bond is shorter than this covalent-radius factor; 0 disables</source>
         <translation>若原始检测键短于该共价半径系数，则拒绝候选；0 表示关闭</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="195" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="206" />
         <source>Pauling decay constant</source>
         <translation>Pauling 衰减常数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="208" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="219" />
         <source>Bond-order threshold</source>
         <translation>键级阈值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="209" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="220" />
         <source>Minimum estimated Pauling bond order required to form a topology edge</source>
         <translation>形成拓扑边所需的最小估计 Pauling 键级</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="222" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="233" />
         <source>Maximum bond-length factor</source>
         <translation>最大键长系数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="223" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="234" />
         <source>Optional upper bound for original bonded pairs</source>
         <translation>原始检测键的可选长度上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="240" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="251" />
         <source>Nonbonded distance factor</source>
         <translation>非键距离系数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="241" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="252" />
         <source>Reject nonbonded pairs closer than this covalent-radius-sum factor</source>
         <translation>若非键原子对短于该共价半径和系数，则拒绝候选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="254" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="265" />
         <source>Guard retries per output</source>
         <translation>每个输出的保护重试次数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="255" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="266" />
         <source>Each retry halves both torsion increments and Gaussian noise</source>
         <translation>每次重试都会把扭转角增量和高斯噪声减半</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="266" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="277" />
         <source>Short-bond rotation cutoff</source>
         <translation>短键旋转截止系数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="267" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="278" />
         <source>Do not rotate bonds shorter than this covalent-radius-sum factor</source>
         <translation>短于该共价半径和系数的键不参与旋转</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="280" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="291" />
         <source>Nonperiodic display box</source>
         <translation>非周期显示盒</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="281" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="292" />
         <source>Cubic cell edge assigned to nonperiodic outputs; it is not a physical boundary</source>
         <translation>赋给非周期输出的立方 cell 边长；它不是物理边界</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="293" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="304" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="295" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="306" />
         <source>Enable reproducible torsion/noise sampling</source>
         <translation>启用 reproducible 扭转/noise 采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="307" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="318" />
         <source>Show topology and geometry-guard settings</source>
         <translation>显示拓扑和几何保护设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="418" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="434" />
         <source>Load an upstream molecule to preview detected bonds and rotatable torsions.</source>
         <translation>请载入上游分子，以预览检测键和可旋转键。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="430" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="438" />
+        <source>Calculating topology preview in background…</source>
+        <translation>正在后台计算拓扑预览…</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="492" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="436" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="514" />
         <source>3D periodic</source>
         <translation>全三维周期</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="436" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="514" />
         <source>nonperiodic</source>
         <translation>非周期</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="438" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="516" />
         <source>First input: {atoms} atoms · {bonds} detected bonds / {torsions} rotatable · {components} molecular components · {boundary} · request {outputs} outputs</source>
         <translation>首个输入：{atoms} 个原子 · {bonds} 条检测键 / {torsions} 条可旋转键 · {components} 个分子连通分量 · {boundary} · 请求输出 {outputs} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="449" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="527" />
         <source>no active torsion; outputs use Gaussian noise only</source>
         <translation>没有生效的扭转；输出仅使用高斯噪声</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="452" />
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="530" />
         <source>local subtree rotation is active</source>
         <translation>已启用局部子树旋转</translation>
     </message>
@@ -7281,77 +7303,81 @@ All child items will also be deleted.</source>
         <translation>均匀随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="105" />
         <source>Select random engine</source>
-        <translation>选择随机引擎</translation>
+        <translation type="vanished">选择随机引擎</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="113" />
+        <location filename="../ui/views/_card/perturb_card.py" line="107" />
+        <source>Uniform is the general default; Sobol improves small-sample coverage for up to 7,067 atoms</source>
+        <translation>Uniform 是通用默认选项；Sobol 可改善不超过 7,067 个原子的少量样本覆盖</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="117" />
         <source>Optional</source>
         <translation>可选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="114" />
+        <location filename="../ui/views/_card/perturb_card.py" line="118" />
         <source>Identify organic</source>
         <translation>识别有机分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="116" />
+        <location filename="../ui/views/_card/perturb_card.py" line="120" />
         <source>Treat organic molecules as rigid units</source>
         <translation>将有机分子作为刚体处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="128" />
+        <location filename="../ui/views/_card/perturb_card.py" line="132" />
         <source>Max distance:</source>
         <translation>最大距离：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="130" />
+        <location filename="../ui/views/_card/perturb_card.py" line="134" />
         <source>Maximum displacement distance</source>
         <translation>最大 displacement 距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="133" />
+        <location filename="../ui/views/_card/perturb_card.py" line="137" />
         <source>Element overrides:</source>
         <translation>元素覆盖：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="134" />
+        <location filename="../ui/views/_card/perturb_card.py" line="138" />
         <source>Override max distance per element; fallback to global value when empty</source>
         <translation>按元素覆盖最大距离；留空时回退到全局值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="143" />
+        <location filename="../ui/views/_card/perturb_card.py" line="147" />
         <source>Enable per-element</source>
         <translation>启用按元素设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="145" />
+        <location filename="../ui/views/_card/perturb_card.py" line="149" />
         <source>Use per-element max distance instead of a single global value</source>
         <translation>使用按元素设置的最大距离，而不是单一全局值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="150" />
+        <location filename="../ui/views/_card/perturb_card.py" line="154" />
         <source>Add an element-specific distance</source>
         <translation>Add an element-specific 距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="170" />
+        <location filename="../ui/views/_card/perturb_card.py" line="174" />
         <source>Structures</source>
         <translation>结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="171" />
+        <location filename="../ui/views/_card/perturb_card.py" line="175" />
         <source>Number of perturbed structures to generate</source>
         <translation>要生成的扰动结构数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="175" />
+        <location filename="../ui/views/_card/perturb_card.py" line="179" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="177" />
+        <location filename="../ui/views/_card/perturb_card.py" line="181" />
         <source>Enable reproducible random perturbations</source>
         <translation>启用 reproducible 随机 perturbations</translation>
     </message>
@@ -7880,8 +7906,8 @@ All child items will also be deleted.</source>
 <context>
     <name>RuntimeMessage</name>
     <message>
-        <location filename="../ui/messages.py" line="15" />
-        <location filename="../ui/messages.py" line="310" />
+        <location filename="../ui/messages.py" line="17" />
+        <location filename="../ui/messages.py" line="317" />
         <source>__language_probe__</source>
         <translation>zh_CN</translation>
     </message>
@@ -8759,8 +8785,8 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/pages/show_nep.py" line="790" />
         <location filename="../ui/pages/show_nep.py" line="791" />
-        <location filename="../ui/pages/show_nep.py" line="1610" />
-        <location filename="../ui/pages/show_nep.py" line="1611" />
+        <location filename="../ui/pages/show_nep.py" line="1636" />
+        <location filename="../ui/pages/show_nep.py" line="1637" />
         <source>Play structures</source>
         <translation>连续播放结构</translation>
     </message>
@@ -8775,8 +8801,8 @@ All child items will also be deleted.</source>
         <translation>/ {count:,} 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1605" />
-        <location filename="../ui/pages/show_nep.py" line="1606" />
+        <location filename="../ui/pages/show_nep.py" line="1631" />
+        <location filename="../ui/pages/show_nep.py" line="1632" />
         <source>Pause structures</source>
         <translation>暂停播放结构</translation>
     </message>
@@ -8823,7 +8849,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/pages/show_nep.py" line="1016" />
         <location filename="../ui/pages/show_nep.py" line="1182" />
-        <location filename="../ui/pages/show_nep.py" line="1352" />
+        <location filename="../ui/pages/show_nep.py" line="1372" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
@@ -8841,8 +8867,8 @@ All child items will also be deleted.</source>
         <location filename="../ui/pages/show_nep.py" line="1070" />
         <location filename="../ui/pages/show_nep.py" line="1110" />
         <location filename="../ui/pages/show_nep.py" line="1140" />
-        <location filename="../ui/pages/show_nep.py" line="1645" />
-        <location filename="../ui/pages/show_nep.py" line="2065" />
+        <location filename="../ui/pages/show_nep.py" line="1671" />
+        <location filename="../ui/pages/show_nep.py" line="2091" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
@@ -8863,7 +8889,7 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="1194" />
-        <location filename="../ui/pages/show_nep.py" line="2075" />
+        <location filename="../ui/pages/show_nep.py" line="2101" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
@@ -8875,70 +8901,75 @@ Do you want to load the new working path?</source>
 仍要加载新的工作路径吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1358" />
+        <location filename="../ui/pages/show_nep.py" line="1379" />
+        <source>Current dataset: {name}</source>
+        <translation>当前数据集：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1384" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1396" />
+        <location filename="../ui/pages/show_nep.py" line="1422" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1396" />
+        <location filename="../ui/pages/show_nep.py" line="1422" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1499" />
+        <location filename="../ui/pages/show_nep.py" line="1525" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1538" />
-        <location filename="../ui/pages/show_nep.py" line="2267" />
+        <location filename="../ui/pages/show_nep.py" line="1564" />
+        <location filename="../ui/pages/show_nep.py" line="2293" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1639" />
+        <location filename="../ui/pages/show_nep.py" line="1665" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1817" />
+        <location filename="../ui/pages/show_nep.py" line="1843" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1828" />
+        <location filename="../ui/pages/show_nep.py" line="1854" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2070" />
+        <location filename="../ui/pages/show_nep.py" line="2096" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2076" />
+        <location filename="../ui/pages/show_nep.py" line="2102" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2087" />
+        <location filename="../ui/pages/show_nep.py" line="2113" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2169" />
+        <location filename="../ui/pages/show_nep.py" line="2195" />
         <source>Filter failed: {message}</source>
         <translation>筛选失败：{message}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2184" />
+        <location filename="../ui/pages/show_nep.py" line="2210" />
         <source>The filter result has expired. Preview it again before applying.</source>
         <translation>筛选结果已过期，请重新预览后再应用。</translation>
     </message>
@@ -8947,8 +8978,8 @@ Do you want to continue?</source>
         <translation type="vanished">原子间距过小，结构可能不合理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2293" />
-        <location filename="../ui/pages/show_nep.py" line="2381" />
+        <location filename="../ui/pages/show_nep.py" line="2319" />
+        <location filename="../ui/pages/show_nep.py" line="2407" />
         <source>Please enter a search query.</source>
         <translation>请输入搜索内容。</translation>
     </message>
@@ -8965,14 +8996,14 @@ Do you want to continue?</source>
         <translation type="vanished">检查当前数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2305" />
-        <location filename="../ui/pages/show_nep.py" line="2319" />
+        <location filename="../ui/pages/show_nep.py" line="2331" />
+        <location filename="../ui/pages/show_nep.py" line="2345" />
         <source>Please load a dataset before running Training Set Audit.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2312" />
-        <location filename="../ui/pages/show_nep.py" line="2329" />
+        <location filename="../ui/pages/show_nep.py" line="2338" />
+        <location filename="../ui/pages/show_nep.py" line="2355" />
         <source>Training Set Audit page is not available.</source>
         <translation>训练集评估页面不可用。</translation>
     </message>

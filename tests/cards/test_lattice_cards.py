@@ -1,6 +1,8 @@
 from .card_test_base import *
 from ase.geometry import cell_to_cellpar, cellpar_to_cell
 from unittest.mock import patch
+import warnings
+from NepTrainKit.core.cards.sampling import derived_structure_seed
 
 
 class TestLatticeCards(BaseCardTest):
@@ -148,6 +150,53 @@ class TestLatticeCards(BaseCardTest):
             displacements = atoms.get_positions() - self.structure.get_positions()
             self.assertLessEqual(float(np.linalg.norm(displacements, axis=1).max()), 0.1 + 1e-12)
 
+    def test_perturb_sobol_is_seeded_bounded_and_quiet(self):
+        structure = Atoms(
+            "Si8",
+            positions=np.arange(24, dtype=float).reshape(8, 3),
+            cell=[30, 30, 30],
+            pbc=False,
+        )
+        params = PerturbParams(
+            engine_type=0,
+            max_distance=0.2,
+            max_num=4,
+            use_seed=True,
+            seed=17,
+        )
+
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            first = PerturbOperation().run_structure(structure, params)
+        repeated = PerturbOperation().run_structure(structure, params)
+
+        self.assertEqual(len(first), 4)
+        self.assertFalse(any("balance properties of Sobol" in str(item.message) for item in caught))
+        for output, repeated_output in zip(first, repeated):
+            self.assertIn("Pert(d=0.2,S)", output.info.get("Config_type", ""))
+            np.testing.assert_allclose(output.positions, repeated_output.positions)
+            displacement = output.positions - structure.positions
+            self.assertLessEqual(
+                float(np.linalg.norm(displacement, axis=1).max()),
+                params.max_distance + 1e-12,
+            )
+
+    def test_perturb_sobol_has_explicit_dimension_limit(self):
+        oversized_count = PerturbOperation._MAX_SOBOL_ATOMS + 1
+        oversized = Atoms(
+            numbers=np.ones(oversized_count, dtype=int),
+            positions=np.zeros((oversized_count, 3)),
+        )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            rf"at most {PerturbOperation._MAX_SOBOL_ATOMS} atoms",
+        ):
+            PerturbOperation().run_structure(
+                oversized,
+                PerturbParams(engine_type=0, max_num=1),
+            )
+
     def test_perturb_max_distance_is_displacement_norm_limit(self):
         structure = Atoms(
             "HHeLi",
@@ -204,7 +253,7 @@ class TestLatticeCards(BaseCardTest):
 
         results = PerturbOperation().run_structure(structure.copy(), params)
 
-        rng = np.random.default_rng(params.seed)
+        rng = np.random.default_rng(derived_structure_seed(params.seed, structure))
         unit_samples = rng.random((params.max_num, len(structure), 3))
         displacements = PerturbOperation.unit_ball_displacements(
             unit_samples,
@@ -215,6 +264,65 @@ class TestLatticeCards(BaseCardTest):
             expected.set_positions(structure.positions + displacement)
             expected.wrap()
             np.testing.assert_allclose(result.positions, expected.positions, atol=1e-12)
+
+    def test_seeded_random_engines_are_structure_specific_and_reorder_stable(self):
+        structure_a = Atoms(
+            "Si8",
+            positions=np.arange(24, dtype=float).reshape(8, 3),
+            cell=[30, 30, 30],
+            pbc=False,
+        )
+        structure_b = structure_a.copy()
+        structure_b.positions[0, 0] += 0.125
+
+        for engine_type in (0, 1):
+            with self.subTest(operation="Perturb", engine_type=engine_type):
+                params = PerturbParams(
+                    engine_type=engine_type,
+                    max_distance=0.2,
+                    max_num=2,
+                    use_seed=True,
+                    seed=42,
+                )
+                operation = PerturbOperation()
+                a_first = operation.run_structure(structure_a, params)
+                b_second = operation.run_structure(structure_b, params)
+                b_first = operation.run_structure(structure_b, params)
+                a_second = operation.run_structure(structure_a, params)
+                duplicate = operation.run_structure(structure_a.copy(), params)
+
+                np.testing.assert_allclose(a_first[0].positions, a_second[0].positions)
+                np.testing.assert_allclose(b_second[0].positions, b_first[0].positions)
+                np.testing.assert_allclose(a_first[0].positions, duplicate[0].positions)
+                self.assertFalse(
+                    np.allclose(
+                        a_first[0].positions - structure_a.positions,
+                        b_second[0].positions - structure_b.positions,
+                    )
+                )
+
+            with self.subTest(operation="CellScaling", engine_type=engine_type):
+                params = CellScalingParams(
+                    engine_type=engine_type,
+                    max_scaling=0.04,
+                    max_num=2,
+                    perturb_angle=False,
+                    use_seed=True,
+                    seed=42,
+                )
+                operation = CellScalingOperation()
+                a_first = operation.run_structure(structure_a, params)
+                b_second = operation.run_structure(structure_b, params)
+                b_first = operation.run_structure(structure_b, params)
+                a_second = operation.run_structure(structure_a, params)
+                duplicate = operation.run_structure(structure_a.copy(), params)
+
+                np.testing.assert_allclose(a_first[0].cell.array, a_second[0].cell.array)
+                np.testing.assert_allclose(b_second[0].cell.array, b_first[0].cell.array)
+                np.testing.assert_allclose(a_first[0].cell.array, duplicate[0].cell.array)
+                self.assertFalse(
+                    np.allclose(a_first[0].cell.array, b_second[0].cell.array)
+                )
 
     def test_cell_scaling_card_options(self):
         card = CellScalingCard()

@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import patch
 
 from .card_test_base import *
@@ -999,8 +1000,13 @@ class TestAlloyCards(BaseCardTest):
         sweep5.n_points_frame.set_input_value([6])
         sweep5.max_output_frame.set_input_value([6])
 
-        swept5 = sweep5.process_structure(base)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            swept5 = sweep5.process_structure(base)
         self.assertEqual(len(swept5), 6)
+        self.assertFalse(
+            any("balance properties of Sobol" in str(item.message) for item in caught)
+        )
         for atoms in swept5:
             cfg = str(atoms.info.get("Config_type", ""))
             comp_tokens = [t.strip() for t in cfg.split("|") if t.strip().startswith("Comp(") and t.strip().endswith(")")]

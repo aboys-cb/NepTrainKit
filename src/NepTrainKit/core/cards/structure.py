@@ -553,6 +553,21 @@ class OrganicMolConfigPBCParams:
     seed: int = 0
 
 
+@dataclass(frozen=True)
+class OrganicMolConfigTopologySummary:
+    """Resolved topology facts used by the card preview."""
+
+    atom_count: int
+    bond_count: int
+    component_count: int
+    torsion_count: int
+    torsion_active: bool
+    pbc_active: bool
+    local_mode: bool
+    requested_outputs: int
+    gaussian_sigma: float
+
+
 class OrganicMolConfigPBCOperation(StructureOperation):
     """Generate torsion-driven molecular conformers using TorsionGuard PBC."""
 
@@ -817,22 +832,20 @@ class OrganicMolConfigPBCOperation(StructureOperation):
         cls,
         structure,
         params: OrganicMolConfigPBCParams,
-    ) -> dict[str, Any]:
+    ) -> OrganicMolConfigTopologySummary:
         """Return resolved topology and sampling information for the UI."""
         settings = cls._validated_settings(structure, params)
-        return {
-            "atom_count": len(settings["symbols"]),
-            "bond_count": settings["bond_count"],
-            "component_count": settings["component_count"],
-            "torsion_count": settings["torsion_count"],
-            "torsion_active": settings["torsion_active"],
-            "pbc_active": settings["pbc_active"],
-            "local_mode": (
-                len(settings["symbols"]) > settings["local_cutoff"]
-            ),
-            "requested_outputs": settings["perturb_per_frame"],
-            "gaussian_sigma": settings["gaussian_sigma"],
-        }
+        return OrganicMolConfigTopologySummary(
+            atom_count=len(settings["symbols"]),
+            bond_count=settings["bond_count"],
+            component_count=settings["component_count"],
+            torsion_count=settings["torsion_count"],
+            torsion_active=settings["torsion_active"],
+            pbc_active=settings["pbc_active"],
+            local_mode=len(settings["symbols"]) > settings["local_cutoff"],
+            requested_outputs=settings["perturb_per_frame"],
+            gaussian_sigma=settings["gaussian_sigma"],
+        )
 
     def run_structure(self, structure, params: OrganicMolConfigPBCParams) -> list:
         settings = self._validated_settings(structure, params)

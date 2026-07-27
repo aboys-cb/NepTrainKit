@@ -9,9 +9,12 @@ Use this map to edit only what is needed.
 - `src/NepTrainKit/ui/views/_card/*.py`: PySide card UI, parameter binding, serialization, and operation delegation.
 - `src/NepTrainKit/ui/views/_card/__init__.py`: card imports and exports.
 - `src/NepTrainKit/core/card_manager.py`: registration mechanics.
+- `src/NepTrainKit/ui/widgets/card_metadata.py`: Find card 列表、卡片简述、详情和本地化元数据。
+- `src/NepTrainKit/ui/views/cards.py`: Add new card 下拉框和 Find card 入口。
 - `src/NepTrainKit/ui/widgets/card_widget.py`: base `MakeDataCard` operation dispatch.
 - `src/NepTrainKit/ui/threads.py`: operation execution threads.
 - `src/NepTrainKit/ui/pages/makedata.py`: workflow runtime integration.
+- `src/NepTrainKit/translations/neptrainkit_zh_CN.ts`: 卡片名称、简述、控件、枚举和状态文案翻译源。
 
 ## Docs paths
 
@@ -24,6 +27,9 @@ Use this map to edit only what is needed.
 
 - `tests/test_makedata_source_card.py`: source-card execution in MakeData page.
 - `tests/cards/`: operation, card transformation, and serialization tests grouped by card domain.
+- `tests/test_card_library_dialog.py`: Find card 简述、文档链接、翻译和新增卡片入口。
+- `tests/test_makedata_failure_semantics.py`: 成功、合法空输出、失败和工作流链终态。
+- `tests/test_threads.py`: 通用后台任务、回调线程和线程清理。
 - Operation tests should avoid Qt setup: call `Operation().run_structure(atoms, Params(...))`, `run_dataset(...)`, or `generate(...)` directly.
 
 ## CI references
@@ -36,3 +42,4 @@ Use this map to edit only what is needed.
 - Structure cards use `StructureOperation`; dataset filters use `DatasetOperation`; no-input generators use `GeneratorOperation`.
 - `src/NepTrainKit/core/cards/*.py` must not import `PySide6`, `qfluentwidgets`, or `MessageManager`.
 - Built-in cards should not override `run()`; dispatch belongs in `MakeDataCard.run()`.
+- Dataset-scaled preview/summary should use the shared background-thread helpers, coalesce repeated requests, discard stale results, and stop safely when the card closes.

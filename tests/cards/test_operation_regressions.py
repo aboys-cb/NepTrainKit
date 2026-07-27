@@ -39,13 +39,18 @@ class TestOperationRegressionEdges(BaseCardTest):
 
         cases = [
             RandomDopingOperation().run_structure(structure, RandomDopingParams(rules=[]))[0],
-            RandomOccupancyOperation().run_structure(structure, RandomOccupancyParams(source="Manual", manual=""))[0],
             ConditionalReplaceOperation().run_structure(structure, ConditionalReplaceParams(target=""))[0],
             GroupLabelOperation().run_structure(structure, GroupLabelParams(overwrite=False))[0],
         ]
 
         for result in cases:
             self.assertIsNot(result, structure)
+
+        with self.assertRaisesRegex(ValueError, "requires a Comp"):
+            RandomOccupancyOperation().run_structure(
+                structure,
+                RandomOccupancyParams(source="Manual", manual=""),
+            )
 
     def test_magnetism_invalid_scan_pair_and_bond_inputs_fail_explicitly(self):
         with self.assertRaisesRegex(ValueError, "three values"):

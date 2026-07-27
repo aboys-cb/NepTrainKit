@@ -292,6 +292,58 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertEqual(first_ids, repeated_ids)
         self.assertNotEqual(first_ids, second_ids)
 
+    def test_random_vacancy_overlapping_random_rules_skip_only_infeasible_draws(self):
+        structure = Atoms(
+            "O6",
+            positions=np.arange(18, dtype=float).reshape(6, 3),
+            cell=[30, 30, 30],
+            pbc=True,
+        )
+        rules = [
+            {"element": "O", "count": [1, 4], "count_mode": "random"},
+            {"element": "O", "count": [1, 3], "count_mode": "random"},
+        ]
+
+        for seed in range(32):
+            with self.subTest(seed=seed):
+                results = RandomVacancyOperation().run_structure(
+                    structure,
+                    RandomVacancyParams(
+                        rules=rules,
+                        max_structures=4,
+                        use_seed=True,
+                        seed=seed,
+                    ),
+                )
+                self.assertGreaterEqual(len(results), 1)
+                for atoms in results:
+                    removed = len(structure) - len(atoms)
+                    self.assertGreaterEqual(removed, 2)
+                    self.assertLessEqual(removed, 5)
+                    self.assertGreater(len(atoms), 0)
+                    self.assertIn(f"Vac(n={removed})", atoms.info.get("Config_type", ""))
+
+    def test_random_vacancy_overlapping_fixed_rules_fail_if_no_nonempty_result_exists(self):
+        structure = Atoms(
+            "O3",
+            positions=np.arange(9, dtype=float).reshape(3, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+
+        with self.assertRaisesRegex(ValueError, "could not generate a valid non-empty structure"):
+            RandomVacancyOperation().run_structure(
+                structure,
+                RandomVacancyParams(
+                    rules=[
+                        {"element": "O", "count": [2, 2], "count_mode": "fixed"},
+                        {"element": "O", "count": [1, 1], "count_mode": "fixed"},
+                    ],
+                    use_seed=True,
+                    seed=7,
+                ),
+            )
+
     def test_vacancy_defect_card_concentration(self):
         card = VacancyDefectCard()
         structure = self.structure.copy()

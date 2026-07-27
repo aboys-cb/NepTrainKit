@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition, CheckBox
 
-from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import RandomOccupancyOperation, RandomOccupancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
@@ -112,14 +112,7 @@ class RandomOccupancyCard(MakeDataCard):
 
     def process_structure(self, structure):
         """Assign occupancy from UI-independent parameters."""
-        try:
-            result = self.create_operation().run_structure(structure, self.get_params())
-        except Exception as exc:  # noqa: BLE001
-            MessageManager.send_warning_message(f"RandomOccupancy: invalid composition: {exc}")
-            return [structure]
-        if len(result) == 1 and result[0] is structure:
-            MessageManager.send_warning_message("RandomOccupancy: missing composition (Config_type Comp tag or manual input).")
-        return result
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         data = super().to_dict()

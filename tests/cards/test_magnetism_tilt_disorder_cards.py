@@ -149,6 +149,50 @@ class TestMagnetismTiltDisorderCards(MagnetismCardTest):
         self.assertTrue(np.allclose(moments[[2, 3], 0], -expected, atol=1e-6))
         self.assertIn("SpinPairG(A=A,B=B,a=6,sg=pos)", str(result.info.get("Config_type", "")))
 
+    def test_small_angle_spin_tilt_missing_prerequisites_fail_instead_of_returning_input(self):
+        operation = SmallAngleSpinTiltOperation()
+        no_moments = self._spin_chain()
+        with self.assertRaisesRegex(ValueError, "requires usable initial magnetic moments"):
+            operation.run_structure(
+                no_moments,
+                SmallAngleSpinTiltParams(include_reference=False),
+            )
+
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+        with self.assertRaisesRegex(ValueError, "group-pair mode requires atoms.arrays"):
+            operation.run_structure(
+                structure,
+                SmallAngleSpinTiltParams(
+                    canting_mode="Group pair canting",
+                    include_reference=False,
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "atom-pair mode matched no valid pairs"):
+            operation.run_structure(
+                structure,
+                SmallAngleSpinTiltParams(
+                    canting_mode="Atom pair canting",
+                    pair_source="Manual indices",
+                    pair_left_indices="",
+                    pair_right_indices="",
+                    include_reference=True,
+                ),
+            )
+
+    def test_small_angle_spin_tilt_reference_must_leave_output_budget_for_canting(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        with self.assertRaisesRegex(ValueError, "max_outputs must be >= 2"):
+            SmallAngleSpinTiltOperation().run_structure(
+                structure,
+                SmallAngleSpinTiltParams(
+                    include_reference=True,
+                    max_outputs=1,
+                ),
+            )
+
     def test_small_angle_spin_tilt_card_auto_neighbor_shell_pair(self):
         structure = self._spin_chain()
         structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])

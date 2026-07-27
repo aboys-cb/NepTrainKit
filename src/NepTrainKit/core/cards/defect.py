@@ -270,18 +270,13 @@ class RandomVacancyOperation(StructureOperation):
         seen_deletions: set[tuple[int, ...]] = set()
         target_outputs = self._output_upper_bound(rules, max_structures)
         max_attempts = max(100, target_outputs * self._MAX_ATTEMPTS_PER_OUTPUT)
+        last_invalid_reason: str | None = None
         for _ in range(max_attempts):
             new_structure = structure.copy()
             keep_mask = np.ones(len(new_structure), dtype=bool)
             total_remove = 0
+            attempt_is_valid = True
             for rule_index, rule in enumerate(rules, start=1):
-                candidate_indices = np.nonzero(keep_mask & rule["candidate_mask"])[0]
-                if rule["count_max"] > len(candidate_indices):
-                    raise ValueError(
-                        f"RandomVacancy rule {rule_index} has only {len(candidate_indices)} "
-                        "eligible atoms after earlier rules; reduce overlapping vacancy counts."
-                    )
-
                 if rule["count_mode"] == "fixed":
                     remove_num = rule["count_min"]
                 else:
@@ -289,12 +284,26 @@ class RandomVacancyOperation(StructureOperation):
                 if remove_num <= 0:
                     continue
 
+                candidate_indices = np.nonzero(keep_mask & rule["candidate_mask"])[0]
+                if remove_num > len(candidate_indices):
+                    last_invalid_reason = (
+                        f"RandomVacancy rule {rule_index} sampled {remove_num} vacancies, "
+                        f"but only {len(candidate_indices)} eligible atoms remain after earlier rules."
+                    )
+                    attempt_is_valid = False
+                    break
+
                 idxs = rng.choice(candidate_indices, remove_num, replace=False)
                 keep_mask[np.asarray(idxs, dtype=int)] = False
                 total_remove += remove_num
 
+            if not attempt_is_valid:
+                continue
             if total_remove >= len(structure):
-                raise ValueError("RandomVacancy rules would remove every atom from the structure.")
+                last_invalid_reason = (
+                    "RandomVacancy sampled a combination that would remove every atom from the structure."
+                )
+                continue
 
             deletion_key = tuple(int(index) for index in np.nonzero(~keep_mask)[0])
             if deletion_key in seen_deletions:
@@ -307,6 +316,12 @@ class RandomVacancyOperation(StructureOperation):
             structure_list.append(new_structure)
             if len(structure_list) >= target_outputs:
                 break
+        if not structure_list:
+            detail = last_invalid_reason or "no distinct deletion pattern could be sampled."
+            raise ValueError(
+                "RandomVacancy could not generate a valid non-empty structure from the rules: "
+                f"{detail}"
+            )
         return structure_list
 
 

@@ -74,15 +74,25 @@ def sample_dopants(
 
     dopant_list = list(dopant_list)
     ratios = np.array(ratios, dtype=float)
+    n_items = int(n_items)
+    if n_items < 0:
+        raise ValueError("Dopant item count must be non-negative.")
     if not dopant_list:
         raise ValueError("At least one dopant is required.")
     if ratios.size != len(dopant_list) or ratios.size == 0:
         raise ValueError("Dopant ratios must match dopant elements.")
     if np.any(~np.isfinite(ratios)) or np.any(ratios < 0.0):
         raise ValueError("Dopant ratios must be finite and non-negative.")
+    invalid_elements = [str(elem) for elem in dopant_list if str(elem) not in atomic_numbers]
+    if invalid_elements:
+        raise ValueError(
+            "Unknown dopant element symbol(s): " + ", ".join(invalid_elements) + "."
+        )
+    if ratio_type not in {"atom", "mass"}:
+        raise ValueError("Dopant ratio_type must be 'atom' or 'mass'.")
 
     if ratio_type == "mass":
-        masses = np.array([atomic_masses[atomic_numbers.get(elem, 1)] for elem in dopant_list])
+        masses = np.array([atomic_masses[atomic_numbers[elem]] for elem in dopant_list])
         atom_ratios = ratios / masses
         total = float(atom_ratios.sum())
     else:
@@ -95,12 +105,7 @@ def sample_dopants(
     if not exact:
         return list(rng.choice(dopant_list, size=n_items, p=atom_ratios, replace=True))
 
-    counts = (atom_ratios * n_items).astype(int)
-    diff = n_items - counts.sum()
-    if diff != 0:
-        max_idx = np.argmax(atom_ratios)
-        counts[max_idx] += diff
-
+    counts = fractions_to_counts_exact(atom_ratios, n_items)
     arr = np.repeat(dopant_list, counts)
     rng.shuffle(arr)
     return list(arr)
@@ -125,37 +130,92 @@ class RandomDopingOperation(StructureOperation):
             return [structure.copy()]
 
         structure_list = []
-        exact = params.doping_type == "Exact"
+        doping_type = str(params.doping_type).strip()
+        if doping_type not in {"Random", "Exact"}:
+            raise ValueError("RandomDoping: doping_type must be Random or Exact.")
+        exact = doping_type == "Exact"
         max_structures = int(params.max_structures)
         if max_structures <= 0:
             raise ValueError("RandomDoping: max_structures must be >= 1.")
-        base_seed = int(params.seed) if params.use_seed else None
+        seed = int(params.seed)
+        if params.use_seed and seed < 0:
+            raise ValueError("RandomDoping: seed must be >= 0.")
+        base_seed = seed if params.use_seed else None
         rng = np.random.default_rng(base_seed)
 
         for _ in range(max_structures):
             new_structure = structure.copy()
             symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
             total_doping = 0
-            for rule in params.rules:
-                target = rule.get("target")
+            for rule_index, rule in enumerate(params.rules, start=1):
+                label = f"RandomDoping rule {rule_index}"
+                if not isinstance(rule, dict):
+                    raise ValueError(f"{label} must be a mapping.")
+                target = str(rule.get("target", "") or "").strip()
                 dopants = rule.get("dopants", {})
-                if not target or not dopants:
-                    continue
+                if not target:
+                    raise ValueError(f"{label} requires a target element.")
                 if not isinstance(dopants, dict):
-                    raise ValueError("RandomDoping rule dopants must be an element->ratio mapping.")
+                    raise ValueError(f"{label} dopants must be an element->ratio mapping.")
+                if not dopants:
+                    raise ValueError(f"{label} requires at least one dopant element.")
+                if target not in atomic_numbers:
+                    raise ValueError(f"{label} has an unknown target element '{target}'.")
+                invalid_dopants = [
+                    str(element)
+                    for element in dopants
+                    if str(element) not in atomic_numbers
+                ]
+                if invalid_dopants:
+                    raise ValueError(
+                        f"{label} has unknown dopant element(s): "
+                        + ", ".join(invalid_dopants)
+                        + "."
+                    )
+                if target in dopants:
+                    raise ValueError(
+                        f"{label} includes target element '{target}' as its own dopant."
+                    )
 
                 groups = rule.get("group")
-                if groups and "group" in new_structure.arrays:
+                requested_groups = [
+                    str(value).strip()
+                    for value in _as_list(groups)
+                    if str(value).strip()
+                ]
+                if requested_groups:
+                    if "group" not in new_structure.arrays:
+                        raise ValueError(
+                            f"{label} requests group labels, but the input structure has no group array."
+                        )
                     group_values = np.asarray(new_structure.arrays["group"], dtype=object)
-                    candidate_indices = np.nonzero((symbols == target) & np.isin(group_values, _as_list(groups)))[0]
+                    candidate_indices = np.nonzero(
+                        (symbols == target)
+                        & np.isin(group_values, requested_groups)
+                    )[0]
                 else:
                     candidate_indices = np.nonzero(symbols == target)[0]
 
                 if len(candidate_indices) == 0:
-                    continue
+                    scope = (
+                        f" in group {','.join(requested_groups)}"
+                        if requested_groups
+                        else ""
+                    )
+                    raise ValueError(
+                        f"{label} matched no '{target}' atoms{scope}."
+                    )
 
                 doping_num = self._doping_count(new_structure, candidate_indices, target, dopants, rule, rng)
-                doping_num = min(doping_num, len(candidate_indices))
+                if doping_num < 0:
+                    raise ValueError(f"{label} replacement count must be >= 0.")
+                if doping_num > len(candidate_indices):
+                    raise ValueError(
+                        f"{label} requests {doping_num} replacements, but only "
+                        f"{len(candidate_indices)} eligible atoms are available."
+                    )
+                if doping_num == 0:
+                    continue
                 idxs = rng.choice(candidate_indices, doping_num, replace=False)
 
                 dopant_list = list(dopants.keys())
@@ -184,36 +244,50 @@ class RandomDopingOperation(StructureOperation):
 
         if use_mode == "atomic_percent":
             percent_min, percent_max = _range_pair(rule.get("percent", [0.0, 100.0]), label="percent")
+            if percent_min < 0.0 or percent_max > 100.0:
+                raise ValueError("percent must be within [0, 100].")
             value = rng.uniform(float(percent_min), float(percent_max)) / 100.0
-            return max(1, int(len(candidate_indices) * value))
+            return int(len(candidate_indices) * value)
 
         if use_mode == "mass_percent":
             percent_min, percent_max = _range_pair(rule.get("percent", [0.0, 100.0]), label="percent")
+            if percent_min < 0.0 or percent_max > 100.0:
+                raise ValueError("percent must be within [0, 100].")
             target_mass_percent = rng.uniform(float(percent_min), float(percent_max)) / 100.0
 
-            target_mass = atomic_masses[atomic_numbers.get(target, 1)]
+            target_mass = atomic_masses[atomic_numbers[target]]
             total_target_mass = len(candidate_indices) * target_mass
             dopant_elements = list(dopants.keys())
             if dopant_elements:
                 avg_dopant_mass = np.mean(
-                    [atomic_masses[atomic_numbers.get(elem, 1)] for elem in dopant_elements]
+                    [atomic_masses[atomic_numbers[elem]] for elem in dopant_elements]
                 )
             else:
                 avg_dopant_mass = target_mass
 
             doped_mass = total_target_mass * target_mass_percent
-            return max(1, int(doped_mass / avg_dopant_mass))
+            return int(doped_mass / avg_dopant_mass)
 
         if use_mode == "count":
             count_min_f, count_max_f = _range_pair(rule.get("count", [1, 1]), label="count")
+            if not float(count_min_f).is_integer() or not float(count_max_f).is_integer():
+                raise ValueError("count values must be integers.")
             count_min = int(count_min_f)
             count_max = int(count_max_f)
+            if count_min < 0:
+                raise ValueError("count values must be >= 0.")
             count_mode = str(rule.get("count_mode", "")).lower()
+            if count_mode and count_mode not in {"fixed", "random"}:
+                raise ValueError("count_mode must be fixed or random.")
             if count_mode == "fixed" or (not count_mode and count_min == count_max):
+                if count_min != count_max:
+                    raise ValueError("fixed count must use the same minimum and maximum.")
                 return count_min
             return int(rng.integers(count_min, count_max + 1))
 
-        return len(candidate_indices)
+        raise ValueError(
+            "RandomDoping rule use must be atomic_percent, mass_percent, or count."
+        )
 
 
 @dataclass(frozen=True)
@@ -1399,14 +1473,32 @@ class RandomOccupancyOperation(StructureOperation):
     def run_structure(self, structure, params: RandomOccupancyParams) -> list:
         comp = self._read_composition(structure, params)
         if not comp:
-            return [structure.copy()]
+            raise ValueError(
+                "RandomOccupancy requires a Comp(...) tag or a non-empty manual composition."
+            )
+        invalid_elements = [element for element in comp if element not in atomic_numbers]
+        if invalid_elements:
+            raise ValueError(
+                "RandomOccupancy has unknown element symbol(s): "
+                + ", ".join(invalid_elements)
+                + "."
+            )
 
         indices = self._eligible_indices(structure, params.group_filter)
-        base_seed = int(params.seed) if params.use_seed else None
+        mode = str(params.mode).strip()
+        if mode not in {"Exact", "Random"}:
+            raise ValueError("RandomOccupancy: mode must be Exact or Random.")
+        samples = int(params.samples)
+        if samples <= 0:
+            raise ValueError("RandomOccupancy: samples must be >= 1.")
+        seed = int(params.seed)
+        if params.use_seed and seed < 0:
+            raise ValueError("RandomOccupancy: seed must be >= 0.")
+        base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
 
         out = []
-        for sample_idx in range(max(int(params.samples), 1)):
+        for sample_idx in range(samples):
             if base_seed is None:
                 rng = np.random.default_rng()
                 seed_note = ""
@@ -1415,8 +1507,8 @@ class RandomOccupancyOperation(StructureOperation):
                 rng = np.random.default_rng(derived_seed)
                 seed_note = f",s={derived_seed}"
 
-            new_atoms = assign_random_occupancy(structure, comp, indices=indices, mode=params.mode, rng=rng)
-            mode_tag = "E" if params.mode.lower().startswith("exact") else "R"
+            new_atoms = assign_random_occupancy(structure, comp, indices=indices, mode=mode, rng=rng)
+            mode_tag = "E" if mode == "Exact" else "R"
             append_config_tag(new_atoms, f"Occ({mode_tag}{seed_note})")
             out.append(new_atoms)
         return out
@@ -1447,13 +1539,27 @@ class RandomOccupancyOperation(StructureOperation):
     @staticmethod
     def _eligible_indices(structure, groups_text: str) -> np.ndarray | None:
         groups_text = groups_text.strip()
-        if not groups_text or "group" not in structure.arrays:
+        if not groups_text:
             return None
         allowed = {group.strip() for group in groups_text.split(",") if group.strip()}
         if not allowed:
             return None
+        if "group" not in structure.arrays:
+            raise ValueError(
+                "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure."
+            )
         groups = structure.arrays["group"]
-        return np.array([i for i, group in enumerate(groups) if str(group) in allowed], dtype=int)
+        indices = np.array(
+            [i for i, group in enumerate(groups) if str(group) in allowed],
+            dtype=int,
+        )
+        if len(indices) == 0:
+            raise ValueError(
+                "RandomOccupancy group_filter matched no atoms: "
+                + ",".join(sorted(allowed))
+                + "."
+            )
+        return indices
 
 
 def normalize_condition_expr(expr: str) -> str:

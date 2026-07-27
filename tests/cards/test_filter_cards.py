@@ -1,6 +1,7 @@
 from .card_test_base import *
 from unittest.mock import patch
 
+from NepTrainKit.core.audit.neighbor_scan import find_short_distance_structure_rows
 from NepTrainKit.ui.views._card.fps_filter_card import FPSFilterDataCard
 from NepTrainKit.ui.widgets.card_widget import FilterDataCard
 
@@ -244,6 +245,67 @@ class TestFilterCards(BaseCardTest):
                 molecule,
                 GeometryFilterParams(min_pair_distance=0.8),
             )
+        )
+
+    def test_geometry_filter_batch_scan_matches_single_structure_contract(self):
+        triclinic_cell = np.array(
+            [
+                [4.0, 0.0, 0.0],
+                [1.2, 3.7, 0.0],
+                [0.4, 0.6, 4.2],
+            ]
+        )
+        structures = [
+            Atoms(
+                "HH",
+                positions=[[0.0, 0.0, 0.0], [0.8, 0.0, 0.0]],
+            ),
+            Atoms(
+                "HH",
+                positions=np.array([[0.01, 0.01, 0.01], [0.99, 0.99, 0.99]])
+                @ triclinic_cell,
+                cell=triclinic_cell,
+                pbc=True,
+            ),
+            Atoms(
+                "HH",
+                positions=[[0.0, 0.0, 0.0], [1.5, 0.0, 0.0]],
+                cell=[5.0, 5.0, 5.0],
+                pbc=True,
+            ),
+        ]
+        params = GeometryFilterParams(min_pair_distance=1.0)
+        expected = [
+            structure
+            for structure in structures
+            if GeometryFilterOperation.keep_structure(structure, params)
+        ]
+
+        actual = GeometryFilterOperation().run_dataset(structures, params)
+
+        self.assertEqual(
+            [any(structure is item for item in actual) for structure in structures],
+            [any(structure is item for item in expected) for structure in structures],
+        )
+
+    def test_geometry_filter_batch_scan_runs_once_and_keeps_exact_cutoff(self):
+        structures = [
+            Atoms("HH", positions=[[0, 0, 0], [0.5, 0, 0]]),
+            Atoms("HH", positions=[[0, 0, 0], [1.0, 0, 0]]),
+            Atoms("HH", positions=[[0, 0, 0], [1.5, 0, 0]]),
+        ]
+        params = GeometryFilterParams(min_pair_distance=1.0)
+
+        with patch(
+            "NepTrainKit.core.cards.filter.find_short_distance_structure_rows",
+            wraps=find_short_distance_structure_rows,
+        ) as scan:
+            kept = GeometryFilterOperation().run_dataset(structures, params)
+
+        self.assertEqual(scan.call_count, 1)
+        self.assertEqual(
+            [any(structure is item for item in kept) for structure in structures],
+            [False, True, True],
         )
 
     def test_geometry_filter_rejects_exact_overlap_and_nonfinite_positions(self):

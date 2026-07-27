@@ -1069,14 +1069,37 @@ class SmallAngleSpinTiltOperation(StructureOperation):
     """Generate deterministic single-spin and pair-canting small-angle states."""
 
     def run_structure(self, structure, params: SmallAngleSpinTiltParams) -> list:
+        supported_modes = {
+            "Global tilt",
+            "Single-spin tilt",
+            "Atom pair canting",
+            "Group pair canting",
+        }
+        if params.canting_mode not in supported_modes:
+            raise ValueError(
+                "SmallAngleSpinTilt: canting_mode must be Global tilt, "
+                "Single-spin tilt, Atom pair canting, or Group pair canting."
+            )
+        max_outputs = int(params.max_outputs)
+        if max_outputs <= 0:
+            raise ValueError("SmallAngleSpinTilt: max_outputs must be >= 1.")
+        if params.include_reference and max_outputs < 2:
+            raise ValueError(
+                "SmallAngleSpinTilt: max_outputs must be >= 2 when include_reference is enabled."
+            )
+
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
-            return [structure.copy()]
+            raise ValueError(
+                "SmallAngleSpinTilt requires usable initial magnetic moments; "
+                "provide initial_magmoms or select Map/default magnitude."
+            )
         if not np.any(np.linalg.norm(base_moments, axis=1) > 1e-10):
-            return [structure.copy()]
+            raise ValueError(
+                "SmallAngleSpinTilt found no nonzero magnetic moments to tilt."
+            )
 
         angles = parse_angle_list(params.angle_list) or [1.0, 2.0, 5.0, 10.0]
-        max_outputs = int(params.max_outputs)
         outputs = []
         reached_limit = False
 
@@ -1089,7 +1112,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         if params.canting_mode == "Global tilt":
             target_indices = self.all_eligible_indices(structure, base_moments, params)
             if not target_indices:
-                return outputs or [structure.copy()]
+                raise ValueError(
+                    "SmallAngleSpinTilt global mode found no eligible magnetic atoms; "
+                    "check apply_elements and magnetic moments."
+                )
             for angle_deg in angles:
                 for sign_tag, sign_value in self.signs(params):
                     tilted = structure.copy()
@@ -1107,7 +1133,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         elif params.canting_mode == "Single-spin tilt":
             target_indices = self.candidate_indices(structure, base_moments, params)
             if not target_indices:
-                return outputs or [structure.copy()]
+                raise ValueError(
+                    "SmallAngleSpinTilt single-spin mode matched no target atoms; "
+                    "check target_mode, target_indices, apply_elements, and magnetic moments."
+                )
             for atom_index in target_indices:
                 for angle_deg in angles:
                     for sign_tag, sign_value in self.signs(params):
@@ -1125,9 +1154,19 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 if reached_limit:
                     break
         elif params.canting_mode == "Atom pair canting":
+            if (
+                str(params.pair_group_filter).strip()
+                and "group" not in structure.arrays
+            ):
+                raise ValueError(
+                    "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group']."
+                )
             pairs = self.pair_targets(structure, base_moments, params)
             if not pairs:
-                return outputs or [structure.copy()]
+                raise ValueError(
+                    "SmallAngleSpinTilt atom-pair mode matched no valid pairs; "
+                    "check pair source, indices, shell, element/group filters, and magnetic moments."
+                )
             for left_idx, right_idx in pairs:
                 for angle_deg in angles:
                     for sign_tag, sign_value in self.signs(params):
@@ -1144,9 +1183,18 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 if reached_limit:
                     break
         else:
+            if "group" not in structure.arrays:
+                raise ValueError(
+                    "SmallAngleSpinTilt group-pair mode requires atoms.arrays['group']."
+                )
             left_group, right_group = self.group_targets(structure, base_moments, params)
             if not left_group or not right_group:
-                return outputs or [structure.copy()]
+                group_a = (params.group_a or "A").strip()
+                group_b = (params.group_b or "B").strip()
+                raise ValueError(
+                    "SmallAngleSpinTilt group-pair mode requires nonzero magnetic atoms "
+                    f"in both groups '{group_a}' and '{group_b}'."
+                )
             group_a = (params.group_a or "A").strip()
             group_b = (params.group_b or "B").strip()
             for angle_deg in angles:
@@ -1162,7 +1210,11 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 if reached_limit:
                     break
 
-        return outputs or [structure.copy()]
+        if not outputs:
+            raise ValueError(
+                "SmallAngleSpinTilt produced no tilted structures from the selected targets."
+            )
+        return outputs
 
     @staticmethod
     def signs(params: SmallAngleSpinTiltParams) -> list[tuple[str, float]]:

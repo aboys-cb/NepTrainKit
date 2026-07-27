@@ -1,5 +1,7 @@
 from .card_test_base import *
 
+from NepTrainKit.core.cards.alloy import sample_dopants
+
 
 class TestAlloyCards(BaseCardTest):
     def test_random_doping_card(self):
@@ -90,6 +92,102 @@ class TestAlloyCards(BaseCardTest):
 
         self.assertEqual(len(results), 2)
         self.assertTrue(all("Ge" in atoms.get_chemical_symbols() for atoms in results))
+
+    def test_random_doping_group_constraint_is_required_and_limits_changed_sites(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        rule = {
+            "target": "Si",
+            "dopants": {"Ge": 1.0},
+            "use": "count",
+            "count": [1, 1],
+            "count_mode": "fixed",
+            "group": ["A"],
+        }
+        operation = RandomDopingOperation()
+
+        with self.assertRaisesRegex(ValueError, "has no group array"):
+            operation.run_structure(
+                structure,
+                RandomDopingParams(rules=[rule], use_seed=True, seed=1),
+            )
+
+        structure.new_array("group", np.array(["A", "A", "B", "B"], dtype=object))
+        result = operation.run_structure(
+            structure,
+            RandomDopingParams(rules=[rule], use_seed=True, seed=1),
+        )[0]
+        symbols = result.get_chemical_symbols()
+        self.assertEqual(symbols[:2].count("Ge"), 1)
+        self.assertEqual(symbols[2:], ["Si", "Si"])
+
+        no_match = structure.copy()
+        no_match.arrays["group"][:] = "B"
+        with self.assertRaisesRegex(ValueError, "matched no 'Si' atoms in group A"):
+            operation.run_structure(
+                no_match,
+                RandomDopingParams(rules=[rule], use_seed=True, seed=1),
+            )
+
+    def test_random_doping_does_not_clamp_zero_percent_or_oversized_count(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        operation = RandomDopingOperation()
+        zero = operation.run_structure(
+            structure,
+            RandomDopingParams(
+                rules=[
+                    {
+                        "target": "Si",
+                        "dopants": {"Ge": 1.0},
+                        "use": "atomic_percent",
+                        "percent": [0.0, 0.0],
+                    }
+                ],
+                use_seed=True,
+                seed=1,
+            ),
+        )[0]
+        self.assertEqual(zero.get_chemical_symbols(), structure.get_chemical_symbols())
+        self.assertNotIn("Dop(", zero.info.get("Config_type", ""))
+
+        with self.assertRaisesRegex(ValueError, "requests 10 replacements, but only 4"):
+            operation.run_structure(
+                structure,
+                RandomDopingParams(
+                    rules=[
+                        {
+                            "target": "Si",
+                            "dopants": {"Ge": 1.0},
+                            "use": "count",
+                            "count": [10, 10],
+                            "count_mode": "fixed",
+                        }
+                    ],
+                ),
+            )
+
+    def test_random_doping_exact_ratios_use_largest_remainder_allocation(self):
+        sampled = sample_dopants(
+            ["Fe", "Co", "Ni"],
+            [0.34, 0.33, 0.33],
+            5,
+            exact=True,
+            rng=np.random.default_rng(1),
+        )
+
+        self.assertEqual(
+            sorted(sampled.count(element) for element in ("Fe", "Co", "Ni")),
+            [1, 2, 2],
+        )
 
     def test_parse_composition_accepts_bare_elements(self):
         self.assertEqual(parse_composition("Ge"), {"Ge": 1.0})
@@ -298,6 +396,52 @@ class TestAlloyCards(BaseCardTest):
 
         self.assertEqual(len(occupied), 1)
         self.assertTrue(set(occupied[0].get_chemical_symbols()).issubset({"Co", "Ni"}))
+
+    def test_random_occupancy_group_filter_is_required_and_limits_assignment(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        params = RandomOccupancyParams(
+            source="Manual",
+            manual="Ge",
+            group_filter="A",
+            use_seed=True,
+            seed=1,
+        )
+        operation = RandomOccupancyOperation()
+
+        with self.assertRaisesRegex(ValueError, "requires atoms.arrays\\['group'\\]"):
+            operation.run_structure(structure, params)
+
+        structure.new_array("group", np.array(["A", "A", "B", "B"], dtype=object))
+        result = operation.run_structure(structure, params)[0]
+        self.assertEqual(result.get_chemical_symbols(), ["Ge", "Ge", "Si", "Si"])
+        self.assertIn("Occ(E", result.info.get("Config_type", ""))
+
+        no_match = structure.copy()
+        no_match.arrays["group"][:] = "B"
+        with self.assertRaisesRegex(ValueError, "matched no atoms: A"):
+            operation.run_structure(no_match, params)
+
+    def test_random_occupancy_missing_composition_and_invalid_counts_fail(self):
+        operation = RandomOccupancyOperation()
+        with self.assertRaisesRegex(ValueError, "requires a Comp"):
+            operation.run_structure(
+                self.structure,
+                RandomOccupancyParams(source="Manual", manual=""),
+            )
+        with self.assertRaisesRegex(ValueError, "samples must be >= 1"):
+            operation.run_structure(
+                self.structure,
+                RandomOccupancyParams(
+                    source="Manual",
+                    manual="Si",
+                    samples=0,
+                ),
+            )
 
     def test_composition_gradient_operation_and_card_roundtrip(self):
         base = Atoms(

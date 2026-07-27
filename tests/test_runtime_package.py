@@ -10,8 +10,11 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
 
 from NepTrainKit.runtime_package import (
+    NEP_ADAPTERS_SPEC,
     RuntimePackageError,
     RuntimePackageHealthError,
     RuntimePackageSpec,
@@ -32,6 +35,14 @@ PROBE_COMMAND = [
         "raise SystemExit(result if result is not None else 99)"
     ),
 ]
+
+
+def test_nep_adapters_runtime_constraint_allows_future_major_versions() -> None:
+    constraint = SpecifierSet(NEP_ADAPTERS_SPEC.version_constraint)
+
+    assert Version("1.0.0") in constraint
+    assert Version("2.0.0") in constraint
+    assert Version("99.0.0") in constraint
 
 
 class _Response:

@@ -8146,6 +8146,11 @@ All child items will also be deleted.</source>
         <translation>NEP 后端</translation>
     </message>
     <message>
+        <location filename="../ui/pages/settings.py" line="632" />
+        <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0 and refresh.</source>
+        <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0 后刷新。</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/settings.py" line="655" />
         <source>{package} v{version} is ready; restart NepTrainKit to activate it</source>
         <translation>{package} v{version} 已就绪；重启 NepTrainKit 后生效</translation>
@@ -8422,11 +8427,6 @@ All child items will also be deleted.</source>
         <location filename="../ui/pages/settings.py" line="624" />
         <source>Native helpers are incomplete ({missing}). Reinstall the NepTrainKit wheel for this Python version.</source>
         <translation>原生模块不完整（{missing}）。请重新安装适配当前 Python 版本的 NepTrainKit wheel。</translation>
-    </message>
-    <message>
-        <location filename="../ui/pages/settings.py" line="632" />
-        <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0,&lt;2 and refresh.</source>
-        <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0,&lt;2 后刷新。</translation>
     </message>
     <message>
         <location filename="../ui/pages/settings.py" line="638" />

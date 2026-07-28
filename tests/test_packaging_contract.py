@@ -133,6 +133,7 @@ def test_macos_wheels_use_explicit_openmp_repair_and_portability_gate():
     assert "CIBW_REPAIR_WHEEL_COMMAND_MACOS" in workflow
     assert "delocate-wheel --require-archs" in workflow
     assert "normalize_macos_openmp.py {dest_dir}/*.whl" in workflow
+    assert "{project}/tools/ci/normalize_macos_openmp.py" not in workflow
     assert "verify_macos_wheel.py wheelhouse/*.whl" in workflow
 
 

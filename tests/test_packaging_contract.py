@@ -93,6 +93,20 @@ def test_windows_standalone_name_matches_verified_x86_64_architecture():
     assert "NepTrainKit.win32.zip" not in workflow
 
 
+def test_release_workflows_target_tagged_x86_64_windows_runtime():
+    publish_workflow = (
+        ROOT / ".github" / "workflows" / "python-publish.yml"
+    ).read_text(encoding="utf-8")
+    nuitka_workflow = (
+        ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "- [windows-2022, win_amd64" in publish_workflow
+    assert "win32" not in publish_workflow
+    assert "ref: ${{ inputs.tag_name }}" in nuitka_workflow
+    assert '--constraint ">=1.0.1"' in nuitka_workflow
+
+
 def test_nuitka_runtime_resources_are_resolved_from_binary_directory():
     package_init = (
         ROOT / "src" / "NepTrainKit" / "__init__.py"

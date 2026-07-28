@@ -142,7 +142,7 @@ def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.nda
     N = len(symbols)
     radii = np.array([COVALENT_RADII.get(s, 0.77) for s in symbols], dtype=float)
     if N == 0:
-        return [set()], {}, radii
+        return [], {}, radii, {}
     inv_cell_T = np.linalg.inv(cell).T
     adj: List[set[int]] = [set() for _ in range(N)]
     edge_len: dict[Tuple[int, int], float] = {}

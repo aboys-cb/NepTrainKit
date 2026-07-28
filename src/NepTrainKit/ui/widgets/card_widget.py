@@ -28,6 +28,7 @@ from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.ui.dialogs import call_path_dialog
+from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, BackgroundTask
 from NepTrainKit.version import DOCS_BASE_URL
 from .card_metadata import CardMetadataDialog
@@ -676,12 +677,15 @@ class MakeDataCard(MakeDataCardWidget):
         del self.worker_thread
         self.run_outcome = "failed"
         self.set_output_available(False)
-        failure_text = self.tr("Failed: {error}").format(error=error)
+        translated_error = translate_runtime_message(error)
+        failure_text = self.tr("Failed: {error}").format(error=translated_error)
         self.status_label.setText(failure_text)
         self.status_label.setToolTip(failure_text)
         self.runFinishedSignal.emit(self.index)
 
-        MessageManager.send_error_message(self.tr("Error occurred: {error}").format(error=error))
+        MessageManager.send_error_message(
+            self.tr("Error occurred: {error}").format(error=translated_error)
+        )
 
     def _apply_canceled_state(self) -> None:
         """Mark partial worker output as unavailable after cancellation."""

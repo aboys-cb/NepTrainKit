@@ -6,6 +6,8 @@ from PySide6.QtCore import QObject, Signal, Qt, QCoreApplication
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, MessageBox
 from loguru import logger
 
+from NepTrainKit.core.cards.errors import CardOperationError
+
 
 def _tr(text: str) -> str:
     return QCoreApplication.translate("MessageManager", text)
@@ -15,6 +17,8 @@ def _zh_runtime_messages_enabled() -> bool:
     return QCoreApplication.translate("RuntimeMessage", "__language_probe__") == "zh_CN"
 
 
+# Compatibility-only fallback for legacy raw strings. New card errors must use
+# CardOperationError so wording changes do not require another substring rule.
 _RUNTIME_PREFIX_REPLACEMENTS = (
     ("Failed to load dataset: ", "加载数据集失败："),
     ("NEP calculation failed [", "NEP 计算失败 ["),
@@ -287,6 +291,9 @@ _RUNTIME_EXCEPTION_REPLACEMENTS = (
 
 def translate_runtime_message(message) -> str:
     """Translate late-bound UI messages and common runtime errors."""
+    if isinstance(message, CardOperationError):
+        template = QCoreApplication.translate("CardOperationError", message.template)
+        return template.format(**message.values)
     text = str(message)
     translated = QCoreApplication.translate("RuntimeMessage", text)
     if translated != text:
@@ -314,6 +321,15 @@ def _runtime_message_catalog() -> None:
         *_RUNTIME_EXCEPTION_REPLACEMENTS,
     ):
         QCoreApplication.translate("RuntimeMessage", text)
+
+
+def _card_operation_error_catalog() -> None:
+    """Literal catalog for structured card errors discovered by lupdate."""
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
+        "use Uniform sampling for larger structures.",
+    )
 
 
 class MessageManager(QObject):

@@ -9,6 +9,7 @@ import numpy as np
 from ase.data import atomic_masses, atomic_numbers
 from ase.neighborlist import neighbor_list
 
+from NepTrainKit.core.audit.neighbor_scan import find_short_distance_structure_rows
 from NepTrainKit.core.calculator import NepCalculator
 from NepTrainKit.core.io import (
     allocate_sqrt_quotas,
@@ -392,10 +393,12 @@ class GeometryFilterOperation(DatasetOperation):
 
     def run_dataset(self, dataset, params: GeometryFilterParams) -> list:
         normalized = self._validated_params(params)
+        structures = list(dataset) if dataset is not None else []
+        reasons = self._batch_rejection_reasons(structures, normalized)
         return [
             structure
-            for structure in dataset
-            if self._rejection_reason(structure, normalized) is None
+            for structure, reason in zip(structures, reasons)
+            if reason is None
         ]
 
     @classmethod
@@ -408,6 +411,8 @@ class GeometryFilterOperation(DatasetOperation):
         cls,
         structure,
         params: GeometryFilterParams,
+        *,
+        pair_is_close: bool | None = None,
     ) -> str | None:
         natoms = len(structure)
         if natoms <= 0:
@@ -437,7 +442,11 @@ class GeometryFilterOperation(DatasetOperation):
         if (
             params.min_pair_distance > 0.0
             and natoms > 1
-            and cls.has_pair_closer_than(structure, params.min_pair_distance)
+            and (
+                pair_is_close
+                if pair_is_close is not None
+                else cls.has_pair_closer_than(structure, params.min_pair_distance)
+            )
         ):
             return "pair_distance"
 
@@ -457,6 +466,76 @@ class GeometryFilterOperation(DatasetOperation):
         return None
 
     @classmethod
+    def _batch_rejection_reasons(
+        cls,
+        structures: list,
+        params: GeometryFilterParams,
+    ) -> list[str | None]:
+        """Return first-failure reasons with one native pair scan per dataset."""
+        close_pair_rows: set[int] = set()
+        if params.min_pair_distance > 0.0:
+            checks_need_cell = (
+                bool(params.require_finite_cell)
+                or params.min_volume_per_atom > 0.0
+                or params.max_volume_per_atom > 0.0
+                or params.min_density > 0.0
+                or params.max_density > 0.0
+            )
+            source_rows: list[int] = []
+            positions_by_structure: list[np.ndarray] = []
+            cells: list[np.ndarray] = []
+            pbc_flags: list[np.ndarray] = []
+            for source_row, structure in enumerate(structures):
+                natoms = len(structure)
+                if natoms <= 1:
+                    continue
+                positions = np.asarray(structure.get_positions(), dtype=float)
+                if (
+                    positions.shape != (natoms, 3)
+                    or not np.all(np.isfinite(positions))
+                ):
+                    continue
+                cell = np.asarray(structure.cell.array, dtype=float)
+                valid_cell = (
+                    cell.shape == (3, 3)
+                    and np.all(np.isfinite(cell))
+                    and abs(float(np.linalg.det(cell))) > 1e-12
+                )
+                if checks_need_cell and not valid_cell:
+                    continue
+                source_rows.append(source_row)
+                positions_by_structure.append(positions)
+                cells.append(cell)
+                pbc_flags.append(np.asarray(structure.pbc, dtype=bool))
+
+            if source_rows:
+                # The card rejects distances strictly below the threshold.
+                # The shared native primitive uses an inclusive cutoff, so move
+                # by one representable float to preserve the existing contract.
+                strict_cutoff = float(
+                    np.nextafter(params.min_pair_distance, -np.inf)
+                )
+                relative_rows = find_short_distance_structure_rows(
+                    positions_by_structure,
+                    cells,
+                    pbc_flags,
+                    strict_cutoff,
+                )
+                close_pair_rows = {
+                    source_rows[relative_row]
+                    for relative_row in relative_rows
+                }
+
+        return [
+            cls._rejection_reason(
+                structure,
+                params,
+                pair_is_close=(source_row in close_pair_rows),
+            )
+            for source_row, structure in enumerate(structures)
+        ]
+
+    @classmethod
     def filter_summary(cls, dataset, params: GeometryFilterParams) -> dict:
         """Return kept and first-failure counts without modifying structures."""
         normalized = cls._validated_params(params)
@@ -470,8 +549,7 @@ class GeometryFilterOperation(DatasetOperation):
         }
         kept = 0
         structures = list(dataset) if dataset is not None else []
-        for structure in structures:
-            reason = cls._rejection_reason(structure, normalized)
+        for reason in cls._batch_rejection_reasons(structures, normalized):
             if reason is None:
                 kept += 1
             else:

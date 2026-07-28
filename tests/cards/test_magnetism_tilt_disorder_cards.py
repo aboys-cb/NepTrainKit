@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from ase.geometry import get_distances
 
 from .magnetism_test_base import *
@@ -149,6 +151,50 @@ class TestMagnetismTiltDisorderCards(MagnetismCardTest):
         self.assertTrue(np.allclose(moments[[2, 3], 0], -expected, atol=1e-6))
         self.assertIn("SpinPairG(A=A,B=B,a=6,sg=pos)", str(result.info.get("Config_type", "")))
 
+    def test_small_angle_spin_tilt_missing_prerequisites_fail_instead_of_returning_input(self):
+        operation = SmallAngleSpinTiltOperation()
+        no_moments = self._spin_chain()
+        with self.assertRaisesRegex(ValueError, "requires usable initial magnetic moments"):
+            operation.run_structure(
+                no_moments,
+                SmallAngleSpinTiltParams(include_reference=False),
+            )
+
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+        with self.assertRaisesRegex(ValueError, "group-pair mode requires atoms.arrays"):
+            operation.run_structure(
+                structure,
+                SmallAngleSpinTiltParams(
+                    canting_mode="Group pair canting",
+                    include_reference=False,
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "atom-pair mode matched no valid pairs"):
+            operation.run_structure(
+                structure,
+                SmallAngleSpinTiltParams(
+                    canting_mode="Atom pair canting",
+                    pair_source="Manual indices",
+                    pair_left_indices="",
+                    pair_right_indices="",
+                    include_reference=True,
+                ),
+            )
+
+    def test_small_angle_spin_tilt_reference_must_leave_output_budget_for_canting(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        with self.assertRaisesRegex(ValueError, "max_outputs must be >= 2"):
+            SmallAngleSpinTiltOperation().run_structure(
+                structure,
+                SmallAngleSpinTiltParams(
+                    include_reference=True,
+                    max_outputs=1,
+                ),
+            )
+
     def test_small_angle_spin_tilt_card_auto_neighbor_shell_pair(self):
         structure = self._spin_chain()
         structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
@@ -264,6 +310,167 @@ class TestMagnetismTiltDisorderCards(MagnetismCardTest):
         restored = SpinDisorderCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_spin_disorder_randomize_ui_value_runs_core_operation(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+        card = SpinDisorderCard()
+        mode_index = card.mode_combo.findData("Randomize fraction")
+        self.assertGreaterEqual(mode_index, 0)
+        card.mode_combo.setCurrentIndex(mode_index)
+        card.fractions_edit.setText("0.5")
+        card.seed_checkbox.setChecked(True)
+        card.seed_frame.set_input_value([13])
+
+        params = card.get_params()
+        self.assertEqual(params.mode, "Randomize fraction")
+        result = card.create_operation().run_structure(structure, params)[0]
+        moments = np.asarray(result.get_initial_magnetic_moments(), dtype=float)
+
+        self.assertEqual(int(np.count_nonzero(np.linalg.norm(moments, axis=1))), 4)
+        self.assertEqual(
+            int(np.count_nonzero(~np.isclose(moments[:, 0], 0.0))),
+            2,
+        )
+        self.assertIn("mode=rand", result.info.get("Config_type", ""))
+
+    def test_spin_disorder_rejects_invalid_fraction_tokens_and_ranges(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+        operation = SpinDisorderOperation()
+
+        for fractions in ("abc", "0", "-0.1", "1.1", "nan", "inf"):
+            with self.subTest(fractions=fractions):
+                with self.assertRaisesRegex(ValueError, "Spin Disorder fraction"):
+                    operation.run_structure(
+                        structure,
+                        SpinDisorderParams(fractions=fractions),
+                    )
+
+    def test_disorder_cards_reject_invalid_disabled_or_serialized_values(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        for params, message in (
+            (
+                SpinDisorderParams(
+                    magnitude_source="typo",
+                ),
+                "magnitude_source",
+            ),
+            (
+                SpinDisorderParams(
+                    use_seed=True,
+                    seed=-1,
+                ),
+                "seed must be >= 0",
+            ),
+            (
+                SpinDisorderParams(
+                    mode="Cone disorder",
+                    cone_angle=181.0,
+                ),
+                "cone_angle",
+            ),
+        ):
+            with self.subTest(card="spin", params=params):
+                with self.assertRaisesRegex(ValueError, message):
+                    SpinDisorderOperation().run_structure(structure, params)
+
+        for params, message in (
+            (
+                CorrelatedRandomSpinParams(
+                    magnitude_source="typo",
+                ),
+                "magnitude_source",
+            ),
+            (
+                CorrelatedRandomSpinParams(
+                    use_seed=True,
+                    seed=-1,
+                ),
+                "seed must be >= 0",
+            ),
+            (
+                CorrelatedRandomSpinParams(
+                    mode="Cone around reference",
+                    cone_angle=181.0,
+                ),
+                "cone_angle",
+            ),
+        ):
+            with self.subTest(card="correlated", params=params):
+                with self.assertRaisesRegex(ValueError, message):
+                    CorrelatedRandomSpinOperation().run_structure(structure, params)
+
+    def test_correlated_random_spin_rejects_invalid_mode_before_rng(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        with patch(
+            "NepTrainKit.core.cards.magnetism.np.random.default_rng"
+        ) as rng_factory:
+            with self.assertRaisesRegex(ValueError, "unsupported mode"):
+                CorrelatedRandomSpinOperation().run_structure(
+                    structure,
+                    CorrelatedRandomSpinParams(mode="typo"),
+                )
+        rng_factory.assert_not_called()
+
+    def test_disorder_cards_map_source_and_apply_elements_limit_changed_spins(self):
+        structure = Atoms(
+            ["Fe", "Ni", "Fe", "Ni"],
+            positions=[
+                [0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [0.0, 0.0, 2.0],
+                [0.0, 0.0, 3.0],
+            ],
+            cell=[6.0, 6.0, 8.0],
+            pbc=[False, False, True],
+        )
+        disordered = SpinDisorderOperation().run_structure(
+            structure,
+            SpinDisorderParams(
+                mode="Randomize fraction",
+                fractions="1.0",
+                samples_per_fraction=1,
+                magnitude_source="Map/default magnitude",
+                magmom_map="Fe:2.0",
+                default_moment=9.0,
+                apply_elements="Fe",
+                use_seed=True,
+                seed=31,
+            ),
+        )[0]
+        np.testing.assert_allclose(
+            np.linalg.norm(disordered.arrays["spin"], axis=1),
+            [2.0, 0.0, 2.0, 0.0],
+            atol=1e-12,
+        )
+
+        correlated = CorrelatedRandomSpinOperation().run_structure(
+            structure,
+            CorrelatedRandomSpinParams(
+                mode="Cone around reference",
+                correlation_kernel="exponential",
+                correlation_length=2.0,
+                samples=1,
+                cone_angle=10.0,
+                magnitude_source="Map/default magnitude",
+                magmom_map="Fe:2.0",
+                default_moment=9.0,
+                apply_elements="Fe",
+                max_atoms_for_full=2,
+                use_seed=True,
+                seed=31,
+            ),
+        )[0]
+        np.testing.assert_allclose(
+            np.linalg.norm(correlated.arrays["spin"], axis=1),
+            [2.0, 0.0, 2.0, 0.0],
+            atol=1e-12,
+        )
 
     def test_correlated_random_spin_cone_preserves_magnitudes_and_seed(self):
         structure = self._spin_chain()

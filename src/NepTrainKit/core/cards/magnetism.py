@@ -1069,14 +1069,37 @@ class SmallAngleSpinTiltOperation(StructureOperation):
     """Generate deterministic single-spin and pair-canting small-angle states."""
 
     def run_structure(self, structure, params: SmallAngleSpinTiltParams) -> list:
+        supported_modes = {
+            "Global tilt",
+            "Single-spin tilt",
+            "Atom pair canting",
+            "Group pair canting",
+        }
+        if params.canting_mode not in supported_modes:
+            raise ValueError(
+                "SmallAngleSpinTilt: canting_mode must be Global tilt, "
+                "Single-spin tilt, Atom pair canting, or Group pair canting."
+            )
+        max_outputs = int(params.max_outputs)
+        if max_outputs <= 0:
+            raise ValueError("SmallAngleSpinTilt: max_outputs must be >= 1.")
+        if params.include_reference and max_outputs < 2:
+            raise ValueError(
+                "SmallAngleSpinTilt: max_outputs must be >= 2 when include_reference is enabled."
+            )
+
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
-            return [structure.copy()]
+            raise ValueError(
+                "SmallAngleSpinTilt requires usable initial magnetic moments; "
+                "provide initial_magmoms or select Map/default magnitude."
+            )
         if not np.any(np.linalg.norm(base_moments, axis=1) > 1e-10):
-            return [structure.copy()]
+            raise ValueError(
+                "SmallAngleSpinTilt found no nonzero magnetic moments to tilt."
+            )
 
         angles = parse_angle_list(params.angle_list) or [1.0, 2.0, 5.0, 10.0]
-        max_outputs = int(params.max_outputs)
         outputs = []
         reached_limit = False
 
@@ -1089,7 +1112,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         if params.canting_mode == "Global tilt":
             target_indices = self.all_eligible_indices(structure, base_moments, params)
             if not target_indices:
-                return outputs or [structure.copy()]
+                raise ValueError(
+                    "SmallAngleSpinTilt global mode found no eligible magnetic atoms; "
+                    "check apply_elements and magnetic moments."
+                )
             for angle_deg in angles:
                 for sign_tag, sign_value in self.signs(params):
                     tilted = structure.copy()
@@ -1107,7 +1133,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         elif params.canting_mode == "Single-spin tilt":
             target_indices = self.candidate_indices(structure, base_moments, params)
             if not target_indices:
-                return outputs or [structure.copy()]
+                raise ValueError(
+                    "SmallAngleSpinTilt single-spin mode matched no target atoms; "
+                    "check target_mode, target_indices, apply_elements, and magnetic moments."
+                )
             for atom_index in target_indices:
                 for angle_deg in angles:
                     for sign_tag, sign_value in self.signs(params):
@@ -1125,9 +1154,19 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 if reached_limit:
                     break
         elif params.canting_mode == "Atom pair canting":
+            if (
+                str(params.pair_group_filter).strip()
+                and "group" not in structure.arrays
+            ):
+                raise ValueError(
+                    "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group']."
+                )
             pairs = self.pair_targets(structure, base_moments, params)
             if not pairs:
-                return outputs or [structure.copy()]
+                raise ValueError(
+                    "SmallAngleSpinTilt atom-pair mode matched no valid pairs; "
+                    "check pair source, indices, shell, element/group filters, and magnetic moments."
+                )
             for left_idx, right_idx in pairs:
                 for angle_deg in angles:
                     for sign_tag, sign_value in self.signs(params):
@@ -1144,9 +1183,18 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 if reached_limit:
                     break
         else:
+            if "group" not in structure.arrays:
+                raise ValueError(
+                    "SmallAngleSpinTilt group-pair mode requires atoms.arrays['group']."
+                )
             left_group, right_group = self.group_targets(structure, base_moments, params)
             if not left_group or not right_group:
-                return outputs or [structure.copy()]
+                group_a = (params.group_a or "A").strip()
+                group_b = (params.group_b or "B").strip()
+                raise ValueError(
+                    "SmallAngleSpinTilt group-pair mode requires nonzero magnetic atoms "
+                    f"in both groups '{group_a}' and '{group_b}'."
+                )
             group_a = (params.group_a or "A").strip()
             group_b = (params.group_b or "B").strip()
             for angle_deg in angles:
@@ -1162,7 +1210,11 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 if reached_limit:
                     break
 
-        return outputs or [structure.copy()]
+        if not outputs:
+            raise ValueError(
+                "SmallAngleSpinTilt produced no tilted structures from the selected targets."
+            )
+        return outputs
 
     @staticmethod
     def signs(params: SmallAngleSpinTiltParams) -> list[tuple[str, float]]:
@@ -1412,6 +1464,40 @@ class SpinDisorderOperation(StructureOperation):
     """Generate controlled spin-disorder states between ordered and PM limits."""
 
     def run_structure(self, structure, params: SpinDisorderParams) -> list:
+        valid_modes = {
+            "Flip fraction",
+            "Cone disorder",
+            "Randomize fraction",
+        }
+        if params.mode not in valid_modes:
+            raise ValueError(
+                "Spin Disorder mode must be Flip fraction, Cone disorder, "
+                "or Randomize fraction."
+            )
+        samples_per_fraction = int(params.samples_per_fraction)
+        if samples_per_fraction <= 0:
+            raise ValueError("Spin Disorder samples_per_fraction must be >= 1.")
+        max_outputs = int(params.max_outputs)
+        if max_outputs <= 0:
+            raise ValueError("Spin Disorder max_outputs must be >= 1.")
+        if params.magnitude_source not in {
+            "Existing initial magmoms",
+            "Map/default magnitude",
+        }:
+            raise ValueError(
+                "Spin Disorder magnitude_source must be Existing initial magmoms "
+                "or Map/default magnitude."
+            )
+        seed = int(params.seed)
+        if params.use_seed and seed < 0:
+            raise ValueError("Spin Disorder seed must be >= 0.")
+        fractions = self.fraction_values(params.fractions)
+        if params.mode == "Cone disorder":
+            cone_angle = float(params.cone_angle)
+            if not np.isfinite(cone_angle) or not 0.0 <= cone_angle <= 180.0:
+                raise ValueError(
+                    "Spin Disorder cone_angle must be within [0, 180] degrees."
+                )
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
             raise ValueError("Spin Disorder requires vector magnetic moments or liftable scalar magmoms.")
@@ -1420,19 +1506,14 @@ class SpinDisorderOperation(StructureOperation):
         if eligible.size == 0:
             raise ValueError("Spin Disorder found no eligible nonzero magnetic moments.")
 
-        fractions = self.fraction_values(params.fractions)
-        if not fractions:
-            raise ValueError("Spin Disorder requires at least one positive disorder fraction.")
-
-        base_seed = int(params.seed) if params.use_seed else None
+        base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
         outputs = []
-        max_outputs = int(params.max_outputs)
         for frac_idx, fraction in enumerate(fractions):
             n_change = self.count_for_fraction(len(eligible), fraction)
             if n_change <= 0:
                 continue
-            for sample_idx in range(max(int(params.samples_per_fraction), 1)):
+            for sample_idx in range(samples_per_fraction):
                 if base_seed is None:
                     rng = np.random.default_rng()
                     seed_tag = ""
@@ -1477,16 +1558,23 @@ class SpinDisorderOperation(StructureOperation):
                 continue
             try:
                 value = float(token)
-            except ValueError:
-                continue
-            if value <= 0.0:
-                continue
-            value = min(value, 1.0)
+            except ValueError as exc:
+                raise ValueError(
+                    f"Spin Disorder fraction '{token}' is not a number."
+                ) from exc
+            if not np.isfinite(value) or not 0.0 < value <= 1.0:
+                raise ValueError(
+                    "Spin Disorder fractions must be finite values within (0, 1]."
+                )
             rounded = float(np.round(value, 12))
             if rounded in seen:
                 continue
             seen.add(rounded)
             values.append(rounded)
+        if not values:
+            raise ValueError(
+                "Spin Disorder requires at least one fraction within (0, 1]."
+            )
         return values
 
     @staticmethod
@@ -1569,6 +1657,13 @@ class CorrelatedRandomSpinOperation(StructureOperation):
     """Generate non-collinear magnetic moments from an exact correlated random field."""
 
     def run_structure(self, structure, params: CorrelatedRandomSpinParams) -> list:
+        if params.mode not in {
+            "Cone around reference",
+            "Full random directions",
+        }:
+            raise ValueError(
+                f"Correlated Random Spin: unsupported mode '{params.mode}'."
+            )
         samples = int(params.samples)
         if samples <= 0:
             raise ValueError("Correlated Random Spin: samples must be >= 1.")
@@ -1580,6 +1675,25 @@ class CorrelatedRandomSpinOperation(StructureOperation):
         max_atoms = int(params.max_atoms_for_full)
         if max_atoms <= 0:
             raise ValueError("Correlated Random Spin: max_atoms_for_full must be >= 1.")
+        if params.magnitude_source not in {
+            "Existing initial magmoms",
+            "Map/default magnitude",
+        }:
+            raise ValueError(
+                "Correlated Random Spin: magnitude_source must be Existing "
+                "initial magmoms or Map/default magnitude."
+            )
+        seed = int(params.seed)
+        if params.use_seed and seed < 0:
+            raise ValueError("Correlated Random Spin: seed must be >= 0.")
+        kernel = self.kernel_name(params.correlation_kernel)
+        if params.mode == "Cone around reference":
+            cone_angle = float(params.cone_angle)
+            if not np.isfinite(cone_angle) or not 0.0 <= cone_angle <= 180.0:
+                raise ValueError(
+                    "Correlated Random Spin: cone_angle must be within "
+                    "[0, 180] degrees."
+                )
 
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
@@ -1594,7 +1708,6 @@ class CorrelatedRandomSpinOperation(StructureOperation):
                 f"{max_atoms} eligible atoms; got {selected.size}. Reduce the selection or use a smaller structure."
             )
 
-        kernel = self.kernel_name(params.correlation_kernel)
         positions = np.asarray(structure.get_positions(), dtype=float)[selected]
         _vec_matrix, distances = SmallAngleSpinTiltOperation.pair_distance_matrix(
             positions,
@@ -1607,7 +1720,7 @@ class CorrelatedRandomSpinOperation(StructureOperation):
         except np.linalg.LinAlgError as exc:
             raise ValueError("Correlated Random Spin covariance is not positive definite for this structure/kernel.") from exc
 
-        base_seed = int(params.seed) if params.use_seed else None
+        base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
         outputs = []
         for sample_idx in range(samples):
@@ -1628,9 +1741,6 @@ class CorrelatedRandomSpinOperation(StructureOperation):
             elif params.mode == "Cone around reference":
                 dirs = self.cone_directions(selected_moments, field, float(params.cone_angle), rng)
                 mode_tag = "cone"
-            else:
-                raise ValueError(f"Correlated Random Spin: unsupported mode '{params.mode}'.")
-
             moments[selected] = magnitudes[:, None] * dirs
             atoms = structure.copy()
             set_initial_magmoms_safe(atoms, moments)

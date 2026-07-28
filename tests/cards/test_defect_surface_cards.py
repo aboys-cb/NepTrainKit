@@ -38,6 +38,34 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertGreater(len(results), 0)
         self.assertTrue(all(len(atoms) >= len(structure) for atoms in results))
 
+    def test_random_slab_operation_enumerates_layer_vacuum_product_and_roundtrips(self):
+        structure = self.structure.copy()
+        structure.info["Config_type"] = "bulk"
+        params = RandomSlabParams(
+            h_range=(1, 1, 1),
+            k_range=(0, 0, 1),
+            l_range=(0, 0, 1),
+            layer_range=(1, 2, 1),
+            vacuum_range=(0.0, 2.0, 2.0),
+        )
+
+        results = RandomSlabOperation().run_structure(structure, params)
+
+        self.assertEqual(len(results), 4)
+        tags = [atoms.info.get("Config_type", "") for atoms in results]
+        self.assertTrue(all("Slab(hkl=100" in tag for tag in tags))
+        self.assertEqual(sum("L=1" in tag for tag in tags), 2)
+        self.assertEqual(sum("L=2" in tag for tag in tags), 2)
+        self.assertEqual(sum("vac=None" in tag for tag in tags), 2)
+        self.assertEqual(sum("vac=2.0" in tag for tag in tags), 2)
+        self.assertTrue(all(np.asarray(atoms.pbc, dtype=bool).all() for atoms in results))
+
+        card = RandomSlabCard()
+        card.set_params(params)
+        restored = RandomSlabCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), params)
+
     def test_random_vacancy_card(self):
         card = RandomVacancyCard()
         structure = self.structure.copy()
@@ -291,6 +319,58 @@ class TestDefectSurfaceCards(BaseCardTest):
 
         self.assertEqual(first_ids, repeated_ids)
         self.assertNotEqual(first_ids, second_ids)
+
+    def test_random_vacancy_overlapping_random_rules_skip_only_infeasible_draws(self):
+        structure = Atoms(
+            "O6",
+            positions=np.arange(18, dtype=float).reshape(6, 3),
+            cell=[30, 30, 30],
+            pbc=True,
+        )
+        rules = [
+            {"element": "O", "count": [1, 4], "count_mode": "random"},
+            {"element": "O", "count": [1, 3], "count_mode": "random"},
+        ]
+
+        for seed in range(32):
+            with self.subTest(seed=seed):
+                results = RandomVacancyOperation().run_structure(
+                    structure,
+                    RandomVacancyParams(
+                        rules=rules,
+                        max_structures=4,
+                        use_seed=True,
+                        seed=seed,
+                    ),
+                )
+                self.assertGreaterEqual(len(results), 1)
+                for atoms in results:
+                    removed = len(structure) - len(atoms)
+                    self.assertGreaterEqual(removed, 2)
+                    self.assertLessEqual(removed, 5)
+                    self.assertGreater(len(atoms), 0)
+                    self.assertIn(f"Vac(n={removed})", atoms.info.get("Config_type", ""))
+
+    def test_random_vacancy_overlapping_fixed_rules_fail_if_no_nonempty_result_exists(self):
+        structure = Atoms(
+            "O3",
+            positions=np.arange(9, dtype=float).reshape(3, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+
+        with self.assertRaisesRegex(ValueError, "could not generate a valid non-empty structure"):
+            RandomVacancyOperation().run_structure(
+                structure,
+                RandomVacancyParams(
+                    rules=[
+                        {"element": "O", "count": [2, 2], "count_mode": "fixed"},
+                        {"element": "O", "count": [1, 1], "count_mode": "fixed"},
+                    ],
+                    use_seed=True,
+                    seed=7,
+                ),
+            )
 
     def test_vacancy_defect_card_concentration(self):
         card = VacancyDefectCard()

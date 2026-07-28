@@ -138,7 +138,7 @@ class DataProcessingThread(QThread):
 
     progressSignal = Signal(int)
     finishSignal = Signal()
-    errorSignal = Signal(str)
+    errorSignal = Signal(object)
 
     def __init__(self, dataset, process_func, params=None):
         super().__init__()
@@ -181,14 +181,14 @@ class DataProcessingThread(QThread):
             self.elapsed_seconds = time.perf_counter() - start
             self.outcome = "failed"
             logger.debug(traceback.format_exc())
-            self.errorSignal.emit(str(e))
+            self.errorSignal.emit(e)
 
 
 class FilterProcessingThread(QThread):
 
     progressSignal = Signal(int)
     finishSignal = Signal()
-    errorSignal = Signal(str)
+    errorSignal = Signal(object)
 
     def __init__(self, process_func=None, dataset=None, operation=None, params=None):
         super().__init__()
@@ -232,7 +232,7 @@ class FilterProcessingThread(QThread):
             self.elapsed_seconds = time.perf_counter() - start
             self.outcome = "failed"
             logger.debug(traceback.format_exc())
-            self.errorSignal.emit(str(e))
+            self.errorSignal.emit(e)
 
 
 class FunctionWorker(QObject):

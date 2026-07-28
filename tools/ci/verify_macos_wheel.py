@@ -4,11 +4,12 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import subprocess
 import tempfile
 import zipfile
+from pathlib import Path
 
+from normalize_macos_openmp import verify_tree
 
 FORBIDDEN_PREFIXES = ("/opt/homebrew/", "/usr/local/opt/")
 
@@ -22,6 +23,8 @@ def verify_wheel(wheel: Path) -> None:
         extensions = sorted((root / "NepTrainKit" / "_native").glob("*.so"))
         if not extensions:
             raise RuntimeError(f"{wheel.name} contains no macOS native extensions")
+
+        verify_tree(root)
 
         failures: list[str] = []
         for extension in extensions:

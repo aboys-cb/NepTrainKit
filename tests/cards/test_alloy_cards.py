@@ -1,4 +1,9 @@
+import warnings
+from unittest.mock import patch
+
 from .card_test_base import *
+
+from NepTrainKit.core.cards.alloy import sample_dopants
 
 
 class TestAlloyCards(BaseCardTest):
@@ -20,6 +25,52 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(len(results), 2)
         for atoms in results:
             self.assertIn("Ge", atoms.get_chemical_symbols())
+
+    def test_random_doping_and_occupancy_cards_roundtrip_nondefault_params(self):
+        doping_params = RandomDopingParams(
+            rules=[
+                {
+                    "target": "Si",
+                    "dopants": {"Ge": 0.7, "C": 0.3},
+                    "use": "count",
+                    "count": [1, 2],
+                    "count_mode": "random",
+                    "group": ["surface"],
+                }
+            ],
+            doping_type="Exact",
+            max_structures=4,
+            use_seed=True,
+            seed=59,
+        )
+        doping = RandomDopingCard()
+        doping.set_params(doping_params)
+        normalized_doping_params = doping.get_params()
+        restored_doping = RandomDopingCard()
+        restored_doping.from_dict(doping.to_dict())
+        self.assertEqual(
+            restored_doping.get_params(),
+            normalized_doping_params,
+        )
+
+        occupancy_params = RandomOccupancyParams(
+            source="Manual",
+            manual="Co:0.4,Ni:0.6",
+            mode="Random",
+            samples=5,
+            group_filter="A,B",
+            use_seed=True,
+            seed=61,
+        )
+        occupancy = RandomOccupancyCard()
+        occupancy.set_params(occupancy_params)
+        normalized_occupancy_params = occupancy.get_params()
+        restored_occupancy = RandomOccupancyCard()
+        restored_occupancy.from_dict(occupancy.to_dict())
+        self.assertEqual(
+            restored_occupancy.get_params(),
+            normalized_occupancy_params,
+        )
 
     def test_random_doping_dopants_accept_bare_element(self):
         item = DopingRuleItem()
@@ -45,6 +96,26 @@ class TestAlloyCards(BaseCardTest):
 
         self.assertEqual(item.dopants_edit.text(), "Ge:0.7,C:0.3")
         self.assertEqual(item.to_rule()["dopants"], {"Ge": 0.7, "C": 0.3})
+
+    def test_random_doping_ratio_button_label_matches_serialized_semantics(self):
+        item = DopingRuleItem()
+
+        self.assertTrue(item.ratio_type_button.isChecked())
+        self.assertEqual(item.ratio_type_button.text(), "Atom ratio")
+        self.assertEqual(item.to_rule()["ratio_type"], "atom")
+
+        item.ratio_type_button.click()
+        self.assertFalse(item.ratio_type_button.isChecked())
+        self.assertEqual(item.ratio_type_button.text(), "Mass ratio")
+        self.assertEqual(item.to_rule()["ratio_type"], "mass")
+
+        item.from_rule({"target": "Si", "dopants": {"Ge": 1.0}, "ratio_type": "atom"})
+        self.assertEqual(item.ratio_type_button.text(), "Atom ratio")
+        self.assertEqual(item.to_rule()["ratio_type"], "atom")
+
+        item.from_rule({"target": "Si", "dopants": {"Ge": 1.0}, "ratio_type": "mass"})
+        self.assertEqual(item.ratio_type_button.text(), "Mass ratio")
+        self.assertEqual(item.to_rule()["ratio_type"], "mass")
 
     def test_random_doping_count_mode_distinguishes_fixed_and_range(self):
         structure = Atoms("Si5", positions=np.arange(15, dtype=float).reshape(5, 3), cell=[10, 10, 10], pbc=True)
@@ -90,6 +161,384 @@ class TestAlloyCards(BaseCardTest):
 
         self.assertEqual(len(results), 2)
         self.assertTrue(all("Ge" in atoms.get_chemical_symbols() for atoms in results))
+
+    def test_random_doping_group_constraint_is_required_and_limits_changed_sites(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        rule = {
+            "target": "Si",
+            "dopants": {"Ge": 1.0},
+            "use": "count",
+            "count": [1, 1],
+            "count_mode": "fixed",
+            "group": ["A"],
+        }
+        operation = RandomDopingOperation()
+
+        with self.assertRaisesRegex(ValueError, "has no group array"):
+            operation.run_structure(
+                structure,
+                RandomDopingParams(rules=[rule], use_seed=True, seed=1),
+            )
+
+        structure.new_array("group", np.array(["A", "A", "B", "B"], dtype=object))
+        result = operation.run_structure(
+            structure,
+            RandomDopingParams(rules=[rule], use_seed=True, seed=1),
+        )[0]
+        symbols = result.get_chemical_symbols()
+        self.assertEqual(symbols[:2].count("Ge"), 1)
+        self.assertEqual(symbols[2:], ["Si", "Si"])
+
+        no_match = structure.copy()
+        no_match.arrays["group"][:] = "B"
+        with self.assertRaisesRegex(ValueError, "matched no 'Si' atoms in group A"):
+            operation.run_structure(
+                no_match,
+                RandomDopingParams(rules=[rule], use_seed=True, seed=1),
+            )
+
+    def test_random_doping_does_not_clamp_zero_percent_or_oversized_count(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        operation = RandomDopingOperation()
+        zero = operation.run_structure(
+            structure,
+            RandomDopingParams(
+                rules=[
+                    {
+                        "target": "Si",
+                        "dopants": {"Ge": 1.0},
+                        "use": "atomic_percent",
+                        "percent": [0.0, 0.0],
+                    }
+                ],
+                use_seed=True,
+                seed=1,
+            ),
+        )[0]
+        self.assertEqual(zero.get_chemical_symbols(), structure.get_chemical_symbols())
+        self.assertNotIn("Dop(", zero.info.get("Config_type", ""))
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "can request up to 10 replacements, but only 4",
+        ):
+            operation.run_structure(
+                structure,
+                RandomDopingParams(
+                    rules=[
+                        {
+                            "target": "Si",
+                            "dopants": {"Ge": 1.0},
+                            "use": "count",
+                            "count": [10, 10],
+                            "count_mode": "fixed",
+                        }
+                    ],
+                ),
+            )
+
+    def test_random_doping_random_count_capacity_is_seed_independent(self):
+        structure = Atoms(
+            "Si3",
+            positions=np.arange(9, dtype=float).reshape(3, 3),
+            cell=[10.0, 10.0, 10.0],
+            pbc=True,
+        )
+        impossible = {
+            "target": "Si",
+            "dopants": {"Ge": 1.0},
+            "use": "count",
+            "count": [1, 4],
+            "count_mode": "random",
+        }
+        feasible = {
+            **impossible,
+            "count": [0, 3],
+        }
+        operation = RandomDopingOperation()
+
+        for seed in range(32):
+            with self.subTest(case="impossible", seed=seed):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "can request up to 4 replacements, but only 3",
+                ):
+                    operation.run_structure(
+                        structure,
+                        RandomDopingParams(
+                            rules=[impossible],
+                            use_seed=True,
+                            seed=seed,
+                        ),
+                    )
+
+            with self.subTest(case="feasible", seed=seed):
+                result = operation.run_structure(
+                    structure,
+                    RandomDopingParams(
+                        rules=[feasible],
+                        use_seed=True,
+                        seed=seed,
+                    ),
+                )[0]
+                self.assertLessEqual(
+                    result.get_chemical_symbols().count("Ge"),
+                    3,
+                )
+
+    def test_random_doping_impossible_range_fails_before_rng(self):
+        structure = Atoms(
+            "Si3",
+            positions=np.arange(9, dtype=float).reshape(3, 3),
+            cell=[10.0, 10.0, 10.0],
+            pbc=True,
+        )
+
+        with patch(
+            "NepTrainKit.core.cards.alloy.np.random.default_rng"
+        ) as rng_factory:
+            with self.assertRaisesRegex(
+                ValueError,
+                "can request up to 4 replacements, but only 3",
+            ):
+                RandomDopingOperation().run_structure(
+                    structure,
+                    RandomDopingParams(
+                        rules=[
+                            {
+                                "target": "Si",
+                                "dopants": {"Ge": 1.0},
+                                "use": "count",
+                                "count": [1, 4],
+                                "count_mode": "random",
+                            }
+                        ],
+                        use_seed=True,
+                        seed=7,
+                    ),
+                )
+        rng_factory.assert_not_called()
+
+    def test_random_doping_overlapping_rules_have_seed_independent_capacity(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[12.0, 12.0, 12.0],
+            pbc=True,
+        )
+        impossible = [
+            {
+                "target": "Si",
+                "dopants": {"Ge": 1.0},
+                "use": "count",
+                "count": [0, 2],
+                "count_mode": "random",
+            },
+            {
+                "target": "Si",
+                "dopants": {"C": 1.0},
+                "use": "count",
+                "count": [3, 3],
+                "count_mode": "fixed",
+            },
+        ]
+        feasible = [
+            {
+                **impossible[0],
+                "count": [0, 1],
+            },
+            impossible[1],
+        ]
+        operation = RandomDopingOperation()
+
+        with patch(
+            "NepTrainKit.core.cards.alloy.np.random.default_rng"
+        ) as rng_factory:
+            with self.assertRaisesRegex(
+                ValueError,
+                "earlier overlapping rules can leave only 2 eligible atoms",
+            ):
+                operation.run_structure(
+                    structure,
+                    RandomDopingParams(
+                        rules=impossible,
+                        use_seed=True,
+                        seed=7,
+                    ),
+                )
+        rng_factory.assert_not_called()
+
+        for seed in range(32):
+            with self.subTest(case="impossible", seed=seed):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "earlier overlapping rules can leave only 2 eligible atoms",
+                ):
+                    operation.run_structure(
+                        structure,
+                        RandomDopingParams(
+                            rules=impossible,
+                            use_seed=True,
+                            seed=seed,
+                        ),
+                    )
+
+            with self.subTest(case="feasible", seed=seed):
+                output = operation.run_structure(
+                    structure,
+                    RandomDopingParams(
+                        rules=feasible,
+                        use_seed=True,
+                        seed=seed,
+                    ),
+                )[0]
+                changed = sum(
+                    symbol != "Si"
+                    for symbol in output.get_chemical_symbols()
+                )
+                self.assertIn(changed, {3, 4})
+
+    def test_random_doping_mass_percent_capacity_is_seed_independent(self):
+        structure = Atoms(
+            "Au4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[12.0, 12.0, 12.0],
+            pbc=True,
+        )
+        impossible = {
+            "target": "Au",
+            "dopants": {"Li": 1.0},
+            "use": "mass_percent",
+            "percent": [5.0, 60.0],
+        }
+        feasible = {
+            **impossible,
+            "percent": [0.1, 3.0],
+        }
+        operation = RandomDopingOperation()
+
+        for seed in range(24):
+            with self.subTest(case="impossible", seed=seed):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "can request up to .* replacements, but only 4",
+                ):
+                    operation.run_structure(
+                        structure,
+                        RandomDopingParams(
+                            rules=[impossible],
+                            use_seed=True,
+                            seed=seed,
+                        ),
+                    )
+
+            with self.subTest(case="feasible", seed=seed):
+                result = operation.run_structure(
+                    structure,
+                    RandomDopingParams(
+                        rules=[feasible],
+                        use_seed=True,
+                        seed=seed,
+                    ),
+                )[0]
+                self.assertLessEqual(
+                    result.get_chemical_symbols().count("Li"),
+                    4,
+                )
+
+    def test_random_doping_mass_percent_uses_declared_dopant_ratio_type(self):
+        structure = Atoms(
+            "Au20",
+            positions=np.arange(60, dtype=float).reshape(20, 3),
+            cell=[80.0, 80.0, 80.0],
+            pbc=True,
+        )
+        operation = RandomDopingOperation()
+        candidates = np.arange(len(structure))
+        common = {
+            "target": "Au",
+            "dopants": {"H": 9.0, "Pt": 1.0},
+            "use": "mass_percent",
+            "percent": [1.0, 1.0],
+        }
+
+        atom_ratio_count = operation._doping_count(
+            structure,
+            candidates,
+            "Au",
+            common["dopants"],
+            {**common, "ratio_type": "atom"},
+            rng=None,
+        )
+        mass_ratio_count = operation._doping_count(
+            structure,
+            candidates,
+            "Au",
+            common["dopants"],
+            {**common, "ratio_type": "mass"},
+            rng=None,
+        )
+
+        self.assertEqual(atom_ratio_count, 1)
+        self.assertGreater(mass_ratio_count, atom_ratio_count)
+
+    def test_random_doping_rejects_invalid_ratios_before_output_sampling(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[20.0, 20.0, 20.0],
+            pbc=True,
+        )
+        operation = RandomDopingOperation()
+
+        for dopants, ratio_type, message in (
+            ({"Ge": -1.0}, "atom", "finite and non-negative"),
+            ({"Ge": 0.0}, "atom", "[Aa]t least one dopant ratio must be positive"),
+            ({"Ge": 1.0}, "typo", "ratio_type must be 'atom' or 'mass'"),
+        ):
+            with self.subTest(dopants=dopants, ratio_type=ratio_type):
+                with self.assertRaisesRegex(ValueError, message):
+                    operation.run_structure(
+                        structure,
+                        RandomDopingParams(
+                            rules=[
+                                {
+                                    "target": "Si",
+                                    "dopants": dopants,
+                                    "ratio_type": ratio_type,
+                                    "use": "count",
+                                    "count": [1, 1],
+                                }
+                            ],
+                            max_structures=3,
+                            use_seed=True,
+                            seed=7,
+                        ),
+                    )
+
+    def test_random_doping_exact_ratios_use_largest_remainder_allocation(self):
+        sampled = sample_dopants(
+            ["Fe", "Co", "Ni"],
+            [0.34, 0.33, 0.33],
+            5,
+            exact=True,
+            rng=np.random.default_rng(1),
+        )
+
+        self.assertEqual(
+            sorted(sampled.count(element) for element in ("Fe", "Co", "Ni")),
+            [1, 2, 2],
+        )
 
     def test_parse_composition_accepts_bare_elements(self):
         self.assertEqual(parse_composition("Ge"), {"Ge": 1.0})
@@ -299,6 +748,118 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(len(occupied), 1)
         self.assertTrue(set(occupied[0].get_chemical_symbols()).issubset({"Co", "Ni"}))
 
+    def test_composition_sweep_budget_modes_fill_cap_and_cover_requested_orders(self):
+        base = self.structure.copy()
+        operation = CompositionSweepOperation()
+
+        for budget_mode in ("Equal+Reflow", "Capacity-weighted"):
+            with self.subTest(budget_mode=budget_mode):
+                params = CompositionSweepParams(
+                    elements="Co,Cr,Ni,Al",
+                    order="2,4",
+                    method="Grid",
+                    step=0.5,
+                    include_endpoints=True,
+                    use_seed=True,
+                    seed=13,
+                    max_outputs=8,
+                    budget_mode=budget_mode,
+                )
+                first = operation.run_structure(base, params)
+                repeated = operation.run_structure(base, params)
+                tags = [atoms.info.get("Config_type", "") for atoms in first]
+                repeated_tags = [
+                    atoms.info.get("Config_type", "") for atoms in repeated
+                ]
+
+                self.assertEqual(len(first), 8)
+                self.assertEqual(tags, repeated_tags)
+                composition_orders = [
+                    tag.rsplit("Comp(", 1)[1].split(")", 1)[0].count(",") + 1
+                    for tag in tags
+                ]
+                self.assertIn(2, composition_orders)
+                self.assertIn(4, composition_orders)
+
+    def test_random_occupancy_group_filter_is_required_and_limits_assignment(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        params = RandomOccupancyParams(
+            source="Manual",
+            manual="Ge",
+            group_filter="A",
+            use_seed=True,
+            seed=1,
+        )
+        operation = RandomOccupancyOperation()
+
+        with self.assertRaisesRegex(ValueError, "requires atoms.arrays\\['group'\\]"):
+            operation.run_structure(structure, params)
+
+        structure.new_array("group", np.array(["A", "A", "B", "B"], dtype=object))
+        result = operation.run_structure(structure, params)[0]
+        self.assertEqual(result.get_chemical_symbols(), ["Ge", "Ge", "Si", "Si"])
+        self.assertIn("Occ(E", result.info.get("Config_type", ""))
+
+        no_match = structure.copy()
+        no_match.arrays["group"][:] = "B"
+        with self.assertRaisesRegex(ValueError, "matched no atoms: A"):
+            operation.run_structure(no_match, params)
+
+    def test_random_occupancy_missing_composition_and_invalid_counts_fail(self):
+        operation = RandomOccupancyOperation()
+        with self.assertRaisesRegex(ValueError, "requires a Comp"):
+            operation.run_structure(
+                self.structure,
+                RandomOccupancyParams(source="Manual", manual=""),
+            )
+        with self.assertRaisesRegex(ValueError, "samples must be >= 1"):
+            operation.run_structure(
+                self.structure,
+                RandomOccupancyParams(
+                    source="Manual",
+                    manual="Si",
+                    samples=0,
+                ),
+            )
+
+    def test_random_occupancy_random_mode_is_seeded_and_respects_sample_contract(self):
+        structure = Atoms(
+            "Si12",
+            positions=np.column_stack(
+                [np.arange(12, dtype=float), np.zeros(12), np.zeros(12)]
+            ),
+            cell=[14.0, 4.0, 4.0],
+            pbc=True,
+        )
+        operation = RandomOccupancyOperation()
+        params = RandomOccupancyParams(
+            source="Manual",
+            manual="Co:0.25,Ni:0.75",
+            mode="Random",
+            samples=4,
+            use_seed=True,
+            seed=23,
+        )
+
+        first = operation.run_structure(structure, params)
+        repeated = operation.run_structure(structure, params)
+
+        self.assertEqual(len(first), 4)
+        self.assertEqual(
+            [atoms.get_chemical_symbols() for atoms in first],
+            [atoms.get_chemical_symbols() for atoms in repeated],
+        )
+        for atoms in first:
+            self.assertEqual(len(atoms), len(structure))
+            self.assertTrue(
+                set(atoms.get_chemical_symbols()).issubset({"Co", "Ni"})
+            )
+
     def test_composition_gradient_operation_and_card_roundtrip(self):
         base = Atoms(
             symbols=["Ni"] * 8,
@@ -374,6 +935,44 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(legacy.get_params().axis, "a")
         self.assertEqual(legacy.axis_combo.currentText(), "Lattice a")
 
+    def test_composition_gradient_target_elements_preserve_other_sublattice(self):
+        cell = np.asarray(
+            [
+                [5.0, 0.0, 0.0],
+                [1.5, 4.0, 0.0],
+                [0.3, 0.5, 5.0],
+            ]
+        )
+        structure = Atoms(
+            "NiONiO",
+            scaled_positions=[
+                [0.1, 0.1, 0.2],
+                [0.2, 0.2, 0.3],
+                [0.8, 0.8, 0.7],
+                [0.9, 0.9, 0.8],
+            ],
+            cell=cell,
+            pbc=True,
+        )
+        result = CompositionGradientOperation().run_structure(
+            structure,
+            CompositionGradientParams(
+                elements="Ni,Co",
+                start_composition="Ni:1,Co:0",
+                end_composition="Ni:0,Co:1",
+                axis="c",
+                bins=2,
+                target_elements="Ni",
+                samples=1,
+                use_seed=True,
+                seed=5,
+            ),
+        )[0]
+
+        self.assertEqual(result.get_chemical_symbols(), ["Ni", "O", "Co", "O"])
+        np.testing.assert_allclose(result.positions, structure.positions)
+        np.testing.assert_allclose(result.cell.array, structure.cell.array)
+
     def test_composition_sweep_quaternary_quinary(self):
         base = self.structure.copy()
         base.info.setdefault("Config_type", "base")
@@ -401,8 +1000,13 @@ class TestAlloyCards(BaseCardTest):
         sweep5.n_points_frame.set_input_value([6])
         sweep5.max_output_frame.set_input_value([6])
 
-        swept5 = sweep5.process_structure(base)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            swept5 = sweep5.process_structure(base)
         self.assertEqual(len(swept5), 6)
+        self.assertFalse(
+            any("balance properties of Sobol" in str(item.message) for item in caught)
+        )
         for atoms in swept5:
             cfg = str(atoms.info.get("Config_type", ""))
             comp_tokens = [t.strip() for t in cfg.split("|") if t.strip().startswith("Comp(") and t.strip().endswith(")")]

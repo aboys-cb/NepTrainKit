@@ -1,4 +1,4 @@
 interface:
-  display_name: "Make Dataset Card Dev"
-  short_description: "按 Operation 架构开发 NepTrainKit Make Dataset 卡片"
-  default_prompt: "根据需求描述、脚本或现有卡片，按 Params dataclass + core Operation + UI 绑定的架构实现或重构 Make Dataset 卡片，并补齐文档和测试。"
+  display_name: "NepTrainKit Make Dataset 卡片开发"
+  short_description: "设计、审查并验证 Make Dataset 卡片的物理语义和交互契约"
+  default_prompt: "使用 $make-dataset-card-dev 逐卡审查或实现 Make Dataset 卡片，打磨功能边界、参数控件、文档和严格测试。"

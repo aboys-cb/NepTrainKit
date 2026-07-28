@@ -17,6 +17,13 @@ import pytest
 from NepTrainKit import i18n
 from NepTrainKit.ui import update
 from NepTrainKit.ui.pages.show_nep import _LoadCompletionRelay
+from NepTrainKit.core.cards.errors import CardOperationError
+from NepTrainKit.ui.messages import (
+    _RUNTIME_EXCEPTION_REPLACEMENTS,
+    _RUNTIME_PREFIX_REPLACEMENTS,
+    _RUNTIME_TEXT_REPLACEMENTS,
+    translate_runtime_message,
+)
 
 _SCRIPT_PATH = Path(__file__).resolve().parents[1] / "tools" / "update_translations.py"
 _SCRIPT_SPEC = importlib.util.spec_from_file_location("update_translations", _SCRIPT_PATH)
@@ -228,6 +235,50 @@ _TASK5_TRANSLATIONS = {
 def test_normalize_language_accepts_only_supported_values():
     assert i18n.normalize_language("auto") == "auto"
     assert i18n.normalize_language("en_US") == "en_US"
+
+
+def test_legacy_runtime_translation_table_is_frozen():
+    replacement_count = sum(
+        len(items)
+        for items in (
+            _RUNTIME_PREFIX_REPLACEMENTS,
+            _RUNTIME_TEXT_REPLACEMENTS,
+            _RUNTIME_EXCEPTION_REPLACEMENTS,
+        )
+    )
+    assert replacement_count <= 258
+
+
+def test_structured_card_error_formats_in_english():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "en_US")
+    error = CardOperationError(
+        "perturb.sobol_dimension_limit",
+        "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
+        "use Uniform sampling for larger structures.",
+        max_atoms=7067,
+    )
+
+    assert translate_runtime_message(error) == (
+        "Perturb: Sobol sampling supports at most 7067 atoms; "
+        "use Uniform sampling for larger structures."
+    )
+
+
+def test_structured_card_error_uses_qt_catalog_in_chinese():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    error = CardOperationError(
+        "perturb.sobol_dimension_limit",
+        "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
+        "use Uniform sampling for larger structures.",
+        max_atoms=7067,
+    )
+
+    assert translate_runtime_message(error) == (
+        "原子扰动：Sobol 采样最多支持 7067 个原子；"
+        "更大的结构请使用 Uniform 采样。"
+    )
     assert i18n.normalize_language("zh_CN") == "zh_CN"
     assert i18n.normalize_language("  zh_CN  ") == "zh_CN"
     assert i18n.normalize_language("zh") == "auto"

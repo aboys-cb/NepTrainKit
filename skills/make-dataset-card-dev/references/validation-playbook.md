@@ -11,8 +11,9 @@ python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick
 Runs:
 
 - operation architecture audit
-- `pytest tests/test_makedata_source_card.py tests/cards -q`
+- `pytest tests/test_makedata_source_card.py tests/test_card_skill_checks.py tests/cards -q`
 - `python tools/docs/audit_card_docs.py`
+- worktree drift check: tests must not create or rewrite tracked/untracked repository artifacts
 
 ## Include docs build
 
@@ -62,13 +63,19 @@ python tools/benchmark_card_operations.py --only slab --json card_bench.json
 
 ## New card test bar
 
-When adding a card, update `tests/cards/` in the domain file that matches the card. The test must prove the card behavior, not only that execution finishes:
+Before implementation, use `references/card-design-review.md` to review user scenario, feature boundary, parameter/control design, reference frames, discoverability, and translation. Then update `tests/cards/` in the matching domain file and select applicable risks from `references/test-rigor-checklist.md`.
 
-- cover each public mode and key parameter branch;
-- cover invalid or boundary params with explicit errors;
+- cover each public mode and key parameter branch, plus combinations that share an element pool, atom set, output budget, or cell degree of freedom;
+- cover defaults, sentinels, invalid/boundary params, legacy JSON, and explicit errors;
 - assert output semantics such as structure count, composition, cell/position/magmom changes, dataset filter decisions, generated tags, and `Config_type`;
-- cover deterministic seed behavior for random operations;
+- include non-orthogonal cells, mixed PBC, and non-default orientations when the public contract supports them;
+- define the random output contract before testing fixed seeds, multi-seed interaction risks, and retry exhaustion;
+- distinguish success with output, legitimate empty output, and failure, including user-visible UI state where applicable;
+- classify preview/summary as exact or estimated; for expensive previews test worker-thread execution, latest-request wins, and safe close behavior;
+- dynamically check registration, docs URL, card-search summary, and translation instead of hard-coding the number of cards;
 - keep UI round-trip tests focused on parameter binding and serialization; operation behavior belongs in direct operation tests.
+
+Full rationale and test patterns: `references/test-rigor-checklist.md`.
 
 ## Operation architecture audit
 

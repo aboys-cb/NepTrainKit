@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import warnings
 from dataclasses import dataclass, field
 from math import comb
@@ -20,6 +19,7 @@ from NepTrainKit.core.config_type import append_config_tag
 
 from .geometry import wrapped_positions
 from .operation import StructureOperation
+from .sampling import derived_structure_seed
 
 
 def _as_list(value: Any) -> list:
@@ -101,24 +101,6 @@ def _parse_insert_species(tokens: str) -> tuple[list[str], list[float]]:
     raw_weights = np.asarray([combined[symbol] for symbol in species], dtype=float)
     weights = (raw_weights / raw_weights.sum()).tolist()
     return species, weights
-
-
-def _structure_seed_id(structure) -> int:
-    """Return a stable content-derived id for per-structure random sampling."""
-    digest = hashlib.blake2b(digest_size=8)
-    for values in (
-        np.asarray(structure.numbers, dtype=np.int64),
-        np.asarray(structure.positions, dtype=np.float64),
-        np.asarray(structure.cell.array, dtype=np.float64),
-        np.asarray(structure.pbc, dtype=np.uint8),
-    ):
-        digest.update(np.ascontiguousarray(values).tobytes())
-    if "group" in structure.arrays:
-        digest.update(
-            "\0".join(str(value) for value in structure.arrays["group"]).encode("utf-8")
-        )
-    digest.update(str(structure.info.get("Config_type", "") or "").encode("utf-8"))
-    return int.from_bytes(digest.digest(), "big", signed=False)
 
 
 @dataclass(frozen=True)
@@ -261,7 +243,7 @@ class RandomVacancyOperation(StructureOperation):
         rules = self._validated_rules(structure, params.rules)
         if params.use_seed:
             rng = np.random.default_rng(
-                np.random.SeedSequence([seed, _structure_seed_id(structure)])
+                derived_structure_seed(seed, structure)
             )
         else:
             rng = np.random.default_rng()
@@ -270,18 +252,13 @@ class RandomVacancyOperation(StructureOperation):
         seen_deletions: set[tuple[int, ...]] = set()
         target_outputs = self._output_upper_bound(rules, max_structures)
         max_attempts = max(100, target_outputs * self._MAX_ATTEMPTS_PER_OUTPUT)
+        last_invalid_reason: str | None = None
         for _ in range(max_attempts):
             new_structure = structure.copy()
             keep_mask = np.ones(len(new_structure), dtype=bool)
             total_remove = 0
+            attempt_is_valid = True
             for rule_index, rule in enumerate(rules, start=1):
-                candidate_indices = np.nonzero(keep_mask & rule["candidate_mask"])[0]
-                if rule["count_max"] > len(candidate_indices):
-                    raise ValueError(
-                        f"RandomVacancy rule {rule_index} has only {len(candidate_indices)} "
-                        "eligible atoms after earlier rules; reduce overlapping vacancy counts."
-                    )
-
                 if rule["count_mode"] == "fixed":
                     remove_num = rule["count_min"]
                 else:
@@ -289,12 +266,26 @@ class RandomVacancyOperation(StructureOperation):
                 if remove_num <= 0:
                     continue
 
+                candidate_indices = np.nonzero(keep_mask & rule["candidate_mask"])[0]
+                if remove_num > len(candidate_indices):
+                    last_invalid_reason = (
+                        f"RandomVacancy rule {rule_index} sampled {remove_num} vacancies, "
+                        f"but only {len(candidate_indices)} eligible atoms remain after earlier rules."
+                    )
+                    attempt_is_valid = False
+                    break
+
                 idxs = rng.choice(candidate_indices, remove_num, replace=False)
                 keep_mask[np.asarray(idxs, dtype=int)] = False
                 total_remove += remove_num
 
+            if not attempt_is_valid:
+                continue
             if total_remove >= len(structure):
-                raise ValueError("RandomVacancy rules would remove every atom from the structure.")
+                last_invalid_reason = (
+                    "RandomVacancy sampled a combination that would remove every atom from the structure."
+                )
+                continue
 
             deletion_key = tuple(int(index) for index in np.nonzero(~keep_mask)[0])
             if deletion_key in seen_deletions:
@@ -307,6 +298,12 @@ class RandomVacancyOperation(StructureOperation):
             structure_list.append(new_structure)
             if len(structure_list) >= target_outputs:
                 break
+        if not structure_list:
+            detail = last_invalid_reason or "no distinct deletion pattern could be sampled."
+            raise ValueError(
+                "RandomVacancy could not generate a valid non-empty structure from the rules: "
+                f"{detail}"
+            )
         return structure_list
 
 
@@ -327,7 +324,7 @@ class VacancyDefectParams:
 class VacancyDefectOperation(StructureOperation):
     """Sample unique global vacancy patterns by count or concentration."""
 
-    _MAX_SOBOL_ATOMS = 21200
+    _MAX_SOBOL_ATOMS = Sobol.MAXDIM - 1
     _MAX_ATTEMPTS_PER_OUTPUT = 20
     _SOBOL_BATCH_BYTES = 8 * 1024 * 1024
 
@@ -408,11 +405,7 @@ class VacancyDefectOperation(StructureOperation):
             raise ValueError("VacancyDefect: seed must be >= 0.")
         derived_seed = None
         if params.use_seed:
-            derived_seed = int(
-                np.random.SeedSequence(
-                    [seed, _structure_seed_id(structure)]
-                ).generate_state(1, dtype=np.uint32)[0]
-            )
+            derived_seed = derived_structure_seed(seed, structure)
 
         min_defects = max_defects if count_mode == "fixed" else 1
         possible_outputs = 0
@@ -993,11 +986,7 @@ class InsertDefectOperation(StructureOperation):
             raise ValueError("InsertDefect: seed must be >= 0.")
         derived_seed = None
         if params.use_seed:
-            derived_seed = int(
-                np.random.SeedSequence(
-                    [seed, _structure_seed_id(structure)]
-                ).generate_state(1, dtype=np.uint32)[0]
-            )
+            derived_seed = derived_structure_seed(seed, structure)
 
         surface_top_fraction = None
         surface_normal = None

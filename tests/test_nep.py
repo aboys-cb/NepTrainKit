@@ -47,6 +47,19 @@ class TestNepTrainResultData( unittest.TestCase):
         for tmp in self._tmp_dirs:
             shutil.rmtree(tmp, ignore_errors=True)
 
+    def test_from_path_propagates_prefetched_structure_errors(self):
+        with patch.object(
+            NepTrainResultData,
+            "set_structures",
+            side_effect=ValueError("invalid in-memory structures"),
+        ):
+            with self.assertRaisesRegex(ValueError, "invalid in-memory structures"):
+                NepTrainResultData.from_path(
+                    self.train_path,
+                    structures=[object()],
+                    cache_outputs=False,
+                )
+
     def test_load_train(self):
         """测试结构加载功能"""
         tmp_dir = self._make_nep_workdir()

@@ -365,15 +365,20 @@ class TestCardLibraryDialog(unittest.TestCase):
             for class_name, metadata in dialog._metadata_by_class.items()
             if Path(metadata.source_path).parent.name == "_card"
         }
+        expected_builtin_cards = {
+            class_name
+            for class_name, card_class in CardManager.card_info_dict.items()
+            if Path(
+                CardManager.card_metadata_dict[class_name].source_path
+            ).parent.name
+            == "_card"
+            and getattr(card_class, "discoverable", True)
+        }
 
-        self.assertEqual(len(builtin_metadata), 38)
+        self.assertEqual(set(builtin_metadata), expected_builtin_cards)
         self.assertNotIn("StackingFaultCard", builtin_metadata)
         self.assertIn("StrictGSFEPathCard", builtin_metadata)
         self.assertIn("StackingFaultCard", CardManager.card_info_dict)
-        self.assertLessEqual(
-            set(builtin_metadata),
-            set(CardManager.card_info_dict),
-        )
         for class_name, metadata in builtin_metadata.items():
             with self.subTest(card=class_name):
                 self.assertTrue(metadata.description)

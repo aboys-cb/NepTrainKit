@@ -115,6 +115,40 @@ class TestMagnetismOrderCards(MagnetismCardTest):
                 ),
             )
 
+    def test_magnetic_order_group_unknown_policy_is_explicit(self):
+        structure = self._spin_chain()
+        structure.arrays["group"] = np.asarray(
+            ["A", "B", "other", "other"],
+            dtype=object,
+        )
+        base = dict(
+            format="collinear",
+            magmom_map="Fe:2.0",
+            gen_fm=False,
+            gen_afm=True,
+            afm_mode="group_ab",
+            afm_group_a="A",
+            afm_group_b="B",
+        )
+
+        zero_unknown = MagneticOrderOperation().run_structure(
+            structure,
+            MagneticOrderParams(**base, afm_zero_unknown=True),
+        )[0]
+        positive_unknown = MagneticOrderOperation().run_structure(
+            structure,
+            MagneticOrderParams(**base, afm_zero_unknown=False),
+        )[0]
+
+        np.testing.assert_allclose(
+            zero_unknown.get_initial_magnetic_moments(),
+            [2.0, -2.0, 0.0, 0.0],
+        )
+        np.testing.assert_allclose(
+            positive_unknown.get_initial_magnetic_moments(),
+            [2.0, -2.0, 2.0, 2.0],
+        )
+
     def test_magnetic_order_k_vector_preview_is_stable_on_repeated_cell(self):
         structure = CrystalPrototypeBuilderOperation().generate(
             CrystalPrototypeBuilderParams(
@@ -494,6 +528,80 @@ class TestMagnetismOrderCards(MagnetismCardTest):
         self.assertEqual(restored.format_combo.currentText(), "Non-collinear (vector)")
         self.assertEqual(restored.map_edit.text(), "Fe:2.5")
 
+    def test_set_and_order_magnetic_maps_honor_defaults_directions_and_element_scope(self):
+        structure = Atoms(
+            ["Fe", "Ni", "Fe", "Ni"],
+            positions=[
+                [0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [0.0, 0.0, 2.0],
+                [0.0, 0.0, 3.0],
+            ],
+            cell=[6.0, 6.0, 8.0],
+            pbc=[False, False, True],
+        )
+        mapped = SetMagneticMomentsOperation().run_structure(
+            structure,
+            SetMagneticMomentsParams(
+                source="Map/default magnitude",
+                format="Non-collinear (vector)",
+                axis=(0.0, 0.0, 1.0),
+                magmom_map="Fe:[2,0,0]",
+                use_element_dirs=True,
+                default_moment=1.5,
+                apply_elements="Fe,Ni",
+            ),
+        )[0]
+        np.testing.assert_allclose(
+            mapped.arrays["spin"],
+            [
+                [2.0, 0.0, 0.0],
+                [0.0, 0.0, 1.5],
+                [2.0, 0.0, 0.0],
+                [0.0, 0.0, 1.5],
+            ],
+            atol=1e-12,
+        )
+
+        scoped = SetMagneticMomentsOperation().run_structure(
+            structure,
+            SetMagneticMomentsParams(
+                source="Map/default magnitude",
+                format="Non-collinear (vector)",
+                magmom_map="Fe:2",
+                default_moment=9.0,
+                apply_elements="Fe",
+            ),
+        )[0]
+        np.testing.assert_allclose(
+            np.linalg.norm(scoped.arrays["spin"], axis=1),
+            [2.0, 0.0, 2.0, 0.0],
+            atol=1e-12,
+        )
+
+        ordered = MagneticOrderOperation().run_structure(
+            structure,
+            MagneticOrderParams(
+                format="noncollinear",
+                magmom_map="Fe:[0,2,0]",
+                use_element_dirs=True,
+                default_moment=1.0,
+                apply_elements="Fe",
+                gen_fm=True,
+                gen_afm=False,
+            ),
+        )[0]
+        np.testing.assert_allclose(
+            ordered.arrays["spin"],
+            [
+                [0.0, 2.0, 0.0],
+                [0.0, 0.0, 0.0],
+                [0.0, 2.0, 0.0],
+                [0.0, 0.0, 0.0],
+            ],
+            atol=1e-12,
+        )
+
     def test_set_magnetic_moments_card_existing_scalar_to_vector(self):
         structure = self._spin_chain()
         structure.set_initial_magnetic_moments([1.0, 2.0, 3.0, 4.0])
@@ -569,3 +677,23 @@ class TestMagnetismOrderCards(MagnetismCardTest):
             self.assertTrue(np.all(norms >= 1.8 - 1e-12))
             self.assertTrue(np.all(norms <= 2.2 + 1e-12))
             self.assertIn("MMR(", a.info.get("Config_type", ""))
+
+    def test_magmom_rotation_card_roundtrips_selection_axis_and_magnitude_controls(self):
+        params = MagneticMomentRotationParams(
+            elements="Fe,Ni",
+            max_angle=17.5,
+            num_structures=6,
+            lift_scalar=False,
+            axis=(1.0, 1.0, 0.0),
+            disturb_magnitude=False,
+            magnitude_factor=(0.8, 1.2),
+            use_seed=True,
+            seed=67,
+        )
+        card = MagneticMomentRotationCard()
+        card.set_params(params)
+        normalized_params = card.get_params()
+        restored = MagneticMomentRotationCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), normalized_params)

@@ -404,6 +404,17 @@ class VibrationModePerturbOperation(StructureOperation):
         modes_per_sample = int(params.modes_per_sample)
         if modes_per_sample <= 0:
             raise ValueError("VibrationModePerturb: modes_per_sample must be >= 1.")
+        max_num_value = float(params.max_num)
+        if not np.isfinite(max_num_value) or not max_num_value.is_integer():
+            raise ValueError("VibrationModePerturb: max_num must be an integer.")
+        max_num = int(max_num_value)
+        if max_num <= 0:
+            raise ValueError("VibrationModePerturb: max_num must be >= 1.")
+        distribution = int(params.distribution)
+        if distribution not in {0, 1}:
+            raise ValueError(
+                "VibrationModePerturb: distribution must be 0 (Normal) or 1 (Uniform)."
+            )
 
         min_frequency = float(params.min_frequency) if params.exclude_near_zero else 0.0
         frequencies, modes = get_vibration_modes(structure, min_frequency=min_frequency)
@@ -419,9 +430,9 @@ class VibrationModePerturbOperation(StructureOperation):
         orig_positions = structure.get_positions()
 
         generated = []
-        for _ in range(int(params.max_num)):
+        for _ in range(max_num):
             indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=replace)
-            if int(params.distribution) == 0:
+            if distribution == 0:
                 coeffs = rng.normal(loc=0.0, scale=1.0, size=modes_per_sample)
             else:
                 coeffs = rng.uniform(-1.0, 1.0, size=modes_per_sample)
@@ -540,6 +551,21 @@ class OrganicMolConfigPBCParams:
     bo_threshold: float = 0.2
     use_seed: bool = False
     seed: int = 0
+
+
+@dataclass(frozen=True)
+class OrganicMolConfigTopologySummary:
+    """Resolved topology facts used by the card preview."""
+
+    atom_count: int
+    bond_count: int
+    component_count: int
+    torsion_count: int
+    torsion_active: bool
+    pbc_active: bool
+    local_mode: bool
+    requested_outputs: int
+    gaussian_sigma: float
 
 
 class OrganicMolConfigPBCOperation(StructureOperation):
@@ -806,22 +832,20 @@ class OrganicMolConfigPBCOperation(StructureOperation):
         cls,
         structure,
         params: OrganicMolConfigPBCParams,
-    ) -> dict[str, Any]:
+    ) -> OrganicMolConfigTopologySummary:
         """Return resolved topology and sampling information for the UI."""
         settings = cls._validated_settings(structure, params)
-        return {
-            "atom_count": len(settings["symbols"]),
-            "bond_count": settings["bond_count"],
-            "component_count": settings["component_count"],
-            "torsion_count": settings["torsion_count"],
-            "torsion_active": settings["torsion_active"],
-            "pbc_active": settings["pbc_active"],
-            "local_mode": (
-                len(settings["symbols"]) > settings["local_cutoff"]
-            ),
-            "requested_outputs": settings["perturb_per_frame"],
-            "gaussian_sigma": settings["gaussian_sigma"],
-        }
+        return OrganicMolConfigTopologySummary(
+            atom_count=len(settings["symbols"]),
+            bond_count=settings["bond_count"],
+            component_count=settings["component_count"],
+            torsion_count=settings["torsion_count"],
+            torsion_active=settings["torsion_active"],
+            pbc_active=settings["pbc_active"],
+            local_mode=len(settings["symbols"]) > settings["local_cutoff"],
+            requested_outputs=settings["perturb_per_frame"],
+            gaussian_sigma=settings["gaussian_sigma"],
+        )
 
     def run_structure(self, structure, params: OrganicMolConfigPBCParams) -> list:
         settings = self._validated_settings(structure, params)

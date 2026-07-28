@@ -8,6 +8,12 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import NamedTuple
+
+
+class WorktreeSnapshot(NamedTuple):
+    status: bytes
+    tracked_diff: bytes
 
 
 def find_repo_root(start: Path) -> Path:
@@ -79,11 +85,50 @@ def audit_operation_architecture(repo_root: Path) -> int:
     return 0
 
 
+def capture_worktree_snapshot(repo_root: Path) -> WorktreeSnapshot | None:
+    """Capture tracked changes and untracked paths without modifying the tree."""
+    status = subprocess.run(
+        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        cwd=repo_root,
+        capture_output=True,
+        check=False,
+    )
+    tracked_diff = subprocess.run(
+        ["git", "diff", "--binary", "--no-ext-diff", "HEAD", "--"],
+        cwd=repo_root,
+        capture_output=True,
+        check=False,
+    )
+    if status.returncode != 0 or tracked_diff.returncode != 0:
+        print("[warn] git worktree snapshot unavailable; artifact drift check skipped")
+        return None
+    return WorktreeSnapshot(status.stdout, tracked_diff.stdout)
+
+
+def report_worktree_drift(
+    before: WorktreeSnapshot | None,
+    after: WorktreeSnapshot | None,
+) -> int:
+    """Fail when validation creates or rewrites repository-visible artifacts."""
+    if before is None or after is None or before == after:
+        return 0
+    print("[fail] validation changed the git worktree")
+    if before.status != after.status:
+        print("[info] git status after validation:")
+        print(after.status.replace(b"\0", b"\n").decode("utf-8", errors="replace").rstrip())
+    else:
+        print("[info] an already-modified tracked file changed during validation")
+    print("[hint] move generated files to a temporary directory and restore the worktree")
+    return 1
+
+
 def run_commands(commands: list[list[str]], cwd: Path) -> int:
     """Run commands sequentially and stop at first failure."""
     audit_result = audit_operation_architecture(cwd)
     if audit_result != 0:
         return audit_result
+    before = capture_worktree_snapshot(cwd)
+    command_result = 0
     env = os.environ.copy()
     src_path = str(cwd / "src")
     env["PYTHONPATH"] = src_path if not env.get("PYTHONPATH") else src_path + os.pathsep + env["PYTHONPATH"]
@@ -92,7 +137,13 @@ def run_commands(commands: list[list[str]], cwd: Path) -> int:
         result = subprocess.run(cmd, cwd=cwd, env=env)
         if result.returncode != 0:
             print(f"[fail] exit code {result.returncode}")
-            return result.returncode
+            command_result = result.returncode
+            break
+    drift_result = report_worktree_drift(before, capture_worktree_snapshot(cwd))
+    if command_result != 0:
+        return command_result
+    if drift_result != 0:
+        return drift_result
     print("[ok] all checks passed")
     return 0
 
@@ -108,7 +159,15 @@ def build_commands(full: bool, with_docs: bool) -> list[list[str]]:
         ]
 
     commands: list[list[str]] = [
-        [py, "-m", "pytest", "tests/test_makedata_source_card.py", "tests/cards", "-q"],
+        [
+            py,
+            "-m",
+            "pytest",
+            "tests/test_makedata_source_card.py",
+            "tests/test_card_skill_checks.py",
+            "tests/cards",
+            "-q",
+        ],
         [py, "tools/docs/audit_card_docs.py"],
     ]
     if with_docs:

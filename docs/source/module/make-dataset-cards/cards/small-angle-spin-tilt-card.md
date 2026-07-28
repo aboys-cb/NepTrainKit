@@ -12,7 +12,7 @@ $$\hat{\mathbf{m}}(\theta)=\cos\theta\,\hat{\mathbf{m}}_0+\sin\theta\,\hat{\math
 
 $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
-**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Magmom Rotation`。
+**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Magmom Rotation`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。
 
 ## 操作示例
 
@@ -165,7 +165,7 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 #### Include Reference（include_reference）
 
-`bool`，默认 `True`。额外输出一帧未偏转的参考磁态，方便做 energy difference 对比。
+`bool`，默认 `True`。额外输出一帧未偏转的参考磁态，方便做 energy difference 对比。打开后 `max_outputs` 至少为 2，确保预算中还留有一帧真正的 canting 输出。
 
 ### 磁矩与参考态
 
@@ -203,7 +203,7 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 #### Max Outputs（max_outputs）
 
-`int`，默认 `100`。自动 pair、角度列表和正负手性会相乘放大输出数量。先用 20-100 检查 pair 选择是否合理，确认后再扩大到完整 DMI 扫描。
+`int`，默认 `100`。自动 pair、角度列表和正负手性会相乘放大输出数量。这个上限包含 reference；开启 `include_reference` 时至少设为 2。先用 20-100 检查 pair 选择是否合理，确认后再扩大到完整 DMI 扫描。
 
 ## 推荐预设
 
@@ -317,11 +317,11 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 ## 常见问题
 
-**输出只有参考态没有 canting 帧。** 检查是否有符合条件的磁性原子（有非零磁矩的 eligible 元素）。`apply_elements` 是否过滤掉了所有目标？pair 模式下找到的对是否为空？
+**提示没有可倾斜磁矩或目标原子。** `Existing initial magmoms` 要求输入已有非零磁矩；否则切换到 `Map/default magnitude` 并填写真实幅值。再检查 `apply_elements`、手动索引和目标模式是否把所有原子过滤掉了。卡片不会再用原结构代替 canting 输出。
 
-**pair 自动找对结果不对。** 调整 `pair_shell_tolerance`——太大把不同壳层并到一起，太小把同一壳层拆开。检查 `pair_element_filter` 和 `pair_group_filter` 是否过紧。
+**提示没有有效 pair。** 手动模式检查左右索引数量和磁矩是否非零；自动模式调整 `pair_shell_tolerance`——太大把不同壳层并到一起，太小把同一壳层拆开。再检查 `pair_element_filter`、`pair_group_filter` 和键方向筛选是否过紧。
 
-**group pair canting 没生效。** 输入需要 `arrays['group']` 且包含 `group_a` 和 `group_b` 指定的标签。用 `Group Label` 先生成。
+**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `group_a` 和 `group_b` 中都要有至少一个非零磁矩原子。可以用 `Group Label` 先生成坐标分组，但它不会自动识别化学子晶格。
 
 **输出数量多于预期。** `Target Mode = All eligible atoms` + `Both (+/- pair)` 会快速膨胀。设 `max_outputs` 上限或改用 `First eligible atom`。
 

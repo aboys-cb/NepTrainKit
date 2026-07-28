@@ -137,6 +137,16 @@ def test_macos_wheels_use_explicit_openmp_repair_and_portability_gate():
     assert "verify_macos_wheel.py wheelhouse/*.whl" in workflow
 
 
+def test_release_assets_are_uploaded_without_updating_release_metadata():
+    workflow = (
+        ROOT / ".github" / "workflows" / "python-publish.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "softprops/action-gh-release" not in workflow
+    assert 'gh release upload "$RELEASE_TAG" dist/*' in workflow
+    assert '--repo "$GITHUB_REPOSITORY" --clobber' in workflow
+
+
 def test_test_and_wheel_matrices_cover_documented_python_versions():
     test_workflow = (
         ROOT / ".github" / "workflows" / "pytest.yml"

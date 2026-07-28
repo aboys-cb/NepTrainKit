@@ -197,11 +197,10 @@ jobs:
           merge-multiple: true
 
       - name: Upload artifacts to GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag_name }}
-          files: dist/*
-          overwrite_files: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag_name }}
+        run: gh release upload "$RELEASE_TAG" dist/* --repo "$GITHUB_REPOSITORY" --clobber
 
 #   Upload the wheels and the source distribution
   upload_pypi:

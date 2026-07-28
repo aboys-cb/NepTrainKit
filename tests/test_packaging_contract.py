@@ -138,13 +138,19 @@ def test_macos_wheels_use_explicit_openmp_repair_and_portability_gate():
 
 
 def test_release_assets_are_uploaded_without_updating_release_metadata():
-    workflow = (
+    publish_workflow = (
         ROOT / ".github" / "workflows" / "python-publish.yml"
     ).read_text(encoding="utf-8")
+    nuitka_workflow = (
+        ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
+    ).read_text(encoding="utf-8")
 
-    assert "softprops/action-gh-release" not in workflow
-    assert 'gh release upload "$RELEASE_TAG" dist/*' in workflow
-    assert '--repo "$GITHUB_REPOSITORY" --clobber' in workflow
+    assert "softprops/action-gh-release" not in publish_workflow
+    assert 'gh release upload "$RELEASE_TAG" dist/*' in publish_workflow
+    assert '--repo "$GITHUB_REPOSITORY" --clobber' in publish_workflow
+    assert "softprops/action-gh-release" not in nuitka_workflow
+    assert 'gh release upload "${{ inputs.tag_name }}"' in nuitka_workflow
+    assert '--repo "$env:GITHUB_REPOSITORY" --clobber' in nuitka_workflow
 
 
 def test_test_and_wheel_matrices_cover_documented_python_versions():

@@ -13,6 +13,8 @@ jobs:
       matrix:
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -135,38 +137,8 @@ jobs:
             exit 1
           }
           Write-Host "File exists: $filePath"
-# 获取现有 Release 的 body
-      - name: Get Existing Release Body
-        id: get_release
-        uses: actions/github-script@v6
-        env:
-          TAG_NAME: ${{ inputs.tag_name }}
-        with:
-          script: |
-            try {
-              const { data: release } = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: process.env.TAG_NAME
-              });
-              core.setOutput('body', release.body || 'No release notes available.');
-              core.setOutput('id', release.id);
-              console.log(`Fetched release body for tag ${process.env.TAG_NAME}`);
-            } catch (error) {
-              core.setOutput('id', null);
-            
-              core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
-            }
-      # 使用现有 body 创建/更新 Release
       - name: Upload Release
-        if: steps.get_release.outputs.id
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ inputs.tag_name }}
-          name: ${{ inputs.tag_name }}
-          body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
-          files: ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip
-          draft: false
-          prerelease: false
+        shell: pwsh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ inputs.tag_name }}" "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip" --repo "$env:GITHUB_REPOSITORY" --clobber

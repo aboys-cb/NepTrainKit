@@ -1089,7 +1089,7 @@ msgstr ""
 #: ../../source/module/show-nep-reference.md:120
 #: b55dca08da194c6fa3e4bffa93d19907
 msgid "`Selection strategy`："
-msgstr ""
+msgstr "`Selection strategy`:"
 
 #: ../../source/module/show-nep-reference.md:121
 #: 744222a5210b4db5a482304bb005e86e
@@ -1108,12 +1108,12 @@ msgstr ""
 #: ../../source/module/show-nep-reference.md:123
 #: 0a29cc8a888d45f59bb97714d2cdc448
 msgid "`Sampling mode`：`Fixed count (FPS)` / `R^2 stop (FPS)`"
-msgstr ""
+msgstr "`Sampling mode`: `Fixed count (FPS)` / `R^2 stop (FPS)`"
 
 #: ../../source/module/show-nep-reference.md:124
 #: 8c79e278e81344fdbefb94dd0efcb3be
 msgid "`Max num`：`[0, 9999999]`"
-msgstr ""
+msgstr "`Max num`: `[0, 9999999]`"
 
 #: ../../source/module/show-nep-reference.md:125
 #: 6d966582f256496c8f2a3ee3e6471ab6
@@ -1123,12 +1123,12 @@ msgstr "`Min distance`: `[0, 10]`, five decimal places"
 #: ../../source/module/show-nep-reference.md:126
 #: 1fece019c79548d288f6beddd0ef61a3
 msgid "`R^2 threshold`：`[0,1]`"
-msgstr ""
+msgstr "`R^2 threshold`: `[0,1]`"
 
 #: ../../source/module/show-nep-reference.md:127
 #: ad209c56050f4b28b6142b6922bf0e34
 msgid "`Descriptor source`：`Reduced (PCA)` / `Raw descriptor`"
-msgstr ""
+msgstr "`Descriptor source`: `Reduced (PCA)` / `Raw descriptor`"
 
 #: ../../source/module/show-nep-reference.md:128
 #: 81b589dc2e984a4b9a084a42e82ae847
@@ -1552,7 +1552,7 @@ msgstr "`Scale`: `[0, 1000]`, default: `1.0`"
 #: ../../source/module/show-nep-reference.md:220
 #: ee15b60c1aa345be9735c81a5dd84eb2
 msgid "`Colormap`：`viridis/magma/plasma/inferno/jet`"
-msgstr ""
+msgstr "`Colormap`: `viridis/magma/plasma/inferno/jet`"
 
 #: ../../source/module/show-nep-reference.md:221
 #: 7b66da9133b442eb8d909a3792a55c99

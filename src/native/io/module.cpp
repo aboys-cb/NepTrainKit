@@ -356,6 +356,14 @@ static void parse_header_line(const char* b, const char* e,
                     AddValue v; v.type = AddType::DOUBLE;
                     try { v.d = std::stod(value); } catch (...) { v.type = AddType::STRING; v.s = value; }
                     add_out["energy"] = std::move(v);
+                } else if (
+                    key == "energy_original"
+                    || key == "Energy_original"
+                    || key == "ENERGY_ORIGINAL"
+                ) {
+                    AddValue v; v.type = AddType::DOUBLE;
+                    try { v.d = std::stod(value); } catch (...) { v.type = AddType::STRING; v.s = value; }
+                    add_out["energy_original"] = std::move(v);
                 } else if (key == "weight" || key == "Weight" || key == "WEIGHT") {
                     AddValue v; v.type = AddType::DOUBLE;
                     try { v.d = std::stod(value); } catch (...) { v.type = AddType::STRING; v.s = value; }

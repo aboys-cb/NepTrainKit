@@ -50,6 +50,7 @@ from NepTrainKit.core.types import (
     Brushes,
     SearchType,
     NepBackend,
+    get_configured_nep_backend,
     FieldValueShape,
     FieldDomain,
     DistributionGroupMode,
@@ -1854,7 +1855,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         """Resolve the backend used when this result requires calculations."""
         if self.FORCE_CPU_BACKEND:
             return NepBackend.CPU
-        return NepBackend(Config.get("nep", "backend", "auto"))
+        return get_configured_nep_backend()
 
     def load(self):
         """Load structures, descriptors, and dataset arrays in sequence.

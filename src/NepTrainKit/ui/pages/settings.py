@@ -28,6 +28,7 @@ from NepTrainKit.core.types import (
     ForcesMode,
     CanvasMode,
     NepBackend,
+    get_configured_nep_backend,
     DataPrecision,
     parse_forces_mode,
     parse_data_precision,
@@ -230,12 +231,8 @@ class SettingsWidget(ScrollArea):
         self.radius_coefficient_Card.setRange(0.0, 1.5)
 
         # NEP backend selection
-        nep_backend_default = Config.get("nep", "backend","auto")
-        try:
-            nep_backend_enum = NepBackend(nep_backend_default)
-        except ValueError:
-            nep_backend_enum = NepBackend.AUTO
-            nep_backend_default = nep_backend_enum.value
+        nep_backend_enum = get_configured_nep_backend()
+        nep_backend_default = nep_backend_enum.value
         self.nep_backend_card = MyComboBoxSettingCard(
             OptionsConfigItem("nep", "backend", nep_backend_enum, OptionsValidator(NepBackend),
                               EnumSerializer(NepBackend)),

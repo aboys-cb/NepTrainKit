@@ -410,6 +410,46 @@ class NepBackend(StrEnum):
     CUDA = "cuda"
 
 
+def parse_nep_backend(
+    value,
+    *,
+    fallback: NepBackend | None = None,
+) -> NepBackend:
+    """Parse a backend value, preserving legacy ``gpu`` fallback behavior."""
+
+    if isinstance(value, NepBackend):
+        return value
+
+    text = str(value or "").strip()
+    if not text:
+        return fallback or NepBackend.AUTO
+
+    normalized = text.lower()
+    if "." in normalized:
+        normalized = normalized.rsplit(".", 1)[-1]
+    if normalized == "gpu":
+        normalized = NepBackend.AUTO.value
+
+    try:
+        return NepBackend(normalized)
+    except ValueError:
+        if fallback is not None:
+            return fallback
+        raise
+
+
+def get_configured_nep_backend(
+    fallback: NepBackend = NepBackend.AUTO,
+) -> NepBackend:
+    """Return the configured backend and persist its canonical spelling."""
+
+    raw = Config.get("nep", "backend", fallback.value)
+    backend = parse_nep_backend(raw, fallback=fallback)
+    if str(raw).strip().lower() != backend.value:
+        Config.set("nep", "backend", backend.value)
+    return backend
+
+
 class DataPrecision(StrEnum):
     """Storage precision preference for imported numeric dataset values."""
 

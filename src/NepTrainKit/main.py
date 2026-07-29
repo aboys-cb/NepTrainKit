@@ -4,6 +4,8 @@
 
 import os
 import sys
+import tempfile
+
 if sys.platform == "darwin":
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
 

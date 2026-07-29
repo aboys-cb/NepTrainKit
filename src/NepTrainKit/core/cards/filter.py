@@ -18,7 +18,7 @@ from NepTrainKit.core.io import (
     structure_element_set_key,
 )
 from NepTrainKit.core.io.importers import import_structures
-from NepTrainKit.core.types import NepBackend
+from NepTrainKit.core.types import parse_nep_backend
 
 from .operation import DatasetOperation
 
@@ -106,7 +106,7 @@ class FPSFilterOperation(DatasetOperation):
                 f"Expected one of {sorted(cls.VALID_STRATEGIES)}."
             )
         try:
-            backend = NepBackend(str(params.backend).strip().lower())
+            backend = parse_nep_backend(params.backend)
         except ValueError as exc:
             raise ValueError(
                 "FPS Filter: backend must be auto, cpu, or cuda."

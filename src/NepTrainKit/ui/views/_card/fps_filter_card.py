@@ -20,6 +20,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.core.types import get_configured_nep_backend
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
@@ -52,7 +53,7 @@ class FPSFilterDataCard(FilterDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self._backend = Config.get("nep", "backend", "auto")
+        self._backend = get_configured_nep_backend().value
         self._chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000)
         self._last_group_report = {}
         self._input_dataset = []

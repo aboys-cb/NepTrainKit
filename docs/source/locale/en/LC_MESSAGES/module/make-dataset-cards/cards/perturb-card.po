@@ -9,255 +9,268 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:3
-#: 4d6beee92574476980b888e7859b55a6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:3
+#: 9866e1f06195456fad9063a210694b97
 msgid "原子扰动（Atomic Perturb）"
 msgstr "Atomic Perturb"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:5
-#: bb38bfa3c3a543fc942a412b5f350052
-msgid "`Group`: `Perturbation` | `Class`: `PerturbCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:5
+#: 60fd978edc3d4db8a80d0add71a5a331
+msgid "**分类：** 扰动"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:7
-#: cbc4d2ff5ef0479aad7727fdcee75684
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:7
+#: ee3fb7d8906141aea4d82be134b2dd30
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:9
-#: 13612b5b94f74c63ba2a40f7a51e3c66
-msgid "对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子的随机位移向量长度不超过 `max_distance`，晶格保持不变。"
-msgstr ""
-"Apply random displacements to atomic positions to sample the local "
-"neighborhood of an equilibrium configuration. The length of each atom's "
-"displacement vector is at most `max_distance`; the cell remains unchanged."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:11
-#: e118956562e642e8949c52586bf1c79d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:9
+#: 0435b49f5287478a9a9efd9c0b6f0d1a
 msgid ""
-"\\Delta\\mathbf{r}_i=r_i\\hat{\\mathbf{u}}_i,\\quad 0\\le r_i\\le d_i,\\quad"
-" \\|\\hat{\\mathbf{u}}_i\\|=1,\\quad "
-"\\mathbf{r}_i'=\\mathbf{r}_i+\\Delta\\mathbf{r}_i"
+"对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子的随机位"
+"移向量长度不超过 `最大距离`（`max_distance`），晶格保持不变。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:13
-#: 6c6415660cf347c98b88d1b9f17f8fe6
-msgid "开启 `identify_organic` 后有机分子团簇做刚性整体移动，避免分子内键被拉伸。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:11
+#: cd1c4dd15b7141e6b845275bbcafa28e
+msgid "原理与公式"
 msgstr ""
-"When `identify_organic` is enabled, detected organic molecules move as rigid"
-" clusters so their internal bonds are not stretched."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:15
-#: 419845a35eae4367ac00996c2df08522
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:13
+#: b64da98f44bc432db1484e7daa39e1a5
+msgid ""
+"\\Delta\\mathbf{r}_i=r_i\\hat{\\mathbf{u}}_i,\\quad 0\\le r_i\\le d_i,\\quad "
+"\\|\\hat{\\mathbf{u}}_i\\|=1,\\quad \\mathbf{r}_i'=\\mathbf{r}_i+"
+"\\Delta\\mathbf{r}_i"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:15
+#: de8b586c1b0b45a88c4bb829b6d55b7a
+msgid ""
+"$d_i$ 是最大位移，单位 Å；$\\hat{\\mathbf u}_i$ 是随机单位方向，$r_i$ 由所选 "
+"Sobol 或伪随机引擎产生。该约束限制的是位移向量模长，不是每个 x/y/z 分量各自的"
+"上限。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:18
+#: 2196ad6d85b74602910be8c791279ff2
+msgid ""
+"开启 `识别有机分子`（`identify_organic`）后有机分子团簇做刚性整体移动，避免分"
+"子内键被拉伸。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:20
+#: 271cc0eab9474eda8cd6de368ea89606
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:17
-#: 4a89340b0ea342539a52a5705dfa2bf4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:22
+#: f760e16c3d2d400db0f991fd7624e1b3
 msgid "场景：静力学测试集上力 MAE 只有 50 meV/A，但 MD 轨迹上跳到 200 meV/A"
 msgstr ""
-"Scenario: force MAE is 50 meV/Å on static tests but rises to 200 meV/Å on an"
-" MD trajectory"
+"Scenario: force MAE is 50 meV/Å on static tests but rises to 200 meV/Å on an "
+"MD trajectory"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:19
-#: 01ef1af08e104a8b97164f02f8f45ff3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:24
+#: 9898f82bd874450fa73453da6e2d568e
 msgid ""
-"你在 Si 上训练了一个 NEP 模型，用 DFT 静态计算的数据做验证，力的 MAE 只有 50 meV/A。但用这个模型跑 300K NVT MD "
-"时，力的误差跳到了 200 meV/A——因为训练集里所有原子都在平衡位置，模型没见过原子偏离平衡态的构型。"
+"你在 Si 上训练了一个 NEP 模型，用 DFT 静态计算的数据做验证，力的 MAE 只有 50 "
+"meV/A。但用这个模型跑 300K NVT MD 时，力的误差跳到了 200 meV/A——因为训练集里"
+"所有原子都在平衡位置，模型没见过原子偏离平衡态的构型。"
 msgstr ""
-"You trained an NEP model for Si and obtained a force MAE of only 50 meV/Å on"
-" static DFT validation structures. During a 300 K NVT trajectory, however, "
+"You trained an NEP model for Si and obtained a force MAE of only 50 meV/Å on "
+"static DFT validation structures. During a 300 K NVT trajectory, however, "
 "the force error rises to 200 meV/Å because every training atom lies near an "
 "equilibrium position and the model has not seen thermally displaced "
 "configurations."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:21
-#: b00809a2dffe40839fef77df6968d959
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:26
+#: 006d019a96514fa8875af01dd3ce1e66
 msgid ""
-"**诊断思路：** 静态弛豫结构代表势能面极小点。MD "
-"轨迹在极小点周围的势能面上采样，模型需要对平衡位置附近的位移方向有力学响应。如果训练集全是极小点，模型对偏离平衡的力梯度完全是外推的。解决方法是对每个结构的原子做随机小位移，让模型学习近平衡势能面的曲率。"
+"**诊断思路：** 静态弛豫结构代表势能面极小点。MD 轨迹在极小点周围的势能面上采"
+"样，模型需要对平衡位置附近的位移方向有力学响应。如果训练集全是极小点，模型对"
+"偏离平衡的力梯度完全是外推的。解决方法是对每个结构的原子做随机小位移，让模型"
+"学习近平衡势能面的曲率。"
 msgstr ""
 "**Diagnosis:** Relaxed structures sit near minima of the potential-energy "
 "surface, whereas an MD trajectory samples the surrounding neighborhood. The "
 "model needs force responses to displacements away from equilibrium. If the "
-"training set contains only minima, those gradients are extrapolations. Small"
-" random displacements supply local curvature information around each "
-"minimum."
+"training set contains only minima, those gradients are extrapolations. Small "
+"random displacements supply local curvature information around each minimum."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:23
-#: e04d65a0011a48f895a223e3f9f52b2a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:28
+#: 51f2e822692146d583e3dc6831987c6e
 msgid "**输入：** 一个弛豫好的 Si 超胞（64 原子）"
 msgstr "**Input:** A relaxed 64-atom Si supercell."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:25
-#: dee7cec1782c4d659d4fc3f137caf983
-msgid "**目标：** 生成 50 个扰动版本，每个原子的位移幅度 ≤ 0.15 Å（约室温 Si 振动幅度的 2~3 倍）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:30
+#: 09ccbad2c92f4b3d96f246a53b7bc8e0
+msgid ""
+"**目标：** 生成 50 个扰动版本，每个原子的位移幅度 ≤ 0.15 Å（约室温 Si 振动幅"
+"度的 2~3 倍）"
 msgstr ""
 "**Goal:** Generate 50 perturbed variants with each atomic displacement no "
-"larger than 0.15 Å, roughly two to three times a typical room-temperature Si"
-" vibration amplitude."
+"larger than 0.15 Å, roughly two to three times a typical room-temperature Si "
+"vibration amplitude."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:27
-#: cad80e78351e4b42bd1d3726b9031d34
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:32
+#: 1b22a37971a2428197c537ae7c431f6a
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:28
-#: 2d61aa4b5d8542cf92c7c65ea24f012c
-msgid "`max_distance` = `0.15` （单位 Å）"
-msgstr "`max_distance` = `0.15` Å"
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:29
-#: ef92687fb2c7408392c79760ec392854
-msgid "`max_num` = `50`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:33
+#: cc1279603ae44eb9a474d8a447efcaae
+msgid "`最大距离`（`max_distance`） = `0.15` （单位 Å）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:30
-#: 7fb32ab47a9446a292f88ec026ee2229
-msgid "`engine_type` = `0` （Sobol，少量样本覆盖更均匀）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:34
+#: bdef47d685134f1cb02c4a1d5187ac4d
+msgid "`最大输出数量`（`max_num`） = `50`"
 msgstr ""
-"`engine_type` = `0` (Sobol, for more even directional coverage with a small "
-"sample)"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:32
-#: dda0886a192f41ff880f0a73bfcf4048
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:35
+#: be293fd3b7b745e59355a1ef72e1703e
+msgid "`生成方式`（`engine_type`） = `0` （Sobol，少量样本覆盖更均匀）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:37
+#: f1158b5dc5c64ea0afba9edf8a9d289e
 msgid "**输出：** 50 个结构，每个原子的坐标在原始位置附近随机偏移 0~0.15 Å"
 msgstr ""
 "**Output:** 50 structures in which every atom is displaced by 0–0.15 Å from "
 "its original position."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:34
-#: f16e3ea5ba4e462388456233b1ed0e49
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:39
+#: 4f9613a7c55341a79c2fecf50fcf875e
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:35
-#: 46d11ed8d45145a591c282a23609c9ac
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:40
+#: a4a144a17f224545a454d80f8df30088
 msgid "重训后用一段 MD 轨迹做推理，力的 MAE 应该显著下降，接近静力学测试集水平"
 msgstr ""
 "After DFT labeling and retraining, evaluate a held-out MD trajectory. Its "
 "force MAE should decrease substantially toward the static-test error."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:36
-#: 526d3c04c62f430c900912971bce9616
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:41
+#: 3bbfe2f3052c4b8d802bc6468781f6f2
 msgid ""
-"抽查最短键长：0.15 Å 位移下 Si-Si 键长变化应在 ±0.3 Å 以内（两个相邻原子可能向不同方向偏移）。如果出现 < 1.8 Å "
-"的短键，降低 `max_distance`"
+"抽查最短键长：0.15 Å 位移下 Si-Si 键长变化应在 ±0.3 Å 以内（两个相邻原子可能"
+"向不同方向偏移）。如果出现 < 1.8 Å 的短键，降低 `最大距离`（`max_distance`）"
 msgstr ""
-"Inspect the shortest bond lengths. With 0.15 Å per-atom displacements, a "
-"Si–Si bond can change by up to about ±0.3 Å when neighboring atoms move in "
-"opposite directions. If contacts shorter than 1.8 Å appear, reduce "
-"`max_distance`."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:37
-#: 04f43428940f46498125a818280ff178
-msgid "如果改善不够，增大 `max_num` 到 100、也增大 `max_distance` 到 0.25 Å"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:42
+#: 3fc7f4d9c7974876a1b3a8534b63dcb7
+msgid ""
+"如果改善不够，增大 `最大输出数量`（`max_num`）到 100、也增大 `最大距离`"
+"（`max_distance`）到 0.25 Å"
 msgstr ""
-"If the improvement is insufficient, try increasing `max_num` to 100 and "
-"`max_distance` to 0.25 Å."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:38
-#: 293ac7d0a76b4cf2995d77e72f1196d1
-msgid "如果体系含多种元素且质量差异大（如含 H + 重元素），考虑开启 `use_element_scaling` 给轻元素更大位移"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:43
+#: 9d1b28f2ecd44d349f729be4130916b0
+msgid ""
+"如果体系含多种元素且质量差异大（如含 H + 重元素），考虑开启 `启用缩放`"
+"（`use_element_scaling`），再在 `元素缩放` 中给轻元素更大位移"
 msgstr ""
-"For a multielement system with a large mass contrast, such as H plus heavy "
-"atoms, consider `use_element_scaling` so light elements can receive larger "
-"displacements."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:40
-#: 629ca796264b401a9409060e5464b3ab
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:45
+#: 4068c26236354c4caf74d995e14eeee0
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:42
-#: de9bfe4bc1a74c3ea48fbba299897546
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:47
+#: c466882cadd944ab82ab60a462938b97
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:43
-#: 7162da50a1e64f98876a198d204ffb72
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:48
+#: 7c58e590a79d45409000855b0b5577b9
 msgid "训练集主要由静态弛豫结构组成，缺少力方向信息"
 msgstr ""
 "The training set consists mainly of relaxed static structures and lacks off-"
 "equilibrium force directions."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:44
-#: 7bf80ac430934dfc93572ddef4ee9ac3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:49
+#: d9c7d0b2085041b586ffa64efb55d642
 msgid "模型在 MD 模拟或非平衡构型上力预测偏差大"
 msgstr ""
 "Force predictions are inaccurate in MD or other nonequilibrium "
 "configurations."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:45
-#: 4b33ee01a8f44135b49b37aaa1beddf5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:50
+#: 0b032671893a4d009a096f183bb6861b
 msgid "需要补近平衡势能面的曲率（力常数）信息"
 msgstr ""
 "You need local potential-energy curvature, or force-constant, information "
 "near equilibrium."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:47
-#: 63f142d18403483e9872cd1902338339
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:52
+#: c03b59b662994553a66965dd993281ef
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:48
-#: 9be873b02b13447e9400a05ef1706b3f
-msgid "训练集已有大量 MD 轨迹数据——MD 本身已覆盖热振动位移，再加随机扰动是冗余的"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:53
+#: 89a35f390c744468bc41f6d4bd70fdf4
+msgid ""
+"训练集已有大量 MD 轨迹数据——MD 本身已覆盖热振动位移，再加随机扰动是冗余的"
 msgstr ""
 "The training set already contains extensive MD trajectories; thermal "
 "displacements are already covered, so random perturbations would be "
 "redundant."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:49
-#: f4e03b6de2c24b1e9147f2d96e475d93
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:54
+#: a20808b6a0e845ae83d5fe9f4d59c1c0
 msgid "输入结构未弛豫——扰动一个本身就不在极小点的结构没有意义，先弛豫再扰动"
 msgstr ""
 "The input has not been relaxed. Relax it before using this card if the goal "
 "is to sample a neighborhood around a minimum."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:50
-#: a3bde5a08f284cb7b373f2f46a753579
-msgid "位移幅度设置的过大（> 0.5 Å），产生大量非物理构型——这种大位移应该用 MD 而不是随机扰动"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:55
+#: e045e1657cd048999f06b69bce9475e2
+msgid ""
+"位移幅度设置的过大（> 0.5 Å），产生大量非物理构型——这种大位移应该用 MD 而不是"
+"随机扰动"
 msgstr ""
 "The displacement is larger than about 0.5 Å and produces many unphysical "
-"structures. Use MD, rather than independent random displacements, to explore"
-" such large excursions."
+"structures. Use MD, rather than independent random displacements, to explore "
+"such large excursions."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:52
-#: 3dc8db2ebaf64fed931f6266023c6ef5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:57
+#: 65914336174f457398f59aac2f3d37ee
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:54
-#: d18bd5007b7c43a0a99f257ad0b52f14
-msgid "Engine Type（engine_type）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:59
+#: da49f1655a6f4af18a709a9ea6ec29cf
+msgid "生成方式（engine_type）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:56
-#: 8a529035ecef4f599a4fb8e9dc81dff6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:61
+#: 4b5170c850454264a3eb721233a9f060
 msgid "`int`，默认 1。`0` = Sobol 准随机序列，`1` = Uniform 均匀随机。"
 msgstr ""
 "`int`, default `1`. `0` selects a Sobol low-discrepancy sequence; `1` "
 "selects uniform random sampling."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:58
-#: 78a642aa56df4d1fb1db97003decd3bc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:63
+#: 72658a473e1e4ce59c85ce2d43d970ae
 msgid ""
-"Uniform 是面向通用输入的默认选择，生成快且没有 Sobol 维数上限。Sobol 在少量样本（< "
-"100）时位移方向分布更均匀、各向同性更好，但 `3 × 原子数` 不能超过 SciPy 的 21,201 "
-"维上限，因此最多支持 7,067 个原子；更大的结构必须使用 Uniform。只生成 20-50 "
-"个结构且希望改善方向覆盖时可选 Sobol，批量生成或大体系优先使用 Uniform。"
+"Uniform 是面向通用输入的默认选择，生成快且没有 Sobol 维数上限。Sobol 在少量样"
+"本（< 100）时位移方向分布更均匀、各向同性更好，但 `3 × 原子数` 不能超过 "
+"SciPy 的 21,201 维上限，因此最多支持 7,067 个原子；更大的结构必须使用 "
+"Uniform。只生成 20-50 个结构且希望改善方向覆盖时可选 Sobol，批量生成或大体系"
+"优先使用 Uniform。"
 msgstr ""
 "Uniform is the general-purpose default: it is fast and has no Sobol "
 "dimensionality limit. Sobol gives more even and isotropic displacement "
@@ -266,176 +279,174 @@ msgstr ""
 "structures must use Uniform. Choose Sobol for 20–50 structures when better "
 "directional coverage matters; prefer Uniform for batches or large systems."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:60
-#: fe8970cebae146cd994b9425b986fde2
-msgid "Max Distance（max_distance）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:65
+#: 05237380c6af421aa33144307cba9637
+msgid "最大距离（max_distance）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:62
-#: 1c47b125782a4712939a5e4e4fd88368
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:67
+#: 0b287eb117e64d12a08409d288acf8a3
 msgid "`float`，默认 0.3。每个原子的最大位移，单位 Å。"
 msgstr "`float`, default: `0.3`. Maximum displacement of each atom, in Å."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:64
-#: 143f984c0c2047a897a2f538dbbfd6c4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:69
+#: 6bf0b74383c5461ab99ad5aa15e987c5
 msgid ""
-"注意这不是应变百分比，也不是 Cartesian 分量分别的上限——就是一个原子最多被挪多远。室温下原子振动幅度约 0.05~0.1 Å，设 "
-"0.15~0.3 Å 通常够用。体系含 H 等轻元素时，H 振幅天然更大，建议同时开启 `use_element_scaling`。设到 0.3~0.5"
-" Å 以上时，跑完务必抽查最近邻键长——这个量级已经可能拉断键了。"
-msgstr ""
-"This is neither a strain percentage nor a separate bound on each Cartesian "
-"component; it is the maximum distance an atom may move. Room-temperature "
-"vibrational amplitudes are often around 0.05–0.1 Å, so 0.15–0.3 Å is usually"
-" sufficient. For light elements such as H, enable `use_element_scaling`. At "
-"0.3–0.5 Å or above, always inspect nearest-neighbor distances because bonds "
-"may be severely distorted or broken."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:66
-#: e1d6d5c7224f4ccbb3b917e1894d1b98
-msgid "Max Num（max_num）"
+"注意这不是应变百分比，也不是 Cartesian 分量分别的上限——就是一个原子最多被挪多"
+"远。室温下原子振动幅度约 0.05~0.1 Å，设 0.15~0.3 Å 通常够用。体系含 H 等轻元"
+"素时，H 振幅天然更大，建议同时开启 `启用缩放`（`use_element_scaling`）。设到 "
+"0.3~0.5 Å 以上时，跑完务必抽查最近邻键长——这个量级已经可能拉断键了。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:68
-#: ba4fd0901921423f874bb3c86de08aec
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:71
+#: 7757d55b137d466dbb893f18136c609c
+msgid "最大输出数量（max_num）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:73
+#: 465a537cb4d84d37b0f6913342d503ae
 msgid "`int`，默认 50。每个输入结构生成多少个扰动版本。"
 msgstr ""
 "`int`, default: `50`. Number of perturbed variants generated for each input "
 "structure."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:70
-#: b38b620667914efc9b119163f021da7e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:75
+#: a54aec32116a4ff28387bfefb446e287
 msgid ""
-"不是原子数上限——是输出结构的数量。20~50 适合轻量补样；50~100 常规覆盖；100+ 建议后面接一张 `FPS Filter` "
-"去重，否则很多扰动样本在描述符空间里高度重复。"
+"不是原子数上限——是输出结构的数量。20~50 适合轻量补样；50~100 常规覆盖；100+ "
+"建议后面接一张 `FPS Filter` 去重，否则很多扰动样本在描述符空间里高度重复。"
 msgstr ""
 "This is the number of output structures, not an atom-count limit. Use 20–50 "
 "for lightweight augmentation and 50–100 for routine coverage. For more than "
 "100, follow with `FPS Filter`, because many perturbations can be nearly "
 "redundant in descriptor space."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:72
-#: 18137bb4edff4d9ca839a3c988810db6
-msgid "Identify Organic（identify_organic）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:77
+#: d80126e4f0e445e8b2730b6e0a15c9a5
+msgid "识别有机分子（identify_organic）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:74
-#: 22ad6913a6214edda99fe1327a9dfff7
-msgid "`bool`，默认 false。打开后把有机分子识别为刚性团簇，整个分子一起平移，分子内部键长完全保留。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:79
+#: c79c53a6b37b46ceb760d8053c04dd1a
+msgid ""
+"`bool`，默认 false。打开后把有机分子识别为刚性团簇，整个分子一起平移，分子内"
+"部键长完全保留。"
 msgstr ""
 "`bool`, default: `false`. When enabled, detected organic molecules are "
 "treated as rigid clusters and translated as units, preserving all "
 "intramolecular bond lengths."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:76
-#: 7835db2e29f5496ea96846525b795425
-msgid "你的体系是纯无机的（金属、氧化物、半导体）→ 关着就行，开了反而多算一堆团簇检测。体系含有机分子 → 必须开，否则每个原子独立随机位移会把分子撕碎。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:81
+#: ec909bd7031e4475ae28aac98442bb11
+msgid ""
+"你的体系是纯无机的（金属、氧化物、半导体）→ 关着就行，开了反而多算一堆团簇检"
+"测。体系含有机分子 → 必须开，否则每个原子独立随机位移会把分子撕碎。"
 msgstr ""
 "For purely inorganic metals, oxides, or semiconductors, leave this disabled "
 "to avoid unnecessary cluster detection. Enable it for systems containing "
-"organic molecules; otherwise independent atomic displacements can distort or"
-" tear the molecules apart."
+"organic molecules; otherwise independent atomic displacements can distort or "
+"tear the molecules apart."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:78
-#: edf70278638541ce85e1abebe4512ed8
-msgid "Use Element Scaling（use_element_scaling）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:83
+#: 6b6525588a0642fea2e00a470271be04
+msgid "启用缩放（use_element_scaling）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:80
-#: 2d483164448445f0baafaae1b957918f
-msgid "`bool`，默认 false。打开后不同元素可以用不同的位移幅度，覆盖全局的 `max_distance`。"
-msgstr ""
-"`bool`, default: `false`. Enables element-specific displacement limits that "
-"override the global `max_distance`."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:82
-#: 7c0a4e62b2104643a82419c53eb81a3b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:85
+#: 194f3abe6162471a96df2c241696b5b8
 msgid ""
-"多元素体系（比如含 H + 重元素）建议开。H 在室温下的振动幅度远大于重元素，用同一个 `max_distance` 会导致要么 H "
-"位移太小、要么重元素位移太大。"
-msgstr ""
-"Enable this for systems with strongly different atomic masses, such as H "
-"plus heavy elements. A single `max_distance` may otherwise under-sample H or"
-" over-displace the heavy atoms."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:84
-#: 8c7c5c951cfc4c87a4da5522405e20a8
-msgid "Element Scalings（element_scalings）"
+"`bool`，默认 false。对应界面中的 `Enable Scaling`。打开后显示下方的 `Element "
+"Scaling` 配置，不同元素可以使用不同的最大位移；关闭时全部元素使用全局 `最大距"
+"离`（`max_distance`）。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:86
-#: 0c5a21a48a2545f5a03ded41c9e43694
-msgid "`dict[str, float] | None`，默认 None。元素 → 最大位移的映射。"
-msgstr ""
-"`dict[str, float] | None`, default: `None`. Mapping from element symbols to "
-"maximum displacements."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:88
-#: c604834030034d63bdf10b0869209491
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:87
+#: ff045e076aa24c8ba9bb772f3d2c07bb
 msgid ""
-"格式如 `{\"H\": 0.5, \"O\": 0.15, \"Si\": 0.1}`。只对列出的元素生效，没列出的元素仍然用上面的 "
-"`max_distance`。"
-msgstr ""
-"For example, `{\"H\": 0.5, \"O\": 0.15, \"Si\": 0.1}`. Listed elements use "
-"their mapped limits; all others continue to use the global `max_distance`."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:90
-#: 7ba77e4bb4584ba38f8afd5b388843a6
-msgid "生效条件：`use_element_scaling` 必须为 true。"
-msgstr "Used only when `use_element_scaling` is `true`."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:92
-#: a012c8af81144e839ed806175bfdfafa
-msgid "Use Seed（use_seed）"
+"多元素体系（比如含 H + 重元素）建议开。H 在室温下的振动幅度远大于重元素，用同"
+"一个 `最大距离`（`max_distance`）会导致要么 H 位移太小、要么重元素位移太大。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:94
-#: bef7abd825fc420c816022f152c4eb20
-msgid "`bool`，默认 false。打开后每次跑同一输入 + 同一参数 + 同一 seed → 完全相同的扰动结果。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:89
+#: fd71d56991db4d4fa4edb4815f8f30ca
+msgid "元素缩放（element_scalings）"
 msgstr ""
-"`bool`, default: `false`. When enabled, the same input, parameters, and seed"
-" reproduce exactly the same perturbations."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:96
-#: 25cc2405c62245ea8358da4c3768a5f4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:91
+#: 4a71b02246734e67849d1b936cf9a790
 msgid ""
-"对比实验或者需要复现时打开，纯探索阶段可以关着。seed "
-"会与单帧结构内容共同派生，因此几何不同的帧不会机械复用同一组位移；重新排列数据集不会改变某一帧自己的结果。完全相同的重复帧仍会得到相同扰动，若希望把重复帧扩成不同样本，应先去重或分批使用不同"
-" seed。"
+"`dict[str, float] | None`，默认 None。对应界面中的 `Element Scaling`，表示“元"
+"素 → 最大位移”的映射，数值单位为 Å；它不是无量纲缩放系数。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:93
+#: 1e3fcb791fde421e91f55af98a09c114
+msgid ""
+"格式如 `{\"H\": 0.5, \"O\": 0.15, \"Si\": 0.1}`。只对列出的元素生效，没列出的"
+"元素仍然用上面的 `最大距离`（`max_distance`）。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:95
+#: df0dc54f03274a198c645c43148fa174
+msgid ""
+"生效条件：`启用缩放`（`use_element_scaling`）必须为 true。未列出的元素继续使"
+"用全局 `最大距离`。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:97
+#: 301bde6cff584171a6967f2da99471d0
+msgid "使用随机种子（use_seed）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:99
+#: 8054a417a107455eaae5080eb4b6eb0d
+msgid ""
+"`bool`，默认 false。打开后每次跑同一输入 + 同一参数 + 同一 seed → 完全相同的"
+"扰动结果。"
+msgstr ""
+"`bool`, default: `false`. When enabled, the same input, parameters, and seed "
+"reproduce exactly the same perturbations."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:101
+#: f9325996ff594b2cb8cc9ee3e5dbd0c8
+msgid ""
+"对比实验或者需要复现时打开，纯探索阶段可以关着。seed 会与单帧结构内容共同派"
+"生，因此几何不同的帧不会机械复用同一组位移；重新排列数据集不会改变某一帧自己"
+"的结果。完全相同的重复帧仍会得到相同扰动，若希望把重复帧扩成不同样本，应先去"
+"重或分批使用不同 seed。"
 msgstr ""
 "Enable it for controlled comparisons or reproducibility; leave it off for "
 "unconstrained exploration. The seed is combined with each structure's "
 "content, so geometrically different frames do not reuse the same "
 "displacements, and reordering the dataset does not change a frame's result. "
-"Exactly duplicated frames still receive identical perturbations; deduplicate"
-" them or process batches with different seeds when distinct augmentation is "
+"Exactly duplicated frames still receive identical perturbations; deduplicate "
+"them or process batches with different seeds when distinct augmentation is "
 "wanted."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:98
-#: 43b545ff46f446d7af7eb4af5efe4577
-msgid "Seed（seed）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:103
+#: 42fc8527046f4d8d9a929b210206ead7
+msgid "随机种子（seed）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:100
-#: e74dbf6557964ab7b3bf48650aa60f57
-msgid "`int`，默认 0。随机种子值。仅在 `use_seed` 打开时生效。两个不同的 seed 会产生两组不同的位移分布。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:105
+#: cf93d94321954a4b82e4132b6cccfaa6
+msgid ""
+"`int`，默认 0。随机种子值。仅在 `使用随机种子`（`use_seed`）打开时生效。两个"
+"不同的 seed 会产生两组不同的位移分布。"
 msgstr ""
-"`int`, default: `0`. Random seed, used only when `use_seed` is enabled. "
-"Different seeds produce different displacement sets."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:102
-#: 8cfe54ef615940478006620291c55c7a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:107
+#: 624e4e5f80d8411fb05bb34ba3aa95c6
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:104
-#: 1521b329d47741aba4414356cebfff6a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:109
+#: defa70cc1c654341aaad4140902238d2
 msgid "室温微扰（0.1 Å，Sobol，30 样本）"
 msgstr "Room-temperature perturbations (0.1 Å, Sobol, 30 samples)"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:105
-#: fce0b593221d429b80409f1c3f55a7f0
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:110
+#: cbef538ab2e14d598aaeab26eca24aa8
 msgid ""
 "{\n"
 "  \"class\": \"PerturbCard\",\n"
@@ -453,14 +464,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:122
-#: 3ad9e1f4402c4b6eafade647c9ed7c5d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:127
+#: b5c13dca414648e38bfa8eecfd0ffcc6
 msgid "常规补力场（0.2 Å，Uniform，50 样本）"
 msgstr "Routine force-field augmentation (0.2 Å, Uniform, 50 samples)"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:123
-#: 22dc3c3034d64e2388c6025ba8638ab7
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:128
+#: 98c24af6b1ab4a4d98ebaca81770393d
 msgid ""
 "{\n"
 "  \"class\": \"PerturbCard\",\n"
@@ -478,16 +488,15 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:140
-#: 619bc0f400a5403c9cfa8cff8a121b66
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:145
+#: 3a9bc93abfd3433aaf5825800e7e7348
 msgid "多元素差异化扰动（H 0.5 Å / 重元素 0.15 Å，100 样本）"
 msgstr ""
 "Element-specific perturbations (H: 0.5 Å; heavy elements: 0.15 Å; 100 "
 "samples)"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:141
-#: 2cc749c6d588460e914ca441635f3101
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:146
+#: 70367b7d557b44a79078814d3f335a7d
 msgid ""
 "{\n"
 "  \"class\": \"PerturbCard\",\n"
@@ -505,110 +514,239 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:158
-#: e72d1bbb8671406f8bfd465d97148bf9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:163
+#: 34be0d3c02b24214bd45dbe69e664dfc
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:160
-#: 45875533525041dcbbb50b2210c40cf3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:165
+#: 425bb0cae2954310a57923bb22102caa
 msgid "`Lattice Strain` → `Atomic Perturb`：先做全局形变，再补局部位移"
 msgstr ""
 "`Lattice Strain` → `Atomic Perturb`: apply a global deformation, then add "
 "local displacements."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:161
-#: 1c00d615cd51404881f0e6352d072807
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:166
+#: 74c3a8fa908240a08bb19dfc33474f99
 msgid "`Shear Matrix Strain` → `Atomic Perturb`：剪切变形后加坐标噪声"
 msgstr ""
 "`Shear Matrix Strain` -> `Atomic Perturb`: add coordinate noise after a "
 "shear deformation"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:162
-#: 05c5e909c9ef45029bd638a5e335e3f6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:167
+#: b7aa067dba4142f79ef8ffaa3b2ba9e3
 msgid "`Atomic Perturb` → `FPS Filter`：大批量扰动后去重"
 msgstr ""
 "`Atomic Perturb` → `FPS Filter`: remove redundancy after large-scale "
 "perturbation."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:164
-#: c34c679510e44344a852af5d1524811c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:169
+#: ac3bdc4fcf4a4996a71c183360f29fd4
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:166
-#: 6aa94cf191eb43608ad9434cb69495d4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:171
+#: 3d81bf5e271d487abc9bb9f95ec7eb7b
 msgid ""
-"**扰动后出现异常短键（< 1.0 Å）。** 两个相邻原子随机位移方向恰好相反，距离骤减。降低 `max_distance` 或增大 "
-"`max_num` 后通过 `FPS Filter` 筛掉短键结构。这是随机扰动的固有局限——它不做碰撞检测。"
+"**扰动后出现异常短键（< 1.0 Å）。** 两个相邻原子随机位移方向恰好相反，距离骤"
+"减。降低 `最大距离`（`max_distance`）或增大 `最大输出数量`（`max_num`）后通"
+"过 `FPS Filter` 筛掉短键结构。这是随机扰动的固有局限——它不做碰撞检测。"
 msgstr ""
-"**Perturbation creates an abnormally short contact below 1.0 Å.** Two "
-"neighboring atoms happened to move toward each other. Reduce `max_distance`,"
-" or generate a larger pool and remove invalid structures before "
-"representative selection. This card does not perform collision detection, so"
-" geometry validation remains necessary."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:168
-#: 8014e3f53d3649ed8ef386ac949de94e
-msgid "**分子晶体中分子碎掉了。** `identify_organic` 没开。开启后整个分子团簇做刚性平移，分子内键长完全保留。"
-msgstr ""
-"**Molecules in a molecular crystal are distorted or broken.** Enable "
-"`identify_organic` so each molecular cluster is translated rigidly and its "
-"internal bond lengths are preserved."
-
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:170
-#: 7189a0c603e144089c1de9437463c5de
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:173
+#: 46b2159397894cdb98676d9a1011f4df
 msgid ""
-"**扰动后力 MAE 没改善。** 可能 `max_distance` 太小，位移落在模型已经学好的线性区内。增大到 0.3~0.5 Å "
-"试试。也可能体系本身的势能面非谐性很强，随机扰动方向不一定是最需要的——此时用 `Vib Mode Perturb` 替代，沿真实振动模方向做位移。"
+"**分子晶体中分子碎掉了。** `识别有机分子`（`identify_organic`）没开。开启后整"
+"个分子团簇做刚性平移，分子内键长完全保留。"
 msgstr ""
-"**Force MAE does not improve after adding perturbed data.** `max_distance` "
-"may be too small, leaving samples inside an already learned linear region; "
-"test 0.3–0.5 Å while validating geometry. If the potential-energy surface is"
-" strongly anharmonic, arbitrary directions may be inefficient. Use `Vib Mode"
-" Perturb` to displace along physically meaningful vibrational modes instead."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:172
-#: 36f73b62505a40d6999a07d225de7b3d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:175
+#: 4e058f98d8e24ca49cc2ce82da463f03
 msgid ""
-"**Sobol 引擎 output 和预期不一致。** Sobol 序列的 scramble 受 seed 控制。如果 "
-"`use_seed=false`，不同运行的 Sobol 序列也不同。需要可复现时必须 `use_seed=true`。"
+"**扰动后力 MAE 没改善。** 可能 `最大距离`（`max_distance`）太小，位移落在模型"
+"已经学好的线性区内。增大到 0.3~0.5 Å 试试。也可能体系本身的势能面非谐性很强，"
+"随机扰动方向不一定是最需要的——此时用 `Vib Mode Perturb` 替代，沿真实振动模方"
+"向做位移。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:177
+#: a73fe629f2ac4af387fc337a452d2f29
+msgid ""
+"**Sobol 引擎 output 和预期不一致。** Sobol 序列的 scramble 受 seed 控制。如"
+"果 `use_seed=false`，不同运行的 Sobol 序列也不同。需要可复现时必须 "
+"`use_seed=true`。"
 msgstr ""
 "**Sobol output differs between runs.** The Sobol scramble depends on the "
 "seed. When `use_seed=false`, repeated runs may therefore use different "
 "sequences. Set `use_seed=true` for reproducible output."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:174
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:179
+#: 23d7a7e0d93747afb85ad0404d00c7ab
 msgid ""
-"**Sobol 提示原子数超过 7,067。** 每个原子需要三个 Sobol 维度，已超过 SciPy "
-"支持的最大维数。改用默认的 Uniform；这不会改变每个原子的位移上限，只会改变随机点的抽样顺序。"
+"**Sobol 提示原子数超过 7,067。** 每个原子需要三个 Sobol 维度，已超过 SciPy 支"
+"持的最大维数。改用默认的 Uniform；这不会改变每个原子的位移上限，只会改变随机"
+"点的抽样顺序。"
 msgstr ""
 "**Sobol reports more than 7,067 atoms.** Each atom consumes three Sobol "
 "dimensions, so the input exceeds SciPy's maximum dimensionality. Use the "
 "default Uniform engine. This keeps each atom's displacement limit unchanged "
 "and only changes how random points are sampled."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:174
-#: 8ea418ab1db44126b6b5f0207ccb3a61
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:181
+#: ae939841aaf84e35b743c0adc51be205
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:176
-#: c66472588c4743f2bc94382ebff6b552
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:183
+#: f5bb2b6792cb415e8bc2185cbc604551
 msgid "`Pert(d={max_distance},{U|S})` —— `U` 表示 Uniform，`S` 表示 Sobol。"
-msgstr "`Pert(d={max_distance},{U|S})`, where `U` means Uniform and `S` means Sobol."
+msgstr ""
+"`Pert(d={max_distance},{U|S})`, where `U` means Uniform and `S` means Sobol."
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:178
-#: f419a29516104d08be8f90d2961a55ba
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:185
+#: 8fefd680344346d6b8ca3ca02663955b
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/perturb-card.md:180
-#: 7b27ce7fbaea48b6bb17911361546426
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:187
+#: 77ee94bd7180420ba7e61bc28a3341f6
 msgid ""
-"勾选 `use_seed` + 固定 `seed` → "
-"相同输入可复现；几何不同的输入帧使用不同但稳定的派生随机流。"
+"勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复"
+"现；几何不同的输入帧使用不同但稳定的派生随机流。"
 msgstr ""
-"Enable `use_seed` and fix `seed` to reproduce the same input; geometrically "
-"different frames use distinct but stable derived random streams."
+
+#~ msgid ""
+#~ "对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子的随机"
+#~ "位移向量长度不超过 `max_distance`，晶格保持不变。"
+#~ msgstr ""
+#~ "Apply random displacements to atomic positions to sample the local "
+#~ "neighborhood of an equilibrium configuration. The length of each atom's "
+#~ "displacement vector is at most `max_distance`; the cell remains unchanged."
+
+#~ msgid ""
+#~ "开启 `identify_organic` 后有机分子团簇做刚性整体移动，避免分子内键被拉伸。"
+#~ msgstr ""
+#~ "When `identify_organic` is enabled, detected organic molecules move as "
+#~ "rigid clusters so their internal bonds are not stretched."
+
+#~ msgid "`max_distance` = `0.15` （单位 Å）"
+#~ msgstr "`max_distance` = `0.15` Å"
+
+#~ msgid "`engine_type` = `0` （Sobol，少量样本覆盖更均匀）"
+#~ msgstr ""
+#~ "`engine_type` = `0` (Sobol, for more even directional coverage with a "
+#~ "small sample)"
+
+#~ msgid ""
+#~ "抽查最短键长：0.15 Å 位移下 Si-Si 键长变化应在 ±0.3 Å 以内（两个相邻原子可"
+#~ "能向不同方向偏移）。如果出现 < 1.8 Å 的短键，降低 `max_distance`"
+#~ msgstr ""
+#~ "Inspect the shortest bond lengths. With 0.15 Å per-atom displacements, a "
+#~ "Si–Si bond can change by up to about ±0.3 Å when neighboring atoms move "
+#~ "in opposite directions. If contacts shorter than 1.8 Å appear, reduce "
+#~ "`max_distance`."
+
+#~ msgid "如果改善不够，增大 `max_num` 到 100、也增大 `max_distance` 到 0.25 Å"
+#~ msgstr ""
+#~ "If the improvement is insufficient, try increasing `max_num` to 100 and "
+#~ "`max_distance` to 0.25 Å."
+
+#~ msgid ""
+#~ "如果体系含多种元素且质量差异大（如含 H + 重元素），考虑开启 "
+#~ "`use_element_scaling` 给轻元素更大位移"
+#~ msgstr ""
+#~ "For a multielement system with a large mass contrast, such as H plus "
+#~ "heavy atoms, consider `use_element_scaling` so light elements can receive "
+#~ "larger displacements."
+
+#~ msgid ""
+#~ "注意这不是应变百分比，也不是 Cartesian 分量分别的上限——就是一个原子最多被"
+#~ "挪多远。室温下原子振动幅度约 0.05~0.1 Å，设 0.15~0.3 Å 通常够用。体系含 H "
+#~ "等轻元素时，H 振幅天然更大，建议同时开启 `use_element_scaling`。设到 "
+#~ "0.3~0.5 Å 以上时，跑完务必抽查最近邻键长——这个量级已经可能拉断键了。"
+#~ msgstr ""
+#~ "This is neither a strain percentage nor a separate bound on each "
+#~ "Cartesian component; it is the maximum distance an atom may move. Room-"
+#~ "temperature vibrational amplitudes are often around 0.05–0.1 Å, so 0.15–"
+#~ "0.3 Å is usually sufficient. For light elements such as H, enable "
+#~ "`use_element_scaling`. At 0.3–0.5 Å or above, always inspect nearest-"
+#~ "neighbor distances because bonds may be severely distorted or broken."
+
+#~ msgid ""
+#~ "`bool`，默认 false。打开后不同元素可以用不同的位移幅度，覆盖全局的 "
+#~ "`max_distance`。"
+#~ msgstr ""
+#~ "`bool`, default: `false`. Enables element-specific displacement limits "
+#~ "that override the global `max_distance`."
+
+#~ msgid ""
+#~ "多元素体系（比如含 H + 重元素）建议开。H 在室温下的振动幅度远大于重元素，"
+#~ "用同一个 `max_distance` 会导致要么 H 位移太小、要么重元素位移太大。"
+#~ msgstr ""
+#~ "Enable this for systems with strongly different atomic masses, such as H "
+#~ "plus heavy elements. A single `max_distance` may otherwise under-sample H "
+#~ "or over-displace the heavy atoms."
+
+#~ msgid "`dict[str, float] | None`，默认 None。元素 → 最大位移的映射。"
+#~ msgstr ""
+#~ "`dict[str, float] | None`, default: `None`. Mapping from element symbols "
+#~ "to maximum displacements."
+
+#, python-brace-format
+#~ msgid ""
+#~ "格式如 `{\"H\": 0.5, \"O\": 0.15, \"Si\": 0.1}`。只对列出的元素生效，没列"
+#~ "出的元素仍然用上面的 `max_distance`。"
+#~ msgstr ""
+#~ "For example, `{\"H\": 0.5, \"O\": 0.15, \"Si\": 0.1}`. Listed elements "
+#~ "use their mapped limits; all others continue to use the global "
+#~ "`max_distance`."
+
+#~ msgid "生效条件：`use_element_scaling` 必须为 true。"
+#~ msgstr "Used only when `use_element_scaling` is `true`."
+
+#~ msgid ""
+#~ "`int`，默认 0。随机种子值。仅在 `use_seed` 打开时生效。两个不同的 seed 会"
+#~ "产生两组不同的位移分布。"
+#~ msgstr ""
+#~ "`int`, default: `0`. Random seed, used only when `use_seed` is enabled. "
+#~ "Different seeds produce different displacement sets."
+
+#~ msgid ""
+#~ "**扰动后出现异常短键（< 1.0 Å）。** 两个相邻原子随机位移方向恰好相反，距离"
+#~ "骤减。降低 `max_distance` 或增大 `max_num` 后通过 `FPS Filter` 筛掉短键结"
+#~ "构。这是随机扰动的固有局限——它不做碰撞检测。"
+#~ msgstr ""
+#~ "**Perturbation creates an abnormally short contact below 1.0 Å.** Two "
+#~ "neighboring atoms happened to move toward each other. Reduce "
+#~ "`max_distance`, or generate a larger pool and remove invalid structures "
+#~ "before representative selection. This card does not perform collision "
+#~ "detection, so geometry validation remains necessary."
+
+#~ msgid ""
+#~ "**分子晶体中分子碎掉了。** `identify_organic` 没开。开启后整个分子团簇做刚"
+#~ "性平移，分子内键长完全保留。"
+#~ msgstr ""
+#~ "**Molecules in a molecular crystal are distorted or broken.** Enable "
+#~ "`identify_organic` so each molecular cluster is translated rigidly and "
+#~ "its internal bond lengths are preserved."
+
+#~ msgid ""
+#~ "**扰动后力 MAE 没改善。** 可能 `max_distance` 太小，位移落在模型已经学好的"
+#~ "线性区内。增大到 0.3~0.5 Å 试试。也可能体系本身的势能面非谐性很强，随机扰"
+#~ "动方向不一定是最需要的——此时用 `Vib Mode Perturb` 替代，沿真实振动模方向做"
+#~ "位移。"
+#~ msgstr ""
+#~ "**Force MAE does not improve after adding perturbed data.** "
+#~ "`max_distance` may be too small, leaving samples inside an already "
+#~ "learned linear region; test 0.3–0.5 Å while validating geometry. If the "
+#~ "potential-energy surface is strongly anharmonic, arbitrary directions may "
+#~ "be inefficient. Use `Vib Mode Perturb` to displace along physically "
+#~ "meaningful vibrational modes instead."
+
+#~ msgid ""
+#~ "勾选 `use_seed` + 固定 `seed` → 相同输入可复现；几何不同的输入帧使用不同但"
+#~ "稳定的派生随机流。"
+#~ msgstr ""
+#~ "Enable `use_seed` and fix `seed` to reproduce the same input; "
+#~ "geometrically different frames use distinct but stable derived random "
+#~ "streams."

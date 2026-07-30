@@ -8,28 +8,29 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-21 21:13+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/example/energy-baseline-shift.md:1
-#: 8e0b7c7ceac447119cda9c34c856c993
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:1
+#: 8b1d439deff34ab8996147bc58afaf00
 msgid "能量基线平移：去掉巨大的常数能量"
 msgstr "Energy Baseline Shift: Remove a Large Constant Energy"
 
-#: ../../source/example/energy-baseline-shift.md:3
-#: 8efb23b797914bb69777c0683fda464d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:3
+#: 7a7b3b6adedf45638d4aae40fc60251c
 msgid ""
-"能量基线平移最常见的用途，是在训练前去掉 DFT 总能量中的巨大常数项。某些 ABACUS、CP2K 数据按原子归一后仍可能达到数千甚至数万 "
-"eV，而模型真正需要学习的是小得多的结构间能量差。直接用 `float32` "
-"训练时，大数会占用有效位数；先把基线移到零附近，可以给这些小能量差留下更多数值精度。"
+"能量基线平移最常见的用途，是在训练前去掉 DFT 总能量中的巨大常数项。某些 "
+"ABACUS、CP2K 数据按原子归一后仍可能达到数千甚至数万 eV，而模型真正需要学习的"
+"是小得多的结构间能量差。直接用 `float32` 训练时，大数会占用有效位数；先把基线"
+"移到零附近，可以给这些小能量差留下更多数值精度。"
 msgstr ""
 "The most common purpose of energy baseline shifting is to remove a large "
 "constant term from DFT total energies before training. Some ABACUS and CP2K "
@@ -39,49 +40,56 @@ msgstr ""
 "digits; shifting the baseline close to zero preserves more numerical "
 "precision for those small differences."
 
-#: ../../source/example/energy-baseline-shift.md:5
-#: aaac6fc57d774fbb87d4115630535ebd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:5
+#: 17e67c6690574a6880b90a0f065788e8
 msgid ""
-"在 `energy` 图上，这类问题通常表现为 DFT 能量和 NEP "
-"预测**整体错开**，但点云的相对形状仍然一致。平移只处理能量零点，不会让模型本身变准；如果散点很散、弯曲，或者只有少数结构偏离，应先检查模型和数据。"
+"在 `energy` 图上，这类问题通常表现为 DFT 能量和 NEP 预测**整体错开**，但点云"
+"的相对形状仍然一致。平移只处理能量零点，不会让模型本身变准；如果散点很散、弯"
+"曲，或者只有少数结构偏离，应先检查模型和数据。"
 msgstr ""
-"In the `energy` plot, this usually appears as a **systematic offset** between "
-"DFT energies and NEP predictions while the relative shape of the point cloud "
-"remains the same. Shifting only changes the energy zero; it does not improve "
-"the model. If the points are scattered, curved, or only a few structures are "
-"off, inspect the model and data first."
+"In the `energy` plot, this usually appears as a **systematic offset** "
+"between DFT energies and NEP predictions while the relative shape of the "
+"point cloud remains the same. Shifting only changes the energy zero; it does "
+"not improve the model. If the points are scattered, curved, or only a few "
+"structures are off, inspect the model and data first."
 
-#: ../../source/example/energy-baseline-shift.md:7
-#: 603f2e7e87fe4dddb2647848e4ea3fb6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:7
+#: f06124fac2df4c39800abd43d7f7c74a
 msgid "1. 先看能量图"
 msgstr "1. Inspect the energy plot first"
 
-#: ../../source/example/energy-baseline-shift.md:9
-#: b40ca1471b564357b80465bf4842ae7b
-msgid "在 `NEP Dataset Display` 中打开带 DFT 能量的数据和对应的 NEP 模型，然后看 `energy` 散点图。"
-msgstr "Open the dataset containing DFT energies and its corresponding NEP model in `NEP Dataset Display`, then inspect the `energy` scatter plot."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:9
+#: f56347989a5e4099a2edfbdd42d533ca
+msgid ""
+"在 `NEP Dataset Display` 中打开带 DFT 能量的数据和对应的 NEP 模型，然后看 "
+"`energy` 散点图。"
+msgstr ""
+"Open the dataset containing DFT energies and its corresponding NEP model in "
+"`NEP Dataset Display`, then inspect the `energy` scatter plot."
 
-#: ../../source/example/energy-baseline-shift.md:11
-#: c7a811ffd2a34844910834d42ed0cee9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:11
+#: 65df8f8ad78140f7b881487f04fa6fdf
 msgid "能量图和能量基线平移按钮"
 msgstr "Energy plot and energy baseline shift button"
 
-#: ../../source/example/energy-baseline-shift.md:11
-#: c7a811ffd2a34844910834d42ed0cee9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:11
+#: 65df8f8ad78140f7b881487f04fa6fdf
 msgid ""
-".. image:: "
-"../_static/image/generated/tutorials/energy_baseline_shift_entry.png"
+".. image:: ../_static/image/generated/tutorials/"
+"energy_baseline_shift_entry.png"
 msgstr ""
-".. image:: "
-"../_static/image/generated/tutorials/energy_baseline_shift_entry.png"
+".. image:: ../_static/image/generated/tutorials/"
+"energy_baseline_shift_entry.png"
 
-#: ../../source/example/energy-baseline-shift.md:16
-#: a29370750ef14721a862aaadee0f6074
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:16
+#: a78477accdc9456eb80a73f114b7ddcb
 msgid "确认是巨大的整体基线后，点击工具栏中的 `Energy baseline shift`。"
-msgstr "After confirming a large overall baseline, click `Energy baseline shift` in the toolbar."
+msgstr ""
+"After confirming a large overall baseline, click `Energy baseline shift` in "
+"the toolbar."
 
-#: ../../source/example/energy-baseline-shift.md:18
-#: 9f1796ec41a84e50b8ed295418f685b2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:18
+#: c22415c8f476434b95c107a28dfc16e0
 msgid ""
 "平移会修改当前数据集里的 `energy`。程序会把第一次平移前的值记在 "
 "`energy_original`，但不会自动撤销后续平移。操作前仍建议先导出一份原始数据。"
@@ -90,70 +98,82 @@ msgstr ""
 "value before the first shift as `energy_original`, but it does not "
 "automatically undo later shifts. Export a copy of the original data first."
 
-#: ../../source/example/energy-baseline-shift.md:20
-#: 8701e0a1882e444dbf19a078cbe6d9e6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:20
+#: a72f4fff6f654ad4bef97ba476cc0d08
 msgid "2. 按这个例子设置"
 msgstr "2. Use these settings"
 
-#: ../../source/example/energy-baseline-shift.md:22
-#: 0cf83dbc09e44796b61bef5f2106dbe2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:22
+#: 156ef2ba7912432cb1ef9f245495bf8a
 msgid "能量基线平移设置窗口"
 msgstr "Energy baseline shift settings"
 
-#: ../../source/example/energy-baseline-shift.md:22
-#: 0cf83dbc09e44796b61bef5f2106dbe2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:22
+#: 156ef2ba7912432cb1ef9f245495bf8a
 msgid ""
-".. image:: "
-"../_static/image/generated/show_nep_reference/g_shift_dialog.png"
+".. image:: ../_static/image/generated/show_nep_reference/g_shift_dialog.png"
 msgstr ""
-".. image:: "
-"../_static/image/generated/show_nep_reference/g_shift_dialog.png"
+".. image:: ../_static/image/generated/show_nep_reference/g_shift_dialog.png"
 
-#: ../../source/example/energy-baseline-shift.md:27
-#: 75c44c0a01d94de7ae7b567286f35734
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:27
+#: 63871e87ae1847279836b48ef70fe61b
 msgid "第一次使用时这样设置即可："
 msgstr "For the first run, use the following settings:"
 
-#: ../../source/example/energy-baseline-shift.md:29
-#: c9319a625dfb453cae36423a6bf0b648
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:29
+#: 966c3657a38d4373a1c015d0798d750c
 msgid "`Use existing preset` 保持空白。"
 msgstr "Leave `Use existing preset` empty."
 
-#: ../../source/example/energy-baseline-shift.md:30
-#: 241b8634373e4440aed4ef8783a200bb
-msgid "如果数据来自同一软件、同一套计算设置，把分组规则填写为 `.*`，让所有 `Config_type` 共用一套基线。"
-msgstr "If the data come from the same software and computational settings, enter `.*` so all `Config_type` values share one baseline."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:30
+#: 04e2dabf0c194f09b4ade6b421ceb530
+msgid ""
+"如果数据来自同一软件、同一套计算设置，把分组规则填写为 `.*`，让所有 "
+"`Config_type` 共用一套基线。"
+msgstr ""
+"If the data come from the same software and computational settings, enter "
+"`.*` so all `Config_type` values share one baseline."
 
-#: ../../source/example/energy-baseline-shift.md:31
-#: dc514aa57a6a4bf380b51870caac0c6b
-msgid "`Alignment mode` 选择 `DFT to NEP`。它根据当前 NEP 预测，拟合每种元素的能量基线，并平移数据集中的 DFT 能量。"
-msgstr "Set `Alignment mode` to `DFT to NEP`. It uses the current NEP predictions to fit a baseline for each element and shifts the dataset's DFT energies."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:31
+#: 94c65707be384f2787f9d4961f1593fd
+msgid ""
+"`Alignment mode` 选择 `DFT to NEP`。它根据当前 NEP 预测，拟合每种元素的能量基"
+"线，并平移数据集中的 DFT 能量。"
+msgstr ""
+"Set `Alignment mode` to `DFT to NEP`. It uses the current NEP predictions to "
+"fit a baseline for each element and shifts the dataset's DFT energies."
 
-#: ../../source/example/energy-baseline-shift.md:32
-#: 389e47c5e33646a5b5234546a6cfa763
-msgid "`Max generations`、`Population size` 和 `Convergence tolerance` 先保留默认值。"
-msgstr "Keep the default values for `Max generations`, `Population size`, and `Convergence tolerance`."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:32
+#: 43c5354e65dc4a31bc845e45f2df73b5
+msgid ""
+"`Max generations`、`Population size` 和 `Convergence tolerance` 先保留默认"
+"值。"
+msgstr ""
+"Keep the default values for `Max generations`, `Population size`, and "
+"`Convergence tolerance`."
 
-#: ../../source/example/energy-baseline-shift.md:33
-#: 6223a91dd1f2460b8342cdc47eff256c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:33
+#: b5493ae2358f48dfbc209e9e4deebdc9
 msgid "点击 `OK`，等待能量图重新绘制。"
 msgstr "Click `OK` and wait for the energy plot to redraw."
 
-#: ../../source/example/energy-baseline-shift.md:35
-#: 26fd375264f045b48444c9313feb8343
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:35
+#: 66b34752c7c44c9c841122d9c667a9d6
 msgid ""
-"不要仅因为数据里有多个 `Config_type` "
-"就逐组拟合。即使来自同一软件，每组单独拟合也可能把求解过程中的微小偏差吸收到基线里；同一计算来源使用 `.*` 更稳妥。"
+"不要仅因为数据里有多个 `Config_type` 就逐组拟合。即使来自同一软件，每组单独拟"
+"合也可能把求解过程中的微小偏差吸收到基线里；同一计算来源使用 `.*` 更稳妥。"
 msgstr ""
 "Do not fit each group separately just because the dataset contains multiple "
 "`Config_type` values. Even for the same software, separate fits can absorb "
 "small solver differences into the baselines; using `.*` for one calculation "
 "source is more robust."
 
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:37
+#: bb411f47b08e459e8e5e410b1cbceea5
 msgid ""
-"`Config_type` 分组主要用于区分不同能量基线来源。只有数据混合了不同软件时才拆组，例如 "
-"`abacus.*;cp2k.*`，多条规则用英文分号 `;` "
-"分隔。不同泛函、赝势或计算精度带来的差异不只影响能量零点，不要靠平移强行混合。"
+"`Config_type` 分组主要用于区分不同能量基线来源。只有数据混合了不同软件时才拆"
+"组，例如 `abacus.*;cp2k.*`，多条规则用英文分号 `;` 分隔。不同泛函、赝势或计算"
+"精度带来的差异不只影响能量零点，不要靠平移强行混合。"
 msgstr ""
 "`Config_type` grouping is mainly for distinguishing different energy-"
 "baseline sources. Split groups only when the dataset mixes different "
@@ -161,58 +181,76 @@ msgstr ""
 "Differences in functionals, pseudopotentials, or numerical settings affect "
 "more than the energy zero, so do not force such data together with a shift."
 
-#: ../../source/example/energy-baseline-shift.md:37
-#: 2fcd931411f741fc8e54cb5ac4622290
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:39
+#: 7e7e9fccbdc74ffb8b7df7a811e70a53
 msgid "3. 看结果是否正确"
 msgstr "3. Check the result"
 
-#: ../../source/example/energy-baseline-shift.md:39
-#: 2fb2abb9164d487bbe0bf0ecde00ce16
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:41
+#: 5a2dee1b0e9146f09522f6c446a726e6
 msgid "平移后回到 `energy` 图："
 msgstr "Return to the `energy` plot after the shift:"
 
-#: ../../source/example/energy-baseline-shift.md:41
-#: 9f8c591d34c74c5dbad49bcd6a88f79c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:43
+#: 6efa1e46c00944f0be3d7581de71b2d5
 msgid "消除整体能量偏移后的散点图"
 msgstr "Scatter plot after removing the systematic energy offset"
 
-#: ../../source/example/energy-baseline-shift.md:41
-#: 9f8c591d34c74c5dbad49bcd6a88f79c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:43
+#: 6efa1e46c00944f0be3d7581de71b2d5
 msgid ""
-".. image:: "
-"../_static/image/generated/tutorials/energy_baseline_shift_result.png"
+".. image:: ../_static/image/generated/tutorials/"
+"energy_baseline_shift_result.png"
 msgstr ""
-".. image:: "
-"../_static/image/generated/tutorials/energy_baseline_shift_result.png"
+".. image:: ../_static/image/generated/tutorials/"
+"energy_baseline_shift_result.png"
 
-#: ../../source/example/energy-baseline-shift.md:46
-#: 4a98ad3de8164560b638e8de1206e0b3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:48
+#: 77c48ae480fb4b5c8d2b671a0bb5809a
 msgid "巨大的绝对能量基线被去掉，能量回到更适合训练的数值范围；"
-msgstr "The large absolute-energy baseline is removed, bringing energies into a numerical range better suited to training."
+msgstr ""
+"The large absolute-energy baseline is removed, bringing energies into a "
+"numerical range better suited to training."
 
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:49
+#: eafd11d82e66426aa147792b32ce0599
 msgid "点云整体靠近对角线，说明主要差异确实来自能量零点；"
-msgstr "The point cloud moves close to the diagonal, indicating that the main difference came from the energy zero."
+msgstr ""
+"The point cloud moves close to the diagonal, indicating that the main "
+"difference came from the energy zero."
 
-#: ../../source/example/energy-baseline-shift.md:47
-#: 8d7d4bd163814b3bae25949d2c7e8283
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:50
+#: f72571d1d4be4efea73e398ff7c86806
 msgid "点云的相对顺序和形状应该基本保留；"
-msgstr "The relative ordering and shape of the point cloud should remain largely unchanged."
+msgstr ""
+"The relative ordering and shape of the point cloud should remain largely "
+"unchanged."
 
-#: ../../source/example/energy-baseline-shift.md:48
-#: 3f7aebea01cd413ca482de695750aabb
-msgid "如果仍明显散开，不要继续反复平移，转去检查异常结构、分组规则和模型误差。"
-msgstr "If the points remain widely scattered, do not repeat the shift. Check abnormal structures, grouping rules, and model error instead."
-
-#: ../../source/example/energy-baseline-shift.md:50
-#: 0f79ba489ebc45a6936319a7c4866a9e
-msgid "能量基线不是给所有结构减去同一个常数。程序会根据结构中的元素个数，减去对应的逐元素基线。因此，包含不同元素或不同原子数的结构也可以放在同一数据集中处理。"
-msgstr "An energy baseline is not one constant subtracted from every structure. NepTrainKit subtracts element-specific baselines according to the element counts, so structures with different elements or atom counts can be handled in one dataset."
-
-#: ../../source/example/energy-baseline-shift.md:52
-#: 93e70e4b37c441d2bcc6dea3707d2415
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:51
+#: 8960ae2ef36e4e8cbb20b46e27685e28
 msgid ""
-"确认结果后，用 `Save` 导出新文件，不要覆盖原始训练集。以后需要处理同一类数据时，可以勾选 `Save baseline as "
-"preset` 保存本次基线；预设只适用于元素和 `Config_type` 分组方式相符的数据。"
+"如果仍明显散开，不要继续反复平移，转去检查异常结构、分组规则和模型误差。"
+msgstr ""
+"If the points remain widely scattered, do not repeat the shift. Check "
+"abnormal structures, grouping rules, and model error instead."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:53
+#: a5b5353c031b41f59631149ffbf8a2b0
+msgid ""
+"能量基线不是给所有结构减去同一个常数。程序会根据结构中的元素个数，减去对应的"
+"逐元素基线。因此，包含不同元素或不同原子数的结构也可以放在同一数据集中处理。"
+msgstr ""
+"An energy baseline is not one constant subtracted from every structure. "
+"NepTrainKit subtracts element-specific baselines according to the element "
+"counts, so structures with different elements or atom counts can be handled "
+"in one dataset."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/energy-baseline-shift.md:55
+#: 1cdb75fbc9cc48b381420d488421bb5e
+msgid ""
+"确认结果后，用 `Save` 导出新文件，不要覆盖原始训练集。以后需要处理同一类数据"
+"时，可以勾选 `Save baseline as preset` 保存本次基线；预设只适用于元素和 "
+"`Config_type` 分组方式相符的数据。"
 msgstr ""
 "After checking the result, use `Save` to export a new file without "
 "overwriting the original training set. For the same kind of data in the "

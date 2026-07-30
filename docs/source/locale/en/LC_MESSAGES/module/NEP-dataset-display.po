@@ -9,182 +9,227 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: NepTrainKit documentation team\n"
-"Language: en\n"
 "Language-Team: English\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/NEP-dataset-display.md:1 e14f6655862643e89b7b086826a7782f
-msgid "NEP Dataset Display"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:1
+#: 9ba77598b3bf45918c3aff407050bd71
+msgid "数据集查看（NEP Dataset Display）"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:3 e98fe3622c1f4ca0b255601f43243f83
-msgid "`NEP Dataset Display` 是用来查看、筛选和导出结构数据的页面。它有两类常见用途："
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:3
+#: 313f56c6573d49c2a9f0c42486a42d90
+msgid ""
+"`NEP Dataset Display` 是用来查看、筛选和导出结构数据的页面。它有两类常见用"
+"途："
 msgstr ""
 "`NEP Dataset Display` is the workspace for inspecting, selecting, and "
 "exporting structure data. It supports two common stages of a dataset "
 "workflow:"
 
-#: ../../source/module/NEP-dataset-display.md:5 0a1d7eb173a345659e08d31428d042f8
-msgid "**DFT 之前**：把 `Make Dataset` 生成的候选结构导入进来，先删掉明显异常结构，再采样去 DFT。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:5
+#: 19a9a96e34d94787b962aaa8a68a783a
+msgid ""
+"**DFT 之前**：把 `生成数据集` 生成的候选结构导入进来，先删掉明显异常结构，再"
+"采样去 DFT。"
 msgstr ""
-"**Before DFT**: import candidates from `Make Dataset`, remove clearly "
-"problematic structures, then sample the cleaned pool for DFT."
 
-#: ../../source/module/NEP-dataset-display.md:6 3dd8e12fa3914a708aaff22eb44cfb7e
-msgid "**训练之后**：导入训练结构和模型输出，找误差大的结构，判断下一轮数据应该补哪里。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:6
+#: c56fc97495cf47739274c0d0a61b6221
+msgid ""
+"**训练之后**：导入训练结构和模型输出，找误差大的结构，判断下一轮数据应该补哪"
+"里。"
 msgstr ""
 "**After training**: load the training structures and model output, locate "
 "high-error structures, and decide which region needs more data in the next "
 "iteration."
 
-#: ../../source/module/NEP-dataset-display.md:8 bfdb286a719747b6b1f283f88267f154
-msgid "它不是训练器，也不替代 DFT。这里的重点是把结构和图上的异常点连起来，让你能快速决定： 保留、删除、导出，还是回到上游重新生成。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:8
+#: 2ff0fbc41e624a2898641d9e79c8fc4d
+msgid ""
+"它不是训练器，也不替代 DFT。这里的重点是把结构和图上的异常点连起来，让你能快"
+"速决定： 保留、删除、导出，还是回到上游重新生成。"
 msgstr ""
 "It is not a trainer and does not replace DFT. Its job is to connect points "
 "in a plot with their actual structures so that you can decide whether to "
 "keep, remove, export, or regenerate them upstream."
 
-#: ../../source/module/NEP-dataset-display.md:11 f6de8f65bb1c463f888646c6ad959945
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 086eacd63c684dc096643890ca78b6c9
 msgid "NEP Dataset Display overview"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 f6de8f65bb1c463f888646c6ad959945
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 086eacd63c684dc096643890ca78b6c9
 msgid ".. image:: ../_static/image/generated/show_nep_overview.png"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:16 af78b610855945ff87cc6ee83d3b26ee
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:27
+#: aaf16efbd8994d16a02b2656704fd050
 msgid "数据从哪里来"
 msgstr "Choose the right input"
 
-#: ../../source/module/NEP-dataset-display.md:18 c5f73bacda4d4505a618a5a1f68c76bc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:29
+#: 5d0657dcb70c48bab3d278928fa3c2c6
 msgid "可以导入三类数据："
 msgstr "You can import three kinds of data:"
 
-#: ../../source/module/NEP-dataset-display.md:11 484ccb13471b4676841b265b2f9eff0a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: e5edd3c02c0e46c687d2ecf92b02c926
 msgid "输入"
 msgstr "Input"
 
-#: ../../source/module/NEP-dataset-display.md:11 91c48bb74bfb4d27894d36f94f88bde8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 8e69cf2d6f174956a994dba1344a55a5
 msgid "什么时候用"
 msgstr "When to use it"
 
-#: ../../source/module/NEP-dataset-display.md:11 8e2839c91e62452e82724724adc25093
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: e3086921d73541e298687d14439bc4cc
 msgid "你会看到什么"
 msgstr "What you can inspect"
 
-#: ../../source/module/NEP-dataset-display.md:11 bd47f783b32a4f289e260b4170b91ce9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: bcaad89b875f45b58233bb76013e957c
 msgid "候选结构 `xyz` / `extxyz`"
 msgstr "Candidate structures in `xyz` / `extxyz`"
 
-#: ../../source/module/NEP-dataset-display.md:11 31338fd9052f4e19bb5f6fc8071abe62
-msgid "`Make Dataset` 刚生成结构后"
-msgstr "Immediately after generating structures with `Make Dataset`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: d2dbba1ae2104411b6d15e9cb249dee1
+msgid "`生成数据集` 刚生成结构后"
+msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 4945a05a791944e39d3ef61d06474a5f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 618ecab1e4ce41bf89edddedd05203fc
 msgid "结构视图、组成、标签、预测或几何异常"
 msgstr "Geometry, composition, labels, predictions, and geometric problems"
 
-#: ../../source/module/NEP-dataset-display.md:11 c0cb691cdb09489c8120888fe0aa875d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 3a29fab2e5d44a30913c42aa580f18d4
 msgid "训练结构 + `nep.txt`"
 msgstr "Training structures + `nep.txt`"
 
-#: ../../source/module/NEP-dataset-display.md:11 92490246dd8946ddabf264a2e8146118
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: a45ad27757bd4720beb90ef6b642d826
 msgid "想用模型快速预筛或回看预测"
 msgstr "For a quick model-based prescreen or to revisit predictions"
 
-#: ../../source/module/NEP-dataset-display.md:11 d68c9377c69c46f9b31a0043531423f6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: c3cc5216a5e545508d221e3aaf72c4c0
 msgid "能量、力、应力等预测结果"
 msgstr "Predicted energy, force, stress, and related quantities"
 
-#: ../../source/module/NEP-dataset-display.md:11 c7f3fef7fa754bf9acbef12ca62e1995
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 79634608b71c479cb159a0672e0a73e7
 msgid "训练输出目录"
 msgstr "Training-output directory"
 
-#: ../../source/module/NEP-dataset-display.md:11 7c5a95233e104a52956b58546b1cc34f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: d281f7d2b8544b259316f39cdfcc9963
 msgid "GPUMD 训练结束后"
 msgstr "After a GPUMD training run"
 
-#: ../../source/module/NEP-dataset-display.md:11 366bd12276a143dabb7af2bf084de2bd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: c9c123ee44184003af38fb8c72fc35e6
 msgid "预测-标签散点、误差最大结构、可导出的子集"
 msgstr ""
 "Prediction-versus-label plots, largest-error structures, and exportable "
 "subsets"
 
-#: ../../source/module/NEP-dataset-display.md:26 9d2ad19a015441fba84115f8c74e7698
-msgid "入口是顶部 `Open`。如果只是看一批候选结构，直接打开 `xyz` 文件；如果要回看完整训练结果， 打开包含训练输出的目录或对应文件。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:37
+#: f19ca467d9bb44f9b2fd72b2a8803a05
+msgid ""
+"入口是顶部 `Open`。如果只是看一批候选结构，直接打开 `xyz` 文件；如果要回看完"
+"整训练结果， 打开包含训练输出的目录或对应文件。"
 msgstr ""
 "Use `Open` in the title bar. Open an `xyz` file to inspect a candidate "
 "collection. Open the training-output directory or the relevant output file "
 "when reviewing a complete training run."
 
-#: ../../source/module/NEP-dataset-display.md:29 ddb2af36c7944ceda0e5515918eeaa96
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:40
+#: a88f8d049cc447908f2cee363046b0ef
 msgid "第一次应该看哪里"
 msgstr "What to inspect first"
 
-#: ../../source/module/NEP-dataset-display.md:31 9f69e40e7c184a3da57fd0b731d3e923
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:42
+#: 2fa9d26b25404b5da2fcbe5f0f707cb8
 msgid "先看三个区域："
 msgstr "Start with these three areas:"
 
-#: ../../source/module/NEP-dataset-display.md:33 c2c8b766212f4f8896b658bc046cd6cd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:44
+#: 2fb2727f445d475d82c0bc463ea7c5d1
 msgid "**误差图或分布图**：先找离群点，不要一上来逐个翻结构。"
 msgstr ""
 "**Error or distribution plots**: locate outliers before browsing structures "
 "one by one."
 
-#: ../../source/module/NEP-dataset-display.md:34 ac186acd8f1c4e898427bfa75cfa19e3
-msgid "**结构视图**：点中图上的结构后，看右侧是否有过近原子、不合理配位、奇怪表面或异常磁矩。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:45
+#: 29156a4e863e46dba2e21d838d27d1fe
+msgid ""
+"**结构视图**：点中图上的结构后，看右侧是否有过近原子、不合理配位、奇怪表面或"
+"异常磁矩。"
 msgstr ""
 "**Structure view**: select a point, then check the structure on the right "
 "for atoms that are too close, unreasonable coordination, unintended "
 "surfaces, or unusual magnetic moments."
 
-#: ../../source/module/NEP-dataset-display.md:35 575b82db609d4f8d826f48485705b137
-msgid "**状态行**：关注 `Orig / Now / Rm / Sel / Unsel / Rej`，确认当前删掉、选中和保留的数量。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:46
+#: 793960875f81446088f0546ce9dbf3d2
+msgid ""
+"**状态行**：关注 `Orig / Now / Rm / Sel / Unsel / Rej`，确认当前删掉、选中和"
+"保留的数量。"
 msgstr ""
 "**Status line**: use `Orig / Now / Rm / Sel / Unsel / Rej` to confirm how "
 "many structures are retained, removed, selected, or rejected."
 
-#: ../../source/module/NEP-dataset-display.md:37 c7bfd2a745804aacac6eac69a66c947a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:48
+#: 878b6c9aa67045a0b515119cc18202cc
 msgid ""
-"如果你正在处理 `Make Dataset` 的候选结构，建议先看完整流程： [候选结构清洗后再进入 DFT](../workflows/clean-"
-"candidate-structures.md)。"
+"如果你正在处理 `生成数据集` 的候选结构，建议先看完整流程： [候选结构清洗后再"
+"进入 DFT](../workflows/clean-candidate-structures.md)。"
 msgstr ""
-"For a candidate pool from `Make Dataset`, follow [Clean candidate structures"
-" before DFT](../workflows/clean-candidate-structures.md)."
 
-#: ../../source/module/NEP-dataset-display.md:40 8032b09db10548a6b23b71c07cbc3dd3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:51
+#: 8f57075adf324afe9f0d44cc58c1f582
 msgid "从这里打开训练集评估"
 msgstr "Open Training Set Audit from this page"
 
-#: ../../source/module/NEP-dataset-display.md:42 15333d2b8f53402a918ca2045621474c
-msgid "加载数据后，打开顶部 `Save` 分裂菜单，点击 `评估当前数据集`。软件会检查当前活动结构，并进入「训练集评估」的概览页。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:53
+#: 07be2afbb90e4beaa0d576a7913de517
+msgid ""
+"加载数据后，打开顶部 `Save` 分裂菜单，点击 `评估当前数据集`。软件会检查当前活"
+"动结构，并进入「训练集评估」的概览页。"
 msgstr ""
 "After loading data, open the `Save` split menu and choose `Check current "
 "dataset`. NepTrainKit audits the active structures and opens the Training "
 "Set Audit overview."
 
-#: ../../source/module/NEP-dataset-display.md:44 4e1953510425459ab307b60baf4bf4b5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:55
+#: d7033d5ed2d64fc8a2e67c870e17db82
 msgid ""
-"如果只想查看能量、力、virial、预测值或误差的分布，可以点击左侧图表工具栏中的 `查看数据分布`。它会直接打开同一页面的「数据地图 → "
-"数据分布」，点击柱形分箱后仍可把对应结构选回 `NEP Dataset Display`。"
+"如果只想查看能量、力、virial、预测值或误差的分布，可以点击左侧图表工具栏中的 "
+"`查看数据分布`。它会直接打开同一页面的「数据地图 → 数据分布」，点击柱形分箱后"
+"仍可把对应结构选回 `NEP Dataset Display`。"
 msgstr ""
 "To inspect only the distribution of energy, force, virial, predictions, or "
 "errors, click `Explore distributions` in the plot toolbar. This opens `Data "
 "map → Data distribution` on the same audit page. Selecting a histogram bin "
 "can still send the matching structures back to `NEP Dataset Display`."
 
-#: ../../source/module/NEP-dataset-display.md:46 c3ac71772c5442909b0e62e67e205e06
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:57
+#: f0da327c6495446aadd2e9824d92accf
 msgid ""
-"训练集评估还可以按精确组分查看结构数量，并对全部结构分析 FCC、HCP、BCC、L1₂、Laves 相结构，以及 "
-"FM、AFM、FiM、PM-like 等 `spin:R:3` 磁类型。完整用法、判据、占比视图和限制见 "
-"[训练集评估](training-set-assessment.md)。"
+"训练集评估还可以按精确组分查看结构数量，并对全部结构分析 FCC、HCP、BCC、L1₂、"
+"Laves 相结构，以及 FM、AFM、FiM、PM-like 等 `spin:R:3` 磁类型。完整用法、判"
+"据、占比视图和限制见 [训练集评估](training-set-assessment.md)。"
 msgstr ""
 "Training Set Audit also groups structures by exact composition and analyzes "
 "FCC, HCP, BCC, L1₂, and Laves structural phases together with `spin:R:3` "
@@ -192,326 +237,438 @@ msgstr ""
 "(training-set-assessment.md) for the workflow, criteria, share views, and "
 "limitations."
 
-#: ../../source/module/NEP-dataset-display.md:48 cc5953354ee44db6995a390bafc9cd03
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:59
+#: da69fa22e9d549bf884fef3e5887db66
 msgid "按目的选工具"
 msgstr "Choose a tool by objective"
 
-#: ../../source/module/NEP-dataset-display.md:11 024209e3647e4633957ddd0220e26c22
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 5c22681e88ff447fb1c3c1280a98ede5
 msgid "目的"
 msgstr "Objective"
 
-#: ../../source/module/NEP-dataset-display.md:11 cb98017360d945348e1b08e689e974ec
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 709be2602f8344fdbf38e8ac5b6d4c77
 msgid "推荐入口"
 msgstr "Recommended entry point"
 
-#: ../../source/module/NEP-dataset-display.md:11 b9c057f466e2443aa4c4e42aec940586
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 9a3c156ddb554cc08af622225e0dcf70
 msgid "结果"
 msgstr "Result"
 
-#: ../../source/module/NEP-dataset-display.md:11 f33d8cd17b1746428a0810bb1d981f9e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: b6116f7be1964f68be663f78d9038e4b
 msgid "找最极端的异常点"
 msgstr "Find the most extreme outliers"
 
-#: ../../source/module/NEP-dataset-display.md:11 c9217c4cab594588a7225f77c732a2c0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 853f3fc4ee114c1fadbad39592bd6403
 msgid "`Find Max Error Point`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 f000df3df3134f9a85bd94be07dbbcb7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: d2daffae4b124ea585bdec936cd33b47
 msgid "选中误差最大的前 N 个结构"
 msgstr "Select the N structures with the largest error"
 
-#: ../../source/module/NEP-dataset-display.md:11 cc38f9513fb84945b1f310d40ca6304d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 8a824ee3283b48a2ab62727abaec4e7f
 msgid "按图上范围选一批点"
 msgstr "Select points inside a plot range"
 
-#: ../../source/module/NEP-dataset-display.md:11 5ceed792fe8849af8eaa4d7ee47f1c03
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: de1a077dc11243e79253a0fbf880b259
 msgid "`Select by Range`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 ae4729318f4c42e78f012a83f4212cb0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 1a3335fb06434cbd84ee34487f8e0fec
 msgid "选中落在指定坐标范围内的结构"
-msgstr "Select structures whose plotted coordinates fall inside the requested range"
+msgstr ""
+"Select structures whose plotted coordinates fall inside the requested range"
 
-#: ../../source/module/NEP-dataset-display.md:11 bd07e79702394ed19875bcd0897d0695
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 074c16a933744bfea52687171734753d
 msgid "找过近原子或疑似坏构型"
 msgstr "Find atoms that are too close or other suspicious geometries"
 
-#: ../../source/module/NEP-dataset-display.md:11 54eb01d61d6e46eba1aa316b0b2d6600
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 79bce474be244f05aadba1e3fbee0a6b
 msgid "`Finding non-physical structures`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 e9f04f8836e049d59c599d4013c3ff8f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 5d38da14d2f84e32846e58e2e58efcdf
 msgid "选中疑似非物理结构"
 msgstr "Select structures with conservative non-physical geometry signals"
 
-#: ../../source/module/NEP-dataset-display.md:11 b23b0f7753de4c2391597d9b626c391c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 45a64ba00eea4922989e59e99b67fae4
 msgid "检查净力是否异常"
 msgstr "Check for an abnormal net force"
 
-#: ../../source/module/NEP-dataset-display.md:11 32f8540599db4be59c19451e1e76c573
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 3b93ace511a144fda5aba4d61bf1abc1
 msgid "`Check Net Force`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 7c127bf1f26a42dfa4469e6ec927c38b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 8151ff8a4d5540efa2b0ebd79638d0e7
 msgid "选中净力超过阈值的结构"
 msgstr "Select structures whose net force exceeds the threshold"
 
-#: ../../source/module/NEP-dataset-display.md:11 9d7336f481fd490c8de0db707d9e2d7c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 4953088454b64d048a6d51efa3e56fc6
 msgid "按来源筛结构"
 msgstr "Filter structures by source"
 
-#: ../../source/module/NEP-dataset-display.md:11 dd39e46488a84b72914807fbe902f562
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 7d7ca171c475493f8d2f432011d7c040
 msgid "搜索框 `tag` 模式"
 msgstr "Search in `tag` mode"
 
-#: ../../source/module/NEP-dataset-display.md:11 59f17ebafaca43a3997d193b861084d7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 8b8b052b93c04c7aa880fdc1a6b2f3b4
 msgid "按 `Config_type` 找某类生成结构"
 msgstr "Find structures by `Config_type`"
 
-#: ../../source/module/NEP-dataset-display.md:11 aa059673d62e4a8892a999fe28fd6f80
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 22c38f19e9f14eeb9b115f5ac72b62d3
 msgid "按元素筛结构"
 msgstr "Filter by element"
 
-#: ../../source/module/NEP-dataset-display.md:11 c1dad2f140fe477ba1efda4544b68e21
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 5890199439f94a77a2cdebfa2120a26c
 msgid "搜索框 `elements` 模式"
 msgstr "Search in `elements` mode"
 
-#: ../../source/module/NEP-dataset-display.md:11 8dc7eaed97db43a9a9eac34cbdd5dd04
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: a4ed136c581544f19cb1e2d4f21a8e03
 msgid "找含有或不含某些元素的结构"
 msgstr "Find structures that contain or exclude specific elements"
 
-#: ../../source/module/NEP-dataset-display.md:11 35a8e2614915417582ef58ba7ca5350a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 97ad717121c3446d8e6997f5b3b6c93a
 msgid "按表达式筛结构"
 msgstr "Filter with an expression"
 
-#: ../../source/module/NEP-dataset-display.md:11 641768a91f474d89bdfb4515820d4f89
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: e56a1cf2f3ac4cdb997c64a0d672e414
 msgid "搜索框 `expression` 模式"
 msgstr "Search in `expression` mode"
 
-#: ../../source/module/NEP-dataset-display.md:11 deb16e7772b9405f9b24d5890fbbe5c3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: b8c9fb37bdad49499150f354d0b0287d
 msgid "用原子数、元素比例、能量、力、应力或原子属性批量选中结构"
 msgstr ""
 "Select structures by atom count, element fractions, energy, force, stress, "
 "virial, or atomic properties"
 
-#: ../../source/module/NEP-dataset-display.md:11 e963903f872648559533b370d4e2f612
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 88f6428940d04e9896109efc439bd7ea
 msgid "代表性采样"
 msgstr "Select representative structures"
 
-#: ../../source/module/NEP-dataset-display.md:11 cf313ccb5199425499ba7c6400f61318
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: befdad2c30cd498c9fcb6ae8f34e31b2
 msgid "`Sparse samples`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 950df3541bf047c1af0d9bef23f78f9c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: bec3100eaa604de984edf77ff8fba26c
 msgid "用 FPS 从当前数据或选区里挑代表结构"
 msgstr "Use FPS on the active dataset or current selection"
 
-#: ../../source/module/NEP-dataset-display.md:11 71cf575db41b44d0a1e88451afa05c2a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: a6f547affd3f493aa68c1db16f51caed
 msgid "完整检查当前数据"
 msgstr "Run a complete audit"
 
-#: ../../source/module/NEP-dataset-display.md:11 8a5c1592e5234aeea967fc4ca5e48547
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 63024b5adc7141acbadfa3af431703ba
 msgid "顶部 `Save` → `评估当前数据集`"
 msgstr "Title-bar `Save` → `Check current dataset`"
 
-#: ../../source/module/NEP-dataset-display.md:11 0e0654043c404332858f18879d01ba9e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 2ddbe79585eb444185879d44bb4a5bfc
 msgid "查看阻塞项、组分、局域环境、结构相、磁类型和复核队列"
 msgstr ""
 "Review blockers, composition, local chemistry, structural phase, magnetic "
 "type, and the review queue"
 
-#: ../../source/module/NEP-dataset-display.md:11 ce91f385c8e2458ebd9f0ff4f3e380f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: a98c973c5b4745da9a6e440a87388b99
 msgid "看数值分布"
 msgstr "Inspect numerical distributions"
 
-#: ../../source/module/NEP-dataset-display.md:11 4dd081aea4794d54811c9f7eceb83a3f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: e7d68218d1b945a98eadccfdaea0d824
 msgid "`查看数据分布`"
 msgstr "`Explore distributions`"
 
-#: ../../source/module/NEP-dataset-display.md:11 54c06c4de7954a8d9da813702c2525a6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: b7b335d42b7145fa8cef6cc2537c309d
 msgid "打开训练集评估中的数据分布，并可反向选择结构"
-msgstr "Open the audit distribution workspace and select structures back from bins"
+msgstr ""
+"Open the audit distribution workspace and select structures back from bins"
 
-#: ../../source/module/NEP-dataset-display.md:11 7591a641a3a44b47be1686c16f499e92
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 2eaedb91340a4f8787f62bf346ea6bea
 msgid "看数据概况"
 msgstr "View a dataset summary"
 
-#: ../../source/module/NEP-dataset-display.md:11 b8dd9eaf33f44155a90712b71116a40b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 0c57ca3e64a14ae28f9bb63c01d05a8a
 msgid "`Dataset Summary`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 eafc73c958a242db82626c1014375f20
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 9ec8ada637264e0281458e613788782f
 msgid "汇总元素、结构数量和数值分布，可导出 HTML"
 msgstr ""
 "Summarize elements, structure counts, and numerical distributions; export "
 "the summary as HTML"
 
-#: ../../source/module/NEP-dataset-display.md:11 bd40c86c0177446988e26e855bf36031
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 27a192d792ce47d5a041f46a240b449b
 msgid "删除当前选中结构"
 msgstr "Remove the current selection"
 
-#: ../../source/module/NEP-dataset-display.md:11 7b901e17ce0645468fae44787afd9f4b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 91266c3839814ab1833a8871370cd2b2
 msgid "`Delete Selected Items`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 2fc29a04323f46bcb66ea48fb136526c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 5e61437c42e946ceb19acac59da48824
 msgid "从当前数据集中移除选中结构"
 msgstr "Remove selected structures from the active dataset"
 
-#: ../../source/module/NEP-dataset-display.md:11 0aaceeb73b4f450bb44b639b2303a1d4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 49ce0d3302fa48f5a6f3fc2cd924ba0d
 msgid "后悔选错"
 msgstr "Undo an incorrect selection"
 
-#: ../../source/module/NEP-dataset-display.md:11 ce71ecc0b26746e8b14f3979cb42f626
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: fad2e81e6b434de8b4fe113015fb5fbe
 msgid "`Undo Selection`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 640f70c352f94787815c534682eefa09
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 77d3845bd5124350b66b62cf29a0fdf2
 msgid "撤销最近一次选择变化"
 msgstr "Restore the previous selection state"
 
-#: ../../source/module/NEP-dataset-display.md:11 99484fa055ee4345ae7ee055f46dd139
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: cbe65e2d561441839d420add46bd8651
 msgid "后悔删除"
 msgstr "Undo a deletion"
 
-#: ../../source/module/NEP-dataset-display.md:11 084a9d07ddd1473ebc335c94510c0350
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 8b65fc89c1af4e77bd73b1fb62bc527a
 msgid "`Undo Delete`"
 msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:11 a515051ea5834b3f908a0d7d1c511ff5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: fdb2d5d923844434ac86fe60b1673bb9
 msgid "恢复最近一次删除"
 msgstr "Restore the most recently deleted structures"
 
-#: ../../source/module/NEP-dataset-display.md:11 356a527de2ba42888c04c13ef0049157
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 1c19caeb2fc4433796e59f3488a83542
 msgid "导出干净子集"
 msgstr "Export a clean subset"
 
-#: ../../source/module/NEP-dataset-display.md:11 d2164de5174b481bbf330e92a343934b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 045a8a8fe21546c78de44cf7f3460ce0
 msgid "顶部 `Save` / 导出菜单"
 msgstr "Title-bar `Save` / export menu"
 
-#: ../../source/module/NEP-dataset-display.md:11 6e82dcfba6a9425b9db5fcc3b59c5f30
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:22
+#: 35ad62b116df45939704df4653af7139
 msgid "保存后进入 DFT、FPS 或训练流程"
 msgstr "Save a subset for DFT, FPS, or training"
 
-#: ../../source/module/NEP-dataset-display.md:68 19cea083ad7d427f9c152dc9bb669578
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:79
+#: 82f2f9b7a1bf4f5b81e3a8f3905780fd
 msgid ""
-"如果你不知道按钮图标对应哪个功能，查 [NEP Dataset Display 详细参考](show-nep-"
-"reference.md)。参考页按按钮列出了参数和执行结果。"
+"如果你不知道按钮图标对应哪个功能，直接展开本页左侧目录。目录按照软件页面从上"
+"到下排列： 顶部数据入口、左侧主图区、右侧结构区、筛选栏、底部状态栏。参数解释"
+"和执行结果都放在对应功能下面。"
 msgstr ""
-"If an icon is unfamiliar, use the [NEP Dataset Display reference](show-nep-"
-"reference.md). It lists each button together with its parameters and result."
 
-#: ../../source/module/NEP-dataset-display.md:71 bd8127a84bab402dbb008586e5481a3e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:82
+#: 712d1ad242024d869310ab0435dd796c
 msgid "候选结构清洗时怎么用"
 msgstr "Clean a candidate pool"
 
-#: ../../source/module/NEP-dataset-display.md:73 5a6d23b8396741dfaa29d94f683252ed
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:84
+#: a7d63697e30d4617924e205b6980a4f2
 msgid "候选结构清洗的重点不是追求预测精度，而是先剔除明显坏样本："
 msgstr ""
-"The purpose of candidate cleaning is not to maximize prediction accuracy. It"
-" is to remove clearly bad samples before they consume DFT resources:"
+"The purpose of candidate cleaning is not to maximize prediction accuracy. It "
+"is to remove clearly bad samples before they consume DFT resources:"
 
-#: ../../source/module/NEP-dataset-display.md:75 06d19813ba6d461398802ee903d0bab9
-msgid "打开 `Make Dataset` 导出的候选结构。"
-msgstr "Open the candidate structures exported from `Make Dataset`."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:86
+#: ea9d6022db78471f95b0926aea6254bc
+msgid "打开 `生成数据集` 导出的候选结构。"
+msgstr ""
 
-#: ../../source/module/NEP-dataset-display.md:76 55b73023dcc64ddcb7349abf6cd47e49
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:87
+#: c8df41bb9b264f7ca2a819c079ba079b
 msgid "用结构视图和 `Finding non-physical structures` 找几何异常。"
 msgstr ""
 "Use the structure view and `Finding non-physical structures` to locate "
 "geometric problems."
 
-#: ../../source/module/NEP-dataset-display.md:77 66ad45ffe06244cfb8ee3dbb49ba3ac3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:88
+#: ced527b037084993bc9bdb6a45270f9f
 msgid "如果有可用 NEP 模型，再看预测力、能量或分布长尾。"
 msgstr ""
 "If a usable NEP model is available, inspect predicted forces, energies, and "
 "long distribution tails."
 
-#: ../../source/module/NEP-dataset-display.md:78 c0b439b139494fd3b605224232a616c2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:89
+#: cad369b2a5f744b39852287f19939595
 msgid "选中异常结构后删除，或单独导出做记录。"
 msgstr ""
 "Delete selected problematic structures or export them separately for "
 "investigation."
 
-#: ../../source/module/NEP-dataset-display.md:79 2d7428c9419946419601d15f54359b4c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:90
+#: 684c96cd949045c89cfe614c2d2049b9
 msgid "导出清洗后的候选池，再做 FPS 或其他代表性采样。"
 msgstr ""
 "Export the cleaned candidate pool, then apply FPS or another representative-"
 "sampling method."
 
-#: ../../source/module/NEP-dataset-display.md:81 5cfc5177166a42808fd81ced52eee3ac
-msgid "这里要避免一个顺序错误：不要把未清洗的候选池直接交给 FPS。FPS 只看描述符距离， 坏结构可能因为“离得远”被选中。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:92
+#: 22b5cfbcec4246d180615c0dfd6ac5a6
+msgid ""
+"这里要避免一个顺序错误：不要把未清洗的候选池直接交给 FPS。FPS 只看描述符距"
+"离， 坏结构可能因为“离得远”被选中。"
 msgstr ""
 "Do not send an uncleaned candidate pool directly to FPS. FPS measures "
 "descriptor distance; a bad structure can be selected precisely because it "
 "lies far from the rest of the pool."
 
-#: ../../source/module/NEP-dataset-display.md:84 db4d66fc363c4e38a711f638a4e38873
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:95
+#: 29e543258751497aaa6327fea400a314
 msgid "训练结果回看时怎么用"
 msgstr "Review training results"
 
-#: ../../source/module/NEP-dataset-display.md:86 29fbb7e797054ddfaee0c71fb312022e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:97
+#: 6fbe96c758bf4b61b6735e9ef428e1ae
 msgid "训练结束后，这个页面更像诊断台："
 msgstr "After training, use this page as a diagnostic workspace:"
 
-#: ../../source/module/NEP-dataset-display.md:88 ed359acda77b41e29108f9bf4011cc95
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:99
+#: 9d938ea3fefe47ff97748ce04d833d52
 msgid "打开训练输出。"
 msgstr "Open the training output."
 
-#: ../../source/module/NEP-dataset-display.md:89 f0e921ffd0ec478b80b430d1ce9c181d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:100
+#: c828688a36994bd1bb9dfb38ca4ba068
 msgid "先看 energy / force / stress / virial 的散点图。"
 msgstr "Inspect the energy, force, stress, and virial scatter plots first."
 
-#: ../../source/module/NEP-dataset-display.md:90 f0525eb3a9c64e329af1a9fd6d3a83ee
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:101
+#: 192bd2d2bd7c4f019c4b9f2b2e6f45d0
 msgid "用 `Find Max Error Point` 找误差最大的结构。"
 msgstr "Use `Find Max Error Point` to locate the largest errors."
 
-#: ../../source/module/NEP-dataset-display.md:91 725b47a8c4664b4f84c7631404b3f387
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:102
+#: aa41a7b9ba3045139226b508d6bfa823
 msgid "在右侧查看结构和 `Config_type`，判断误差来源。"
 msgstr ""
 "Inspect the corresponding structure and `Config_type` on the right to "
 "determine where the error comes from."
 
-#: ../../source/module/NEP-dataset-display.md:92 d2eca06c443f4502a2529b8174e6f9d4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:103
+#: 2d3cf85071e241aaaa3d17f2e6482232
 msgid "导出这些结构，作为下一轮补数据或排查 DFT 标签的入口。"
 msgstr ""
-"Export those structures as input for the next data iteration or for checking"
-" the original DFT labels."
+"Export those structures as input for the next data iteration or for checking "
+"the original DFT labels."
 
-#: ../../source/module/NEP-dataset-display.md:94 6feb58c64b464a8682a9d99beaa4971e
-msgid "判断时不要只看一个总 RMSE。更有用的是确认误差集中在哪类结构： 缺陷、表面、应变、高能构型、某个元素组合，还是某个生成卡片的输出。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:105
+#: 655f4302b6204ba49d75f775ffe4f5b8
+msgid ""
+"判断时不要只看一个总 RMSE。更有用的是确认误差集中在哪类结构： 缺陷、表面、应"
+"变、高能构型、某个元素组合，还是某个生成卡片的输出。"
 msgstr ""
 "Do not stop at a single aggregate RMSE. Determine where the error is "
 "concentrated: defects, surfaces, strained cells, high-energy structures, a "
 "particular element combination, or output from a particular generation card."
 
-#: ../../source/module/NEP-dataset-display.md:97 83254cee4ed64fecbe996cf8ca898471
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:108
+#: b903f01ad4ba45ceaa493f4312cadae3
 msgid "搜索模式"
 msgstr "Search modes"
 
-#: ../../source/module/NEP-dataset-display.md:99 25453a440c5b4a4aae235c67795200b7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:110
+#: 383490c88ec447e5bc72ce02cd26a75b
 msgid "`tag`：基于 `Config_type` 正则匹配。"
 msgstr "`tag`: regular-expression matching against `Config_type`."
 
-#: ../../source/module/NEP-dataset-display.md:100 f58bfe597b8c47e1ad95def840776e13
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:111
+#: c1600c5043074b8185783446073821b8
 msgid "`formula`：基于化学式正则匹配。"
 msgstr "`formula`: regular-expression matching against chemical formulas."
 
-#: ../../source/module/NEP-dataset-display.md:101 e9f17d7218d94801953ef7e44e5ecbc5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:112
+#: 1cba24a642cc4580886a27f4af63869d
 msgid "`elements`：元素集合语法，例如 `+Fe -O`。"
 msgstr "`elements`: element-set syntax such as `+Fe -O`."
 
-#: ../../source/module/NEP-dataset-display.md:102 aecc05f5ce0d4c8aac2e3219c4bb159c
-msgid "`expression`：基于结构级表达式筛选，支持 `natoms`、元素统计、能量、力、应力、virial 和 `atomic.<name>`。"
-msgstr ""
-"`expression`: structure-level expressions using `natoms`, element counts and"
-" fractions, energy, force, stress, virial, and `atomic.<name>`."
-
-#: ../../source/module/NEP-dataset-display.md:104 10bb61692f45468a98d94544cb2b4f0a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:113
+#: 513725fea15849268ee2d66fb7f42ac3
 msgid ""
-"`expression` 的完整语法、字段规则和示例见 [NEP Dataset Display 详细参考](show-nep-"
-"reference.md)。"
+"`expression`：基于结构级表达式筛选，支持 `natoms`、元素统计、能量、力、应力、"
+"virial 和 `atomic.<name>`。"
 msgstr ""
-"See the [NEP Dataset Display reference](show-nep-reference.md) for the full "
-"`expression` syntax, field rules, and examples."
+"`expression`: structure-level expressions using `natoms`, element counts and "
+"fractions, energy, force, stress, virial, and `atomic.<name>`."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/NEP-dataset-display.md:115
+#: 244c851876cc459dacb45620fdc35a77
+msgid ""
+"`expression` 的完整语法、字段规则和示例见 [筛选栏：按标签、元素和表达式找结"
+"构](nep-display-filter.md)。"
+msgstr ""
+
+#~ msgid ""
+#~ "**DFT 之前**：把 `Make Dataset` 生成的候选结构导入进来，先删掉明显异常结"
+#~ "构，再采样去 DFT。"
+#~ msgstr ""
+#~ "**Before DFT**: import candidates from `Make Dataset`, remove clearly "
+#~ "problematic structures, then sample the cleaned pool for DFT."
+
+#~ msgid "`Make Dataset` 刚生成结构后"
+#~ msgstr "Immediately after generating structures with `Make Dataset`"
+
+#~ msgid ""
+#~ "如果你正在处理 `Make Dataset` 的候选结构，建议先看完整流程： [候选结构清洗"
+#~ "后再进入 DFT](../workflows/clean-candidate-structures.md)。"
+#~ msgstr ""
+#~ "For a candidate pool from `Make Dataset`, follow [Clean candidate "
+#~ "structures before DFT](../workflows/clean-candidate-structures.md)."
+
+#~ msgid ""
+#~ "如果你不知道按钮图标对应哪个功能，查 [NEP Dataset Display 详细参考](show-"
+#~ "nep-reference.md)。参考页按按钮列出了参数和执行结果。"
+#~ msgstr ""
+#~ "If an icon is unfamiliar, use the [NEP Dataset Display reference](show-"
+#~ "nep-reference.md). It lists each button together with its parameters and "
+#~ "result."
+
+#~ msgid "打开 `Make Dataset` 导出的候选结构。"
+#~ msgstr "Open the candidate structures exported from `Make Dataset`."
+
+#~ msgid ""
+#~ "`expression` 的完整语法、字段规则和示例见 [NEP Dataset Display 详细参考]"
+#~ "(show-nep-reference.md)。"
+#~ msgstr ""
+#~ "See the [NEP Dataset Display reference](show-nep-reference.md) for the "
+#~ "full `expression` syntax, field rules, and examples."

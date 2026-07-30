@@ -9,301 +9,329 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:3
-#: fd325ab56f214617b53a879a980b0c64
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:3
+#: b03408dbe299416abfc329466381c63b
 msgid "剪切矩阵应变（Shear Matrix Strain）"
 msgstr "Shear Matrix Strain"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:5
-#: b535401b734847b9aef7235430de8277
-msgid "`Group`: `Lattice` | `Class`: `ShearMatrixCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:5
+#: 26c69d9d1e9a4011aa0831756c9a9a01
+msgid "**分类：** 晶格"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:7
-#: 66c63170745f4c4990a35ae81dfec7c5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:7
+#: 0a952afc2e4c49a8b7776e1069c4c12f
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:9
-#: 8334b8b9d9054777be84bd55ca2dc107
-msgid "通过 xy/yz/xz 剪切矩阵分量生成非对角形变样本。对晶格矢量的三个剪切通道做系统扫描，每个通道独立控制 min/max/step。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:9
+#: 1fdd346debb8443b9f9a4216ac77c18f
+msgid ""
+"通过 xy/yz/xz 剪切矩阵分量生成非对角形变样本。对晶格矢量的三个剪切通道做系统"
+"扫描，每个通道独立控制 min/max/step。"
 msgstr ""
 "Generate off-diagonal deformations by scanning xy, yz, and xz shear-matrix "
 "components, each with an independent minimum, maximum, and step."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:11
-#: a45142fd537045bcb2fd7afad362f4bf
-msgid ""
-"\\gamma_{xy}=\\frac{s_{xy}}{100},\\quad "
-"\\mathbf{S}=\\begin{bmatrix}1&\\gamma_{xy}&\\gamma_{xz}\\\\0&1&\\gamma_{yz}\\\\0&0&1\\end{bmatrix},\\quad"
-" \\mathbf{C}'=\\mathbf{C}\\mathbf{S}"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:11
+#: 822ea0800d1545c794c05e94ac76093e
+msgid "原理与公式"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:13
-#: 83fbc621f35d49f8bdd42c8481c89e3c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:13
+#: 3e4e1cd17ba84db6b125f2fc6db36391
+msgid ""
+"\\gamma_{xy}=\\frac{s_{xy}}{100},\\quad \\mathbf{S}=\\begin{bmatrix}"
+"1&\\gamma_{xy}&\\gamma_{xz}\\\\0&1&\\gamma_{yz}\\\\0&0&1\\end{bmatrix},"
+"\\quad \\mathbf{C}'=\\mathbf{C}\\mathbf{S}"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:15
+#: 5144a79a58644366aaee072202d25ac0
 msgid "`symmetric=true` 时填充 S 的下三角对应项，使剪切路径更接近对称形变。"
 msgstr ""
 "With `symmetric=true`, matching lower-triangular entries are filled to form "
 "a symmetric strain-like path."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:15
-#: 09fedff555ad4d2db0860353996516b5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:17
+#: f8bcebe2807f4e92b9ff707784b6809f
+msgid ""
+"其中 $s_{xy},s_{yz},s_{xz}$ 是界面输入的百分数，$\\gamma$ 是无量纲剪切量。 非"
+"对称模式是简单剪切；对称模式同时填入转置位置。原子分数坐标保持不变。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:20
+#: f2eda7d494bc491381bc2df0df6f8f01
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:17
-#: 5c325f86934d43ad81a01aeccb4d2529
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:22
+#: eb20fed47f664d97b9a37ffd95ffde37
 msgid "场景：模型预测剪切模量 C44 比 DFT 低 40%"
 msgstr "Scenario: Predicted C44 is 40% below DFT"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:19
-#: a2df45dfe05449a7813f83e281e9e617
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:24
+#: 86fdad54864d4f3aaedb03d2d7df4300
 msgid ""
-"你在 fcc Al 上训练了一个 NEP 模型，C11/C12 都对，但 C44 只有 DFT 值的 60%。诊断发现：C44 是对应于 "
-"xy/yz/xz 方向剪切的分量，而训练集里所有结构都是轴向拉伸/压缩（通过 `Lattice Strain` 生成的），模型没见过非对角剪切变形。"
+"你在 fcc Al 上训练了一个 NEP 模型，C11/C12 都对，但 C44 只有 DFT 值的 60%。诊"
+"断发现：C44 是对应于 xy/yz/xz 方向剪切的分量，而训练集里所有结构都是轴向拉伸/"
+"压缩（通过 `Lattice Strain` 生成的），模型没见过非对角剪切变形。"
 msgstr ""
 "An fcc Al NEP reproduces C11 and C12 but predicts only 60% of the DFT C44. "
 "Its training set contains axial strains but no off-diagonal shear states."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:21
-#: 713e14d369f64407b0cfc48e1ab6c4a4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:26
+#: 59ae20860d824e5e9fb8c8ea48121e88
 msgid ""
 "**诊断思路：** 剪切弹性常数来源于非对角应变。如果训练集只覆盖对角应变（axial "
-"strain），模型对剪切方向的刚度完全靠外推。需要往训练集里加入已知剪切分量的结构。"
+"strain），模型对剪切方向的刚度完全靠外推。需要往训练集里加入已知剪切分量的结"
+"构。"
 msgstr ""
 "**Diagnosis:** Shear elastic constants derive from off-diagonal strain "
 "response. Add cells with controlled shear components so that response is "
 "interpolated."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:23
-#: bd12cdb724d34754a068765774149b51
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:28
+#: 8bef0acf6e624234a7248a9edc61f6d6
 msgid "**输入：** 一个弛豫好的 fcc Al 单胞"
 msgstr "**Input:** A relaxed fcc Al cell."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:25
-#: df4c58b03f524e138ccc08e654cc19ea
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:30
+#: 2821517332ed4652b2f4cb3c8d851fe7
 msgid "**目标：** 沿 xy 方向做 -3% 到 +3% 剪切，步长 1%，对称模式，共 7 个结构"
 msgstr "**Objective:** Scan symmetric xy shear from -3% to +3% in 1% steps."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:27
-#: 744ce74c26494e50adb4295af0afe5c6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:32
+#: 05c9b2ac27a84465acb75cdaeaeebcfd
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:28
-#: c3d908b3ef0944efa4b3697e240b24ab
-msgid "`xy_range` = `[-3, 3, 1]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:33
+#: 82a015bf2699427885260e09d00345e4
+msgid "`XY 剪切范围`（`xy_range`） = `[-3, 3, 1]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:29
-#: 8429775f40714defbb76cf85e6fe2b5e
-msgid "`yz_range` = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值写进去，否则 range 为空不生成"
-msgstr "`yz_range` = `[0,0,1]` (one zero point; the step must be nonzero)"
-
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:30
-#: d0749a8d2de14ee08243908b02aff727
-msgid "`xz_range` = `[0, 0, 1]` （不扫 xz）"
-msgstr "`xz_range` = `[0,0,1]`"
-
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:31
-#: eee54a5a92e34d0b92fdfed2ea10b848
-msgid "`symmetric` = `true`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:34
+#: 945738140e9c49a689cc245519e09301
+msgid ""
+"`YZ 剪切范围`（`yz_range`） = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值"
+"写进去，否则 range 为空不生成"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:33
-#: 84c7c7d1c9c04fd4ae4f98e88311436c
-msgid "**输出：** 7 个结构，剪切矩阵的 xy 分量从 -0.03 到 +0.03，yz 和 xz 分量为 0"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:35
+#: 19625dff54764a96988f57b177f91290
+msgid "`XZ 剪切范围`（`xz_range`） = `[0, 0, 1]` （不扫 xz）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:36
+#: aec40b38f4c04970bb65430c7de790b3
+msgid "`对称剪切`（`symmetric`） = `true`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:38
+#: 85ca563370254c0595cfbe88702267cb
+msgid ""
+"**输出：** 7 个结构，剪切矩阵的 xy 分量从 -0.03 到 +0.03，yz 和 xz 分量为 0"
 msgstr ""
 "**Output:** Seven structures with xy from -0.03 to +0.03 and zero yz/xz "
 "components."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:35
-#: 5277a45352314cb2901a390ebec9b64d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:40
+#: ed97fac246aa4c04a67ba0c78aa151c6
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:36
-#: 9c5dd83a63dd4f2aabfc527243b9b71b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:41
+#: d4b95868059642468851bf4a9c60e2c1
 msgid "重训后重新计算弹性常数矩阵，C44 应该更接近 DFT 参考值"
 msgstr ""
 "After labeling and retraining, recompute the elastic tensor; C44 should "
 "approach the DFT reference."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:37
-#: 123c00f261124c29bac17eea1960d879
-msgid "检查输出结构的晶格角变化：单斜/triclinic 体系剪切后角度会偏离正交，确认变化在物理合理范围"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:42
+#: b1f1fe9a60d341e591741a8eb0637ae9
+msgid ""
+"检查输出结构的晶格角变化：单斜/triclinic 体系剪切后角度会偏离正交，确认变化在"
+"物理合理范围"
 msgstr ""
 "Inspect resulting cell angles and confirm that nonorthogonality remains in "
 "the intended range."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:38
-#: ff9e306ee429464c90187504f42d92cf
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:43
+#: ddb0133a2f23428c991f6ae2812d5cfe
 msgid "如果 C44 改善但 C55/C66 仍有偏差，再单独扫 yz_range 和 xz_range"
 msgstr "If C44 improves but C55/C66 do not, scan yz and xz separately."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:39
-#: 6d37212442064ca0b951ed068a496ee5
-msgid "如果三个分量都需要同时补，再同时放开三个 range —— 但注意输出数 = Nxy * Nyz * Nxz，组合数很快爆炸"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:44
+#: 40455f5f39bd413a9a91b70bc1655701
+msgid ""
+"如果三个分量都需要同时补，再同时放开三个 range —— 但注意输出数 = Nxy * Nyz * "
+"Nxz，组合数很快爆炸"
 msgstr ""
 "Open all three ranges only when joint coverage is needed; output is Nxy × "
 "Nyz × Nxz."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:41
-#: db6753f54bc8479abf65d8bc9cc2da23
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:46
+#: c67cc643dec74fd89f6a99e6d994f10d
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:43
-#: cb6f9bd078bf46dcaa39311f46161c88
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:48
+#: a14fab4faaab48bbb4c2958461cec7f5
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:44
-#: eca3363082d841768aad2ce857281f2b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:49
+#: 28a879edf7d245e3b489e8a422ab3f6a
 msgid "模型剪切模量、非对角弹性常数系统性偏差"
 msgstr "Shear modulus or off-diagonal elastic response is systematically wrong"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:45
-#: a106ee344a4f470295165bb80ec63491
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:50
+#: c7550c39f7c846eaa8e2c10afdd9c15e
 msgid "训练集缺少非正交晶格构型、所有结构都在高对称格点"
 msgstr "Training lacks nonorthogonal cells"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:46
-#: d412136c8ff043a6858a0a67c8b0a370
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:51
+#: a33e7c1cc82641269e7bb7b28581d0da
 msgid "需要覆盖剪切方向的应力-应变响应"
 msgstr "Stress-strain response along shear directions is needed"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:48
-#: 8702d90b72494bd7b6f53b20afc83a89
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:53
+#: f623fdec088d4cf5bcfafbcf1192ca16
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:49
-#: 633b91a19b9a4944b5372c8c4700a4f8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:54
+#: d69441957d5e4d5faa32e6ced1b51610
 msgid "只需要体积和单轴应变 → `Lattice Strain` 更直接"
 msgstr "Only volume and axial strain are needed; use `Lattice Strain`"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:50
-#: e1b6dac8187f416f9104a5a7fb0eb784
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:55
+#: d5cbf70d2e594a2295144fe121987e0d
 msgid "想通过角度而非矩阵分量控制剪切 → `Shear Angle Strain` 更适合"
 msgstr ""
-"Shear should be controlled through crystallographic angles; use `Shear Angle"
-" Strain`"
+"Shear should be controlled through crystallographic angles; use `Shear Angle "
+"Strain`"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:51
-#: ce356b650c874a6f89a09195cc47bc43
-msgid "体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `identify_organic`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:56
+#: 27c9d32305384be8bbaf840004819a00
+msgid ""
+"体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `识别有机分子`"
+"（`identify_organic`）"
 msgstr ""
-"The system is molecular and shear would distort intramolecular topology "
-"without molecular protection"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:53
-#: f0c5c7147cee41ed85b767def8518025
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:58
+#: d9949568dd2e45a08a1e26f2a4a98343
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:55
-#: b6227a7c3aeb4989bdd0e50592903325
-msgid "XY Range（xy_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:60
+#: 518ec8cee6fd4e44bea348aa8e490103
+msgid "XY 剪切范围（xy_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:57
-#: 22345b7543594a3fa11834cee30654cc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:62
+#: 401d1a2c27ee4624b13ec40172883aeb
 msgid ""
-"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。剪切矩阵 xy 分量的扫描区间，格式 `[min,"
-" max, step]`，单位 %。比如 `sxy=5` 对应剪切矩阵分量 0.05。如果你只扫一个分量，把另外两个设为一个点就行——但注意不能设成 "
-"`[0, 0, 0]`（步长为 0 会让 range 变空），正确写法是 `[0, 0, 1]` 保证至少生成一个 0 点。"
+"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。剪切矩阵 xy 分量的扫描"
+"区间，格式 `[min, max, step]`，单位 %。比如 `sxy=5` 对应剪切矩阵分量 0.05。如"
+"果你只扫一个分量，把另外两个设为一个点就行——但注意不能设成 `[0, 0, 0]`（步长"
+"为 0 会让 range 变空），正确写法是 `[0, 0, 1]` 保证至少生成一个 0 点。"
 msgstr ""
 "`tuple[float, float, float]`, default `(-5.0,5.0,1.0)`. xy scan as "
 "`[min,max,step]` in percent; `5` means matrix component 0.05. Use `[0,0,1]` "
 "for an inactive channel."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:59
-#: e630c8982e474a2cbfb7ee739113901d
-msgid "YZ Range（yz_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:64
+#: dd92af04692f4369b30e1525c5077b17
+msgid "YZ 剪切范围（yz_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:61
-#: 51afd086246c4aceb04cf6ff4175bcdc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:66
+#: 7c72ac6cd9d14352b2e2519ea112830e
 msgid ""
-"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。yz 分量的扫描区间，单位和语法同 "
-"xy_range。同理，不扫时写 `[0, 0, 1]`。"
+"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。yz 分量的扫描区间，单"
+"位和语法同 xy_range。同理，不扫时写 `[0, 0, 1]`。"
 msgstr ""
 "`tuple[float,float,float]`, default `(-5.0,5.0,1.0)`. yz scan with the same "
 "syntax; use `[0,0,1]` when inactive."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:63
-#: 1c9b11f19c3e40e989b17e69a8306e55
-msgid "XZ Range（xz_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:68
+#: 92bb29fd93824c268d1deb0e1e27cbe2
+msgid "XZ 剪切范围（xz_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:65
-#: 2d55489925904bb6ae311220cd9044eb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:70
+#: ef8c2c212766433594f788f37323d909
 msgid ""
-"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。xz 分量的扫描区间，同上。不扫时写 `[0, "
-"0, 1]`。"
+"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。xz 分量的扫描区间，同"
+"上。不扫时写 `[0, 0, 1]`。"
 msgstr ""
 "`tuple[float,float,float]`, default `(-5.0,5.0,1.0)`. xz scan with the same "
 "syntax; use `[0,0,1]` when inactive."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:67
-#: 35f35f948b204b0aad281f1d08b4b2cb
-msgid "输出总数 = Nxy * Nyz * Nxz。三个通道同时按默认值跑 = 11^3 = 1331 个结构。建议先单通道试跑验证参数，再逐步加通道。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:72
+#: 3d556e8e95424cfdb9fc12298b940bbe
+msgid ""
+"输出总数 = Nxy * Nyz * Nxz。三个通道同时按默认值跑 = 11^3 = 1331 个结构。建议"
+"先单通道试跑验证参数，再逐步加通道。"
 msgstr ""
 "Output is Nxy × Nyz × Nxz. Three default 11-point channels produce 1,331 "
 "structures. Validate one channel first."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:69
-#: 29c75a93114848318b9ed5c9d9e74b18
-msgid "Symmetric（symmetric）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:74
+#: 47a0bf8dea3a4da5bc7c52a7df94d257
+msgid "对称剪切（symmetric）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:71
-#: bce59586accd4f15bcb8d4c0a2e229a9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:76
+#: 7fe34b62bae142fda23ef8ef053611cc
 msgid ""
-"`bool`，默认 `true`。打开后剪切矩阵下三角同步填充（比如 `S[1,0] = "
-"S[0,1]`），形变路径更接近物理上的对称剪切。如果你在研究非对称畸变（比如某些铁弹相变），把这个关掉。"
+"`bool`，默认 `true`。打开后剪切矩阵下三角同步填充（比如 `S[1,0] = S[0,1]`），"
+"形变路径更接近物理上的对称剪切。如果你在研究非对称畸变（比如某些铁弹相变），"
+"把这个关掉。"
 msgstr ""
 "`bool`, default `true`. Mirror upper-triangular components into the lower "
 "triangle, for example `S[1,0]=S[0,1]`. Disable only for an intentionally "
 "asymmetric deformation path."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:73
-#: d8bb2c160c4e46abb335360a47785ce8
-msgid "Identify Organic（identify_organic）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:78
+#: fbee4bcb670748798905001d873c099d
+msgid "识别有机分子（identify_organic）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:75
-#: 37c54fa736af49a1874b4b5dd89f8d53
-msgid "`bool`，默认 `false`。分子晶体必须打开——否则剪切变形会撕裂分子内键。纯无机体系关着即可。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:80
+#: 29e8410a965648e0b37c2ad2a2ec6d24
+msgid ""
+"`bool`，默认 `false`。分子晶体必须打开——否则剪切变形会撕裂分子内键。纯无机体"
+"系关着即可。"
 msgstr ""
-"`bool`, default `false`. Enable molecular protection for molecular crystals;"
-" leave disabled for purely inorganic systems."
+"`bool`, default `false`. Enable molecular protection for molecular crystals; "
+"leave disabled for purely inorganic systems."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:77
-#: 7443a784a2ee48b4a77868afc65932b8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:82
+#: b8c9e067b45e493389b95776d4c5601a
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:79
-#: 7383019914d7498dbcd58157e41ae7fd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:84
+#: 8a3f719720bd49cc91ad3d29b75bdcce
 msgid "单分量弹性补样（仅 xy，±3%，对称）"
 msgstr "Single-component elastic sampling (xy only, ±3%, symmetric)"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:80
-#: eeb19f041d1a44c9854afd48fd2dd6c2
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:85
+#: 444e7877f53644bfbc698ed191e8d6f3
 msgid ""
 "{\n"
 "  \"class\": \"ShearMatrixCard\",\n"
@@ -316,14 +344,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:92
-#: 9161ad5f5a7a4369ae9cf9fa97246c42
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:97
+#: 2c8c7cbd526c4eaf8b0f3a1ce7aae4fb
 msgid "双分量剪切覆盖（xy+yz，±5%，对称，~121 个输出）"
-msgstr "Two-component shear coverage (xy and yz, ±5%, symmetric, about 121 outputs)"
+msgstr ""
+"Two-component shear coverage (xy and yz, ±5%, symmetric, about 121 outputs)"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:93
-#: 7f8af607dc76411ab9410143bd407c55
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:98
+#: 433dd92833dc4cc88b629487db99c01b
 msgid ""
 "{\n"
 "  \"class\": \"ShearMatrixCard\",\n"
@@ -336,14 +364,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:105
-#: 0254e167b88d4b7d9ac2d009025b145c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:110
+#: 640be4856e524540918d93ffd79c4e73
 msgid "三通道研究级（xy+yz+xz，±6%，步长 2%，非对称，~343 个输出）"
 msgstr "Three-channel study (±6%, step 2%, asymmetric, about 343 outputs)"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:106
-#: 368fe2fec4614a7a8b57ec4a1737d7e5
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:111
+#: c3170559593d4ff98b25d70a5b948be2
 msgid ""
 "{\n"
 "  \"class\": \"ShearMatrixCard\",\n"
@@ -356,90 +383,110 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:118
-#: 2c0705dac03543b0a4dc4f5125a9aba4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:123
+#: d2a09bee05b54748935a41a12dbfdd38
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:120
-#: 4e2c724f9a044ae9a103c2e044efb6d2
-msgid "`Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量，覆盖完整弹性张量"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:125
+#: b1992b92891a4ad686ff2e942101c58b
+msgid ""
+"`Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量，覆盖完"
+"整弹性张量"
 msgstr ""
-"`Lattice Strain` -> `Shear Matrix Strain`: cover axial response before shear"
-" tensor components"
+"`Lattice Strain` -> `Shear Matrix Strain`: cover axial response before shear "
+"tensor components"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:121
-#: 05e1e3ff2db742cba9ddbc34c6d99034
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:126
+#: 035788bf950d477691cf214b60853f46
 msgid "`Shear Matrix Strain` → `Atomic Perturb`：剪切变形后加坐标噪声"
 msgstr ""
 "`Shear Matrix Strain` -> `Atomic Perturb`: add coordinate noise after a "
 "shear deformation"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:122
-#: 769abc89c177474abd7d7a1b2c370863
-msgid "`Super Cell` → `Shear Matrix Strain`：先扩胞再剪切，适合研究大尺度剪切响应"
-msgstr "`Super Cell` -> `Shear Matrix Strain`: shear at the intended cell scale"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:127
+#: 5d83ef8183ee454996bff4c339936f68
+msgid ""
+"`Super Cell` → `Shear Matrix Strain`：先扩胞再剪切，适合研究大尺度剪切响应"
+msgstr ""
+"`Super Cell` -> `Shear Matrix Strain`: shear at the intended cell scale"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:124
-#: e6f6281e6a5341e2b5c674e95b358158
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:129
+#: 51594d995b3f4ab5a417d9d548bdcda9
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:126
-#: 3a681acb5f194402a91d5f9132cfd7a0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:131
+#: 4d04ce10c52b4140ad805776cfc1f05e
 msgid ""
-"**输出为空。** 检查 range 的步长是否 > 0。如果不扫某个分量，不能设置 `[0, 0, 0]` —— 步长为 0 会导致 range "
-"为空。应该设置 `[0, 0, 1]` 确保至少生成一个点（0）。"
+"**输出为空。** 检查 range 的步长是否 > 0。如果不扫某个分量，不能设置 `[0, 0, "
+"0]` —— 步长为 0 会导致 range 为空。应该设置 `[0, 0, 1]` 确保至少生成一个点"
+"（0）。"
 msgstr ""
 "**No output.** Every step must be positive; use `[0,0,1]` for an inactive "
 "component."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:128
-#: 1bf181bad5f04950b740f0f53dc0cbfa
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:133
+#: c8a16f2dda9d43ce9a80db0328f343f6
 msgid ""
-"**输出数量爆炸。** 三通道联扫的输出数 = Nxy * Nyz * Nxz。默认 `[-5, 5, 1]` 三个通道同时开 = 11^3 = "
-"1331 个结构。建议先单通道试跑验证参数合理性后再加通道。"
+"**输出数量爆炸。** 三通道联扫的输出数 = Nxy * Nyz * Nxz。默认 `[-5, 5, 1]` 三"
+"个通道同时开 = 11^3 = 1331 个结构。建议先单通道试跑验证参数合理性后再加通道。"
 msgstr ""
 "**Output explodes.** Three channels form a Cartesian product. Validate one "
 "channel and estimate the total before adding more."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:130
-#: 13fb524f1e924f8b8b5e54ea0766767c
-msgid "**剪切后结构物理不合理。** 剪切幅度过大导致晶格条件数恶化（接近奇异）。抽查最近邻距离和晶格行列式。±5% 以上建议逐步增加并每步检查。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:135
+#: 93cf95e5e25545e89f6d5e988e38d095
+msgid ""
+"**剪切后结构物理不合理。** 剪切幅度过大导致晶格条件数恶化（接近奇异）。抽查最"
+"近邻距离和晶格行列式。±5% 以上建议逐步增加并每步检查。"
 msgstr ""
 "**Geometry becomes implausible.** Excessive shear can make the lattice ill-"
 "conditioned. Inspect nearest-neighbor distances and the cell determinant, "
 "increasing beyond ±5% gradually."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:132
-#: 8856e05e39c74e03a6ac7940c7dac39f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:137
+#: ebaec0354cde447c80880f716084424a
 msgid ""
-"**vs Shear Angle Strain 如何选择。** Shear Matrix "
-"在笛卡尔坐标下直接修改剪切矩阵分量，适合和弹性常数计算对齐；Shear Angle 修改晶胞角度 alpha/beta/gamma，适合和 "
-"XRD/晶体学角度对齐。两者产生不同的形变路径，可以互补使用。"
+"**vs Shear Angle Strain 如何选择。** Shear Matrix 在笛卡尔坐标下直接修改剪切"
+"矩阵分量，适合和弹性常数计算对齐；Shear Angle 修改晶胞角度 alpha/beta/gamma，"
+"适合和 XRD/晶体学角度对齐。两者产生不同的形变路径，可以互补使用。"
 msgstr ""
 "**Matrix or angle shear?** Matrix shear directly controls Cartesian off-"
-"diagonal components and aligns with elastic-tensor calculations. Angle shear"
-" controls alpha, beta, and gamma and aligns with crystallographic "
+"diagonal components and aligns with elastic-tensor calculations. Angle shear "
+"controls alpha, beta, and gamma and aligns with crystallographic "
 "descriptions. They are distinct paths and may be complementary."
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:134
-#: 884b832a43844d328118629b04ed76e6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:139
+#: 159a03e82cb841eaa8011386dbb9eb35
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:136
-#: d71771f1775a495995d425fa3c39413e
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:141
+#: 756f644751254a48a3369621cf8ba365
 msgid "`Shr(xy={sxy}%,yz={syz}%,xz={sxz}%,sym={0|1})`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:138
-#: c27f9c18b37143d980e77e413a17e99a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:143
+#: e3330f9591fc46588540e3b4b2a63bbc
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:140
-#: 320fec7c46424e3f9a8c92d1274d299b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:145
+#: def3b390f16c4b8c9848f4a67ffa5fa2
 msgid "无随机性。同参数同输入 → 严格一致输出。所有剪切分量按固定网格扫描。"
 msgstr "Deterministic: all components are scanned on a fixed grid."
+
+#~ msgid ""
+#~ "`yz_range` = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值写进去，否则 "
+#~ "range 为空不生成"
+#~ msgstr "`yz_range` = `[0,0,1]` (one zero point; the step must be nonzero)"
+
+#~ msgid "`xz_range` = `[0, 0, 1]` （不扫 xz）"
+#~ msgstr "`xz_range` = `[0,0,1]`"
+
+#~ msgid ""
+#~ "体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `identify_organic`"
+#~ msgstr ""
+#~ "The system is molecular and shear would distort intramolecular topology "
+#~ "without molecular protection"

@@ -1,0 +1,184 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-overview.md:1
+#: 07412d1271f34d6f87316950c38602a0
+msgid "概览与快速体检"
+msgstr "概览与快速体检"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-overview.md:3
+#: c592612505e543349382610a389c8b18
+msgid "先看当前结论和数据概况，再处理训练阻塞项与建议复核项。"
+msgstr "先看当前结论和数据概况，再处理训练阻塞项与建议复核项。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:714
+#: 1e4564655f784e898194a04063997fe7
+msgid "「概览」先回答 3 个问题："
+msgstr "「概览」先回答 3 个问题："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:716
+#: d9315761f9884fa98a5f317bd7d0630b
+msgid "有没有空结构、非法数值、标签形状错误等训练阻塞项；"
+msgstr "有没有空结构、非法数值、标签形状错误等训练阻塞项；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:717
+#: 48eee15d65f24cb29a3ed00a8e686f4e
+msgid "当前数据包含哪些精确组分、元素和标签；"
+msgstr "当前数据包含哪些精确组分、元素和标签；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:718
+#: 26028860b184404c88fb626d13296db2
+msgid "哪些高力、高能量、重复或低频集合值得先复核。"
+msgstr "哪些高力、高能量、重复或低频集合值得先复核。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:720
+#: 6e4683fe5a2947238f1d94c9084b30a9
+msgid ""
+"点击复核项后，下方会显示观察事实、解释和能力边界。再点击显示结构按钮，即可返"
+"回原页面，并选中该项对应的真实结构。"
+msgstr ""
+"点击复核项后，下方会显示观察事实、解释和能力边界。再点击显示结构按钮，即可返"
+"回原页面，并选中该项对应的真实结构。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:722
+#: aa482c9e0dd746fa9fb24340d915d69a
+msgid ""
+"训练集评估概览页，标出当前结论、数据概况、建议复核顺序和 HTML 报告导出入口"
+msgstr ""
+"训练集评估概览页，标出当前结论、数据概况、建议复核顺序和 HTML 报告导出入口"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:722
+#: aa482c9e0dd746fa9fb24340d915d69a
+msgid ".. image:: ../_static/image/generated/training_set_audit_overview.png"
+msgstr ".. image:: ../_static/image/generated/training_set_audit_overview.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:727
+#: f8ca590065a443ffa401438e8b805fcb
+msgid ""
+"图中的编号就是推荐阅读顺序：先读当前结论，再确认本次检查了多少结构和标签，随"
+"后按「建议下一步」进入复核队列。只有需要留档或发给合作者时，才使用右上角的 "
+"HTML 导出。"
+msgstr ""
+"图中的编号就是推荐阅读顺序：先读当前结论，再确认本次检查了多少结构和标签，随"
+"后按「建议下一步」进入复核队列。只有需要留档或发给合作者时，才使用右上角的 "
+"HTML 导出。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3330
+#: da17472ec94c47508c1c80b0e7f38b09
+msgid "快速体检检查什么"
+msgstr "快速体检检查什么"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3332
+#: d60d89c2b46d470ea9846115a7cc424c
+msgid "训练阻塞项"
+msgstr "训练阻塞项"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3334
+#: 413e4ec353e4403a9b5cf2f5e8d8ce2a
+msgid "以下结果违反明确的数据契约，应在训练前处理："
+msgstr "以下结果违反明确的数据契约，应在训练前处理："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3336
+#: bb85a40f9c6b4aebbf8c3520d386a516
+msgid "空结构；"
+msgstr "空结构；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3337
+#: 20570de65fcc4aa2b0784fe4cb37fa12
+msgid "位置、晶胞或标签中的 `NaN / Inf`；"
+msgstr "位置、晶胞或标签中的 `NaN / Inf`；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3338
+#: 1a32334be50d4618b53ed8ea59afd412
+msgid "位置、力、virial 等数组形状错误；"
+msgstr "位置、力、virial 等数组形状错误；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3339
+#: ae42914657a24a17aa777a528b588a3f
+msgid "周期方向与晶胞不一致；"
+msgstr "周期方向与晶胞不一致；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3340
+#: 140a75684a3b4b608591bcf0855d4462
+msgid "未知元素，或元素数量与原子数不一致；"
+msgstr "未知元素，或元素数量与原子数不一致；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3341
+#: 7d07859b025148649d466cc8eb885801
+msgid "最短原子距离小于 `0.5 Å` 的保守重叠信号；"
+msgstr "最短原子距离小于 `0.5 Å` 的保守重叠信号；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3342
+#: 4d8e6ad99fa34c6c88668ce2f6bb13c7
+msgid "相同几何对应互相冲突的能量、力或 virial 标签。"
+msgstr "相同几何对应互相冲突的能量、力或 virial 标签。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3344
+#: e697b8ff6104439ea0e7b552c2648d9f
+msgid ""
+"相同几何按元素、周期边界、晶胞和坐标共同判断；晶胞与坐标比较到小数点后 8 位。"
+"冲突标签的当前绝对容差为：能量 `1 × 10⁻⁵`、力 `1 × 10⁻⁵`、virial `1 × 10⁻⁴`，"
+"相对容差为 `0`。"
+msgstr ""
+"相同几何按元素、周期边界、晶胞和坐标共同判断；晶胞与坐标比较到小数点后 8 位。"
+"冲突标签的当前绝对容差为：能量 `1 × 10⁻⁵`、力 `1 × 10⁻⁵`、virial `1 × 10⁻⁴`，"
+"相对容差为 `0`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3346
+#: cfa79779f40f4f6c9f6904e6c099d1c8
+msgid ""
+"软件不会自动删除阻塞结构，也不会替用户决定哪一次重复计算才正确。应先回到结构"
+"来源和 DFT 输出核对。"
+msgstr ""
+"软件不会自动删除阻塞结构，也不会替用户决定哪一次重复计算才正确。应先回到结构"
+"来源和 DFT 输出核对。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3348
+#: 3a17785042d04b7daa998bb7ad91eaec
+msgid "建议复核项"
+msgstr "建议复核项"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3350
+#: 9df8990fd0714dd7a91159a4787e6923
+msgid "最大力最高的 10%；"
+msgstr "最大力最高的 10%；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3351
+#: 2470b1402f084f649a091cace4b2fdd9
+msgid "单原子能量最高的 5%；"
+msgstr "单原子能量最高的 5%；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3352
+#: 952a04b59ac24a579895d61e31aaafb7
+msgid "重复几何；"
+msgstr "重复几何；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3353
+#: baafc9fd301b4d80ab0885f8c91d65b9
+msgid "当前数据内部的低频组分、低频局域环境或不平衡集合。"
+msgstr "当前数据内部的低频组分、低频局域环境或不平衡集合。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3355
+#: 2e6822b0306a45f5b83cffc7843f465d
+msgid ""
+"固定分位集合按排名必然产生。高力、高能量或重复结构可能来自真实目标物理、显式"
+"加权或独立计算，因此这些结果是复核入口，不是删除建议。"
+msgstr ""
+"固定分位集合按排名必然产生。高力、高能量或重复结构可能来自真实目标物理、显式"
+"加权或独立计算，因此这些结果是复核入口，不是删除建议。"

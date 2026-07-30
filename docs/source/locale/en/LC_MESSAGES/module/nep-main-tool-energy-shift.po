@@ -1,0 +1,237 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:1
+#: a29c4a8817594d008ec16b4b7b577bde
+msgid "能量基线平移（Energy Baseline Shift）"
+msgstr "能量基线平移（Energy Baseline Shift）"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:3
+#: eb9c03f6f3b04c49bfabe270c86ede11
+msgid "作用与适用场景"
+msgstr "作用与适用场景"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:5
+#: 45363c1a6f9f4c33a1f2f8fa2a83840b
+msgid ""
+"按元素计数拟合原子参考能，并从结构总能量中减去对应基线。适合统一不同 "
+"`Config_type` 或不同组成数据的能量零点，便于比较形成能附近的变化。"
+msgstr ""
+"按元素计数拟合原子参考能，并从结构总能量中减去对应基线。适合统一不同 "
+"`Config_type` 或不同组成数据的能量零点，便于比较形成能附近的变化。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:8
+#: 9abade70e7274a8897958896faebc71f
+msgid ""
+"这个操作会修改当前结构的 energy。第一次平移前的数值会写入 "
+"`energy_original`； 同一结构再次平移时不会覆盖已经保存的原始能量。"
+msgstr ""
+"这个操作会修改当前结构的 energy。第一次平移前的数值会写入 "
+"`energy_original`； 同一结构再次平移时不会覆盖已经保存的原始能量。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:11
+#: 12f701a16cf645f7a1817e2468e2f8e7
+msgid "拟合与平移原理"
+msgstr "拟合与平移原理"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:13
+#: 2570ab49898b4623a9f9b5feb6460cb6
+msgid ""
+"设结构 $i$ 的元素计数向量为 $\\mathbf n_i$，待拟合的逐元素基线为 $"
+"\\mathbf\\varepsilon_g$，其中 $g$ 是由 `分组规则`匹配到的 `Config_type` 组。 "
+"程序用自然进化策略（NES）最小化"
+msgstr ""
+"设结构 $i$ 的元素计数向量为 $\\mathbf n_i$，待拟合的逐元素基线为 $"
+"\\mathbf\\varepsilon_g$，其中 $g$ 是由 `分组规则`匹配到的 `Config_type` 组。 "
+"程序用自然进化策略（NES）最小化"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:17
+#: 4dce6ca50d934488b885f896c16333d9
+msgid ""
+"\n"
+"\\mathcal L_g=\n"
+"\\frac{1}{|g|}\\sum_{i\\in g}\n"
+"\\left[E_i^{\\mathrm{DFT}}-\\mathbf n_i^\\mathsf T\n"
+"\\mathbf\\varepsilon_g-T_i\\right]^2,\n"
+msgstr ""
+"\n"
+"\\mathcal L_g=\n"
+"\\frac{1}{|g|}\\sum_{i\\in g}\n"
+"\\left[E_i^{\\mathrm{DFT}}-\\mathbf n_i^\\mathsf T\n"
+"\\mathbf\\varepsilon_g-T_i\\right]^2,\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:24
+#: a627e2f4eb084f0bb64386fc36b60331
+msgid "然后写回"
+msgstr "然后写回"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:26
+#: 2fa91bf9ec3b4fc6bfc2eec6b93efec9
+msgid ""
+"\n"
+"E_i^{\\mathrm{new}}=E_i^{\\mathrm{DFT}}\n"
+"-\\mathbf n_i^\\mathsf T\\mathbf\\varepsilon_g.\n"
+msgstr ""
+"\n"
+"E_i^{\\mathrm{new}}=E_i^{\\mathrm{DFT}}\n"
+"-\\mathbf n_i^\\mathsf T\\mathbf\\varepsilon_g.\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:31
+#: 82ba6ef541b742e2bd411c3a68222dd5
+msgid ""
+"这里 $\\varepsilon_{g,e}$ 的单位是 eV/atom，$\\mathbf n_i^\\mathsf "
+"T\\mathbf\\varepsilon_g$ 是结构总能量基线，单位 eV。三种`对齐方式`只改变目标 "
+"$T_i$："
+msgstr ""
+"这里 $\\varepsilon_{g,e}$ 的单位是 eV/atom，$\\mathbf n_i^\\mathsf "
+"T\\mathbf\\varepsilon_g$ 是结构总能量基线，单位 eV。三种`对齐方式`只改变目标 "
+"$T_i$："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: 04262108749b4eb1ac33c35f865f2d66
+msgid "对齐方式"
+msgstr "对齐方式"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: 6c2798cbba1e439fab0897df012d4968
+msgid "目标 $T_i$"
+msgstr "目标 $T_i$"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: 7364fc08fe984728ba6e72b677482d1a
+msgid "适合用途"
+msgstr "适合用途"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: bd4c270f95f94dd2957864a4ba81597b
+msgid "`参考组`"
+msgstr "`参考组`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: b0c88561cc8d4483b62f8605ae5576f9
+msgid "当前选中参考结构的平均总能量"
+msgstr "当前选中参考结构的平均总能量"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: 383e66b96da34b52947a1b956b58fafc
+msgid "把不同组对齐到用户指定参考零点"
+msgstr "把不同组对齐到用户指定参考零点"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: 9462f9c7349a4d338a986214aeef077c
+msgid "`零基线`"
+msgstr "`零基线`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: bd7f767c30954fb39e52ada9e0da14c8
+msgid "$0$"
+msgstr "$0$"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: ecdad0ebcfc44b898b6a1baff89cdcd3
+msgid "去掉逐元素线性基线，观察剩余相对能量"
+msgstr "去掉逐元素线性基线，观察剩余相对能量"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: ca4c6b0142e44477a1a7453071c7ffcf
+msgid "`DFT 对齐 NEP`"
+msgstr "`DFT 对齐 NEP`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: 257b6010697447218f44654e2da51c9f
+msgid "$E_i^{\\mathrm{NEP}}$"
+msgstr "$E_i^{\\mathrm{NEP}}$"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:0
+#: c2ee7a44f4594481ae7ba52985896e9e
+msgid "让平移后的 DFT 总能量尽量贴合 NEP 总能量"
+msgstr "让平移后的 DFT 总能量尽量贴合 NEP 总能量"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:40
+#: f0ea0737d8ec41a5906e411a8e87ff51
+msgid ""
+"`DFT 对齐 NEP`会把界面中的 NEP 每原子能量乘以原子数后再作为总能量目标。 `最大"
+"迭代代数`、`种群大小`和`收敛容差`控制 NES 搜索，不改变上述目标函数。"
+msgstr ""
+"`DFT 对齐 NEP`会把界面中的 NEP 每原子能量乘以原子数后再作为总能量目标。 `最大"
+"迭代代数`、`种群大小`和`收敛容差`控制 NES 搜索，不改变上述目标函数。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:43
+#: 1ae2d26a5b5e4f6cac737b5389258363
+msgid "参数与执行结果"
+msgstr "参数与执行结果"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8104
+#: a6d0cd4ce63946fe93f8fa0158fe56ef
+msgid "预设区：`基线预设`，以及导入、导出和删除按钮。"
+msgstr "预设区：`基线预设`，以及导入、导出和删除按钮。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8105
+#: 212a1c8890b346c7b26b34e7b176439c
+msgid ""
+"参数区：`分组规则`、`对齐方式`、`最大迭代代数`、`种群大小`、`收敛容差`。"
+msgstr ""
+"参数区：`分组规则`、`对齐方式`、`最大迭代代数`、`种群大小`、`收敛容差`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8106
+#: 9156068a038f46309a3308e6f32a9d41
+msgid "保存区：`保存为基线预设`和`预设名称`。"
+msgstr "保存区：`保存为基线预设`和`预设名称`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8107
+#: 29f1d8b60be84dd6b5a24db66d3b4d4c
+msgid "执行结果：后台拟合/应用基线平移并重绘。"
+msgstr "执行结果：后台拟合/应用基线平移并重绘。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8109
+#: 307e97ce28744533981ae7a0fa0fa30e
+msgid ""
+"![能量基线平移对话框](../_static/image/generated/show_nep_reference/"
+"g_shift_dialog.png)"
+msgstr ""
+"![能量基线平移对话框](../_static/image/generated/show_nep_reference/"
+"g_shift_dialog.png)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8109
+#: b546bb144b674e3098917d53cfc27106
+msgid "能量基线平移对话框"
+msgstr "能量基线平移对话框"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8109
+#: b546bb144b674e3098917d53cfc27106
+msgid ""
+".. image:: ../_static/image/generated/show_nep_reference/g_shift_dialog.png"
+msgstr ""
+".. image:: ../_static/image/generated/show_nep_reference/g_shift_dialog.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:50
+#: 51d31fef15b84dedaae4729bb1046467
+msgid "操作后检查"
+msgstr "操作后检查"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-energy-shift.md:52
+#: 6d081ef8114646c880d257c16b5c8663
+msgid ""
+"完成后检查实际平移结构数、未匹配的 `Config_type` 和重绘后的能量分布。导出 "
+"`extxyz` 后， 抽查 `energy` 与 `energy_original`，确认新旧能量都可追溯。预设"
+"来自其他数据集时尤其要检查分组是否匹配。"
+msgstr ""
+"完成后检查实际平移结构数、未匹配的 `Config_type` 和重绘后的能量分布。导出 "
+"`extxyz` 后， 抽查 `energy` 与 `energy_original`，确认新旧能量都可追溯。预设"
+"来自其他数据集时尤其要检查分组是否匹配。"

@@ -1,0 +1,56 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-advanced.md:1
+#: 965cc89f6a4d4649b72ccf4c61c388a0
+msgid "进阶证据：局域环境"
+msgstr "进阶证据：局域环境"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2491
+#: e0f3fbace6484972aad0f704dcb8c4a4
+msgid ""
+"有活动的 `nep.txt` 时，页面会读取模型声明的元素及径向、角向 cutoff，并按模型"
+"实际可见的邻域统计："
+msgstr ""
+"有活动的 `nep.txt` 时，页面会读取模型声明的元素及径向、角向 cutoff，并按模型"
+"实际可见的邻域统计："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2493
+#: b50bfb01abd74c5badca8ac1a2f691aa
+msgid "中心元素周围的配位数和近邻元素组成；"
+msgstr "中心元素周围的配位数和近邻元素组成；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2494
+#: 17ebc1a1f6ad414eb084b9644c871481
+msgid "元素对是否共同出现、是否在 cutoff 内真正接触；"
+msgstr "元素对是否共同出现、是否在 cutoff 内真正接触；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2495
+#: 04ea1018f80b4a879ea250ac3bbabc5f
+msgid "标签分布、高力尾部和高能量尾部。"
+msgstr "标签分布、高力尾部和高能量尾部。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2497
+#: 4685fb687f8247f4bc71b2580c8a1b62
+msgid ""
+"没有 `nep.txt` 时，数据质量、组分、标签、结构相和磁类型仍可使用；依赖模型 "
+"cutoff 的局域化学与元素对接触会显示为不可用。"
+msgstr ""
+"没有 `nep.txt` 时，数据质量、组分、标签、结构相和磁类型仍可使用；依赖模型 "
+"cutoff 的局域化学与元素对接触会显示为不可用。"

@@ -9,72 +9,105 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-25 13:17+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:3
-#: 47a07297a0c74ba0833676d121ec7c59
-msgid "成分扫描（Composition Sweep）"
-msgstr "Composition Sweep"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:3
+#: 054dfff196334c64b2b382aea09c1107
+msgid "成分空间采样（Composition Space Sampling）"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:5
-#: fba3965feadd4a9b91561163f0f84f89
-msgid "`Group`: `Alloy` | `Class`: `CompositionSweepCard`"
-msgstr "`Group`: `Alloy` | `Class`: `CompositionSweepCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:5
+#: 97c6dfd0f0d04c9fb9980e0cdb211b6d
+msgid "**分类：** 合金与组分"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:7
-#: 25a7e86296d04089b618398e3960c9c4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:7
+#: 9b205b7b093f42ee81a64004ac7f9c7f
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:9
-#: ac3f3d30ba174c989e0337bb4f8a59f2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:9
+#: 5c6162d4e3e24347a9b300fb6f113e73
 msgid ""
-"在元素池和元数约束下生成成分设计空间。对选定元素集合按二元到五元组合展开，用网格或 Sobol 低差异序列在 simplex 上采样目标配比点，输出带 "
-"`Comp(...)` 标签的结构副本。本卡只生成目标配比计划，不真正落位——需要下游接 `Random Occupancy` 才能得到离散原子占位。"
+"在元素池和元数约束下生成成分设计空间。对选定元素集合按二元到五元组合展开，用"
+"网格或 Sobol 低差异序列在 simplex 上采样目标配比点，输出带 `Comp(...)` 标签的"
+"结构副本。本卡只生成目标配比计划，不真正落位——需要下游接 `Random Occupancy` "
+"才能得到离散原子占位。"
 msgstr ""
 "Generate a composition design space from an element pool and selected "
 "component counts. The card expands binary through quinary combinations and "
 "samples target fractions on each simplex with a grid or Sobol sequence. It "
 "outputs structure copies labeled `Comp(...)`; these labels are composition "
-"plans, not actual site occupations. Follow with `Random Occupancy` to assign"
-" discrete species."
+"plans, not actual site occupations. Follow with `Random Occupancy` to assign "
+"discrete species."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:11
-#: e3549a8ff48a493488b3059ae204b3d7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:11
+#: 1bc9a203a4c54c1f8cc4dc22dbb8f2d0
+msgid "原理与公式"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:13
+#: 4510641d03fa44adb8f6fb9fd1724849
+msgid ""
+"这张卡采样的是成分单纯形，而不是直接替换原子。对 $K$ 种元素，目标成分满足"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:15
+#: ddacc8ef69e44d36b30a1a1790689118
+msgid ""
+"\n"
+"x_e\\ge x_{\\min},\\qquad \\sum_{e=1}^{K}x_e=1.\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:19
+#: 2b8b030e4d4843758263468dafb994e7
+msgid ""
+"`网格`模式在这个约束面上枚举规则点；`Sobol`模式把低差异序列映射到同一约束面，"
+"适合在 有限预算下更均匀地覆盖高维成分空间。输出只把目标 $x_e$ 写入 "
+"`Comp(...)` 标签，元素占位 仍与输入相同；要得到真实化学结构，必须再接`随机占"
+"位`。预算分配会在每个输入结构之间回流 未用完名额，因此“最大输出数”是全流程上"
+"限，不保证每个输入得到相同数量。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:24
+#: a7d17afaf3494e8193b29ff1c39c8af0
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:13
-#: 435133777f5844b1bf8bb2bcecdd9a18
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:26
+#: 1c2e6bc98074454887721f78644456d2
 msgid "场景：模型在偏离训练集化学计量比时预测崩了"
 msgstr "Scenario: Predictions fail away from the training stoichiometry"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:15
-#: 55c1bf4112f847c6991ffa21f0b8cfa9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:28
+#: 16642240dff4453fa8092d56e3f8c061
 msgid ""
-"你在 Co-Cr-Ni 三元系上训练了一个 NEP 模型，训练数据全部来自等摩尔 CoCrNi 单相。模型对等摩尔构型的能量和力预测很好，但一跑 "
-"Co30Cr20Ni50 这种偏离等摩尔的组分，能量误差翻了三倍。诊断结果是：训练集所有数据的成分落在 simplex "
-"的一个点上，模型根本没有见过成分变化导致的局域化学环境差异。"
+"你在 Co-Cr-Ni 三元系上训练了一个 NEP 模型，训练数据全部来自等摩尔 CoCrNi 单"
+"相。模型对等摩尔构型的能量和力预测很好，但一跑 Co30Cr20Ni50 这种偏离等摩尔的"
+"组分，能量误差翻了三倍。诊断结果是：训练集所有数据的成分落在 simplex 的一个点"
+"上，模型根本没有见过成分变化导致的局域化学环境差异。"
 msgstr ""
 "A Co-Cr-Ni NEP is trained entirely on equiatomic CoCrNi. It performs well "
 "there, but its energy error triples at a composition such as Co30Cr20Ni50. "
 "All training compositions occupy one point of the simplex, so composition-"
 "dependent local chemistry is extrapolated."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:17
-#: ea5f4645e684451f85fb6d39b3ee5046
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:30
+#: 088914372a6742fca06f90eb1606ff07
 msgid ""
-"**诊断思路：** "
-"合金模型的基本要求是能在整个成分空间内插，而不是只记住一个成分点。如果训练集成分覆盖太窄，模型只能外推——成分漂得越远，误差越大。解决办法是先在目标成分空间内均匀撒一批配比点，再去下游逐个落位，让模型从头学起不同成分下的化学环境。"
+"**诊断思路：** 合金模型的基本要求是能在整个成分空间内插，而不是只记住一个成分"
+"点。如果训练集成分覆盖太窄，模型只能外推——成分漂得越远，误差越大。解决办法是"
+"先在目标成分空间内均匀撒一批配比点，再去下游逐个落位，让模型从头学起不同成分"
+"下的化学环境。"
 msgstr ""
 "**Diagnosis:** An alloy model should interpolate across the intended "
 "composition domain, not memorize one composition. First design a well-"
@@ -82,556 +115,794 @@ msgstr ""
 "downstream site occupation so the training set contains distinct chemical "
 "environments."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:19
-#: e59788277d564dfc80a2f77de4c3f279
-msgid "**输入：** 一个弛豫好的 CoCrNi 超胞结构（当前训练集里唯一的结构，等摩尔配比）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:32
+#: 6c186950851a42f29ca01490af594ea0
+msgid ""
+"**输入：** 一个弛豫好的 CoCrNi 超胞结构（当前训练集里唯一的结构，等摩尔配比）"
 msgstr ""
 "**Input:** A relaxed equiatomic CoCrNi supercell, currently the only "
 "training composition."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:21
-#: fdec769aa1404bc2a9ff3845d3d69a73
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:34
+#: 875509f2bed54e488138bf2eb583ff64
 msgid ""
-"**目标：** 从 Co-Cr-Ni 三个元素出发，生成二元 + 三元所有配比的网格采样，约 500 个目标配比点，后续接 `Random "
-"Occupancy` 落地"
+"**目标：** 从 Co-Cr-Ni 三个元素出发，生成二元 + 三元所有配比的网格采样，约 "
+"500 个目标配比点，后续接 `Random Occupancy` 落地"
 msgstr ""
 "**Objective:** Grid-sample all binary and ternary Co-Cr-Ni combinations up "
 "to about 500 targets, then realize them with `Random Occupancy`."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:23
-#: 4423205f755d411bad26781adb2703a4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:36
+#: bfa8f0e8bfc94aaa946a8dec58315db1
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:24
-#: d40557d8bea74b00857b71f41b5a5236
-msgid "`elements` = `Co,Cr,Ni`"
-msgstr "`elements` = `Co,Cr,Ni`"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:25
-#: 55a31c9edffc43fb8a4f04edd895bd6b
-msgid "`order` = `2,3` （二元 + 三元组合）"
-msgstr "`order` = `2,3` (binary and ternary combinations)"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:26
-#: 54cd75585e0149c9a102cc91c1e5754c
-msgid "`method` = `Grid`，`step` = `0.1`"
-msgstr "`method` = `Grid`，`step` = `0.1`"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:27
-#: d61ab9dcc879419881085ce39cd93d6c
-msgid "`max_outputs` = `500`"
-msgstr "`max_outputs` = `500`"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:29
-#: cbbc259a450843829186c30f6cfd1fd2
-msgid "**输出：** 约 500 个带 `Comp(Co=...,Cr=...,Ni=...)` 标签的结构副本。此时结构内原子种类未变，标签只是目标配比计划"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:37
+#: 561390c684884d0c8d5e131ddf1fe271
+msgid "`元素`（`elements`） = `Co,Cr,Ni`"
 msgstr ""
-"**Output:** About 500 structure copies labeled `Comp(Co=...,Cr=...,Ni=...)`."
-" Atomic species are unchanged at this stage; the label records only the "
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:38
+#: fdf9f56aa12e4ddebd6971357988e525
+msgid "`组合元数`（`order`） = `2,3` （二元 + 三元组合）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:39
+#: 9644b02446284b87857053bb5744b440
+msgid "`采样方法`（`method`） = `Grid`，`成分步长`（`step`） = `0.1`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:40
+#: ac57f59155fe439ba23812b280817a9d
+msgid "`每个输入的最大目标成分数`（`max_outputs`） = `500`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:42
+#: 5dc41f50228c48488146342761a4102c
+msgid ""
+"**输出：** 约 500 个带 `Comp(Co=...,Cr=...,Ni=...)` 标签的结构副本。此时结构"
+"内原子种类未变，标签只是目标配比计划"
+msgstr ""
+"**Output:** About 500 structure copies labeled `Comp(Co=...,Cr=...,Ni=...)`. "
+"Atomic species are unchanged at this stage; the label records only the "
 "target composition."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:31
-#: f0c9e2b4cf6a477c815a0c710535f4c9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:44
+#: 3a7f6a688165479c849accb506d1adf9
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:32
-#: 9ccbe03c31dc40cc965ca701b5361d78
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:45
+#: 9416b88e974a4397ae1c746b309e68e6
 msgid "重训后跑几个偏移等摩尔的测试组分，力的 MAE 应该不再随成分漂移而显著恶化"
 msgstr ""
 "After realization, labeling, and retraining, force MAE at several off-"
 "equiatomic tests should no longer deteriorate sharply with composition "
 "distance."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:33
-#: 21468331fd6149a7ab3c6c7332db7e0f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:46
+#: 2a0cd4fa6934458a854e7800c7e3d450
 msgid ""
-"检查 `Config_type` 中 Comp 标签的成分分布是否覆盖了 simplex 各区域——如果某些边角空白，减小 step 或换 Sobol "
-"补点"
+"检查 `Config_type` 中 Comp 标签的成分分布是否覆盖了 simplex 各区域——如果某些"
+"边角空白，减小 step 或换 Sobol 补点"
 msgstr ""
 "Plot the `Comp` fractions from `Config_type` and confirm coverage across "
-"each simplex. Reduce the grid step or use Sobol if corners or regions remain"
-" empty."
+"each simplex. Reduce the grid step or use Sobol if corners or regions remain "
+"empty."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:34
-#: c8d60f921af647f9b1bec9f5f4dd03cd
-msgid "如果全部集中等摩尔附近但没有边角覆盖，打开 `include_endpoints`，降低 `min_fraction` 到 0"
-msgstr ""
-"If points cluster near equiatomic compositions and omit boundaries, enable "
-"`include_endpoints` and set `min_fraction` to 0."
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:35
-#: 4d6dca462e7f460abc62a744d6f08ce0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:47
+#: f1841b10afb2412c9f8b64aafd13d105
 msgid ""
-"如果输出量不够覆盖所有 order 组合，提高 `max_outputs`，或把 `budget_mode` 换成 `Capacity-"
+"如果全部集中等摩尔附近但没有边角覆盖，打开 `包含边界成分点`"
+"（`include_endpoints`），降低 `元素最小占比`（`min_fraction`）到 0"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:48
+#: 3737487e9851404c8114af4c4bbaadd7
+msgid ""
+"如果输出量不够覆盖所有 order 组合，提高 `每个输入的最大目标成分数`"
+"（`max_outputs`），或把 `输出预算分配`（`budget_mode`）换成 `Capacity-"
 "weighted` 让高元数组合分到更多名额"
 msgstr ""
-"If the output budget undersamples some orders, raise `max_outputs` or choose"
-" `Capacity-weighted` so higher-order simplexes receive more points."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:37
-#: c20348a3b6684241bf04120f0bee08bf
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:50
+#: 5a73ff7694544df6a449721b8a70dc84
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:39
-#: 0f79bd62d6c04a47aaf4bf22d12a4f81
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:52
+#: c57f936215214deea71b1426d8b4ea12
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:40
-#: 779d4e1aa985457e96dc8331901d4ae6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:53
+#: 9fb0ddf7cfc54e2f8aca7ce97830aebd
 msgid "模型在偏离训练集化学计量比时误差显著增大"
 msgstr "Model error grows markedly away from the training stoichiometry"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:41
-#: ac458d6200384ea796a15c7d4f1d04aa
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:54
+#: 63e44f946b984a4e9d70755f3ba057d0
 msgid "需要系统覆盖二元到多元合金成分空间，而非少量随机掺杂"
 msgstr "A binary-to-multicomponent composition space needs systematic coverage"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:42
-#: 8ed48c41e8ad43c88ba94fe654f8b13f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:55
+#: 75133a663f5c40d592c278856678d2c3
 msgid "作为合金 pipeline 的第一步，先定义配比，再接占位卡片"
 msgstr "An alloy workflow needs target fractions before site occupation"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:44
-#: d72beeac7a79453abe9cb446283b4c26
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:57
+#: fe46cdee29c84c929fbf4373b209274b
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:45
-#: 269e7ea8d3854da1b1cf54608446c66b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:58
+#: 57adf0dd1c6246afbdf3b82590ca1b77
 msgid "只需单一固定化学计量比的结构"
 msgstr "Only one fixed stoichiometry is needed"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:46
-#: 06842b68782942c1bedac736ee4499d5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:59
+#: 62a4009deb25498eb40530cd049e87ea
 msgid "已经有明确掺杂规则且不需要扫配比空间 → 直接用 `Random Doping`"
 msgstr ""
 "A specific doping rule is already known and no composition scan is needed; "
 "use `Random Doping`"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:47
-#: 14634a3b992c4382a83846ccb6c0360b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:60
+#: f270863cc92b4218aed141f5f59ea0f0
 msgid "需要增补的是同一成分下的不同原子排布 → 直接用 `Random Occupancy`"
 msgstr ""
 "Only atomic arrangements at one composition are missing; use `Random "
 "Occupancy`"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:49
-#: 8677635bc0fe498a99ad3a1d63302c28
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:62
+#: c27963cd98704b4f9548c85d5aca601f
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:51
-#: 00e34b35b1a34baa99a1a84395ad1ea7
-msgid "Elements（elements）"
-msgstr "Elements（elements）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:64
+#: 0682f2e8f6404a6995c0468f6b3a88aa
+msgid "元素（elements）"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:53
-#: 28e877410f354cf5918b3b0a99e3747a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:66
+#: a0e855cfbcf045878f1b429d77d18548
 msgid ""
-"`str`，默认 `Co,Cr,Ni`。逗号分隔的元素列表，如 `Co,Cr,Ni,Al,Fe`。至少需要 2 个元素，程序会从中取出所有 n "
-"元组合做配比扫描。"
+"`str`，默认 `Co,Cr,Ni`。逗号分隔的元素列表，如 `Co,Cr,Ni,Al,Fe`。至少需要 2 "
+"个元素，程序会从中取出所有 n 元组合做配比扫描。"
 msgstr ""
 "`str`, default `Co,Cr,Ni`. Comma-separated element pool, for example "
 "`Co,Cr,Ni,Al,Fe`. At least two elements are required; the card forms all "
 "requested n-component subsets."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:55
-#: 0d66b0abfde24f338a478391a92407e4
-msgid "Order（order）"
-msgstr "Order（order）"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:57
-#: 0e5e86bf78b6480c81d18b10ffee8112
-msgid ""
-"`str`，默认 `2,3,4,5`。按逗号分隔的整数列表决定扫描哪些元数的组合，只支持 2/3/4/5 元。也兼容旧版名称如 "
-"`Binary`、`Ternary+Quaternary`。`2,3` 适合快速覆盖，`2,3,4,5` 适合系统性高熵探索。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:68
+#: f6787d4a97da44aa9b7d60b0eb005958
+msgid "组合元数（order）"
 msgstr ""
-"`str`, default `2,3,4,5`. Comma-separated component counts; supported values"
-" are 2, 3, 4, and 5. Legacy names such as `Binary` and `Ternary+Quaternary` "
-"are accepted. Use `2,3` for a compact design and all orders for systematic "
-"high-entropy exploration."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:59
-#: 283bf229f40a4f71868eaf9b057d53e6
-msgid "Method（method）"
-msgstr "Method（method）"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:61
-#: c1ac89c3d647418588bbf93cf7ccc488
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:70
+#: 487c022fcf1c4f17a4473fdffbff1320
 msgid ""
-"`str`，默认 `Grid`。`Grid` 用均匀网格采样，步长可控，适合低元数（2-3 元）。`Sobol` 用低差异序列在高维 simplex "
-"上覆盖更均匀，适合 4-5 元或点数有限的情况。"
+"`str`，默认 `2,3,4,5`。决定采样二元、三元、四元或五元成分空间。界面用“二元"
+"（2）”“二元 + 三元（2,3）”等易读名称显示，保存时仍使用 `2`、`2,3` 等稳定值。"
+"也兼容旧版名称如 `Binary`、`Ternary+Quaternary`。当候选元素不足时，不可执行的"
+"元数会自动跳过。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:72
+#: 31ef13d93d27489f945e925f0831dc2e
+msgid "采样方法（method）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:74
+#: b73da8b28f11416b980984184b469fc1
+msgid ""
+"`str`，默认 `Grid`。`Grid` 用均匀网格采样，步长可控，适合低元数（2-3 元）。"
+"`Sobol` 用低差异序列在高维 simplex 上覆盖更均匀，适合 4-5 元或点数有限的情"
+"况。"
 msgstr ""
 "`str`, default `Grid`. `Grid` uses a controlled uniform step and is "
 "convenient for binary or ternary spaces. `Sobol` gives more even limited-"
 "point coverage of four- or five-component simplexes."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:63
-#: b9f8fd376a6d4233bc38aa5ea2422a43
-msgid "Step（step）"
-msgstr "Step（step）"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:65
-#: e23510dbae8a4d1e99b3e5570170f080
-msgid "`float`，默认 0.1，仅 Grid 模式生效。控制 simplex 网格分辨率——越小点越密、输出越多。典型值 0.05-0.15。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:76
+#: c27ceba654fe43868de853317641b0a0
+msgid "成分步长（step）"
 msgstr ""
-"`float`, default `0.1`; Grid only. Simplex grid spacing. Smaller values "
-"produce denser and larger outputs; 0.05-0.15 is a typical starting range."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:67
-#: 3e48f20ed134410cbcd19a1c1594db00
-msgid "N Points（n_points）"
-msgstr "N Points（n_points）"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:69
-#: 8e362b02559143d7a11996cabc71adf8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:78
+#: d8cc1c85d90e456799bb08633ecbe9a8
 msgid ""
-"`int`，默认 50，仅 Sobol 模式生效。它表示通过 `min_fraction` "
-"约束后的目标有效点数，而不是过滤前的尝试数。operation 会继续补采样直到得到该数量；典型值 25-200。"
+"`float`，默认 0.1，仅 Grid 模式生效。单位是成分分数，`0.1` 表示 10 个百分点。"
+"数值越小，网格越密、目标配比越多；典型值为 0.05-0.15。"
 msgstr ""
-"`int`, default 50; used only in Sobol mode. This is the target number of "
-"valid points after applying `min_fraction`, not the number of attempts "
-"before filtering. The operation continues sampling until it reaches that "
-"target. Typical values are 25-200."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:71
-#: 6d08d97c0bd1448199ab1fde7a3c66ec
-msgid "Min Fraction（min_fraction）"
-msgstr "Min Fraction（min_fraction）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:80
+#: f1fb585f275e4b4b95f549b72c7cb32a
+msgid "每种元素组合的采样点数（n_points）"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:73
-#: 1354d42d57634842af95d31de2078900
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:82
+#: 043baeffa4e1494dba832eb9c7829018
 msgid ""
-"`float`，默认 0.0，范围 0-1。每个元素的最小占比下限。比如设为 0.05 意味着每个组分至少 5%，极端稀释的端点成分会被自动过滤掉。设 "
-"0 则不做下限约束。"
+"`int`，默认 50，仅 Sobol 模式生效。它表示每一种元素组合通过 `元素最小占比`"
+"（`min_fraction`）约束后的目标有效点数，而不是过滤前的尝试数。operation 会继"
+"续补采样直到得到该数量；典型值为 25-200。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:84
+#: 7782bbc85a3c4431a77bd62bc49aeaed
+msgid "元素最小占比（min_fraction）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:86
+#: 1390e1d5b6ac4e6b9945e53d4a22540a
+msgid ""
+"`float`，默认 0.0，范围 0-1。每个元素的最小占比下限。比如设为 0.05 意味着每个"
+"组分至少 5%，极端稀释的端点成分会被自动过滤掉。设 0 则不做下限约束。"
 msgstr ""
 "`float`, default `0.0`, range 0-1. Minimum fraction of every included "
 "element. A value of 0.05 removes compositions below 5%; zero imposes no "
 "lower bound."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:75
-#: fc52fc5defbb4486b378a9df05c7efb8
-msgid "Include Endpoints（include_endpoints）"
-msgstr "Include Endpoints（include_endpoints）"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:77
-#: 7f9a3ce8d208400cb209d3de0d3e0a01
-msgid "`bool`，默认 true，仅 Grid 模式。勾选后保留纯端点及边界成分点，关掉则跳过这些点。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:88
+#: e321824fad424bddbd3d8fdc1c8e484e
+msgid "包含边界成分点（include_endpoints）"
 msgstr ""
-"`bool`, default `true`; Grid only. Keep pure endpoints and boundary "
-"compositions when enabled."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:79
-#: 18c6563a6a1c4597973f57de66e78dfe
-msgid "Use Seed（use_seed）"
-msgstr "Use Seed（use_seed）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:90
+#: 819d9798d4874bec8600b07319033e12
+msgid ""
+"`bool`，默认 true，仅 Grid 模式。勾选后保留纯元素端点和某个元素占比为零的边界"
+"成分；关掉后只保留所有元素占比均大于零的内部点。"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:81
-#: d035c3184f0f4e7bb0e8951448f34329
-msgid "`bool`，默认 false。打开后固定随机路径（Sobol 生成和组合选取），同参数同输入可复现。对比实验时打开，探索阶段可以关着。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:92
+#: c076c7febabe4fd6b917e93546a07812
+msgid "使用随机种子（use_seed）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:94
+#: bdf348afd42442c6a374c8e2e11086a4
+msgid ""
+"`bool`，默认 false。打开后固定随机路径（Sobol 生成和组合选取），同参数同输入"
+"可复现。对比实验时打开，探索阶段可以关着。"
 msgstr ""
 "`bool`, default `false`. Fix Sobol generation and combination selection for "
 "reproducible controlled comparisons."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:83
-#: 79cd1b849a964f3086b2d9dbf3fbc6ed
-msgid "Seed（seed）"
-msgstr "Seed（seed）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:96
+#: 4523b90937674bb98cd6db252886e862
+msgid "随机种子（seed）"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:85
-#: c844a2eec73f4ca6a985f2fba442b7f1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:98
+#: 45cc696f8141465ab48e998152ebe04f
 msgid "`int`，默认 0。不同取值产生不同的采样分布。"
 msgstr "`int`, default `0`. Different values produce different sample designs."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:87
-#: cb6783727014495a97aeb36ae1865350
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:100
+#: 2b4c04c0361c4a7db9944da0b768d6d2
 msgid "生效条件：`use_seed=True`。"
 msgstr "Active only when `use_seed=True`."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:89
-#: a391ff76f2014250a5b6e25a056ef37f
-msgid "Max Outputs（max_outputs）"
-msgstr "Max Outputs（max_outputs）"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:91
-#: 0075ba1cf06b4d259d06fa4c4e15349e
-msgid "`int`，默认 500。输出总上限，防止组合爆炸。超出预算时按 `budget_mode` 规则分配到各 order。典型值 250-1500。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:102
+#: 817f8cdab9964fb9956c5126623ad3fd
+msgid "每个输入的最大目标成分数（max_outputs）"
 msgstr ""
-"`int`, default `500`. Global output cap. When capacity exceeds it, "
-"`budget_mode` allocates points among orders. Values around 250-1500 are "
-"typical."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:93
-#: 638812fc60be4c74aa3a89cba1c9e20f
-msgid "Budget Mode（budget_mode）"
-msgstr "Budget Mode（budget_mode）"
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:95
-#: 5fa9cbcb48084b9a963233ed8c71cc10
-msgid "`str`，默认 `Equal+Reflow`。控制超出预算时如何在不同元数之间分配名额。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:104
+#: 0d1ed37eb9d0499fa6eebdf26d0b50a3
+msgid ""
+"`int`，默认 500。限制每个输入结构生成的目标配比总数，防止组合爆炸。超出预算时"
+"按 `输出预算分配`（`budget_mode`）规则分配到各组合元数；典型值为 250-1500。"
 msgstr ""
-"`str`, default `Equal+Reflow`. Allocation policy when the requested design "
-"exceeds the budget."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:97
-#: d50287ff27cd46afb7281e82aa4b85eb
-msgid "`Equal+Reflow`：各 order 均分，余量回流，适合大多数场景。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:106
+#: abdba30cc22a4aafbc7f69012749024b
+msgid "输出预算分配（budget_mode）"
 msgstr ""
-"`Equal+Reflow`: split equally, then reassign unused capacity; suitable for "
-"most designs."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:98
-#: 508144754f644e2597682e1267318f53
-msgid "`Capacity-weighted`：按各 order 的理论容量加权分配，高元数分到更多名额。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:108
+#: 619668f10ee34cceb4a77876614a9120
+msgid ""
+"`str`，默认 `Equal+Reflow`。控制输出上限如何在不同组合元数之间分配。界面使用"
+"易读名称，保存值保持不变："
 msgstr ""
-"`Capacity-weighted`: allocate by theoretical capacity, favoring higher-"
-"component orders."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:99
-#: c9dda5ac98fc49e695caeccf0f22c095
-msgid "`Equal (Legacy)`：旧版均分，不做余量回流。"
-msgstr "`Equal (Legacy)`: old equal split without reflow."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:110
+#: c1f7aae0a42249a88cb889ca60ba52c0
+msgid ""
+"`均衡各元数`（`Equal+Reflow`）：各元数先均分，未用完的名额再分给仍有候选点的"
+"元数，适合大多数场景。"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:101
-#: 3a8793e88c3a4c6b9f17ae6c29dfb523
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:111
+#: 78eb3c7d500a476497a7d1c3b99336ba
+msgid ""
+"`侧重更大的成分空间`（`Capacity-weighted`）：按理论容量加权，更大的成分空间分"
+"到更多名额。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:112
+#: 65627a40b484453cb4823f40e3d74433
+msgid "`旧版均分`（`Equal (legacy)`）：保留旧行为，各元数均分且不回流余量。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:114
+#: 868b97e5f4594a65ac5cc508bc99cb8e
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:103
-#: 08164b2973bb4d0bb61065528a2eb70e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:116
+#: 94704dce202b4516a5085b9a8472c908
 msgid "快速试探（二元+三元 Grid，~100 点）"
 msgstr "Quick survey (binary and ternary Grid, about 100 points)"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:104
-#: b2cb8cce504f4cf2bb58b6e9be057247
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:117
+#: 49cfb9f58b544d39a1208d6d35e48177
 msgid ""
 "{\n"
 "  \"class\": \"CompositionSweepCard\",\n"
 "  \"check_state\": true,\n"
-"  \"elements\": \"Co,Cr,Ni\",\n"
-"  \"order\": \"2,3\",\n"
-"  \"method\": \"Grid\",\n"
-"  \"step\": [0.1],\n"
-"  \"n_points\": [50],\n"
-"  \"min_fraction\": [0.0],\n"
-"  \"include_endpoints\": true,\n"
-"  \"use_seed\": false,\n"
-"  \"seed\": [0],\n"
-"  \"max_outputs\": [100],\n"
-"  \"budget_mode\": \"Equal+Reflow\"\n"
+"  \"params\": {\n"
+"    \"elements\": \"Co,Cr,Ni\",\n"
+"    \"order\": \"2,3\",\n"
+"    \"method\": \"Grid\",\n"
+"    \"step\": 0.1,\n"
+"    \"n_points\": 50,\n"
+"    \"min_fraction\": 0.0,\n"
+"    \"include_endpoints\": true,\n"
+"    \"use_seed\": false,\n"
+"    \"seed\": 0,\n"
+"    \"max_outputs\": 100,\n"
+"    \"budget_mode\": \"Equal+Reflow\"\n"
+"  }\n"
 "}\n"
 msgstr ""
-"{\n"
-"  \"class\": \"CompositionSweepCard\",\n"
-"  \"check_state\": true,\n"
-"  \"elements\": \"Co,Cr,Ni\",\n"
-"  \"order\": \"2,3\",\n"
-"  \"method\": \"Grid\",\n"
-"  \"step\": [0.1],\n"
-"  \"n_points\": [50],\n"
-"  \"min_fraction\": [0.0],\n"
-"  \"include_endpoints\": true,\n"
-"  \"use_seed\": false,\n"
-"  \"seed\": [0],\n"
-"  \"max_outputs\": [100],\n"
-"  \"budget_mode\": \"Equal+Reflow\"\n"
-"}\n"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:122
-#: a218ff4067a947c29b911af9526e4afc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:137
+#: 921a18d1742f4343b22f84f9995f9a17
 msgid "常规覆盖（全组合 Grid，~500 点）"
 msgstr "Routine coverage (all combinations, Grid, about 500 points)"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:123
-#: 6e9b9eea657d4ee3ab210222115cb2ca
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:138
+#: 61e6f350135c410ea48b44ba015d0505
 msgid ""
 "{\n"
 "  \"class\": \"CompositionSweepCard\",\n"
 "  \"check_state\": true,\n"
-"  \"elements\": \"Co,Cr,Ni,Al\",\n"
-"  \"order\": \"2,3,4,5\",\n"
-"  \"method\": \"Grid\",\n"
-"  \"step\": [0.1],\n"
-"  \"n_points\": [50],\n"
-"  \"min_fraction\": [0.0],\n"
-"  \"include_endpoints\": true,\n"
-"  \"use_seed\": false,\n"
-"  \"seed\": [0],\n"
-"  \"max_outputs\": [500],\n"
-"  \"budget_mode\": \"Equal+Reflow\"\n"
+"  \"params\": {\n"
+"    \"elements\": \"Co,Cr,Ni,Al\",\n"
+"    \"order\": \"2,3,4\",\n"
+"    \"method\": \"Grid\",\n"
+"    \"step\": 0.1,\n"
+"    \"n_points\": 50,\n"
+"    \"min_fraction\": 0.0,\n"
+"    \"include_endpoints\": true,\n"
+"    \"use_seed\": false,\n"
+"    \"seed\": 0,\n"
+"    \"max_outputs\": 500,\n"
+"    \"budget_mode\": \"Equal+Reflow\"\n"
+"  }\n"
 "}\n"
 msgstr ""
-"{\n"
-"  \"class\": \"CompositionSweepCard\",\n"
-"  \"check_state\": true,\n"
-"  \"elements\": \"Co,Cr,Ni,Al\",\n"
-"  \"order\": \"2,3,4,5\",\n"
-"  \"method\": \"Grid\",\n"
-"  \"step\": [0.1],\n"
-"  \"n_points\": [50],\n"
-"  \"min_fraction\": [0.0],\n"
-"  \"include_endpoints\": true,\n"
-"  \"use_seed\": false,\n"
-"  \"seed\": [0],\n"
-"  \"max_outputs\": [500],\n"
-"  \"budget_mode\": \"Equal+Reflow\"\n"
-"}\n"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:141
-#: 6b6ad450f31948c382798ee226463230
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:158
+#: 8dc0068a6e5846babd819724b8729cd7
 msgid "高维探索（Sobol 全组合，~1500 点）"
-msgstr "High-dimensional exploration (all combinations, Sobol, about 1,500 points)"
+msgstr ""
+"High-dimensional exploration (all combinations, Sobol, about 1,500 points)"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:142
-#: d561c739396f4ad9b3ca72ca189d7378
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:159
+#: 9ee26ff1a57e4813985df0b3eb755df7
 msgid ""
 "{\n"
 "  \"class\": \"CompositionSweepCard\",\n"
 "  \"check_state\": true,\n"
-"  \"elements\": \"Co,Cr,Ni,Al,Fe\",\n"
-"  \"order\": \"2,3,4,5\",\n"
-"  \"method\": \"Sobol\",\n"
-"  \"step\": [0.1],\n"
-"  \"n_points\": [150],\n"
-"  \"min_fraction\": [0.0],\n"
-"  \"include_endpoints\": true,\n"
-"  \"use_seed\": true,\n"
-"  \"seed\": [42],\n"
-"  \"max_outputs\": [1500],\n"
-"  \"budget_mode\": \"Capacity-weighted\"\n"
+"  \"params\": {\n"
+"    \"elements\": \"Co,Cr,Ni,Al,Fe\",\n"
+"    \"order\": \"2,3,4,5\",\n"
+"    \"method\": \"Sobol\",\n"
+"    \"step\": 0.1,\n"
+"    \"n_points\": 150,\n"
+"    \"min_fraction\": 0.0,\n"
+"    \"include_endpoints\": true,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42,\n"
+"    \"max_outputs\": 1500,\n"
+"    \"budget_mode\": \"Capacity-weighted\"\n"
+"  }\n"
 "}\n"
 msgstr ""
-"{\n"
-"  \"class\": \"CompositionSweepCard\",\n"
-"  \"check_state\": true,\n"
-"  \"elements\": \"Co,Cr,Ni,Al,Fe\",\n"
-"  \"order\": \"2,3,4,5\",\n"
-"  \"method\": \"Sobol\",\n"
-"  \"step\": [0.1],\n"
-"  \"n_points\": [150],\n"
-"  \"min_fraction\": [0.0],\n"
-"  \"include_endpoints\": true,\n"
-"  \"use_seed\": true,\n"
-"  \"seed\": [42],\n"
-"  \"max_outputs\": [1500],\n"
-"  \"budget_mode\": \"Capacity-weighted\"\n"
-"}\n"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:160
-#: 0e8b83f015754c50a1768c3c3ecb6fbe
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:179
+#: ee2b1540db7d44c3b53e0ed999cabebb
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:162
-#: b16d704af291473d8203d78135cf423c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:181
+#: 09addd210433474e8dba40d40bd71e4c
 msgid ""
-"`Composition Sweep` → `Random Occupancy`：先定义目标配比，再落到离散原子占位。合金 pipeline "
-"的标准起手式。"
+"`Composition Space Sampling` → `Random Occupancy`：先定义目标配比，再落到离散"
+"原子占位。合金 pipeline 的标准起手式。"
 msgstr ""
-"`Composition Sweep` -> `Random Occupancy`: define target fractions, then "
-"realize discrete occupations; the standard alloy workflow."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:163
-#: 45defed5997d482f9496d3f4891a7dc3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:182
+#: cb547707944441bd892e7ecc9f3c963f
 msgid ""
-"`Composition Sweep` → `Random Occupancy` → `Random Doping`：配比覆盖 + 占位多样性 + "
-"额外局部替位。"
+"`Composition Space Sampling` → `Random Occupancy` → `Random Doping`：配比覆"
+"盖 + 占位多样性 + 额外局部替位。"
 msgstr ""
-"`Composition Sweep` -> `Random Occupancy` -> `Random Doping`: composition "
-"coverage, occupation diversity, then additional local substitutions."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:164
-#: 53cff990b12b417c9f70e800224a0138
-msgid "`Composition Sweep` → `Random Occupancy` → `Atomic Perturb`：成分 + 占位 + 坐标噪声。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:183
+#: 81e033d3dec240fba5df30108d607d05
+msgid ""
+"`Composition Space Sampling` → `Random Occupancy` → `Atomic Perturb`：成分 + "
+"占位 + 坐标噪声。"
 msgstr ""
-"`Composition Sweep` -> `Random Occupancy` -> `Atomic Perturb`: composition, "
-"occupation, and coordinate noise."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:166
-#: 96e631d0000641da9ad94967ea5c7987
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:185
+#: f87f91f69c5d4fa687140b8fcf3e8c40
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:168
-#: 222e0f181b9c40f285020a65d2b328d5
-msgid "**输出和输入完全一样。** `elements` 少于 2 个元素，或 `order` 不合法，或 `max_outputs` <= 0。"
-msgstr ""
-"**Output is unchanged.** Check that `elements` has at least two entries, "
-"`order` is supported, and `max_outputs` is positive."
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:170
-#: 754e09ab0af64579a266f156f5f70b07
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:187
+#: 8a7eee9be0064589a4d310ad4bce9209
 msgid ""
-"**标签成分和原子实际组成不一致。** 正常——Composition Sweep 只打目标配比标签，不改原子种类。需要接 `Random "
-"Occupancy` 才会真正替换原子。"
+"**输出和输入完全一样。** `元素`（`elements`）少于 2 个元素，或 `组合元数`"
+"（`order`）不合法，或 `每个输入的最大目标成分数`（`max_outputs`） <= 0。"
 msgstr ""
-"**Label fractions differ from actual species counts.** This is expected: "
-"Composition Sweep records a plan but does not replace atoms. Add `Random "
-"Occupancy` to realize it."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:172
-#: 1178611f2ead4e99b328dd5c54853b61
-msgid "**组合爆炸。** 5 元 + Grid + step=0.05 可产生上万个点。先用 `max_outputs` 卡住上限，小样本验证后再放量。"
-msgstr ""
-"**Combinatorial explosion.** A five-component Grid at step 0.05 can contain "
-"tens of thousands of points. Set `max_outputs`, validate a small design, "
-"then increase it deliberately."
-
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:174
-#: 8e52c8d954a34ea8be49dadc8959ae68
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:189
+#: 67b2058b9dc7483abc2ecf0f62a33476
 msgid ""
-"**某些 order 没有输出。** 检查 `budget_mode` 分配和 element 数量。只有 3 个元素但 order 含 4 和 5 "
-"时，程序自动跳过不可执行的组合。"
+"**标签成分和原子实际组成不一致。** 正常——Composition Space Sampling 只写目标"
+"配比标签，不改原子种类。需要接 `Random Occupancy` 才会真正替换原子。"
 msgstr ""
-"**Some orders have no output.** Check budget allocation and the element "
-"count. With only three elements, orders 4 and 5 are skipped."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:176
-#: db7774936d7640f49d8d86d6f2925608
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:191
+#: 0b34c041acb140f6b9abf8134ffa3e41
 msgid ""
-"**Sobol + min_fraction 报告有效点不足。** 下限越接近等摩尔值 `1/order`，可接受区域越小。operation "
-"会在明确的尝试预算内补采样；仍不足时抛出 `ValueError`，报告实际接受点数、目标点数和尝试次数，不会静默返回少量结构。"
+"**组合爆炸。** 5 元 + Grid + step=0.05 可产生上万个点。先用 `每个输入的最大目"
+"标成分数`（`max_outputs`）卡住上限，小样本验证后再放量。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:193
+#: 971b14ad4dc74eafb579547759417801
+msgid ""
+"**某些 order 没有输出。** 检查 `输出预算分配`（`budget_mode`）分配和 element "
+"数量。只有 3 个元素但 order 含 4 和 5 时，程序自动跳过不可执行的组合。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:195
+#: ca497557813d4ebc9fc9281145a68115
+msgid ""
+"**Sobol + min_fraction 报告有效点不足。** 下限越接近等摩尔值 `1/order`，可接"
+"受区域越小。operation 会在明确的尝试预算内补采样；仍不足时抛出 `ValueError`，"
+"报告实际接受点数、目标点数和尝试次数，不会静默返回少量结构。"
 msgstr ""
 "**Sobol + min_fraction reports too few valid points.** The closer the lower "
-"bound is to the equimolar value `1/order`, the smaller the admissible region"
-" becomes. The operation resamples within an explicit attempt budget. If the "
-"target is still not reached, it raises `ValueError` with the accepted count,"
-" target count, and attempt count instead of silently returning a small "
+"bound is to the equimolar value `1/order`, the smaller the admissible region "
+"becomes. The operation resamples within an explicit attempt budget. If the "
+"target is still not reached, it raises `ValueError` with the accepted count, "
+"target count, and attempt count instead of silently returning a small "
 "dataset."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:178
-#: c357fcbb264844d7b50390577cd67ee7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:197
+#: e21c7ff4f5134f2f946529028184b14e
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:180
-#: 695b30ded4844627856b9bfc8cfa99dc
-msgid "`Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 格式。每个输出结构通过 `Config_type` 携带目标配比。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:199
+#: a5807bd5dd1945618803cc5f8f690164
+msgid ""
+"`Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 格式。每个输出结构通过 `Config_type` 携"
+"带目标配比。"
 msgstr ""
 "Format: `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)`. Each output carries its "
 "target fractions in `Config_type`."
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:182
-#: d12dd0f2f89449a08915b5f09896c914
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:201
+#: e8336107aaf14c899de0f3086f2e970a
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/composition-sweep-card.md:184
-#: 6a573aa1d6f54de48c4ba2088800515b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-sweep-card.md:203
+#: cbeacba96c014b0e9b0efe800513161c
 msgid ""
-"勾选 `use_seed` + 固定 `seed` → 相同输入顺序可复现。Grid 模式的网格点本身是确定性的，`use_seed` "
-"主要影响组合选取顺序和 Sobol 生成。"
+"勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入顺序"
+"可复现。Grid 模式的网格点本身是确定性的，`使用随机种子`（`use_seed`）主要影响"
+"组合选取顺序和 Sobol 生成。"
 msgstr ""
-"Enable `use_seed` and fix `seed` to reproduce an input order. Grid points "
-"are deterministic; the seed mainly affects subset selection and Sobol "
-"generation."
+
+#~ msgid "成分扫描（Composition Sweep）"
+#~ msgstr "Composition Sweep"
+
+#~ msgid "`Group`: `Alloy` | `Class`: `CompositionSweepCard`"
+#~ msgstr "`Group`: `Alloy` | `Class`: `CompositionSweepCard`"
+
+#~ msgid "`elements` = `Co,Cr,Ni`"
+#~ msgstr "`elements` = `Co,Cr,Ni`"
+
+#~ msgid "`order` = `2,3` （二元 + 三元组合）"
+#~ msgstr "`order` = `2,3` (binary and ternary combinations)"
+
+#~ msgid "`method` = `Grid`，`step` = `0.1`"
+#~ msgstr "`method` = `Grid`，`step` = `0.1`"
+
+#~ msgid "`max_outputs` = `500`"
+#~ msgstr "`max_outputs` = `500`"
+
+#~ msgid ""
+#~ "如果全部集中等摩尔附近但没有边角覆盖，打开 `include_endpoints`，降低 "
+#~ "`min_fraction` 到 0"
+#~ msgstr ""
+#~ "If points cluster near equiatomic compositions and omit boundaries, "
+#~ "enable `include_endpoints` and set `min_fraction` to 0."
+
+#~ msgid ""
+#~ "如果输出量不够覆盖所有 order 组合，提高 `max_outputs`，或把 `budget_mode` "
+#~ "换成 `Capacity-weighted` 让高元数组合分到更多名额"
+#~ msgstr ""
+#~ "If the output budget undersamples some orders, raise `max_outputs` or "
+#~ "choose `Capacity-weighted` so higher-order simplexes receive more points."
+
+#~ msgid "Elements（elements）"
+#~ msgstr "Elements（elements）"
+
+#~ msgid "Order（order）"
+#~ msgstr "Order（order）"
+
+#~ msgid ""
+#~ "`str`，默认 `2,3,4,5`。按逗号分隔的整数列表决定扫描哪些元数的组合，只支持 "
+#~ "2/3/4/5 元。也兼容旧版名称如 `Binary`、`Ternary+Quaternary`。`2,3` 适合快"
+#~ "速覆盖，`2,3,4,5` 适合系统性高熵探索。"
+#~ msgstr ""
+#~ "`str`, default `2,3,4,5`. Comma-separated component counts; supported "
+#~ "values are 2, 3, 4, and 5. Legacy names such as `Binary` and "
+#~ "`Ternary+Quaternary` are accepted. Use `2,3` for a compact design and all "
+#~ "orders for systematic high-entropy exploration."
+
+#~ msgid "Method（method）"
+#~ msgstr "Method（method）"
+
+#~ msgid "Step（step）"
+#~ msgstr "Step（step）"
+
+#~ msgid ""
+#~ "`float`，默认 0.1，仅 Grid 模式生效。控制 simplex 网格分辨率——越小点越密、"
+#~ "输出越多。典型值 0.05-0.15。"
+#~ msgstr ""
+#~ "`float`, default `0.1`; Grid only. Simplex grid spacing. Smaller values "
+#~ "produce denser and larger outputs; 0.05-0.15 is a typical starting range."
+
+#~ msgid "N Points（n_points）"
+#~ msgstr "N Points（n_points）"
+
+#~ msgid ""
+#~ "`int`，默认 50，仅 Sobol 模式生效。它表示通过 `min_fraction` 约束后的目标"
+#~ "有效点数，而不是过滤前的尝试数。operation 会继续补采样直到得到该数量；典型"
+#~ "值 25-200。"
+#~ msgstr ""
+#~ "`int`, default 50; used only in Sobol mode. This is the target number of "
+#~ "valid points after applying `min_fraction`, not the number of attempts "
+#~ "before filtering. The operation continues sampling until it reaches that "
+#~ "target. Typical values are 25-200."
+
+#~ msgid "Min Fraction（min_fraction）"
+#~ msgstr "Min Fraction（min_fraction）"
+
+#~ msgid "Include Endpoints（include_endpoints）"
+#~ msgstr "Include Endpoints（include_endpoints）"
+
+#~ msgid ""
+#~ "`bool`，默认 true，仅 Grid 模式。勾选后保留纯端点及边界成分点，关掉则跳过"
+#~ "这些点。"
+#~ msgstr ""
+#~ "`bool`, default `true`; Grid only. Keep pure endpoints and boundary "
+#~ "compositions when enabled."
+
+#~ msgid "Use Seed（use_seed）"
+#~ msgstr "Use Seed（use_seed）"
+
+#~ msgid "Seed（seed）"
+#~ msgstr "Seed（seed）"
+
+#~ msgid "Max Outputs（max_outputs）"
+#~ msgstr "Max Outputs（max_outputs）"
+
+#~ msgid ""
+#~ "`int`，默认 500。输出总上限，防止组合爆炸。超出预算时按 `budget_mode` 规则"
+#~ "分配到各 order。典型值 250-1500。"
+#~ msgstr ""
+#~ "`int`, default `500`. Global output cap. When capacity exceeds it, "
+#~ "`budget_mode` allocates points among orders. Values around 250-1500 are "
+#~ "typical."
+
+#~ msgid "Budget Mode（budget_mode）"
+#~ msgstr "Budget Mode（budget_mode）"
+
+#~ msgid ""
+#~ "`str`，默认 `Equal+Reflow`。控制超出预算时如何在不同元数之间分配名额。"
+#~ msgstr ""
+#~ "`str`, default `Equal+Reflow`. Allocation policy when the requested "
+#~ "design exceeds the budget."
+
+#~ msgid "`Equal+Reflow`：各 order 均分，余量回流，适合大多数场景。"
+#~ msgstr ""
+#~ "`Equal+Reflow`: split equally, then reassign unused capacity; suitable "
+#~ "for most designs."
+
+#~ msgid ""
+#~ "`Capacity-weighted`：按各 order 的理论容量加权分配，高元数分到更多名额。"
+#~ msgstr ""
+#~ "`Capacity-weighted`: allocate by theoretical capacity, favoring higher-"
+#~ "component orders."
+
+#~ msgid "`Equal (Legacy)`：旧版均分，不做余量回流。"
+#~ msgstr "`Equal (Legacy)`: old equal split without reflow."
+
+#, python-brace-format
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"CompositionSweepCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"elements\": \"Co,Cr,Ni\",\n"
+#~ "  \"order\": \"2,3\",\n"
+#~ "  \"method\": \"Grid\",\n"
+#~ "  \"step\": [0.1],\n"
+#~ "  \"n_points\": [50],\n"
+#~ "  \"min_fraction\": [0.0],\n"
+#~ "  \"include_endpoints\": true,\n"
+#~ "  \"use_seed\": false,\n"
+#~ "  \"seed\": [0],\n"
+#~ "  \"max_outputs\": [100],\n"
+#~ "  \"budget_mode\": \"Equal+Reflow\"\n"
+#~ "}\n"
+#~ msgstr ""
+#~ "{\n"
+#~ "  \"class\": \"CompositionSweepCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"elements\": \"Co,Cr,Ni\",\n"
+#~ "  \"order\": \"2,3\",\n"
+#~ "  \"method\": \"Grid\",\n"
+#~ "  \"step\": [0.1],\n"
+#~ "  \"n_points\": [50],\n"
+#~ "  \"min_fraction\": [0.0],\n"
+#~ "  \"include_endpoints\": true,\n"
+#~ "  \"use_seed\": false,\n"
+#~ "  \"seed\": [0],\n"
+#~ "  \"max_outputs\": [100],\n"
+#~ "  \"budget_mode\": \"Equal+Reflow\"\n"
+#~ "}\n"
+
+#, python-brace-format
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"CompositionSweepCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"elements\": \"Co,Cr,Ni,Al\",\n"
+#~ "  \"order\": \"2,3,4,5\",\n"
+#~ "  \"method\": \"Grid\",\n"
+#~ "  \"step\": [0.1],\n"
+#~ "  \"n_points\": [50],\n"
+#~ "  \"min_fraction\": [0.0],\n"
+#~ "  \"include_endpoints\": true,\n"
+#~ "  \"use_seed\": false,\n"
+#~ "  \"seed\": [0],\n"
+#~ "  \"max_outputs\": [500],\n"
+#~ "  \"budget_mode\": \"Equal+Reflow\"\n"
+#~ "}\n"
+#~ msgstr ""
+#~ "{\n"
+#~ "  \"class\": \"CompositionSweepCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"elements\": \"Co,Cr,Ni,Al\",\n"
+#~ "  \"order\": \"2,3,4,5\",\n"
+#~ "  \"method\": \"Grid\",\n"
+#~ "  \"step\": [0.1],\n"
+#~ "  \"n_points\": [50],\n"
+#~ "  \"min_fraction\": [0.0],\n"
+#~ "  \"include_endpoints\": true,\n"
+#~ "  \"use_seed\": false,\n"
+#~ "  \"seed\": [0],\n"
+#~ "  \"max_outputs\": [500],\n"
+#~ "  \"budget_mode\": \"Equal+Reflow\"\n"
+#~ "}\n"
+
+#, python-brace-format
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"CompositionSweepCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"elements\": \"Co,Cr,Ni,Al,Fe\",\n"
+#~ "  \"order\": \"2,3,4,5\",\n"
+#~ "  \"method\": \"Sobol\",\n"
+#~ "  \"step\": [0.1],\n"
+#~ "  \"n_points\": [150],\n"
+#~ "  \"min_fraction\": [0.0],\n"
+#~ "  \"include_endpoints\": true,\n"
+#~ "  \"use_seed\": true,\n"
+#~ "  \"seed\": [42],\n"
+#~ "  \"max_outputs\": [1500],\n"
+#~ "  \"budget_mode\": \"Capacity-weighted\"\n"
+#~ "}\n"
+#~ msgstr ""
+#~ "{\n"
+#~ "  \"class\": \"CompositionSweepCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"elements\": \"Co,Cr,Ni,Al,Fe\",\n"
+#~ "  \"order\": \"2,3,4,5\",\n"
+#~ "  \"method\": \"Sobol\",\n"
+#~ "  \"step\": [0.1],\n"
+#~ "  \"n_points\": [150],\n"
+#~ "  \"min_fraction\": [0.0],\n"
+#~ "  \"include_endpoints\": true,\n"
+#~ "  \"use_seed\": true,\n"
+#~ "  \"seed\": [42],\n"
+#~ "  \"max_outputs\": [1500],\n"
+#~ "  \"budget_mode\": \"Capacity-weighted\"\n"
+#~ "}\n"
+
+#~ msgid ""
+#~ "`Composition Sweep` → `Random Occupancy`：先定义目标配比，再落到离散原子占"
+#~ "位。合金 pipeline 的标准起手式。"
+#~ msgstr ""
+#~ "`Composition Sweep` -> `Random Occupancy`: define target fractions, then "
+#~ "realize discrete occupations; the standard alloy workflow."
+
+#~ msgid ""
+#~ "`Composition Sweep` → `Random Occupancy` → `Random Doping`：配比覆盖 + 占"
+#~ "位多样性 + 额外局部替位。"
+#~ msgstr ""
+#~ "`Composition Sweep` -> `Random Occupancy` -> `Random Doping`: composition "
+#~ "coverage, occupation diversity, then additional local substitutions."
+
+#~ msgid ""
+#~ "`Composition Sweep` → `Random Occupancy` → `Atomic Perturb`：成分 + 占位 "
+#~ "+ 坐标噪声。"
+#~ msgstr ""
+#~ "`Composition Sweep` -> `Random Occupancy` -> `Atomic Perturb`: "
+#~ "composition, occupation, and coordinate noise."
+
+#~ msgid ""
+#~ "**输出和输入完全一样。** `elements` 少于 2 个元素，或 `order` 不合法，或 "
+#~ "`max_outputs` <= 0。"
+#~ msgstr ""
+#~ "**Output is unchanged.** Check that `elements` has at least two entries, "
+#~ "`order` is supported, and `max_outputs` is positive."
+
+#~ msgid ""
+#~ "**标签成分和原子实际组成不一致。** 正常——Composition Sweep 只打目标配比标"
+#~ "签，不改原子种类。需要接 `Random Occupancy` 才会真正替换原子。"
+#~ msgstr ""
+#~ "**Label fractions differ from actual species counts.** This is expected: "
+#~ "Composition Sweep records a plan but does not replace atoms. Add `Random "
+#~ "Occupancy` to realize it."
+
+#~ msgid ""
+#~ "**组合爆炸。** 5 元 + Grid + step=0.05 可产生上万个点。先用 `max_outputs` "
+#~ "卡住上限，小样本验证后再放量。"
+#~ msgstr ""
+#~ "**Combinatorial explosion.** A five-component Grid at step 0.05 can "
+#~ "contain tens of thousands of points. Set `max_outputs`, validate a small "
+#~ "design, then increase it deliberately."
+
+#~ msgid ""
+#~ "**某些 order 没有输出。** 检查 `budget_mode` 分配和 element 数量。只有 3 "
+#~ "个元素但 order 含 4 和 5 时，程序自动跳过不可执行的组合。"
+#~ msgstr ""
+#~ "**Some orders have no output.** Check budget allocation and the element "
+#~ "count. With only three elements, orders 4 and 5 are skipped."
+
+#~ msgid ""
+#~ "勾选 `use_seed` + 固定 `seed` → 相同输入顺序可复现。Grid 模式的网格点本身"
+#~ "是确定性的，`use_seed` 主要影响组合选取顺序和 Sobol 生成。"
+#~ msgstr ""
+#~ "Enable `use_seed` and fix `seed` to reproduce an input order. Grid points "
+#~ "are deterministic; the seed mainly affects subset selection and Sobol "
+#~ "generation."
 
 #~ msgid "`int`，默认 50，仅 Sobol 模式生效。目标采样点数，典型值 25-200。"
-#~ msgstr "`int`, default `50`; Sobol only. Requested sample count, commonly 25-200."
+#~ msgstr ""
+#~ "`int`, default `50`; Sobol only. Requested sample count, commonly 25-200."

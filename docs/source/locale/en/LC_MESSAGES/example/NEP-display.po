@@ -9,158 +9,450 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/example/NEP-display.md:1 d34f2af8a8eb4daf91cbf849efa05abe
-msgid "NEP Dataset Display 示例"
-msgstr "NEP Dataset Display Example"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:1
+#: f54f84b27f8a4c0085c5b5d1ec116153
+msgid "NEP Dataset Display 操作演示"
+msgstr ""
 
-#: ../../source/example/NEP-display.md:3 0a1d1232acbb427fbe169cd15cc117b7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:3
+#: 383116e1b5ff478daac79a51e21a809c
 msgid ""
-"本页以操作演示为主。完整工具说明与参数手册请见： [`NEP Dataset Display 详细参考`](../module/show-nep-"
-"reference.md)"
-msgstr ""
-"This page is a task-oriented walkthrough. For the complete tool and "
-"parameter reference, see [the detailed NEP Dataset Display "
-"reference](../module/show-nep-reference.md)."
-
-#: ../../source/example/NEP-display.md:6 4a5df3ed61ec4a07b1e7a4f42f173eed
-msgid "数据导入"
-msgstr "Import data"
-
-#: ../../source/example/NEP-display.md:8 24481be576fd429883a2305a809b524e
-msgid "使用 `nep.txt` 与 `train.xyz` 作为最小输入；支持拖拽导入。"
-msgstr ""
-"Use `nep.txt` and `train.xyz` as the minimal input pair. You can also drag "
-"and drop them into the application."
-
-#: ../../source/example/NEP-display.md:10 acc353fbce9b4decae9d9ef0212ba29b
-msgid "![GIF Image](../_static/image/example/display/import.gif)"
+"本页带你完成一次最短的“打开数据 → 看图 → 选结构 → 导出”流程。动图只演示操作位"
+"置； 参数含义和算法原理请进入对应的[功能指南](../module/NEP-dataset-"
+"display.md)。"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:10 ../../source/example/NEP-display.md:18
-#: ../../source/example/NEP-display.md:22 ../../source/example/NEP-display.md:23
-#: ../../source/example/NEP-display.md:24 ../../source/example/NEP-display.md:25
-#: ../../source/example/NEP-display.md:31 0bb5bd5792b84a88a135863ad1079083
-#: 0cdbd2b45de1466e9576b976995414e0 370956a7f59648159074624229f899a4
-#: 37aa6d7bf2be4316bd8d7e2377d03e96 405babf95456480087d693ae19c67717
-#: a824c293fe58497eb720431c13a53223 ea65577bc3da46ba8375579eac77f43d
-msgid "GIF Image"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:6
+#: 15c6a5d4485f4a8b92d8cf94fe8bf6b2
+msgid "开始前准备什么"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:10 405babf95456480087d693ae19c67717
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: 6a822ec39c6d42828204ca396575ebcd
+msgid "我手里的文件"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: 85b94cf3168a40e1a228b3552b5f4495
+msgid "可以做什么"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: db2443919d554800911f3471ae77bb94
+msgid "只有 `train.xyz`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: 0c71d98391824f109d08f4396c062b33
+msgid "查看结构、标签和已有 DFT 数据"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: 5270400b7c514b129eab31ae78dcec44
+msgid "`train.xyz` + `nep.txt`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: cbb163593d0c4f8ead4447170a641ef3
+msgid "重新预测并比较 NEP 与参考值"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: fd5aa070332d4f62915bc27e134c6691
+msgid "`train.xyz` + `energy/force/virial_*.out`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:0
+#: 526eb578b9094d5a8f63fc4a1f7106de
+msgid "直接回看 GPUMD 已输出的训练或测试结果"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:14
+#: 488675b43c244d8aa88964851100bd27
+msgid ""
+"如果文件不能导入，先按文件类型查看[支持格式](../formats.md)，不要反复更改扩展"
+"名尝试。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:16
+#: ac67669d706e45db9f2aa39d87c3924f
+msgid "1. 打开结构和模型"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:18
+#: 79560e6970f143b2865d66250b5f1b9f
+msgid ""
+"把 `train.xyz` 拖入窗口，或从顶部 `Open` 菜单选择结构文件。需要现场计算预测值"
+"时， 再打开 `nep.txt`；只查看已有标签时不必加载模型。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:21
+#: ba2ec4bc2acf4e11a8c143d51580d32d
+msgid "![拖入结构文件并加载数据](../_static/image/example/display/import.gif)"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:21
+#: 6c52fe0ec1404724bd627f355aeebfbb
+msgid "拖入结构文件并加载数据"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:21
+#: 6c52fe0ec1404724bd627f355aeebfbb
 msgid ".. image:: ../_static/image/example/display/import.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:12 ba3a6934f13c4a4481102ba7d1355ec1
-msgid "轨迹播放"
-msgstr "Play a trajectory"
-
-#: ../../source/example/NEP-display.md:14 62bf651f2c714416bd6bce20824067a5
-msgid "点击播放按钮可逐帧预览结构："
-msgstr "Click the play button to inspect the structures frame by frame:"
-
-#: ../../source/example/NEP-display.md:16 b4193a29c72d4edd8063cdac2f97340b
-msgid "play"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:23
+#: 6cc41bc2d3ac48f38ed2110b091a07fe
+msgid "看完动图后检查："
 msgstr ""
 
-#: ../../source/example/NEP-display.md:16 b4193a29c72d4edd8063cdac2f97340b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:25
+#: 3a627c74008a459dae7092ec4fa23936
+msgid "顶部和状态栏显示的结构数量是否与文件一致；"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:26
+#: bf448fcd2ff74665b2ac6b9bbec44104
+msgid "主图区是否出现能量、力或 virial 图；"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:27
+#: 80bae0ee086f4d7e8c616fce59fbb780
+msgid "结构区能否显示当前帧。没有标签的数据不会凭空出现误差图。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:29
+#: 77c71f0bb85b4fc483fb8393e3d8a852
+msgid "2. 逐帧查看结构"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:31
+#: 0a8c22eb634e4a05b0c2679f4cb87c1b
+msgid ""
+"点击播放按钮可按当前顺序逐帧切换结构。播放只改变当前显示帧，不会删除、重新排"
+"序或修改数据。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:33
+#: 8c3b4fa79861493f95d45ec59a6ae119
+msgid "播放结构序列"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:33
+#: 8c3b4fa79861493f95d45ec59a6ae119
 msgid ".. image:: ../_static/image/generated/show_nep_icons/play.svg"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:18 5ef6410c8d544e208bd730f806719c33
-msgid "![GIF Image](../_static/image/example/display/play.gif)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:35
+#: 02429245a5e04401a8c3f01ef66d5b87
+msgid "![播放并逐帧查看结构](../_static/image/example/display/play.gif)"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:18 a824c293fe58497eb720431c13a53223
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:35
+#: b1e92f2328a24cabb5c116b1c4b5f7b8
+msgid "播放并逐帧查看结构"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:35
+#: b1e92f2328a24cabb5c116b1c4b5f7b8
 msgid ".. image:: ../_static/image/example/display/play.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:20 222729be159f437abdd3cc3285d92dbf
-msgid "数据筛选"
-msgstr "Filter the dataset"
-
-#: ../../source/example/NEP-display.md:22 53014a51838c4264a817b8108c4e9be0
-msgid "最大误差点筛选：![GIF Image](../_static/image/example/display/maxerror.gif)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:37
+#: 5b1d6db19c764de8907b541d0473b364
+msgid ""
+"发现明显异常时先暂停，再记录当前结构编号或将其标记。大数据集不适合只靠播放检"
+"查， 应结合误差、几何过滤和搜索条件缩小范围。"
 msgstr ""
-"Select the largest-error structures: ![GIF "
-"Image](../_static/image/example/display/maxerror.gif)"
 
-#: ../../source/example/NEP-display.md:22 37aa6d7bf2be4316bd8d7e2377d03e96
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:40
+#: 99ae75721a474cbea191b6a72c4d747d
+msgid "3. 从最大误差回到原结构"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:42
+#: 4d54c400059448e4bd50f1bff5a332c2
+msgid ""
+"最大误差工具按当前图中参考值与预测值的差异找结构。能量图通常一行对应一个结"
+"构； 力图会先把原子分量映射回结构并去重。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:45
+#: a7da6440023b475ab9db337855286979
+msgid "![按最大误差选择结构](../_static/image/example/display/maxerror.gif)"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:45
+#: a7a6d3d3f78d4e4aa77e331f726bc119
+msgid "按最大误差选择结构"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:45
+#: a7a6d3d3f78d4e4aa77e331f726bc119
 msgid ".. image:: ../_static/image/example/display/maxerror.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:23 0c0e48facb4b461ca0adf57e61115b00
-msgid "FPS 稀疏采样：![GIF Image](../_static/image/example/display/fps.gif)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:47
+#: d7b11f2bd9db4198a534666edee3afcc
+msgid ""
+"运行后不要只看“选中了多少个”。点击几个被选结构，确认异常来自真实的数据缺口， "
+"而不是短键、错误晶胞、错误元素或标签损坏。详细规则见[最大误差筛选](../module/"
+"nep-main-tool-max-error.md)。"
 msgstr ""
-"Select representative structures with FPS: ![GIF "
-"Image](../_static/image/example/display/fps.gif)"
 
-#: ../../source/example/NEP-display.md:23 ea65577bc3da46ba8375579eac77f43d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:50
+#: 5540890c953648f097b80abda55070c2
+msgid "4. 用 FPS 选择代表结构"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:52
+#: 6c235d5a399b41f1a496ce5b65fbaff3
+msgid ""
+"FPS 根据描述符距离从候选池中选择分散的代表结构。它适合减少已经清洗过的候选"
+"池， 不负责判断结构是否物理合理。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:55
+#: b1a0d0b786cc4159b8df14878abd6cec
+msgid "![使用 FPS 选择代表结构](../_static/image/example/display/fps.gif)"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:55
+#: 24cdd63a0f1545eebc5449abdfea8a5a
+msgid "使用 FPS 选择代表结构"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:55
+#: 24cdd63a0f1545eebc5449abdfea8a5a
 msgid ".. image:: ../_static/image/example/display/fps.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:24 3ff9ade5f14c42ae96ef7a9ea78e8369
-msgid "鼠标选择/反选：![GIF Image](../_static/image/example/display/mouse.gif)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:57
+#: dd5b5facc3a84e11b6cc297f1dcfc9ab
+msgid ""
+"运行前先确认候选池已清除明显坏结构；运行后检查实际选择数是否因最小距离或 "
+"$R^2$ 阈值提前停止。算法和多种模式见[代表性采样](../module/nep-main-tool-"
+"sparse-samples.md)。"
 msgstr ""
-"Select or deselect structures with the mouse: ![GIF "
-"Image](../_static/image/example/display/mouse.gif)"
 
-#: ../../source/example/NEP-display.md:24 0bb5bd5792b84a88a135863ad1079083
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:60
+#: f146d79edca24456928d1646d6d7017d
+msgid "5. 在图上直接框选或反选"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:62
+#: 776ea73a574045a9a7949000232a4056
+msgid ""
+"鼠标选择适合处理肉眼可辨的局部点群。先切到选择模式，在图中框选点，再使用反选"
+"或清除选择 调整范围；选择会同步回结构列表。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:65
+#: 22cf10ebcde444eab2134891ea143815
+msgid "![在散点图中框选和反选](../_static/image/example/display/mouse.gif)"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:65
+#: a59e3cfdc3724f47a5a512ca21b4ac52
+msgid "在散点图中框选和反选"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:65
+#: a59e3cfdc3724f47a5a512ca21b4ac52
 msgid ".. image:: ../_static/image/example/display/mouse.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:25 f37f8a4bc73e4f8e9d92dc4316f7e85b
-msgid "`Config_type` 组合筛选：![GIF Image](../_static/image/example/display/config1.gif)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:67
+#: 7a5b63cb652c4e6bb9250a9215e695a6
+msgid ""
+"图上一个点不一定总等于一个结构：在力图和 virial 分量图中，同一结构可能贡献多"
+"行数据。 导出前应回到结构列表确认最终结构数量。"
 msgstr ""
-"Filter by combinations of `Config_type` values: ![GIF "
-"Image](../_static/image/example/display/config1.gif)"
 
-#: ../../source/example/NEP-display.md:25 0cdbd2b45de1466e9576b976995414e0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:70
+#: 605b7b951563448882e48ab7a9e2ac33
+msgid "6. 按 `Config_type` 组合筛选"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:72
+#: a755d2ca61754d869265a85cc625b9db
+msgid ""
+"切换到标签筛选后，可以组合多个 `Config_type` 标签定位来源相近的结构。这个字段"
+"通常记录 生成卡片、计算批次或数据来源，不是化学式。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:75
+#: a4263da0cd294dcbbadf4d7c14e5fef6
+msgid ""
+"![按 Config_type 组合筛选](../_static/image/example/display/config1.gif)"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:75
+#: 8dd216c99b4d4e43892fcd35e03c80ed
+msgid "按 Config_type 组合筛选"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:75
+#: 8dd216c99b4d4e43892fcd35e03c80ed
 msgid ".. image:: ../_static/image/example/display/config1.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:27 30d678b3cb244d97b8930cf03d2060df
-msgid "导出"
-msgstr "Export"
-
-#: ../../source/example/NEP-display.md:29 473ef8684b014607894b3c2636b75570
-msgid "过滤完成后导出数据："
-msgstr "Export the filtered dataset when the selection is ready:"
-
-#: ../../source/example/NEP-display.md:31 23b41630cc5744a29569028b4cff4bab
-msgid "![GIF Image](../_static/image/example/display/save.gif)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:77
+#: 508d5d9839b847dc9e7ccd5731b6268f
+msgid ""
+"如果标签命名不统一，先用[批量编辑结构元数据](edit-structure-metadata.md)整"
+"理，再建立筛选条件。 完整表达式和元素筛选方式见[筛选栏](../module/nep-"
+"display-filter.md)。"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:31 370956a7f59648159074624229f899a4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:80
+#: b0288fa00a5c4a5ebe284a27dfe96262
+msgid "7. 只导出确认过的子集"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:82
+#: 77c62a6de1df4c5384c17607a45321a9
+msgid ""
+"完成标记后，从 `Save` 菜单选择导出当前活动结构或所选结构。导出前最后确认状态"
+"栏中的 活动数、选中数和删除数，避免把已排除结构重新写回文件。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:85
+#: 743b83c3924147558ac6ff8fd019dc66
+msgid "![导出清洗或筛选后的结构](../_static/image/example/display/save.gif)"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:85
+#: 7bb58062619c40bc83a8405fcceed186
+msgid "导出清洗或筛选后的结构"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:85
+#: 7bb58062619c40bc83a8405fcceed186
 msgid ".. image:: ../_static/image/example/display/save.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:35 d7826ab26abe46aabfb8e8988a4cb880
-msgid "更多细节："
-msgstr "For more detail:"
-
-#: ../../source/example/NEP-display.md:37 863b8f9540e340f7b6b852cb3da995de
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:87
+#: 0070a0c085a34280950463fee112b7ab
 msgid ""
-"图标对照与每个工具逻辑：[`../module/show-nep-reference.md`](../module/show-nep-"
-"reference.md)"
+"建议使用能表达阶段的文件名，例如 `candidate_pool_clean.xyz` 或 "
+"`max_error_review.xyz`。导出格式和字段保留规则见[支持格式](../formats.md)。"
 msgstr ""
-"For the icon legend and the behavior of each tool, see the [detailed "
-"reference](../module/show-nep-reference.md)."
 
-#: ../../source/example/NEP-display.md:38 e09ed2d4bfed47429e321292e30ef334
-msgid ""
-"导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-reference.md`](../module/show-nep-"
-"reference.md)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:90
+#: 6209ec573cc34fa7896865648c1bc3c0
+msgid "下一步查哪里"
 msgstr ""
-"For import and export paths, switching NEP models, and search syntax, see "
-"the [detailed reference](../module/show-nep-reference.md)."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:92
+#: 2a3527d8f84a4298903d35788a507464
+msgid ""
+"不认识主图区按钮：看[主图区工具](../module/nep-display-main-plot-tools.md)。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:93
+#: 26c383ca419642d9b87258d28bda45e4
+msgid ""
+"不认识结构区按钮：看[结构区工具](../module/nep-display-structure-tools.md)。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:94
+#: 75b35fab158e4ef797ed2d1cd86e8652
+msgid ""
+"不会导入、导出或切换模型：看[打开数据与切换模型](../module/nep-display-open-"
+"data.md)。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/NEP-display.md:95
+#: 7e19ffd1db4c4e1980bb570f29cac1d1
+msgid ""
+"页面没有图、数量不对或工具不可用：看[状态栏与常见提示](../module/nep-display-"
+"status-and-errors.md)。"
+msgstr ""
+
+#~ msgid "NEP Dataset Display 示例"
+#~ msgstr "NEP Dataset Display Example"
+
+#~ msgid ""
+#~ "本页以操作演示为主。完整工具说明与参数手册请见： [`NEP Dataset Display 详"
+#~ "细参考`](../module/show-nep-reference.md)"
+#~ msgstr ""
+#~ "This page is a task-oriented walkthrough. For the complete tool and "
+#~ "parameter reference, see [the detailed NEP Dataset Display reference](../"
+#~ "module/show-nep-reference.md)."
+
+#~ msgid "数据导入"
+#~ msgstr "Import data"
+
+#~ msgid "使用 `nep.txt` 与 `train.xyz` 作为最小输入；支持拖拽导入。"
+#~ msgstr ""
+#~ "Use `nep.txt` and `train.xyz` as the minimal input pair. You can also "
+#~ "drag and drop them into the application."
+
+#~ msgid "轨迹播放"
+#~ msgstr "Play a trajectory"
+
+#~ msgid "点击播放按钮可逐帧预览结构："
+#~ msgstr "Click the play button to inspect the structures frame by frame:"
+
+#~ msgid "数据筛选"
+#~ msgstr "Filter the dataset"
+
+#~ msgid ""
+#~ "最大误差点筛选：![GIF Image](../_static/image/example/display/"
+#~ "maxerror.gif)"
+#~ msgstr ""
+#~ "Select the largest-error structures: ![GIF Image](../_static/image/"
+#~ "example/display/maxerror.gif)"
+
+#~ msgid "FPS 稀疏采样：![GIF Image](../_static/image/example/display/fps.gif)"
+#~ msgstr ""
+#~ "Select representative structures with FPS: ![GIF Image](../_static/image/"
+#~ "example/display/fps.gif)"
+
+#~ msgid ""
+#~ "鼠标选择/反选：![GIF Image](../_static/image/example/display/mouse.gif)"
+#~ msgstr ""
+#~ "Select or deselect structures with the mouse: ![GIF Image](../_static/"
+#~ "image/example/display/mouse.gif)"
+
+#~ msgid ""
+#~ "`Config_type` 组合筛选：![GIF Image](../_static/image/example/display/"
+#~ "config1.gif)"
+#~ msgstr ""
+#~ "Filter by combinations of `Config_type` values: ![GIF Image](../_static/"
+#~ "image/example/display/config1.gif)"
+
+#~ msgid "导出"
+#~ msgstr "Export"
+
+#~ msgid "过滤完成后导出数据："
+#~ msgstr "Export the filtered dataset when the selection is ready:"
+
+#~ msgid "更多细节："
+#~ msgstr "For more detail:"
+
+#~ msgid ""
+#~ "图标对照与每个工具逻辑：[`../module/show-nep-reference.md`](../module/"
+#~ "show-nep-reference.md)"
+#~ msgstr ""
+#~ "For the icon legend and the behavior of each tool, see the [detailed "
+#~ "reference](../module/show-nep-reference.md)."
+
+#~ msgid ""
+#~ "导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-reference.md`]"
+#~ "(../module/show-nep-reference.md)"
+#~ msgstr ""
+#~ "For import and export paths, switching NEP models, and search syntax, see "
+#~ "the [detailed reference](../module/show-nep-reference.md)."

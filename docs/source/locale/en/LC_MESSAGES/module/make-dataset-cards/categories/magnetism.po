@@ -1,0 +1,32 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/magnetism.md:1
+#: 1f61da1bca2443dcb2052a6c0523600f
+msgid "磁性构型"
+msgstr "Magnetic configurations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/magnetism.md:3
+#: 82a8e0ca065d4434aba98f2f8db2253a
+msgid ""
+"这组卡片只处理磁矩或磁序，不替代晶格和原子坐标生成。旋转、倾斜、螺旋和无序卡"
+"片通常 需要输入中已经存在有效磁矩。"
+msgstr ""
+"这组卡片只处理磁矩或磁序，不替代晶格和原子坐标生成。旋转、倾斜、螺旋和无序卡"
+"片通常 需要输入中已经存在有效磁矩。"

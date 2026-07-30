@@ -1,0 +1,299 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:1
+#: 5c1f9e72a67c426bbed08f4b39846f41
+msgid "从训练误差定位下一轮数据缺口"
+msgstr "从训练误差定位下一轮数据缺口"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:3
+#: 943be615e7374c9f8ca3c643a3c597ef
+msgid ""
+"这条流程适合已经完成一次 NEP 训练、准备决定下一轮补什么数据的人。它不以“删掉"
+"所有大误差点” 为目标，而是把误差点还原到真实结构和来源，区分标签问题、坏构型"
+"和训练集缺口。"
+msgstr ""
+"这条流程适合已经完成一次 NEP 训练、准备决定下一轮补什么数据的人。它不以“删掉"
+"所有大误差点” 为目标，而是把误差点还原到真实结构和来源，区分标签问题、坏构型"
+"和训练集缺口。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:6
+#: 052999a51cda49ef8a6541e13cf48cc6
+msgid "1. 打开训练结果"
+msgstr "1. 打开训练结果"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:8
+#: 9ea0cecbe0c3474cb29edb3a88653f56
+msgid ""
+"在 `NEP Dataset Display` 中打开训练输出目录，确认能量、力和 virial 的参考值与"
+"预测值已经载入。 如果某类输出文件缺失，只分析当前真实可用的数据，不把缺失量当"
+"成零误差。"
+msgstr ""
+"在 `NEP Dataset Display` 中打开训练输出目录，确认能量、力和 virial 的参考值与"
+"预测值已经载入。 如果某类输出文件缺失，只分析当前真实可用的数据，不把缺失量当"
+"成零误差。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:11
+#: 35cc43cb30cd450e9bc9cdca647d1646
+msgid "先确认两件事："
+msgstr "先确认两件事："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:13
+#: 263bfba0dc114b5f9cae86cc9f9134e0
+msgid "图中的参考值和预测值分别来自哪里；"
+msgstr "图中的参考值和预测值分别来自哪里；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:14
+#: 5dbaeb2a6a4746558c7b94894058134f
+msgid "当前显示的是训练集、测试集，还是另一个独立结构集合。"
+msgstr "当前显示的是训练集、测试集，还是另一个独立结构集合。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:16
+#: a072e0642d6049f1b543c62beb69d248
+msgid "2. 先看误差集中在哪里"
+msgstr "2. 先看误差集中在哪里"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:18
+#: 8c42b79f91f84a9caaf1a836316e9381
+msgid "不要只记录一个总 RMSE。依次检查："
+msgstr "不要只记录一个总 RMSE。依次检查："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:20
+#: f1f395d9ee874e0f86122648ee4dacd5
+msgid "energy、force 和 virial 是否只有一种量明显偏差；"
+msgstr "energy、force 和 virial 是否只有一种量明显偏差；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:21
+#: 34169ca86aa244f6b05b25b27736fc5f
+msgid "大误差是否集中在少数 `Config_type`；"
+msgstr "大误差是否集中在少数 `Config_type`；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:22
+#: 7918353e02c548e0abe2c449d0a11aa1
+msgid "是否集中在某种组分、表面、缺陷、应变或磁构型；"
+msgstr "是否集中在某种组分、表面、缺陷、应变或磁构型；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:23
+#: d7115aea600a44db80c8302f458a2e35
+msgid "同一结构附近是否已经有足够相似的训练样本。"
+msgstr "同一结构附近是否已经有足够相似的训练样本。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:25
+#: 66b2e36e143f44d1a37db716b3b500ea
+msgid ""
+"使用 `Find Max Error Point` 选择最大误差结构，再查看右侧结构、元素组成和来源"
+"标签。 需要批量查看某个误差范围时，使用 `Select by Range`。"
+msgstr ""
+"使用 `Find Max Error Point` 选择最大误差结构，再查看右侧结构、元素组成和来源"
+"标签。 需要批量查看某个误差范围时，使用 `Select by Range`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:28
+#: 0f05870022284fa1bd0db6bace1668e6
+msgid "3. 进入训练集评估"
+msgstr "3. 进入训练集评估"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:30
+#: 5b5c8bf89ea3411e98f16fb93a8bf655
+msgid ""
+"从顶部 `Save` 分裂菜单打开“评估当前数据集”。先看概览中的训练阻塞项，再查看："
+msgstr ""
+"从顶部 `Save` 分裂菜单打开“评估当前数据集”。先看概览中的训练阻塞项，再查看："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:32
+#: 0068e5df1ec8442f950a693ad7d7bf8f
+msgid "精确组分与低频集合；"
+msgstr "精确组分与低频集合；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:33
+#: f020d5afd8e946829699819e98b40e69
+msgid "高力和高能量尾部；"
+msgstr "高力和高能量尾部；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:34
+#: 86d7f9ab391d4956a075f68a4bedb6f2
+msgid "局域环境与元素对接触；"
+msgstr "局域环境与元素对接触；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:35
+#: 02ca0374247a48e8b268a1606865b5fa
+msgid "结构相和磁类型；"
+msgstr "结构相和磁类型；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:36
+#: 985e11b679e548cdb4c26747fc21fa7d
+msgid "重复几何或标签冲突。"
+msgstr "重复几何或标签冲突。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:38
+#: 240b38557bb5460385a870941993c2fa
+msgid ""
+"训练集评估给出的是当前数据内部证据。某个组分数量较多，不代表该组分的温压、缺"
+"陷或局域环境 已经覆盖；没有独立测试集时，也不能仅凭训练集预测判断模型已经泛"
+"化。"
+msgstr ""
+"训练集评估给出的是当前数据内部证据。某个组分数量较多，不代表该组分的温压、缺"
+"陷或局域环境 已经覆盖；没有独立测试集时，也不能仅凭训练集预测判断模型已经泛"
+"化。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:41
+#: fe133146054c4dab9e9cc96194971927
+msgid "4. 给每类问题选择处理方向"
+msgstr "4. 给每类问题选择处理方向"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: fc78095ff0014cedba162aa7f6063867
+msgid "看到的现象"
+msgstr "看到的现象"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: c356dc8decaf4d0fbeced4224e5163f8
+msgid "先做什么"
+msgstr "先做什么"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 47e7641b80cf4d8da3234c30ef1e5fb9
+msgid "不要直接做什么"
+msgstr "不要直接做什么"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 64dc6f6914154c24b69d5761d6028e82
+msgid "同一几何对应冲突标签"
+msgstr "同一几何对应冲突标签"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: a48b9d2b00544a32b24dbd2041523207
+msgid "回查 DFT 输出、单位和结构映射"
+msgstr "回查 DFT 输出、单位和结构映射"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 440e26b54cbd4f8ca001f298c57258cd
+msgid "把其中一条随机删掉"
+msgstr "把其中一条随机删掉"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 27eb3dc4d7574807b009f1cfc4211dfa
+msgid "明显原子重叠或异常表面"
+msgstr "明显原子重叠或异常表面"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: c7d50a4aea7f4055991f9aaea67cfbfb
+msgid "隔离并检查生成参数"
+msgstr "隔离并检查生成参数"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: e1bf01af897f42aa96ae74a09dc88133
+msgid "送入 FPS 强行保留"
+msgstr "送入 FPS 强行保留"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: b7c0a797603f4d01b84694bacff3db3a
+msgid "某类真实结构持续高误差"
+msgstr "某类真实结构持续高误差"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: c6a061859db24f50a4073b79659b6254
+msgid "导出该类结构并补充邻近构型"
+msgstr "导出该类结构并补充邻近构型"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 438ae8bd9a9f4276b2f861300a071834
+msgid "只增加完全无关的随机扰动"
+msgstr "只增加完全无关的随机扰动"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: d81f0c779e1940b8bb8e59d75047e0f5
+msgid "某组分或磁类型样本很少"
+msgstr "某组分或磁类型样本很少"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 162c3df348bf4c31a4e57747e4679df4
+msgid "按研究目标补对应结构"
+msgstr "按研究目标补对应结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 5d0dc1ef3c194a9d95c6d8bda6c33405
+msgid "把“低频”自动等同于“错误”"
+msgstr "把“低频”自动等同于“错误”"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: d1fbc9fb0cd84e5498f77e387366935e
+msgid "训练集误差小、独立测试误差大"
+msgstr "训练集误差小、独立测试误差大"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 5dce3c66cabb4659b72303ab19c8f391
+msgid "检查数据划分和覆盖范围"
+msgstr "检查数据划分和覆盖范围"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
+#: 08997ce7870e4fc8945bcbf392664e68
+msgid "继续只优化训练 RMSE"
+msgstr "继续只优化训练 RMSE"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:51
+#: abb6808984ff4fb7b348e3ee1ca1df1b
+msgid "5. 导出可追溯的下一轮输入"
+msgstr "5. 导出可追溯的下一轮输入"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:53
+#: 9b049c18d72a4d2eb01c169c0718d763
+msgid "把不同原因的结构分开导出，例如："
+msgstr "把不同原因的结构分开导出，例如："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:55
+#: dd914fa27d8f4ce08a19924399d13702
+msgid ""
+"review_label_conflicts.xyz\n"
+"review_bad_geometry.xyz\n"
+"next_round_surface_gap.xyz\n"
+"next_round_magnetic_gap.xyz\n"
+msgstr ""
+"review_label_conflicts.xyz\n"
+"review_bad_geometry.xyz\n"
+"next_round_surface_gap.xyz\n"
+"next_round_magnetic_gap.xyz\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:62
+#: 2059f4d098684de48d76c314db90d6ef
+msgid ""
+"如果需要新生成结构，再回到 `生成数据集`，按缺口选择主卡片。生成后的候选结构仍"
+"然要经过 几何检查和代表性采样，不能因为它们来自“高误差结构附近”就默认合理。"
+msgstr ""
+"如果需要新生成结构，再回到 `生成数据集`，按缺口选择主卡片。生成后的候选结构仍"
+"然要经过 几何检查和代表性采样，不能因为它们来自“高误差结构附近”就默认合理。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:65
+#: 2204896c837d4d0f8d2c06ffe6abf9ed
+msgid "跑完检查："
+msgstr "跑完检查："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:67
+#: 5e9dc58a59f24af88864edae93fc4d6d
+msgid "每个导出文件只对应一种明确处理意图；"
+msgstr "每个导出文件只对应一种明确处理意图；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:68
+#: 30e51265fe5d4bf8bf70454e9ae615ef
+msgid "结构保留原有 `Config_type`，新生成结构追加可追溯标签；"
+msgstr "结构保留原有 `Config_type`，新生成结构追加可追溯标签；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:69
+#: 5d5b1e2938d14799af67fd47ba3425f8
+msgid "下一轮训练前，能说明每批新增数据解决的具体缺口。"
+msgstr "下一轮训练前，能说明每批新增数据解决的具体缺口。"

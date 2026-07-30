@@ -9,573 +9,879 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:3
-#: 46d4bc079a3e4c24912996166574a72e
-msgid "插隙/吸附缺陷（Insert Defect）"
-msgstr "Interstitial and Adsorbate Defects (Insert Defect)"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:5
-#: b9103e6c1f1a4ac094c4f7746db2216c
-msgid "`Group`: `Defect` | `Class`: `InsertDefectCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:3
+#: 9ceac07800da43e9a3f87dd48a31fbbd
+msgid "插隙与表面吸附（Interstitial and Surface Adsorption）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:7
-#: 8f4ba552b1364bd499b0491f2ac20a1a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:5
+#: 44bba6f423854dd5ac73b2ed0059d0f1
+msgid "**分类：** 缺陷"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:7
+#: 45cfeea12eff4a7aa8e1274763b246e1
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:9
-#: e501e3300f454081a49fc4fd587002be
-msgid ""
-"在体相或表面结构中随机插入额外原子。支持 Interstitial（体相间隙位插入）和 "
-"Adsorption（表面吸附位放置）两种模式，用最小距离约束避免原子碰撞。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:9
+#: 7d2563427dca44f3996257f898ee270a
+msgid "为每个输入结构生成两类未弛豫候选："
 msgstr ""
-"Randomly add atoms to bulk or surface structures. Interstitial mode places "
-"atoms at candidate sites inside a bulk cell, while Adsorption mode places "
-"them above a surface. A minimum-distance constraint prevents direct atomic "
-"overlap."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:11
-#: 363f2376f3254ca7a8c82ba41b58d8d8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:11
+#: 7423f1e5d9014abab467eac34d023c7b
+msgid "**体相随机插隙**：在晶胞内部按分数坐标均匀随机取点并插入原子。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:12
+#: c06772671909465685f9b2b50bf391da
+msgid ""
+"**上表面随机吸附**：在指定晶格方向的上表面随机取横向位置，并放到原始宿主最高"
+"原子平面上方的固定高度。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:14
+#: 5c77640cd0704cd4ac7e5e89757a9bab
+msgid ""
+"两种模式都用最小原子间距排除明显碰撞。该距离同时检查候选点到宿主原子和此前已"
+"插入原子的距离。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:16
+#: 8978afee3ef44558ac93ea9c617ce806
+msgid ""
+"这张卡**不识别晶体学间隙位或化学吸附位**：不会自动寻找四面体、八面体、顶位、"
+"桥位或空位，也不会弛豫坐标。它适合生成连续随机候选，再交给 DFT、几何优化、能"
+"量筛选或 `FPS Filter`；需要确定的物理路径时，应使用专门的位点或路径构造工具。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:18
+#: 0685fe6b74354d9e845553ad531df9c2
+msgid "原理与公式"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:20
+#: 8f39ba12c88a48cd9a7e6df8e3676c3a
+msgid "体相随机插隙"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:22
+#: 0184cfedc4554e779fca76c1fa174a5f
+msgid ""
+"每次在 `[0,1)^3` 中抽取一个分数坐标并映射到晶胞。候选点满足 `最小原子间距`"
+"（`min_distance`）后才会插入。若一个输出需要多个原子，后插入的原子也会避开先"
+"插入的原子。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:24
+#: faecadc2a6514423b5d3cd973c80d97d
+msgid "上表面随机吸附"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:26
+#: e12fd6a2ce024e66bc49d795e54adcdd
+msgid ""
+"`真空／表面法向方向`（`axis`）指定 slab 真空所在的晶格方向 `a`、`b` 或 `c`。"
+"程序以原始宿主原子的最大分数坐标确定上表面，在该平面内随机取点，再沿真实表面"
+"法向移动 `高于最高原子平面的距离`（`offset`）。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:28
+#: 401a60cf7b4d4edeaf2b6a62c1cc8afd
+msgid ""
+"对于倾斜晶胞，法向由对应的倒易方向计算，而不是直接沿晶格矢量移动。多个吸附原"
+"子始终以同一个原始宿主平面为参考，不会逐个向上堆叠。当前只生成上表面候选。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:30
+#: 0ef269e61ceb41b498f543d1d9a65b41
+msgid "完整输出约束"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:32
+#: c13d66d1a14642a193615e8fdc304f53
+msgid ""
+"每个输出必须插满 `每个输出插入原子数`（`insert_count`）个原子。任何一个原子"
+"在 `每个原子的放置尝试次数`（`max_attempts`）次尝试后仍无法放置时，卡片会明确"
+"报错，不返回未修改或只完成一部分的伪成功结构。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:34
+#: dc7fdf228fb349198fa5975aa7cec8d8
+msgid "两种模式都要求每个候选点 $\\mathbf r$ 满足"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:36
+#: 2f5bcfa0a0084ef29406d8e4e02d6663
+msgid ""
+"\n"
+"\\min_j d_{\\mathrm{MIC}}(\\mathbf r,\\mathbf r_j)\\ge d_{\\min},\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:40
+#: be0b6aeca1164858b75815c753bde5c9
+msgid ""
+"其中 $d_{\\mathrm{MIC}}$ 是按输入周期边界计算的最小镜像距离，$d_{\\min}$ 的单"
+"位为 Å； $\\mathbf r_j$ 同时包含宿主原子和本次已插入原子。多元素输入按归一化"
+"权重抽取插入元素。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:43
+#: b3068b2364e54d1e86f612da90a867c4
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:13
-#: e38d1e60696d4bc9b606086cb2bb82ce
-msgid "场景：模型对 Li 扩散路径预测完全错误"
-msgstr "Scenario: the model predicts an incorrect Li diffusion pathway"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:45
+#: c5be381f03a847fdb0e492f95eec4e20
+msgid "场景：训练集缺少表面吸附初始构型"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:15
-#: 63135b2a9455401cbd783b75d72d34a2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:47
+#: 82bb03aa74464b1aa07c3e5c096de1ab
 msgid ""
-"你在 LiCoO2 上训练了一个 NEP 模型跑 Li 扩散。模型预测的扩散势垒比 DFT "
-"低了一半——中间态的能量被严重低估。检查训练集发现：所有结构里 Li 都待在八面体位点，从来没见过 Li 在四面体间隙位的结构。"
-msgstr ""
-"You trained an NEP model for Li diffusion in LiCoO2. Its predicted diffusion"
-" barrier is only half the DFT value because the intermediate states are "
-"severely underestimated. Inspection shows that every training structure "
-"places Li at an octahedral site; none contains Li near a tetrahedral "
-"interstitial site."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:17
-#: 75a75508aa454c7699fd36616bbdcdba
-msgid ""
-"**诊断思路：** 扩散路径上的过渡态对应 Li "
-"从一个八面体位穿过四面体间隙位跃迁到相邻八面体位的过程。训练集里只有基态构型，模型自然会低估中间态能量。需要往训练集里加入 Li "
-"在四面体间隙位附近的构型，让模型见过这些局域环境。"
-msgstr ""
-"**Diagnosis:** Along this diffusion path, Li moves from one octahedral site "
-"to the next through a tetrahedral interstitial region. A training set that "
-"contains only ground-state occupations gives the model no information about "
-"those intermediate local environments. Add configurations with Li near "
-"tetrahedral interstitial sites so the model can learn their energies."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:19
-#: 8ff08ca20e8e404c91e671575c865da5
-msgid "**输入：** 一个 LiCoO2 超胞"
-msgstr "**Input:** A LiCoO2 supercell."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:21
-#: 30ed97d64b6a45c3934f33d2b967cf9b
-msgid "**目标：** 在体相中插入单个 Li 原子于随机间隙位，生成 50 个候选构型"
-msgstr ""
-"**Goal:** Generate 50 candidates by inserting one Li atom at a random "
-"interstitial position in the bulk cell."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:23
-#: 87d1aad804d24d2e92e5c7320bac9658
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:24
-#: 3ec03575c1774f36b4c670909748f39a
-msgid "`Mode` = `Interstitial`"
+"模型在洁净表面和少量弛豫吸附构型上表现正常，但对随机初始吸附位置的能量和力误"
+"差很大。这说明训练集只覆盖了稳定极小值，缺少优化路径起点和高能横向位置。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:25
-#: e86f6a9dfe584ef7a18f8f49a02d6f07
-msgid "`Species comma-separated` = `Li`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:49
+#: 004ddd1feac0422186b763d4a9dc0f06
+msgid "**输入：** 带真空层的 slab，真空沿晶格 `c`。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:26
-#: 4ef31c5f07664bcea566804fae3c1ff2
-msgid "`Atoms per structure` = `[1]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:51
+#: 2c0422dda8cb4c83861500f33eb8c1e5
+msgid "**目标：** 在上表面放置一个 O 原子，生成 50 个横向位置不同的候选。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:27
-#: caf02663c59e47fe98ffc827832742cd
-msgid "`Structures to generate` = `[50]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:53
+#: 6ebba517195a483d9cf7c42c83d774f7
+msgid "**参数：**"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:28
-#: e458d577810942a1b235011d2cc163d8
-msgid "`Min distance (A)` = `[1.4]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:55
+#: 3b31b03c615c4352abef94257327365b
+msgid "`插入模式`（`mode`）：`Random upper-surface adsorption`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:29
-#: 569a2ff4f155441eb371e22e5d347d7f
-msgid "`Max Attempts` = `[200]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:56
+#: 55fdf7dcee85468388fb1a9e7974047c
+msgid "`插入元素与权重`（`species`）：`O`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:31
-#: 85f243d53c6b4ca084c88729e11b3f75
-msgid "**输出：** 50 个插隙结构，每个含一个额外 Li 原子放置于不与宿主原子碰撞的位置，带 `Ins(int,n=1)` 标签"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:57
+#: 5507a5800a6b4304a9ba38a16eb72fce
+msgid "`每个输出插入原子数`（`insert_count`）：`1`"
 msgstr ""
-"**Output:** 50 interstitial structures, each containing one additional Li "
-"atom at a position that does not collide with the host atoms, labeled "
-"`Ins(int,n=1)`."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:33
-#: 09de9f5f1b004e4d9b4ba158a1ad9ae5
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:34
-#: a68f9c43b44e4640b8e678668f5b2c37
-msgid "重训后用 NEB 算 Li 扩散势垒，应接近 DFT 参考值"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:58
+#: 7fc072e3eb044691a34e3c9bfed3974d
+msgid "`每个输入的输出数`（`structure_count`）：`50`"
 msgstr ""
-"After DFT labeling and retraining, calculate the Li diffusion barrier with "
-"NEB and compare it with the DFT reference."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:35
-#: 9a0c36509ee14ba285dfc1075125bb0e
-msgid "抽查插入原子的最近邻距离：≥ min_distance 是底线，太近（<1.0 Å）的结构应该不会出现"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:59
+#: bd6d7aef179b49e3bf1d92d92fa9660a
+msgid "`最小原子间距`（`min_distance`）：`1.4 Å`"
 msgstr ""
-"Inspect the nearest-neighbor distance of the inserted atom. It must be at "
-"least `min_distance`; structures with contacts below 1.0 Å should not "
-"appear."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:36
-#: 91eff818a2d148229bdf465f33831b53
-msgid "如果成功率很低（输出远少于 50 个），增大 `max_attempts` 或降低 `min_distance`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:60
+#: 7ae1a927eeea4de48a9f4d97a094b354
+msgid "`真空／表面法向方向`（`axis`）：`Lattice c direction`"
 msgstr ""
-"If the success rate is low and far fewer than 50 structures are produced, "
-"increase `max_attempts` or reduce `min_distance`."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:37
-#: 18ea9b0471364020b6c0ff949e2a6d08
-msgid "如果是表面吸附场景，切到 `Mode` = `Adsorption`，调整 `offset` 控制吸附高度"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:61
+#: 2402538408aa45138ab48e82ef753a42
+msgid "`高于最高原子平面的距离`（`offset`）：`1.8 Å`"
 msgstr ""
-"For surface adsorption, set `Mode` to `Adsorption` and use `offset` to "
-"control the adsorption height."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:39
-#: 04f0ba43b2494c309746607eed7b7f42
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:41
-#: fe14b64ca55b4c93b720e757ad4b17df
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:42
-#: 6efae16378064b7ebd0c5a4c761a9fd2
-msgid "模型对扩散、吸附、插层位点预测不准"
-msgstr "The model is inaccurate for diffusion, adsorption, or intercalation sites."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:43
-#: 9281cfeb58934ff39f1d5695899254a0
-msgid "训练集只有完美晶格占据，缺少间隙原子环境"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:62
+#: b04b4988f4ab42a29d93dc28364246ce
+msgid "`使用随机种子`（`use_seed`）：开启，便于比较后续筛选方案"
 msgstr ""
-"The training set contains only ideal lattice occupations and lacks "
-"interstitial environments."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:44
-#: e3e5100a48c4400990142012207ee925
-msgid "研究表面催化、电池材料离子输运"
-msgstr "You are studying surface catalysis or ion transport in battery materials."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:46
-#: a34488b8fa2440abb67e908fe4a543bb
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:47
-#: 2e0569b74ba04a84a8c2ae8706591a9b
-msgid "只需基态占据 → 不需要额外插入原子"
-msgstr "Only ground-state occupations are needed → no additional atoms are required."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:48
-#: 70c1ef21ce294690ab86dc370971fddc
-msgid "插入物种与宿主剧烈反应（如碱金属+水）→ 先确认化学可行性"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:64
+#: ec53983fd83a4633beb5e17e14b6841b
+msgid "**验证：**"
 msgstr ""
-"The inserted species can react violently with the host, such as an alkali "
-"metal with water → establish chemical feasibility first."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:50
-#: 62b1beb0276b4856aee0bd9536809a18
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:66
+#: b9d746365e9543d4b1ab616d596f5a9b
+msgid "每个输出应比输入多一个 O，并带 `Ins(ad,n=1)` 标签。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:67
+#: 13ea41a6cc08484c8d8b03987eec2132
+msgid "插入原子到所有宿主原子的最近距离应不小于 `1.4 Å`。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:68
+#: 0a17306061e8435e985ca3804ba138f7
+msgid "50 个 O 应处于相同法向高度，但横向位置不同。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:69
+#: 1eb4fe8849b24a29998db01f8cf952b1
+msgid "几何优化或 DFT 标注后，再检查模型对吸附初始构型的能量和力误差是否下降。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:71
+#: 6d8f62b236504da0b4a597da55289252
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:52
-#: ad10f530ffcc4245bde2587c98b827ef
-msgid "插入模式和数量"
-msgstr "Insertion mode and count"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:54
-#: 8584475dcf8641d3a7c10600b96d752b
-msgid "Mode（mode）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:73
+#: 35bb396423cf423a967604da7525055d
+msgid "模式与元素"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:56
-#: 60b3d3b1f2534a99ad0773eb8222c8d7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:75
+#: f11b2bb7950549f7b1d1ae0feb937d49
+msgid "插入模式（mode）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:77
+#: 36d235d15e874fa29c9346eedabd22d6
+msgid "`int`，默认 `0`。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:79
+#: a431726980834693bb15b4a400ebc556
+msgid "`0`：体相随机插隙，在整个晶胞内连续随机取点。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:80
+#: 3b41ce7948924f68a33030b6e7010225
+msgid "`1`：上表面随机吸附，在指定上表面随机取横向位置。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:82
+#: ddbda4fdc3c54ee7a69f5eeb94c94205
+msgid "插入元素与权重（species）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:84
+#: d6c3ace7429641f39631ca9a4b9ab125
 msgid ""
-"`int`，默认 0。`0` = Interstitial（体相插隙），在晶胞内随机采样位点放入额外原子；`1` = "
-"Adsorption（表面吸附），沿表面法向在表面上方放置原子。"
+"`str`，默认空，运行时必填。可填写单一元素 `Li`，或使用相对权重 `Li:7, Na:3`。"
+"多个插入原子会分别独立抽样，因此权重表示概率，不保证单个输出达到精确组成。"
 msgstr ""
-"`int`, default: `0`. `0` selects Interstitial mode, which samples positions "
-"inside the cell; `1` selects Adsorption mode, which places atoms above the "
-"surface along its normal."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:58
-#: dc7c261c29844237af630dea8fa7ab3f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:86
+#: 69c9dbda59e44605aef3ffdf134cb114
+msgid "元素符号必须有效，权重必须为有限正数。重复元素的权重会合并。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:88
+#: 38751e26d6f4440e9a7fbdf0c3197cc4
+msgid "输出数量"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:90
+#: f1a981c156ad4374b5e49562fd3e2c06
+msgid "每个输出插入原子数（insert_count）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:92
+#: 03e28f1ec2b8407b854a412d04647c5b
+msgid "`int`，默认 `1`。每个成功输出必须插入的原子数，界面范围为 1–20。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:94
+#: f2e76256b54742cd906faf41a9c073ee
+msgid "每个输入的输出数（structure_count）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:96
+#: 061634c3517a45459c03a188a9112cbe
+msgid "`int`，默认 `10`。每个输入结构生成的完整输出数，界面范围为 1–1000。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:98
+#: 5073db3f5653410f819dd35b0640d427
+msgid "几何与尝试预算"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:100
+#: b9132ada26754f5a9b658409df037461
+msgid "最小原子间距（min_distance）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:102
+#: 6e99092f481d47b89b7f97a0f4123d20
 msgid ""
-"Interstitial 模式下 `axis` 和 `offset` 不生效。Adsorption 模式需要 slab 输入，`axis` "
-"决定了吸附原子沿哪条晶轴放。"
-msgstr ""
-"`axis` and `offset` are ignored in Interstitial mode. Adsorption mode "
-"requires a slab input, and `axis` selects the cell direction along which "
-"adsorbates are placed above the surface."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:60
-#: 818071e4835441c39503c9a3a891c824
-msgid "Species（species）"
+"`float`，默认 `1.4 Å`。候选点到宿主原子和已插入原子的最小允许距离。必须为有限"
+"正数。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:62
-#: 9b31d8ba97d04aca85cbcdf5b74c1790
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:104
+#: 2f8260ed40534f32a800449bcb877311
 msgid ""
-"`str`，默认空。逗号分隔的元素列表，指定要插入什么原子。支持权重写法：`Li:0.7,Na:0.3` 表示每次随机放置时有 70% 概率插 "
-"Li，30% 概率插 Na。权重不写则等概率。"
-msgstr ""
-"`str`, default: empty. Comma-separated elements to insert. Weighted entries "
-"are supported: `Li:0.7,Na:0.3` chooses Li with 70% probability and Na with "
-"30% probability for each placement. Without weights, the elements are "
-"sampled uniformly."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:64
-#: 2040e860557f4ce2821ffa37710725cd
-msgid "Insert Count（insert_count）"
+"该值只排除明显近距离碰撞，不代表化学合理的键长。不同元素体系应按原子尺寸和预"
+"期局域环境调整。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:66
-#: 688338c082e947cd9e2235357f34e9d4
-msgid "`int`，默认 1。每个生成结构里插几个额外原子。1~3 是常见范围——单原子插隙最容易放进去，数量越大碰撞失败概率越高。"
-msgstr ""
-"`int`, default: `1`. Number of additional atoms in each generated structure."
-" A typical range is 1–3. A single interstitial is easiest to place; larger "
-"counts increase the chance that placement fails because of collisions."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:68
-#: 91e9c79d56514763b4717ed15f94f06b
-msgid "Structure Count（structure_count）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:106
+#: a08aeaadafdd4077a6e5f37bd9e49cf3
+msgid "每个原子的放置尝试次数（max_attempts）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:70
-#: 338fbe2b904a4cacbb1106c51a3f9f7e
-msgid "`int`，默认 10。每输入帧生成多少个插入版本。"
-msgstr ""
-"`int`, default: `10`. Number of inserted variants generated for each input "
-"frame."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:72
-#: 1e2aa82dcef546e9b61a50ce08b052bc
-msgid "10~50 做轻量验证，50~200 常规覆盖，200 以上建议接 `FPS Filter`。"
-msgstr ""
-"Use 10–50 for a lightweight check and 50–200 for routine coverage. For more "
-"than 200, follow this card with `FPS Filter`."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:74
-#: 9aa638c800e24fcda03aa82c5a9e9899
-msgid "几何约束"
-msgstr "Geometric constraints"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:76
-#: 3a01d193afac43808703d941c516162b
-msgid "Min Distance（min_distance）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:78
-#: 8ec1104b8a7844eb89cb8f46bbb7a79a
-msgid "`float`，默认 1.4。候选插入点与已有原子的最小允许距离，单位 Å。"
-msgstr ""
-"`float`, default: `1.4`. Minimum allowed distance, in Å, between a candidate"
-" insertion point and every existing atom."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:80
-#: 5b7b90256eb54d598cfe375ae06ff6fc
-msgid "对致密晶体，1.6~2.5 Å 比较保守安全；1.2~1.6 Å 是一个平衡点；压到 0.8~1.2 Å 碰撞风险明显升高，只有在你确信结构能容纳时才用。"
-msgstr ""
-"For dense crystals, 1.6–2.5 Å is conservative; 1.2–1.6 Å balances acceptance"
-" and separation. At 0.8–1.2 Å the collision risk rises substantially, so use"
-" such values only when the chemistry and available volume justify them."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:82
-#: ce0b0d7ff1424197aea83fdb01feb1ad
-msgid "Max Attempts（max_attempts）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:84
-#: 7aeacffa873041339a3c20ff9516aef0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:108
+#: 72f25a976a9746d492044b5e44737ed8
 msgid ""
-"`int`，默认 200。每个待插入原子的最大随机尝试次数。增大它可以提高放置成功率，但耗时线性增长——如果你发现 200 "
-"次几乎每次都触顶失败，说明问题不是尝试次数不够，而是 `min_distance` 设大了或者胞太密。"
+"`int`，默认 `200`。每个待插入原子的最大随机尝试次数。达到上限仍找不到满足距离"
+"的位置时，整个操作报错。"
 msgstr ""
-"`int`, default: `200`. Maximum random placement attempts for each atom to "
-"insert. Increasing it may improve acceptance but increases cost linearly. If"
-" nearly every insertion exhausts all 200 attempts, the real problem is "
-"usually an overly large `min_distance` or an excessively dense cell."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:86
-#: 3934ad449956474c981f2a4d6f26d8ba
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:110
+#: f3043b42fa1d484e9f0daa91432b99ac
+msgid ""
+"连续触发上限通常说明晶胞过密、插入数过多或 `最小原子间距`（`min_distance`）过"
+"大；单纯继续提高尝试次数未必有效。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:112
+#: 559b6fb0435e4e85b1ca98b4e247c599
 msgid "表面吸附"
 msgstr "Surface adsorption"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:88
-#: a27d797b68b4436392f799b7bb776ee4
-msgid "Axis（axis）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:114
+#: e019e7789716436a80da607a18ef3ae6
+msgid "真空／表面法向方向（axis）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:90
-#: 2b0539c3d4ed4dafa40b1e452a2ad8dc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:116
+#: c229558938a749eda4ca5051679b5c5d
+msgid "`int`，默认 `2`，仅在吸附模式生效。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:118
+#: e29a673ba6d44920af1fb34df67e82a1
+msgid "`0`：真空沿晶格 `a`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:119
+#: 24f774f4dbcc4301a73f4f763016ae3e
+msgid "`1`：真空沿晶格 `b`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:120
+#: 99b62309f13241a7bb00f2f1d5de8011
+msgid "`2`：真空沿晶格 `c`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:122
+#: d31e69a7dbff486b878e84ab39033ca0
 msgid ""
-"`int`，默认 2。Adsorption 模式下它是表面法向。如果你的 slab 真空沿 z，默认 2（z "
-"轴）就不用改；表面取向不同时一定要调，否则吸附高度方向会错。"
-msgstr ""
-"`int`, default: `2`. Surface-normal axis in Adsorption mode. Keep the "
-"default `2` when the slab vacuum lies along *z*. Change it for a differently"
-" oriented surface; otherwise the adsorption height will be applied along the"
-" wrong direction."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:92
-#: 769ddb7c83264a2f850ffd2bc4d83664
-msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
-msgstr ""
-"Used by modes that depend on a direction, layering, a surface, or vector "
-"initialization."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:94
-#: 226acf7e838e4f968016669706d5be82
-msgid "Offset（offset）"
+"这里选择的是晶格方向，不等同于笛卡尔 `x`、`y`、`z`。程序会据此计算真实表面法"
+"向。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:96
-#: fb0a9d818ab04b0c92cad5b1452509ed
-msgid "`float`，默认 1.5。表面吸附时原子放在表面上方多远，单位 Å。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:124
+#: 4b787835011a451cb929618afb412d25
+msgid "高于最高原子平面的距离（offset）"
 msgstr ""
-"`float`, default: `1.5`. Distance in Å above the surface at which the "
-"adsorbate is placed."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:98
-#: 9e406890a1004f7bbae5dc6ee39d2af4
-msgid "生效条件：`mode` 选择 Adsorption 时。"
-msgstr "Used only when `mode` is set to Adsorption."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:126
+#: 48cfc118271e42d6a069b50500fbbdc1
+msgid ""
+"`float`，默认 `1.5 Å`，仅在吸附模式生效。表示候选原子到原始宿主最高原子平面的"
+"法向距离，必须为有限正数。"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:100
-#: 847c8facb9074b78b501fa5aeaf4ae13
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:128
+#: f35ee69ede0142c28ca09572af7ef66e
+msgid "该参数不会自动扩大晶胞。应先确保 slab 有足够真空容纳吸附原子。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:130
+#: 3c7e59ac56364c298e2ca5eb9a69cb48
 msgid "随机性"
 msgstr "Randomness"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:102
-#: 99cea4d8d07747eebc7c22b4ec0232f5
-msgid "Use Seed（use_seed）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:132
+#: 7944a250db3f4910938b0e5ed6454ea1
+msgid "使用随机种子（use_seed）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:104
-#: 33e1d1d8254145cebf56cccb6005c9d0
-msgid "`bool`，默认 false。打开后固定 seed → 同样输入和参数每次跑出一样的插入结果。对比实验时开，纯探索可以关掉。"
-msgstr ""
-"`bool`, default: `false`. When enabled with a fixed seed, the same input and"
-" parameters reproduce the same insertions. Enable it for controlled "
-"comparisons; it can remain off during exploratory sampling."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:106
-#: 09effa8808af497e9a916ceaf4e093dd
-msgid "Seed（seed）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:134
+#: 04436fd21ee8488d907b348120515eec
+msgid "`bool`，默认 `false`。启用后可复现同一输入结构的元素选择和几何位置。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:108
-#: 4984ce76d06346d2a01a2f047522dab1
-msgid "`int`，默认 0。随机种子值。"
-msgstr "`int`, default `0`. Random seed value."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:136
+#: 9f3013f1252a40b0a92d500f03ec0c9f
+msgid "随机种子（seed）"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:110
-#: 2f7d4431fc084806882c21db283a32a7
-msgid "生效条件：`use_seed=True`。"
-msgstr "Active only when `use_seed=True`."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:138
+#: e1b7324e9e384590ab8214ff1f636051
+msgid ""
+"`int`，默认 `0`，仅在 `use_seed=true` 时生效。种子会与结构内容共同派生，因此"
+"几何不同的输入帧不会机械地获得相同分数坐标。"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:112
-#: b159d36e882a4700854b4f8f94539c5d
-msgid "推荐预设"
-msgstr "Recommended presets"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:140
+#: ccdb94aa31fa4c8585c14bcead3751df
+msgid "推荐配置"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:114
-#: edca44db38744e7da3e1172bfd4ba6f6
-msgid "体相单原子间隙（Interstitial，50 个输出）"
-msgstr "Single-atom bulk interstitials (Interstitial, 50 outputs)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:142
+#: 03e26d65558d43ebb71925a62a33f34e
+msgid "体相单原子插隙"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:115
-#: 8749652e673548be8c087ce2c2ed8ccc
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:144
+#: b9474249c6204b06816220d3664e01f9
 msgid ""
 "{\n"
 "  \"class\": \"InsertDefectCard\",\n"
 "  \"check_state\": true,\n"
-"  \"mode\": 0,\n"
-"  \"species\": \"Li\",\n"
-"  \"insert_count\": [1],\n"
-"  \"structure_count\": [50],\n"
-"  \"min_distance\": [1.4],\n"
-"  \"max_attempts\": [200],\n"
-"  \"use_seed\": true,\n"
-"  \"seed\": [42],\n"
-"  \"axis\": 2,\n"
-"  \"offset\": [1.5]\n"
+"  \"params\": {\n"
+"    \"mode\": 0,\n"
+"    \"species\": \"Li\",\n"
+"    \"insert_count\": 1,\n"
+"    \"structure_count\": 50,\n"
+"    \"min_distance\": 1.4,\n"
+"    \"max_attempts\": 200,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42,\n"
+"    \"axis\": 2,\n"
+"    \"offset\": 1.5\n"
+"  }\n"
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:132
-#: 8f6b4c08a73e480b8123bcaada7f3197
-msgid "表面单原子吸附（Adsorption，50 个输出）"
-msgstr "Single-atom surface adsorption (Adsorption, 50 outputs)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:163
+#: f6e56e075999439aa7d8fc5a56c5c28b
+msgid "上表面混合吸附候选"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:133
-#: 07faac2e5c804e8a8b7203d774e8013f
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:165
+#: 352ba25bbd914e7e97dc9f6d35baa2c0
 msgid ""
 "{\n"
 "  \"class\": \"InsertDefectCard\",\n"
 "  \"check_state\": true,\n"
-"  \"mode\": 1,\n"
-"  \"species\": \"O,H\",\n"
-"  \"insert_count\": [1],\n"
-"  \"structure_count\": [50],\n"
-"  \"min_distance\": [1.6],\n"
-"  \"max_attempts\": [300],\n"
-"  \"use_seed\": true,\n"
-"  \"seed\": [42],\n"
-"  \"axis\": 2,\n"
-"  \"offset\": [2.0]\n"
+"  \"params\": {\n"
+"    \"mode\": 1,\n"
+"    \"species\": \"O:3, H:1\",\n"
+"    \"insert_count\": 2,\n"
+"    \"structure_count\": 50,\n"
+"    \"min_distance\": 1.2,\n"
+"    \"max_attempts\": 300,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42,\n"
+"    \"axis\": 2,\n"
+"    \"offset\": 1.8\n"
+"  }\n"
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:150
-#: a5e2a5a9e9064c88854230d12ed7ea09
-msgid "多物种间隙探索（Interstitial，200 个输出）"
-msgstr "Multiple-species interstitial exploration (Interstitial, 200 outputs)"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:151
-#: b537cab3f45d42b1bc4ce2ca4cf28fc2
-#, python-brace-format
-msgid ""
-"{\n"
-"  \"class\": \"InsertDefectCard\",\n"
-"  \"check_state\": true,\n"
-"  \"mode\": 0,\n"
-"  \"species\": \"Li:0.5,Na:0.3,Mg:0.2\",\n"
-"  \"insert_count\": [2],\n"
-"  \"structure_count\": [200],\n"
-"  \"min_distance\": [1.2],\n"
-"  \"max_attempts\": [400],\n"
-"  \"use_seed\": true,\n"
-"  \"seed\": [42],\n"
-"  \"axis\": 2,\n"
-"  \"offset\": [1.5]\n"
-"}\n"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:168
-#: 47a9bf35fd334ea9b7306577b08094c5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:184
+#: ba9102a1e934492c9eca3d025e277753
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:170
-#: 0b0b813735764bc2a239122365e98daa
-msgid "`Random Slab` → `Insert Defect`：先切表面 slab，再加吸附原子"
-msgstr "`Random Slab` → `Insert Defect`: cut a surface slab, then add adsorbates."
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:171
-#: ac754936505a419692dc7cad5166856f
-msgid "`Insert Defect` → `Random Vacancy`：互补缺陷族（间隙 + 空位）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:186
+#: acd10af470b14606ab773e00692c1be8
+msgid ""
+"`Random Slab` → `Insert Defect`：先生成带真空层的表面，再放置上表面吸附候选。"
 msgstr ""
-"`Insert Defect` → `Random Vacancy`: generate complementary defect families, "
-"interstitials and vacancies."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:172
-#: e2d0cc59468449d4a59f16fa4a89a7af
-msgid "`Insert Defect` → `FPS Filter`：大批量生成后做代表性筛选"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:187
+#: 278ec3a0eee54f02bdfda290fb4a066a
+msgid "`Insert Defect` → 几何优化或 DFT：本卡输出是未弛豫随机候选。"
 msgstr ""
-"`Insert Defect` → `FPS Filter`: select representative structures after "
-"large-scale generation."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:174
-#: e35685bc02cf40e49877de94cc5e8557
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:188
+#: 8504b7de4630402f9ddb94e1edd0261f
+msgid ""
+"`Insert Defect` → `FPS Filter`：大量候选经过描述符筛选后再进入昂贵计算。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:190
+#: a4b7a74c5c984579b731febca9aa09f3
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:176
-#: 3ce71c46006d42298d14aa3181c3f8fa
-msgid ""
-"**输出为空或数量远少于预期。** `min_distance` 太严、`max_attempts` 太小，或者输入超胞太密找不到合适位点。先放宽 "
-"min_distance 到 1.0 Å 试跑。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:192
+#: f5f0c5cb8d7e4e3393a0d93dd7ebac45
+msgid "**为什么没有四面体或八面体位点选项？**"
 msgstr ""
-"**No output is produced, or the count is far below expectation.** "
-"`min_distance` may be too strict, `max_attempts` too small, or the input "
-"cell too dense to contain a valid site. As a diagnostic, reduce "
-"`min_distance` to 1.0 Å and try again."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:178
-#: 60c6e27b84924c178d8107fde5664390
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:194
+#: 8d0f2c004c384d71b1f4f603a1434ef8
 msgid ""
-"**插入原子和宿主重叠。** 检查 min_distance 是否 ≤ 0（被跳过）。如果 min_distance 合理但仍重叠，增大 "
-"`max_attempts`。"
+"当前算法不做晶体学位点识别，只在连续空间随机采样。需要确定间隙位时，应使用专"
+"门的位点生成方法。"
 msgstr ""
-"**An inserted atom overlaps the host.** Check whether `min_distance` is "
-"nonpositive, which disables the test. If the distance is reasonable but "
-"placements still look problematic, increase `max_attempts` and inspect the "
-"accepted structures."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:180
-#: 302d5248f9ed4a1cbeb2cc4c21590c67
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:196
+#: 02a6758c07e7483eb5f9577b2744a792
+msgid "**为什么运行直接报“无法放置”？**"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:198
+#: 69231371e26f43148db8a3990d547ad9
 msgid ""
-"**Adsorption 模式下原子放在 box 外面。** 检查 axis 是否指向了正确的表面法向。如果 slab 的 c 轴不是表面法向，需要调整"
-" axis。"
+"卡片不会返回插入数不足的结构。先检查 `最小原子间距`（`min_distance`）、插入原"
+"子数和晶胞可用空间，再决定是否增加尝试次数。"
 msgstr ""
-"**Adsorption mode places atoms outside the intended region of the cell.** "
-"Check that `axis` points along the actual surface normal. If the slab's *c* "
-"axis is not normal to the surface, choose the correct axis."
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:182
-#: 7f25bea59e3d4cc58823c680029cc4c0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:200
+#: 53708226b4b143028db28113d521c170
+msgid "**为什么吸附原子可能位于晶胞范围外？**"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:202
+#: 5327454f3dff4483a35eb171e9275921
+msgid ""
+"卡片保持原晶胞和宿主坐标不变，也不会静默包裹吸附原子。请先在表面法向留出足够"
+"真空，或在后续计算前明确扩展晶胞。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:204
+#: 449dd557776c4b0da5d8b9e7efdcbfae
+msgid "**如何生成下表面吸附？**"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:206
+#: 24f48a779ab044bb85571d3970331397
+msgid ""
+"当前只生成所选晶格方向的上表面。可先翻转 slab，或使用明确支持上下表面的专门工"
+"具。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:208
+#: 751a8b89c0c74068a28c551b25e55bd4
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:184
-#: 9824c0cf0d4147aa973a3c722e5b5eeb
-#, python-brace-format
-msgid "`Ins(int,n={插入数})` / `Ins(ad,n={插入数})`"
-msgstr "`Ins(int,n={number inserted})` / `Ins(ad,n={number inserted})`"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:186
-#: 0093bc8948ae44259c893bacdb99a300
-msgid "可复现性"
-msgstr "Reproducibility"
-
-#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:188
-#: ee858b7c41124843a42e54d065e5c77b
-msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入顺序变化也会影响随机路径。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:210
+#: 716b7fce5f3c4c97a8705ded001e8fa9
+msgid "体相插隙：`Ins(int,n={插入数})`"
 msgstr ""
-"Enable `use_seed` and fix `seed` to reproduce a result for the same input. "
-"Changing the input order can still change the random path."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:211
+#: 64bae7879f4540f9ad8e39413349f057
+msgid "上表面吸附：`Ins(ad,n={插入数})`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:213
+#: 07af5a2cb6dc43009a8ee225cd893c82
+msgid "兼容性"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:215
+#: 6b75c69f86314b8eab0c00863dc47bf9
+msgid ""
+"内部 `card_name`、类名和参数键保持不变。旧版顶层参数和当前 `params` 对象都可"
+"以读取；显示名称和失败语义已收紧。"
+msgstr ""
+
+#~ msgid "插隙/吸附缺陷（Insert Defect）"
+#~ msgstr "Interstitial and Adsorbate Defects (Insert Defect)"
+
+#~ msgid ""
+#~ "在体相或表面结构中随机插入额外原子。支持 Interstitial（体相间隙位插入）和 "
+#~ "Adsorption（表面吸附位放置）两种模式，用最小距离约束避免原子碰撞。"
+#~ msgstr ""
+#~ "Randomly add atoms to bulk or surface structures. Interstitial mode "
+#~ "places atoms at candidate sites inside a bulk cell, while Adsorption mode "
+#~ "places them above a surface. A minimum-distance constraint prevents "
+#~ "direct atomic overlap."
+
+#~ msgid "场景：模型对 Li 扩散路径预测完全错误"
+#~ msgstr "Scenario: the model predicts an incorrect Li diffusion pathway"
+
+#~ msgid ""
+#~ "你在 LiCoO2 上训练了一个 NEP 模型跑 Li 扩散。模型预测的扩散势垒比 DFT 低了"
+#~ "一半——中间态的能量被严重低估。检查训练集发现：所有结构里 Li 都待在八面体位"
+#~ "点，从来没见过 Li 在四面体间隙位的结构。"
+#~ msgstr ""
+#~ "You trained an NEP model for Li diffusion in LiCoO2. Its predicted "
+#~ "diffusion barrier is only half the DFT value because the intermediate "
+#~ "states are severely underestimated. Inspection shows that every training "
+#~ "structure places Li at an octahedral site; none contains Li near a "
+#~ "tetrahedral interstitial site."
+
+#~ msgid ""
+#~ "**诊断思路：** 扩散路径上的过渡态对应 Li 从一个八面体位穿过四面体间隙位跃"
+#~ "迁到相邻八面体位的过程。训练集里只有基态构型，模型自然会低估中间态能量。需"
+#~ "要往训练集里加入 Li 在四面体间隙位附近的构型，让模型见过这些局域环境。"
+#~ msgstr ""
+#~ "**Diagnosis:** Along this diffusion path, Li moves from one octahedral "
+#~ "site to the next through a tetrahedral interstitial region. A training "
+#~ "set that contains only ground-state occupations gives the model no "
+#~ "information about those intermediate local environments. Add "
+#~ "configurations with Li near tetrahedral interstitial sites so the model "
+#~ "can learn their energies."
+
+#~ msgid "**输入：** 一个 LiCoO2 超胞"
+#~ msgstr "**Input:** A LiCoO2 supercell."
+
+#~ msgid "**目标：** 在体相中插入单个 Li 原子于随机间隙位，生成 50 个候选构型"
+#~ msgstr ""
+#~ "**Goal:** Generate 50 candidates by inserting one Li atom at a random "
+#~ "interstitial position in the bulk cell."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid ""
+#~ "**输出：** 50 个插隙结构，每个含一个额外 Li 原子放置于不与宿主原子碰撞的位"
+#~ "置，带 `Ins(int,n=1)` 标签"
+#~ msgstr ""
+#~ "**Output:** 50 interstitial structures, each containing one additional Li "
+#~ "atom at a position that does not collide with the host atoms, labeled "
+#~ "`Ins(int,n=1)`."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后用 NEB 算 Li 扩散势垒，应接近 DFT 参考值"
+#~ msgstr ""
+#~ "After DFT labeling and retraining, calculate the Li diffusion barrier "
+#~ "with NEB and compare it with the DFT reference."
+
+#~ msgid ""
+#~ "抽查插入原子的最近邻距离：≥ min_distance 是底线，太近（<1.0 Å）的结构应该"
+#~ "不会出现"
+#~ msgstr ""
+#~ "Inspect the nearest-neighbor distance of the inserted atom. It must be at "
+#~ "least `min_distance`; structures with contacts below 1.0 Å should not "
+#~ "appear."
+
+#~ msgid ""
+#~ "如果成功率很低（输出远少于 50 个），增大 `max_attempts` 或降低 "
+#~ "`min_distance`"
+#~ msgstr ""
+#~ "If the success rate is low and far fewer than 50 structures are produced, "
+#~ "increase `max_attempts` or reduce `min_distance`."
+
+#~ msgid ""
+#~ "如果是表面吸附场景，切到 `Mode` = `Adsorption`，调整 `offset` 控制吸附高度"
+#~ msgstr ""
+#~ "For surface adsorption, set `Mode` to `Adsorption` and use `offset` to "
+#~ "control the adsorption height."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "模型对扩散、吸附、插层位点预测不准"
+#~ msgstr ""
+#~ "The model is inaccurate for diffusion, adsorption, or intercalation sites."
+
+#~ msgid "训练集只有完美晶格占据，缺少间隙原子环境"
+#~ msgstr ""
+#~ "The training set contains only ideal lattice occupations and lacks "
+#~ "interstitial environments."
+
+#~ msgid "研究表面催化、电池材料离子输运"
+#~ msgstr ""
+#~ "You are studying surface catalysis or ion transport in battery materials."
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "只需基态占据 → 不需要额外插入原子"
+#~ msgstr ""
+#~ "Only ground-state occupations are needed → no additional atoms are "
+#~ "required."
+
+#~ msgid "插入物种与宿主剧烈反应（如碱金属+水）→ 先确认化学可行性"
+#~ msgstr ""
+#~ "The inserted species can react violently with the host, such as an alkali "
+#~ "metal with water → establish chemical feasibility first."
+
+#~ msgid "插入模式和数量"
+#~ msgstr "Insertion mode and count"
+
+#~ msgid ""
+#~ "`int`，默认 0。`0` = Interstitial（体相插隙），在晶胞内随机采样位点放入额"
+#~ "外原子；`1` = Adsorption（表面吸附），沿表面法向在表面上方放置原子。"
+#~ msgstr ""
+#~ "`int`, default: `0`. `0` selects Interstitial mode, which samples "
+#~ "positions inside the cell; `1` selects Adsorption mode, which places "
+#~ "atoms above the surface along its normal."
+
+#~ msgid ""
+#~ "Interstitial 模式下 `axis` 和 `offset` 不生效。Adsorption 模式需要 slab 输"
+#~ "入，`axis` 决定了吸附原子沿哪条晶轴放。"
+#~ msgstr ""
+#~ "`axis` and `offset` are ignored in Interstitial mode. Adsorption mode "
+#~ "requires a slab input, and `axis` selects the cell direction along which "
+#~ "adsorbates are placed above the surface."
+
+#~ msgid ""
+#~ "`str`，默认空。逗号分隔的元素列表，指定要插入什么原子。支持权重写法："
+#~ "`Li:0.7,Na:0.3` 表示每次随机放置时有 70% 概率插 Li，30% 概率插 Na。权重不"
+#~ "写则等概率。"
+#~ msgstr ""
+#~ "`str`, default: empty. Comma-separated elements to insert. Weighted "
+#~ "entries are supported: `Li:0.7,Na:0.3` chooses Li with 70% probability "
+#~ "and Na with 30% probability for each placement. Without weights, the "
+#~ "elements are sampled uniformly."
+
+#~ msgid ""
+#~ "`int`，默认 1。每个生成结构里插几个额外原子。1~3 是常见范围——单原子插隙最"
+#~ "容易放进去，数量越大碰撞失败概率越高。"
+#~ msgstr ""
+#~ "`int`, default: `1`. Number of additional atoms in each generated "
+#~ "structure. A typical range is 1–3. A single interstitial is easiest to "
+#~ "place; larger counts increase the chance that placement fails because of "
+#~ "collisions."
+
+#~ msgid "`int`，默认 10。每输入帧生成多少个插入版本。"
+#~ msgstr ""
+#~ "`int`, default: `10`. Number of inserted variants generated for each "
+#~ "input frame."
+
+#~ msgid "10~50 做轻量验证，50~200 常规覆盖，200 以上建议接 `FPS Filter`。"
+#~ msgstr ""
+#~ "Use 10–50 for a lightweight check and 50–200 for routine coverage. For "
+#~ "more than 200, follow this card with `FPS Filter`."
+
+#~ msgid "几何约束"
+#~ msgstr "Geometric constraints"
+
+#~ msgid "`float`，默认 1.4。候选插入点与已有原子的最小允许距离，单位 Å。"
+#~ msgstr ""
+#~ "`float`, default: `1.4`. Minimum allowed distance, in Å, between a "
+#~ "candidate insertion point and every existing atom."
+
+#~ msgid ""
+#~ "对致密晶体，1.6~2.5 Å 比较保守安全；1.2~1.6 Å 是一个平衡点；压到 0.8~1.2 "
+#~ "Å 碰撞风险明显升高，只有在你确信结构能容纳时才用。"
+#~ msgstr ""
+#~ "For dense crystals, 1.6–2.5 Å is conservative; 1.2–1.6 Å balances "
+#~ "acceptance and separation. At 0.8–1.2 Å the collision risk rises "
+#~ "substantially, so use such values only when the chemistry and available "
+#~ "volume justify them."
+
+#~ msgid ""
+#~ "`int`，默认 200。每个待插入原子的最大随机尝试次数。增大它可以提高放置成功"
+#~ "率，但耗时线性增长——如果你发现 200 次几乎每次都触顶失败，说明问题不是尝试"
+#~ "次数不够，而是 `min_distance` 设大了或者胞太密。"
+#~ msgstr ""
+#~ "`int`, default: `200`. Maximum random placement attempts for each atom to "
+#~ "insert. Increasing it may improve acceptance but increases cost linearly. "
+#~ "If nearly every insertion exhausts all 200 attempts, the real problem is "
+#~ "usually an overly large `min_distance` or an excessively dense cell."
+
+#~ msgid ""
+#~ "`int`，默认 2。Adsorption 模式下它是表面法向。如果你的 slab 真空沿 z，默"
+#~ "认 2（z 轴）就不用改；表面取向不同时一定要调，否则吸附高度方向会错。"
+#~ msgstr ""
+#~ "`int`, default: `2`. Surface-normal axis in Adsorption mode. Keep the "
+#~ "default `2` when the slab vacuum lies along *z*. Change it for a "
+#~ "differently oriented surface; otherwise the adsorption height will be "
+#~ "applied along the wrong direction."
+
+#~ msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
+#~ msgstr ""
+#~ "Used by modes that depend on a direction, layering, a surface, or vector "
+#~ "initialization."
+
+#~ msgid "`float`，默认 1.5。表面吸附时原子放在表面上方多远，单位 Å。"
+#~ msgstr ""
+#~ "`float`, default: `1.5`. Distance in Å above the surface at which the "
+#~ "adsorbate is placed."
+
+#~ msgid "生效条件：`mode` 选择 Adsorption 时。"
+#~ msgstr "Used only when `mode` is set to Adsorption."
+
+#~ msgid ""
+#~ "`bool`，默认 false。打开后固定 seed → 同样输入和参数每次跑出一样的插入结"
+#~ "果。对比实验时开，纯探索可以关掉。"
+#~ msgstr ""
+#~ "`bool`, default: `false`. When enabled with a fixed seed, the same input "
+#~ "and parameters reproduce the same insertions. Enable it for controlled "
+#~ "comparisons; it can remain off during exploratory sampling."
+
+#~ msgid "`int`，默认 0。随机种子值。"
+#~ msgstr "`int`, default `0`. Random seed value."
+
+#~ msgid "生效条件：`use_seed=True`。"
+#~ msgstr "Active only when `use_seed=True`."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "体相单原子间隙（Interstitial，50 个输出）"
+#~ msgstr "Single-atom bulk interstitials (Interstitial, 50 outputs)"
+
+#~ msgid "表面单原子吸附（Adsorption，50 个输出）"
+#~ msgstr "Single-atom surface adsorption (Adsorption, 50 outputs)"
+
+#~ msgid "多物种间隙探索（Interstitial，200 个输出）"
+#~ msgstr ""
+#~ "Multiple-species interstitial exploration (Interstitial, 200 outputs)"
+
+#~ msgid "`Random Slab` → `Insert Defect`：先切表面 slab，再加吸附原子"
+#~ msgstr ""
+#~ "`Random Slab` → `Insert Defect`: cut a surface slab, then add adsorbates."
+
+#~ msgid "`Insert Defect` → `Random Vacancy`：互补缺陷族（间隙 + 空位）"
+#~ msgstr ""
+#~ "`Insert Defect` → `Random Vacancy`: generate complementary defect "
+#~ "families, interstitials and vacancies."
+
+#~ msgid "`Insert Defect` → `FPS Filter`：大批量生成后做代表性筛选"
+#~ msgstr ""
+#~ "`Insert Defect` → `FPS Filter`: select representative structures after "
+#~ "large-scale generation."
+
+#~ msgid ""
+#~ "**输出为空或数量远少于预期。** `min_distance` 太严、`max_attempts` 太小，"
+#~ "或者输入超胞太密找不到合适位点。先放宽 min_distance 到 1.0 Å 试跑。"
+#~ msgstr ""
+#~ "**No output is produced, or the count is far below expectation.** "
+#~ "`min_distance` may be too strict, `max_attempts` too small, or the input "
+#~ "cell too dense to contain a valid site. As a diagnostic, reduce "
+#~ "`min_distance` to 1.0 Å and try again."
+
+#~ msgid ""
+#~ "**插入原子和宿主重叠。** 检查 min_distance 是否 ≤ 0（被跳过）。如果 "
+#~ "min_distance 合理但仍重叠，增大 `max_attempts`。"
+#~ msgstr ""
+#~ "**An inserted atom overlaps the host.** Check whether `min_distance` is "
+#~ "nonpositive, which disables the test. If the distance is reasonable but "
+#~ "placements still look problematic, increase `max_attempts` and inspect "
+#~ "the accepted structures."
+
+#~ msgid ""
+#~ "**Adsorption 模式下原子放在 box 外面。** 检查 axis 是否指向了正确的表面法"
+#~ "向。如果 slab 的 c 轴不是表面法向，需要调整 axis。"
+#~ msgstr ""
+#~ "**Adsorption mode places atoms outside the intended region of the cell.** "
+#~ "Check that `axis` points along the actual surface normal. If the slab's "
+#~ "*c* axis is not normal to the surface, choose the correct axis."
+
+#, python-brace-format
+#~ msgid "`Ins(int,n={插入数})` / `Ins(ad,n={插入数})`"
+#~ msgstr "`Ins(int,n={number inserted})` / `Ins(ad,n={number inserted})`"
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid ""
+#~ "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入顺序变化也会影响随机路"
+#~ "径。"
+#~ msgstr ""
+#~ "Enable `use_seed` and fix `seed` to reproduce a result for the same "
+#~ "input. Changing the input order can still change the random path."

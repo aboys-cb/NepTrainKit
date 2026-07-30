@@ -9,37 +9,38 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:3
-#: a0d39d931bb74a0490bb796012730232
-msgid "Random Packing"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:3
+#: f275d909e7f74976891eae328d551d3c
+msgid "随机原子堆积（Random Packing）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:5
-#: 2e5b5dc64f234312abfbfc7a9039acdb
-msgid "`Group`: `Structure` | `Class`: `RandomPackingCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:5
+#: 89b051ce7b5244dbafb8aed1c52628c2
+msgid "**分类：** 结构"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:7
-#: 9432b8eda7b54666a78b65b4602421bc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:7
+#: 7ebddcbbe6aa4996932b35f9c96a4e7e
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:9
-#: bb4c94aab65e4f06975fc48dfb941231
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:9
+#: 04bf96d817a741eba9d2c9806c4af1dd
 msgid ""
-"`Random Packing` 是原子坐标卡，不是磁性卡。它保留输入结构的 `cell` 和 `pbc`，按输入组成或手动精确组成在 cell "
-"内重新随机放置原子，并用全局和 pair-specific 最小距离约束挡掉明显不可能的短键初态。"
+"`Random Packing` 是原子坐标卡，不是磁性卡。它保留输入结构的 `cell` 和 `pbc`，"
+"按输入组成或手动精确组成在 cell 内重新随机放置原子，并用全局和 pair-specific "
+"最小距离约束挡掉明显不可能的短键初态。"
 msgstr ""
 "`Random Packing` operates on atomic coordinates, not magnetic moments. It "
 "preserves the input `cell` and `pbc`, then redistributes atoms inside the "
@@ -47,140 +48,178 @@ msgstr ""
 "composition. Global and pair-specific minimum distances reject clearly "
 "impossible short-contact starting states."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:11
-#: 85b2d026cf61463c824fed9bff29e81e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:11
+#: af3ec8a052c84f5388b2d0498754d1c8
 msgid ""
-"这张卡解决的是“训练集缺少无序初始构型”，不是“缺少磁矩无序”。磁矩无序使用 `Spin Disorder` 或 `Correlated Random "
-"Spin`。"
+"这张卡解决的是“训练集缺少无序初始构型”，不是“缺少磁矩无序”。磁矩无序使用 "
+"`Spin Disorder` 或 `Correlated Random Spin`。"
 msgstr ""
 "Use this card when the training set lacks structurally disordered starting "
 "configurations. For disordered magnetic moments, use `Spin Disorder` or "
 "`Correlated Random Spin` instead."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:13
-#: 0fff41827e8045ad8766c601ca4145ee
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:13
+#: 5fa8ceffdaf24831a6d21a7da343ee98
+msgid "原理与公式"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:15
+#: e131593f207d4bda9e78fcff0ed79794
+msgid ""
+"程序在输入晶胞内依次随机放置原子。候选分数坐标 $\\mathbf s\\sim U([0,1)^3)$，"
+"Cartesian 坐标为 $\\mathbf r=\\mathbf s^\\mathsf T\\mathbf C$。对新原子 $i$，"
+"只有满足"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:19
+#: 1b19a954c06046568a238226883963c9
+msgid ""
+"\n"
+"d_{ij}^{\\mathrm{MIC}}\\ge d_{\\min}(Z_i,Z_j)\n"
+"\\qquad \\forall j<i\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:24
+#: 6bc8a74c686e4a4d97c260adaf3784cf
+msgid ""
+"才接受该位置。元素对专用阈值优先于全局最小距离；所有距离单位为 Å。程序优先放"
+"置约束更大 的元素，以降低后期无位置可放的概率，但它仍是带拒绝的随机顺序算法，"
+"不保证在高密度条件下 一定找到解。达到每原子最大尝试次数后，严格模式报错，非严"
+"格模式跳过该输出样本。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:28
+#: bd9046b65543470abfd1cf8b5be9a8f2
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:15
-#: cc691bff773947bebd1abdd55b3d037e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:30
+#: c81f9938cf3f45bc8edf76c5f9a40bc5
 msgid "场景：模型只见过有序晶格，遇到无序初态能量排序不稳定"
 msgstr ""
 "Scenario: a model trained only on ordered lattices gives unstable energy "
 "rankings for disordered starting states"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:17
-#: fa01db7acbec4466be23358dac331cbc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:32
+#: deb1363ae9b140bab103fe990e157f74
 msgid ""
-"输入是一个已有 cell 和组成的候选结构。你希望在相同 cell 和元素计数下生成 20 个随机原子 packing，用于 amorphous "
-"seed、液相初态或高温无序初态的 DFT 采样。"
+"输入是一个已有 cell 和组成的候选结构。你希望在相同 cell 和元素计数下生成 20 "
+"个随机原子 packing，用于 amorphous seed、液相初态或高温无序初态的 DFT 采样。"
 msgstr ""
 "The input is a candidate structure with a defined cell and composition. You "
 "want 20 random packings with the same cell and element counts for use as "
 "amorphous seeds, liquid starting states, or high-temperature disordered "
 "configurations for DFT sampling."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:19
-#: 01e35e358f7b45238c7b2ce45a6757bd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:34
+#: 3aae602f1e984b019426e9f782270b2c
 msgid ""
-"参数设置：`structures=20`，`composition=\"\"`，`min_distance=1.5`，`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`，`strict_mode=True`，打开"
-" `use_seed`。"
+"参数设置：`structures=20`，`composition=\"\"`，`min_distance=1.5`，"
+"`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`，`strict_mode=True`，打开 `使用随机"
+"种子`（`use_seed`）。"
 msgstr ""
-"Set `structures=20`, `composition=\"\"`, `min_distance=1.5`, "
-"`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`, and `strict_mode=True`, then "
-"enable `use_seed`."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:21
-#: f4399ee0d8ff4a24876c667158ece3c5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:36
+#: f273589f5f6b40cb90da6741f778bf30
 msgid ""
 "输出结构保留原 cell/pbc 和元素计数，坐标随机重排，`Config_type` 追加 "
-"`RandPack(...)`。检查输出时重点看最短距离分布和后续 DFT 是否仍有明显短键崩溃。"
+"`RandPack(...)`。检查输出时重点看最短距离分布和后续 DFT 是否仍有明显短键崩"
+"溃。"
 msgstr ""
 "Each output preserves the original cell, periodicity, and element counts "
-"while randomizing coordinates. `RandPack(...)` is appended to `Config_type`."
-" Validate the minimum-distance distribution and check whether subsequent DFT"
-" calculations still fail because of short contacts."
+"while randomizing coordinates. `RandPack(...)` is appended to `Config_type`. "
+"Validate the minimum-distance distribution and check whether subsequent DFT "
+"calculations still fail because of short contacts."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:23
-#: 91c11f194c87420099b232a29bb3335b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:38
+#: 01eecc53910f445fbeaab14f86974038
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:25
-#: 9c0feb67bd214960b25f94dcab345c88
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:40
+#: d286f015826445e6991c461d524222d0
 msgid "组成和数量"
 msgstr "Composition and count"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:27
-#: ecff83a2b6324e13b99f7ded6c82db6a
-msgid "Structures（structures）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:42
+#: 0f78fe8261bf4cdd919d593f03568bcb
+msgid "结构数（structures）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:29
-#: e5fc622c07a74dce9429034878639d6d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:44
+#: 42de43b1e91944b092db051ecb983f2d
 msgid "`int`，默认 1。每个输入结构生成几个独立的随机 packing 版本。"
 msgstr ""
 "`int`, default: `1`. Number of independent random packings generated for "
 "each input structure."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:31
-#: 615f9f79639d44c88e8965e360f322e8
-msgid "10-20 个适合无序初始构型试探；50+ 时注意——每个输出结构都要靠随机试错来放置，高密度体系会显著变慢，而且 DFT 预算也成倍放大。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:46
+#: f7523b60dd7241c083680aecf2b84b13
+msgid ""
+"10-20 个适合无序初始构型试探；50+ 时注意——每个输出结构都要靠随机试错来放置，"
+"高密度体系会显著变慢，而且 DFT 预算也成倍放大。"
 msgstr ""
 "Use 10–20 to probe disordered starting states. At 50 or more, placement can "
 "become slow in dense systems because each structure relies on repeated "
 "random trials, and the downstream DFT cost grows proportionally."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:33
-#: 65c71b091ac1463788c76ff538074fdb
-msgid "Composition（composition）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:48
+#: 8113927ae8f64d04825509ba9965d301
+msgid "组成（composition）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:35
-#: b1884016f25548edabbb019af73bef89
-msgid "`str`，默认空。留空 = 沿用输入结构的元素种类和原子计数。手动指定时写整数计数，如 `Fe:32, O:64`。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:50
+#: a7a3b2f858c64f859b9c0ac805eeef80
+msgid ""
+"`str`，默认空。留空 = 沿用输入结构的元素种类和原子计数。手动指定时写整数计"
+"数，如 `Fe:32, O:64`。"
 msgstr ""
 "`str`, default: empty. Leave empty to preserve the input elements and atom "
 "counts. To override them, provide integer counts such as `Fe:32, O:64`."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:37
-#: 86c2f418c1084efabdac507944f1ac58
-msgid "注意这一卡不接受比例（不接受 `Fe:0.33` 这种写法）。因为随机 packing 需要确切知道每个种类有多少个原子才能放置。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:52
+#: 31857d9295da44208049e154bddf4518
+msgid ""
+"注意这一卡不接受比例（不接受 `Fe:0.33` 这种写法）。因为随机 packing 需要确切"
+"知道每个种类有多少个原子才能放置。"
 msgstr ""
 "Fractions such as `Fe:0.33` are not accepted. Random packing requires an "
 "exact integer count for every species before placement begins."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:39
-#: 53cf8507b29b4b20b41219efeb7263a2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:54
+#: 5df13dbd3f37494faf5947284971571d
 msgid "距离约束"
 msgstr "Distance constraints"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:41
-#: 80e4eae68e484628a636fd3537d43ab7
-msgid "原子是一个一个随机扔进盒子里的。每扔一个，都要检查它跟已经放置的所有原子之间的距离够不够大。下面三个参数控制\"多大算够大\"以及\"试多少次放弃\"。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:56
+#: 1db5013ef52f402ea6d3dd5dc2ddcb98
+msgid ""
+"原子是一个一个随机扔进盒子里的。每扔一个，都要检查它跟已经放置的所有原子之间"
+"的距离够不够大。下面三个参数控制\"多大算够大\"以及\"试多少次放弃\"。"
 msgstr ""
 "Atoms are placed one at a time. Every candidate position is checked against "
 "all atoms already placed. The following parameters define the required "
-"separation and the number of failed trials allowed before placement gives "
-"up."
+"separation and the number of failed trials allowed before placement gives up."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:43
-#: 1ade061ec2374e4883fd324a24c57580
-msgid "Min Distance（min_distance）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:58
+#: e731056e46a04a11bb2f49e0facab221
+msgid "最小距离（min_distance）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:45
-#: a893961d1008480b931b6d2929a82627
-msgid "`float`，默认 1.5 Å。全局最小原子对距离——任何两个原子都不允许比这个值更近。"
-msgstr ""
-"`float`, default: `1.5` Å. Global minimum pair distance; no two atoms may be"
-" closer than this value."
-
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:47
-#: a621709fd3d34be89024140afa8d686c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:60
+#: f4b98cc20aa54ea8a737509bc6ae8dcc
 msgid ""
-"设太小会放行短键坏结构，设太大在高密度 cell 里可能根本放不下所有原子。一个安全的起点是：取体系最短合理键长的 70-90%。比如 Si-Si 键约"
-" 2.35 Å，设 1.8 Å 通常没问题。"
+"`float`，默认 1.5 Å。全局最小原子对距离——任何两个原子都不允许比这个值更近。"
+msgstr ""
+"`float`, default: `1.5` Å. Global minimum pair distance; no two atoms may be "
+"closer than this value."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:62
+#: 8c6ea95ce74947c6a8573a52538888e9
+msgid ""
+"设太小会放行短键坏结构，设太大在高密度 cell 里可能根本放不下所有原子。一个安"
+"全的起点是：取体系最短合理键长的 70-90%。比如 Si-Si 键约 2.35 Å，设 1.8 Å 通"
+"常没问题。"
 msgstr ""
 "A value that is too small admits bad short-contact structures, while one "
 "that is too large may make a dense cell impossible to fill. A useful "
@@ -188,115 +227,110 @@ msgstr ""
 "For example, with a Si–Si bond near 2.35 Å, 1.8 Å is often a sensible "
 "initial constraint."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:49
-#: 682918f5e75847f0a3ada3a74fdd8c40
-msgid "Pair Min Distances（pair_min_distances）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:64
+#: e94b7e7479fc45f4821e8db3d065bcbf
+msgid "分元素对最小距离（pair_min_distances）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:51
-#: e46ccdaf8eb341448ff5708c9fcac549
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:66
+#: f56c3558e1274b3a9917d30f28075bb4
 msgid "`str`，默认空。按元素对覆盖全局距离。例如 `Fe-O:1.8, O-O:1.2`。"
 msgstr ""
 "`str`, default: empty. Element-pair overrides for the global distance, for "
 "example `Fe-O:1.8, O-O:1.2`."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:53
-#: 9f87e8c369634d80a139cab47343ebfe
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:68
+#: 1433cc21fb2842d9b8b2346de02284a4
 msgid ""
-"元素半径差异大时你会想用这个——O-O 通常比 Fe-O 可以更近一些，同时 Fe-O 可能需要比全局 `min_distance` 更宽松。写在 "
-"pair 里的距离覆盖全局值，没写的元素对仍然用 `min_distance`。"
-msgstr ""
-"Use pair overrides when species have substantially different sizes or "
-"contact requirements. A listed pair replaces the global constraint; unlisted"
-" pairs continue to use `min_distance`."
-
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:55
-#: 8e4e6b01ba4748d9accb297e88e2b1f0
-msgid "Max Attempts Per Atom（max_attempts_per_atom）"
+"元素半径差异大时你会想用这个——O-O 通常比 Fe-O 可以更近一些，同时 Fe-O 可能需"
+"要比全局 `最小距离`（`min_distance`）更宽松。写在 pair 里的距离覆盖全局值，没"
+"写的元素对仍然用 `最小距离`（`min_distance`）。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:57
-#: 814c0e02f84a4bedab252dadce63c1b6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:70
+#: 1c6650dc7bf4492685601547e8814f6c
+msgid "每个原子最大尝试次数（max_attempts_per_atom）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:72
+#: b3a9c59fc2684a9993de0ac789533f27
 msgid "`int`，默认 500。每个原子最多随机尝试多少次放置位置，超过就认为放不下。"
 msgstr ""
 "`int`, default: `500`. Maximum random position trials for each atom before "
 "that placement is considered impossible."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:59
-#: a933a656c8ed49268b8bc99e4800e09e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:74
+#: 70442c68bd214ae89babbcc98937042c
 msgid ""
-"增大它只增加搜索时间，不改变物理可行性。如果你发现它一直失败（几乎每次都触达 500 次上限），不是该调大它——是你的 `min_distance` "
-"设大了，或者 cell 相对原子数太小。先调松距离或扩胞。"
-msgstr ""
-"Increasing this limit only spends more search time; it cannot make an "
-"infeasible packing physically possible. If most placements exhaust all 500 "
-"attempts, reduce `min_distance` or use a larger cell before increasing the "
-"attempt count."
-
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:61
-#: 8fcc904794bb4f18a1eb7bb6a6bda559
-msgid "Strict Mode（strict_mode）"
+"增大它只增加搜索时间，不改变物理可行性。如果你发现它一直失败（几乎每次都触达 "
+"500 次上限），不是该调大它——是你的 `最小距离`（`min_distance`）设大了，或者 "
+"cell 相对原子数太小。先调松距离或扩胞。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:63
-#: 072ad9a2d7e2409da29c022c3a5cdd07
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:76
+#: 584e7f805421422faffd0180cdcb12bc
+msgid "严格模式（strict_mode）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:78
+#: e3ffc656e0144e98821b60fb7fcbbc17
 msgid ""
-"`bool`，默认 true。打开：只要有一个原子放不下，整个样本就报错，保证输出数量 = 设定值。关闭：放不下的样本被跳过，最终输出可能比你设的 "
-"`structures` 少。"
+"`bool`，默认 true。打开：只要有一个原子放不下，整个样本就报错，保证输出数量 "
+"= 设定值。关闭：放不下的样本被跳过，最终输出可能比你设的 `结构数`"
+"（`structures`）少。"
 msgstr ""
-"`bool`, default: `true`. When enabled, failure to place any atom raises an "
-"error for the sample, enforcing the requested output-count contract. When "
-"disabled, failed samples are skipped and the output count may be lower than "
-"`structures`."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:65
-#: 0d41dc6b8393475c80aee189de6fa733
-msgid "如果你在做参数扫描、不确定什么约束组合能放得下→ 先关掉 strict，看实际产出了几个样本，再决定要不要调参数。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:80
+#: efafbe107b434eef96ae364dba40b1db
+msgid ""
+"如果你在做参数扫描、不确定什么约束组合能放得下→ 先关掉 strict，看实际产出了几"
+"个样本，再决定要不要调参数。"
 msgstr ""
 "When scanning uncertain constraint combinations, disable strict mode first "
 "and inspect how many samples are accepted before tuning the parameters."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:67
-#: 0013c9feeace4455b831ec4e2df0b16f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:82
+#: 330523d15f144df99fcbf40279b59a35
 msgid "随机性"
 msgstr "Randomness"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:69
-#: cd26319b140c411486c3fc75b36cd6b5
-msgid "Use Seed（use_seed）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:84
+#: 5ad75a1a0aae48319ed1564fa501da2d
+msgid "使用随机种子（use_seed）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:71
-#: 239b3e6b42394f9b9f14a42d7d6679ce
-msgid "`bool`，默认 false。打开后同参数同输入 → 相同的 packing 结果。对比实验时开，纯探索可以关。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:86
+#: fe411de5aa5a4220b9d8079405cd301d
+msgid ""
+"`bool`，默认 false。打开后同参数同输入 → 相同的 packing 结果。对比实验时开，"
+"纯探索可以关。"
 msgstr ""
 "`bool`, default: `false`. Enable it to reproduce the same packing from the "
 "same input and parameters. Use it for controlled comparisons; it may remain "
 "disabled during exploration."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:73
-#: 8dbfc37ea192432eb6f9a705ce049989
-msgid "Seed（seed）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:88
+#: 7058b644509940e38449df0b789dde78
+msgid "随机种子（seed）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:75
-#: 9901f559b8204c5882ecbef72f0f25ec
-msgid "`int`，默认 0。仅 `use_seed` 打开时生效。"
-msgstr "`int`, default: `0`. Used only when `use_seed` is enabled."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:90
+#: e75ce491d9b84c2aafe7a067d41acee0
+msgid "`int`，默认 0。仅 `使用随机种子`（`use_seed`）打开时生效。"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:77
-#: 4deb53049a6c48dba305bdc09ebb0c34
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:92
+#: 1c31305bda224ebcb481575fcf328717
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:79
-#: d18f2587e1a846759cffe3be404921e2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:94
+#: cf46de4754c54c309dd7f4f935effcb4
 msgid "保持输入组成"
 msgstr "Preserve the input composition"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:81
-#: 10e95200d0d2403b83cabfe1e93416b2
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:96
+#: 3c8e4505d03e4e52a4a33dac03d38cc7
 msgid ""
 "{\n"
 "  \"class\": \"RandomPackingCard\",\n"
@@ -313,14 +347,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:97
-#: fbd46c30ea334cbf89e8f2e5dfade2d6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:112
+#: 0995882b2452492d97c93733ac348d46
 msgid "手动精确组成"
 msgstr "Specify an exact composition"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:99
-#: 03d9da791d13470ba28c55ffb34ad9d2
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:114
+#: 74413ed138224993b27b6e3560e01be5
 msgid ""
 "{\n"
 "  \"class\": \"RandomPackingCard\",\n"
@@ -337,83 +370,136 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:115
-#: 7d6304af55ae4886aa53d2673bd1d254
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:130
+#: 2d19a30001514935a07e5d13c4e8f4cf
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:117
-#: eb8e198968444068b325dc1c4fbd8bde
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:132
+#: 93afc24de2ec4d0f9d2a84a36498b021
 msgid ""
-"`Crystal Prototype Builder → Super Cell → Random Packing`：复用目标 cell 尺度生成无序 "
-"seed。"
+"`Crystal Prototype Builder → Super Cell → Random Packing`：复用目标 cell 尺度"
+"生成无序 seed。"
 msgstr ""
 "`Crystal Prototype Builder → Super Cell → Random Packing`: establish the "
 "target cell size, then generate disordered seeds in that cell."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:118
-#: 40b35c2d8220400982ce2160cce7f63b
-msgid "`Random Packing → Geometry Filter`：先生成，再过滤短键、体积和密度异常。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:133
+#: 525ff4ca294a48dbb67c4b6324ab2b33
+msgid ""
+"`Random Packing → Geometry Filter`：先生成，再过滤短键、体积和密度异常。"
 msgstr ""
 "`Random Packing → Geometry Filter`: generate candidates, then reject "
 "abnormal contacts, volumes, or densities."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:119
-#: fa6422fef3104c1e9d799f51283e3fb9
-msgid "`Random Packing → Atomic Perturb`：在已经满足硬距离约束的无序 seed 上叠加小位移噪声。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:134
+#: acdcbed2f5bc4f5aa50ee90448e17035
+msgid ""
+"`Random Packing → Atomic Perturb`：在已经满足硬距离约束的无序 seed 上叠加小位"
+"移噪声。"
 msgstr ""
 "`Random Packing → Atomic Perturb`: add small displacement noise to a "
 "disordered seed that already satisfies hard distance constraints."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:121
-#: e874a60567644fa494aac675a1e63286
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:136
+#: 5d7f929d3f4e494bb17482d5ef679773
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:123
-#: 7d1977f4cd094ee080161527c2c8c507
-msgid "**为什么不接受比例组成？** 因为这张卡生成真实原子列表，必须知道整数原子数。比例到整数的舍入会改变组成语义，应该在上游先确定超胞和计数。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:138
+#: d33437f58b6f43f98dd06844ccfdacb4
+msgid ""
+"**为什么不接受比例组成？** 因为这张卡生成真实原子列表，必须知道整数原子数。比"
+"例到整数的舍入会改变组成语义，应该在上游先确定超胞和计数。"
 msgstr ""
 "**Why are fractional compositions not accepted?** The card must construct a "
 "concrete atom list with integer counts. Rounding fractions would change "
 "their composition semantics, so determine the supercell and exact counts "
 "upstream."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:125
-#: ea59b03691674dc68845e24627f7775a
-msgid "**为什么默认 strict？** 链式卡片里输出数量通常会继续相乘。默认跳过失败样本会让后续数量偏离用户设定，所以默认保持严格数量契约。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:140
+#: 32c5cdaeb87c493f9f8c2fc9a91945f0
+msgid ""
+"**为什么默认 strict？** 链式卡片里输出数量通常会继续相乘。默认跳过失败样本会"
+"让后续数量偏离用户设定，所以默认保持严格数量契约。"
 msgstr ""
 "**Why is strict mode the default?** In a card chain, downstream operations "
 "often multiply the current output count. Silently skipping failed samples "
 "would make later counts diverge from the user's plan, so the default "
 "enforces an explicit count contract."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:127
-#: 57664f40688845f7931b62ee5f169820
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:142
+#: 4db397125b47429bae800cb3ff0d01b4
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:129
-#: 78e7818d2ee14f389942089ba4c178c0
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:144
+#: e22c423acfa04c829c05bb2f0fc3761f
 msgid ""
-"`RandPack(n={atom_count},d={min_distance},s={seed})`。`s` 只在 `use_seed=True` "
-"时出现。"
+"`RandPack(n={atom_count},d={min_distance},s={seed})`。`s` 只在 "
+"`use_seed=True` 时出现。"
 msgstr ""
 "`RandPack(n={atom_count},d={min_distance},s={seed})`. The `s` field appears "
 "only when `use_seed=True`."
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:131
-#: dddb2ae238ef4cc7af8be0b693757f33
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:146
+#: 1e89b706acc44f10acba36580859c368
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/random-packing-card.md:133
-#: 0a0cb4b1c6dc4804bfb614cd48d57a1f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:148
+#: a5c5c0df200e4ca595a31021a4438d59
 msgid ""
-"开启 `use_seed` 后，随机 packing 由 `seed`、输入结构稳定 ID 和 sample 序号共同决定。相同输入、相同参数、相同 "
-"seed 会生成相同坐标。"
+"开启 `使用随机种子`（`use_seed`）后，随机 packing 由 `随机种子`（`seed`）、输"
+"入结构稳定 ID 和 sample 序号共同决定。相同输入、相同参数、相同 seed 会生成相"
+"同坐标。"
 msgstr ""
-"With `use_seed` enabled, the packing is determined jointly by `seed`, the "
-"input structure's stable ID, and the sample index. The same input, "
-"parameters, and seed reproduce the same coordinates."
+
+#~ msgid ""
+#~ "参数设置：`structures=20`，`composition=\"\"`，`min_distance=1.5`，"
+#~ "`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`，`strict_mode=True`，打开 "
+#~ "`use_seed`。"
+#~ msgstr ""
+#~ "Set `structures=20`, `composition=\"\"`, `min_distance=1.5`, "
+#~ "`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`, and `strict_mode=True`, then "
+#~ "enable `use_seed`."
+
+#~ msgid ""
+#~ "元素半径差异大时你会想用这个——O-O 通常比 Fe-O 可以更近一些，同时 Fe-O 可能"
+#~ "需要比全局 `min_distance` 更宽松。写在 pair 里的距离覆盖全局值，没写的元素"
+#~ "对仍然用 `min_distance`。"
+#~ msgstr ""
+#~ "Use pair overrides when species have substantially different sizes or "
+#~ "contact requirements. A listed pair replaces the global constraint; "
+#~ "unlisted pairs continue to use `min_distance`."
+
+#~ msgid ""
+#~ "增大它只增加搜索时间，不改变物理可行性。如果你发现它一直失败（几乎每次都触"
+#~ "达 500 次上限），不是该调大它——是你的 `min_distance` 设大了，或者 cell 相"
+#~ "对原子数太小。先调松距离或扩胞。"
+#~ msgstr ""
+#~ "Increasing this limit only spends more search time; it cannot make an "
+#~ "infeasible packing physically possible. If most placements exhaust all "
+#~ "500 attempts, reduce `min_distance` or use a larger cell before "
+#~ "increasing the attempt count."
+
+#~ msgid ""
+#~ "`bool`，默认 true。打开：只要有一个原子放不下，整个样本就报错，保证输出数"
+#~ "量 = 设定值。关闭：放不下的样本被跳过，最终输出可能比你设的 `structures` "
+#~ "少。"
+#~ msgstr ""
+#~ "`bool`, default: `true`. When enabled, failure to place any atom raises "
+#~ "an error for the sample, enforcing the requested output-count contract. "
+#~ "When disabled, failed samples are skipped and the output count may be "
+#~ "lower than `structures`."
+
+#~ msgid "`int`，默认 0。仅 `use_seed` 打开时生效。"
+#~ msgstr "`int`, default: `0`. Used only when `use_seed` is enabled."
+
+#~ msgid ""
+#~ "开启 `use_seed` 后，随机 packing 由 `seed`、输入结构稳定 ID 和 sample 序号"
+#~ "共同决定。相同输入、相同参数、相同 seed 会生成相同坐标。"
+#~ msgstr ""
+#~ "With `use_seed` enabled, the packing is determined jointly by `seed`, the "
+#~ "input structure's stable ID, and the sample index. The same input, "
+#~ "parameters, and seed reproduce the same coordinates."

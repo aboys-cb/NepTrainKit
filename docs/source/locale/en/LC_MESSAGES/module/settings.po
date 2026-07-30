@@ -9,25 +9,28 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-25 13:17+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/settings.md:1 b4a8485b2b1949feaeedc8075b650739
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:1
+#: bafc64721b7e485b816d175a8acf188b
 msgid "设置（Settings）"
 msgstr "Settings"
 
-#: ../../source/module/settings.md:3 9de26f7dd2eb41299eb364f8b0737255
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:3
+#: 16687226acc6473c873a427d337abf8c
 msgid ""
-"`Settings` 用来调整显示、导入导出、NEP "
-"后端和绘图样式。刚开始不需要全部改；只有当你遇到加载慢、显示卡顿、预测慢、导出格式不符合下游要求，或想切换 CPU/CUDA 后端时，再来这里。"
+"`Settings` 用来调整显示、导入导出、NEP 后端和绘图样式。刚开始不需要全部改；只"
+"有当你遇到加载慢、显示卡顿、预测慢、导出格式不符合下游要求，或想切换 CPU/"
+"CUDA 后端时，再来这里。"
 msgstr ""
 "Use `Settings` to adjust rendering, import and export behavior, the NEP "
 "backend, and plot styles. You do not need to tune everything at first. "
@@ -35,251 +38,313 @@ msgstr ""
 "prediction, an incompatible export format, or a need to switch between CPU "
 "and CUDA."
 
-#: ../../source/module/settings.md:5 d1fe25b5213243688f7946c6b94ecc70
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:5
+#: adc2506cfdf142c6b2a8866c01b003f2
 msgid "先改哪些"
 msgstr "Choose the relevant setting"
 
-#: ../../source/module/settings.md 8a7fce664e4745f4b8d9fba068ca2c88
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 23d0a31daeb141bfb4ab8e87ce96ea9f
 msgid "你遇到的问题"
 msgstr "What you observe"
 
-#: ../../source/module/settings.md d7a0ca6e74984e05be3f728256ec3371
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 8ff965b189a142cba70f731112ac3714
 msgid "可以看哪个设置"
 msgstr "Setting to check"
 
-#: ../../source/module/settings.md 4316c01573874378be8dab1ca0391010
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 98ecf445988347169247f000cd48cd4d
 msgid "影响"
 msgstr "Effect"
 
-#: ../../source/module/settings.md f79cbc0bb7204ffa9985c094876b566c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 272ad28f29d64ed698d474d721261f48
 msgid "大结构显示卡顿"
 msgstr "Large structures render slowly"
 
-#: ../../source/module/settings.md 8bf19f11c0e84ee79e3ffd8eaf36d89a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 4baee98aaf8749ce9ff40130d22b1b60
 msgid "`Canvas Engine`"
 msgstr "`Canvas Engine`"
 
-#: ../../source/module/settings.md 4183f7de3048442090cfe08d69366f1f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 73dd07210a0049cba8c33a3520000762
 msgid "在 `Auto` / `PyQtGraph` / `VisPy` 间切换结构和散点渲染后端"
 msgstr ""
 "Switch the structure and scatter rendering backend among `Auto`, "
 "`PyQtGraph`, and `VisPy`"
 
-#: ../../source/module/settings.md 8b4172fd03ef4839b5b4b82bcb0b3abb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: d6402c138f2a4f0e85be45f57d3057bc
 msgid "力图数值不符合习惯"
 msgstr "Force plots use an unfamiliar scale"
 
-#: ../../source/module/settings.md 1976528dab5c4714aaef5a4e9708c077
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: cda1489a145744c0ab68e5e101376e1c
 msgid "`Force data format`"
 msgstr "`Force data format`"
 
-#: ../../source/module/settings.md d087d68cb41c4f94af8130c75445c68e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 760dd44ebcbd4e48ab5621901a8bc760
 msgid "在原始力和归一化显示之间切换"
 msgstr "Switch between raw-force and normalized display"
 
-#: ../../source/module/settings.md a52977283a604d8a905695f7e4229f96
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: c77bbe6eccee404ca2177dfde3304d98
 msgid "打开目录时不想自动加载"
 msgstr "Opening a directory should not trigger automatic loading"
 
-#: ../../source/module/settings.md 7326437b243a46f7a47245f9bcff1443
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 4065646a5c824027b9c96a08cd28ef72
 msgid "`Auto loading`"
 msgstr "`Auto loading`"
 
-#: ../../source/module/settings.md 56b696e6185e46aea7386c58ac7b8dd8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 0a1397366c514d829e32f45c85d6c115
 msgid "控制是否自动读取启动路径里的相关结果文件"
 msgstr ""
 "Control whether related result files in the startup path are loaded "
 "automatically"
 
-#: ../../source/module/settings.md cd2b9ac9abde420295f0c4c3e430fa3b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: f711cbf9f8264f0583ca7c149e50a08c
 msgid "卡片处理时原子顺序影响观察"
 msgstr "Atom order makes card outputs difficult to inspect"
 
-#: ../../source/module/settings.md 0d5dd9bdbf2a448d9283c2339134496f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: f91036e78aaf4489bc35caf34f3c2f1f
 msgid "`Sort atoms`"
 msgstr "`Sort atoms`"
 
-#: ../../source/module/settings.md d8fbac35dddf456f891d9a60deedc732
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 7a98acbb26354628b94a94ee89b7fcf7
 msgid "处理结构时按元素顺序重排原子"
 msgstr "Sort atoms by element while processing structures"
 
-#: ../../source/module/settings.md d96b3ad18b3f4e68a064d095f4d40201
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 5bbd41e33f5143a68ecc6ea64c0aa76c
 msgid "卡片菜单太拥挤"
 msgstr "The card menu is crowded"
 
-#: ../../source/module/settings.md ef21672fe01d49ae87d43d9f8032a128
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: b986551a6f7542b09e3b96dd3c46765d
 msgid "`Use card group menu`"
 msgstr "`Use card group menu`"
 
-#: ../../source/module/settings.md dfb5205df5df412d96982361d7473eb9
-msgid "按卡片 `group` 分组显示 Make Dataset 菜单"
-msgstr "Group the Make Dataset menu by each card's `group`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: a382f3871ade4b0f831f31309a31174f
+msgid "按卡片 `group` 分组显示 生成数据集 菜单"
+msgstr ""
 
-#: ../../source/module/settings.md 9e16e62054fd47e6bea1f280b143b94b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: a6741e60051243ee9bd6959ed3f82fde
 msgid "DeepMD 导出不想丢目录层级"
 msgstr "DeepMD export should preserve subdirectories"
 
-#: ../../source/module/settings.md 2594bfd3d6ee428883456902e0c98e61
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 7146b41d51054554adfdc3d9035c00d5
 msgid "`Keep DeepMD subfolders`"
 msgstr "`Keep DeepMD subfolders`"
 
-#: ../../source/module/settings.md f4ff06fb34364bd2bfcf720fc373e1a3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 2322e8b2b3c54598a8221cc633e25854
 msgid "导出 `deepmd/npy` 时保留导入时的子目录结构"
-msgstr "Preserve the imported subdirectory structure when exporting `deepmd/npy`"
+msgstr ""
+"Preserve the imported subdirectory structure when exporting `deepmd/npy`"
 
-#: ../../source/module/settings.md d4009ad86c0b412a89c15421e6a1685d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: a77742a6ad924d1bb049a4155f588474
 msgid "反复打开同一批输出较慢"
 msgstr "Reopening the same outputs is slow"
 
-#: ../../source/module/settings.md b0d175b6130d40e3a36b00f1f3546160
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: dbcd5b9ff03d4be1acd123093424da33
 msgid "`Cache output files`"
 msgstr "`Cache output files`"
 
-#: ../../source/module/settings.md c871fd967fb042bf8c712bf5bfdf0f99
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 33a08ff32d994b1788901e1b1da6dec7
 msgid "缓存 `*.out` 和 `descriptor.out`，减少重复解析"
 msgstr "Cache `*.out` and `descriptor.out` files to avoid repeated parsing"
 
-#: ../../source/module/settings.md 9baea05df7c74d4ba6dc2a959dc4f3ec
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 488543bdb6074c50ab4d58d9a28cbabe
 msgid "导出小数位不合适"
 msgstr "Exported numeric precision is unsuitable"
 
-#: ../../source/module/settings.md b5a84653ccd5497c83e5eed149ea7307
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 8fca39f5aedd4acbb25e6a7afe52fa6b
 msgid "`Export significant digits`"
 msgstr "`Export significant digits`"
 
-#: ../../source/module/settings.md d523e8f30101467a9a5ecd0ac4e2523f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: cc5d7905a912413bb5a230b74d37791f
 msgid "控制 `xyz` / `extxyz` 中逐原子数值的有效数字"
 msgstr "Set the significant digits for per-atom values in `xyz` and `extxyz`"
 
-#: ../../source/module/settings.md 069e2300b0bb411383991853cf64028a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: f8b84ddc63434978bbc8b312e94976d6
 msgid "源文件没有 `Config_type`"
 msgstr "Source structures have no `Config_type`"
 
-#: ../../source/module/settings.md f9a42c3ae11f41f0bda04bed4d18eb93
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 903713da30de40e2979c5a4e29435bbc
 msgid "`Default Config_type`"
 msgstr "`Default Config_type`"
 
-#: ../../source/module/settings.md d42ee47f1a3642138b5713025b99a63f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 1dfdcc3aff224158896086030796354d
 msgid "给缺少标签的结构补默认来源标签"
 msgstr "Assign a default provenance label when one is missing"
 
-#: ../../source/module/settings.md e4ecba281eab42acab721c56f6d35870
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: cf01c24326ab4c66b8474af3cc3fd379
 msgid "非物理结构检测太松或太严"
 msgstr "Nonphysical-structure detection is too permissive or too strict"
 
-#: ../../source/module/settings.md bc0f9928820e45fd98b2058325566560
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: 69cb1546da344db7942918bd5008f883
 msgid "`Covalent radius coefficient`"
 msgstr "`Covalent radius coefficient`"
 
-#: ../../source/module/settings.md d7fdc458d25b48e8af83e1ca34d8374f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
+#: d70c23d0a03a4372a2c3eaefb5cbf7e1
 msgid "调整近邻距离判据"
 msgstr "Adjust the nearest-neighbor distance criterion"
 
-#: ../../source/module/settings.md:20 b39300872d37439c923f26cbf2aa7c12
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:20
+#: 39e48bce188f4558905a0ae4af3c0330
 msgid "NEP 后端"
 msgstr "NEP backend"
 
-#: ../../source/module/settings.md:22 4e65d83b4b6942c68b7ab7e541f03011
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:22
+#: c563457104054027af05a27b4e231bf1
 msgid "`NEP Backend` 控制预测时使用 CPU、CUDA，还是由程序自动选择。"
 msgstr ""
 "`NEP Backend` controls whether prediction uses CPU, CUDA, or automatic "
 "backend selection."
 
-#: ../../source/module/settings.md:24 3ead8a38dc4a48b0aec2fdb3611a46f5
-msgid "`Auto`：默认路径；CUDA 可用且当前模型受支持时使用 CUDA，否则在任务开始前明确提示并使用 CPU。运行中不会静默切换后端。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:24
+#: 0fb82a34428f434bb74df1adfc0a50a1
+msgid ""
+"`Auto`：默认路径；CUDA 可用且当前模型受支持时使用 CUDA，否则在任务开始前明确"
+"提示并使用 CPU。运行中不会静默切换后端。"
 msgstr ""
 "`Auto`: the default path. It uses CUDA when available and supported by the "
-"current model; otherwise it explains the decision before the task starts and"
-" uses CPU. It does not silently switch backend during execution."
+"current model; otherwise it explains the decision before the task starts and "
+"uses CPU. It does not silently switch backend during execution."
 
-#: ../../source/module/settings.md:25 05d9a494b1e8432d964dcfd2991a640a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:25
+#: b38dde7b928a4e44abc4e7fc7368f6de
 msgid "`CPU`：适合没有可用 GPU、驱动不匹配，或只是少量结构快速查看。"
 msgstr ""
-"`CPU`: use when no compatible GPU is available or when inspecting only a few"
-" structures."
+"`CPU`: use when no compatible GPU is available or when inspecting only a few "
+"structures."
 
-#: ../../source/module/settings.md:26 c979b8ecf3fa4b6aa5f9372ab22266a6
-msgid "`CUDA`：明确要求 NVIDIA CUDA 后端；不可用时直接报错并说明驱动或安装问题。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:26
+#: f9404743b1e741389f00b8e40ede16b8
+msgid ""
+"`CUDA`：明确要求 NVIDIA CUDA 后端；不可用时直接报错并说明驱动或安装问题。"
 msgstr ""
 "`CUDA`: explicitly require the NVIDIA CUDA backend. If unavailable, the "
 "application reports the driver or installation problem instead of changing "
 "backend."
 
-#: ../../source/module/settings.md:28 a8f93a888370441bb4cdaa85f4e73434
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:28
+#: c842b5d896004a238303465d3e11fa06
 msgid ""
-"`NEP Chunk Max Atoms` 决定一次预测分块包含的总原子数，CPU 和 CUDA "
-"使用相同语义。遇到显存或内存不足时调小；单个结构本身超过 CUDA 可用规模时应改用 CPU，因为单结构不能安全拆分。"
+"`NEP Chunk Max Atoms` 决定一次预测分块包含的总原子数，CPU 和 CUDA 使用相同语"
+"义。遇到显存或内存不足时调小；单个结构本身超过 CUDA 可用规模时应改用 CPU，因"
+"为单结构不能安全拆分。"
 msgstr ""
 "`NEP Chunk Max Atoms` sets the total atom count allowed in one prediction "
 "chunk, with the same meaning on CPU and CUDA. Reduce it when device or host "
 "memory is insufficient. If one structure alone exceeds the CUDA capacity, "
 "use CPU because a single structure cannot be split safely."
 
-#: ../../source/module/settings.md:30 1d885540c61147aea05cb251bd97284a
-msgid "`Data Precision` 控制导入 DFT/结构数据后的存储精度。常规可保持默认；只有在内存压力明显或需要保留更高精度数值时再改。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:30
+#: a8e020d994b04c3b8de7ce81aae16a25
+msgid ""
+"`Data Precision` 控制导入 DFT/结构数据后的存储精度。常规可保持默认；只有在内"
+"存压力明显或需要保留更高精度数值时再改。"
 msgstr ""
 "`Data Precision` controls the storage precision of imported DFT and "
 "structure data. Keep the default for normal work. Change it only to address "
 "clear memory pressure or a requirement to retain higher-precision values."
 
-#: ../../source/module/settings.md:32 0e788ed2989943268633300bff489bf4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:32
+#: f9b711d3f2354c29b8e5a258efb37eb6
 msgid ""
-"`NEP Settings` 中的运行时健康项会显示 NepTrainKit 原生辅助模块、`nep-adapters` 版本以及 CPU/CUDA "
-"可用状态。点击 `NEP runtime updates` 可以从 PyPI "
-"手动检查兼容更新。每次打开软件后也会在后台执行一次运行时检查：没有更新或网络检查失败时保持静默，发现新版本时弹出安装提示。程序会校验 wheel 的 "
-"SHA256，并在独立进程中确认导入和 CPU 后端可用后才切换版本；更新在重启 NepTrainKit 后生效。验证失败时继续使用原版本。"
+"`NEP Settings` 中的运行时健康项会显示 NepTrainKit 原生辅助模块、`nep-"
+"adapters` 版本以及 CPU/CUDA 可用状态。点击 `NEP runtime updates` 可以从 PyPI "
+"手动检查兼容更新。每次打开软件后也会在后台执行一次运行时检查：没有更新或网络"
+"检查失败时保持静默，发现新版本时弹出安装提示。程序会校验 wheel 的 SHA256，并"
+"在独立进程中确认导入和 CPU 后端可用后才切换版本；更新在重启 NepTrainKit 后生"
+"效。验证失败时继续使用原版本。"
 msgstr ""
-"The runtime health section under `NEP Settings` reports NepTrainKit's native"
-" helper modules, the `nep-adapters` version, and CPU/CUDA availability. Use "
+"The runtime health section under `NEP Settings` reports NepTrainKit's native "
+"helper modules, the `nep-adapters` version, and CPU/CUDA availability. Use "
 "`NEP runtime updates` to check PyPI manually for a compatible update. The "
 "application also checks once in the background after startup: no-update and "
 "network-failure results remain silent, while an available version opens an "
 "installation prompt. Before activation, NepTrainKit verifies the wheel "
 "SHA256 and uses an isolated process to confirm that it imports and that the "
-"CPU backend is usable. The update takes effect after restarting NepTrainKit;"
-" a failed validation leaves the existing version active."
+"CPU backend is usable. The update takes effect after restarting NepTrainKit; "
+"a failed validation leaves the existing version active."
 
-#: ../../source/module/settings.md:34 68a3c3b2067243afb260c0e2db0c730a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:34
+#: 67f3dcada4614b14b8a79c8be51c425e
 msgid ""
-"通过 pip 安装 NepTrainKit 时，更新后的运行时保存在用户配置目录；Nuitka 独立版则保存在 `NepTrainKit.exe` 旁的"
-" `runtime/nep-adapters/versions`，当前版和上一版会保留用于恢复。"
+"通过 pip 安装 NepTrainKit 时，更新后的运行时保存在用户配置目录；Nuitka 独立版"
+"则保存在 `NepTrainKit.exe` 旁的 `runtime/nep-adapters/versions`，当前版和上一"
+"版会保留用于恢复。"
 msgstr ""
 "For a pip installation, updated runtimes are stored in the user "
 "configuration directory. In a standalone Nuitka build, they are stored next "
 "to `NepTrainKit.exe` under `runtime/nep-adapters/versions`; the current and "
 "previous versions are retained for recovery."
 
-#: ../../source/module/settings.md:36 302fddf6ed234a638cc10db030b816f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:36
+#: f992b9e2e4e04fcd874626ed7a39e9b6
 msgid "绘图和结构显示"
 msgstr "Plots and structure rendering"
 
-#: ../../source/module/settings.md:38 8c65a744bd9843688ac6ead18e64c86a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:38
+#: 518f6f9d550f41fc9245f6864f9c2c8c
 msgid "Plot Settings 只影响显示，不改变底层数据。"
 msgstr ""
 "Plot Settings affect presentation only; they do not alter the underlying "
 "data."
 
-#: ../../source/module/settings.md:40 a45e23f474ba4d56aca6337ead22aaf9
-msgid "`Scatter edge color` / `Scatter face color` / `Face alpha`：散点默认颜色和透明度。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:40
+#: 0f5e2faf14fb4ee4ab90f88caf4f8274
+msgid ""
+"`Scatter edge color` / `Scatter face color` / `Face alpha`：散点默认颜色和透"
+"明度。"
 msgstr ""
 "`Scatter edge color`, `Scatter face color`, and `Face alpha`: default "
 "scatter colors and opacity."
 
-#: ../../source/module/settings.md:41 8905023fbe514a00832a233648e2afb5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:41
+#: a92a7e5e63f045ccb16f59791eb65773
 msgid ""
-"`PyQtGraph scatter size` / `VisPy scatter size` / `VisPy "
-"antialias`：不同画布后端的点大小和抗锯齿。"
+"`PyQtGraph scatter size` / `VisPy scatter size` / `VisPy antialias`：不同画布"
+"后端的点大小和抗锯齿。"
 msgstr ""
-"`PyQtGraph scatter size`, `VisPy scatter size`, and `VisPy antialias`: point"
-" size and antialiasing for each canvas backend."
+"`PyQtGraph scatter size`, `VisPy scatter size`, and `VisPy antialias`: point "
+"size and antialiasing for each canvas backend."
 
-#: ../../source/module/settings.md:42 767edd6558494cf9965e145611ccccfa
-msgid "`Structure background` / `Lattice line color`：结构视图背景和晶格线颜色。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:42
+#: deb20dbf94dd4564a16dfaac61e5cf5d
+msgid ""
+"`Structure background` / `Lattice line color`：结构视图背景和晶格线颜色。"
 msgstr ""
 "`Structure background` and `Lattice line color`: background and cell-line "
 "colors in the structure view."
 
-#: ../../source/module/settings.md:43 c4f017ba91c641469e5ffa726180165c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:43
+#: b9b31d8a914646339dd1c4d68a47c8b0
 msgid ""
 "`Selected color` / `Show color` / `Current marker color` / `Current marker "
 "size`：选中点、高亮点和当前结构标记的显示样式。"
@@ -288,60 +353,76 @@ msgstr ""
 "size`: styles for selected points, highlighted points, and the current-"
 "structure marker."
 
-#: ../../source/module/settings.md:45 31b443422d8e478fab30d28f30a7a151
-msgid "如果只是想判断结构是否异常，优先调整点大小和当前结构标记；不要为了配色反复改变数据筛选流程。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:45
+#: d870c704e38c43ea8f5edc73ee722328
+msgid ""
+"如果只是想判断结构是否异常，优先调整点大小和当前结构标记；不要为了配色反复改"
+"变数据筛选流程。"
 msgstr ""
 "When the goal is to spot anomalous structures, adjust point size and the "
 "current-structure marker first. Do not change the filtering workflow merely "
 "to compensate for plot colors."
 
-#: ../../source/module/settings.md:47 a2a37bc203c5442fb470d23e8fed6944
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:47
+#: dbe4b45f0ea74bbbba5bf048783833ca
 msgid "NEP89 和更新"
 msgstr "NEP89 and software updates"
 
-#: ../../source/module/settings.md:49 9c13cea99e5a42cd8b0d2b936aa5c744
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:49
+#: d9405ec49bf8427d887a77d51e23844f
 msgid ""
-"`About NEP89` 会检查并更新内置 `nep89.txt`。NEP89 "
-"可以用于某些候选结构的快速预筛，但它不是所有材料体系的可靠模型。使用时把它当作异常结构筛查工具，不要当作 DFT 标签来源。"
+"`About NEP89` 会检查并更新内置 `nep89.txt`。NEP89 可以用于某些候选结构的快速"
+"预筛，但它不是所有材料体系的可靠模型。使用时把它当作异常结构筛查工具，不要当"
+"作 DFT 标签来源。"
 msgstr ""
 "`About NEP89` checks for and updates the bundled `nep89.txt`. NEP89 can "
 "quickly prescreen candidates for some systems, but it is not reliable for "
 "every material. Use it to flag anomalies, never as a source of DFT labels."
 
-#: ../../source/module/settings.md:51 fad2428b89014dc89d163c754cbaf154
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:51
+#: 1a326eddc6b94959b0c5a9d0f3e77044
 msgid "如果你有当前体系自己的 NEP 模型，优先使用自己的模型做预筛。"
 msgstr ""
 "If a NEP model trained for the current system is available, prefer it for "
 "prescreening."
 
-#: ../../source/module/settings.md:53 48a260f27cdd45b0873cebcf06af8144
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:53
+#: 51c3b549098b4c21963be203a2b76d0e
 msgid ""
-"`About` 里的 `Check for Updates` 用于检查 NepTrainKit "
-"新版本。这个检查只影响软件版本提示，不会自动修改你的训练数据。"
+"`About` 里的 `Check for Updates` 用于检查 NepTrainKit 新版本。这个检查只影响"
+"软件版本提示，不会自动修改你的训练数据。"
 msgstr ""
-"`Check for Updates` under `About` checks for a newer NepTrainKit release. It"
-" only updates the version notification and never modifies training data "
+"`Check for Updates` under `About` checks for a newer NepTrainKit release. It "
+"only updates the version notification and never modifies training data "
 "automatically."
 
-#: ../../source/module/settings.md:55 b863b219e86c4e9abbe8d97a4ca7c7f5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:55
+#: aeed312a0d8a4604b8f015ed5671a3a8
 msgid "修改设置的原则"
 msgstr "Guidelines for changing settings"
 
-#: ../../source/module/settings.md:57 418920b47eee42cea80e6b6c177014a7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:57
+#: ef33d919122f45e58d021fe1cc807f82
 msgid "先确认问题属于显示、读取、预测、导出还是卡片流程，再改对应设置。"
 msgstr ""
 "First determine whether the problem is in rendering, input, prediction, "
 "export, or the card workflow, then change only the corresponding setting."
 
-#: ../../source/module/settings.md:58 f384c750b8be4d8e84abf8986041a364
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:58
+#: 8204b46496b749bb94bcd2f87f8c2f7e
 msgid "一次只改一个关键选项，方便判断影响。"
-msgstr "Change one important option at a time so its effect remains attributable."
+msgstr ""
+"Change one important option at a time so its effect remains attributable."
 
-#: ../../source/module/settings.md:59 05b1fbc1c4a341edad5340bc1ad7f2c0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:59
+#: 06f15e079c1e4ff3bd90e1a75f85e1f3
 msgid "涉及数据清洗阈值时，改完要抽查被选中的结构，而不是只看数量变化。"
 msgstr ""
 "After changing a data-cleaning threshold, inspect some of the selected "
 "structures rather than judging the change only by the count."
+
+#~ msgid "按卡片 `group` 分组显示 Make Dataset 菜单"
+#~ msgstr "Group the Make Dataset menu by each card's `group`"
 
 #~ msgid "`Auto`：默认路径，程序优先尝试可用后端。"
 #~ msgstr "`Auto`: the default path; NepTrainKit selects an available backend."
@@ -349,10 +430,10 @@ msgstr ""
 #~ msgid "`GPU`：适合批量预测或较大候选池。"
 #~ msgstr "`GPU`: use for batch prediction or a large candidate pool."
 
-#~ msgid "`GPU Batch Size` 决定一次送入 GPU 的结构数量。显存不足时调小；显存充足但吞吐低时可以调大。"
+#~ msgid ""
+#~ "`GPU Batch Size` 决定一次送入 GPU 的结构数量。显存不足时调小；显存充足但吞"
+#~ "吐低时可以调大。"
 #~ msgstr ""
-#~ "`GPU Batch Size` controls how many "
-#~ "structures are sent to the GPU at "
-#~ "once. Reduce it after an out-of-"
-#~ "memory failure; increase it when memory "
+#~ "`GPU Batch Size` controls how many structures are sent to the GPU at "
+#~ "once. Reduce it after an out-of-memory failure; increase it when memory "
 #~ "is available but throughput is low."

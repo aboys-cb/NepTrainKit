@@ -1,0 +1,149 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:1
+#: 9766953aaeaf40a78a5a9755500f5689
+msgid "按晶格参数选择（Select by Lattice）"
+msgstr "按晶格参数选择（Select by Lattice）"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:3
+#: dd21eaa2486247d4b7349a8fe6529ef9
+msgid "作用与适用场景"
+msgstr "作用与适用场景"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:5
+#: 8e75271fbdea4a46bce4733172e7c458
+msgid ""
+"按照晶格长度 `a/b/c` 和晶格角 `α/β/γ` 选择结构。适合从混合数据中找特定尺寸、 "
+"体形或畸变范围的晶胞，不依赖当前散点图坐标。"
+msgstr ""
+"按照晶格长度 `a/b/c` 和晶格角 `α/β/γ` 选择结构。适合从混合数据中找特定尺寸、 "
+"体形或畸变范围的晶胞，不依赖当前散点图坐标。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:8
+#: faabf18dce7b4479ac4dfcf1a323f91a
+msgid "判定原理"
+msgstr "判定原理"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:10
+#: a64108ee2eaa4f6bb57e73e7946b79cf
+msgid "对每个结构，程序从晶胞矩阵计算"
+msgstr "对每个结构，程序从晶胞矩阵计算"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:12
+#: 67485af1905c4c7b80f3a555b56a40d0
+msgid ""
+"\n"
+"(a,b,c,\\alpha,\\beta,\\gamma),\n"
+msgstr ""
+"\n"
+"(a,b,c,\\alpha,\\beta,\\gamma),\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:16
+#: d9edd8a29803424b84bbc6531e97f1eb
+msgid ""
+"其中 $a,b,c$ 是三条晶格矢量长度，单位为 Å；$\\alpha,\\beta,\\gamma$ 分别是 $"
+"\\mathbf b$ 与 $\\mathbf c$、$\\mathbf a$ 与 $\\mathbf c$、$\\mathbf a$ 与 $"
+"\\mathbf b$ 的夹角，单位为度。结构只有在六个量都落入各自闭区间时才会被选中："
+msgstr ""
+"其中 $a,b,c$ 是三条晶格矢量长度，单位为 Å；$\\alpha,\\beta,\\gamma$ 分别是 $"
+"\\mathbf b$ 与 $\\mathbf c$、$\\mathbf a$ 与 $\\mathbf c$、$\\mathbf a$ 与 $"
+"\\mathbf b$ 的夹角，单位为度。结构只有在六个量都落入各自闭区间时才会被选中："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:20
+#: 8cfebf6b470944499a33d229b25cc110
+msgid ""
+"\n"
+"M(i)=\\bigwedge_{q\\in\\{a,b,c,\\alpha,\\beta,\\gamma\\}}\n"
+"\\left(q_{\\min}-10^{-4}\\le q_i\\le q_{\\max}+10^{-4}\\right).\n"
+msgstr ""
+"\n"
+"M(i)=\\bigwedge_{q\\in\\{a,b,c,\\alpha,\\beta,\\gamma\\}}\n"
+"\\left(q_{\\min}-10^{-4}\\le q_i\\le q_{\\max}+10^{-4}\\right).\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:25
+#: 0ef1a57b7fc64209bfd4d2213d283ecd
+msgid ""
+"固定的 $10^{-4}$ 容差用于吸收浮点换算误差，并不是可调的物理容差。若某一维不想"
+"参与筛选， 应把该维范围放宽到覆盖全部数据。"
+msgstr ""
+"固定的 $10^{-4}$ 容差用于吸收浮点换算误差，并不是可调的物理容差。若某一维不想"
+"参与筛选， 应把该维范围放宽到覆盖全部数据。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:28
+#: cfe931c0099443649dd9450b9075e284
+msgid "参数与执行结果"
+msgstr "参数与执行结果"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5920
+#: 1f32105453de4c48a9ad04f4b2b33084
+msgid ""
+"输入控件：晶格长度 `a / b / c` 与晶格角 `α / β / γ` 各自的最小值和最大值。"
+msgstr ""
+"输入控件：晶格长度 `a / b / c` 与晶格角 `α / β / γ` 各自的最小值和最大值。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5921
+#: 6546f19925ca41daae3a9a143b62b9e8
+msgid "范围：`[0, 1e6]`，4 位小数。"
+msgstr "范围：`[0, 1e6]`，4 位小数。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5922
+#: 5294dbdea925491c9380b61d24f6d57f
+msgid "默认值：当前活动结构的晶格参数范围。"
+msgstr "默认值：当前活动结构的晶格参数范围。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5923
+#: bfeec498a5144bd9a42e446a187d8e1d
+msgid "细节：内部比较带固定容差 `1e-4`。"
+msgstr "细节：内部比较带固定容差 `1e-4`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5925
+#: 536100e0b1434c64a1b0a1d55c69d725
+msgid ""
+"![按晶格参数选择对话框](../_static/image/generated/show_nep_reference/"
+"g_lattice_dialog.png)"
+msgstr ""
+"![按晶格参数选择对话框](../_static/image/generated/show_nep_reference/"
+"g_lattice_dialog.png)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5925
+#: 33f15e066fa64ec89da1e2fad286dd0a
+msgid "按晶格参数选择对话框"
+msgstr "按晶格参数选择对话框"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5925
+#: 33f15e066fa64ec89da1e2fad286dd0a
+msgid ""
+".. image:: ../_static/image/generated/show_nep_reference/g_lattice_dialog.png"
+msgstr ""
+".. image:: ../_static/image/generated/show_nep_reference/g_lattice_dialog.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:35
+#: ff320787b1634324a61f153dfa7d93f8
+msgid "操作后检查"
+msgstr "操作后检查"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-lattice.md:37
+#: f4ff3caca75546dd92e3aecef2e8abf9
+msgid ""
+"六组范围同时生效。若没有选中结果，先放宽不关心的晶格角或长度范围，再逐项收"
+"紧， 避免把无关维度设成过窄的过滤条件。"
+msgstr ""
+"六组范围同时生效。若没有选中结果，先放宽不关心的晶格角或长度范围，再逐项收"
+"紧， 避免把无关维度设成过窄的过滤条件。"

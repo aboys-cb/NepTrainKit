@@ -1,0 +1,596 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:1
+#: d4d1d4243c8f4c479d5081242f447dc4
+msgid "结构相识别：判据与边界"
+msgstr "结构相识别：判据与边界"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:2
+#: 21e2c117987a48248d1137cffef2fd26
+msgid "本页目录"
+msgstr "本页目录"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3898
+#: 87c606806e31451ba6c2c3a3ec90c612
+msgid "结构相如何识别"
+msgstr "结构相如何识别"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3900
+#: a874f823782540fbbcbd90fe64a41fe9
+msgid "FCC、HCP 和 BCC：自适应公共近邻分析"
+msgstr "FCC、HCP 和 BCC：自适应公共近邻分析"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3902
+#: a9fdf55093d845c5a6d5883fbb9e2d79
+msgid ""
+"页面先对每个原子做自适应公共近邻分析（Adaptive Common Neighbor Analysis，a-"
+"CNA）。算法使用周期性近邻搜索，最多取得 24 个近邻，并根据第一、第二近邻壳之间"
+"的距离间隔为每个原子单独确定 cutoff。"
+msgstr ""
+"页面先对每个原子做自适应公共近邻分析（Adaptive Common Neighbor Analysis，a-"
+"CNA）。算法使用周期性近邻搜索，最多取得 24 个近邻，并根据第一、第二近邻壳之间"
+"的距离间隔为每个原子单独确定 cutoff。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3904
+#: 67b2b0dcffdf49a7b353b32519a6750b
+msgid ""
+"对于 FCC 和 HCP，设排好序的近邻距离为 $d_1 \\le \\cdots \\le d_{13}$。只有在"
+msgstr ""
+"对于 FCC 和 HCP，设排好序的近邻距离为 $d_1 \\le \\cdots \\le d_{13}$。只有在"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3906
+#: 8e5ad3f583c14b6c9b1738a52afa5564
+msgid ""
+"\n"
+"\\frac{d_{13}}{d_{12}} \\ge 1.08\n"
+msgstr ""
+"\n"
+"\\frac{d_{13}}{d_{12}} \\ge 1.08\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3910
+#: 400cc497455f4ff3ac1d9faae2fb4e7f
+msgid "时，才用"
+msgstr "时，才用"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3912
+#: 896bde1ee487457992e99b2b2394cf37
+msgid ""
+"\n"
+"r_\\mathrm{cut}=\\frac{d_{12}+d_{13}}{2}\n"
+msgstr ""
+"\n"
+"r_\\mathrm{cut}=\\frac{d_{12}+d_{13}}{2}\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3916
+#: 525709ee41ea4b20abaf0c449eaebcc9
+msgid ""
+"分隔 12 配位的第一近邻壳。随后统计每条中心—近邻键的 3 个 CNA 数：公共近邻数、"
+"公共近邻之间的键数、最长键链长度。理想拓扑对应："
+msgstr ""
+"分隔 12 配位的第一近邻壳。随后统计每条中心—近邻键的 3 个 CNA 数：公共近邻数、"
+"公共近邻之间的键数、最长键链长度。理想拓扑对应："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 6e9d14fb97c1497793675e496f32ef52
+msgid "局域结构"
+msgstr "局域结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: ce84be48c5c941af8b7b7269d62539eb
+msgid "CNA 组合"
+msgstr "CNA 组合"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: d85cb96a6c7545e592c035ae34cd01a2
+msgid "FCC"
+msgstr "FCC"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: d73fd4bb77364cc5a379c700b4a70fba
+msgid "12 条 `(4, 2, 1)`"
+msgstr "12 条 `(4, 2, 1)`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: e973a54ed7694377b411f5adf732ed24
+msgid "HCP"
+msgstr "HCP"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 56f865f0483c41ebbda925fcad312fa8
+msgid "6 条 `(4, 2, 1)` + 6 条 `(4, 2, 2)`"
+msgstr "6 条 `(4, 2, 1)` + 6 条 `(4, 2, 2)`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 95f34a2ead8e4c62bc7afedfff0a3bb0
+msgid "BCC"
+msgstr "BCC"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 8e41b14bbc6a4798bce2cb1ce041900d
+msgid "6 条 `(4, 4, 3)` + 8 条 `(6, 6, 5)`"
+msgstr "6 条 `(4, 4, 3)` + 8 条 `(6, 6, 5)`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3924
+#: b3fd492d8db24f959c15a9232a3b68c6
+msgid ""
+"BCC 使用前 14 个近邻，并要求 $d_{15}/d_{14} \\ge 1.08$。不满足壳层间隔或拓扑"
+"组合的原子记为「未解析」，不会强行分到最接近的晶相。"
+msgstr ""
+"BCC 使用前 14 个近邻，并要求 $d_{15}/d_{14} \\ge 1.08$。不满足壳层间隔或拓扑"
+"组合的原子记为「未解析」，不会强行分到最接近的晶相。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3926
+#: 5c5722c475b94edb8ef590413407cc6d
+msgid "对一帧结构，某种局域相的原子占比为"
+msgstr "对一帧结构，某种局域相的原子占比为"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3928
+#: e74f15215c404a80b579044eea821546
+msgid ""
+"\n"
+"p_\\alpha=\\frac{N_\\alpha}{N}\n"
+msgstr ""
+"\n"
+"p_\\alpha=\\frac{N_\\alpha}{N}\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3932
+#: 2a12c843a4b04c1b8f998c336d882c2e
+msgid ""
+"若没有更具体的有序相通过确认，$p_\\alpha \\ge 0.80$ 时结构记为强证据；$0.50 "
+"\\le p_\\alpha < 0.80$ 时记为混合证据；低于 `0.50` 时记为未解析。这些比例描述"
+"当前快照中的局域拓扑，不等同于热力学相分数。"
+msgstr ""
+"若没有更具体的有序相通过确认，$p_\\alpha \\ge 0.80$ 时结构记为强证据；$0.50 "
+"\\le p_\\alpha < 0.80$ 时记为混合证据；低于 `0.50` 时记为未解析。这些比例描述"
+"当前快照中的局域拓扑，不等同于热力学相分数。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3934
+#: 5eec8dad188946f0aa089d6d6e0de76b
+msgid "常见晶体原型：几何和化学同时过门槛"
+msgstr "常见晶体原型：几何和化学同时过门槛"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3936
+#: 677007cda922415084b77cfe4a56f8ae
+msgid ""
+"有序合金和化合物不能只靠 FCC/HCP/BCC 局域几何区分。页面会对三维周期结构做保守"
+"的原型确认，并同时检查组成、局域形状和物种占位。当前确认目录如下；这是一组经"
+"过反例测试的常见原型，不是完整晶体学数据库。"
+msgstr ""
+"有序合金和化合物不能只靠 FCC/HCP/BCC 局域几何区分。页面会对三维周期结构做保守"
+"的原型确认，并同时检查组成、局域形状和物种占位。当前确认目录如下；这是一组经"
+"过反例测试的常见原型，不是完整晶体学数据库。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 366b2cb0076149ed95f366a88e7ac824
+msgid "显示标签"
+msgstr "显示标签"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: e2131cf41944495eb8d023df914f1de9
+msgid "常见名称"
+msgstr "常见名称"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: c4d128da47fd47808ceba63ef138a4ae
+msgid "Pearson / 空间群"
+msgstr "Pearson / 空间群"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: bdae8e367e5e457892de6144abd06809
+msgid "说明"
+msgstr "说明"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 90388b01f0744026ab2d5186b676f498
+msgid "A4"
+msgstr "A4"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: a63c5609c9734766aad7bf73e5db1ebe
+msgid "金刚石"
+msgstr "金刚石"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 87e8b3f17d4d493aacf37602bdb84db1
+msgid "`cF8` / $Fd\\bar 3m$ (227)"
+msgstr "`cF8` / $Fd\\bar 3m$ (227)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 1772d36e769c4962b16c6a5186d548ec
+msgid "单元素四面体网络"
+msgstr "单元素四面体网络"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 3f0f5ad0e47f414d8788c92efe0404d3
+msgid "L1₀"
+msgstr "L1₀"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: ac01a7fd83ed42329aa64742d0965fd3
+msgid "CuAu 型"
+msgstr "CuAu 型"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: bc1d550f6e15461a8ed2b3ea5b4686f6
+msgid "`tP2` / $P4/mmm$ (123)"
+msgstr "`tP2` / $P4/mmm$ (123)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: cb8e13759c6a4422b920efbaa21b4f93
+msgid "FCC 衍生的 `1:1` 有序结构"
+msgstr "FCC 衍生的 `1:1` 有序结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: b07ef70b4fda4739abd6394670346674
+msgid "L1₂"
+msgstr "L1₂"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: b3e5eb4bf22143b2ab3c3fd60d54b115
+msgid "Cu₃Au 型"
+msgstr "Cu₃Au 型"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 0e08ddb486214110b24cc5691e014c2c
+msgid "`cP4` / $Pm\\bar 3m$ (221)"
+msgstr "`cP4` / $Pm\\bar 3m$ (221)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: f25bb67b9e2a449888cc782270fc0323
+msgid "FCC 衍生的 `3:1` 有序结构"
+msgstr "FCC 衍生的 `3:1` 有序结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: db0eb79f489b4f90b9eb9cebba5ec251
+msgid "B1"
+msgstr "B1"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: e0c14fef7d504103adb5f6e3e99bde3c
+msgid "岩盐"
+msgstr "岩盐"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: d7a02f72786c4f35aea2df79c7614c68
+msgid "`cF8` / $Fm\\bar 3m$ (225)"
+msgstr "`cF8` / $Fm\\bar 3m$ (225)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 0a1ec3b32f4242efba868b72ff83bae0
+msgid "`1:1` 八面体配位"
+msgstr "`1:1` 八面体配位"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 849d268541284b1f8b36e2cb4646891a
+msgid "B2"
+msgstr "B2"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: de7fe2402dda4938bbf9ac2945abb4dd
+msgid "CsCl"
+msgstr "CsCl"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: a0122497d7e84ea5b251bd809fe34e0d
+msgid "`cP2` / $Pm\\bar 3m$ (221)"
+msgstr "`cP2` / $Pm\\bar 3m$ (221)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 325a7f229790493183873526554ba9ff
+msgid "BCC 衍生的 `1:1` 有序结构"
+msgstr "BCC 衍生的 `1:1` 有序结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 778fd97b3a654a6799b7de9780a6293c
+msgid "B3 / B4"
+msgstr "B3 / B4"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 6acfa29a0cfe40ca9fcde8f88a4d82c0
+msgid "闪锌矿 / 纤锌矿"
+msgstr "闪锌矿 / 纤锌矿"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 15dde3f6d74a427a854bc6cf1dad20ad
+msgid "`cF8` / $F\\bar 43m$ (216)；`hP4` / $P6_3mc$ (186)"
+msgstr "`cF8` / $F\\bar 43m$ (216)；`hP4` / $P6_3mc$ (186)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 7f9d9433f337483699c0115753eb2095
+msgid "立方／六方四面体化合物"
+msgstr "立方／六方四面体化合物"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 25f2727d7a144f2389cf982044c9197d
+msgid "C1"
+msgstr "C1"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: af6bdf9597f14d3e9f460039e38118db
+msgid "萤石"
+msgstr "萤石"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: eedeb312c71144749786f8dcda62a52d
+msgid "`cF12` / $Fm\\bar 3m$ (225)"
+msgstr "`cF12` / $Fm\\bar 3m$ (225)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 7d6fddb82d43464393e76f0f75760bc1
+msgid "`1:2` 化合物"
+msgstr "`1:2` 化合物"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: e8528e801d7d4c2a98a3b39e68eb99b7
+msgid "B8₁"
+msgstr "B8₁"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 45dd8021755948ab96e6ebdd1250e333
+msgid "NiAs"
+msgstr "NiAs"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: dfaea1be741b41abb9594b5f66e5b99d
+msgid "`hP4` / $P6_3/mmc$ (194)"
+msgstr "`hP4` / $P6_3/mmc$ (194)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: f56cbba93fa242669ff3de0b848b8130
+msgid "六方 `1:1` 化合物"
+msgstr "六方 `1:1` 化合物"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 92408c076e2c4d43b0cc6cb3872c1aad
+msgid "D0₃"
+msgstr "D0₃"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 2a4d33cd24cc4fd3b032aa0d19194fcc
+msgid "Fe₃Al 型"
+msgstr "Fe₃Al 型"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 0e07de165f014d84bf965468fb638411
+msgid "`cF16` / $Fm\\bar 3m$ (225)"
+msgstr "`cF16` / $Fm\\bar 3m$ (225)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: dacb49a0cf7c40969f9e4f431097ff9e
+msgid "BCC 衍生的 `3:1` 有序结构"
+msgstr "BCC 衍生的 `3:1` 有序结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 5e7f06c7f01344a299e601e6ecc3e738
+msgid "L2₁ / C1ᵦ"
+msgstr "L2₁ / C1ᵦ"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 97e775df020f401d8a25aced42b79d51
+msgid "全赫斯勒 / 半赫斯勒"
+msgstr "全赫斯勒 / 半赫斯勒"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 5daed8f1dea5448b961a439003a1fd03
+msgid "`cF16` / $Fm\\bar 3m$ (225)；`cF12` / $F\\bar 43m$ (216)"
+msgstr "`cF16` / $Fm\\bar 3m$ (225)；`cF12` / $F\\bar 43m$ (216)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 4b96b196351942c7b2451b6939ed6e8a
+msgid "三元 `2:1:1`／`1:1:1` 结构"
+msgstr "三元 `2:1:1`／`1:1:1` 结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: a8a1462eca0145e092b755fb19c199d3
+msgid "D0₁₉"
+msgstr "D0₁₉"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: ab81ef25749b41c7801b69374067334c
+msgid "Ni₃Sn 型"
+msgstr "Ni₃Sn 型"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: cf137209922949c081e7bda90bf30c3d
+msgid "`hP8` / $P6_3/mmc$ (194)"
+msgstr "`hP8` / $P6_3/mmc$ (194)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 27c5d9b42b41410290b113eceac40131
+msgid "HCP 衍生的 `3:1` 有序结构"
+msgstr "HCP 衍生的 `3:1` 有序结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: be80d7aebf0b46cd9ae268c9d799716d
+msgid "C14 / C15"
+msgstr "C14 / C15"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 97303ab3189d4b2a9fef16c2e663f708
+msgid "Laves"
+msgstr "Laves"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: a89a316760a34dcb8d1baf9a5113ffec
+msgid "`hP12` / $P6_3/mmc$ (194)；`cF24` / $Fd\\bar 3m$ (227)"
+msgstr "`hP12` / $P6_3/mmc$ (194)；`cF24` / $Fd\\bar 3m$ (227)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-phase.md:8
+#: 3e6f3e25d14f4909aed64c149c2d2268
+msgid "`1:2` Frank–Kasper 结构"
+msgstr "`1:2` Frank–Kasper 结构"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3953
+#: 0aa1ca67c4cf463bbb90887316abf80e
+msgid ""
+"局域形状首先消除整体尺度。对选定的 $K$ 个近邻，以平均近邻距离 $\\bar r$ 归一"
+"化，构造"
+msgstr ""
+"局域形状首先消除整体尺度。对选定的 $K$ 个近邻，以平均近邻距离 $\\bar r$ 归一"
+"化，构造"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3955
+#: d7fc02a0ad9b4942a94488d48f0de025
+msgid ""
+"\n"
+"\\mathbf d=\\operatorname{sort}\\left(\\frac{r_i}{\\bar r}\\right)\n"
+"\\oplus\n"
+"\\operatorname{sort}\\left(\\frac{\\lVert\\mathbf r_i-\\mathbf r_j\\rVert}"
+"{\\bar r}\\right)_{i<j}\n"
+msgstr ""
+"\n"
+"\\mathbf d=\\operatorname{sort}\\left(\\frac{r_i}{\\bar r}\\right)\n"
+"\\oplus\n"
+"\\operatorname{sort}\\left(\\frac{\\lVert\\mathbf r_i-\\mathbf r_j\\rVert}"
+"{\\bar r}\\right)_{i<j}\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3961
+#: ff19727e0b4d4a4188b68539c9d90046
+msgid ""
+"这里 $\\oplus$ 表示把两组数连接起来。程序计算该描述向量与内置参考晶体模板之间"
+"的最小均方根距离。物种检查使用同一组完整近邻壳，比较每一壳中的元素角色数。这"
+"样可以容忍整体平移、旋转、缩放、原子重排、元素编号变化和适度畸变，但不会仅凭"
+"化学计量、晶格常数或“看起来像立方”认相。"
+msgstr ""
+"这里 $\\oplus$ 表示把两组数连接起来。程序计算该描述向量与内置参考晶体模板之间"
+"的最小均方根距离。物种检查使用同一组完整近邻壳，比较每一壳中的元素角色数。这"
+"样可以容忍整体平移、旋转、缩放、原子重排、元素编号变化和适度畸变，但不会仅凭"
+"化学计量、晶格常数或“看起来像立方”认相。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3963
+#: aee1ccb8931c440886ce2cc992842904
+msgid ""
+"通用原型门槛为：组成比例相对理想值的偏差不超过 `3.5%`，几何匹配原子比例至少 "
+"`0.82`，化学匹配比例至少 `0.80`，两者同时匹配的比例至少 `0.80`。每个局域环境"
+"使用不少于 14 个、且不截断完整壳层的近邻；壳层边界附近最多容许 `max(1, "
+"floor(0.08 K))` 个近邻的排序交换。若两个已通过候选的局域形状距离和联合支持度"
+"都不足以明确拉开差距，结果直接返回「未解析」，不会按最接近模板猜一个标签。"
+msgstr ""
+"通用原型门槛为：组成比例相对理想值的偏差不超过 `3.5%`，几何匹配原子比例至少 "
+"`0.82`，化学匹配比例至少 `0.80`，两者同时匹配的比例至少 `0.80`。每个局域环境"
+"使用不少于 14 个、且不截断完整壳层的近邻；壳层边界附近最多容许 `max(1, "
+"floor(0.08 K))` 个近邻的排序交换。若两个已通过候选的局域形状距离和联合支持度"
+"都不足以明确拉开差距，结果直接返回「未解析」，不会按最接近模板猜一个标签。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3965
+#: a199f6f9858649f7be795cc427360de8
+msgid ""
+"**L1₂：** 自动识别接近 `A:B = 1:3` 的二元组成。除了 FCC 形状外，还要求 A 位点"
+"的前 12 个近邻中没有 A、第二壳 6 个近邻全为 A；B 位点的前 12 个近邻中有 4 个 "
+"A、第二壳没有 A。几何匹配比例至少为 `0.80`，化学匹配比例至少为 `0.85`，几何与"
+"化学同时匹配的比例至少为 `0.80`。"
+msgstr ""
+"**L1₂：** 自动识别接近 `A:B = 1:3` 的二元组成。除了 FCC 形状外，还要求 A 位点"
+"的前 12 个近邻中没有 A、第二壳 6 个近邻全为 A；B 位点的前 12 个近邻中有 4 个 "
+"A、第二壳没有 A。几何匹配比例至少为 `0.80`，化学匹配比例至少为 `0.85`，几何与"
+"化学同时匹配的比例至少为 `0.80`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3966
+#: 7d6955a44a2f4ac2938125ef65d18ea8
+msgid ""
+"**Laves：** 自动识别接近 `A:B = 1:2` 的二元组成。A 位点按 Z16 模板检查，B 位"
+"点按 Z12 模板检查；A 位点应有 4 个 A 近邻，B 位点应有 6 个 A 近邻。几何匹配和"
+"联合匹配比例都至少为 `0.85`。通过后再用 B 子晶格的中心对称参数区分 C14 与 "
+"C15。"
+msgstr ""
+"**Laves：** 自动识别接近 `A:B = 1:2` 的二元组成。A 位点按 Z16 模板检查，B 位"
+"点按 Z12 模板检查；A 位点应有 4 个 A 近邻，B 位点应有 6 个 A 近邻。几何匹配和"
+"联合匹配比例都至少为 `0.85`。通过后再用 B 子晶格的中心对称参数区分 C14 与 "
+"C15。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3968
+#: 8a291e25d47a4bb6af0c35d8f37a222d
+msgid ""
+"C15 的 Pearson 符号是 `cF24`，空间群是 $Fd\\bar 3m$；这里的 `F` 表示面心立方"
+"布拉菲格子，但不表示它是 A1 型 FCC 固溶体，也不表示每个原子都具有 a-CNA 的 "
+"FCC 近邻拓扑。C15 的两类位点分别使用 Laves 的 Z12/Z16 Frank–Kasper 环境，因此"
+"界面可以同时显示「C15 Laves 已确认」和「a-CNA（仅 FCC/HCP/BCC）为其他 / 未解"
+"析」。参见 [AFLOW C15 原型](https://www.aflow.org/prototype-encyclopedia/"
+"A2B_cF24_227_d_a)。"
+msgstr ""
+"C15 的 Pearson 符号是 `cF24`，空间群是 $Fd\\bar 3m$；这里的 `F` 表示面心立方"
+"布拉菲格子，但不表示它是 A1 型 FCC 固溶体，也不表示每个原子都具有 a-CNA 的 "
+"FCC 近邻拓扑。C15 的两类位点分别使用 Laves 的 Z12/Z16 Frank–Kasper 环境，因此"
+"界面可以同时显示「C15 Laves 已确认」和「a-CNA（仅 FCC/HCP/BCC）为其他 / 未解"
+"析」。参见 [AFLOW C15 原型](https://www.aflow.org/prototype-encyclopedia/"
+"A2B_cF24_227_d_a)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3970
+#: 8f085b8a859947eea2f133c64652d03a
+msgid ""
+"自动推断 A/B 角色时，实际组成与理想少数元素比例的偏差必须不超过 `3.5%`。C36 "
+"局域堆垛与 C14/C15 混合在当前局域证据下可能不可区分，因此只显示为未确认线索，"
+"不会作为已确认 C36 输出。这里的「未确认」表示证据不足，不表示该相一定不存在。"
+msgstr ""
+"自动推断 A/B 角色时，实际组成与理想少数元素比例的偏差必须不超过 `3.5%`。C36 "
+"局域堆垛与 C14/C15 混合在当前局域证据下可能不可区分，因此只显示为未确认线索，"
+"不会作为已确认 C36 输出。这里的「未确认」表示证据不足，不表示该相一定不存在。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3972
+#: 022ebbdf5f1d4c34ba8b4a2b4aec846b
+msgid "为什么会同时显示“B1 已确认”和“局域未解析”"
+msgstr "为什么会同时显示“B1 已确认”和“局域未解析”"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3974
+#: 0bc9c440914c4385bf59ce98c894b83e
+msgid ""
+"这两行回答的是不同问题。以轻微应变和原子扰动后的 `U₄N₄` 为例，物种分辨的完整"
+"近邻壳仍与 B1 岩盐模板一致，因此结构级标签可以显示："
+msgstr ""
+"这两行回答的是不同问题。以轻微应变和原子扰动后的 `U₄N₄` 为例，物种分辨的完整"
+"近邻壳仍与 B1 岩盐模板一致，因此结构级标签可以显示："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3976
+#: 86a11dc56e4c40c9b5b3cfb5f3f35bb0
+msgid ""
+"B1（岩盐）· 已确认原型\n"
+"参考晶体学（理想原型）：cF8 · Fm-3m (No. 225) · 面心立方布拉菲格子\n"
+msgstr ""
+"B1（岩盐）· 已确认原型\n"
+"参考晶体学（理想原型）：cF8 · Fm-3m (No. 225) · 面心立方布拉菲格子\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3981
+#: ba577de59cc04bfb865aaa263f5ddc88
+msgid ""
+"但 a-CNA 只识别每个原子的 A1-FCC、A2-BCC 或 A3-HCP 局域拓扑。B1 中每个原子的"
+"第一近邻是 6 配位八面体环境，不是 12 配位的 A1-FCC 环境，所以同一张卡片可以同"
+"时显示："
+msgstr ""
+"但 a-CNA 只识别每个原子的 A1-FCC、A2-BCC 或 A3-HCP 局域拓扑。B1 中每个原子的"
+"第一近邻是 6 配位八面体环境，不是 12 配位的 A1-FCC 环境，所以同一张卡片可以同"
+"时显示："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3983
+#: 2dd85243b6e74eaeae7c80349e9f07f8
+msgid "a-CNA 局域环境（仅 FCC/HCP/BCC）：其他 / 未解析 100.0%\n"
+msgstr "a-CNA 局域环境（仅 FCC/HCP/BCC）：其他 / 未解析 100.0%\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3987
+#: 123d971604b54761a7bbcc24ffa2ddb5
+msgid ""
+"这不是相互矛盾，也不是把 B1 误判成 FCC：前者是**化合物原型确认**，后者是**单"
+"原子局域金属骨架统计**。软件会并列保留两层证据。A15、钙钛矿、L1₁、C36 等尚未"
+"进入确认目录的具体原型不会被猜成某个已支持原型；如果它们仍具有明显的 FCC/BCC/"
+"HCP 局域骨架，页面最多只报告该局域骨架。"
+msgstr ""
+"这不是相互矛盾，也不是把 B1 误判成 FCC：前者是**化合物原型确认**，后者是**单"
+"原子局域金属骨架统计**。软件会并列保留两层证据。A15、钙钛矿、L1₁、C36 等尚未"
+"进入确认目录的具体原型不会被猜成某个已支持原型；如果它们仍具有明显的 FCC/BCC/"
+"HCP 局域骨架，页面最多只报告该局域骨架。"

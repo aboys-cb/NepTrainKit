@@ -1,0 +1,38 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-review-queue.md:1
+#: 80350493516a49f9a42d23e20012208a
+msgid "复核队列：记录人工判断"
+msgstr "复核队列：记录人工判断"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2778
+#: 354f0b2f177a4b7e89f94bb76eb8b72b
+msgid ""
+"「复核队列」把相关的低频分箱合并为一个主题，避免同一问题产生大量重复提醒。状"
+"态选项会随问题类型变化：阻塞项可标为「未解决」或「已解决并重新检查」，重复几"
+"何可标记为「有意保留」「隔离候选」或「需要重算」，普通复核项可标记为「物理上"
+"合理」或「检查几何」。这些状态用于当前数据快照的页面复核，不会自动删除或修改"
+"结构。"
+msgstr ""
+"「复核队列」把相关的低频分箱合并为一个主题，避免同一问题产生大量重复提醒。状"
+"态选项会随问题类型变化：阻塞项可标为「未解决」或「已解决并重新检查」，重复几"
+"何可标记为「有意保留」「隔离候选」或「需要重算」，普通复核项可标记为「物理上"
+"合理」或「检查几何」。这些状态用于当前数据快照的页面复核，不会自动删除或修改"
+"结构。"

@@ -1,0 +1,467 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:1
+#: df4ec69b5efb4094bad4d79e4fb73baf
+msgid "常见问题与故障排查"
+msgstr "常见问题与故障排查"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:3
+#: 2a3b89dad82a4ec1942774c0e0eeca52
+msgid ""
+"先按你看到的现象定位。每一项只给最短检查路径；需要完整参数时进入链接页面。"
+msgstr ""
+"先按你看到的现象定位。每一项只给最短检查路径；需要完整参数时进入链接页面。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:5
+#: be73dbb73fe04877a0c4c2b2b317ce4e
+msgid "安装和启动"
+msgstr "安装和启动"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:7
+#: da139a08fb9f4002bc95ab6a17ef7250
+msgid "`nepkit` 启动后立即报错"
+msgstr "`nepkit` 启动后立即报错"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:9
+#: 9cc88b91fc5648e9b243e8b67daeabb0
+msgid "确认当前终端已激活安装 NepTrainKit 的环境。"
+msgstr "确认当前终端已激活安装 NepTrainKit 的环境。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:10
+#: 9eda50b706a741be9ee44dfbcc9937ac
+msgid ""
+"运行 `python -c \"import NepTrainKit; print(NepTrainKit.__file__)\"`，确认导"
+"入来自预期环境。"
+msgstr ""
+"运行 `python -c \"import NepTrainKit; print(NepTrainKit.__file__)\"`，确认导"
+"入来自预期环境。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:11
+#: 0ebda529ea2a4726a9d81fb3f9bdfbdb
+msgid ""
+"如果 traceback 指向某个缺失模块，重新核对安装是否完整，不要在多个环境间单独复"
+"制包文件。"
+msgstr ""
+"如果 traceback 指向某个缺失模块，重新核对安装是否完整，不要在多个环境间单独复"
+"制包文件。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:12
+#: 12bf3c89a7d1447d80754e74a14dac47
+msgid ""
+"如果是 macOS Dock 图标提示但主窗口仍能打开，应保留完整 traceback 判断是否只是"
+"图标初始化失败。"
+msgstr ""
+"如果是 macOS Dock 图标提示但主窗口仍能打开，应保留完整 traceback 判断是否只是"
+"图标初始化失败。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:14
+#: 0cec61c6c98a49629c774374a4a4f5fc
+msgid "安装和运行时检查见[快速开始](../quickstart.md)。"
+msgstr "安装和运行时检查见[快速开始](../quickstart.md)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:16
+#: b3ff53a5c7224807bb8557454a8816c5
+msgid "CUDA 不可用或自动回退到 CPU"
+msgstr "CUDA 不可用或自动回退到 CPU"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:18
+#: d42718917aa846cd94102e05f44cd88e
+msgid "先运行："
+msgstr "先运行："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:20
+#: b3a5fbc11b6b4f22a93ef73d7963118b
+msgid ""
+"python -c \"import nep_adapters as n; print(n.backend_status('cpu')); "
+"print(n.backend_status('cuda'))\"\n"
+msgstr ""
+"python -c \"import nep_adapters as n; print(n.backend_status('cpu')); "
+"print(n.backend_status('cuda'))\"\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:24
+#: 238104f9cad144aebc42c3350a7eeb3b
+msgid ""
+"`Auto` 会使用可用后端并说明 CUDA 不可用原因。只有必须使用 GPU 时才在设置中强"
+"制选 `CUDA`；强制选择但运行时不可用会明确失败。详细入口见[设置](../module/"
+"settings.md)。"
+msgstr ""
+"`Auto` 会使用可用后端并说明 CUDA 不可用原因。只有必须使用 GPU 时才在设置中强"
+"制选 `CUDA`；强制选择但运行时不可用会明确失败。详细入口见[设置](../module/"
+"settings.md)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:27
+#: 2f163931663e428bacc5bbf840c3b412
+msgid "导入和显示"
+msgstr "导入和显示"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:29
+#: c6fa7673e971415db8c5f97dd65da840
+msgid "`.xyz` / `.extxyz` 导入失败"
+msgstr "`.xyz` / `.extxyz` 导入失败"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:31
+#: f62e10beb10c487da62e4d080c25bc7b
+msgid "依次检查首帧："
+msgstr "依次检查首帧："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:33
+#: 8c9c3c2204c84db59d4d62f831d1ed74
+msgid "声明的原子数是否等于实际原子行数；"
+msgstr "声明的原子数是否等于实际原子行数；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:34
+#: b74be03db2a04cc1b21c8f71f725085b
+msgid "`Properties` 声明的列数是否与每行一致；"
+msgstr "`Properties` 声明的列数是否与每行一致；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:35
+#: 2d948b838d974cd7bc1ae9b42358e8da
+msgid "元素符号是否合法；"
+msgstr "元素符号是否合法；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:36
+#: 717bdeace37646419b470979ec222532
+msgid "周期结构的 `Lattice` 是否有效；"
+msgstr "周期结构的 `Lattice` 是否有效；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:37
+#: ebf9b62e6e10493195fd83da28dea51f
+msgid "`pbc` 是否符合全周期、全非周期或部分周期的真实设置。"
+msgstr "`pbc` 是否符合全周期、全非周期或部分周期的真实设置。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:39
+#: c957960341c048eb9e685aee894cee8a
+msgid ""
+"不要通过补零、伪元素或只改扩展名绕过错误。各格式的完整契约见[支持格式](../"
+"formats.md)。"
+msgstr ""
+"不要通过补零、伪元素或只改扩展名绕过错误。各格式的完整契约见[支持格式](../"
+"formats.md)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:41
+#: 0bd1c1fe6b744d55bc5596c5a2968c46
+msgid "LAMMPS dump 提示缺少元素映射"
+msgstr "LAMMPS dump 提示缺少元素映射"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:43
+#: e86c12ce5da74f1a88e92506d59cba01
+msgid ""
+"只有数值 `type` 的 dump 不能自动知道真实元素。导入时提供完整的“类型编号 → 元"
+"素”映射， 或者在 dump 中直接写出 `element` 列。坐标还必须完整使用 `xs/ys/"
+"zs`、`x/y/z` 或 `xu/yu/zu` 中的一组。"
+msgstr ""
+"只有数值 `type` 的 dump 不能自动知道真实元素。导入时提供完整的“类型编号 → 元"
+"素”映射， 或者在 dump 中直接写出 `element` 列。坐标还必须完整使用 `xs/ys/"
+"zs`、`x/y/z` 或 `xu/yu/zu` 中的一组。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:47
+#: c8b1398b0a40400aaf36ab0a38166f86
+msgid "打开结构后没有能量、力或 virial 图"
+msgstr "打开结构后没有能量、力或 virial 图"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:49
+#: 99d50ddcb9b945859e64ff51662e11a1
+msgid "结构坐标可以正常显示，不代表文件中一定有标签。检查是否同时提供了："
+msgstr "结构坐标可以正常显示，不代表文件中一定有标签。检查是否同时提供了："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:51
+#: 6e4eda5f792148b8a075cd8944f6b826
+msgid "EXTXYZ 中的参考能量、力或 virial；"
+msgstr "EXTXYZ 中的参考能量、力或 virial；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:52
+#: 5bcde14689d1401e82d30635507ad208
+msgid "对应的 GPUMD 输出文件；或"
+msgstr "对应的 GPUMD 输出文件；或"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:53
+#: 90893daf506241da84a32b49a3931017
+msgid "可用于现场预测的 `nep.txt`。"
+msgstr "可用于现场预测的 `nep.txt`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:55
+#: 47a78cee5b734666b3ee5a82c31cd941
+msgid ""
+"数据入口和组合方式见[打开数据与切换模型](../module/nep-display-open-"
+"data.md)。"
+msgstr ""
+"数据入口和组合方式见[打开数据与切换模型](../module/nep-display-open-"
+"data.md)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:57
+#: e0971507a618473183788b8d37a503ba
+msgid "图上的 x、y 哪个是 DFT"
+msgstr "图上的 x、y 哪个是 DFT"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:59
+#: 57b6f522d3a74b87816a4e87d3062501
+msgid ""
+"NepTrainKit 当前 NEP 对比图中，**x 轴是 NEP 预测值，y 轴是参考值（通常为 "
+"DFT）**。 NEP 与其他工具的输出列顺序不同，不影响本页面坐标约定。仍不确定时直"
+"接看坐标轴标题， 不要靠点云方向或文件列顺序猜测。"
+msgstr ""
+"NepTrainKit 当前 NEP 对比图中，**x 轴是 NEP 预测值，y 轴是参考值（通常为 "
+"DFT）**。 NEP 与其他工具的输出列顺序不同，不影响本页面坐标约定。仍不确定时直"
+"接看坐标轴标题， 不要靠点云方向或文件列顺序猜测。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:63
+#: 1a5381f3d5ff44e0b23d2e0588cca621
+msgid "生成数据集"
+msgstr "生成数据集"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:65
+#: 017a2e17ddba4770822363b47865f971
+msgid "点击运行后没有输出"
+msgstr "点击运行后没有输出"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:67
+#: 5ad4bed8bef24947917cb8e637a08aa5
+msgid "按顺序检查："
+msgstr "按顺序检查："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:69
+#: 96c9573145f94c61abcd4ea5b5bad14d
+msgid "卡片是否已勾选；"
+msgstr "卡片是否已勾选；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:70
+#: a02985ac15844242be8f8b0ea86ff5cd
+msgid "需要输入的卡片是否已经导入结构；"
+msgstr "需要输入的卡片是否已经导入结构；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:71
+#: 96cbe667f32a4586a43762c6ca643856
+msgid "参数范围是否真的产生采样点，例如起点、终点和步长是否一致；"
+msgstr "参数范围是否真的产生采样点，例如起点、终点和步长是否一致；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:72
+#: fbde3fd620e54dd6974ed8c262fadb60
+msgid "过滤卡是否把全部结构排除；"
+msgstr "过滤卡是否把全部结构排除；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:73
+#: f55b4914d0b24d86a03462cdb4ed64dc
+msgid "状态提示是否说明输入前提、路径、元素或几何条件不满足。"
+msgstr "状态提示是否说明输入前提、路径、元素或几何条件不满足。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:75
+#: 9a4f923bfde3491aa63559b2a67d7e51
+msgid ""
+"进入[卡片选择页](../module/make-dataset-cards/index.md)后打开具体卡片，查看"
+"“操作示例”和 “常见问题”。不要只反复点击运行。"
+msgstr ""
+"进入[卡片选择页](../module/make-dataset-cards/index.md)后打开具体卡片，查看"
+"“操作示例”和 “常见问题”。不要只反复点击运行。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:78
+#: 165794677be6414aa1b461c0c5bf4ff1
+msgid "输出数量比预计少"
+msgstr "输出数量比预计少"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:80
+#: 86d4cdb138764c1b88e20aa1e4f26dd1
+msgid ""
+"常见原因包括：重复结果被去重、几何检查拒绝候选、距离阈值提前停止、随机尝试达"
+"到上限， 或输入结构本身没有足够可操作位点。具体数量契约以卡片页的功能说明和参"
+"数说明为准。"
+msgstr ""
+"常见原因包括：重复结果被去重、几何检查拒绝候选、距离阈值提前停止、随机尝试达"
+"到上限， 或输入结构本身没有足够可操作位点。具体数量契约以卡片页的功能说明和参"
+"数说明为准。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:83
+#: 7c8e2d7dbb974637873388131360e2b5
+msgid "输出数量突然非常大"
+msgstr "输出数量突然非常大"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:85
+#: a9764314d62c49289cff326ce7713660
+msgid ""
+"多轴扫描、多元素组合、多个输入结构和多张卡片都可能相乘。先用单个输入和小范围"
+"预览， 再逐步增加轴、配比或随机样本数。需要多分支时查看[配方示例](../module/"
+"make-dataset-cards/recipes.md)， 不要一次把所有组合都送入 DFT。"
+msgstr ""
+"多轴扫描、多元素组合、多个输入结构和多张卡片都可能相乘。先用单个输入和小范围"
+"预览， 再逐步增加轴、配比或随机样本数。需要多分支时查看[配方示例](../module/"
+"make-dataset-cards/recipes.md)， 不要一次把所有组合都送入 DFT。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:89
+#: 5c169894edd84547bf17101416ae597e
+msgid "界面是中文，文档里为什么还出现英文"
+msgstr "界面是中文，文档里为什么还出现英文"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:91
+#: 2fbd5e3c0e4d403da63dd8241396e3cf
+msgid ""
+"文档采用“中文用途（英文界面名／序列化名）”的方式：中文用于阅读，英文用于和旧 "
+"JSON、 代码字段或未翻译界面精确对应。参数标题先写中文标签，括号中保留稳定字段"
+"名。"
+msgstr ""
+"文档采用“中文用途（英文界面名／序列化名）”的方式：中文用于阅读，英文用于和旧 "
+"JSON、 代码字段或未翻译界面精确对应。参数标题先写中文标签，括号中保留稳定字段"
+"名。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:94
+#: 7abd4762aead40e1b4b09f160ddf01f9
+msgid "筛选、采样和数据修改"
+msgstr "筛选、采样和数据修改"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:96
+#: 5667912037494e5eb38b9370ec720c6d
+msgid "FPS 选择数远少于目标"
+msgstr "FPS 选择数远少于目标"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:98
+#: 41924af2ca9149adb7d994379371e0ec
+msgid ""
+"最小距离或 $R^2$ 阈值可能提前停止；也可能是候选池本身高度重复。降低阈值或关闭"
+"距离停止， 并检查实际停止原因。FPS 只能从已有候选中选择，不会补出缺失的结构类"
+"型。详见 [代表性采样](../module/nep-main-tool-sparse-samples.md)。"
+msgstr ""
+"最小距离或 $R^2$ 阈值可能提前停止；也可能是候选池本身高度重复。降低阈值或关闭"
+"距离停止， 并检查实际停止原因。FPS 只能从已有候选中选择，不会补出缺失的结构类"
+"型。详见 [代表性采样](../module/nep-main-tool-sparse-samples.md)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:102
+#: 905b5cdf85e344809d632b54361e7374
+msgid "FPS 选出的结构仍然不合理"
+msgstr "FPS 选出的结构仍然不合理"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:104
+#: 8cde75cb9d2748fe9e287e7d68fb2383
+msgid ""
+"FPS 只看描述符空间距离，短键或坏晶胞反而可能因为“很不一样”而被选中。先执行几"
+"何和人工清洗， 再做代表性采样。完整顺序见[候选结构清洗](../workflows/clean-"
+"candidate-structures.md)。"
+msgstr ""
+"FPS 只看描述符空间距离，短键或坏晶胞反而可能因为“很不一样”而被选中。先执行几"
+"何和人工清洗， 再做代表性采样。完整顺序见[候选结构清洗](../workflows/clean-"
+"candidate-structures.md)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:107
+#: 8c38ee80c3414fbc9b0871e8ed0b410a
+msgid "能量平移后找不到原始能量"
+msgstr "能量平移后找不到原始能量"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:109
+#: 8f5fd3c009c145f6b735d0caeae2fe86
+msgid ""
+"第一次平移前的结构总能量写入 `energy_original`，新值写在 `energy`。导出 "
+"EXTXYZ 后检查这两个 帧级字段。再次平移不会覆盖已经保存的 `energy_original`。"
+"详见 [能量基线平移](../module/nep-main-tool-energy-shift.md)。"
+msgstr ""
+"第一次平移前的结构总能量写入 `energy_original`，新值写在 `energy`。导出 "
+"EXTXYZ 后检查这两个 帧级字段。再次平移不会覆盖已经保存的 `energy_original`。"
+"详见 [能量基线平移](../module/nep-main-tool-energy-shift.md)。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:113
+#: a078ed7b6a964aefa6caee56e16a3175
+msgid "最大误差选中的结构数和点数不一致"
+msgstr "最大误差选中的结构数和点数不一致"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:115
+#: dab470e43f9841e78f53da8df4a30811
+msgid ""
+"能量图通常一行对应一个结构；力图中一个结构有多个原子和分量。最大误差工具会把"
+"行映射回 结构编号并去重，所以最终结构数可以少于图上的候选点数。"
+msgstr ""
+"能量图通常一行对应一个结构；力图中一个结构有多个原子和分量。最大误差工具会把"
+"行映射回 结构编号并去重，所以最终结构数可以少于图上的候选点数。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:118
+#: ee04dc59a79e4d0a97653897d280f7f8
+msgid "训练集评估"
+msgstr "训练集评估"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:120
+#: 2b505f7dd98b41bc9ea14b49459b6ba2
+msgid "页面显示“没有磁性数据”"
+msgstr "页面显示“没有磁性数据”"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:122
+#: 4bfc71ee9ced4b968f37f36d89f448c1
+msgid ""
+"磁性评估只读取有效的逐原子 `spin:R:3`。`mforce`、`force_mag` 或标量说明文字不"
+"能代替 三分量自旋字段。先在 EXTXYZ 的 `Properties` 和原子列中确认字段真实存"
+"在。"
+msgstr ""
+"磁性评估只读取有效的逐原子 `spin:R:3`。`mforce`、`force_mag` 或标量说明文字不"
+"能代替 三分量自旋字段。先在 EXTXYZ 的 `Properties` 和原子列中确认字段真实存"
+"在。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:125
+#: a6ea66560ee34b2a8e488cbbe97ed129
+msgid "结构相或磁类型和预期不同"
+msgstr "结构相或磁类型和预期不同"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:127
+#: 7f3fe020c3834b9686e232b67a33b0f0
+msgid ""
+"评估结果是当前阈值和有限结构快照下的证据分类。先检查晶胞、周期边界、元素、邻"
+"居环境和 自旋字段，再进入[结构相判据](../module/training-audit-phase.md)或 "
+"[磁类型判据](../module/training-audit-magnetism.md)。不要把分类名称直接当成热"
+"力学相结论。"
+msgstr ""
+"评估结果是当前阈值和有限结构快照下的证据分类。先检查晶胞、周期边界、元素、邻"
+"居环境和 自旋字段，再进入[结构相判据](../module/training-audit-phase.md)或 "
+"[磁类型判据](../module/training-audit-magnetism.md)。不要把分类名称直接当成热"
+"力学相结论。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:131
+#: 733b01b16a924b0cb3ed2aa6c28f9f14
+msgid "仍然无法定位"
+msgstr "仍然无法定位"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:133
+#: 25310cec7aa0420985be5df5f518c46f
+msgid "保留以下信息再反馈问题："
+msgstr "保留以下信息再反馈问题："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:135
+#: 0d5f824c2d794db38b1f69b4299efb5a
+msgid "NepTrainKit 版本和操作系统；"
+msgstr "NepTrainKit 版本和操作系统；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:136
+#: c96be6afa6f14cdda4696574dac4ad10
+msgid "完整 traceback 或界面原始错误文本；"
+msgstr "完整 traceback 或界面原始错误文本；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:137
+#: 1bd7478d035440fc841bb9f9fe7ec88e
+msgid "能复现问题的最小输入；"
+msgstr "能复现问题的最小输入；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:138
+#: 1e5788bd9a5b4c919e3906f06a32bf2b
+msgid "使用的页面、卡片和参数；"
+msgstr "使用的页面、卡片和参数；"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:139
+#: f1f004cbaff64e8c8df36923cfd7f138
+msgid "预期结果与实际结果。"
+msgstr "预期结果与实际结果。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/troubleshooting.md:141
+#: 2b764eaa7552407ba88060f0028313be
+msgid ""
+"不要只截最后一行错误；根因通常在 traceback 前面的文件、字段或参数信息中。"
+msgstr ""
+"不要只截最后一行错误；根因通常在 traceback 前面的文件、字段或参数信息中。"

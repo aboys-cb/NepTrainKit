@@ -1,0 +1,153 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:1
+#: 847af1356cf842bcb6584bfebac47455
+msgid "DFT-D3 修正"
+msgstr "DFT-D3 修正"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:3
+#: b8327f4d2a3a447dadf072b291ec8206
+msgid "界面按钮：`DFT D3`。"
+msgstr "界面按钮：`DFT D3`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:5
+#: cc6ee79d3dde45e6a5436fbbed0ee945
+msgid "作用与适用场景"
+msgstr "作用与适用场景"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:7
+#: 73c6d4047ca74c8cb00ebc422a35f547
+msgid ""
+"计算 DFT-D3 色散修正，并按所选模式加到或从当前能量、力和 virial 中扣除。 适合"
+"统一训练数据是否包含 D3 的标签约定，不是用于随意改善散点图。"
+msgstr ""
+"计算 DFT-D3 色散修正，并按所选模式加到或从当前能量、力和 virial 中扣除。 适合"
+"统一训练数据是否包含 D3 的标签约定，不是用于随意改善散点图。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:11
+#: ce20c6f077234df390ca37617bb1d91c
+msgid ""
+"DFT-D3 计算仅支持 CPU。即使 NEP 后端选择了 GPU，执行这项操作时也会改用 CPU。"
+msgstr ""
+"DFT-D3 计算仅支持 CPU。即使 NEP 后端选择了 GPU，执行这项操作时也会改用 CPU。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:14
+#: 29262ea7c0f948a9b84710034912021a
+msgid "修正原理"
+msgstr "修正原理"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:16
+#: 528c6793540f49879f177a6907904633
+msgid ""
+"DFT-D3 用元素、原子间距和配位环境计算经验色散能 $E_{\\mathrm{D3}}$，并由其对"
+"坐标和 应变的导数得到力 $\\mathbf F_{\\mathrm{D3}}$ 与 virial $\\mathbf "
+"W_{\\mathrm{D3}}$。本工具不重新做 DFT，只对已有标签执行一致的加减："
+msgstr ""
+"DFT-D3 用元素、原子间距和配位环境计算经验色散能 $E_{\\mathrm{D3}}$，并由其对"
+"坐标和 应变的导数得到力 $\\mathbf F_{\\mathrm{D3}}$ 与 virial $\\mathbf "
+"W_{\\mathrm{D3}}$。本工具不重新做 DFT，只对已有标签执行一致的加减："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:20
+#: cae2fb0868124bb1b48bee3a7c09a081
+msgid ""
+"\n"
+"\\begin{aligned}\n"
+"E' &= E+sE_{\\mathrm{D3}},\\\\\n"
+"\\mathbf F'_i &= \\mathbf F_i+s\\mathbf F_{\\mathrm{D3},i},\\\\\n"
+"\\mathbf W' &= \\mathbf W+s\\mathbf W_{\\mathrm{D3}},\n"
+"\\end{aligned}\n"
+"\\qquad\n"
+"s=\\begin{cases}+1,&\\text{加上}\\\\-1,&\\text{减去。}\\end{cases}\n"
+msgstr ""
+"\n"
+"\\begin{aligned}\n"
+"E' &= E+sE_{\\mathrm{D3}},\\\\\n"
+"\\mathbf F'_i &= \\mathbf F_i+s\\mathbf F_{\\mathrm{D3},i},\\\\\n"
+"\\mathbf W' &= \\mathbf W+s\\mathbf W_{\\mathrm{D3}},\n"
+"\\end{aligned}\n"
+"\\qquad\n"
+"s=\\begin{cases}+1,&\\text{加上}\\\\-1,&\\text{减去。}\\end{cases}\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:30
+#: 82653e1a372140e88d84fb3b32ac674d
+msgid ""
+"`交换-相关泛函`决定 D3 阻尼参数，必须与原始 DFT 泛函一致；`D3 截断半径`控制色"
+"散原子对， `配位数截断半径`控制配位环境计算，两者单位均为 Å。截断半径不是“精"
+"度越大越好”的普通滑块： 增大会提高计算量，也可能改变与原始标签约定的一致性。"
+msgstr ""
+"`交换-相关泛函`决定 D3 阻尼参数，必须与原始 DFT 泛函一致；`D3 截断半径`控制色"
+"散原子对， `配位数截断半径`控制配位环境计算，两者单位均为 Å。截断半径不是“精"
+"度越大越好”的普通滑块： 增大会提高计算量，也可能改变与原始标签约定的一致性。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:34
+#: 38b14f8c5f4d49d8a45d9aebb03d94bb
+msgid "参数与执行结果"
+msgstr "参数与执行结果"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8385
+#: b3a7ea9e9c95485e92a06284922198f2
+msgid ""
+"输入控件：`交换-相关泛函`、`D3 截断半径`、`配位数截断半径`和`修正方式（加上/"
+"减去）`。"
+msgstr ""
+"输入控件：`交换-相关泛函`、`D3 截断半径`、`配位数截断半径`和`修正方式（加上/"
+"减去）`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8386
+#: 8f0af16d51944ce4baad3e0d9524c541
+msgid "执行结果：后台应用 DFT-D3 修正并重绘。"
+msgstr "执行结果：后台应用 DFT-D3 修正并重绘。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8388
+#: e10d79fe689a43b6b28201a23204a145
+msgid ""
+"![DFT-D3 修正对话框](../_static/image/generated/show_nep_reference/"
+"g_dftd3_dialog.png)"
+msgstr ""
+"![DFT-D3 修正对话框](../_static/image/generated/show_nep_reference/"
+"g_dftd3_dialog.png)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8388
+#: 5d1cac3e39674098bb5fa2a1de130e17
+msgid "DFT-D3 修正对话框"
+msgstr "DFT-D3 修正对话框"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8388
+#: 5d1cac3e39674098bb5fa2a1de130e17
+msgid ""
+".. image:: ../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
+msgstr ""
+".. image:: ../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:41
+#: e318b727a577474cb1199a5285817250
+msgid "操作后检查"
+msgstr "操作后检查"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-dft-d3.md:43
+#: 0746664b613a4f1fad3ea26c1a71abe5
+msgid ""
+"`functional` 必须与原始 DFT 计算采用的泛函一致。完成后比较修正前后的能量和力"
+"分布， 并确认 `Add/Subtract` 与目标标签约定一致；方向选反会造成整批数据系统性"
+"偏移。"
+msgstr ""
+"`functional` 必须与原始 DFT 计算采用的泛函一致。完成后比较修正前后的能量和力"
+"分布， 并确认 `Add/Subtract` 与目标标签约定一致；方向选反会造成整批数据系统性"
+"偏移。"

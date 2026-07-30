@@ -1,0 +1,267 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:1
+#: 9dd24bf2becd46d2889f86597d4146eb
+msgid "主图区：看图、选择与处理数据"
+msgstr "Main plot: inspect, select, and process data"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:3
+#: 9bf55c2f208248e795b12e0713b5e600
+msgid ""
+"这一页对应软件左侧主图区及其竖向工具栏。目录顺序与界面按钮从上到下保持一致。 "
+"点击左侧目录中的具体工具，可以直接查看参数、默认行为和执行结果。"
+msgstr "This page covers the main plot and its vertical toolbar on the left side of the application. The page follows the buttons from top to bottom. Select a tool in the local table of contents to see its parameters, default behavior, and result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:26
+#: 1361547aca074eeaa0f1edae12a49f27
+msgid "按界面顺序选择工具"
+msgstr "Choose a tool in interface order"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: fc30e315d9964ba69440a899f860c10f
+msgid "界面按钮"
+msgstr "Interface button"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 6311c08da6384693881055da98d9b464
+msgid "什么时候用"
+msgstr "When to use it"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 92d376cef52041fdae094a3188036658
+msgid "参数入口"
+msgstr "Parameter page"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 9fc20a74ab054f3c94b7a3187759d2b1
+msgid "`Reset View` / `Pan View` / `Mouse Selection` 等"
+msgstr "`Reset View` / `Pan View` / `Mouse Selection` 等"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 92bcb3902f7545608b3c7def484d1f98
+msgid "调整主图、圈选、反选、撤销或删除"
+msgstr "Adjust the main plot, select points, invert the selection, undo, or delete"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: e2fd5bd39e0f499e92a6a5695a5f16bd
+msgid "[浏览与基础选择](nep-main-tool-basic.md)"
+msgstr "[浏览与基础选择](nep-main-tool-basic.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 8d26c3ec750640ad9bd5d8457daee0fb
+msgid "`Select by Index`"
+msgstr "`Select by Index`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 20912d2188f6425bb002c9f78cd3227c
+msgid "已知结构编号或切片"
+msgstr "已知结构编号或切片"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 032d8f0f2b104f649403a706fe8b6a44
+msgid "[按索引选择](nep-main-tool-select-index.md)"
+msgstr "[按索引选择](nep-main-tool-select-index.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: e120fac953724ad99ba08e4ec35ab499
+msgid "`Select by Range`"
+msgstr "`Select by Range`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: bbc906c3c0064aca9b5524ad3d800e5f
+msgid "按当前图的 x/y 范围选点"
+msgstr "Select points within the current plot's x/y range"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 1fcb802a8392432a9d813ac0944d47a4
+msgid "[按图上范围选择](nep-main-tool-select-range.md)"
+msgstr "[按图上范围选择](nep-main-tool-select-range.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 3fffded7b4ee4611a605ae5f50e38e67
+msgid "`Select by Lattice`"
+msgstr "`Select by Lattice`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: e3eda223950642c883f22d1ba21cd9f4
+msgid "按晶格长度和角度筛选"
+msgstr "Filter by lattice lengths and angles"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: e09101a4215844d9af08b78bd5f00895
+msgid "[按晶格参数选择](nep-main-tool-select-lattice.md)"
+msgstr "[按晶格参数选择](nep-main-tool-select-lattice.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 74ceaa835afc4db58a117bb6f66178f1
+msgid "`Find Max Error Point`"
+msgstr "`Find Max Error Point`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 63c72ee469e042c1910de31fa894ba77
+msgid "找当前指标误差最大的前 N 个结构"
+msgstr "Find the N structures with the largest error for the current metric"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: a0724706f1ca49ea8dacb04ad1327cb7
+msgid "[查找最大误差结构](nep-main-tool-max-error.md)"
+msgstr "[查找最大误差结构](nep-main-tool-max-error.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 9f2f029c3cb345ffbc2c61d01be9fbbe
+msgid "`Sparse samples`"
+msgstr "`Sparse samples`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 3bca635a8b2d4975b7623107f61608c4
+msgid "用 FPS 选择代表结构"
+msgstr "Select representative structures with FPS"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 7f142269d5224cf39e187c1c90b3ef64
+msgid "[代表性采样](nep-main-tool-sparse-samples.md)"
+msgstr "[代表性采样](nep-main-tool-sparse-samples.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 3f503cec843545e193927edeb6051446
+msgid "`Finding non-physical structures`"
+msgstr "`Finding non-physical structures`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 48f1398a1fa4448c985f556b74153d25
+msgid "查找近邻距离异常结构"
+msgstr "Find structures with anomalous neighbor distances"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: ec000e2998404f5cb41a8f7a189ecd7e
+msgid "[查找疑似非物理结构](nep-main-tool-nonphysical.md)"
+msgstr "[查找疑似非物理结构](nep-main-tool-nonphysical.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 1864189a78d54dadb490fca6630898a7
+msgid "`Check Net Force`"
+msgstr "`Check Net Force`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: a8bac6f3672a443fad853878a3c929c1
+msgid "按净力阈值检查标签"
+msgstr "Check labels against a net-force threshold"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 35619d9bab2c4a1ba6d818940fb7728d
+msgid "[检查净力](nep-main-tool-net-force.md)"
+msgstr "[检查净力](nep-main-tool-net-force.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 06437862582b409ea7f7c3366d867693
+msgid "`Edit Info`"
+msgstr "`Edit Info`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 6a415170614a444c99a9330ae076a8b8
+msgid "批量增加、删除或重命名 metadata"
+msgstr "Add, delete, or rename metadata in batches"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 1a315a5b0fb14abbb64fb614d658e902
+msgid "[编辑结构信息](nep-main-tool-edit-info.md)"
+msgstr "[编辑结构信息](nep-main-tool-edit-info.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: e69c4aeadf644c7e9034b167be9db8ce
+msgid "`Export structure descriptor`"
+msgstr "`Export structure descriptor`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 5e74d733405c4986afad298449bf3921
+msgid "导出当前数据的结构描述符"
+msgstr "Export structural descriptors for the current data"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 0343d675f78c46a5b773b5d0d80bb123
+msgid "[导出结构描述符](nep-main-tool-export-descriptor.md)"
+msgstr "[导出结构描述符](nep-main-tool-export-descriptor.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 24607aef06c34ac792d079e9d0647ca8
+msgid "`Energy Baseline Shift`"
+msgstr "`Energy Baseline Shift`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 0fc42d6ce6064942b8064ab04e43e0ff
+msgid "拟合并应用能量基线平移"
+msgstr "Fit and apply an energy-baseline shift"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: f17d1fb56d894e6582610a97e534b41e
+msgid "[能量基线平移](nep-main-tool-energy-shift.md)"
+msgstr "[能量基线平移](nep-main-tool-energy-shift.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 0bcd5d0f9250426cb57275db4880b3a2
+msgid "`DFT D3`"
+msgstr "`DFT D3`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 0cbefb3994f543a1882182d8637c3eda
+msgid "增加或移除 DFT-D3 修正"
+msgstr "Add or remove a DFT-D3 correction"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 577039ab26c44ff3bf1cc35dbe617099
+msgid "[DFT-D3 修正](nep-main-tool-dft-d3.md)"
+msgstr "[DFT-D3 修正](nep-main-tool-dft-d3.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 822670bfefeb434eb99d4540809da2c8
+msgid "`Training Set Audit`"
+msgstr "`Training Set Audit`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: fcd6096947e94aa78d5682116a69b814
+msgid "打开训练集整体质量评估"
+msgstr "Open the overall training-set audit"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 64c212201385439fad2b8838daa3a624
+msgid "[进入训练集评估](nep-main-tool-training-audit.md)"
+msgstr "[进入训练集评估](nep-main-tool-training-audit.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: f42af09350bd43059164e62b7117d177
+msgid "`Explore distributions`"
+msgstr "`Explore distributions`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 860580b97176457ea1501fe22bf372fd
+msgid "查看数值字段分布并反向选结构"
+msgstr "Inspect numeric-field distributions and select structures from them"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:6
+#: 39965c96a1074c3b9848eae15aa79fb1
+msgid "[查看数据分布](nep-main-tool-distributions.md)"
+msgstr "[查看数据分布](nep-main-tool-distributions.md)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-main-plot-tools.md:45
+#: fe229010232e45219bed54a1388a94c5
+msgid ""
+"英文名称来自软件按钮，目录名称统一采用“中文用途（界面按钮）”，便于中文阅读和"
+"界面对照。"
+msgstr "The English names come from the application buttons. The Chinese table of contents uses “Chinese purpose (interface button)” consistently so that Chinese readers can match the documentation to the interface."

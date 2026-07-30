@@ -9,65 +9,96 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:3
-#: 62788952a2984ed0b18a0761544538e6
-msgid "随机表面切片（Random Slab）"
-msgstr "Random Surface Slabs (Random Slab)"
-
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:5
-#: 2c1ba285987c491f8e90f4f78e88a7c7
-msgid "`Group`: `Surface` | `Class`: `RandomSlabCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:3
+#: 02ec754e653649a5a4ad9ab728e58412
+msgid "随机表面板层（Random Slab）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:7
-#: eb7119af59184dc2b531aafbfd86449b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:5
+#: dd6aa50b3ac8491ca4b31e199ba15389
+msgid "**分类：** 表面"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:7
+#: e020a1749407474584cf8b06ae78cc10
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:9
-#: 1eae35d9e56e4744a0dd5c8d67e71821
-msgid "从体相结构按 Miller 指数、层数和真空厚度范围批量切出 slab，覆盖不同表面取向和几何参数组合。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:9
+#: 9914e8afee654498bbc5b89283f67fdb
+msgid ""
+"从体相结构按 Miller 指数、层数和真空厚度范围批量切出 slab，覆盖不同表面取向和"
+"几何参数组合。"
 msgstr ""
-"Cut slabs from a bulk structure over ranges of Miller indices, layer counts,"
-" and vacuum thicknesses, covering multiple surface orientations and "
+"Cut slabs from a bulk structure over ranges of Miller indices, layer counts, "
+"and vacuum thicknesses, covering multiple surface orientations and "
 "geometries."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:11
-#: 814dc24eb82d4cfa9c1a0e613e95b654
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:11
+#: 3bd69b33988e439b8c54e4e5469c9b95
+msgid "原理与公式"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:13
+#: 88023fdb441e441ab71b8efe38e569aa
+msgid "卡片对 Miller 指数、层数和真空厚度做笛卡尔积扫描："
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:15
+#: 93124c5076444dfba2a2ef8a03b4c866
+msgid ""
+"\n"
+"\\mathcal O=\n"
+"\\{(h,k,l,L,v): (h,k,l)\\ne(0,0,0)\\}.\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:20
+#: ea81ab4685a84105bf0cf1acfef9fcbd
+msgid ""
+"对每个组合调用周期表面构造，把 $(hkl)$ 平面作为表面法向，沿法向堆叠 $L$ 层； "
+"$v>0$ 时在法向加入对应 Å 数的真空，$v=0$ 时不额外加真空。输出数的理论上限是各"
+"扫描 点数的乘积减去 $(0,0,0)$ 组合。失败的不可构造晶面会记录并跳过，因此实际"
+"输出可能更少。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:24
+#: 6bd7fd1870bf4765b25ebc545c552bf0
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:13
-#: cfeace4e47814b66b754c1ac5d6da8ac
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:26
+#: 3e9893ffac7d40fcbd114653f7596baa
 msgid "场景：模型在表面吸附能上系统性偏离 DFT"
-msgstr "Scenario: model adsorption energies are systematically biased relative to DFT"
+msgstr ""
+"Scenario: model adsorption energies are systematically biased relative to DFT"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:15
-#: fd1ad3acbe364bf9bffd15719cca96fb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:28
+#: 14454119040043d4b9a1f85c62c41432
 msgid ""
-"你在体相 Pt 上训练了一个 NEP 模型，体相弹性和声子都很好。然后跑 Pt(111) 表面上的 CO 吸附能——模型预测的吸附能比 DFT 弱 "
-"0.5 eV，误差远超可接受范围。"
+"你在体相 Pt 上训练了一个 NEP 模型，体相弹性和声子都很好。然后跑 Pt(111) 表面"
+"上的 CO 吸附能——模型预测的吸附能比 DFT 弱 0.5 eV，误差远超可接受范围。"
 msgstr ""
 "You trained an NEP model on bulk Pt and obtained good elastic and phonon "
 "properties. For CO adsorption on Pt(111), however, the predicted adsorption "
 "is 0.5 eV weaker than DFT, well outside the acceptable error."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:17
-#: e39642f2dbdf4154a3c22d9d54219491
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:30
+#: 2a1138d6106f4b528973a0d4ed577a99
 msgid ""
-"**诊断思路：** 训练集里全是体相 Pt 结构，模型从来没见过表面的低配位原子。Pt(111) "
-"表面的台阶位、平台位的局域环境与体相完全不同——配位数从 12 降到 9 甚至更低。模型需要见过多种表面取向和厚度的 slab 才能泛化到表面化学。"
+"**诊断思路：** 训练集里全是体相 Pt 结构，模型从来没见过表面的低配位原子。"
+"Pt(111) 表面的台阶位、平台位的局域环境与体相完全不同——配位数从 12 降到 9 甚至"
+"更低。模型需要见过多种表面取向和厚度的 slab 才能泛化到表面化学。"
 msgstr ""
 "**Diagnosis:** The training set contains only bulk Pt, so the model has "
 "never seen undercoordinated surface atoms. Terrace and step environments on "
@@ -75,40 +106,42 @@ msgstr ""
 "to 9 or fewer. Include slabs with multiple orientations and thicknesses "
 "before expecting transfer to surface chemistry."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:19
-#: 24e8309d459a45b1a92d1e21780dfb86
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:32
+#: 03dfe7fd14f142aca7085957d6eb04d6
 msgid "**输入：** 一个体相 fcc Pt 单胞"
 msgstr "**Input:** A bulk fcc Pt unit cell."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:21
-#: 86799eff97cc4f7ab64628ecf94b2413
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:34
+#: 2937a9a7de734ad48038d5a41005d52e
 msgid "**目标：** 切出 (111) 面，3~6 层厚，10 Å 真空，覆盖多种 Miller 指数组合"
 msgstr ""
-"**Goal:** Generate slabs spanning several Miller-index combinations, with "
-"3–6 layers and 10 Å of vacuum, including the (111) surface."
+"**Goal:** Generate slabs spanning several Miller-index combinations, with 3–"
+"6 layers and 10 Å of vacuum, including the (111) surface."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:23
-#: 46fe0accf93145839f8ab7cf458f97b1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:36
+#: 555d59b597e34a82a5ad17e5b0514a9c
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:24
-#: f2dc9ab58e514f8990a33ce26b38689e
-msgid "`H Range` = `[0, 1, 1]`，`K Range` = `[0, 1, 1]`，`L Range` = `[1, 3, 1]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:37
+#: 512ee5bdfa8b4f23b00bc769f2f4df5c
+msgid ""
+"`Miller 指数 h 范围`（`h_range`） = `[0, 1, 1]`，`Miller 指数 k 范围`"
+"（`k_range`） = `[0, 1, 1]`，`Miller 指数 l 范围`（`l_range`） = `[1, 3, 1]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:25
-#: 38615966a9444923b32d2724a7b652b4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:38
+#: b8fc2940a15f4876a967cb93628f0f36
 msgid "`Layer Range` = `[3, 6, 1]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:26
-#: b6afc1ac55414712892d2948740c4979
-msgid "`Vacuum Range` = `[10, 10, 1]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:39
+#: 519f5be470864566881cd185b70efd40
+msgid "`真空层范围`（`vacuum_range`） = `[10, 10, 1]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:28
-#: 08a5a89d15d540c0ad6ea63e0f992e1a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:41
+#: 8e103bcb34314cd9844e2350710054b6
 msgid ""
 "**输出：** 多个 slab 结构，覆盖不同 hkl 组合、3~6 层厚度、10 Å 真空，带 "
 "`Slab(hkl=...,L=...,vac=...)` 标签"
@@ -116,212 +149,221 @@ msgstr ""
 "**Output:** Slab structures over the selected *hkl* combinations and 3–6 "
 "layer thicknesses with 10 Å vacuum, labeled `Slab(hkl=...,L=...,vac=...)`."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:30
-#: 3b76a0e4a4b4432dadf8d526bfcd4464
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:43
+#: 8b63b0fd97794f09a5b10a6972bb17d4
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:31
-#: 94189928367146388643528891c15ac2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:44
+#: fbc53cb452134d65ba0790bd9ca76eee
 msgid "重训后计算 Pt(111) 上的 CO 吸附能，应该接近 DFT 参考"
 msgstr ""
 "After DFT labeling and retraining, recalculate CO adsorption on Pt(111) and "
 "compare it with the DFT reference."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:32
-#: b9197b38142a4a1f97a1ae3e28785f2f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:45
+#: 95f43e4ac7064d2997ae4f9f6004c6c0
 msgid "检查 slab 上下表面没有重叠，真空层足够隔离周期镜像"
 msgstr ""
 "Check that the two slab surfaces do not overlap and that the vacuum "
 "separates periodic images adequately."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:33
-#: b666cf522f5146b0ae9126edd76b6d5f
-msgid "如果表面能预测仍不准，扩大 `l_range` 到 `[1, 5, 1]` 覆盖更多高指数面"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:46
+#: eba2d5dc58db4e9680f0cec66308c8d7
+msgid ""
+"如果表面能预测仍不准，扩大 `Miller 指数 l 范围`（`l_range`）到 `[1, 5, 1]` 覆"
+"盖更多高指数面"
 msgstr ""
-"If surface-energy predictions remain inaccurate, expand `l_range` to `[1, 5,"
-" 1]` to include more orientations, while controlling the total count."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:34
-#: f8d55c94a63c4adfbc8db77fa2339b63
-msgid "如果 slab 太薄表面效应过强，增大 `layer_range` 的下限"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:47
+#: f052314feb544cec965b9fc7240bc335
+msgid "如果 slab 太薄表面效应过强，增大 `层数范围`（`layer_range`）的下限"
 msgstr ""
-"If the slabs are too thin and the two surfaces interact strongly, raise the "
-"lower bound of `layer_range`."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:36
-#: 0b454bbb30f043b8af178a6d78d57ddf
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:49
+#: 28aa559f50fc46f6ae7a34b4a3f5b232
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:38
-#: f950ddcb65d84c2493cad4f71719e7b6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:51
+#: 7329fa39e99745fcb435fa9a49ee8b51
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:39
-#: 0a002809e9a24652bc1a418cda089c22
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:52
+#: af01f3dd1bf14cf997a938bcd5a9d419
 msgid "模型在表面相关任务（吸附、表面能、表面反应）上预测差"
 msgstr ""
 "The model is inaccurate for adsorption, surface energies, or surface "
 "reactions."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:40
-#: 0f4c175f807c4db298bb7aef1083dad4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:53
+#: f05b0e03843f4fe9b81f7f1c55b1d4d7
 msgid "需要覆盖多种表面取向和厚度"
 msgstr "You need to cover several surface orientations and thicknesses."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:41
-#: 15af14caa05846f19e442b51d97f45ad
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:54
+#: a0d9e4b7aaa94d679a8a73c80441fa6d
 msgid "作为后续吸附/缺陷卡片的母结构"
 msgstr "You need parent slabs for downstream adsorption or defect cards."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:43
-#: a1ccd8fb06134b88a2d457a4b585584d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:56
+#: 946529cde7994374a72133f1e85f045b
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:44
-#: 58bf957a9cc44739901b53c6bc9d9213
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:57
+#: db558f3697314d88b90949e0d9430778
 msgid "只做体相性质训练，不需要表面结构"
-msgstr "The model targets bulk properties only and does not need surface structures."
+msgstr ""
+"The model targets bulk properties only and does not need surface structures."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:45
-#: 12940cdfd4fc41928cbbeca24ee67940
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:58
+#: ca9fc57993f04a38a0673df24e98af13
 msgid "已经手动切好了 slab，只需要做表面修饰"
 msgstr ""
 "The required slabs have already been prepared and only surface modification "
 "is needed."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:47
-#: 623caf3c282948d1bdf376c412f15116
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:60
+#: e7bc15b518b04488bbaf489760353bf9
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:49
-#: 78ea7b40c73548afbd19c1ec6a8b8434
-msgid "H Range（h_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:62
+#: 1b8d7ffade684ce8be4bd9bc9934101c
+msgid "Miller 指数 h 范围（h_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:51
-#: 691a3ac1a6514a8280cf3f3c65e3761a
-msgid "`Sequence[int]`，默认 (0, 1, 1)。`[最小值, 最大值, 步长]`，整数，定义切片的 Miller h 指数搜索空间。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:64
+#: 58a818ace7324872ac8145cafbc3b71a
+msgid ""
+"`Sequence[int]`，默认 (0, 1, 1)。`[最小值, 最大值, 步长]`，整数，定义切片的 "
+"Miller h 指数搜索空间。"
 msgstr ""
 "`Sequence[int]`, default: `(0, 1, 1)`. Integer `[minimum, maximum, step]` "
 "range for the Miller *h* index."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:53
-#: 27914697b49f4ee8b46b4a403a153253
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:66
+#: 2e7a92c6512f4d989ee4bd58b02c9e50
 msgid ""
-"hkl 为 (0,0,0) 的组合自动跳过。填参数之前先心算一下：输出总数 = (h 点数) x (k 点数) x (l 点数) x (层数) x "
-"(真空数)——别让五重循环悄悄把输出量炸了。"
+"hkl 为 (0,0,0) 的组合自动跳过。填参数之前先心算一下：输出总数 = (h 点数) x "
+"(k 点数) x (l 点数) x (层数) x (真空数)——别让五重循环悄悄把输出量炸了。"
 msgstr ""
 "The `(0, 0, 0)` combination is skipped. Before running, estimate the output "
-"count as `Nh × Nk × Nl × Nlayers × Nvacuum`; the five nested ranges can grow"
-" quickly."
+"count as `Nh × Nk × Nl × Nlayers × Nvacuum`; the five nested ranges can grow "
+"quickly."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:55
-#: 529269cfa3c740e4afd9e27e69401734
-msgid "K Range（k_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:68
+#: 3c34e982c1814b7f8755dafa57a6ab99
+msgid "Miller 指数 k 范围（k_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:57
-#: 67daa62e44a94c698170e904ee350c0d
-msgid "`Sequence[int]`，默认 (0, 1, 1)。`[最小值, 最大值, 步长]`，和上面 h 一样用法。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:70
+#: 7703d488c0f34f848c129bbe5ae04129
+msgid ""
+"`Sequence[int]`，默认 (0, 1, 1)。`[最小值, 最大值, 步长]`，和上面 h 一样用"
+"法。"
 msgstr ""
 "`Sequence[int]`, default: `(0, 1, 1)`. Integer `[minimum, maximum, step]` "
 "range for the Miller *k* index."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:59
-#: fb26787a2a7d4001b3ac88ccf2a415f0
-msgid "h/k 设 [0,1,1] 只出低指数面，[0,2,1] 覆盖中等取向，[0,3,1] 进入探索区——组合数增长很快，注意控制范围。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:72
+#: a9584add0af54a1bb6edff216d98d84a
+msgid ""
+"h/k 设 [0,1,1] 只出低指数面，[0,2,1] 覆盖中等取向，[0,3,1] 进入探索区——组合数"
+"增长很快，注意控制范围。"
 msgstr ""
 "Using `[0,1,1]` for *h* and *k* limits the scan to low-index values; "
 "`[0,2,1]` broadens it, while `[0,3,1]` is exploratory. Control both ranges "
 "because their combinations multiply."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:61
-#: ed969600e7e947b99ac4c4231089c6ed
-msgid "L Range（l_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:74
+#: d7932ea5a0614729860c3d5fc3cfef16
+msgid "Miller 指数 l 范围（l_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:63
-#: 1060290d57fd455b8b1f46db4ab53f33
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:76
+#: ad90259b708f4b808fe6f66a21d58b46
 msgid ""
-"`Sequence[int]`，默认 (1, 3, 1)。`[最小值, 最大值, 步长]`。注意 l 的默认起点不是 0，因为 (0,0,0) "
-"没意义会直接跳过。"
+"`Sequence[int]`，默认 (1, 3, 1)。`[最小值, 最大值, 步长]`。注意 l 的默认起点"
+"不是 0，因为 (0,0,0) 没意义会直接跳过。"
 msgstr ""
 "`Sequence[int]`, default: `(1, 3, 1)`. Integer `[minimum, maximum, step]` "
 "range for the Miller *l* index. Its default starts at 1 because `(0, 0, 0)` "
 "is undefined and would be skipped."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:65
-#: b3d9bfe925604536a6e985a30136d304
-msgid "保守用 [1,1,1] 只切一个面；平衡用 [1,3,1] 覆盖 3 个不同 l 的面；探索用 [1,5,1] 但要准备好让输出数被五重循环放大。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:78
+#: 0f398b6012f6423ea0a9c597329f5e1f
+msgid ""
+"保守用 [1,1,1] 只切一个面；平衡用 [1,3,1] 覆盖 3 个不同 l 的面；探索用 "
+"[1,5,1] 但要准备好让输出数被五重循环放大。"
 msgstr ""
 "Use `[1,1,1]` for a single *l* value, `[1,3,1]` for routine coverage, and "
-"`[1,5,1]` for exploration, accounting for multiplication by all other "
-"ranges."
+"`[1,5,1]` for exploration, accounting for multiplication by all other ranges."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:67
-#: 28450c259851484296bac2dda9b2c8ab
-msgid "Layer Range（layer_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:80
+#: ebb0934abed3416d83e176437cc2696a
+msgid "层数范围（layer_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:69
-#: c8f38548013c41208ced9b62309f5a3e
-msgid "`Sequence[int]`，默认 (3, 6, 1)。`[最小值, 最大值, 步长]`，整数，控制每个 slab 的厚度（层数）。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:82
+#: 2ae6344dd1064b468a073edd5c441b8c
+msgid ""
+"`Sequence[int]`，默认 (3, 6, 1)。`[最小值, 最大值, 步长]`，整数，控制每个 "
+"slab 的厚度（层数）。"
 msgstr ""
 "`Sequence[int]`, default: `(3, 6, 1)`. Integer `[minimum, maximum, step]` "
 "range for slab thickness in atomic layers."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:71
-#: dc0325b608864ee8994f8d80a0d6c03e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:84
+#: 88bca5f347fa4bb6acfb58c714f69825
 msgid ""
-"3~6 层是标准 slab 厚度——上下表面的原子环境已经近似体相了，表面能收敛不会因为厚度不够而飘。1~2 层的超薄 slab "
-"量子尺寸效应明显，除非你有明确的物理原因，否则谨慎使用。8 层以上的厚 slab 对 DFT 预算不友好。"
+"3~6 层是标准 slab 厚度——上下表面的原子环境已经近似体相了，表面能收敛不会因为"
+"厚度不够而飘。1~2 层的超薄 slab 量子尺寸效应明显，除非你有明确的物理原因，否"
+"则谨慎使用。8 层以上的厚 slab 对 DFT 预算不友好。"
 msgstr ""
 "Three to six layers is a practical starting range, but convergence must be "
 "checked for the material and property of interest. One- or two-layer slabs "
 "can show strong finite-size effects; slabs above eight layers increase DFT "
 "cost substantially."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:73
-#: 97115592ba374cd68c3f6a515cf90646
-msgid "Vacuum Range（vacuum_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:86
+#: cb6c1062ac664552ae37bc5ea400aab6
+msgid "真空层范围（vacuum_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:75
-#: f1a2c58568bf40f9b7c9f7ac1d119cd5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:88
+#: 102559c83fdb47618c82f5b014e2d4ce
 msgid "`Sequence[int]`，默认 (10, 10, 1)。`[最小值, 最大值, 步长]`，单位 Å。"
 msgstr ""
 "`Sequence[int]`, default: `(10, 10, 1)`. Vacuum-thickness range in Å, "
 "expressed as `[minimum, maximum, step]`."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:77
-#: 2c47806b3daa4974a57a3eeeb3387fca
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:90
+#: b3eddf1f0ed647bd876b4f3ff7334252
 msgid ""
-"10 Å 对大多数场景是可靠的下限，足够隔断周期镜像之间的相互作用。如果你后续要在表面放吸附分子，拉高到 15-20 Å 确保吸附物不碰到镜像 "
-"slab。低于 5 Å 不建议用——镜像 slab 的电子密度会穿透真空层。"
+"10 Å 对大多数场景是可靠的下限，足够隔断周期镜像之间的相互作用。如果你后续要在"
+"表面放吸附分子，拉高到 15-20 Å 确保吸附物不碰到镜像 slab。低于 5 Å 不建议用——"
+"镜像 slab 的电子密度会穿透真空层。"
 msgstr ""
 "Ten Å is a common starting point, but vacuum convergence remains system "
 "dependent. For adsorbates, 15–20 Å may be needed to avoid contact with the "
 "periodic image. Vacuum below 5 Å is generally unsafe for isolated-slab "
 "calculations."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:79
-#: b27f3e905c7a40f8946544f143161753
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:92
+#: 79e299bc07ae4905b2b4f1dbdeb29c76
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:81
-#: 73eb6d39cebf4c99bfdd154d891d6e81
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:94
+#: f03e029b20f243bc9f491c069e2eea79
 msgid "低指数面（111，3~6 层，10 Å，少量输出）"
 msgstr "Low-index surfaces ((111), 3–6 layers, 10 Å vacuum, few outputs)"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:82
-#: 041ca51ec0784783836b517c8ac6034f
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:95
+#: 463daa579d544eb0b4752a5f7aea700b
 msgid ""
 "{\n"
 "  \"class\": \"RandomSlabCard\",\n"
@@ -334,14 +376,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:94
-#: 1088bd07e15e4d328b08cd239b745c8c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:107
+#: 13bafad1b94a42adb56c725499440fd5
 msgid "多取向覆盖（h/k 0-1, l 1-3，3~6 层，10-15 Å）"
-msgstr "Multiple orientations (*h/k*: 0–1, *l*: 1–3; 3–6 layers; 10–15 Å vacuum)"
+msgstr ""
+"Multiple orientations (*h/k*: 0–1, *l*: 1–3; 3–6 layers; 10–15 Å vacuum)"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:95
-#: 3b4f43d1b4984076bc44d997e70bc86c
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:108
+#: 229421cd333949a497b8d1d55c840dd7
 msgid ""
 "{\n"
 "  \"class\": \"RandomSlabCard\",\n"
@@ -354,16 +396,15 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:107
-#: 65659823676f4cf1b38c0cd8ebb94a51
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:120
+#: 73ecfdb8d93047dfa8f89b9346b410fe
 msgid "全取向探索（h/k 0-2, l 1-5，3~9 层，10-20 Å）"
 msgstr ""
 "Broad orientation exploration (*h/k*: 0–2, *l*: 1–5; 3–9 layers; 10–20 Å "
 "vacuum)"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:108
-#: b6d3728e6ac34491800bfe11b654bc49
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:121
+#: 6576651aba864f92ab65ec5029330752
 msgid ""
 "{\n"
 "  \"class\": \"RandomSlabCard\",\n"
@@ -376,78 +417,96 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:120
-#: 804571198e5542db89819a1bb1ef9921
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:133
+#: f39752828e7b4e0fa19f47a1e2377149
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:122
-#: 77095dee7e884093bd0aa3fff8d87980
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:135
+#: a4555423bc654844b34a05a5c0054c4c
 msgid "`Random Slab` → `Insert Defect`：先切表面，再加吸附原子"
 msgstr "`Random Slab` → `Insert Defect`: cut surfaces, then place adsorbates."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:123
-#: 23cef2179c314317b83894bcced8d3d9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:136
+#: 82bcca44db9d4337b4d31b1d64f1c13f
 msgid "`Random Slab` → `Random Vacancy`：先切表面，再删表面原子构造空位"
 msgstr ""
-"`Random Slab` → `Random Vacancy`: cut surfaces, then remove surface atoms to"
-" create vacancies."
+"`Random Slab` → `Random Vacancy`: cut surfaces, then remove surface atoms to "
+"create vacancies."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:124
-#: 437dbf08dd4a4ff8aa6a0690b8f2062b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:137
+#: 333785722ba94db0b1e66d457962b00b
 msgid "`Super Cell` → `Random Slab`：先扩胞到足够大面内尺寸，再切片"
 msgstr ""
-"`Super Cell` → `Random Slab`: enlarge the in-plane dimensions before cutting"
-" slabs."
+"`Super Cell` → `Random Slab`: enlarge the in-plane dimensions before cutting "
+"slabs."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:126
-#: b735547316184b06a4b492d18a976cfb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:139
+#: 9f1b46652c59411895176155b8627087
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:128
-#: 39f56b1f62c8431d9bf4134c2850daa6
-msgid "**输出为空。** 通常因为 (0,0,0) 被跳过后没有有效 hkl 组合，或者体相的 Miller 指数组合和晶格不兼容。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:141
+#: aa73c99f627b44b497d15378968f771d
+msgid ""
+"**输出为空。** 通常因为 (0,0,0) 被跳过后没有有效 hkl 组合，或者体相的 Miller "
+"指数组合和晶格不兼容。"
 msgstr ""
 "**No structures are produced.** After `(0, 0, 0)` is removed, the selected "
 "ranges may contain no valid Miller combination, or the bulk lattice may be "
 "incompatible with the requested cut."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:130
-#: b80e58c81dad4babb7ecfa89248c9a82
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:143
+#: 5ed5bf836f144c3784fb720ec9487f42
 msgid ""
-"**输出数量爆炸。** h_range、k_range、l_range、layer_range、vacuum_range 五重循环。先估算：Nh x "
-"Nk x Nl x Nlayer x Nvacuum。如果数字太大，先收窄 l_range 和 layer_range。"
+"**输出数量爆炸。** h_range、k_range、l_range、layer_range、vacuum_range 五重"
+"循环。先估算：Nh x Nk x Nl x Nlayer x Nvacuum。如果数字太大，先收窄 l_range "
+"和 layer_range。"
 msgstr ""
-"**The output count is unexpectedly large.** The five ranges form a Cartesian"
-" product. Estimate `Nh × Nk × Nl × Nlayer × Nvacuum`; if it is too large, "
+"**The output count is unexpectedly large.** The five ranges form a Cartesian "
+"product. Estimate `Nh × Nk × Nl × Nlayer × Nvacuum`; if it is too large, "
 "narrow `l_range` and `layer_range` first."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:132
-#: 8261e023935a45e3be48262fc124dc1f
-msgid "**Slab 上下表面重叠。** layer_range 下限太小时，slab 厚度可能小于 2 层原子间距。增大下限。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:145
+#: 2dd66930066a41188532682af7836b02
+msgid ""
+"**Slab 上下表面重叠。** layer_range 下限太小时，slab 厚度可能小于 2 层原子间"
+"距。增大下限。"
 msgstr ""
 "**The upper and lower slab surfaces overlap or interact too strongly.** The "
-"lower bound of `layer_range` is too small. Increase it and recheck thickness"
-" convergence."
+"lower bound of `layer_range` is too small. Increase it and recheck thickness "
+"convergence."
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:134
-#: a3fa337713b348b0b5a5dc43c6873795
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:147
+#: eb2f7605ffa942ba98dd51324b34d8ab
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:136
-#: 87d5ffe670e54f569fd3bef0a74ab157
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:149
+#: 1ae7035b808b4faeafe57a39269d619f
 msgid "`Slab(hkl={h}{k}{l},L={层数},vac={真空})`"
 msgstr "`Slab(hkl={h}{k}{l},L={layer count},vac={vacuum})`"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:138
-#: 7e0fe8829be34afbbb4ee7d89faadb4e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:151
+#: 6b8d0c2438f342e882c70df4fcbabd9f
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/random-slab-card.md:140
-#: 4a1f8d63c75a4c0bac727ce61bf594f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:153
+#: dcbc74db4d3b4f6f9bf5a7d3b5d2c8c1
 msgid "无随机性。同参数同输入 → 严格一致输出。"
-msgstr "Deterministic: identical inputs and parameters produce identical outputs."
+msgstr ""
+"Deterministic: identical inputs and parameters produce identical outputs."
+
+#~ msgid "随机表面切片（Random Slab）"
+#~ msgstr "Random Surface Slabs (Random Slab)"
+
+#~ msgid "如果表面能预测仍不准，扩大 `l_range` 到 `[1, 5, 1]` 覆盖更多高指数面"
+#~ msgstr ""
+#~ "If surface-energy predictions remain inaccurate, expand `l_range` to `[1, "
+#~ "5, 1]` to include more orientations, while controlling the total count."
+
+#~ msgid "如果 slab 太薄表面效应过强，增大 `layer_range` 的下限"
+#~ msgstr ""
+#~ "If the slabs are too thin and the two surfaces interact strongly, raise "
+#~ "the lower bound of `layer_range`."

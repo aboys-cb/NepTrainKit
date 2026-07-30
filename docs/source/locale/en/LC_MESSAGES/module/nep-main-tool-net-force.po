@@ -1,0 +1,133 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:1
+#: e27efbb9ffd34cdbb04b82db2a07e148
+msgid "检查净力（Check Net Force）"
+msgstr "检查净力（Check Net Force）"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:3
+#: e8341a7ffc18441190cb4ff41bedee62
+msgid "作用与适用场景"
+msgstr "作用与适用场景"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:5
+#: a00791824853426791630fff20ec0a7c
+msgid ""
+"计算每个结构所有原子力的矢量和 `|ΣF|`，并选中超过阈值的结构。它常用于发现未满"
+"足平移不变性、 标签映射错误或 DFT 输出异常的数据。"
+msgstr ""
+"计算每个结构所有原子力的矢量和 `|ΣF|`，并选中超过阈值的结构。它常用于发现未满"
+"足平移不变性、 标签映射错误或 DFT 输出异常的数据。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:8
+#: 84e9a0bd072a4a588ab72262a93aec86
+msgid "判定原理"
+msgstr "判定原理"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:10
+#: 8aee034cca2643c599089806739f2ff4
+msgid "对含 $N$ 个原子的结构，程序先求参考力的矢量和，再取欧氏模："
+msgstr "对含 $N$ 个原子的结构，程序先求参考力的矢量和，再取欧氏模："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:12
+#: ecd9dcf0bb0d43f8818b2ece7062a650
+msgid ""
+"\n"
+"\\mathbf F_{\\mathrm{net}}=\\sum_{i=1}^{N}\\mathbf F_i,\\qquad\n"
+"F_{\\mathrm{net}}=\\left\\|\\mathbf F_{\\mathrm{net}}\\right\\|_2\n"
+"=\\sqrt{F_x^2+F_y^2+F_z^2}.\n"
+msgstr ""
+"\n"
+"\\mathbf F_{\\mathrm{net}}=\\sum_{i=1}^{N}\\mathbf F_i,\\qquad\n"
+"F_{\\mathrm{net}}=\\left\\|\\mathbf F_{\\mathrm{net}}\\right\\|_2\n"
+"=\\sqrt{F_x^2+F_y^2+F_z^2}.\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:18
+#: 8932dcc5ce5c4c73b28ef9b44ad6fa67
+msgid ""
+"当 $F_{\\mathrm{net}}>F_{\\mathrm{threshold}}$ 时选中该结构。力的单位为 eV/"
+"Å，所以净力和阈值 也都是 eV/Å。理想的孤立周期体系满足平移不变性时净力应接近"
+"零，但有限 SCF 精度、 约束计算或外场也可能带来真实残差；这个工具是质量复核门"
+"槛，不是自动纠错器。"
+msgstr ""
+"当 $F_{\\mathrm{net}}>F_{\\mathrm{threshold}}$ 时选中该结构。力的单位为 eV/"
+"Å，所以净力和阈值 也都是 eV/Å。理想的孤立周期体系满足平移不变性时净力应接近"
+"零，但有限 SCF 精度、 约束计算或外场也可能带来真实残差；这个工具是质量复核门"
+"槛，不是自动纠错器。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:22
+#: 1a2fc3103760499c9f7fad35c38f17f5
+msgid "参数与执行结果"
+msgstr "参数与执行结果"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7334
+#: e8ef83566067402cb50b9f71e2784c3b
+msgid "输入控件：`净力阈值`，即 `|ΣF|`。"
+msgstr "输入控件：`净力阈值`，即 `|ΣF|`。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7335
+#: 0a7aa4f700194069a26b854a5f58c950
+msgid "范围：`[0, 1e6]`，10 位小数。"
+msgstr "范围：`[0, 1e6]`，10 位小数。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7336
+#: 3997b54c1abd40ddac8171d3fbd08236
+msgid "默认值：`widget.force_balance_threshold`（缺省 `1e-3`）。"
+msgstr "默认值：`widget.force_balance_threshold`（缺省 `1e-3`）。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7337
+#: 5cf2bbddefc84e4f9fabc585c6e82a54
+msgid "执行结果：选中超阈值结构，并显示统计消息。"
+msgstr "执行结果：选中超阈值结构，并显示统计消息。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7339
+#: 6021bb164bb441cb9aebc99fd9e053c7
+msgid ""
+"![检查净力对话框](../_static/image/generated/show_nep_reference/"
+"g_force_dialog.png)"
+msgstr ""
+"![检查净力对话框](../_static/image/generated/show_nep_reference/"
+"g_force_dialog.png)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7339
+#: 6f41b056a82949b1b95247173727a7af
+msgid "检查净力对话框"
+msgstr "检查净力对话框"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7339
+#: 6f41b056a82949b1b95247173727a7af
+msgid ""
+".. image:: ../_static/image/generated/show_nep_reference/g_force_dialog.png"
+msgstr ""
+".. image:: ../_static/image/generated/show_nep_reference/g_force_dialog.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:29
+#: 9b65172f90bf4315b48e1dfd5e3a85ad
+msgid "操作后检查"
+msgstr "操作后检查"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-net-force.md:31
+#: b8814684e30c4bd88e944425a8c9b8d1
+msgid ""
+"阈值单位为 `eV/Å`，必须大于零。选中后结合结构原子数、计算精度和标签来源判"
+"断； 工具只标出超阈值结构，不会修改力标签。"
+msgstr ""
+"阈值单位为 `eV/Å`，必须大于零。选中后结合结构原子数、计算精度和标签来源判"
+"断； 工具只标出超阈值结构，不会修改力标签。"

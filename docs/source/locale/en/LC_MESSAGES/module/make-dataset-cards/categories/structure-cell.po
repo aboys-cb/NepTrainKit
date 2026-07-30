@@ -1,0 +1,82 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:1
+#: c1208110175e463d95179be190790ec0
+msgid "结构来源与晶胞"
+msgstr "Structure sources and cells"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:3
+#: 6f074ee47b5e481e975c3455834dd415
+msgid ""
+"这组卡片决定“从什么结构开始”和“晶胞怎样承载后续操作”。通常先完成这里的操作， "
+"再进入应变、缺陷、表面、合金或磁性卡片。"
+msgstr ""
+"这组卡片决定“从什么结构开始”和“晶胞怎样承载后续操作”。通常先完成这里的操作， "
+"再进入应变、缺陷、表面、合金或磁性卡片。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: 21149bed578a47d587a65da8c5960b0a
+msgid "目标"
+msgstr "Goal"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: 5cd75da260584dd8bb2f72e3d0375e95
+msgid "使用卡片"
+msgstr "Card to use"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: 18087d75bd18487e9b58668cab415e16
+msgid "从标准晶体原型开始"
+msgstr "Start from a standard crystal prototype"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: 29b924380fa84c84a83fbbbdb94f8afe
+msgid "`Crystal Prototype Builder`"
+msgstr "`Crystal Prototype Builder`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: a74971df9f264b9ea938767e8c76e9e1
+msgid "在给定周期晶胞中生成随机坐标初态"
+msgstr "Generate random-coordinate initial states in a specified periodic cell"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: 22759f64c3b545beb7bea68ee3dc6cc4
+msgid "`Random Packing`"
+msgstr "`Random Packing`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: ba56bae103174678a619c1dba2b8eed6
+msgid "扩大已有晶胞"
+msgstr "扩大已有晶胞"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: 2f565d23e16a47199109be1ae73a337d
+msgid "`Super Cell`"
+msgstr "`Super Cell`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: fb644c6efabc47e486fa8e0d604d5209
+msgid "沿层方向复制并施加几何位移"
+msgstr "沿层方向复制并施加几何位移"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
+#: 5d996e0fe8714339a6e56c106e02de8d
+msgid "`Layer Copy`"
+msgstr "`Layer Copy`"

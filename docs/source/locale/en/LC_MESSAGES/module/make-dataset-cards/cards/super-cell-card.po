@@ -9,37 +9,38 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:3
-#: 9e6dc036a2b0428e8af541ebfa530843
-msgid "超胞生成（Super Cell）"
-msgstr "Super Cell"
-
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:5
-#: 0902ae1ac75745f09410433f2e1350a4
-msgid "`Group`: `Lattice` | `Class`: `SuperCellCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:3
+#: 81377252f121468d9194c99146e12864
+msgid "扩胞（Super Cell）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:7
-#: 2ef81e86510f42efa13a9e771f12a03a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:5
+#: fad1e6959c7449ea9e1ba95d9bcdf9c8
+msgid "**分类：** 晶格"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:7
+#: 3b58d64ccb4449afb5e5e2404c6784ee
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:9
-#: 3e63caf8ce364ee486a0d2e8dc0565e9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:9
+#: d1f600809e3f446fbf42a335b13bebdc
 msgid ""
-"按倍率、目标胞长或原子数上限扩胞，为缺陷/表面/磁性操作提供足够空间。三种扩胞策略三选一：固定倍率（`scale`）、目标胞长（`cell`）、原子数上限（`max_atoms`）。可锁定特定轴向不扩胞——适合"
-" slab 等需要维持法向层间距的场景。"
+"按倍率、目标胞长或原子数上限扩胞，为缺陷/表面/磁性操作提供足够空间。三种扩胞"
+"策略三选一：固定倍率（`scale`）、目标胞长（`cell`）、原子数上限"
+"（`max_atoms`）。可锁定特定轴向不扩胞——适合 slab 等需要维持法向层间距的场景。"
 msgstr ""
 "Expand a structure by fixed replication, target cell lengths, or an atom-"
 "count limit so downstream defect, surface, and magnetic operations have "
@@ -47,181 +48,204 @@ msgstr ""
 "Individual axes can be locked, which is useful for preserving the normal "
 "direction of a slab."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:11
-#: ef80eff14c8c4324baf85fe1b97e53ca
-#, python-brace-format
-msgid ""
-"\\mathbf{T}=\\mathrm{diag}(n_a,n_b,n_c),\\quad "
-"\\mathbf{C}'=\\mathbf{C}\\mathbf{T},\\quad N'=N\\cdot n_a n_b n_c"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:11
+#: 0ed857e968174e49997e6f8d32745b26
+msgid "原理与公式"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:13
-#: 9dd6fcfa4bb94e5d9c3d5de7433f51bb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:13
+#: af5d9b0705c54bb49051de215c511a19
+msgid ""
+"\\mathbf{T}=\\mathrm{diag}(n_a,n_b,n_c),\\quad \\mathbf{C}'=\\mathbf{C}"
+"\\mathbf{T},\\quad N'=N\\cdot n_a n_b n_c"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:15
+#: 4ec7226ae183423c9ddd743bc4654fa1
+msgid ""
+"$n_a,n_b,n_c$ 是三个方向的正整数重复数。目标胞长模式把每个 $n_i$ 取到足以达到"
+"目标 长度的最小整数；原子数上限模式在 $N'$ 不超过预算的前提下选择重复数。锁定"
+"轴固定对应 $n_i=1$。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:19
+#: 58d964a0c4f94e789f6d37e0c9d51b8f
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:15
-#: 61818b93c52d4baabad12ac1fc7e21e7
-msgid "场景：模型在小胞上训练后跑空位计算，周期镜像干扰导致空位形成能偏高 0.5 eV"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:21
+#: d5f066135af84d40ab7565d8ffbc2e68
+msgid ""
+"场景：模型在小胞上训练后跑空位计算，周期镜像干扰导致空位形成能偏高 0.5 eV"
 msgstr "Scenario: Periodic images raise the vacancy formation energy by 0.5 eV"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:17
-#: 8bb438a3bcc341e38970203907a70bb6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:23
+#: 69b0d495530448c0a8654ab9c1e299b9
 msgid ""
-"你在 bcc Fe 上用 2x2x2 超胞（16 原子）训练了一个 NEP 模型。拿这个模型算单空位形成能，结果比 DFT 高了 0.5 "
-"eV。诊断发现：2x2x2 太小的胞里，空位和它的周期镜像之间距离只有约 5 "
-"Å，空位-空位镜像相互作用不可忽略，模型学到的实际上是\"带镜像相互作用的空位\"而非孤立空位。"
+"你在 bcc Fe 上用 2x2x2 超胞（16 原子）训练了一个 NEP 模型。拿这个模型算单空位"
+"形成能，结果比 DFT 高了 0.5 eV。诊断发现：2x2x2 太小的胞里，空位和它的周期镜"
+"像之间距离只有约 5 Å，空位-空位镜像相互作用不可忽略，模型学到的实际上是\"带镜"
+"像相互作用的空位\"而非孤立空位。"
 msgstr ""
 "A bcc Fe NEP is trained on 2x2x2 cells with 16 atoms and overestimates a "
 "single-vacancy formation energy by 0.5 eV. The vacancy is only about 5 Å "
-"from its periodic images, so the training environment represents interacting"
-" vacancy images rather than an isolated defect."
+"from its periodic images, so the training environment represents interacting "
+"vacancy images rather than an isolated defect."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:19
-#: f730b78f78a94198b6cfacfe639d672c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:25
+#: 073a410c261b452586b88cb68f815ee5
 msgid ""
-"**诊断思路：** 缺陷计算的黄金法则是\"超胞要大到使缺陷-缺陷镜像相互作用可忽略\"。2x2x2 = 16 "
-"原子的胞对空位来说太小。解法是在训练集里用更大的超胞（至少 3x3x3 = 54 原子或 4x4x4 = 128 "
-"原子）做空位计算，这样模型至少见过大胞里的空位环境。同时，下游做空位操作时也需要大胞作为母结构。"
+"**诊断思路：** 缺陷计算的黄金法则是\"超胞要大到使缺陷-缺陷镜像相互作用可忽略"
+"\"。2x2x2 = 16 原子的胞对空位来说太小。解法是在训练集里用更大的超胞（至少 "
+"3x3x3 = 54 原子或 4x4x4 = 128 原子）做空位计算，这样模型至少见过大胞里的空位"
+"环境。同时，下游做空位操作时也需要大胞作为母结构。"
 msgstr ""
 "**Diagnosis:** Defect cells must be large enough that interactions between "
 "periodic defect images are negligible for the target accuracy. Add vacancy "
 "labels in larger cells, for example 3x3x3 or 4x4x4, and use such cells as "
 "parents for downstream defect generation."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:21
-#: 7f05eabf33da453d8a584826b31b07ee
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:27
+#: 83a5d6cce1ac43ce84aba33534e49db0
 msgid "**输入：** 一个 bcc Fe 原胞（2 原子）"
 msgstr "**Input:** A two-atom bcc Fe primitive cell."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:23
-#: 419d07a797e54b24b26ed6b77f70467e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:29
+#: 32b2ae82c1a14ad48cf0c1570c922027
 msgid "**目标：** 扩到 4x4x4 超胞（128 原子），为后续空位缺陷生成提供母结构"
 msgstr "**Objective:** Build a 4x4x4, 128-atom parent for vacancy generation."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:25
-#: cec93d4eb7ce41b1851f27aae2a48bc3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:31
+#: 706bad32d74841edaf399ebbbac621a1
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:26
-#: fffb3d53791c4e77bc9495513ae71862
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:32
+#: 407935ad49bc4b7d98943555127ff8e6
 msgid "mode = `scale`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:27
-#: 397750f3c6d143d8b54590ec47d7542d
-msgid "`super_scale` = `[4, 4, 4]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:33
+#: 31b378901793480d964f5baecf705ab3
+msgid "`超胞倍率`（`super_scale`） = `[4, 4, 4]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:29
-#: 9957016ceb114b3683f6b90ff20ee586
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:35
+#: 64f4b2ae2f28467a8c7805f340e95428
 msgid "**输出：** 1 个 4x4x4 超胞结构，128 原子"
 msgstr "**Output:** One 4x4x4 supercell with 128 atoms."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:31
-#: 8d4bc42e8629423daafd49c1ea453d82
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:37
+#: 5df682cab1dc4a7db5f8433d9b65b129
 msgid "**怎么验证结果合理：**"
 msgstr "**How to verify the result:**"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:32
-#: 19ee6e9249c54984a6853de4c11121b5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:38
+#: 3e5b463e2c9c4955b6365999e273f7e4
 msgid "检查原子数：原胞 2 原子 * 4 * 4 * 4 = 128，核对输出"
 msgstr "Check atom count: 2 × 4 × 4 × 4 = 128."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:33
-#: cf023849f2e747058b09b0f604f48909
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:39
+#: 0047b1ca00024d5abbebfa020c19c4c5
 msgid "检查晶格矢量：每个方向拉长 4 倍，体积增大 64 倍"
 msgstr ""
 "Check lattice vectors: each is four times longer and volume is 64 times "
 "larger."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:34
-#: 5936a58099fd4933aff663b091f22c05
-msgid "如果空位形成能仍偏高，继续增大到 5x5x5 = 250 原子，直到 DFT 和 NEP 的形成能收敛"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:40
+#: 3596ec8806ad4f68bc563d4777c3132f
+msgid ""
+"如果空位形成能仍偏高，继续增大到 5x5x5 = 250 原子，直到 DFT 和 NEP 的形成能收"
+"敛"
 msgstr ""
 "If the vacancy formation energy remains size dependent, repeat at larger "
 "cells until the chosen DFT and NEP comparisons are converged."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:35
-#: cb858f78770c4c738bf5fc4f300505a6
-msgid "如果超胞太大计算不起，用 `max_atoms` 模式设置预算上限"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:41
+#: ccdcca3567244671b3584b32ccd685c3
+msgid "如果超胞太大计算不起，用 `最大原子数`（`max_atoms`）模式设置预算上限"
 msgstr ""
-"If larger cells exceed the labeling budget, use `max_atoms` to impose a hard"
-" size limit."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:37
-#: ee3ccf41dc154c96b0bbdeff72c4afb7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:43
+#: 99f4b852a2ac4274a0c8f84ef920a60f
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:39
-#: ae99104193454b68ac46943c862d43db
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:45
+#: 7178e7e4927b42f7953544de298b036c
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:40
-#: 1071af5df0524d45b779aeb07866bd29
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:46
+#: 228f9d030dbb42c3b6f2f77a763e060a
 msgid "下游要做缺陷（空位、间隙）、表面（slab）、磁性操作，需要超胞作为母结构"
 msgstr ""
 "Downstream vacancies, interstitials, surfaces, or magnetic patterns need a "
 "larger parent cell"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:41
-#: a4c27f062a2e4fba909e492a7fc87a73
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:47
+#: e6f7bea153f9417a95ecc0b4a8d27ae7
 msgid "当前训练集胞太小，周期镜像干扰不可忽略"
 msgstr "Periodic-image interactions are not negligible in current cells"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:42
-#: 900d787efd2f4581809695bfe01c3b69
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:48
+#: 65699d2fcbb24b618ac12b699c1a10c5
 msgid "需要扩胞以使 defect-defect 距离 > 10 Å"
 msgstr "A specified minimum defect-image separation is required"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:44
-#: 708c7a8d028d4875b63ca221f37c304d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:50
+#: 80005d09e5ab4a4e977d3a4c86f813ab
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:45
-#: 63c5dfced7f346eb9f24e938caae20ec
-msgid "下游任务是体相性质（弹性常数、声子），原胞/小胞就够 —— 扩胞只会白增计算量"
-msgstr "The task is a bulk property already converged in the primitive or small cell"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:51
+#: ce3a5ae7c1e24eb5b4fcf5c9fb1ff51e
+msgid ""
+"下游任务是体相性质（弹性常数、声子），原胞/小胞就够 —— 扩胞只会白增计算量"
+msgstr ""
+"The task is a bulk property already converged in the primitive or small cell"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:46
-#: 42da4109cbf946a9bb3aa9d3cb4fd4f2
-msgid "计算预算严重受限，扩胞后 DFT 跑不动 —— 这种情况下维持小胞，接受周期镜像有残留误差"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:52
+#: 2d383248c84149ba88249917f8346ab0
+msgid ""
+"计算预算严重受限，扩胞后 DFT 跑不动 —— 这种情况下维持小胞，接受周期镜像有残留"
+"误差"
 msgstr ""
 "The DFT budget cannot support the expanded cell and the remaining finite-"
 "size error is explicitly accepted"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:47
-#: 92e6cdf7a2184fee8eb993965145ff99
-msgid "需要的是带应变的晶格变化而非单纯的重复复制 —— 用 `Lattice Strain` 或 `Cell Scaling`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:53
+#: 9417c60cdde34909bb6ae7d5dbd30a04
+msgid ""
+"需要的是带应变的晶格变化而非单纯的重复复制 —— 用 `Lattice Strain` 或 `Cell "
+"Scaling`"
 msgstr ""
 "Cell deformation rather than replication is needed; use `Lattice Strain` or "
 "`Lattice Perturb`"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:49
-#: c8f6d159db904f0a8356069fd35f07bd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:55
+#: 66b4446e5c4e4426952f3abd5631ca46
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:51
-#: 7d66db94898d46908358f48887f34f1c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:57
+#: 3366a6a2f7934827b49f95b143752cf2
 msgid "扩胞策略"
 msgstr "Expansion strategy"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:53
-#: 780d83d437984a15a51cc7080e91c3c7
-msgid "Behavior Type（behavior_type）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:59
+#: 88e04fd6c188438bb7b146ff3229a13c
+msgid "扩胞方式（behavior_type）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:55
-#: 80dfd0143bf24a11845422deccd0ffe2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:61
+#: e52b0ea77ff04da38c98d4f79e0eb273
 msgid ""
-"`int`，默认 0。控制输出哪些超胞。`0` = 单输出：scale 模式输出刚好那个倍数；cell 模式输出最大或最小倍数的超胞；max_atoms"
-" 模式输出原子数最大的那个。`1` = 枚举：从 1x1x1 到目标倍数，所有中间组合都输出——适合想一次生成多个不同大小的超胞。`2` = "
-"最小满足：cell 模式用 ceil 取整（至少达到目标长度），max_atoms 模式同理——适合\"至少多大才够\"的场景。"
+"`int`，默认 0。控制输出哪些超胞。`0` = 单输出：scale 模式输出刚好那个倍数；"
+"cell 模式输出最大或最小倍数的超胞；max_atoms 模式输出原子数最大的那个。`1` = "
+"枚举：从 1x1x1 到目标倍数，所有中间组合都输出——适合想一次生成多个不同大小的超"
+"胞。`2` = 最小满足：cell 模式用 ceil 取整（至少达到目标长度），max_atoms 模式"
+"同理——适合\"至少多大才够\"的场景。"
 msgstr ""
 "`int`, default `0`. Selects outputs. `0` returns one requested/selected "
 "cell; `1` enumerates intermediate replication combinations from 1x1x1 "
@@ -229,117 +253,111 @@ msgstr ""
 "including ceiling behavior for target lengths. Estimate enumeration size "
 "before using mode 1."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:57
-#: cb6c199332b4459d9f76eb2034363439
-msgid "Mode（mode）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:63
+#: 6dc75d759c6a428ea8a9d3e8cce023db
+msgid "模式（mode）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:59
-#: 144b5ab7330140af9d7b120951e2a84f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:65
+#: d5c21c20c1c44fb18baa3011cac77c87
 msgid ""
-"`SuperCellMode`，默认 `'scale'`。`\"scale\"` 按 `super_scale` "
-"里写死的倍数扩——你最清楚自己要多大时用这个。`\"cell\"` 按 `target_cell` 里的目标胞长（单位 Å）自动算倍数，每个方向的倍数 "
-"= floor 或 ceil（目标长度/原始长度），取决于 `behavior_type`——想让胞长达到特定数值（比如所有方向大于等于 20 "
-"Å）时用这个。`\"max_atoms\"` 按原子数上限枚举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这个。"
-msgstr ""
-"`SuperCellMode`, default `'scale'`. `scale` uses explicit `super_scale`; "
-"`cell` derives per-axis replication from `target_cell` in Å using floor or "
-"ceiling according to `behavior_type`; `max_atoms` searches replication "
-"combinations under an atom-count cap. Use explicit scale when the required "
-"cell is known, target lengths for separation constraints, and max atoms for "
-"a budget-limited design."
-
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:61
-#: d2e368cdab9a4cffb15dd646b4d35494
-msgid "Super Scale（super_scale）"
+"`SuperCellMode`，默认 `'scale'`。`\"scale\"` 按 `超胞倍率`（`super_scale`）里"
+"写死的倍数扩——你最清楚自己要多大时用这个。`\"cell\"` 按 `目标晶胞长度`"
+"（`target_cell`）里的目标胞长（单位 Å）自动算倍数，每个方向的倍数 = floor 或 "
+"ceil（目标长度/原始长度），取决于 `扩胞方式`（`behavior_type`）——想让胞长达到"
+"特定数值（比如所有方向大于等于 20 Å）时用这个。`\"max_atoms\"` 按原子数上限枚"
+"举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这"
+"个。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:63
-#: 6419e33c8ea34dd09fdd3a2b298dd83a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:67
+#: 7577dc60d71a4a2283a5251d730e72eb
+msgid "超胞倍率（super_scale）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:69
+#: 9fa9b9184e75456dbb56a35bf43e002d
 msgid ""
-"`tuple[int, int, int]`，默认 `(3, 3, 3)`。仅 scale 模式生效。a/b/c 方向各复制几倍，最小 "
-"1（不复制），典型值 2~4。注意 3x3x3 = 27 倍原子数，提前心算一下总原子数别超预算。"
+"`tuple[int, int, int]`，默认 `(3, 3, 3)`。仅 scale 模式生效。a/b/c 方向各复制"
+"几倍，最小 1（不复制），典型值 2~4。注意 3x3x3 = 27 倍原子数，提前心算一下总"
+"原子数别超预算。"
 msgstr ""
 "`tuple[int, int, int]`, default `(3, 3, 3)`; scale only. Replication along "
-"a, b, and c, with minimum 1. Total atom count is multiplied by their "
-"product."
+"a, b, and c, with minimum 1. Total atom count is multiplied by their product."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:65
-#: a34facf2e8ea4c63b571356428c64d3e
-msgid "Target Cell（target_cell）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:71
+#: ee58a76f8dd84bc48c7d39eb02d868a9
+msgid "目标晶胞长度（target_cell）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:67
-#: 6369ff9e810d4f1ea967673c8ac7220e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:73
+#: 40d35d52782f49b38cff4c489e69c1fb
 msgid ""
-"`tuple[float, float, float]`，默认 `(20.0, 20.0, 20.0)`。仅 cell 模式生效。各方向的目标胞长，单位"
-" Å。比如原胞 a 长度 = 5 Å 时，target=20 会算出倍数 4（或 5，取决于 behavior_type 是 floor 还是 "
-"ceil）。"
+"`tuple[float, float, float]`，默认 `(20.0, 20.0, 20.0)`。仅 cell 模式生效。各"
+"方向的目标胞长，单位 Å。比如原胞 a 长度 = 5 Å 时，target=20 会算出倍数 4（或 "
+"5，取决于 behavior_type 是 floor 还是 ceil）。"
 msgstr ""
 "`tuple[float, float, float]`, default `(20.0, 20.0, 20.0)` Å; cell only. "
 "Target lengths by axis. Replication is derived from target/original length "
 "and the selected floor/ceiling behavior."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:69
-#: 0708fccc7d89499fa0b1757a30ce4fa8
-msgid "Max Atoms（max_atoms）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:75
+#: a63e5b5e9034453ba707d012e60d93b2
+msgid "最大原子数（max_atoms）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:71
-#: 39a3a8c383644f718d17212cf7fd45b9
-msgid "`int`，默认 100。仅 max_atoms 模式生效。超胞总原子数上限，实际输出可能包含多个不超过此上限的不同倍数超胞。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:77
+#: 44ac67cca963428d98d3806f784439a6
+msgid ""
+"`int`，默认 100。仅 max_atoms 模式生效。超胞总原子数上限，实际输出可能包含多"
+"个不超过此上限的不同倍数超胞。"
 msgstr ""
 "`int`, default `100`; max-atoms only. Upper bound on total atoms. "
 "Enumeration behavior may emit several replication combinations below it."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:73
-#: 6a1fc47dfc144e428b6f28e70d873fb1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:79
+#: 587a739c1c3248289eb96935ecc6f90f
 msgid "轴向锁定"
 msgstr "Axis locking"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:75
-#: 3ee6c719056b487285ec9e31624c5f75
-msgid "Fixed Axis Flags（fixed_axis_flags）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:81
+#: af9d00af51124e80852850c4309be499
+msgid "固定轴选择（fixed_axis_flags）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:77
-#: ccc33e765254467a9a0e70fbdffe7763
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:83
+#: 683e52ba015742b1af20816fbfb05faf
 msgid ""
-"`tuple[bool, bool, bool]`，默认 `(false, false, false)`。锁定 a/b/c 方向的扩胞倍数。最适合 "
-"slab 场景：把法向（通常 c 轴）锁住不扩，只扩面内两个方向。被锁住的轴用 `fixed_axis_scale` 里对应的倍数，不被锁住的轴正常扩。"
-msgstr ""
-"`tuple[bool, bool, bool]`, default `(false, false, false)`. Lock replication"
-" along a, b, or c. For a slab, lock the normal and expand only in plane. "
-"Locked axes use `fixed_axis_scale`; others follow the selected strategy."
-
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:79
-#: e0660894d6f048a98185f2bd92fbbb6d
-msgid "Fixed Axis Scale（fixed_axis_scale）"
+"`tuple[bool, bool, bool]`，默认 `(false, false, false)`。锁定 a/b/c 方向的扩"
+"胞倍数。最适合 slab 场景：把法向（通常 c 轴）锁住不扩，只扩面内两个方向。被锁"
+"住的轴用 `固定轴倍率`（`fixed_axis_scale`）里对应的倍数，不被锁住的轴正常扩。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:81
-#: e38be703c62a4970bd61d69b6e8917f1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:85
+#: 01d4a96d53454e5cb9ac0d8b6f19f0ad
+msgid "固定轴倍率（fixed_axis_scale）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:87
+#: 0c797e7631ef4553957669f24a4d497a
 msgid ""
-"`tuple[int, int, int]`，默认 `(1, 1, 1)`。仅对 `fixed_axis_flags` 中对应位置为 true "
-"的轴生效。通常设为 1（不扩胞），但如果你需要一个方向固定扩 2 倍、另一个方向自由扩，也可以设成其他值。"
+"`tuple[int, int, int]`，默认 `(1, 1, 1)`。仅对 `固定轴选择`"
+"（`fixed_axis_flags`）中对应位置为 true 的轴生效。通常设为 1（不扩胞），但如"
+"果你需要一个方向固定扩 2 倍、另一个方向自由扩，也可以设成其他值。"
 msgstr ""
-"`tuple[int, int, int]`, default `(1, 1, 1)`. Replication values for axes "
-"enabled in `fixed_axis_flags`. Use 1 to preserve an axis or another fixed "
-"integer when required."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:83
-#: 7ce236a027dd41e89ee758390fdc14f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:89
+#: d9dbe5eab3bd4d48a540e11aefd80f59
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:85
-#: 770fa7be1c184fa9840ac9e9d4bb67c4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:91
+#: 01711b5ccfaa4f01a94672905ba88591
 msgid "快速扩胞（固定 3x3x3，单输出）"
 msgstr "Direct 3x3x3 expansion (one output)"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:86
-#: b8096cc0b31945658e208e17e2d9a77f
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:92
+#: 7767192b6d7a4066bdf107706f4e39ee
 msgid ""
 "{\n"
 "  \"class\": \"SuperCellCard\",\n"
@@ -354,14 +372,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:100
-#: 72258858584648d4a53daccc9279cacd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:106
+#: bb3d50aa010546cfaf2bc3ea6b0103b8
 msgid "Slab 扩胞（面内扩到 20 Å，法向锁 1x，枚举所有组合）"
-msgstr "Slab expansion (20 Å in plane, normal locked at 1x, enumerate combinations)"
+msgstr ""
+"Slab expansion (20 Å in plane, normal locked at 1x, enumerate combinations)"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:101
-#: bfb7b20990114f3995d651d4b1058666
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:107
+#: 367187416edf43ffb774daff4c87b43c
 msgid ""
 "{\n"
 "  \"class\": \"SuperCellCard\",\n"
@@ -376,14 +394,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:115
-#: ac4338b4e31b4d84bce4c194286d96a9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:121
+#: 4d95a2e47c034b26868414fe09dd454c
 msgid "预算限制下的最大超胞（≤ 300 原子，取最大）"
 msgstr "Largest supercell under a 300-atom budget"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:116
-#: edda18beac59430b928a0d4cc437e004
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:122
+#: 8093357482d64760bf0635abf9cc3e31
 msgid ""
 "{\n"
 "  \"class\": \"SuperCellCard\",\n"
@@ -398,99 +415,153 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:130
-#: e00908052f614fedbcc3478a1c5047c6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:136
+#: d54f11864d534e72915a776f0b22bc6a
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:132
-#: 84f40b1722fe45b2b3feddb830df66ce
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:138
+#: 2dedd0b36fd348dba5d146a6b7bca45c
 msgid "`Super Cell` → `Vacancy Defect`：先扩胞再删原子，保证缺陷-镜像距离"
 msgstr ""
 "`Super Cell` -> `Vacancy Defect`: establish defect-image separation before "
 "removing atoms"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:133
-#: 3fba2425e7da42569bfbb269b99ad34c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:139
+#: 01e8f84759cc4e23af2059380320f3e1
 msgid "`Super Cell` → `Lattice Strain`：扩胞后做应变扫描"
 msgstr "`Super Cell` -> `Lattice Strain`: strain the target-size cell"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:134
-#: aed4ab5a77164c02a256416f1cc5971c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:140
+#: 43fe74cb9c6f41db8c942d099744fe60
 msgid "`Super Cell` → `Surface Warp`：扩胞后做表面起伏"
 msgstr ""
 "`Super Cell` -> `Surface Warp`: create surface variation after in-plane "
 "expansion"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:135
-#: 737b869c3fd546c09ea067bf6d99a3b2
-msgid "`Super Cell` → `FPS Filter`：枚举模式产生大量超胞时，用 FPS 去重（相同大小的超胞只有 1 个有用）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:141
+#: cc3ead6d97254f12a3d66015266d4d6e
+msgid ""
+"`Super Cell` → `FPS Filter`：枚举模式产生大量超胞时，用 FPS 去重（相同大小的"
+"超胞只有 1 个有用）"
 msgstr ""
-"`Super Cell` -> `FPS Filter`: reduce redundant outputs from an intentionally"
-" broad enumeration"
+"`Super Cell` -> `FPS Filter`: reduce redundant outputs from an intentionally "
+"broad enumeration"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:137
-#: e9fed651bed149eb81ee8cf6eeb02192
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:143
+#: 251336e8e1e74f79887e9a73867b116c
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:139
-#: 654a657950d54c8ca2880c998ab20c13
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:145
+#: 6be788dc6ec743a3b946c56567bcee76
 msgid ""
-"**输出只有 1x1x1（等于没扩胞）。** 如果原胞自身已经满足目标——例如原胞 3 Å、target_cell=20、behavior_type=0"
-" 时倍数=6，但原胞 a 长度已经 25 Å —— 倍数被截断为 1。检查 target_cell 是否设得比原胞还小。或者在 max_atoms "
-"模式下，原胞原子数已超上限，只输出原胞。"
+"**输出只有 1x1x1（等于没扩胞）。** 如果原胞自身已经满足目标——例如原胞 3 Å、"
+"target_cell=20、behavior_type=0 时倍数=6，但原胞 a 长度已经 25 Å —— 倍数被截"
+"断为 1。检查 target_cell 是否设得比原胞还小。或者在 max_atoms 模式下，原胞原"
+"子数已超上限，只输出原胞。"
 msgstr ""
-"**Only 1x1x1 is returned.** The input may already meet `target_cell`, or its"
-" atom count may already exceed `max_atoms`. Compare target lengths and "
-"budget with the input cell."
+"**Only 1x1x1 is returned.** The input may already meet `target_cell`, or its "
+"atom count may already exceed `max_atoms`. Compare target lengths and budget "
+"with the input cell."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:141
-#: 57f17dc26ea543c29f3afbb6fb2dd9b1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:147
+#: b26ab170dec84bfd9f41d0729b4aa6a0
 msgid ""
-"**Slab 面内方向扩胞不均匀。** `fixed_axis_flags` 只锁了法向，面内两个方向各走各的倍数。如果面内需要正方形胞，确保 "
-"target_cell 的 a/b 目标值一致，或者用 scale 模式手动统一倍数。"
+"**Slab 面内方向扩胞不均匀。** `固定轴选择`（`fixed_axis_flags`）只锁了法向，"
+"面内两个方向各走各的倍数。如果面内需要正方形胞，确保 target_cell 的 a/b 目标"
+"值一致，或者用 scale 模式手动统一倍数。"
 msgstr ""
-"**A slab expands unevenly in plane.** Unlocked axes choose replication "
-"independently. Use equal a/b targets or explicit scale when a square in-"
-"plane cell is required."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:143
-#: 1072ada7d3c44598806cbc6b9b8503ac
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:149
+#: 96899b193f214b37b4d88bb4cfd6904d
 msgid ""
-"**原子数暴增超出计算预算。** 4x4x4 = 64 倍原子数。先心算：倍数 = (na*nb*nc)，原子数 = 原胞原子数 * 倍数。谨慎选择 "
-"behavior_type=1（枚举模式），因为从 1x1x1 到目标倍数会产生多个不同大小的超胞。"
+"**原子数暴增超出计算预算。** 4x4x4 = 64 倍原子数。先心算：倍数 = (na*nb*nc)，"
+"原子数 = 原胞原子数 * 倍数。谨慎选择 behavior_type=1（枚举模式），因为从 "
+"1x1x1 到目标倍数会产生多个不同大小的超胞。"
 msgstr ""
 "**Atom count exceeds the budget.** Compute `n_input × na × nb × nc` first. "
 "Enumeration mode also emits multiple sizes, not just the largest."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:145
-#: ac06982931324f098c861754590ccfb8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:151
+#: 73add1f21647432582ef9b79a08baa3c
 msgid ""
-"**枚举模式产生过多超胞。** behavior_type=1 + max_atoms=500 + 原胞=2 原子 → 所有 ≤250 "
-"倍原子数的组合都会被输出。如果不需要所有中间大小，改用 behavior_type=0 只取最大。"
+"**枚举模式产生过多超胞。** behavior_type=1 + max_atoms=500 + 原胞=2 原子 → 所"
+"有 ≤250 倍原子数的组合都会被输出。如果不需要所有中间大小，改用 "
+"behavior_type=0 只取最大。"
 msgstr ""
 "**Enumeration produces too many cells.** Mode 1 emits all allowed "
 "intermediate combinations. Use behavior 0 when only the largest selected "
 "cell is needed."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:147
-#: 1f263b72d0304eb89411587fba6f9817
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:153
+#: a614d3d65b1a4effa81e8831ceddebe4
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:149
-#: 76f60b0a992949f599307df8e309175d
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:155
+#: 8ff81603736c4dc69dd17a992f11c36d
 msgid "`SC({na}x{nb}x{nc})` —— 如 `SC(4x4x4)`。"
 msgstr "`SC({na}x{nb}x{nc})`, for example `SC(4x4x4)`."
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:151
-#: 5e73bb339de04948952452d592ee7d4c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:157
+#: 457d92217eca48deb1a3dc8fed6ecba0
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/super-cell-card.md:153
-#: 7a3c3bb70b8d4e11ba052e89cbecfb02
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:159
+#: 120252c292ce4de0bf04ea9d002c30c6
 msgid "无随机性。同参数同输入 → 严格一致输出。"
-msgstr "Deterministic: identical inputs and parameters produce identical outputs."
+msgstr ""
+"Deterministic: identical inputs and parameters produce identical outputs."
+
+#~ msgid "超胞生成（Super Cell）"
+#~ msgstr "Super Cell"
+
+#~ msgid "如果超胞太大计算不起，用 `max_atoms` 模式设置预算上限"
+#~ msgstr ""
+#~ "If larger cells exceed the labeling budget, use `max_atoms` to impose a "
+#~ "hard size limit."
+
+#~ msgid ""
+#~ "`SuperCellMode`，默认 `'scale'`。`\"scale\"` 按 `super_scale` 里写死的倍数"
+#~ "扩——你最清楚自己要多大时用这个。`\"cell\"` 按 `target_cell` 里的目标胞长"
+#~ "（单位 Å）自动算倍数，每个方向的倍数 = floor 或 ceil（目标长度/原始长"
+#~ "度），取决于 `behavior_type`——想让胞长达到特定数值（比如所有方向大于等于 "
+#~ "20 Å）时用这个。`\"max_atoms\"` 按原子数上限枚举所有可能的倍数组合，输出所"
+#~ "有不超过上限的超胞——预算受限时找最大可用超胞用这个。"
+#~ msgstr ""
+#~ "`SuperCellMode`, default `'scale'`. `scale` uses explicit `super_scale`; "
+#~ "`cell` derives per-axis replication from `target_cell` in Å using floor "
+#~ "or ceiling according to `behavior_type`; `max_atoms` searches replication "
+#~ "combinations under an atom-count cap. Use explicit scale when the "
+#~ "required cell is known, target lengths for separation constraints, and "
+#~ "max atoms for a budget-limited design."
+
+#~ msgid ""
+#~ "`tuple[bool, bool, bool]`，默认 `(false, false, false)`。锁定 a/b/c 方向的"
+#~ "扩胞倍数。最适合 slab 场景：把法向（通常 c 轴）锁住不扩，只扩面内两个方"
+#~ "向。被锁住的轴用 `fixed_axis_scale` 里对应的倍数，不被锁住的轴正常扩。"
+#~ msgstr ""
+#~ "`tuple[bool, bool, bool]`, default `(false, false, false)`. Lock "
+#~ "replication along a, b, or c. For a slab, lock the normal and expand only "
+#~ "in plane. Locked axes use `fixed_axis_scale`; others follow the selected "
+#~ "strategy."
+
+#~ msgid ""
+#~ "`tuple[int, int, int]`，默认 `(1, 1, 1)`。仅对 `fixed_axis_flags` 中对应位"
+#~ "置为 true 的轴生效。通常设为 1（不扩胞），但如果你需要一个方向固定扩 2 "
+#~ "倍、另一个方向自由扩，也可以设成其他值。"
+#~ msgstr ""
+#~ "`tuple[int, int, int]`, default `(1, 1, 1)`. Replication values for axes "
+#~ "enabled in `fixed_axis_flags`. Use 1 to preserve an axis or another fixed "
+#~ "integer when required."
+
+#~ msgid ""
+#~ "**Slab 面内方向扩胞不均匀。** `fixed_axis_flags` 只锁了法向，面内两个方向"
+#~ "各走各的倍数。如果面内需要正方形胞，确保 target_cell 的 a/b 目标值一致，或"
+#~ "者用 scale 模式手动统一倍数。"
+#~ msgstr ""
+#~ "**A slab expands unevenly in plane.** Unlocked axes choose replication "
+#~ "independently. Use equal a/b targets or explicit scale when a square in-"
+#~ "plane cell is required."

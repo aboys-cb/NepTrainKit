@@ -1,0 +1,82 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:18
+msgid "术语表"
+msgstr "Glossary"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:18
+msgid "常见问题与故障排查"
+msgstr "FAQ and troubleshooting"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:2
+#: 7de45da834d24098a47a877a3b9450c7
+msgid "参考资料"
+msgstr "Reference"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:4
+#: 8d8de973c9a647c79c2848d9b2be74ce
+msgid "这里放需要准确查找的契约，不承担新手教学："
+msgstr "This section contains contracts and definitions that need to be looked up precisely; it is not a beginner tutorial:"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:6
+#: b705e91a54d144619e3bfcfae0c217de
+msgid ""
+":doc:`glossary`：集中解释 ``Config_type``、FPS、GSFE、virial、``spin:R:3`` 等"
+"术语。"
+msgstr ":doc:`glossary`: definitions of terms such as ``Config_type``, FPS, GSFE, virial, and ``spin:R:3``."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:7
+#: d0b96bf77818481cb6623644e3196815
+msgid ""
+":doc:`troubleshooting`：按“导入失败、没有输出、CUDA 不可用”等症状定位问题。"
+msgstr ":doc:`troubleshooting`: locate problems by symptoms such as import failures, missing output, or unavailable CUDA."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:8
+#: ea3fac518ad1415cbc3935869f587696
+msgid ":doc:`../formats`：可导入、导出和自动识别的文件格式。"
+msgstr ":doc:`../formats`: file formats that can be imported, exported, and recognized automatically."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:9
+#: c9c047acfb134a7b89d1c8a4549193e3
+msgid ""
+":doc:`../module/make-dataset-cards/index`：先按目的选择卡片，再进入完整参数参"
+"考。"
+msgstr ":doc:`../module/make-dataset-cards/index`: choose a card by purpose first, then open the complete parameter reference."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:10
+#: 4b4b5287318b48108eb6ba583d09d1a0
+msgid ""
+":doc:`../module/make-dataset-cards/cards/stacking-fault-card`：载入旧工作流时"
+"迁移已经隐藏的旧版层错卡片。"
+msgstr ":doc:`../module/make-dataset-cards/cards/stacking-fault-card`: migrate the legacy stacking-fault card when loading an older workflow."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:12
+#: d3950fef3699415c92a06e345212d131
+msgid ""
+"各桌面功能的按钮、参数和操作说明不再单独放在这里，而是直接归入对应"
+"的 :doc:`../module/index`。用户从软件页面名称进入后，就能按界面顺序继续展开。"
+msgstr "Button, parameter, and operation details for desktop features are no longer kept here separately. They are grouped under :doc:`../module/index`, so users can enter from an application-page name and continue in interface order."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/reference/index.rst:15
+#: 97f13cee80a04bffaacb1ea9d32a2124
+msgid ""
+"如果你是在完成一个具体任务，而不是核对字段或按钮，请先从 :doc:`../example/"
+"index` 或 :doc:`../workflows/index` 开始。"
+msgstr "If you are completing a specific task rather than checking a field or button, start with :doc:`../example/index` or :doc:`../workflows/index`."

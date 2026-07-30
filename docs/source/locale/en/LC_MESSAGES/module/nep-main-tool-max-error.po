@@ -1,0 +1,130 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:1
+#: 1dd57bc76e744a17a2839fe606985342
+msgid "查找最大误差结构（Find Max Error Point）"
+msgstr "查找最大误差结构（Find Max Error Point）"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:3
+#: c0b09fa8131d438d89b22a5f197d03d4
+msgid "作用与适用场景"
+msgstr "作用与适用场景"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:5
+#: 61be149b516b4f62ac16792f6c2a9302
+msgid ""
+"从当前图对应的误差指标中选出最大的前 `N` 个结构，用于快速定位最需要复核的标"
+"签、 异常构型或训练集缺口。结果依赖当前子图，切换 energy、force 或 virial 后"
+"含义不同。"
+msgstr ""
+"从当前图对应的误差指标中选出最大的前 `N` 个结构，用于快速定位最需要复核的标"
+"签、 异常构型或训练集缺口。结果依赖当前子图，切换 energy、force 或 virial 后"
+"含义不同。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:8
+#: a452daa93b35453aa79d97229d046a37
+msgid "排名原理"
+msgstr "排名原理"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:10
+#: 73a2f4c8778b4225ad190f41cead5cc7
+msgid ""
+"当前图中 x 轴是 NEP 预测值，y 轴是参考值（通常为 DFT）。对图中第 $i$ 行数"
+"据， 程序按当前子图包含的分量计算绝对误差和："
+msgstr ""
+"当前图中 x 轴是 NEP 预测值，y 轴是参考值（通常为 DFT）。对图中第 $i$ 行数"
+"据， 程序按当前子图包含的分量计算绝对误差和："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:13
+#: 1ca362e3715c41c49c1522a7ceb07ee7
+msgid ""
+"\n"
+"e_i=\\sum_{k\\in C}\\left|y_{ik}-x_{ik}\\right|,\n"
+msgstr ""
+"\n"
+"e_i=\\sum_{k\\in C}\\left|y_{ik}-x_{ik}\\right|,\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:17
+#: 81192ab294df4e9b965b284ae5dd829c
+msgid ""
+"其中 $C$ 是当前图实际参与比较的列。例如能量图通常每个结构只有一行；力图中一个"
+"结构 会有多个原子行。程序先按 $e_i$ 从大到小排序，再把行映射回结构编号并去"
+"重，直到得到 前 $N$ 个不同结构。因此在力图中，它回答的是“至少有一个原子分量误"
+"差很大的结构”， 不是按结构平均 RMSE 排名。"
+msgstr ""
+"其中 $C$ 是当前图实际参与比较的列。例如能量图通常每个结构只有一行；力图中一个"
+"结构 会有多个原子行。程序先按 $e_i$ 从大到小排序，再把行映射回结构编号并去"
+"重，直到得到 前 $N$ 个不同结构。因此在力图中，它回答的是“至少有一个原子分量误"
+"差很大的结构”， 不是按结构平均 RMSE 排名。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:22
+#: 3ae4cdf9501b489bb9e899c0b1eaa579
+msgid "参数与执行结果"
+msgstr "参数与执行结果"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:6213
+#: 722ae12faa2f4edbb9eb6e48052f9587
+msgid "输入控件：`结构数`（整数 `N`）。"
+msgstr "输入控件：`结构数`（整数 `N`）。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:6214
+#: 678c51bd545449cdb35c68bc0d4228c5
+msgid "默认值：`widget.max_error_value`（缺省 `10`）。"
+msgstr "默认值：`widget.max_error_value`（缺省 `10`）。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:6215
+#: 756f2f8fea4e428e9875ff823527e953
+msgid "执行结果：选中当前轴上误差最大的前 `N` 个结构。"
+msgstr "执行结果：选中当前轴上误差最大的前 `N` 个结构。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:6217
+#: 7521ac17974246b291bcaac76a3464ba
+msgid ""
+"![查找最大误差结构对话框](../_static/image/generated/show_nep_reference/"
+"g_maxerr_dialog.png)"
+msgstr ""
+"![查找最大误差结构对话框](../_static/image/generated/show_nep_reference/"
+"g_maxerr_dialog.png)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:6217
+#: e06167b4a0a94f02932f388bbed7e424
+msgid "查找最大误差结构对话框"
+msgstr "查找最大误差结构对话框"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:6217
+#: e06167b4a0a94f02932f388bbed7e424
+msgid ""
+".. image:: ../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
+msgstr ""
+".. image:: ../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:29
+#: e9500f0ac39743a59d056b9c34cba450
+msgid "操作后检查"
+msgstr "操作后检查"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-max-error.md:31
+#: d646fcbb32f64f8ebfef808c0379acb8
+msgid ""
+"不要仅凭误差排名删除结构。点开选中的结构，结合 `Config_type`、几何和 DFT 来源"
+"判断： 它可能是坏标签，也可能是训练集中真正缺少的重要边界构型。"
+msgstr ""
+"不要仅凭误差排名删除结构。点开选中的结构，结合 `Config_type`、几何和 DFT 来源"
+"判断： 它可能是坏标签，也可能是训练集中真正缺少的重要边界构型。"

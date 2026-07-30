@@ -9,52 +9,51 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:31+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/custom-card-development.md:1
-#: 08be5b960cde48f69fad1660cbccd882
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:1
+#: 4b9cc124b2c64cd68f45aad8d823a052
 msgid "自定义卡片开发"
 msgstr "Develop Custom Cards"
 
-#: ../../source/module/custom-card-development.md:3
-#: 6ec1b1486151426288776dd39baa24c9
-msgid "本页教你为 Make Dataset 模块开发一张新卡片，按当前的 Operation/Params 架构拆分 UI 和业务逻辑。"
-msgstr ""
-"This page shows how to add a card to Make Dataset using the current "
-"Operation/Params architecture, with the user interface kept separate from "
-"the card logic."
-
-#: ../../source/module/custom-card-development.md:5
-#: 63e304795fe14898b86e93f4cbac5aff
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:3
+#: 5e50c7e5bc99489181bb9bc3bde7df86
 msgid ""
-"如果你要新增内置卡片，仓库内的 `make-dataset-card-dev` skill "
-"会引导你走完整流程（规格→实现→文档→验证）。本页更适合作快速参考。"
+"本页教你为 生成数据集 模块开发一张新卡片，按当前的 Operation/Params 架构拆分 "
+"UI 和业务逻辑。"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:5
+#: aabdbb1a33894bfe9692832d7555e36c
+msgid ""
+"如果你要新增内置卡片，仓库内的 `make-dataset-card-dev` skill 会引导你走完整流"
+"程（规格→实现→文档→验证）。本页更适合作快速参考。"
 msgstr ""
 "When adding a built-in card, use the repository's `make-dataset-card-dev` "
 "skill for the full specification, implementation, documentation, and "
 "validation workflow. Use this page as a quick reference."
 
-#: ../../source/module/custom-card-development.md:7
-#: 5ecbc995ef3f4e7bae8ddedb69670461
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:7
+#: 7dd149d84ef94e2a83d8fec61744f431
 msgid "架构概览"
 msgstr "Architecture overview"
 
-#: ../../source/module/custom-card-development.md:9
-#: fa987de50929453e906fa5f2aba80a22
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:9
+#: 8b462b0c14a24faeb82ef87b4e7891b1
 msgid "每张卡片由三层组成："
 msgstr "Each card has three layers:"
 
-#: ../../source/module/custom-card-development.md:11
-#: d3c8c74060cd43f69b6bee946138236b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:11
+#: 08b8c77962ce4cf9b4257e890446bf02
 msgid ""
 "CardWidget (UI)\n"
 "  ├── get_params() → Params dataclass\n"
@@ -80,108 +79,126 @@ msgstr ""
 "CardParams (frozen dataclass)\n"
 "  └── types, defaults, and ranges for every parameter\n"
 
-#: ../../source/module/custom-card-development.md:24
-#: 07851afa5bc34c7995e8ddf565b3989d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:24
+#: d1fdf45e7af7429ba4ea603373bcbb77
 msgid "**UI 层**不写算法，只读控件、构造 params、调 operation。"
 msgstr ""
 "The **UI layer** contains no algorithms. It reads widgets, constructs the "
 "params object, and invokes the operation."
 
-#: ../../source/module/custom-card-development.md:25
-#: fb834be7afd0401294b981f6a2985632
-msgid "**Operation 层**不 import `PySide6`、`qfluentwidgets`、`MessageManager`。错误直接抛异常。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:25
+#: 9068c4b2cf684adfaebf39672b277c86
+msgid ""
+"**Operation 层**不 import `PySide6`、`qfluentwidgets`、`MessageManager`。错误"
+"直接抛异常。"
 msgstr ""
 "The **Operation layer** must not import `PySide6`, `qfluentwidgets`, or "
 "`MessageManager`. Report errors by raising exceptions."
 
-#: ../../source/module/custom-card-development.md:27
-#: 22d35d4fd53c4f3593ad2c915b8e199d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:27
+#: b86c8e1c8cfb43f2a53ff9db49571e15
 msgid "第一步：选 Operation 类型"
 msgstr "Step 1: Choose the operation type"
 
-#: ../../source/module/custom-card-development.md 7aae5defe348431884231953ef09c9f9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: bd7774ed7049488fa30e07b65e91867f
 msgid "类型"
 msgstr "Type"
 
-#: ../../source/module/custom-card-development.md 92ec0a8c471c4b7e8ab505c1ff32e590
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 498601de896a4a37bef8052e07113eec
 msgid "基类"
 msgstr "Base class"
 
-#: ../../source/module/custom-card-development.md ba42b5aac9d946f3ba01948b543f7c81
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 5f51f265ae724904a1a57bc339d81559
 msgid "签名"
 msgstr "Method signature"
 
-#: ../../source/module/custom-card-development.md 56d38609bbd04e0ea64177ab3f593814
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 121f8f77df2145b0877388bc8d0b0cc9
 msgid "什么时候用"
 msgstr "Use it for"
 
-#: ../../source/module/custom-card-development.md aeed84a5cf3f492e8894cfd31865930b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: c200a21bcd0143bcba97951a4c8f8287
 msgid "`StructureOperation`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md 7468c7d73984413aaff1d5a454de2664
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 8548f9f523724e8e9a5afcd47f561107
 msgid "`core.cards.operation.StructureOperation`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md 1468aaf916b24888adbba52c28ecd9db
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: be23e2679f1d482e89736488d689f277
 msgid "`run_structure(structure, params) → list[Atoms]`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md 352193be21454465b48eafd899ba450a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 6b814ccc5d8b4a4d9fa49acdf6a20a06
 msgid "单结构变换：应变、扰动、扩胞、掺杂"
 msgstr ""
 "Per-structure transformations such as strain, perturbation, supercells, and "
 "doping"
 
-#: ../../source/module/custom-card-development.md fbd091711e5e42ba9ebb053a7ea71691
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: bdc67b1424104055887330bd4d6594fd
 msgid "`DatasetOperation`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md 15555bb18ec148ada709b77631ddc6f8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 09c1f76e8dea480aad7b338d7a0ad719
 msgid "`core.cards.operation.DatasetOperation`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md 9140538c30c04d608b12215679be3471
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 9c02bcc6df1049a68eb23b1fa4cb9951
 msgid "`run_dataset(dataset, params) → list[Atoms]`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md a63dc9545cae44ff894934188b57252f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: df7625e711814971afb74b01e6b994de
 msgid "全数据集过滤/排序：FPS"
 msgstr "Whole-dataset filtering or ordering, such as FPS"
 
-#: ../../source/module/custom-card-development.md 0d290fd029e6488ab9bb80fb27495051
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 7eb089107a5b4b6fa1cc3fc4f4cc9377
 msgid "`GeneratorOperation`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md c0a2eb4368a74d138856e7a475c02048
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: edab2e5c9cb74663b4f5a1ecdec0afc8
 msgid "`core.cards.operation.GeneratorOperation`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md 5283995f8c4a4b87b81bffaff30f1c7d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 5ecb6729c2d448b3af096dd70406d7a9
 msgid "`generate(params) → list[Atoms]`"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md 402e3408572144eab6260bcf37b71b4b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:0
+#: 7ef918c4f0e841c8b6fa0b0f1a7fafb8
 msgid "无输入生成：晶体原型构建"
 msgstr "Generation without an input structure, such as crystal prototypes"
 
-#: ../../source/module/custom-card-development.md:35
-#: 12d1e9023be64372bca4738397648c83
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:35
+#: e2b5b442ee6b49b0baf4433126271b21
 msgid "第二步：写 Params dataclass"
 msgstr "Step 2: Define the Params dataclass"
 
-#: ../../source/module/custom-card-development.md:37
-#: ab7bec9f700a4256a0bd09835e4d2471
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:37
+#: 93950c7388e94535a376cb36ba41aacf
 msgid ""
-"在 `src/NepTrainKit/core/cards/` 对应模块（`lattice.py` / `alloy.py` / `defect.py`"
-" / `magnetism.py` / `structure.py` / `filter.py`）中定义："
+"在 `src/NepTrainKit/core/cards/` 对应模块（`lattice.py` / `alloy.py` / "
+"`defect.py` / `magnetism.py` / `structure.py` / `filter.py`）中定义："
 msgstr ""
 "Define it in the appropriate module under `src/NepTrainKit/core/cards/` "
 "(`lattice.py`, `alloy.py`, `defect.py`, `magnetism.py`, `structure.py`, or "
 "`filter.py`):"
 
-#: ../../source/module/custom-card-development.md:39
-#: 14243f39f96f40b6b3fe89a016383177
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:39
+#: beca8d6ec17741478737354d9a74780e
 msgid ""
 "from dataclasses import dataclass\n"
 "\n"
@@ -194,35 +211,35 @@ msgid ""
 "    seed: int = 0\n"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md:51
-#: 5202a46ca6474bae92db02bfbc524858
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:51
+#: eef7ba66d37345be8e40bb321f1de453
 msgid "必须是 frozen dataclass"
 msgstr "Use a frozen dataclass."
 
-#: ../../source/module/custom-card-development.md:52
-#: 43076ebc432f48878e7d390cc125d68c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:52
+#: 34c3ebcf2dfd465a82467bfeb037c421
 msgid "每个字段给默认值"
 msgstr "Give every field a default value."
 
-#: ../../source/module/custom-card-development.md:53
-#: 6bc0589933574c49957f8d671a64694b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:53
+#: 1c9bc55aa208432095fbb851f9c05dc0
 msgid "命名用下划线，和 UI 控件的 `get_params()` key 一致"
 msgstr ""
-"Use snake_case names that match the keys returned by the UI's `get_params()`"
-" method."
+"Use snake_case names that match the keys returned by the UI's `get_params()` "
+"method."
 
-#: ../../source/module/custom-card-development.md:55
-#: 5457fad5f9f445e28e51dcb3c4dd0fda
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:55
+#: e73b3ed784f8401b996504ca62c89d13
 msgid "第三步：写 Operation"
 msgstr "Step 3: Implement the operation"
 
-#: ../../source/module/custom-card-development.md:57
-#: 722d7bdde23d408292ea5f7dd2ed7b48
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:57
+#: 03137624184f4a81bfa8b9ba404955a1
 msgid "同文件内："
 msgstr "In the same module:"
 
-#: ../../source/module/custom-card-development.md:59
-#: bb9d19f6fd2b40bfbf7c35df48f286cb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:59
+#: 81e71e95095340c1a95aefeb17288072
 msgid ""
 "from .operation import StructureOperation  # 或 DatasetOperation / "
 "GeneratorOperation\n"
@@ -258,45 +275,45 @@ msgstr ""
 "        append_config_tag(new_structure, f\"MyTag(...)\")\n"
 "        return [new_structure]\n"
 
-#: ../../source/module/custom-card-development.md:77
-#: 605e949be31a4d91b29fb7c6bdaa653b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:77
+#: e73adf57a0674936b770d012944054c7
 msgid "规则："
 msgstr "Rules:"
 
-#: ../../source/module/custom-card-development.md:78
-#: 79db7630368b48488ee34b7337079db5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:78
+#: 1a468b6e1d73423292f3c3d864901ef3
 msgid "不 import UI 库"
 msgstr "Do not import UI libraries."
 
-#: ../../source/module/custom-card-development.md:79
-#: ae55e69ae9d24ef982af05827c9c012c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:79
+#: f82e4121d4b049cc885dd4c7ebd82674
 msgid "参数校验失败抛异常"
 msgstr "Raise an exception when parameter validation fails."
 
-#: ../../source/module/custom-card-development.md:80
-#: 7deadd86f37e450a99739b20b537d05f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:80
+#: 1c1fdc9e411f4dd6b244da9c8a881020
 msgid "用 `append_config_tag` 写可追溯标签"
 msgstr "Use `append_config_tag` to add a traceable label."
 
-#: ../../source/module/custom-card-development.md:81
-#: 9a662a78c77f446082d2321b7be5bdcc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:81
+#: a3e9d85732844a688f68c51656ca78f8
 msgid "不做静默回退"
 msgstr "Do not silently fall back to another behavior."
 
-#: ../../source/module/custom-card-development.md:83
-#: 50cb77a657c743d2b66b79cb31e4b5eb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:83
+#: 65fcf0cff2e74c7bb58c7cef398260d6
 msgid "第四步：写 UI 卡片"
 msgstr "Step 4: Implement the UI card"
 
-#: ../../source/module/custom-card-development.md:85
-#: 7ed6619d630f47d39c67781400a0fbf0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:85
+#: e19d0f0d06394c748fd730551c5af9d3
 msgid "在 `src/NepTrainKit/ui/views/_card/` 新建文件，继承 `MakeDataCard`："
 msgstr ""
 "Create a module under `src/NepTrainKit/ui/views/_card/` and inherit from "
 "`MakeDataCard`:"
 
-#: ../../source/module/custom-card-development.md:87
-#: ed4ee9b8b8a64c369f4d3e12ada91c49
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:87
+#: 9ef94782f8914eb6bb8153ec620b941e
 msgid ""
 "from PySide6.QtWidgets import QFrame\n"
 "from qfluentwidgets import BodyLabel, ComboBox, CheckBox\n"
@@ -406,12 +423,12 @@ msgstr ""
 "            params = MyCardParams()  # Use all defaults.\n"
 "        self.set_params(params)\n"
 
-#: ../../source/module/custom-card-development.md:143
-#: 5a9292dbf341405b8dfa902a9d907851
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:143
+#: 62830ea34751438b84b073e0f4f96185
 msgid ""
 "**只在迁移旧卡片时才从旧 key 恢复**。上面的模板是新卡写法，`from_dict` 只读 "
-"`params`。如果你在迁移一张已有用户的旧卡片，可以在 `else` 分支里从 `data[\"old_key\"]` 等旧字段构造 Params "
-"以保证向后兼容。"
+"`params`。如果你在迁移一张已有用户的旧卡片，可以在 `else` 分支里从 "
+"`data[\"old_key\"]` 等旧字段构造 Params 以保证向后兼容。"
 msgstr ""
 "**Read legacy keys only when migrating an existing card.** The template "
 "above is for a new card, so `from_dict` reads only `params`. When migrating "
@@ -419,27 +436,31 @@ msgstr ""
 "construct Params from legacy fields such as `data[\"old_key\"]` to preserve "
 "backward compatibility."
 
-#: ../../source/module/custom-card-development.md:145
-#: a91b941fcf98494abc982f2c49d8b8d1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:145
+#: 98192ae174b34b78a7aa6cfbdda5868b
 msgid "关键规则"
 msgstr "Key rules"
 
-#: ../../source/module/custom-card-development.md:147
-#: 66756023329f40849009caaf98ea778e
-msgid "**禁止覆盖 `run()`**：基类已根据 `create_operation()` 返回的类型自动分发到正确线程。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:147
+#: a341d2df8fcb4429ae7e1d2eab079e44
+msgid ""
+"**禁止覆盖 `run()`**：基类已根据 `create_operation()` 返回的类型自动分发到正"
+"确线程。"
 msgstr ""
 "**Do not override `run()`.** The base class dispatches work to the correct "
 "thread from the type returned by `create_operation()`."
 
-#: ../../source/module/custom-card-development.md:148
-#: c581c375898d4a83879fa879e1154d20
-msgid "**禁止在 UI 里写算法**：`init_ui()` 只建控件，`get_params()` 只读值，算法全在 Operation 里。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:148
+#: f7627631fc8d419999c566343c147b48
+msgid ""
+"**禁止在 UI 里写算法**：`init_ui()` 只建控件，`get_params()` 只读值，算法全"
+"在 Operation 里。"
 msgstr ""
 "**Do not put algorithms in the UI.** `init_ui()` constructs widgets, "
 "`get_params()` reads values, and the Operation owns all computation."
 
-#: ../../source/module/custom-card-development.md:149
-#: fa09ccc012e246f5a876d2104d2c0f8d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:149
+#: 5e801759370b4a85b772dbfa878484d3
 msgid ""
 "**`process_structure()` 不新增**：如果要保留旧兼容层，只做一行委托 `return "
 "self.create_operation().run_structure(structure, self.get_params())`。"
@@ -448,49 +469,51 @@ msgstr ""
 "compatibility method must remain, reduce it to one delegation line: `return "
 "self.create_operation().run_structure(structure, self.get_params())`."
 
-#: ../../source/module/custom-card-development.md:150
-#: f866b4dd5bb04f409765ede276c1cba1
-msgid "数值参数用 `SpinBoxUnitInputFrame`，枚举用 `ComboBox`，开关用 `CheckBox`，字符串用 `LineEdit`。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:150
+#: 12ca519245a84da881000aa23d0db7e7
+msgid ""
+"数值参数用 `SpinBoxUnitInputFrame`，枚举用 `ComboBox`，开关用 `CheckBox`，字"
+"符串用 `LineEdit`。"
 msgstr ""
-"Use `SpinBoxUnitInputFrame` for numeric values, `ComboBox` for enumerations,"
-" `CheckBox` for switches, and `LineEdit` for strings."
+"Use `SpinBoxUnitInputFrame` for numeric values, `ComboBox` for enumerations, "
+"`CheckBox` for switches, and `LineEdit` for strings."
 
-#: ../../source/module/custom-card-development.md:152
-#: fd23e01e10b14de885f4a09064146b90
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:152
+#: 9d8c07ba9d534f01bd1f49338bda1a3b
 msgid "第五步：注册、文档、测试"
 msgstr "Step 5: Register, document, and test the card"
 
-#: ../../source/module/custom-card-development.md:154
-#: 1016eca88d8845e7a94e3a56fe27556e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:154
+#: 76a1c1e897154d29ad8dba8c867a42a8
 msgid "`@CardManager.register_card` 装饰 UI 类。"
 msgstr "Decorate the UI class with `@CardManager.register_card`."
 
-#: ../../source/module/custom-card-development.md:155
-#: cad826a0629849a1ba09a4ee3a9e2880
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:155
+#: 91bce9194dc24435822d3c5dd9213783
 msgid "在 `src/NepTrainKit/ui/views/_card/__init__.py` 导入并加入 `__all__`。"
 msgstr ""
 "Import the class in `src/NepTrainKit/ui/views/_card/__init__.py` and add it "
 "to `__all__`."
 
-#: ../../source/module/custom-card-development.md:156
-#: bece9532e979447aa9fa7031c52519f8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:156
+#: c9a0092d7e9e43fe9cfe4e982f917f3c
 msgid ""
-"写文档页 `docs/source/module/make-dataset-cards/cards/my-"
-"card.md`，操作示例必须从训练集诊断场景出发：先说用户遇到什么训练集问题，再说明这张卡如何补结构。参见 [卡片文档编写规范](make-"
-"dataset-cards/writing-guide.md)。"
+"写文档页 `docs/source/module/make-dataset-cards/cards/my-card.md`，操作示例必"
+"须从训练集诊断场景出发：先说用户遇到什么训练集问题，再说明这张卡如何补结构。"
+"参见 [卡片文档编写规范](make-dataset-cards/writing-guide.md)。"
 msgstr ""
 "Add `docs/source/module/make-dataset-cards/cards/my-card.md`. Start its "
 "example from a diagnosed training-set problem, then explain how the card "
-"adds the missing structures. See the [card documentation guide](make-"
-"dataset-cards/writing-guide.md)."
+"adds the missing structures. See the [card documentation guide](make-dataset-"
+"cards/writing-guide.md)."
 
-#: ../../source/module/custom-card-development.md:157
-#: 1f8f0cf0e2df44e3a0c55db70f5bed3f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:157
+#: 81c4e3c14842475aaa6adfa948222883
 msgid "写 operation 测试（不需要 Qt）："
 msgstr "Write operation tests that do not require Qt:"
 
-#: ../../source/module/custom-card-development.md:158
-#: 206b1c969abd4bd7bb65e6eb864edfdc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:158
+#: 600b7335787242da8a3cc41235cf6db9
 msgid ""
 "def test_my_card_operation():\n"
 "    op = MyCardOperation()\n"
@@ -498,104 +521,37 @@ msgid ""
 "    assert len(result) > 0\n"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md:165
-#: 5ba750aa84b148b587af397cbceb79c3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:165
+#: 4d6925d068574765bb7957d7874f68bb
 msgid "验证"
 msgstr "Validate"
 
-#: ../../source/module/custom-card-development.md:167
-#: a79a6adf252f47cea0473502992d641d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:167
+#: dd5e2f14846b4425853d0f85874dc4c1
 msgid ""
 "python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick\n"
 "python tools/docs/audit_card_docs.py\n"
 msgstr ""
 
-#: ../../source/module/custom-card-development.md:172
-#: 80ecfcde4c724bb1aa1a0f074aed343b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:172
+#: 003f75df8f4e4a15be971a346939eb6f
 msgid "放置自定义卡片"
 msgstr "Install an external card"
 
-#: ../../source/module/custom-card-development.md:174
-#: 76a3b3df2d964584992988ad109d91db
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/custom-card-development.md:174
+#: b5bdce2684074926bfa427faf8ec6bf4
 msgid ""
-"内置卡片放在 `src/NepTrainKit/ui/views/_card/`。外部自定义卡片放在用户配置目录的 `cards/` "
-"子目录下，程序启动时会自动加载。"
+"内置卡片放在 `src/NepTrainKit/ui/views/_card/`。外部自定义卡片放在用户配置目"
+"录的 `cards/` 子目录下，程序启动时会自动加载。"
 msgstr ""
 "Built-in cards live in `src/NepTrainKit/ui/views/_card/`. Put an external "
 "custom card in the `cards/` subdirectory of the user configuration "
 "directory; NepTrainKit discovers it at startup."
 
 #~ msgid ""
-#~ "from .operation import StructureOperation  # "
-#~ "或 DatasetOperation / GeneratorOperation\n"
-#~ "\n"
-#~ "class MyCardOperation(StructureOperation):\n"
-#~ "    \"\"\"Pure logic for my card.\"\"\"\n"
-#~ "\n"
-#~ "    def run_structure(self, structure, params: MyCardParams) → list:\n"
-#~ "        # 校验\n"
-#~ "        if params.param_b <= 0:\n"
-#~ "            raise ValueError(\"param_b must be > 0\")\n"
-#~ "\n"
-#~ "        # 纯算法逻辑\n"
-#~ "        new_structure = structure.copy()\n"
-#~ "        # ... do something with params ...\n"
-#~ "        append_config_tag(new_structure, f\"MyTag(...)\")\n"
-#~ "        return [new_structure]\n"
+#~ "本页教你为 Make Dataset 模块开发一张新卡片，按当前的 Operation/Params 架构"
+#~ "拆分 UI 和业务逻辑。"
 #~ msgstr ""
-
-#~ msgid ""
-#~ "from PySide6.QtWidgets import QFrame\n"
-#~ "from qfluentwidgets import BodyLabel, ComboBox, CheckBox\n"
-#~ "from NepTrainKit.core import CardManager\n"
-#~ "from NepTrainKit.core.cards.xxx import MyCardOperation, MyCardParams\n"
-#~ "from NepTrainKit.core.cards.operation import params_to_dict\n"
-#~ "from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, MakeDataCard\n"
-#~ "\n"
-#~ "@CardManager.register_card\n"
-#~ "class MyCard(MakeDataCard):\n"
-#~ "    group = \"MyGroup\"\n"
-#~ "    card_name = \"My Card\"\n"
-#~ "    menu_icon = r\":/images/src/images/my_icon.svg\"\n"
-#~ "\n"
-#~ "    def __init__(self, parent=None):\n"
-#~ "        super().__init__(parent)\n"
-#~ "        self.init_ui()\n"
-#~ "\n"
-#~ "    def init_ui(self):\n"
-#~ "        # 构建控件\n"
-#~ "        ...\n"
-#~ "\n"
-#~ "    # ---- 必须实现的三个方法 ----\n"
-#~ "\n"
-#~ "    def create_operation(self):\n"
-#~ "        return MyCardOperation()\n"
-#~ "\n"
-#~ "    def get_params(self) → MyCardParams:\n"
-#~ "        return MyCardParams(\n"
-#~ "            param_a=self.combo.currentText(),\n"
-#~ "            param_b=float(self.spinbox.get_input_value()[0]),\n"
-#~ "            ...\n"
-#~ "        )\n"
-#~ "\n"
-#~ "    def set_params(self, params: MyCardParams) → None:\n"
-#~ "        self.combo.setText(params.param_a)\n"
-#~ "        self.spinbox.set_input_value([params.param_b])\n"
-#~ "        ...\n"
-#~ "\n"
-#~ "    # ---- 序列化（必须实现） ----\n"
-#~ "\n"
-#~ "    def to_dict(self):\n"
-#~ "        data = super().to_dict()\n"
-#~ "        data[\"params\"] = params_to_dict(self.get_params())\n"
-#~ "        return data\n"
-#~ "\n"
-#~ "    def from_dict(self, data):\n"
-#~ "        super().from_dict(data)\n"
-#~ "        raw = data.get(\"params\")\n"
-#~ "        if raw is not None:\n"
-#~ "            params = MyCardParams(**raw)\n"
-#~ "        else:\n"
-#~ "            params = MyCardParams()  # 全部默认值\n"
-#~ "        self.set_params(params)\n"
-#~ msgstr ""
+#~ "This page shows how to add a card to Make Dataset using the current "
+#~ "Operation/Params architecture, with the user interface kept separate from "
+#~ "the card logic."

@@ -1,0 +1,355 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:1
+#: 288817f598cb4d80b71520b92082a1cd
+msgid "磁类型识别：判据与边界"
+msgstr "磁类型识别：判据与边界"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:2
+#: 3cf01107804241eaa4db255debc8ea7e
+msgid "本页目录"
+msgstr "本页目录"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7602
+#: aefa7c80f4b64e22a2cb240ee17aaea3
+msgid "磁类型如何识别"
+msgstr "磁类型如何识别"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7604
+#: bb8a8a80f7e94542ac1ccfafb23f6e42
+msgid "输入条件"
+msgstr "输入条件"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7606
+#: 4190a33561054e02b5998d77f40f9316
+msgid "磁类型分析只读取逐原子的 `spin:R:3`，即每个原子一个三分量自旋向量："
+msgstr "磁类型分析只读取逐原子的 `spin:R:3`，即每个原子一个三分量自旋向量："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7608
+#: 9d9b5ff876b84bcbaad5f8d1ce88bd28
+msgid "Properties=species:S:1:pos:R:3:spin:R:3\n"
+msgstr "Properties=species:S:1:pos:R:3:spin:R:3\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7612
+#: 8674879be9a54eb6bed908dcef019035
+msgid ""
+"`spin` 必须是数值型 `N × 3` 数组，并且所有分量有限。`mforce` 和 `force_mag` "
+"是磁力标签，不能替代 `spin`。缺少有效 `spin` 的结构会单独显示为「无有效 spin "
+"字段」，不会被猜成非磁结构。"
+msgstr ""
+"`spin` 必须是数值型 `N × 3` 数组，并且所有分量有限。`mforce` 和 `force_mag` "
+"是磁力标签，不能替代 `spin`。缺少有效 `spin` 的结构会单独显示为「无有效 spin "
+"字段」，不会被猜成非磁结构。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7614
+#: 8a0457a262ec4cb79940c7213ea290d0
+msgid "4 组判据"
+msgstr "4 组判据"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7616
+#: 6b903df5f5c540cd96e7a4460f4a4418
+msgid ""
+"设第 $i$ 个自旋为 $\\mathbf s_i$，磁矩大小为 $m_i=\\lVert\\mathbf "
+"s_i\\rVert$，单位方向为 $\\hat{\\mathbf s}_i=\\mathbf s_i/m_i$。小于等于 `1 "
+"× 10⁻⁷` 的磁矩不参与方向统计。"
+msgstr ""
+"设第 $i$ 个自旋为 $\\mathbf s_i$，磁矩大小为 $m_i=\\lVert\\mathbf "
+"s_i\\rVert$，单位方向为 $\\hat{\\mathbf s}_i=\\mathbf s_i/m_i$。小于等于 `1 "
+"× 10⁻⁷` 的磁矩不参与方向统计。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7618
+#: 44faaa49046d4ba3a1d921e3216c86f5
+msgid "**净磁矩比例**"
+msgstr "**净磁矩比例**"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7620
+#: 0770e6379c42403e8a5efa32a225e449
+msgid ""
+"\n"
+"   R_M=\\frac{\\left\\lVert\\sum_i\\mathbf s_i\\right\\rVert}"
+"{\\sum_i\\lVert\\mathbf s_i\\rVert}\n"
+"   "
+msgstr ""
+"\n"
+"   R_M=\\frac{\\left\\lVert\\sum_i\\mathbf s_i\\right\\rVert}"
+"{\\sum_i\\lVert\\mathbf s_i\\rVert}\n"
+"   "
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7624
+#: f6881753256348bea6af22056711b2c6
+msgid ""
+"$R_M$ 接近 `1` 表示自旋净对齐，接近 `0` 表示整体补偿。它是无量纲比例；平均磁"
+"矩仍沿用输入 `spin` 的单位。"
+msgstr ""
+"$R_M$ 接近 `1` 表示自旋净对齐，接近 `0` 表示整体补偿。它是无量纲比例；平均磁"
+"矩仍沿用输入 `spin` 的单位。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7626
+#: 6034628dc89e4f4094763c6092b23746
+msgid "**共线性与共面性**"
+msgstr "**共线性与共面性**"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7628
+#: b2b7d498ac29401f8402d6bb17ee6b22
+msgid ""
+"\n"
+"   \\mathbf Q=\\frac{1}{N_s}\\sum_i\\hat{\\mathbf s}_i\\hat{\\mathbf s}"
+"_i^{\\mathsf T},\n"
+"   \\qquad \\lambda_1\\le\\lambda_2\\le\\lambda_3\n"
+"   "
+msgstr ""
+"\n"
+"   \\mathbf Q=\\frac{1}{N_s}\\sum_i\\hat{\\mathbf s}_i\\hat{\\mathbf s}"
+"_i^{\\mathsf T},\n"
+"   \\qquad \\lambda_1\\le\\lambda_2\\le\\lambda_3\n"
+"   "
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7633
+#: ac0fb23b9694409bae7a99e67baa192c
+msgid ""
+"共线性取 $C=\\lambda_3$，共面性取 $P=1-3\\lambda_1$。$C$ 接近 `1` 表示方向集"
+"中在同一条轴上；$P$ 接近 `1` 表示方向主要位于同一平面。"
+msgstr ""
+"共线性取 $C=\\lambda_3$，共面性取 $P=1-3\\lambda_1$。$C$ 接近 `1` 表示方向集"
+"中在同一条轴上；$P$ 接近 `1` 表示方向主要位于同一平面。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7635
+#: e15e122830e54d5caa268a4df31a3805
+msgid "**近邻自旋相关**"
+msgstr "**近邻自旋相关**"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7637
+#: b461e556c1e4481385edd7de41bb8280
+msgid "每个原子最多取 12 个最近邻，计算"
+msgstr "每个原子最多取 12 个最近邻，计算"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7639
+#: a61272f1b25440c99757c4dc8745b344
+msgid ""
+"\n"
+"   \\bar c=\\left\\langle\\hat{\\mathbf s}_i\\cdot\\hat{\\mathbf s}"
+"_j\\right\\rangle_{\\langle i,j\\rangle}\n"
+"   "
+msgstr ""
+"\n"
+"   \\bar c=\\left\\langle\\hat{\\mathbf s}_i\\cdot\\hat{\\mathbf s}"
+"_j\\right\\rangle_{\\langle i,j\\rangle}\n"
+"   "
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7643
+#: d71f485e57f9482b95c542f32fdeed3a
+msgid ""
+"点积不小于 `0.80` 记为平行近邻，不大于 `-0.80` 记为反平行近邻。程序还分别统计"
+"平行和反平行近邻比例。"
+msgstr ""
+"点积不小于 `0.80` 记为平行近邻，不大于 `-0.80` 记为反平行近邻。程序还分别统计"
+"平行和反平行近邻比例。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7645
+#: 140bde68b0734388894f9a08d0533971
+msgid "**低阶磁结构因子**"
+msgstr "**低阶磁结构因子**"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7647
+#: f5ea1c919264489baaea80303b29ac7a
+msgid ""
+"对分数坐标 $\\mathbf f_i$，程序在周期方向上扫描 $|h|,|k|,|l|\\le3$ 的非零整数"
+"波矢，计算"
+msgstr ""
+"对分数坐标 $\\mathbf f_i$，程序在周期方向上扫描 $|h|,|k|,|l|\\le3$ 的非零整数"
+"波矢，计算"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7649
+#: 621be37c1d3d4562a960e390b3852d4f
+msgid ""
+"\n"
+"   S(\\mathbf q)=\\min\\!\\left[1,\n"
+"   \\frac{2\\left\\lVert\\sum_i\\mathbf s_i\n"
+"   \\exp\\!\\left(\\mathrm i2\\pi\\mathbf q\\cdot\\mathbf f_i\\right)"
+"\\right\\rVert^2}\n"
+"   {\\left(\\sum_i m_i\\right)^2}\\right]\n"
+"   "
+msgstr ""
+"\n"
+"   S(\\mathbf q)=\\min\\!\\left[1,\n"
+"   \\frac{2\\left\\lVert\\sum_i\\mathbf s_i\n"
+"   \\exp\\!\\left(\\mathrm i2\\pi\\mathbf q\\cdot\\mathbf f_i\\right)"
+"\\right\\rVert^2}\n"
+"   {\\left(\\sum_i m_i\\right)^2}\\right]\n"
+"   "
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7656
+#: 8ddba0e65c9048a0be249e4d2645fd34
+msgid ""
+"页面记录最大值 $S_\\mathrm{max}$ 及对应的整数波矢。它用于识别当前超胞内可分辨"
+"的低阶调制，不是连续 reciprocal-space 扫描。"
+msgstr ""
+"页面记录最大值 $S_\\mathrm{max}$ 及对应的整数波矢。它用于识别当前超胞内可分辨"
+"的低阶调制，不是连续 reciprocal-space 扫描。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7658
+#: efa9800605444ad3b45efd22d6074404
+msgid "结构级磁类型标签"
+msgstr "结构级磁类型标签"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7660
+#: 34a76e4bc3ba4339819d8035fd6a0f25
+msgid "判定按下表从上到下执行："
+msgstr "判定按下表从上到下执行："
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: e9a1e0f6c04c481d9b2ef374809fe8e1
+msgid "输出"
+msgstr "输出"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: ffd6e144d91349b49a62b30a64d2b616
+msgid "当前判据"
+msgstr "当前判据"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 9c35ebca9be2405b8d4d61be550ad98b
+msgid "低／零磁矩"
+msgstr "低／零磁矩"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 7ead7356436c4881aa349ffb6f03f55e
+msgid "没有大于 `1 × 10⁻⁷` 的有效磁矩"
+msgstr "没有大于 `1 × 10⁻⁷` 的有效磁矩"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 7341231ba4b14af88f739e562ac9e38f
+msgid "未识别"
+msgstr "未识别"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 4b5aa911e186420ebec3c0d132763679
+msgid "只有 1 个有效磁矩；或后续证据不足以落入其他类型"
+msgstr "只有 1 个有效磁矩；或后续证据不足以落入其他类型"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 8c484895ccb846e1a4157522782895d0
+msgid "FM"
+msgstr "FM"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 9e1aa2154d4e4a4ba44636845d2a17d6
+msgid "$C\\ge0.90$、$R_M\\ge0.82$、$\\bar c\\ge0.20$"
+msgstr "$C\\ge0.90$、$R_M\\ge0.82$、$\\bar c\\ge0.20$"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 243826b0853e431cb893025dd2b1331a
+msgid "AFM"
+msgstr "AFM"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: f2b94f88e1b54436974b4d7edcb22977
+msgid ""
+"$C\\ge0.90$、$R_M\\le0.20$，并且满足 $S_\\mathrm{max}\\ge0.45$、$\\bar "
+"c\\le-0.25$ 或反平行近邻比例至少 `0.20` 中的任一项"
+msgstr ""
+"$C\\ge0.90$、$R_M\\le0.20$，并且满足 $S_\\mathrm{max}\\ge0.45$、$\\bar "
+"c\\le-0.25$ 或反平行近邻比例至少 `0.20` 中的任一项"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 1c069c3642af439ead8a949c3fed3b8b
+msgid "FiM"
+msgstr "FiM"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: f45a86fb96764160b032a98f939573f1
+msgid ""
+"$C\\ge0.90$、$R_M<0.82$、反平行近邻比例至少 `0.20`，并且 $S_\\mathrm{max}"
+"\\ge0.35$ 或 $\\bar c<-0.05$"
+msgstr ""
+"$C\\ge0.90$、$R_M<0.82$、反平行近邻比例至少 `0.20`，并且 $S_\\mathrm{max}"
+"\\ge0.35$ 或 $\\bar c<-0.05$"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 267ee8346b90435b90f751a5b62e20b2
+msgid "其他非共线"
+msgstr "其他非共线"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: 0d85d10b698a464988194ed81eb22e5a
+msgid ""
+"$C<0.90$，且满足 $S_\\mathrm{max}\\ge0.45$ 与 $P\\ge0.72$；或满足 "
+"$S_\\mathrm{max}\\ge0.32$、$\\lvert\\bar c\\rvert\\ge0.30$ 中的任一项"
+msgstr ""
+"$C<0.90$，且满足 $S_\\mathrm{max}\\ge0.45$ 与 $P\\ge0.72$；或满足 "
+"$S_\\mathrm{max}\\ge0.32$、$\\lvert\\bar c\\rvert\\ge0.30$ 中的任一项"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: f6eb1f7d28e54a57937aef0a31359ccf
+msgid "PM-like（自旋无序）"
+msgstr "PM-like（自旋无序）"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-magnetism.md:8
+#: fedd50aedc9c4102a7261830815e46da
+msgid ""
+"$R_M\\le0.25$、$S_\\mathrm{max}\\le0.22$ 且 $\\lvert\\bar c\\rvert\\le0.15$"
+msgstr ""
+"$R_M\\le0.25$、$S_\\mathrm{max}\\le0.22$ 且 $\\lvert\\bar c\\rvert\\le0.15$"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7672
+#: 8c3162f0c1ed4027885e8e79b3e2e098
+msgid ""
+"只有结构级结果已经属于 AFM，程序才继续检查层序。它沿周期晶格方向用分数坐标聚"
+"合磁层；同一方向上分数坐标间隔不超过 `0.025` 的原子归入同一层，层内极化绝对值"
+"必须至少为 `0.80`。层序细分至少需要 4 个有效磁矩原子。一个完整的周期 `↑↓` 标"
+"为「逐层 AFM」，`↑↑↓↓` 标为「双层 AFM」。周期边界会继续重复该层序，因此不要求"
+"同一晶胞内再出现第二遍。没有通过层序门槛的 AFM 显示为「AFM（未细分）」。"
+msgstr ""
+"只有结构级结果已经属于 AFM，程序才继续检查层序。它沿周期晶格方向用分数坐标聚"
+"合磁层；同一方向上分数坐标间隔不超过 `0.025` 的原子归入同一层，层内极化绝对值"
+"必须至少为 `0.80`。层序细分至少需要 4 个有效磁矩原子。一个完整的周期 `↑↓` 标"
+"为「逐层 AFM」，`↑↑↓↓` 标为「双层 AFM」。周期边界会继续重复该层序，因此不要求"
+"同一晶胞内再出现第二遍。没有通过层序门槛的 AFM 显示为「AFM（未细分）」。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7674
+#: f67574c5ebe74dc38792c3dacef01ee7
+msgid ""
+"逐元素结果使用相同的净磁矩、方向张量、同元素近邻相关和结构因子，给出「对齐」"
+"「补偿」「调制」「非共线」「混合共线」「无序」等快照标签。异元素近邻耦合按平"
+"均点积判断：不小于 `0.50` 为平行，不大于 `-0.50` 为反平行，其余为混合。"
+msgstr ""
+"逐元素结果使用相同的净磁矩、方向张量、同元素近邻相关和结构因子，给出「对齐」"
+"「补偿」「调制」「非共线」「混合共线」「无序」等快照标签。异元素近邻耦合按平"
+"均点积判断：不小于 `0.50` 为平行，不大于 `-0.50` 为反平行，其余为混合。"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7676
+#: 1c07a36072394617a1f1f75ccc17dca0
+msgid "磁类型标签的边界"
+msgstr "磁类型标签的边界"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:7678
+#: 7e7d85314385479e881beec8b3d9c4e6
+msgid ""
+"这些标签描述单帧自旋快照，不是有限温度磁相判定。`PM-like` 只表示这一帧在当前"
+"判据下呈现低净磁矩、低 q 峰和弱近邻相关，不能据此声明热力学顺磁相。波矢扫描只"
+"覆盖当前超胞可表示的低阶整数点；非公度螺旋、更长周期调制、强缺陷结构或尺寸很"
+"小的结构可能落入「其他非共线」或「未识别」。判断相变温度、磁畴稳定性或自由能"
+"仍需要独立模拟和物理验证。"
+msgstr ""
+"这些标签描述单帧自旋快照，不是有限温度磁相判定。`PM-like` 只表示这一帧在当前"
+"判据下呈现低净磁矩、低 q 峰和弱近邻相关，不能据此声明热力学顺磁相。波矢扫描只"
+"覆盖当前超胞可表示的低阶整数点；非公度螺旋、更长周期调制、强缺陷结构或尺寸很"
+"小的结构可能落入「其他非共线」或「未识别」。判断相变温度、磁畴稳定性或自由能"
+"仍需要独立模拟和物理验证。"

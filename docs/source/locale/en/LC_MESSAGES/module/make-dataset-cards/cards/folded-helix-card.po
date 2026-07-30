@@ -9,428 +9,436 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-26 11:17+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:3
-#: 2e035971d8224109963bf00ab33fcfa7
-msgid "折返螺旋（Folded Helix）"
-msgstr "Folded Helix"
-
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:5
-#: f87121f702f4426ea0d237061cbc3634
-msgid "`Group`: `Magnetism` | `Class`: `FoldedHelixCard`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:3
+#: 9b8cae333aff406792fabbd50313711c
+msgid "折返螺旋磁序（Folded Helix）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:7
-#: 8868239b6a974097881addf549027921
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:5
+#: b5794809f59f477c8b4cfbc3265ab9b9
+msgid "**分类：** 磁性"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:7
+#: 8ac98b33f41349b89cf201eeba43e1df
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:9
-#: e8fa9b0936934365b66179deef9706e2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:9
+#: 2358ec78aff84043be525b6be8c49d70
 msgid ""
-"按层离散定义对称折返螺旋磁矩纹理。磁矩被限制在垂直于 `plane_normal` 的平面内，沿 `layer_axis` "
-"方向在前半周期逐层按固定角度旋转、到转折层后按相同步长反向旋转，形成一个\"先顺时针、到中间再逆时针\"的三角相位轮廓。"
+"按层离散定义对称折返螺旋磁矩纹理。磁矩被限制在垂直于 `平面法向`"
+"（`plane_normal`）的平面内，沿 `层轴`（`layer_axis`）方向在前半周期逐层按固定"
+"角度旋转、到转折层后按相同步长反向旋转，形成一个\"先顺时针、到中间再逆时针"
+"\"的三角相位轮廓。"
 msgstr ""
-"Construct a symmetric folded-helix magnetic-moment texture on discrete "
-"atomic layers. Moments are confined to the plane normal to "
-"`plane_normal`. Along `layer_axis`, they rotate by a fixed angle from one"
-" layer to the next during the first half-period, then reverse by the same"
-" increment after the turning layer. The result is a triangular phase "
-"profile that rotates in one direction and folds back at the midpoint."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:11
-#: d07a2021100d4e0399a220de4ae494a9
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:11
+#: 6e8c5b713e8a4883bd0ce68c69dcc2fd
+msgid "原理与公式"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:13
+#: cf77be31e7214e078071b493e4c715ab
 msgid "s(k)=\\begin{cases}k,&0\\le k\\le h\\\\2h-k,&h\\lt k\\lt2h\\end{cases}"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:13
-#: e77e8aa450a74f1798ce303c7884dc19
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:15
+#: d44a6b17406c4cdfb65e33e78d0417a6
 msgid "\\phi(k)=\\phi_0+\\sigma\\cdot s(k)\\cdot\\Delta\\phi"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:15
-#: 0d384bd491544543ad10bff2e06a54ad
-msgid "默认 `half_period_mode = Auto from layer count`，会在当前层范围上自动构造首尾闭合的折返周期。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:17
+#: 38fd7cefb9e24436921cc87e5c3f683f
+msgid ""
+"默认 `half_period_mode = Auto from layer count`，会在当前层范围上自动构造首尾"
+"闭合的折返周期。"
 msgstr ""
 "With the default `half_period_mode = Auto from layer count`, the card "
-"derives a folded period from the detected layers so that the phase closes"
-" from the first layer to the last."
+"derives a folded period from the detected layers so that the phase closes "
+"from the first layer to the last."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:17
-#: fc184578dc5f456897635974571d46fd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:19
+#: 3dae96881fec4768b803d3fde01c16b2
 msgid ""
-"**和 `Spin Spiral` 的区别：** `Spin Spiral` "
-"沿传播轴连续旋转（单向、不折返）。本卡生成的是\"走一段、折回来\"的分层离散纹理，更适合二维磁体、异质结界面或需要镜像对称磁矩分布的场景。"
+"其中 $k$ 是离散层号，$h$ 是半周期层数，$\\Delta\\phi$ 是相邻层转角， $"
+"\\sigma=\\pm1$ 控制手性，$\\phi_0$ 是全局初相位。$s(k)$ 的三角形轮廓正是“前半"
+"段 递增、后半段折返”的来源。"
 msgstr ""
-"**How this differs from `Spin Spiral`:** `Spin Spiral` rotates "
-"continuously and in one direction along its propagation axis. This card "
-"creates a layer-discrete texture that advances and then folds back, "
-"making it better suited to two-dimensional magnets, heterostructure "
-"interfaces, and mirror-symmetric moment distributions."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:19
-#: 9bfd5812b21f4fcd8b79bc6e9dcc79b5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:23
+#: 62c938c24ea54a309b1eb9376cf9c3de
+msgid ""
+"**和 `Spin Spiral` 的区别：** `Spin Spiral` 沿传播轴连续旋转（单向、不折"
+"返）。本卡生成的是\"走一段、折回来\"的分层离散纹理，更适合二维磁体、异质结界"
+"面或需要镜像对称磁矩分布的场景。"
+msgstr ""
+"**How this differs from `Spin Spiral`:** `Spin Spiral` rotates continuously "
+"and in one direction along its propagation axis. This card creates a layer-"
+"discrete texture that advances and then folds back, making it better suited "
+"to two-dimensional magnets, heterostructure interfaces, and mirror-symmetric "
+"moment distributions."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:25
+#: 9cea3c5f885140e7a9b85a83416a6e04
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:21
-#: af42d14d88fc4b36ba3134e518ab875b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:27
+#: 05bd078e9c9142f49824e0e257aeb1a1
 msgid "场景：层状反铁磁模型在非均匀自旋纹理上预测崩塌"
 msgstr ""
-"Scenario: a layered antiferromagnetic model fails on nonuniform spin "
-"textures"
+"Scenario: a layered antiferromagnetic model fails on nonuniform spin textures"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:23
-#: 49e767a1e05b4d4490d32368d1e2e790
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:29
+#: 395f073f77864fb8a9f16d8986471221
 msgid ""
-"你训练了一个层状磁性模型（如 CrI3 双层），训练数据里层内是 FM、层间是 AFM——这是完美均匀的磁序。但实验发现施加电场后，顶层磁矩偏了 "
-"15 度而底层偏了 -15 度——这是一个非单调的、分层的自旋纹理。模型对此完全无法预测。"
+"你训练了一个层状磁性模型（如 CrI3 双层），训练数据里层内是 FM、层间是 AFM——这"
+"是完美均匀的磁序。但实验发现施加电场后，顶层磁矩偏了 15 度而底层偏了 -15 度——"
+"这是一个非单调的、分层的自旋纹理。模型对此完全无法预测。"
 msgstr ""
-"Suppose you trained a model for a layered magnet such as bilayer CrI3. "
-"Its training data are ferromagnetic within each layer and "
-"antiferromagnetic between layers: perfectly uniform magnetic order. Under"
-" an applied electric field, however, the top-layer moments may tilt by "
-"15° while the bottom-layer moments tilt by −15°. This is a nonmonotonic, "
-"layer-dependent spin texture that the model has never learned."
+"Suppose you trained a model for a layered magnet such as bilayer CrI3. Its "
+"training data are ferromagnetic within each layer and antiferromagnetic "
+"between layers: perfectly uniform magnetic order. Under an applied electric "
+"field, however, the top-layer moments may tilt by 15° while the bottom-layer "
+"moments tilt by −15°. This is a nonmonotonic, layer-dependent spin texture "
+"that the model has never learned."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:25
-#: 9f40b0e6a03c449280b79795c56b0d64
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:31
+#: d7b3a63eb8664741a037c8199df2f728
 msgid ""
-"**诊断思路：** "
-"训练集里的自旋变化是单调的（要么全同向、要么交替翻转）。模型从未见过磁矩方向在空间中\"先转过去、再转回来\"的纹理。需要生成按层离散的折返螺旋构型，让模型学习分层磁矩分布的能量面。"
+"**诊断思路：** 训练集里的自旋变化是单调的（要么全同向、要么交替翻转）。模型从"
+"未见过磁矩方向在空间中\"先转过去、再转回来\"的纹理。需要生成按层离散的折返螺"
+"旋构型，让模型学习分层磁矩分布的能量面。"
 msgstr ""
-"**Diagnosis:** Spin variation in the training set is monotonic: moments "
-"are either aligned or alternate between opposite directions. The model "
-"has never seen a texture whose direction rotates away and then returns. "
-"Generate layer-discrete folded helices so the model can learn the energy "
-"surface associated with nonuniform moment distributions across layers."
+"**Diagnosis:** Spin variation in the training set is monotonic: moments are "
+"either aligned or alternate between opposite directions. The model has never "
+"seen a texture whose direction rotates away and then returns. Generate layer-"
+"discrete folded helices so the model can learn the energy surface associated "
+"with nonuniform moment distributions across layers."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:27
-#: 56a46a580a7a4762a229b9273e91851a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:33
+#: eb1688cf71fe4323a6c91dab523f9714
 msgid ""
-"**输入：** 一个已有 `initial_magmoms` 的层状磁性结构（或通过 `magnitude_source = "
-"Map/default magnitude` 指定磁矩模长）"
+"**输入：** 一个已有 `initial_magmoms` 的层状磁性结构（或通过 "
+"`magnitude_source = Map/default magnitude` 指定磁矩模长）"
 msgstr ""
 "**Input:** A layered magnetic structure with `initial_magmoms`, or a "
-"structure for which moment magnitudes can be supplied with "
-"`magnitude_source = Map/default magnitude`."
+"structure for which moment magnitudes can be supplied with `magnitude_source "
+"= Map/default magnitude`."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:29
-#: 0fb307eefc384c66bad282fe8b06d971
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:35
+#: 68efe990c3dc4180ba144604640c62d9
 msgid ""
-"**目标：** 用 auto 模式自动适配当前层数，生成 3 个层间转角（15/30/45 度）、4 个全局相位（0/30/60/90 度）、2 "
-"种手性顺序，共 3x4x2 = 24 个折返螺旋构型"
+"**目标：** 用 auto 模式自动适配当前层数，生成 3 个层间转角（15/30/45 度）、4 "
+"个全局相位（0/30/60/90 度）、2 种手性顺序，共 3x4x2 = 24 个折返螺旋构型"
 msgstr ""
-"**Goal:** Let automatic mode adapt to the detected layer count and "
-"generate three interlayer rotation angles (15°, 30°, and 45°), four "
-"global phases (0°, 30°, 60°, and 90°), and two chirality sequences, for a"
-" total of 3 × 4 × 2 = 24 folded-helix configurations."
+"**Goal:** Let automatic mode adapt to the detected layer count and generate "
+"three interlayer rotation angles (15°, 30°, and 45°), four global phases "
+"(0°, 30°, 60°, and 90°), and two chirality sequences, for a total of 3 × 4 × "
+"2 = 24 folded-helix configurations."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:31
-#: 6f5c878c175448dda0ef8784416147fa
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:37
+#: 85d149b46146403b9672570603b42caa
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:32
-#: 4ac57b2055da4eb990402848412d48d5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:38
+#: bd51024bf9864049b5b772ff96d86a39
 msgid "`Layer Axis` = `[0, 0, 1]`（沿 z 轴分层）"
 msgstr "`Layer Axis` = `[0, 0, 1]` (identify layers along *z*)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:33
-#: 016cbb7e6d3c4b02b2f96d57a6b2c435
-msgid "`Plane Normal` = `[0, 0, 1]`（磁矩在 xy 面内旋转）"
-msgstr "`Plane Normal` = `[0, 0, 1]` (rotate moments in the *xy* plane)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:39
+#: 68871b9663f34d45b7bf4b070c5c4664
+msgid "`平面法向`（`plane_normal`） = `[0, 0, 1]`（磁矩在 xy 面内旋转）"
+msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:34
-#: e7bbd349dc814107a3b488da0a24cbbe
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:40
+#: 5df5fd60acf6426bad08605f36a3a780
 msgid "`Half-Period Mode` = `Auto from layer count`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:35
-#: 55d30794244e46129347f72d2eec3969
-msgid "`Angle Step Range` = `[15, 45, 15]`"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:41
+#: 6880012f276242909cf6f59db62d27f3
+msgid "`角度步长范围`（`angle_step_range`） = `[15, 45, 15]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:36
-#: 632ee5e841ec4e22a105c79d1fffbaf3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:42
+#: 9fde7eab93594ef791394d8993a6e754
 msgid "`Phase Range` = `[0, 90, 30]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:37
-#: 5649fa92c4f8490aa494a7777cf8e74a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:43
+#: 61820f43e0944c87b3e57ca55f81b06e
 msgid "`Sequence` = `Both`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:39
-#: c6a2595836af443e93b247464dc67885
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:45
+#: 3a5b0ef2e0674c40bd5cc8d48c7ba90f
 msgid ""
 "**输出：** 24 个结构，磁矩在 xy 面内按层折返旋转，带 "
 "`FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)` 标签。"
 msgstr ""
-"**Output:** 24 structures whose moments fold back layer by layer in the "
-"*xy* plane, labeled "
-"`FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)`."
+"**Output:** 24 structures whose moments fold back layer by layer in the *xy* "
+"plane, labeled `FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)`."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:41
-#: e18f307fcdb24d0485e6c5c65e0ccfb0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:47
+#: 83604caafff4472492a688be1ee263af
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:42
-#: d3edb5f0e7174198909c6abd3bb441c4
-msgid "重训后跑几组不同层间转角的测试构型，能量排序应合理（近 FM 的转角能量低，近 180 度的高）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:48
+#: 3ebdfebc90fb4b789bb9e3440197ed2b
+msgid ""
+"重训后跑几组不同层间转角的测试构型，能量排序应合理（近 FM 的转角能量低，近 "
+"180 度的高）"
 msgstr ""
 "After retraining, evaluate several test configurations with different "
-"interlayer angles. Their energy ordering should be physically reasonable "
-"for the target system—for example, angles near its preferred FM alignment"
-" should be lower than strongly misaligned states."
+"interlayer angles. Their energy ordering should be physically reasonable for "
+"the target system—for example, angles near its preferred FM alignment should "
+"be lower than strongly misaligned states."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:43
-#: 9aa6885ac149493ca7d38062c3df0962
-msgid "抽查输出：层 0 磁矩方向 = 全局相位，中间层达到最大转角，顶层回到接近全局相位"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:49
+#: 88586b4b57bf40fa943dc1ec8f7417df
+msgid ""
+"抽查输出：层 0 磁矩方向 = 全局相位，中间层达到最大转角，顶层回到接近全局相位"
 msgstr ""
 "Inspect several outputs: layer 0 should start at the global phase, the "
 "middle layer should reach the largest rotation, and the top layer should "
 "return close to the global phase."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:44
-#: 04e99a6957de45b2ba265ee77a87636c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:50
+#: cfec438477d8424e89c1dd848710cef1
 msgid ""
-"如果 auto 模式给出的半周期不合适——比如你的结构有 10 层但 auto 给了 h=4——切到 manual 模式手动指定 "
-"`half_period_layers`"
+"如果 auto 模式给出的半周期不合适——比如你的结构有 10 层但 auto 给了 h=4——切到 "
+"manual 模式手动指定 `半周期层数`（`half_period_layers`）"
 msgstr ""
-"If automatic mode chooses an unsuitable half-period—for example, `h=4` "
-"for a ten-layer structure—switch to manual mode and set "
-"`half_period_layers` explicitly."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:46
-#: d7d5a8b4cea8450ea73d8b670b7a1857
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:52
+#: b1751fd4f61945b3953e760123fb69c5
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:48
-#: 741577e6ac0f41bc9a9f7d52776e3671
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:54
+#: f2144a499baf407b930d4c27e714bb48
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:49
-#: 96cbfaa2c5aa4453860c78ada1232f0f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:55
+#: 4319824743f94f1b9f3397f8696cd7ed
 msgid "层状磁体（vdW 磁体、异质结、超晶格）需要非单调的分层磁矩纹理"
 msgstr ""
 "A layered magnet, such as a van der Waals magnet, heterostructure, or "
 "superlattice, needs a nonmonotonic layer-dependent moment texture."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:50
-#: ef4a5d0664f54f49a9536909a2cf044f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:56
+#: e720e38158774d43a49396bf9e3dd5f6
 msgid "想构造镜像对称的自旋分布（两半周期互为镜像）"
 msgstr ""
-"You want a mirror-symmetric spin distribution whose two half-periods "
-"reflect one another."
+"You want a mirror-symmetric spin distribution whose two half-periods reflect "
+"one another."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:51
-#: 81b31223af2a493da38942322f7e3c9c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:57
+#: d40247b64cc249468a7b4fa3fc7685b3
 msgid "需要同层原子共享磁矩方向（layer-locked 行为是内置的）"
 msgstr ""
-"Atoms in the same layer should share one moment direction; layer locking "
-"is built in."
+"Atoms in the same layer should share one moment direction; layer locking is "
+"built in."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:53
-#: 0e22c8f1927b4b779d2b6ee204c3bf31
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:59
+#: fa95d5bd9df74e738667a68a1db1866f
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:54
-#: 88d0438dd09149ae92f48e3bd4b93ec5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:60
+#: 2008f8093ffb43308d255eb94436d232
 msgid "需要标准单向传播的螺旋 → 用 `Spin Spiral`"
-msgstr "You need a conventional one-way propagating spiral → use `Spin Spiral`."
+msgstr ""
+"You need a conventional one-way propagating spiral → use `Spin Spiral`."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:55
-#: ce92fa1c03474f31a12e1a259327362c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:61
+#: 569d07ae5098440688344a555a63685e
 msgid "需要连续坐标依赖的相位（非分层）→ 用 `Spin Spiral` 的 continuous 模式"
 msgstr ""
-"You need a phase that varies continuously with position rather than by "
-"layer → use the continuous mode of `Spin Spiral`."
+"You need a phase that varies continuously with position rather than by layer "
+"→ use the continuous mode of `Spin Spiral`."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:56
-#: 84724e627c2247efb162ad4d2b41cfcb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:62
+#: 3c0fdf9b24ca4813be68a6e0bf10e162
 msgid "体系没有层状结构 → 分层无意义"
 msgstr ""
 "The structure is not layered, so a layer-based texture has no physical "
 "meaning."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:58
-#: 140748b6506a401d84ecfc14ce1b864a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:64
+#: 07c9bb1805d2429d97bdc2e0e1f771e5
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:60
-#: 6ee9a053aff240caacbb5c2ceeb04933
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:66
+#: e0131e9323704aab80bff70f095df502
 msgid "分层定义"
 msgstr "Layer definition"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:62
-#: f61f1d9654e445ea978e7291f79e2bf1
-msgid "Layer Axis（layer_axis）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:68
+#: 6ccd4d4d26484520961d92a38a9369b5
+msgid "层轴（layer_axis）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:64
-#: 8549deab4b694be581722cd8a72cf41b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:70
+#: b01af3ae5fe643fd9d8d72cc17584d95
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
-"1.0)`。原子坐标沿此方向投影后用于分层，格式 `[x, y, z]`。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。原子坐标"
+"沿此方向投影后用于分层，格式 `[x, y, z]`。"
 msgstr ""
 "`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. "
 "Direction onto which atomic positions are projected to identify layers, "
 "expressed as `[x, y, z]`."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:66
-#: 92ffdeddeb13416e8a31aa671a0f1454
-msgid "Plane Normal（plane_normal）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:72
+#: 9b184f5530cb469882b6d73b9b9ce79c
+msgid "平面法向（plane_normal）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:68
-#: 1d1cf0244b6a4048a691cddcc39ad314
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:74
+#: 970c7faceaa947f2afa6186f1545be42
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
-"1.0)`。磁矩旋转平面的法向。例如 `[0, 0, 1]` 表示磁矩在 xy 面内旋转。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。磁矩旋转"
+"平面的法向。例如 `[0, 0, 1]` 表示磁矩在 xy 面内旋转。"
 msgstr ""
 "`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. "
-"Normal vector of the plane in which moments rotate. For example, `[0, 0, "
-"1]` constrains them to the *xy* plane."
+"Normal vector of the plane in which moments rotate. For example, `[0, 0, 1]` "
+"constrains them to the *xy* plane."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:70
-#: 5356c233ac064a1d9c373e876a813648
-msgid "Layer Tolerance（layer_tolerance）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:76
+#: 9b2111dd4e24491bb9b5bad927931f7a
+msgid "层容差（layer_tolerance）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:72
-#: 2d88f2d9fd38480ba8c860beba0d7a38
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:78
+#: d0fc8e1410124afbac8d1f16f7c19fa1
 msgid "`float`，默认 `0.05`。投影坐标差不超过此阈值的原子归为同一层，单位 Å。"
 msgstr ""
 "`float`, default: `0.05`. Atoms whose projected coordinates differ by no "
 "more than this tolerance are assigned to the same layer. Unit: Å."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:73
-#: 13212db5121342a69a1ca8d5b1dd01f8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:79
+#: c1558e0cfbf74373b38a7f43c5068f98
 msgid "保守：`0.01`（严格分层）"
 msgstr "Conservative: `0.01` (strict layer separation)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:74
-#: 7ad73943217340c6b44ceebf1fcd281d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:80
+#: fc4cb416bd4d4bcab80f0faeb28b964c
 msgid "平衡：`0.03~0.10`（容忍小幅层内起伏）"
 msgstr "Balanced: `0.03–0.10` (allows modest intralayer rumpling)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:75
-#: 2f6acd2fa6e9443590a350a69aff1142
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:81
+#: cee3e17f99bc45b1b0e128fffbbdc47a
 msgid "如果层内有明显 rumpling，适当放宽"
-msgstr "Increase the tolerance if atoms within a layer show appreciable rumpling."
+msgstr ""
+"Increase the tolerance if atoms within a layer show appreciable rumpling."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:77
-#: d8a13d0ca9ac47808beaab5d3c19b278
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:83
+#: 2cd161b74b0f4abe967adca64fc76b3f
 msgid "半周期控制"
 msgstr "Half-period control"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:79
-#: 69f25f5452d24a48b0f25e69cb670ab6
-msgid "Half Period Mode（half_period_mode）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:85
+#: def77120d66049d59bcc61ab445b340c
+msgid "半周期模式（half_period_mode）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:81
-#: b63da35118614fde80eca44b3cb42547
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:87
+#: e0062b937ec9408d9809de747b80e989
 msgid ""
-"`str`，默认 `'Auto from layer count'`。`Auto from layer count` "
-"由当前层数自动推导半周期，保证首尾闭合（大多数情况推荐这个）。`Manual` 手动指定 `half_period_layers` "
-"扫描范围，适合比较不同折返周期。"
-msgstr ""
-"`str`, default: `'Auto from layer count'`. `Auto from layer count` "
-"derives a half-period from the detected layers and closes the phase "
-"between the first and last layers; this is recommended in most cases. "
-"`Manual` scans the range set by `half_period_layers` and is useful for "
-"comparing different folded periods."
-
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:83
-#: 5f384870f1b545c0b3651462d632f697
-msgid "Half Period Layers（half_period_layers）"
+"`str`，默认 `'Auto from layer count'`。`Auto from layer count` 由当前层数自动"
+"推导半周期，保证首尾闭合（大多数情况推荐这个）。`Manual` 手动指定 `半周期层数"
+"`（`half_period_layers`）扫描范围，适合比较不同折返周期。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:85
-#: 302c4086bf954d80b1edc36e2a834e86
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:89
+#: 705fcacbd34749298f374ea24673f18f
+msgid "半周期层数（half_period_layers）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:91
+#: 8011691e73574b3aaeeabf9ead1e35e4
 msgid ""
-"`list[int] | tuple[int, int, int]`，默认 `(2, 4, 1)`。仅在 manual 模式下生效。`[min, "
-"max, step]` 格式，半周期的层步进数。"
+"`list[int] | tuple[int, int, int]`，默认 `(2, 4, 1)`。仅在 manual 模式下生"
+"效。`[min, max, step]` 格式，半周期的层步进数。"
 msgstr ""
 "`list[int] | tuple[int, int, int]`, default: `(2, 4, 1)`. Used only in "
-"manual mode. Expressed as `[minimum, maximum, step]`, it scans the number"
-" of layer intervals in one half-period."
+"manual mode. Expressed as `[minimum, maximum, step]`, it scans the number of "
+"layer intervals in one half-period."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:86
-#: 3cf849bf9be14fc4bc0f0bf9de8c7dab
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:92
+#: 5e69481bb20148baa5a3b21acdd1a3f7
 msgid "保守：`[2, 2, 1]`（最短折返）"
 msgstr "Conservative: `[2, 2, 1]` (shortest fold)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:87
-#: 2ef84be948b14ee186b76da4db45620d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:93
+#: ec391140fd7e498b820e5450e5efe737
 msgid "平衡：`[2, 6, 1]`"
 msgstr "Balanced: `[2, 6, 1]`"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:88
-#: c11b8999b4124c4b87453cf074b91173
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:94
+#: d86457a781cf493e91999e64d0f2dbd7
 msgid "探索：`[4, 12, 2]`"
 msgstr "Exploratory: `[4, 12, 2]`"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:90
-#: ec446676f475430a8bea76116cffea72
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:96
+#: f434c70ac8d64311b45bd970b9b350c0
 msgid "旋转参数"
 msgstr "Rotation parameters"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:92
-#: 8e168ad1af674d46a628d448cd584bf9
-msgid "Angle Step Range（angle_step_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:98
+#: b14c89e6476b45a6965e85dce9411ce7
+msgid "角度步长范围（angle_step_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:94
-#: fb18c4f75c424156b6e91e98c01f02d3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:100
+#: aad6e1966d694e74bcc56746a15769fa
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(15.0, 45.0, 15.0)`。`[min,"
-" max, step]`，相邻层之间的面内转角，单位度。"
+"`list[float] | tuple[float, float, float]`，默认 `(15.0, 45.0, 15.0)`。"
+"`[min, max, step]`，相邻层之间的面内转角，单位度。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default: `(15.0, 45.0, "
-"15.0)`. In-plane rotation between adjacent layers, in degrees, expressed "
-"as `[minimum, maximum, step]`."
+"`list[float] | tuple[float, float, float]`, default: `(15.0, 45.0, 15.0)`. "
+"In-plane rotation between adjacent layers, in degrees, expressed as "
+"`[minimum, maximum, step]`."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:95
-#: c6ec7e1596b042c9991ced199a9ce2f8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:101
+#: a5156ecfe4314b2f90fe5f18401a939c
 msgid "保守：`[5, 15, 5]`（小转角）"
 msgstr "Conservative: `[5, 15, 5]` (small rotations)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:96
-#: 3a19a8a5c1b648de9b1e65ffd587a34c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:102
+#: a7fa543dec774c349281482dc542464f
 msgid "平衡：`[15, 45, 15]`（中转角）"
 msgstr "Balanced: `[15, 45, 15]` (moderate rotations)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:97
-#: 44a829b73ee541af9b623b361f419d45
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:103
+#: 6a2abd99410c4b808a33a6595daaf11e
 msgid "探索：`[30, 90, 15]`（大转角）"
 msgstr "Exploratory: `[30, 90, 15]` (large rotations)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:99
-#: 1d49bf3f55724b43a58101c71ccdc640
-msgid "Phase Range（phase_range）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:105
+#: c692124e13794786864abce359f6ddf9
+msgid "相位范围（phase_range）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:101
-#: 46c0a1430db647eb9ffedb95c0eea96a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:107
+#: 7b0978cfd9d542ee9c0404a72fc9fa83
 msgid ""
 "`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 15.0)`。`[min, "
 "max, step]`，全局相位偏移，单位度。"
@@ -438,137 +446,138 @@ msgstr ""
 "`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 15.0)`. "
 "Global phase offsets as `[min, max, step]` in degrees."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:102
-#: 9db9e865f8c5468c9711f5a6f9e35ab8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:108
+#: 3a300c0c81bf4907915088317313ed09
 msgid "保守：`[0, 0, 15]`"
 msgstr "Conservative: `[0, 0, 15]`"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:103
-#: a4eadf261de5441c90b4454ecd342987
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:109
+#: d349b06fa1be4f2b8f4680bde3de52ac
 msgid "平衡：`[0, 90, 30]`"
 msgstr "Balanced: `[0, 90, 30]`"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:104
-#: 8b7707469d004d5f924b3a7925205bcf
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:110
+#: 3a8abf9f563e4b2fbec21a1e6a88de55
 msgid "探索：`[-180, 180, 30]`"
 msgstr "Exploratory: `[-180, 180, 30]`"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:106
-#: 380f7dbe2d66469b900582df66c72156
-msgid "Sequence Mode（sequence_mode）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:112
+#: cdee99d7548e49d5932ee84e6595e5d2
+msgid "序列方式（sequence_mode）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:108
-#: 46fddbbd962d433f9d36ba1320ffe8fb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:114
+#: 72406727572f494fbebcb85e22e5e51a
 msgid ""
 "`str`，默认 `'Clockwise then counterclockwise'`。`Clockwise then "
-"counterclockwise` 前半周期顺时针、后半周期逆时针；`Counterclockwise then clockwise` "
-"相反；`Both` 两种都生成。"
+"counterclockwise` 前半周期顺时针、后半周期逆时针；`Counterclockwise then "
+"clockwise` 相反；`Both` 两种都生成。"
 msgstr ""
 "`str`, default: `'Clockwise then counterclockwise'`. `Clockwise then "
 "counterclockwise` uses clockwise rotation in the first half-period and "
-"counterclockwise rotation in the second. `Counterclockwise then "
-"clockwise` reverses that order. `Both` generates both sequences."
+"counterclockwise rotation in the second. `Counterclockwise then clockwise` "
+"reverses that order. `Both` generates both sequences."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:110
-#: abc320ddef384054bb0fff657b701c5a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:116
+#: aa68f6cb02da42aea3a52f31f028ac69
 msgid "磁矩幅值"
 msgstr "Moment magnitudes"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:112
-#: 9633cef9bbae4e4a9e8b4a6e89bfcc65
-msgid "Magnitude Source（magnitude_source）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:118
+#: 9dc02f8ec495415fa5547bc052471d02
+msgid "磁矩大小来源（magnitude_source）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:114
-#: 20b60301e0084c63943248e23ce82200
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:120
+#: 7a2f12c557ec4e96b028c130099782cb
 msgid ""
-"`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` "
-"复用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。"
+"`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` 复"
+"用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。"
 msgstr ""
 "`str`, default `'Existing initial magmoms'`. Choose `Existing initial "
 "magmoms` to reuse stored moments or `Map/default magnitude` to create "
 "magnitudes from an element map."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:116
-#: b27b929adf454d9789010ef69ed87d5e
-msgid "**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。"
-msgstr ""
-"**`Magmom Map`** / **`Default Moment`**: used only in `Map/default "
-"magnitude` mode."
-
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:118
-#: 9998540f2c4f4fef9b3f9ef0385d8a66
-msgid "Magmom Map（magmom_map）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:122
+#: 909bf3e598d4491390f9040bb3bfc844
+msgid ""
+"**`元素磁矩表`（`magmom_map`）** / **`默认磁矩`（`default_moment`）**：仅在 "
+"`Map/default magnitude` 模式下生效。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:120
-#: 2364b20266d14823bdca171f17939303
-msgid "`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:124
+#: 3767f05bbaee43618a3cbba77f462c8b
+msgid "元素磁矩表（magmom_map）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:126
+#: 7726736169214c0f982e9b6583520fe5
+msgid ""
+"`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不"
+"要用默认值伪造先验。"
 msgstr ""
 "`str`, default `''`. Provide known element-resolved local moments "
 "explicitly, for example `Fe:2.2,Ni:0.6`. Do not invent a prior for an "
 "unknown element through a default value."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:122
-#: 8b456d5599354d7497b2579f09998e8a
-msgid "Default Moment（default_moment）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:128
+#: ebe9a22e950e40a5b954e5ba21b29f81
+msgid "默认磁矩（default_moment）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:124
-#: 8d1fe5384c82442e989073a1f963ef34
-msgid "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。"
-msgstr ""
-"`float`, default `0.0`. Used only when an element is absent from "
-"`magmom_map`. List important magnetic elements explicitly; nonmagnetic "
-"elements should normally remain at 0."
-
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:126
-#: aca3de0a167b47a6b82d9f251e4b9802
-msgid "Apply Elements（apply_elements）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:130
+#: 2c8148bc9c2942c0a4f4b27cfb0b60b0
+msgid ""
+"`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅"
+"值。关键磁性元素应显式列出，非磁元素通常保持 0。"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:128
-#: 5c826b93e6244fb68f26137dca125702
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:132
+#: 6ff18f9a42ef4ce1a6fe6a81d27716bc
+msgid "应用元素（apply_elements）"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:134
+#: 51753d404757455baa712f0c18c33109
 msgid "`str`，默认 `''`。限制哪些元素施加折返纹理，留空则全部参与。"
 msgstr ""
 "`str`, default: `''`. Restricts the folded texture to selected elements. "
 "Leave empty to include all elements."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:130
-#: b071aa3bb0de494688a6871cbca932e2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:136
+#: 75d6182d2d1247b1b7e61587b33fd088
 msgid "输出预算"
 msgstr "Output budget"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:132
-#: 9766b0ea9fe147529b2253e2ac1161d8
-msgid "Max Outputs（max_outputs）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:138
+#: 2c5abaf3c66740b18c37ec0545d3f7f4
+msgid "最大输出数（max_outputs）"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:134
-#: 7f86f66acf7a4367a7d61cf5a239f568
-msgid "`int`，默认 `100`。半周期、角度、相位和手性会相乘放大输出数量。先用几十个确认相位和层识别无误，再放大到研究级扫描。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:140
+#: 4ccfc47230204b6f8796235f7debca5e
+msgid ""
+"`int`，默认 `100`。半周期、角度、相位和手性会相乘放大输出数量。先用几十个确认"
+"相位和层识别无误，再放大到研究级扫描。"
 msgstr ""
-"`int`, default: `100`. Half-periods, angles, phases, and chirality "
-"sequences multiply the output count. Start with a few dozen structures to"
-" verify layer detection and phase conventions before scaling up to a "
-"research scan."
+"`int`, default: `100`. Half-periods, angles, phases, and chirality sequences "
+"multiply the output count. Start with a few dozen structures to verify layer "
+"detection and phase conventions before scaling up to a research scan."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:136
-#: 396791e92da64b8ab4d4811a156e919a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:142
+#: b895317249134ec190973ba9944eb961
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:138
-#: a42204a37caf4a439acb28d6d7ee6914
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:144
+#: 5075d80d63554156b23f738b742651d7
 msgid "auto 模式单折返验证（~2 个输出，先确认分层和方向正确）"
 msgstr ""
-"Single-fold automatic-mode check (~2 outputs; verify layers and "
-"directions first)"
+"Single-fold automatic-mode check (~2 outputs; verify layers and directions "
+"first)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:139
-#: 27893757b1ce416ca9e739ec9b2eca7b
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:145
+#: 93e4ce50a52445349cbbb1f3cef8fa08
 msgid ""
 "{\n"
 "  \"class\": \"FoldedHelixCard\",\n"
@@ -589,16 +598,15 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:159
-#: 94b55a293c0d4f77b5ffe7308edd27d2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:165
+#: 154695520c314b338e11bf08f9167b45
 msgid "多转角多相位常规覆盖（~24 个输出，适合层状磁体训练）"
 msgstr ""
-"Routine coverage of several rotations and phases (~24 outputs; suitable "
-"for layered-magnet training)"
+"Routine coverage of several rotations and phases (~24 outputs; suitable for "
+"layered-magnet training)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:160
-#: 22c05ad128624720b27e1ce6eeaa08f1
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:166
+#: 7d97bd2bfdf94ec4bceb6e524b3bfde7
 msgid ""
 "{\n"
 "  \"class\": \"FoldedHelixCard\",\n"
@@ -619,16 +627,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:180
-#: a18936deaf794b49a2876bfceab90613
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:186
+#: 01b9d4793b1f4aa7b6705fee59ffa3a9
 msgid "手动多周期 + 全相位探索（~500 个输出，研究级）"
 msgstr ""
-"Manual multiple-period, full-phase exploration (~500 outputs; research "
-"scale)"
+"Manual multiple-period, full-phase exploration (~500 outputs; research scale)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:181
-#: 5fd38823761445f993b33e7793f3fa7b
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:187
+#: 1b0fbd4d2b3c49d2afe64381816aae7f
 msgid ""
 "{\n"
 "  \"class\": \"FoldedHelixCard\",\n"
@@ -649,131 +655,216 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:201
-#: 598db73d6dd24d0fad64f62ffd5ba741
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:207
+#: d62175144f874b7e8817bfdd2f1030ab
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:203
-#: 87584037289e419db663d9aecd32f4ec
-msgid "`Magnetic Order` → `Folded Helix`：先建立 FM/AFM 局域磁矩模长，再按层折返旋转"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:209
+#: 96335b80a97745e99af98955184fdb7d
+msgid ""
+"`Magnetic Order` → `Folded Helix`：先建立 FM/AFM 局域磁矩模长，再按层折返旋转"
 msgstr ""
-"`Magnetic Order` → `Folded Helix`: establish local FM/AFM moment "
-"magnitudes, then rotate them in a folded layer pattern."
+"`Magnetic Order` → `Folded Helix`: establish local FM/AFM moment magnitudes, "
+"then rotate them in a folded layer pattern."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:204
-#: 8c0cfd48ec2048858e5935f6738ea9bb
-msgid "`Set Magnetic Moments` → `Folded Helix`：手动指定元素模长，再生成折返纹理"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:210
+#: e952762484ab479b969249aa74e68a14
+msgid ""
+"`Set Magnetic Moments` → `Folded Helix`：手动指定元素模长，再生成折返纹理"
 msgstr ""
-"`Set Magnetic Moments` → `Folded Helix`: assign element-specific "
-"magnitudes manually, then generate the folded texture."
+"`Set Magnetic Moments` → `Folded Helix`: assign element-specific magnitudes "
+"manually, then generate the folded texture."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:205
-#: c7f0dc3e5ecf477ca8eb06e0562a340a
-msgid "`Group Label` → `Folded Helix`：先打 group 标签，再在特定子晶格上施加折返"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:211
+#: c411f743e37c4b3ab987479fbc55f6ea
+msgid ""
+"`Group Label` → `Folded Helix`：先打 group 标签，再在特定子晶格上施加折返"
 msgstr ""
-"`Group Label` → `Folded Helix`: label groups first, then apply the fold "
-"to a selected sublattice."
+"`Group Label` → `Folded Helix`: label groups first, then apply the fold to a "
+"selected sublattice."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:207
-#: 2abeb6dd575c4f92a126a62bd8167efa
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:213
+#: fa5fd0d376d9420493f38dc724d8fc44
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:209
-#: 7beac037d25c497aa1c209bf5d6581f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:215
+#: a0ec691b39774c8f9f0ff6815ad02c9c
 msgid ""
-"**输出只有原始输入。** 磁矩幅值全为 0。检查 `magnitude_source` 和 `magmom_map`。结构只有 1 "
-"层时折返无意义——至少需要 2 层。"
+"**输出只有原始输入。** 磁矩幅值全为 0。检查 `磁矩大小来源`"
+"（`magnitude_source`）和 `元素磁矩表`（`magmom_map`）。结构只有 1 层时折返无"
+"意义——至少需要 2 层。"
 msgstr ""
-"**Only the original input is returned.** All moment magnitudes are zero. "
-"Check `magnitude_source` and `magmom_map`. A fold is undefined for a one-"
-"layer structure; at least two layers are required."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:211
-#: df2169a3604e4667849255f62ecd3150
-msgid "**分层结果不符合预期。** `layer_axis` 方向是否正确？调整 `layer_tolerance`——太小把同层拆散，太大把不同层合并。"
-msgstr ""
-"**Layer detection is incorrect.** Check the direction of `layer_axis`, "
-"then adjust `layer_tolerance`: a value that is too small splits one "
-"physical layer, while a value that is too large merges neighboring "
-"layers."
-
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:213
-#: bb1ef391f517428f88d5ae32f4e763d3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:217
+#: a35b37b031284fe5bdb2aa450e167d48
 msgid ""
-"**auto 模式的半周期太小或太大。** auto 模式取 `(总层数 - 1) // 2`。如果结构有偶数层且你期望一个层作为转折峰，切到 "
-"manual 模式手动指定 `half_period_layers`。"
+"**分层结果不符合预期。** `层轴`（`layer_axis`）方向是否正确？调整 `层容差`"
+"（`layer_tolerance`）——太小把同层拆散，太大把不同层合并。"
 msgstr ""
-"**The automatic half-period is too short or too long.** Automatic mode "
-"uses `(number of layers - 1) // 2`. For an even number of layers, if you "
-"need a particular layer to be the turning peak, switch to manual mode and"
-" set `half_period_layers`."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:215
-#: d400272209f7436f941760d9057af0a2
-msgid "**输出相位看起来没有折返。** 如果层数太少（如 3 层），折返曲线不明显。用 6 层以上的结构效果更直观。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:219
+#: 74776b6495d04feba668cf9aa275bb71
+msgid ""
+"**auto 模式的半周期太小或太大。** auto 模式取 `(总层数 - 1) // 2`。如果结构有"
+"偶数层且你期望一个层作为转折峰，切到 manual 模式手动指定 `半周期层数`"
+"（`half_period_layers`）。"
 msgstr ""
-"**The output phase does not appear to fold.** With very few layers, such "
-"as three, the triangular profile is difficult to see. A structure with at"
-" least six layers makes the fold clearer."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:217
-#: f2f7f537f8ed4ae8a3b9d6b5b0d1264d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:221
+#: 68a751ebad4848d0a75d9f02b1a7bd7b
+msgid ""
+"**输出相位看起来没有折返。** 如果层数太少（如 3 层），折返曲线不明显。用 6 层"
+"以上的结构效果更直观。"
+msgstr ""
+"**The output phase does not appear to fold.** With very few layers, such as "
+"three, the triangular profile is difficult to see. A structure with at least "
+"six layers makes the fold clearer."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:223
+#: 08e2a732a30b47c1964e95f9dd730f0d
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:219
-#: 9ecad10d39f4459bb497d7cb999e0d31
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:225
+#: b44b61183a354302868ab90813af0da0
 msgid "`FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:220
-#: c1409cb736324997bf8036de58225c6f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:226
+#: 8d69553705a54a99a89adffee1f9602b
 msgid "`h`：半周期层步数"
 msgstr "`h`: number of layer intervals in one half-period"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:221
-#: 567d029782c0425c87ccdbc9cc4dabd0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:227
+#: 480621b92e6646b08e559218cf28aabe
 msgid "`da`：层间转角"
 msgstr "`da`: interlayer rotation angle"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:222
-#: 952f87d027754ccc9ca76601288a407f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:228
+#: 5dc040b63f6e4d8985cf4b89f3c42653
 msgid "`ph`：全局相位"
 msgstr "`ph`: global phase"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:223
-#: c0007b1968874bcaae52b098fd2b00c3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:229
+#: 991836372a304e6b8aa6972948ca20e7
 msgid "`seq`：手性顺序（`cw-ccw` 或 `ccw-cw`）"
 msgstr "`seq`: chirality sequence (`cw-ccw` or `ccw-cw`)"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:224
-#: a3ed46c0a793469fa2451c5d86dca848
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:230
+#: ff39570ac2f74ed3920a52860e9085cc
 msgid "`ax`：分层轴标签"
 msgstr "`ax`: layer-axis label"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:225
-#: ea990286440e42a693674725c88a981a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:231
+#: 2e6a80f7f62649ecaf36b64024de24e4
 msgid "`pn`：旋转平面法向标签"
 msgstr "`pn`: rotation-plane-normal label"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:227
-#: 4ffd212a6a2348b9a5953b190d661f67
-msgid "所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别名。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:233
+#: 337e2670ef79497f8a2dcb9cc0a6c075
+msgid ""
+"所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别"
+"名。"
 msgstr ""
-"All exported outputs use `spin:R:3`; an ASE `initial_magmoms` "
-"three-component vector alias is kept in sync internally."
+"All exported outputs use `spin:R:3`; an ASE `initial_magmoms` three-"
+"component vector alias is kept in sync internally."
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:229
-#: d68d2f6feb774f529d4b2632f8c54ee8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:235
+#: a449454e7095469188f0769a2531065c
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:231
-#: e5ab92e6ff5c432998f7f8526b4ca1c8
-msgid "无随机性。相同输入结构和相同参数 → 严格一致输出。分层原点固定为沿 `layer_axis` 投影后的最小层号。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/folded-helix-card.md:237
+#: 31b748a31a224db7a12abcc1523f2162
+msgid ""
+"无随机性。相同输入结构和相同参数 → 严格一致输出。分层原点固定为沿 `层轴`"
+"（`layer_axis`）投影后的最小层号。"
 msgstr ""
-"Deterministic. Identical input structures and parameters produce "
-"identical output. The layer origin is fixed at the smallest projected "
-"coordinate along `layer_axis`."
+
+#~ msgid "折返螺旋（Folded Helix）"
+#~ msgstr "Folded Helix"
+
+#~ msgid ""
+#~ "按层离散定义对称折返螺旋磁矩纹理。磁矩被限制在垂直于 `plane_normal` 的平面"
+#~ "内，沿 `layer_axis` 方向在前半周期逐层按固定角度旋转、到转折层后按相同步长"
+#~ "反向旋转，形成一个\"先顺时针、到中间再逆时针\"的三角相位轮廓。"
+#~ msgstr ""
+#~ "Construct a symmetric folded-helix magnetic-moment texture on discrete "
+#~ "atomic layers. Moments are confined to the plane normal to "
+#~ "`plane_normal`. Along `layer_axis`, they rotate by a fixed angle from one "
+#~ "layer to the next during the first half-period, then reverse by the same "
+#~ "increment after the turning layer. The result is a triangular phase "
+#~ "profile that rotates in one direction and folds back at the midpoint."
+
+#~ msgid "`Plane Normal` = `[0, 0, 1]`（磁矩在 xy 面内旋转）"
+#~ msgstr "`Plane Normal` = `[0, 0, 1]` (rotate moments in the *xy* plane)"
+
+#~ msgid ""
+#~ "如果 auto 模式给出的半周期不合适——比如你的结构有 10 层但 auto 给了 h=4——切"
+#~ "到 manual 模式手动指定 `half_period_layers`"
+#~ msgstr ""
+#~ "If automatic mode chooses an unsuitable half-period—for example, `h=4` "
+#~ "for a ten-layer structure—switch to manual mode and set "
+#~ "`half_period_layers` explicitly."
+
+#~ msgid ""
+#~ "`str`，默认 `'Auto from layer count'`。`Auto from layer count` 由当前层数"
+#~ "自动推导半周期，保证首尾闭合（大多数情况推荐这个）。`Manual` 手动指定 "
+#~ "`half_period_layers` 扫描范围，适合比较不同折返周期。"
+#~ msgstr ""
+#~ "`str`, default: `'Auto from layer count'`. `Auto from layer count` "
+#~ "derives a half-period from the detected layers and closes the phase "
+#~ "between the first and last layers; this is recommended in most cases. "
+#~ "`Manual` scans the range set by `half_period_layers` and is useful for "
+#~ "comparing different folded periods."
+
+#~ msgid ""
+#~ "**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式"
+#~ "下生效。"
+#~ msgstr ""
+#~ "**`Magmom Map`** / **`Default Moment`**: used only in `Map/default "
+#~ "magnitude` mode."
+
+#~ msgid ""
+#~ "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元"
+#~ "素应显式列出，非磁元素通常保持 0。"
+#~ msgstr ""
+#~ "`float`, default `0.0`. Used only when an element is absent from "
+#~ "`magmom_map`. List important magnetic elements explicitly; nonmagnetic "
+#~ "elements should normally remain at 0."
+
+#~ msgid ""
+#~ "**输出只有原始输入。** 磁矩幅值全为 0。检查 `magnitude_source` 和 "
+#~ "`magmom_map`。结构只有 1 层时折返无意义——至少需要 2 层。"
+#~ msgstr ""
+#~ "**Only the original input is returned.** All moment magnitudes are zero. "
+#~ "Check `magnitude_source` and `magmom_map`. A fold is undefined for a one-"
+#~ "layer structure; at least two layers are required."
+
+#~ msgid ""
+#~ "**分层结果不符合预期。** `layer_axis` 方向是否正确？调整 `layer_tolerance`"
+#~ "——太小把同层拆散，太大把不同层合并。"
+#~ msgstr ""
+#~ "**Layer detection is incorrect.** Check the direction of `layer_axis`, "
+#~ "then adjust `layer_tolerance`: a value that is too small splits one "
+#~ "physical layer, while a value that is too large merges neighboring layers."
+
+#~ msgid ""
+#~ "**auto 模式的半周期太小或太大。** auto 模式取 `(总层数 - 1) // 2`。如果结"
+#~ "构有偶数层且你期望一个层作为转折峰，切到 manual 模式手动指定 "
+#~ "`half_period_layers`。"
+#~ msgstr ""
+#~ "**The automatic half-period is too short or too long.** Automatic mode "
+#~ "uses `(number of layers - 1) // 2`. For an even number of layers, if you "
+#~ "need a particular layer to be the turning peak, switch to manual mode and "
+#~ "set `half_period_layers`."
+
+#~ msgid ""
+#~ "无随机性。相同输入结构和相同参数 → 严格一致输出。分层原点固定为沿 "
+#~ "`layer_axis` 投影后的最小层号。"
+#~ msgstr ""
+#~ "Deterministic. Identical input structures and parameters produce "
+#~ "identical output. The layer origin is fixed at the smallest projected "
+#~ "coordinate along `layer_axis`."

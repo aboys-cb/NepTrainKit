@@ -2,11 +2,26 @@
 
 # 晶体原型构建（Crystal Prototype Builder）
 
-`Group`: `Lattice` | `Class`: `CrystalPrototypeBuilderCard`
+**分类：** 晶格
 
 ## 功能说明
 
 从 `fcc`、`bcc`、`hcp`、`fcc111` 等标准晶格原型直接生成晶体结构。选定元素和晶格常数后，程序按模板构造单胞并自动扩胞至目标原子数。这是一张生成器卡（Generator），不需要输入结构。
+
+## 原理与公式
+
+每种原型由固定的基胞矩阵 $\mathbf C_0(a,c/a)$ 和分数坐标集合
+$\{\mathbf s_j\}_{j=1}^{N_0}$ 定义。扩胞重复数为
+$(n_a,n_b,n_c)$ 时，
+
+$$
+\mathbf C'=\operatorname{diag}(n_a,n_b,n_c)\mathbf C_0,\qquad
+N'=N_0n_an_bn_c.
+$$
+
+`自动扩胞`在 $N'\le N_{\max}$ 的约束下选择尽可能利用原子预算、同时形状不过分失衡的
+三轴重复数；`手动重复`直接采用用户指定整数。`hcp`等非立方原型还使用
+$c=a(c/a)$。这张卡按理想模板生成未弛豫结构，不会自动优化晶格常数或内部坐标。
 
 ## 操作示例
 
@@ -21,16 +36,16 @@
 **目标：** 生成 fcc + hcp 两种晶型的 Ni 结构，晶格常数在实验值附近略有扫描
 
 **参数设置：**
-- `lattice = "fcc"`，`element = "Ni"`，`a_range = [3.52, 3.52, 0.05]`
-- `auto_supercell = true`，`max_atoms = 256`
-- 再开一张同参数但 `lattice = "hcp"` 的卡
+- `晶格`选择“面心立方”，`元素`填 `Ni`，`晶格常数范围`填 `[3.52, 3.52, 0.05]`；
+- 开启`自动扩胞`，`最大原子数`填 `256`；
+- 再开一张同参数但把`晶格`改为“六方密排”的卡。
 
 **输出：** fcc 和 hcp 两种晶型的 Ni 超胞结构，带 `Proto(fcc,a=...,rep=...)` / `Proto(hcp,a=...,rep=...)` 标签
 
 **怎么验证训练集质量改善：**
 - 重训后计算 fcc/hcp 能量差，应接近 DFT 参考
 - 检查输出结构原子数和对称性：fcc 应为立方对称，hcp 六角对称
-- 如果输出原子数远小于 `max_atoms`，说明 auto_supercell 找不到合适的扩胞因子——关掉 `auto_supercell`，手动设 `Rep`
+- 如果输出原子数远小于 `最大原子数`（`max_atoms`），说明 auto_supercell 找不到合适的扩胞因子——关掉 `自动扩胞`（`auto_supercell`），手动设 `重复倍数`（`rep`）
 
 ### 什么时候加这张卡、什么时候不加
 
@@ -45,7 +60,8 @@
 
 ## 参数说明
 
-### Lattice（lattice）
+### 晶格（lattice）
+
 `str`，默认 `'fcc'`。晶格原型类型，支持 `fcc`、`bcc`、`hcp`、`fcc111`。
 
 | 选项 | 含义 | 什么时候选 |
@@ -57,25 +73,32 @@
 
 `fcc111` 不是带真空的表面 slab；它仍然是周期 cell，只是把原始 fcc 的 (111) 面转成当前 cell 的 `(001)` 面。这样 `Stacking Fault / GSFE Path` 可以安全地按第三晶胞方向切开上下两半。
 
-### Element（element）
+### 元素（element）
+
 `str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），这里只用第一个元素——后续需要用 `Composition Space Sampling` + `Random Occupancy` 来实现多元素分布。
 
-### A Range（a_range）
-`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，格式 `[最小值, 最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `max_outputs` 控制总量。
+### 晶格常数 a 范围（a_range）
 
-### C/A（covera）
+`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，格式 `[最小值, 最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `最大输出数`（`max_outputs`）控制总量。
+
+### 晶格轴比 c/a（covera）
+
 `float`，默认 1.633。仅 hcp 晶型使用，c/a 轴比，理想值约 1.633。
 
-### Auto Supercell（auto_supercell）
-`bool`，默认 true。勾选后程序自动计算扩胞因子以逼近 `Max Atoms`；不勾选则手动通过 `Rep` 指定扩胞倍数。
+### 自动扩胞（auto_supercell）
 
-### Max Atoms（max_atoms）
-`int`，默认 512。目标最大原子数，仅 `auto_supercell` 开启时生效。常规范围 256~512。
+`bool`，默认 true。勾选后程序自动计算扩胞因子以逼近 `Max Atoms`；不勾选则手动通过 `重复倍数`（`rep`）指定扩胞倍数。
 
-### Rep（rep）
-`tuple[int, int, int]`，默认 `(4, 4, 4)`。三个方向的扩胞倍数 `[na, nb, nc]`，仅 `auto_supercell` 关闭时生效。
+### 最大原子数（max_atoms）
 
-### Max Outputs（max_outputs）
+`int`，默认 512。目标最大原子数，仅 `自动扩胞`（`auto_supercell`）开启时生效。常规范围 256~512。
+
+### 重复倍数（rep）
+
+`tuple[int, int, int]`，默认 `(4, 4, 4)`。三个方向的扩胞倍数 `[na, nb, nc]`，仅 `自动扩胞`（`auto_supercell`）关闭时生效。
+
+### 最大输出数（max_outputs）
+
 `int`，默认 200。这张卡输出结构总数的硬上限，防止 a_range 扫描 + 多晶型组合爆炸。
 
 ## 推荐预设
@@ -163,7 +186,7 @@
 
 **输出只有 1 个结构。** a_range 的起点=终点且步长>0 时只产生单点。如果需要扫描，设定不同起点和终点。
 
-**原子数远小于 `max_atoms`。** auto_supercell 的扩胞因子是整数，可能因为单胞原子数多导致最近整数倍已超过 max_atoms。手动关掉 auto_supercell 改 `rep`。
+**原子数远小于 `最大原子数`（`max_atoms`）。** auto_supercell 的扩胞因子是整数，可能因为单胞原子数多导致最近整数倍已超过 max_atoms。手动关掉 auto_supercell 改 `重复倍数`（`rep`）。
 
 **hcp 结构不是六角的。** hcp 的 ASE bulk 构造需要正确的 covera。确认 covera 在 1.6 左右。
 

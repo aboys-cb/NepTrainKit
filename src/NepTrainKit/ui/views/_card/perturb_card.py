@@ -38,7 +38,7 @@ class ElementScalingRow(QFrame):
         self.distance_frame.set_input_value([default_distance])
 
         self.delete_button = TransparentToolButton(FluentIcon.DELETE, self)
-        self.delete_button.setToolTip(self.tr("Remove this element override"))
+        self.delete_button.setToolTip(self.tr("Remove this element scaling"))
         self.delete_button.installEventFilter(
             ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP)
         )
@@ -134,37 +134,38 @@ class PerturbCard(MakeDataCard):
         self.scaling_radio_label.setToolTip(self.tr("Maximum displacement distance"))
         self.scaling_radio_label.installEventFilter(ToolTipFilter(self.scaling_radio_label, 300, ToolTipPosition.TOP))
 
-        self.element_scaling_label = BodyLabel(self.tr("Element overrides:"), self.setting_widget)
-        self.element_scaling_label.setToolTip(self.tr("Override max distance per element; fallback to global value when empty"))
+        self.element_scaling_label = BodyLabel(self.tr("Element Scaling:"), self.setting_widget)
+        self.element_scaling_label.setToolTip(
+            self.tr("Set maximum displacement per element; unlisted elements use Max distance")
+        )
         self.element_scaling_label.installEventFilter(ToolTipFilter(self.element_scaling_label, 300, ToolTipPosition.TOP))
         self.element_scaling_frame = QFrame(self.setting_widget)
-        self.element_scaling_layout = QVBoxLayout(self.element_scaling_frame)
+        self.element_scaling_layout = QHBoxLayout(self.element_scaling_frame)
         self.element_scaling_layout.setContentsMargins(0, 0, 0, 0)
         self.element_scaling_layout.setSpacing(4)
-        header_layout = QHBoxLayout()
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        header_layout.setSpacing(4)
-        self.element_scaling_checkbox = CheckBox(self.tr("Enable per-element"), self.setting_widget)
+        self.element_scaling_checkbox = CheckBox(self.tr("Enable Scaling"), self.setting_widget)
         self.element_scaling_checkbox.setChecked(False)
-        self.element_scaling_checkbox.setToolTip(self.tr("Use per-element max distance instead of a single global value"))
+        self.element_scaling_checkbox.setToolTip(
+            self.tr("Enable element-specific maximum displacement")
+        )
         self.element_scaling_checkbox.installEventFilter(
             ToolTipFilter(self.element_scaling_checkbox, 300, ToolTipPosition.TOP)
         )
         self.add_element_button = TransparentToolButton(FluentIcon.ADD, self.setting_widget)
-        self.add_element_button.setToolTip(self.tr("Add an element-specific distance"))
+        self.add_element_button.setToolTip(self.tr("Add Element Scaling"))
         self.add_element_button.installEventFilter(
             ToolTipFilter(self.add_element_button, 300, ToolTipPosition.TOP)
         )
-        header_layout.addWidget(self.element_scaling_checkbox)
-        header_layout.addWidget(self.add_element_button)
-        header_layout.addStretch(1)
-        self.element_rows_frame = QFrame(self.element_scaling_frame)
+        self.element_scaling_layout.addWidget(self.element_scaling_checkbox)
+        self.element_scaling_layout.addWidget(self.add_element_button)
+        self.element_scaling_layout.addStretch(1)
+        self.element_rows_frame = QFrame(self.setting_widget)
         self.element_rows_layout = QVBoxLayout(self.element_rows_frame)
         self.element_rows_layout.setContentsMargins(0, 0, 0, 0)
         self.element_rows_layout.setSpacing(4)
-        self.element_scaling_layout.addLayout(header_layout)
-        self.element_scaling_layout.addWidget(self.element_rows_frame)
+        self.element_scaling_label.setVisible(False)
         self.element_rows_frame.setVisible(False)
+        self.add_element_button.setEnabled(False)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1,"int")
@@ -197,25 +198,28 @@ class PerturbCard(MakeDataCard):
 
         self.settingLayout.addWidget(self.scaling_condition_frame, 2, 1, 1,2)
 
-        self.settingLayout.addWidget(self.element_scaling_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.element_scaling_frame, 3, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.num_label,4, 0, 1, 1)
+        self.settingLayout.addWidget(self.element_scaling_label, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.element_rows_frame, 4, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.num_condition_frame,4, 1, 1,2)
+        self.settingLayout.addWidget(self.num_label,5, 0, 1, 1)
+        self.settingLayout.addWidget(self.num_condition_frame,5, 1, 1,2)
 
-        self.settingLayout.addWidget(self.seed_checkbox, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 5, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 6, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 6, 1, 1, 2)
 
         self.add_element_button.clicked.connect(self._add_element_row)
         self.element_scaling_checkbox.toggled.connect(self._toggle_element_scaling_frame)
 
     def _toggle_element_scaling_frame(self, checked: bool) -> None:
-        """Show or hide element override rows."""
+        """Show or hide element scaling controls."""
+        self.element_scaling_label.setVisible(checked)
         self.element_rows_frame.setVisible(checked)
+        self.add_element_button.setEnabled(checked)
 
     def _add_element_row(self, element: str | None = None, distance: float | None = None) -> ElementScalingRow:
-        """Append an element override row."""
+        """Append an element scaling row."""
         row = ElementScalingRow(self.element_rows_frame, default_distance=self.scaling_condition_frame.get_input_value()[0])
         if element:
             row.set_value(element)
@@ -235,7 +239,7 @@ class PerturbCard(MakeDataCard):
         row.deleteLater()
 
     def _collect_element_scalings(self) -> dict[str, float]:
-        """Gather valid element override values."""
+        """Gather valid element scaling values."""
         scalings: dict[str, float] = {}
         for row in self.element_rows:
             value = row.get_value()

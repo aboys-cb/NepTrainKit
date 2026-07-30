@@ -71,6 +71,10 @@ myst_enable_extensions = [
 ]
 
 templates_path = ['_templates']
+exclude_patterns = [
+    'module/nep-dataset-display-content.md',
+    'module/training-set-assessment-content.md',
+]
 locale_dirs = ['locale/']
 gettext_compact = False
 gettext_uuid = True
@@ -83,12 +87,24 @@ language = {
 
 
 html_theme = 'sphinx_rtd_theme'
+html_theme_options = {
+    # Keep the global sidebar as a document tree.  Page-local headings belong
+    # in the page's own contents block; mixing both makes long reference pages
+    # unreadable in the navigation.
+    'collapse_navigation': True,
+    'navigation_depth': 5,
+    'includehidden': True,
+    'titles_only': True,
+}
 html_static_path = ['_static']
 html_context = {
     'author_name': author,
 }
 html_css_files = [
     'css/custom.css',  # specify your custom CSS file here
+]
+html_js_files = [
+    'js/partial-navigation.js',
 ]
 
 copybutton_prompt_text = r'^\s*(>>> |\.\.\. |\$ |PS> )'

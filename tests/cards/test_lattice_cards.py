@@ -134,6 +134,21 @@ class TestLatticeCards(BaseCardTest):
         ]
         self.assertTrue(any(delta > 0 for delta in displacements))
 
+    def test_perturb_element_scaling_labels_and_disclosure(self):
+        card = PerturbCard()
+
+        self.assertEqual(card.element_scaling_checkbox.text(), "Enable Scaling")
+        self.assertEqual(card.element_scaling_label.text(), "Element Scaling:")
+        self.assertTrue(card.element_scaling_label.isHidden())
+        self.assertTrue(card.element_rows_frame.isHidden())
+        self.assertFalse(card.add_element_button.isEnabled())
+
+        card.element_scaling_checkbox.setChecked(True)
+
+        self.assertFalse(card.element_scaling_label.isHidden())
+        self.assertFalse(card.element_rows_frame.isHidden())
+        self.assertTrue(card.add_element_button.isEnabled())
+
     def test_perturb_operation_is_ui_independent(self):
         params = PerturbParams(
             engine_type=1,

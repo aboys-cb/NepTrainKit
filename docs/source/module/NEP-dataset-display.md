@@ -1,12 +1,23 @@
-# NEP Dataset Display
+# 数据集查看（NEP Dataset Display）
 
 `NEP Dataset Display` 是用来查看、筛选和导出结构数据的页面。它有两类常见用途：
 
-- **DFT 之前**：把 `Make Dataset` 生成的候选结构导入进来，先删掉明显异常结构，再采样去 DFT。
+- **DFT 之前**：把 `生成数据集` 生成的候选结构导入进来，先删掉明显异常结构，再采样去 DFT。
 - **训练之后**：导入训练结构和模型输出，找误差大的结构，判断下一轮数据应该补哪里。
 
 它不是训练器，也不替代 DFT。这里的重点是把结构和图上的异常点连起来，让你能快速决定：
 保留、删除、导出，还是回到上游重新生成。
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+
+nep-display-open-data
+nep-display-main-plot-tools
+nep-display-structure-tools
+nep-display-filter
+nep-display-status-and-errors
+```
 
 ```{image} ../_static/image/generated/show_nep_overview.png
 :alt: NEP Dataset Display overview
@@ -19,7 +30,7 @@
 
 | 输入 | 什么时候用 | 你会看到什么 |
 | --- | --- | --- |
-| 候选结构 `xyz` / `extxyz` | `Make Dataset` 刚生成结构后 | 结构视图、组成、标签、预测或几何异常 |
+| 候选结构 `xyz` / `extxyz` | `生成数据集` 刚生成结构后 | 结构视图、组成、标签、预测或几何异常 |
 | 训练结构 + `nep.txt` | 想用模型快速预筛或回看预测 | 能量、力、应力等预测结果 |
 | 训练输出目录 | GPUMD 训练结束后 | 预测-标签散点、误差最大结构、可导出的子集 |
 
@@ -34,7 +45,7 @@
 2. **结构视图**：点中图上的结构后，看右侧是否有过近原子、不合理配位、奇怪表面或异常磁矩。
 3. **状态行**：关注 `Orig / Now / Rm / Sel / Unsel / Rej`，确认当前删掉、选中和保留的数量。
 
-如果你正在处理 `Make Dataset` 的候选结构，建议先看完整流程：
+如果你正在处理 `生成数据集` 的候选结构，建议先看完整流程：
 [候选结构清洗后再进入 DFT](../workflows/clean-candidate-structures.md)。
 
 ## 从这里打开训练集评估
@@ -65,14 +76,14 @@
 | 后悔删除 | `Undo Delete` | 恢复最近一次删除 |
 | 导出干净子集 | 顶部 `Save` / 导出菜单 | 保存后进入 DFT、FPS 或训练流程 |
 
-如果你不知道按钮图标对应哪个功能，查
-[NEP Dataset Display 详细参考](show-nep-reference.md)。参考页按按钮列出了参数和执行结果。
+如果你不知道按钮图标对应哪个功能，直接展开本页左侧目录。目录按照软件页面从上到下排列：
+顶部数据入口、左侧主图区、右侧结构区、筛选栏、底部状态栏。参数解释和执行结果都放在对应功能下面。
 
 ## 候选结构清洗时怎么用
 
 候选结构清洗的重点不是追求预测精度，而是先剔除明显坏样本：
 
-1. 打开 `Make Dataset` 导出的候选结构。
+1. 打开 `生成数据集` 导出的候选结构。
 2. 用结构视图和 `Finding non-physical structures` 找几何异常。
 3. 如果有可用 NEP 模型，再看预测力、能量或分布长尾。
 4. 选中异常结构后删除，或单独导出做记录。
@@ -102,4 +113,4 @@
 - `expression`：基于结构级表达式筛选，支持 `natoms`、元素统计、能量、力、应力、virial 和 `atomic.<name>`。
 
 `expression` 的完整语法、字段规则和示例见
-[NEP Dataset Display 详细参考](show-nep-reference.md)。
+[筛选栏：按标签、元素和表达式找结构](nep-display-filter.md)。

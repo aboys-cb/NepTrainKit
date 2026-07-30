@@ -2,13 +2,19 @@
 
 # 晶格应变（Lattice Strain）
 
-`Group`: `Lattice` | `Class`: `CellStrainCard`
+**分类：** 晶格
 
 ## 功能说明
 
 对晶胞轴向做受控应变扫描。选定方向组合（单轴/双轴/三轴/各向同性），给定拉伸百分比和步长，程序按比例缩放晶格矢量，生成一组不同应变的结构。
 
+## 原理与公式
+
 $$\epsilon_i=\frac{s_i}{100},\quad \mathbf{C}'=\mathbf{D}\mathbf{C},\quad \mathbf{D}=\mathrm{diag}(1+\epsilon_x,1+\epsilon_y,1+\epsilon_z)$$
+
+其中 $s_i$ 是界面输入的百分数，$\epsilon_i$ 是无量纲工程应变，$\mathbf C$ 是原晶胞
+矩阵。未选中的方向取 $\epsilon_i=0$。原子分数坐标保持不变，所以生成的是晶胞和原子
+共同经历的仿射应变。
 
 ## 操作示例
 
@@ -23,8 +29,8 @@ $$\epsilon_i=\frac{s_i}{100},\quad \mathbf{C}'=\mathbf{D}\mathbf{C},\quad \mathb
 **目标：** 沿 x 方向做 -2% 到 +2% 的单轴应变，步长 1%，共 5 个结构，让模型在 ±2% 范围内有内插依据
 
 **参数设置：**
-- `Axes` = `uniaxial`
-- `x_range` = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）
+- `轴`（`axes`） = `uniaxial`
+- `X 轴范围`（`x_range`） = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）
 
 **输出：** 5 个结构（-2%, -1%, 0%, +1%, +2%），晶格 x 分量逐步拉长，原子分数坐标保持不变
 
@@ -45,25 +51,25 @@ $$\epsilon_i=\frac{s_i}{100},\quad \mathbf{C}'=\mathbf{D}\mathbf{C},\quad \mathb
 - 体系本身对应变不敏感（如刚性分子晶体），加了只是增大训练集体积没帮助
 
 ## 参数说明
-### Axes（axes）
+### 轴（axes）
 
 `str`，默认 `'uniaxial'`。选 `uniaxial` 就只沿一个方向拉/压，补 C11/C22/C33 这类单轴弹性响应；`biaxial` 同时动两个方向，面内耦合和泊松效应都能覆盖；`isotropic` 三个方向等比例缩放，更接近 EOS 和体模量采样。注意，别在只想做体积曲线的时候打开三轴独立扫描（`triaxial`）——那会触发热爆炸级的组合数。
 
-### X Range（x_range）
+### X 轴范围（x_range）
 
-`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。格式是 `[最小值, 最大值, 步长]`，单位 %。只有 `Axes` 激活的方向才生效；isotropic 模式只认 x_range。步长越小、范围越宽，输出的结构就越多。
+`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。格式是 `[最小值, 最大值, 步长]`，单位 %。只有 `轴`（`axes`）激活的方向才生效；isotropic 模式只认 x_range。步长越小、范围越宽，输出的结构就越多。
 
 典型参考值：±1~2% 是大多数无机晶体的弹性区，键长变化一般不到 0.1 Å，补弹性常数首选这个区间。推到 ±3~5% 就进入非谐区了，适合做应力-应变曲线覆盖，抽检输出确认没有非物理键长。如果你设到 ±6% 以上，那是极端变形，很可能拉断键——每批跑完务必抽查最近邻距离。
 
-### Y Range（y_range）
+### Y 轴范围（y_range）
 
-`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。语法和 x_range 完全一样，仅作用在 y 轴。只有 `Axes` 激活的方向才生效。isotropic 模式不单独看 y_range。典型参考值和 x_range 一致：±1~2% 弹性区，±3~5% 非谐区，±6%+ 需要警惕非物理键长。
+`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。语法和 x_range 完全一样，仅作用在 y 轴。只有 `轴`（`axes`）激活的方向才生效。isotropic 模式不单独看 y_range。典型参考值和 x_range 一致：±1~2% 弹性区，±3~5% 非谐区，±6%+ 需要警惕非物理键长。
 
-### Z Range（z_range）
+### Z 轴范围（z_range）
 
 `tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。同上，只作用于 z 轴。isotropic 模式不单独看 z_range。典型参考值同上：±1~2% 弹性区，±3~5% 非谐区，±6%+ 注意抽查最近邻距离。
 
-### Identify Organic（identify_organic）
+### 识别有机分子（identify_organic）
 
 `bool`，默认 `false`。分子晶体、MOF、有机半导体这几种场景必须打开——打开后程序会识别有机分子团簇，晶格应变只作用在分子间，分子内部的键长尽量保持刚性。纯无机晶体关着就行，开了反而多算一堆团簇检测。
 
@@ -122,7 +128,7 @@ $$\epsilon_i=\frac{s_i}{100},\quad \mathbf{C}'=\mathbf{D}\mathbf{C},\quad \mathb
 
 **组合爆炸。** `triaxial` + 步长 0.5% + ±5% = 21³ = 9261 个结构。先估算 Nx × Ny × Nz 再跑。
 
-**有机分子键被拉断。** `Identify organic` 没开。
+**有机分子键被拉断。** `识别有机分子`（`identify_organic`）没开。
 
 ## 输出标签
 

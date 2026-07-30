@@ -2,15 +2,21 @@
 
 # 小角度自旋倾斜（Small-Angle Spin Tilt）
 
-`Group`: `Magnetism` | `Class`: `SmallAngleSpinTiltCard`
+**分类：** 磁性
 
 ## 功能说明
 
 对选定目标原子、全局磁序或原子对做确定性小角度磁矩偏转（canting）。支持四种模式：单自旋偏转、Global tilt、显式原子对 canting、两组原子的 group-pair canting。pair 模式显式构造 S_i x S_j 的正/负手性对，直接服务于 DMI 训练集；Global tilt 用于外场下的集体偏转角扫描。
 
+## 原理与公式
+
 $$\hat{\mathbf{m}}(\theta)=\cos\theta\,\hat{\mathbf{m}}_0+\sin\theta\,\hat{\mathbf{t}}$$
 
 $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
+
+$\hat{\mathbf t}$ 是与参考磁矩 $\hat{\mathbf m}_0$ 正交的单位倾斜方向。成对 canting
+把总夹角 $\theta$ 平分到左右自旋，使两者相对角度可控；正负手性通过翻转
+$\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 
 **关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Magmom Rotation`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。
 
@@ -29,17 +35,17 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 **参数设置：**
 - `Canting Mode` = `Atom pair canting`
 - `Pair Source` = `Auto by neighbor shell`
-- `Pair Shell` = `[1]`
-- `Angle List` = `1,2,5,10`
+- `近邻壳层`（`pair_shell`） = `[1]`
+- `倾斜角列表`（`angle_list`） = `1,2,5,10`
 - `Tilt Signs` = `Both (+/- pair)`
-- `Magnitude Source` = `Map/default magnitude`，`Magmom Map` = `Fe:2.2`
+- `Magnitude Source` = `Map/default magnitude`，`元素磁矩表`（`magmom_map`） = `Fe:2.2`
 
 **输出：** 对每个第一近邻 Fe-Fe 对，4 个角度 x 2 种手性 = 8 个 canting 构型。如果自动找到 4 个近邻对，共 ~32 个输出（含 reference 则为 33）。
 
 **怎么验证训练集质量改善：**
 - 重训后计算左手和右手螺旋构型的能量差，符号和趋势应该接近 DFT 参考
 - 抽查一对 canting 输出：左侧原子磁矩偏 +theta/2，右侧偏 -theta/2
-- 如果 DMI 仍不准，扩大 `Angle List` 到 `1,2,3,5,7,10,15`，增加第二近邻 `Pair Shell = [2]`
+- 如果 DMI 仍不准，扩大 `倾斜角列表`（`angle_list`）到 `1,2,3,5,7,10,15`，增加第二近邻 `Pair Shell = [2]`
 - 如果只想研究特定键，切到 `Manual indices` 精确指定
 
 ### 什么时候加这张卡、什么时候不加
@@ -60,7 +66,7 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 ### 倾斜目标
 
-#### Canting Mode（canting_mode）
+#### 倾斜模式（canting_mode）
 
 `str`，默认 `'Single-spin tilt'`。
 
@@ -71,83 +77,83 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 | `Atom pair canting` | 左右两侧原子分别偏转 ±θ/2 | DMI 训练集首选 |
 | `Group pair canting` | 两组原子整体分别偏转 ±θ/2 | 子晶格级别 canting |
 
-#### Target Mode（target_mode）
+#### 目标选择方式（target_mode）
 
 `str`，默认 `'First eligible atom'`。单原子验证用 `First` 或手动索引；需要系统性覆盖局部环境时用 `All eligible`——注意全量目标会显著放大输出数量。
 
-#### Target Indices（target_indices）
+#### 目标原子索引（target_indices）
 
 `str`，默认 `''`。手动指定要倾斜的原子索引，格式如 `1,3-5`。
 
-生效条件：`target_mode` 使用手动索引时。
+生效条件：`目标选择方式`（`target_mode`）使用手动索引时。
 
 ### 原子对目标
 
-#### Pair Left Indices（pair_left_indices）
+#### 左侧原子对索引（pair_left_indices）
 
 `str`，默认 `''`。手动模式时，左侧原子 1-based 索引列表，与右侧一一配对。
 
-生效条件：`pair_source` 选择手动索引时。
+生效条件：`原子对来源`（`pair_source`）选择手动索引时。
 
-#### Pair Right Indices（pair_right_indices）
+#### 右侧原子对索引（pair_right_indices）
 
 `str`，默认 `''`。手动模式时，右侧原子 1-based 索引列表，与左侧一一配对。
 
-生效条件：`pair_source` 选择手动索引时。
+生效条件：`原子对来源`（`pair_source`）选择手动索引时。
 
-#### Pair Source（pair_source）
+#### 原子对来源（pair_source）
 
 `str`，默认 `'Manual indices'`。手动索引适合可控验证；自动近邻壳层适合批量生成 DMI/交换路径样本，但需要检查元素对和键方向筛选。
 
-#### Pair Shell（pair_shell）
+#### 近邻壳层（pair_shell）
 
 `int`，默认 `1`。自动模式时取第几近邻壳层。1 为第一近邻，2 为第二近邻。
 
-生效条件：`pair_source` 选择近邻自动搜索时。
+生效条件：`原子对来源`（`pair_source`）选择近邻自动搜索时。
 
-#### Pair Shell Tolerance（pair_shell_tolerance）
+#### 近邻壳层容差（pair_shell_tolerance）
 
 `float`，默认 `0.05`。自动分壳层的距离容差，单位 Å。
 
-生效条件：`pair_source` 选择近邻自动搜索时。
+生效条件：`原子对来源`（`pair_source`）选择近邻自动搜索时。
 
-#### Pair Element Filter（pair_element_filter）
+#### 原子对元素筛选（pair_element_filter）
 
 `str`，默认 `''`。按元素对限制自动近邻 pair，例如 `Fe-Fe` 或 `Fe-Co`。DMI/交换路径分析时务必匹配目标相互作用元素对。
 
 生效条件：自动生成原子对后需要按元素筛选时。
 
-#### Pair Group Filter（pair_group_filter）
+#### 原子对分组筛选（pair_group_filter）
 
 `str`，默认 `''`。按 group 对限制自动近邻 pair，适合层状 AFM、界面或已标记子晶格。没有上游 group 标签时不要使用。
 
 生效条件：自动生成原子对后需要按 group 筛选时。
 
-#### Bond Filter Mode（bond_filter_mode）
+#### 键筛选方式（bond_filter_mode）
 
 `str`，默认 `'Any'`。`Any` 保留所有候选键；`Near axis` 选接近某方向的键；`Near plane` 选接近某晶面的键，用于区分面内/面外相互作用。
 
-#### Bond Filter Axis（bond_filter_axis）
+#### 键筛选轴（bond_filter_axis）
 
 `list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。研究面内/面外 DMI 时必须和晶体取向一致。
 
-生效条件：`bond_filter_mode` 不是关闭状态时。
+生效条件：`键筛选方式`（`bond_filter_mode`）不是关闭状态时。
 
-#### Bond Filter Tolerance（bond_filter_tolerance）
+#### 键筛选容差（bond_filter_tolerance）
 
 `float`，默认 `20.0`。方向筛选容差——设太小可能找不到 pair，设太大会混入不该比较的交换路径。
 
-生效条件：`bond_filter_mode` 不是关闭状态时。
+生效条件：`键筛选方式`（`bond_filter_mode`）不是关闭状态时。
 
 ### Group Pair 模式
 
-#### Group A（group_a）
+#### A 组（group_a）
 
 `str`，默认 `'A'`。`arrays['group']` 中的标签名。需要输入已有 group 标签。
 
 生效条件：需要 group pair、手动 group 或 AFM group 模式时。
 
-#### Group B（group_b）
+#### B 组（group_b）
 
 `str`，默认 `'B'`。`arrays['group']` 中的标签名。需要输入已有 group 标签。
 
@@ -155,55 +161,55 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 ### 角度和手性
 
-#### Angle List（angle_list）
+#### 倾斜角列表（angle_list）
 
 `str`，默认 `'1,2,5,10'`。逗号分隔的偏转角列表，单位度。推荐从这个默认列表起步。
 
-#### Tilt Signs（tilt_signs）
+#### 倾斜符号（tilt_signs）
 
 `str`，默认 `'Positive only'`。只做 +θ 可以验证局部响应；同时做 ±θ 才能提取手性不对称项，DMI 数据建议用成对输出。
 
-#### Include Reference（include_reference）
+#### 包含参考构型（include_reference）
 
-`bool`，默认 `True`。额外输出一帧未偏转的参考磁态，方便做 energy difference 对比。打开后 `max_outputs` 至少为 2，确保预算中还留有一帧真正的 canting 输出。
+`bool`，默认 `True`。额外输出一帧未偏转的参考磁态，方便做 energy difference 对比。打开后 `最大输出数`（`max_outputs`）至少为 2，确保预算中还留有一帧真正的 canting 输出。
 
 ### 磁矩与参考态
 
-#### Magnitude Source（magnitude_source）
+#### 磁矩大小来源（magnitude_source）
 
-`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms` 时复用它最安全；没有磁矩输入时用 `magmom_map`/`default_moment` 构造幅值。不要用默认幅值替代已知元素磁矩。
+`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms` 时复用它最安全；没有磁矩输入时用 `元素磁矩表`（`magmom_map`）/`默认磁矩`（`default_moment`）构造幅值。不要用默认幅值替代已知元素磁矩。
 
-#### Magmom Map（magmom_map）
+#### 元素磁矩表（magmom_map）
 
 `str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。
 
-#### Default Moment（default_moment）
+#### 默认磁矩（default_moment）
 
-`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
+`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
 
-#### Lift Scalar（lift_scalar）
+#### 标量磁矩转为矢量（lift_scalar）
 
 `bool`，默认 `True`。输入是标量磁矩但下游需要非共线向量时打开；如果原始数据已有方向信息，不要重新提升覆盖它。
 
-#### Axis（axis）
+#### 轴（axis）
 
 `list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。这是方向参考，不是普通数值——改它会改变分层、表面法向或磁矩方向。使用前先确认 cell 取向和目标物理方向。
 
 生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
 
-#### Reference Direction（reference_direction）
+#### 参考方向（reference_direction）
 
 `list[float] | tuple[float, float, float]`，默认 `(1.0, 0.0, 0.0)`。canting 平面的首选侧向参考方向。
 
-#### Apply Elements（apply_elements）
+#### 应用元素（apply_elements）
 
 `str`，默认 `''`。限制哪些元素参与目标筛选，留空则全部参与。
 
 ### 输出预算
 
-#### Max Outputs（max_outputs）
+#### 最大输出数（max_outputs）
 
-`int`，默认 `100`。自动 pair、角度列表和正负手性会相乘放大输出数量。这个上限包含 reference；开启 `include_reference` 时至少设为 2。先用 20-100 检查 pair 选择是否合理，确认后再扩大到完整 DMI 扫描。
+`int`，默认 `100`。自动 pair、角度列表和正负手性会相乘放大输出数量。这个上限包含 reference；开启 `包含参考构型`（`include_reference`）时至少设为 2。先用 20-100 检查 pair 选择是否合理，确认后再扩大到完整 DMI 扫描。
 
 ## 推荐预设
 
@@ -317,13 +323,13 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 ## 常见问题
 
-**提示没有可倾斜磁矩或目标原子。** `Existing initial magmoms` 要求输入已有非零磁矩；否则切换到 `Map/default magnitude` 并填写真实幅值。再检查 `apply_elements`、手动索引和目标模式是否把所有原子过滤掉了。卡片不会再用原结构代替 canting 输出。
+**提示没有可倾斜磁矩或目标原子。** `Existing initial magmoms` 要求输入已有非零磁矩；否则切换到 `Map/default magnitude` 并填写真实幅值。再检查 `应用元素`（`apply_elements`）、手动索引和目标模式是否把所有原子过滤掉了。卡片不会再用原结构代替 canting 输出。
 
-**提示没有有效 pair。** 手动模式检查左右索引数量和磁矩是否非零；自动模式调整 `pair_shell_tolerance`——太大把不同壳层并到一起，太小把同一壳层拆开。再检查 `pair_element_filter`、`pair_group_filter` 和键方向筛选是否过紧。
+**提示没有有效 pair。** 手动模式检查左右索引数量和磁矩是否非零；自动模式调整 `近邻壳层容差`（`pair_shell_tolerance`）——太大把不同壳层并到一起，太小把同一壳层拆开。再检查 `原子对元素筛选`（`pair_element_filter`）、`原子对分组筛选`（`pair_group_filter`）和键方向筛选是否过紧。
 
-**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `group_a` 和 `group_b` 中都要有至少一个非零磁矩原子。可以用 `Group Label` 先生成坐标分组，但它不会自动识别化学子晶格。
+**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `A 组`（`group_a`）和 `B 组`（`group_b`）中都要有至少一个非零磁矩原子。可以用 `Group Label` 先生成坐标分组，但它不会自动识别化学子晶格。
 
-**输出数量多于预期。** `Target Mode = All eligible atoms` + `Both (+/- pair)` 会快速膨胀。设 `max_outputs` 上限或改用 `First eligible atom`。
+**输出数量多于预期。** `Target Mode = All eligible atoms` + `Both (+/- pair)` 会快速膨胀。设 `最大输出数`（`max_outputs`）上限或改用 `First eligible atom`。
 
 ## 输出标签
 
@@ -336,4 +342,4 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 ## 可复现性
 
-无随机性。相同输入、相同参数 → 严格一致输出。`reference_direction` 会先对基准磁矩方向正交化，结果是确定性的。
+无随机性。相同输入、相同参数 → 严格一致输出。`参考方向`（`reference_direction`）会先对基准磁矩方向正交化，结果是确定性的。

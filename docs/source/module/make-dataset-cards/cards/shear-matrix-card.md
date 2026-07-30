@@ -2,15 +2,20 @@
 
 # 剪切矩阵应变（Shear Matrix Strain）
 
-`Group`: `Lattice` | `Class`: `ShearMatrixCard`
+**分类：** 晶格
 
 ## 功能说明
 
 通过 xy/yz/xz 剪切矩阵分量生成非对角形变样本。对晶格矢量的三个剪切通道做系统扫描，每个通道独立控制 min/max/step。
 
+## 原理与公式
+
 $$\gamma_{xy}=\frac{s_{xy}}{100},\quad \mathbf{S}=\begin{bmatrix}1&\gamma_{xy}&\gamma_{xz}\\0&1&\gamma_{yz}\\0&0&1\end{bmatrix},\quad \mathbf{C}'=\mathbf{C}\mathbf{S}$$
 
 `symmetric=true` 时填充 S 的下三角对应项，使剪切路径更接近对称形变。
+
+其中 $s_{xy},s_{yz},s_{xz}$ 是界面输入的百分数，$\gamma$ 是无量纲剪切量。
+非对称模式是简单剪切；对称模式同时填入转置位置。原子分数坐标保持不变。
 
 ## 操作示例
 
@@ -25,10 +30,10 @@ $$\gamma_{xy}=\frac{s_{xy}}{100},\quad \mathbf{S}=\begin{bmatrix}1&\gamma_{xy}&\
 **目标：** 沿 xy 方向做 -3% 到 +3% 剪切，步长 1%，对称模式，共 7 个结构
 
 **参数设置：**
-- `xy_range` = `[-3, 3, 1]`
-- `yz_range` = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值写进去，否则 range 为空不生成
-- `xz_range` = `[0, 0, 1]` （不扫 xz）
-- `symmetric` = `true`
+- `XY 剪切范围`（`xy_range`） = `[-3, 3, 1]`
+- `YZ 剪切范围`（`yz_range`） = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值写进去，否则 range 为空不生成
+- `XZ 剪切范围`（`xz_range`） = `[0, 0, 1]` （不扫 xz）
+- `对称剪切`（`symmetric`） = `true`
 
 **输出：** 7 个结构，剪切矩阵的 xy 分量从 -0.03 到 +0.03，yz 和 xz 分量为 0
 
@@ -48,29 +53,29 @@ $$\gamma_{xy}=\frac{s_{xy}}{100},\quad \mathbf{S}=\begin{bmatrix}1&\gamma_{xy}&\
 **不加：**
 - 只需要体积和单轴应变 → `Lattice Strain` 更直接
 - 想通过角度而非矩阵分量控制剪切 → `Shear Angle Strain` 更适合
-- 体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `identify_organic`
+- 体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `识别有机分子`（`identify_organic`）
 
 ## 参数说明
 
-### XY Range（xy_range）
+### XY 剪切范围（xy_range）
 
 `tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。剪切矩阵 xy 分量的扫描区间，格式 `[min, max, step]`，单位 %。比如 `sxy=5` 对应剪切矩阵分量 0.05。如果你只扫一个分量，把另外两个设为一个点就行——但注意不能设成 `[0, 0, 0]`（步长为 0 会让 range 变空），正确写法是 `[0, 0, 1]` 保证至少生成一个 0 点。
 
-### YZ Range（yz_range）
+### YZ 剪切范围（yz_range）
 
 `tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。yz 分量的扫描区间，单位和语法同 xy_range。同理，不扫时写 `[0, 0, 1]`。
 
-### XZ Range（xz_range）
+### XZ 剪切范围（xz_range）
 
 `tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。xz 分量的扫描区间，同上。不扫时写 `[0, 0, 1]`。
 
 输出总数 = Nxy * Nyz * Nxz。三个通道同时按默认值跑 = 11^3 = 1331 个结构。建议先单通道试跑验证参数，再逐步加通道。
 
-### Symmetric（symmetric）
+### 对称剪切（symmetric）
 
 `bool`，默认 `true`。打开后剪切矩阵下三角同步填充（比如 `S[1,0] = S[0,1]`），形变路径更接近物理上的对称剪切。如果你在研究非对称畸变（比如某些铁弹相变），把这个关掉。
 
-### Identify Organic（identify_organic）
+### 识别有机分子（identify_organic）
 
 `bool`，默认 `false`。分子晶体必须打开——否则剪切变形会撕裂分子内键。纯无机体系关着即可。
 

@@ -1,8 +1,8 @@
 <!-- card-schema: {"card_name": "Vacancy Defect Generation", "source_file": "src/NepTrainKit/ui/views/_card/vacancy_defect_card.py", "serialized_keys": ["params"]} -->
 
-# 全局随机空位（Vacancy Defect Generation）
+# 全局随机空位（Global Random Vacancy）
 
-`Group`: `Defect` | `Class`: `VacancyDefectCard`
+**分类：** 缺陷
 
 ## 功能说明
 
@@ -15,14 +15,33 @@
 - `Global Random Vacancy`：所有元素都可被删除，适合快速覆盖整体空位数量或比例。
 - `Random Vacancy`：按元素和可选 `group` 规则选择候选位点，适合子晶格或特定元素空位。
 
+## 原理与公式
+
+设输入有 $N$ 个原子。按浓度输入时，最大空位数为
+
+$$
+n_{\max}=\lfloor fN\rfloor;
+$$
+
+按数量输入时直接使用指定整数。`固定数量`只采样 $n=n_{\max}$，`随机数量`覆盖
+$n=1,\ldots,n_{\max}$。每个 $n$ 的不同空位图样数是
+
+$$
+\Omega_n=\binom{N}{n}.
+$$
+
+`Sobol`引擎用低差异序列在位点选择空间中取样，`均匀随机`使用伪随机数；两者都会去重，
+并受最大输出数限制。程序保证至少保留一个原子。这里是全局位点采样；若要按元素或 group
+限定候选位点，应使用`按规则生成空位`。
+
 ## 快速使用
 
 以一个 100 原子的超胞为例，要为每个输入生成最多 50 个、每个含 5 个空位的构型：
 
-1. 选择 `Vacancy fraction (0–1)`，设为 `0.05`。
-2. `Vacancies per output` 选择 `Fixed at the set value`。
-3. `Maximum outputs per input` 设为 `50`。
-4. `Site sampling` 保持 `Uniform random (recommended)`。
+1. 选择 `空位比例（0–1）`（`concentration_condition`），设为 `0.05`。
+2. `每个输出的空位数`（`count_mode`）选择 `Fixed at the set value`。
+3. `每个输入最大输出数`（`max_structures`）设为 `50`。
+4. `位点采样方式`（`engine_type`）保持 `Uniform random (recommended)`。
 5. 做对照实验时勾选 `Use seed` 并填写固定种子。
 
 首帧预览会显示实际删除的原子数和最多可生成的唯一输出数。输出带有 `Vac(n=5)` 标签。
@@ -31,11 +50,11 @@
 
 ### 删除量
 
-#### Vacancy count（num_condition）
+#### 空位数量（num_condition）
 
 `int`，默认 `1`。每个输出最多删除的原子数。必须至少为 1，且必须小于输入结构的原子数，程序不会再静默缩小过大的数值。
 
-#### Vacancy fraction (0–1)（concentration_condition）
+#### 空位比例（0–1）（concentration_condition）
 
 `float`，默认 `0.01`。按
 
@@ -45,11 +64,11 @@
 
 换算删除量。例如 100 个原子、比例 `0.05` 会删除 5 个原子。比例必须在 `(0, 1)` 内；若向下取整后为 0，卡片会提示当前结构至少需要的比例。
 
-#### Use Num（use_num）
+#### 按数量设置（use_num）
 
 `bool`，默认 `true`。`true` 使用绝对数量；`false` 使用整体比例。界面中未选中的输入框会被禁用，避免误以为两个值会同时生效。
 
-#### Vacancies per output（count_mode）
+#### 每个输出的空位数（count_mode）
 
 `str`，默认 `fixed`。
 
@@ -60,11 +79,11 @@
 
 ### 采样和输出
 
-#### Maximum outputs per input（max_structures）
+#### 每个输入最大输出数（max_structures）
 
 `int`，默认 `1`。每个输入结构请求的最大输出数。相同的删除位点组合会去重；当所有可能组合少于请求值时，实际输出会更少。
 
-#### Site sampling（engine_type）
+#### 位点采样方式（engine_type）
 
 `int`，默认 `1`。
 

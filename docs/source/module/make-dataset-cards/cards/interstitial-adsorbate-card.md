@@ -1,8 +1,8 @@
 <!-- card-schema: {"card_name": "Insert Defect", "source_file": "src/NepTrainKit/ui/views/_card/interstitial_adsorbate_card.py", "serialized_keys": ["params"]} -->
 
-# 插隙与表面吸附（Insert Defect）
+# 插隙与表面吸附（Interstitial and Surface Adsorption）
 
-`Group`: `Defect` | `Class`: `InsertDefectCard`
+**分类：** 缺陷
 
 ## 功能说明
 
@@ -15,21 +15,30 @@
 
 这张卡**不识别晶体学间隙位或化学吸附位**：不会自动寻找四面体、八面体、顶位、桥位或空位，也不会弛豫坐标。它适合生成连续随机候选，再交给 DFT、几何优化、能量筛选或 `FPS Filter`；需要确定的物理路径时，应使用专门的位点或路径构造工具。
 
-## 工作原理
+## 原理与公式
 
 ### 体相随机插隙
 
-每次在 `[0,1)^3` 中抽取一个分数坐标并映射到晶胞。候选点满足 `min_distance` 后才会插入。若一个输出需要多个原子，后插入的原子也会避开先插入的原子。
+每次在 `[0,1)^3` 中抽取一个分数坐标并映射到晶胞。候选点满足 `最小原子间距`（`min_distance`）后才会插入。若一个输出需要多个原子，后插入的原子也会避开先插入的原子。
 
 ### 上表面随机吸附
 
-`axis` 指定 slab 真空所在的晶格方向 `a`、`b` 或 `c`。程序以原始宿主原子的最大分数坐标确定上表面，在该平面内随机取点，再沿真实表面法向移动 `offset`。
+`真空／表面法向方向`（`axis`）指定 slab 真空所在的晶格方向 `a`、`b` 或 `c`。程序以原始宿主原子的最大分数坐标确定上表面，在该平面内随机取点，再沿真实表面法向移动 `高于最高原子平面的距离`（`offset`）。
 
 对于倾斜晶胞，法向由对应的倒易方向计算，而不是直接沿晶格矢量移动。多个吸附原子始终以同一个原始宿主平面为参考，不会逐个向上堆叠。当前只生成上表面候选。
 
 ### 完整输出约束
 
-每个输出必须插满 `insert_count` 个原子。任何一个原子在 `max_attempts` 次尝试后仍无法放置时，卡片会明确报错，不返回未修改或只完成一部分的伪成功结构。
+每个输出必须插满 `每个输出插入原子数`（`insert_count`）个原子。任何一个原子在 `每个原子的放置尝试次数`（`max_attempts`）次尝试后仍无法放置时，卡片会明确报错，不返回未修改或只完成一部分的伪成功结构。
+
+两种模式都要求每个候选点 $\mathbf r$ 满足
+
+$$
+\min_j d_{\mathrm{MIC}}(\mathbf r,\mathbf r_j)\ge d_{\min},
+$$
+
+其中 $d_{\mathrm{MIC}}$ 是按输入周期边界计算的最小镜像距离，$d_{\min}$ 的单位为 Å；
+$\mathbf r_j$ 同时包含宿主原子和本次已插入原子。多元素输入按归一化权重抽取插入元素。
 
 ## 操作示例
 
@@ -43,14 +52,14 @@
 
 **参数：**
 
-- `Insertion mode`：`Random upper-surface adsorption`
-- `Inserted species and weights`：`O`
-- `Atoms inserted per output`：`1`
-- `Outputs per input`：`50`
-- `Minimum atom distance`：`1.4 Å`
-- `Vacuum / surface-normal direction`：`Lattice c direction`
-- `Height above top atomic plane`：`1.8 Å`
-- `Use seed`：开启，便于比较后续筛选方案
+- `插入模式`（`mode`）：`Random upper-surface adsorption`
+- `插入元素与权重`（`species`）：`O`
+- `每个输出插入原子数`（`insert_count`）：`1`
+- `每个输入的输出数`（`structure_count`）：`50`
+- `最小原子间距`（`min_distance`）：`1.4 Å`
+- `真空／表面法向方向`（`axis`）：`Lattice c direction`
+- `高于最高原子平面的距离`（`offset`）：`1.8 Å`
+- `使用随机种子`（`use_seed`）：开启，便于比较后续筛选方案
 
 **验证：**
 
@@ -63,14 +72,14 @@
 
 ### 模式与元素
 
-#### Insertion Mode（mode）
+#### 插入模式（mode）
 
 `int`，默认 `0`。
 
 - `0`：体相随机插隙，在整个晶胞内连续随机取点。
 - `1`：上表面随机吸附，在指定上表面随机取横向位置。
 
-#### Inserted Species and Weights（species）
+#### 插入元素与权重（species）
 
 `str`，默认空，运行时必填。可填写单一元素 `Li`，或使用相对权重 `Li:7, Na:3`。多个插入原子会分别独立抽样，因此权重表示概率，不保证单个输出达到精确组成。
 
@@ -78,31 +87,31 @@
 
 ### 输出数量
 
-#### Atoms Inserted per Output（insert_count）
+#### 每个输出插入原子数（insert_count）
 
 `int`，默认 `1`。每个成功输出必须插入的原子数，界面范围为 1–20。
 
-#### Outputs per Input（structure_count）
+#### 每个输入的输出数（structure_count）
 
 `int`，默认 `10`。每个输入结构生成的完整输出数，界面范围为 1–1000。
 
 ### 几何与尝试预算
 
-#### Minimum Atom Distance（min_distance）
+#### 最小原子间距（min_distance）
 
 `float`，默认 `1.4 Å`。候选点到宿主原子和已插入原子的最小允许距离。必须为有限正数。
 
 该值只排除明显近距离碰撞，不代表化学合理的键长。不同元素体系应按原子尺寸和预期局域环境调整。
 
-#### Placement Attempts per Atom（max_attempts）
+#### 每个原子的放置尝试次数（max_attempts）
 
 `int`，默认 `200`。每个待插入原子的最大随机尝试次数。达到上限仍找不到满足距离的位置时，整个操作报错。
 
-连续触发上限通常说明晶胞过密、插入数过多或 `min_distance` 过大；单纯继续提高尝试次数未必有效。
+连续触发上限通常说明晶胞过密、插入数过多或 `最小原子间距`（`min_distance`）过大；单纯继续提高尝试次数未必有效。
 
 ### 表面吸附
 
-#### Vacuum / Surface-normal Direction（axis）
+#### 真空／表面法向方向（axis）
 
 `int`，默认 `2`，仅在吸附模式生效。
 
@@ -112,7 +121,7 @@
 
 这里选择的是晶格方向，不等同于笛卡尔 `x`、`y`、`z`。程序会据此计算真实表面法向。
 
-#### Height Above Top Atomic Plane（offset）
+#### 高于最高原子平面的距离（offset）
 
 `float`，默认 `1.5 Å`，仅在吸附模式生效。表示候选原子到原始宿主最高原子平面的法向距离，必须为有限正数。
 
@@ -120,11 +129,11 @@
 
 ### 随机性
 
-#### Use Seed（use_seed）
+#### 使用随机种子（use_seed）
 
 `bool`，默认 `false`。启用后可复现同一输入结构的元素选择和几何位置。
 
-#### Seed（seed）
+#### 随机种子（seed）
 
 `int`，默认 `0`，仅在 `use_seed=true` 时生效。种子会与结构内容共同派生，因此几何不同的输入帧不会机械地获得相同分数坐标。
 
@@ -186,7 +195,7 @@
 
 **为什么运行直接报“无法放置”？**
 
-卡片不会返回插入数不足的结构。先检查 `Minimum atom distance`、插入原子数和晶胞可用空间，再决定是否增加尝试次数。
+卡片不会返回插入数不足的结构。先检查 `最小原子间距`（`min_distance`）、插入原子数和晶胞可用空间，再决定是否增加尝试次数。
 
 **为什么吸附原子可能位于晶胞范围外？**
 

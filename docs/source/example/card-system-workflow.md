@@ -1,4 +1,4 @@
-# 用一条流程学会 Make Dataset 卡片系统
+# 用一条流程学会 生成数据集卡片系统
 
 这不是四张卡片的功能介绍，而是一个完整的工作流示例。目标是从 2 原子的 Si 晶胞出发，同时生成掺杂和空位两类候选，再做小幅扰动和几何筛选。走完一次后，你应该能看懂卡片顺序、`Card Group` 分支、启停状态、输入输出数量以及流程复用方式。
 
@@ -7,7 +7,7 @@
 所有卡片共用同一组标题栏按钮：
 
 ```{image} ../_static/image/generated/tutorials/card_system_controls.png
-:alt: Make Dataset 卡片标题栏通用按钮
+:alt: 生成数据集卡片标题栏通用按钮
 :class: docs-screenshot
 ```
 

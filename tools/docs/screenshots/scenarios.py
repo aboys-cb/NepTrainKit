@@ -286,6 +286,10 @@ def make_data_empty(ctx: ScenarioContext) -> None:
     """Prepare an empty Make Data workspace."""
     ctx.window.switchTo(ctx.window.make_data_interface)
     pump_events(ctx.app, 100)
+    ctx.window.make_data_run_button = _find_make_data_run_button(
+        ctx,
+        ctx.window.make_data_interface,
+    )
 
 
 def _find_make_data_run_button(ctx: ScenarioContext, page) -> QWidget:

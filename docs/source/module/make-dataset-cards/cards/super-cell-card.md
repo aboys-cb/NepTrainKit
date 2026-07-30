@@ -1,14 +1,20 @@
 <!-- card-schema: {"card_name": "Super Cell", "source_file": "src/NepTrainKit/ui/views/_card/super_cell_card.py", "serialized_keys": ["params"]} -->
 
-# 超胞生成（Super Cell）
+# 扩胞（Super Cell）
 
-`Group`: `Lattice` | `Class`: `SuperCellCard`
+**分类：** 晶格
 
 ## 功能说明
 
 按倍率、目标胞长或原子数上限扩胞，为缺陷/表面/磁性操作提供足够空间。三种扩胞策略三选一：固定倍率（`scale`）、目标胞长（`cell`）、原子数上限（`max_atoms`）。可锁定特定轴向不扩胞——适合 slab 等需要维持法向层间距的场景。
 
+## 原理与公式
+
 $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\quad N'=N\cdot n_a n_b n_c$$
+
+$n_a,n_b,n_c$ 是三个方向的正整数重复数。目标胞长模式把每个 $n_i$ 取到足以达到目标
+长度的最小整数；原子数上限模式在 $N'$ 不超过预算的前提下选择重复数。锁定轴固定对应
+$n_i=1$。
 
 ## 操作示例
 
@@ -24,7 +30,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 
 **参数设置：**
 - mode = `scale`
-- `super_scale` = `[4, 4, 4]`
+- `超胞倍率`（`super_scale`） = `[4, 4, 4]`
 
 **输出：** 1 个 4x4x4 超胞结构，128 原子
 
@@ -32,7 +38,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 - 检查原子数：原胞 2 原子 * 4 * 4 * 4 = 128，核对输出
 - 检查晶格矢量：每个方向拉长 4 倍，体积增大 64 倍
 - 如果空位形成能仍偏高，继续增大到 5x5x5 = 250 原子，直到 DFT 和 NEP 的形成能收敛
-- 如果超胞太大计算不起，用 `max_atoms` 模式设置预算上限
+- 如果超胞太大计算不起，用 `最大原子数`（`max_atoms`）模式设置预算上限
 
 ### 什么时候加这张卡、什么时候不加
 
@@ -50,35 +56,35 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 
 ### 扩胞策略
 
-#### Behavior Type（behavior_type）
+#### 扩胞方式（behavior_type）
 
 `int`，默认 0。控制输出哪些超胞。`0` = 单输出：scale 模式输出刚好那个倍数；cell 模式输出最大或最小倍数的超胞；max_atoms 模式输出原子数最大的那个。`1` = 枚举：从 1x1x1 到目标倍数，所有中间组合都输出——适合想一次生成多个不同大小的超胞。`2` = 最小满足：cell 模式用 ceil 取整（至少达到目标长度），max_atoms 模式同理——适合"至少多大才够"的场景。
 
-#### Mode（mode）
+#### 模式（mode）
 
-`SuperCellMode`，默认 `'scale'`。`"scale"` 按 `super_scale` 里写死的倍数扩——你最清楚自己要多大时用这个。`"cell"` 按 `target_cell` 里的目标胞长（单位 Å）自动算倍数，每个方向的倍数 = floor 或 ceil（目标长度/原始长度），取决于 `behavior_type`——想让胞长达到特定数值（比如所有方向大于等于 20 Å）时用这个。`"max_atoms"` 按原子数上限枚举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这个。
+`SuperCellMode`，默认 `'scale'`。`"scale"` 按 `超胞倍率`（`super_scale`）里写死的倍数扩——你最清楚自己要多大时用这个。`"cell"` 按 `目标晶胞长度`（`target_cell`）里的目标胞长（单位 Å）自动算倍数，每个方向的倍数 = floor 或 ceil（目标长度/原始长度），取决于 `扩胞方式`（`behavior_type`）——想让胞长达到特定数值（比如所有方向大于等于 20 Å）时用这个。`"max_atoms"` 按原子数上限枚举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这个。
 
-#### Super Scale（super_scale）
+#### 超胞倍率（super_scale）
 
 `tuple[int, int, int]`，默认 `(3, 3, 3)`。仅 scale 模式生效。a/b/c 方向各复制几倍，最小 1（不复制），典型值 2~4。注意 3x3x3 = 27 倍原子数，提前心算一下总原子数别超预算。
 
-#### Target Cell（target_cell）
+#### 目标晶胞长度（target_cell）
 
 `tuple[float, float, float]`，默认 `(20.0, 20.0, 20.0)`。仅 cell 模式生效。各方向的目标胞长，单位 Å。比如原胞 a 长度 = 5 Å 时，target=20 会算出倍数 4（或 5，取决于 behavior_type 是 floor 还是 ceil）。
 
-#### Max Atoms（max_atoms）
+#### 最大原子数（max_atoms）
 
 `int`，默认 100。仅 max_atoms 模式生效。超胞总原子数上限，实际输出可能包含多个不超过此上限的不同倍数超胞。
 
 ### 轴向锁定
 
-#### Fixed Axis Flags（fixed_axis_flags）
+#### 固定轴选择（fixed_axis_flags）
 
-`tuple[bool, bool, bool]`，默认 `(false, false, false)`。锁定 a/b/c 方向的扩胞倍数。最适合 slab 场景：把法向（通常 c 轴）锁住不扩，只扩面内两个方向。被锁住的轴用 `fixed_axis_scale` 里对应的倍数，不被锁住的轴正常扩。
+`tuple[bool, bool, bool]`，默认 `(false, false, false)`。锁定 a/b/c 方向的扩胞倍数。最适合 slab 场景：把法向（通常 c 轴）锁住不扩，只扩面内两个方向。被锁住的轴用 `固定轴倍率`（`fixed_axis_scale`）里对应的倍数，不被锁住的轴正常扩。
 
-#### Fixed Axis Scale（fixed_axis_scale）
+#### 固定轴倍率（fixed_axis_scale）
 
-`tuple[int, int, int]`，默认 `(1, 1, 1)`。仅对 `fixed_axis_flags` 中对应位置为 true 的轴生效。通常设为 1（不扩胞），但如果你需要一个方向固定扩 2 倍、另一个方向自由扩，也可以设成其他值。
+`tuple[int, int, int]`，默认 `(1, 1, 1)`。仅对 `固定轴选择`（`fixed_axis_flags`）中对应位置为 true 的轴生效。通常设为 1（不扩胞），但如果你需要一个方向固定扩 2 倍、另一个方向自由扩，也可以设成其他值。
 
 ## 推荐预设
 
@@ -138,7 +144,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 
 **输出只有 1x1x1（等于没扩胞）。** 如果原胞自身已经满足目标——例如原胞 3 Å、target_cell=20、behavior_type=0 时倍数=6，但原胞 a 长度已经 25 Å —— 倍数被截断为 1。检查 target_cell 是否设得比原胞还小。或者在 max_atoms 模式下，原胞原子数已超上限，只输出原胞。
 
-**Slab 面内方向扩胞不均匀。** `fixed_axis_flags` 只锁了法向，面内两个方向各走各的倍数。如果面内需要正方形胞，确保 target_cell 的 a/b 目标值一致，或者用 scale 模式手动统一倍数。
+**Slab 面内方向扩胞不均匀。** `固定轴选择`（`fixed_axis_flags`）只锁了法向，面内两个方向各走各的倍数。如果面内需要正方形胞，确保 target_cell 的 a/b 目标值一致，或者用 scale 模式手动统一倍数。
 
 **原子数暴增超出计算预算。** 4x4x4 = 64 倍原子数。先心算：倍数 = (na*nb*nc)，原子数 = 原胞原子数 * 倍数。谨慎选择 behavior_type=1（枚举模式），因为从 1x1x1 到目标倍数会产生多个不同大小的超胞。
 

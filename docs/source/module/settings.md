@@ -10,7 +10,7 @@
 | 力图数值不符合习惯 | `Force data format` | 在原始力和归一化显示之间切换 |
 | 打开目录时不想自动加载 | `Auto loading` | 控制是否自动读取启动路径里的相关结果文件 |
 | 卡片处理时原子顺序影响观察 | `Sort atoms` | 处理结构时按元素顺序重排原子 |
-| 卡片菜单太拥挤 | `Use card group menu` | 按卡片 `group` 分组显示 Make Dataset 菜单 |
+| 卡片菜单太拥挤 | `Use card group menu` | 按卡片 `group` 分组显示 生成数据集 菜单 |
 | DeepMD 导出不想丢目录层级 | `Keep DeepMD subfolders` | 导出 `deepmd/npy` 时保留导入时的子目录结构 |
 | 反复打开同一批输出较慢 | `Cache output files` | 缓存 `*.out` 和 `descriptor.out`，减少重复解析 |
 | 导出小数位不合适 | `Export significant digits` | 控制 `xyz` / `extxyz` 中逐原子数值的有效数字 |

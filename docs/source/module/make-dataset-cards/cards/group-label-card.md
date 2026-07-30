@@ -2,7 +2,7 @@
 
 # 分组标记（Group Label）
 
-`Group`: `Alloy` | `Class`: `GroupLabelCard`
+**分类：** 合金与组分
 
 ## 功能说明
 
@@ -11,6 +11,8 @@
 **这是一张元数据卡：不改坐标、不改元素，也不写 `atoms.arrays["sublattice"]`。** `group` 是下游工作流使用的选择标签；`sublattice` 是晶体学位点身份，两者保持独立。
 
 两种规则都相对于**当前晶胞和坐标原点**计算：
+
+## 原理与公式
 
 $$g_{\mathrm{layer}}=\left\lfloor 2(\mathbf{s}\cdot\mathbf{k})\right\rfloor\bmod 2$$
 
@@ -28,8 +30,8 @@ $$g_{\mathrm{parity}}=\left(\sum_{\alpha=x,y,z}\left\lfloor2s_\alpha+\frac{1}{2}
 
 **参数设置：**
 
-- `Grouping rule` = `k_vector`
-- `Layer vector` = `111`
+- `分组规则`（`mode`） = `k_vector`
+- `层向量`（`kvec`） = `111`
 - `Group A label` = `A`
 - `Group B label` = `B`
 - `Overwrite existing group labels` = 关闭（输入没有 group 时仍会正常生成）
@@ -78,11 +80,11 @@ $$g_{\mathrm{parity}}=\left(\sum_{\alpha=x,y,z}\left\lfloor2s_\alpha+\frac{1}{2}
 
 ### A 组标签（group_a）
 
-`str`，默认 `A`。写入偶相位原子的标签。必须非空，并与 `group_b` 不同；下游引用时区分大小写。
+`str`，默认 `A`。写入偶相位原子的标签。必须非空，并与 `B 组标签`（`group_b`）不同；下游引用时区分大小写。
 
 ### B 组标签（group_b）
 
-`str`，默认 `B`。写入奇相位原子的标签。必须非空，并与 `group_a` 不同。
+`str`，默认 `B`。写入奇相位原子的标签。必须非空，并与 `A 组标签`（`group_a`）不同。
 
 ### 覆盖已有分组（overwrite）
 
@@ -156,7 +158,7 @@ $$g_{\mathrm{parity}}=\left(\sum_{\alpha=x,y,z}\left\lfloor2s_\alpha+\frac{1}{2}
 
 **输入已有 group，但参数似乎没有生效。** overwrite 默认关闭，此时卡片会保留现有 group；预览会显示已有标签计数。确认确实需要覆盖后再开启。
 
-**下游读不到 group。** 确认输出使用 EXTXYZ 等能保存 per-atom arrays 的格式，并确保下游填写的标签与 `group_a` / `group_b` 完全一致。
+**下游读不到 group。** 确认输出使用 EXTXYZ 等能保存 per-atom arrays 的格式，并确保下游填写的标签与 `A 组标签`（`group_a`） / `B 组标签`（`group_b`）完全一致。
 
 ## 输出标签
 

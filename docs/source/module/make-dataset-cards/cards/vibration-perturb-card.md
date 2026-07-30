@@ -1,14 +1,20 @@
 <!-- card-schema: {"card_name": "Vib Mode Perturb", "source_file": "src/NepTrainKit/ui/views/_card/vibration_perturb_card.py", "serialized_keys": ["params"]} -->
 
-# 振动模态扰动（Vib Mode Perturb）
+# 振动模式扰动（Vib Mode Perturb）
 
-`Group`: `Perturbation` | `Class`: `VibrationModePerturbCard`
+**分类：** 扰动
 
 ## 功能说明
 
 沿声子振动模态方向施加位移扰动，比纯随机扰动更贴近动力学自由度。每个输出结构随机选取若干振动模态，按幅值叠加位移。可选按频率缩放（高频模态贡献更小）和排除近零频模态（避免平移/旋转伪模）。
 
+## 原理与公式
+
 $$\mathbf{r}'=\mathbf{r}+A\sum_{k\in\mathcal{K}} c_k\mathbf{u}_k,\quad c_k\sim\mathcal{N}(0,1)\ \text{or}\ \mathcal{U}(-1,1)$$
+
+$\mathbf u_k$ 是第 $k$ 个输入振动模态，$\mathcal K$ 是本样本抽中的模态集合，
+$A$ 是总幅值尺度。开启频率缩放时，高频模态系数会按频率降低；最小频率门槛用于排除
+近零平移/转动伪模。该卡不会自行计算本征模，公式完全依赖输入模态的归一化约定。
 
 **关键前置条件：** 输入结构必须携带振动模态数据。如果来自 EXTXYZ 文件，需要包含 `mode_N_x/y/z` 和 `frequency_N` 列，或者整块数组 `modes` / `vibration_modes` 和 `frequencies` / `vibration_frequencies`。没有模态数据时，卡片返回空结果。
 
@@ -25,20 +31,20 @@ $$\mathbf{r}'=\mathbf{r}+A\sum_{k\in\mathcal{K}} c_k\mathbf{u}_k,\quad c_k\sim\m
 **目标：** 生成 32 个扰动结构，每次随机选 3 个模态叠加，幅值 0.05，只使用频率 > 10 THz 的模态（或 < 10 的具体看体系）
 
 **参数设置：**
-- `amplitude` = `0.05`
-- `modes_per_sample` = `3`
-- `max_num` = `32`
-- `min_frequency` = `0.0` （或设一个合理的过滤值）
-- `distribution` = `0` （高斯分布）
-- `scale_by_frequency` = `true` （高频模自动衰减）
+- `振动幅度`（`amplitude`） = `0.05`
+- `每个样本的模式数`（`modes_per_sample`） = `3`
+- `最大输出数量`（`max_num`） = `32`
+- `最小频率`（`min_frequency`） = `0.0` （或设一个合理的过滤值）
+- `分布`（`distribution`） = `0` （高斯分布）
+- `按频率缩放`（`scale_by_frequency`） = `true` （高频模自动衰减）
 
 **输出：** 32 个结构，每个沿 3 个随机选取的振动模态方向偏移，位移幅值按频率缩放
 
 **怎么验证训练集质量改善：**
 - 重训后重新计算声子色散，低频声学支应更接近 DFT 结果
-- 检查输出中哪些模态被选中——如果低频模态总是被 `min_frequency` 排除，降低此阈值
-- 如果模型对高频光学支仍然不准，增大 `modes_per_sample` 到 4~5，或增大 `max_num`
-- 如果 `scale_by_frequency` 导致高频模位移太小（几乎看不到变化），关闭此开关试一批
+- 检查输出中哪些模态被选中——如果低频模态总是被 `最小频率`（`min_frequency`）排除，降低此阈值
+- 如果模型对高频光学支仍然不准，增大 `每个样本的模式数`（`modes_per_sample`）到 4~5，或增大 `最大输出数量`（`max_num`）
+- 如果 `按频率缩放`（`scale_by_frequency`）导致高频模位移太小（几乎看不到变化），关闭此开关试一批
 
 ### 什么时候加这张卡、什么时候不加
 
@@ -76,41 +82,41 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 
 ## 参数说明
 
-### Distribution（distribution）
+### 分布（distribution）
 
 `int`，默认 0。模态系数的采样分布。`0` = 高斯（均值 0，大幅位移概率更低，更接近热振动统计）；`1` = 均匀。通常高斯更物理——你不希望模型被极端大位移的训练点带偏。
 
-### Amplitude（amplitude）
+### 振动幅度（amplitude）
 
 `float`，默认 `0.05`。模态叠加的总幅值系数，实际位移 = `amplitude * sum(coefficient * mode_vector)`。注意这个幅值是乘在归一化后的模态矢量上的——如果上游的模态归一化方式不同（mass-weighted vs. 不归一化），同样的 amplitude 产生的实际原子位移也不一样。0.01~0.03 适合微扰验证；0.05~0.08 常规补充；设到 0.1 以上建议后筛检查最近邻距离。
 
-### Modes Per Sample（modes_per_sample）
+### 每个样本的模式数（modes_per_sample）
 
 `int`，默认 2。每个输出结构随机选几个模态来叠加。1~2 个适合单模态方向验证，能清楚看到每个模态的贡献；3~4 个做多模态混合覆盖；5 个以上单个模态的贡献会被稀释，而且组合数指数增长——通常 2~4 就够了。
 
-### Min Frequency（min_frequency）
+### 最小频率（min_frequency）
 
 `float`，默认 `10.0`。频率低于这个值的模态不参与采样。仅在 `exclude_near_zero=true` 时生效。设 0 则不过滤。典型值：排除平移/旋转伪模设 0.1~1.0 THz；排除软模设 1~10 THz，具体看你的体系。
 
-### Max Num（max_num）
+### 最大输出数量（max_num）
 
 `int`，默认 32。每个输入结构生成多少个扰动样本。20~40 常规覆盖，50~100 高密度覆盖。建议后面接一张 `FPS Filter` 去重。
 
-### Scale BY Frequency（scale_by_frequency）
+### 按频率缩放（scale_by_frequency）
 
-`bool`，默认 `true`。打开后每个模态系数除以 sqrt(frequency)，高频模态的贡献自动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被过度采样，建议同时降低 `amplitude`。
+`bool`，默认 `true`。打开后每个模态系数除以 sqrt(frequency)，高频模态的贡献自动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被过度采样，建议同时降低 `振动幅度`（`amplitude`）。
 
-### Exclude Near Zero（exclude_near_zero）
+### 排除近零频率（exclude_near_zero）
 
-`bool`，默认 `true`。打开后用 `min_frequency` 做阈值过滤，排除近零频模态。一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些"模态"做位移会产生异常大的整体漂移。
+`bool`，默认 `true`。打开后用 `最小频率`（`min_frequency`）做阈值过滤，排除近零频模态。一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些"模态"做位移会产生异常大的整体漂移。
 
-### Use Seed（use_seed）
+### 使用随机种子（use_seed）
 
 `bool`，默认 `false`。打开后每次同一输入 + 同一参数 + 同一 seed 得到完全相同的扰动结果。对比实验或需要复现时打开，纯探索阶段可以关着。
 
-### Seed（seed）
+### 随机种子（seed）
 
-`int`，默认 0。随机种子值。仅在 `use_seed` 打开时生效。
+`int`，默认 0。随机种子值。仅在 `使用随机种子`（`use_seed`）打开时生效。
 
 生效条件：`use_seed=True`。
 
@@ -183,11 +189,11 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 
 **输出为空（无结构生成）。** 输入结构没有可识别的模态数据。检查：列名是否正确（`mode_1_x` 不是 `mode1_x`），频率列是否存在且命名正确，数组形状是否和原子数一致。可以用 ASE 读取 EXTXYZ 文件后查看 `arrays` 确认键名。
 
-**部分模态始终没被选中。** 这是随机采样的正常现象。`modes_per_sample` 较小时（1~2），样本数不够覆盖所有模态。增大 `max_num` 或 `modes_per_sample` 提高覆盖率。
+**部分模态始终没被选中。** 这是随机采样的正常现象。`每个样本的模式数`（`modes_per_sample`）较小时（1~2），样本数不够覆盖所有模态。增大 `最大输出数量`（`max_num`）或 `每个样本的模式数`（`modes_per_sample`）提高覆盖率。
 
-**关闭 `scale_by_frequency` 后高频模位移过大。** 这是预期行为——`1/sqrt(frequency)` 的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `amplitude` 补偿。
+**关闭 `按频率缩放`（`scale_by_frequency`）后高频模位移过大。** 这是预期行为——`1/sqrt(frequency)` 的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `振动幅度`（`amplitude`）补偿。
 
-**`min_frequency` 过滤后模态太少。** 如果体系存在大量软模（近零频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然后适当降低 `min_frequency` 或关闭 `exclude_near_zero`。
+**`最小频率`（`min_frequency`）过滤后模态太少。** 如果体系存在大量软模（近零频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然后适当降低 `最小频率`（`min_frequency`）或关闭 `排除近零频率`（`exclude_near_zero`）。
 
 ## 输出标签
 
@@ -195,4 +201,4 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 
 ## 可复现性
 
-勾选 `use_seed` + 固定 `seed` → 相同输入可复现。模态选择、系数采样均受 seed 控制。
+勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复现。模态选择、系数采样均受 seed 控制。

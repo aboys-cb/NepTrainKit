@@ -3,17 +3,46 @@
 这页按“你手里有什么文件”来选入口。NepTrainKit 会把常见结构和训练结果转换成内部
 `Structure` 表示，用于显示、筛选、生成候选结构或导出。
 
+## 30 秒快速判断
+
+| 你手里的内容 | 能否直接打开 | 从哪里打开 | 打开后通常做什么 |
+| --- | --- | --- | --- |
+| `.xyz` / `.extxyz` | 可以 | `生成数据集` 或 `NEP Dataset Display` | 继续生成，或检查、筛选和导出 |
+| `POSCAR` / `CONTCAR` / `.cif` | 可以 | `生成数据集` | 作为基础晶体生成候选结构 |
+| `OUTCAR` / `XDATCAR` | 可以 | `NEP Dataset Display` | 检查或转换 VASP 结果 |
+| `dump` / `lammpstrj` | 通常可以 | `NEP Dataset Display` | 查看 LAMMPS 轨迹；数值 `type` 需要元素映射 |
+| DeepMD `deepmd/npy` 目录 | 可以，但必须是完整目录 | `NEP Dataset Display` | 查看或转换 DeepMD 数据 |
+| `energy_*.out` / `force_*.out` / `virial_*.out` | 不能单独使用 | 与对应结构文件一起打开 | 回看预测值与参考值 |
+| CP2K 优化或 MD 的多步主输出 | 不建议直接打开 | 先转换成 EXTXYZ | 保留逐步晶胞、坐标和标签 |
+| 不在表中的结构或轨迹 | 不要只改扩展名 | 先转换成 EXTXYZ | 用 `Lattice`、`Properties` 和 `pbc` 明确数据契约 |
+
+只想确认“我的 `.xyz` 能不能打开”时，先看文件首帧：原子数要与原子行一致；周期结构应有
+有效 `Lattice`；逐原子列必须与 `Properties` 声明一致。满足这些条件的普通 XYZ/EXTXYZ
+可以直接尝试导入。失败时根据错误信息检查具体字段，不要用补零或伪元素绕过。
+
+:::{tip}
+要继续生成新结构，进入 `生成数据集`；要看图、删结构、筛选或导出子集，进入
+`NEP Dataset Display`。同一种文件在两个入口中的用途不同，但底层结构数据不会因为入口不同
+自动增加 DFT 标签。
+:::
+
+对应操作入口：
+
+- [在“生成数据集”中打开基础结构](module/make-dataset.md)
+- [在“NEP Dataset Display”中打开结构、模型和训练输出](module/nep-display-open-data.md)
+- [导入失败时按症状排查](reference/troubleshooting.md)
+
 ## 结构文件
 
 | 文件 | 推荐入口 | 常见用途 |
 | --- | --- | --- |
-| `.xyz` / `.extxyz` | `Make Dataset` 或 `NEP Dataset Display` | 作为初始结构、候选池或训练集 |
-| `POSCAR` / `CONTCAR` | `Make Dataset` | 作为初始晶体结构生成候选池 |
-| `CIF` | `Make Dataset` | 从晶体结构开始构建候选集 |
+| `.xyz` / `.extxyz` | `生成数据集` 或 `NEP Dataset Display` | 作为初始结构、候选池或训练集 |
+| `POSCAR` / `CONTCAR` | `生成数据集` | 作为初始晶体结构生成候选池 |
+| `CIF` | `生成数据集` | 从晶体结构开始构建候选集 |
 | ASE `.traj` | `NEP Dataset Display` | 查看已有轨迹或转换结构 |
 | DeepMD `deepmd/npy` 目录 | `NEP Dataset Display` | 查看或导出 DeepMD 风格结构数据 |
 
-如果你要继续生成新结构，优先导入 `Make Dataset`。如果你要检查、删除、筛选或导出子集，
+如果你要继续生成新结构，优先导入 `生成数据集`。如果你要检查、删除、筛选或导出子集，
 优先导入 `NEP Dataset Display`。
 
 DeepMD 目录导入要求存在 `type.raw`、`type_map.raw`、`set.* / box.npy` 和
@@ -110,7 +139,7 @@ $$
 
 `NEP Dataset Display` 可以把当前数据导出为两类结果：
 
-- `xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 Make Dataset 流程。
+- `xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 生成数据集 流程。
 - `deepmd/npy`：适合接入 DeepMD 风格数据管理；是否保留导入时的子目录层级由 `Settings → Keep DeepMD subfolders` 控制。
 
 导出 `deepmd/npy` 时，NepTrainKit 会保留全周期或全非周期 PBC；全非周期目录写入

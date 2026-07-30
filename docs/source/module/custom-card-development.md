@@ -1,6 +1,6 @@
 # 自定义卡片开发
 
-本页教你为 Make Dataset 模块开发一张新卡片，按当前的 Operation/Params 架构拆分 UI 和业务逻辑。
+本页教你为 生成数据集 模块开发一张新卡片，按当前的 Operation/Params 架构拆分 UI 和业务逻辑。
 
 如果你要新增内置卡片，仓库内的 `make-dataset-card-dev` skill 会引导你走完整流程（规格→实现→文档→验证）。本页更适合作快速参考。
 

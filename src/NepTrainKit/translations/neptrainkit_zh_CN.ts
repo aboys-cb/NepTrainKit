@@ -1988,7 +1988,7 @@
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="702" />
         <source>Make Dataset cards</source>
-        <translation>Make Dataset 卡片</translation>
+        <translation>生成数据集卡片</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="712" />
@@ -2159,7 +2159,7 @@
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="599" />
         <source>Make Dataset Card</source>
-        <translation>Make Dataset 卡片</translation>
+        <translation>生成数据集卡片</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="630" />
@@ -2964,7 +2964,7 @@
     <message>
         <location filename="../ui/views/_card/correlated_random_spin_card.py" line="84" />
         <source>Magmom map</source>
-        <translation>Magmom 映射</translation>
+        <translation>元素磁矩表</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/correlated_random_spin_card.py" line="85" />
@@ -3617,8 +3617,8 @@
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="41" />
-        <source>Remove this element override</source>
-        <translation>移除此元素覆盖项</translation>
+        <source>Remove this element scaling</source>
+        <translation>移除此元素缩放</translation>
     </message>
 </context>
 <context>
@@ -4274,7 +4274,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     <message>
         <location filename="../ui/views/_card/folded_helix_card.py" line="121" />
         <source>Magmom map</source>
-        <translation>Magmom 映射</translation>
+        <translation>元素磁矩表</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/folded_helix_card.py" line="122" />
@@ -5662,7 +5662,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     </message>
     <message>
         <source>Magmom map</source>
-        <translation type="vanished">Magmom 映射</translation>
+        <translation type="vanished">元素磁矩表</translation>
     </message>
     <message>
         <source>Per-element moments, e.g. "Fe:2.2,Co:1.7,Ni:0.6,Cr:1.0" or JSON</source>
@@ -5686,7 +5686,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     </message>
     <message>
         <source>Magnitude for elements not listed in Magmom map</source>
-        <translation type="vanished">未列在 Magmom 映射中的元素使用该磁矩大小</translation>
+        <translation type="vanished">未列在元素磁矩表中的元素使用该磁矩大小</translation>
     </message>
     <message>
         <source>Apply elements</source>
@@ -6704,7 +6704,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../main.py" line="171" />
         <source>Make Dataset</source>
-        <translation>构建数据集</translation>
+        <translation>生成数据集</translation>
     </message>
     <message>
         <location filename="../main.py" line="176" />
@@ -6754,7 +6754,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../main.py" line="396" />
         <source>Make Dataset output</source>
-        <translation>数据集生成输出</translation>
+        <translation>生成数据集输出</translation>
     </message>
     <message>
         <location filename="../main.py" line="404" />
@@ -7338,28 +7338,28 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="137" />
-        <source>Element overrides:</source>
-        <translation>元素覆盖：</translation>
+        <source>Element Scaling:</source>
+        <translation>元素缩放：</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="138" />
-        <source>Override max distance per element; fallback to global value when empty</source>
-        <translation>按元素覆盖最大距离；留空时回退到全局值</translation>
+        <source>Set maximum displacement per element; unlisted elements use Max distance</source>
+        <translation>为不同元素设置最大位移；未列出的元素使用“最大距离”</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="147" />
-        <source>Enable per-element</source>
-        <translation>启用按元素设置</translation>
+        <source>Enable Scaling</source>
+        <translation>启用缩放</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="149" />
-        <source>Use per-element max distance instead of a single global value</source>
-        <translation>使用按元素设置的最大距离，而不是单一全局值</translation>
+        <source>Enable element-specific maximum displacement</source>
+        <translation>启用按元素设置最大位移</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="154" />
-        <source>Add an element-specific distance</source>
-        <translation>Add an element-specific 距离</translation>
+        <source>Add Element Scaling</source>
+        <translation>添加元素缩放</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="174" />
@@ -7952,7 +7952,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="61" />
         <source>Magmom map</source>
-        <translation>Magmom 映射</translation>
+        <translation>元素磁矩表</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="63" />
@@ -7982,7 +7982,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="77" />
         <source>Magnitude for elements not listed in Magmom map</source>
-        <translation>未列在 Magmom 映射中的元素使用该磁矩大小</translation>
+        <translation>未列在元素磁矩表中的元素使用该磁矩大小</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="85" />
@@ -9238,7 +9238,7 @@ Do you want to continue?</source>
     <message>
         <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="177" />
         <source>Magmom map</source>
-        <translation>Magmom 映射</translation>
+        <translation>元素磁矩表</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="178" />
@@ -9760,7 +9760,7 @@ Do you want to continue?</source>
     <message>
         <location filename="../ui/views/_card/spin_disorder_card.py" line="70" />
         <source>Magmom map</source>
-        <translation>Magmom 映射</translation>
+        <translation>元素磁矩表</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/spin_disorder_card.py" line="71" />
@@ -9958,7 +9958,7 @@ Do you want to continue?</source>
     <message>
         <location filename="../ui/views/_card/spin_spiral_card.py" line="158" />
         <source>Magmom map</source>
-        <translation>Magmom 映射</translation>
+        <translation>元素磁矩表</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/spin_spiral_card.py" line="159" />

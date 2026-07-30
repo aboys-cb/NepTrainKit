@@ -1,8 +1,10 @@
+:orphan:
+
 <!-- card-schema: {"card_name": "Stacking Fault", "source_file": "src/NepTrainKit/ui/views/_card/stacking_fault_card.py", "serialized_keys": ["params"]} -->
 
-# 旧版层错位移（Stacking Fault）
+# 旧版层错位移（Legacy Stacking Fault）
 
-`Group`: `Defect` | `Class`: `StackingFaultCard`
+**分类：** 缺陷
 
 ## 兼容性说明
 
@@ -16,31 +18,31 @@
 - 切面位置；
 - 输入晶胞与目标层错面的定向一致性。
 
-旧版卡没有显式滑移方向，因此仅凭 `hkl` 无法定义一个物理滑移系。
+旧版卡没有显式滑移方向，因此仅凭 `近似晶面 h k l`（`hkl`）无法定义一个物理滑移系。
 
 ## 旧算法实际做什么
 
-给定输入晶胞 \(A\) 和 `hkl=(h,k,l)`，旧算法先用倒易晶格构造单位法向：
+给定输入晶胞 $A$ 和 `hkl=(h,k,l)`，旧算法先用倒易晶格构造单位法向：
 
-\[
+$$
 \hat{\mathbf n}
 =
 \frac{h\mathbf b_1+k\mathbf b_2+l\mathbf b_3}
 {\left|h\mathbf b_1+k\mathbf b_2+l\mathbf b_3\right|}
-\]
+$$
 
-随后从全局笛卡尔 x、y、z 轴中选择与 \(\hat{\mathbf n}\) 最不平行的一根轴 \(\mathbf e\)，并定义：
+随后从全局笛卡尔 x、y、z 轴中选择与 $\hat{\mathbf n}$ 最不平行的一根轴 $\mathbf e$，并定义：
 
-\[
+$$
 \hat{\mathbf s}
 =
 \frac{\hat{\mathbf n}\times\mathbf e}
 {\left|\hat{\mathbf n}\times\mathbf e\right|}
-\]
+$$
 
-这个 \(\hat{\mathbf s}\) 是确定性的面内方向，但不是用户指定的晶向。只要它恰好等于目标滑移方向，旧算法生成的结构可以是有效层错；否则结果只是另一个方向上的层间错排。把同一物理晶体整体旋转后，所选方向还可能改变。
+这个 $\hat{\mathbf s}$ 是确定性的面内方向，但不是用户指定的晶向。只要它恰好等于目标滑移方向，旧算法生成的结构可以是有效层错；否则结果只是另一个方向上的层间错排。把同一物理晶体整体旋转后，所选方向还可能改变。
 
-原子按投影 \(q_i=\mathbf r_i\cdot\hat{\mathbf n}\) 排序。`layers` 选择第几个投影坐标作为阈值，并移动满足 \(q_i\ge q_\mathrm{cut}\) 的原子。若 `layers` 超出投影层数，算法静默改用中间投影层。最后沿 \(\hat{\mathbf s}\) 施加绝对 Å 位移并把坐标折回周期晶胞。
+原子按投影 $q_i=\mathbf r_i\cdot\hat{\mathbf n}$ 排序。`旧版投影层序号`（`layers`）选择第几个投影坐标作为阈值，并移动满足 $q_i\ge q_\mathrm{cut}$ 的原子。若 `旧版投影层序号`（`layers`）超出投影层数，算法静默改用中间投影层。最后沿 $\hat{\mathbf s}$ 施加绝对 Å 位移并把坐标折回周期晶胞。
 
 因此旧卡的核心位移并非错误，但参数面不足以可靠表达任意滑移系：
 
@@ -53,17 +55,17 @@
 
 ## 参数说明
 
-### Approximate Plane h k l（hkl）
+### 近似晶面 h k l（hkl）
 
 长度为 3 的整数序列，默认 `(1,1,1)`。只用于构造投影法向，不足以定义物理滑移系。
 
-### Legacy Projected-Layer Rank（layers）
+### 旧版投影层序号（layers）
 
-`int`，默认 1，必须至少为 1。选择排序后的第 `layers` 个投影坐标作为移动阈值；并不是“参与层错的层数”。
+`int`，默认 1，必须至少为 1。选择排序后的第 `旧版投影层序号`（`layers`）个投影坐标作为移动阈值；并不是“参与层错的层数”。
 
-### Displacement（step）
+### 位移（step）
 
-三个浮点数 `[start, stop, step]`，默认 `[0.0, 1.0, 0.5]`，单位 Å。每个值都是沿旧算法自动选择的 \(\hat{\mathbf s}\) 的绝对位移。
+三个浮点数 `[start, stop, step]`，默认 `[0.0, 1.0, 0.5]`，单位 Å。每个值都是沿旧算法自动选择的 $\hat{\mathbf s}$ 的绝对位移。
 
 ## 兼容配置示例
 

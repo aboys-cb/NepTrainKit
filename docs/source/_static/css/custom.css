@@ -31,3 +31,6 @@ pre {
 .rst-content .sd-card-title {
     font-weight: 700;
 }
+.docs-partial-loading .wy-nav-content {
+  pointer-events: none;
+}

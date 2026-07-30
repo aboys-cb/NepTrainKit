@@ -1,7 +1,14 @@
-# Make Dataset
+# 生成数据集
 
-`Make Dataset` 是候选训练结构的生产台。它把“扩胞、应变、扰动、缺陷、表面、掺杂、磁性设置”
+`生成数据集` 是候选训练结构的生产台。它把“扩胞、应变、扰动、缺陷、表面、掺杂、磁性设置”
 这些操作拆成卡片，让你把一批可信初始结构扩展成候选池。
+
+```{toctree}
+:maxdepth: 3
+:hidden:
+
+make-dataset-cards/index
+```
 
 它的输出通常还不是最终训练集。更稳的路线是：
 
@@ -14,7 +21,7 @@
 ```
 
 ```{image} ../_static/image/generated/make_data_empty.png
-:alt: Make Dataset workspace
+:alt: 生成数据集 workspace
 :class: docs-screenshot
 ```
 
@@ -61,7 +68,7 @@ Super Cell → Lattice Strain → Atomic Perturb
 | 做合金或占位变化 | `Random Doping` / `Random Occupancy` / `Composition Space Sampling` |
 | 做磁性构型 | `Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral` |
 
-完整选择表见 [Make Dataset 卡片手册](make-dataset-cards/index.md)。
+完整选择表见 [生成数据集卡片手册](make-dataset-cards/index.md)。
 
 ## 什么时候导出
 
@@ -94,12 +101,12 @@ candidate_pool_fps.xyz
 ## 文档入口
 
 - [快速开始](../quickstart.md)：从安装到生成第一批候选结构。
-- [卡片手册](make-dataset-cards/index.md)：按目标选卡、易混卡片对比、每张卡的完整参数说明。
+- [选择卡片与查看参考](make-dataset-cards/index.md)：按目标选卡、易混卡片对比，并按功能进入每张卡的参考页。
 - [配方示例](make-dataset-cards/recipes.md)：多卡组合示例。
-- [自定义卡片开发](custom-card-development.md)：把已有脚本封装成 Make Dataset 卡片。
+- [自定义卡片开发](custom-card-development.md)：把已有脚本封装成 生成数据集卡片。
 
 ## 从文档 JSON 直接创建卡片
 
-如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `Make Dataset` 页面执行 `Load → Paste Card JSON`。
+如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `生成数据集` 页面执行 `Load → Paste Card JSON`。
 
 这个入口不会清空当前工作区，只会把剪贴板里的卡片追加到末尾。需要完整替换工作区时，仍然使用 `Load → Import Card Config` 导入保存好的 JSON 文件。

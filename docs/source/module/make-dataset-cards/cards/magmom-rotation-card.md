@@ -2,13 +2,19 @@
 
 # 磁矩旋转（Magmom Rotation）
 
-`Group`: `Perturbation` | `Class`: `MagneticMomentRotationCard`
+**分类：** 扰动
 
 ## 功能说明
 
 对已存在的磁矩做随机小角度旋转，并可选地扰动模长。每个输入结构输出多个旋转版本，用于补充自旋方向附近的连续构型邻域数据。
 
+## 原理与公式
+
 $$\mathbf{m}'=\lambda\,\mathbf{R}(\hat{\mathbf{n}},\theta)\,\mathbf{m},\quad \lambda\in[f_{\min},f_{\max}]$$
+
+$\mathbf R(\hat{\mathbf n},\theta)$ 是绕单位轴 $\hat{\mathbf n}$ 的三维旋转矩阵，
+$\theta$ 在零到最大旋转角之间抽样；$\lambda$ 是可选的模长缩放。只旋转方向时
+$\lambda=1$，所以 $|\mathbf m'|=|\mathbf m|$。
 
 **关键限制：** 这张卡只做随机旋转和模长缩放，不改变晶体结构，不定义新的磁序。它依赖输入已有 `initial_magmoms`。
 
@@ -25,16 +31,16 @@ $$\mathbf{m}'=\lambda\,\mathbf{R}(\hat{\mathbf{n}},\theta)\,\mathbf{m},\quad \la
 **目标：** 对每个输入帧生成 5 个旋转版本，最大旋转角 10 度，模长扰动 ±5%，覆盖自旋方向附近的连续邻域
 
 **参数设置：**
-- `Max Angle` = `10.0`
-- `Num Structures` = `5`
-- `Disturb Magnitude` = 勾选，`Magnitude Factor` = `[0.95, 1.05]`
+- `最大旋转角`（`max_angle`） = `10.0`
+- `生成结构数`（`num_structures`） = `5`
+- `扰动磁矩大小`（`disturb_magnitude`） = 勾选，`磁矩缩放系数`（`magnitude_factor`） = `[0.95, 1.05]`
 
 **输出：** 每输入帧 5 个结构，磁矩方向在 0~10 度范围内随机偏离，模长在 95%~105% 之间浮动。原子位置不变。
 
 **怎么验证训练集质量改善：**
 - 重训后跑有限温度 MD，检查力的 MAE 是否比之前更稳定
-- 如果仍有方向敏感性问题，增大 `Max Angle` 到 15~20 度，或增加 `Num Structures`
-- 如果特定元素的磁矩扰动后偏离物理合理范围，用 `Elements` 限制只扰动目标元素
+- 如果仍有方向敏感性问题，增大 `最大旋转角`（`max_angle`）到 15~20 度，或增加 `生成结构数`（`num_structures`）
+- 如果特定元素的磁矩扰动后偏离物理合理范围，用 `元素`（`elements`）限制只扰动目标元素
 
 ### 什么时候加这张卡、什么时候不加
 
@@ -50,47 +56,47 @@ $$\mathbf{m}'=\lambda\,\mathbf{R}(\hat{\mathbf{n}},\theta)\,\mathbf{m},\quad \la
 
 ## 参数说明
 
-### Elements（elements）
+### 元素（elements）
 
 `str`，默认 `''`。逗号分隔的元素列表，如 `Fe,Co`——只对列出的元素做旋转和模长扰动。留空则全部磁性原子参与。
 
-### Max Angle（max_angle）
+### 最大旋转角（max_angle）
 
 `float`，默认 `10.0`。最大旋转角，单位度。每次随机采样角度在 [0, max_angle] 内均匀分布。
 - 保守：2~5°（验证方向变化确实有帮助）
 - 平衡：8~15°（常规有限温度覆盖）
 - 探索：20°+（宽温度区间，需重点抽查）
 
-### Num Structures（num_structures）
+### 生成结构数（num_structures）
 
 `int`，默认 `5`。每输入帧输出的旋转版本数。5~10 用于轻量补样，10~30 常规覆盖，30+ 建议后接过滤。
 
-### Lift Scalar（lift_scalar）
+### 标量磁矩转为矢量（lift_scalar）
 
-`bool`，默认 `True`。输入是共线标量磁矩时，是否先沿 `Axis` 抬升为向量再做旋转。输入是标量且需要旋转时必须开启。
+`bool`，默认 `True`。输入是共线标量磁矩时，是否先沿 `轴`（`axis`）抬升为向量再做旋转。输入是标量且需要旋转时必须开启。
 
-### Axis（axis）
+### 轴（axis）
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。`lift_scalar` 抬升时使用的参考方向。输入已经是向量磁矩时此参数对初始方向无影响。
+`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。`标量磁矩转为矢量`（`lift_scalar`）抬升时使用的参考方向。输入已经是向量磁矩时此参数对初始方向无影响。
 
 生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
 
-### Disturb Magnitude（disturb_magnitude）
+### 扰动磁矩大小（disturb_magnitude）
 
 `bool`，默认 `True`。旋转的同时随机缩放磁矩模长。
 
-### Magnitude Factor（magnitude_factor）
+### 磁矩缩放系数（magnitude_factor）
 
 `list[float] | tuple[float, float]`，默认 `(0.95, 1.05)`。`[min, max]` 格式的模长缩放因子区间。
 - 保守：`[0.98, 1.02]`
 - 平衡：`[0.95, 1.05]`
 - 探索：`[0.85, 1.15]`
 
-### Use Seed（use_seed）
+### 使用随机种子（use_seed）
 
 `bool`，默认 `False`。勾选后固定种子可复现。对比实验时开，纯探索可以关。
 
-### Seed（seed）
+### 随机种子（seed）
 
 `int`，默认 `0`。种子值。
 
@@ -157,11 +163,11 @@ $$\mathbf{m}'=\lambda\,\mathbf{R}(\hat{\mathbf{n}},\theta)\,\mathbf{m},\quad \la
 
 ## 常见问题
 
-**输出和输入一样。** 检查输入是否有 `initial_magmoms`。标量磁矩需开 `Lift Scalar`。`Max Angle` 不能为 0。
+**输出和输入一样。** 检查输入是否有 `initial_magmoms`。标量磁矩需开 `标量磁矩转为矢量`（`lift_scalar`）。`最大旋转角`（`max_angle`）不能为 0。
 
-**输出磁矩全是零。** `Elements` 过滤掉了所有有磁矩的元素，或 `Magnitude Factor` 下限为 0 且被采样到。
+**输出磁矩全是零。** `元素`（`elements`）过滤掉了所有有磁矩的元素，或 `磁矩缩放系数`（`magnitude_factor`）下限为 0 且被采样到。
 
-**每次运行结果不同。** 未开启 `Use Seed`。需要可复现时勾选并固定 `Seed`。
+**每次运行结果不同。** 未开启 `Use Seed`。需要可复现时勾选并固定 `随机种子`（`seed`）。
 
 ## 输出标签
 
@@ -172,4 +178,4 @@ $$\mathbf{m}'=\lambda\,\mathbf{R}(\hat{\mathbf{n}},\theta)\,\mathbf{m},\quad \la
 
 ## 可复现性
 
-勾选 `use_seed` + 固定 `seed` → 相同输入可复现。每次旋转的随机轴和角度由 seed + 结构序号联合控制。
+勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复现。每次旋转的随机轴和角度由 seed + 结构序号联合控制。

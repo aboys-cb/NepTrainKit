@@ -1,8 +1,8 @@
 <!-- card-schema: {"card_name": "Card Group", "source_file": "src/NepTrainKit/ui/views/_card/card_group.py", "serialized_keys": ["card_list", "filter_card"]} -->
 
-# 分支合并组（Card Group）
+# 分支合并组（Branch Merge Group）
 
-`Group`: `Container` | `Class`: `CardGroup`
+**分类：** 工作流
 
 ## 功能说明
 
@@ -11,6 +11,20 @@
 这里的“分支”是**数据语义**，不是同时占用多个线程：每张启用的子卡都读取同一份组输入，子卡按界面顺序逐张运行，前一张子卡的输出不会成为下一张子卡的输入。全部成功后，组把各分支输出合并为一个数据集。
 
 **不是做什么的：** 不是过滤器、不是生成卡、不支持组内卡片之间的串行依赖。串行依赖请放在组外顺序连接。
+
+## 工作原理
+
+设组输入为数据集 $\mathcal D$，启用的子卡操作为
+$O_1,\ldots,O_m$。分支合并的结果是
+
+$$
+\mathcal D_{\mathrm{merge}}=
+O_1(\mathcal D)\mathbin{\Vert}\cdots\mathbin{\Vert}O_m(\mathcal D),
+$$
+
+其中 $\Vert$ 表示按分支顺序拼接；它不是
+$O_m(\cdots O_2(O_1(\mathcal D)))$。若配置了一张后置过滤卡 $F$，最终输出才是
+$F(\mathcal D_{\mathrm{merge}})$。因此子卡之间不能依赖前一张子卡生成的标签、坐标或元素。
 
 ## 操作示例
 

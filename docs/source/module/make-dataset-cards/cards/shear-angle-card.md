@@ -2,15 +2,20 @@
 
 # 剪切角应变（Shear Angle Strain）
 
-`Group`: `Lattice` | `Class`: `ShearAngleCard`
+**分类：** 晶格
 
 ## 功能说明
 
 在保持晶格长度不变的前提下扰动 alpha/beta/gamma 角，采样角度剪切自由度。每个角度通道独立控制 min/max/step（单位：度），扫描的是相对原始角度的增量。
 
+## 原理与公式
+
 $$\alpha'=\alpha+\Delta\alpha,\quad \beta'=\beta+\Delta\beta,\quad \gamma'=\gamma+\Delta\gamma$$
 
 $$\mathbf{C}'=\mathrm{cellpar\_to\_cell}(a,b,c,\alpha',\beta',\gamma')$$
+
+$a,b,c$ 保持原长度，三个 $\Delta$ 值单位均为度。程序从新的六个晶格参数重建晶胞，
+不是直接给某个矩阵元素加角度数值；原子分数坐标保持不变。
 
 ## 操作示例
 
@@ -25,9 +30,9 @@ $$\mathbf{C}'=\mathrm{cellpar\_to\_cell}(a,b,c,\alpha',\beta',\gamma')$$
 **目标：** 沿 beta 方向生成 -6° 到 +6° 的角度扫描，步长 2°，覆盖单斜相可能出现的 beta 偏离
 
 **参数设置：**
-- `alpha_range` = `[0, 0, 1]` （不扫 alpha）
-- `beta_range` = `[-6, 6, 2]`
-- `gamma_range` = `[0, 0, 1]` （不扫 gamma）
+- `α 角范围`（`alpha_range`） = `[0, 0, 1]` （不扫 alpha）
+- `β 角范围`（`beta_range`） = `[-6, 6, 2]`
+- `γ 角范围`（`gamma_range`） = `[0, 0, 1]` （不扫 gamma）
 
 **输出：** 7 个结构（-6°, -4°, -2°, 0°, +2°, +4°, +6°），晶格长度不变，只有 beta 角偏离 90 度
 
@@ -51,21 +56,21 @@ $$\mathbf{C}'=\mathrm{cellpar\_to\_cell}(a,b,c,\alpha',\beta',\gamma')$$
 
 ## 参数说明
 
-### Alpha Range（alpha_range）
+### α 角范围（alpha_range）
 
 `tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。alpha 角相对于原始值的增量扫描区间，格式 `[min, max, step]`，单位度。注意最终角度 = 原始角度 + 增量，不是直接用增量替换。不扫的通道不能设 `[0, 0, 0]`，必须写 `[0, 0, 1]` 让 range 至少产生一个 0 点。
 
-### Beta Range（beta_range）
+### β 角范围（beta_range）
 
 `tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。beta 角增量扫描区间，单位和语法同上。不扫时写 `[0, 0, 1]`。
 
-### Gamma Range（gamma_range）
+### γ 角范围（gamma_range）
 
 `tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。gamma 角增量扫描区间，同上。不扫时写 `[0, 0, 1]`。
 
 输出总数 = Nalpha * Nbeta * Ngamma。三个通道同时按默认值跑 = 5^3 = 125 个结构。步长减半会 8 倍增长，建议从单通道开始逐次加。
 
-### Identify Organic（identify_organic）
+### 识别有机分子（identify_organic）
 
 `bool`，默认 `false`。分子晶体必须打开——角度变化会改变分子间相对取向，如果分子内键也被跟着拉伸就不对了。纯无机体系关着即可。
 

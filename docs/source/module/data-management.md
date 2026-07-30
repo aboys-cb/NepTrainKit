@@ -41,7 +41,7 @@ Project: TiH2 surface defects
 `Data Management` 更适合放在每轮流程结束后使用：
 
 ```text
-Make Dataset 生成候选结构
+生成数据集 生成候选结构
 -> NEP Dataset Display 清洗
 -> DFT
 -> GPUMD 训练

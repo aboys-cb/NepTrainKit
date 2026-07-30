@@ -1,4 +1,9 @@
-# Make Dataset 配方示例（Recipes）
+# 生成数据集配方示例（Recipes）
+
+```{contents} 本页目录
+:local:
+:depth: 2
+```
 
 这份页面回答两个问题：
 

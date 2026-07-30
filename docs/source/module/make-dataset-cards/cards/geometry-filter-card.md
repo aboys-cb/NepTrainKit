@@ -1,8 +1,8 @@
 <!-- card-schema: {"card_name": "Geometry Filter", "source_file": "src/NepTrainKit/ui/views/_card/geometry_filter_card.py", "serialized_keys": ["params"]} -->
 
-# 几何过滤（Geometry Filter）
+# 几何健全性过滤（Geometry Sanity Filter）
 
-`Group`: `Filter` | `Class`: `GeometryFilterCard`
+**分类：** 筛选与采样
 
 ## 功能说明
 
@@ -14,6 +14,21 @@
 
 卡片中的保留/删除数量预览在后台计算，不会占用界面事件循环。连续调整参数时，中间请求会被合并，界面只采用最新参数对应的结果；正式运行仍会重新按当前参数处理完整输入。
 
+## 原理与公式
+
+对含 $N$ 个原子的有效晶胞，程序计算
+
+$$
+d_{\min}=\min_{i<j}d_{ij}^{\mathrm{MIC}},\qquad
+v_{\mathrm{atom}}=\frac{|\det\mathbf C|}{N},\qquad
+\rho=1.66053906660\,\frac{\sum_i M_i}{|\det\mathbf C|}.
+$$
+
+$d_{ij}^{\mathrm{MIC}}$ 是按周期边界最小镜像得到的距离，单位 Å；
+$v_{\mathrm{atom}}$ 的单位是 Å³/atom；原子质量 $M_i$ 用 u，换算后的
+$\rho$ 为 g/cm³。所有已开启的上下限必须**同时满足**才保留结构。阈值为 0 表示关闭对应
+检查；空结构、非有限坐标，以及被已开启晶胞相关检查命中的无效晶胞会被拒绝。
+
 ## 操作示例
 
 ### 场景：随机占位和强扰动后出现短键结构
@@ -22,29 +37,36 @@
 
 **输入：** 已生成的候选结构池。
 **目标：** 在 FPS 前删除短键和异常体积结构。
-**参数设置：** `min_pair_distance=1.2`，`min_volume_per_atom=5.0`，`max_volume_per_atom=40.0`，密度阈值保持关闭。
+**参数设置：** `允许的最短原子对距离`填 `1.2 Å`，`最小单原子体积`填
+`5.0 Å³/atom`，`最大单原子体积`填 `40.0 Å³/atom`，密度阈值保持关闭。
 **输出：** 只保留满足所有开启阈值的结构。
 **怎么验证训练集质量改善：** 导入 `NEP Dataset Display` 后，最短键分布不再有低端离群点；FPS 选出的结构不应再包含明显重叠帧。
 
 ## 参数说明
-### Shortest Allowed Pair Distance（min_pair_distance）
+### 允许的最短原子对距离（min_pair_distance）
+
 `float`，默认 0 Å（关闭）。任意原子对允许的最近距离，是与元素种类无关的硬门槛。周期方向使用最小镜像距离，非周期分子即使没有晶胞也可以只做此项检查。
 
 阈值应低于候选池中所有合理键长。不要把金属体系常用的 1.0~1.5 Å 直接用于含 H–H、O–H 或其他短键的混合数据集；这张卡不会根据共价半径自动调整阈值。
 
-### Min Volume Per Atom（min_volume_per_atom）
+### 最小单原子体积（min_volume_per_atom）
+
 `float`，默认 0.0（关闭）。允许的最小单原子体积，过滤过度压缩的结构。阈值应来自同材料平衡体积的下界。多孔、slab 或含真空的体系不要随便打开，开了反而误删合理结构。
 
-### Max Volume Per Atom（max_volume_per_atom）
+### 最大单原子体积（max_volume_per_atom）
+
 `float`，默认 0.0（关闭）。允许的最大单原子体积，过滤过度拉伸或异常大 cell。体相候选池可以设一个合理上界；slab/分子体系有真空时这个阈值容易误杀。
 
-### Min Density（min_density）
+### 最小密度（min_density）
+
 `float`，默认 0.0（关闭）。按质量密度过滤低密度异常结构。只在体相或近体相候选池打开；含真空、孔洞或表面模型应保持 0。
 
-### Max Density（max_density）
+### 最大密度（max_density）
+
 `float`，默认 0.0（关闭）。按质量密度过滤过度压缩的结构。阈值应参考该材料的真实密度上界，不要跨元素体系套同一个数字。
 
-### Require a Finite, Nonzero-Volume Cell（require_finite_cell）
+### 要求有限且非零体积的晶胞（require_finite_cell）
+
 `bool`，默认 false。打开后，含 NaN/Inf 或行列式接近零的晶胞会被删除。任何体积或密度上下限只要开启，也会隐式要求有效的非零体积晶胞。晶体、slab、界面候选池建议开；孤立分子或非周期构型关掉。
 
 ## 推荐预设
@@ -97,7 +119,7 @@
 
 **密度阈值不生效。** `min_density=0.0` 和 `max_density=0.0` 都表示关闭密度检查。只有大于 0 的阈值参与判定。
 
-**非周期分子被删掉。** 如果开启了体积、密度或 `require_finite_cell`，零体积分子会被删除。分子构象清洗通常只开 `min_pair_distance`。
+**非周期分子被删掉。** 如果开启了体积、密度或 `要求有限且非零体积的晶胞`（`require_finite_cell`），零体积分子会被删除。分子构象清洗通常只开 `允许的最短原子对距离`（`min_pair_distance`）。
 
 **为什么不能给混合化学体系设置一个可靠的通用短键阈值？** 当前参数是统一的绝对距离，不读取元素对或键级。先查看数据中各元素对的合理距离范围；如果无法给出统一下界，应把阈值保持为 0，并在更合适的元素对检查工具中处理。
 

@@ -4,6 +4,9 @@ Kept checks (catch real bugs):
   * every card source has a doc page, and every doc page has a card source
   * serialized_keys in the card-schema comment match what to_dict() writes
   * every Params dataclass field has a dedicated parameter heading
+  * every card explains its operation principle and contains inspectable math
+  * every discoverable card appears exactly once in the user-facing category tree
+  * compatibility-only cards stay out of the user-facing category tree
 """
 
 from __future__ import annotations
@@ -18,14 +21,29 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 ROOT = Path(__file__).resolve().parents[2]
+DOC_SOURCE_DIR = ROOT / "docs" / "source"
 CARD_DIR = ROOT / "src" / "NepTrainKit" / "ui" / "views" / "_card"
 DOC_DIR = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "cards"
+CATEGORY_DIR = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "categories"
 CORE_CARDS_DIR = ROOT / "src" / "NepTrainKit" / "core" / "cards"
 INDEX_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "index.md"
 RECIPES_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "recipes.md"
+ROOT_INDEX = ROOT / "docs" / "source" / "index.rst"
+MODULE_INDEX = ROOT / "docs" / "source" / "module" / "index.rst"
+WORKFLOW_INDEX = ROOT / "docs" / "source" / "workflows" / "index.rst"
+REFERENCE_INDEX = ROOT / "docs" / "source" / "reference" / "index.rst"
+GLOSSARY_DOC = ROOT / "docs" / "source" / "reference" / "glossary.md"
+TROUBLESHOOTING_DOC = ROOT / "docs" / "source" / "reference" / "troubleshooting.md"
+NEP_DISPLAY_EXAMPLE = ROOT / "docs" / "source" / "example" / "NEP-display.md"
+FORMATS_DOC = ROOT / "docs" / "source" / "formats.md"
+SPHINX_CONF = ROOT / "docs" / "source" / "conf.py"
+PARTIAL_NAV_JS = ROOT / "docs" / "source" / "_static" / "js" / "partial-navigation.js"
 
 SCHEMA_RE = re.compile(r"<!--\s*card-schema:\s*(\{.*\})\s*-->")
-PARAM_HEADING_RE = re.compile(r"^\s{0,3}#{3,4}\s+.+?（([A-Za-z_][A-Za-z0-9_]*)）\s*$", re.MULTILINE)
+PARAM_HEADING_RE = re.compile(
+    r"^\s{0,3}#{3,4}\s+(.+?)（([A-Za-z_][A-Za-z0-9_]*)）\s*$",
+    re.MULTILINE,
+)
 INLINE_PARAM_RE = re.compile(r"^\s*\*\*`[^`]+`\*\*（[A-Za-z_][A-Za-z0-9_]*(?:\s*/\s*[A-Za-z_][A-Za-z0-9_]*)*）", re.MULTILINE)
 BANNED_PARAM_TEXT = [
     "以 UI 下拉项为准",
@@ -38,6 +56,22 @@ BANNED_PARAM_TEXT = [
 ]
 TYPE_PREFIX = "类型："
 CONDITION_PREFIX = "生效条件："
+PRINCIPLE_HEADING_RE = re.compile(
+    r"^## (?:原理与公式|工作原理|先理解“副本平移量”|旧算法实际做什么)\s*$",
+    re.MULTILINE,
+)
+CARD_SECTION_REQUIREMENTS = {
+    "功能说明": re.compile(r"^## (?:功能说明|这张卡做什么)\s*$", re.MULTILINE),
+    "操作示例": re.compile(r"^## (?:操作示例|快速使用|常用工作流)\s*$", re.MULTILINE),
+    "参数说明": re.compile(r"^## 参数说明\s*$", re.MULTILINE),
+    "常见问题": re.compile(r"^## 常见问题\s*$", re.MULTILINE),
+}
+MATH_RE = re.compile(
+    r"(?:\$\$|(?<!\$)\$(?!\$)[^$\n]+\$(?!\$))",
+    re.DOTALL,
+)
+INLINE_MATH_DELIMITER_RE = re.compile(r"(?<!\\)(?<!\$)\$(?!\$)")
+DISPLAY_MATH_DELIMITER_RE = re.compile(r"(?<!\\)\$\$(?!\$)")
 
 
 @dataclass
@@ -46,6 +80,7 @@ class CardCode:
     card_name: str
     class_name: str
     keys: list[str]
+    discoverable: bool
 
 
 @dataclass
@@ -70,6 +105,7 @@ def parse_code_cards() -> dict[str, CardCode]:
         module = ast.parse(text)
         card_name = ""
         class_name = ""
+        discoverable = True
         for node in module.body:
             if not isinstance(node, ast.ClassDef):
                 continue
@@ -79,6 +115,8 @@ def parse_code_cards() -> dict[str, CardCode]:
                     for target in stmt.targets:
                         if isinstance(target, ast.Name) and target.id == "card_name" and isinstance(stmt.value, ast.Constant):
                             card_name = str(stmt.value.value)
+                        if isinstance(target, ast.Name) and target.id == "discoverable" and isinstance(stmt.value, ast.Constant):
+                            discoverable = bool(stmt.value.value)
             if not card_name:
                 continue
             # grab to_dict keys
@@ -87,7 +125,7 @@ def parse_code_cards() -> dict[str, CardCode]:
         if not card_name:
             continue
         rel = path.relative_to(ROOT).as_posix()
-        cards[rel] = CardCode(rel, card_name, class_name, keys)
+        cards[rel] = CardCode(rel, card_name, class_name, keys, discoverable)
     return cards
 
 
@@ -122,6 +160,17 @@ def parse_doc_pages() -> list[CardDoc]:
         data = json.loads(match.group(1))
         pages.append(CardDoc(path, str(data["source_file"]), str(data["card_name"]), list(data["serialized_keys"]), text))
     return pages
+
+
+def parse_category_card_refs() -> dict[str, list[Path]]:
+    """Return card-doc filenames and the category pages that reference them."""
+    refs: dict[str, list[Path]] = {}
+    pattern = re.compile(r"^\s*\.\./cards/([a-z0-9-]+)(?:\.md)?\s*$", re.MULTILINE)
+    for path in sorted(CATEGORY_DIR.glob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        for slug in pattern.findall(text):
+            refs.setdefault(f"{slug}.md", []).append(path)
+    return refs
 
 
 def extract_params_fields(source_file: str) -> list[str] | None:
@@ -169,7 +218,7 @@ def extract_parameter_blocks(section: str) -> dict[str, list[str]]:
     for line in section.splitlines():
         match = PARAM_HEADING_RE.match(line)
         if match:
-            current_key = match.group(1)
+            current_key = match.group(2)
             blocks[current_key] = []
             continue
         if line.startswith("### ") and not match:
@@ -191,6 +240,47 @@ def find_orphan_h4_parameter_headings(section: str) -> list[str]:
         if line.startswith("#### ") and PARAM_HEADING_RE.match(line) and not seen_group:
             orphan_headings.append(line.strip())
     return orphan_headings
+
+
+def find_malformed_display_math(text: str) -> list[str]:
+    """Find ``$$`` blocks that MyST may merge with later inline math."""
+    lines = text.splitlines()
+    markers = [index for index, line in enumerate(lines) if line.strip() == "$$"]
+    errors: list[str] = []
+    if len(markers) % 2:
+        errors.append("unpaired `$$` delimiter")
+        return errors
+
+    for opening, closing in zip(markers[::2], markers[1::2]):
+        if opening == 0 or lines[opening - 1].strip():
+            errors.append(f"line {opening + 1}: opening `$$` needs a blank line before it")
+        if closing + 1 >= len(lines) or lines[closing + 1].strip():
+            errors.append(f"line {closing + 1}: closing `$$` needs a blank line after it")
+    return errors
+
+
+def find_malformed_markdown_math(text: str) -> list[str]:
+    """Check math delimiters outside fenced and inline code."""
+    clean_lines: list[str] = []
+    errors: list[str] = []
+    in_fence = False
+    for line_number, line in enumerate(text.splitlines(), 1):
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        clean_line = re.sub(r"`[^`]*`", "", line)
+        clean_lines.append(clean_line)
+        if len(INLINE_MATH_DELIMITER_RE.findall(clean_line)) % 2:
+            errors.append(f"line {line_number}: unpaired inline `$` delimiter")
+        if re.match(r"^\s*\\[\[\]]\s*$", clean_line):
+            errors.append(f"line {line_number}: raw `\\[`/`\\]` delimiter")
+
+    if len(DISPLAY_MATH_DELIMITER_RE.findall("\n".join(clean_lines))) % 2:
+        errors.append("unpaired `$$` delimiter")
+    errors.extend(find_malformed_display_math("\n".join(clean_lines)))
+    return errors
 
 
 # ---------------------------------------------------------------------------
@@ -220,6 +310,25 @@ def audit() -> list[str]:
             continue
         code = code_cards[src]
 
+        title_match = re.search(r"^#\s+(.+)$", doc.text, re.MULTILINE)
+        if not title_match or not re.search(r"[\u4e00-\u9fff]", title_match.group(1)):
+            errors.append(f"{doc.path}: page title must use the Chinese UI card name")
+        if re.search(r"^`Group`:\s*`", doc.text, re.MULTILINE):
+            errors.append(f"{doc.path}: developer Group/Class metadata is visible to users")
+        if not PRINCIPLE_HEADING_RE.search(doc.text):
+            errors.append(f"{doc.path}: missing a user-facing operation-principle section")
+        if not MATH_RE.search(doc.text):
+            errors.append(f"{doc.path}: operation principle must contain an inspectable formula or rule")
+        if code.discoverable:
+            for section_name, pattern in CARD_SECTION_REQUIREMENTS.items():
+                if not pattern.search(doc.text):
+                    errors.append(f"{doc.path}: discoverable card is missing `## {section_name}`")
+        if re.search(r"^\\[\[\]]\s*$", doc.text, re.MULTILINE):
+            errors.append(f"{doc.path}: use MyST `$`/`$$` math delimiters, not raw `\\[`/`\\]`")
+        malformed_math = find_malformed_display_math(doc.text)
+        if malformed_math:
+            errors.append(f"{doc.path}: malformed display math: {malformed_math[:3]}")
+
         # ---- serialized keys must match ----
         code_set = set(code.keys)
         doc_set = set(doc.keys)
@@ -246,7 +355,13 @@ def audit() -> list[str]:
             if param_section is None:
                 errors.append(f"{doc.path}: missing `## 参数说明` section")
             elif params_fields:
-                documented = set(PARAM_HEADING_RE.findall(param_section))
+                heading_matches = PARAM_HEADING_RE.findall(param_section)
+                documented = {key for _label, key in heading_matches}
+                for label, key in heading_matches:
+                    if not re.search(r"[\u4e00-\u9fff]", label):
+                        errors.append(
+                            f"{doc.path}: parameter `{key}` must show its Chinese UI label before the serialized key"
+                        )
                 for key in params_fields:
                     if key not in documented:
                         errors.append(f"{doc.path}: missing parameter heading for `{key}`")
@@ -267,15 +382,135 @@ def audit() -> list[str]:
 
     # ---- index integrity ----
     index_text = INDEX_DOC.read_text(encoding="utf-8")
-    for required in ["Super Cell", "Lattice Strain", "Magnetic Order", "FPS Filter"]:
-        if required not in index_text:
-            errors.append(f"{INDEX_DOC}: missing mention of `{required}`")
+    required_card_links = {
+        "扩胞": "cards/super-cell-card.md",
+        "晶格应变": "cards/cell-strain-card.md",
+        "磁序": "cards/magnetic-order-card.md",
+        "代表性采样": "cards/fps-filter-card.md",
+    }
+    for label, target in required_card_links.items():
+        if target not in index_text:
+            errors.append(f"{INDEX_DOC}: missing `{label}` card link `{target}`")
+
+    # ---- user-facing category tree integrity ----
+    category_refs = parse_category_card_refs()
+    docs_by_name = {doc.path.name: doc for doc in doc_pages}
+    for name, paths in category_refs.items():
+        if name not in docs_by_name:
+            errors.append(f"Category tree references unknown card doc `{name}`")
+        if len(paths) > 1:
+            joined = ", ".join(str(path) for path in paths)
+            errors.append(f"Card doc `{name}` appears in multiple categories: {joined}")
+
+    for code in code_cards.values():
+        doc = doc_by_source.get(code.source_file)
+        if doc is None:
+            continue
+        category_paths = category_refs.get(doc.path.name, [])
+        if code.discoverable and len(category_paths) != 1:
+            errors.append(
+                f"{doc.path}: discoverable card must appear exactly once in category tree "
+                f"(found {len(category_paths)})"
+            )
+        if not code.discoverable and category_paths:
+            errors.append(f"{doc.path}: compatibility-only card must not appear in category tree")
 
     # ---- recipes integrity ----
     recipes_text = RECIPES_DOC.read_text(encoding="utf-8")
     for required in ["高熵合金", "富缺陷表面", "磁性数据"]:
         if required not in recipes_text:
             errors.append(f"{RECIPES_DOC}: missing recipe `{required}`")
+
+    # ---- global information architecture integrity ----
+    root_index_text = ROOT_INDEX.read_text(encoding="utf-8")
+    root_markers = [
+        ":caption: 开始使用",
+        ":caption: 端到端工作流",
+        ":caption: 功能指南",
+        ":caption: 操作指南",
+        ":caption: 参考资料",
+        ":caption: 开发者",
+    ]
+    marker_positions = [root_index_text.find(marker) for marker in root_markers]
+    if any(position < 0 for position in marker_positions):
+        errors.append(f"{ROOT_INDEX}: missing one or more top-level documentation sections")
+    elif marker_positions != sorted(marker_positions):
+        errors.append(f"{ROOT_INDEX}: top-level documentation sections are out of user-reading order")
+
+    feature_markers = [
+        "<module/NEP-dataset-display>",
+        "<module/training-set-assessment>",
+        "<module/make-dataset>",
+        "<module/data-management>",
+        "<module/settings>",
+    ]
+    feature_positions = [root_index_text.find(marker) for marker in feature_markers]
+    if any(position < 0 for position in feature_positions):
+        errors.append(f"{ROOT_INDEX}: feature guide tree does not cover all application pages")
+    elif feature_positions != sorted(feature_positions):
+        errors.append(f"{ROOT_INDEX}: feature guide order no longer matches the application navigation")
+
+    if "stacking-fault-card" in root_index_text:
+        errors.append(f"{ROOT_INDEX}: compatibility-only card leaked into the global navigation")
+
+    # ---- reader entry points added by the documentation redesign ----
+    reference_index_text = REFERENCE_INDEX.read_text(encoding="utf-8")
+    for marker in ("glossary", "troubleshooting"):
+        if marker not in reference_index_text:
+            errors.append(f"{REFERENCE_INDEX}: missing `{marker}` entry")
+
+    glossary_text = GLOSSARY_DOC.read_text(encoding="utf-8")
+    for term in ("Config_type", "FPS", "GSFE", "virial", "spin:R:3"):
+        if term not in glossary_text:
+            errors.append(f"{GLOSSARY_DOC}: missing core term `{term}`")
+
+    troubleshooting_text = TROUBLESHOOTING_DOC.read_text(encoding="utf-8")
+    for symptom in ("CUDA", "导入失败", "没有输出", "x、y", "energy_original"):
+        if symptom not in troubleshooting_text:
+            errors.append(f"{TROUBLESHOOTING_DOC}: missing troubleshooting symptom `{symptom}`")
+
+    display_example_text = NEP_DISPLAY_EXAMPLE.read_text(encoding="utf-8")
+    for step in range(1, 8):
+        if f"## {step}." not in display_example_text:
+            errors.append(f"{NEP_DISPLAY_EXAMPLE}: missing explained workflow step {step}")
+
+    workflow_index_text = WORKFLOW_INDEX.read_text(encoding="utf-8")
+    for workflow in ("clean-candidate-structures", "review-training-results", "manage-iterations"):
+        if workflow not in workflow_index_text:
+            errors.append(f"{WORKFLOW_INDEX}: missing workflow `{workflow}`")
+
+    module_index_text = MODULE_INDEX.read_text(encoding="utf-8")
+    for child_page in ("nep-display-open-data", "training-audit-overview", "make-dataset-cards/index"):
+        if child_page not in module_index_text:
+            errors.append(f"{MODULE_INDEX}: missing common feature entry `{child_page}`")
+
+    formats_text = FORMATS_DOC.read_text(encoding="utf-8")
+    if "## 30 秒快速判断" not in formats_text:
+        errors.append(f"{FORMATS_DOC}: missing first-screen format decision guide")
+
+    # ---- math syntax across the complete Markdown documentation ----
+    for path in sorted(DOC_SOURCE_DIR.rglob("*.md")):
+        math_errors = find_malformed_markdown_math(path.read_text(encoding="utf-8-sig"))
+        if math_errors:
+            errors.append(f"{path}: malformed math delimiters: {math_errors[:3]}")
+
+    conf_text = SPHINX_CONF.read_text(encoding="utf-8-sig")
+    if "'collapse_navigation': True" not in conf_text:
+        errors.append(f"{SPHINX_CONF}: deep navigation branches must stay collapsed until the user opens them")
+    if "'titles_only': True" not in conf_text:
+        errors.append(f"{SPHINX_CONF}: global sidebar must not mix page-local headings into the document tree")
+    if "'js/partial-navigation.js'" not in conf_text:
+        errors.append(f"{SPHINX_CONF}: partial document navigation script is not enabled")
+    if not PARTIAL_NAV_JS.exists():
+        errors.append(f"{PARTIAL_NAV_JS}: partial document navigation script is missing")
+    else:
+        partial_nav_text = PARTIAL_NAV_JS.read_text(encoding="utf-8")
+        if "typesetPromise([content])" not in partial_nav_text:
+            errors.append(f"{PARTIAL_NAV_JS}: swapped content must be re-typeset with MathJax")
+        if '!raw || raw.startsWith("#") || raw.startsWith("javascript:")' in partial_nav_text:
+            errors.append(f"{PARTIAL_NAV_JS}: current-page sidebar links must be normalized before a page swap")
+        if "currentBranch.innerHTML" in partial_nav_text:
+            errors.append(f"{PARTIAL_NAV_JS}: do not replace the whole active sidebar branch on every navigation")
 
     return errors
 

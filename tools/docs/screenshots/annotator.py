@@ -93,6 +93,8 @@ def _badge_point(rect: QRect, placement: str | tuple[int, int] | None, image_wid
         return QPoint(min(rect.right() + margin, image_width - 24), rect.center().y())
     if place == "left":
         return QPoint(max(rect.left() - margin, 24), rect.center().y())
+    if place == "bottom":
+        return QPoint(rect.center().x(), min(rect.bottom() + margin, image_height - 24))
     if place == "top-right":
         return QPoint(min(rect.right() - 18, image_width - 24), max(rect.top() + 18, 24))
     if place == "top-left":

@@ -520,7 +520,7 @@ SCENARIOS: dict[str, ScenarioSpec] = {
         annotations=(
             Annotation("1", "Open input structures", "widget:open_dir_button", "right"),
             Annotation("2", "Add new card", "widget:make_data_interface.setting_group.new_card_button", "right"),
-            Annotation("3", "Run selected cards", (292, 72, 26, 26), "right"),
+            Annotation("3", "Run selected cards", "widget:make_data_run_button", "bottom"),
             Annotation("4", "Workflow workspace", "widget:make_data_interface.workspace_card_widget", "top-left"),
         ),
     ),
@@ -533,7 +533,7 @@ SCENARIOS: dict[str, ScenarioSpec] = {
         annotations=(
             Annotation("1", "Add Lattice Strain card", "widget:make_data_interface.setting_group.new_card_button", "right"),
             Annotation("2", "Set strain range", "widget:make_data_interface.workspace_card_widget.cards.0", "right"),
-            Annotation("3", "Run selected cards", (292, 72, 26, 26), "right"),
+            Annotation("3", "Run selected cards", "widget:make_data_run_button", "bottom"),
             Annotation("4", "Export generated structures", "widget:make_data_interface.workspace_card_widget.cards.0.export_button", "right"),
         ),
     ),

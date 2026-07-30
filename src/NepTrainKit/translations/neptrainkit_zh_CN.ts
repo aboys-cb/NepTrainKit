@@ -6704,7 +6704,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../main.py" line="171" />
         <source>Make Dataset</source>
-        <translation>生成数据集</translation>
+        <translation>构建数据集</translation>
     </message>
     <message>
         <location filename="../main.py" line="176" />

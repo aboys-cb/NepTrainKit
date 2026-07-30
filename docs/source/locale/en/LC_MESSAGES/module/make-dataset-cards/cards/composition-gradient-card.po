@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Composition Gradient"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:5
 #: ac2281d0b22c4aca87cfefcb55a554a7
 msgid "**分类：** 合金与组分"
-msgstr ""
+msgstr "**Category:** Alloys and composition"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:7
 #: e86ac8a0cafa4da385014e1d6a618c2b
@@ -41,7 +40,7 @@ msgid ""
 "`Composition Gradient` 沿晶格 `a`、`b` 或 `c` 方向排列可替换原子，再把它们分"
 "成原子数尽量相同的若干层。第一层使用起始成分，最后一层使用结束成分，中间层做"
 "线性插值。卡片只重新分配元素，不移动原子，也不改变晶胞。"
-msgstr ""
+msgstr "`Composition Gradient` arranges replaceable atoms along lattice direction `a`, `b`, or `c`, then divides them into layers with nearly equal atom counts. The first layer uses the start composition, the last uses the end composition, and intermediate layers are linearly interpolated. The card only reallocates elements; it does not move atoms or change the cell."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:11
 #: 926189b72c0449b4afdef9bccde4b77c
@@ -49,19 +48,19 @@ msgid ""
 "它适合扩散偶、梯度合金和界面过渡层。如果你需要的是多个空间均匀、但全局成分不"
 "同的合金结构，应使用 `Composition Space Sampling → Random Occupancy`，而不是"
 "这张卡。"
-msgstr ""
+msgstr "Use it for diffusion couples, gradient alloys, and interfacial transition layers. If you need spatially uniform alloy structures with different global compositions, use `Composition Space Sampling → Random Occupancy` instead."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:13
 #: 02d68cba72ec4243960a5db92dc51921
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and formulas"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:15
 #: a6e3c645c38f44928cdc5b7192daed6c
 msgid ""
 "程序先把候选位点沿指定晶格轴的分数坐标 $s$ 包裹到 $[0,1)$，排序后分箱。第 "
 "$b$ 个 分箱中心对应 $t_b\\in[0,1]$，其目标成分由起点和终点线性插值："
-msgstr ""
+msgstr "The program wraps candidate-site fractional coordinates $s$ along the selected lattice axis into $[0,1)$, sorts them, and bins them. The center of bin $b$ is $t_b\\in[0,1]$, and its target composition is linearly interpolated between the endpoints:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:18
 #: 8da6daf90f69496a8a2bdfbcbae7ac96
@@ -78,7 +77,7 @@ msgid ""
 "c_e\\rfloor$，再把剩余位点按小数余数从大到小补给各元素，保证 $\\sum_e "
 "n_e=N_b$。所以有限晶胞中的实际比例是最接近目标的整数实现，不会逐箱精确等于 连"
 "续比例。"
-msgstr ""
+msgstr "If a bin contains $N_b$ sites, the ideal count is $N_b c_e$. The program first takes $n_e=\\lfloor N_b c_e\\rfloor$, then assigns remaining sites to elements in descending order of fractional remainder so that $\\sum_e n_e=N_b$. Thus the finite-cell ratio is the nearest integer realization of the target and is not exactly equal to the continuous ratio in every bin."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:28
 #: 34eec9aa4d3c4f7c8dee334585ca411a
@@ -110,7 +109,7 @@ msgid ""
 "有相同层配比、不同层内随机排布的梯度结构。 **怎么验证训练集质量改善：** 按晶"
 "格 `a` 方向分层统计元素比例，应从 Ni-rich 单调过渡到 Co-rich；重训后扩散偶界"
 "面测试误差应下降。"
-msgstr ""
+msgstr "**Input:** a Ni or Ni–Co supercell long enough along lattice direction `a`. **Goal:** create a composition gradient from `Ni:1,Co:0` to `Ni:0,Co:1` along `a`. **Settings:** enter `Ni,Co` for `Input elements`, select `a` as `Gradient axis`, set `Bins` to `8`, enter `Ni,Co` for `Target elements`, set `Samples per input` to `3`, and enable `Use seed`. **Output:** each input produces three gradient structures with the same layer compositions but different within-layer random arrangements. **Validation:** bin element fractions along `a`; they should change monotonically from Ni-rich to Co-rich, and retraining should reduce diffusion-couple interface error."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:41
 #: edcb2fd5235f427fa02a7c3e87e731d4
@@ -120,7 +119,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:43
 #: e6f92c8ab53c40459cb09cc212bdbeff
 msgid "元素（elements）"
-msgstr ""
+msgstr "elements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:45
 #: d62dd06324e74a529b61275eb4188734
@@ -135,7 +134,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:47
 #: a90f712ba4cf4f74a4ab3f9a988b76c0
 msgid "起始成分（start_composition）"
-msgstr ""
+msgstr "start_composition"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:49
 #: 54765a9b5291490b8349dc76402fac51
@@ -150,7 +149,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:51
 #: 8f2f04b9ce98481eba5471c7f6ba6942
 msgid "结束成分（end_composition）"
-msgstr ""
+msgstr "end_composition"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:53
 #: 4a85a889e64640499af85dfaffec0a25
@@ -165,7 +164,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:55
 #: 8b822fe076804b9fabd60e72cb1fd666
 msgid "轴（axis）"
-msgstr ""
+msgstr "axis"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:57
 #: fca36a7693e646bbb8f1e3b363d0b1cd
@@ -173,33 +172,33 @@ msgid ""
 "`str`，默认 `a`，可选 `a`、`b` 或 `c`。它们表示晶格坐标方向，不是笛卡尔 X/Y/"
 "Z。程序按对应的分数坐标从低到高排列原子：起始成分放在低坐标端，结束成分放在高"
 "坐标端。"
-msgstr ""
+msgstr "`str`, default `a`; choose `a`, `b`, or `c`. These are lattice-coordinate directions, not Cartesian X/Y/Z. Atoms are sorted by the corresponding fractional coordinate: the start composition is placed at the low-coordinate end and the end composition at the high-coordinate end."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:59
 #: 943eadcbda8946b2afa6eb68d1dc550e
 msgid ""
 "选真实扩散方向或界面法向。旧配置中的 `x/y/z` 仍可加载，并分别按 `a/b/c` 处"
 "理。"
-msgstr ""
+msgstr "Choose the physical diffusion direction or interface normal. Legacy `x/y/z` values remain loadable and are interpreted as `a/b/c`, respectively."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:61
 #: 74317fece4e741a49669b5620634e74a
 msgid ""
 "如果这个方向是周期的，晶胞高坐标端会和低坐标端相接。起止成分不同时，周期边界"
 "处会出现一次额外的成分突变；做周期扩散偶时要确认这正是你想要的边界条件。"
-msgstr ""
+msgstr "If this direction is periodic, the high-coordinate end of the cell connects to the low-coordinate end. When the endpoint compositions differ, an additional composition jump appears at the periodic boundary; confirm that this is the intended boundary condition for a periodic diffusion couple."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:63
 #: 84d9a83d2ccb4be99f3f7fa5ff91ad46
 msgid "分箱数（bins）"
-msgstr ""
+msgstr "bins"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:65
 #: 8c7fe5dd538c4c5f84126a7e8915dc9c
 msgid ""
 "`int`，默认 8。程序按位置排序后，把候选原子分成原子数尽量相同的若干组；它不是"
 "按等距离切出若干个等厚空间层。"
-msgstr ""
+msgstr "`int`, default 8. After sorting by position, the program divides candidate atoms into groups with nearly equal counts; it does not cut equal-thickness spatial layers at equal distances."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:67
 #: f6b79a9830524c7ea2ba3d3a490a1f0e
@@ -208,12 +207,12 @@ msgid ""
 "大。某层有 `N` 个候选原子时，单个元素能够表达的最小成分步长约为 `1/N`。例如每"
 "层只有 4 个原子，只能稳定表达 0%、25%、50%、75% 和 100%。如果输入只有 32 个候"
 "选原子，设 8 层已经意味着每层约 4 个原子。"
-msgstr ""
+msgstr "Larger `bins` make the composition change appear finer, but leave fewer atoms per layer and increase integer-rounding error. With `N` candidate atoms in a layer, the smallest fraction step for one element is about `1/N`. A layer with four atoms can stably express only 0%, 25%, 50%, 75%, and 100%; with 32 candidates, eight bins already means about four atoms per layer."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:69
 #: 689e2c69f3af44838a51b4533f4770cb
 msgid "目标元素（target_elements）"
-msgstr ""
+msgstr "target_elements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:71
 #: d833c482e23542d284da46b71bc1e2de
@@ -221,19 +220,19 @@ msgid ""
 "`str`，默认空。这里填写输入结构中允许被替换的现有元素，不是输出元素。留空会让"
 "所有原子都参与重新分配；例如输入含 Ni、Co、Al，而 `elements=Ni,Co` 时，Al 也"
 "会被改成 Ni 或 Co。"
-msgstr ""
+msgstr "`str`, default empty. Enter the existing input elements allowed to be replaced, not the output elements. If empty, all atoms participate; for an input containing Ni, Co, and Al, `elements=Ni,Co` can also replace Al with Ni or Co."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:73
 #: 556dda291c954967a5e0349ac98c9800
 msgid ""
 "多组元体系通常应显式填写，例如 `Ni,Co`，以保留 Al 子晶格。当前参数只能按元素"
 "筛选，不能按空间区域或 `group` 标签筛选。"
-msgstr ""
+msgstr "For multicomponent systems, specify the elements explicitly, such as `Ni,Co`, to preserve the Al sublattice. The current parameter filters by element only; it cannot filter by spatial region or `group` label."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:75
 #: c93147d4bc4449128ecf4e014a2f962b
 msgid "样本数（samples）"
-msgstr ""
+msgstr "samples"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:77
 #: 50acae37b36e4116860d5359907fc9ab
@@ -241,12 +240,12 @@ msgid ""
 "`int`，默认 1。每个输入结构生成几个随机排布。同一层的元素数量不变，改变的只是"
 "这些元素落在哪些候选位点上。1-3 个适合补少量扩散偶构型；如果要研究同一成分梯"
 "度下的局域无序差异，可以增加输出数量。"
-msgstr ""
+msgstr "`int`, default 1. Number of random arrangements generated per input. Element counts in each layer stay fixed; only the candidate sites occupied by those elements change. One to three samples are suitable for a small number of diffusion-couple configurations; increase this value to study local disorder at the same composition gradient."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:79
 #: 12d9fc65fded442ab9755afacc075773
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:81
 #: 2964fe73cca442b0ade8916455f08ae4
@@ -261,7 +260,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:83
 #: c5e81ffc790e48e4a55123cc7031f935
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:85
 #: e03f62a861f44510ae17cda2c6ef13da
@@ -379,21 +378,21 @@ msgstr "Common questions"
 msgid ""
 "**层内成分不等于目标小数。** 原子数是整数，每层按最接近的整数计数分配。增大超"
 "胞或减少 `分箱数`（`bins`）可以提高每层成分分辨率。"
-msgstr ""
+msgstr "**The within-layer composition is not exactly the target fraction.** Atom counts are integers, so each layer uses the nearest integer allocation. Increase the supercell or reduce `bins` to improve composition resolution per layer."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:143
 #: ab439cb6a71d4db8a7453bfa30365acf
 msgid ""
 "**运行报错或没有输出。** `元素`（`elements`）少于 2 个、起止成分解析失败，或 "
 "`目标元素`（`target_elements`）没有匹配到原子。"
-msgstr ""
+msgstr "**The card errors or produces no output.** `elements` contains fewer than two elements, an endpoint composition cannot be parsed, or `target_elements` matches no atoms."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:145
 #: a0ac6dc5a047499da5b5a376054abb90
 msgid ""
 "**倾斜晶胞中的方向怎么看。** `a/b/c` 始终表示晶格分数坐标方向。即使晶格向量倾"
 "斜，也不会切换成笛卡尔 X/Y/Z。"
-msgstr ""
+msgstr "**How to interpret directions in a tilted cell.** `a/b/c` always refer to lattice fractional-coordinate directions. Even when lattice vectors are tilted, they do not switch to Cartesian X/Y/Z."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:147
 #: 78074c5a8b9443708bd85850d009ee79
@@ -401,7 +400,7 @@ msgid ""
 "**为什么周期边界处还有一个突变界面。** 周期方向的高坐标端会与低坐标端相接，而"
 "线性梯度的结束成分通常不同于起始成分。需要连续周期成分场时，这张卡当前不适"
 "用。"
-msgstr ""
+msgstr "**Why is there still a jump interface at the periodic boundary?** The high-coordinate end of a periodic direction joins the low-coordinate end, while the linear-gradient endpoint usually differs from the start. This card is not suitable when a continuously periodic composition field is required."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:149
 #: fa1ccb0c59a8437993e01d26f0f94b3f
@@ -412,7 +411,7 @@ msgstr "Output labels"
 #: 9c3812632b4b41e397f174773bb411ef
 msgid ""
 "`CompGrad(ax={a|b|c},b={bins},s={seed})`。`s` 只在 `use_seed=True` 时出现。"
-msgstr ""
+msgstr "`CompGrad(ax={a|b|c},b={bins},s={seed})`. `s` appears only when `use_seed=True`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/composition-gradient-card.md:153
 #: e5ae5d1a38a34c71ab01a3d5cd47cc47
@@ -424,7 +423,7 @@ msgstr "Reproducibility"
 msgid ""
 "开启 `使用随机种子`（`use_seed`）后，层内元素排布由 `随机种子`（`seed`）、输"
 "入结构标识和 sample 序号共同决定。"
-msgstr ""
+msgstr "When `Use Seed` (`use_seed`) is enabled, within-layer element arrangements are determined jointly by `Seed` (`seed`), the input structure identifier, and the sample index."
 
 #~ msgid ""
 #~ "`Composition Gradient` 沿 x/y/z 方向把结构分成若干坐标层，并在每层按起点成"

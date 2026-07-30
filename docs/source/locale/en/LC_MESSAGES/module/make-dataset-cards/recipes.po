@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:1
 #: 9cc2b679ac214e88801c1f0150132035
 msgid "生成数据集配方示例（Recipes）"
-msgstr ""
+msgstr "Generate Dataset recipes"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:2
 #: e90ec6473721498f82d133591c51c7c5
 msgid "本页目录"
-msgstr ""
+msgstr "On this page"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:8
 #: 94d58f4523c14cbf940b93b317bfc436
@@ -145,7 +144,7 @@ msgstr "Card order"
 msgid ""
 "`Crystal Prototype Builder → Composition Space Sampling → Random Occupancy → "
 "Random Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`"
-msgstr ""
+msgstr "`Crystal Prototype Builder → Composition Space Sampling → Random Occupancy → Random Doping → export xyz → clean in NEP Dataset Display → FPS`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:37
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:154
@@ -338,7 +337,7 @@ msgstr "Common failure modes"
 msgid ""
 "只做 `Composition Space Sampling` 就停止：这只定义目标配比，不代表已经得到真"
 "实随机合金。"
-msgstr ""
+msgstr "Stopping after `Composition Space Sampling`: this defines a target composition but does not produce a truly random alloy."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:136
 #: 5e29e7d129f642129e46bf09dda8530d
@@ -483,7 +482,7 @@ msgstr ""
 msgid ""
 "**每步预期输出：** 每个 slab 再生成 2 个上表面随机吸附候选；这里只做连续横向"
 "采样和最小距离约束，不识别顶位、桥位或空位。"
-msgstr ""
+msgstr "**Expected output at each step:** generate two additional random upper-surface adsorption candidates per slab; this performs continuous lateral sampling with a minimum-distance constraint and does not identify top, bridge, or vacancy sites."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:214
 #: c17ab0c96d71445e84d8c1ab77c5a566
@@ -595,7 +594,7 @@ msgstr ""
 msgid ""
 "`Crystal Prototype Builder(fcc111) → Stacking Fault / GSFE Path → 导出 xyz → "
 "NEP Dataset Display 清洗 → DFT`"
-msgstr ""
+msgstr "`Crystal Prototype Builder(fcc111) → Stacking Fault / GSFE Path → export xyz → clean in NEP Dataset Display → DFT`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:266
 #: 67f6b3a313e7445498a3f3cff2db91a5
@@ -685,7 +684,7 @@ msgstr ""
 msgid ""
 "直接把普通 `fcc` cubic cell 送进 `Stacking Fault / GSFE Path`：第三晶胞方向不"
 "垂直于目标 `(111)` 面，程序会报 slab-oriented 错误。"
-msgstr ""
+msgstr "Passing an ordinary `fcc` cubic cell directly to `Stacking Fault / GSFE Path`: the third cell direction is not perpendicular to the target `(111)` plane, so the program reports a slab-oriented error."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:313
 #: 6e115ecf9b4a4fcb87e54e7a5da7035f
@@ -806,7 +805,7 @@ msgstr ""
 msgid ""
 "**每步预期输出：** 得到 1 个 FM、1 个 AFM 和 8 个 PM 候选；"
 "`afm_mode=group_ab` 时，真正起作用的是 `afm_group_a/b`，不是 `afm_kvec`。"
-msgstr ""
+msgstr "**Expected output at each step:** obtain one FM, one AFM, and eight PM candidates; when `afm_mode=group_ab`, `afm_group_a/b` control the assignment, not `afm_kvec`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:383
 #: 10e0d126a1c74927940380e12bc4adf5

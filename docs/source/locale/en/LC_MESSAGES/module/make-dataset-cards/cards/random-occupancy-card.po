@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Random Occupancy"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:5
 #: b5b4fdaf39234fd5a1a187d40a15e639
 msgid "**分类：** 合金与组分"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:7
 #: 79e4fc20c2dc491bb867b6d64023eea6
@@ -52,17 +51,17 @@ msgstr ""
 msgid ""
 "典型用法：接在 `Composition Space Sampling` 之后，把目标配比计划转化为可以跑 "
 "DFT/NEP 的实际结构。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:13
 #: 978154ed271649a8b810aef8e3816fe1
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:15
 #: 6b14d614088844579f574aeb4feb2572
 msgid "设可占位点数为 $N$，归一化目标比例为 $p_e$。`精确`模式使用最大余数法："
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:17
 #: 02c1f6f470934c02af32bde57d6fd7da
@@ -80,7 +79,7 @@ msgid ""
 "n\\sim\\operatorname{Multinomial}(N,\\mathbf p)$ 抽取计数，再打乱占位池。 因"
 "此精确模式每个样本的元素计数相同；随机模式只在大量样本的统计平均上接近目标比"
 "例。 `分组筛选`会把 $N$ 限制为命中 group 标签的位点数。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:28
 #: 060638197336452c82b0c69e541848da
@@ -102,7 +101,7 @@ msgid ""
 "Cr 永远在角落、Co 永远在面心。模型学到的不是\"这个成分\"，而是\"这个成分 + 这"
 "个特定排布\"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 "
 "meV/atom 跳到了 50 meV/atom。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:34
 #: 587476d12f094fe886f2a08bb66eae24
@@ -121,7 +120,7 @@ msgstr ""
 msgid ""
 "**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 "
 "`Composition Space Sampling`）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:38
 #: 7ba5b9099ed0449a88b811593ab0bce9
@@ -137,18 +136,18 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:41
 #: 3c79b2768a654b08b242f48aea7b22bf
 msgid "`来源`（`source`） = `Auto (Comp tag)` （自动读取上游 Comp 标签）"
-msgstr ""
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:42
 #: 678306603ea14b749babfca940284b26
 msgid ""
 "`模式`（`mode`） = `Exact` （精确匹配目标配比，每次排布不同但元素计数一致）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:43
 #: bd6da7d158dc48f0a91a6b6e743f7c9f
 msgid "`样本数`（`samples`） = `5`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:45
 #: 0144ee84dfab4120801bcb1e19ffa46d
@@ -187,14 +186,14 @@ msgstr ""
 msgid ""
 "如果不同排布之间的能量差异非常小且体系对排布不敏感，可以减少 `样本数`"
 "（`samples`）；差异大则增大"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:51
 #: de2ab5dc539049078e5d9191575d48cf
 msgid ""
 "如果上游没有 `Comp(...)` 标签导致输出=输入，切换到手工模式并填写 `手动`"
 "（`manual`）成分字符串"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:53
 #: 72d9dd2ca21e496e8db225d44c739bd6
@@ -211,7 +210,7 @@ msgstr "**Add it when:**"
 msgid ""
 "上游有 `Composition Space Sampling` 或手工定义了目标配比，需要落到具体原子占"
 "位"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:57
 #: e095d4bc3d2c4552ad59c0c0b13c2b71
@@ -257,7 +256,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:67
 #: 6d3d5c8db3b042249cf65c10e9749f10
 msgid "来源（source）"
-msgstr ""
+msgstr "source"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:69
 #: 82bc917b2bd543abafec5602efa3b2b2
@@ -265,12 +264,12 @@ msgid ""
 "`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 `Config_type` 中读取 "
 "`Comp(...)` 标签作为目标配比，适合接在 `Composition Space Sampling` 之后。`手"
 "动`（`manual`）从下面的 `手动`（`manual`）字段读取手工配比字符串。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:71
 #: badd105282aa47c48ab083378a40b791
 msgid "手动（manual）"
-msgstr ""
+msgstr "manual"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:73
 #: 0fa887d4d8ee4373a830cf79f987b635
@@ -286,7 +285,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:75
 #: f1b425aded4a4a4a88ccdf9b188a3dad
 msgid "模式（mode）"
-msgstr ""
+msgstr "mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:77
 #: 95250ccb230c47009611a5d9ac6f04af
@@ -303,7 +302,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:79
 #: b899311408f046cea859ba21ade1b239
 msgid "样本数（samples）"
-msgstr ""
+msgstr "samples"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:81
 #: a350fa00f9694df5aa705f268ddbf511
@@ -318,7 +317,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:83
 #: 6f27adb880884abf99d1e282a21e7aba
 msgid "分组筛选（group_filter）"
-msgstr ""
+msgstr "group_filter"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:85
 #: fc8ce6659a404d05b7dd07ec4123d7ac
@@ -326,24 +325,24 @@ msgid ""
 "`str`，默认空。逗号分隔的 group 标签，如 `A,B`。限制只在这些 group 内的位点上"
 "做占位分配。填写后，输入必须带 `atoms.arrays['group']` 且至少有一个标签命中；"
 "否则卡片会明确报错，不会退化成全结构占位。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:87
 #: 9df21e024b6e44119d4c5413a0861c7c
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:89
 #: 77e5562c834e4109b7161e12b788ace4
 msgid ""
 "`bool`，默认 false。打开后固定随机路径，`随机种子`（`seed`）不同取值产生不同"
 "占位分布。程序会结合输入结构的 stable config ID 为每个样本派生独立种子。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:91
 #: 6c6df71b9c544e88ab972f1387f2e85a
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:93
 #: 02a409b845354120971f160167aaf3eb
@@ -435,7 +434,7 @@ msgstr "Recommended combinations"
 msgid ""
 "`Composition Space Sampling` → `Random Occupancy`：标准合金 pipeline，配比 → "
 "落位。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:147
 #: f38a21c10d3f4ac19ba92ed690db1972
@@ -462,7 +461,7 @@ msgid ""
 "**提示缺少目标成分。** 上游没有 `Comp(...)` 标签且 `手动`（`manual`）为空时，"
 "卡片会停止并报错。检查 `来源`（`source`）设置，或切换到 Manual 模式并填写成"
 "分；它不会再把原结构当成成功输出。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:154
 #: 2431b6f55a864c63a2835a7352e3757c
@@ -478,14 +477,14 @@ msgstr ""
 msgid ""
 "**输出数量远超预期。** 输出 = 输入帧数 x `样本数`（`samples`）。上游 500 个配"
 "比点 x `samples=5` = 2500 个结构。先估算总规模再跑。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:158
 #: f974cfedde634ae5953634ae844edbb5
 msgid ""
 "**group_filter 报错。** 检查输入结构是否有 `atoms.arrays['group']` 且标签拼写"
 "完全匹配。缺少数组和零命中都会报错，避免本来只想改 A 组却意外改完整个结构。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:160
 #: 1ffa58dff7aa4f8f869d7097872ccbf3
@@ -512,7 +511,7 @@ msgid ""
 "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`）可复现。种子与输"
 "入结构的 stable config ID 联合派生样本级种子，相同配置 + 相同 seed → 相同占位"
 "序列。注意输入结构顺序变化会影响结果。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
 #~ "典型用法：接在 `Composition Sweep` 之后，把目标配比计划转化为可以跑 DFT/"

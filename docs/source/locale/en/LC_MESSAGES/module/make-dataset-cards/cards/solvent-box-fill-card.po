@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:3
 #: ec27cf45101846809a125247cf0f4ce3
 msgid "周期溶剂盒（Solvent Box Fill）"
-msgstr ""
+msgstr "Solvent Box Fill"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:5
 #: 0bf9dd61a3b94ac993ac762a6df7f7e5
 msgid "**分类：** 分子与溶剂"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:7
 #: d58996eb66024ce09a553eae958097b3
@@ -41,7 +40,7 @@ msgid ""
 "`Solvent Box Fill` 在已有周期性晶胞的整个 cell 中随机插入溶剂分子，适合从空"
 "盒、干结构或稀疏溶剂结构生成周期溶剂候选初态。输入可以没有原子，但必须有有限"
 "且非奇异的 cell，并且至少一个周期方向开启。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:11
 #: dc18e84f11c0496da4f9de77385c05d5
@@ -49,19 +48,19 @@ msgid ""
 "它解决的是“训练集缺少周期溶剂环境”的覆盖问题，不替代分子动力学平衡或量化优"
 "化。各模式下分子位置和整体取向都采用随机采样；`water`、`loose`、`dense` 主要"
 "改变默认碰撞半径缩放，并不会生成局部离子水合取向。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:13
 #: 0f67b821072b4766b7b6c1dd7b58c0c3
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:15
 #: 04b67bb5da3b41869d2fa5188b660e26
 msgid ""
 "`固定分子数`直接使用用户给定数量。`按密度估算`根据晶胞体积 $V$、目标密度 $"
 "\\rho$、 填充比例 $p$ 和单个溶剂分子摩尔质量 $M$ 计算"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:18
 #: 4b109c44464e415d984f5560c1c790f9
@@ -79,7 +78,7 @@ msgid ""
 "子， 并用周期最小镜像距离执行碰撞拒绝；显式最小距离与元素共价半径缩放共同决定"
 "是否接受。 因此密度模式给出的是目标装填数，不代表未经弛豫的瞬时结构已经达到真"
 "实液体平衡密度。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:28
 #: deaff6db135f4c1fbdb92558179671b7
@@ -109,7 +108,7 @@ msgid ""
 "参数设置：`count_mode=\"fixed\"`，`solvent_count=200`，"
 "`sampling_mode=\"auto\"`，`min_distance=0.8`，"
 "`max_attempts_per_solvent=500`，打开 `使用随机种子`（`use_seed`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:36
 #: 22007950550a43c29e601372ddff01bd
@@ -133,7 +132,7 @@ msgstr "Solvent input"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:42
 #: d74e1e583e4b47d6b0259a0056163454
 msgid "溶剂 XYZ（solvent_xyz）"
-msgstr ""
+msgstr "solvent_xyz"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:44
 #: a105e96f95b84717b12edb9439a0112c
@@ -146,7 +145,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:46
 #: 73f775555f604b94872441d23eacdf92
 msgid "每个输入的独立输出数（structures）"
-msgstr ""
+msgstr "structures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:48
 #: 9e4e0fcf6ea84bf181108f920197dbae
@@ -161,7 +160,7 @@ msgstr "Count control"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:52
 #: d6d8d7f3b24e4c56860878202ad64222
 msgid "目标用量（count_mode）"
-msgstr ""
+msgstr "count_mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:54
 #: 57dd63eaca6c44cd98730bfe6c7850ec
@@ -169,12 +168,12 @@ msgid ""
 "`str`，默认 `fixed`。可选 `fixed`、`按密度`（`density`）。`fixed` 直接使用目"
 "标分子数；`按密度`（`density`）根据**完整 cell 体积**、溶剂分子质量、目标密度"
 "和数量乘数估算一个名义分子数。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:56
 #: d098068e183844d99da93f7975761ed8
 msgid "目标溶剂分子数（solvent_count）"
-msgstr ""
+msgstr "solvent_count"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:58
 #: 81bae9d8fcd84319a6bce097e7309b19
@@ -184,7 +183,7 @@ msgstr "`int`, default `100`; fixed mode only."
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:60
 #: 6808cccf45314c10af841a2d2685a47c
 msgid "按密度（density）"
-msgstr ""
+msgstr "density"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:62
 #: 40b5ff707b06431ab0f63e9a1b5ae9b4
@@ -196,7 +195,7 @@ msgstr "`float`, default `1.0` g/cm³; density mode only."
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:64
 #: 28649f49ca8e42fba4bc3b64acce5030
 msgid "密度计数系数（fill_packing）"
-msgstr ""
+msgstr "fill_packing"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:66
 #: bdb7300e42674c4082bb62e7d188bd1a
@@ -204,7 +203,7 @@ msgid ""
 "`float`，默认 1.0，范围 `(0, 1]`。`count_mode=\"density\"` 时乘到名义纯溶剂分"
 "子数上；小于 1 会降低目标数量。大于 1 没有清楚的“填充比例”含义，因此程序不再"
 "静默截断，而是直接报错。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:69
 #: cad50b2809f1411d8d7813186c88fa4e
@@ -213,7 +212,7 @@ msgid ""
 "最终溶液密度。对含表面、溶质或大块固体的 cell，它只是按完整 cell 体积给出的初"
 "始数量估计；请看卡片预览中的解析数量，再用 `密度计数系数`（`fill_packing`）或"
 "固定数量修正。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:72
 #: d33d5df68c644f358459ee889e3ec5a1
@@ -223,7 +222,7 @@ msgstr "Sampling and geometry constraints"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:74
 #: a5d5de5e179f49ffbcd3a592046e1cf9
 msgid "碰撞配置（sampling_mode）"
-msgstr ""
+msgstr "sampling_mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:76
 #: ae51b88973fd48d18bdd840aae889349
@@ -232,12 +231,12 @@ msgid ""
 "`auto` 只根据溶剂分子是否恰好为 H₂O 解析成 `water` 或 `general`；整盒填充没有"
 "局部中心，因此不会进入 `ion-water`。这些配置主要控制 `min_distance=0` 时的默"
 "认元素半径缩放，分子整体取向始终是随机的。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:78
 #: 8f54a71cb8ba416595be4822b90cd7d4
 msgid "统一最小距离覆盖值（min_distance）"
-msgstr ""
+msgstr "min_distance"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
 #: 49b2c59bd0974a85ad30add1ddeda93c
@@ -245,24 +244,24 @@ msgid ""
 "`float`，默认 0。大于 0 时，所有试放溶剂原子与已有原子之间使用同一个最小距"
 "离，并忽略 `元素半径碰撞缩放`（`collision_scale`）；等于 0 时使用元素碰撞半"
 "径。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:82
 #: 2b72fc7025d943b3ac21b1b568e9bede
 msgid "元素半径碰撞缩放（collision_scale）"
-msgstr ""
+msgstr "collision_scale"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:84
 #: 90c52319aaff4b67bbd749a63a0a412a
 msgid ""
 "`float`，默认 0。等于 0 时使用碰撞配置的内置缩放；大于 0 时覆盖配置默认值。仅"
 "在 `min_distance=0` 时生效。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:86
 #: 9b93ac3ace874c0a9c412d7521e87761
 msgid "每个溶剂分子最大尝试次数（max_attempts_per_solvent）"
-msgstr ""
+msgstr "max_attempts_per_solvent"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:88
 #: a11961f1787d4012a3f7e7c4970b1235
@@ -270,12 +269,12 @@ msgid ""
 "`int`，默认 500。总尝试上限是“该值 × 目标分子数”；若连续拒绝次数达到内部停滞"
 "阈值，也会提前停止。高密度盒子触顶时，优先检查目标数量和碰撞规则，再考虑增加"
 "它。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:90
 #: ea8be1786e794259a93b16b53e6215d3
 msgid "严格数量（strict_count）"
-msgstr ""
+msgstr "strict_count"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:92
 #: 3c180b7071c543d3ae6d05eef881e839
@@ -283,7 +282,7 @@ msgid ""
 "`bool`，默认 true。打开后，未插满目标数量就失败；关闭后允许输出至少放入 1 个"
 "分子的部分结果。若一个分子都放不进去，仍会报错，避免把未变化的输入标成“已填"
 "盒”。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:94
 #: 9eb5f68f57f14893b42c84fa219e6f3b
@@ -293,7 +292,7 @@ msgstr "Flexible solvent molecules"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:96
 #: 712ae00da790480e984f8d5a1ea43258
 msgid "启用柔性溶剂（flex_solvent）"
-msgstr ""
+msgstr "flex_solvent"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:98
 #: 5dddc84cad09425aa1583a3c9183fdae
@@ -301,12 +300,12 @@ msgid ""
 "`bool`，默认 false。打开后复用“有机构象采样”的几何启发式拓扑生成溶剂构象池，"
 "再用于填盒。水没有可旋转单键，因此普通水盒不需要打开；打开后主要只增加高斯坐"
 "标噪声。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:100
 #: 7770254344fe415d9338fb582f8981af
 msgid "柔性构象池（flex_pool）"
-msgstr ""
+msgstr "flex_pool"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:102
 #: 24b83a107de840adb7bf2f239f6853eb
@@ -317,19 +316,19 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:104
 #: 55c0a014b3ba4c2d885177f8b30e9e0d
 msgid "柔性扭转角范围（flex_torsion_range）"
-msgstr ""
+msgstr "flex_torsion_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:106
 #: 5af6b8b6ce9a486197de517c9d7ab9f3
 msgid ""
 "`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时附"
 "加的扭转角增量范围。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:108
 #: 8bf0ea2612ab4154a4448b2b42d3c245
 msgid "柔性采样最大扭转键数（flex_max_torsions）"
-msgstr ""
+msgstr "flex_max_torsions"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:110
 #: 6c888bd8f50c44898410c3ecd4ab599e
@@ -341,7 +340,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:112
 #: 2db564a355204f14b053e1ae3f41ba6a
 msgid "柔性采样高斯宽度（flex_gaussian_sigma）"
-msgstr ""
+msgstr "flex_gaussian_sigma"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:114
 #: 3217304ff8f94ab0859d55d8c45316e9
@@ -358,7 +357,7 @@ msgstr "Randomness"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:118
 #: b7b08501e7aa4c0dba51082ce3f1afe4
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:120
 #: 3b62d9bae6f14b86899fa9188ce59d7d
@@ -370,7 +369,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:122
 #: c4762ab6d6414161bea0e9b5edb4b1ac
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:124
 #: d0cea987a87e46419aea14370b039c16
@@ -472,7 +471,7 @@ msgstr ""
 msgid ""
 "无法插满目标数量：降低固定数量或密度数量乘数，减小统一最小距离或元素半径缩"
 "放，增大 cell；也可以关闭严格数量先保留非零的部分结果。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:178
 #: a18e9d44fd284efeb0b0b6bed6d135a5
@@ -480,14 +479,14 @@ msgid ""
 "按密度估算的数量不符合预期：数量由完整 cell 体积、溶剂分子质量、目标密度和数"
 "量乘数共同决定，不会扣除宿主占据体积。先检查 cell 单位、真空层、已有原子和 `"
 "溶剂 XYZ`（`solvent_xyz`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:179
 #: f28f6a741d7940dbb71a5ba64cfb2a6f
 msgid ""
 "想生成离子第一水合壳：改用 `Local Solvation`。整盒卡不会按离子元素选择 ion–O "
 "距离或水分子取向。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:181
 #: d3913e1d6a384b8ab82465dc26dae7b5
@@ -497,7 +496,7 @@ msgstr "Output labels"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:183
 #: fd9fb3721f1e4a7fb0b819f720df3f11
 msgid "`SolvBox(mode={mode},req={目标数},ok={实际放入数})`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/solvent-box-fill-card.md:185
 #: f03f90c907234489bbe6e17dfde082cb
@@ -510,7 +509,7 @@ msgid ""
 "打开 `使用随机种子`（`use_seed`）后，相同输入结构、结构顺序、参数和 `随机种子"
 "`（`seed`）会生成相同填盒结果。`count_mode=\"density\"` 时，cell 体积或 `溶"
 "剂 XYZ`（`solvent_xyz`）改变会改变目标分子数，因此输出也会改变。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
 #~ "`Solvent Box Fill` 在已有周期性晶胞中插入溶剂分子，适合从干结构或稀疏溶剂"

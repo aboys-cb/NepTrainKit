@@ -20,47 +20,43 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-target-model.md:1
 #: d69b07981f954863bf0d118407b34acc
 msgid "目标与模型：比较覆盖规则"
-msgstr "目标与模型：比较覆盖规则"
+msgstr "Targets and models: coverage comparison rules"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3025
 #: 05331b0322814cdc955dfdd8755b9a52
 msgid "目标比较只在用户明确给出目标后才成立。可以指定："
-msgstr "目标比较只在用户明确给出目标后才成立。可以指定："
+msgstr "A target comparison is meaningful only after the user explicitly provides a target. You can specify:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3027
 #: 8261537e557144ad81a808f0f01c7b78
 msgid "一个元素的浓度范围；"
-msgstr "一个元素的浓度范围；"
+msgstr "a concentration range for one element;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3028
 #: cee12142935f4f3eb2f92b9d4e718ebe
 msgid "必须出现的浓度点；"
-msgstr "必须出现的浓度点；"
+msgstr "concentration points that must be present;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3029
 #: 544130a1565943769970a821e43379dc
 msgid "必须出现的 `Config_type`；"
-msgstr "必须出现的 `Config_type`；"
+msgstr "`Config_type` values that must be present;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3030
 #: de82eeba8c5d4604a06c7f82f14c88b2
 msgid "每个点的最少结构数。"
-msgstr "每个点的最少结构数。"
+msgstr "the minimum number of structures per point."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3032
 #: ee5cdddff14944c29be194be87bbebcc
 msgid ""
 "页面比较的是**精确组分点和结构数量规则**。即使某个点显示为「支持」，也只表示"
 "数量规则通过，不代表局域环境、温压路径、缺陷类型或模型精度已经覆盖。"
-msgstr ""
-"页面比较的是**精确组分点和结构数量规则**。即使某个点显示为「支持」，也只表示"
-"数量规则通过，不代表局域环境、温压路径、缺陷类型或模型精度已经覆盖。"
+msgstr "The page compares **exact composition points and structure-count rules**. Even when a point is shown as supported, that only means the count rule passed; it does not prove coverage of local environments, temperature/pressure paths, defect types, or model accuracy."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:3034
 #: 81555f3b08c342d8b8a05c282c63b640
 msgid ""
 "当前训练数据上的 Show NEP 预测可以用于浏览误差，但不会自动视为独立模型验证。"
 "要判断泛化误差，仍需结构映射和单位已经核对的独立参考值与预测值。"
-msgstr ""
-"当前训练数据上的 Show NEP 预测可以用于浏览误差，但不会自动视为独立模型验证。"
-"要判断泛化误差，仍需结构映射和单位已经核对的独立参考值与预测值。"
+msgstr "Show NEP predictions on the current training data are useful for browsing errors, but they are not automatically independent model validation. To assess generalization error, use independent reference and predicted values whose structure mapping and units have been checked."

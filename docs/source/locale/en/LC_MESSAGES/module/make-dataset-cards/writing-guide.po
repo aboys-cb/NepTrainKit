@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -562,7 +561,15 @@ msgid ""
 "**参数设置：** magmom_map=Fe:2.2, gen_fm+gen_afm+gen_pm, pm_count=8\n"
 "**输出：** 10 个不同磁序结构\n"
 "**怎么验证训练集质量改善：** 重训后 FM/AFM 推理能量误差差距应显著缩小\n"
-msgstr ""
+msgstr "\\### Scenario: an FM model fails on the AFM phase\n"
+"\n"
+"A bcc Fe NEP predicts FM configurations accurately, but the AFM energy error is five times larger. The training set contains only one magnetic order.\n"
+"\n"
+"**Input:** bcc Fe with a known Fe moment of about 2.2 μB\n"
+"**Goal:** generate 1 FM + 1 AFM + 8 PM structures so the model sees local environments from different magnetic orders\n"
+"**Parameters:** magmom_map=Fe:2.2, gen_fm+gen_afm+gen_pm, pm_count=8\n"
+"**Output:** 10 structures with different magnetic orders\n"
+"**How to verify improvement:** after retraining, the FM/AFM inference energy-error gap should shrink substantially\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:132
 #: 540bb5a2c7034898b07fc3cb5afca444

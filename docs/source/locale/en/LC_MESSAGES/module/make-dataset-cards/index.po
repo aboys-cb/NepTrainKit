@@ -4,107 +4,107 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:1
-#: ccbcb4cfdd464829bce43bf6f088982b
+#: ../../source/module/make-dataset-cards/index.md:1
+#: 75f4ce4a3d3340a5baf17b5eba2066c8
 msgid "选择生成数据集卡片"
-msgstr ""
+msgstr "Choose Make Dataset cards"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:3
-#: abe18cf4cbeb4f5883e94c0428192bdc
-msgid ""
-"这页先帮你选对卡片。选定后，再进入对应分类查看输入前提、参数、输出和检查方"
-"法："
+#: ../../source/module/make-dataset-cards/index.md:3
+#: 5250d582ec2a434b8440b929f27c9dc7
+msgid "这页先帮你选对卡片。选定后，再进入对应分类查看输入前提、参数、输出和检查方法："
 msgstr ""
+"This page helps you choose the right card first. After choosing one, open"
+" its category to review prerequisites, parameters, outputs, and checks:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:5
-#: 1dab2718ae784972b1102c5123456dc5
+#: ../../source/module/make-dataset-cards/index.md:5
+#: 4d58999e414e4e83981233cc78e1dd49
 msgid "我应该先选哪张卡"
 msgstr "Which card should I choose first?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:6
-#: 1c772eb7391a4a6ca4f21e3e1303bb0f
+#: ../../source/module/make-dataset-cards/index.md:6
+#: 08e773cafb1a419eb810015aae6082d4
 msgid "这张卡在什么场景下值得加"
 msgstr "When is this card worth adding to the workflow?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:7
-#: eb879e0d923e4dd0aa229ed7103b1710
+#: ../../source/module/make-dataset-cards/index.md:7
+#: fb49b2582051471993895cab16242d5c
 msgid "输出后我该怎么看结果是否合理"
 msgstr "How do I decide whether its output is reasonable?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:23
-#: b07d961613884834b924d0c2d608f758
+#: ../../source/module/make-dataset-cards/index.md:23
+#: 79eff1d41c84421fbe8a242761d591bd
 msgid "本页目录"
-msgstr ""
+msgstr "On this page"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:29
-#: 92dc71e854a441ea90eb6b5cf487696d
+#: ../../source/module/make-dataset-cards/index.md:29
+#: 0b0640420c53429aa319fbcd99d5ccf7
 msgid "快速上手路径"
 msgstr "Recommended learning path"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:31
-#: e949c0ad7fc04e80a7456e99772c579b
+#: ../../source/module/make-dataset-cards/index.md:31
+#: e15d56d8907e41bea00b629d977b45bc
 msgid "如果你是第一次使用“生成数据集”，推荐先按下面顺序理解："
-msgstr ""
+msgstr "If this is your first time using Make Dataset, follow this order:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:33
-#: 0240830001924a0dac24c572afa65e3c
+#: ../../source/module/make-dataset-cards/index.md:33
+#: a2774f3b71774e049e4b1002ef91c69d
 msgid "先看“按目标选卡”，确定主卡片。"
 msgstr "Start with “Choose a card by goal” to identify the main operation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:34
-#: 949f66f8570c45fb9406d2d19536963f
+#: ../../source/module/make-dataset-cards/index.md:34
+#: 884524afa2f64522ad55db11634aa6d1
 msgid "再看对应卡片页里的“操作示例”，确认参数量级。"
 msgstr "Read the card's worked example to establish sensible parameter scales."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:35
-#: 26032973ba2d4febafe91956493caf3f
+#: ../../source/module/make-dataset-cards/index.md:35
+#: 917ff54540ea486a83fa28955df3ed9b
 msgid "最后参考 [配方示例（Recipes）](recipes.md) 组织多卡流程。"
 msgstr "Then use [Recipes](recipes.md) to assemble a multi-card workflow."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:38
-#: 20422a3de96945b89f16094345c54ab8
+#: ../../source/module/make-dataset-cards/index.md:38
+#: 235747c377764f7d9bf0d6b290b097f3
 msgid ""
-"涉及 `FPS Filter` 的高通量流程，通常先导出 `xyz`，在 `NEP Dataset Display` 里"
-"清洗明显异常结构，再做代表性采样。清洗时可以用内置 NEP89 或当前体系已有模型做"
-"预筛， 但不要把它们当作 DFT 标签。`FPS Filter` 本身适合做末端代表性筛选，不适"
-"合替代结构生成卡片。"
+"涉及 `FPS Filter` 的高通量流程，通常先导出 `xyz`，在 `NEP Dataset Display` "
+"里清洗明显异常结构，再做代表性采样。清洗时可以用内置 NEP89 或当前体系已有模型做预筛， 但不要把它们当作 DFT 标签。`FPS "
+"Filter` 本身适合做末端代表性筛选，不适合替代结构生成卡片。"
 msgstr ""
-"In a high-throughput workflow that ends with `FPS Filter`, first export the "
-"candidate pool as XYZ and remove obvious failures in `NEP Dataset Display`, "
-"then perform representative selection. The built-in NEP89 model or an "
-"existing model for the same chemical system can help with preliminary "
-"screening, but its predictions are not DFT labels. `FPS Filter` belongs near "
-"the end of the pipeline; it selects from candidates and does not replace "
-"structure generation."
+"In a high-throughput workflow that ends with `FPS Filter`, first export "
+"the candidate pool as XYZ and remove obvious failures in `NEP Dataset "
+"Display`, then perform representative selection. The built-in NEP89 model"
+" or an existing model for the same chemical system can help with "
+"preliminary screening, but its predictions are not DFT labels. `FPS "
+"Filter` belongs near the end of the pipeline; it selects from candidates "
+"and does not replace structure generation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:43
-#: e48eee0b1679439da0761f021a7ebb97
+#: ../../source/module/make-dataset-cards/index.md:43
+#: 43c0797a2304451d82f1e6a07785de64
 msgid "30 秒确定方向"
-msgstr ""
+msgstr "Choose a direction in 30 seconds"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:45
-#: 90ce7774afae40c69693322bb02591ab
+#: ../../source/module/make-dataset-cards/index.md:45
+#: 4f34147ff4944b2eac84191d5be26691
 msgid "先判断你要改变什么，再进入对应小表。不要从四十张卡片中逐个试："
 msgstr ""
+"Decide what you need to change before opening the corresponding table; do"
+" not try forty cards one by one:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:47
-#: fe00fc2736094ecd8daa6359ab801c22
+#: ../../source/module/make-dataset-cards/index.md:47
+#: e6c2879b797e45c98589eb4efd4ae224
 msgid ""
 "没有初始结构\n"
 "├─ 从标准晶型开始 → 晶体原型构建\n"
@@ -117,914 +117,940 @@ msgid ""
 "├─ 改磁矩 → 磁性构型\n"
 "├─ 做分子或溶剂 → 分子与溶剂\n"
 "└─ 不再生成，只想清洗或选代表结构 → 过滤与采样\n"
-msgstr ""
+msgstr "No initial structure\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:61
-#: 45a6769718bc40afb0881ffac1528ea2
-msgid ""
-"如果一条任务跨越多步，例如“生成表面并加入吸附原子”，先找改变边界条件的主卡， "
-"再接局部操作卡。完整串联方式见[配方示例](recipes.md)。"
+#: ../../source/module/make-dataset-cards/index.md:61
+#: e7fe11cf3fd1466180ebbeb68e75c0c0
+msgid "如果一条任务跨越多步，例如“生成表面并加入吸附原子”，先找改变边界条件的主卡， 再接局部操作卡。完整串联方式见[配方示例](recipes.md)。"
 msgstr ""
+"When a task spans multiple steps, such as generating a surface and adding"
+" adsorbates, choose the card that changes the boundary conditions first, "
+"then add local-operation cards. See [Recipes](recipes.md) for complete "
+"workflows."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:64
-#: 443399233648416e877bf3ebb1bb1f2c
+#: ../../source/module/make-dataset-cards/index.md:64
+#: da9ff972da854eb8ad2e689e23cf5d16
 msgid "按场景选卡"
-msgstr ""
+msgstr "Choose cards by scenario"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:66
-#: 7e69623c784e4c2da5fc6b5c3576d37f
+#: ../../source/module/make-dataset-cards/index.md:66
+#: 84079b4823ef42c98077de4ae962d172
 msgid "从哪里得到初始结构"
-msgstr ""
+msgstr "Where the initial structure comes from"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: ead4426e691b4ff59cae06cc1fa54b5c 938ca5a6cbc543d0bd93b329eed30f1f
-#: 3293836c8731461f856521fc6252b8a7 8c30b71b39874f82a924a56a4e726544
-#: bc04da0634b64f39ba9b1a592b9de99f 10cb7de25e174910b5f0c9ef9a5fb4ad
-#: 9eb6c1c1a9104b57bcdf9d9d71e6d63b
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 67021c5397354d238da6a135016855a7
 msgid "我的需求"
 msgstr "Goal"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 907dc24960424ababebd838f6c1be9df fce727e675a7449e9212e4f1c578e3e1
-#: 8818f63ea59e4664a1a7b5dc5a2b3470 2405ed86739f42f8ae17453ef610e64e
-#: 4735d92383a949cb9654a79bdc427cf4 1d0cebea3b6f448ea23b5db233e0b64a
-#: d520efe724f1486391bc59fab14f4018
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 20909f983f3b40b7b179caca927fa18e
 msgid "推荐卡片"
 msgstr "Recommended card"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: f19833b92259467f9243e6f9dc7e05ef 72dbb74c78a644679d13a4bb58206d99
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 8ed0a69f30c24a23acefe81103dbb464 ea359b464edd4a29bba1c6ad4504c8f8
 msgid "使用前先确认"
-msgstr ""
+msgstr "Check before use"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 97c0aa91cccd44d6b35f80608415d595
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 67100710b4bc4fd2b47a1aa97bf25d5f
 msgid "从标准晶型直接生成结构"
-msgstr ""
+msgstr "Generate a structure directly from a standard crystal prototype"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: de71784389504b2ab663bf55c31c2bb0
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4a834d881fab4eb0a8be65a781a727cb
 msgid "[晶体原型构建](cards/crystal-prototype-builder-card.md)"
-msgstr ""
+msgstr "[Crystal Prototype Builder](cards/crystal-prototype-builder-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7afb28085c9140638e68e390a007dd38
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 95c790893dee46e1a6d4405dd105e36a
 msgid "原型、晶格常数和元素映射符合目标体系"
 msgstr ""
+"The prototype, lattice constants, and element mapping match the target "
+"system"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 9ec8c3abe8624615bd8d2476dd38ad40
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 07f57e20be6e43b49d9fc49a812abd81
 msgid "扩大现有晶胞，为缺陷或表面操作留空间"
-msgstr ""
+msgstr "Expand an existing cell to leave room for defect or surface operations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 18c3047b73e14347ba4f86253e25a198
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 732305f937574738bbeae3fcd6096703
 msgid "[扩胞](cards/super-cell-card.md)"
-msgstr ""
+msgstr "[Super Cell](cards/super-cell-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 8c9a31f1d2be440db2a1fd34b9cee1d7
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 094e1e42ff5d41bfbd2746ae3779cab6
 msgid "这是重复晶胞，不会生成自由表面"
-msgstr ""
+msgstr "This repeats the cell; it does not create a free surface"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 18c372b307bc4581a12e281cb9048bb4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 0050ff274c0b449da7dc3ca27502833b
 msgid "在固定晶胞和组成下生成随机坐标初态"
 msgstr ""
+"Generate random-coordinate initial states with a fixed cell and "
+"composition"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 00214b74d2904fb89d452528391df024
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7e563d038603411db85c365bdf4e3df0
 msgid "[随机原子堆积](cards/random-packing-card.md)"
-msgstr ""
+msgstr "[Random Packing](cards/random-packing-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 5e4047d22eb540fab1010778549e4f9f
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 900c24d9f56f44e9b381afab2b72e241
 msgid "后接几何健全性过滤，不要把初态直接送 DFT"
 msgstr ""
+"Follow with a geometry sanity filter; do not send initial states directly"
+" to DFT"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 5bbbe4804d084d7a810b3abf7a03c321
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 45f232fe9ea14e8eb91d064b996af518
 msgid "复制层状结构并控制层间重复距离"
-msgstr ""
+msgstr "Copy a layered structure and control the repeat distance between layers"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 9e5f0a8cc7194a9ab7338a7e860ca768
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
 msgid "[分层堆叠](cards/layer-copy-card.md)"
-msgstr ""
+msgstr "[Layer Stack](cards/layer-copy-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 9c8fcac1edb841a0902b3600363edbf2
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 65172c9487bd47b5926815172486baf8
 msgid "输入已经是可重复的层状结构"
-msgstr ""
+msgstr "The input is already a repeatable layered structure"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:75
-#: 10818e04932344c6a0757fccde887eba
+#: ../../source/module/make-dataset-cards/index.md:75
+#: b0566c12d4764ad08cde37845a3bc05c
 msgid "改晶胞、应变或原子坐标"
-msgstr ""
+msgstr "Change the cell, strain, or atomic coordinates"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 862fb2e809004ea3b2accb241adb70b7
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c2f873df70384a0e971bdaa4b260f63f
 msgid "不要误用"
 msgstr "Common misuse"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 94a23228efe342d4a3377f9fadac08c4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b89cdcd5a4724915b1ee45fe9494f4d3
 msgid "扫描指定轴向的拉伸和压缩"
-msgstr ""
+msgstr "Scan tension and compression along selected axes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 32930578303e42d680bcc973e2f7e253
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
 msgid "[晶格应变](cards/cell-strain-card.md)"
-msgstr ""
+msgstr "[Lattice Strain](cards/cell-strain-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: f0a5207a1dfb4a04b7d499c9b64f0a12
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 08909c4379d94d40ac7a14467283a092
 msgid "用原子扰动改变晶格"
-msgstr ""
+msgstr "Change the lattice with atomic perturbations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 23520740597b40d1b7b831ffc3b125dd
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f26a59fdb5ac4fbba0667afab6e74dc7
 msgid "给晶格长度和角度加随机变化"
-msgstr ""
+msgstr "Add random changes to lattice lengths and angles"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: b223b86e1fc342d8919f3cc1b90a034e
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
 msgid "[晶格随机扰动](cards/cell-scaling-card.md)"
-msgstr ""
+msgstr "[Lattice Perturb](cards/cell-scaling-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 42740edeedca4e269b118e0a93d4e02a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3d25bbad393b4f1790bcb4e4bd2cb0e4
 msgid "把随机扰动当成严格应变路径"
-msgstr ""
+msgstr "Treat a random perturbation as a strict strain path"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7a0bf896da8642a4af1b97177f060d57
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 1a4519f8ea5c4ff4908f37366b50cf06
 msgid "沿四方相变或外延方向扫描 `c/a`"
-msgstr ""
+msgstr "Scan `c/a` along a tetragonal transition or epitaxial direction"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 1c67a9228b9c420cbc70211a73b9bcd8
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
 msgid "[Bain 路径](cards/bain-path-card.md)"
-msgstr ""
+msgstr "[Bain Path](cards/bain-path-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7d455204e38942a4a97c77c43136203b
+#: ../../source/module/make-dataset-cards/index.md:37
+#: cebbaec5c7854226afd4e726b957233a
 msgid "用普通轴向应变替代系统路径"
-msgstr ""
+msgstr "Use ordinary axial strain instead of a systematic path"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: b3f1c2ce5e9e4a4cbdafdbb65a9ba9ae
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 8cddb420f346459aa60fa42860283dd6
 msgid "做矩阵剪切或晶格角剪切"
-msgstr ""
+msgstr "Apply matrix shear or lattice-angle shear"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 28c0b0add3ab4486a105062a2c1286b0
-msgid ""
-"[剪切矩阵应变](cards/shear-matrix-card.md) / [剪切角应变](cards/shear-angle-"
-"card.md)"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 53201dbde1ff4893b962df25a8c1d186
+msgid "[剪切矩阵应变](cards/shear-matrix-card.md) / [剪切角应变](cards/shear-angle-card.md)"
 msgstr ""
+"[Shear Matrix Strain](cards/shear-matrix-card.md) / [Shear Angle "
+"Strain](cards/shear-angle-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 6c7c5e34c0cb4d1a812ccf46b9d9769a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a9c0ff549ba74e1089e8a41b6ad85847
 msgid "用轴向应变模拟纯剪切"
-msgstr ""
+msgstr "Use axial strain to emulate pure shear"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: fb60f6da0edd4b60b2623fb02b27ebcf
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4b7c946611e7477fa062033d1fc111c9
 msgid "给近平衡结构加坐标噪声"
-msgstr ""
+msgstr "Add coordinate noise to near-equilibrium structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 63e1887bdd6e452aab2074ce11d4dede
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 732305f937574738bbeae3fcd6096703
 msgid "[原子扰动](cards/perturb-card.md)"
-msgstr ""
+msgstr "[Atomic Perturb](cards/perturb-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7f7a6e3ed4794a5d9c326c989f348105
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 682c238841cf48b68bf4ca9bb365f04e
 msgid "用大幅晶格扰动代替热扰动"
-msgstr ""
+msgstr "Use large lattice perturbations as a substitute for thermal perturbations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 8ac2f3d044b84b3ca4e2257fbd9a8a13
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6dabe4ba95084f0b93ca3df970b8d819
 msgid "沿已有振动模态生成位移"
-msgstr ""
+msgstr "Generate displacements along existing vibrational modes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 76bd5c0087ad4dabacb3de5f88672df1
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
 msgid "[振动模式扰动](cards/vibration-perturb-card.md)"
-msgstr ""
+msgstr "[Vib Mode Perturb](cards/vibration-perturb-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: c67aeae4767a458c8f6fe8fb7f40476c
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b6e18704b17d4829b73cf56c321158b4
 msgid "输入没有模态数组时改用原子扰动"
-msgstr ""
+msgstr "Use Atomic Perturb when the input has no mode array"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:86
-#: 277ec28b639e46b69c68bf59b6858c76
+#: ../../source/module/make-dataset-cards/index.md:86
+#: 0680b780291c4abc8d18417355dc0f4d
 msgid "改元素、配比或占位"
-msgstr ""
+msgstr "Change elements, composition, or occupancy"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 38333c3e2304482ca59624f6863c99ed eaa2e4b18bf24cf68da8859cfa3a5fd1
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 86eee3f636e248ac9594150a5a3df54c e1a18aa99c8748248c3b56400108eeb8
 msgid "使用边界"
-msgstr ""
+msgstr "Usage boundary"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 11c449b078644be7aaf414fce32bda73
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ecb23942da244b6ebe57de0366094916
 msgid "建立带晶体学子晶格的有序合金"
-msgstr ""
+msgstr "Build an ordered alloy with crystallographic sublattices"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 70b1c542964f4fbba806dd510f0f0427
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3f62cf7994c443818a44f0980d6a4f01
 msgid "[有序合金原型](cards/ordered-alloy-prototype-card.md)"
-msgstr ""
+msgstr "[Ordered Alloy Prototype](cards/ordered-alloy-prototype-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: c498de4043254a8ea9cef4f0d39b6061
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3b0d349bee884c22b648788a2ff4aeaa
 msgid "`sublattice` 是位点身份，不等同于普通 `group`"
 msgstr ""
+"`sublattice` identifies a site and is not equivalent to an ordinary "
+"`group`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 091ac84edb9f4535ad538997edfe1db4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 999ccd1097084e41b4901609a5bca2b2
 msgid "枚举有限晶胞中整数可实现的组成和排布"
 msgstr ""
+"Enumerate integer-realizable compositions and arrangements in a finite "
+"cell"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 001829aad5ad4d5c9a5bc7647d001d89
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 28a6a14c07fe408aa9010834c726e778
 msgid "[有限晶胞合金占位](cards/finite-cell-alloy-occupancy-card.md)"
-msgstr ""
+msgstr "[Finite-Cell Alloy Occupancy](cards/finite-cell-alloy-occupancy-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: a8183278940444629f36113bc25ce2f2
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a7657b44b7a04aa9b7c1a8630e305c68
 msgid "连续比例必须落到整数原子数"
-msgstr ""
+msgstr "Continuous fractions must map to integer atom counts"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e0c4234ffed84ada93dbf1f112f7c34e
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f48317687be54c8cbe18aacd0f466b1f
 msgid "直接做一次随机替换或掺杂"
-msgstr ""
+msgstr "Perform one random replacement or doping operation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 12f84b5c06af48c883547426f7cc6570
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b597fb6ed4f94230abc7f7ccbf468c7f
 msgid "[随机掺杂](cards/random-doping-card.md)"
-msgstr ""
+msgstr "[Random Doping](cards/random-doping-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 95e53fa304e54566b8b497c0a251a95a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 0a4943bd40b944429e22c496f4afe47e
 msgid "不适合系统扫描完整配比空间"
-msgstr ""
+msgstr "Not suitable for systematically scanning the full composition space"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 5065ac99553d4d90a072c9de6d876fc4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: e78e24acee9c4ad7bc5998753984cc07
 msgid "先定义一组目标配比"
-msgstr ""
+msgstr "Define a set of target compositions first"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 905b9c91d5054767bd2ee848bc5a16df
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
 msgid "[成分空间采样](cards/composition-sweep-card.md)"
-msgstr ""
+msgstr "[Composition Space Sampling](cards/composition-sweep-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 6affd495f4c542bea3c5760878bbebb8
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ac9eaccd6ed045728a6ddc0df0575b5b
 msgid "输出是目标配比标签，不代表占位已经改变"
 msgstr ""
+"The output carries target-composition labels; occupancy has not "
+"necessarily changed"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e398a1dbeb4545dc866c2d807c4b1ad3
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4a429ba351d24e48824245d15cc0a895
 msgid "把目标配比真正落到离散位点"
-msgstr ""
+msgstr "Assign the target composition to discrete sites"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 89c532810bdc4bafa41b8ac56c74c9d4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 286aa805d9984ebcb5fb64302cdfd8f4
 msgid "[随机占位](cards/random-occupancy-card.md)"
-msgstr ""
+msgstr "[Random Occupancy](cards/random-occupancy-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 143c5af45c2941198cdd7ee8323f76a0
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 02595417c8ba4fca855f8a1e43a5634a
 msgid "可接在成分空间采样之后"
-msgstr ""
+msgstr "Can follow Composition Space Sampling"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 5e88ecdbbe5f4243b5acc3c8c123e012
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12dc059717ec4df4ab742b3316d32f40
 msgid "沿空间方向形成配比梯度"
-msgstr ""
+msgstr "Create a composition gradient along a spatial direction"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 902035568b694962b2afde98b9b21134
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
 msgid "[成分梯度](cards/composition-gradient-card.md)"
-msgstr ""
+msgstr "[Composition Gradient](cards/composition-gradient-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: a503b34faf334c2a8f7611f28d5771d4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: cd0567dc5e3e478cab42ca929a1a748c
 msgid "输入需要足够多的层或位点"
-msgstr ""
+msgstr "The input needs enough layers or sites"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 0a2b6c0a03c440478ea5290959dc78ba
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 5c2b0122fd224b1895c91a2e0bc4cca5
 msgid "按坐标、元素或分组规则替换位点"
-msgstr ""
+msgstr "Replace sites by coordinate, element, or group rules"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 79a0ac246ada41299c940bfcdeffa198
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d781031f798d4f4ba001953b88c4510d
 msgid "[条件替换](cards/conditional-replace-card.md)"
-msgstr ""
+msgstr "[Conditional Replace](cards/conditional-replace-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 8cb5a8ff34c24133ba1a9900f35eff22
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 48790b236d8a480abf6fb17183eb9b5f
 msgid "复杂规则不要退化成无约束随机掺杂"
-msgstr ""
+msgstr "Do not reduce complex rules to unconstrained random doping"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:98
-#: d1d81b8c94384603aef8c8df2d09be3a
+#: ../../source/module/make-dataset-cards/index.md:98
+#: e83e845fa8244abcb3b313cfb082d3b7
 msgid "生成缺陷、表面或层错"
-msgstr ""
+msgstr "Generate defects, surfaces, or stacking faults"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7f5a7ad4a37b41049323750308476087
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7adcdc23708a4f35b6fc2c32c7a46e5c
 msgid "常见前置步骤"
-msgstr ""
+msgstr "Common prerequisites"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: b049d2b5dbdd47e998466fc0b4117726
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b3e71c520ed543288ffc2cfeda396dfe
 msgid "生成不同晶面的表面板层"
-msgstr ""
+msgstr "Generate slabs with different surface orientations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 75782dfa81dd4527999c25f8a8cfa8bf
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
 msgid "[随机表面板层](cards/random-slab-card.md)"
-msgstr ""
+msgstr "[Random Slab](cards/random-slab-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 29001fbb34324d1fa06211cb4cbc8998
+#: ../../source/module/make-dataset-cards/index.md:37
+#: fe7a45b784b9448eb5b745cb5a98a82e
 msgid "先确认晶胞和 Miller 指数"
-msgstr ""
+msgstr "Confirm the cell and Miller indices first"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 8707143a5f0e4b7b85c3b21634c21614
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c4c13601c4164804bddf7628ba6dad6f
 msgid "在全部原子中按数量或比例随机删位"
-msgstr ""
+msgstr "Randomly delete sites among all atoms by count or concentration"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: bf58c388d333444ab84322d0c0b3c09a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f108015f6464ff0b6422fb60deea3ab
 msgid "[全局随机空位](cards/vacancy-defect-card.md)"
-msgstr ""
+msgstr "[Global Random Vacancy](cards/vacancy-defect-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: f8164bcb591742039297c872fdf5f27d
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 959e86cf0f9243908699348f461a3022
 msgid "通常先扩胞"
-msgstr ""
+msgstr "Usually expand the cell first"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 869157e23429416ab75e0ad26eccfda2
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 93fbf698585c4e55a1708035458a54e4
 msgid "只删除指定元素或 `group` 中的位点"
-msgstr ""
+msgstr "Delete sites only from a specified element or `group`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 67344ebcdda3474e88427482c657ec82
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c85b3fd2dffa48abb6ec9c6ba5d81133
 msgid "[随机空位](cards/random-vacancy-card.md)"
-msgstr ""
+msgstr "[Random Vacancy](cards/random-vacancy-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: cbdd0fe34c7f4d688d9a85584a752ddd
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 98e798f16e524c3ab79b2bdb45ff369d
 msgid "需要时先做分组标记"
-msgstr ""
+msgstr "Add group labels first when needed"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: d622f43f1195465f86ea78dd16b6109c
+#: ../../source/module/make-dataset-cards/index.md:37
+#: e3d182201d314ab7b304ba713d6db926
 msgid "插入间隙原子或表面吸附原子"
-msgstr ""
+msgstr "Insert interstitial atoms or surface adsorbates"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 57bdc5c8e32c420ea2159d8276e56507
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f76c93be25cc4b8f9ae92f28313fee3a
 msgid "[插隙与表面吸附](cards/interstitial-adsorbate-card.md)"
 msgstr ""
+"[Interstitial and Surface Adsorption](cards/interstitial-adsorbate-"
+"card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 3499a0c7e170493d8a47bca5376762c8
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12074332d36046369017fa785f7af3be
 msgid "体相通常先扩胞，吸附通常先建表面"
-msgstr ""
+msgstr "Expand bulk cells first; build a surface before adsorption"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 3d936db8b22342a1b2fd847045f72322
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 95b0d68456794ed7980e1a86d67781c7
 msgid "扫描指定晶面和滑移方向的层错路径"
-msgstr ""
+msgstr "Scan a stacking-fault path for a selected plane and slip direction"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 695a37ee1f544bde95a289f71880cbfd
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 38ccd79d63a8401f8d1cbdbbb015c6c8
 msgid "[层错 / GSFE 路径](cards/strict-gsfe-path-card.md)"
-msgstr ""
+msgstr "[Stacking Fault / GSFE Path](cards/strict-gsfe-path-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: f62b1d3aa0114539b02e35833c0b7695
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 87127dcea2ac45fe808e678df76e0429
 msgid "输入必须已经按目标晶面定向"
-msgstr ""
+msgstr "The input must already be oriented to the target plane"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:108
-#: 8bfcbb1ddeea40c293b05fdcef07224a
+#: ../../source/module/make-dataset-cards/index.md:108
+#: 8760297d3fa0423ab18453653d0aa02d
 msgid "生成磁性构型"
-msgstr ""
+msgstr "Generate magnetic configurations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 1101b43a1a294a7684b0b2b49853e2a5
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7d33a1aed919470c9cf070850afb0cae
 msgid "只把磁矩写入结构"
-msgstr ""
+msgstr "Write magnetic moments into the structure only"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: dbef5ef6f6b64727a60ea6beb486ee78
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b3957e4c05544344821bfe8810c5845b
 msgid "[设置磁矩](cards/set-magnetic-moments-card.md)"
-msgstr ""
+msgstr "[Set Magnetic Moments](cards/set-magnetic-moments-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: c6687d8369c84778a2ca9700f7eb726a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3616e7fc011d4a2183582739393f9b59
 msgid "这不会自动生成多种磁序"
-msgstr ""
+msgstr "This does not automatically generate multiple magnetic orders"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: a2c306770e604e7e9aa4c60b6ac76809
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 14178635a3f14bbf8164aef9a967ba1d
 msgid "生成 FM、AFM 或 PM 分支"
-msgstr ""
+msgstr "Generate FM, AFM, or PM branches"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 1d5fba10642d46f2b1b58677fd4ed95b
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4a48bdfab06b422f9310937cf6d1db25
 msgid "[磁序](cards/magnetic-order-card.md)"
-msgstr ""
+msgstr "[Magnetic Order](cards/magnetic-order-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 1fe858989d0c4c389c763595ab4db9b8
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ad901dc69bbb4fd3a119bb1991fd3c7b
 msgid "AFM 可能需要先做分组标记"
-msgstr ""
+msgstr "AFM may require group labels first"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 1921647797524bbea50607b37d0ad71b
+#: ../../source/module/make-dataset-cards/index.md:37
+#: aa1e19751f4d4cc580f4ebbf770f3cdc
 msgid "从有序磁态逐步增加无序度"
-msgstr ""
+msgstr "Increase disorder gradually from an ordered magnetic state"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: c38d9317695c41f6b3962d200fe0cf15
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 476e7e7b7428480ea80cf9e0405aaee2
 msgid "[自旋无序](cards/spin-disorder-card.md)"
-msgstr ""
+msgstr "[Spin Disorder](cards/spin-disorder-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: fa7c1480419c41759ba8c73a9b2a6b3d
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a45969b79ea44b29ae1a33742a58ee84
 msgid "输入已有有效磁矩"
-msgstr ""
+msgstr "The input already contains valid magnetic moments"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: f994a1b6faf144be8787e2e239ad809c
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f2c90952928740f58d41d9f076ba490f
 msgid "生成具有空间相关长度的非共线磁矩"
-msgstr ""
+msgstr "Generate non-collinear moments with a spatial correlation length"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 1437baffc64d4fd0be601abad9c44937
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 690b8d8c5a7f4e3cb8fa94071e83e17b
 msgid "[关联随机自旋](cards/correlated-random-spin-card.md)"
-msgstr ""
+msgstr "[Correlated Random Spin](cards/correlated-random-spin-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 81d6855e18b9417db3c4eea1f8b67f4a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 15bb3d6247a849ea9f4551e977fe0726
 msgid "这是相关随机场，不应直接称为自旋玻璃"
 msgstr ""
+"This is a correlated random field and should not be called a spin glass "
+"directly"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 760b483230044b4d8a5e2222e623f1b1
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d87b13d794f1438da8c26c5ae251fe2b
 msgid "旋转、canting 或生成螺旋磁序"
-msgstr ""
+msgstr "Rotate moments, introduce canting, or generate spin spirals"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e3d07250df734868854b195bbdc0f7c4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12359e5a66a14b34a80574b59e5326e6
 msgid ""
-"[磁矩旋转](cards/magmom-rotation-card.md) / [小角度自旋倾斜](cards/small-"
-"angle-spin-tilt-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋"
-"磁序](cards/folded-helix-card.md)"
+"[磁矩旋转](cards/magmom-rotation-card.md) / [小角度自旋倾斜](cards/small-angle-spin-"
+"tilt-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋磁序](cards"
+"/folded-helix-card.md)"
 msgstr ""
+"[Magmom Rotation](cards/magmom-rotation-card.md) / [Small-Angle Spin "
+"Tilt](cards/small-angle-spin-tilt-card.md) / [Spin Spiral](cards/spin-"
+"spiral-card.md) / [Folded Helix](cards/folded-helix-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 809de59463724789894f82bdbbb06bc8
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3f7bbaed43174cdc87f0c1af5cadf097
 msgid "不要对没有磁矩的空白结构直接旋转"
-msgstr ""
+msgstr "Do not rotate a blank structure with no magnetic moments"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:118
-#: af4506e134cf456a9b30d3cf32b3ee16
+#: ../../source/module/make-dataset-cards/index.md:118
+#: 973bfa24b47c45f195898ff7c5afa419
 msgid "处理分子和溶剂"
-msgstr ""
+msgstr "Work with molecules and solvents"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: d31a108960a7497690cc3cd7dcb6153d
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 574a41dd6141429f8ac0ec6b22e31057
 msgid "在周期边界中采样有机分子构象"
-msgstr ""
+msgstr "Sample organic-molecule conformations under periodic boundaries"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: c072810f4dd74191823248bfe10c55de
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f018163f96f4a54a760890d521787cb
 msgid "[有机构象采样](cards/organic-mol-config-pbc-card.md)"
-msgstr ""
+msgstr "[Organic Molecule Config](cards/organic-mol-config-pbc-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e5788d9a0b8e4a71b2fd8649004813f9
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 44e93deb7b1d44c1884e8d3eeb249ccf
 msgid "输入应能识别分子和可旋转键"
-msgstr ""
+msgstr "The input must expose identifiable molecules and rotatable bonds"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 0c9c2360b16d418a871acf652c95167c
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7d268330eadc4411973c20d6d92cd625
 msgid "在溶质或离子周围补局部溶剂壳"
-msgstr ""
+msgstr "Add a local solvation shell around solutes or ions"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 352deb6491f74082821419f5c0e5f7de
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
 msgid "[局部溶剂壳](cards/local-solvation-card.md)"
-msgstr ""
+msgstr "[Local Solvation](cards/local-solvation-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 601d27af735844399a384741047cca13
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 9577594ce09142b8a33b96e9ac274fab
 msgid "只生成初始构型，不代表已经平衡"
-msgstr ""
+msgstr "Generates initial configurations only; equilibration is not implied"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e939bc28f1e34184ab55a6ab21bb4656
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7b4a34c3c64b4c99b61e7f6ce9fbd29d
 msgid "在周期晶胞中填充整盒溶剂"
-msgstr ""
+msgstr "Fill an entire periodic cell with solvent"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: d4d2f14dcc594af0ab2b9d0805ab7c37
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
 msgid "[周期溶剂盒](cards/solvent-box-fill-card.md)"
-msgstr ""
+msgstr "[Solvent Box Fill](cards/solvent-box-fill-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7d11a41635554fe2843749aa1ea1054c
+#: ../../source/module/make-dataset-cards/index.md:37
+#: df070a21ec58426e85b02a8328e8ce8f
 msgid "晶胞必须有效且体积非零"
-msgstr ""
+msgstr "The cell must be valid and have nonzero volume"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:126
-#: 1b62027adec14b90a1c0cbb5a5764f12
+#: ../../source/module/make-dataset-cards/index.md:126
+#: 50926d4b8c3d47a0b077a8dd6764f3ab
 msgid "清洗、采样或组织流程"
-msgstr ""
+msgstr "Clean, sample, or organize a workflow"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 6fea9fb1678b4bfa9e4b29454ba8fcbb
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4441b9b456d4499e892c10870fb4d82b
 msgid "放在流程哪里"
-msgstr ""
+msgstr "Where to place it"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 431200becce04347a95fca15eeb8ed99
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a75183e216e0453d9adde56fa3c08f44
 msgid "过滤短键、异常体积或异常密度"
-msgstr ""
+msgstr "Filter short bonds, abnormal volumes, or abnormal densities"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e22a7150225f4cf7a023fa50e033135e
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
 msgid "[几何健全性过滤](cards/geometry-filter-card.md)"
-msgstr ""
+msgstr "[Geometry Sanity Filter](cards/geometry-filter-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 9e54014f98d94308bb4875d4186de08f
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12aba3b9606c487798528b8a30091faa
 msgid "放在强扰动、随机占位和缺陷生成之后"
 msgstr ""
+"Place it after strong perturbations, random occupancy, and defect "
+"generation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 326e1bc640384bf2b4383d0eb9051b0c
+#: ../../source/module/make-dataset-cards/index.md:37
+#: deaf6ac1c7464e05962a8f79e60c4c57
 msgid "从干净候选池中选代表结构"
-msgstr ""
+msgstr "Select representative structures from a clean candidate pool"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: fb26d84ca87c4b3689a1db27c869e86d
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
 msgid "[代表性采样（FPS）](cards/fps-filter-card.md)"
-msgstr ""
+msgstr "[Representative Sampling (FPS)](cards/fps-filter-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7168647c860841ae8a41b2442fe94561
+#: ../../source/module/make-dataset-cards/index.md:37
+#: bb64bed6b4a6463e8582a3b1ce66e46e
 msgid "先清洗异常结构，再采样"
-msgstr ""
+msgstr "Clean anomalous structures before sampling"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 2deae5c9fabf4e03928d02a6dced998e
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 1c94678e73284986a6b4e625777c9efa
 msgid "为后续规则或 AFM 标记 A/B 组"
-msgstr ""
+msgstr "Mark A/B groups for later rules or AFM configurations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: ae54810edade418b8de7d4724e29f853
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
 msgid "[分组标记](cards/group-label-card.md)"
-msgstr ""
+msgstr "[Group Label](cards/group-label-card.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 18db1a5a03e440099027c7a1a47a6860
+#: ../../source/module/make-dataset-cards/index.md:37
+#: cf969cd1dbc9464091bd00d67cde7bb6
 msgid "放在读取 `group` 的卡片之前"
-msgstr ""
+msgstr "Place it before cards that read `group` labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 9fb4dc9a850d4f2a9cc03a47f8c4b9a4
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 64e73b02bced4a09b973b9e05caff672
 msgid "合并共享同一输入的多个分支"
-msgstr ""
+msgstr "Merge multiple branches that share the same input"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 67bbc35e36e04bf69d0b06d56b26bf8c
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f108015f6464ff0b6422fb60deea3ab
 msgid "[分支合并组](cards/card-group.md)"
-msgstr ""
+msgstr "[Branch Merge Group](cards/card-group.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 0b9b7b06226c4ffdbdb8a51a4ce966de
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ed8be3a8ea7d4d4fad8b486abf8250d7
 msgid "子卡并行接收同一输入，不是顺序流水线"
 msgstr ""
+"Child cards receive the same input in parallel; this is not a sequential "
+"pipeline"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:135
-#: 5e50664118db4f6794212c6da43e439f
+#: ../../source/module/make-dataset-cards/index.md:135
+#: 0c41f11bfa554f28b6dc014470967234
 msgid "易混卡片对比"
 msgstr "Cards that are easy to confuse"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:137
-#: f39ee49ed16941b3871e780a90cf6ba0
+#: ../../source/module/make-dataset-cards/index.md:137
+#: be66863b88bb451c92ce65f31c51a700
 msgid "随机表面板层 vs 全局随机空位"
-msgstr ""
+msgstr "Random Slab vs. Global Random Vacancy"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:139
-#: 6b8474e733064a9d9a81b8fcccb7f8e7
+#: ../../source/module/make-dataset-cards/index.md:139
+#: 06a0469a5c57456183111cac4a131ecc
 msgid "`Random Slab` 改的是边界条件和表面取向，结果会引入真空层与自由表面。"
 msgstr ""
 "`Random Slab` changes surface orientation and cell geometry, introducing "
 "vacuum and free surfaces."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:140
-#: 4c180c65150a4329ae53694b804f5dfd
-msgid ""
-"`Vacancy Defect Generation` 改的是体相或表面内部的删位强度，不会自动生成表"
-"面。"
+#: ../../source/module/make-dataset-cards/index.md:140
+#: a23bcb5441574db28e72c443d073670f
+msgid "`Vacancy Defect Generation` 改的是体相或表面内部的删位强度，不会自动生成表面。"
 msgstr ""
-"`Vacancy Defect Generation` removes sites from an existing bulk or surface "
-"structure; it does not create a surface by itself."
+"`Vacancy Defect Generation` removes sites from an existing bulk or "
+"surface structure; it does not create a surface by itself."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:141
-#: 8e683a46408b46b38b92b42983cb7fb6
+#: ../../source/module/make-dataset-cards/index.md:141
+#: bfd0047e5d0c4118bcefef725a301da0
 msgid ""
-"想研究“表面缺陷”，通常先 `Random Slab`，再 `Insert Defect` 或 `Vacancy "
-"Defect Generation`。"
+"想研究“表面缺陷”，通常先 `Random Slab`，再 `Insert Defect` 或 `Vacancy Defect "
+"Generation`。"
 msgstr ""
-"For surface defects, usually run `Random Slab` first, then `Insert Defect` "
-"or `Vacancy Defect Generation`."
+"For surface defects, usually run `Random Slab` first, then `Insert "
+"Defect` or `Vacancy Defect Generation`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:143
-#: f77819cf6de047e5a5b81346d64f7aa9
+#: ../../source/module/make-dataset-cards/index.md:143
+#: 01010da6322a4380a4f783a9f01f82c5
 msgid "随机掺杂 vs 成分空间采样 vs 随机占位"
-msgstr ""
+msgstr "Random Doping vs. Composition Space Sampling vs. Random Occupancy"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:145
-#: 7c9a74255ca24e7388dfa28981923600
-msgid ""
-"`Composition Space Sampling` 负责定义“目标配比空间”，输出仍是带目标配比标签的"
-"结构副本。"
+#: ../../source/module/make-dataset-cards/index.md:145
+#: 548c732d6aae40a6a1cdfb54cb340f04
+msgid "`Composition Space Sampling` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副本。"
 msgstr ""
+"`Composition Space Sampling` defines the target composition space; its "
+"output remains structure copies carrying target-composition labels."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:146
-#: 094ec0641acb40e186557df3a50c570f
+#: ../../source/module/make-dataset-cards/index.md:146
+#: b148308f8ec4422cb09d9cce31983f85
 msgid "`Random Occupancy` 负责把目标配比真正落到离散原子位点上。"
 msgstr ""
-"`Random Occupancy` realizes each target composition on discrete atomic sites."
+"`Random Occupancy` realizes each target composition on discrete atomic "
+"sites."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:147
-#: 7dee641070954881bfe7ae1f21441122
-msgid ""
-"`Random Doping` 更适合“给定规则后直接做一次随机替换”，而不是系统地扫完整配比"
-"空间。"
+#: ../../source/module/make-dataset-cards/index.md:147
+#: cd5b7192f9a2485eb969202775989fcb
+msgid "`Random Doping` 更适合“给定规则后直接做一次随机替换”，而不是系统地扫完整配比空间。"
 msgstr ""
-"`Random Doping` is better for applying explicit random substitution rules "
-"than for scanning a complete composition space."
+"`Random Doping` is better for applying explicit random substitution rules"
+" than for scanning a complete composition space."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:149
-#: ba569d095b984c7aba44719aa6606ca3
+#: ../../source/module/make-dataset-cards/index.md:149
+#: 993857c2ddd74ee2b0d17fcf88c31579
 msgid "有序合金原型 vs 有限晶胞合金占位"
-msgstr ""
+msgstr "Ordered Alloy Prototype vs. Finite-Cell Alloy Occupancy"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:151
-#: df31156a645f4cec9fd53cae730a431a
-msgid ""
-"`Ordered Alloy Prototype` 建立晶胞、周期边界、分数坐标和 A/B 晶体学子晶格，不"
-"负责枚举组成。"
+#: ../../source/module/make-dataset-cards/index.md:151
+#: a35b3bbf11cb44e7be16598501afa339
+msgid "`Ordered Alloy Prototype` 建立晶胞、周期边界、分数坐标和 A/B 晶体学子晶格，不负责枚举组成。"
 msgstr ""
-"`Ordered Alloy Prototype` creates the cell, periodic boundaries, fractional "
-"coordinates, and crystallographic A/B sublattices; it does not enumerate "
-"compositions."
+"`Ordered Alloy Prototype` creates the cell, periodic boundaries, "
+"fractional coordinates, and crystallographic A/B sublattices; it does not"
+" enumerate compositions."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:152
-#: 243baf1364d9461298240c014f8c7144
-msgid ""
-"`Finite-Cell Alloy Occupancy` 接收已有位点或子晶格，先确定可实现的整数计数，"
-"再生成不重复排布。"
+#: ../../source/module/make-dataset-cards/index.md:152
+#: 8c2d0f3581564f288b0be1173a717ef5
+msgid "`Finite-Cell Alloy Occupancy` 接收已有位点或子晶格，先确定可实现的整数计数，再生成不重复排布。"
 msgstr ""
-"`Finite-Cell Alloy Occupancy` accepts existing sites or sublattices, first "
-"determines realizable integer counts, and then generates unique arrangements."
+"`Finite-Cell Alloy Occupancy` accepts existing sites or sublattices, "
+"first determines realizable integer counts, and then generates unique "
+"arrangements."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:153
-#: a0f28a96ef2347eb98a0370a3c878ec6
-msgid ""
-"要覆盖 L1₂、B2、L1₀ 的有序到部分无序路径，通常先生成原型，再做有限晶胞占位。"
+#: ../../source/module/make-dataset-cards/index.md:153
+#: bd1cf9837ee647668ee0e9eb48282183
+msgid "要覆盖 L1₂、B2、L1₀ 的有序到部分无序路径，通常先生成原型，再做有限晶胞占位。"
 msgstr ""
 "To cover ordered-to-partially-disordered paths for L1₂, B2, and L1₀, "
 "generate the prototype first and then apply finite-cell occupancy."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:155
-#: 8f16282658bb474aa6c2e45e35196480
+#: ../../source/module/make-dataset-cards/index.md:155
+#: 1608ac6c8fa54be4947f609fb66a6d36
 msgid "原子扰动 vs 振动模式扰动"
-msgstr ""
+msgstr "Atomic Perturb vs. Vib Mode Perturb"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:157
-#: 3468d7803feb495899cc1c3376512a5b
+#: ../../source/module/make-dataset-cards/index.md:157
+#: b8f4d92883674d04909b3efbc108a291
 msgid "`Atomic Perturb` 是无模型的随机位移，适合快速补近平衡噪声。"
 msgstr ""
 "`Atomic Perturb` adds model-free random displacements for quick near-"
 "equilibrium augmentation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:158
-#: cd3387058c6b4b799f8e653852fe08ec
+#: ../../source/module/make-dataset-cards/index.md:158
+#: 9527de1e4ca649f68dad03e3bc9575ba
 msgid "`Vib Mode Perturb` 基于已有振动模态，适合更接近特定频率空间的位移采样。"
 msgstr ""
-"`Vib Mode Perturb` uses existing normal modes to sample selected regions of "
-"vibrational-coordinate space."
+"`Vib Mode Perturb` uses existing normal modes to sample selected regions "
+"of vibrational-coordinate space."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:159
-#: 47fa377200df42d387f96cd110288465
+#: ../../source/module/make-dataset-cards/index.md:159
+#: 24f7fe8763cd42af8020c130d2bc6d5d
 msgid "输入里没有模态数组时，不能直接用 `Vib Mode Perturb`。"
 msgstr ""
-"`Vib Mode Perturb` cannot operate until the input contains recognized mode "
-"arrays."
+"`Vib Mode Perturb` cannot operate until the input contains recognized "
+"mode arrays."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:161
-#: 56233c4c60e24030ac5487d69494ec91
+#: ../../source/module/make-dataset-cards/index.md:161
+#: d675d3d06fc846f38079d1b213512ab2
 msgid "层错只保留一个新建入口"
-msgstr ""
+msgstr "Use one creation entry for stacking faults"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:163
-#: f6670f4ffe7f48c68fb0bbce0968ba7b
+#: ../../source/module/make-dataset-cards/index.md:163
+#: 55be924b9ed84a7d8e9b77d20075025c
 msgid ""
-"新任务统一使用 `Stacking Fault / GSFE Path`，显式填写 `plane_hkl`、位于面内"
-"的 `slip_uvw`、切面位置和位移路径。"
+"新任务统一使用 `Stacking Fault / GSFE Path`，显式填写 `plane_hkl`、位于面内的 "
+"`slip_uvw`、切面位置和位移路径。"
 msgstr ""
+"Use `Stacking Fault / GSFE Path` for new tasks and specify `plane_hkl`, "
+"the in-plane `slip_uvw`, the cut position, and the displacement path "
+"explicitly."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:164
-#: cbd4938f14ed4d43a7cd505238c25ffc
+#: ../../source/module/make-dataset-cards/index.md:164
+#: bd4f1272df624916bd656056523b89e6
 msgid ""
-"它不限材料和晶面，但要求输入已经定向：第三晶胞方向必须垂直于 `plane_hkl`。普"
-"通 cubic fcc cell 若要扫原始 `(111)` 面，应先用 `Crystal Prototype Builder` "
-"的 `fcc111` 原型或自行构造已定向晶胞。"
+"它不限材料和晶面，但要求输入已经定向：第三晶胞方向必须垂直于 `plane_hkl`。普通 cubic fcc cell 若要扫原始 "
+"`(111)` 面，应先用 `Crystal Prototype Builder` 的 `fcc111` 原型或自行构造已定向晶胞。"
 msgstr ""
+"It is not restricted to a material or plane, but the input must already "
+"be oriented: the third cell direction must be perpendicular to "
+"`plane_hkl`. To scan the original `(111)` plane of a conventional cubic "
+"fcc cell, first use the `fcc111` prototype in `Crystal Prototype Builder`"
+" or construct an oriented cell yourself."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:165
-#: 2a6d330a0dfe4130a7e2fe8f182968bd
+#: ../../source/module/make-dataset-cards/index.md:165
+#: 73923375fdc04f318ba319ccaede079d
 msgid ""
-"旧 `StackingFaultCard` 仍保留在序列化注册表中，用于载入历史 JSON；因为它自动"
-"从全局笛卡尔轴推导滑移方向，所以不再显示在“添加新卡片”和“查找卡片”中。"
+"旧 `StackingFaultCard` 仍保留在序列化注册表中，用于载入历史 "
+"JSON；因为它自动从全局笛卡尔轴推导滑移方向，所以不再显示在“添加新卡片”和“查找卡片”中。"
 msgstr ""
+"The legacy `StackingFaultCard` remains in the serialization registry for "
+"loading historical JSON. Because it derives the slip direction from "
+"global Cartesian axes, it is no longer shown in `Add new card` or `Find "
+"card`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:167
-#: 92b73f8c24cd4576a7c5fac5f142eb8a
+#: ../../source/module/make-dataset-cards/index.md:167
+#: 7ee4dc2b1c30488b93b22f322c107e7d
 msgid "设置磁矩 vs 磁序 vs 磁矩旋转"
-msgstr ""
+msgstr "Set moments vs. magnetic order vs. moment rotation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:169
-#: abe0853087b64b5e9ae16e4767763431
+#: ../../source/module/make-dataset-cards/index.md:169
+#: 47a98ef091e04ec2993d3de278c1dbca
 msgid "`Set Magnetic Moments` 只负责把磁矩写进去，适合静态初始化。"
 msgstr ""
-"`Set Magnetic Moments` writes one consistent moment state and is intended "
-"for static initialization."
+"`Set Magnetic Moments` writes one consistent moment state and is intended"
+" for static initialization."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:170
-#: 8dc9c978e3984f86ad3063d4b422f333
+#: ../../source/module/make-dataset-cards/index.md:170
+#: 7b72422df8644554bb1e69a22e40b5cc
 msgid "`Magnetic Order` 会生成 FM / AFM / PM 等多磁态分支。"
 msgstr "`Magnetic Order` branches into FM, AFM, and PM-like initial states."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:171
-#: 524bab19739e4f5cbb59fdb388956205
-msgid ""
-"`Magmom Rotation` 基于已有磁矩做角度扰动，适合补充非共线或局部旋转样本。"
+#: ../../source/module/make-dataset-cards/index.md:171
+#: a081b72630794983bee4d8ddeeeba5b3
+msgid "`Magmom Rotation` 基于已有磁矩做角度扰动，适合补充非共线或局部旋转样本。"
 msgstr ""
 "`Magmom Rotation` perturbs existing directions and is suitable for local "
 "noncollinear augmentation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:173
-#: 3d6cf68905f74305a0f45d5653a79354
+#: ../../source/module/make-dataset-cards/index.md:173
+#: 361b554f119844ed99525f0ae3ca4478
 msgid ""
-"磁性卡片对外统一使用 NEP / Show NEP 的 `spin:R:3` EXTXYZ 字段。卡片内部仍同步"
-"维护 ASE 的 `initial_magmoms`，用于兼容 ASE 操作和旧工作流；导出文件只保留 "
-"`spin`。读取已有磁矩时优先使用 `spin`，只有输入没有 `spin` 时才回退到旧的 "
-"`initial_magmoms`。标量模式会按卡片中明确设置的 `Axis` 转成三分量 `spin`；零"
-"向量 Axis 会明确失败，不会静默假设方向。"
+"磁性卡片对外统一使用 NEP / Show NEP 的 `spin:R:3` EXTXYZ 字段。卡片内部仍同步维护 ASE 的 "
+"`initial_magmoms`，用于兼容 ASE 操作和旧工作流；导出文件只保留 `spin`。读取已有磁矩时优先使用 "
+"`spin`，只有输入没有 `spin` 时才回退到旧的 `initial_magmoms`。标量模式会按卡片中明确设置的 `Axis` "
+"转成三分量 `spin`；零向量 Axis 会明确失败，不会静默假设方向。"
 msgstr ""
 "Magnetic cards use the NEP / Show NEP `spin:R:3` EXTXYZ field as their "
-"external contract. Internally, they also keep ASE `initial_magmoms` in sync "
-"for ASE operations and legacy workflows; exported files retain only `spin`. "
-"Existing moments are read from `spin` first and fall back to legacy "
-"`initial_magmoms` only when `spin` is absent. Scalar mode converts values to "
-"three-component `spin` vectors using the card's explicit `Axis`; a zero Axis "
-"fails clearly instead of silently assuming a direction."
+"external contract. Internally, they also keep ASE `initial_magmoms` in "
+"sync for ASE operations and legacy workflows; exported files retain only "
+"`spin`. Existing moments are read from `spin` first and fall back to "
+"legacy `initial_magmoms` only when `spin` is absent. Scalar mode converts"
+" values to three-component `spin` vectors using the card's explicit "
+"`Axis`; a zero Axis fails clearly instead of silently assuming a "
+"direction."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:175
-#: 150571ee23bf464ca0bc58b4a5a97928
+#: ../../source/module/make-dataset-cards/index.md:175
+#: 8ad5274402014406b4b81e08a51caa5c
 msgid "按功能浏览"
-msgstr ""
+msgstr "Browse by function"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 46adcd6e75f042a9a40805360ad4a726
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 065b4483d3d8478a95bb975d413edcef
 msgid "我正在处理什么"
-msgstr ""
+msgstr "What am I working on?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 5eb44ec31d554f5db548f0ad1935357a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 71032fdaca9742e5b15254827ca86049
 msgid "进入这里"
-msgstr ""
+msgstr "Open this section"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 785a580d724440b2af391ac29bee3e58
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 8dcfa783a7014224a108ecb8b4381d0e
 msgid "初始结构、晶胞大小或层状结构"
-msgstr ""
+msgstr "Initial structures, cell size, or layered structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: b76cb62ddebd41e2b46a94ffd7fee7be
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 732305f937574738bbeae3fcd6096703
 msgid "[结构来源与晶胞](categories/structure-cell.md)"
-msgstr ""
+msgstr "[Structure sources and cells](categories/structure-cell.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e4ee64765d43499ca08f79ab7b3a4ebc
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3a2a09ba38da4734bc9ca8acdb7c235a
 msgid "应变、相变路径、原子或模态扰动"
-msgstr ""
+msgstr "Strain, transition paths, atomic or mode perturbations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7b3bb38ac4c049b3903ee1de8ceee5e3
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
 msgid "[应变、路径与扰动](categories/deformation-perturbation.md)"
-msgstr ""
+msgstr "[Strain, paths, and perturbations](categories/deformation-perturbation.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: fafb7b299613462d8383239e053795f8
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 0680b780291c4abc8d18417355dc0f4d
 msgid "合金原型、配比、占位或替换"
-msgstr ""
+msgstr "Alloy prototypes, compositions, occupancy, or replacement"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 82952a384786497e9d60246ad414e096
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
 msgid "[合金与组成](categories/composition-alloy.md)"
-msgstr ""
+msgstr "[Alloys and composition](categories/composition-alloy.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 52d3425949d04fd6a0d21d758e3303b5
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a7e1436640bc44b6b6f0868c7f95802d
 msgid "表面、空位、插隙、吸附或层错"
-msgstr ""
+msgstr "Surfaces, vacancies, interstitials, adsorbates, or stacking faults"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: e41a3ffb95c64206811e310176b86960
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f108015f6464ff0b6422fb60deea3ab
 msgid "[缺陷与表面](categories/defect-surface.md)"
-msgstr ""
+msgstr "[Defects and surfaces](categories/defect-surface.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 25e30a54ce494921975b0a132d18356f
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d97c20fa94d34751914f71424d3bbc25
 msgid "共线、非共线和空间相关磁构型"
-msgstr ""
+msgstr "Collinear, non-collinear, and spatially correlated magnetic configurations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7a0a84e751964b3b8ac177bae7f11b4b
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 79ac50666a9b4f518c87320ada225baa
 msgid "[磁性构型](categories/magnetism.md)"
-msgstr ""
+msgstr "[Magnetic configurations](categories/magnetism.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 994f9885a4d34f37a39fae6deced88f9
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f09f81ce291948bd9a2601696c04a89a
 msgid "有机构象、局部溶剂壳和周期溶剂盒"
-msgstr ""
+msgstr "Organic conformations, local solvation shells, and periodic solvent boxes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 96c4b66b920c4b0fb4754dfa668aca32
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
 msgid "[分子与溶剂](categories/molecule-solvation.md)"
-msgstr ""
+msgstr "[Molecules and solvation](categories/molecule-solvation.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 4e68ea559b3347179f9885dcf5db4600
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 57a3239d9ac84c56a229e66d09def1ce
 msgid "几何清洗或代表性采样"
-msgstr ""
+msgstr "Geometry cleaning or representative sampling"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: c500a526de75432b997c8b45aeba607a
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
 msgid "[过滤与代表性采样](categories/filter-sampling.md)"
-msgstr ""
+msgstr "[Filtering and representative sampling](categories/filter-sampling.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 37e3a5e709c94cf99090d48ecc4936d1
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 9b9ad6f305bd43f18a2d05d5f9f1a5a0
 msgid "分组标签、分支和输出合并"
-msgstr ""
+msgstr "Group labels, branching, and output merging"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:37
-#: 7aa7896428b1485aa5f6c374bedf4665
+#: ../../source/module/make-dataset-cards/index.md:37
+#: dd2b32e14b6c4559b4644a6d7ee584c8
 msgid "[工作流与元数据](categories/workflow-metadata.md)"
-msgstr ""
+msgstr "[Workflows and metadata](categories/workflow-metadata.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/index.md:188
-#: b538803d0b9948b09d35a16b70679573
+#: ../../source/module/make-dataset-cards/index.md:188
+#: 89d217e3dfed4d91a6cb732c824906b2
 msgid ""
-"旧版 `Stacking Fault` 只用于载入历史 JSON，不再属于新任务的卡片目录。迁移方法"
-"见 [旧版层错位移](cards/stacking-fault-card.md)。"
+"旧版 `Stacking Fault` 只用于载入历史 JSON，不再属于新任务的卡片目录。迁移方法见 [旧版层错位移](cards"
+"/stacking-fault-card.md)。"
 msgstr ""
+"The legacy `Stacking Fault` card is retained only for loading historical "
+"JSON and is not part of the card catalog for new tasks. See [Legacy "
+"Stacking Fault](cards/stacking-fault-card.md) for migration guidance."
 
 #~ msgid "Make Dataset 卡片手册"
 #~ msgstr "Make Dataset Card Guide"
 
 #~ msgid "这份手册不只解释“每个参数是什么意思”，更强调三件事："
 #~ msgstr ""
-#~ "This manual does more than define individual parameters. It helps you "
+#~ "This manual does more than define "
+#~ "individual parameters. It helps you "
 #~ "answer three practical questions:"
 
-#~ msgid "维护规范见 [卡片文档编写规范](writing-guide.md)。"
+#~ msgid "维护规范见 [Related guide](writing-guide.md)。"
 #~ msgstr ""
-#~ "For documentation-maintenance conventions, see [Writing Card "
-#~ "Documentation](writing-guide.md)."
+#~ "For documentation-maintenance conventions, see"
+#~ " [Writing Card Documentation](writing-guide.md)."
 
 #~ msgid "如果你是第一次使用 Make Dataset，推荐先按下面顺序理解："
 #~ msgstr "If this is your first time using Make Dataset, follow this order:"
@@ -1049,11 +1075,11 @@ msgstr ""
 
 #~ msgid "用 `Super Cell` 手工拼基础晶型"
 #~ msgstr ""
-#~ "Trying to construct a missing crystal prototype manually with `Super Cell`"
+#~ "Trying to construct a missing crystal"
+#~ " prototype manually with `Super Cell`"
 
 #~ msgid "在固定 cell 和组成下生成无序原子坐标初态"
-#~ msgstr ""
-#~ "Generate disordered atomic coordinates at a fixed cell and composition"
+#~ msgstr "Generate disordered atomic coordinates at a fixed cell and composition"
 
 #~ msgid "把它当成磁矩无序卡"
 #~ msgstr "Treating it as a magnetic-disorder card"
@@ -1062,8 +1088,7 @@ msgstr ""
 #~ msgstr "Reject short contacts, abnormal volumes, or abnormal densities"
 
 #~ msgid "强扰动、随机占位、表面或缺陷生成卡"
-#~ msgstr ""
-#~ "A strong perturbation, random-occupancy, surface, or defect generator"
+#~ msgstr "A strong perturbation, random-occupancy, surface, or defect generator"
 
 #~ msgid "把 `FPS Filter` 当成几何质量检查"
 #~ msgstr "Using `FPS Filter` as a geometry-validity check"
@@ -1106,19 +1131,20 @@ msgstr ""
 
 #~ msgid "生成带 A/B 晶体学子晶格的有序合金原型"
 #~ msgstr ""
-#~ "Generate an ordered-alloy prototype with crystallographic A/B sublattices"
+#~ "Generate an ordered-alloy prototype with"
+#~ " crystallographic A/B sublattices"
 
 #~ msgid "用 `group` 代替 `sublattice` 身份"
 #~ msgstr "Using `group` in place of crystallographic `sublattice` identity"
 
 #~ msgid "在有限晶胞上枚举整数可实现的合金组成和排布"
 #~ msgstr ""
-#~ "Enumerate integer-realizable alloy compositions and arrangements in a "
+#~ "Enumerate integer-realizable alloy "
+#~ "compositions and arrangements in a "
 #~ "finite cell"
 
 #~ msgid "连续比例取整后仍标成精确组成"
-#~ msgstr ""
-#~ "Rounding continuous fractions while still labeling the result as exact"
+#~ msgstr "Rounding continuous fractions while still labeling the result as exact"
 
 #~ msgid "做单点随机合金"
 #~ msgstr "Create a random alloy at one composition"
@@ -1142,8 +1168,7 @@ msgstr ""
 #~ msgstr "A sufficiently large structure with enough layers"
 
 #~ msgid "用全局随机占位假装扩散偶或梯度层"
-#~ msgstr ""
-#~ "Using global random occupancy as a diffusion couple or layered gradient"
+#~ msgstr "Using global random occupancy as a diffusion couple or layered gradient"
 
 #~ msgid "把目标配比真正落到原子占位上"
 #~ msgstr "Realize a target composition on discrete atomic sites"
@@ -1189,7 +1214,8 @@ msgstr ""
 
 #~ msgid "`Crystal Prototype Builder` 的 `fcc111` 原型 / slab-oriented cell"
 #~ msgstr ""
-#~ "The `fcc111` prototype from `Crystal Prototype Builder`, or another slab-"
+#~ "The `fcc111` prototype from `Crystal "
+#~ "Prototype Builder`, or another slab-"
 #~ "oriented periodic cell"
 
 #~ msgid "用普通 cubic cell 直接扫 `(111)`"
@@ -1209,29 +1235,29 @@ msgstr ""
 
 #~ msgid "生成 FM/AFM 到 PM 之间的无序度梯度"
 #~ msgstr ""
-#~ "Generate an order-to-disorder gradient from FM/AFM toward PM-like states"
+#~ "Generate an order-to-disorder gradient"
+#~ " from FM/AFM toward PM-like states"
 
 #~ msgid "把离散翻转塞进 `Magmom Rotation`"
 #~ msgstr "Using continuous moment rotation for discrete sign flips"
 
 #~ msgid "生成有空间相关长度的非共线随机磁矩"
-#~ msgstr ""
-#~ "Generate noncollinear random moments with a spatial correlation length"
+#~ msgstr "Generate noncollinear random moments with a spatial correlation length"
 
 #~ msgid "把它叫成 `Spin Glass`"
 #~ msgstr "Calling every correlated random texture a spin glass"
 
 #~ msgid "只想把磁矩写到结构里，不想生成多磁态分支"
-#~ msgstr ""
-#~ "Write moments to a structure without creating several magnetic branches"
+#~ msgstr "Write moments to a structure without creating several magnetic branches"
 
 #~ msgid "用 `Magnetic Order` 做静态赋值"
 #~ msgstr "Using `Magnetic Order` for a single static assignment"
 
 #~ msgid "基于已有磁矩做旋转、多步 canting、全局偏转或螺旋"
 #~ msgstr ""
-#~ "Rotate existing moments, scan canting, apply a global tilt, or generate a "
-#~ "spiral"
+#~ "Rotate existing moments, scan canting, "
+#~ "apply a global tilt, or generate a"
+#~ " spiral"
 
 #~ msgid "直接拿空白结构做旋转"
 #~ msgstr "Trying to rotate a structure with no initial moments"
@@ -1253,7 +1279,8 @@ msgstr ""
 
 #~ msgid "用无机卡片强行扰动有机体系"
 #~ msgstr ""
-#~ "Applying an inorganic perturbation workflow indiscriminately to molecules"
+#~ "Applying an inorganic perturbation workflow"
+#~ " indiscriminately to molecules"
 
 #~ msgid "在局部离子、极性中心或溶质周围补溶剂壳"
 #~ msgstr "Build a local solvent shell around an ion, polar center, or solute"
@@ -1263,8 +1290,8 @@ msgstr ""
 
 #~ msgid "把它当成平衡溶剂化或量化优化"
 #~ msgstr ""
-#~ "Treating generated shells as equilibrated or quantum-optimized solvation "
-#~ "structures"
+#~ "Treating generated shells as equilibrated "
+#~ "or quantum-optimized solvation structures"
 
 #~ msgid "在周期 cell 中生成整盒溶剂初态"
 #~ msgstr "Fill an entire periodic cell with solvent starting configurations"
@@ -1293,35 +1320,38 @@ msgstr ""
 #~ msgid "把 `FPS Filter` 当成第一道质量检查"
 #~ msgstr "Using `FPS Filter` as the first quality gate"
 
-#~ msgid ""
-#~ "`Composition Sweep` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副"
-#~ "本。"
+#~ msgid "`Composition Sweep` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副本。"
 #~ msgstr ""
-#~ "`Composition Sweep` defines the target-composition space. Its outputs are "
-#~ "still labeled copies, not realized site occupations."
+#~ "`Composition Sweep` defines the target-"
+#~ "composition space. Its outputs are still"
+#~ " labeled copies, not realized site "
+#~ "occupations."
 
-#~ msgid ""
-#~ "`Stacking Fault` 更适合快速生成层错候选，参数以滑移向量和切面比例为主。"
+#~ msgid "`Stacking Fault` 更适合快速生成层错候选，参数以滑移向量和切面比例为主。"
 #~ msgstr ""
-#~ "`Stacking Fault` is a quick candidate generator controlled mainly by a "
+#~ "`Stacking Fault` is a quick candidate"
+#~ " generator controlled mainly by a "
 #~ "displacement vector and a cut fraction."
 
-#~ msgid ""
-#~ "`Strict GSFE Path` 适合你已经知道目标滑移系统，需要明确写出 `plane_hkl` "
-#~ "和 `slip_uvw`。"
+#~ msgid "`Strict GSFE Path` 适合你已经知道目标滑移系统，需要明确写出 `plane_hkl` 和 `slip_uvw`。"
 #~ msgstr ""
-#~ "`Strict GSFE Path` is for a known slip system specified explicitly by "
+#~ "`Strict GSFE Path` is for a known"
+#~ " slip system specified explicitly by "
 #~ "`plane_hkl` and `slip_uvw`."
 
 #~ msgid ""
-#~ "`Strict GSFE Path` 要求输入已经是 slab-oriented cell：第三晶胞方向必须垂直"
-#~ "于 `plane_hkl`。如果只是普通 cubic fcc cell，先用 `Crystal Prototype "
-#~ "Builder` 的 `fcc111` 原型或自己构造合适 slab cell。"
+#~ "`Strict GSFE Path` 要求输入已经是 slab-oriented"
+#~ " cell：第三晶胞方向必须垂直于 `plane_hkl`。如果只是普通 cubic fcc"
+#~ " cell，先用 `Crystal Prototype Builder` 的 "
+#~ "`fcc111` 原型或自己构造合适 slab cell。"
 #~ msgstr ""
-#~ "`Strict GSFE Path` requires a slab-oriented periodic cell whose third "
-#~ "cell vector is normal to `plane_hkl`. For a conventional cubic fcc input, "
-#~ "first use the `fcc111` prototype from `Crystal Prototype Builder` or "
-#~ "construct an equivalent oriented cell."
+#~ "`Strict GSFE Path` requires a slab-"
+#~ "oriented periodic cell whose third cell"
+#~ " vector is normal to `plane_hkl`. For"
+#~ " a conventional cubic fcc input, "
+#~ "first use the `fcc111` prototype from"
+#~ " `Crystal Prototype Builder` or construct"
+#~ " an equivalent oriented cell."
 
 #~ msgid "按分组浏览"
 #~ msgstr "Browse by category"

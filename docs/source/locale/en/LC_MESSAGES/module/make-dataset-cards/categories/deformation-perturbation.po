@@ -27,9 +27,7 @@ msgstr "Strain, paths, and perturbations"
 msgid ""
 "这组卡片补充晶格响应、相变路径和近平衡位移。先判断需要改变的是晶胞、原子坐"
 "标， 还是已有振动模态；三者不要混用。"
-msgstr ""
-"这组卡片补充晶格响应、相变路径和近平衡位移。先判断需要改变的是晶胞、原子坐"
-"标， 还是已有振动模态；三者不要混用。"
+msgstr "These cards add lattice responses, phase-transition paths, and near-equilibrium displacements. First decide whether you need to change the cell, atomic coordinates, or an existing vibrational mode; do not conflate these operations."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: 451acc3c67824ca8bc526e866ac50a86
@@ -64,7 +62,7 @@ msgstr "`Lattice Perturb`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: f5ad3df8d506488bac5f5128b39ae398
 msgid "扫描 Bain 四方畸变路径"
-msgstr "扫描 Bain 四方畸变路径"
+msgstr "Scan a Bain tetragonal-distortion path"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: 5dfccd698a61429386aac2b35636b9c5
@@ -74,7 +72,7 @@ msgstr "`Bain Path`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: 0454e8d267d54fe4aa0930ace05c7f52
 msgid "施加矩阵或角度剪切"
-msgstr "施加矩阵或角度剪切"
+msgstr "Apply matrix or angular shear"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: 3142a8377e8b47c088f21e0964a82614
@@ -84,7 +82,7 @@ msgstr "`Shear Matrix Strain` / `Shear Angle Strain`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: 96315847b9564a368c39751662418e24
 msgid "添加随机原子位移"
-msgstr "添加随机原子位移"
+msgstr "Add random atomic displacements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: 480025fffa5d482884b5e6ee87a6fa64
@@ -94,7 +92,7 @@ msgstr "`Atomic Perturb`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: f597912741ef44e59a80efb00b9a68b1
 msgid "沿已有振动模态生成位移"
-msgstr "沿已有振动模态生成位移"
+msgstr "Generate displacements along existing vibrational modes"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/deformation-perturbation.md:0
 #: 2bfb85fd9409470a8a16627a855eee0a

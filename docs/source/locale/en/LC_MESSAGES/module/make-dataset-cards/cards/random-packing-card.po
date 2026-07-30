@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:3
 #: f275d909e7f74976891eae328d551d3c
 msgid "随机原子堆积（Random Packing）"
-msgstr ""
+msgstr "Random Packing"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:5
 #: 89b051ce7b5244dbafb8aed1c52628c2
 msgid "**分类：** 结构"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:7
 #: 7ebddcbbe6aa4996932b35f9c96a4e7e
@@ -61,7 +60,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:13
 #: 5fa8ceffdaf24831a6d21a7da343ee98
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:15
 #: e131593f207d4bda9e78fcff0ed79794
@@ -69,7 +68,7 @@ msgid ""
 "程序在输入晶胞内依次随机放置原子。候选分数坐标 $\\mathbf s\\sim U([0,1)^3)$，"
 "Cartesian 坐标为 $\\mathbf r=\\mathbf s^\\mathsf T\\mathbf C$。对新原子 $i$，"
 "只有满足"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:19
 #: 1b19a954c06046568a238226883963c9
@@ -86,7 +85,7 @@ msgid ""
 "置约束更大 的元素，以降低后期无位置可放的概率，但它仍是带拒绝的随机顺序算法，"
 "不保证在高密度条件下 一定找到解。达到每原子最大尝试次数后，严格模式报错，非严"
 "格模式跳过该输出样本。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:28
 #: bd9046b65543470abfd1cf8b5be9a8f2
@@ -117,7 +116,7 @@ msgid ""
 "参数设置：`structures=20`，`composition=\"\"`，`min_distance=1.5`，"
 "`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`，`strict_mode=True`，打开 `使用随机"
 "种子`（`use_seed`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:36
 #: f273589f5f6b40cb90da6741f778bf30
@@ -144,7 +143,7 @@ msgstr "Composition and count"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:42
 #: 0f78fe8261bf4cdd919d593f03568bcb
 msgid "结构数（structures）"
-msgstr ""
+msgstr "structures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:44
 #: 42de43b1e91944b092db051ecb983f2d
@@ -166,7 +165,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:48
 #: 8113927ae8f64d04825509ba9965d301
 msgid "组成（composition）"
-msgstr ""
+msgstr "composition"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:50
 #: a7a3b2f858c64f859b9c0ac805eeef80
@@ -204,7 +203,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:58
 #: e731056e46a04a11bb2f49e0facab221
 msgid "最小距离（min_distance）"
-msgstr ""
+msgstr "min_distance"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:60
 #: f4b98cc20aa54ea8a737509bc6ae8dcc
@@ -230,7 +229,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:64
 #: e94b7e7479fc45f4821e8db3d065bcbf
 msgid "分元素对最小距离（pair_min_distances）"
-msgstr ""
+msgstr "pair_min_distances"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:66
 #: f56c3558e1274b3a9917d30f28075bb4
@@ -245,12 +244,12 @@ msgid ""
 "元素半径差异大时你会想用这个——O-O 通常比 Fe-O 可以更近一些，同时 Fe-O 可能需"
 "要比全局 `最小距离`（`min_distance`）更宽松。写在 pair 里的距离覆盖全局值，没"
 "写的元素对仍然用 `最小距离`（`min_distance`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:70
 #: 1c6650dc7bf4492685601547e8814f6c
 msgid "每个原子最大尝试次数（max_attempts_per_atom）"
-msgstr ""
+msgstr "max_attempts_per_atom"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:72
 #: b3a9c59fc2684a9993de0ac789533f27
@@ -265,12 +264,12 @@ msgid ""
 "增大它只增加搜索时间，不改变物理可行性。如果你发现它一直失败（几乎每次都触达 "
 "500 次上限），不是该调大它——是你的 `最小距离`（`min_distance`）设大了，或者 "
 "cell 相对原子数太小。先调松距离或扩胞。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:76
 #: 584e7f805421422faffd0180cdcb12bc
 msgid "严格模式（strict_mode）"
-msgstr ""
+msgstr "strict_mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:78
 #: e3ffc656e0144e98821b60fb7fcbbc17
@@ -278,7 +277,7 @@ msgid ""
 "`bool`，默认 true。打开：只要有一个原子放不下，整个样本就报错，保证输出数量 "
 "= 设定值。关闭：放不下的样本被跳过，最终输出可能比你设的 `结构数`"
 "（`structures`）少。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:80
 #: efafbe107b434eef96ae364dba40b1db
@@ -297,7 +296,7 @@ msgstr "Randomness"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:84
 #: 5ad75a1a0aae48319ed1564fa501da2d
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:86
 #: fe411de5aa5a4220b9d8079405cd301d
@@ -312,12 +311,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:88
 #: 7058b644509940e38449df0b789dde78
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:90
 #: e75ce491d9b84c2aafe7a067d41acee0
 msgid "`int`，默认 0。仅 `使用随机种子`（`use_seed`）打开时生效。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-packing-card.md:92
 #: 1c31305bda224ebcb481575fcf328717
@@ -453,7 +452,7 @@ msgid ""
 "开启 `使用随机种子`（`use_seed`）后，随机 packing 由 `随机种子`（`seed`）、输"
 "入结构稳定 ID 和 sample 序号共同决定。相同输入、相同参数、相同 seed 会生成相"
 "同坐标。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
 #~ "参数设置：`structures=20`，`composition=\"\"`，`min_distance=1.5`，"

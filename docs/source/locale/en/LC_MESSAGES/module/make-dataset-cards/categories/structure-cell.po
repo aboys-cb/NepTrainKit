@@ -27,9 +27,7 @@ msgstr "Structure sources and cells"
 msgid ""
 "这组卡片决定“从什么结构开始”和“晶胞怎样承载后续操作”。通常先完成这里的操作， "
 "再进入应变、缺陷、表面、合金或磁性卡片。"
-msgstr ""
-"这组卡片决定“从什么结构开始”和“晶胞怎样承载后续操作”。通常先完成这里的操作， "
-"再进入应变、缺陷、表面、合金或磁性卡片。"
+msgstr "These cards determine the starting structure and how the cell carries subsequent operations. Normally complete these steps before applying strain, defects, surfaces, alloying, or magnetism cards."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
 #: 21149bed578a47d587a65da8c5960b0a
@@ -64,7 +62,7 @@ msgstr "`Random Packing`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
 #: ba56bae103174678a619c1dba2b8eed6
 msgid "扩大已有晶胞"
-msgstr "扩大已有晶胞"
+msgstr "Expand an existing cell"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
 #: 2f565d23e16a47199109be1ae73a337d
@@ -74,7 +72,7 @@ msgstr "`Super Cell`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
 #: fb644c6efabc47e486fa8e0d604d5209
 msgid "沿层方向复制并施加几何位移"
-msgstr "沿层方向复制并施加几何位移"
+msgstr "Copy along the layer direction and apply geometric displacements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/structure-cell.md:0
 #: 5d996e0fe8714339a6e56c106e02de8d

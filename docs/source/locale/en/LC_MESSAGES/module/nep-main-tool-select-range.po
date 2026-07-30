@@ -1,57 +1,59 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:1
-#: 42dc38f42a2a4e4cbc2dc08456ce49e2
+#: ../../source/module/nep-main-tool-select-range.md:1
+#: 554cef56b5b94bc99fe5b12954dd393c
 msgid "按图上范围选择（Select by Range）"
-msgstr "按图上范围选择（Select by Range）"
+msgstr "Select by range"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:3
-#: d62ead7fcd894cce875d3d644af01455
+#: ../../source/module/nep-main-tool-select-range.md:3
+#: 3f1774aaff8e403a8f0e71b67b104724
 msgid "作用与适用场景"
-msgstr "作用与适用场景"
+msgstr "Purpose and use cases"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:5
-#: 81fccbabcb0c4cdb9d02165b9e990344
+#: ../../source/module/nep-main-tool-select-range.md:5
+#: c1cc9232658d4fffb74a7377e9044c4e
 msgid ""
-"按照当前散点图的 x/y 数值范围选中结构。适合截取误差长尾、能量区间或描述符图中"
-"的局部点群。 切换到另一张图后，x/y 的物理含义也会随当前坐标轴改变。"
-msgstr ""
-"按照当前散点图的 x/y 数值范围选中结构。适合截取误差长尾、能量区间或描述符图中"
-"的局部点群。 切换到另一张图后，x/y 的物理含义也会随当前坐标轴改变。"
+"按照当前散点图的 x/y 数值范围选中结构。适合截取误差长尾、能量区间或描述符图中的局部点群。 切换到另一张图后，x/y "
+"的物理含义也会随当前坐标轴改变。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:8
-#: ca0a76c70f914d44b5fa74e09dfb4b1a
+#: ../../source/module/nep-main-tool-select-range.md:8
+#: 999867b9bf8e426087d78902566c006e
 msgid "判定原理"
-msgstr "判定原理"
+msgstr "Decision principle"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:10
-#: e567afe59c1f435bad508e0413c45a2c
+#: ../../source/module/nep-main-tool-select-range.md:10
+#: debfc895027846f99199589a2ac23de5
+#, python-brace-format
 msgid ""
-"设当前点的横、纵坐标为 $x_i,y_i$，输入范围为 $[x_{\\min},x_{\\max}]$ 和 $"
-"[y_{\\min},y_{\\max}]$。程序先自动交换写反的上下限，再计算"
+"设当前点的横、纵坐标为 $x_i,y_i$，输入范围为 $[x_{\\min},x_{\\max}]$ 和 "
+"$[y_{\\min},y_{\\max}]$。程序先自动交换写反的上下限，再计算"
 msgstr ""
-"设当前点的横、纵坐标为 $x_i,y_i$，输入范围为 $[x_{\\min},x_{\\max}]$ 和 $"
-"[y_{\\min},y_{\\max}]$。程序先自动交换写反的上下限，再计算"
+"This section explains the option, its parameters, operation, and expected"
+" result."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:13
-#: 3b6c4113fab24bbfb8a25b12544c3859
+#: ../../source/module/nep-main-tool-select-range.md:13
+#: e8ec494460c4473298615a3c2232c22b
+#, python-brace-format
 msgid ""
 "\n"
 "M_x(i)=(x_{\\min}\\le x_i\\le x_{\\max}),\\qquad\n"
@@ -61,80 +63,74 @@ msgstr ""
 "M_x(i)=(x_{\\min}\\le x_i\\le x_{\\max}),\\qquad\n"
 "M_y(i)=(y_{\\min}\\le y_i\\le y_{\\max}).\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:18
-#: a03be06880c1446a962d64b179ed2279
+#: ../../source/module/nep-main-tool-select-range.md:18
+#: bfc5672c99da44eeb08d9f357cb87d00
 msgid ""
-"`同时满足（AND）`使用 $M(i)=M_x(i)\\land M_y(i)$；`任一满足（OR）`使用 "
-"$M(i)=M_x(i)\\lor M_y(i)$。边界点会被选中。这里比较的是**当前子图实际显示的数"
-"据**， 不是固定的能量或力字段，因此运行前先看清坐标轴名称。"
+"`同时满足（AND）`使用 $M(i)=M_x(i)\\land M_y(i)$；`任一满足（OR）`使用 $M(i)=M_x(i)\\lor "
+"M_y(i)$。边界点会被选中。这里比较的是**当前子图实际显示的数据**， 不是固定的能量或力字段，因此运行前先看清坐标轴名称。"
 msgstr ""
-"`同时满足（AND）`使用 $M(i)=M_x(i)\\land M_y(i)$；`任一满足（OR）`使用 "
-"$M(i)=M_x(i)\\lor M_y(i)$。边界点会被选中。这里比较的是**当前子图实际显示的数"
-"据**， 不是固定的能量或力字段，因此运行前先看清坐标轴名称。"
+"This section explains the option, its parameters, operation, and expected"
+" result."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:22
-#: 72252f89e6f24992893de2f2c22e68e3
+#: ../../source/module/nep-main-tool-select-range.md:22
+#: b3ab6d8f24114482ba2ae86f6d13f047
 msgid "参数与执行结果"
-msgstr "参数与执行结果"
+msgstr "Parameters and execution result"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5590
-#: 7a2cffd5bd144a7db25aa0d47cc64891
+#: ../../source/module/nep-dataset-display-content.md:5590
+#: d5c8aa8756644b83be57ef039c4b9619
 msgid "输入控件："
-msgstr "输入控件："
+msgstr "Input controls:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5591
-#: c4cff59ee3ba4f95b36f2d3182186047
-msgid ""
-"`x 最小值 / x 最大值 / y 最小值 / y 最大值`：范围 `[-1e8, 1e8]`，6 位小数；"
-msgstr ""
-"`x 最小值 / x 最大值 / y 最小值 / y 最大值`：范围 `[-1e8, 1e8]`，6 位小数；"
+#: ../../source/module/nep-dataset-display-content.md:5591
+#: dea89f6e880f4356bce77c9a9025796a
+msgid "`x 最小值 / x 最大值 / y 最小值 / y 最大值`：范围 `[-1e8, 1e8]`，6 位小数；"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5592
-#: 23cf762942a94c7fb0568fa5695efd3d
+#: ../../source/module/nep-dataset-display-content.md:5592
+#: 6ee47158e6454bbfaa21aec1ae800643
 msgid "`逻辑关系`：`同时满足（AND）` / `任一满足（OR）`，默认同时满足。"
-msgstr "`逻辑关系`：`同时满足（AND）` / `任一满足（OR）`，默认同时满足。"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5593
-#: 3c230375d88644008c0dfa038d2d2e1d
+#: ../../source/module/nep-dataset-display-content.md:5593
+#: f732cad7345c4948b85e4a1f46b6f09e
 msgid "默认值：打开时自动填充为当前子图数据极值。"
-msgstr "默认值：打开时自动填充为当前子图数据极值。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5594
-#: 49172bef60d1415890ce01dcc82ce2dc
+#: ../../source/module/nep-dataset-display-content.md:5594
+#: b86e52211f5d4450b2ef4bac760fc967
 msgid "执行结果：按坐标窗口筛选并选中结构。"
-msgstr "执行结果：按坐标窗口筛选并选中结构。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5596
-#: ceddbc6c47864cbba3eb24179ec7cbb2
-msgid ""
-"![按图上范围选择对话框](../_static/image/generated/show_nep_reference/"
-"g_range_dialog.png)"
-msgstr ""
-"![按图上范围选择对话框](../_static/image/generated/show_nep_reference/"
-"g_range_dialog.png)"
+#: ../../source/module/nep-dataset-display-content.md:5596
+#: da8a56b200ce4cbc8da1d3c6cb7e3ef6
+msgid "![按图上范围选择对话框](../_static/image/generated/show_nep_reference/g_range_dialog.png)"
+msgstr "See the figure for the corresponding control and result."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5596
-#: 1771dc47b15d47a695c01e18ee5df14a
+#: ../../source/module/nep-dataset-display-content.md:5596
+#: 7a1b1c9be52e479eb66126b29fd30782
 msgid "按图上范围选择对话框"
-msgstr "按图上范围选择对话框"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5596
-#: 1771dc47b15d47a695c01e18ee5df14a
+#: ../../source/module/nep-dataset-display-content.md:5596
+#: 7a1b1c9be52e479eb66126b29fd30782
 msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/g_range_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_range_dialog.png"
 msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/g_range_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_range_dialog.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:29
-#: d1306b8407404559956a73f04279512f
+#: ../../source/module/nep-main-tool-select-range.md:29
+#: 599756adb3894598af852df846cd9d53
 msgid "操作后检查"
-msgstr "操作后检查"
+msgstr "Post-operation checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-range.md:31
-#: 3464bb1ea8384dfe8a51b175ead28710
+#: ../../source/module/nep-main-tool-select-range.md:31
+#: 4adfe29a43324980b4f3e4a6fd0ae22c
 msgid ""
-"范围框默认填入当前图的数据极值。缩小范围后先核对高亮点位置和 `Sel` 数量； `同"
-"时满足（AND）`要求 x、y 同时落入范围，`任一满足（OR）`只要求其中一项满足。"
+"范围框默认填入当前图的数据极值。缩小范围后先核对高亮点位置和 `Sel` 数量； `同时满足（AND）`要求 x、y "
+"同时落入范围，`任一满足（OR）`只要求其中一项满足。"
 msgstr ""
-"范围框默认填入当前图的数据极值。缩小范围后先核对高亮点位置和 `Sel` 数量； `同"
-"时满足（AND）`要求 x、y 同时落入范围，`任一满足（OR）`只要求其中一项满足。"
+"This section explains the option, its parameters, operation, and expected"
+" result."

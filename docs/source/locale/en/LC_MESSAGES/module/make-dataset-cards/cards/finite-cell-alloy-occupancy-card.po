@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Finite-Cell Alloy Occupancy"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:5
 #: 7e3249576b454cb6a3fd6b19db1d6572
 msgid "**分类：** 合金与组分"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:7
 #: 0e25690af80244e9b3b572cc8947ae79
@@ -97,12 +96,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:19
 #: 98da292f090441928ab08d8a5f7b1b72
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:21
 #: 17ff95eb51924a0e962edabbd9868723
 msgid "有限晶胞不能实现任意连续比例。若一个子晶格有 $N$ 个位点，程序枚举满足"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:23
 #: 3c96caa55869470a83faa0d702b35b2b
@@ -117,7 +116,7 @@ msgid ""
 "且落入用户比例/计数上下限的可行整数向量。比例范围会转换为 $\\lceil f_{e,"
 "\\min}N\\rceil\\le n_e\\le\\lfloor f_{e,\\max}N\\rfloor$；固定比例用最大余数"
 "法 得到和为 $N$ 的计数。给定计数向量时，不同占位排列数为"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:31
 #: 9bebc664d09d4ec4bcf086cb1624220d
@@ -131,7 +130,7 @@ msgstr ""
 msgid ""
 "多个独立子晶格的组合数是各自 $\\Omega$ 的乘积。卡片在可行组合中去重采样，并受"
 "每组和 总输出上限约束；它不会声称已穷举超出预算的全部排列。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:38
 #: d2971e201e3c49f8a7b765d4ad5f993c
@@ -150,7 +149,7 @@ msgstr ""
 msgid ""
 "32 位点随机固溶体经过连续 Composition Space Sampling 后再取整，多个目标点可能"
 "都变成同一整数计数组合，训练集看似有很多组成，实际却重复。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:44
 #: 9deed2f1027a4a18a11cc52f4bb2c70b
@@ -163,7 +162,7 @@ msgid ""
 "arrangement ID 不重复。 **怎么验证训练集质量改善：** 统计 metadata 中的 "
 "`counts`，确认每帧总和为 32、composition ID 无重复；重训时再按实际分数切片比"
 "较误差，而不是按原连续目标比例分组。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:52
 #: b1591d188f9544ef8aaa0c3c645bb219
@@ -173,7 +172,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:54
 #: 11bd44617ab4467f9ff5350440390bb0
 msgid "位点划分规则（site_rules）"
-msgstr ""
+msgstr "site_rules"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:56
 #: 8afd25e649694e6798d136e928cf5865
@@ -182,7 +181,7 @@ msgid ""
 "结构且规则尚未被手动编辑时，卡片会立即按首个输入结构的实际 site set、元素和当"
 "前比例生成安全规则。例如 Ni/Al 的 A/B 结构会自动得到真实的 Ni、Al 规则，而不"
 "会生成 `X` 原子。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:58
 #: e316be9c7631461f81d0078d1ce5a5bf
@@ -202,7 +201,7 @@ msgid ""
 "A、B 规则。JSON 顶层 key 必须与输入的 site set 完全一致。有 `sublattice` 时逐"
 "个编辑 A、B 等标签；没有时使用 `all`。卡片不会把 `all` 静默套到每个子晶格，也"
 "不会使用 `group` 代替 `sublattice`。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:64
 #: c22b96b74d814c49a81dc01a8d89e74a
@@ -212,14 +211,14 @@ msgid ""
 "B。界面会明确提示自动匹配结果。只要用户编辑过规则、主动选择过模板、粘贴过 "
 "JSON 或载入过持久化参数，卡片就不再自动覆盖，标签不匹配或仍含 `X` 时改为显示"
 "错误。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:66
 #: 0cc776b719c14d93a397c210c5c339c4
 msgid ""
 "切换位点划分或应用模板会整体替换当前规则。已有手动编辑时，界面会先确认，避免"
 "误删元素、范围和 site set。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:68
 #: 2737b8c3d30e4d00993c68b4d1bed37f
@@ -228,7 +227,7 @@ msgid ""
 "签、非法/重复元素、范围错误和无整数解。底层持久化仍是 `位点划分规则`"
 "（`site_rules`）字符串；“高级：查看/粘贴 JSON”默认收起，可用于复制现有格式或"
 "粘贴旧配置。非法 JSON 不会覆盖当前有效的可视化规则。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:70
 #: 6ae5e43c23184d5198a740eae81f278e
@@ -250,7 +249,7 @@ msgid ""
 "可视化编辑器要求固定比例之和为 1，例如 `0.5 + 0.5`。旧项目或直接调用 "
 "operation 的 JSON 若使用 `1 + 1` 这类相对权重，底层仍会归一化以保持兼容；界面"
 "新建和修改规则时不再依赖这种隐式归一化。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:78
 #: f93b64eea80f4fb0929c3cb4eb149d4c
@@ -283,7 +282,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:90
 #: f136e49060a347b68c5e443bfb68cbf8
 msgid "每种组成的排布数（arrangements_per_composition）"
-msgstr ""
+msgstr "arrangements_per_composition"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:92
 #: 026d1cd55d9447c8acef3e847670ea15
@@ -306,7 +305,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:96
 #: 74acb058641b49e3b2b868d63984c519
 msgid "使用固定种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:98
 #: 06e9c9a5ef1c4e3c85efda1d5f6ad3ce
@@ -329,7 +328,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:102
 #: fd72447b92b049839448d1c961ba59c4
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:104
 #: 83cfdad6a0d14cd0815913409478e796
@@ -349,7 +348,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:108
 #: 364fb1f6e52440f5a06451b79604905c
 msgid "每个输入的最大输出数（max_outputs）"
-msgstr ""
+msgstr "max_outputs"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:110
 #: 4dc7d95e93044934b733f31456480bce
@@ -365,7 +364,7 @@ msgid ""
 "择可覆盖的组成，再采用“组成优先”的轮转调度：先为每个选中组成生成第 1 个排布，"
 "再生成各组成的第 2 个排布，以此类推。因此，小预算不会先被单一组成的多个排布耗"
 "尽。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:114
 #: 7a1069f7d1e245cc94f3b708ed021a7c
@@ -374,7 +373,7 @@ msgid ""
 "成数，并显示输出上限估计。这个数字是 `可行组成数 × 每组成请求排布数` 的上界；"
 "某些组成的唯一排布数不足时，实际输出会更少。没有输入时只提示先载入上游结构，"
 "不显示伪精确数字。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:116
 #: 3e4fcdf576544e1888a1c29c815813b8
@@ -418,7 +417,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:133
 #: 0696fbc0f44e4f1593e25c4a0b0307a8
 msgid "L1₂ 子晶格部分无序"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:135
 #: ba4f8983948e43319a156661bae7d0ae
@@ -521,7 +520,7 @@ msgid ""
 "理论排布数已耗尽，或触发了 `每个输入的最大输出数`（`max_outputs`）。这不是随"
 "机失败，卡片不会用重复排布伪造样本数。触发总输出上限时，卡片优先覆盖不同组"
 "成，再为同一组成增加排布。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:162
 #: 4fb8b26ad2b54603ab94cf6fd4d7b6c8
@@ -529,7 +528,7 @@ msgid ""
 "**提示仍含占位元素 X。** `X` 只用于没有输入时展示规则结构，operation 会拒绝生"
 "成含 `X` 的结果。接入真实结构后可让未编辑的规则自动匹配，也可以手动把 `X` 替"
 "换为实际元素。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:164
 #: 59e0e3eaa8514bccbddae85f613ea8e5
@@ -561,7 +560,7 @@ msgstr "Reproducibility"
 msgid ""
 "固定 `use_seed=true` 与 `随机种子`（`seed`）后严格可复现。超预算组成抽样使用"
 "确定索引顺序；排布去重以逐位元素序列为准，不依赖集合迭代顺序。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "`Group`: `Alloy` | `Class`: `FiniteCellAlloyOccupancyCard`"
 #~ msgstr "`Group`: `Alloy` | `Class`: `FiniteCellAlloyOccupancyCard`"

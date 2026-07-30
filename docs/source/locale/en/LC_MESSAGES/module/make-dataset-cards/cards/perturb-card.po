@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Atomic Perturb"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:5
 #: 60fd978edc3d4db8a80d0add71a5a331
 msgid "**分类：** 扰动"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:7
 #: ee3fb7d8906141aea4d82be134b2dd30
@@ -40,12 +39,12 @@ msgstr "What the card does"
 msgid ""
 "对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子的随机位"
 "移向量长度不超过 `最大距离`（`max_distance`），晶格保持不变。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:11
 #: cd1c4dd15b7141e6b845275bbcafa28e
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:13
 #: b64da98f44bc432db1484e7daa39e1a5
@@ -61,14 +60,14 @@ msgid ""
 "$d_i$ 是最大位移，单位 Å；$\\hat{\\mathbf u}_i$ 是随机单位方向，$r_i$ 由所选 "
 "Sobol 或伪随机引擎产生。该约束限制的是位移向量模长，不是每个 x/y/z 分量各自的"
 "上限。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:18
 #: 2196ad6d85b74602910be8c791279ff2
 msgid ""
 "开启 `识别有机分子`（`identify_organic`）后有机分子团簇做刚性整体移动，避免分"
 "子内键被拉伸。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:20
 #: 271cc0eab9474eda8cd6de368ea89606
@@ -132,17 +131,17 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:33
 #: cc1279603ae44eb9a474d8a447efcaae
 msgid "`最大距离`（`max_distance`） = `0.15` （单位 Å）"
-msgstr ""
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:34
 #: bdef47d685134f1cb02c4a1d5187ac4d
 msgid "`最大输出数量`（`max_num`） = `50`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:35
 #: be293fd3b7b745e59355a1ef72e1703e
 msgid "`生成方式`（`engine_type`） = `0` （Sobol，少量样本覆盖更均匀）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:37
 #: f1158b5dc5c64ea0afba9edf8a9d289e
@@ -168,21 +167,21 @@ msgstr ""
 msgid ""
 "抽查最短键长：0.15 Å 位移下 Si-Si 键长变化应在 ±0.3 Å 以内（两个相邻原子可能"
 "向不同方向偏移）。如果出现 < 1.8 Å 的短键，降低 `最大距离`（`max_distance`）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:42
 #: 3fc7f4d9c7974876a1b3a8534b63dcb7
 msgid ""
 "如果改善不够，增大 `最大输出数量`（`max_num`）到 100、也增大 `最大距离`"
 "（`max_distance`）到 0.25 Å"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:43
 #: 9d1b28f2ecd44d349f729be4130916b0
 msgid ""
 "如果体系含多种元素且质量差异大（如含 H + 重元素），考虑开启 `启用缩放`"
 "（`use_element_scaling`），再在 `元素缩放` 中给轻元素更大位移"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:45
 #: 4068c26236354c4caf74d995e14eeee0
@@ -254,7 +253,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:59
 #: da49f1655a6f4af18a709a9ea6ec29cf
 msgid "生成方式（engine_type）"
-msgstr ""
+msgstr "engine_type"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:61
 #: 4b5170c850454264a3eb721233a9f060
@@ -282,7 +281,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:65
 #: 05237380c6af421aa33144307cba9637
 msgid "最大距离（max_distance）"
-msgstr ""
+msgstr "max_distance"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:67
 #: 0b287eb117e64d12a08409d288acf8a3
@@ -296,12 +295,12 @@ msgid ""
 "远。室温下原子振动幅度约 0.05~0.1 Å，设 0.15~0.3 Å 通常够用。体系含 H 等轻元"
 "素时，H 振幅天然更大，建议同时开启 `启用缩放`（`use_element_scaling`）。设到 "
 "0.3~0.5 Å 以上时，跑完务必抽查最近邻键长——这个量级已经可能拉断键了。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:71
 #: 7757d55b137d466dbb893f18136c609c
 msgid "最大输出数量（max_num）"
-msgstr ""
+msgstr "max_num"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:73
 #: 465a537cb4d84d37b0f6913342d503ae
@@ -324,7 +323,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:77
 #: d80126e4f0e445e8b2730b6e0a15c9a5
 msgid "识别有机分子（identify_organic）"
-msgstr ""
+msgstr "identify_organic"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:79
 #: c79c53a6b37b46ceb760d8053c04dd1a
@@ -350,7 +349,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:83
 #: 6b6525588a0642fea2e00a470271be04
 msgid "启用缩放（use_element_scaling）"
-msgstr ""
+msgstr "use_element_scaling"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:85
 #: 194f3abe6162471a96df2c241696b5b8
@@ -358,45 +357,45 @@ msgid ""
 "`bool`，默认 false。对应界面中的 `Enable Scaling`。打开后显示下方的 `Element "
 "Scaling` 配置，不同元素可以使用不同的最大位移；关闭时全部元素使用全局 `最大距"
 "离`（`max_distance`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:87
 #: ff045e076aa24c8ba9bb772f3d2c07bb
 msgid ""
 "多元素体系（比如含 H + 重元素）建议开。H 在室温下的振动幅度远大于重元素，用同"
 "一个 `最大距离`（`max_distance`）会导致要么 H 位移太小、要么重元素位移太大。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:89
 #: fd71d56991db4d4fa4edb4815f8f30ca
 msgid "元素缩放（element_scalings）"
-msgstr ""
+msgstr "element_scalings"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:91
 #: 4a71b02246734e67849d1b936cf9a790
 msgid ""
 "`dict[str, float] | None`，默认 None。对应界面中的 `Element Scaling`，表示“元"
 "素 → 最大位移”的映射，数值单位为 Å；它不是无量纲缩放系数。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:93
 #: 1e3fcb791fde421e91f55af98a09c114
 msgid ""
 "格式如 `{\"H\": 0.5, \"O\": 0.15, \"Si\": 0.1}`。只对列出的元素生效，没列出的"
 "元素仍然用上面的 `最大距离`（`max_distance`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:95
 #: df0dc54f03274a198c645c43148fa174
 msgid ""
 "生效条件：`启用缩放`（`use_element_scaling`）必须为 true。未列出的元素继续使"
 "用全局 `最大距离`。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:97
 #: 301bde6cff584171a6967f2da99471d0
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:99
 #: 8054a417a107455eaae5080eb4b6eb0d
@@ -426,14 +425,14 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:103
 #: 42fc8527046f4d8d9a929b210206ead7
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:105
 #: cf93d94321954a4b82e4132b6cccfaa6
 msgid ""
 "`int`，默认 0。随机种子值。仅在 `使用随机种子`（`use_seed`）打开时生效。两个"
 "不同的 seed 会产生两组不同的位移分布。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:107
 #: 624e4e5f80d8411fb05bb34ba3aa95c6
@@ -551,14 +550,14 @@ msgid ""
 "**扰动后出现异常短键（< 1.0 Å）。** 两个相邻原子随机位移方向恰好相反，距离骤"
 "减。降低 `最大距离`（`max_distance`）或增大 `最大输出数量`（`max_num`）后通"
 "过 `FPS Filter` 筛掉短键结构。这是随机扰动的固有局限——它不做碰撞检测。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:173
 #: 46b2159397894cdb98676d9a1011f4df
 msgid ""
 "**分子晶体中分子碎掉了。** `识别有机分子`（`identify_organic`）没开。开启后整"
 "个分子团簇做刚性平移，分子内键长完全保留。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:175
 #: 4e058f98d8e24ca49cc2ce82da463f03
@@ -567,7 +566,7 @@ msgid ""
 "已经学好的线性区内。增大到 0.3~0.5 Å 试试。也可能体系本身的势能面非谐性很强，"
 "随机扰动方向不一定是最需要的——此时用 `Vib Mode Perturb` 替代，沿真实振动模方"
 "向做位移。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/perturb-card.md:177
 #: a73fe629f2ac4af387fc337a452d2f29
@@ -613,7 +612,7 @@ msgstr "Reproducibility"
 msgid ""
 "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复"
 "现；几何不同的输入帧使用不同但稳定的派生随机流。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
 #~ "对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子的随机"

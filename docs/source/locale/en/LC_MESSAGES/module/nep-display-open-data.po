@@ -59,24 +59,22 @@ msgstr ".. image:: ../_static/image/example/display/main.png"
 msgid ""
 "左侧：误差散点主图区（descriptor / energy / force / pressure / potential "
 "energy 等子图）。"
-msgstr ""
-"左侧：误差散点主图区（descriptor / energy / force / pressure / potential "
-"energy 等子图）。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:159
 #: 0e6fc8fa04f54c61bb3ed9e554cc6fde
 msgid "右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。"
-msgstr "右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:160
 #: 61e2069b54934373a3f480cf4f21bb20
 msgid "底部：数据状态行 `Orig / Now / Rm / Sel / Unsel / Rej`。"
-msgstr "底部：数据状态行 `Orig / Now / Rm / Sel / Unsel / Rej`。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:161
 #: 2ad3b8d6cff54b35a610efa7b49f86d8
 msgid "顶部：`Open` / `Save` 分裂按钮（菜单动作会随页面显示动态注入）。"
-msgstr "顶部：`Open` / `Save` 分裂按钮（菜单动作会随页面显示动态注入）。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:16
 #: 613e38bd2852461cac3e060f2d93b940
@@ -134,12 +132,12 @@ msgstr "`Open File...`"
 #: 86fc3539b3654b3396df69a42ba88d99 56cf1b83eace4584a98334940ab50440
 #: 2694957edb33412786572482742e6047
 msgid "是"
-msgstr "是"
+msgstr "Yes"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4204
 #: c49cbaf8272146a7ac0823fdea07cb86
 msgid "选择 `*.xyz`"
-msgstr "选择 `*.xyz`"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4205
 #: 7705b0c7655347fba825f0b582e2f1fa
@@ -168,7 +166,7 @@ msgstr ".. image:: ../_static/image/generated/show_nep_icons/save.svg"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4206
 #: 2b0d0755fcbd4772a9622fc13f739f2d
 msgid "`Export All...` 等导出菜单"
-msgstr "`Export All...` 等导出菜单"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4206
 #: 13f82d0e2e9a4490b8a818e5d0d84f79
@@ -255,22 +253,22 @@ msgstr "5.3 Switching NEP models (drop-down at the right of the path bar)"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10477
 #: e4f3750784d74d7e9a31d3941ac4b102
 msgid "文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。"
-msgstr "文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10478
 #: b96d943a40d5436f88039469ab06db50
 msgid "排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。"
-msgstr "排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10479
 #: 42730edc7f914e2db43940f3351d6c31
 msgid "切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。"
-msgstr "切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10480
 #: 2805ad739ae24561b4038d762525f763
 msgid "状态保持：切换后恢复 `selected` 与 `reject`。"
-msgstr "状态保持：切换后恢复 `selected` 与 `reject`。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10482
 #: ac28b84035fe48378a5ec711cbb95a0b

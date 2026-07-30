@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:3
 #: c09ca1d4cc1849d2adc809fbb90771bf
 msgid "振动模式扰动（Vib Mode Perturb）"
-msgstr ""
+msgstr "Vib Mode Perturb"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:5
 #: 343cba6c8393441bb822016e5efa3081
 msgid "**分类：** 扰动"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:7
 #: 816adecf1ac748d0966d497c15cd6bf1
@@ -51,7 +50,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:11
 #: acd54f4e91644ea7b7a69ae00d5e1688
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:13
 #: a2c1895672764fcb900ef3d419e15287
@@ -67,7 +66,7 @@ msgid ""
 "合， $A$ 是总幅值尺度。开启频率缩放时，高频模态系数会按频率降低；最小频率门槛"
 "用于排除 近零平移/转动伪模。该卡不会自行计算本征模，公式完全依赖输入模态的归"
 "一化约定。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:19
 #: 183258d77c0f497eb4ba696f0805153a
@@ -154,32 +153,32 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:34
 #: 88e580b4e0604624aadbfda3b6a23f2d
 msgid "`振动幅度`（`amplitude`） = `0.05`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:35
 #: 31f1512921d34ca08ab111d93b4dfb22
 msgid "`每个样本的模式数`（`modes_per_sample`） = `3`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:36
 #: 8177a68d3f4d46c18f82f811e90c2eaa
 msgid "`最大输出数量`（`max_num`） = `32`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:37
 #: 48696d3a497a4a18ad239270f9a07b3b
 msgid "`最小频率`（`min_frequency`） = `0.0` （或设一个合理的过滤值）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:38
 #: b5ae2159a66849548c20cf21cc686ebb
 msgid "`分布`（`distribution`） = `0` （高斯分布）"
-msgstr ""
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:39
 #: 2036ba48080f49b89e7185e17fa8a34f
 msgid "`按频率缩放`（`scale_by_frequency`） = `true` （高频模自动衰减）"
-msgstr ""
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:41
 #: 6c5d76d688ed46eb93ff2fd3eedbdcaf
@@ -207,21 +206,21 @@ msgstr ""
 msgid ""
 "检查输出中哪些模态被选中——如果低频模态总是被 `最小频率`（`min_frequency`）排"
 "除，降低此阈值"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:46
 #: ffd15518550c497e9c2207c4dfe0a03a
 msgid ""
 "如果模型对高频光学支仍然不准，增大 `每个样本的模式数`（`modes_per_sample`）"
 "到 4~5，或增大 `最大输出数量`（`max_num`）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:47
 #: 70d2a979457247f1b75877be33233348
 msgid ""
 "如果 `按频率缩放`（`scale_by_frequency`）导致高频模位移太小（几乎看不到变"
 "化），关闭此开关试一批"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:49
 #: b8fb13f8536e486b9ef9204c8a2c3083
@@ -361,7 +360,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:85
 #: 585d58600c4c41e28ff2cf1076e8a989
 msgid "分布（distribution）"
-msgstr ""
+msgstr "distribution"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:87
 #: fde80a36c06a400d83f3bda1c25984e3
@@ -377,7 +376,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:89
 #: 3a7318500aa341cfb8adaf7833f7aa65
 msgid "振动幅度（amplitude）"
-msgstr ""
+msgstr "amplitude"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:91
 #: a841c6f30c30421eb6d828f99d1fc37e
@@ -398,7 +397,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:93
 #: 9e2c857afee5475daa1807f60282b482
 msgid "每个样本的模式数（modes_per_sample）"
-msgstr ""
+msgstr "modes_per_sample"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:95
 #: a5b7f7c26ea54e6783dda0b2585b31fc
@@ -415,7 +414,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:97
 #: 8109e007260346d1b25fbc684801967a
 msgid "最小频率（min_frequency）"
-msgstr ""
+msgstr "min_frequency"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:99
 #: b181556098924e75b30663a662dcf38d
@@ -433,7 +432,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:101
 #: 65f5835baf94416e9af6eb0d69d6546a
 msgid "最大输出数量（max_num）"
-msgstr ""
+msgstr "max_num"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:103
 #: bbb36e2d954840689c16159523eb154a
@@ -448,7 +447,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:105
 #: fb659f2503394b348331d4dca5d79e76
 msgid "按频率缩放（scale_by_frequency）"
-msgstr ""
+msgstr "scale_by_frequency"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:107
 #: d6d53c3a00034146bdaa2f3fb587e0ad
@@ -457,12 +456,12 @@ msgid ""
 "动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频"
 "模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被"
 "过度采样，建议同时降低 `振动幅度`（`amplitude`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:109
 #: dd163ea808354b67bd3ef32ac8fd64c4
 msgid "排除近零频率（exclude_near_zero）"
-msgstr ""
+msgstr "exclude_near_zero"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:111
 #: 715c6d76261847c682c60f56d4a1d825
@@ -470,12 +469,12 @@ msgid ""
 "`bool`，默认 `true`。打开后用 `最小频率`（`min_frequency`）做阈值过滤，排除近"
 "零频模态。一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些\"模态\"做位移"
 "会产生异常大的整体漂移。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:113
 #: 325021f2d8754ee7948db9c339f1d3f5
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:115
 #: 1bd197199d28461a86a2ecbf7336fb9f
@@ -490,13 +489,13 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:117
 #: 1e01705a747246e18921932e46fa9649
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:119
 #: 63173b463ba74105ab9fc883f4c85e0d
 msgid ""
 "`int`，默认 0。随机种子值。仅在 `使用随机种子`（`use_seed`）打开时生效。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:121
 #: f9ba318e70e046a3baa90b5f903458d6
@@ -639,7 +638,7 @@ msgid ""
 "**部分模态始终没被选中。** 这是随机采样的正常现象。`每个样本的模式数`"
 "（`modes_per_sample`）较小时（1~2），样本数不够覆盖所有模态。增大 `最大输出数"
 "量`（`max_num`）或 `每个样本的模式数`（`modes_per_sample`）提高覆盖率。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:194
 #: 9b93d52db11d4d6fa2ccfc1244a5b739
@@ -648,7 +647,7 @@ msgid ""
 "——`1/sqrt(frequency)` 的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，"
 "但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `振动幅度`"
 "（`amplitude`）补偿。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:196
 #: 586712af736448fd8793021252a4f5b6
@@ -657,7 +656,7 @@ msgid ""
 "频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然"
 "后适当降低 `最小频率`（`min_frequency`）或关闭 `排除近零频率`"
 "（`exclude_near_zero`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:198
 #: 4d5d83a38a9148e5b4f1658c9f12f8e1
@@ -679,7 +678,7 @@ msgstr "Reproducibility"
 msgid ""
 "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复"
 "现。模态选择、系数采样均受 seed 控制。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "振动模态扰动（Vib Mode Perturb）"
 #~ msgstr "Vibrational-Mode Perturbation (Vib Mode Perturb)"

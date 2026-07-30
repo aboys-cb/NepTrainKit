@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Crystal Prototype Builder"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:5
 #: b01ef6e7e6cc4bbeb6278f935b9c41cd
 msgid "**分类：** 晶格"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:7
 #: 9841615dd0c64f9ba7753a522d0c1e60
@@ -51,14 +50,14 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:11
 #: 2d95f601c638415f97c21abc8c75ee91
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:13
 #: c6f9ded9309a444ba07bc3b8ac3e424d
 msgid ""
 "每种原型由固定的基胞矩阵 $\\mathbf C_0(a,c/a)$ 和分数坐标集合 $\\{\\mathbf "
 "s_j\\}_{j=1}^{N_0}$ 定义。扩胞重复数为 $(n_a,n_b,n_c)$ 时，"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:17
 #: 8758101bad47470bb2ad3b57e10cf727
@@ -74,7 +73,7 @@ msgid ""
 "`自动扩胞`在 $N'\\le N_{\\max}$ 的约束下选择尽可能利用原子预算、同时形状不过"
 "分失衡的 三轴重复数；`手动重复`直接采用用户指定整数。`hcp`等非立方原型还使用 "
 "$c=a(c/a)$。这张卡按理想模板生成未弛豫结构，不会自动优化晶格常数或内部坐标。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:26
 #: 4c442706816d4cd685eff04594f43b2d
@@ -136,17 +135,17 @@ msgstr "**Parameters:**"
 #: 060bc0d942b347d59605d29f9bd47224
 msgid ""
 "`晶格`选择“面心立方”，`元素`填 `Ni`，`晶格常数范围`填 `[3.52, 3.52, 0.05]`；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:40
 #: 734431254e9f44f48e991a250af81f65
 msgid "开启`自动扩胞`，`最大原子数`填 `256`；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:41
 #: 8c9b14fa19574417858011e24dda7015
 msgid "再开一张同参数但把`晶格`改为“六方密排”的卡。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:43
 #: 88c485a21aa74b30abc3845016c5624e
@@ -182,7 +181,7 @@ msgid ""
 "如果输出原子数远小于 `最大原子数`（`max_atoms`），说明 auto_supercell 找不到"
 "合适的扩胞因子——关掉 `自动扩胞`（`auto_supercell`），手动设 `重复倍数`"
 "（`rep`）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:50
 #: 775d7bdf8e1b4e808d16e91912faae58
@@ -203,9 +202,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:54
 #: 518bb79501dd457798f9f37d0934e5fe
 msgid "需要对比不同晶型的能量（相稳定性）"
-msgstr ""
-"You need to compare the energies of different phases for a phase-stability "
-"study."
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:55
 #: a25ced8ede0642f6bb10b2a386323679
@@ -241,7 +238,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:63
 #: aba38a2510664d3087c12c882731ffe7
 msgid "晶格（lattice）"
-msgstr ""
+msgstr "lattice"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:65
 #: cc818f14761149a48affdb5d063750d6
@@ -326,7 +323,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
 #: d300ba198e7a43669ef14de3a1eb21a6
 msgid "接 `Stacking Fault / GSFE Path`，扫 fcc (111) 面内滑移"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:74
 #: f379312c449142b4ab75f195ead52b7a
@@ -334,12 +331,12 @@ msgid ""
 "`fcc111` 不是带真空的表面 slab；它仍然是周期 cell，只是把原始 fcc 的 (111) 面"
 "转成当前 cell 的 `(001)` 面。这样 `Stacking Fault / GSFE Path` 可以安全地按第"
 "三晶胞方向切开上下两半。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:76
 #: f3a4ec8480364fada0df5eb780f7f2d8
 msgid "元素（element）"
-msgstr ""
+msgstr "element"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:78
 #: 750846314509402990c13ecfaa3d24b2
@@ -347,12 +344,12 @@ msgid ""
 "`str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 "
 "rocksalt），这里只用第一个元素——后续需要用 `Composition Space Sampling` + "
 "`Random Occupancy` 来实现多元素分布。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:80
 #: 45deaf4a622e4490934e457b354ff6de
 msgid "晶格常数 a 范围（a_range）"
-msgstr ""
+msgstr "a_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:82
 #: 9b70076cb3cf4650a6ae996f47ad37c0
@@ -361,12 +358,12 @@ msgid ""
 "格式 `[最小值, 最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个"
 "结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `最大"
 "输出数`（`max_outputs`）控制总量。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:84
 #: 052562d799d0474fa204db9ed00b5708
 msgid "晶格轴比 c/a（covera）"
-msgstr ""
+msgstr "covera"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:86
 #: 0eb627df5bd64a81bdb6fbd11055b067
@@ -378,43 +375,43 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:88
 #: cd58970ff12a40ecb6072bb722bbe99c
 msgid "自动扩胞（auto_supercell）"
-msgstr ""
+msgstr "auto_supercell"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:90
 #: bc4ff5afa58945a0af28154ac8c50631
 msgid ""
 "`bool`，默认 true。勾选后程序自动计算扩胞因子以逼近 `Max Atoms`；不勾选则手动"
 "通过 `重复倍数`（`rep`）指定扩胞倍数。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:92
 #: b0e9222f44ac42339ca6661951dca07b
 msgid "最大原子数（max_atoms）"
-msgstr ""
+msgstr "max_atoms"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:94
 #: 545823895dc5472e8694e3c072150d9d
 msgid ""
 "`int`，默认 512。目标最大原子数，仅 `自动扩胞`（`auto_supercell`）开启时生"
 "效。常规范围 256~512。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:96
 #: c0229354fa41452185901389ef3e1851
 msgid "重复倍数（rep）"
-msgstr ""
+msgstr "rep"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:98
 #: 3c1b99fea93c419d9138715c724239b0
 msgid ""
 "`tuple[int, int, int]`，默认 `(4, 4, 4)`。三个方向的扩胞倍数 `[na, nb, nc]`，"
 "仅 `自动扩胞`（`auto_supercell`）关闭时生效。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:100
 #: 9f78f6b87d25404db7241625981eaeba
 msgid "最大输出数（max_outputs）"
-msgstr ""
+msgstr "max_outputs"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:102
 #: 3892f18be55a4fca8193c2931c91e09b
@@ -506,7 +503,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:160
 #: 2059dadb41ef45c1ba26c519df80dd95
 msgid "fcc111 GSFE 起点（1 个输出，接 Stacking Fault / GSFE Path）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:161
 #: 020e7103f94b448aaecfc21723322175
@@ -544,7 +541,7 @@ msgstr ""
 msgid ""
 "`Crystal Prototype Builder` → `Composition Space Sampling` → `Random "
 "Occupancy`：先生成干净模板，再进行成分修饰"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:182
 #: 99179297e17848ccada567fa5c354e73
@@ -558,7 +555,7 @@ msgstr ""
 msgid ""
 "`Crystal Prototype Builder(fcc111)` → `Stacking Fault / GSFE Path`：先生成 "
 "slab-oriented 周期 cell，再扫 fcc (111) 的 GSFE 路径"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:185
 #: 9794f67764fb41caaa3bd66bb88e7597
@@ -581,7 +578,7 @@ msgid ""
 "**原子数远小于 `最大原子数`（`max_atoms`）。** auto_supercell 的扩胞因子是整"
 "数，可能因为单胞原子数多导致最近整数倍已超过 max_atoms。手动关掉 "
 "auto_supercell 改 `重复倍数`（`rep`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:191
 #: 2e0b09c294214c8f96eff198b62ba963
@@ -599,7 +596,7 @@ msgid ""
 "`(111)` 面不等于当前 cell 的 `(001)` 面，第三晶胞方向也不垂直于这个面。用 "
 "`lattice = \"fcc111\"` 重新生成起点结构，再在层错卡中使用 `plane_hkl = [0, "
 "0, 1]`。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:195
 #: 787b9cf72cb44fa3b52340b0668e3d4a

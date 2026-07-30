@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:3
 #: 7be6fe01cf9f44f9af0e9e2a083df557
 msgid "代表性采样（FPS）（Representative Sampling (FPS)）"
-msgstr ""
+msgstr "Representative Sampling (FPS)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:5
 #: aad2e5fd485a41c8b984aa4bd739a0a1
 msgid "**分类：** 筛选与采样"
-msgstr ""
+msgstr "**Category:** Filtering and sampling"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:7
 #: 4e1cef24bc6e4bb6b2d0337567ffe144
@@ -42,7 +41,7 @@ msgid ""
 "集。需要提供一个 NEP 模型文件（如内置的 `nep89.txt` 或你自己训练的模型）用于"
 "生成描述符。**代表性是相对于这个模型的描述符空间而言的**；换一个 NEP 模型，结"
 "构间距离和最终选择都可能改变。"
-msgstr ""
+msgstr "Perform farthest-point sampling (FPS) using structure-level mean NEP descriptors to select a representative subset from a large structure pool. Provide a NEP model file, such as the bundled `nep89.txt` or a model you trained, to generate descriptors. **Representativeness is relative to this model's descriptor space**; changing the model can change structure distances and the final selection."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:11
 #: 00a035fb9d634db5956bd051657fb8c7
@@ -54,7 +53,7 @@ msgstr "The card provides two sampling strategies:"
 msgid ""
 "`global`：兼容原有行为，对全部结构执行一次全局 FPS；没有已有训练集时固定从输"
 "入第 1 个结构开始；"
-msgstr ""
+msgstr "`global`: preserves the original behavior by running one global FPS over all structures; without an existing training set, it starts from the first input structure;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:14
 #: ec694121fa364bb8b0caa9aa4d18a584
@@ -72,7 +71,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:16
 #: 54e576e5211345518719b871565942d6
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:18
 #: 7959bb9510a64ef4a89ad699f37b8688
@@ -94,7 +93,7 @@ msgid ""
 "述符， $S_t$ 是第 $t$ 步已选集合。`最小距离`要求新代表点到已有集合的最近描述"
 "符距离不低于 阈值；已有训练集会作为初始 $S_0$，使候选优先补训练集尚未覆盖的区"
 "域。"
-msgstr ""
+msgstr "$\\mathbf d_{ia}^{\\mathrm{NEP}}$ is an atomic descriptor, $\\mathbf d_i$ is the structure-level mean descriptor, and $S_t$ is the selected set at step $t$. `Minimum distance` requires the nearest descriptor distance from a new representative to the existing set to be no smaller than the threshold. An existing training set acts as initial $S_0$, so candidates preferentially fill regions not covered by the training set."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:26
 #: 2d4b24b3951a4a0184897f4fea4103e9
@@ -144,14 +143,14 @@ msgstr "**Objective:** Select 200 representative structures."
 msgid ""
 "**参数设置：** `采样策略`选择“全局 FPS”，`描述符 NEP 模型`指向 NEP 模型， `最"
 "多保留结构数`填 `200`，`描述符距离阈值`填 `0.01`。"
-msgstr ""
+msgstr "**Parameters:** set `Sampling strategy` to `Global FPS`, point `Descriptor NEP model` to a NEP model, set `Maximum structures to keep` to `200`, and `Descriptor distance threshold` to `0.01`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:41
 #: 5f6577d1ac334848b3b2e5c22b4b1d8c
 msgid ""
 "**输出：** 最多 200 个结构，以贪心最远点规则扩展描述符空间覆盖。FPS 不保证全"
 "局最优，也不保证关键物性误差一定优于随机抽样。"
-msgstr ""
+msgstr "**Output:** up to 200 structures selected by the greedy farthest-point rule to expand descriptor-space coverage. FPS does not guarantee a global optimum or lower errors for every key property than random sampling."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:43
 #: df8349006cb04b8b86799d41dd1718bc
@@ -212,14 +211,14 @@ msgid ""
 "已有训练集可作为 warm start，卡片会优先选择当前训练集尚未覆盖的区域。"
 "`global` 模式把全部已有结构作为距离起点；`element_set` 模式只比较元素集合相同"
 "的已有结构。已有训练集不计入 `最多保留结构数`（`n_samples`）输出数量。"
-msgstr ""
+msgstr "An existing training set can be used as a warm start, so the card prioritizes regions not covered by it. `global` uses all existing structures as distance anchors; `element_set` compares only existing structures with the same element set. Existing training structures do not count toward the output limit `Maximum structures to keep` (`n_samples`)."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:55
 #: c33522998b6f40ff8fc1baa3466211c6
 msgid ""
 "这里“元素集合”只看出现过哪些元素，不看化学计量比。例如 H₂O 和 H₂O₂ 都属于 "
 "`{H, O}` 组。"
-msgstr ""
+msgstr "Here, an `element set` records only which elements appear, not their stoichiometric ratios. For example, H₂O and H₂O₂ both belong to the `{H, O}` group."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:57
 #: 48c5bd31cae24147872aec26251cc731
@@ -282,7 +281,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:71
 #: bbccd9e5708846ec9bb7e84894f37c4d
 msgid "描述符 NEP 模型（nep_path）"
-msgstr ""
+msgstr "nep_path"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:73
 #: eccad75c3dc34807a117c2a3ebad7b75
@@ -290,53 +289,53 @@ msgid ""
 "`str`。指向用于生成 NEP 描述符的模型文件，界面默认使用内置 `nep89.txt`。路径"
 "为空或文件不存在时卡片直接报错。内置模型便于快速筛选；正式数据选择更适合使用"
 "覆盖候选化学体系和局域环境的模型。"
-msgstr ""
+msgstr "`str`. Path to the model used to generate NEP descriptors; the UI defaults to the bundled `nep89.txt`. An empty or missing path fails immediately. The bundled model is convenient for quick screening; for production data, use a model covering the candidate chemistry and local environments."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:75
 #: d7ba8f66b3014f71a1f6c5d3b9f0a0cb
 msgid "最多保留结构数（n_samples）"
-msgstr ""
+msgstr "n_samples"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:77
 #: 993cfd61e43c4cc6baf5260bf23db879
 msgid ""
 "`int`，默认 100。FPS 过滤后保留结构数的上限。这是输出数量，不是上游生成数量。"
 "若候选数更少，最多保留全部候选；若距离阈值提前触发，实际输出也会少于该值。"
-msgstr ""
+msgstr "`int`, default 100. Maximum number of structures retained after FPS. This is an output limit, not the upstream generation count. Fewer candidates means fewer outputs; an active distance threshold can also stop earlier."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:79
 #: 30b7b4814e79447b8868c5ff5e53df8d
 msgid "描述符距离阈值（min_distance）"
-msgstr ""
+msgstr "min_distance"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:81
 #: d0cdf8b3df2b426bb5293aa8687b26e5
 msgid ""
 "`float`，默认 0。描述符空间中的最小距离阈值，没有物理单位，而且数值尺度依赖 "
 "NEP 模型。"
-msgstr ""
+msgstr "`float`, default 0. Minimum distance threshold in descriptor space. It has no physical unit and its scale depends on the NEP model."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:83
 #: 77b84c808f834fb5a448714484bf9a4e
 msgid "`0`：关闭距离提前停止，按数量上限选择；"
-msgstr ""
+msgstr "`0`: disable early stopping by distance and select up to the count limit;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:84
 #: a23cce6aaebf4816a58f0afbbfbdc91c
 msgid "`>0`：下一个最远候选与已覆盖集合的距离低于该值时提前停止。"
-msgstr ""
+msgstr "`>0`: stop early when the next farthest candidate is closer than this value to the covered set."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:86
 #: a0a6b6e9389b492c88cbeba2ec381708
 msgid ""
 "值越大去重越激进，也越可能选不够目标数量。不要把某个模型上合适的阈值直接照搬"
 "到另一个模型。"
-msgstr ""
+msgstr "Larger values deduplicate more aggressively and make it more likely that the target count will not be reached. Do not copy a threshold that works for one model directly to another."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:88
 #: f8c3d3aacacb4fbd80cddcd8247332bc
 msgid "计算后端（backend）"
-msgstr ""
+msgstr "backend"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:90
 #: fc9919845c7447e6907ef5005f74048b
@@ -350,7 +349,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:92
 #: 54ca7ebb85db4a5ab5f1671170d5bd23
 msgid "单批最大原子数（chunk_max_atoms）"
-msgstr ""
+msgstr "chunk_max_atoms"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:94
 #: 94ca58780b7a4bbfa11c2847c5d4accb
@@ -367,7 +366,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:96
 #: f6afe47a336542848cc29bf9eb1f7996
 msgid "采样方式（strategy）"
-msgstr ""
+msgstr "strategy"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:98
 #: 3a929fffcb3c4151b170cd5c6b75d830
@@ -392,7 +391,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
 #: 5c16b5e95673481299dee4b122c6f42b
 msgid "兼容旧流程；全部结构共享一个预算，没有 warm start 时从输入索引 0 开始"
-msgstr ""
+msgstr "Compatible with the legacy workflow; all structures share one budget, and without a warm start the input index 0 is used first"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
 #: 833f4e86f02a4b8ebb1bb822b06e22b0
@@ -417,7 +416,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:107
 #: d7503227c0a240d99a8e373dabc1d0e4
 msgid "已有数据集路径（existing_dataset_path）"
-msgstr ""
+msgstr "existing_dataset_path"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:109
 #: 7d0f4797611441bf887c05a24f42db14
@@ -425,7 +424,7 @@ msgid ""
 "`str`，默认空字符串。指向已有 `.xyz` 或 `.extxyz` 训练集，作为描述符覆盖的 "
 "warm start。`global` 模式与全部已有结构比较；`element_set` 只与同元素集合结构"
 "比较。路径不存在、无法读取或不含结构时明确报错。"
-msgstr ""
+msgstr "`str`, default empty. Path to an existing `.xyz` or `.extxyz` training set used as a descriptor-coverage warm start. `global` compares with all existing structures; `element_set` compares only structures with the same element set. Missing, unreadable, or empty paths fail explicitly."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:111
 #: 46f7c16bd68e4b7397224d142fb62275
@@ -488,7 +487,7 @@ msgstr "Recommended combinations"
 msgid ""
 "任意生成链 → `Geometry Filter` → `FPS Filter`：先去掉明显坏结构，再做代表性筛"
 "选"
-msgstr ""
+msgstr "Any generation chain → `Geometry Filter` → `FPS Filter`: remove obvious bad structures first, then perform representative selection."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:150
 #: ecd84841bda440beb6e466bfde52add5
@@ -512,21 +511,21 @@ msgstr "Common questions"
 msgid ""
 "**卡片报错\"NEP file does not exist\"。** `描述符 NEP 模型`（`nep_path`）指向"
 "的文件不存在。确认路径正确。"
-msgstr ""
+msgstr "**The card reports \"NEP file does not exist\".** The file pointed to by `Descriptor NEP model` (`nep_path`) is missing. Check the path."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:157
 #: 823962821749431bbf099d7305ec95e7
 msgid ""
 "**输出数量远小于目标上限。** 描述符距离阈值太严，无法选出足够多满足距离约束的"
 "结构。降低该阈值，或设为 0 只按数量停止。"
-msgstr ""
+msgstr "**The output count is far below the limit.** The descriptor distance threshold is too strict to select enough structures satisfying the distance constraint. Lower it or set it to 0 to stop only by count."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:159
 #: 6c86907b27ab4f62946a89f4d5d6e430
 msgid ""
 "**平衡模式提示目标数量不足。** `最多保留结构数`（`n_samples`）小于元素集合组"
 "数。提高目标数量，或者在上游移除本轮不需要的化学体系。"
-msgstr ""
+msgstr "**Balanced mode reports too few target structures.** `Maximum structures to keep` (`n_samples`) is smaller than the number of element-set groups. Increase the target or remove unnecessary chemistries upstream."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:161
 #: befdec2753b346eca6a0d5a35d4720dd
@@ -554,7 +553,7 @@ msgid ""
 "**描述符计算很慢。** 大批量时描述符计算可能耗时。`单批最大原子数`"
 "（`chunk_max_atoms`）控制单批总原子数；它不是最终 FPS 的分块采样参数，减小它"
 "只降低计算峰值内存，不会改变选择算法。"
-msgstr ""
+msgstr "**Descriptor calculation is slow.** Descriptor generation can take time for large batches. `Maximum atoms per chunk` (`chunk_max_atoms`) controls the total atoms in one batch; it is not a chunked-sampling parameter for FPS. Reducing it lowers peak memory only and does not change the selection algorithm."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:167
 #: b6f467b65d0b47e882e0474ac51f2925

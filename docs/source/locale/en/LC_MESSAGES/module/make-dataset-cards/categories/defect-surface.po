@@ -27,15 +27,11 @@ msgstr "Defects and surfaces"
 msgid ""
 "这组卡片改变表面边界或原子数，也包含显式层错路径。表面生成、删位、插入原子和"
 "层间滑移 是不同操作；需要组合时，按“先构造边界，再引入局部缺陷”的顺序执行。"
-msgstr ""
-"这组卡片改变表面边界或原子数，也包含显式层错路径。表面生成、删位、插入原子和"
-"层间滑移 是不同操作；需要组合时，按“先构造边界，再引入局部缺陷”的顺序执行。"
+msgstr "These cards change surface boundaries or atom counts and include explicit stacking-fault paths. Slab construction, vacancy creation, atom insertion, and interlayer sliding are different operations; when combining them, build the boundary first and then add local defects."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/defect-surface.md:16
 #: 1ab1fee89ad2459f95a5ca37ff4ead46
 msgid ""
 "旧版 `Stacking Fault` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用 "
 "`Stacking Fault / GSFE Path`。"
-msgstr ""
-"旧版 `Stacking Fault` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用 "
-"`Stacking Fault / GSFE Path`。"
+msgstr "The legacy `Stacking Fault` card is hidden from the Add menu and retained only for historical JSON compatibility. Use `Stacking Fault / GSFE Path` for new tasks."

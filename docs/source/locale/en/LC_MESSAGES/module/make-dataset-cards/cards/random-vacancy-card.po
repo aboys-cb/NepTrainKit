@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Random Vacancy"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:5
 #: 16334f25d15242c4938b72c391cb28a5
 msgid "**分类：** 缺陷"
-msgstr ""
+msgstr "**Category:** Defects"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:7
 #: 7c2e21e8ba1e48b094a5a3cc84918956
@@ -41,7 +40,7 @@ msgid ""
 "按规则从指定元素的候选位点中均匀随机选择原子并删除。每条规则控制“删除哪种元"
 "素、删除多少个、是否限制在已有 `group` 标签内”；没有被删除的原子坐标、晶胞和 "
 "PBC 保持不变。"
-msgstr ""
+msgstr "Uniformly sample and delete atoms from candidate sites of specified elements. Each rule controls which element to delete, how many atoms to delete, and whether to restrict sites to an existing `group`; coordinates, cell, and PBC of retained atoms remain unchanged."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:11
 #: 3a12932990634361ae50dd83c2ba3c5b
@@ -53,7 +52,7 @@ msgstr "**How it differs from `Vacancy Defect Generation`:**"
 msgid ""
 "`Random Vacancy`：规则驱动，按元素和已有 group 限定候选池，再随机选择具体位"
 "点，适合定向研究某类空位缺陷"
-msgstr ""
+msgstr "`Random Vacancy` is rule-driven: it restricts the candidate pool by element and existing groups, then samples specific sites. Use it to study a targeted vacancy-defect family."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:13
 #: a8712fb2cfda4582a32354a4888394d1
@@ -70,12 +69,12 @@ msgid ""
 "本卡不会识别表面、体相或化学子晶格。`group` 是输入结构中已经存在的 "
 "`atoms.arrays[\"group\"]` 标签；如果规则填写了 group 而输入没有对应数组或标"
 "签，卡片会明确报错，不会退化成全元素删位。"
-msgstr ""
+msgstr "This card does not infer surfaces, bulk regions, or chemical sublattices. `group` refers to an existing `atoms.arrays[\"group\"]` label; if a rule specifies a group that is absent from the input, the card fails explicitly instead of falling back to deletion across all elements."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:17
 #: 124628fe23d24ebbbdfcd25bcb197d8e
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and formulas"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:19
 #: 1efc7af8d0974c34abe361de8f8206e4
@@ -83,7 +82,7 @@ msgid ""
 "每条规则先用元素和可选 group 得到候选集合 $\\mathcal I_r$。`固定数量`从中无放"
 "回抽取 指定的 $n_r$ 个位点；`随机数量`先在整数区间 $[n_{r,\\min},n_{r,\\max}]"
 "$ 抽取 $n_r$，再抽位点。单条规则理论上有"
-msgstr ""
+msgstr "Each rule first builds a candidate set $\\mathcal I_r$ from the element and optional group. `Fixed count` samples the specified $n_r$ sites without replacement; `Random count` first samples $n_r$ from the integer interval $[n_{r,\\min},n_{r,\\max}]$, then samples the sites. A single rule has, in principle,"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:23
 #: 7fcf4b7ab70e43fd8c7f4e39c991b309
@@ -98,7 +97,7 @@ msgid ""
 "种删除组合。多条规则依次应用并检查重复结果；若请求数量超过候选位点数会直接报"
 "错，而不是 暗中降低空位数。固定种子会结合输入结构派生随机路径，使同一结构和参"
 "数可复现。"
-msgstr ""
+msgstr "deletion combinations. Multiple rules are applied in order and duplicate results are checked. If the request exceeds the available candidate sites, the card fails instead of silently reducing the vacancy count. A fixed seed is combined with the input structure to derive the random path, making identical structure-and-parameter runs reproducible."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:30
 #: 0c519226d47c4eb4ba484386622bc9ba
@@ -138,7 +137,7 @@ msgstr ""
 msgid ""
 "**输入：** 一个 LiCoO2 的 slab 结构，并且上游建模或导入流程已经写入 "
 "`surface` / `bulk` group 标签"
-msgstr ""
+msgstr "**Input:** a LiCoO2 slab whose upstream modeling or import workflow has written `surface` / `bulk` group labels"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:40
 #: 7bfad14899f045f281d3e7b9cc3082bd
@@ -159,24 +158,24 @@ msgstr "**Parameters:**"
 msgid ""
 "`规则`（`rules`）：`[{\"element\":\"O\",\"count_mode\":\"random\",\"count\":"
 "[1,3],\"group\":[\"surface\"]}]`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:44
 #: a3de091610184180ab263f59465fb87b
 msgid "`Maximum Outputs per Input`：`20`"
-msgstr ""
+msgstr "`Maximum Outputs per Input`: `20`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:45
 #: f544235bc0624cabb8de5df7a7387a51
 msgid "`Use Seed`：勾选，`随机种子`（`seed`）：`[42]`"
-msgstr ""
+msgstr "Enable `Use Seed`; set `Random Seed` (`seed`) to `[42]`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:47
 #: 23caf6053e374aaa938b4501d3598dc7
 msgid ""
 "**输出：** 最多 20 个不重复的空位结构，每个结构中 1~3 个表面氧被删除，带 "
 "`Vac(n=...)` 标签。若可用位点组合不足，实际输出数会少于 20。"
-msgstr ""
+msgstr "**Output:** up to 20 unique vacancy structures, each deleting 1–3 surface oxygen atoms and carrying a `Vac(n=...)` label. If too few site combinations are available, fewer than 20 outputs are produced."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:49
 #: 3b262dbf0d05432bbe39fba3203ad543
@@ -218,7 +217,7 @@ msgstr ""
 msgid ""
 "删除操作不会自动弛豫空位近邻；进入训练集前应做几何检查，并按任务需要进行 DFT "
 "弛豫或单点计算"
-msgstr ""
+msgstr "Deletion does not automatically relax atoms neighboring a vacancy. Perform a geometry check before adding outputs to a training set and run DFT relaxation or single-point calculations as required."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:56
 #: 42d0a59ae5054022b4d7c7ea9a307552
@@ -273,14 +272,14 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:69
 #: 11b8a51ec48f4b51b1c692bbd43e80ab
 msgid "规则（rules）"
-msgstr ""
+msgstr "rules"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:71
 #: f6f9613fbe9b4543923b0060285074ee
 msgid ""
 "`list[dict[str, Any]]`，默认空列表。界面默认提供一条空规则；必须填写元素后才"
 "能运行。"
-msgstr ""
+msgstr "`list[dict[str, Any]]`, default empty. The interface provides one blank rule by default; an element must be entered before running."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:73
 #: 2b883fd455b646829dcbba39cd70eb02
@@ -305,12 +304,12 @@ msgstr "Description"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: 2ac051c8b1834278b033bb7733966964
 msgid "`element`"
-msgstr ""
+msgstr "`element`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: 4f53c80fe60942d2ab19e9a7a8dffe5c 899c949787454f16ad29698d42c9a7fd
 msgid "string"
-msgstr ""
+msgstr "string"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: db9073144b7c4eadbb1e7aa395c7aeba
@@ -320,19 +319,19 @@ msgstr "Element to remove, such as `O`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: aa6e8493c7024776b84714dbb99f935c
 msgid "`count_mode`"
-msgstr ""
+msgstr "`count_mode`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: daf0c50024124987af90e21f7a53cba4
 msgid ""
 "`fixed` 精确删除 `count[0]` 个原子；`random` 在闭区间 `count[0]..count[1]` 中"
 "随机"
-msgstr ""
+msgstr "`fixed` deletes exactly `count[0]` atoms; `random` samples uniformly from the inclusive interval `count[0]..count[1]`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: 0ff2ff16997646399a03fdab575cabf5
 msgid "`count`"
-msgstr ""
+msgstr "`count`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: 76743fab3ce74f2dab6f19e569f360c8
@@ -347,7 +346,7 @@ msgstr "Use `[n,n]` for a fixed count and `[min,max]` for a range"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: b1241d2e328549fb9c3ae6c2c10d97fd
 msgid "`group`"
-msgstr ""
+msgstr "`group`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:0
 #: 5d8b0a1d056844c597725763b5a202d6
@@ -359,14 +358,14 @@ msgstr "string / list (optional)"
 msgid ""
 "限制只删除输入结构已有 group 标签内的原子。界面里可写 "
 "`surface_top,surface_bottom`"
-msgstr ""
+msgstr "Restrict deletion to atoms carrying existing group labels in the input. The interface accepts values such as `surface_top,surface_bottom`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:82
 #: ef12e5c2052f44e9a20be03333701f62
 msgid ""
 "固定数量必须至少为 1；随机范围允许最小值为 0，以便把原始结构作为一个可能端"
 "点，但最大值必须至少为 1。请求上限不能超过候选原子数，也不能把结构全部删空。"
-msgstr ""
+msgstr "A fixed count must be at least 1. A random range may start at 0 so the original structure is one possible endpoint, but its maximum must be at least 1. The requested count cannot exceed the candidate atom count or delete every atom."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:84
 #: 5d865a59fd3640899bd46e513370c878
@@ -375,19 +374,19 @@ msgid ""
 "的原子。随机范围偶尔抽到不可行组合时，程序会丢弃这一次尝试并继续采样，不会因"
 "为一个随机分支终止整张卡片；如果所有尝试都无法留下至少一个原子，才会明确报"
 "错。"
-msgstr ""
+msgstr "Rules run in order. If two candidate pools overlap, the second rule sees only atoms left after the first deletion. When a random range occasionally produces an infeasible combination, that attempt is discarded and sampling continues; the card fails only if every attempt would remove all atoms."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:86
 #: 3d0f1f9408df47fb821c544dfe20ef06
 msgid "最大结构数（max_structures）"
-msgstr ""
+msgstr "max_structures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:88
 #: 8cacd468e11744bfa310862e569fadd5
 msgid ""
 "`int`，默认 1。每个输入帧最多保留多少个不同的空位版本。卡片按删除位点集合去"
 "重，因此可用组合不足时输出会少于该值。"
-msgstr ""
+msgstr "`int`, default 1. Maximum distinct vacancy variants retained per input frame. Outputs are deduplicated by deletion-site sets, so fewer are produced when too few combinations exist."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:90
 #: 062f7142deac48a2a4edfd5cbe9b187d
@@ -402,19 +401,19 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:92
 #: 05a811209984497495dfe6d24b94f255
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:94
 #: 8e0b6dfe58ec4d0783bc2a381e379653
 msgid ""
 "`bool`，默认 false。打开后同一结构内容 + 同一参数 + 同一 seed 会得到完全相同"
 "的删除结果。不同输入结构会派生不同随机序列，改变数据集顺序不会改变单帧结果。"
-msgstr ""
+msgstr "`bool`, default false. When enabled, identical structure content, parameters, and seed produce exactly the same deletions. Different input structures derive different random sequences, so reordering the dataset does not change a frame's result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:96
 #: e55da6517dd448ca863ed92167fc32fe
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:98
 #: 1c6c1aa33afc4ac59d32eecb44366f36
@@ -510,14 +509,14 @@ msgstr "Recommended combinations"
 msgid ""
 "`Group Label` → `Random Vacancy`：可按坐标规则生成 A/B 两组后定向删位；"
 "`Group Label` 不会自动识别 surface/bulk 或化学子晶格"
-msgstr ""
+msgstr "`Group Label` → `Random Vacancy`: create A/B groups by coordinate rules and delete sites selectively; `Group Label` does not infer surface/bulk regions or chemical sublattices."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:156
 #: f213c41c73dc4a09984092b0daf48f4c
 msgid ""
 "已有 `surface` / `bulk` / `sublattice` 标签 → `Random Vacancy`：直接填写已有"
 "标签定向删位"
-msgstr ""
+msgstr "Existing `surface` / `bulk` / `sublattice` labels → `Random Vacancy`: enter the existing labels to target deletion directly."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:157
 #: ee3502527fea4afe9a5d0dc50cb455f3
@@ -543,21 +542,21 @@ msgstr "Common questions"
 #: 68e3d7cceabd4491aee27b4316de0f7b
 msgid ""
 "**提示“需要填写元素”。** 默认规则仍为空；填写要删除的元素符号，例如 `O`。"
-msgstr ""
+msgstr "**The card says an element is required.** The default rule is still empty; enter the symbol of the element to delete, such as `O`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:164
 #: b34b7f438f0645c486710a5826c1e051
 msgid ""
 "**提示输入没有 group 或没有匹配原子。** 本卡不会猜测或忽略 group。先确认输入"
 "结构确实带有对应 `atoms.arrays[\"group\"]` 标签，或清空规则中的 group 限制。"
-msgstr ""
+msgstr "**The input has no group or no matching atoms.** This card does not guess or ignore groups. Confirm that the input contains the corresponding `atoms.arrays[\"group\"]` labels, or clear the group restriction in the rule."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:166
 #: 8721fe1b493846a1ac39756873966645
 msgid ""
 "**生成数少于设置值。** 输出会按删除位点集合去重。例如只有一个 O 位点且固定删"
 "除 1 个时，不论上限设置多大都只有一种结构。"
-msgstr ""
+msgstr "**Fewer structures were generated than requested.** Outputs are deduplicated by deletion-site sets. For example, one O site with a fixed deletion count of 1 produces only one structure regardless of the configured limit."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:168
 #: f4a0450f6d9b48ec9b32b8b70a422828
@@ -565,7 +564,7 @@ msgid ""
 "**删位后局部结构不合理。** 本卡只删除原子，不移动剩余原子。在小胞中删除过多原"
 "子会产生不合理化学计量和强缺陷相互作用；应先扩胞，并在下游进行几何检查或弛"
 "豫。"
-msgstr ""
+msgstr "**The local structure is unreasonable after deletion.** This card only deletes atoms and does not move the remainder. Deleting too many atoms in a small cell can create unreasonable stoichiometry and strong defect interactions; expand the cell first, then perform downstream geometry checks or relaxation."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:170
 #: 1d7e485594554520abf9107f0e3641fe
@@ -574,7 +573,7 @@ msgid ""
 "选池会变小。随机模式会跳过偶发的不可行组合；如果持续提示无法生成非空结构，说"
 "明规则的固定数量或最小删除数已经互相冲突，应减少删除数、拆开 group，或先扩"
 "胞。"
-msgstr ""
+msgstr "**Multiple rules interact unexpectedly.** Rules run in order, so deleting many atoms with one rule shrinks the next rule's candidate pool. Random mode skips occasional infeasible combinations; if no non-empty structure can be generated repeatedly, the fixed counts or minimum deletions conflict. Reduce the deletion counts, split groups, or expand the cell first."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-vacancy-card.md:172
 #: 42540a8be9404326a7143aad5db14cf9
@@ -597,7 +596,7 @@ msgid ""
 "勾选 `使用随机种子`（`use_seed`）并固定 `随机种子`（`seed`）后，随机序列由 "
 "seed 与单帧结构内容共同决定：同一结构可复现，不同结构不会机械复用同一组原子编"
 "号，数据集重新排序也不改变单帧结果。"
-msgstr ""
+msgstr "When `Use Seed` (`use_seed`) is enabled with a fixed `Seed` (`seed`), the random sequence is determined by the seed and each frame's structure content: the same structure is reproducible, different structures do not mechanically reuse the same atom indices, and reordering the dataset does not change a frame's result."
 
 #~ msgid ""
 #~ "按规则表对指定元素原子做删除操作，生成可控的空位缺陷结构。每条规则精确控制"

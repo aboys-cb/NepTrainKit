@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -160,7 +159,7 @@ msgid ""
 "-> GPUMD 训练\n"
 "-> NEP Dataset Display 回看\n"
 "-> Data Management 记录这一轮\n"
-msgstr ""
+msgstr "Generate a dataset and candidate structures\n-> clean them in NEP Dataset Display\n-> DFT\n-> train with GPUMD\n-> review in NEP Dataset Display\n-> record the iteration in Data Management\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:52
 #: 4356c896487d44718d78433de086aad9

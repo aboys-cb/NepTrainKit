@@ -1,1305 +1,1239 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:1
-#: 55f1db2be49a45499b3485aeb537a6d1
+#: ../../source/module/nep-display-filter.md:1 d5fd3d2ac75e46a0a7777a37593d0262
 msgid "筛选栏：按标签、元素和表达式找结构"
-msgstr "筛选栏：按标签、元素和表达式找结构"
+msgstr "Filter bar: find structures by tags, elements, and expressions"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:3
-#: ffeaf486c7fb4b2182b53ba352a33a7c
+#: ../../source/module/nep-display-filter.md:3 06349dbb12154ac686304e37818c06d7
 msgid ""
-"这一页对应结构筛选栏。简单条件优先使用配置类型、化学式和元素筛选；需要组合数"
-"值条件时， 再使用 `expression`。筛选只改变匹配或选择状态，不会自动删除结构。"
+"这一页对应结构筛选栏。简单条件优先使用配置类型、化学式和元素筛选；需要组合数值条件时， 再使用 "
+"`expression`。筛选只改变匹配或选择状态，不会自动删除结构。"
 msgstr ""
-"这一页对应结构筛选栏。简单条件优先使用配置类型、化学式和元素筛选；需要组合数"
-"值条件时， 再使用 `expression`。筛选只改变匹配或选择状态，不会自动删除结构。"
+"This page covers the structure filter bar. Use configuration type, "
+"formula, and element filters for simple conditions; use `expression` when"
+" numeric conditions must be combined. Filtering changes the match or "
+"selection state only; it never deletes structures automatically."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:5
-#: 8ce84e8bd9cb46349638bd4d8d7a1234
+#: ../../source/module/nep-display-filter.md:5 127999abb62341739da11906a1005b4b
 msgid "本页目录"
-msgstr "本页目录"
+msgstr "On this page"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11198
-#: 88239d317b684884acc0f4a84f902895
+#: ../../source/module/nep-dataset-display-content.md:11198
+#: 1ecc32f00f664114a5dfa3b8ce9ef487
 msgid "6. 结构筛选栏"
-msgstr "6. 结构筛选栏"
+msgstr "6. Structure filter bar"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11200
-#: 07021553c75c4a12904fdb8acca8eae1
-msgid ""
-"结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；"
-"经常重复使用的组合可以保存为“常用筛选”。"
+#: ../../source/module/nep-dataset-display-content.md:11200
+#: 48740c407c40448ca5a55c776ef5c137
+msgid "结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。"
 msgstr ""
-"结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；"
-"经常重复使用的组合可以保存为“常用筛选”。"
+"The filter bar can combine configuration type, formula, element, and "
+"custom-expression filters. Conditions are intersected by default; "
+"combinations used often can be saved as “saved filters”."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11202
-#: 20cc9984c57d44eaa9b2072f3e2fffed
-msgid ""
-"![结构筛选栏与条件编辑器](../_static/image/generated/show_nep_reference/"
-"g_structure_filter.png)"
-msgstr ""
-"![结构筛选栏与条件编辑器](../_static/image/generated/show_nep_reference/"
-"g_structure_filter.png)"
+#: ../../source/module/nep-dataset-display-content.md:11202
+#: 192c81314287421cadd64d11f201a045
+msgid "![结构筛选栏与条件编辑器](../_static/image/generated/show_nep_reference/g_structure_filter.png)"
+msgstr "See the figure for the corresponding control and result."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11202
-#: e603703ee1204716aed5734cd96e4712
+#: ../../source/module/nep-dataset-display-content.md:11202
+#: d700de5312574a9c959324ebc9e9d7a1
 msgid "结构筛选栏与条件编辑器"
-msgstr "结构筛选栏与条件编辑器"
+msgstr "Structure filter bar and condition editor"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11202
-#: e603703ee1204716aed5734cd96e4712
+#: ../../source/module/nep-dataset-display-content.md:11202
+#: d700de5312574a9c959324ebc9e9d7a1
 msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"g_structure_filter.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_structure_filter.png"
 msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"g_structure_filter.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_structure_filter.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11204
-#: ecb67a1abbd94241ae5422c38532a094
+#: ../../source/module/nep-dataset-display-content.md:11204
+#: 173f53194a35483994a63b054b5bf777
 msgid "6.1 基本流程"
-msgstr "6.1 基本流程"
+msgstr "6.1 Basic workflow"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11206
-#: 64c9567a342a42b290409d08a21d8560
+#: ../../source/module/nep-dataset-display-content.md:11206
+#: 7fbca2e2ea764e53b9f84ef93120c292
 msgid "点击“筛选条件”打开编辑器。空筛选会自动出现第一行。"
-msgstr "点击“筛选条件”打开编辑器。空筛选会自动出现第一行。"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11207
-#: 360955c71afa43d2afe9858c1f910767
-msgid ""
-"在左下角点击“+”继续添加条件，例如“配置类型包含 `surface`”“必须包含 `Fe,O`”“不"
-"得包含 `H`”。"
 msgstr ""
-"在左下角点击“+”继续添加条件，例如“配置类型包含 `surface`”“必须包含 `Fe,O`”“不"
-"得包含 `H`”。"
+"Click `Filter conditions` to open the editor. An empty filter "
+"automatically starts with the first row."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11208
-#: cef077e421414b4c859f33d845de24e9
+#: ../../source/module/nep-dataset-display-content.md:11207
+#: 474e2465ef50412cabb1cc82df281e1d
+msgid "在左下角点击“+”继续添加条件，例如“配置类型包含 `surface`”“必须包含 `Fe,O`”“不得包含 `H`”。"
+msgstr ""
+"Click `+` in the lower-left corner to add conditions, such as "
+"`configuration type contains surface`, `must contain Fe,O`, or `must not "
+"contain H`."
+
+#: ../../source/module/nep-dataset-display-content.md:11208
+#: 2f83dbc3c9174c34a603083826f61e25
 msgid "在右上角选择“满足全部条件（AND）”或“满足任一条件（OR）”。"
-msgstr "在右上角选择“满足全部条件（AND）”或“满足任一条件（OR）”。"
+msgstr ""
+"In the upper-right corner, choose whether all conditions (AND) or any "
+"condition (OR) must match."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11209
-#: eed26178735d41c5ab984f228cd0cf03
+#: ../../source/module/nep-dataset-display-content.md:11209
+#: 504c99f87c854089a78647b39566e704
 msgid "点击“完成并预览”。图中的匹配高亮只用于预览，不会改变当前选择。"
-msgstr "点击“完成并预览”。图中的匹配高亮只用于预览，不会改变当前选择。"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11210
-#: db3dd19625cd474397ad1a44c657a56d
-msgid ""
-"确认匹配数量后，在“应用结果”中选择“替换当前选择”“加入当前选择”或“从当前选择中"
-"移除”。"
 msgstr ""
-"确认匹配数量后，在“应用结果”中选择“替换当前选择”“加入当前选择”或“从当前选择中"
-"移除”。"
+"Click `Finish and preview`. Highlighted matches are for preview only and "
+"do not change the current selection."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11212
-#: 56c90b7c9a8d44238c43a6edcda31817
-msgid ""
-"修改条件后，旧匹配结果会显示为“结果已过期”。重新预览前不能继续应用旧结果。"
+#: ../../source/module/nep-dataset-display-content.md:11210
+#: 0979608461e94d92838d3df35bc913d7
+msgid "确认匹配数量后，在“应用结果”中选择“替换当前选择”“加入当前选择”或“从当前选择中移除”。"
 msgstr ""
-"修改条件后，旧匹配结果会显示为“结果已过期”。重新预览前不能继续应用旧结果。"
+"After checking the match count, use `Apply result` to replace the current"
+" selection, add to it, or remove matches from it."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11214
-#: 21d27f23d3e64ad0aecfc932cb28709d
-msgid ""
-"编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**。清空"
-"选择位于“应用结果”菜单中。"
-msgstr ""
-"编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**。清空"
-"选择位于“应用结果”菜单中。"
+#: ../../source/module/nep-dataset-display-content.md:11212
+#: dadf7cbfff184a6fbd26037e6a6083f4
+msgid "修改条件后，旧匹配结果会显示为“结果已过期”。重新预览前不能继续应用旧结果。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11216
-#: 50ef5f71ded840c990ba90578be0183f
+#: ../../source/module/nep-dataset-display-content.md:11214
+#: 20f34463fa5d4e8da6b267a679f8c813
+msgid "编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**。清空选择位于“应用结果”菜单中。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:11216
+#: 85254d2cc5214b9f97b5520eb829f0b2
 msgid "6.2 条件含义"
-msgstr "6.2 条件含义"
+msgstr "6.2 Condition semantics"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 5425f7e8564c45518fb59f6f283ea72e
+#: ../../source/module/nep-display-filter.md:11
+#: 3b2ac090b87047dfb32b2109bc86055f
 msgid "条件"
-msgstr "条件"
+msgstr "Condition"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: c505d1df9bf44fb7a7e2722255d44969 c2ca7164a8c547c8a337bcb10e813473
-#: ee19abed9eed4c0395ccd880624004bf
+#: ../../source/module/nep-display-filter.md:11
+#: 556fdf38e4d8487abb048d36e13c0974 751aaafaeee649bfa87a4f5739e0d717
+#: 95c04336909c4ea4885ffaa4d9ad068c
 msgid "含义"
-msgstr "含义"
+msgstr "Meaning"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 576cf702fcfd4c3a92bf2ac4fa39a02c 24d7f3aa1cfb4fa4bade9917eef5e322
+#: ../../source/module/nep-display-filter.md:11
+#: de68f034ddff41e0ab32cc557ad4e6e8 f650f37d4bc6480ca49f73265e619e2f
 msgid "示例"
-msgstr "示例"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 1ea7042f227d40e0bf7cf51b1c426e35
+#: ../../source/module/nep-display-filter.md:11
+#: 1999b7aa733c4ea2ba38dba810324acb
 msgid "配置类型"
-msgstr "配置类型"
+msgstr "Configuration type"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: c006faea72484c6dabf0f77473652b73
+#: ../../source/module/nep-display-filter.md:11
+#: dd8d8af420ca456abd4b536549f0e65a
 msgid "包含、完全等于、开头、结尾或正则匹配"
-msgstr "包含、完全等于、开头、结尾或正则匹配"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: e09d7e5746be4544afe95d32228e388c
+#: ../../source/module/nep-display-filter.md:11
+#: c2086d8ebd064c638ea862ef4fdaab82
 msgid "`surface`"
 msgstr "`surface`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 0339df23bf794bdf81b2b30639b21788
+#: ../../source/module/nep-display-filter.md:11
+#: 87eedbc2ddcc459aa979a37f8516e028
 msgid "化学式"
-msgstr "化学式"
+msgstr "Formula"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: ce99e08c32c0457f82b49bdf36c66ed6
+#: ../../source/module/nep-display-filter.md:11
+#: 1f0e52bddd354e678a07871da7006886
 msgid "默认完全等于，也可选择包含或正则匹配"
-msgstr "默认完全等于，也可选择包含或正则匹配"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: b83a2aa55cf94790933525741a2509eb
+#: ../../source/module/nep-display-filter.md:11
+#: c0f6651586864dccb39d9eb8fcd47866
 msgid "`Fe2O3`"
 msgstr "`Fe2O3`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: aea6856948a04393864a7a9e3097e06a
+#: ../../source/module/nep-display-filter.md:11
+#: 10ac2af28e2a4b1aa4f606eab5739d05
 msgid "必须包含元素"
-msgstr "必须包含元素"
+msgstr "Required elements"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 5f3cb862fcec41189fb8edfbdc97ab50
+#: ../../source/module/nep-display-filter.md:11
+#: 711b1187cfa44276a2b45b162b787cfa
 msgid "所列元素必须全部存在，允许还有其他元素"
-msgstr "所列元素必须全部存在，允许还有其他元素"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 7c62908b930a4eca98f7dc37b7201870
+#: ../../source/module/nep-display-filter.md:11
+#: 27af22a791e240e0b154682f46752129
 msgid "`Fe,O` 可匹配 FeO 和 FeOC"
-msgstr "`Fe,O` 可匹配 FeO 和 FeOC"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 88f513068c4043b992dcb9ec7331d909
+#: ../../source/module/nep-display-filter.md:11
+#: fb5828ea5175412a8e558a4a5e033c7c
 msgid "不得包含元素"
-msgstr "不得包含元素"
+msgstr "Forbidden elements"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 4d6737179c9c468ba44f481803663039
+#: ../../source/module/nep-display-filter.md:11
+#: c78474549d05494086fa8c0d35f3d66e
 msgid "所列元素必须全部不存在"
-msgstr "所列元素必须全部不存在"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: acb7445413444e3a92e8baadcfd5c747
+#: ../../source/module/nep-display-filter.md:11
+#: 91abdb601350416996c6a57856334ec4
 msgid "`H` 排除含 H 结构"
-msgstr "`H` 排除含 H 结构"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: a622557090f242a4b7c843571b7bb3fb
+#: ../../source/module/nep-display-filter.md:11
+#: 1d60778e47fc4bdb838730e07d633006
 msgid "只允许这些元素"
-msgstr "只允许这些元素"
+msgstr "Allowed elements only"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 3b031764ff7749d5b24e009bfd931174
+#: ../../source/module/nep-display-filter.md:11
+#: 5dca49d0c8c64bc48b7d5e69c33c7ee4
 msgid "结构中不能出现列表外元素"
-msgstr "结构中不能出现列表外元素"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: a1cdb711f34d411f8df8bdc082a8faa6
+#: ../../source/module/nep-display-filter.md:11
+#: 9396f4159e0f477e8f5d18bf5f81a0a2
 msgid "`Fe,O` 可匹配 Fe、O 和 FeO"
-msgstr "`Fe,O` 可匹配 Fe、O 和 FeO"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 3e1fa3c3a038475bae4b2dbc6ac2aff2
+#: ../../source/module/nep-display-filter.md:11
+#: 932c0890b5464848a1428f47e32a6130
 msgid "自定义表达式"
-msgstr "自定义表达式"
+msgstr "Custom expression"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: c5bb9365c59c4a0fb6b673e6bf44c64d
+#: ../../source/module/nep-display-filter.md:11
+#: 8f691be21315464c86f45637841c449f
 msgid "使用现有结构表达式引擎"
-msgstr "使用现有结构表达式引擎"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11289
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11422
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: acf7a4e10fe042eb878e0881fd33aafa 29f4731f9f5746cfa90804ecfed2cd6e
-#: 03e57bf03cbf443fa965572f977944a2
+#: ../../source/module/nep-dataset-display-content.md:11289
+#: ../../source/module/nep-dataset-display-content.md:11422
+#: ../../source/module/nep-display-filter.md:11
+#: 287e27c3e7a941ed97d0b3a1e741e32c 3250670299164f0bb2ad7adfd8f6fd9c
+#: 546a8705aeff4dd9ad8f599a2724da0c
 msgid "`natoms > 100`"
 msgstr "`natoms > 100`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11227
-#: 8fa5fe15d85e4d1a84129be5df7c69e5
-msgid ""
-"同一条配置类型或化学式条件可以用分号输入多个值，多个值之间取“任一匹配”。元素"
-"之间使用逗号或空格分隔，例如 `Fe, O`。"
-msgstr ""
-"同一条配置类型或化学式条件可以用分号输入多个值，多个值之间取“任一匹配”。元素"
-"之间使用逗号或空格分隔，例如 `Fe, O`。"
+#: ../../source/module/nep-dataset-display-content.md:11227
+#: 54e675c22f444eacb055a203a933d3cf
+msgid "同一条配置类型或化学式条件可以用分号输入多个值，多个值之间取“任一匹配”。元素之间使用逗号或空格分隔，例如 `Fe, O`。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11229
-#: 61e2f3b718cc4dce950a340e2f8cc8c4
-msgid ""
-"每行左侧的开关控制该条件是否参与筛选。关闭条件不会删除输入内容。配置类型和化"
-"学式右侧的 `Aa` 控制是否区分大小写；高亮时区分，未高亮时不区分。"
-msgstr ""
-"每行左侧的开关控制该条件是否参与筛选。关闭条件不会删除输入内容。配置类型和化"
-"学式右侧的 `Aa` 控制是否区分大小写；高亮时区分，未高亮时不区分。"
+#: ../../source/module/nep-dataset-display-content.md:11229
+#: ce5b22af84204fbeb6deb956bff21532
+msgid "每行左侧的开关控制该条件是否参与筛选。关闭条件不会删除输入内容。配置类型和化学式右侧的 `Aa` 控制是否区分大小写；高亮时区分，未高亮时不区分。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11231
-#: c3d5f85e4abb42e59ff4f72155921fb2
-msgid ""
-"非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不"
-"会意外匹配全部结构。"
-msgstr ""
-"非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不"
-"会意外匹配全部结构。"
+#: ../../source/module/nep-dataset-display-content.md:11231
+#: 76f63019c52f48d4bd82146ff5697229
+msgid "非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不会意外匹配全部结构。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11233
-#: 357deb2efaa14a44915e5f43f1525493
+#: ../../source/module/nep-dataset-display-content.md:11233
+#: 41747ee09fcf4ae9a0dd6313f44bd84a
 msgid "6.3 保存和复用常用筛选"
-msgstr "6.3 保存和复用常用筛选"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11235
-#: ce5947a491c54edbb7fbf233935722a1
-msgid ""
-"如果经常清理同一类数据，可以保存整个条件组合。例如，一个常用组合可以是："
-msgstr ""
-"如果经常清理同一类数据，可以保存整个条件组合。例如，一个常用组合可以是："
+#: ../../source/module/nep-dataset-display-content.md:11235
+#: 1abc0d37c4e34b1394115e722172a3ce
+msgid "如果经常清理同一类数据，可以保存整个条件组合。例如，一个常用组合可以是："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11237
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11504
-#: c919350ae4914e3a81744bc7ef01c39b 66f4114f43ab4ac1be4836e9186521b2
+#: ../../source/module/nep-dataset-display-content.md:11237
+#: ../../source/module/nep-dataset-display-content.md:11504
+#: 3ad4921d1b2043d39914b16db2d17cd6 b2113469fa434f29ab9349f5498b99b6
 msgid "配置类型包含 `surface`"
-msgstr "配置类型包含 `surface`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11238
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11505
-#: e601963a87de4dc888dfa82e29c09882 e59c7417dde04981b94dbce4f8105b36
+#: ../../source/module/nep-dataset-display-content.md:11238
+#: ../../source/module/nep-dataset-display-content.md:11505
+#: 0fca5415e89d4505bc3d00d23b2b103b c2f6a8b6644b4d359ad6f9139b0cf3dc
 msgid "必须包含元素 `Fe,O`"
-msgstr "必须包含元素 `Fe,O`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11239
-#: 57b0738749c04fe39d8627baa6ab37b8
+#: ../../source/module/nep-dataset-display-content.md:11239
+#: 6531dff1a1484f54b1df1086a9b19e86
 msgid "不得包含元素 `H`"
-msgstr "不得包含元素 `H`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11240
-#: cc1aea15bd664b2f815f5a50d4b1120d
+#: ../../source/module/nep-dataset-display-content.md:11240
+#: bfd5fd8433874d499c6558b25f2b39d7
 msgid "条件关系为“满足全部条件（AND）”"
-msgstr "条件关系为“满足全部条件（AND）”"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11242
-#: 4832a9bde86b4e28a57de0168bb45d6f
+#: ../../source/module/nep-dataset-display-content.md:11242
+#: 4e6d76733e924d3ebf4771bfd0a1fa5d
 msgid "保存一次后，下次不需要逐行重填："
-msgstr "保存一次后，下次不需要逐行重填："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11244
-#: eaf22496698540e4a03294bb3e79af30
+#: ../../source/module/nep-dataset-display-content.md:11244
+#: 33fec4251a484f069a90b2d83f38a551
 msgid "先把条件、AND/OR 关系和 `Aa` 状态设置好。"
-msgstr "先把条件、AND/OR 关系和 `Aa` 状态设置好。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11245
-#: ef44283cbf4d42249935f10a421a5924
+#: ../../source/module/nep-dataset-display-content.md:11245
+#: d55ed604f0ff4e2c84a17dd82f8ad20f
 msgid "点击“常用筛选 → 保存当前条件…”。"
-msgstr "点击“常用筛选 → 保存当前条件…”。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11246
-#: 96d8dc0ee9d64c1b91928b1c39131f63
+#: ../../source/module/nep-dataset-display-content.md:11246
+#: 232a6b9f451f4115b489ae3ec38549da
 msgid "输入容易识别的名称，例如 `Fe-O surface`，然后点击“保存”。"
-msgstr "输入容易识别的名称，例如 `Fe-O surface`，然后点击“保存”。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11247
-#: 7f8884eaeedf482fb175497a444cdea6
+#: ../../source/module/nep-dataset-display-content.md:11247
+#: cf627fe4f2474071b9b9e05fa0006a19
 msgid "下次打开编辑器时，点击“常用筛选”，再直接点击该名称。"
-msgstr "下次打开编辑器时，点击“常用筛选”，再直接点击该名称。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11249
-#: 421dc46e35a94478ad5178c38f7a3d0a
-msgid ""
-"![常用筛选菜单](../_static/image/generated/show_nep_reference/"
-"g_structure_filter_presets.png)"
-msgstr ""
-"![常用筛选菜单](../_static/image/generated/show_nep_reference/"
-"g_structure_filter_presets.png)"
+#: ../../source/module/nep-dataset-display-content.md:11249
+#: 0d546cba8a0e4d09bf6e589200fe728b
+msgid "![常用筛选菜单](../_static/image/generated/show_nep_reference/g_structure_filter_presets.png)"
+msgstr "See the figure for the corresponding control and result."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11249
-#: 79ec65a152594c2bb8bed3894acb0b63
+#: ../../source/module/nep-dataset-display-content.md:11249
+#: 4ec173961f0044078a8e116a15f56189
 msgid "常用筛选菜单"
-msgstr "常用筛选菜单"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11249
-#: 79ec65a152594c2bb8bed3894acb0b63
+#: ../../source/module/nep-dataset-display-content.md:11249
+#: 4ec173961f0044078a8e116a15f56189
 msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"g_structure_filter_presets.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_structure_filter_presets.png"
 msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"g_structure_filter_presets.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_structure_filter_presets.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11251
-#: 0f2a2a9c61364e138bdf7ff093b5a735
-msgid ""
-"加载常用筛选会**替换编辑器里的当前条件**，随后更新预览；它不会自动执行“应用结"
-"果”，也不会改变当前选择。"
-msgstr ""
-"加载常用筛选会**替换编辑器里的当前条件**，随后更新预览；它不会自动执行“应用结"
-"果”，也不会改变当前选择。"
+#: ../../source/module/nep-dataset-display-content.md:11251
+#: fc0d91e6f2ac4faf8830ae0d4c2c3bd1
+msgid "加载常用筛选会**替换编辑器里的当前条件**，随后更新预览；它不会自动执行“应用结果”，也不会改变当前选择。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11253
-#: defb62aaa8fd43a78ec8a62d8ac7cdf2
+#: ../../source/module/nep-dataset-display-content.md:11253
+#: b5da0d6f31fc4fcdbb6c6b798cceffc8
 msgid "保存内容包括："
-msgstr "保存内容包括："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11255
-#: f9f282638584448bb29ede9a2abb18ab
+#: ../../source/module/nep-dataset-display-content.md:11255
+#: 943fc0dfa47649e7bd67b7234bc87d42
 msgid "每条条件的类型、输入值和启用状态"
-msgstr "每条条件的类型、输入值和启用状态"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11256
-#: bdda51e7d38e40c0b26af879fc721704
+#: ../../source/module/nep-dataset-display-content.md:11256
+#: ade2421978e0449fb04328af8d0abc43
 msgid "配置类型或化学式的匹配方式与 `Aa` 状态"
-msgstr "配置类型或化学式的匹配方式与 `Aa` 状态"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11257
-#: 41d0d7a614cb462e94abbc24f69f0fa0
+#: ../../source/module/nep-dataset-display-content.md:11257
+#: cec1680a46dd451da61ad3ab5c0e2cd3
 msgid "“满足全部条件（AND）”或“满足任一条件（OR）”"
-msgstr "“满足全部条件（AND）”或“满足任一条件（OR）”"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11259
-#: 3786bc1211bd4da599ab4419c604fb47
+#: ../../source/module/nep-dataset-display-content.md:11259
+#: e4183b8ee0c14fe4b9aea72d4e66002c
 msgid ""
-"常用筛选保存在本机用户配置中，关闭并重新打开软件后仍可使用。它不会保存当前匹"
-"配结果、当前选择、数据集路径或 NEP 模型；保存的是筛选条件，不是自动处理流程。"
-msgstr ""
-"常用筛选保存在本机用户配置中，关闭并重新打开软件后仍可使用。它不会保存当前匹"
-"配结果、当前选择、数据集路径或 NEP 模型；保存的是筛选条件，不是自动处理流程。"
+"常用筛选保存在本机用户配置中，关闭并重新打开软件后仍可使用。它不会保存当前匹配结果、当前选择、数据集路径或 NEP "
+"模型；保存的是筛选条件，不是自动处理流程。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11261
-#: 42d020fdee604737bdd69f29f691720e
+#: ../../source/module/nep-dataset-display-content.md:11261
+#: 67d84a7024714faba41a552583911eb3
 msgid "需要维护已有条目时，进入“常用筛选 → 管理常用筛选”："
-msgstr "需要维护已有条目时，进入“常用筛选 → 管理常用筛选”："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11263
-#: cbf0baede9634efb9379a49f49fa5eab
+#: ../../source/module/nep-dataset-display-content.md:11263
+#: 64a80cdc3da54193b869314af2161baa
 msgid "“重命名”只修改名称，不改变条件。"
-msgstr "“重命名”只修改名称，不改变条件。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11264
-#: 08116ff7215c4fdab232c022bb186fd8
+#: ../../source/module/nep-dataset-display-content.md:11264
+#: c0d3cb6b640b428694703422c6f1cea5
 msgid "“删除”只删除保存的条目，不清空编辑器中的当前条件。"
-msgstr "“删除”只删除保存的条目，不清空编辑器中的当前条件。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11265
-#: 082691f6080e42268e3505eaada52cd9
+#: ../../source/module/nep-dataset-display-content.md:11265
+#: df55e1fe04a04982816750d3e018e660
 msgid "保存或重命名为已有名称时，软件会先询问是否覆盖。"
-msgstr "保存或重命名为已有名称时，软件会先询问是否覆盖。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11267
-#: 2f1a4b383ce64b828c81155103d415da
+#: ../../source/module/nep-dataset-display-content.md:11267
+#: df224b82f83347e8a87a6f3abbcfedf3
 msgid "如果条件中仍有空白行，软件不会保存。请补全该行，或用行尾的“×”先删除它。"
-msgstr ""
-"如果条件中仍有空白行，软件不会保存。请补全该行，或用行尾的“×”先删除它。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11270
-#: 4738571d36f74affbbab8508f3a985ed
+#: ../../source/module/nep-dataset-display-content.md:11270
+#: 1898c2c8f2424e37b11856911089dab9
 msgid "6.4 `expression` 用法总览"
-msgstr "6.4 `expression` 用法总览"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11272
-#: 867387b9f4cb44a1b6a9bfe97491a27e
-msgid ""
-"目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结"
-"果。"
-msgstr ""
-"目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结"
-"果。"
+#: ../../source/module/nep-dataset-display-content.md:11272
+#: 2a74f0a7b4b145d8b0815d59612d8edc
+msgid "目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结果。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11273
-#: 001eed8445354e4abda893413152b6b6
+#: ../../source/module/nep-dataset-display-content.md:11273
+#: 4e7fbe8af70f4a3190bfbb80398d0c95
 msgid "作用对象：仅当前 active structures；已经删除的结构不会参与表达式计算。"
-msgstr "作用对象：仅当前 active structures；已经删除的结构不会参与表达式计算。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11274
-#: 84e56e428109477d874dc01457d640dc
+#: ../../source/module/nep-dataset-display-content.md:11274
+#: 3666d8727a92468fac0aad1a7fa5f286
 msgid "搜索按钮：高亮匹配结构。"
-msgstr "搜索按钮：高亮匹配结构。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11275
-#: 40e2cc3b7c444deda8bf7d81f5ac7c48
+#: ../../source/module/nep-dataset-display-content.md:11275
+#: dc79444fce7842fe87b3080d00672f3d
 msgid "勾选按钮：把匹配结构加入当前选择集。"
-msgstr "勾选按钮：把匹配结构加入当前选择集。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11276
-#: 6cce7fdd558c4ecf81aeda0347d3bd94
+#: ../../source/module/nep-dataset-display-content.md:11276
+#: 20571a7be7b24499992e9bc35437d099
 msgid "反选按钮：把匹配结构从当前选择集中移除。"
-msgstr "反选按钮：把匹配结构从当前选择集中移除。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11277
-#: ff357cf0a71d4a6a993a9e746f6adc7d
+#: ../../source/module/nep-dataset-display-content.md:11277
+#: 7bca7cbf83f64a0a851e2ecdeef06589
 msgid "删除流程不变：通常是先用 expression 勾选，再点工具栏删除按钮。"
-msgstr "删除流程不变：通常是先用 expression 勾选，再点工具栏删除按钮。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11279
-#: f00f71af9801447badb28a5aa565b356
+#: ../../source/module/nep-dataset-display-content.md:11279
+#: 53ed9a2fa11a4f2989a2b484a1c193e9
 msgid "6.4.1 支持的运算符"
-msgstr "6.4.1 支持的运算符"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11281
-#: bae2dc16289945229607e31bc92680e2
+#: ../../source/module/nep-dataset-display-content.md:11281
+#: dead324e038f43bea8e0399a0a19a93b
 msgid "逻辑运算：`&&`、`||`、`!`"
-msgstr "逻辑运算：`&&`、`||`、`!`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11282
-#: c1f226446e634fe39368ee29a0145f9f
+#: ../../source/module/nep-dataset-display-content.md:11282
+#: 57a27464e48c4016a2c76eac726f7450
 msgid "逻辑关键字：`and`、`or`、`not`"
-msgstr "逻辑关键字：`and`、`or`、`not`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11283
-#: ac93a683967a45f5a85df877d4daa93c
+#: ../../source/module/nep-dataset-display-content.md:11283
+#: 48c52287bbbb4069801d7ab127986563
 msgid "比较运算：`>`、`>=`、`<`、`<=`、`==`、`!=`"
-msgstr "比较运算：`>`、`>=`、`<`、`<=`、`==`、`!=`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11284
-#: b330092c2fb04c448ef491be33a1e672
+#: ../../source/module/nep-dataset-display-content.md:11284
+#: ced74ae03ab947c0963e1c02c06b1484
 msgid "算术运算：`+`、`-`、`*`、`/`"
-msgstr "算术运算：`+`、`-`、`*`、`/`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11285
-#: 082c19dafc284e43955a917c02ab45de
+#: ../../source/module/nep-dataset-display-content.md:11285
+#: 81117afcad8d4afab8cec71267060558
 msgid "括号：`(`、`)`"
-msgstr "括号：`(`、`)`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11287
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11321
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11369
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11388
-#: 128ae59199e34e718bf949adceb05275 d55f578b4a094f71a785813646767cdb
-#: 25d0594ec0e44157a53b0d1ff92b52c3 7313002c27b9414284d276fce0b9826f
+#: ../../source/module/nep-dataset-display-content.md:11287
+#: ../../source/module/nep-dataset-display-content.md:11321
+#: ../../source/module/nep-dataset-display-content.md:11369
+#: ../../source/module/nep-dataset-display-content.md:11388
+#: 378650960c934e6e8bdaf17b0f3c8632 550c86fb627c4c829849cda9ccaae7a9
+#: bcd5dba4a73947f9921e8d9ad6d96df4 ccb489f9d78f4996a9726325ee0dece3
 msgid "示例："
-msgstr "示例："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11290
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: de144f6a1cce435b882452f2026aa24d 0d402435dd454c1a9f57a9295ec6aa31
+#: ../../source/module/nep-dataset-display-content.md:11290
+#: ../../source/module/nep-display-filter.md:11
+#: 5675ca02fbde4c87981260b0df30a5cd 5b165a05712d4937a90193b69310d986
 msgid "`has.H && natoms < 50`"
 msgstr "`has.H && natoms < 50`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11291
-#: 506d61971814404989578dc54a6210c1
+#: ../../source/module/nep-dataset-display-content.md:11291
+#: 1390dfa85e4d40cc843f1fe9bcab40b0
 msgid "`(energy_per_atom < -3.0) && (force.norm > 10)`"
 msgstr "`(energy_per_atom < -3.0) && (force.norm > 10)`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11293
-#: 7ee55b98ee5241acaf1321a1f5b0fb16
+#: ../../source/module/nep-dataset-display-content.md:11293
+#: 67a64bb8832a4b849993ca34fc206c23
 msgid "6.4.2 不支持的语法"
-msgstr "6.4.2 不支持的语法"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11295
-#: 5636321e1d8543e098adbed87552071b
+#: ../../source/module/nep-dataset-display-content.md:11295
+#: 4bdac154b8864deb8649570ec355a84d
 msgid "不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`"
-msgstr "不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11296
-#: 4e17eedf0c944b75b4c61610b3116319
+#: ../../source/module/nep-dataset-display-content.md:11296
+#: 14748ec8173c4f769f812556c91bcdf9
 msgid "不支持固定原子索引：例如 `atom[3].force.x > 1`"
-msgstr "不支持固定原子索引：例如 `atom[3].force.x > 1`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11297
-#: a9c7703b8cac4881b9615105da2d9383
+#: ../../source/module/nep-dataset-display-content.md:11297
+#: a6a774ba02234b65998585ad235d85cc
 msgid "不支持数字分量后缀：例如 `force.1`、`stress.3`"
-msgstr "不支持数字分量后缀：例如 `force.1`、`stress.3`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11298
-#: b021f721ee86426fad1436d3f8c00e1b
+#: ../../source/module/nep-dataset-display-content.md:11298
+#: eb9bafc36fd24ae2880eed9d3d483942
 msgid "不支持字符串函数或正则函数"
-msgstr "不支持字符串函数或正则函数"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11300
-#: 937dedb098644799a856c7868636f569
+#: ../../source/module/nep-dataset-display-content.md:11300
+#: c930a073d573405c8d908e4d59af7825
 msgid "如果需要原子数，请直接使用 `natoms`。"
-msgstr "如果需要原子数，请直接使用 `natoms`。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11302
-#: 44f9d4e0016c4332a2e73be89d1464df
+#: ../../source/module/nep-dataset-display-content.md:11302
+#: 2211279611464799bde28a2e1b70e969
 msgid "6.4.3 内置结构字段"
-msgstr "6.4.3 内置结构字段"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11304
-#: de03b60c7005428c9ada215490356ed1
-msgid ""
-"下列字段不依赖当前图上显示哪一个子图，始终按当前 active structures 实时计算。"
-msgstr ""
-"下列字段不依赖当前图上显示哪一个子图，始终按当前 active structures 实时计算。"
+#: ../../source/module/nep-dataset-display-content.md:11304
+#: 1a175bcb4cf2495b85bba5184ca2352e
+msgid "下列字段不依赖当前图上显示哪一个子图，始终按当前 active structures 实时计算。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: c7fc7aa139c74a3e9ef7e96b6df787a6
+#: ../../source/module/nep-display-filter.md:11
+#: 0ba193ae8ab6496eb60769c4a2ea309d
 msgid "字段"
-msgstr "字段"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 2f60c10e8b9a45519cb19a2fbaa30ec2
+#: ../../source/module/nep-display-filter.md:11
+#: 2d7fc6f8b3be46c0b9e3c65d90066104
 msgid "`natoms`"
 msgstr "`natoms`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 6851ddad638e4b8d92b35310850fa11b
+#: ../../source/module/nep-display-filter.md:11
+#: 4d6f295b3cb54208a9b149a3e8fa346d
 msgid "原子数"
-msgstr "原子数"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: c9787b1e884945138baf1422964d9425
+#: ../../source/module/nep-display-filter.md:11
+#: 058f9cc109f546e6b29f124acc4b600e
 msgid "`n_atoms`"
 msgstr "`n_atoms`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: be0b4916814a4ffc907c8c52c8803d78
+#: ../../source/module/nep-display-filter.md:11
+#: c9b27adf706443a6ba2a34ae925ae113
 msgid "`natoms` 的别名"
-msgstr "`natoms` 的别名"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 9536e7c25479430d841917b3938dbb87
+#: ../../source/module/nep-display-filter.md:11
+#: f4b45e11444740d8827aa5b8235dc9dc
 msgid "`volume`"
 msgstr "`volume`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: bc5d59d46bab4b02830bf0db1f10e81e
+#: ../../source/module/nep-display-filter.md:11
+#: a83ea720a4fb4edc958430d311269d3f
 msgid "晶胞体积"
-msgstr "晶胞体积"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: d3e8e0bf4ca549f7ad42a1aa673681bf
+#: ../../source/module/nep-display-filter.md:11
+#: cc129e35e6e447898fa96af664a08cf3
 msgid "`a` `b` `c`"
 msgstr "`a` `b` `c`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: f61d8e98654e4d47a59dd7d2afd698ae
+#: ../../source/module/nep-display-filter.md:11
+#: 4b3c608c233742cbb1c5e5d497abb0fb
 msgid "晶格长度"
-msgstr "晶格长度"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 78f26539ea35498b80046d2972af64cf
+#: ../../source/module/nep-display-filter.md:11
+#: d0b79ec252c04bb19553d9ba889f91ea
 msgid "`alpha` `beta` `gamma`"
 msgstr "`alpha` `beta` `gamma`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: ec02b73493f542429f4004124ca03fba
+#: ../../source/module/nep-display-filter.md:11
+#: 15abb980486e4d0fa0acfbac733ed01e
 msgid "晶格角"
-msgstr "晶格角"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 6755d80863584187a92ce50c81b17f7d
+#: ../../source/module/nep-display-filter.md:11
+#: 6d90b592da804aaf8eaff37efd76f598
 msgid "`spin_natoms`"
 msgstr "`spin_natoms`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 77b7c6edded74ea99913f5e231f4e02f
+#: ../../source/module/nep-display-filter.md:11
+#: 78b7101a979447dface9b0fce0014cfb
 msgid "有磁矩原子数"
-msgstr "有磁矩原子数"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: e32153f39fd54f81b1a95b1c1bd3d427
+#: ../../source/module/nep-display-filter.md:11
+#: 8c307a6ef83c42cbb3ae267821fd24b0
 msgid "`energy`"
 msgstr "`energy`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 2c9aaff1590b4c179f041a09e29119d6
+#: ../../source/module/nep-display-filter.md:11
+#: 781c81ea05b74b36a3156ee159ff625f
 msgid "结构总能"
-msgstr "结构总能"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 9136eabb02ed4430b181f50319cccd13
+#: ../../source/module/nep-display-filter.md:11
+#: 8d684e09fc6045d7900057f6a3182a56
 msgid "`energy_per_atom`"
 msgstr "`energy_per_atom`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 138c1e8a3cde4a999cbb4cbcc7a6890f
+#: ../../source/module/nep-display-filter.md:11
+#: 5981d366675f415facec5b5f915d27f2
 msgid "每原子能量"
-msgstr "每原子能量"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 4c5a12d909f24f68b5f9f04924bb9ddc
+#: ../../source/module/nep-display-filter.md:11
+#: 328d1b97715c4760b06479e06be55f89
 msgid "`has_energy`"
 msgstr "`has_energy`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 48ef76d1d9c0421e85a6e3230fac5754
+#: ../../source/module/nep-display-filter.md:11
+#: 8aa5b46defed404b8c1adcc60467607e
 msgid "是否存在能量"
-msgstr "是否存在能量"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: e17ea3ed5e014149b2c951a7ad909f51
+#: ../../source/module/nep-display-filter.md:11
+#: 4e628b10feb54e56bed1cfd14dc119eb
 msgid "`has_forces`"
 msgstr "`has_forces`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 03566493b69b4a13a23d84edafd109e0
+#: ../../source/module/nep-display-filter.md:11
+#: 96dc581744a34482b0b937af186ae459
 msgid "是否存在力"
-msgstr "是否存在力"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: ccd9e056d12e40adb770c0ae070d2feb
+#: ../../source/module/nep-display-filter.md:11
+#: 6f8bcea2dc0c4abaa24df91507872838
 msgid "`has_virial`"
 msgstr "`has_virial`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: e61a86edf3e842afbbe926985066f65b
+#: ../../source/module/nep-display-filter.md:11
+#: fd2107787e4b482bb969e9b8678067bd
 msgid "是否存在 virial"
-msgstr "是否存在 virial"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 93484db7824545e18425f3df1fbb07de
+#: ../../source/module/nep-display-filter.md:11
+#: 16f23a2b935a486ea2d35ac3613350b5
 msgid "`has_bec`"
 msgstr "`has_bec`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 20bf880ce0334188b251ed714db72a76
+#: ../../source/module/nep-display-filter.md:11
+#: 906fdf310860440f991d3169baaba1e2
 msgid "是否存在 BEC"
-msgstr "是否存在 BEC"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11323
-#: cc1c7905a27e42d0b82a3679f5901eef
+#: ../../source/module/nep-dataset-display-content.md:11323
+#: c61da31b7cd2461589928c53060c2a96
 msgid "`natoms >= 128`"
 msgstr "`natoms >= 128`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11324
-#: 99c0b59b4343474095b4d7426d1994e6
+#: ../../source/module/nep-dataset-display-content.md:11324
+#: 39a222c2b19c4e9d8fef2ad2d8a39351
 msgid "`volume < 500`"
 msgstr "`volume < 500`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11325
-#: ba06c0811f9642d68b0db1bdc7a2f686
+#: ../../source/module/nep-dataset-display-content.md:11325
+#: 81fcf1befe964b3692a2b2526c828f31
 msgid "`a > 4.5 && c < 20`"
 msgstr "`a > 4.5 && c < 20`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11326
-#: 9dd1b81bf2dc4b179c649b08debbea9b
+#: ../../source/module/nep-dataset-display-content.md:11326
+#: bca5b3f4d9bb4575ad214860b4a92eb5
 msgid "`energy_per_atom < -4.2`"
 msgstr "`energy_per_atom < -4.2`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11327
-#: 191c6c66fcfa48118cf6d4d2f91671c9
+#: ../../source/module/nep-dataset-display-content.md:11327
+#: 72e7d09772a44d0b915aa8cd9ebee8ae
 msgid "`has_forces && !has_bec`"
 msgstr "`has_forces && !has_bec`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11329
-#: 740818a93ce9483cacc4759cddaf5aa6
+#: ../../source/module/nep-dataset-display-content.md:11329
+#: 06f614dece5d4cb086fd677c7f5a55da
 msgid "6.4.4 元素统计字段"
-msgstr "6.4.4 元素统计字段"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11331
-#: d4a73bdeaa5d45f786b2f9637dfa6b5c
+#: ../../source/module/nep-dataset-display-content.md:11331
+#: 9a0d57e3fe5b4972a80152fdff59345f
 msgid "元素字段按当前 active structures 里实际出现过的元素动态生成。"
-msgstr "元素字段按当前 active structures 里实际出现过的元素动态生成。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 25eef1b9b8d04ea3943ab09b6552f3b2
+#: ../../source/module/nep-display-filter.md:11
+#: 2b78e349c9ac46fc85cd1e3e5b9e5646
 msgid "字段形式"
-msgstr "字段形式"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: e6714fe069b94bac9e24aef038151128
+#: ../../source/module/nep-display-filter.md:11
+#: 2a97b078c4b045248cd1d6aabbad4ba1
 msgid "`count.<Elem>`"
 msgstr "`count.<Elem>`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 5b47773db3e447428c327a577ba6dc8a
+#: ../../source/module/nep-display-filter.md:11
+#: d4bb07a9fa7a45e0991e635234ef23f5
 msgid "指定元素个数"
-msgstr "指定元素个数"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: e8ba2cf263034f3d9554c104a74e1364
+#: ../../source/module/nep-display-filter.md:11
+#: 29094a097d9741bab30d863b1812d970
 msgid "`count.Fe >= 4`"
 msgstr "`count.Fe >= 4`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 916c3fa99c7f4fa681c24cab004a3853
+#: ../../source/module/nep-display-filter.md:11
+#: 2000bbc0ac764b68bb8230d2f22bd0ea
 msgid "`frac.<Elem>`"
 msgstr "`frac.<Elem>`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 0bd7c37fbf1045368a83d25857ee16da
+#: ../../source/module/nep-display-filter.md:11
+#: 90a94bf9f2ac4b879719b82ed409314c
 msgid "指定元素占比"
-msgstr "指定元素占比"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: 2af5c00ec2094d119b0e689d86038f28
+#: ../../source/module/nep-display-filter.md:11
+#: 351db0a7c58141ed9b7d25955df9c292
 msgid "`frac.Li > 0.5`"
 msgstr "`frac.Li > 0.5`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: f688bcf269af4cd1a05234652bef45d8
+#: ../../source/module/nep-display-filter.md:11
+#: 4521096e425745608cfe3bd6bc60f3a8
 msgid "`has.<Elem>`"
 msgstr "`has.<Elem>`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-filter.md:11
-#: f4b5bc0e88d449839490af5362a99c9e
+#: ../../source/module/nep-display-filter.md:11
+#: 34036cfc86894825892c280e6e094c02
 msgid "是否包含指定元素"
-msgstr "是否包含指定元素"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11339
-#: c403cd68761b4208a923030ed5046236
+#: ../../source/module/nep-dataset-display-content.md:11339
+#: 8f6bd594806c45bf8d1220fd1bbcb5d7
 msgid "补充说明："
-msgstr "补充说明："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11341
-#: 3a7b5e76d05040bfb59225a92c587d36
+#: ../../source/module/nep-dataset-display-content.md:11341
+#: 376c9fd98c734d6cacbe34ffca6d3934
 msgid "`<Elem>` 使用标准元素符号，例如 `H`、`O`、`Fe`、`Li`"
-msgstr "`<Elem>` 使用标准元素符号，例如 `H`、`O`、`Fe`、`Li`"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11342
-#: 384dfea5fa844b86bb86f7389ff94f18
-msgid ""
-"区分元素符号，不区分前缀大小写的内部解析细节；文档和输入建议始终使用标准写法"
-msgstr ""
-"区分元素符号，不区分前缀大小写的内部解析细节；文档和输入建议始终使用标准写法"
+#: ../../source/module/nep-dataset-display-content.md:11342
+#: 4c52cdf183b642609d4ad0ca46bb219f
+msgid "区分元素符号，不区分前缀大小写的内部解析细节；文档和输入建议始终使用标准写法"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11343
-#: 43b7ec2891a24455a1442e165443c816
+#: ../../source/module/nep-dataset-display-content.md:11343
+#: 2c581417245047f7b31aeb863dee194b
 msgid "如果当前 active structures 中没有该元素，表达式会报错"
-msgstr "如果当前 active structures 中没有该元素，表达式会报错"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11345
-#: 0abd86d89e654956aea121bb79b9fbc1
+#: ../../source/module/nep-dataset-display-content.md:11345
+#: 17fa363a1b7e400bbe7ab1adbcf4d363
 msgid "6.4.5 动态数据字段"
-msgstr "6.4.5 动态数据字段"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11347
-#: 86ed94cd876a438798e133117d67f737
-msgid ""
-"当前结果数据里存在什么字段，expression 模式就暴露什么字段。常见来源有两类："
-msgstr ""
-"当前结果数据里存在什么字段，expression 模式就暴露什么字段。常见来源有两类："
+#: ../../source/module/nep-dataset-display-content.md:11347
+#: b403078c69bc416bb3e1bb5ec7c51b4b
+msgid "当前结果数据里存在什么字段，expression 模式就暴露什么字段。常见来源有两类："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11349
-#: a8865f1180964ff3b48c37765de2398f
-msgid ""
-"结果数据集字段：如 `force`、`mforce`、`stress`、`virial`、`dipole`、`bec`"
-msgstr ""
-"结果数据集字段：如 `force`、`mforce`、`stress`、`virial`、`dipole`、`bec`"
+#: ../../source/module/nep-dataset-display-content.md:11349
+#: 8b5821d41d1044848cff51d11be238c4
+msgid "结果数据集字段：如 `force`、`mforce`、`stress`、`virial`、`dipole`、`bec`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11350
-#: 24c833f0acb44cdd9714b432423247f2
+#: ../../source/module/nep-dataset-display-content.md:11350
+#: ff96bce40f8c4796b850f3889558e3c8
 msgid "原子属性字段：写成 `atomic.<name>`，例如 `atomic.spin_vec`"
-msgstr "原子属性字段：写成 `atomic.<name>`，例如 `atomic.spin_vec`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11352
-#: 9b8457611ca64669a031f9c9426a4b39
+#: ../../source/module/nep-dataset-display-content.md:11352
+#: b72199d44dbe41a185cc2d345ddd93e3
 msgid "这意味着："
-msgstr "这意味着："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11354
-#: f02f6c2aeca64c53a0cbed041dad1c50
+#: ../../source/module/nep-dataset-display-content.md:11354
+#: c59acf821d844124b7d13183a041f4f3
 msgid "如果当前数据里没有 `mforce`，补全中不会出现 `mforce`"
-msgstr "如果当前数据里没有 `mforce`，补全中不会出现 `mforce`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11355
-#: 89752360ba1b48af93370497411b91e2
+#: ../../source/module/nep-dataset-display-content.md:11355
+#: 646f88200a254d87b3a787f5f3e83287
 msgid "如果手动输入了不存在的字段，例如 `mforce.ref.x > 1`，会直接报错"
-msgstr "如果手动输入了不存在的字段，例如 `mforce.ref.x > 1`，会直接报错"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11357
-#: 707042367189473f8a0b1110e0527dfb
+#: ../../source/module/nep-dataset-display-content.md:11357
+#: e3440779653641f8b462890eb3c187bd
 msgid "6.4.6 后缀规则"
-msgstr "6.4.6 后缀规则"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11359
-#: 9466b83659b14d288220c5b5916ea6ce
+#: ../../source/module/nep-dataset-display-content.md:11359
+#: a5267341c3c54a4ba7f77641d7fc3082
 msgid "A. 数据视图后缀"
-msgstr "A. 数据视图后缀"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11361
-#: bde5f060ff734744a3f7421cfd32aab1
+#: ../../source/module/nep-dataset-display-content.md:11361
+#: 546daf7fee1f4028b783eff3b8af1b41
 msgid "对于有参考值/预测值成对存在的数据集字段，可以追加："
-msgstr "对于有参考值/预测值成对存在的数据集字段，可以追加："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11363
-#: 523d5fd773224a92b4c93742b91419c0
+#: ../../source/module/nep-dataset-display-content.md:11363
+#: 2e262c5402e04cd2a4201349ec6795b6
 msgid "`.ref`：参考值"
-msgstr "`.ref`：参考值"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11364
-#: bdb315f10a324b1d83ad3d305ab46963
+#: ../../source/module/nep-dataset-display-content.md:11364
+#: 4e191ea92d134d0cae0172fd6befa86d
 msgid "`.pred`：预测值"
-msgstr "`.pred`：预测值"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11365
-#: d1f96a0ea2b5490c8ef57ed0fcf2866a
+#: ../../source/module/nep-dataset-display-content.md:11365
+#: 794442e833e4406393a0a9820d5db3b2
 msgid "`.err`：误差，等价于 `pred - ref`"
-msgstr "`.err`：误差，等价于 `pred - ref`"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11367
-#: 7366a9a5dbd2487a82080c08448ca19c
+#: ../../source/module/nep-dataset-display-content.md:11367
+#: 901ed953576344f6aac4c49643f6614f
 msgid "如果省略视图后缀，默认使用 `.ref`。"
-msgstr "如果省略视图后缀，默认使用 `.ref`。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11371
-#: 4aa5f78387f84c6085065cb95deaeb22
+#: ../../source/module/nep-dataset-display-content.md:11371
+#: 27b7b04bc5c14e0b8a66004066752b5e
 msgid "`force.x > 10` 等价于 `force.ref.x > 10`"
-msgstr "`force.x > 10` 等价于 `force.ref.x > 10`"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11372
-#: c1ee0faaa2c2465bb0896e21243e4d79
+#: ../../source/module/nep-dataset-display-content.md:11372
+#: bc711dfbf86e4e34bdfa67968d2dc43f
 msgid "`stress.err.norm > 2`"
 msgstr "`stress.err.norm > 2`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11373
-#: d848acd47ac2415fa107c3031349191c
+#: ../../source/module/nep-dataset-display-content.md:11373
+#: bba3f23938af4e868e8f1edb49deaab0
 msgid "`energy.pred > -4.0`"
 msgstr "`energy.pred > -4.0`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11375
-#: a7bcdaa8671141029345c45b4f04446a
+#: ../../source/module/nep-dataset-display-content.md:11375
+#: 3b59462319ad4f0ca0e402d914399193
 msgid "并不是所有字段都支持这三个后缀："
-msgstr "并不是所有字段都支持这三个后缀："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11377
-#: b82600bc2b944a99bd57e276412c7ddd
+#: ../../source/module/nep-dataset-display-content.md:11377
+#: b0b40f4df0ec40b592412fb1bd5c83bf
 msgid "`atomic.<name>` 不支持 `.ref/.pred/.err`"
-msgstr "`atomic.<name>` 不支持 `.ref/.pred/.err`"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11378
-#: 791950254a8744aa857bbefa1360769b
+#: ../../source/module/nep-dataset-display-content.md:11378
+#: 3dca6519e34a4a5abdb98dd68c263eb3
 msgid "非成对数据字段也不支持 `.pred/.err`"
-msgstr "非成对数据字段也不支持 `.pred/.err`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11380
-#: 3c0daee962eb42d4ac6aa71906a9d4b7
+#: ../../source/module/nep-dataset-display-content.md:11380
+#: 9e51c3936b194bda95f429736dfdff04
 msgid "B. 分量与范数后缀"
-msgstr "B. 分量与范数后缀"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11382
-#: f4a178e653ce4993bc425ce46974a2f4
+#: ../../source/module/nep-dataset-display-content.md:11382
+#: 45f09eddf4194ebeb4db815f6290b0f1
 msgid "向量或张量字段支持命名分量后缀，例如："
-msgstr "向量或张量字段支持命名分量后缀，例如："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11384
-#: 3bb589856bd5436f88e67c287651d3bc
+#: ../../source/module/nep-dataset-display-content.md:11384
+#: 7d4f15756909460caf3ffe70d508fba2
 msgid "三维向量：`.x`、`.y`、`.z`"
-msgstr "三维向量：`.x`、`.y`、`.z`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11385
-#: 981c8ba43b88405d87c56e0ca7294d1c
+#: ../../source/module/nep-dataset-display-content.md:11385
+#: e439853f04e3488083468bbed0e05400
 msgid "六分量张量：`.xx`、`.yy`、`.zz`、`.xy`、`.yz`、`.zx`"
-msgstr "六分量张量：`.xx`、`.yy`、`.zz`、`.xy`、`.yz`、`.zx`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11386
-#: 98c25c80959b46ff8dfd076855f3ac80
+#: ../../source/module/nep-dataset-display-content.md:11386
+#: 88c914a0ada64745a5efa642c3f14672
 msgid "范数：`.norm`"
-msgstr "范数：`.norm`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11390
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11444
-#: 3bc90bbe6e43439dadd77a76edeebe5e 01fc50fe94fe4dc2ba85715aa017de0f
+#: ../../source/module/nep-dataset-display-content.md:11390
+#: ../../source/module/nep-dataset-display-content.md:11444
+#: 0de9c9f087e64c1ca4107d4b027b9eca 6fd2980efc6d4c12856776cb4ba02160
 msgid "`force.x > 10`"
 msgstr "`force.x > 10`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11391
-#: 6db0138671424aa4b2535cd6dc24ef30
+#: ../../source/module/nep-dataset-display-content.md:11391
+#: 2ca54c1b3df24a81a7cd2901e34eb2b3
 msgid "`mforce.norm > 5`"
 msgstr "`mforce.norm > 5`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11392
-#: 8270537be2d24cc3b57d539ba1cc727d
+#: ../../source/module/nep-dataset-display-content.md:11392
+#: 15d1026946894c1dbb912cc4df3279ba
 msgid "`virial.xx < -20`"
 msgstr "`virial.xx < -20`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11393
-#: 67f790764e91444dbab07cfbbc2dffd1
+#: ../../source/module/nep-dataset-display-content.md:11393
+#: 8f92eaf2dca941969cfaaec56a289f41
 msgid "`atomic.spin_vec.z > 0.2`"
 msgstr "`atomic.spin_vec.z > 0.2`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11395
-#: 4dfdc26a7e8f40f590dbb89969415b25
+#: ../../source/module/nep-dataset-display-content.md:11395
+#: e81a7dd238ad4caa89584200ce8b7b94
 msgid "注意："
-msgstr "注意："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11397
-#: 675fc70745a840f496ba48721c7dde60
+#: ../../source/module/nep-dataset-display-content.md:11397
+#: 3aaa1900ec004c9bb5ccc86953daa734
 msgid "不支持 `.1/.2/.3` 这类数字分量写法"
-msgstr "不支持 `.1/.2/.3` 这类数字分量写法"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11398
-#: 6cc2ded8fc554c8fb73cd811d8b6400d
+#: ../../source/module/nep-dataset-display-content.md:11398
+#: 83781393830e41298bd3bcdcd93416b3
 msgid "多分量字段若不写分量或 `.norm`，表达式会报错"
-msgstr "多分量字段若不写分量或 `.norm`，表达式会报错"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11399
-#: 8add6c9bda174187bb08f4bdd7591c53
+#: ../../source/module/nep-dataset-display-content.md:11399
+#: 007d1482f51446619bdecb3734272bb2
 msgid "标量字段可以直接比较，例如 `energy > -10`"
-msgstr "标量字段可以直接比较，例如 `energy > -10`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11401
-#: 78c159e924a54617b70463bca67cef8f
+#: ../../source/module/nep-dataset-display-content.md:11401
+#: a499d6c2b7e740508444293313577233
 msgid "6.4.7 原子级字段如何聚合到结构级"
-msgstr "6.4.7 原子级字段如何聚合到结构级"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11403
-#: 955f1b2b4a264c408cdaeb4e01697219
-msgid ""
-"表达式最终必须得到“每个结构是否命中”的结果，所以原子级数据会先聚合到结构级。"
-msgstr ""
-"表达式最终必须得到“每个结构是否命中”的结果，所以原子级数据会先聚合到结构级。"
+#: ../../source/module/nep-dataset-display-content.md:11403
+#: ad3a61b1666b474d9512a6d8831b933a
+msgid "表达式最终必须得到“每个结构是否命中”的结果，所以原子级数据会先聚合到结构级。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11405
-#: d564f74db56740c6a9613e708193b31b
+#: ../../source/module/nep-dataset-display-content.md:11405
+#: 7733e00e809f4b40afbaf6b1b7f4fc21
 msgid "默认规则："
-msgstr "默认规则："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11407
-#: 38ac17a4a6cf4c6ebda7174079bd54b1
+#: ../../source/module/nep-dataset-display-content.md:11407
+#: 5c97c9bb267344d2be42976c5564759d
 msgid "先按你写的后缀取出分量或范数"
-msgstr "先按你写的后缀取出分量或范数"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11408
-#: f1ada5348ca84d299562583a87b0b9b2
+#: ../../source/module/nep-dataset-display-content.md:11408
+#: 2cfa058430f144158c66a0ec9d86889d
 msgid "再在该结构内部做 `max(abs(values))`"
-msgstr "再在该结构内部做 `max(abs(values))`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11410
-#: f3b988ef88db46fe93ed4a156fc2dacf
+#: ../../source/module/nep-dataset-display-content.md:11410
+#: d55f9ab5db814796b0d6d05eaf267588
 msgid "因此："
-msgstr "因此："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11412
-#: e4c259ccf85349d282aa8cbf242c5974
-msgid ""
-"`force.x > 10` 的含义是“这个结构里是否存在原子满足 `max(abs(force_x)) > 10`”"
-msgstr ""
-"`force.x > 10` 的含义是“这个结构里是否存在原子满足 `max(abs(force_x)) > 10`”"
+#: ../../source/module/nep-dataset-display-content.md:11412
+#: 4f2c4c40b63f4a2fb10fa20ed3b27dbc
+msgid "`force.x > 10` 的含义是“这个结构里是否存在原子满足 `max(abs(force_x)) > 10`”"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11413
-#: ce27dd8ef6414acca0c6bbca2942b42e
-msgid ""
-"`force.norm > 10` 的含义是“这个结构里是否存在原子满足 `max(force_norm) > 10`”"
-msgstr ""
-"`force.norm > 10` 的含义是“这个结构里是否存在原子满足 `max(force_norm) > 10`”"
+#: ../../source/module/nep-dataset-display-content.md:11413
+#: afca83cb997c4951963d06b8c33d020c
+msgid "`force.norm > 10` 的含义是“这个结构里是否存在原子满足 `max(force_norm) > 10`”"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11414
-#: 4e2c568863f146018e26c384412260e0
+#: ../../source/module/nep-dataset-display-content.md:11414
+#: 9ccc1437a7794030a29b75db0046660a
 msgid "`atomic.spin_vec.y > 0.5` 的含义也是同样的结构级最大绝对值判断"
-msgstr "`atomic.spin_vec.y > 0.5` 的含义也是同样的结构级最大绝对值判断"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11416
-#: 65784e55a4d640d2888d81b99c8d62d1
-msgid ""
-"结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。"
-msgstr ""
-"结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。"
+#: ../../source/module/nep-dataset-display-content.md:11416
+#: 2e832f8cc1c84bce84b5549890611ea7
+msgid "结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11418
-#: c413dd7f6eea440e9e9a457a955a7aae
+#: ../../source/module/nep-dataset-display-content.md:11418
+#: 5be9b0e3abe34e389141960a75c42828
 msgid "6.4.8 常用表达式示例"
-msgstr "6.4.8 常用表达式示例"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11420
-#: 3611e3d396dc4ea495867ecff4cffeb3
+#: ../../source/module/nep-dataset-display-content.md:11420
+#: 74fb08cfb4d5489bbe9a7548c88f9a68
 msgid "按结构大小筛选"
-msgstr "按结构大小筛选"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11423
-#: 4d178c6979d3454aa1b5a26dae5f170b
+#: ../../source/module/nep-dataset-display-content.md:11423
+#: 4b424a361c3a4c1096bd4a2ddac281c7
 msgid "`natoms >= 32 && natoms <= 128`"
 msgstr "`natoms >= 32 && natoms <= 128`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11425
-#: 899e2f3306724c0b950dd959766efd7c
+#: ../../source/module/nep-dataset-display-content.md:11425
+#: 09450e6583164d828f5131259a6b7af2
 msgid "按晶格或体积筛选"
-msgstr "按晶格或体积筛选"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11427
-#: 7d4cf09acba84a298a22f2c82f6d9c21
+#: ../../source/module/nep-dataset-display-content.md:11427
+#: 58a26279364b4147b86f28fae9a7b6f1
 msgid "`volume < 1000`"
 msgstr "`volume < 1000`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11428
-#: f29e2079a9cd4c4fa0f69456d4c39b99
+#: ../../source/module/nep-dataset-display-content.md:11428
+#: 955db3582a65481da1b713f64b3494a7
 msgid "`a > 3 && b > 3 && c > 3`"
 msgstr "`a > 3 && b > 3 && c > 3`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11429
-#: cf419931156d4a14a1f9e4ca75b4aed1
+#: ../../source/module/nep-dataset-display-content.md:11429
+#: 315aaeede18749e5a5685e36451f0a40
 msgid "`gamma != 120`"
 msgstr "`gamma != 120`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11431
-#: 2d3878d88a524ed69faa6270dac5b757
+#: ../../source/module/nep-dataset-display-content.md:11431
+#: 0a65a6922199423fba1c325c3176762a
 msgid "按元素组成筛选"
-msgstr "按元素组成筛选"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11433
-#: a157aa7f662845edb93ef67634ac4d9a
+#: ../../source/module/nep-dataset-display-content.md:11433
+#: 5810f34e90a0433991035c96311bd50a
 msgid "`count.O >= 4`"
 msgstr "`count.O >= 4`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11434
-#: d43a4fb5d82a407da0d82bf59120605b
+#: ../../source/module/nep-dataset-display-content.md:11434
+#: a58efeeab2c841a1af34a2c674d0fbf5
 msgid "`frac.Li > 0.25`"
 msgstr "`frac.Li > 0.25`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11435
-#: 601e5a7ec1694bc08705efb3b4d905bd
+#: ../../source/module/nep-dataset-display-content.md:11435
+#: b319bc644d0443ec98510d1fd1ab4021
 msgid "`has.Fe && !has.H`"
 msgstr "`has.Fe && !has.H`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11437
-#: 324db487bfe74a7fb9316b16bb42d2bc
+#: ../../source/module/nep-dataset-display-content.md:11437
+#: c163dc9e2f5142f390d8ad7720ef02c9
 msgid "按能量筛选"
-msgstr "按能量筛选"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11439
-#: febe9ee7c702480fa9fcb69e7cbbedc9
+#: ../../source/module/nep-dataset-display-content.md:11439
+#: d915f598766441648a0dd7c4a03badd6
 msgid "`energy_per_atom < -3.5`"
 msgstr "`energy_per_atom < -3.5`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11440
-#: c7c76b8c196343f5ab5e9b338884bea3
+#: ../../source/module/nep-dataset-display-content.md:11440
+#: 46e3568b27e84a5daa56e52f2bd9e41d
 msgid "`has_energy && energy > -500`"
 msgstr "`has_energy && energy > -500`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11442
-#: c39007546f874d4e93b2973ccb6c7ded
+#: ../../source/module/nep-dataset-display-content.md:11442
+#: 7ebd3069fdaf4555ad135bb4e9160c21
 msgid "按力、应力、virial 筛选"
-msgstr "按力、应力、virial 筛选"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11445
-#: f5a59036e16d410eb71635af1d72b702
+#: ../../source/module/nep-dataset-display-content.md:11445
+#: 64a43581769c446d9b36dd7533545383
 msgid "`force.norm > 15`"
 msgstr "`force.norm > 15`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11446
-#: 3058fa6133964d8496bd724a59a107cd
+#: ../../source/module/nep-dataset-display-content.md:11446
+#: 732637ba2322497985aee6b85a9cef8a
 msgid "`force.err.norm > 0.2`"
 msgstr "`force.err.norm > 0.2`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11447
-#: 506eba7775be47bf9f0916c9b1138bbd
+#: ../../source/module/nep-dataset-display-content.md:11447
+#: 3fc0f595b3c04745be602421ace5b720
 msgid "`stress.xx > 5`"
 msgstr "`stress.xx > 5`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11448
-#: b2dc5ceb84844180b33fe396d8cf5fc9
+#: ../../source/module/nep-dataset-display-content.md:11448
+#: 34528cb678974037b9fb68d03056a9cd
 msgid "`virial.err.norm > 1`"
 msgstr "`virial.err.norm > 1`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11450
-#: 12a2c8ba17ee40b6b3b068c776357dad
+#: ../../source/module/nep-dataset-display-content.md:11450
+#: a1c4ab3bdc41401a99386a1026ffa8be
 msgid "按 atomic property 筛选"
-msgstr "按 atomic property 筛选"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11452
-#: 51891a9196be47ddaec925170eaae569
+#: ../../source/module/nep-dataset-display-content.md:11452
+#: d7b36943ca564e2da3f04db5638c2407
 msgid "`atomic.spin_vec.norm > 1.5`"
 msgstr "`atomic.spin_vec.norm > 1.5`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11453
-#: 555e02c1d52e49a8a5f4e003c6251c8b
+#: ../../source/module/nep-dataset-display-content.md:11453
+#: deb29eadf9a8422a9af8e258b5d5ed3a
 msgid "`atomic.spin_scalar > 0.1`"
 msgstr "`atomic.spin_scalar > 0.1`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11455
-#: 0abed1703ae0408ea6b7661c04356b36
+#: ../../source/module/nep-dataset-display-content.md:11455
+#: 719ebe4fe23d4a04be7522af5712efdf
 msgid "组合条件"
-msgstr "组合条件"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11457
-#: 59561a3d6bb844268fac50ff69cce8f4
+#: ../../source/module/nep-dataset-display-content.md:11457
+#: ce70d66711b54a02af6d0da94b038845
 msgid "`has.H && natoms < 50 && energy_per_atom < -2.5`"
 msgstr "`has.H && natoms < 50 && energy_per_atom < -2.5`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11458
-#: d36d67336b2c4989bc3494373b5e26f8
+#: ../../source/module/nep-dataset-display-content.md:11458
+#: cd03b6bded5145b4bc08a4b787a406cf
 msgid "`(count.Fe >= 2) && (force.norm > 8 || stress.norm > 2)`"
 msgstr "`(count.Fe >= 2) && (force.norm > 8 || stress.norm > 2)`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11460
-#: b52c77e1b6a94850b707baa0d91f2c08
+#: ../../source/module/nep-dataset-display-content.md:11460
+#: 20bf9dd586c34af58f170d7ba4853944
 msgid "6.4.9 补全与右侧数量说明"
-msgstr "6.4.9 补全与右侧数量说明"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11462
-#: 955749fc6810419b93602d39c1a1eb42
-msgid ""
-"expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共用缓存。"
-msgstr ""
-"expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共用缓存。"
+#: ../../source/module/nep-dataset-display-content.md:11462
+#: d69d52de4343411597138935cfdcc3dd
+msgid "expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共用缓存。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11464
-#: 97bf46e6d88347698584392e7dd405dd
+#: ../../source/module/nep-dataset-display-content.md:11464
+#: e21920da9ee04b13ab04f7fdc6796f9c
 msgid "补全来源包括："
-msgstr "补全来源包括："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11466
-#: 55360251c90043fd852c029c21c495be
+#: ../../source/module/nep-dataset-display-content.md:11466
+#: 6b423abb5797469abb9aa612bba0e198
 msgid "内置结构字段，例如 `natoms`、`volume`"
-msgstr "内置结构字段，例如 `natoms`、`volume`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11467
-#: a16a03dd68e14786a836ae23210ad178
+#: ../../source/module/nep-dataset-display-content.md:11467
+#: eb2eaf493dc544679fb57ccd34d58adb
 msgid "元素统计字段，例如 `count.Fe`、`frac.O`"
-msgstr "元素统计字段，例如 `count.Fe`、`frac.O`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11468
-#: 5ffae0d8def74bc9a5281849b92bb9ed
+#: ../../source/module/nep-dataset-display-content.md:11468
+#: 1874b29f6cb148d99f201928eea87727
 msgid "当前数据集中真实存在的动态字段，例如 `force.ref.x`、`virial.ref.xx`"
-msgstr "当前数据集中真实存在的动态字段，例如 `force.ref.x`、`virial.ref.xx`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11469
-#: fb73b218fa9e47da8229ac98379bdd29
+#: ../../source/module/nep-dataset-display-content.md:11469
+#: 78d9343d10454b3b9ec235135a8b8812
 msgid "当前结构里真实存在的原子属性字段，例如 `atomic.spin_vec.y`"
-msgstr "当前结构里真实存在的原子属性字段，例如 `atomic.spin_vec.y`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11471
-#: 4c97b7d273b046feaee4b145988dc5b5
-msgid ""
-"补全列表右侧的数字不是“本次搜索命中数”，而是“当前 active structures 中有多少"
-"个结构对这个候选字段是可用的/有意义的”："
-msgstr ""
-"补全列表右侧的数字不是“本次搜索命中数”，而是“当前 active structures 中有多少"
-"个结构对这个候选字段是可用的/有意义的”："
+#: ../../source/module/nep-dataset-display-content.md:11471
+#: d8a6fcad792f497a8041eac6d8852740
+msgid "补全列表右侧的数字不是“本次搜索命中数”，而是“当前 active structures 中有多少个结构对这个候选字段是可用的/有意义的”："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11473
-#: e5c1130be50640ec9b8074d90fae19fb
+#: ../../source/module/nep-dataset-display-content.md:11473
+#: 1b77afd79feb4ad4a1a8ff4dd4126e77
 msgid "`natoms` 右侧数字通常等于当前 active structures 总数"
-msgstr "`natoms` 右侧数字通常等于当前 active structures 总数"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11474
-#: 477f0816535e43efb3776b92696edf47
+#: ../../source/module/nep-dataset-display-content.md:11474
+#: e18de4a5d0624c8681b4981aad291650
 msgid "`count.Fe` 右侧数字表示包含 `Fe` 的结构数"
-msgstr "`count.Fe` 右侧数字表示包含 `Fe` 的结构数"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11475
-#: 84504ce6f29c4df48014e6e7491cfb0a
+#: ../../source/module/nep-dataset-display-content.md:11475
+#: 7fa8ed79d4c04ae3b6cb02e30eea3b2d
 msgid "`has.H` 右侧数字表示包含 `H` 的结构数"
-msgstr "`has.H` 右侧数字表示包含 `H` 的结构数"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11476
-#: 66a3f559ec744ad8a12431a560bc0c10
+#: ../../source/module/nep-dataset-display-content.md:11476
+#: 25f5f9a6037f44478328241e6d48e7ed
 msgid "`force.ref.x` 右侧数字表示当前有 `force` 数据的结构数"
-msgstr "`force.ref.x` 右侧数字表示当前有 `force` 数据的结构数"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11477
-#: 6015cf857034485094fac2b67a85edfc
+#: ../../source/module/nep-dataset-display-content.md:11477
+#: c899a117adc147c59860b07b9c5232a2
 msgid "`atomic.spin_vec.y` 右侧数字表示当前有 `spin_vec` 原子属性的结构数"
-msgstr "`atomic.spin_vec.y` 右侧数字表示当前有 `spin_vec` 原子属性的结构数"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11479
-#: 88edb71d08914595b58f683c0639a191
+#: ../../source/module/nep-dataset-display-content.md:11479
+#: 89871da5180049b39915e7e8d2c84667
 msgid "这和你实际输入完整表达式后的命中数量不是一回事。"
-msgstr "这和你实际输入完整表达式后的命中数量不是一回事。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11481
-#: 84262b10a09742ee98f8889069c34df1
+#: ../../source/module/nep-dataset-display-content.md:11481
+#: 4336deaf7e5a4de99b210d8eddea0208
 msgid "6.4.10 错误与排查"
-msgstr "6.4.10 错误与排查"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11483
-#: 3f90222c8caf480a9118de0110eef249
+#: ../../source/module/nep-dataset-display-content.md:11483
+#: 70100d18c9aa424c9aa9360e76504562
 msgid "常见错误包括："
-msgstr "常见错误包括："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11485
-#: e9a619b7b11841088f16e49ec851c960
+#: ../../source/module/nep-dataset-display-content.md:11485
+#: d747ae29fda04589bc56ab986685dd02
 msgid "`Unknown field in expression`"
 msgstr "`Unknown field in expression`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11486
-#: 73488b63c38c47daa8e28cfaf180e869
+#: ../../source/module/nep-dataset-display-content.md:11486
+#: 4a512406ebdd4ca5a648c2b3800f0b9f
 msgid "字段不存在，或当前数据里没有这个字段"
-msgstr "字段不存在，或当前数据里没有这个字段"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11487
-#: 699c3d57d0b8462593220381c74c2930
+#: ../../source/module/nep-dataset-display-content.md:11487
+#: 52e7a00435174aef94691582e0807f79
 msgid "`Unknown atomic field`"
 msgstr "`Unknown atomic field`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11488
-#: f72f33438f07445b88ce8d5978fd5fa8
+#: ../../source/module/nep-dataset-display-content.md:11488
+#: 1616296f20724663869357af9f61012c
 msgid "`atomic.<name>` 写错了，或当前结构没有该原子属性"
-msgstr "`atomic.<name>` 写错了，或当前结构没有该原子属性"
+msgstr "See the parameter description for details."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11489
-#: 5ff26e843f1e4ab6a9f78ea79073e316
+#: ../../source/module/nep-dataset-display-content.md:11489
+#: 5814f926f97842d69a34f234caf8f15b
 msgid "`Numeric component suffixes are not supported`"
 msgstr "`Numeric component suffixes are not supported`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11490
-#: 345d77c3d2cb47c4b23591dd8871eab2
+#: ../../source/module/nep-dataset-display-content.md:11490
+#: 1cf10e28412c410ab7af35274af2e7e9
 msgid "使用了 `.1/.2/.3` 这类数字分量"
-msgstr "使用了 `.1/.2/.3` 这类数字分量"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11491
-#: e6c70fe2d0774f6eb1b7273da67de6dd
+#: ../../source/module/nep-dataset-display-content.md:11491
+#: 5649fa004b5648d0818521938e26e805
 msgid "`Field 'xxx' requires an explicit component or '.norm'`"
 msgstr "`Field 'xxx' requires an explicit component or '.norm'`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11492
-#: 890569bead9641b686491a1e0111d433
+#: ../../source/module/nep-dataset-display-content.md:11492
+#: ded19d62335045349c5dfb0c20eea895
 msgid "多分量字段没有写具体分量"
-msgstr "多分量字段没有写具体分量"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11493
-#: e4112e5d98eb420d81ff226e46633f82
+#: ../../source/module/nep-dataset-display-content.md:11493
+#: ed6f8c9139544b059fefd914801daf86
 msgid "`does not support value views`"
 msgstr "`does not support value views`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11494
-#: 7092605ca1ab4a829dc1748254ee742b
+#: ../../source/module/nep-dataset-display-content.md:11494
+#: 1f24682f059741db9197d2fdefe308f9
 msgid "给不支持的字段写了 `.pred` 或 `.err`"
-msgstr "给不支持的字段写了 `.pred` 或 `.err`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11495
-#: 6537022acc474bbf89d773b153affabe
+#: ../../source/module/nep-dataset-display-content.md:11495
+#: c950ac80845145328f45881d71933d59
 msgid "`Invalid expression syntax`"
 msgstr "`Invalid expression syntax`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11496
-#: ae5cab6934ee4d098153c3fe24f96ba8
+#: ../../source/module/nep-dataset-display-content.md:11496
+#: ed9a963bede647bebd6269f05c26cb00
 msgid "语法不完整，例如 `force.x >`"
-msgstr "语法不完整，例如 `force.x >`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11498
-#: cf9709b08e974214b5a98c2735bfc20e
+#: ../../source/module/nep-dataset-display-content.md:11498
+#: 4713895ac6a2473a8fbab9eb9db540ae
 msgid "6.4.11 在结构筛选器中使用表达式"
-msgstr "6.4.11 在结构筛选器中使用表达式"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11500
-#: dfc37366d1f74ad38c777433579b90e7
-msgid ""
-"添加“自定义表达式”条件后，直接输入完整表达式。表达式仍由原有求值器执行，因此"
-"本节列出的字段、运算符和动态数据能力都可以继续使用。"
-msgstr ""
-"添加“自定义表达式”条件后，直接输入完整表达式。表达式仍由原有求值器执行，因此"
-"本节列出的字段、运算符和动态数据能力都可以继续使用。"
+#: ../../source/module/nep-dataset-display-content.md:11500
+#: 0ea2627a21b94c70b62ac3c28edfa977
+msgid "添加“自定义表达式”条件后，直接输入完整表达式。表达式仍由原有求值器执行，因此本节列出的字段、运算符和动态数据能力都可以继续使用。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11502
-#: fba4b7f8613e4c7a90c8aaa8f4daaea4
+#: ../../source/module/nep-dataset-display-content.md:11502
+#: 3b00b2c90c3a4471808d56fffca482e6
 msgid "表达式可以和其他条件组合。例如："
-msgstr "表达式可以和其他条件组合。例如："
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11506
-#: bd68c6097755483f9b7d9ed17b110f45
+#: ../../source/module/nep-dataset-display-content.md:11506
+#: ca5e40d0912c4aeeaa83e73bb6f3622d
 msgid "自定义表达式 `natoms >= 64 && force.error.norm < 0.2`"
-msgstr "自定义表达式 `natoms >= 64 && force.error.norm < 0.2`"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:11508
-#: 69728ba0db254f54819e8fd9c25efd84
-msgid ""
-"三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，"
-"因此不会丢失 `!=`、晶格角、布尔字段或动态字段。"
-msgstr ""
-"三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，"
-"因此不会丢失 `!=`、晶格角、布尔字段或动态字段。"
+#: ../../source/module/nep-dataset-display-content.md:11508
+#: f6d94e91ed574021b64b8c7ef4d70d71
+msgid "三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，因此不会丢失 `!=`、晶格角、布尔字段或动态字段。"
+msgstr "Details for this option"

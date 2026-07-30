@@ -22,7 +22,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:1
 #: b99c0b67ff204860b2ef34e4734440dc
 msgid "用一条流程学会 生成数据集卡片系统"
-msgstr ""
+msgstr "Learn the Generate Dataset card system through one workflow"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:3
 #: e11946978e9f4cc3a369799d28b96cb4
@@ -50,7 +50,7 @@ msgstr "Every card uses the same title-bar controls:"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
 #: cb163a39baf84b5f82a5c51ceceda8c8
 msgid "生成数据集卡片标题栏通用按钮"
-msgstr ""
+msgstr "Common title-bar buttons for Generate Dataset cards"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
 #: cb163a39baf84b5f82a5c51ceceda8c8

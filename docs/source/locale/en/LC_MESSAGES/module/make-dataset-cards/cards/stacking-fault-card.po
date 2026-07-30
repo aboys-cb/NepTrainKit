@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,17 +22,17 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:5
 #: c8abc4c87de34881a18873442f6a632a
 msgid "旧版层错位移（Legacy Stacking Fault）"
-msgstr ""
+msgstr "Legacy Stacking Fault"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:7
 #: dd9013139fbb4bd181362ed2055c631d
 msgid "**分类：** 缺陷"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:9
 #: 19cfb09bae994ce7a431a53b579ab5db
 msgid "兼容性说明"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:11
 #: 8db7af9d6a2a41b6a3d7686a10555189
@@ -42,56 +41,56 @@ msgid ""
 "它的“切面一侧整体滑移”思路可以生成层错，也与常见 Atomsk 脚本采用同一种几何操"
 "作；问题在于卡片没有让用户显式指定滑移方向，切面参数也容易误解，因此不再出现"
 "在“添加新卡片”和“查找卡片”中。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:13
 #: 6cc2ecead89943d78841a3d8de0425a6
 msgid ""
 "旧 JSON 中的 `StackingFaultCard` 仍可正常载入和运行。新任务请使用 `Stacking "
 "Fault / GSFE Path`（序列化类名仍为 `StrictGSFEPathCard`）。后者显式要求："
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:15
 #: 709ba547c5744959b1b7bd63fb4d2371
 msgid "层错面 `plane_hkl`；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:16
 #: 6541272be5764da889cc8cf5ac686208
 msgid "滑移方向 `slip_uvw`；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:17
 #: 923e684cc5c44a5fb12b32b91a8379f4
 msgid "位移单位；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:18
 #: 6db14debcf2e42ce950eb124244d4e11
 msgid "切面位置；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:19
 #: 6941481dfc714f9fa641ee5d3f40695e
 msgid "输入晶胞与目标层错面的定向一致性。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:21
 #: 31e7c767882a48e4b0ccf860738af27b
 msgid ""
 "旧版卡没有显式滑移方向，因此仅凭 `近似晶面 h k l`（`hkl`）无法定义一个物理滑"
 "移系。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:23
 #: a3c4cdd233954487877b9d833de9eeff
 msgid "旧算法实际做什么"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:25
 #: bb4a40a25f584a9497f1a85d3eb045ae
 msgid "给定输入晶胞 $A$ 和 `hkl=(h,k,l)`，旧算法先用倒易晶格构造单位法向："
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:27
 #: 93ff2dad2b9c4c5cb962478d925493fb
@@ -108,7 +107,7 @@ msgstr ""
 msgid ""
 "随后从全局笛卡尔 x、y、z 轴中选择与 $\\hat{\\mathbf n}$ 最不平行的一根轴 $"
 "\\mathbf e$，并定义："
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:36
 #: d79985b96788467fa731fef0cfa17e89
@@ -126,7 +125,7 @@ msgid ""
 "这个 $\\hat{\\mathbf s}$ 是确定性的面内方向，但不是用户指定的晶向。只要它恰好"
 "等于目标滑移方向，旧算法生成的结构可以是有效层错；否则结果只是另一个方向上的"
 "层间错排。把同一物理晶体整体旋转后，所选方向还可能改变。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:45
 #: 3f8f8342366048fba08c904120eb1ca1
@@ -135,42 +134,42 @@ msgid ""
 "（`layers`）选择第几个投影坐标作为阈值，并移动满足 $q_i\\ge q_\\mathrm{cut}$ "
 "的原子。若 `旧版投影层序号`（`layers`）超出投影层数，算法静默改用中间投影层。"
 "最后沿 $\\hat{\\mathbf s}$ 施加绝对 Å 位移并把坐标折回周期晶胞。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:47
 #: 30181648294540e680e52ee162ced217
 msgid "因此旧卡的核心位移并非错误，但参数面不足以可靠表达任意滑移系："
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:49
 #: 07176b5e61464fef8f5a5341d3206a29
 msgid "默认 `layers=1` 可能选中全部原子，只产生整体平移，没有形成相对层移；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:50
 #: 6787ad89f2894dc7b993cac6891aefb4
 msgid "“层”由投影坐标四舍五入到 8 位后去重，不是带容差的晶体学层识别；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:51
 #: c6e626797226431aa5a294576a078486
 msgid "超范围层号不会报错，而会回退到中间层；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:52
 #: 54dd11106a6f412e9085efd93bc30b20
 msgid "`hkl=(0,0,0)` 会原样返回输入结构；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:53
 #: 92ed3ebd9f024ea29df55f2090d4a84f
 msgid "输出是否对应目标层错取决于自动方向是否恰好等于目标晶向；"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:54
 #: 3f96a5fb813e45088c1aefdac481feef
 msgid "卡片不检查输入晶胞是否已按目标晶面定向。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:56
 #: c262dd0df40b439093a3647ced6ea2dd
@@ -180,43 +179,43 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:58
 #: 71092b25a1ec4d4891e2a6ee532df50e
 msgid "近似晶面 h k l（hkl）"
-msgstr ""
+msgstr "hkl"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:60
 #: 5ed8156345e3403da64b749e3f937865
 msgid ""
 "长度为 3 的整数序列，默认 `(1,1,1)`。只用于构造投影法向，不足以定义物理滑移"
 "系。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:62
 #: 86b8f802523e4ffca41f46126ed82b1f
 msgid "旧版投影层序号（layers）"
-msgstr ""
+msgstr "layers"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:64
 #: cc1f0b0e16be417eb50e6246b6728d51
 msgid ""
 "`int`，默认 1，必须至少为 1。选择排序后的第 `旧版投影层序号`（`layers`）个投"
 "影坐标作为移动阈值；并不是“参与层错的层数”。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:66
 #: 2a54615e6a8343f3a7f5d770f955b613
 msgid "位移（step）"
-msgstr ""
+msgstr "step"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:68
 #: 9a1e34c895f94fde8f55b8e7a3de6f93
 msgid ""
 "三个浮点数 `[start, stop, step]`，默认 `[0.0, 1.0, 0.5]`，单位 Å。每个值都是"
 "沿旧算法自动选择的 $\\hat{\\mathbf s}$ 的绝对位移。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:70
 #: aa6d0d051662444d9259aa7061f7638b
 msgid "兼容配置示例"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:72
 #: a86675c1393d4a4fb58243471dde5caf
@@ -237,24 +236,24 @@ msgstr ""
 msgid ""
 "该示例仅用于重现旧工作流。新任务应使用显式卡片，把晶面、滑移方向和切面分别写"
 "清楚。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:86
 #: 6d19d90c003449bcab8d59dbf5baf3a7
 msgid "如何迁移到显式 GSFE"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:88
 #: 47923a934e07446682848a901ca965c1
 msgid ""
 "旧配置不能自动无损转换，因为其中没有记录滑移方向。迁移时需要根据材料和目标滑"
 "移系人工确定 `slip_uvw`，并重新检查切面。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:90
 #: cfa71d02ec6d4616bfa84040e8ddd4cc
 msgid "示意配置："
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:92
 #: c76d8dda259b40a8961c62df2f491609
@@ -278,7 +277,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:109
 #: 421513f0bbac45638fe6878a5e39509f
 msgid "这里的指数只是格式示例，不能直接照搬到具体材料。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:111
 #: 5f67decf3a684fab8d247d92b8944d5d
@@ -288,12 +287,12 @@ msgstr "Output labels"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:113
 #: d1c68f97f951492eabd909838cac1866
 msgid "SF(hkl={h}{k}{l},d={位移量})\n"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result.\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:117
 #: f80d386f1915430c8745ce6c89f8e779
 msgid "标签表示旧算法参数，不证明输出是物理有效的层错或孪晶。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/stacking-fault-card.md:119
 #: 1dbaa73076f44fccad7f7c1ad99938b9
@@ -305,7 +304,7 @@ msgstr "Reproducibility"
 msgid ""
 "无随机性。同一坐标系中的同一输入和参数会得到一致输出；把结构旋转到另一笛卡尔"
 "取向后，结果不保证等价。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "层错构型（Stacking Fault）"
 #~ msgstr "Stacking Fault"

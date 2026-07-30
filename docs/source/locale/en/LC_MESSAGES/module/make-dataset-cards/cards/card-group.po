@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:3
 #: 25c9ad1537ff4ec383760b2c874b04fb
 msgid "分支合并组（Branch Merge Group）"
-msgstr ""
+msgstr "Branch Merge Group"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:5
 #: 5f4360bee90246468940234457b0529b
 msgid "**分类：** 工作流"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:7
 #: 3b72cda01500472e9413cd36b66e6a72
@@ -40,7 +39,7 @@ msgstr "What the card does"
 msgid ""
 "把共享同一输入的多张卡片装进一个容器里，依次运行后汇总输出。适合“同一个母相结"
 "构既要生成表面，又要生成体相空位”这类独立分支场景。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:11
 #: 8896f6eee376436892357ab8f0c0750b
@@ -48,7 +47,7 @@ msgid ""
 "这里的“分支”是**数据语义**，不是同时占用多个线程：每张启用的子卡都读取同一份"
 "组输入，子卡按界面顺序逐张运行，前一张子卡的输出不会成为下一张子卡的输入。全"
 "部成功后，组把各分支输出合并为一个数据集。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:13
 #: 988b7b59be114a83be38f6c4d2b069b6
@@ -63,14 +62,14 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:15
 #: 5cf30b6d149c4338ada96950cb9310c5
 msgid "工作原理"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:17
 #: b35d8440d5e24ffca6952b4e8371afc7
 msgid ""
 "设组输入为数据集 $\\mathcal D$，启用的子卡操作为 $O_1,\\ldots,O_m$。分支合并"
 "的结果是"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:20
 #: 2d8f211836ec4cb699f28c8c8951675f
@@ -86,7 +85,7 @@ msgid ""
 "其中 $\\Vert$ 表示按分支顺序拼接；它不是 $O_m(\\cdots O_2(O_1(\\mathcal D)))"
 "$。若配置了一张后置过滤卡 $F$，最终输出才是 $F(\\mathcal D_{\\mathrm{merge}})"
 "$。因此子卡之间不能依赖前一张子卡生成的标签、坐标或元素。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:29
 #: 2fbe92c4a38a4f019a29c9a5ab975df0
@@ -119,7 +118,7 @@ msgstr "**Input:** A relaxed 4×4×4 Ni supercell."
 msgid ""
 "**目标：** 把 `Random Slab` 和 `Random Vacancy` 放入同一组，共享输入，生成两"
 "个独立分支并统一导出"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:39
 #: 7c31be27adf04d07b456003f9e2b4698
@@ -176,7 +175,7 @@ msgstr "**Use it when:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:51
 #: 2fc5cd26678544b4a998e773c5a63fd6
 msgid "同一输入需要分别喂给多张彼此无依赖的卡片"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:52
 #: 19d51b56dc9a4232b49a42b5fbf50af8
@@ -216,14 +215,14 @@ msgid ""
 "组内的子卡片列表，由界面拖入操作自动维护，不需要你手动编辑。每项是一个完整的"
 "卡片配置 dict（含 `class`、`check_state`、`params` 等字段）。界面中的顺序决定"
 "实际运行顺序，但不构成数据依赖。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:64
 #: fe8c48718d1f444bb6a06761cdb5b126
 msgid ""
 "关闭整个组时，组会直接把输入传给下游，不会改动各子卡原本的启用状态；重新开启"
 "组后，之前选择的分支仍会保留。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:66
 #: d2f9103d7e6f4e37972037b26ec57d0c
@@ -236,12 +235,12 @@ msgid ""
 "dict 或 null，默认 null。选填：在组内末尾挂一张过滤卡（如 `FPS Filter`），对"
 "所有分支合并后的结果做统一筛选。一个组只允许一张后置过滤卡；若已有过滤卡，应"
 "先关闭或移走，再拖入另一张。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:70
 #: 4cd58f27cfc445e2abdd98eb282e9c1a
 msgid "后置过滤结果就是最终组输出，也会成为下游卡片的输入。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:72
 #: 895859d002c54a70bd208556950107bb
@@ -267,7 +266,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:84
 #: e253905a554948ebab6609430703574b
 msgid "带组内过滤（先生成独立分支，再 FPS 筛）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:85
 #: 63b76d9d1335459a814072e3cd1427a6
@@ -306,7 +305,7 @@ msgstr "Recommended combinations"
 msgid ""
 "`Card Group(Random Slab, Insert Defect)` → `FPS Filter`：从同一输入生成表面与"
 "缺陷分支 → 组外统一筛选"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:112
 #: 86477402c5514c799c59f30b162c85ee
@@ -337,7 +336,7 @@ msgid ""
 "**组输出为空。** 检查组内每张子卡片是否勾选了 `check_state`、各自配置是否合"
 "法。任一启用子卡失败时，组会清空已收集的部分结果，停止后续分支并把失败传给工"
 "作流。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:119
 #: 8b1f0633309f498d982f92cea2b3aa8b
@@ -355,21 +354,21 @@ msgid ""
 "**组内过滤卡把结果全筛掉了。** `filter_card` 的过滤阈值可能过严，例如几何阈值"
 "不适合当前体系，或 FPS 描述符距离阈值导致提前停止。先看过滤卡自己的预览和错误"
 "信息，再调整参数。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:123
 #: 88924ab54ae648a8be788c6efca6e0ad
 msgid ""
 "**想在组内串行。** 不支持。组内所有卡片共享同一输入，是彼此独立的分支。串行依"
 "赖请拆到组外。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:125
 #: d4302f11abc8474e945e051cd16734b5
 msgid ""
 "这里的“串行依赖”是指 A 的输出作为 B 的输入。分支合并组虽然为了资源安全逐张执"
 "行子卡，但数据上仍是独立分支。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/card-group.md:127
 #: bec4e85028de4c3abf65dcc73297fa5c

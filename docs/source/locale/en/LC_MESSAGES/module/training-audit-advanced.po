@@ -20,37 +20,33 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-advanced.md:1
 #: 965cc89f6a4d4649b72ccf4c61c388a0
 msgid "进阶证据：局域环境"
-msgstr "进阶证据：局域环境"
+msgstr "Advanced evidence: local environments"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2491
 #: e0f3fbace6484972aad0f704dcb8c4a4
 msgid ""
 "有活动的 `nep.txt` 时，页面会读取模型声明的元素及径向、角向 cutoff，并按模型"
 "实际可见的邻域统计："
-msgstr ""
-"有活动的 `nep.txt` 时，页面会读取模型声明的元素及径向、角向 cutoff，并按模型"
-"实际可见的邻域统计："
+msgstr "When an active `nep.txt` is available, the page reads the elements and radial/angular cutoffs declared by the model and summarizes the neighborhoods actually visible to that model:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2493
 #: b50bfb01abd74c5badca8ac1a2f691aa
 msgid "中心元素周围的配位数和近邻元素组成；"
-msgstr "中心元素周围的配位数和近邻元素组成；"
+msgstr "coordination numbers and neighboring-element composition around each center element;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2494
 #: 17ebc1a1f6ad414eb084b9644c871481
 msgid "元素对是否共同出现、是否在 cutoff 内真正接触；"
-msgstr "元素对是否共同出现、是否在 cutoff 内真正接触；"
+msgstr "whether element pairs co-occur and actually contact each other within the cutoff;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2495
 #: 04ea1018f80b4a879ea250ac3bbabc5f
 msgid "标签分布、高力尾部和高能量尾部。"
-msgstr "标签分布、高力尾部和高能量尾部。"
+msgstr "label distributions and the high-force and high-energy tails."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:2497
 #: 4685fb687f8247f4bc71b2580c8a1b62
 msgid ""
 "没有 `nep.txt` 时，数据质量、组分、标签、结构相和磁类型仍可使用；依赖模型 "
 "cutoff 的局域化学与元素对接触会显示为不可用。"
-msgstr ""
-"没有 `nep.txt` 时，数据质量、组分、标签、结构相和磁类型仍可使用；依赖模型 "
-"cutoff 的局域化学与元素对接触会显示为不可用。"
+msgstr "Without `nep.txt`, data quality, composition, labels, phases, and magnetic types remain available; local chemistry and element-pair contact that depend on the model cutoff are shown as unavailable."

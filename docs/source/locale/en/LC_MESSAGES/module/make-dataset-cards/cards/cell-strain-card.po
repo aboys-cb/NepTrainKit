@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Lattice Strain"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:5
 #: a0e22c76bdb9433592af9bb697631d64
 msgid "**分类：** 晶格"
-msgstr ""
+msgstr "**Category:** Lattice"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:7
 #: f48d5d2b7c7f4e5cbee283fb8bf24c12
@@ -48,7 +47,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:11
 #: f04745e8b01a42bcb8d998668181e2ce
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:13
 #: ccd18e4c1901458fb51dd066bc8dae27
@@ -63,7 +62,7 @@ msgid ""
 "其中 $s_i$ 是界面输入的百分数，$\\epsilon_i$ 是无量纲工程应变，$\\mathbf C$ "
 "是原晶胞 矩阵。未选中的方向取 $\\epsilon_i=0$。原子分数坐标保持不变，所以生成"
 "的是晶胞和原子 共同经历的仿射应变。"
-msgstr ""
+msgstr "Here $s_i$ is the percentage entered in the UI, $\\epsilon_i$ is the dimensionless engineering strain, and $\\mathbf C$ is the original cell matrix. Unselected directions use $\\epsilon_i=0$. Atomic fractional coordinates remain unchanged, so the cell and atoms undergo the same affine strain."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:19
 #: ca0d9dcedb64423780a6b5f9b92a693f
@@ -123,12 +122,12 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:32
 #: c46002b2daab45a8804e839bf5272059
 msgid "`轴`（`axes`） = `uniaxial`"
-msgstr ""
+msgstr "`Axes` (`axes`) = `uniaxial`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:33
 #: de4dbd292f8a4d3b9ea7be74a2cc7ec7
 msgid "`X 轴范围`（`x_range`） = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）"
-msgstr ""
+msgstr "`X-axis range` (`x_range`) = `[-2, 2, 1]` (-2% to +2%, in 1% steps)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:35
 #: 5ef85c72020c4dc4b6320b4af9663549
@@ -220,7 +219,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:54
 #: 0da56c67847d48349499d3f693c11b6e
 msgid "轴（axes）"
-msgstr ""
+msgstr "axes"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:56
 #: 36c69286e6d2451197dfc59b4846ba3f
@@ -239,7 +238,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:58
 #: 7a6b9d84ce224f67ada487665c2243fb
 msgid "X 轴范围（x_range）"
-msgstr ""
+msgstr "x_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:60
 #: aa829b4e7d6748f08477f617fc4487c8
@@ -247,7 +246,7 @@ msgid ""
 "`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。格式是 `[最小值, 最大"
 "值, 步长]`，单位 %。只有 `轴`（`axes`）激活的方向才生效；isotropic 模式只认 "
 "x_range。步长越小、范围越宽，输出的结构就越多。"
-msgstr ""
+msgstr "`tuple[float, float, float]`, default `(-5.0, 5.0, 1.0)`. Format: `[minimum, maximum, step]`, in %. Only directions activated by `Axes` (`axes`) take effect; isotropic mode uses only `x_range`. Smaller steps and wider ranges produce more structures."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:62
 #: 13fdb3d3ca4c43369758aabe9a874ad2
@@ -265,7 +264,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:64
 #: 8bb8d46f5569433c903e5fbd97b8fa06
 msgid "Y 轴范围（y_range）"
-msgstr ""
+msgstr "y_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:66
 #: d6c6106e753f40ff9f22c69eef23aaaa
@@ -274,12 +273,12 @@ msgid ""
 "样，仅作用在 y 轴。只有 `轴`（`axes`）激活的方向才生效。isotropic 模式不单独"
 "看 y_range。典型参考值和 x_range 一致：±1~2% 弹性区，±3~5% 非谐区，±6%+ 需要"
 "警惕非物理键长。"
-msgstr ""
+msgstr "`tuple[float, float, float]`, default `(-5.0, 5.0, 1.0)`. The syntax is the same as `x_range` and applies only to the y axis. It takes effect only when y is activated in `Axes`; isotropic mode does not use `y_range` separately. Typical values match `x_range`: ±1–2% elastic, ±3–5% anharmonic, and ≥±6% requires caution about unphysical bond lengths."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:68
 #: b740f3d94a6c45a4abb744e468cf6d66
 msgid "Z 轴范围（z_range）"
-msgstr ""
+msgstr "z_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:70
 #: 35786f317d7440f0901af381214a647d
@@ -295,7 +294,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:72
 #: 0cc87e36663744f9b3e4ccfd10e7cb1f
 msgid "识别有机分子（identify_organic）"
-msgstr ""
+msgstr "identify_organic"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:74
 #: f6b106b1ffbc497da7f91303f6655dc8
@@ -434,7 +433,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:131
 #: f75d8a32e5ee495cac8b0bf210479a5b
 msgid "**有机分子键被拉断。** `识别有机分子`（`identify_organic`）没开。"
-msgstr ""
+msgstr "**An organic-molecule bond was broken.** `Identify organic molecules` (`identify_organic`) is disabled."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:133
 #: c6f7594486a94ba49cb0bca40e44e2d8

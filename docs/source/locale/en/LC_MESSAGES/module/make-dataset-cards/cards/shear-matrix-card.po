@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Shear Matrix Strain"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:5
 #: 26c69d9d1e9a4011aa0831756c9a9a01
 msgid "**分类：** 晶格"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:7
 #: 0a952afc2e4c49a8b7776e1069c4c12f
@@ -47,7 +46,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:11
 #: 822ea0800d1545c794c05e94ac76093e
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:13
 #: 3e4e1cd17ba84db6b125f2fc6db36391
@@ -69,7 +68,7 @@ msgstr ""
 msgid ""
 "其中 $s_{xy},s_{yz},s_{xz}$ 是界面输入的百分数，$\\gamma$ 是无量纲剪切量。 非"
 "对称模式是简单剪切；对称模式同时填入转置位置。原子分数坐标保持不变。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:20
 #: f2eda7d494bc491381bc2df0df6f8f01
@@ -120,24 +119,24 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:33
 #: 82a015bf2699427885260e09d00345e4
 msgid "`XY 剪切范围`（`xy_range`） = `[-3, 3, 1]`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:34
 #: 945738140e9c49a689cc245519e09301
 msgid ""
 "`YZ 剪切范围`（`yz_range`） = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值"
 "写进去，否则 range 为空不生成"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:35
 #: 19625dff54764a96988f57b177f91290
 msgid "`XZ 剪切范围`（`xz_range`） = `[0, 0, 1]` （不扫 xz）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:36
 #: aec40b38f4c04970bb65430c7de790b3
 msgid "`对称剪切`（`symmetric`） = `true`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:38
 #: 85ca563370254c0595cfbe88702267cb
@@ -229,7 +228,7 @@ msgstr ""
 msgid ""
 "体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `识别有机分子`"
 "（`identify_organic`）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:58
 #: d9949568dd2e45a08a1e26f2a4a98343
@@ -239,7 +238,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:60
 #: 518ec8cee6fd4e44bea348aa8e490103
 msgid "XY 剪切范围（xy_range）"
-msgstr ""
+msgstr "xy_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:62
 #: 401d1a2c27ee4624b13ec40172883aeb
@@ -256,7 +255,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:64
 #: dd92af04692f4369b30e1525c5077b17
 msgid "YZ 剪切范围（yz_range）"
-msgstr ""
+msgstr "yz_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:66
 #: 7c72ac6cd9d14352b2e2519ea112830e
@@ -270,7 +269,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:68
 #: 92bb29fd93824c268d1deb0e1e27cbe2
 msgid "XZ 剪切范围（xz_range）"
-msgstr ""
+msgstr "xz_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:70
 #: ef8c2c212766433594f788f37323d909
@@ -293,7 +292,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:74
 #: 47a0bf8dea3a4da5bc7c52a7df94d257
 msgid "对称剪切（symmetric）"
-msgstr ""
+msgstr "symmetric"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:76
 #: 7fe34b62bae142fda23ef8ef053611cc
@@ -309,7 +308,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:78
 #: fbee4bcb670748798905001d873c099d
 msgid "识别有机分子（identify_organic）"
-msgstr ""
+msgstr "identify_organic"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-matrix-card.md:80
 #: 29e8410a965648e0b37c2ad2a2ec6d24

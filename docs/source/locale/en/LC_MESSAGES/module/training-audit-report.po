@@ -20,134 +20,124 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-report.md:1
 #: da33d937762d4cd7b7cf31555c9e44f9
 msgid "导出报告与当前限制"
-msgstr "导出报告与当前限制"
+msgstr "Export reports and current limitations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10190
 #: 8a095346767d4860b42483daba11f549
 msgid "导出 HTML 报告"
-msgstr "导出 HTML 报告"
+msgstr "Export an HTML report"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10192
 #: a9acb4646f794bbb8726be36310d7dd4
 msgid ""
 "点击页面顶部「导出 HTML 报告」，可保存本次数据快照。报告采用与页面相同的阅读"
 "优先级，不再把所有原始表格一次性铺开："
-msgstr ""
-"点击页面顶部「导出 HTML 报告」，可保存本次数据快照。报告采用与页面相同的阅读"
-"优先级，不再把所有原始表格一次性铺开："
+msgstr "Click “Export HTML report” at the top of the page to save the current data snapshot. The report follows the same reading priority as the page instead of spreading every raw table across the first screen:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10194
 #: 93d9dd0bd0134a85a095c81b18d1e6be
 msgid "第一屏先给出「训练前必须处理」「建议复核」或「未发现阻塞项」；"
-msgstr "第一屏先给出「训练前必须处理」「建议复核」或「未发现阻塞项」；"
+msgstr "The first screen reports “Must fix before training”, “Review recommended”, or “No blockers found”;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10195
 #: ded04d1288ea40418163145f5a04ad27
 msgid "紧接着显示结构数、精确组分点、阻塞项数、复核组数以及相／磁分析进度；"
-msgstr "紧接着显示结构数、精确组分点、阻塞项数、复核组数以及相／磁分析进度；"
+msgstr "it then shows the structure count, exact composition points, blocker count, review-group count, and phase/magnetism analysis progress;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10196
 #: 2f8708391b82473ca4421ef539500260
 msgid "「Start here」只列最多 3 个最高优先级问题，并给出下一步动作；"
-msgstr "「Start here」只列最多 3 个最高优先级问题，并给出下一步动作；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10197
 #: f810c625c1084ea2a1375c79be739f3e
 msgid ""
 "完整复核项按「必须处理」「建议复核」「支持证据」「不可用检查」分组；只有阻塞"
 "项默认展开；"
-msgstr ""
-"完整复核项按「必须处理」「建议复核」「支持证据」「不可用检查」分组；只有阻塞"
-"项默认展开；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10198
 #: 8769d4102335477e829c2245d9b7283c
 msgid ""
 "普通复核详情、组分清单、相／磁地图、输入参数和运行指纹默认折叠，需要追证据时"
 "再展开。"
-msgstr ""
-"普通复核详情、组分清单、相／磁地图、输入参数和运行指纹默认折叠，需要追证据时"
-"再展开。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10200
 #: c2b9291efa3243f5ac910cf9f970a1f7
 msgid ""
 "因此，收到报告的人应先读状态横幅和 `Start here`，再展开与自己判断有关的证据。"
 "报告中仍保留："
-msgstr ""
-"因此，收到报告的人应先读状态横幅和 `Start here`，再展开与自己判断有关的证据。"
-"报告中仍保留："
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10202
 #: 71e7b6a2cb8f40cda9a9ab4eb1f16141
 msgid "评估范围、生成时间、数据与模型指纹；"
-msgstr "评估范围、生成时间、数据与模型指纹；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10203
 #: 0b0852e0cf17495ea6531fa36e43d99c
 msgid "数据质量、组分、标签、局域环境、结构相和磁类型摘要；"
-msgstr "数据质量、组分、标签、局域环境、结构相和磁类型摘要；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10204
 #: 47595231eeed491996895979385e752a
 msgid "复核项对应的真实结构索引；"
-msgstr "复核项对应的真实结构索引；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10205
 #: 09892adeee344ab7a493118b64bcac1a
 msgid "每项判据和能力边界。"
-msgstr "每项判据和能力边界。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10207
 #: bc8e38944e0c4379b8e735d64f3c6cb6
 msgid "报告用于记录和协作，不是全局覆盖证明，也不是自动采样指令。"
-msgstr "报告用于记录和协作，不是全局覆盖证明，也不是自动采样指令。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10209
 #: 42261c435e744771bb4a114d98a49765
 msgid "当前不能单独回答什么"
-msgstr "当前不能单独回答什么"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10211
 #: f008e51584b44628b7090eb74e7e2283
 msgid "训练集评估不能单独回答："
-msgstr "训练集评估不能单独回答："
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10213
 #: 7d7bd74b00f545888a2a0728a6ec5acb
 msgid "数据是否覆盖某个温度、压力、缺陷、界面或相变目标；"
-msgstr "数据是否覆盖某个温度、压力、缺陷、界面或相变目标；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10214
 #: 7e4cea06b33149f1a69c35195ef4638e
 msgid "哪种目标结构一定缺失；"
-msgstr "哪种目标结构一定缺失；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10215
 #: 8837642b4e164adea6ff7f72deb4b06d
 msgid "势函数在独立测试集上的误差；"
-msgstr "势函数在独立测试集上的误差；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10216
 #: bbc59ac016f04beeb8a57bcbd1be6da4
 msgid "长时间分子动力学是否稳定；"
-msgstr "长时间分子动力学是否稳定；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10217
 #: 29d5cdc4dc4c432d88caa7334963a6a0
 msgid "某项物性的误差是否可接受；"
-msgstr "某项物性的误差是否可接受；"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10218
 #: 679d010021d54273b38c4bdecb38f7ec
 msgid "单帧结构和自旋标签对应的热力学相是否稳定。"
-msgstr "单帧结构和自旋标签对应的热力学相是否稳定。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10220
 #: 4ce61c4dc9c641579a82977e43f9be52
 msgid ""
 "这些问题分别需要明确的目标空间、目标结构或轨迹、模型预测、独立参考数据和物性"
 "验证协议。「当前数据中少」只表示相对稀少，不等于研究目标中缺失。"
-msgstr ""
-"这些问题分别需要明确的目标空间、目标结构或轨迹、模型预测、独立参考数据和物性"
-"验证协议。「当前数据中少」只表示相对稀少，不等于研究目标中缺失。"
+msgstr "Details for this option"

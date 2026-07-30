@@ -1,95 +1,87 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-training-audit.md:1
-#: 05c2cc711af04882b71d1df4651a300d
+#: ../../source/module/nep-main-tool-training-audit.md:1
+#: f3796d6b2d4e4bf88c04524d69204523
 msgid "进入训练集评估（Training Set Audit）"
-msgstr "进入训练集评估（Training Set Audit）"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-training-audit.md:3
-#: 47b70c69b206462a93ccebbe621f86fa
+#: ../../source/module/nep-main-tool-training-audit.md:3
+#: 909c3ff4e3a54ddd8d38e5fe6c8622b0
 msgid "作用与适用场景"
-msgstr "作用与适用场景"
+msgstr "Purpose and use cases"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-training-audit.md:5
-#: 53ed017197af42019ad0d9fe42b110b7
-msgid ""
-"把当前活动结构送入训练集评估页面，检查阻塞项、组分、标签、局域环境、结构相和"
-"磁类型。 这个入口不复制数据，也不会自动删除或修改结构。"
-msgstr ""
-"把当前活动结构送入训练集评估页面，检查阻塞项、组分、标签、局域环境、结构相和"
-"磁类型。 这个入口不复制数据，也不会自动删除或修改结构。"
+#: ../../source/module/nep-main-tool-training-audit.md:5
+#: da12f348f52f4af484ee9476d1666837
+msgid "把当前活动结构送入训练集评估页面，检查阻塞项、组分、标签、局域环境、结构相和磁类型。 这个入口不复制数据，也不会自动删除或修改结构。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-training-audit.md:8
-#: 0b5486a7040148909eaaa17e4b3bd4a6
+#: ../../source/module/nep-main-tool-training-audit.md:8
+#: af3fd9a3fd36475d9f8ac3a72721e5a7
 msgid "评估范围与结果"
-msgstr "评估范围与结果"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8643
-#: 45b6920cdea9416c8cd129dff29ba5a9
+#: ../../source/module/nep-dataset-display-content.md:8643
+#: 8c115027a6204d57b1d101e3b716ea5c
 msgid "位置：删除按钮后的分隔栏右侧。"
-msgstr "位置：删除按钮后的分隔栏右侧。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8644
-#: 5a2566fbdfef4bf5bacb5a30976ccbd2
+#: ../../source/module/nep-dataset-display-content.md:8644
+#: 1fc8ae799c17437b93e4a871d38c0fb7
 msgid "评估范围：当前活动结构；已经删除的结构不参与。"
-msgstr "评估范围：当前活动结构；已经删除的结构不参与。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8645
-#: f0a18e986daf4a26ab09c5de66e88fa6
+#: ../../source/module/nep-dataset-display-content.md:8645
+#: fe97ba42c6f94478b913c4a339f0d88a
 msgid "概览：结构/原子统计、标签可用性、元素共现矩阵与精确元素集合。"
-msgstr "概览：结构/原子统计、标签可用性、元素共现矩阵与精确元素集合。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8646
-#: 89b747df5df44af7b948c0d4c4728fce
+#: ../../source/module/nep-dataset-display-content.md:8646
+#: e3b880c0ff674c449b5c4ebafd91044b
 msgid "证据：数据质量、局域化学、结构相和磁类型；耗时证据在后台计算。"
-msgstr "证据：数据质量、局域化学、结构相和磁类型；耗时证据在后台计算。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8647
-#: d87d3f17e9c646f88d1a57ad7616bace
-msgid ""
-"结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset "
-"Display`。"
-msgstr ""
-"结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset "
-"Display`。"
+#: ../../source/module/nep-dataset-display-content.md:8647
+#: 17d101d142ab4ca5b9e04ce7c31585f1
+msgid "结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset Display`。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8648
-#: eff6a9bb26f14fc7a235a1e28adc16f6
+#: ../../source/module/nep-dataset-display-content.md:8648
+#: 2b23b243d2444ac8970e66fbee51e5da
 msgid "报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。"
-msgstr "报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。"
+msgstr "Details for this option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:8650
-#: 0af52e4a07934f08b61e5b300b014618
+#: ../../source/module/nep-dataset-display-content.md:8650
+#: ba2813039a32454589faa07b5efe990d
 msgid "完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。"
-msgstr "完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。"
+msgstr "Details for this option ([Related guide](training-set-assessment.md))"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-training-audit.md:15
-#: 247692dbac04427cb80c6d4fa363f296
+#: ../../source/module/nep-main-tool-training-audit.md:15
+#: 45ee4d71cffa403c8fbf91ae4597f65f
 msgid "操作后检查"
-msgstr "操作后检查"
+msgstr "Post-operation checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-training-audit.md:17
-#: 5e4a65f808a04ed58170fc63a2e1e171
+#: ../../source/module/nep-main-tool-training-audit.md:17
+#: ea88cdeae94f413eaafee9700387af7d
 msgid ""
-"先看概览中的训练阻塞项，再进入数据地图和复核队列。点击图表或复核项可以把真实"
-"结构索引 回选到数据集查看页面；数据变化后应重新检查，不能继续使用旧快照。"
-msgstr ""
-"先看概览中的训练阻塞项，再进入数据地图和复核队列。点击图表或复核项可以把真实"
-"结构索引 回选到数据集查看页面；数据变化后应重新检查，不能继续使用旧快照。"
+"先看概览中的训练阻塞项，再进入数据地图和复核队列。点击图表或复核项可以把真实结构索引 "
+"回选到数据集查看页面；数据变化后应重新检查，不能继续使用旧快照。"
+msgstr "Details for this option"

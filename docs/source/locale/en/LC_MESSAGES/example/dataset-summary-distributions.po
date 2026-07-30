@@ -61,7 +61,6 @@ msgstr "Training set check overview"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dataset-summary-distributions.md:9
 #: 27825af79e4049629504711a24bc4705
-#, fuzzy
 msgid ".. image:: ../_static/image/generated/training_set_audit_overview.png"
 msgstr ".. image:: ../_static/image/generated/tutorials/dataset_summary.png"
 

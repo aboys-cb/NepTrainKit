@@ -8,727 +8,610 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:1
-#: cff78c2a1fa745128956313163999e91
+#: ../../source/formats.md:1 37d28ee1d2c545aaa53c63104e1e73fc
 msgid "支持格式"
 msgstr "Supported Formats"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:3
-#: 7e848bac471c4370a530accdf7788bdf
+#: ../../source/formats.md:3 ade770d8e1ae4e7e9c6fc77a4c46b5e2
 msgid ""
-"这页按“你手里有什么文件”来选入口。NepTrainKit 会把常见结构和训练结果转换成内"
-"部 `Structure` 表示，用于显示、筛选、生成候选结构或导出。"
+"这页按“你手里有什么文件”来选入口。NepTrainKit 会把常见结构和训练结果转换成内部 `Structure` "
+"表示，用于显示、筛选、生成候选结构或导出。"
 msgstr ""
 "Use this page to choose an entry point from the files you already have. "
 "NepTrainKit converts common structure files and training outputs to its "
-"internal `Structure` representation for visualization, filtering, candidate "
-"generation, and export."
+"internal `Structure` representation for visualization, filtering, "
+"candidate generation, and export."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:6
-#: 6eadcfd8982945cf99e3f416a097ae41
+#: ../../source/formats.md:6 34195f109efc453795bc2da170e130fe
 msgid "30 秒快速判断"
-msgstr ""
+msgstr "30-second quick check"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 7724b720c8c747bd964afcefc8aee4a7
+#: ../../source/formats.md f95b7e2e131049d7bae4f1b5d3fd3ce9
 msgid "你手里的内容"
-msgstr ""
+msgstr "What you have"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: d696737ac6d74cfcb1a23576fddfab2a
+#: ../../source/formats.md 3380bd939b304244bf4f0d852dd6971a
 msgid "能否直接打开"
-msgstr ""
+msgstr "Can it be opened directly?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 2f7f445b80824643ba7311b55d328f94
+#: ../../source/formats.md 5ff36f1ef04841fa982127018ac6743e
 msgid "从哪里打开"
-msgstr ""
+msgstr "Where to open it"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 23dc5fb38bef45939491040b79d0274a
+#: ../../source/formats.md df8cb4c696604be3bf46e829d55b669f
 msgid "打开后通常做什么"
-msgstr ""
+msgstr "Typical next step"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 7f9e3c7937c045ebb94c7d62773371f0 b2ac2a3658814e60a4c609caac5bd9e2
+#: ../../source/formats.md ../../source/formats.md:23
+#: feae16b5b3e6490ab9e2e8f1aaf7bc41
 msgid "`.xyz` / `.extxyz`"
 msgstr "`.xyz` / `.extxyz`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 219f00c731be44c3be8ec4c790a43ebd 75cbca182db84d8f96f54199ec1678cb
-#: aec1bcfbc8764ff8998b85220305f064
+#: ../../source/formats.md b8ae1997a05a4e0eb86e1a8df41bd4c2
+#: d1853ca1fce34c5da57937fbe9a0a49a d80e1a69112d4d2f81a032bb22cef80b
 msgid "可以"
-msgstr ""
+msgstr "Yes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: fe4a2a87f8434a1e89d54d1f0f2d8a98 f23b67b7853d4287baa235a0848e4b28
+#: ../../source/formats.md ../../source/formats.md:23
+#: 21247a1bcb4c4d819ee426b5bd22dec5
 msgid "`生成数据集` 或 `NEP Dataset Display`"
-msgstr ""
+msgstr "`Make Dataset` or `NEP Dataset Display`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: e4802ecbabec408b83094de10b88b19a
+#: ../../source/formats.md c480f6d746da464886f04fb05cefc627
 msgid "继续生成，或检查、筛选和导出"
-msgstr ""
+msgstr "Continue generating, or inspect, filter, and export"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 89cdb90f3d68455bbb319d31bc207140
+#: ../../source/formats.md b806c34f2d8a4b9d9b9206152c234084
 msgid "`POSCAR` / `CONTCAR` / `.cif`"
-msgstr ""
+msgstr "`POSCAR` / `CONTCAR` / `.cif`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 7becd5c25b694a78bd014fceadae61cf 29a50649373c4de488b5fd84b2d8ffd1
-#: abd96e28c8064bd18a8700cc717b86d4
+#: ../../source/formats.md ../../source/formats.md:23
+#: 9da2e7561750476a946c229309060d51 a9284883812b4a0f82e87fcd4c43f2f4
+#: ca0b824c2ddf4d3a80384a9380d10315
 msgid "`生成数据集`"
-msgstr ""
+msgstr "`Make Dataset`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: c563c6d869ef4f3fb92479c6d7c7e3fa
+#: ../../source/formats.md 4430bb99d23045e59d475f2d8180af76
 msgid "作为基础晶体生成候选结构"
-msgstr ""
+msgstr "Use as a base crystal for candidate generation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 7af63b56b7664ac3b89b782caaab9c29
+#: ../../source/formats.md b806c34f2d8a4b9d9b9206152c234084
 msgid "`OUTCAR` / `XDATCAR`"
-msgstr ""
+msgstr "`OUTCAR` / `XDATCAR`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: db69346662c94123ae5cac6b7f1dde17 1a98ca6b6a604d09942161da53501457
-#: 56186166413d421ba5374d8c18309d15 89ab0156d4874e99a56865c65719c2d8
-#: bea4b3310cde4ca49c037bb4d801b304
+#: ../../source/formats.md ../../source/formats.md:23
+#: 9710f95fdbef47aa94a986f4dd734990
 msgid "`NEP Dataset Display`"
 msgstr "`NEP Dataset Display`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 381f8effc9544674813fb4108e8d9ef5
+#: ../../source/formats.md 99638d3e84dc4dd3ad3e4627a25e3e07
 msgid "检查或转换 VASP 结果"
-msgstr ""
+msgstr "Inspect or convert VASP results"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: dc5170dd24ee42e192cb27a7072eb100
+#: ../../source/formats.md eba8f233246343b98556522434629deb
 msgid "`dump` / `lammpstrj`"
-msgstr ""
+msgstr "`dump` / `lammpstrj`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 8e2c3fa5f4fd4e96943a12c6d2d389e9
+#: ../../source/formats.md 203d7ae052a8425a96ca55a2f84517af
 msgid "通常可以"
-msgstr ""
+msgstr "Usually"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 2b5f61b0db6c4de79a564636fbe0fe8d
+#: ../../source/formats.md dca9b4d86fe74a6aa2afaca80a786a9c
 msgid "查看 LAMMPS 轨迹；数值 `type` 需要元素映射"
-msgstr ""
+msgstr "View LAMMPS trajectories; numeric `type` values need an element mapping"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: f76ce5b563cb4c63b66f703fdade5227 765780b6394f4fbdae78f3dd038f4b0b
+#: ../../source/formats.md ../../source/formats.md:23
+#: 2a964db8ee9a4bb9801d137dea70e313
 msgid "DeepMD `deepmd/npy` 目录"
 msgstr "DeepMD `deepmd/npy` directory"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: a972a597aa1c4ab69e62f4c6d5db3ac8
+#: ../../source/formats.md 61e11d7ba9da4e7b8bfae581491aa5b0
 msgid "可以，但必须是完整目录"
-msgstr ""
+msgstr "Yes, but the complete directory is required"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 94cf2af5c3704c6a89c9b60bdd4e04a6
+#: ../../source/formats.md 5686a8e5341340e09b389c405e59c737
 msgid "查看或转换 DeepMD 数据"
-msgstr ""
+msgstr "View or convert DeepMD data"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: e8f37ba92036443cb9f85941275b16d3
+#: ../../source/formats.md d6cb9bedc52b47d4a696642ad8274b6f
 msgid "`energy_*.out` / `force_*.out` / `virial_*.out`"
-msgstr ""
+msgstr "`energy_*.out` / `force_*.out` / `virial_*.out`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 30d2b6f83a9341acb10bded7d5013015
+#: ../../source/formats.md 3de647a2c23841758fc3fb830e19ca23
 msgid "不能单独使用"
-msgstr ""
+msgstr "Cannot be used alone"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 42b3aedf1363459aa48e4c7d8a88d8b4
+#: ../../source/formats.md e555219d83c04324943e7ca48c2051cc
 msgid "与对应结构文件一起打开"
-msgstr ""
+msgstr "Open together with the corresponding structure file"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 44e9d4d8d213451ba53d4e88e7d021ab
+#: ../../source/formats.md aa55dcea402848198474a2e68a348d44
 msgid "回看预测值与参考值"
-msgstr ""
+msgstr "Review predictions and reference values"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 245f6eb16c7c46459e630ea70459d186
+#: ../../source/formats.md acdac1f593a9436a874426332f7f9e17
 msgid "CP2K 优化或 MD 的多步主输出"
-msgstr ""
+msgstr "Multi-step main output from CP2K optimization or MD"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: ed9d4aa6c9c1414ab343dd9f855aea8e
+#: ../../source/formats.md 3772560cf3444b1aa701f39cb344584a
 msgid "不建议直接打开"
-msgstr ""
+msgstr "Direct opening is not recommended"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: a08fa35ca3684aab8698f1dff272de00 fbf7baf5b61f449e9133fcb3a5882969
+#: ../../source/formats.md db70a103278e449f96bc2507928a23f0
+#: ed190edd6d774624b0c900382ae586ea
 msgid "先转换成 EXTXYZ"
-msgstr ""
+msgstr "Convert to EXTXYZ first"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: ead321cbd4544ff2825bc7c4cae0fd81
+#: ../../source/formats.md 6632ecf50365415e847022ad0c2d64d3
 msgid "保留逐步晶胞、坐标和标签"
-msgstr ""
+msgstr "Preserve per-step cells, coordinates, and labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 814cbf38d15545b2ab52b9a3da5c26c4
+#: ../../source/formats.md fee90fff3e4b437482ef3f814700cefc
 msgid "不在表中的结构或轨迹"
-msgstr ""
+msgstr "Other structures or trajectories"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: 88c36adf1e634483b139a59be3aaefb7
+#: ../../source/formats.md a23370edc38a449cbbb2e3e1a07bb72d
 msgid "不要只改扩展名"
-msgstr ""
+msgstr "Do not merely rename the extension"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:0
-#: f0eebb3a48bb4f82a31f5028ef8f6271
+#: ../../source/formats.md a890770ae79541c08861fe02b8244299
 msgid "用 `Lattice`、`Properties` 和 `pbc` 明确数据契约"
-msgstr ""
+msgstr "Make the data contract explicit with `Lattice`, `Properties`, and `pbc`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:19
-#: c33ec242e09e4d37b0f9a5ac205f69be
+#: ../../source/formats.md:19 38cafb93c5804a9292383004b4129aee
 msgid ""
-"只想确认“我的 `.xyz` 能不能打开”时，先看文件首帧：原子数要与原子行一致；周期"
-"结构应有 有效 `Lattice`；逐原子列必须与 `Properties` 声明一致。满足这些条件的"
-"普通 XYZ/EXTXYZ 可以直接尝试导入。失败时根据错误信息检查具体字段，不要用补零"
-"或伪元素绕过。"
+"只想确认“我的 `.xyz` 能不能打开”时，先看文件首帧：原子数要与原子行一致；周期结构应有 有效 `Lattice`；逐原子列必须与 "
+"`Properties` 声明一致。满足这些条件的普通 XYZ/EXTXYZ "
+"可以直接尝试导入。失败时根据错误信息检查具体字段，不要用补零或伪元素绕过。"
 msgstr ""
+"To check whether an `.xyz` file can be opened, inspect its first frame: "
+"the atom count must match the atom rows; periodic structures need a valid"
+" `Lattice`; per-atom columns must match the `Properties` declaration. "
+"Ordinary XYZ/EXTXYZ files meeting these conditions can be imported "
+"directly. If import fails, inspect the named fields instead of padding "
+"values or using fake elements."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:24
-#: e95189cd6273407a9fa199495a9f6833
+#: ../../source/formats.md:24 faf1a36c0f4d449a9537473c582713ba
 msgid ""
-"要继续生成新结构，进入 `生成数据集`；要看图、删结构、筛选或导出子集，进入 "
-"`NEP Dataset Display`。同一种文件在两个入口中的用途不同，但底层结构数据不会因"
-"为入口不同 自动增加 DFT 标签。"
+"要继续生成新结构，进入 `生成数据集`；要看图、删结构、筛选或导出子集，进入 `NEP Dataset "
+"Display`。同一种文件在两个入口中的用途不同，但底层结构数据不会因为入口不同 自动增加 DFT 标签。"
 msgstr ""
+"To generate new structures, open `Make Dataset`; to view, delete, filter,"
+" or export a subset, open `NEP Dataset Display`. The same file serves "
+"different purposes in these two entry points, but the underlying data do "
+"not gain DFT labels merely because the entry point changes."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:29
-#: f8f1d603dd24461cbb99eab5482b2f5d
+#: ../../source/formats.md:29 998c32e61baa4c56b9ce618c70f86d66
 msgid "对应操作入口："
-msgstr ""
+msgstr "Relevant entry points:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:31
-#: 9a98305c1f6e46359dd08d73930e481f
+#: ../../source/formats.md:31 60b0cca02cbd458dadd2d3cb0ca23a25
 msgid "[在“生成数据集”中打开基础结构](module/make-dataset.md)"
-msgstr ""
+msgstr "[Open a base structure in `Make Dataset`](module/make-dataset.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:32
-#: b4ca9634e403448d95d63222c7e58ee0
-msgid ""
-"[在“NEP Dataset Display”中打开结构、模型和训练输出](module/nep-display-open-"
-"data.md)"
+#: ../../source/formats.md:32 1e82fc296b2747c78f14eb224b5c6324
+msgid "[在“NEP Dataset Display”中打开结构、模型和训练输出](module/nep-display-open-data.md)"
 msgstr ""
+"[Open structures, models, and training outputs in `NEP Dataset "
+"Display`](module/nep-display-open-data.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:33
-#: c8bdaf1faaab4550af2fdfb3f098281b
+#: ../../source/formats.md:33 3384c7f43275460f83dc5b7ff1bb1da8
 msgid "[导入失败时按症状排查](reference/troubleshooting.md)"
-msgstr ""
+msgstr "[Troubleshoot imports by symptom](reference/troubleshooting.md)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:35
-#: b3f24367d1484279a3f0fae617bbdb5c
+#: ../../source/formats.md:35 624b09267918454b9e3b60b07ddb1069
 msgid "结构文件"
 msgstr "Structure files"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 17990cead09047df9bf540b5f5da9185 d45c55e2412c4f1ea436d3d335795885
+#: ../../source/formats.md:23 73b945dcc09446b4a4aad9231698ab33
 msgid "文件"
 msgstr "File"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 46b0c4bc19d043cd944f2f2f9f3c5c7c
+#: ../../source/formats.md:23 d1a8cf6e8cb748dc9325a43f77cc8cf3
 msgid "推荐入口"
 msgstr "Recommended entry point"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 2c036cd5f1b34fc59e9ca814db74e390
+#: ../../source/formats.md:23 136a29b8f27642648fdda7c33587b218
 msgid "常见用途"
 msgstr "Typical use"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 86325e3737f7465c9b663f0a79b9f17c
+#: ../../source/formats.md:23 5cb9d13b1adc4a18a913841f1dbd0b5a
 msgid "作为初始结构、候选池或训练集"
 msgstr "Starting structures, a candidate pool, or a training set"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: a05f6019dd8c44e08252dd784ffdfbca
+#: ../../source/formats.md:23 b806c34f2d8a4b9d9b9206152c234084
 msgid "`POSCAR` / `CONTCAR`"
 msgstr "`POSCAR` / `CONTCAR`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 3fe02346317f49ceb954ee6508062bbd
+#: ../../source/formats.md:23 4430bb99d23045e59d475f2d8180af76
 msgid "作为初始晶体结构生成候选池"
 msgstr "Generate a candidate pool from an initial crystal structure"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 36a09787b8b94e0d9d359675e839fbb1
+#: ../../source/formats.md:23 ff7ec82f2601436980243a9f46aeecf7
 msgid "`CIF`"
 msgstr "`CIF`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 425afd871a14441d915ad3c9da979410
+#: ../../source/formats.md:23 03b90f09dce84df4b1ae2f995711aded
 msgid "从晶体结构开始构建候选集"
 msgstr "Build a candidate set from a crystal structure"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 2834cac1c7124b608fd17ba3a881ec30
+#: ../../source/formats.md:23 188dbab4148041409014cd496d4a777f
 msgid "ASE `.traj`"
 msgstr "ASE `.traj`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 1d17f73eca86486faec15fa29f406194
+#: ../../source/formats.md:23 aa9f94873a2b41e496b2932f3323809d
 msgid "查看已有轨迹或转换结构"
 msgstr "Inspect an existing trajectory or convert structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 0883d367658a45aeb1e8bedb27fc6b39
+#: ../../source/formats.md:23 5686a8e5341340e09b389c405e59c737
 msgid "查看或导出 DeepMD 风格结构数据"
 msgstr "Inspect or export data in DeepMD format"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:45
-#: 5abeaf6cf9974192b8ed84247b23505c
-msgid ""
-"如果你要继续生成新结构，优先导入 `生成数据集`。如果你要检查、删除、筛选或导出"
-"子集， 优先导入 `NEP Dataset Display`。"
+#: ../../source/formats.md:45 bdc1aad9dff2491e882db74a41c5aeeb
+msgid "如果你要继续生成新结构，优先导入 `生成数据集`。如果你要检查、删除、筛选或导出子集， 优先导入 `NEP Dataset Display`。"
 msgstr ""
+"If you want to generate new structures, open `Make Dataset` first. If you"
+" want to inspect, delete, filter, or export a subset, open `NEP Dataset "
+"Display` first."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:48
-#: aaad568a3dd94a18a2d6ed8d912abefb
+#: ../../source/formats.md:48 a637ae4748b84ec5bc5fdd79255810b5
 msgid ""
-"DeepMD 目录导入要求存在 `type.raw`、`type_map.raw`、`set.* / box.npy` 和 "
-"`set.* / coord.npy`，并且帧数、原子数、元素映射、晶胞和坐标必须一致。缺少这些"
-"契约时 会明确失败，不会用伪元素、单位晶胞或不完整帧继续加载。"
+"DeepMD 目录导入要求存在 `type.raw`、`type_map.raw`、`set.* / box.npy` 和 `set.* / "
+"coord.npy`，并且帧数、原子数、元素映射、晶胞和坐标必须一致。缺少这些契约时 会明确失败，不会用伪元素、单位晶胞或不完整帧继续加载。"
 msgstr ""
-"Importing a DeepMD directory requires `type.raw`, `type_map.raw`, `set.* / "
-"box.npy`, and `set.* / coord.npy`, with consistent frame counts, atom "
-"counts, element mappings, cells, and coordinates. Missing or inconsistent "
-"contracts fail explicitly instead of continuing with placeholder elements, "
-"an identity cell, or incomplete frames."
+"Importing a DeepMD directory requires `type.raw`, `type_map.raw`, `set.* "
+"/ box.npy`, and `set.* / coord.npy`, with consistent frame counts, atom "
+"counts, element mappings, cells, and coordinates. Missing or inconsistent"
+" contracts fail explicitly instead of continuing with placeholder "
+"elements, an identity cell, or incomplete frames."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:52
-#: fe1f914a80be4710886e302e800f18ff
+#: ../../source/formats.md:52 7d6cee168ec04dfe9f895c1a595b2e2c
 msgid "EXTXYZ 数据契约"
 msgstr "EXTXYZ data contract"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:54
-#: b8e359206f9347f0a7e240f355ad9c9f
+#: ../../source/formats.md:54 34274d27749f4844b1ac48847bd7cfc6
 msgid ""
-"`NEP Dataset Display` 会按扩展 XYZ 契约校验原子数、`Lattice`、`Properties`、"
-"元素符号、 逐原子列数和逻辑字段。文件声明的原子数与实际行数不一致、列缺失、非"
-"法元素、非法 PBC 或周期晶胞退化时会明确失败，不会用零值补齐。与 GPUMD/NEP 的 "
-"EXTXYZ 约定一致， 没有写 `pbc` 的帧默认按全周期 `T T T` 处理；非周期或部分周"
-"期数据必须在文件头明确写出。"
+"`NEP Dataset Display` 会按扩展 XYZ 契约校验原子数、`Lattice`、`Properties`、元素符号、 "
+"逐原子列数和逻辑字段。文件声明的原子数与实际行数不一致、列缺失、非法元素、非法 PBC 或周期晶胞退化时会明确失败，不会用零值补齐。与 "
+"GPUMD/NEP 的 EXTXYZ 约定一致， 没有写 `pbc` 的帧默认按全周期 `T T T` "
+"处理；非周期或部分周期数据必须在文件头明确写出。"
 msgstr ""
 "`NEP Dataset Display` validates atom counts, `Lattice`, `Properties`, "
 "element symbols, per-atom column counts, and logical fields against the "
-"extended XYZ contract. A frame fails explicitly if its declared atom count "
-"differs from the number of rows, columns are missing, an element or PBC "
-"value is invalid, or a periodic cell is degenerate; missing data is never "
-"padded with zeros. Consistent with the GPUMD/NEP EXTXYZ convention, frames "
-"without `pbc` default to fully periodic `T T T`. Nonperiodic or partially "
-"periodic data must declare `pbc` explicitly in the header."
+"extended XYZ contract. A frame fails explicitly if its declared atom "
+"count differs from the number of rows, columns are missing, an element or"
+" PBC value is invalid, or a periodic cell is degenerate; missing data is "
+"never padded with zeros. Consistent with the GPUMD/NEP EXTXYZ convention,"
+" frames without `pbc` default to fully periodic `T T T`. Nonperiodic or "
+"partially periodic data must declare `pbc` explicitly in the header."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:59
-#: b56609354b484033b5ecbb64ba30fd90
+#: ../../source/formats.md:59 f4a5b236ce0844a6bd0d18c80b7b7ef0
 msgid "NEP 训练相关文件"
 msgstr "NEP training files"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 4a04578942be4c6e8da1f461975cb67c
+#: ../../source/formats.md:23 225b3c63bcc44a95835f35674ab2d6ca
 msgid "作用"
 msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 527cdc01f6a44420ac44a365ee67cb15
+#: ../../source/formats.md:23 0bd31cc3847f488ca4dd08fc281cbc27
 msgid "`nep.txt`"
 msgstr "`nep.txt`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: c55796d54bcd4ba2941859ed48f9d061
+#: ../../source/formats.md:23 22a56c1f95c6406cba9860b570701861
 msgid "NEP 模型文件，可用于预测、回看或预筛"
-msgstr ""
-"NEP model used for prediction, retrospective inspection, or prescreening"
+msgstr "NEP model used for prediction, retrospective inspection, or prescreening"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: e030cd76d5af46efbf3d4372cf4b5f0e
+#: ../../source/formats.md:23 8a59fbca097845cca201fc2a2f5c751f
 msgid "`energy_*.out`"
 msgstr "`energy_*.out`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 82d4d4e1afd040ac9739821b322d6abf
+#: ../../source/formats.md:23 56e6fdc5615f414397235418c43ef528
 msgid "能量预测/标签结果"
 msgstr "Energy predictions or reference labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 6156c33309ec4249951f3dc071e8a074
+#: ../../source/formats.md:23 903e9ab95faa4540bc1e26837976191c
 msgid "`force_*.out`"
 msgstr "`force_*.out`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: f2f5c3588d0044e0a27452c4dbfca02e
+#: ../../source/formats.md:23 3425b8e2d0c740abb3fd60bc40f34f9e
 msgid "力预测/标签结果"
 msgstr "Force predictions or reference labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: fd472dfb0d224c5c873669a9c5952c07
+#: ../../source/formats.md:23 ca2c4fd892514240aacd04964d90fb6a
 msgid "`virial_*.out`"
 msgstr "`virial_*.out`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 97405ea955944122bf2c4d97c9d51298
+#: ../../source/formats.md:23 cc9e2986e82d4254987c9ce0b32e4372
 msgid "virial 预测/标签结果"
 msgstr "Virial predictions or reference labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 3b63dba2a71b4129a4408e24d6921f16
+#: ../../source/formats.md:23 b1665a5a70d540339346711ea60b8f5c
 msgid "`stress_*.out`"
 msgstr "`stress_*.out`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 8b02ba2155ce4a37bef1c3f1b5b65bca
+#: ../../source/formats.md:23 40c1d46e19564c749f4d8b7f0a52a4ef
 msgid "stress 预测/标签结果"
 msgstr "Stress predictions or reference labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 514fcc1c7878432fb373787ed10aeb68
+#: ../../source/formats.md:23 744b5ee75bd7495fa1693738e007a989
 msgid "`descriptor*.out`"
 msgstr "`descriptor*.out`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:23
-#: 30eca0c32d3c4674bb8268269344c25e
+#: ../../source/formats.md:23 3bc25b197d18484ca7ba09d58a4bc719
 msgid "描述符输出，用于可视化或采样分析"
 msgstr "Descriptor output used for visualization or sampling analysis"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:70
-#: a379b5c203e340ea86215f20686711ea
+#: ../../source/formats.md:70 8d125966e99245dd98d0c602d47d417f
 msgid ""
-"训练结束后，把训练结构和这些输出一起导入 `NEP Dataset Display`，可以查看散点"
-"图、 定位误差最大的结构，并导出下一轮要处理的子集。"
+"训练结束后，把训练结构和这些输出一起导入 `NEP Dataset Display`，可以查看散点图、 "
+"定位误差最大的结构，并导出下一轮要处理的子集。"
 msgstr ""
-"After training, load the training structures together with these outputs in "
-"`NEP Dataset Display`. You can inspect scatter plots, locate the largest-"
-"error structures, and export a subset for the next iteration."
+"After training, load the training structures together with these outputs "
+"in `NEP Dataset Display`. You can inspect scatter plots, locate the "
+"largest-error structures, and export a subset for the next iteration."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:73
-#: 82c84bfcfc51457184e5781572225285
+#: ../../source/formats.md:73 6bbff08d434c44508cb0fe8f004c7918
 msgid "VASP"
 msgstr "VASP"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:75
-#: 7317fb6a4175437687ee1692f9ac39bb
+#: ../../source/formats.md:75 457f0a07adfa49319bef09a7ab445872
 msgid "`OUTCAR`：读取晶胞、坐标、力、应力和 virial。"
 msgstr "`OUTCAR`: reads the cell, coordinates, forces, stress, and virial."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:76
-#: 7ddf499048d94d72babfc974e07c1a81
+#: ../../source/formats.md:76 93418f9ab4224b6b866bfc3605263911
 msgid "`XDATCAR`：读取逐帧晶胞和坐标。"
 msgstr "`XDATCAR`: reads the cell and coordinates for each frame."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:78
-#: d0258e9671bb447a8d647d3aceddb647
-msgid ""
-"VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP Dataset Display` 中检查标"
-"签质量。"
+#: ../../source/formats.md:78 b0406520401749ef804f9a55e8cdde28
+msgid "VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP Dataset Display` 中检查标签质量。"
 msgstr ""
 "VASP results are commonly used to convert DFT labels into training "
 "structures or to inspect label quality in `NEP Dataset Display`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:80
-#: 527c4e5e7d004d7ead7045146e81446d
+#: ../../source/formats.md:80 fc09ad1697784053a8048e35e8867c6f
 msgid "高级结构格式"
 msgstr "Advanced structure formats"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:82
-#: 2c62b3b592774b75a3721f99faa3a14f
+#: ../../source/formats.md:82 9d59542e25f1426aa2a20ddca4156641
 msgid ""
 "`NEP Dataset Display → Open File…` 的 `Advanced / experimental structure "
-"files` 筛选器 还会显示 CP2K 输出与 n2p2 `input.data`。这两个入口按文件内容识"
-"别格式，不会只因为扩展名 匹配就把损坏文件当成有效数据。"
+"files` 筛选器 还会显示 CP2K 输出与 n2p2 `input.data`。这两个入口按文件内容识别格式，不会只因为扩展名 "
+"匹配就把损坏文件当成有效数据。"
 msgstr ""
 "The `Advanced / experimental structure files` filter under `NEP Dataset "
-"Display → Open File…` also exposes CP2K output and n2p2 `input.data`. Both "
-"importers identify the format from file contents; a matching extension alone "
-"does not make a damaged file valid."
+"Display → Open File…` also exposes CP2K output and n2p2 `input.data`. "
+"Both importers identify the format from file contents; a matching "
+"extension alone does not make a damaged file valid."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:86
-#: cc3e85a4c1e9407b9fc0bc1a1df1261f
+#: ../../source/formats.md:86 ea0b97c1301e4415862660f788d34751
 msgid "CP2K 单点输出"
 msgstr "CP2K single-point output"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:88
-#: b14b55f42ece43cdad34c1ba4768c410
+#: ../../source/formats.md:88 7c66afbbe7814ef79efa6b18ec0a9633
 msgid "支持带 CP2K 签名的 `.out` / `.log` 主输出。"
 msgstr "Main `.out` / `.log` files containing a CP2K signature are supported."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:89
-#: 327401b820014d7ba4d53da0f7f481bc
-msgid ""
-"当前入口只支持包含一组坐标和一组力的三维周期单点输出；优化或 MD 的多步历史应"
-"先转换为 EXTXYZ，不能直接把多个坐标块拼成一个结构。"
+#: ../../source/formats.md:89 27bd2fc344534b7a9d2a7786d835d4bb
+msgid "当前入口只支持包含一组坐标和一组力的三维周期单点输出；优化或 MD 的多步历史应先转换为 EXTXYZ，不能直接把多个坐标块拼成一个结构。"
 msgstr ""
-"This entry point currently supports only three-dimensional periodic single-"
-"point output containing one coordinate block and one force block. Convert "
-"multi-step optimization or MD histories to EXTXYZ first; multiple coordinate "
-"blocks are never concatenated into one structure."
+"This entry point currently supports only three-dimensional periodic "
+"single-point output containing one coordinate block and one force block. "
+"Convert multi-step optimization or MD histories to EXTXYZ first; multiple"
+" coordinate blocks are never concatenated into one structure."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:91
-#: eb59e504789a45d5a703d405420b9a3a
+#: ../../source/formats.md:91 ef2413872a644b638cd7586c97f75ea2
 msgid ""
 "读取 `CELL| Vector a/b/c [angstrom]`、`MODULE QUICKSTEP: ATOMIC COORDINATES "
-"IN ANGSTROM`、Hartree 能量、原子单位力和 GPa stress，并转换到 eV、Å 和 eV/"
-"Å³。"
+"IN ANGSTROM`、Hartree 能量、原子单位力和 GPa stress，并转换到 eV、Å 和 eV/Å³。"
 msgstr ""
 "The importer reads `CELL| Vector a/b/c [angstrom]`, `MODULE QUICKSTEP: "
-"ATOMIC COORDINATES IN ANGSTROM`, Hartree energy, forces in atomic units, and "
-"stress in GPa, then converts them to eV, Å, and eV/Å³."
+"ATOMIC COORDINATES IN ANGSTROM`, Hartree energy, forces in atomic units, "
+"and stress in GPa, then converts them to eV, Å, and eV/Å³."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:94
-#: 04213202fee14b9bb1451e48d36bc177
-msgid ""
-"缺少完整 cell、没有坐标、力数量不一致、cell 退化或含多个坐标/力块时会明确失"
-"败。"
+#: ../../source/formats.md:94 2924b85c8c9040ab8aca56f5d588e521
+msgid "缺少完整 cell、没有坐标、力数量不一致、cell 退化或含多个坐标/力块时会明确失败。"
 msgstr ""
-"Import fails explicitly when the complete cell or coordinates are missing, "
-"the force count does not match, the cell is degenerate, or multiple "
-"coordinate or force blocks are present."
+"Import fails explicitly when the complete cell or coordinates are "
+"missing, the force count does not match, the cell is degenerate, or "
+"multiple coordinate or force blocks are present."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:95
-#: 3787ad74766b478bb52cbf738f7d8068
+#: ../../source/formats.md:95 aacab49c2abb47a9af86539530dc9776
 msgid ""
-"当前 CP2K 主输出入口记录 `pbc=\"T T T\"`，因此不要用于 `PERIODIC NONE` 或部分"
-"周期计算。 这类计算应从 CP2K 导出带明确 `Lattice` 和 `pbc` 的 EXTXYZ 后再导"
-"入。"
+"当前 CP2K 主输出入口记录 `pbc=\"T T T\"`，因此不要用于 `PERIODIC NONE` 或部分周期计算。 这类计算应从 "
+"CP2K 导出带明确 `Lattice` 和 `pbc` 的 EXTXYZ 后再导入。"
 msgstr ""
-"The current CP2K main-output entry point records `pbc=\"T T T\"`; do not use "
-"it for `PERIODIC NONE` or partially periodic calculations. Export those "
-"calculations from CP2K as EXTXYZ with explicit `Lattice` and `pbc`, then "
-"import that file."
+"The current CP2K main-output entry point records `pbc=\"T T T\"`; do not "
+"use it for `PERIODIC NONE` or partially periodic calculations. Export "
+"those calculations from CP2K as EXTXYZ with explicit `Lattice` and `pbc`,"
+" then import that file."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:98
-#: fce4840c3d4344ecadb8da123e0fa17f
-msgid ""
-"CP2K 的几何优化文档也建议使用轨迹或最终结构文件承载多步几何；主输出并不是完整"
-"轨迹容器。"
+#: ../../source/formats.md:98 6599f261acd84b51bbc8f7dd0658edd6
+msgid "CP2K 的几何优化文档也建议使用轨迹或最终结构文件承载多步几何；主输出并不是完整轨迹容器。"
 msgstr ""
-"The CP2K geometry-optimization documentation likewise recommends trajectory "
-"or final-structure files for multi-step geometries; the main output is not a "
-"complete trajectory container."
+"The CP2K geometry-optimization documentation likewise recommends "
+"trajectory or final-structure files for multi-step geometries; the main "
+"output is not a complete trajectory container."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:100
-#: 550bc8e2169f42c9aa138032daf536c8
+#: ../../source/formats.md:100 d5db711f62564ce6b29c0f7a329022ab
 msgid "n2p2 `input.data`"
 msgstr "n2p2 `input.data`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:102
-#: 898a723584a84f368d7659a712883b4c
+#: ../../source/formats.md:102 b956da274b8d4fdc828c62f6fd967bcc
 msgid "支持名为 `input.data` 的文件以及 `.data` / `.cfg` 文件。"
 msgstr ""
 "Files named `input.data` and files with `.data` or `.cfg` extensions are "
 "supported."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:103
-#: 1da23cfa1d6c4e63b772d95d4b816c3f
-msgid ""
-"结构块必须由 `begin` / `end` 完整包围；每个 atom 行严格包含位置、元素、电荷、"
-"逐原子能量 和三维力。"
+#: ../../source/formats.md:103 0fcbc776705341d28bdd226833bf76ea
+msgid "结构块必须由 `begin` / `end` 完整包围；每个 atom 行严格包含位置、元素、电荷、逐原子能量 和三维力。"
 msgstr ""
-"Every structure block must be enclosed by `begin` and `end`. Each atom row "
-"must contain position, element, charge, per-atom energy, and a three-"
+"Every structure block must be enclosed by `begin` and `end`. Each atom "
+"row must contain position, element, charge, per-atom energy, and a three-"
 "dimensional force."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:105
-#: c934b2591ec248bc8de1e808525c0383
+#: ../../source/formats.md:105 3fc1f2d9d36f48f2b24e1135a3e75759
 msgid "n2p2 CFG 数值按 Bohr / Hartree 读取，并转换为 Å、eV 和 eV/Å。"
 msgstr ""
-"n2p2 CFG values are read in Bohr and Hartree, then converted to Å, eV, and "
-"eV/Å."
+"n2p2 CFG values are read in Bohr and Hartree, then converted to Å, eV, "
+"and eV/Å."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:106
-#: bcb2ac491f7d4d738090041a8ebfd4ea
-msgid ""
-"0 或 3 行 lattice 都是合法契约；只有 1–2 行 lattice、损坏数值、非法元素或缺"
-"少 `end` 会使整次导入失败。"
+#: ../../source/formats.md:106 607fc84768e443709b04f9a210d31450
+msgid "0 或 3 行 lattice 都是合法契约；只有 1–2 行 lattice、损坏数值、非法元素或缺少 `end` 会使整次导入失败。"
 msgstr ""
-"Either zero or three lattice rows form a valid contract. One or two lattice "
-"rows, damaged numeric values, invalid elements, or a missing `end` marker "
-"cause the entire import to fail."
+"Either zero or three lattice rows form a valid contract. One or two "
+"lattice rows, damaged numeric values, invalid elements, or a missing "
+"`end` marker cause the entire import to fail."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:109
-#: da012cab22ee45c8a27a7005cccb2e6d
+#: ../../source/formats.md:109 550770ae52034cf2a0f03a1a0df164f6
 msgid "LAMMPS"
 msgstr "LAMMPS"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:111
-#: 604f15d7a3634cdbacbbbed5bd96aa96
+#: ../../source/formats.md:111 1b97d4380a274e62b070f61595bf1b00
 msgid "`dump`"
 msgstr "`dump`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:112
-#: e6580de4ac264f3d9463eb7eacbe752a
+#: ../../source/formats.md:112 eec88ab8f8564dd2b3002b9275ad9620
 msgid "`lammpstrj`"
 msgstr "`lammpstrj`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:114
-#: 99836f80ad634a64b6856ded629bcb8e
+#: ../../source/formats.md:114 5973bfb51b854a9a8a2e72a4fd92a463
 msgid ""
-"支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位"
-"是否符合预期。 每一帧必须包含完整的 `BOX BOUNDS` 边界标志、一个完整坐标三元组"
-"（`xs/ys/zs`、 `x/y/z` 或 `xu/yu/zu`）以及 `element` 或 `type` 列。仅有数值 "
-"`type` 时，需要由导入 界面或调用方提供完整的“类型编号 → 元素”映射；"
-"NepTrainKit 不会把未知类型替换成伪元素。 原子行截断、非法元素、缺失映射或退化"
-"晶胞都会使整次导入明确失败，不会返回不完整轨迹。"
+"支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。 每一帧必须包含完整的 `BOX BOUNDS` "
+"边界标志、一个完整坐标三元组（`xs/ys/zs`、 `x/y/z` 或 `xu/yu/zu`）以及 `element` 或 `type` "
+"列。仅有数值 `type` 时，需要由导入 界面或调用方提供完整的“类型编号 → 元素”映射；NepTrainKit 不会把未知类型替换成伪元素。"
+" 原子行截断、非法元素、缺失映射或退化晶胞都会使整次导入明确失败，不会返回不完整轨迹。"
 msgstr ""
 "Orthogonal and triclinic cells and the common coordinate columns are "
-"supported. After import, spot-check the cell, element types, and coordinate "
-"units. Every frame must provide complete `BOX BOUNDS` boundary flags, one "
-"complete coordinate triplet (`xs/ys/zs`, `x/y/z`, or `xu/yu/zu`), and an "
-"`element` or `type` column. A dump containing only numeric `type` values "
-"requires a complete type-number-to-element mapping from the import UI or "
-"caller; NepTrainKit never substitutes pseudo-elements for unknown types. "
-"Truncated atom rows, invalid elements, missing mappings, or degenerate cells "
-"fail the entire import instead of returning a partial trajectory."
+"supported. After import, spot-check the cell, element types, and "
+"coordinate units. Every frame must provide complete `BOX BOUNDS` boundary"
+" flags, one complete coordinate triplet (`xs/ys/zs`, `x/y/z`, or "
+"`xu/yu/zu`), and an `element` or `type` column. A dump containing only "
+"numeric `type` values requires a complete type-number-to-element mapping "
+"from the import UI or caller; NepTrainKit never substitutes pseudo-"
+"elements for unknown types. Truncated atom rows, invalid elements, "
+"missing mappings, or degenerate cells fail the entire import instead of "
+"returning a partial trajectory."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:120
-#: c62be8bc317548448156a10888b8228d
+#: ../../source/formats.md:120 19d4ae08c8014cef9835d832ff44479e
 msgid "带自旋的推荐 dump"
 msgstr "Recommended dump format with spins"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:122
-#: 785ac3a786a34d838194a541f9d483f5
+#: ../../source/formats.md:122 f0a3aeb5c68a4ba8ab1545a8f4a86542
 msgid "使用 spin LAMMPS 时，推荐按下面的列名输出磁矩："
 msgstr ""
-"When using spin LAMMPS, use the following column names to output magnetic "
-"moments:"
+"When using spin LAMMPS, use the following column names to output magnetic"
+" moments:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:124
-#: 159afe260ff14c2a9c46e7a2f29997e7
+#: ../../source/formats.md:124 330eecb051fd46eea7a0fea93f467a01
 msgid ""
 "compute spin all property/atom sp spx spy spz fmx fmy fmz fx fy fz\n"
-"dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] c_spin[2] "
-"c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]\n"
+"dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] "
+"c_spin[2] c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]\n"
 msgstr ""
 "compute spin all property/atom sp spx spy spz fmx fmy fmz fx fy fz\n"
-"dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] c_spin[2] "
-"c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]\n"
+"dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] "
+"c_spin[2] c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:129
-#: 8caca967a3b7454e8c44c9a697b9125b
+#: ../../source/formats.md:129 3b52d2a1e78a40f09be51cb1fe20f0c6
 msgid ""
-"导入器把 `c_spin[1]` 解释为磁矩模长，把 `c_spin[2]`、`c_spin[3]`、"
-"`c_spin[4]` 解释为三个方向分量，并重建逐原子自旋向量："
+"导入器把 `c_spin[1]` 解释为磁矩模长，把 `c_spin[2]`、`c_spin[3]`、`c_spin[4]` "
+"解释为三个方向分量，并重建逐原子自旋向量："
 msgstr ""
 "The importer treats `c_spin[1]` as the moment magnitude and `c_spin[2]`, "
 "`c_spin[3]`, and `c_spin[4]` as the three direction components, then "
 "reconstructs the per-atom spin vector:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:131
-#: e26f2ea185af4fa9af803c2bb8627fd8
+#: ../../source/formats.md:131 3620f2b3d8c4400d926ef57f02dbf8be
 msgid ""
 "\n"
 "\\mathbf s_i=c_{\\mathrm{spin}[1]}\n"
-"\\left(c_{\\mathrm{spin}[2]},c_{\\mathrm{spin}[3]},c_{\\mathrm{spin}[4]}"
-"\\right).\n"
+"\\left(c_{\\mathrm{spin}[2]},c_{\\mathrm{spin}[3]},c_{\\mathrm{spin}[4]}\\right)."
+"\n"
 msgstr ""
 "\n"
 "\\mathbf s_i=c_{\\mathrm{spin}[1]}\n"
-"\\left(c_{\\mathrm{spin}[2]},c_{\\mathrm{spin}[3]},c_{\\mathrm{spin}[4]}"
-"\\right).\n"
+"\\left(c_{\\mathrm{spin}[2]},c_{\\mathrm{spin}[3]},c_{\\mathrm{spin}[4]}\\right)."
+"\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:136
-#: 655576535d7e4537a2d22e3bf3990a0d
+#: ../../source/formats.md:136 d96e134b9baf478f985dfa37ba410d31
 msgid ""
-"`c_spin[5]`、`c_spin[6]`、`c_spin[7]` 是磁力分量，不会写入 `spin:R:3`。如果缺"
-"少 `c_spin[1:4]` 中任意一列，导入器不会为该帧生成自旋字段。"
+"`c_spin[5]`、`c_spin[6]`、`c_spin[7]` 是磁力分量，不会写入 `spin:R:3`。如果缺少 "
+"`c_spin[1:4]` 中任意一列，导入器不会为该帧生成自旋字段。"
 msgstr ""
-"`c_spin[5]`, `c_spin[6]`, and `c_spin[7]` are magnetic-force components and "
-"are not written to `spin:R:3`. If any column in `c_spin[1:4]` is missing, "
-"the importer does not create a spin field for that frame."
+"`c_spin[5]`, `c_spin[6]`, and `c_spin[7]` are magnetic-force components "
+"and are not written to `spin:R:3`. If any column in `c_spin[1:4]` is "
+"missing, the importer does not create a spin field for that frame."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:138
-#: 209b661642244e0eab47b7e0c821653a
+#: ../../source/formats.md:138 45c76f76fb534a04aa83f159f114e140
 msgid "导出"
 msgstr "Export"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:140
-#: 0456fc4e3f0c43668688bfac513b2b8d
+#: ../../source/formats.md:140 8418f19c8c044c09938d828fe4a20143
 msgid "`NEP Dataset Display` 可以把当前数据导出为两类结果："
 msgstr "`NEP Dataset Display` can export the current data in two main forms:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:142
-#: 1b5807f59ebb49c495ef6b45514a6320
+#: ../../source/formats.md:142 8ef3cf9e3cd04a95bcc0f3386baaf940
 msgid "`xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 生成数据集 流程。"
 msgstr ""
+"`xyz` / `extxyz`: suitable for returning to a GPUMD, ASE, or Make Dataset"
+" workflow."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:143
-#: 4bd873aa9f3d4a0381ff25a9c1a82803
+#: ../../source/formats.md:143 88291e59da404e22bb0160045b5d6a48
 msgid ""
-"`deepmd/npy`：适合接入 DeepMD 风格数据管理；是否保留导入时的子目录层级由 "
-"`Settings → Keep DeepMD subfolders` 控制。"
+"`deepmd/npy`：适合接入 DeepMD 风格数据管理；是否保留导入时的子目录层级由 `Settings → Keep DeepMD "
+"subfolders` 控制。"
 msgstr ""
-"`deepmd/npy`: suitable for DeepMD-style data management. `Settings → Keep "
-"DeepMD subfolders` controls whether the imported subdirectory hierarchy is "
-"preserved."
+"`deepmd/npy`: suitable for DeepMD-style data management. `Settings → Keep"
+" DeepMD subfolders` controls whether the imported subdirectory hierarchy "
+"is preserved."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:145
-#: c464c98c8585408585f5b457c0d76352
+#: ../../source/formats.md:145 be3ba45e7eb64d49bc1795f03d2055e7
 msgid ""
-"导出 `deepmd/npy` 时，NepTrainKit 会保留全周期或全非周期 PBC；全非周期目录写"
-"入 `nopbc`。同一 `Config_type` 下的结构必须具有一致的元素/原子数、PBC、逐原子"
-"字段和 能量/virial 覆盖。DeepMD 标准目录不能无歧义表示部分周期边界或同一目录"
-"中的混合契约， 遇到这些输入时导出会在写文件前失败。逐原子整数、逻辑和字符串字"
-"段会按原类型往返， 原子顺序则按 `type_map` 规范化。"
+"导出 `deepmd/npy` 时，NepTrainKit 会保留全周期或全非周期 PBC；全非周期目录写入 `nopbc`。同一 "
+"`Config_type` 下的结构必须具有一致的元素/原子数、PBC、逐原子字段和 能量/virial 覆盖。DeepMD "
+"标准目录不能无歧义表示部分周期边界或同一目录中的混合契约， 遇到这些输入时导出会在写文件前失败。逐原子整数、逻辑和字符串字段会按原类型往返， "
+"原子顺序则按 `type_map` 规范化。"
 msgstr ""
-"When exporting `deepmd/npy`, NepTrainKit preserves fully periodic or fully "
-"nonperiodic PBC; a fully nonperiodic directory receives a `nopbc` marker. "
-"Structures sharing a `Config_type` must have consistent elements and atom "
-"count, PBC, per-atom fields, and energy/virial coverage. Because the "
-"standard DeepMD directory format cannot unambiguously represent partial PBC "
-"or mixed contracts in one directory, such inputs fail before any files are "
-"written. Per-atom integer, logical, and string fields round-trip with their "
-"original types, while atom order is canonicalized by `type_map`."
+"When exporting `deepmd/npy`, NepTrainKit preserves fully periodic or "
+"fully nonperiodic PBC; a fully nonperiodic directory receives a `nopbc` "
+"marker. Structures sharing a `Config_type` must have consistent elements "
+"and atom count, PBC, per-atom fields, and energy/virial coverage. Because"
+" the standard DeepMD directory format cannot unambiguously represent "
+"partial PBC or mixed contracts in one directory, such inputs fail before "
+"any files are written. Per-atom integer, logical, and string fields "
+"round-trip with their original types, while atom order is canonicalized "
+"by `type_map`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:151
-#: 6c66e419187f4fff91576fdb4a8d7baa
+#: ../../source/formats.md:151 e12e472ab1f54c7dbb2e3b7f48928606
 msgid "大数据和导入说明"
 msgstr "Large datasets and import behavior"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:153
-#: eca924e0333e4f0a96a426086b283fea
-msgid ""
-"大数据集导入时，界面显示可能做抽样或延迟渲染；底层选择和导出仍以完整数据为"
-"准。"
+#: ../../source/formats.md:153 3a938f0d1f984b0484f87563ddd340a0
+msgid "大数据集导入时，界面显示可能做抽样或延迟渲染；底层选择和导出仍以完整数据为准。"
 msgstr ""
 "For a large dataset, the interface may sample or defer rendering for "
-"responsiveness. Selection and export still operate on the complete dataset."
+"responsiveness. Selection and export still operate on the complete "
+"dataset."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:154
-#: 820f2944709a48e19c70122282ce1598
+#: ../../source/formats.md:154 4ca20eb04c974c54a39bd07a9eb20078
 msgid "导入过程支持中断。"
 msgstr "You can cancel an import while it is running."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/formats.md:155
-#: 0016861e50e942fbba54e2956649bb5a
+#: ../../source/formats.md:155 4d049707da7a4475a271bf186d7a3c13
 msgid ""
-"不同来源的文件最好保留清晰命名，例如 `candidate_pool.xyz`、"
-"`candidate_pool_clean.xyz`、`dft_labeled.xyz`。"
+"不同来源的文件最好保留清晰命名，例如 "
+"`candidate_pool.xyz`、`candidate_pool_clean.xyz`、`dft_labeled.xyz`。"
 msgstr ""
 "Use descriptive names for files from different stages, such as "
 "`candidate_pool.xyz`, `candidate_pool_clean.xyz`, and `dft_labeled.xyz`."
@@ -740,22 +623,26 @@ msgstr ""
 #~ msgstr "`Make Dataset`"
 
 #~ msgid ""
-#~ "如果你要继续生成新结构，优先导入 `Make Dataset`。如果你要检查、删除、筛选"
-#~ "或导出子集， 优先导入 `NEP Dataset Display`。"
+#~ "如果你要继续生成新结构，优先导入 `Make Dataset`。如果你要检查、删除、筛选或导出子集， "
+#~ "优先导入 `NEP Dataset Display`。"
 #~ msgstr ""
-#~ "Import the data into `Make Dataset` when you want to generate more "
-#~ "structures. Use `NEP Dataset Display` when the next task is to inspect, "
-#~ "remove, filter, or export a subset."
+#~ "Import the data into `Make Dataset` "
+#~ "when you want to generate more "
+#~ "structures. Use `NEP Dataset Display` "
+#~ "when the next task is to inspect,"
+#~ " remove, filter, or export a subset."
 
 #~ msgid "`xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 Make Dataset 流程。"
 #~ msgstr ""
-#~ "`xyz` / `extxyz`: suitable for continuing in GPUMD, ASE, or a Make "
-#~ "Dataset workflow."
+#~ "`xyz` / `extxyz`: suitable for "
+#~ "continuing in GPUMD, ASE, or a "
+#~ "Make Dataset workflow."
 
-#~ msgid ""
-#~ "支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单"
-#~ "位是否符合预期。"
+#~ msgid "支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。"
 #~ msgstr ""
-#~ "Orthogonal and triclinic cells and common coordinate columns are "
-#~ "supported. After import, check a few structures to confirm that the cell, "
-#~ "element types, and coordinate units were interpreted as expected."
+#~ "Orthogonal and triclinic cells and "
+#~ "common coordinate columns are supported. "
+#~ "After import, check a few structures "
+#~ "to confirm that the cell, element "
+#~ "types, and coordinate units were "
+#~ "interpreted as expected."

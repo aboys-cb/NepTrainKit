@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:3
 #: 81377252f121468d9194c99146e12864
 msgid "扩胞（Super Cell）"
-msgstr ""
+msgstr "Super Cell"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:5
 #: fad1e6959c7449ea9e1ba95d9bcdf9c8
 msgid "**分类：** 晶格"
-msgstr ""
+msgstr "**Category:** Lattice"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:7
 #: 3b58d64ccb4449afb5e5e2404c6784ee
@@ -51,7 +50,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:11
 #: 0ed857e968174e49997e6f8d32745b26
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:13
 #: af5d9b0705c54bb49051de215c511a19
@@ -66,7 +65,7 @@ msgid ""
 "$n_a,n_b,n_c$ 是三个方向的正整数重复数。目标胞长模式把每个 $n_i$ 取到足以达到"
 "目标 长度的最小整数；原子数上限模式在 $N'$ 不超过预算的前提下选择重复数。锁定"
 "轴固定对应 $n_i=1$。"
-msgstr ""
+msgstr "$n_a,n_b,n_c$ are positive integer repeat counts along the three directions. In target-cell-length mode, each $n_i$ is the smallest integer that reaches the target length; in max-atom mode, repeat counts are chosen subject to the $N'$ budget. A locked axis has a fixed corresponding $n_i=1$."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:19
 #: 58d964a0c4f94e789f6d37e0c9d51b8f
@@ -128,7 +127,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:33
 #: 31b378901793480d964f5baecf705ab3
 msgid "`超胞倍率`（`super_scale`） = `[4, 4, 4]`"
-msgstr ""
+msgstr "`Supercell scale` (`super_scale`) = `[4, 4, 4]`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:35
 #: 64f4b2ae2f28467a8c7805f340e95428
@@ -164,7 +163,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:41
 #: ccdcca3567244671b3584b32ccd685c3
 msgid "如果超胞太大计算不起，用 `最大原子数`（`max_atoms`）模式设置预算上限"
-msgstr ""
+msgstr "If the supercell is too large to calculate, use `Maximum atom count` (`max_atoms`) mode to set a budget limit."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:43
 #: 99f4b852a2ac4274a0c8f84ef920a60f
@@ -236,7 +235,7 @@ msgstr "Expansion strategy"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:59
 #: 88e04fd6c188438bb7b146ff3229a13c
 msgid "扩胞方式（behavior_type）"
-msgstr ""
+msgstr "behavior_type"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:61
 #: e52b0ea77ff04da38c98d4f79e0eb273
@@ -256,7 +255,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:63
 #: 6dc75d759c6a428ea8a9d3e8cce023db
 msgid "模式（mode）"
-msgstr ""
+msgstr "mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:65
 #: d5c21c20c1c44fb18baa3011cac77c87
@@ -268,12 +267,12 @@ msgid ""
 "特定数值（比如所有方向大于等于 20 Å）时用这个。`\"max_atoms\"` 按原子数上限枚"
 "举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这"
 "个。"
-msgstr ""
+msgstr "`SuperCellMode`, default `'scale'`. `\"scale\"` expands by the explicit factors in `Supercell scale` (`super_scale`) when you know the desired size. `\"cell\"` derives factors from the target lengths in `Target cell length` (`target_cell`) in Å; each factor is floor or ceil of target/original length according to `Expansion behavior` (`behavior_type`). Use it to reach specific lengths such as at least 20 Å in every direction. `\"max_atoms\"` enumerates factor combinations under the atom-count limit and returns supercells within the budget; use it to find the largest usable cell under a constraint."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:67
 #: 7577dc60d71a4a2283a5251d730e72eb
 msgid "超胞倍率（super_scale）"
-msgstr ""
+msgstr "super_scale"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:69
 #: 9fa9b9184e75456dbb56a35bf43e002d
@@ -288,7 +287,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:71
 #: ee58a76f8dd84bc48c7d39eb02d868a9
 msgid "目标晶胞长度（target_cell）"
-msgstr ""
+msgstr "target_cell"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:73
 #: 40d35d52782f49b38cff4c489e69c1fb
@@ -304,7 +303,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:75
 #: a63e5b5e9034453ba707d012e60d93b2
 msgid "最大原子数（max_atoms）"
-msgstr ""
+msgstr "max_atoms"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:77
 #: 44ac67cca963428d98d3806f784439a6
@@ -323,7 +322,7 @@ msgstr "Axis locking"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:81
 #: af9d00af51124e80852850c4309be499
 msgid "固定轴选择（fixed_axis_flags）"
-msgstr ""
+msgstr "fixed_axis_flags"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:83
 #: 683e52ba015742b1af20816fbfb05faf
@@ -331,12 +330,12 @@ msgid ""
 "`tuple[bool, bool, bool]`，默认 `(false, false, false)`。锁定 a/b/c 方向的扩"
 "胞倍数。最适合 slab 场景：把法向（通常 c 轴）锁住不扩，只扩面内两个方向。被锁"
 "住的轴用 `固定轴倍率`（`fixed_axis_scale`）里对应的倍数，不被锁住的轴正常扩。"
-msgstr ""
+msgstr "`tuple[bool, bool, bool]`, default `(false, false, false)`. Lock expansion along a/b/c. This is useful for slabs: lock the normal (usually c) and expand only the two in-plane directions. A locked axis uses its corresponding factor from `Fixed-axis scale` (`fixed_axis_scale`); unlocked axes expand normally."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:85
 #: 01d4a96d53454e5cb9ac0d8b6f19f0ad
 msgid "固定轴倍率（fixed_axis_scale）"
-msgstr ""
+msgstr "fixed_axis_scale"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:87
 #: 0c797e7631ef4553957669f24a4d497a
@@ -344,7 +343,7 @@ msgid ""
 "`tuple[int, int, int]`，默认 `(1, 1, 1)`。仅对 `固定轴选择`"
 "（`fixed_axis_flags`）中对应位置为 true 的轴生效。通常设为 1（不扩胞），但如"
 "果你需要一个方向固定扩 2 倍、另一个方向自由扩，也可以设成其他值。"
-msgstr ""
+msgstr "`tuple[int, int, int]`, default `(1, 1, 1)`. Applies only to axes enabled in `Fixed-axis selection` (`fixed_axis_flags`). Usually set it to 1 (no expansion), but another value can keep one direction at a fixed 2× expansion while leaving another free."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:89
 #: d9dbe5eab3bd4d48a540e11aefd80f59
@@ -471,7 +470,7 @@ msgid ""
 "**Slab 面内方向扩胞不均匀。** `固定轴选择`（`fixed_axis_flags`）只锁了法向，"
 "面内两个方向各走各的倍数。如果面内需要正方形胞，确保 target_cell 的 a/b 目标"
 "值一致，或者用 scale 模式手动统一倍数。"
-msgstr ""
+msgstr "**The slab expands unevenly in-plane.** `Fixed-axis selection` (`fixed_axis_flags`) locks only the normal, so the two in-plane directions may use different factors. For a square in-plane cell, give a and b the same target lengths or use scale mode with equal factors."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/super-cell-card.md:149
 #: 96899b193f214b37b4d88bb4cfd6904d

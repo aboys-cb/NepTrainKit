@@ -27,9 +27,7 @@ msgstr "Workflows and metadata"
 msgid ""
 "这组卡片不表达某一种材料结构操作，而是控制后续卡片如何识别原子集合、如何分支"
 "以及如何合并输出。"
-msgstr ""
-"这组卡片不表达某一种材料结构操作，而是控制后续卡片如何识别原子集合、如何分支"
-"以及如何合并输出。"
+msgstr "These cards do not represent a particular structural operation. Instead, they control how later cards identify atom groups, branch the workflow, and merge outputs."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:0
 #: 56d0b9b3e79b472c8637dcab3be35608

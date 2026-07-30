@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -131,62 +130,62 @@ msgstr "Choose an entry point based on what you are trying to do. Only first-tim
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:16
 #: 6853cedea4894a8f95e73fd17a8b8809
 msgid "第一次安装和使用"
-msgstr ""
+msgstr "Install and use NepTrainKit for the first time"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:20
 #: 0076a49f92ae4c9794d53e2a5d03974e
 msgid "从安装、启动、生成第一批候选结构，一直走到清洗前的检查。"
-msgstr ""
+msgstr "Go from installation and launch to generating your first candidate structures and checking them before cleaning."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:22
 #: e5293be1e9fb4b76a81a1ac56e90c76b
 msgid "软件里的某个功能不会用"
-msgstr ""
+msgstr "I need help with a feature"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:26
 #: 2e2adacfbae34611adc9afbd56e477de
 msgid "按桌面软件页面顺序查按钮、参数、默认行为和输出。"
-msgstr ""
+msgstr "Look up buttons, parameters, default behavior, and outputs in the same order as the desktop interface."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:28
 #: a3da9f148ab54b148005affc777bf2e6
 msgid "我已经有候选结构"
-msgstr ""
+msgstr "I already have candidate structures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:32
 #: 12ff3fa9bf2d4b8a8f503cb4dbfc2827
 msgid "在 ``NEP Dataset Display`` 中检查异常，再做代表性采样并送去 DFT。"
-msgstr ""
+msgstr "Inspect them in ``NEP Dataset Display``, select representative samples, and send those samples to DFT."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:34
 #: f83cac1e7a2f4daaa58db809ecc44459
 msgid "我想复盘训练结果"
-msgstr ""
+msgstr "I want to review training results"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:38
 #: efa48fc7850a45ae9935a834b3a7390d
 msgid "从误差和异常结构追到数据缺口，组织下一轮补数据。"
-msgstr ""
+msgstr "Trace errors and anomalous structures back to gaps in the dataset, then plan the next round of data generation."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:40
 #: 9cfb9b1ede3149b8b2745193222cb1cf
 msgid "软件报错或没有输出"
-msgstr ""
+msgstr "The application reports an error or produces no output"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:44
 #: f34a462ddf5f40c4b62f5ec637c474a4
 msgid "按“导入失败、卡片无输出、CUDA 不可用”等症状直接排查。"
-msgstr ""
+msgstr "Troubleshoot directly by symptom, such as an import failure, an empty card output, or unavailable CUDA."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:46
 #: b593600d60604a38ac71a5eb4a8239d0
 msgid "看不懂术语或字段"
-msgstr ""
+msgstr "I do not understand a term or field"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:50
 #: f5e1594536364895bd560c44a1134b58
 msgid "集中查询 ``Config_type``、FPS、GSFE、virial 和 ``spin:R:3``。"
-msgstr ""
+msgstr "Look up ``Config_type``, FPS, GSFE, virial, and ``spin:R:3`` in one place."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/index.rst:53
 #: 88d1c58dd4fc41dcb65145e139e2750d

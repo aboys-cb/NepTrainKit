@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Spin Spiral"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:5
 #: 7722a9ce940f49c8b3ac4908edd28291
 msgid "**分类：** 磁性"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:7
 #: 21e78c95c9c8466fb740d35fc7f1bb4f
@@ -51,7 +50,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:11
 #: 793eb3cf8e1e496186c3dc70d5892ec7
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:13
 #: 519cd267dc1c4b9ab17c3bb67c1034cf
@@ -70,7 +69,7 @@ msgstr ""
 msgid ""
 "其中 $m_z=m_\\parallel/|\\mathbf m|$ 是无量纲轴向分量。$m_z=0$ 为平面 "
 "helix， $0<|m_z|<1$ 为 conical spiral，$|m_z|=1$ 是完全沿轴的共线极限。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:20
 #: 49ad422bb0e14d9ca1bb005921f5706e
@@ -169,7 +168,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:40
 #: 08afb37f0b034d88aa78becf0dca3d7c
 msgid "`手性`（`chirality`） = `Both`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:42
 #: 4d52f26c09884a0bbbf2ff138c0a29ce
@@ -197,7 +196,7 @@ msgstr ""
 msgid ""
 "如果极小值位置仍偏离，加密 `周期范围`（`period_range`）扫描（例如 `[10, 40, "
 "5]`）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:47
 #: d1edf134ce914bf09c641a9e1f3b8acf
@@ -228,9 +227,7 @@ msgstr "**Add it when:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:53
 #: 0c151abe37f04083b7dd376ea207f2d6
 msgid "研究体系存在螺旋/非共线磁基态（如 chiral magnet、skyrmion 宿主材料）"
-msgstr ""
-"The system has a spiral or noncollinear magnetic state, as in a chiral "
-"magnet or skyrmion-host material."
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:54
 #: 43e1341b82f94a8cb7cb85c6e7b9f32c
@@ -280,7 +277,7 @@ msgstr "Propagation axis and period"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:66
 #: 45e52ec3c1fa4404b2fde9914921ccb2
 msgid "轴（axis）"
-msgstr ""
+msgstr "axis"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:68
 #: 19d11809a6bc455991798179d8566f75
@@ -302,7 +299,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:72
 #: 6d6ae5e2beee4f2c93631de7e214e8a9
 msgid "螺旋参数方式（spiral_parameter_mode）"
-msgstr ""
+msgstr "spiral_parameter_mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:74
 #: 2681aef069a741789dc115612dea4a41
@@ -317,7 +314,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:76
 #: 6a339d518d354ea4bfec93d931145f9d
 msgid "周期范围（period_range）"
-msgstr ""
+msgstr "period_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:78
 #: ddfa0dfb17cc4c8fb07e950f97617b24
@@ -346,7 +343,7 @@ msgstr "Exploratory: `[4, 80, 4]` (broad range)"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:83
 #: 843cfa66dd1a43fabed208ff4094dfac
 msgid "角度梯度范围（angle_gradient_range）"
-msgstr ""
+msgstr "angle_gradient_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:85
 #: b54e036900504d42a0bee7c9c26e9ef3
@@ -362,7 +359,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:87
 #: 54d0de8ca1f2429cb1380c38913946fb
 msgid "层容差（layer_tolerance）"
-msgstr ""
+msgstr "layer_tolerance"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:89
 #: 51b32669828b457c83d4b9143d29bd08
@@ -377,7 +374,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:91
 #: 2342b36882b2457c99e50d0815cb4bc4
 msgid "仅生成公度周期（only_commensurate_periods）"
-msgstr ""
+msgstr "only_commensurate_periods"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:93
 #: 49ca8ccc3099403b9ea9affadda31ca8
@@ -397,7 +394,7 @@ msgstr "Phase and spiral shape"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:97
 #: 9043d6b07de04275a9e67a1068c848f3
 msgid "相位范围（phase_range）"
-msgstr ""
+msgstr "phase_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:99
 #: 237297cc1ad84fcb923aa84935c61111
@@ -426,7 +423,7 @@ msgstr "Exploratory: `[-180, 180, 30]` (full phase range)"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:104
 #: 549afbdd45cb4234b5a5012218829950
 msgid "z 方向磁矩分量（mz）"
-msgstr ""
+msgstr "mz"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:106
 #: 0056c46b971e435b8369077116a0a6f9
@@ -456,7 +453,7 @@ msgstr "Exploratory: `[-0.9, 0.9, 0.1]` (broad conical range)"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:111
 #: d5c5a1e94c354b3bb050ec4889465691
 msgid "手性（chirality）"
-msgstr ""
+msgstr "chirality"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:113
 #: cf0a764cbc8d401a99b260ce17323eb8
@@ -471,7 +468,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:115
 #: e6f5dadfbbc54be88c66eeae2db97ab3
 msgid "相位模式（phase_mode）"
-msgstr ""
+msgstr "phase_mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:117
 #: 0a78c9e375f54f8da3f2bdc08b732c12
@@ -493,7 +490,7 @@ msgstr "Moment magnitudes"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:121
 #: f13387d7c0124d028eecbe0fd7962204
 msgid "磁矩大小来源（magnitude_source）"
-msgstr ""
+msgstr "magnitude_source"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:123
 #: fb829da040e14732abcd3fc29580fb85
@@ -510,12 +507,12 @@ msgstr ""
 msgid ""
 "**`元素磁矩表`（`magmom_map`）** / **`默认磁矩`（`default_moment`）**：仅在 "
 "`Map/default magnitude` 模式下生效。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:127
 #: 143250798cac4676ae342af48d176d38
 msgid "元素磁矩表（magmom_map）"
-msgstr ""
+msgstr "magmom_map"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:129
 #: 5deaea81a0f64958a4607e63c7e649d6
@@ -530,19 +527,19 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:131
 #: 77b0ea3ce6544e08a584f146734d957e
 msgid "默认磁矩（default_moment）"
-msgstr ""
+msgstr "default_moment"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:133
 #: cd38601a3e21494b987b34ad0ae0cee2
 msgid ""
 "`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅"
 "值。关键磁性元素应显式列出，非磁元素通常保持 0。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:135
 #: ac76335e6f144cd5975a047fafe61cb1
 msgid "应用元素（apply_elements）"
-msgstr ""
+msgstr "apply_elements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:137
 #: 4a3898ecda4f45efbc1e54346d4b8b6a
@@ -559,7 +556,7 @@ msgstr "Output budget"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:141
 #: 47a692e299ee463385076bf7c85bb685
 msgid "最大输出数（max_outputs）"
-msgstr ""
+msgstr "max_outputs"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:143
 #: 07677d67aaf542ffb90b9c3bb26f2104
@@ -706,14 +703,14 @@ msgid ""
 "**输出为空 / 只有原始输入。** 磁矩幅值全为 0（检查 `磁矩大小来源`"
 "（`magnitude_source`）和 `magmom_map`）。`Period Filter` 开启且区间内没有相容"
 "周期——卡片会打印建议超胞倍数。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:226
 #: cdcdfd67603840c6882c63547934a467
 msgid ""
 "**相邻层相位递进不对。** 检查 `Propagation Axis` 是否指向预期的传播方向。"
 "`Phase Mode = Layer-locked` 时调整 `层容差`（`layer_tolerance`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:228
 #: 3f647284f19a463abc59c83a000bf277
@@ -721,7 +718,7 @@ msgid ""
 "**输出比预期的多很多。** `周期范围`（`period_range`）步长太小，或 `z 方向磁矩"
 "分量`（`mz`）范围太宽。设 `最大输出数`（`max_outputs`）上限，先小步长试跑再扩"
 "大。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:230
 #: 5d1eae8302f242669172c2f207e6556a

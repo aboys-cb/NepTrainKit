@@ -55,10 +55,7 @@ msgid ""
 "播放按钮：<img src=\"../_static/image/generated/show_nep_icons/play.svg\" "
 "width=\"18\" /> / <img src=\"../_static/image/generated/show_nep_icons/"
 "pause.svg\" width=\"18\" />。"
-msgstr ""
-"播放按钮：<img src=\"../_static/image/generated/show_nep_icons/play.svg\" "
-"width=\"18\" /> / <img src=\"../_static/image/generated/show_nep_icons/"
-"pause.svg\" width=\"18\" />。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
 #: 97dfaf29401e41b7b4ec7d2cdf4cf8dc

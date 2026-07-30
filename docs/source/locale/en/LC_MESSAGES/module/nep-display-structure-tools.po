@@ -20,52 +20,50 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:1
 #: e69c6315ba3f4ad2b87d0a268c42587f
 msgid "结构区：查看、标记与导出结构"
-msgstr "结构区：查看、标记与导出结构"
+msgstr "Structure view: inspect, tag, and export structures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3
 #: 364b6475107b4970a81d4b1dcba3e305
 msgid ""
 "这一页对应软件右侧结构区及其工具栏。先用相机和键显示检查当前结构，再按需要显"
 "示向量、 标记异常结构或导出当前结构。"
-msgstr ""
-"这一页对应软件右侧结构区及其工具栏。先用相机和键显示检查当前结构，再按需要显"
-"示向量、 标记异常结构或导出当前结构。"
+msgstr "This page covers the structure view and toolbar on the right. Use the camera and bond display to inspect the current structure, then show vectors, tag anomalies, or export the current structure as needed."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:5
 #: 3306905532fd42e3bb00cb52916e6618
 msgid "本页目录"
-msgstr "本页目录"
+msgstr "On this page"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:11
 #: 148691382b50469f83dacb0b721478e9
 msgid "工具栏总表"
-msgstr "工具栏总表"
+msgstr "Toolbar overview"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:3198
 #: ed293667bb15415783412f1763b34e14
 msgid "2.2 结构工具栏（右侧）"
-msgstr "2.2 结构工具栏（右侧）"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
 #: 109a0ca5300f474ea326656d25f4a57c
 msgid "图标"
-msgstr "图标"
+msgstr "Icon"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
 #: 285f91dca08c47379803981a2db2c74d 8c6a112d43db4a4c8335d95dbbfea375
 msgid "按钮"
-msgstr "按钮"
+msgstr "Buttons"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
 #: c8004494aea846a38448aa06b8eb444b
 msgid "是否打开设置"
-msgstr "是否打开设置"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
 #: f92a5239f98943df8440e963841054f2
 msgid "作用"
-msgstr "作用"
+msgstr "Purpose"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
 #: 1260f973839f4eba9206f549a3e450b9
@@ -94,12 +92,12 @@ msgstr "`Ortho View`"
 #: 9f32c9f4c924440a8ffed83728110b25 992080ee1e494b6697c50be22f057441
 #: 18f96997c7e64b08b16b49602a3ba321 bd3a1ec9eea04987828eebcf772d01f2
 msgid "否（开关）"
-msgstr "否（开关）"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3202
 #: d8ac6b8d5ff1409a9c66fd59b619d382
 msgid "切换正交视图"
-msgstr "切换正交视图"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3202
 #: f48df0e11b9f4e759bc783cb0f2cd56b
@@ -124,7 +122,7 @@ msgstr "`Automatic View`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3203
 #: 52a7eea61c284acbb299de09ae517e96
 msgid "自动调整结构观察距离"
-msgstr "自动调整结构观察距离"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3203
 #: cc03dbee84884151a1498dd0f842c4dd
@@ -149,7 +147,7 @@ msgstr "`Show Bonds`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3204
 #: 7c5b295a3024464aa65a3107156b4012
 msgid "显示或隐藏键连线"
-msgstr "显示或隐藏键连线"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3204
 #: 9889720439e34c69a60c2447f6b6c1be
@@ -174,12 +172,12 @@ msgstr "`Show Arrows`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3206
 #: cac9f6e57a314fb6ac285958e4eb7f0b 82c74b7b587a4fe9bd45237890139bf7
 msgid "是"
-msgstr "是"
+msgstr "Yes"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3205
 #: 58b9b1baff784ca484c86109346d32ef
 msgid "显示力、磁矩或其他向量箭头"
-msgstr "显示力、磁矩或其他向量箭头"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3205
 #: 38f8d5d9cbb74bcb999d982199ba24b3
@@ -203,7 +201,7 @@ msgstr "`Export current structure`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3206
 #: dc9866eb5ac648789fa294e1f464d5d9
 msgid "导出当前结构"
-msgstr "导出当前结构"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3206
 #: d7f32f45c3f94b96a9996e28f48acb89
@@ -227,7 +225,7 @@ msgstr "`Mark Bad (Reject)`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3207
 #: f3656fe5d2444fb08f9d58914db766c6
 msgid "标记当前结构为 reject"
-msgstr "标记当前结构为 reject"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3207
 #: 428e3107d30240c896d3e7a576500f1c
@@ -251,42 +249,42 @@ msgstr "`Drop All Bad`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3208
 #: 781c7c64bd4b4de5895db3134bcd2419
 msgid "是（确认）"
-msgstr "是（确认）"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3208
 #: 902c5ec378414e33ba6cb0ac64b7dc15
 msgid "删除所有 reject 结构"
-msgstr "删除所有 reject 结构"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9393
 #: 94c587790d854152a63fdda794f0c948
 msgid "4. 结构工具栏（按按钮查）"
-msgstr "4. 结构工具栏（按按钮查）"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9395
 #: 1499276e3ce4434db4e9ff5b9b4d03e3
 msgid "4.1 相机与显示控制"
-msgstr "4.1 相机与显示控制"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
 #: 6aa9e0a8d6624946b1565534b400f72d
 msgid "行为"
-msgstr "行为"
+msgstr "Behavior"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
 #: b3cc89eea2734105a6c9c038f402cad7
 msgid "切换正交投影"
-msgstr "切换正交投影"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
 #: f356b2b32f4049f7b85f16d38f7cc84a
 msgid "自动视角/距离对齐"
-msgstr "自动视角/距离对齐"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
 #: 308d63744bc54db49cf561e16d1c734d
 msgid "显示/隐藏键；图标在 `show_bond/hide_bond` 间切换"
-msgstr "显示/隐藏键；图标在 `show_bond/hide_bond` 间切换"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9403
 #: e4077c10220d4e4fb28f67460dcea6d8
@@ -296,22 +294,22 @@ msgstr "4.2 `Show Arrows`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9405
 #: 5c74b714765b4a5b828fc7d8049c8b4e
 msgid "前提：当前结构画布必须支持箭头 API（通常 vispy）。"
-msgstr "前提：当前结构画布必须支持箭头 API（通常 vispy）。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9406
 #: 7fb0c5dffdba47609fcaa584f27d9bee
 msgid "输入控件："
-msgstr "输入控件："
+msgstr "Input controls:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9407
 #: fde23f634e7b46d481466ca4883a3faa
 msgid "`Property`：仅 `N x 3` 原子向量属性"
-msgstr "`Property`：仅 `N x 3` 原子向量属性"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9408
 #: 46a57234d4b9446ab12ec4287117139e
 msgid "`Scale`：`[0, 1000]`，默认 `1.0`"
-msgstr "`Scale`：`[0, 1000]`，默认 `1.0`"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9409
 #: cbee4f3113bd452584a954d357fd7342
@@ -321,7 +319,7 @@ msgstr "`Colormap`：`viridis/magma/plasma/inferno/jet`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9410
 #: 7f6814502b524ef3a3b2fa35eee3b289
 msgid "`Show arrows`：勾选显示，取消则清除"
-msgstr "`Show arrows`：勾选显示，取消则清除"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9412
 #: de3202c91a024cb9be814c0474c0cb14
@@ -352,7 +350,7 @@ msgstr "4.3 `Export current structure`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9416
 #: 31784ce374d749cb95a1a0809bbf8f4f
 msgid "第一步：选格式"
-msgstr "第一步：选格式"
+msgstr "Step 1: choose a format"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9417
 #: bf354c8f7b264704a3618577aa433ea5
@@ -367,17 +365,17 @@ msgstr "`DeepMD/NPY (deepmd/npy)`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9419
 #: 0a2a92589992402c842637c158e691a7
 msgid "第二步：选路径"
-msgstr "第二步：选路径"
+msgstr "Step 2: choose a path"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9420
 #: f86db99b86c346ca9613a4f73b80c190
 msgid "`xyz`：文件保存路径（默认 `structure_{index}.xyz`）"
-msgstr "`xyz`：文件保存路径（默认 `structure_{index}.xyz`）"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9421
 #: 04b9d71a52ed484f8d48a0f69de069fb
 msgid "`deepmd/npy`：目录保存路径"
-msgstr "`deepmd/npy`：目录保存路径"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9423
 #: 1c2a1335ce664d9f971daeed22fdd682
@@ -403,19 +401,18 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9425
 #: af13b37c55744f21b641de6fb0f4019a
 msgid "4.4 `Mark Bad (Reject)` 与 `Drop All Bad`"
-msgstr "4.4 `Mark Bad (Reject)` 与 `Drop All Bad`"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9427
 #: 7e1083c78e4a41ef898b9608c1424408
 msgid "`Mark Bad (Reject)`：只标记，不删除；主图显示 reject 高亮。"
-msgstr "`Mark Bad (Reject)`：只标记，不删除；主图显示 reject 高亮。"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9428
 #: 6df72ce3fc4846b690744ddb744b2d23
 msgid ""
 "`Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
-msgstr ""
-"`Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9430
 #: 269333af30554d05a491af9c62ad528a

@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:3
 #: 7b697b93c283458a8e9b42ab2bad2b87
 msgid "关联随机自旋（Correlated Random Spin）"
-msgstr ""
+msgstr "Correlated Random Spin"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:5
 #: 51518a99429046de9b9672f7181877bd
 msgid "**分类：** 磁性"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:7
 #: 858913203ba74904a80fcaa3c4690ce5
@@ -41,7 +40,7 @@ msgid ""
 "`Correlated Random Spin` 从已有磁矩或元素磁矩表出发，生成带空间相关长度的非共"
 "线随机磁矩。它保持每个原子的磁矩模长，只改变方向；相关性由距离核函数和 `相关"
 "长度`（`correlation_length`）控制。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:11
 #: f87b36389cca40a9bbc948781f2ae51a
@@ -57,12 +56,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:13
 #: 668572b00c874c2e8183cfdc79ba1a9c
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:15
 #: ec8e4a9ce173454fad74335ab1fcda86
 msgid "程序先按周期最小镜像距离 $r_{ij}$ 构造空间协方差矩阵。两种核分别是"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:17
 #: d7afe9f886324e4a8bff376295ae1565
@@ -81,7 +80,7 @@ msgid ""
 "\\mathbf u$ 在原磁矩横向平面内的方向， 并把偏转角限制在圆锥半角内；`完全随机"
 "方向`直接归一化相关场。两种模式都保持每个原磁矩 的模长不变。该算法使用完整 "
 "$N\\times N$ 协方差矩阵，因此有明确的最大原子数限制。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:28
 #: 6c6e03e1afd84359a1154e4092f36d59
@@ -124,7 +123,7 @@ msgid ""
 "输出结构的 `spin` 为 `(N, 3)`，`Config_type` 追加 `CorrSpin(...)`。检查时看磁"
 "矩模长是否保持、cone 角度是否符合设定，以及不同 `相关长度`"
 "（`correlation_length`）下相邻自旋相似度是否变化。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:38
 #: e77a0534daf24824ae67fe748941bbb9
@@ -139,7 +138,7 @@ msgstr "Correlated random field"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:42
 #: 08e65fe11e844d9a8e941375818c123f
 msgid "模式（mode）"
-msgstr ""
+msgstr "mode"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:44
 #: 4c322f4dd2f84e148fff20cae2424b51
@@ -156,7 +155,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:46
 #: d74d2f1a2a334c1493422dcd2e452052
 msgid "相关核函数（correlation_kernel）"
-msgstr ""
+msgstr "correlation_kernel"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:48
 #: 0f90eef162e648c6925da34dd918ded0
@@ -172,7 +171,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:50
 #: 0a8104f364b843c188e79a72c808898e
 msgid "相关长度（correlation_length）"
-msgstr ""
+msgstr "correlation_length"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:52
 #: fdb30dba3a824319b2d0e1bdc381245d
@@ -189,7 +188,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:54
 #: ef48c9ec5a1d4fc38ad020888ace10da
 msgid "完整协方差最大原子数（max_atoms_for_full）"
-msgstr ""
+msgstr "max_atoms_for_full"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:56
 #: 73557580b2cb485295c15232df943cc7
@@ -211,7 +210,7 @@ msgstr "Outputs and angular range"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:60
 #: 4269fd624b504f67a35e18b4b475a889
 msgid "样本数（samples）"
-msgstr ""
+msgstr "samples"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:62
 #: 825b0a71660d4fb6b087ba9599ed9c9e
@@ -225,7 +224,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:64
 #: c8b9a4c30dc54515873956f1b413f60a
 msgid "锥角（cone_angle）"
-msgstr ""
+msgstr "cone_angle"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:66
 #: 3629bdbadfcc4b81823c9eb137c930bf
@@ -240,7 +239,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:68
 #: ce8974fab0234ea8bb9ec1a7745cf983
 msgid "生效条件：`模式`（`mode`）为 cone 模式时。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:70
 #: c0fab3ce01bd4f0d99f4c4e419d98c73
@@ -250,7 +249,7 @@ msgstr "Moment magnitudes"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:72
 #: eeb739051f9d43cbbad8bcd431762cf1
 msgid "磁矩大小来源（magnitude_source）"
-msgstr ""
+msgstr "magnitude_source"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:74
 #: 6aa0abc4240740f491abe169902b0a21
@@ -259,12 +258,12 @@ msgid ""
 "时优先复用，没有时兼容旧 `initial_magmoms`；两者都没有时用 `元素磁矩表`"
 "（`magmom_map`）和 `默认磁矩`（`default_moment`）构造。不要用默认幅值替代已知"
 "元素的实测磁矩。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:76
 #: 448e4ebb893148a5b2bbf56afba22306
 msgid "元素磁矩表（magmom_map）"
-msgstr ""
+msgstr "magmom_map"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:78
 #: 041f1fb3c0824e5998f10720f168f17a
@@ -279,19 +278,19 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:80
 #: 1ec72ebaedb74962a376027ab1fb005d
 msgid "默认磁矩（default_moment）"
-msgstr ""
+msgstr "default_moment"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:82
 #: 31c3ea2a1461442880a5dd5ed0f70d48
 msgid ""
 "`float`，默认 0.0。作为 `元素磁矩表`（`magmom_map`）没命中的元素的兜底幅值。"
 "关键磁性元素应显式列在 magmom_map 里，非磁元素通常保持 0。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:84
 #: f6d80c322f404b8eb9f90d8b2f9540eb
 msgid "标量磁矩转为矢量（lift_scalar）"
-msgstr ""
+msgstr "lift_scalar"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:86
 #: 58063bad77924c0f801de5810e1c681a
@@ -305,7 +304,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:88
 #: 083470cb0fc5471dbc354d416906f4db
 msgid "轴（axis）"
-msgstr ""
+msgstr "axis"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:90
 #: db8c6d6206184332ba91b50f35892430
@@ -328,7 +327,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:94
 #: bb57a388852d497487479f1880387505
 msgid "应用元素（apply_elements）"
-msgstr ""
+msgstr "apply_elements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:96
 #: 8be85f282306475eaee9605340d102b1
@@ -348,7 +347,7 @@ msgstr "Randomness"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:100
 #: 70e10eb7beac405da05bd606c7a7bc99
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:102
 #: c1bc80589d1f4d90975a5b45417e85fa
@@ -363,7 +362,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:104
 #: 7192b21d0d90463bae85ac5ea20aeda9
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:106
 #: c7f726e72e6f46318735489e73891441
@@ -485,7 +484,7 @@ msgid ""
 "**为什么超过 `完整协方差最大原子数`（`max_atoms_for_full`）直接失败？** 当前"
 "实现是精确协方差采样，需要 full matrix 和 Cholesky，复杂度随原子数快速增长。"
 "自动切换近似算法会让同一张卡在不同体系大小下改变物理语义，所以 v1 明确失败。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/correlated-random-spin-card.md:170
 #: 5fd9214d27c1401a9010f4b402c891bc
@@ -542,7 +541,7 @@ msgid ""
 "开启 `使用随机种子`（`use_seed`）后，相关随机场由 `随机种子`（`seed`）、输入"
 "结构稳定 ID 和 sample 序号共同决定。相同输入、相同参数、相同 seed 会生成相同"
 "磁矩方向。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
 #~ "`Correlated Random Spin` 从已有磁矩或元素磁矩表出发，生成带空间相关长度的"

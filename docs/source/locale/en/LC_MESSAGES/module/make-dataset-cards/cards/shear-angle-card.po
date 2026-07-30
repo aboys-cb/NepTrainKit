@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Shear Angle Strain"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:5
 #: 1493fa0fefbd4e348ce80c9acc3c3e27
 msgid "**分类：** 晶格"
-msgstr ""
+msgstr "**Category:** Lattice"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:7
 #: 8d1236fe54f34bdc9441613023acc695
@@ -48,7 +47,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:11
 #: e253aafc85fc4bcb84f6171aef7a6ffb
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:13
 #: 63f9dcceb4194dd08e32e4fc52ee3940
@@ -68,7 +67,7 @@ msgstr ""
 msgid ""
 "$a,b,c$ 保持原长度，三个 $\\Delta$ 值单位均为度。程序从新的六个晶格参数重建晶"
 "胞， 不是直接给某个矩阵元素加角度数值；原子分数坐标保持不变。"
-msgstr ""
+msgstr "$a,b,c$ keep their original lengths, and the three $\\Delta$ values are in degrees. The program rebuilds the cell from the six new lattice parameters rather than adding angle values directly to matrix elements; atomic fractional coordinates remain unchanged."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:20
 #: c23ff72c49504c7f97927a117f961da1
@@ -108,8 +107,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:28
 #: 6cc13cf656b947d18c054645c932eeb7
 msgid "**输入：** 一个弛豫好的 HfO2 四方相结构（alpha=beta=gamma=90°）"
-msgstr ""
-"**Input:** Relaxed tetragonal HfO2 with alpha = beta = gamma = 90 degrees."
+msgstr "alpha=beta=gamma=90°"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:30
 #: d6aabdf42a7545a7b8d7382672ce9fd5
@@ -127,17 +125,17 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:33
 #: 46245342b7f14d77840ac8d9713c45c4
 msgid "`α 角范围`（`alpha_range`） = `[0, 0, 1]` （不扫 alpha）"
-msgstr ""
+msgstr "`α angle range` (`alpha_range`) = `[0, 0, 1]` (do not scan alpha)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:34
 #: 91207ab626fa45fe9cbd02a3a9fc1bfc
 msgid "`β 角范围`（`beta_range`） = `[-6, 6, 2]`"
-msgstr ""
+msgstr "`β angle range` (`beta_range`) = `[-6, 6, 2]`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:35
 #: 9b1d2d57230d4f72bba52e13de57cbf5
 msgid "`γ 角范围`（`gamma_range`） = `[0, 0, 1]` （不扫 gamma）"
-msgstr ""
+msgstr "`γ angle range` (`gamma_range`) = `[0, 0, 1]` (do not scan gamma)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:37
 #: 0471c6104fa14b0f9cc296b2ecf6ab3c
@@ -246,7 +244,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:59
 #: e9f2a3201f284ec1a4ebc9a0092aa335
 msgid "α 角范围（alpha_range）"
-msgstr ""
+msgstr "alpha_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:61
 #: c876610d54214f228d161b1efc12f84a
@@ -263,7 +261,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:63
 #: 7fcc324221804a819b3c73336ecf2824
 msgid "β 角范围（beta_range）"
-msgstr ""
+msgstr "beta_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:65
 #: cdd43413d606442aad562ff7108b0b21
@@ -277,7 +275,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:67
 #: 088c816a2e9a41c689d92cb91bacb7bf
 msgid "γ 角范围（gamma_range）"
-msgstr ""
+msgstr "gamma_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:69
 #: ed47284c9d894fa2bfccb294526cda6b
@@ -301,7 +299,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:73
 #: dc66b697fe164ffa966ddc16bb2ee8e2
 msgid "识别有机分子（identify_organic）"
-msgstr ""
+msgstr "identify_organic"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:75
 #: 4e850001e41c49758d1de79b157f0736

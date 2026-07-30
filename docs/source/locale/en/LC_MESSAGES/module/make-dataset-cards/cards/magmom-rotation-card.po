@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Magnetic-Moment Rotation (Magmom Rotation)"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:5
 #: 6b4cce2d21c740efba2f017a14082cb4
 msgid "**分类：** 扰动"
-msgstr ""
+msgstr "**Category:** Perturbation"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:7
 #: 019596b538114299a30899f949af1ef4
@@ -48,7 +47,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:11
 #: 8dcd233285db47cdbf653ad90ec89d4d
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:13
 #: 89017f139ccc4006b3944799dd6f9cbb
@@ -63,7 +62,7 @@ msgid ""
 "$\\mathbf R(\\hat{\\mathbf n},\\theta)$ 是绕单位轴 $\\hat{\\mathbf n}$ 的三维"
 "旋转矩阵， $\\theta$ 在零到最大旋转角之间抽样；$\\lambda$ 是可选的模长缩放。"
 "只旋转方向时 $\\lambda=1$，所以 $|\\mathbf m'|=|\\mathbf m|$。"
-msgstr ""
+msgstr "$\\mathbf R(\\hat{\\mathbf n},\\theta)$ is the three-dimensional rotation matrix about unit axis $\\hat{\\mathbf n}$. Sample $\\theta$ between zero and the maximum rotation angle; $\\lambda$ optionally scales the magnitude. For direction-only rotations, $\\lambda=1$, so $|\\mathbf m'|=|\\mathbf m|$."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:19
 #: 4b865fae45784012bc6c34f1f1dcfe76
@@ -137,19 +136,19 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:34
 #: cef1ce9c75894d5699ff1ba915e0ce53
 msgid "`最大旋转角`（`max_angle`） = `10.0`"
-msgstr ""
+msgstr "`Maximum rotation angle` (`max_angle`) = `10.0`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:35
 #: bbc6b020376a4362b19d52ca8e0ad073
 msgid "`生成结构数`（`num_structures`） = `5`"
-msgstr ""
+msgstr "`Structures to generate` (`num_structures`) = `5`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:36
 #: dd04b08fa5e9440b86438bde85664c1e
 msgid ""
 "`扰动磁矩大小`（`disturb_magnitude`） = 勾选，`磁矩缩放系数`"
 "（`magnitude_factor`） = `[0.95, 1.05]`"
-msgstr ""
+msgstr "Enable `Perturb moment magnitude` (`disturb_magnitude`) and set `Moment scaling factor` (`magnitude_factor`) to `[0.95, 1.05]`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:38
 #: d9b986d51f8a4f9dac6074ec19ba2ba4
@@ -178,14 +177,14 @@ msgstr ""
 msgid ""
 "如果仍有方向敏感性问题，增大 `最大旋转角`（`max_angle`）到 15~20 度，或增加 `"
 "生成结构数`（`num_structures`）"
-msgstr ""
+msgstr "If direction sensitivity remains, increase `Maximum rotation angle` (`max_angle`) to 15–20 degrees or increase `Structures to generate` (`num_structures`)."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:43
 #: 0fb4d6976249434fb5d0c8ae3080b93f
 msgid ""
 "如果特定元素的磁矩扰动后偏离物理合理范围，用 `元素`（`elements`）限制只扰动目"
 "标元素"
-msgstr ""
+msgstr "If perturbations push a particular element's moments outside a physically reasonable range, use `Elements` (`elements`) to perturb only the target elements."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:45
 #: cfcda12c79e048f9b45da8a6b675b16e
@@ -252,7 +251,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:59
 #: b7426e5123bd4bc492674eb2ad922232
 msgid "元素（elements）"
-msgstr ""
+msgstr "elements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:61
 #: cc4f3abd672b4a02ab8e5c17fb6d25aa
@@ -267,7 +266,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:63
 #: 54e0177f29264c518457f34e8f960e18
 msgid "最大旋转角（max_angle）"
-msgstr ""
+msgstr "max_angle"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:65
 #: 86cda3ba46814fe5843e3416902e8c0b
@@ -296,7 +295,7 @@ msgstr "Exploratory: 20° or more (broad angular coverage; inspect carefully)"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:70
 #: ad670ca3ac2544fdadd5ea19c6a8afc6
 msgid "生成结构数（num_structures）"
-msgstr ""
+msgstr "num_structures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:72
 #: 5d547b43dcfe4722b0f79c0decf3d5f3
@@ -311,19 +310,19 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:74
 #: ef59459aef63443c8a488a633892a435
 msgid "标量磁矩转为矢量（lift_scalar）"
-msgstr ""
+msgstr "lift_scalar"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:76
 #: b52341c83bb14d6da73442f0c69fbe80
 msgid ""
 "`bool`，默认 `True`。输入是共线标量磁矩时，是否先沿 `轴`（`axis`）抬升为向量"
 "再做旋转。输入是标量且需要旋转时必须开启。"
-msgstr ""
+msgstr "`bool`, default `True`. For collinear scalar moments, whether to lift them along `Axis` (`axis`) into vectors before rotation. It must be enabled when scalar input needs rotation."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:78
 #: 8205c6c94188465cb04bd5f22d8d6422
 msgid "轴（axis）"
-msgstr ""
+msgstr "axis"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:80
 #: faa23c10c4c54fb5b96230d380e04c47
@@ -331,7 +330,7 @@ msgid ""
 "`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。`标量磁矩"
 "转为矢量`（`lift_scalar`）抬升时使用的参考方向。输入已经是向量磁矩时此参数对"
 "初始方向无影响。"
-msgstr ""
+msgstr "`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. Reference direction used when `Lift scalar moments to vectors` (`lift_scalar`) is enabled. It does not affect the initial direction when the input moments are already vectors."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:82
 #: 86c720aecfad4609ab99c0f4a46e098e
@@ -343,7 +342,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:84
 #: 78d60c936a354beab67720edfb0fd9d9
 msgid "扰动磁矩大小（disturb_magnitude）"
-msgstr ""
+msgstr "disturb_magnitude"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:86
 #: 8e4337b4c8894ce882dff23d4b295aa8
@@ -355,7 +354,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:88
 #: cb54674fd2e449cb9139df58a6f221b8
 msgid "磁矩缩放系数（magnitude_factor）"
-msgstr ""
+msgstr "magnitude_factor"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:90
 #: 9fc3ea92737a468ba35080d7cb939fd1
@@ -384,7 +383,7 @@ msgstr "Exploratory: `[0.85, 1.15]`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:95
 #: c85bd49a92ef4b33b147bb59ab723c9e
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:97
 #: a0ad5ab2b4cc4edabe6024c113a05486
@@ -397,7 +396,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:99
 #: e2cfbb818b774b2689f1c1cac9e7bb7d
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:101
 #: 0222b99f4a08473fb6251f60ec759e00
@@ -522,21 +521,21 @@ msgstr "Common questions"
 msgid ""
 "**输出和输入一样。** 检查输入是否有 `initial_magmoms`。标量磁矩需开 `标量磁矩"
 "转为矢量`（`lift_scalar`）。`最大旋转角`（`max_angle`）不能为 0。"
-msgstr ""
+msgstr "**The output is identical to the input.** Check that the input contains `initial_magmoms`. Scalar moments require `Lift scalar moments to vectors` (`lift_scalar`). `Maximum rotation angle` (`max_angle`) must not be 0."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:168
 #: a9844947d9804ab49362b858aad58b91
 msgid ""
 "**输出磁矩全是零。** `元素`（`elements`）过滤掉了所有有磁矩的元素，或 `磁矩缩"
 "放系数`（`magnitude_factor`）下限为 0 且被采样到。"
-msgstr ""
+msgstr "**All output moments are zero.** `Elements` (`elements`) filtered out every element with a moment, or the lower bound of `Moment scaling factor` (`magnitude_factor`) was 0 and was sampled."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:170
 #: 4adf8f99eab54ce0a1218d4d746789ac
 msgid ""
 "**每次运行结果不同。** 未开启 `Use Seed`。需要可复现时勾选并固定 `随机种子`"
 "（`seed`）。"
-msgstr ""
+msgstr "**Each run produces different results.** `Use Seed` is disabled. Enable it and fix `Random seed` (`seed`) for reproducibility."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:172
 #: bc691a259b034e939b1b7b4ed826fca8
@@ -551,9 +550,7 @@ msgstr "`MMR(a=10.0,s=0.95-1.05)`: vector rotation with magnitude perturbation"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:175
 #: edc7be2bd8c84e029cd40bfdd82d3455
 msgid "`MMS(s=0.95-1.05)`：仅模长缩放（旋转角度为 0 或无向量输入）"
-msgstr ""
-"`MMS(s=0.95-1.05)`: magnitude scaling only, when the rotation angle is zero "
-"or vector input is unavailable"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magmom-rotation-card.md:177
 #: 6564d7aa82ed48e1b3bc9e3697f93a1a
@@ -574,7 +571,7 @@ msgstr "Reproducibility"
 msgid ""
 "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复"
 "现。每次旋转的随机轴和角度由 seed + 结构序号联合控制。"
-msgstr ""
+msgstr "Enable `Use random seed` (`use_seed`) and fix `Random seed` (`seed`) to reproduce the same input. The random axis and angle for each rotation are controlled jointly by the seed and structure index."
 
 #~ msgid "`Disturb Magnitude` = 勾选，`Magnitude Factor` = `[0.95, 1.05]`"
 #~ msgstr ""

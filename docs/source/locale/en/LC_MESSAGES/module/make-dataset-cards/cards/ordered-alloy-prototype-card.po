@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -28,7 +27,7 @@ msgstr "Ordered Alloy Prototype"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:5
 #: 58891182ed814d7a9f1f8bc06b29ac13
 msgid "**分类：** 合金与组分"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:7
 #: 8badc3b8c91b4fdb8d39b3bb7e24be65
@@ -65,14 +64,14 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:13
 #: 432fb1bb17474ec9bc266dd6999ad9d3
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:15
 #: e56583bc73d34ff0a692caf6eb6202d4
 msgid ""
 "每个有序原型由基胞矩阵、固定分数坐标和每个位点的子晶格标签共同定义。重复数为 "
 "$(n_a,n_b,n_c)$ 时，"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:18
 #: 743294fa7ac04470a6742cfa92f93828
@@ -89,7 +88,7 @@ msgid ""
 "数。 因此 L1₂ 的 A:B=3:1、B2 的 A:B=1:1 会在任何整数扩胞后严格保持。非立方 "
 "A3/hcp 和 L1₀ 使用 $c=a(c/a)$。`sublattice` 标签表示位点身份；把 A、B 映射成"
 "什么元素只是占位 赋值，不改变原型拓扑。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:28
 #: 45aa0b36d89f47b48bb39399c8b5b34d
@@ -124,7 +123,7 @@ msgid ""
 "`sublattice` 中有 24 个 `A` 和 8 个 `B`。 **怎么验证训练集质量改善：** 下游分"
 "别约束 A/B 占位并完成 DFT 标注后，按原型和子晶格无序程度切片比较能量/力误差；"
 "不能只看混合后的总 RMSE。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:42
 #: 7716681c444c4640bc1f2661f402757e
@@ -134,7 +133,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:44
 #: 81bf301925a640178c25967110ab61eb
 msgid "原型（prototype）"
-msgstr ""
+msgstr "prototype"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:46
 #: f7dcf3888a654881801d84a9b184dc13
@@ -228,7 +227,7 @@ msgstr "A=2，B=2"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:57
 #: 470914fb318c4f02b74ef843f605cc13
 msgid "晶格常数范围（a_range）"
-msgstr ""
+msgstr "a_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:59
 #: 4f65c6b2ff074925a3136dc269bb3cd8
@@ -244,19 +243,19 @@ msgstr ""
 msgid ""
 "需要补体积响应时可扫描一段窄范围；只要一个结构时令起点等于终点。每个扫描点都"
 "受 `最大输出数`（`max_outputs`）限制。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:63
 #: 9ee66c1557fc40608c56571b2c2011cc
 msgid "晶格轴比 c/a（covera）"
-msgstr ""
+msgstr "covera"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:65
 #: 47661cf9363a4c1fad863287745372e2
 msgid ""
 "`float`，默认 1.0。A3/hcp 和 L1₀ 使用该值设置 `晶格轴比 c/a`（`covera`）；立"
 "方 A1、A2、L1₂、B2 固定使用 1，并在界面中禁用该输入，避免误以为它会生效。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:67
 #: 893cfa1473c141ada01ab6dce30de0c2
@@ -272,7 +271,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:69
 #: 0717e757908048fab83bbef2d21aa5eb
 msgid "子晶格元素（sublattice_elements）"
-msgstr ""
+msgstr "sublattice_elements"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:71
 #: 77b8f0c253e94a2f8197901758c6ff0f
@@ -299,14 +298,14 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:75
 #: f23f3cb243a841cd955c4850d6030506
 msgid "自动扩胞（auto_supercell）"
-msgstr ""
+msgstr "auto_supercell"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:77
 #: ea73915097d444d08fed479c676bdfd1
 msgid ""
 "`bool`，默认 true。开启后，在不超过 `最大原子数`（`max_atoms`）的前提下自动选"
 "择三轴重复数。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:79
 #: 7a1cbbed450f4253898df77f45d02d91
@@ -321,7 +320,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:81
 #: debd95f2e11b4496b77b491075fa4953
 msgid "最大原子数（max_atoms）"
-msgstr ""
+msgstr "max_atoms"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:83
 #: f01036e417484c4ab65d57db7de597a7
@@ -334,12 +333,12 @@ msgstr ""
 msgid ""
 "如果基胞本身或手动 `重复倍数`（`rep`）超过这个上限，operation 直接抛出 "
 "`ValueError`，不会偷偷缩小重复数或返回超预算结构。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:87
 #: 283e6d718f434e0e8f3d18feeee12020
 msgid "重复倍数（rep）"
-msgstr ""
+msgstr "rep"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:89
 #: 66061ab7bbbd4d7bb6a3109ffc2ad082
@@ -361,7 +360,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:93
 #: 23c20e2306984625b5837f7f5490f7a4
 msgid "最大输出数（max_outputs）"
-msgstr ""
+msgstr "max_outputs"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:95
 #: df60dab6eb4640efab9dab9478b68286
@@ -374,7 +373,7 @@ msgstr ""
 msgid ""
 "扫描范围很密时，它是独立于原子数的第二道预算门；达到上限后按 `晶格常数范围`"
 "（`a_range`）的确定顺序停止。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:99
 #: f4b0098666c64e07bc9d905ba6460beb
@@ -507,7 +506,7 @@ msgstr ""
 msgid ""
 "**手动超胞超过 `最大原子数`（`max_atoms`）。** 卡片会明确失败，不会改变用户给"
 "出的重复数。调小 `重复倍数`（`rep`）或提高原子数预算。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:149
 #: dc2b66ff69364818ba6785f56a78e247

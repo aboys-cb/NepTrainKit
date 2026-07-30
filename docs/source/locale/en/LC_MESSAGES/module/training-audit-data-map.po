@@ -20,7 +20,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-audit-data-map.md:1
 #: 066a4bec99d845cdb0ca8b73282b8cc5
 msgid "数据地图：组分、结构相与磁类型"
-msgstr "数据地图：组分、结构相与磁类型"
+msgstr "Data map: composition, phases, and magnetic types"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1190
 #: 33706fbfe3c545aca3334714df5627fc
@@ -28,10 +28,7 @@ msgid ""
 "「组分地图」按精确原子比例合并结构。例如，`Fe2Ni2`、`Fe4Ni4` 和 `Fe32Ni32` 都"
 "归入同一个 `Fe:Ni = 1:1` 组分点。右侧表格仍保留结构数量、原子数和 "
 "`Config_type`，不会把不同尺寸的结构当成同一个结构。"
-msgstr ""
-"「组分地图」按精确原子比例合并结构。例如，`Fe2Ni2`、`Fe4Ni4` 和 `Fe32Ni32` 都"
-"归入同一个 `Fe:Ni = 1:1` 组分点。右侧表格仍保留结构数量、原子数和 "
-"`Config_type`，不会把不同尺寸的结构当成同一个结构。"
+msgstr "The Composition Map merges structures by exact atomic ratio. For example, `Fe2Ni2`, `Fe4Ni4`, and `Fe32Ni32` belong to the same `Fe:Ni = 1:1` composition point. The table on the right still keeps the structure count, atom count, and `Config_type`, so different sizes are not treated as the same structure."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1192
 #: 89f2a966f1784196bff2a907119f01b4
@@ -40,38 +37,28 @@ msgid ""
 "历当前评估范围内的所有结构；不需要另找按钮启动。大体系如果不希望自动分析，可"
 "在「设置 → 个性化」中关闭「自动分析结构证据」。分析完成后会增加两种视图，但不"
 "会擅自切换当前组分图："
-msgstr ""
-"第一次进入时，柱高表示该浓度下的结构数。基础诊断显示后，页面默认自动在后台遍"
-"历当前评估范围内的所有结构；不需要另找按钮启动。大体系如果不希望自动分析，可"
-"在「设置 → 个性化」中关闭「自动分析结构证据」。分析完成后会增加两种视图，但不"
-"会擅自切换当前组分图："
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1194
 #: 244a8879fad64816a85f06c80947cda3
 msgid ""
 "**结构相：** FCC、HCP、BCC，以及通过保守模板确认的 A4、L1₀、L1₂、B1、B2、B3、"
 "B4、C1、B8₁、D0₃、L2₁、C1ᵦ、D0₁₉、C14、C15；其余显示为混合局域结构或未解析；"
-msgstr ""
-"**结构相：** FCC、HCP、BCC，以及通过保守模板确认的 A4、L1₀、L1₂、B1、B2、B3、"
-"B4、C1、B8₁、D0₃、L2₁、C1ᵦ、D0₁₉、C14、C15；其余显示为混合局域结构或未解析；"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1195
 #: f87e0ae8da6f42fa99d3fba25436efa0
 msgid ""
 "**磁类型：** FM、AFM（未细分）、逐层 AFM（`↑↓`）、双层 AFM（`↑↑↓↓`）、FiM、"
 "PM-like（自旋无序）、其他非共线、未识别、低／零磁矩和无有效 `spin` 字段。"
-msgstr ""
-"**磁类型：** FM、AFM（未细分）、逐层 AFM（`↑↓`）、双层 AFM（`↑↑↓↓`）、FiM、"
-"PM-like（自旋无序）、其他非共线、未识别、低／零磁矩和无有效 `spin` 字段。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1197
 #: 0f76f44aef1545eca02cf2ad8e84c20a
 msgid ""
 "分析结束后，可以先选组分，再用结构相和磁类型下拉框继续筛选。点击「查看选中的"
 "结构」即可回到 `NEP Dataset Display`。"
-msgstr ""
-"分析结束后，可以先选组分，再用结构相和磁类型下拉框继续筛选。点击「查看选中的"
-"结构」即可回到 `NEP Dataset Display`。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1199
 #: dc06f796ae954174b7addd76989eff2b
@@ -79,10 +66,7 @@ msgid ""
 "相和磁是两条独立证据。同一个 FCC 或 BCC 骨架可以承载不同磁结构，所以页面不会"
 "把它们合成一个不可拆分的标签。`Config_type` 只是来源元数据，不参与结构相或磁"
 "类型判断。"
-msgstr ""
-"相和磁是两条独立证据。同一个 FCC 或 BCC 骨架可以承载不同磁结构，所以页面不会"
-"把它们合成一个不可拆分的标签。`Config_type` 只是来源元数据，不参与结构相或磁"
-"类型判断。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1201
 #: f52d6ec07c3b4d1ca6115230428b08c5
@@ -91,18 +75,13 @@ msgid ""
 "相中的磁类型占比、每个磁类型中的结构相占比，以及整个评估范围的磁类型占比。颜"
 "色段中的百分比和右侧帧数分别回答“占多少”和“有多少帧”；点击任一颜色段可回选对"
 "应结构。"
-msgstr ""
-"在「进阶证据 → 磁序」中还可以切换三张按结构帧数归一化的 100% 堆叠图：每个结构"
-"相中的磁类型占比、每个磁类型中的结构相占比，以及整个评估范围的磁类型占比。颜"
-"色段中的百分比和右侧帧数分别回答“占多少”和“有多少帧”；点击任一颜色段可回选对"
-"应结构。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1203
 #: 6c15522228cb4f629c70c0fdd9b00b89
 msgid ""
 "训练集评估的磁类型占比视图，显示图表切换、结构帧占比、颜色图例和结构回选入口"
-msgstr ""
-"训练集评估的磁类型占比视图，显示图表切换、结构帧占比、颜色图例和结构回选入口"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1203
 #: 6c15522228cb4f629c70c0fdd9b00b89
@@ -115,8 +94,7 @@ msgstr ""
 #: e46f762d761e41778c19f3d6b23f9559
 msgid ""
 "训练集评估的组分地图，标出证据层切换、相分布柱图、精确组分表和结构回选控件"
-msgstr ""
-"训练集评估的组分地图，标出证据层切换、相分布柱图、精确组分表和结构回选控件"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1208
 #: e46f762d761e41778c19f3d6b23f9559
@@ -132,8 +110,4 @@ msgid ""
 "板都没有给出强证据，因此柱子显示为灰色「未解析」。这不是程序出错，而是「当前"
 "几何证据不足以给出已支持标签」。如果数据带有有效 `spin:R:3`，右上角证据层还会"
 "出现「按磁序着色」，下方磁序筛选框也会启用。"
-msgstr ""
-"上图使用的示例数据只有一个 `Pb:Te = 1:1` 精确组分点，而且 a-CNA 和内置原型模"
-"板都没有给出强证据，因此柱子显示为灰色「未解析」。这不是程序出错，而是「当前"
-"几何证据不足以给出已支持标签」。如果数据带有有效 `spin:R:3`，右上角证据层还会"
-"出现「按磁序着色」，下方磁序筛选框也会启用。"
+msgstr "This section explains the option, its parameters, operation, and expected result."

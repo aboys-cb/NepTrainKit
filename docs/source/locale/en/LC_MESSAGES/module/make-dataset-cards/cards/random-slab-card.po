@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:3
 #: 02ec754e653649a5a4ad9ab728e58412
 msgid "随机表面板层（Random Slab）"
-msgstr ""
+msgstr "Random Slab"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:5
 #: dd6aa50b3ac8491ca4b31e199ba15389
 msgid "**分类：** 表面"
-msgstr ""
+msgstr "**Category:** Surface"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:7
 #: e020a1749407474584cf8b06ae78cc10
@@ -48,12 +47,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:11
 #: 3bd69b33988e439b8c54e4e5469c9b95
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:13
 #: 88023fdb441e441ab71b8efe38e569aa
 msgid "卡片对 Miller 指数、层数和真空厚度做笛卡尔积扫描："
-msgstr ""
+msgstr "The card scans the Cartesian product of Miller indices, layer counts, and vacuum thicknesses:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:15
 #: 93124c5076444dfba2a2ef8a03b4c866
@@ -70,7 +69,7 @@ msgid ""
 "$v>0$ 时在法向加入对应 Å 数的真空，$v=0$ 时不额外加真空。输出数的理论上限是各"
 "扫描 点数的乘积减去 $(0,0,0)$ 组合。失败的不可构造晶面会记录并跳过，因此实际"
 "输出可能更少。"
-msgstr ""
+msgstr "For each combination, it calls periodic surface construction, uses the $(hkl)$ plane as the surface normal, and stacks $L$ layers along that normal. When $v>0$, it adds the corresponding vacuum in Å; when $v=0$, no extra vacuum is added. The theoretical output limit is the product of scan-point counts minus the $(0,0,0)$ combination. Invalid or unconstructable planes are recorded and skipped, so the actual output may be smaller."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:24
 #: 6bd7fd1870bf4765b25ebc545c552bf0
@@ -128,7 +127,7 @@ msgstr "**Parameters:**"
 msgid ""
 "`Miller 指数 h 范围`（`h_range`） = `[0, 1, 1]`，`Miller 指数 k 范围`"
 "（`k_range`） = `[0, 1, 1]`，`Miller 指数 l 范围`（`l_range`） = `[1, 3, 1]`"
-msgstr ""
+msgstr "`Miller index h range` (`h_range`) = `[0, 1, 1]`, `Miller index k range` (`k_range`) = `[0, 1, 1]`, `Miller index l range` (`l_range`) = `[1, 3, 1]`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:38
 #: b8fc2940a15f4876a967cb93628f0f36
@@ -138,7 +137,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:39
 #: 519f5be470864566881cd185b70efd40
 msgid "`真空层范围`（`vacuum_range`） = `[10, 10, 1]`"
-msgstr ""
+msgstr "`Vacuum-layer range` (`vacuum_range`) = `[10, 10, 1]`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:41
 #: 8e103bcb34314cd9844e2350710054b6
@@ -173,12 +172,12 @@ msgstr ""
 msgid ""
 "如果表面能预测仍不准，扩大 `Miller 指数 l 范围`（`l_range`）到 `[1, 5, 1]` 覆"
 "盖更多高指数面"
-msgstr ""
+msgstr "If surface-energy predictions remain inaccurate, extend `Miller index l range` (`l_range`) to `[1, 5, 1]` to cover more high-index surfaces."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:47
 #: f052314feb544cec965b9fc7240bc335
 msgid "如果 slab 太薄表面效应过强，增大 `层数范围`（`layer_range`）的下限"
-msgstr ""
+msgstr "If the slab is too thin and surface effects are too strong, increase the lower bound of `Layer-count range` (`layer_range`)."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:49
 #: 28aa559f50fc46f6ae7a34b4a3f5b232
@@ -233,7 +232,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:62
 #: 1b8d7ffade684ce8be4bd9bc9934101c
 msgid "Miller 指数 h 范围（h_range）"
-msgstr ""
+msgstr "h_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:64
 #: 58a818ace7324872ac8145cafbc3b71a
@@ -257,7 +256,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:68
 #: 3c34e982c1814b7f8755dafa57a6ab99
 msgid "Miller 指数 k 范围（k_range）"
-msgstr ""
+msgstr "k_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:70
 #: 7703d488c0f34f848c129bbe5ae04129
@@ -281,7 +280,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:74
 #: d7932ea5a0614729860c3d5fc3cfef16
 msgid "Miller 指数 l 范围（l_range）"
-msgstr ""
+msgstr "l_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:76
 #: ad90259b708f4b808fe6f66a21d58b46
@@ -305,7 +304,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:80
 #: ebb0934abed3416d83e176437cc2696a
 msgid "层数范围（layer_range）"
-msgstr ""
+msgstr "layer_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:82
 #: 2ae6344dd1064b468a073edd5c441b8c
@@ -331,7 +330,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:86
 #: cb6c1062ac664552ae37bc5ea400aab6
 msgid "真空层范围（vacuum_range）"
-msgstr ""
+msgstr "vacuum_range"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-slab-card.md:88
 #: 102559c83fdb47618c82f5b014e2d4ce

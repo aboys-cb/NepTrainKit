@@ -41,7 +41,7 @@ msgstr "Edit Structure Metadata in Batches"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:7
 msgid "选择、清洗与导出"
-msgstr ""
+msgstr "Select, clean, and export"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
 msgid "能量基线平移"
@@ -61,11 +61,11 @@ msgstr "Descriptor Plotting Example"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
 msgid "数值修正与分析"
-msgstr ""
+msgstr "Numerical corrections and analysis"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:26
 msgid "NEP Dataset Display 示例"
-msgstr ""
+msgstr "NEP Dataset Display examples"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:26
 msgid "用一条流程学会卡片系统"
@@ -73,19 +73,19 @@ msgstr "Learn the Card System with One Workflow"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:26
 msgid "页面与卡片流程"
-msgstr ""
+msgstr "Page and card workflows"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:2
 #: 4090fc1dd55747f8a4775f17d927076b
 msgid "按具体任务操作"
-msgstr ""
+msgstr "Task-based procedures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:4
 #: 4a883ca1da594eb586c60828edf1c117
 msgid ""
 "这里的页面每次解决一个明确问题。需要跨越“生成候选结构、清洗、DFT、训练和复"
 "核” 多个阶段时，请改看 :doc:`../workflows/index`。"
-msgstr ""
+msgstr "Each page here solves one clearly defined problem. When a task spans candidate generation, cleaning, DFT, training, and review, use :doc:`../workflows/index` instead."
 
 #~ msgid "NEP 数据展示示例"
 #~ msgstr "NEP Dataset Display Example"

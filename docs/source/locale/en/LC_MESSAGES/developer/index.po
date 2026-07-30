@@ -20,14 +20,14 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/developer/index.rst:2
 #: 70a604503d14414cbc90a3b9671d325d
 msgid "开发者文档"
-msgstr "开发者文档"
+msgstr "Developer documentation"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/developer/index.rst:4
 #: 1b65484a45f141899a24d886446f2256
 msgid ""
 "这一部分面向扩展 NepTrainKit 或维护在线文档的人，不属于普通数据处理流程。"
 msgstr ""
-"这一部分面向扩展 NepTrainKit 或维护在线文档的人，不属于普通数据处理流程。"
+"This section is for people who extend NepTrainKit or maintain the online documentation; it is not part of the normal data-processing workflow."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/developer/index.rst:6
 #: 75d8cf5f56294e2b8a53395ac7858022
@@ -35,8 +35,7 @@ msgid ""
 ":doc:`../module/custom-card-development`：把现有结构处理脚本封装为 生成数据集"
 "卡片。"
 msgstr ""
-":doc:`../module/custom-card-development`：把现有结构处理脚本封装为 生成数据集"
-"卡片。"
+":doc:`../module/custom-card-development`: wrap an existing structure-processing script as a Make Dataset card."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/developer/index.rst:7
 #: 70ca8abc98094a8dbf3801273c8e1c6f
@@ -44,8 +43,7 @@ msgid ""
 ":doc:`../module/make-dataset-cards/writing-guide`：维护卡片参数、示例和序列化"
 "说明。"
 msgstr ""
-":doc:`../module/make-dataset-cards/writing-guide`：维护卡片参数、示例和序列化"
-"说明。"
+":doc:`../module/make-dataset-cards/writing-guide`: maintain card parameters, examples, and serialization notes."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/developer/index.rst:8
 #: 77887ce5d0aa4e0590f418ff583a3492
@@ -57,4 +55,4 @@ msgstr ":doc:`../api/index`：Python API。"
 msgid ""
 "普通用户要查卡片怎么用，请进入 :doc:`../module/make-dataset-cards/index`。"
 msgstr ""
-"普通用户要查卡片怎么用，请进入 :doc:`../module/make-dataset-cards/index`。"
+"If you are a regular user looking up how to use a card, start at :doc:`../module/make-dataset-cards/index`."

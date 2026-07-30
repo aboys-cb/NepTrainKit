@@ -4,7 +4,6 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
@@ -23,12 +22,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:3
 #: bbaddb27e73f4b339843c8f87ea0f3ab
 msgid "晶格随机扰动（Lattice Perturb）"
-msgstr ""
+msgstr "Lattice Perturb"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:5
 #: 9f1dfaa88b31491796384014ce84a343
 msgid "**分类：** 晶格"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:7
 #: ed841de3e1f74c4793e0576129e2138f
@@ -48,7 +47,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:11
 #: 2071eb2337fa4d12abe9bfe78c59037c
 msgid "原理与公式"
-msgstr ""
+msgstr "Principle and equations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:13
 #: 4c5e6490bb2a405787f972e6f8c6525b
@@ -61,7 +60,7 @@ msgid ""
 "其中 $m$ 是最大相对缩放，$f_i$ 是第 $i$ 条晶格矢量的随机长度因子；开启角度扰"
 "动时 $g_j$ 同样在指定范围内抽样并作用于晶格角。原子分数坐标保持不变，因此 "
 "Cartesian 坐标 会随新晶胞同步变化。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:19
 #: 68f6f4d674504a9fbc2207d463a5bb2d
@@ -120,18 +119,18 @@ msgstr "**Parameters:**"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:32
 #: fec377c1e5734410a007e025dc7d2f50
 msgid "`最大缩放`（`max_scaling`） = `0.04` （4% 缩放幅度）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:33
 #: 3e104c52902647599281af4196ebf0c4
 msgid "`最大输出数量`（`max_num`） = `30`"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:34
 #: c170e3e9363147d88cd5b13896bc1a78
 msgid ""
 "`扰动角度`（`perturb_angle`） = `false` （先只看长度变化，避免角度扰动混入）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:36
 #: 6b2c9263ea564a9f833bf7728720e9ef
@@ -169,14 +168,14 @@ msgstr ""
 msgid ""
 "如果改善不够，增大 `最大缩放`（`max_scaling`）到 0.06~0.08，同时换 Sobol 引擎"
 "覆盖更均匀"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:42
 #: edbcf746229c47c2b39c05e1880fd373
 msgid ""
 "抽查最短键长：如果 4% 缩放后最短键比 DFT 参考键长短了 > 0.2 Å，说明缩放过大，"
 "回调 `最大缩放`（`max_scaling`）"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:44
 #: 27d5bce1f2154c898aec6ddbf0215cff
@@ -231,7 +230,7 @@ msgstr ""
 msgid ""
 "输入结构含有机分子但没开 `识别有机分子`（`identify_organic`） —— 分子内键会被"
 "错误拉伸"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:56
 #: 3090639d3e88428b849effcd8a3bd13c
@@ -241,7 +240,7 @@ msgstr "Parameters"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:58
 #: 9d8f398e256f44d683d59971b3995ac8
 msgid "生成方式（engine_type）"
-msgstr ""
+msgstr "engine_type"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:60
 #: af3f53dde6c74c51bf637e169605ec55
@@ -258,7 +257,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:62
 #: 2999033298b5462aa413ffc99c75dda5
 msgid "最大缩放（max_scaling）"
-msgstr ""
+msgstr "max_scaling"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:64
 #: 57bb684ac72e4f5dbe880ed14fa48f0a
@@ -267,12 +266,12 @@ msgid ""
 "1+m]` 范围内均匀采样。如果同时开启了 `扰动角度`（`perturb_angle`），角度也在"
 "这个相对范围内同步缩放。0.01~0.03 适合补近平衡声子区；推到 0.04~0.06 覆盖热膨"
 "胀；设到 0.08 以上时务必抽查最近邻距离，防止出现非物理键长。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:66
 #: 491de6b418cb47588a0043f187b93f0d
 msgid "最大输出数量（max_num）"
-msgstr ""
+msgstr "max_num"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:68
 #: 66d37bed3096446094f5c887263ffdeb
@@ -291,7 +290,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:70
 #: 9b617ff634624e93820168b6f2bde9a5
 msgid "扰动角度（perturb_angle）"
-msgstr ""
+msgstr "perturb_angle"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:72
 #: 2cf1fe3dbe3b47dab0ef0b340867f3b3
@@ -309,7 +308,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:74
 #: e82ab5e0343843c089ece7a6638b47c0
 msgid "识别有机分子（identify_organic）"
-msgstr ""
+msgstr "identify_organic"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:76
 #: 5b0fcaba02bb4745ad5e6d23393c7102
@@ -326,7 +325,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:78
 #: 4bfadf9c276e4281ae45826c862cdcfe
 msgid "使用随机种子（use_seed）"
-msgstr ""
+msgstr "use_seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:80
 #: ee937a98bd034387883cec1626d5081d
@@ -341,14 +340,14 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:82
 #: 69a1f67085644fdfb381c2ef743dab86
 msgid "随机种子（seed）"
-msgstr ""
+msgstr "seed"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:84
 #: dd9080c304034a098e7cd4930e2cc19d
 msgid ""
 "`int`，默认 0。随机种子值，仅在 `使用随机种子`（`use_seed`）打开时生效。两个"
 "不同的 seed 会产生两组不同的扰动分布。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:86
 #: e4c03d25d82a4f9091ace0027694f0ac
@@ -469,14 +468,14 @@ msgid ""
 "**输出全是相同结构或分布极窄。** `最大缩放`（`max_scaling`）是否太小（如 "
 "0.001）？或者 `最大输出数量`（`max_num`）太小导致偶然均匀。先增大 `最大缩放`"
 "（`max_scaling`）到 0.02 以上，增大 `最大输出数量`（`max_num`）到 20 以上。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:151
 #: 44d7fc03ae4b4867b6ff6292cc854e8b
 msgid ""
 "**分子晶体输出中键被拉断。** `识别有机分子`（`identify_organic`）没开。对于 "
 "MOF、有机晶体等，必须开启此开关，否则晶格缩放会直接拉伸分子内键。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:153
 #: 51d80899c32e4243aeeacd54f9410f8a
@@ -495,7 +494,7 @@ msgid ""
 "**Sobol 和 Uniform 输出差异大。** `最大输出数量`（`max_num`）较小时（< 20）"
 "Sobol 覆盖明显更均匀。样本数 ≥ 50 后两者差异缩小。如果在意复现性，固定 `生成"
 "方式`（`engine_type`） + `使用随机种子`（`use_seed`）。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:157
 #: d5edafd517f74043960e21fb7ba5c5ff
@@ -520,7 +519,7 @@ msgid ""
 "现。seed 会与单帧结构内容共同派生，因此几何或晶胞不同的帧不会机械复用同一组缩"
 "放因子，数据集重新排序也不改变单帧结果；完全相同的重复帧仍得到相同结果。"
 "Sobol 引擎的 scramble 同样受这个派生 seed 控制。"
-msgstr ""
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "晶格扰动（Lattice Perturb）"
 #~ msgstr "Lattice Perturb"

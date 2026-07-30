@@ -20,68 +20,60 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:1
 #: 4051a1fdc5464144b722c7d89db06385
 msgid "浏览与基础选择"
-msgstr "浏览与基础选择"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:3
 #: d42a27dd734143b0ba7d36abbd5e01ac
 msgid ""
 "对应 `Reset View`、`Pan View`、`Mouse Selection`、`Inverse Selection`、 "
 "`Delete Selected Items`、`Undo Selection` 和 `Undo Delete`。"
-msgstr ""
-"对应 `Reset View`、`Pan View`、`Mouse Selection`、`Inverse Selection`、 "
-"`Delete Selected Items`、`Undo Selection` 和 `Undo Delete`。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:6
 #: 8a17db0fcd134c89b67a5c6674d553f9
 msgid "这些工具会改变什么"
-msgstr "这些工具会改变什么"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:8
 #: 7c9de13b086441b59fb35df6d0cc72e9
 msgid "`Reset View` 和 `Pan View` 只改变当前图的观察范围，不改结构和选择。"
-msgstr "`Reset View` 和 `Pan View` 只改变当前图的观察范围，不改结构和选择。"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:9
 #: 85a3d5fb3d7d4d3fae1a22b676ca927b
 msgid ""
 "`Mouse Selection`、`Inverse Selection` 和 `Undo Selection` 改变选择集，适合在"
 "图上逐步圈出目标结构。"
-msgstr ""
-"`Mouse Selection`、`Inverse Selection` 和 `Undo Selection` 改变选择集，适合在"
-"图上逐步圈出目标结构。"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:10
 #: f2fcf42e34294ba1a851e34c259afa72
 msgid ""
 "`Delete Selected Items` 把选中结构移出活动数据集；`Undo Delete` 可以恢复最近"
 "一次删除。"
-msgstr ""
-"`Delete Selected Items` 把选中结构移出活动数据集；`Undo Delete` 可以恢复最近"
-"一次删除。"
+msgstr "See the parameter description for details."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:12
 #: fe8ab058be4847699e988a470719480c
 msgid ""
 "选择、标记和删除是三种不同状态。操作后看底部 `Sel / Rej / Rm / Now`，确认变化"
 "落在预期状态。"
-msgstr ""
-"选择、标记和删除是三种不同状态。操作后看底部 `Sel / Rej / Rm / Now`，确认变化"
-"落在预期状态。"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:14
 #: c92e62602e27476a896ca308f23e3d46
 msgid "按钮行为"
-msgstr "按钮行为"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: cc6a12c5f71d44d584e0eb66a8e5dafe
 msgid "按钮"
-msgstr "按钮"
+msgstr "Buttons"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 5365bf88d3694256af3d312b234f6036
 msgid "行为"
-msgstr "行为"
+msgstr "Behavior"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 3677b94f173c4675af4a0cabff57171f
@@ -91,7 +83,7 @@ msgstr "`Reset View`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 09d32366167d4de1aa386b77ec542547
 msgid "当前子图自动缩放回数据范围"
-msgstr "当前子图自动缩放回数据范围"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 3a9a507be32347db907a8fac5ddaddd1
@@ -101,7 +93,7 @@ msgstr "`Pan View`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: a2031f9cb3bb47eaa47a9e8897c62108
 msgid "切换平移交互"
-msgstr "切换平移交互"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 1962d0eef0d54c66912fdf223dca7fb1
@@ -111,7 +103,7 @@ msgstr "`Mouse Selection`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: c74a497d239c49dea70a89eaf0be88fa
 msgid "切换多边形/点选交互"
-msgstr "切换多边形/点选交互"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 4312762cb4ea494f92eed6d799defba8
@@ -121,7 +113,7 @@ msgstr "`Inverse Selection`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 9e7714b8dd5541fbb55c34076acea4ce
 msgid "对当前活动结构集合执行反选"
-msgstr "对当前活动结构集合执行反选"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 56c49bcc3f4a4453abf6c2ce3af66f63
@@ -131,7 +123,7 @@ msgstr "`Delete Selected Items`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 5bbd7defc46347488750c4885cdac334
 msgid "删除选中结构并重绘"
-msgstr "删除选中结构并重绘"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 38983cc5a2a442bc9339e8254023b704
@@ -141,7 +133,7 @@ msgstr "`Undo Selection`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: 64c1f3f8bd26489ba5fc0e359a50be3d
 msgid "撤销最近一次选择变化；无可撤销时提示 `No undoable selection!`"
-msgstr "撤销最近一次选择变化；无可撤销时提示 `No undoable selection!`"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: f05b9dc6879d4b86b75a76529202ae3e
@@ -151,18 +143,16 @@ msgstr "`Undo Delete`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:16
 #: dce17f80351648fc90b2d0249cf853a8
 msgid "撤销最近删除；无可撤销时提示 `No undoable deletion!`"
-msgstr "撤销最近删除；无可撤销时提示 `No undoable deletion!`"
+msgstr "Details for this option"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:21
 #: e7a23bef254944848a5cd00ab673e2c3
 msgid "操作后检查"
-msgstr "操作后检查"
+msgstr "Post-operation checks"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-basic.md:23
 #: 52d977da54504482b13bddc14af37432
 msgid ""
 "先确认选中点数量，再执行删除或导出。误选时优先用 `Undo Selection`，不要通过删"
 "除再恢复来代替选择撤销。"
-msgstr ""
-"先确认选中点数量，再执行删除或导出。误选时优先用 `Undo Selection`，不要通过删"
-"除再恢复来代替选择撤销。"
+msgstr "Details for this option"

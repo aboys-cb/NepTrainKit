@@ -86,7 +86,7 @@ msgstr "whether they concentrate in a composition, surface, defect, strain, or m
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:23
 #: d7115aea600a44db80c8302f458a2e35
 msgid "同一结构附近是否已经有足够相似的训练样本。"
-msgstr "Details for this option"
+msgstr "Whether enough similar training samples already exist near the same structure."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:25
 #: 66b2e36e143f44d1a37db716b3b500ea
@@ -98,13 +98,13 @@ msgstr "Use `Find Max Error Point` to select the largest-error structure, then i
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:28
 #: 0f05870022284fa1bd0db6bace1668e6
 msgid "3. 进入训练集评估"
-msgstr "Details for this option"
+msgstr "3. Open Training Set Audit"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:30
 #: 5b5c8bf89ea3411e98f16fb93a8bf655
 msgid ""
 "从顶部 `Save` 分裂菜单打开“评估当前数据集”。先看概览中的训练阻塞项，再查看："
-msgstr "Details for this option"
+msgstr "Open “Audit current dataset” from the top `Save` split menu. Check training blockers in the overview first, then inspect:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:32
 #: 0068e5df1ec8442f950a693ad7d7bf8f
@@ -137,112 +137,112 @@ msgid ""
 "训练集评估给出的是当前数据内部证据。某个组分数量较多，不代表该组分的温压、缺"
 "陷或局域环境 已经覆盖；没有独立测试集时，也不能仅凭训练集预测判断模型已经泛"
 "化。"
-msgstr "Details for this option"
+msgstr "Training Set Audit reports evidence within the current data. A large count for one composition does not prove that its pressure, temperature, defects, or local environments are covered; without an independent test set, training-set predictions alone cannot establish generalization."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:41
 #: fe133146054c4dab9e9cc96194971927
 msgid "4. 给每类问题选择处理方向"
-msgstr "Details for this option"
+msgstr "4. Choose a response for each problem type"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: fc78095ff0014cedba162aa7f6063867
 msgid "看到的现象"
-msgstr "Details for this option"
+msgstr "Observed symptom"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: c356dc8decaf4d0fbeced4224e5163f8
 msgid "先做什么"
-msgstr "Details for this option"
+msgstr "First action"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 47e7641b80cf4d8da3234c30ef1e5fb9
 msgid "不要直接做什么"
-msgstr "Details for this option"
+msgstr "Do not do this directly"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 64dc6f6914154c24b69d5761d6028e82
 msgid "同一几何对应冲突标签"
-msgstr "Details for this option"
+msgstr "Conflicting labels for the same geometry"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: a48b9d2b00544a32b24dbd2041523207
 msgid "回查 DFT 输出、单位和结构映射"
-msgstr "Details for this option"
+msgstr "Recheck the DFT output, units, and structure mapping"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 440e26b54cbd4f8ca001f298c57258cd
 msgid "把其中一条随机删掉"
-msgstr "Details for this option"
+msgstr "Randomly delete one label"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 27eb3dc4d7574807b009f1cfc4211dfa
 msgid "明显原子重叠或异常表面"
-msgstr "Details for this option"
+msgstr "Obvious atomic overlap or an abnormal surface"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: c7d50a4aea7f4055991f9aaea67cfbfb
 msgid "隔离并检查生成参数"
-msgstr "Details for this option"
+msgstr "Isolate it and inspect the generation parameters"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: e1bf01af897f42aa96ae74a09dc88133
 msgid "送入 FPS 强行保留"
-msgstr "Details for this option"
+msgstr "Send it to FPS and force it to remain"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: b7c0a797603f4d01b84694bacff3db3a
 msgid "某类真实结构持续高误差"
-msgstr "Details for this option"
+msgstr "A real structure class has persistently high error"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: c6a061859db24f50a4073b79659b6254
 msgid "导出该类结构并补充邻近构型"
-msgstr "Details for this option"
+msgstr "Export that class and add nearby configurations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 438ae8bd9a9f4276b2f861300a071834
 msgid "只增加完全无关的随机扰动"
-msgstr "Details for this option"
+msgstr "Only add unrelated random perturbations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: d81f0c779e1940b8bb8e59d75047e0f5
 msgid "某组分或磁类型样本很少"
-msgstr "Details for this option"
+msgstr "A composition or magnetic type is poorly represented"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 162c3df348bf4c31a4e57747e4679df4
 msgid "按研究目标补对应结构"
-msgstr "Details for this option"
+msgstr "Add structures that match the research target"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 5d0dc1ef3c194a9d95c6d8bda6c33405
 msgid "把“低频”自动等同于“错误”"
-msgstr "Details for this option"
+msgstr "Automatically treat “rare” as “wrong”"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: d1fbc9fb0cd84e5498f77e387366935e
 msgid "训练集误差小、独立测试误差大"
-msgstr "Details for this option"
+msgstr "Training error is small but independent-test error is large"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 5dce3c66cabb4659b72303ab19c8f391
 msgid "检查数据划分和覆盖范围"
-msgstr "Details for this option"
+msgstr "Check the data split and coverage"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:0
 #: 08997ce7870e4fc8945bcbf392664e68
 msgid "继续只优化训练 RMSE"
-msgstr "Details for this option"
+msgstr "Keep optimizing training RMSE only"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:51
 #: abb6808984ff4fb7b348e3ee1ca1df1b
 msgid "5. 导出可追溯的下一轮输入"
-msgstr "Details for this option"
+msgstr "5. Export traceable inputs for the next round"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:53
 #: 9b049c18d72a4d2eb01c169c0718d763
 msgid "把不同原因的结构分开导出，例如："
-msgstr "Details for this option"
+msgstr "Export structures with different causes separately, for example:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:55
 #: dd914fa27d8f4ce08a19924399d13702
@@ -262,24 +262,24 @@ msgstr ""
 msgid ""
 "如果需要新生成结构，再回到 `生成数据集`，按缺口选择主卡片。生成后的候选结构仍"
 "然要经过 几何检查和代表性采样，不能因为它们来自“高误差结构附近”就默认合理。"
-msgstr "Details for this option"
+msgstr "If new structures are needed, return to `Make Dataset` and choose the main card for the gap. Generated candidates still require geometry checks and representative sampling; being near a high-error structure does not make them automatically valid."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:65
 #: 2204896c837d4d0f8d2c06ffe6abf9ed
 msgid "跑完检查："
-msgstr "Details for this option"
+msgstr "After the review:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:67
 #: 5e9dc58a59f24af88864edae93fc4d6d
 msgid "每个导出文件只对应一种明确处理意图；"
-msgstr "Details for this option"
+msgstr "Give each export file one clear purpose;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:68
 #: 30e51265fe5d4bf8bf70454e9ae615ef
 msgid "结构保留原有 `Config_type`，新生成结构追加可追溯标签；"
-msgstr "Details for this option"
+msgstr "Keep the original `Config_type`, and add traceable labels to generated structures;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/review-training-results.md:69
 #: 5d5b1e2938d14799af67fd47ba3425f8
 msgid "下一轮训练前，能说明每批新增数据解决的具体缺口。"
-msgstr "Details for this option"
+msgstr "Before the next training round, be able to state which specific gap each batch of new data addresses."

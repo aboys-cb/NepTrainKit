@@ -199,7 +199,7 @@ msgstr ".. image:: _static/image/generated/make_data_lattice_strain.png"
 
 #: ../../source/quickstart.md:72 b705ee6265db4a648768418b1b528bdb
 msgid "这张图对应的使用逻辑是："
-msgstr "The workflow illustrated above is deliberate:"
+msgstr "Here is the logic behind this workflow:"
 
 #: ../../source/quickstart.md:74 d71050c663c84593857f9a893117e5ff
 msgid "先添加卡片，不要一开始就改很多高级参数。"
@@ -219,7 +219,7 @@ msgstr ""
 
 #: ../../source/quickstart.md:78 4eebba56a7f249ba88a25f047ba0faa5
 msgid "4. 检查候选结构"
-msgstr "Step 4: Inspect the candidates"
+msgstr "4. Inspect the candidates"
 
 #: ../../source/quickstart.md:80 f40b3ad6a47b44fd96284b2ddb1f06a2
 msgid "`生成数据集` 生成的是候选结构，不建议默认直接送 DFT。最短检查路径是："
@@ -253,7 +253,7 @@ msgstr "After cleaning, decide whether representative FPS sampling is needed."
 
 #: ../../source/quickstart.md:92 4e1432a8830d4155a09024e5640d8e42
 msgid "5. 进入 DFT 和训练"
-msgstr "Step 5: Continue to DFT and training"
+msgstr "5. Continue to DFT and training"
 
 #: ../../source/quickstart.md:94 d899352f44a14818891f60b04f4e0fa6
 msgid ""

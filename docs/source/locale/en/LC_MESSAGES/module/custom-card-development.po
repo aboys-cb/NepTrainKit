@@ -28,7 +28,7 @@ msgstr "Develop Custom Cards"
 #: 6ec1b1486151426288776dd39baa24c9
 msgid "本页教你为 生成数据集 模块开发一张新卡片，按当前的 Operation/Params 架构拆分 UI 和业务逻辑。"
 msgstr ""
-"This page explains how to develop a new card for the Generate Dataset "
+"This page explains how to develop a new card for the Make Dataset "
 "module using the current Operation/Params architecture to separate UI and"
 " business logic."
 
@@ -123,17 +123,17 @@ msgstr "Use it for"
 #: ../../source/module/custom-card-development.md
 #: aeed84a5cf3f492e8894cfd31865930b
 msgid "`StructureOperation`"
-msgstr ""
+msgstr "`StructureOperation`"
 
 #: ../../source/module/custom-card-development.md
 #: 7468c7d73984413aaff1d5a454de2664
 msgid "`core.cards.operation.StructureOperation`"
-msgstr ""
+msgstr "`core.cards.operation.StructureOperation`"
 
 #: ../../source/module/custom-card-development.md
 #: 1468aaf916b24888adbba52c28ecd9db
 msgid "`run_structure(structure, params) → list[Atoms]`"
-msgstr ""
+msgstr "`run_structure(structure, params) → list[Atoms]`"
 
 #: ../../source/module/custom-card-development.md
 #: 352193be21454465b48eafd899ba450a
@@ -145,17 +145,17 @@ msgstr ""
 #: ../../source/module/custom-card-development.md
 #: fbd091711e5e42ba9ebb053a7ea71691
 msgid "`DatasetOperation`"
-msgstr ""
+msgstr "`DatasetOperation`"
 
 #: ../../source/module/custom-card-development.md
 #: 15555bb18ec148ada709b77631ddc6f8
 msgid "`core.cards.operation.DatasetOperation`"
-msgstr ""
+msgstr "`core.cards.operation.DatasetOperation`"
 
 #: ../../source/module/custom-card-development.md
 #: 9140538c30c04d608b12215679be3471
 msgid "`run_dataset(dataset, params) → list[Atoms]`"
-msgstr ""
+msgstr "`run_dataset(dataset, params) → list[Atoms]`"
 
 #: ../../source/module/custom-card-development.md
 #: a63dc9545cae44ff894934188b57252f
@@ -165,17 +165,17 @@ msgstr "Whole-dataset filtering or ordering, such as FPS"
 #: ../../source/module/custom-card-development.md
 #: 0d290fd029e6488ab9bb80fb27495051
 msgid "`GeneratorOperation`"
-msgstr ""
+msgstr "`GeneratorOperation`"
 
 #: ../../source/module/custom-card-development.md
 #: c0a2eb4368a74d138856e7a475c02048
 msgid "`core.cards.operation.GeneratorOperation`"
-msgstr ""
+msgstr "`core.cards.operation.GeneratorOperation`"
 
 #: ../../source/module/custom-card-development.md
 #: 5283995f8c4a4b87b81bffaff30f1c7d
 msgid "`generate(params) → list[Atoms]`"
-msgstr ""
+msgstr "`generate(params) → list[Atoms]`"
 
 #: ../../source/module/custom-card-development.md
 #: 402e3408572144eab6260bcf37b71b4b
@@ -210,6 +210,15 @@ msgid ""
 "    use_seed: bool = False\n"
 "    seed: int = 0\n"
 msgstr ""
+"from dataclasses import dataclass\n"
+"\n"
+"@dataclass(frozen=True)\n"
+"class MyCardParams:\n"
+"    \"\"\"Parameters for my card.\"\"\"\n"
+"    param_a: str = \"default\"\n"
+"    param_b: float = 1.0\n"
+"    use_seed: bool = False\n"
+"    seed: int = 0\n"
 
 #: ../../source/module/custom-card-development.md:51
 #: 5202a46ca6474bae92db02bfbc524858
@@ -517,6 +526,10 @@ msgid ""
 "    result = op.run_structure(test_atoms, MyCardParams(param_b=2.0))\n"
 "    assert len(result) > 0\n"
 msgstr ""
+"def test_my_card_operation():\n"
+"    op = MyCardOperation()\n"
+"    result = op.run_structure(test_atoms, MyCardParams(param_b=2.0))\n"
+"    assert len(result) > 0\n"
 
 #: ../../source/module/custom-card-development.md:165
 #: 5ba750aa84b148b587af397cbceb79c3
@@ -529,6 +542,8 @@ msgid ""
 "python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick\n"
 "python tools/docs/audit_card_docs.py\n"
 msgstr ""
+"python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick\n"
+"python tools/docs/audit_card_docs.py\n"
 
 #: ../../source/module/custom-card-development.md:172
 #: 80ecfcde4c724bb1aa1a0f074aed343b

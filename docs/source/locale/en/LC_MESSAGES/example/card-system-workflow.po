@@ -22,7 +22,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:1
 #: b99c0b67ff204860b2ef34e4734440dc
 msgid "用一条流程学会 生成数据集卡片系统"
-msgstr "Learn the Generate Dataset card system through one workflow"
+msgstr "Learn the Make Dataset card system through one workflow"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:3
 #: e11946978e9f4cc3a369799d28b96cb4
@@ -35,7 +35,7 @@ msgstr ""
 "workflow: start from a two-atom Si cell, generate doped and vacancy "
 "candidates in parallel, then apply a small perturbation and a geometry "
 "filter. After completing it once, you should understand card order, `Card "
-"Group` branches, enabled states, input/output counts, and workflow reuse."
+"Group` branches, enabled/disabled states, input/output counts, and workflow reuse."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:5
 #: ee62c303e6e4478883e849394e6a62d8
@@ -50,7 +50,7 @@ msgstr "Every card uses the same title-bar controls:"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
 #: cb163a39baf84b5f82a5c51ceceda8c8
 msgid "生成数据集卡片标题栏通用按钮"
-msgstr "Common title-bar buttons for Generate Dataset cards"
+msgstr "Common title-bar buttons for Make Dataset cards"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
 #: cb163a39baf84b5f82a5c51ceceda8c8
@@ -551,7 +551,7 @@ msgid ""
 "包含生成结构**。"
 msgstr ""
 "`Copy JSON` or `Save → Export Card Config` saves card order, parameters, and "
-"enabled states. It **does not contain generated structures**."
+"enabled/disabled states. It **does not contain generated structures**."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:106
 #: 31502e2af27e49bcb5d6eaa04fd2f588

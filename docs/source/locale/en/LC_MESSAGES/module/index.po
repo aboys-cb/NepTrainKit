@@ -74,7 +74,7 @@ msgstr "Start with the complete page logic: :doc:`NEP-dataset-display`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:20
 #: befb31115821405c889465e64f9d33cb
 msgid "训练集评估（Training Set Audit）"
-msgstr "Training-set audit (Training Set Audit)"
+msgstr "Training Set Audit (Training Set Audit)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:22
 #: c38e8236ad88446db0b878e1bf869f94
@@ -152,7 +152,7 @@ msgstr "Want a complete multi-card workflow: :doc:`make-dataset-cards/recipes`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:45
 #: 949349ac16c54285b26af8b1a551e9f6
 msgid "数据管理（Data Management）"
-msgstr "Data management (Data Management)"
+msgstr "Data Management (Data Management)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:47
 #: 1dccf66ae2534e2ea7ef02949b1e113d

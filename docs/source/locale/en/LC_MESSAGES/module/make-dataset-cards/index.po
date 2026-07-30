@@ -117,7 +117,7 @@ msgid ""
 "├─ 改磁矩 → 磁性构型\n"
 "├─ 做分子或溶剂 → 分子与溶剂\n"
 "└─ 不再生成，只想清洗或选代表结构 → 过滤与采样\n"
-msgstr "No initial structure\n"
+msgstr "No initial structure\n├─ Start from a standard crystal structure → Crystal Prototype Builder\n└─ Start from random coordinates → Random Packing\n\nExisting initial structure\n├─ Change the cell or coordinates → Cell, strain, and perturbation\n├─ Change elements or composition → Alloys and composition\n├─ Change atom count or surfaces → Defects and surfaces\n├─ Change magnetic moments → Magnetic configurations\n├─ Work with molecules or solvents → Molecules and solvents\n└─ Do not generate more structures; clean or select representatives → Filtering and sampling\n"
 
 #: ../../source/module/make-dataset-cards/index.md:61
 #: e7fe11cf3fd1466180ebbeb68e75c0c0

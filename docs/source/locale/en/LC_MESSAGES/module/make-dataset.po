@@ -148,7 +148,7 @@ msgstr "Expand a simulation cell"
 
 #: ../../source/module/make-dataset.md:23 3876c59ea9364b37b6afed924398e9bf
 msgid "`Super Cell`"
-msgstr ""
+msgstr "`Super Cell`"
 
 #: ../../source/module/make-dataset.md:23 d568e217556a44a2b9b1619a9c27a9b4
 msgid "从标准晶体原型开始"
@@ -156,7 +156,7 @@ msgstr "Start from a standard crystal prototype"
 
 #: ../../source/module/make-dataset.md:23 505e689b29aa4d37b879ee278930b825
 msgid "`Crystal Prototype Builder`"
-msgstr ""
+msgstr "`Crystal Prototype Builder`"
 
 #: ../../source/module/make-dataset.md:23 2e689876a8514aaea7601c0651e9d0f6
 msgid "补弹性响应"
@@ -164,7 +164,7 @@ msgstr "Add elastic-response structures"
 
 #: ../../source/module/make-dataset.md:23 92858ee4cc464e8cb56b2110dada8395
 msgid "`Lattice Strain` / `Shear Matrix Strain` / `Shear Angle Strain`"
-msgstr ""
+msgstr "`Lattice Strain` / `Shear Matrix Strain` / `Shear Angle Strain`"
 
 #: ../../source/module/make-dataset.md:23 3e51909d9b29444e93f451166b5d2253
 msgid "补四方相变或层错 / GSFE 路径"
@@ -172,7 +172,7 @@ msgstr "Add a tetragonal phase transition or a stacking-fault / GSFE path"
 
 #: ../../source/module/make-dataset.md:23 80e22b2affb44e0fa4db22d34ce7f883
 msgid "`Bain Path` / `Stacking Fault / GSFE Path`"
-msgstr ""
+msgstr "`Bain Path` / `Stacking Fault / GSFE Path`"
 
 #: ../../source/module/make-dataset.md:23 c86005b73c5a493cafffc67e0254e9f3
 msgid "补近平衡扰动"
@@ -180,7 +180,7 @@ msgstr "Add near-equilibrium perturbations"
 
 #: ../../source/module/make-dataset.md:23 d83f1176a7314cd88f1e5f208636d00c
 msgid "`Atomic Perturb` / `Vibration Perturb`"
-msgstr ""
+msgstr "`Atomic Perturb` / `Vibration Perturb`"
 
 #: ../../source/module/make-dataset.md:23 7d1d2a6f0e66424d9cd9d0e119080a01
 msgid "做缺陷"
@@ -188,7 +188,7 @@ msgstr "Create defects"
 
 #: ../../source/module/make-dataset.md:23 11b5ac4427b44c04afc96a34b9cba769
 msgid "`Random Vacancy` / `Vacancy Defect` / `Insert Defect`"
-msgstr ""
+msgstr "`Random Vacancy` / `Vacancy Defect` / `Insert Defect`"
 
 #: ../../source/module/make-dataset.md:23 072da3454f834c9084f2245d12c7f7c8
 msgid "做表面或层错"
@@ -196,7 +196,7 @@ msgstr "Create surfaces or stacking faults"
 
 #: ../../source/module/make-dataset.md:23 fffa72b823b547898b641a0bd1b28c62
 msgid "`Random Slab` / `Stacking Fault / GSFE Path`"
-msgstr ""
+msgstr "`Random Slab` / `Stacking Fault / GSFE Path`"
 
 #: ../../source/module/make-dataset.md:23 e8d0d1b91d8b4875bd0f998f0868a91a
 msgid "做合金或占位变化"
@@ -204,7 +204,7 @@ msgstr "Vary alloy composition or site occupation"
 
 #: ../../source/module/make-dataset.md:23 2dad59de647a4f269d4e1a1f67a3c302
 msgid "`Random Doping` / `Random Occupancy` / `Composition Space Sampling`"
-msgstr ""
+msgstr "`Random Doping` / `Random Occupancy` / `Composition Space Sampling`"
 
 #: ../../source/module/make-dataset.md:23 a639f02325044d97a3ebe2e38a1a5494
 msgid "做磁性构型"
@@ -212,7 +212,7 @@ msgstr "Create magnetic configurations"
 
 #: ../../source/module/make-dataset.md:23 41a7659f43fd4d57938035dc158541ed
 msgid "`Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral`"
-msgstr ""
+msgstr "`Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral`"
 
 #: ../../source/module/make-dataset.md:71 a8dee12d391d4ef498a6140afff78adf
 msgid "完整选择表见 [生成数据集卡片手册](make-dataset-cards/index.md)。"
@@ -236,6 +236,9 @@ msgid ""
 "candidate_pool_clean.xyz\n"
 "candidate_pool_fps.xyz\n"
 msgstr ""
+"candidate_pool.xyz\n"
+"candidate_pool_clean.xyz\n"
+"candidate_pool_fps.xyz\n"
 
 #: ../../source/module/make-dataset.md:83 031160618fdb49dfa13ad89b967b8647
 msgid "这样后续发现问题时，可以追溯到底是生成阶段、清洗阶段还是采样阶段引入的。"

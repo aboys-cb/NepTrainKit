@@ -134,7 +134,7 @@ msgstr "`Use card group menu`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
 #: a382f3871ade4b0f831f31309a31174f
 msgid "按卡片 `group` 分组显示 生成数据集 菜单"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "Group the `Make Dataset` menu by card `group`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/settings.md:0
 #: a6741e60051243ee9bd6959ed3f82fde

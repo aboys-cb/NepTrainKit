@@ -49,7 +49,7 @@ msgstr "Energy Baseline Shift"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
 msgid "训练集评估与分布"
-msgstr "Training set check and distributions"
+msgstr "Training Set Audit and distributions"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
 msgid "加上或减去 DFT-D3"

@@ -328,7 +328,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 30afbd9b41a9499b8ff01d6dfbe98bb1
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: e6dd84c5d7d045cb8f3ddd5cd68bf39f
@@ -343,7 +343,7 @@ msgstr "Suggested heading"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 268d5aaa026c44b7af926d8c5728aacb
 msgid "1"
-msgstr ""
+msgstr "1"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: feea0bbee1634a6eb90b85bb2c1cf6ca
@@ -358,7 +358,7 @@ msgstr "`## What it does`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: d2f9d1111cc24f4b95d07882b5c878e7
 msgid "2"
-msgstr ""
+msgstr "2"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 27d337e5b92e441d8875fa1f788cb23e
@@ -375,7 +375,7 @@ msgstr "`## Worked example`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 250d165689cd4d2bbdf8c9e33026b6d2
 msgid "3"
-msgstr ""
+msgstr "3"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: ff634a6be3124db9af937d601c7c155a
@@ -392,7 +392,7 @@ msgstr "`## Parameters`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 361075cb54e14902b0885fe8b18f48c0
 msgid "4"
-msgstr ""
+msgstr "4"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 5d5e01a185ac4a91abfb844ddc6a41f7
@@ -407,7 +407,7 @@ msgstr "`## Presets`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: da23cd3f706d49899d5ab3695a4fbd99
 msgid "5"
-msgstr ""
+msgstr "5"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: cfea65ca045046d2ab5d657fbbbb537f
@@ -422,7 +422,7 @@ msgstr "`## Recommended combinations`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: a36c8d3ebc124feba6a7a22bf0ccab32
 msgid "6"
-msgstr ""
+msgstr "6"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 2fde26b53eea468a97e862317e247e89
@@ -437,7 +437,7 @@ msgstr "`## Troubleshooting`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 2b3adb612e974addb2be2c53c9d5daa8
 msgid "7"
-msgstr ""
+msgstr "7"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 55e131a3bcd54c709f2c901e4e8180ab
@@ -452,7 +452,7 @@ msgstr "`## Output labels`"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: 67d84b12f5294150adbc650a8b548d91
 msgid "8"
-msgstr ""
+msgstr "8"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
 #: d851656f64634219b917645306f2b9a1

@@ -22,7 +22,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:1
 #: 9cc2b679ac214e88801c1f0150132035
 msgid "生成数据集配方示例（Recipes）"
-msgstr "Generate Dataset recipes"
+msgstr "Make Dataset recipes"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:2
 #: e90ec6473721498f82d133591c51c7c5
@@ -161,7 +161,7 @@ msgstr "JSON for each step"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:264
 #: 472db5b1941d4a3c91babd0a3da1c527 e53bb1764693412da7c5d7da3e11e5bd
 msgid "Step 1. `Crystal Prototype Builder`"
-msgstr ""
+msgstr "Step 1. `Crystal Prototype Builder`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:41
 #: a568b830373643788524c06a31838bac
@@ -180,6 +180,19 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"CrystalPrototypeBuilderCard\",\n"
+"  \"params\": {\n"
+"    \"lattice\": \"fcc\",\n"
+"    \"element\": \"Ni\",\n"
+"    \"a_range\": [3.52, 3.52, 0.1],\n"
+"    \"covera\": 1.633,\n"
+"    \"auto_supercell\": true,\n"
+"    \"max_atoms\": 64,\n"
+"    \"rep\": [2, 2, 2],\n"
+"    \"max_outputs\": 1\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:57
 #: b9bc10d5fc194d0e9fb2132e1730d6e1
@@ -193,7 +206,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:59
 #: 069625a9e6324817b1d964481c9c5d55
 msgid "Step 2. `Composition Space Sampling`"
-msgstr ""
+msgstr "Step 2. `Composition Space Sampling`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:61
 #: 9569a3afb0fc43058105bc5a5431cb5d
@@ -215,6 +228,22 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"CompositionSweepCard\",\n"
+"  \"params\": {\n"
+"    \"elements\": \"Co,Cr,Ni,Al,Fe\",\n"
+"    \"order\": \"4,5\",\n"
+"    \"method\": \"Sobol\",\n"
+"    \"step\": 0.1,\n"
+"    \"n_points\": 24,\n"
+"    \"min_fraction\": 0.05,\n"
+"    \"include_endpoints\": true,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42,\n"
+"    \"max_outputs\": 24,\n"
+"    \"budget_mode\": \"Equal+Reflow\"\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:80
 #: 6260a4491d794aecb857923ae74f3dfa
@@ -228,7 +257,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:82
 #: a0b0a3eacd314e6a83f3dce29704ad67
 msgid "Step 3. `Random Occupancy`"
-msgstr ""
+msgstr "Step 3. `Random Occupancy`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:84
 #: f522a5b3b0ab42fe900add23a370b9c8
@@ -246,6 +275,18 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"RandomOccupancyCard\",\n"
+"  \"params\": {\n"
+"    \"source\": \"Auto (Comp tag)\",\n"
+"    \"manual\": \"\",\n"
+"    \"mode\": \"Exact\",\n"
+"    \"samples\": 2,\n"
+"    \"group_filter\": \"\",\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:99
 #: ae7aed07c61044828bf2266ac4b89b98
@@ -260,7 +301,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:101
 #: 6be5abd14b2441338623aa5d51f9d75a
 msgid "Step 4. `Random Doping`"
-msgstr ""
+msgstr "Step 4. `Random Doping`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:103
 #: 4b8eb20d1a174a259f7914fa6f814284
@@ -285,6 +326,25 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"RandomDopingCard\",\n"
+"  \"params\": {\n"
+"    \"rules\": [\n"
+"      {\n"
+"        \"target\": \"Ni\",\n"
+"        \"dopants\": {\"Co\": 1.0, \"Cr\": 1.0},\n"
+"        \"use\": \"count\",\n"
+"        \"count_mode\": \"random\",\n"
+"        \"count\": [1, 2],\n"
+"        \"percent\": [0.0, 1.0]\n"
+"      }\n"
+"    ],\n"
+"    \"doping_type\": \"Exact\",\n"
+"    \"max_structures\": 2,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 123\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:125
 #: 115293a69448423f9f4e3269170e164a
@@ -394,7 +454,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:156
 #: a79d404840f64a4bafcb427c9b211aff
 msgid "Step 1. `Super Cell`"
-msgstr ""
+msgstr "Step 1. `Super Cell`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:158
 #: 3d4a0b0b9d424bc3b08a30d40d539b37
@@ -412,6 +472,18 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"SuperCellCard\",\n"
+"  \"params\": {\n"
+"    \"behavior_type\": 0,\n"
+"    \"mode\": \"scale\",\n"
+"    \"super_scale\": [2, 2, 1],\n"
+"    \"target_cell\": [20.0, 20.0, 20.0],\n"
+"    \"max_atoms\": 200,\n"
+"    \"fixed_axis_flags\": [false, false, true],\n"
+"    \"fixed_axis_scale\": [1, 1, 1]\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:173
 #: aa07391a7c6b46fc83451c90ca4ece86
@@ -425,7 +497,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:175
 #: 78e0d82285314adebecd6d5330cb1e88
 msgid "Step 2. `Random Slab`"
-msgstr ""
+msgstr "Step 2. `Random Slab`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:177
 #: 188e79fb42584b3289b59b2f5e4aae06
@@ -441,6 +513,16 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"RandomSlabCard\",\n"
+"  \"params\": {\n"
+"    \"h_range\": [0, 1, 1],\n"
+"    \"k_range\": [0, 1, 1],\n"
+"    \"l_range\": [1, 3, 1],\n"
+"    \"layer_range\": [4, 8, 1],\n"
+"    \"vacuum_range\": [12, 18, 2]\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:190
 #: 95e11ed9256c40d99715d221479e0f62
@@ -455,7 +537,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:192
 #: 3e7a74cdfe2843eb8c868b6dd3e4ccf2
 msgid "Step 3. `Insert Defect`"
-msgstr ""
+msgstr "Step 3. `Insert Defect`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:194
 #: bfb36fb80e944ea5a2cb4123543d43fb
@@ -476,6 +558,21 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"InsertDefectCard\",\n"
+"  \"params\": {\n"
+"    \"mode\": 1,\n"
+"    \"species\": \"H,O\",\n"
+"    \"insert_count\": 1,\n"
+"    \"structure_count\": 2,\n"
+"    \"min_distance\": 1.2,\n"
+"    \"max_attempts\": 50,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 7,\n"
+"    \"axis\": 2,\n"
+"    \"offset\": 1.5\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:212
 #: 505623cd011147a08981331288dab227
@@ -487,7 +584,7 @@ msgstr "**Expected output at each step:** generate two additional random upper-s
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:214
 #: c17ab0c96d71445e84d8c1ab77c5a566
 msgid "Step 4. `Vacancy Defect Generation`"
-msgstr ""
+msgstr "Step 4. `Vacancy Defect Generation`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:216
 #: b158df7066e34efe99bb64ff23dcc7bf
@@ -506,6 +603,19 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"VacancyDefectCard\",\n"
+"  \"params\": {\n"
+"    \"engine_type\": 1,\n"
+"    \"num_condition\": 1,\n"
+"    \"use_num\": false,\n"
+"    \"concentration_condition\": 0.03,\n"
+"    \"count_mode\": \"fixed\",\n"
+"    \"max_structures\": 3,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 19\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:232
 #: a3ce038474274ee2a734ea79c5e5f71f
@@ -613,6 +723,19 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"CrystalPrototypeBuilderCard\",\n"
+"  \"params\": {\n"
+"    \"lattice\": \"fcc111\",\n"
+"    \"element\": \"Ni\",\n"
+"    \"a_range\": [3.60, 3.60, 0.1],\n"
+"    \"covera\": 1.633,\n"
+"    \"auto_supercell\": false,\n"
+"    \"max_atoms\": 256,\n"
+"    \"rep\": [2, 2, 2],\n"
+"    \"max_outputs\": 1\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:282
 #: 9f412ef26794433dacd0912195234c04
@@ -627,7 +750,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:284
 #: 50947c5fc6f640cdbe58689ddd311736
 msgid "Step 2. `Stacking Fault / GSFE Path`"
-msgstr ""
+msgstr "Step 2. `Stacking Fault / GSFE Path`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:286
 #: 281bf8e07e2d4418a20ea5472c9af75c
@@ -646,6 +769,19 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"StrictGSFEPathCard\",\n"
+"  \"params\": {\n"
+"    \"plane_hkl\": [0, 0, 1],\n"
+"    \"slip_uvw\": [1, 0, 0],\n"
+"    \"displacement_range\": [0.0, 1.0, 0.1],\n"
+"    \"displacement_unit\": \"fraction_of_vector\",\n"
+"    \"cut_mode\": \"middle\",\n"
+"    \"cut_fraction\": 0.5,\n"
+"    \"layer_index\": 0,\n"
+"    \"wrap\": true\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:302
 #: 966fb515c879415b9f4c2fbe646d6e4c
@@ -733,12 +869,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:329
 #: 71c21c1f4f74434289b59c0a3595198f
 msgid "`Group Label → Magnetic Order → Magmom Rotation`"
-msgstr ""
+msgstr "`Group Label → Magnetic Order → Magmom Rotation`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:333
 #: 5e8b96ff749847c4854c6848cfb9d063
 msgid "Step 1. `Group Label`"
-msgstr ""
+msgstr "Step 1. `Group Label`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:335
 #: 13e4b3853f314d8cb18ee699a6a55a22
@@ -754,6 +890,16 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"GroupLabelCard\",\n"
+"  \"params\": {\n"
+"    \"mode\": \"k_vector\",\n"
+"    \"kvec\": \"111\",\n"
+"    \"group_a\": \"A\",\n"
+"    \"group_b\": \"B\",\n"
+"    \"overwrite\": false\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:348
 #: cc52da2522de4afa9bcd764ddf182591
@@ -767,7 +913,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:350
 #: 4cd82f5228d14bb38da1c4a13aea2ab0
 msgid "Step 2. `Magnetic Order`"
-msgstr ""
+msgstr "Step 2. `Magnetic Order`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:352
 #: a39c103fc0844766b430775629e607e1
@@ -799,6 +945,32 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"MagneticOrderCard\",\n"
+"  \"params\": {\n"
+"    \"format\": \"collinear\",\n"
+"    \"axis\": [0.0, 0.0, 1.0],\n"
+"    \"magmom_map\": \"Fe:2.2\",\n"
+"    \"use_element_dirs\": false,\n"
+"    \"default_moment\": 0.0,\n"
+"    \"apply_elements\": \"Fe\",\n"
+"    \"gen_fm\": true,\n"
+"    \"gen_afm\": true,\n"
+"    \"afm_mode\": \"group_ab\",\n"
+"    \"afm_kvec\": \"111\",\n"
+"    \"afm_group_a\": \"A\",\n"
+"    \"afm_group_b\": \"B\",\n"
+"    \"afm_zero_unknown\": true,\n"
+"    \"gen_pm\": true,\n"
+"    \"pm_count\": 8,\n"
+"    \"pm_direction\": \"sphere\",\n"
+"    \"pm_cone_angle\": 30.0,\n"
+"    \"pm_balanced\": true,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 88,\n"
+"    \"max_outputs\": 20\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:381
 #: fce8bff7dce3442dbb97afe0ccc0c437
@@ -810,7 +982,7 @@ msgstr "**Expected output at each step:** obtain one FM, one AFM, and eight PM c
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:383
 #: 10e0d126a1c74927940380e12bc4adf5
 msgid "Step 3. `Magmom Rotation`"
-msgstr ""
+msgstr "Step 3. `Magmom Rotation`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:385
 #: 9204decfa2d94e36aaf018ccf601d273
@@ -830,6 +1002,20 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"MagneticMomentRotationCard\",\n"
+"  \"params\": {\n"
+"    \"elements\": \"Fe\",\n"
+"    \"max_angle\": 15.0,\n"
+"    \"num_structures\": 3,\n"
+"    \"lift_scalar\": true,\n"
+"    \"axis\": [0.0, 0.0, 1.0],\n"
+"    \"disturb_magnitude\": false,\n"
+"    \"magnitude_factor\": [1.0, 1.0],\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 99\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:402
 #: f971e7d799ff4ed68d9e80dfa21263f4
@@ -916,7 +1102,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:433
 #: 355359d9d8e14a2dbead7b882b3dcc0f
 msgid "Step 1. `Organic Mol Config`"
-msgstr ""
+msgstr "Step 1. `Organic Mol Config`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:435
 #: 24c7c2685a9044f08cdb9bc1fd5e0fd6
@@ -946,6 +1132,30 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"OrganicMolConfigPBCCard\",\n"
+"  \"params\": {\n"
+"    \"perturb_per_frame\": 8,\n"
+"    \"torsion_range_deg\": [-25.0, 25.0],\n"
+"    \"max_torsions_per_conf\": 2,\n"
+"    \"gaussian_sigma\": 0.01,\n"
+"    \"pbc_mode\": \"molecule in box\",\n"
+"    \"local_cutoff\": 5,\n"
+"    \"local_subtree\": 100,\n"
+"    \"bond_detect_factor\": 1.15,\n"
+"    \"bond_keep_min_factor\": 0.75,\n"
+"    \"bond_keep_max_factor\": 1.30,\n"
+"    \"bond_keep_max_enable\": true,\n"
+"    \"nonbond_min_factor\": 0.80,\n"
+"    \"max_retries\": 50,\n"
+"    \"mult_bond_factor\": 1.10,\n"
+"    \"nonpbc_box_size\": 20.0,\n"
+"    \"bo_c_const\": 0.35,\n"
+"    \"bo_threshold\": 0.25,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 5\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:462
 #: c3d62a840bb64c3dac10c7f12402f1c5
@@ -960,7 +1170,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:464
 #: 50128311ddde4bab973952a2291a7d82
 msgid "Step 2. `Atomic Perturb`"
-msgstr ""
+msgstr "Step 2. `Atomic Perturb`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:466
 #: 4c4d0a8532234523b7ce16cf6849b96b
@@ -979,6 +1189,19 @@ msgid ""
 "  }\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"PerturbCard\",\n"
+"  \"params\": {\n"
+"    \"engine_type\": 0,\n"
+"    \"max_distance\": 0.03,\n"
+"    \"max_num\": 3,\n"
+"    \"identify_organic\": true,\n"
+"    \"use_element_scaling\": false,\n"
+"    \"element_scalings\": {},\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 6\n"
+"  }\n"
+"}\n"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/recipes.md:482
 #: bf02080e5c0c48429fd48b0d065332d5

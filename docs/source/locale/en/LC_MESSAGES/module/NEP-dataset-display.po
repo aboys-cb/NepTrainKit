@@ -78,7 +78,7 @@ msgstr "You can import three kinds of data:"
 #: ../../source/module/NEP-dataset-display.md:22
 #: 484ccb13471b4676841b265b2f9eff0a
 msgid "输入"
-msgstr "Input"
+msgstr "Data import"
 
 #: ../../source/module/NEP-dataset-display.md:22
 #: 91c48bb74bfb4d27894d36f94f88bde8
@@ -103,7 +103,7 @@ msgstr "Immediately after `Make Dataset` generates structures"
 #: ../../source/module/NEP-dataset-display.md:22
 #: 4945a05a791944e39d3ef61d06474a5f
 msgid "结构视图、组成、标签、预测或几何异常"
-msgstr "Geometry, composition, labels, predictions, and geometric problems"
+msgstr "Structure view, composition, labels, predictions, and geometric problems"
 
 #: ../../source/module/NEP-dataset-display.md:22
 #: c0cb691cdb09489c8120888fe0aa875d
@@ -367,7 +367,7 @@ msgstr "`Sparse samples`"
 #: ../../source/module/NEP-dataset-display.md:22
 #: 950df3541bf047c1af0d9bef23f78f9c
 msgid "用 FPS 从当前数据或选区里挑代表结构"
-msgstr "Use FPS on the active dataset or current selection"
+msgstr "Use FPS to select representative structures from the active dataset or current selection"
 
 #: ../../source/module/NEP-dataset-display.md:22
 #: 71cf575db41b44d0a1e88451afa05c2a
@@ -409,7 +409,7 @@ msgstr "View a dataset summary"
 #: ../../source/module/NEP-dataset-display.md:22
 #: b8dd9eaf33f44155a90712b71116a40b
 msgid "`Dataset Summary`"
-msgstr ""
+msgstr "`Dataset Summary`"
 
 #: ../../source/module/NEP-dataset-display.md:22
 #: eafc73c958a242db82626c1014375f20
@@ -426,7 +426,7 @@ msgstr "Remove the current selection"
 #: ../../source/module/NEP-dataset-display.md:22
 #: 7b901e17ce0645468fae44787afd9f4b
 msgid "`Delete Selected Items`"
-msgstr ""
+msgstr "`Delete Selected Items`"
 
 #: ../../source/module/NEP-dataset-display.md:22
 #: 2fc29a04323f46bcb66ea48fb136526c
@@ -441,7 +441,7 @@ msgstr "Undo an incorrect selection"
 #: ../../source/module/NEP-dataset-display.md:22
 #: ce71ecc0b26746e8b14f3979cb42f626
 msgid "`Undo Selection`"
-msgstr ""
+msgstr "`Undo Selection`"
 
 #: ../../source/module/NEP-dataset-display.md:22
 #: 640f70c352f94787815c534682eefa09
@@ -456,7 +456,7 @@ msgstr "Undo a deletion"
 #: ../../source/module/NEP-dataset-display.md:22
 #: 084a9d07ddd1473ebc335c94510c0350
 msgid "`Undo Delete`"
-msgstr ""
+msgstr "`Undo Delete`"
 
 #: ../../source/module/NEP-dataset-display.md:22
 #: a515051ea5834b3f908a0d7d1c511ff5

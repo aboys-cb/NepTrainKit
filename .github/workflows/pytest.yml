@@ -140,7 +140,7 @@ jobs:
         $venv = "$env:RUNNER_TEMP/neptrainkit-runtime-venv"
         $python = "$venv/Scripts/python.exe"
         & $python -m pip install `
-          "PySide6==6.9.0" `
+          "PySide6==6.11.1" `
           "PySide6-Fluent-Widgets>=1.7.0" `
           ase `
           SQLAlchemy

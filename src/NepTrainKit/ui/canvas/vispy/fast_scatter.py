@@ -30,6 +30,7 @@ uniform vec4 u_edge_color;
 uniform float u_size;
 uniform float u_pixel_scale;
 uniform float u_edge_width;
+uniform float u_antialias;
 
 void main(void) {
     vec2 p = gl_PointCoord.xy - vec2(0.5, 0.5);
@@ -38,15 +39,26 @@ void main(void) {
         discard;
     }
     float point_size = max(1.0, u_size * u_pixel_scale);
-    float edge_start = max(0.0, 0.5 - u_edge_width / point_size);
-    if (r2 >= edge_start * edge_start) {
-        gl_FragColor = u_edge_color;
-    } else {
-        if (u_face_color.a <= 0.0) {
-            discard;
-        }
-        gl_FragColor = u_face_color;
+    float aa = clamp(u_antialias * u_pixel_scale / point_size, 0.0, 0.5);
+    float coverage = 1.0;
+    if (aa > 0.0) {
+        float coverage_start = 0.5 - aa;
+        coverage = 1.0 - smoothstep(coverage_start * coverage_start, 0.25, r2);
     }
+
+    float edge_start = max(0.0, 0.5 - u_edge_width * u_pixel_scale / point_size);
+    float edge_mix = step(edge_start * edge_start, r2);
+    if (aa > 0.0 && u_edge_width > 0.0) {
+        float edge_inner = max(0.0, edge_start - aa);
+        float edge_outer = min(0.5, edge_start + aa);
+        edge_mix = smoothstep(edge_inner * edge_inner, edge_outer * edge_outer, r2);
+    }
+    vec4 color = mix(u_face_color, u_edge_color, edge_mix);
+    color.a *= coverage;
+    if (color.a <= 0.0) {
+        discard;
+    }
+    gl_FragColor = color;
 }
 """
 
@@ -72,6 +84,7 @@ class FastScatterVisual(Visual):
         self._face_color = (1.0, 1.0, 1.0, 1.0)
         self._edge_color = (1.0, 1.0, 1.0, 1.0)
         self._edge_width = 1.0
+        self._antialias = 1.0
         self._size = 6.0
         self._pos_changed = True
         self._style_changed = True
@@ -105,6 +118,7 @@ class FastScatterVisual(Visual):
         face_color=(1.0, 1.0, 1.0, 1.0),
         edge_color=None,
         edge_width=1.0,
+        antialias=1.0,
         symbol=None,
         **_kwargs,
     ):
@@ -119,6 +133,7 @@ class FastScatterVisual(Visual):
         self._face_color = self._rgba(face_color)
         self._edge_color = self._rgba(edge_color, fallback=self._face_color)
         self._edge_width = max(0.0, float(edge_width or 0.0))
+        self._antialias = max(0.0, float(antialias or 0.0))
         self._pos_changed = True
         self._style_changed = True
         self.update()
@@ -167,6 +182,7 @@ class FastScatterVisual(Visual):
             self.shared_program["u_edge_color"] = self._edge_color
             self.shared_program["u_size"] = self._size
             self.shared_program["u_edge_width"] = self._edge_width
+            self.shared_program["u_antialias"] = self._antialias
             self._style_changed = False
             style_ms = (time.perf_counter() - t0) * 1000
         self.shared_program["u_pixel_scale"] = self.transforms.pixel_scale

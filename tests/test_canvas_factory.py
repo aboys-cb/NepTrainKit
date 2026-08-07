@@ -15,6 +15,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core.io.base import NepPlotData
 from NepTrainKit.core.types import Brushes, CanvasMode, Pens
 import NepTrainKit.ui.canvas.canvas_factory as canvas_factory
+import NepTrainKit.ui.canvas.vispy.canvas as vispy_canvas
 import NepTrainKit.ui.canvas.vispy.structure as vispy_structure
 
 
@@ -162,6 +163,43 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertEqual(result_data.select_index, {0, 1, 2})
         brushes = canvas.axes_list[0]._scatter.data["brush"]
         self.assertTrue(all(brush.color().rgba() == Brushes.Selected.color().rgba() for brush in brushes))
+
+    def test_pyqtgraph_auto_range_ignores_empty_highlight_layer(self):
+        canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        plot.title = "energy"
+        plot.scatter(np.array([20.0, 30.0]), np.array([40.0, 50.0]))
+
+        canvas.auto_range(plot)
+
+        x_range, y_range = plot.viewRange()
+        self.assertGreater(x_range[0], 10.0)
+        self.assertGreater(y_range[0], 10.0)
+        self.assertLessEqual(x_range[0], 20.0)
+        self.assertGreaterEqual(x_range[1], 50.0)
+        self.assertLessEqual(y_range[0], 20.0)
+        self.assertGreaterEqual(y_range[1], 50.0)
+
+    def test_pyqtgraph_auto_range_keeps_large_negative_finite_values(self):
+        canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        plot.parity_mode = False
+        plot.title = "descriptor"
+        plot.scatter(
+            np.array([-20000.0, 30.0, np.nan]),
+            np.array([40.0, 50.0, 60000.0]),
+        )
+
+        canvas.auto_range(plot)
+
+        x_range, y_range = plot.viewRange()
+        self.assertLessEqual(x_range[0], -20000.0)
+        self.assertGreaterEqual(x_range[1], 30.0)
+        self.assertLessEqual(y_range[0], 40.0)
+        self.assertGreaterEqual(y_range[1], 50.0)
+        self.assertLess(y_range[1], 60000.0)
 
     def test_vispy_set_view_layout_single_axis_uses_nonzero_col_span(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
@@ -439,11 +477,25 @@ class TestCanvasFactory(unittest.TestCase):
             face_color=(1.0, 1.0, 1.0, 0.0),
             edge_color=(0.0, 0.25, 0.75, 1.0),
             edge_width=0.8,
+            antialias=1.25,
         )
 
         self.assertEqual(visual._face_color, (1.0, 1.0, 1.0, 0.0))
         self.assertEqual(visual._edge_color, (0.0, 0.25, 0.75, 1.0))
         self.assertEqual(visual._edge_width, 0.8)
+        self.assertEqual(visual._antialias, 1.25)
+
+    def test_vispy_base_scatter_uses_configured_antialias(self):
+        plot = vispy_canvas.ViewBoxWidget("energy")
+        plot.marker_antialias = 1.5
+
+        plot.scatter(
+            np.array([0.0], dtype=np.float32),
+            np.array([0.0], dtype=np.float32),
+            np.array([0], dtype=np.int32),
+        )
+
+        self.assertEqual(plot._scatter._antialias, 1.5)
 
     def test_vispy_active_mask_updates_index_buffer_without_reuploading_positions(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)

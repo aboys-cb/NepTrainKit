@@ -816,7 +816,7 @@ class ShowNepWidget(QWidget):
         self.graph_widget = NepResultPlotWidget(self  )
         self.graph_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.graph_widget.canvas.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
+        self.graph_widget.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
 
         self.graph_toolbar = NepDisplayGraphicsToolBar(  self.plot_widget)
         self.graph_widget.set_tool_bar(self.graph_toolbar)

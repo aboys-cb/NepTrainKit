@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.config import Config
 from NepTrainKit.core.precision import get_storage_float_dtype, get_storage_precision
-from NepTrainKit.core.types import DataPrecision
+from NepTrainKit.core.types import CanvasMode, DataPrecision
 from NepTrainKit.ui.pages.settings import SettingsWidget
 
 
@@ -71,3 +71,19 @@ def test_settings_widget_hides_removed_vispy_thumbnail_controls():
     widget = SettingsWidget(None)
     assert not hasattr(widget, "vispy_thumbnail_mode_card")
     assert not hasattr(widget, "vispy_thumbnail_limit_card")
+
+
+def test_canvas_setting_broadcasts_live_backend_change():
+    _app()
+    previous = Config.get("widget", "canvas_type", CanvasMode.AUTO.value)
+    try:
+        widget = SettingsWidget(None)
+        emitted = []
+        widget.canvasModeChanged.connect(emitted.append)
+
+        widget._on_canvas_mode_changed(CanvasMode.VISPY.value)
+
+        assert Config.get("widget", "canvas_type") == CanvasMode.VISPY.value
+        assert emitted == [CanvasMode.VISPY.value]
+    finally:
+        Config.set("widget", "canvas_type", previous)

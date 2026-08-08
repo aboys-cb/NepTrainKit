@@ -6593,6 +6593,30 @@ All child items will also be deleted.</source>
 <context>
     <name>NepResultPlotWidget</name>
     <message>
+        <source>Large plot detected</source>
+        <translation>检测到大型绘图</translation>
+    </message>
+    <message>
+        <source>This result contains {point_count:,} plotted points. PyQtGraph may become less responsive at this size. Switch this result view to VisPy?</source>
+        <translation>此结果包含 {point_count:,} 个绘制点。PyQtGraph 在该数据量下可能响应变慢。是否将当前结果视图切换到 VisPy？</translation>
+    </message>
+    <message>
+        <source>Switch to VisPy</source>
+        <translation>切换到 VisPy</translation>
+    </message>
+    <message>
+        <source>Keep PyQtGraph</source>
+        <translation>继续使用 PyQtGraph</translation>
+    </message>
+    <message>
+        <source>Large result ({point_count:,} plotted points): switched to VisPy to keep the plot responsive.</source>
+        <translation>结果数据量较大（{point_count:,} 个绘制点），已切换到 VisPy 以保持绘图流畅。</translation>
+    </message>
+    <message>
+        <source>Failed to switch canvas backend; the current canvas was kept.</source>
+        <translation>画布后端切换失败，已保留当前画布。</translation>
+    </message>
+    <message>
         <location filename="../ui/views/nep.py" line="330" />
         <source>Balanced FPS selected {selected} structures across {groups} element sets.</source>
         <translation>元素集合平衡 FPS 已在 {groups} 个元素集合中选出 {selected} 个结构。</translation>

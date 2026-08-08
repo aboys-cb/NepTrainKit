@@ -196,6 +196,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.training_set_audit_window = TrainingSetAuditWindow(self)
         self.make_data_interface = MakeDataWidget(self)
         self.setting_interface = SettingsWidget(self)
+        self.setting_interface.canvasModeChanged.connect(
+            self.show_nep_interface.graph_widget.apply_canvas_mode
+        )
         self.data_manager_interface = DataManagerWidget(self)
         self._audited_result_data = None
         self._audited_result_signature = None

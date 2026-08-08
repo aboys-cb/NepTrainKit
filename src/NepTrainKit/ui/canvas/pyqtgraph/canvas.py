@@ -271,17 +271,18 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             self.ci.layout.setRowStretchFactor(row, factor)
 
     @timeit
-    def plot_nep_result(self):
+    def plot_nep_result(self, preserve_selection=False):
         """Render all dataset scatter plots and their annotations.
         
         Notes
         -----
         Invoked after data mutations (delete, undo, reload) to refresh the canvas.
         """
-        self.nep_result_data.select_index.clear()
-        clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
-        if clear_selection_history is not None:
-            clear_selection_history()
+        if not preserve_selection:
+            self.nep_result_data.select_index.clear()
+            clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+            if clear_selection_history is not None:
+                clear_selection_history()
 
         for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
@@ -340,6 +341,8 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        if preserve_selection:
+            self.rebuild_selection_display()
         if self._search_highlight_indices:
             self.set_search_highlight(self._search_highlight_indices)
 

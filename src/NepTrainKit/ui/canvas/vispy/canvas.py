@@ -1734,17 +1734,18 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
     @timeit
 
-    def plot_nep_result(self):
+    def plot_nep_result(self, preserve_selection=False):
         """Render all dataset scatter plots and refresh overlay layers.
         
         Notes
         -----
         Called after data mutations to keep the canvas in sync with the dataset.
         """
-        self.nep_result_data.select_index.clear()
-        clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
-        if clear_selection_history is not None:
-            clear_selection_history()
+        if not preserve_selection:
+            self.nep_result_data.select_index.clear()
+            clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+            if clear_selection_history is not None:
+                clear_selection_history()
         self._ensure_plot_dataset_indices()
         # Clear all overlays so deleted selections do not persist visually
         for plot in self.axes_list:
@@ -1796,6 +1797,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        if preserve_selection:
+            self.rebuild_selection_display()
         self._refresh_current_point_marker()
         self.prewarm_overlay_position_cache()
         if self._search_highlight_indices:

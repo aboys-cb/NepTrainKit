@@ -4,7 +4,7 @@
 # @email    : 1747193328@qq.com
 
 
-from PySide6.QtCore import QUrl, Qt
+from PySide6.QtCore import QUrl, Qt, Signal
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
  
@@ -50,6 +50,8 @@ class SettingsWidget(ScrollArea):
     parent : QWidget
         Parent container that hosts the settings page.
     """
+
+    canvasModeChanged = Signal(str)
 
     def __init__(self,parent):
         """Initialise setting groups, cards, and default values.
@@ -516,7 +518,7 @@ class SettingsWidget(ScrollArea):
         None
             Hooks persist user choices into the ``Config`` store.
         """
-        self.canvas_card.optionChanged.connect(lambda option:Config.set("widget","canvas_type",option ))
+        self.canvas_card.optionChanged.connect(self._on_canvas_mode_changed)
         self.radius_coefficient_Card.valueChanged.connect(lambda value:Config.set("widget","radius_coefficient",value))
         self.optimization_forces_card.optionChanged.connect(lambda option:Config.set("widget","forces_data",option ))
         self.language_combo.currentIndexChanged.connect(self._on_language_changed)
@@ -565,6 +567,11 @@ class SettingsWidget(ScrollArea):
         # self.about_card.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
         self.feedback_card.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))
+
+    def _on_canvas_mode_changed(self, option: str) -> None:
+        """Persist and broadcast canvas changes for live result-view switching."""
+        Config.set("widget", "canvas_type", option)
+        self.canvasModeChanged.emit(str(option))
 
     def _on_language_changed(self, index: int) -> None:
         """Persist the selected UI language."""

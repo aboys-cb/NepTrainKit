@@ -144,6 +144,31 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertEqual(brushes[1].color().rgba(), Brushes.TrainingOverlay.color().rgba())
         self.assertEqual(brushes[2].color().rgba(), Brushes.TrainingOverlay.color().rgba())
 
+    def test_pyqtgraph_replot_can_preserve_selection_for_backend_switch(self):
+        canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)
+        self.assertFalse(fallback)
+        dataset = NepPlotData(
+            np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]], dtype=np.float32),
+            index_list=np.array([0, 1, 2], dtype=np.int32),
+            title="descriptor",
+        )
+        dataset.show_rmse = False
+        result_data = SimpleNamespace(
+            datasets=[dataset],
+            select_index={1},
+            reject_index=set(),
+            clear_selection_history=MagicMock(),
+        )
+
+        canvas.init_axes(1)
+        canvas.set_nep_result_data(result_data)
+        canvas.plot_nep_result(preserve_selection=True)
+
+        self.assertEqual(result_data.select_index, {1})
+        result_data.clear_selection_history.assert_not_called()
+        brushes = canvas.axes_list[0]._scatter.data["brush"]
+        self.assertEqual(brushes[1].color().rgba(), Brushes.Selected.color().rgba())
+
     def test_pyqtgraph_inverse_select_from_empty_refreshes_all_points(self):
         canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)
         self.assertFalse(fallback)

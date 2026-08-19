@@ -34,6 +34,7 @@ from .dialog import (
     TrainingOverlayDialog,
 )
 from .input import SpinBoxUnitInputFrame
+from .compact_form import StatusDot, CategoryTag, CompactField, SegmentedControl
 from .card_widget import (
     CheckableHeaderCardWidget,
     ShareCheckableHeaderCardWidget,
@@ -74,6 +75,10 @@ __all__ = [
     "ProgressDialog",
     "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",
+    "StatusDot",
+    "CategoryTag",
+    "CompactField",
+    "SegmentedControl",
     "ModelInfoMessageBox",
     "AdvancedModelSearchDialog",
     "TrainingOverlayDialog",

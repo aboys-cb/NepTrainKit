@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QSpinBox, QDoubleSpinBox
-from qfluentwidgets import BodyLabel
+from qfluentwidgets import CaptionLabel, SpinBox, DoubleSpinBox
 
 
 class SpinBoxUnitInputFrame(QFrame):
-    """Composite input frame with spin boxes followed by unit labels."""
+    """Composite input frame with spin boxes followed by unit labels.
+
+    Uses the Fluent-styled `SpinBox`/`DoubleSpinBox` (rounded, inline
+    up/down controls, focus ring) rather than bare `QSpinBox`/`QDoubleSpinBox`
+    so every numeric field across the app shares one polished look, while
+    keeping this class's public API (`set_input`, `get_input_value`,
+    `set_input_value`, `setRange`, `setDecimals`, `setSingleStep`,
+    `object_list`) unchanged for existing callers.
+    """
 
     def __init__(self, parent=None):
         """Create the layout and track added input widgets.
@@ -20,6 +28,7 @@ class SpinBoxUnitInputFrame(QFrame):
         super(SpinBoxUnitInputFrame, self).__init__(parent)
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(4)
         self.object_list: list[QSpinBox | QDoubleSpinBox] = []
 
     def set_input(self, unit_str, object_num, input_type="int"):
@@ -56,18 +65,19 @@ class SpinBoxUnitInputFrame(QFrame):
 
         for i in range(object_num):
             if input_type[i % len(unit_str)] == "int":
-                input_object = QSpinBox(self)
-                input_object.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
+                input_object = SpinBox(self)
             elif input_type[i % len(unit_str)] == "float":
-                input_object = QDoubleSpinBox(self)
+                input_object = DoubleSpinBox(self)
                 input_object.setDecimals(3)
-                input_object.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
             else:
                 raise TypeError("input_type must be int or float")
 
-            input_object.setFixedHeight(25)
+            input_object.setFixedHeight(30)
             self._layout.addWidget(input_object)
-            self._layout.addWidget(BodyLabel(unit_str[i % len(unit_str)], self))
+
+            unit_label = CaptionLabel(unit_str[i % len(unit_str)], self)
+            unit_label.setStyleSheet("color:#8a95a0;")
+            self._layout.addWidget(unit_label)
             self.object_list.append(input_object)
 
     def setRange(self, min_value, max_value):

@@ -261,6 +261,19 @@ class PerturbCard(MakeDataCard):
             self.element_rows_frame.setVisible(self.element_scaling_checkbox.isChecked())
 
 
+    def get_summary_text(self) -> str:
+        """Return a one-line description shown while the card is collapsed."""
+        params = self.get_params()
+        parts = [self.tr("max {distance} Å").format(distance=params.max_distance)]
+        if params.use_element_scaling and params.element_scalings:
+            parts.append(
+                self.tr("{count} element overrides").format(count=len(params.element_scalings))
+            )
+        parts.append(self.tr("{count} structures").format(count=params.max_num))
+        if params.use_seed:
+            parts.append(self.tr("seed {seed}").format(seed=params.seed))
+        return " · ".join(parts)
+
     def create_operation(self):
         """Return the UI-independent atomic perturbation operation."""
         return PerturbOperation()

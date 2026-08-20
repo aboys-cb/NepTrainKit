@@ -35,6 +35,7 @@ from .organic_mol_config_pbc_card import OrganicMolConfigPBCCard
 from .local_solvation_card import LocalSolvationCard
 from .solvent_box_fill_card import SolventBoxFillCard
 from .layer_copy_card import LayerCopyCard
+from .interface_layer_mix_card import InterfaceLayerMixCard
 from .interstitial_adsorbate_card import InsertDefectCard
 
 from .fps_filter_card import FPSFilterDataCard
@@ -79,6 +80,7 @@ __all__ = [
     "LocalSolvationCard",
     "SolventBoxFillCard",
     "LayerCopyCard",
+    "InterfaceLayerMixCard",
     "InsertDefectCard",
     "FPSFilterDataCard",
     "GeometryFilterCard",

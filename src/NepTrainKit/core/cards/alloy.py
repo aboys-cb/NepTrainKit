@@ -8,6 +8,7 @@ import json
 import math
 import random
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from functools import lru_cache
 from itertools import combinations
@@ -29,6 +30,7 @@ from NepTrainKit.core.alloy import (
 )
 from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 
+from .errors import CardOperationError
 from .geometry import scaled_positions
 from .operation import GeneratorOperation, StructureOperation
 
@@ -2053,3 +2055,353 @@ def _exact_replacement_sample(new_atoms: list[str], probs: np.ndarray, total: in
         sampled.extend([name] * int(count))
     rng.shuffle(sampled)
     return np.array(sampled, dtype=object)
+# ----------------------------------------------------------------------
+# Interface thin-layer interdiffusion (界面随机互混)
+#
+# Detects a bilayer interface, picks near-interface atomic layers on both
+# sides (L = below the interface, R = above it), and swaps atom species
+# between the two selected regions at a fixed or gradient concentration.
+# ----------------------------------------------------------------------
+
+INTERFACE_AXIS_INDEX = {"a": 0, "b": 1, "c": 2}
+MIN_CONTRAST = 1e-4
+CONC_TOLERANCE = 1e-6
+
+
+@dataclass(frozen=True)
+class InterfaceLayerMixParams:
+    axis: str = "auto"
+    auto_position: bool = True
+    interface_position: float = 0.5
+    left_layers: int = 2
+    right_layers: int = 2
+    mode: str = "fixed"
+    concentration: float = 0.5
+    gradient_start: float = 0.0
+    gradient_end: float = 1.0
+    num_structures: int = 1
+    use_seed: bool = False
+    seed: int = 0
+
+
+class InterfaceLayerMixOperation(StructureOperation):
+    """Swap atom species between near-interface layers of a bilayer."""
+
+    def run_structure(self, structure, params: InterfaceLayerMixParams) -> list:
+        resolved = self._resolve(structure, params)
+        c_schedule = self._concentration_schedule(params, resolved["c_max"])
+        outputs = []
+        base_seed = int(params.seed) if bool(params.use_seed) else None
+        cfg_id = stable_config_id(structure)
+        for sample_idx, c in enumerate(c_schedule):
+            if base_seed is None:
+                rng = np.random.default_rng()
+                seed_tag = ""
+            else:
+                derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
+                rng = np.random.default_rng(derived_seed)
+                seed_tag = f",s={derived_seed}"
+            atoms = structure.copy()
+            self._swap_atoms(atoms, resolved, c, rng)
+            append_config_tag(
+                atoms,
+                f"IfaceMix(L={int(params.left_layers)},R={int(params.right_layers)},c={c:.3g}{seed_tag})",
+            )
+            outputs.append(atoms)
+        return outputs
+
+    def interface_summary(self, structure, params: InterfaceLayerMixParams) -> dict:
+        """Deterministic geometry summary for the preview panel (no RNG)."""
+        resolved = self._resolve(structure, params)
+        return {
+            "axis": resolved["axis"],
+            "position": resolved["position"],
+            "left_formula": resolved["left_formula"],
+            "right_formula": resolved["right_formula"],
+            "left_layers_available": resolved["left_layers_available"],
+            "right_layers_available": resolved["right_layers_available"],
+            "left_layers": int(params.left_layers),
+            "right_layers": int(params.right_layers),
+            "n_left": resolved["n_left"],
+            "n_right": resolved["n_right"],
+            "n_total": resolved["n_total"],
+            "c_max": resolved["c_max"],
+            "num_structures": int(params.num_structures),
+            "mode": str(params.mode).strip(),
+        }
+
+    # ------------------------------------------------------------------
+    # geometry / validation
+    # ------------------------------------------------------------------
+
+    def _resolve(self, structure, params: InterfaceLayerMixParams) -> dict:
+        if int(getattr(structure.cell, "rank", 0)) < 3:
+            raise CardOperationError(
+                "interface.singular_cell",
+                "Interface Layer Mixing requires a non-singular 3D cell.",
+            )
+        if len(structure) < 2:
+            raise CardOperationError(
+                "interface.too_few_atoms",
+                "Interface Layer Mixing requires at least two atoms.",
+            )
+
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
+        species = sorted(set(symbols.tolist()), key=lambda s: atomic_numbers.get(s, 200))
+        if len(species) < 2:
+            raise CardOperationError(
+                "interface.single_element",
+                "Interface Layer Mixing found only one element ({element}); "
+                "swapping would not change the structure.",
+                element=species[0],
+            )
+
+        left_layers = int(params.left_layers)
+        right_layers = int(params.right_layers)
+        if left_layers < 1:
+            raise CardOperationError(
+                "interface.left_layers",
+                "L-side layer count must be >= 1 (got {value}).",
+                value=left_layers,
+            )
+        if right_layers < 1:
+            raise CardOperationError(
+                "interface.right_layers",
+                "R-side layer count must be >= 1 (got {value}).",
+                value=right_layers,
+            )
+        if int(params.num_structures) < 1:
+            raise CardOperationError(
+                "interface.num_structures",
+                "Number of structures must be >= 1 (got {value}).",
+                value=int(params.num_structures),
+            )
+
+        coord3 = scaled_positions(structure, wrap=True)
+        axis_key = str(params.axis).strip().lower()
+        axis_idx = INTERFACE_AXIS_INDEX.get(axis_key)
+        if axis_key != "auto" and axis_idx is None:
+            raise CardOperationError(
+                "interface.invalid_axis",
+                "Interface axis must be auto, a, b, or c (got {axis}).",
+                axis=params.axis,
+            )
+
+        pos = None
+        if axis_key == "auto":
+            best = None
+            for idx in range(3):
+                contrast, candidate_pos = self._best_split(symbols, species, coord3[:, idx])
+                if best is None or contrast > best[0]:
+                    best = (contrast, idx, candidate_pos)
+            contrast, axis_idx, pos = best
+            axis_key = ("a", "b", "c")[axis_idx]
+            if pos is None or contrast < MIN_CONTRAST:
+                raise CardOperationError(
+                    "interface.no_interface",
+                    "Auto-detection found no interface with distinct compositions "
+                    "(max contrast {contrast}). Check that the structure is a bilayer "
+                    "or pick the interface normal axis manually.",
+                    contrast=f"{contrast:.3g}",
+                )
+
+        if bool(params.auto_position):
+            if pos is None:
+                contrast, pos = self._best_split(symbols, species, coord3[:, axis_idx])
+            if pos is None or contrast < MIN_CONTRAST:
+                raise CardOperationError(
+                    "interface.no_interface",
+                    "Lattice axis {axis} shows no distinct-composition split "
+                    "(contrast {contrast}). Try another axis, or disable auto-locate "
+                    "and type the interface position.",
+                    axis=axis_key,
+                    contrast=f"{contrast:.3g}",
+                )
+        else:
+            pos = float(params.interface_position)
+            if not (0.0 <= pos <= 1.0):
+                raise CardOperationError(
+                    "interface.invalid_position",
+                    "Interface fractional position must be in [0, 1] (got {pos}).",
+                    pos=f"{pos:.4g}",
+                )
+
+        coord = coord3[:, axis_idx]
+        l_mask = coord < pos
+        r_mask = ~l_mask
+        idx = np.arange(len(structure), dtype=int)
+
+        l_layer_id, n_left_avail = self._layer_ids(coord[l_mask])
+        if n_left_avail < left_layers:
+            raise CardOperationError(
+                "interface.not_enough_layers",
+                "Not enough atomic layers below the interface: need {need}, only "
+                "{have} available. Reduce the L-side layer count.",
+                need=left_layers,
+                have=n_left_avail,
+            )
+        l_sel = np.zeros(len(structure), dtype=bool)
+        l_sel[l_mask] = n_left_avail - 1 - l_layer_id < left_layers
+
+        r_layer_id, n_right_avail = self._layer_ids(coord[r_mask])
+        if n_right_avail < right_layers:
+            raise CardOperationError(
+                "interface.not_enough_layers",
+                "Not enough atomic layers above the interface: need {need}, only "
+                "{have} available. Reduce the R-side layer count.",
+                need=right_layers,
+                have=n_right_avail,
+            )
+        r_sel = np.zeros(len(structure), dtype=bool)
+        r_sel[r_mask] = r_layer_id < right_layers
+
+        l_idx = idx[l_sel]
+        r_idx = idx[r_sel]
+        n_left = int(l_idx.size)
+        n_right = int(r_idx.size)
+
+        l_elements = set(symbols[l_idx].tolist())
+        r_elements = set(symbols[r_idx].tolist())
+        if l_elements == r_elements and len(l_elements) == 1:
+            raise CardOperationError(
+                "interface.same_elements",
+                "Both selected regions are the same single element {element}; "
+                "swapping would not change the structure.",
+                element=next(iter(l_elements)),
+            )
+
+        n_total = n_left + n_right
+        c_max = 2.0 * min(n_left, n_right) / n_total
+        return {
+            "axis": axis_key,
+            "position": pos,
+            "n_left": n_left,
+            "n_right": n_right,
+            "n_total": n_total,
+            "left_formula": self._formula(symbols[l_idx]),
+            "right_formula": self._formula(symbols[r_idx]),
+            "left_layers_available": n_left_avail,
+            "right_layers_available": n_right_avail,
+            "left_index": l_idx,
+            "right_index": r_idx,
+            "c_max": float(c_max),
+        }
+
+    def _concentration_schedule(self, params: InterfaceLayerMixParams, c_max: float) -> list[float]:
+        num = int(params.num_structures)
+        mode = str(params.mode).strip()
+        if mode == "fixed":
+            c = float(params.concentration)
+            if c < 0.0 or c > c_max + CONC_TOLERANCE:
+                raise CardOperationError(
+                    "interface.concentration_exceeds_max",
+                    "Target concentration {c} exceeds this interface's swap capacity "
+                    "{c_max}. Lower the concentration or add more layers.",
+                    c=f"{c:.4g}",
+                    c_max=f"{c_max:.4g}",
+                )
+            return [c] * num
+        if mode == "gradient":
+            start = float(params.gradient_start)
+            end = float(params.gradient_end)
+            top = max(start, end)
+            if start < 0.0 or end < 0.0 or top > c_max + CONC_TOLERANCE:
+                raise CardOperationError(
+                    "interface.concentration_exceeds_max",
+                    "Gradient concentration bound {top} exceeds this interface's swap "
+                    "capacity {c_max}. Lower the concentration or add more layers.",
+                    top=f"{top:.4g}",
+                    c_max=f"{c_max:.4g}",
+                )
+            if num == 1:
+                return [start]
+            return [start + (end - start) * i / (num - 1) for i in range(num)]
+        raise CardOperationError(
+            "interface.invalid_mode",
+            "Concentration mode must be fixed or gradient (got {mode}).",
+            mode=mode,
+        )
+
+    # ------------------------------------------------------------------
+    # helpers
+    # ------------------------------------------------------------------
+
+    def _best_split(self, symbols: np.ndarray, species: list[str], coord: np.ndarray) -> tuple[float, float | None]:
+        """Return (contrast, split position) for the best split on one axis."""
+        n_species = len(species)
+        species_index = {s: i for i, s in enumerate(species)}
+        sym_idx = np.asarray([species_index[s] for s in symbols], dtype=int)
+        uniq_vals, inv = np.unique(coord, return_inverse=True)
+        n_uniq = uniq_vals.size
+        if n_uniq < 2:
+            return 0.0, None
+        uniq_hist = np.zeros((n_uniq, n_species), dtype=float)
+        for s in range(n_species):
+            uniq_hist[:, s] = np.bincount(inv[sym_idx == s], minlength=n_uniq)
+        cum_hist = np.cumsum(uniq_hist, axis=0)
+        cum_count = np.cumsum(uniq_hist.sum(axis=1))
+        total = int(cum_count[-1])
+        best_contrast = 0.0
+        best_pos = None
+        for i in range(n_uniq - 1):
+            n_left = int(cum_count[i])
+            n_right = total - n_left
+            if n_left == 0 or n_right == 0:
+                continue
+            hist_l = cum_hist[i] / n_left
+            hist_r = (cum_hist[-1] - cum_hist[i]) / n_right
+            contrast = 1.0 - self._cosine(hist_l, hist_r)
+            pos = 0.5 * (float(uniq_vals[i]) + float(uniq_vals[i + 1]))
+            if contrast > best_contrast:
+                best_contrast = contrast
+                best_pos = pos
+        return float(best_contrast), best_pos
+
+    @staticmethod
+    def _cosine(a: np.ndarray, b: np.ndarray) -> float:
+        denom = float(np.sqrt(np.dot(a, a) * np.dot(b, b)))
+        if denom == 0.0:
+            return 0.0
+        return float(np.dot(a, b)) / denom
+
+    @classmethod
+    def _layer_ids(cls, coords: np.ndarray) -> tuple[np.ndarray, int]:
+        """Assign each atom a layer id (ascending plane coordinate).
+
+        Atomic planes are resolved at 0.01 fractional resolution, matching the
+        stacking-fault cards' plane convention while tolerating in-plane noise
+        (relaxed atoms within one plane round to the same coordinate).
+        """
+        if coords.size == 0:
+            return np.zeros(0, dtype=int), 0
+        planes, inv = np.unique(np.round(coords, 2), return_inverse=True)
+        return inv, int(planes.size)
+
+    @staticmethod
+    def _formula(symbols_subset: np.ndarray) -> str:
+        counts = Counter(symbols_subset.tolist())
+        order = sorted(counts, key=lambda s: atomic_numbers.get(s, 200))
+        g = 0
+        for v in counts.values():
+            g = math.gcd(g, v)
+        parts = []
+        for s in order:
+            n = counts[s] // g if g else counts[s]
+            parts.append(s if n == 1 else f"{s}{n}")
+        return "".join(parts)
+
+    @staticmethod
+    def _swap_atoms(atoms, resolved: dict, c: float, rng: np.random.Generator) -> None:
+        symbols = np.asarray(atoms.get_chemical_symbols(), dtype=object)
+        l_idx = resolved["left_index"]
+        r_idx = resolved["right_index"]
+        k_max = min(int(l_idx.size), int(r_idx.size))
+        k = min(int(np.round(c * resolved["n_total"] / 2.0)), k_max)
+        if k <= 0:
+            return
+        lp = rng.permutation(l_idx)[:k]
+        rp = rng.permutation(r_idx)[:k]
+        old_l = symbols[lp].copy()
+        symbols[lp] = symbols[rp]
+        symbols[rp] = old_l
+        atoms.set_chemical_symbols(symbols.tolist())

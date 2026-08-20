@@ -114,6 +114,13 @@ def _localized_catalog(_language_marker: str):
                 "Divide atoms into two coordinate-based groups for downstream magnetic, doping, or vacancy operations; coordinates and elements are unchanged.",
             ),
         ),
+        "InterfaceLayerMixCard": (
+            QCoreApplication.translate("CardCatalog", "Interface Layer Mixing"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Detect a bilayer interface, pick near-interface layers on both sides, and swap their atom species at a target or gradient concentration.",
+            ),
+        ),
         "InsertDefectCard": (
             QCoreApplication.translate(
                 "CardCatalog",

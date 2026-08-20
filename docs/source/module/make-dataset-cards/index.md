@@ -93,6 +93,7 @@ categories/workflow-metadata
 | 先定义一组目标配比 | [成分空间采样](cards/composition-sweep-card.md) | 输出是目标配比标签，不代表占位已经改变 |
 | 把目标配比真正落到离散位点 | [随机占位](cards/random-occupancy-card.md) | 可接在成分空间采样之后 |
 | 沿空间方向形成配比梯度 | [成分梯度](cards/composition-gradient-card.md) | 输入需要足够多的层或位点 |
+| 互混界面两侧的少数原子层 | [界面随机互混](cards/interface-layer-mix-card.md) | 输入需要界面法向明确的异种元素双层 |
 | 按坐标、元素或分组规则替换位点 | [条件替换](cards/conditional-replace-card.md) | 复杂规则不要退化成无约束随机掺杂 |
 
 ### 生成缺陷、表面或层错

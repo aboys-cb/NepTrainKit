@@ -107,6 +107,7 @@ def _translation_catalog() -> None:
     QCoreApplication.translate("CardCombo", "B2/AB")
     QCoreApplication.translate("CardCombo", "L10/AB")
     QCoreApplication.translate("CardCombo", "Auto (Comp tag)")
+    QCoreApplication.translate("CardCombo", "Auto detect")
     QCoreApplication.translate("CardCombo", "Manual")
     QCoreApplication.translate("CardCombo", "Exact")
     QCoreApplication.translate("CardCombo", "Random")

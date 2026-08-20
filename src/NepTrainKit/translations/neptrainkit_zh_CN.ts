@@ -873,6 +873,16 @@
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="118" />
+        <source>Interface Layer Mixing</source>
+        <translation>界面随机互混</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="121" />
+        <source>Detect a bilayer interface, pick near-interface layers on both sides, and swap their atom species at a target or gradient concentration.</source>
+        <translation>识别双层结构的界面，选中界面两侧薄层，按固定或梯度浓度交换两侧原子元素类型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="118" />
         <source>Interstitial and Surface Adsorption</source>
         <translation>插隙与表面吸附</translation>
     </message>
@@ -1536,6 +1546,11 @@
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="110" />
+        <source>Auto detect</source>
+        <translation>自动检测</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="111" />
         <source>Manual</source>
         <translation>手动</translation>
     </message>
@@ -4918,6 +4933,105 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     <message>
         <source>Height above the surface plane when placing adsorbates</source>
         <translation type="vanished">放置吸附物时高出表面的距离</translation>
+    </message>
+</context>
+<context>
+    <name>InterfaceLayerMixCard</name>
+    <message>
+        <source>Interface Layer Mixing</source>
+        <translation>界面随机互混</translation>
+    </message>
+    <message>
+        <source>Interface normal</source>
+        <translation>界面法向</translation>
+    </message>
+    <message>
+        <source>Lattice axis perpendicular to the bilayer interface</source>
+        <translation>垂直于双层界面的晶格轴</translation>
+    </message>
+    <message>
+        <source>Auto: the axis with the sharpest composition split is chosen.</source>
+        <translation>自动：选择成分差异最明显的晶轴。</translation>
+    </message>
+    <message>
+        <source>Atoms are layered along lattice {axis}.</source>
+        <translation>原子沿晶格 {axis} 方向分层。</translation>
+    </message>
+    <message>
+        <source>L-side layers from interface</source>
+        <translation>L侧层数</translation>
+    </message>
+    <message>
+        <source>Number of atomic layers selected below the interface</source>
+        <translation>界面下方选中的原子层数</translation>
+    </message>
+    <message>
+        <source>R-side layers from interface</source>
+        <translation>R侧层数</translation>
+    </message>
+    <message>
+        <source>Number of atomic layers selected above the interface</source>
+        <translation>界面上方选中的原子层数</translation>
+    </message>
+    <message>
+        <source>Concentration mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <source>Fixed target concentration, or a linear gradient across the generated structures</source>
+        <translation>固定目标浓度，或在生成的结构之间线性渐变</translation>
+    </message>
+    <message>
+        <source>Target concentration</source>
+        <translation>值</translation>
+    </message>
+    <message>
+        <source>Fraction of the selected-layer atoms that exchange species across the interface</source>
+        <translation>选中层中跨界面交换元素类型的原子占比</translation>
+    </message>
+    <message>
+        <source>Number of structures</source>
+        <translation>结构数</translation>
+    </message>
+    <message>
+        <source>Number of new structures generated for each input structure</source>
+        <translation>每个输入结构生成的新结构数量</translation>
+    </message>
+    <message>
+        <source>Use seed</source>
+        <translation>使用随机种子</translation>
+    </message>
+    <message>
+        <source>Enable reproducible random swapping</source>
+        <translation>启用可复现的随机交换</translation>
+    </message>
+    <message>
+        <source>Random seed</source>
+        <translation>随机种子</translation>
+    </message>
+    <message>
+        <source>Fixed concentration</source>
+        <translation>固定浓度</translation>
+    </message>
+    <message>
+        <source>Gradient concentration</source>
+        <translation>梯度浓度</translation>
+    </message>
+    <message>
+        <source>Relative to the interface, the L side is below and the R side is above.</source>
+        <translation>以界面为基准，L侧为界面下方，R侧为界面上方</translation>
+    </message>
+    <message>
+        <source>Preview appears after attaching an input dataset.</source>
+        <translation>接入输入数据集后显示界面检测预览。</translation>
+    </message>
+    <message>
+        <source>Preview unavailable: {reason}</source>
+        <translation>无法预览：{reason}</translation>
+    </message>
+    <message>
+        <source>{axis}-axis interface @ {pos}; L={l_layers} ({left_formula}) &lt;-&gt; R={r_layers} ({right_formula}); c_max={c_max}; outputs: {count}</source>
+        <translation>沿{axis}轴界面@{pos}；L={l_layers}（{left_formula}）↔R={r_layers}（{right_formula}）；最大浓度{c_max}；输出：{count}</translation>
     </message>
 </context>
 <context>

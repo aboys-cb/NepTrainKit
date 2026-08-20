@@ -10,6 +10,7 @@
 ../cards/finite-cell-alloy-occupancy-card
 ../cards/composition-sweep-card
 ../cards/composition-gradient-card
+../cards/interface-layer-mix-card
 ../cards/random-occupancy-card
 ../cards/random-doping-card
 ../cards/conditional-replace-card

@@ -1,9 +1,8 @@
 """Card for applying random atomic perturbations."""
 
-from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QVBoxLayout, QLineEdit
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget, QLineEdit
 from qfluentwidgets import (
     BodyLabel,
-    ComboBox,
     ToolTipFilter,
     ToolTipPosition,
     CheckBox,
@@ -14,7 +13,7 @@ from qfluentwidgets import (
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.lattice import PerturbOperation, PerturbParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, CompactField, SegmentedControl
 from NepTrainKit.ui.widgets import MakeDataCard
 
 
@@ -66,7 +65,7 @@ class ElementScalingRow(QFrame):
 @CardManager.register_card
 class PerturbCard(MakeDataCard):
     """Apply random atomic displacements within a configurable distance budget.
-    
+
     Parameters
     ----------
     parent : QWidget, optional
@@ -81,7 +80,7 @@ class PerturbCard(MakeDataCard):
     ]
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
-        
+
         Parameters
         ----------
         parent : QWidget, optional
@@ -94,55 +93,48 @@ class PerturbCard(MakeDataCard):
 
     def init_ui(self):
         """Build the form controls that expose the card configuration.
+
+        Fields are grouped into a dense two-column grid (`CompactField`
+        pairs) instead of one long single-column list, so the card stays
+        readable as it grows more options.
         """
         self.setObjectName("perturb_card_widget")
-        self.engine_label=BodyLabel(self.tr("Random engine:"),self.setting_widget)
-        self.engine_type_combo=ComboBox(self.setting_widget)
-        self.engine_type_combo.addItem(self.tr("Sobol"))
-        self.engine_type_combo.addItem(self.tr("Uniform"))
-        self.engine_type_combo.setCurrentIndex(1)
+        self.settingLayout.setHorizontalSpacing(10)
+        self.settingLayout.setVerticalSpacing(10)
 
-        self.engine_label.setToolTip(
+        self.engine_type_combo = SegmentedControl(
+            [self.tr("Sobol"), self.tr("Uniform")], self.setting_widget
+        )
+        self.engine_type_combo.setCurrentIndex(1)
+        engine_field = CompactField(self.tr("Random engine"), self.engine_type_combo, self.setting_widget)
+        engine_field.setToolTip(
             self.tr(
                 "Uniform is the general default; Sobol improves small-sample coverage for up to 7,067 atoms"
             )
         )
-        self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
+        engine_field.installEventFilter(ToolTipFilter(engine_field, 300, ToolTipPosition.TOP))
 
-        self.optional_frame = QFrame(self.setting_widget)
-        self.optional_frame_layout = QGridLayout(self.optional_frame)
-        self.optional_frame_layout.setContentsMargins(0, 0, 0, 0)
-        self.optional_frame_layout.setSpacing(2)
-
-        self.optional_label=BodyLabel(self.tr("Optional"),self.setting_widget)
-        self.organic_checkbox=CheckBox(self.tr("Identify organic"), self.setting_widget)
+        self.organic_checkbox = CheckBox(self.tr("Identify organic"), self.setting_widget)
         self.organic_checkbox.setChecked(False)
-        self.optional_label.setToolTip(self.tr("Treat organic molecules as rigid units"))
-        self.optional_label.installEventFilter(ToolTipFilter(self.optional_label, 300, ToolTipPosition.TOP))
-
-
-
-        self.optional_frame_layout.addWidget(self.organic_checkbox,0,0,1,1)
+        optional_field = CompactField(self.tr("Optional"), self.organic_checkbox, self.setting_widget)
+        optional_field.setToolTip(self.tr("Treat organic molecules as rigid units"))
+        optional_field.installEventFilter(ToolTipFilter(optional_field, 300, ToolTipPosition.TOP))
 
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
-        self.scaling_condition_frame.set_input("Å",1,"float")
+        self.scaling_condition_frame.set_input("Å", 1, "float")
         self.scaling_condition_frame.setDecimals(4)
         self.scaling_condition_frame.setSingleStep(0.01)
-        self.scaling_condition_frame.setRange(0,1)
-        self.scaling_radio_label=BodyLabel(self.tr("Max distance:"),self.setting_widget)
+        self.scaling_condition_frame.setRange(0, 1)
         self.scaling_condition_frame.set_input_value([0.3])
-        self.scaling_radio_label.setToolTip(self.tr("Maximum displacement distance"))
-        self.scaling_radio_label.installEventFilter(ToolTipFilter(self.scaling_radio_label, 300, ToolTipPosition.TOP))
+        distance_field = CompactField(self.tr("Max distance"), self.scaling_condition_frame, self.setting_widget)
+        distance_field.setToolTip(self.tr("Maximum displacement distance"))
+        distance_field.installEventFilter(ToolTipFilter(distance_field, 300, ToolTipPosition.TOP))
 
         self.element_scaling_label = BodyLabel(self.tr("Element Scaling:"), self.setting_widget)
         self.element_scaling_label.setToolTip(
             self.tr("Set maximum displacement per element; unlisted elements use Max distance")
         )
         self.element_scaling_label.installEventFilter(ToolTipFilter(self.element_scaling_label, 300, ToolTipPosition.TOP))
-        self.element_scaling_frame = QFrame(self.setting_widget)
-        self.element_scaling_layout = QHBoxLayout(self.element_scaling_frame)
-        self.element_scaling_layout.setContentsMargins(0, 0, 0, 0)
-        self.element_scaling_layout.setSpacing(4)
         self.element_scaling_checkbox = CheckBox(self.tr("Enable Scaling"), self.setting_widget)
         self.element_scaling_checkbox.setChecked(False)
         self.element_scaling_checkbox.setToolTip(
@@ -156,9 +148,15 @@ class PerturbCard(MakeDataCard):
         self.add_element_button.installEventFilter(
             ToolTipFilter(self.add_element_button, 300, ToolTipPosition.TOP)
         )
-        self.element_scaling_layout.addWidget(self.element_scaling_checkbox)
-        self.element_scaling_layout.addWidget(self.add_element_button)
-        self.element_scaling_layout.addStretch(1)
+        element_toggle_row = QWidget(self.setting_widget)
+        element_toggle_layout = QHBoxLayout(element_toggle_row)
+        element_toggle_layout.setContentsMargins(0, 0, 0, 0)
+        element_toggle_layout.setSpacing(4)
+        element_toggle_layout.addWidget(self.element_scaling_checkbox)
+        element_toggle_layout.addWidget(self.add_element_button)
+        element_toggle_layout.addStretch(1)
+        element_field = CompactField(self.tr("Element scaling"), element_toggle_row, self.setting_widget)
+
         self.element_rows_frame = QFrame(self.setting_widget)
         self.element_rows_layout = QVBoxLayout(self.element_rows_frame)
         self.element_rows_layout.setContentsMargins(0, 0, 0, 0)
@@ -168,14 +166,12 @@ class PerturbCard(MakeDataCard):
         self.add_element_button.setEnabled(False)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
-        self.num_condition_frame.set_input("unit",1,"int")
-        self.num_condition_frame.setRange(1,10000)
+        self.num_condition_frame.set_input("unit", 1, "int")
+        self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([50])
-
-        self.num_label=BodyLabel(self.tr("Structures"),self.setting_widget)
-        self.num_label.setToolTip(self.tr("Number of perturbed structures to generate"))
-
-        self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
+        num_field = CompactField(self.tr("Structures"), self.num_condition_frame, self.setting_widget)
+        num_field.setToolTip(self.tr("Number of perturbed structures to generate"))
+        num_field.installEventFilter(ToolTipFilter(num_field, 300, ToolTipPosition.TOP))
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
@@ -187,27 +183,25 @@ class PerturbCard(MakeDataCard):
         self.seed_frame.set_input_value([0])
         self.seed_frame.setEnabled(False)
         self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+        seed_row = QWidget(self.setting_widget)
+        seed_row_layout = QHBoxLayout(seed_row)
+        seed_row_layout.setContentsMargins(0, 0, 0, 0)
+        seed_row_layout.setSpacing(6)
+        seed_row_layout.addWidget(self.seed_checkbox)
+        seed_row_layout.addWidget(self.seed_frame, 1)
+        seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
 
-        self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
-        self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
+        self.settingLayout.addWidget(engine_field, 0, 0, 1, 1)
+        self.settingLayout.addWidget(optional_field, 0, 1, 1, 1)
 
-        self.settingLayout.addWidget(self.optional_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.optional_frame,1, 1, 1, 2)
+        self.settingLayout.addWidget(distance_field, 1, 0, 1, 1)
+        self.settingLayout.addWidget(element_field, 1, 1, 1, 1)
 
-        self.settingLayout.addWidget(self.scaling_radio_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.element_scaling_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.element_rows_frame, 2, 1, 1, 1)
 
-        self.settingLayout.addWidget(self.scaling_condition_frame, 2, 1, 1,2)
-
-        self.settingLayout.addWidget(self.element_scaling_frame, 3, 1, 1, 2)
-
-        self.settingLayout.addWidget(self.element_scaling_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.element_rows_frame, 4, 1, 1, 2)
-
-        self.settingLayout.addWidget(self.num_label,5, 0, 1, 1)
-        self.settingLayout.addWidget(self.num_condition_frame,5, 1, 1,2)
-
-        self.settingLayout.addWidget(self.seed_checkbox, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 6, 1, 1, 2)
+        self.settingLayout.addWidget(num_field, 3, 0, 1, 1)
+        self.settingLayout.addWidget(seed_field, 3, 1, 1, 1)
 
         self.add_element_button.clicked.connect(self._add_element_row)
         self.element_scaling_checkbox.toggled.connect(self._toggle_element_scaling_frame)
@@ -315,7 +309,7 @@ class PerturbCard(MakeDataCard):
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.
-        
+
         Parameters
         ----------
         data_dict : dict

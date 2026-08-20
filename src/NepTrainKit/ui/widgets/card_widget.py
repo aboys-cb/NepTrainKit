@@ -163,15 +163,15 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         """
         super(ShareCheckableHeaderCardWidget, self).__init__(parent)
 
-        # doc/info/copy-json/export used to be always-visible header icons;
-        # they now only back the overflow menu (see `show_overflow_menu`).
-        # They stay real, independently-parented widgets -- not added to
-        # `headerLayout` -- purely so their tooltip/accessibleName/visibility
-        # API stays available for existing callers. Parenting them to a
-        # widget that is never shown keeps `setVisible()` toggling their own
-        # `isHidden()` flag (for compatibility) without ever painting them
-        # floating over the header at (0, 0), which is what happens to an
-        # unlayouted child once something calls `setVisible(True)` on it.
+        # doc/info are used rarely, so only the overflow menu shows them
+        # (see `show_overflow_menu`). They stay real, independently-parented
+        # widgets -- not added to `headerLayout` -- purely so their
+        # tooltip/accessibleName/visibility API stays available for existing
+        # callers. Parenting them to a widget that is never shown keeps
+        # `setVisible()` toggling their own `isHidden()` flag (for
+        # compatibility) without ever painting them floating over the header
+        # at (0, 0), which is what happens to an unlayouted child once
+        # something calls `setVisible(True)` on it.
         self._legacy_action_holder = QWidget(self)
         self._legacy_action_holder.setVisible(False)
 
@@ -189,13 +189,14 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         )
         self.info_button.installEventFilter(ToolTipFilter(self.info_button, 300, ToolTipPosition.TOP))
 
-        self.copy_json_button = TransparentToolButton(FluentIcon.COPY, self._legacy_action_holder)
+        # Copy JSON and export are used often enough to stay directly visible.
+        self.copy_json_button = TransparentToolButton(FluentIcon.COPY, self)
         self.copy_json_button.clicked.connect(self.copy_json_to_clipboard)
         self.copy_json_button.setToolTip(self.tr("Copy card JSON"))
         self.copy_json_button.setAccessibleName(self.tr("Copy card JSON"))
         self.copy_json_button.installEventFilter(ToolTipFilter(self.copy_json_button, 300, ToolTipPosition.TOP))
 
-        self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self._legacy_action_holder)
+        self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
         self.export_button.clicked.connect(self.exportSignal)
         self.export_button.setToolTip(self.tr("Export data"))
         self.export_button.setAccessibleName(self.tr("Export data"))
@@ -218,6 +219,8 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
 
         self.headerLayout.insertWidget(1, self.category_tag, 0, Qt.AlignmentFlag.AlignLeft)
         self.headerLayout.addWidget(self.status_dot, 0, Qt.AlignmentFlag.AlignRight)
+        self.headerLayout.addWidget(self.copy_json_button, 0, Qt.AlignmentFlag.AlignRight)
+        self.headerLayout.addWidget(self.export_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.overflow_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
         self.refresh_doc_button()
@@ -227,7 +230,7 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.category_tag.setText(text)
 
     def show_overflow_menu(self) -> None:
-        """Open the menu holding the card's secondary actions.
+        """Open the menu holding the card's less-used secondary actions.
 
         Documentation only appears when `get_online_doc_url()` resolves to
         something (mirrors `doc_button`'s own visibility).
@@ -241,14 +244,6 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         info_action = Action(FluentIcon.INFO, self.tr("Card info and contributors"), self)
         info_action.triggered.connect(self.show_card_info)
         menu.addAction(info_action)
-
-        copy_action = Action(FluentIcon.COPY, self.tr("Copy card JSON"), self)
-        copy_action.triggered.connect(self.copy_json_to_clipboard)
-        menu.addAction(copy_action)
-
-        export_action = Action(QIcon(":/images/src/images/export1.svg"), self.tr("Export data..."), self)
-        export_action.triggered.connect(self.exportSignal)
-        menu.addAction(export_action)
 
         pos = self.overflow_button.mapToGlobal(QPoint(0, self.overflow_button.height() + 4))
         menu.exec(pos)
@@ -354,7 +349,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         )
         self.view_output_button.clicked.connect(self.request_view_output)
         self.headerLayout.insertWidget(
-            self.headerLayout.indexOf(self.overflow_button),
+            self.headerLayout.indexOf(self.copy_json_button),
             self.view_output_button,
             0,
             Qt.AlignmentFlag.AlignRight,
@@ -507,11 +502,22 @@ class MakeDataCard(MakeDataCardWidget):
 
     def show_setting(self):
         """Show the configuration panel expanded, or a one-line summary collapsed."""
-        expanded = self.window_state == "expand"
-        self.setting_widget.setVisible(expanded)
-        summary = "" if expanded else self.get_summary_text()
-        self.summary_label.setText(summary)
-        self.summary_label.setVisible(bool(summary))
+        self.setting_widget.setVisible(self.window_state == "expand")
+        self._refresh_collapsed_summary()
+
+    def _refresh_collapsed_summary(self) -> None:
+        """Keep the collapsed-state summary line and the status bar mutually
+        exclusive, so a collapsed card shows exactly one line of info -- the
+        parameter summary before it has run, the real result once it has.
+        """
+        show_summary = False
+        if self.window_state != "expand" and self.run_outcome == "idle":
+            summary = self.get_summary_text()
+            if summary:
+                self.summary_label.setText(summary)
+                show_summary = True
+        self.summary_label.setVisible(show_summary)
+        self.status_label.setVisible(not show_summary)
 
     def get_summary_text(self) -> str:
         """Return a one-line description of this card's current settings.
@@ -664,6 +670,7 @@ class MakeDataCard(MakeDataCardWidget):
             self.result_dataset = []
             self._last_elapsed_seconds = None
             self.set_output_available(False)
+            self._refresh_collapsed_summary()
             operation = self.create_operation()
             params = self.get_params()
             if isinstance(operation, StructureOperation):
@@ -757,6 +764,7 @@ class MakeDataCard(MakeDataCardWidget):
         failure_text = self.tr("Failed: {error}").format(error=translated_error)
         self.status_label.setText(failure_text)
         self.status_label.setToolTip(failure_text)
+        self._refresh_collapsed_summary()
         self.runFinishedSignal.emit(self.index)
 
         MessageManager.send_error_message(
@@ -774,11 +782,13 @@ class MakeDataCard(MakeDataCardWidget):
                 output_count=len(self.result_dataset),
             )
         )
+        self._refresh_collapsed_summary()
 
     def update_dataset_info(self):
         """Display dataset statistics in the status label."""
         self.set_output_available(bool(self.result_dataset))
         self.status_label.setText(self._format_dataset_info())
+        self._refresh_collapsed_summary()
 
     def _format_dataset_info(self) -> str:
         """Return the compact input/output/time summary shown below the card."""
@@ -831,5 +841,4 @@ class FilterDataCard(MakeDataCard):
 
     def update_dataset_info(self):
         """Display the number of structures kept by the filter."""
-        self.set_output_available(bool(self.result_dataset))
-        self.status_label.setText(self._format_dataset_info())
+        super().update_dataset_info()

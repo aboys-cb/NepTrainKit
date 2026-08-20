@@ -19,7 +19,7 @@
 Ni/Al 界面模型在纯 Ni、纯 Al 和均匀合金上误差正常，但给出一个两侧各带 2-3 层互混原子的界面构型时，界面附近原子力预测明显偏差。训练集里从来没有"界面两侧元素互换"的中间态，模型只能靠外推。
 
 **输入：** 一个已弛豫的 Ni(上)/Al(下) 双层结构，界面沿晶格 `c` 方向，两侧各有 6 层以上原子。
-**目标：** 生成界面两侧各 2 层的互混构型，让模型见过界面处 Fe/Al 元素互换的局域环境。
+**目标：** 生成界面两侧各 2 层的互混构型，让模型见过界面处 Ni/Al 元素互换的局域环境。
 **参数设置：** `axis=auto`，`left_layers=2`，`right_layers=2`，`mode=fixed`，`concentration=0.5`，`num_structures=20`，开启 `use_seed`。
 **输出：** 20 个结构，每个都有约一半选中层原子被换到对侧；界面仍清晰，只是薄层变混。
 **怎么验证训练集质量改善：** 重训后看界面附近原子力 MAE 是否下降；如果互混浓度不够丰富，把 `concentration` 或 `num_structures` 调大，或改用 `gradient` 模式覆盖 0 → c_max 的完整区间。
@@ -70,7 +70,7 @@ Ni/Al 界面模型在纯 Ni、纯 Al 和均匀合金上误差正常，但给出�
 
 ### 模式（mode）
 
-`str`，默认 `fixed`，可选 `fixed` 或 `gradient`。控制浓度怎么在输出结构间取值。卡片中用「固定浓度」/「梯度浓度」两个互斥勾选框切换，对应 `mode=fixed` / `mode=gradient`；选中「梯度浓度」时下方显示一行 `初始 ~ 终止` 两个百分比输入（百分比符号只在终止框后出现一次）。
+`str`，默认 `fixed`，可选 `fixed` 或 `gradient`。控制浓度怎么在输出结构间取值。卡片中用「固定浓度」/「梯度浓度」下拉框切换，对应 `mode=fixed` / `mode=gradient`；选中「梯度浓度」时下方显示一行 `初始 ~ 终止` 两个百分比输入（百分比符号只在终止框后出现一次）。
 
 | 选项 | 含义 | 什么时候选 |
 |------|------|-----------|
@@ -177,7 +177,7 @@ Ni/Al 界面模型在纯 Ni、纯 Al 和均匀合金上误差正常，但给出�
 
 ## 输出标签
 
-`IfaceMix(L={left_layers},R={right_layers},c={concentration})`，开启 `use_seed` 时追加 `,s={seed}`。示例：`IfaceMix(L=2,R=2,c=0.5,s=42)`。
+`IfaceMix(L={left_layers},R={right_layers},c={concentration})`，开启 `use_seed` 时追加 `,s={derived_seed}`。`derived_seed = seed + 输入结构标识 × 1000003 + 帧序号`（见「可复现性」）；输入结构标识为 0 时即等于 `seed`。示例：`IfaceMix(L=2,R=2,c=0.5,s=42)`。
 
 ## 可复现性
 

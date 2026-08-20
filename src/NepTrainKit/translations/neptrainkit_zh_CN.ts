@@ -873,6 +873,16 @@
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="118" />
+        <source>Interface Layer Mixing</source>
+        <translation>界面随机互混</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="121" />
+        <source>Detect a bilayer interface, pick near-interface layers on both sides, and swap their atom species at a target or gradient concentration.</source>
+        <translation>识别双层结构的界面，选中界面两侧薄层，按固定或梯度浓度交换两侧原子元素类型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="118" />
         <source>Interstitial and Surface Adsorption</source>
         <translation>插隙与表面吸附</translation>
     </message>

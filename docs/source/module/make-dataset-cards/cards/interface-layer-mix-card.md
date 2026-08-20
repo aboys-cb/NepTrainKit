@@ -2,7 +2,7 @@
 
 # 界面随机互混（Interface Layer Mixing）
 
-`Group`: `Alloy` | `Class`: `InterfaceLayerMixCard`
+**分类：** 合金与组成
 
 ## 功能说明
 
@@ -11,6 +11,34 @@
 浓度表示"发生了交换的原子数占选中薄层原子总数的比例"，例如 0.5 意味着选中层里一半的原子换成了对侧的元素。你可以固定目标浓度生成多帧，也可以用**浓度梯度**让 `num_structures` 帧从初始浓度线性过渡到终止浓度。
 
 它和 `Composition Gradient` 的区别：`Composition Gradient` 沿某个方向对**整段结构**做配比渐变；这张卡只动**界面两侧的少数原子层**，模拟互扩散初期的界面薄层互混，其余原子层保持原样。
+
+## 原理与公式
+
+卡片先把原子按界面法向的分数坐标分成 L（界面下方）与 R（界面上方）两侧，再沿法向把每侧聚合成原子层，选中靠近界面的 `left_layers`/`right_layers` 层参与互混。每次交换取 1 个 L 原子与 1 个 R 原子互换元素类型，格点位置与晶胞不变。设选中层原子数为 $n_L$、$n_R$，可交换对数上限为
+
+$$
+k_{\max}=\min(n_L,n_R),
+$$
+
+浓度定义为交换原子数占选中薄层原子总数的比例：
+
+$$
+c=\frac{2k}{n_L+n_R},
+$$
+
+由此得到交换容量上限
+
+$$
+c_{\max}=\frac{2\min(n_L,n_R)}{n_L+n_R}.
+$$
+
+两侧层数相等时 $c_{\max}=1$；两侧不均衡时 $c_{\max}<1$，目标浓度超出会直接报错而不是静默截断。梯度模式下第 $i$ 帧（$0\le i\le N-1$）的目标浓度按线性插值：
+
+$$
+c_i=c_{\mathrm{start}}+\frac{i}{N-1}(c_{\mathrm{end}}-c_{\mathrm{start}}).
+$$
+
+`fixed` 模式所有帧共用同一个目标浓度；`gradient` 模式用上式在 `num_structures` 帧之间做线性过渡。
 
 ## 操作示例
 
@@ -36,7 +64,7 @@ Ni/Al 界面模型在纯 Ni、纯 Al 和均匀合金上误差正常，但给出�
 
 ## 参数说明
 
-### Axis（axis）
+### 界面法向（axis）
 
 `str`，默认 `auto`。界面法向所在的晶格轴。
 
@@ -44,13 +72,13 @@ Ni/Al 界面模型在纯 Ni、纯 Al 和均匀合金上误差正常，但给出�
 
 如果你的体系两侧成分接近（例如 Cu/Ni 固溶体两边差不多），`auto` 可能分不清哪一侧是 L 哪一侧是 R，此时手动选轴更可靠。`a`/`b`/`c` 表示晶格分数坐标方向，不是笛卡尔 X/Y/Z。
 
-### Auto-locate interface（auto_position）
+### 自动定位界面（auto_position）
 
 `bool`，默认 true。是否自动定位界面在轴上的位置。
 
 卡片固定为 true，界面位置始终自动检测：在法向轴上找"成分变化最剧烈"的间隙，取间隙中点作为界面分数坐标，再按它分 L/R。卡片不再提供关闭选项；该字段保留在参数与序列化 JSON 中，仅用于兼容，运行结构时始终走自动定位。
 
-### Interface Position（interface_position）
+### 界面位置（interface_position）
 
 `float`，默认 0.5，范围 [0, 1]。界面在法向上的分数坐标。
 
@@ -77,19 +105,19 @@ Ni/Al 界面模型在纯 Ni、纯 Al 和均匀合金上误差正常，但给出�
 | `fixed` | 所有输出结构都用同一个目标浓度 | 补单一互混程度的多帧随机排布 |
 | `gradient` | 从初始浓度到终止浓度线性插值 | 扫一条浓度-能量曲线或完整互混区间 |
 
-### Concentration（concentration）
+### 目标浓度（concentration）
 
 `float`，默认 0.5，范围 [0, c_max]，`fixed` 模式生效。目标浓度 = 交换原子数 / 选中薄层总原子数。UI 中按百分比输入（0–100%，默认 50%），内部换算为 0–1 分数。
 
 它不是"选中的 L 原子里有多少换走"，而是两侧合计的交换占比：每交换一对（1 个 L ↔ 1 个 R）计 2 个原子。给定选中层原子数 n_L、n_R，可交换对数上限 `k_max = min(n_L, n_R)`，浓度上限 `c_max = 2·k_max / (n_L+n_R)`。n_L=n_R 时 c_max 恰好是 1.0；两侧不均衡时 c_max < 1，超出会直接报错而不是静默截断。
 
-### Gradient Start（gradient_start）
+### 起始浓度（gradient_start）
 
 `float`，默认 0.0，范围 [0, c_max]，`gradient` 模式生效。第一个生成结构的目标浓度。UI 中按百分比输入（默认 0%）。
 
 `num_structures=1` 时，只生成这一个浓度的结构。
 
-### Gradient End（gradient_end）
+### 终止浓度（gradient_end）
 
 `float`，默认 1.0，范围 [0, c_max]，`gradient` 模式生效。最后一个生成结构的目标浓度。UI 中按百分比输入（默认 100%）。中间帧按 `start + (end-start)·i/(num-1)` 线性取值，`num_structures=1` 时忽略。
 
@@ -103,7 +131,7 @@ Ni/Al 界面模型在纯 Ni、纯 Al 和均匀合金上误差正常，但给出�
 
 `bool`，默认 false。开启后固定随机种子，同一输入 + 同一参数可复现同一批结构。
 
-### Seed（seed）
+### 随机种子（seed）
 
 `int`，默认 0。随机种子基准值。
 

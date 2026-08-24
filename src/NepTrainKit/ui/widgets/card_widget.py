@@ -7,9 +7,9 @@ from urllib.parse import urljoin
 
 from typing import Any, Iterable
 
-from PySide6.QtCore import Qt, Signal, QMimeData, Property, QUrl, QPoint
+from PySide6.QtCore import QCoreApplication, QEvent, Qt, Signal, QMimeData, Property, QUrl, QPoint, QSize
 from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont, QDesktopServices
-from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QApplication, QWidget, QFrame, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSizePolicy
 
 from qfluentwidgets import (
     CaptionLabel,
@@ -20,8 +20,6 @@ from qfluentwidgets import (
     FluentStyleSheet,
     setFont,
     FluentIcon,
-    RoundMenu,
-    Action,
 )
 
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
@@ -34,8 +32,8 @@ from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, BackgroundTask
 from NepTrainKit.version import DOCS_BASE_URL
-from .card_metadata import CardMetadataDialog
-from .compact_form import StatusDot, CategoryTag
+from .card_metadata import CardMetadataDialog, localized_card_description
+from .compact_form import CategoryTag, StatusBadge, StatusDot
 from .label import ProcessLabel
 from ase.io import write as ase_write
 
@@ -54,15 +52,33 @@ class HeaderCardWidget(SimpleCardWidget):
         super().__init__(parent)
         self.headerView = QWidget(self)
         self.headerLabel = QLabel(self)
+        self.headerLabel.setMinimumWidth(0)
+        self.headerLabel.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
         self.separator = CardSeparator(self)
         self.view = QWidget(self)
 
         self.vBoxLayout = QVBoxLayout(self)
-        self.headerLayout = QHBoxLayout(self.headerView)
+        self.headerViewLayout = QVBoxLayout(self.headerView)
+        self.headerTopView = QWidget(self.headerView)
+        self.headerInfoView = QWidget(self.headerView)
+        self.headerLayout = QHBoxLayout(self.headerTopView)
+        self.headerInfoLayout = QHBoxLayout(self.headerInfoView)
         self.viewLayout = QHBoxLayout(self.view)
 
         self.headerLayout.addWidget(self.headerLabel)
         self.headerLayout.setContentsMargins(24, 0, 16, 0)
+        self.headerInfoLayout.setContentsMargins(10, 0, 3, 3)
+        self.headerInfoLayout.setSpacing(4)
+        self.headerViewLayout.setContentsMargins(0, 0, 0, 0)
+        self.headerViewLayout.setSpacing(0)
+        self.headerViewLayout.addWidget(self.headerTopView)
+        self.headerViewLayout.addWidget(self.headerInfoView)
+        self.headerTopView.setFixedHeight(48)
+        self.headerInfoView.setFixedHeight(34)
+        self.headerInfoView.hide()
         self.headerView.setFixedHeight(48)
 
         self.vBoxLayout.setSpacing(0)
@@ -76,6 +92,8 @@ class HeaderCardWidget(SimpleCardWidget):
 
         self.view.setObjectName("view")
         self.headerView.setObjectName("headerView")
+        self.headerTopView.setObjectName("headerTopView")
+        self.headerInfoView.setObjectName("headerInfoView")
         self.headerLabel.setObjectName("headerLabel")
         FluentStyleSheet.CARD_WIDGET.apply(self)
 
@@ -100,6 +118,7 @@ class HeaderCardWidget(SimpleCardWidget):
             Text placed inside the header label.
         """
         self.headerLabel.setText(title)
+        self.headerLabel.setToolTip(title)
 
     def _postInit(self):
         """Extension hook for subclasses to customize the layout."""
@@ -121,13 +140,17 @@ class CheckableHeaderCardWidget(HeaderCardWidget):
         """
         super(CheckableHeaderCardWidget, self).__init__(parent)
         self.state_checkbox = CheckBox()
+        self.state_checkbox.setStyleSheet(
+            self.state_checkbox.styleSheet()
+            + "\nCheckBox { min-width: 24px; max-width: 24px; padding: 0; }"
+        )
         self.state_checkbox.setChecked(True)
         self.state_checkbox.stateChanged.connect(self.state_changed)
         self.state_checkbox.setToolTip(self.tr("Enable or disable this card"))
         self.headerLayout.insertWidget(0, self.state_checkbox, 0, Qt.AlignmentFlag.AlignLeft)
         self.headerLayout.setStretch(1, 3)
         self.headerLayout.setContentsMargins(10, 0, 3, 0)
-        self.headerLayout.setSpacing(3)
+        self.headerLayout.setSpacing(2)
         self.viewLayout.setContentsMargins(6, 0, 6, 0)
         self.headerLayout.setAlignment(self.headerLabel, Qt.AlignmentFlag.AlignLeft)
         self.check_state = True
@@ -153,6 +176,12 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
     doc_anchor = ""
     exportSignal = Signal()
 
+    @staticmethod
+    def _compact_header_action(button, icon_size: int = 14) -> None:
+        """Use a quiet icon while retaining a practical desktop hit target."""
+        button.setFixedSize(28, 28)
+        button.setIconSize(QSize(icon_size, icon_size))
+
     def __init__(self, parent=None):
         """Create the card and attach export/close controls.
 
@@ -163,8 +192,8 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         """
         super(ShareCheckableHeaderCardWidget, self).__init__(parent)
 
-        # doc/info are used rarely, so only the overflow menu shows them
-        # (see `show_overflow_menu`). They stay real, independently-parented
+        # doc/info are presented by the workflow inspector. They stay real,
+        # independently-parented
         # widgets -- not added to `headerLayout` -- purely so their
         # tooltip/accessibleName/visibility API stays available for existing
         # callers. Parenting them to a widget that is never shown keeps
@@ -189,64 +218,88 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         )
         self.info_button.installEventFilter(ToolTipFilter(self.info_button, 300, ToolTipPosition.TOP))
 
-        # Copy JSON and export are used often enough to stay directly visible.
+        # Copy stays visible on top-level workflow cards; export remains in the
+        # overflow menu until there is a result worth exporting.
         self.copy_json_button = TransparentToolButton(FluentIcon.COPY, self)
+        self._compact_header_action(self.copy_json_button)
         self.copy_json_button.clicked.connect(self.copy_json_to_clipboard)
         self.copy_json_button.setToolTip(self.tr("Copy card JSON"))
         self.copy_json_button.setAccessibleName(self.tr("Copy card JSON"))
         self.copy_json_button.installEventFilter(ToolTipFilter(self.copy_json_button, 300, ToolTipPosition.TOP))
+        self.copy_json_button.hide()
 
         self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
+        self._compact_header_action(self.export_button)
+        self.export_button.setEnabled(False)
         self.export_button.clicked.connect(self.exportSignal)
         self.export_button.setToolTip(self.tr("Export data"))
         self.export_button.setAccessibleName(self.tr("Export data"))
         self.export_button.installEventFilter(ToolTipFilter(self.export_button, 300, ToolTipPosition.TOP))
 
         self.close_button = TransparentToolButton(FluentIcon.CLOSE, self)
+        self._compact_header_action(self.close_button, 11)
         self.close_button.clicked.connect(self.close)
         self.close_button.setToolTip(self.tr("Close card"))
         self.close_button.setAccessibleName(self.tr("Close card"))
         self.close_button.installEventFilter(ToolTipFilter(self.close_button, 300, ToolTipPosition.TOP))
 
-        self.category_tag = CategoryTag(str(getattr(self, "group", "") or ""), self)
+        group = str(getattr(self, "group", "") or "")
+        translated_group = QCoreApplication.translate("CardCatalog", group)
+        self._nested_header = False
+        self.category_tag = CategoryTag(translated_group, self)
         self.status_dot = StatusDot(self)
         self.status_dot.setToolTip(self.tr("Card status"))
-        self.overflow_button = TransparentToolButton(FluentIcon.MORE, self)
-        self.overflow_button.setToolTip(self.tr("More actions"))
-        self.overflow_button.setAccessibleName(self.tr("More actions"))
-        self.overflow_button.clicked.connect(self.show_overflow_menu)
-        self.overflow_button.installEventFilter(ToolTipFilter(self.overflow_button, 300, ToolTipPosition.TOP))
-
+        self.status_badge = StatusBadge(self)
+        self.status_badge.hide()
+        self.status_dot.stateChanged.connect(self.status_badge.set_state)
         self.headerLayout.insertWidget(1, self.category_tag, 0, Qt.AlignmentFlag.AlignLeft)
         self.headerLayout.addWidget(self.status_dot, 0, Qt.AlignmentFlag.AlignRight)
-        self.headerLayout.addWidget(self.copy_json_button, 0, Qt.AlignmentFlag.AlignRight)
+        self.headerLayout.addWidget(self.status_badge, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.export_button, 0, Qt.AlignmentFlag.AlignRight)
-        self.headerLayout.addWidget(self.overflow_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
         self.refresh_doc_button()
 
     def set_category_tag(self, text: str) -> None:
         """Update the small category pill shown next to the card title."""
         self.category_tag.setText(text)
+        self.category_tag.setVisible(bool(text) and not self._nested_header)
 
-    def show_overflow_menu(self) -> None:
-        """Open the menu holding the card's less-used secondary actions.
+    def set_compact_header(self, compact: bool) -> None:
+        """Switch between a full top-level header and a narrow nested header."""
+        self._nested_header = bool(compact)
+        set_two_row = getattr(self, "set_two_row_header", None)
+        if callable(set_two_row):
+            set_two_row(not compact and hasattr(self, "setting_widget"))
+        self.category_tag.setVisible(not compact)
+        # Card JSON is available from the right inspector; keeping the legacy
+        # button hidden preserves the API without duplicating the action here.
+        self.copy_json_button.setVisible(False)
+        self.status_dot.setVisible(compact)
+        self.status_badge.setVisible(not compact)
+        self._refresh_result_action_group()
+        update_close = getattr(self, "_update_close_affordance", None)
+        if callable(update_close):
+            update_close()
 
-        Documentation only appears when `get_online_doc_url()` resolves to
-        something (mirrors `doc_button`'s own visibility).
-        """
-        menu = RoundMenu(parent=self)
-        if not self.doc_button.isHidden():
-            doc_action = Action(FluentIcon.HELP, self.tr("Open documentation"), self)
-            doc_action.triggered.connect(self.open_online_doc)
-            menu.addAction(doc_action)
+    def _refresh_result_action_group(self) -> None:
+        """Show available result actions as one connected visual unit."""
+        group = getattr(self, "result_action_group", None)
+        view_button = getattr(self, "view_output_button", None)
+        if group is None or view_button is None:
+            return
+        top_level = not self._nested_header
+        view_button.setVisible(top_level and view_button.isEnabled())
+        self.export_button.setVisible(top_level and self.export_button.isEnabled())
+        group.setVisible(
+            top_level
+            and (view_button.isEnabled() or self.export_button.isEnabled())
+        )
 
-        info_action = Action(FluentIcon.INFO, self.tr("Card info and contributors"), self)
-        info_action.triggered.connect(self.show_card_info)
-        menu.addAction(info_action)
-
-        pos = self.overflow_button.mapToGlobal(QPoint(0, self.overflow_button.height() + 4))
-        menu.exec(pos)
+    def set_export_available(self, available: bool) -> None:
+        """Expose direct export only when this card owns a valid result."""
+        available = bool(available)
+        self.export_button.setEnabled(available)
+        self._refresh_result_action_group()
 
     def _derive_builtin_doc_page_path(self) -> str:
         """Return the default docs page path for built-in Make Dataset cards."""
@@ -324,6 +377,8 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
 
     windowStateChangedSignal = Signal()
     viewOutputSignal = Signal(object)
+    dragStartedSignal = Signal(object)
+    dragFinishedSignal = Signal(object, bool)
 
     def __init__(self, parent=None):
         """Configure collapse controls and state tracking.
@@ -337,31 +392,108 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         self.setMouseTracking(True)
         self.window_state = "expand"
         self._drag_start_pos = None
+        self._two_row_header = False
+        self._workflow_selected = False
+        self._header_hovered = False
+        self._close_icon = self.close_button.icon()
         self.view_output_button = TransparentToolButton(
             QIcon(":/images/src/images/show_nep.svg"),
             self,
         )
+        self._compact_header_action(self.view_output_button)
         self.view_output_button.setEnabled(False)
+        self.view_output_button.hide()
         self.view_output_button.setToolTip(self.tr("View this card output"))
         self.view_output_button.setAccessibleName(self.tr("View this card output"))
         self.view_output_button.installEventFilter(
             ToolTipFilter(self.view_output_button, 300, ToolTipPosition.TOP)
         )
         self.view_output_button.clicked.connect(self.request_view_output)
+        self.headerLayout.removeWidget(self.export_button)
+        self.result_action_group = QWidget(self.headerView)
+        self.result_action_group.setFixedHeight(28)
+        result_layout = QHBoxLayout(self.result_action_group)
+        result_layout.setContentsMargins(0, 0, 0, 0)
+        result_layout.setSpacing(2)
+        result_layout.addWidget(self.view_output_button)
+        result_layout.addWidget(self.export_button)
         self.headerLayout.insertWidget(
-            self.headerLayout.indexOf(self.copy_json_button),
-            self.view_output_button,
+            self.headerLayout.indexOf(self.close_button),
+            self.result_action_group,
             0,
             Qt.AlignmentFlag.AlignRight,
         )
+        self.result_action_group.hide()
+        self.copy_json_button.hide()
         self.collapse_button = TransparentToolButton(QIcon(":/images/src/images/collapse.svg"), self)
+        self._compact_header_action(self.collapse_button, 12)
         self.collapse_button.clicked.connect(self.collapse)
         self.collapse_button.setToolTip(self.tr("Collapse or expand card"))
         self.collapse_button.setAccessibleName(self.tr("Collapse or expand card"))
         self.collapse_button.installEventFilter(ToolTipFilter(self.collapse_button, 300, ToolTipPosition.TOP))
 
         self.headerLayout.insertWidget(0, self.collapse_button, 0, Qt.AlignmentFlag.AlignLeft)
+        self.drag_handle = QLabel("⠿", self)
+        self.drag_handle.setFixedWidth(24)
+        self.drag_handle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.drag_handle.setCursor(Qt.CursorShape.OpenHandCursor)
+        self.drag_handle.setToolTip(self.tr("Drag to reorder card"))
+        self.drag_handle.setAccessibleName(self.tr("Drag to reorder card"))
+        self.drag_handle.setStyleSheet(
+            "color: rgba(72, 96, 104, 175); font-size: 14px;"
+        )
+        self.drag_handle.installEventFilter(self)
+        self.headerLayout.insertWidget(0, self.drag_handle, 0, Qt.AlignmentFlag.AlignLeft)
         self.windowStateChangedSignal.connect(self.update_window_state)
+        self._update_close_affordance()
+
+    def set_two_row_header(self, enabled: bool) -> None:
+        """Place runtime context on a dedicated row for root operation cards."""
+        enabled = bool(enabled)
+        if enabled == self._two_row_header:
+            return
+        self._two_row_header = enabled
+        summary_label = getattr(self, "summary_label", None)
+        if enabled:
+            if summary_label is not None:
+                self.viewLayout.removeWidget(summary_label)
+                self.headerInfoLayout.insertWidget(0, summary_label, 1)
+            self.headerLayout.removeWidget(self.status_badge)
+            self.headerLayout.removeWidget(self.result_action_group)
+            self.headerInfoLayout.removeWidget(self.result_action_group)
+            self.headerInfoLayout.addWidget(
+                self.status_badge, 0, Qt.AlignmentFlag.AlignRight
+            )
+            self.headerLayout.insertWidget(
+                self.headerLayout.indexOf(self.close_button),
+                self.result_action_group, 0, Qt.AlignmentFlag.AlignRight
+            )
+            self.headerTopView.setFixedHeight(40)
+            self.headerInfoView.show()
+            self.headerView.setFixedHeight(74)
+        else:
+            self.headerInfoLayout.removeWidget(self.status_badge)
+            close_index = self.headerLayout.indexOf(self.close_button)
+            self.headerLayout.insertWidget(
+                close_index,
+                self.status_badge,
+                0,
+                Qt.AlignmentFlag.AlignRight,
+            )
+            if self.headerLayout.indexOf(self.result_action_group) < 0:
+                self.headerLayout.insertWidget(
+                    self.headerLayout.indexOf(self.close_button),
+                    self.result_action_group,
+                    0,
+                    Qt.AlignmentFlag.AlignRight,
+                )
+            if summary_label is not None:
+                self.headerInfoLayout.removeWidget(summary_label)
+                self.viewLayout.addWidget(summary_label)
+            self.headerInfoView.hide()
+            self.headerTopView.setFixedHeight(48)
+            self.headerView.setFixedHeight(48)
+        self._refresh_result_action_group()
 
     def request_view_output(self) -> None:
         """Request opening this card's current result dataset."""
@@ -369,10 +501,33 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
 
     def set_output_available(self, available: bool) -> None:
         """Keep the card-level output action aligned with its result state."""
-        self.view_output_button.setEnabled(bool(available))
+        available = bool(available)
+        self.view_output_button.setEnabled(available)
+        self.set_export_available(available)
+        self._refresh_result_action_group()
+
+    def set_workflow_selected(self, selected: bool) -> None:
+        """Expose destructive close affordance for the active workflow node."""
+        self._workflow_selected = bool(selected)
+        self._update_close_affordance()
+
+    def _update_close_affordance(self) -> None:
+        show_icon = self._workflow_selected or self._header_hovered
+        self.close_button.setEnabled(show_icon)
+        self.close_button.setIcon(self._close_icon if show_icon else QIcon())
+
+    def enterEvent(self, event) -> None:  # noqa: N802 - Qt override
+        self._header_hovered = True
+        self._update_close_affordance()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:  # noqa: N802 - Qt override
+        self._header_hovered = False
+        self._update_close_affordance()
+        super().leaveEvent(event)
 
     def mousePressEvent(self, e):
-        """Remember where a possible card drag started."""
+        """Remember where a possible background drag started."""
         if e.button() == Qt.MouseButton.LeftButton:
             self._drag_start_pos = e.position().toPoint()
         super().mousePressEvent(e)
@@ -387,26 +542,67 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         """
         if e.buttons() != Qt.MouseButton.LeftButton:
             return
-
         if self._drag_start_pos is None:
             self._drag_start_pos = e.position().toPoint()
             return
-
         current_pos = e.position().toPoint()
-        if (current_pos - self._drag_start_pos).manhattanLength() < QApplication.startDragDistance():
+        if (
+            current_pos - self._drag_start_pos
+        ).manhattanLength() < QApplication.startDragDistance():
             return
+        self._start_drag(current_pos)
 
+    def _start_drag(self, current_pos: QPoint) -> None:
+        """Start a compact card drag preview from an explicit local position."""
+        self.dragStartedSignal.emit(self)
         drag = QDrag(self)
         mime = QMimeData()
+        mime.setData("application/x-neptrainkit-card", b"card")
         drag.setMimeData(mime)
 
-        pixmap = QPixmap(self.size())
-        self.render(pixmap)
+        pixmap = self.headerView.grab()
+        if pixmap.width() > 460:
+            pixmap = pixmap.scaledToWidth(
+                460,
+                Qt.TransformationMode.SmoothTransformation,
+            )
         drag.setPixmap(pixmap)
-        drag.setHotSpot(current_pos)
+        drag.setHotSpot(QPoint(min(28, pixmap.width() // 2), pixmap.height() // 2))
 
-        drag.exec(Qt.DropAction.MoveAction)
+        result = drag.exec(Qt.DropAction.MoveAction)
         self._drag_start_pos = None
+        self.drag_handle.setCursor(Qt.CursorShape.OpenHandCursor)
+        self.dragFinishedSignal.emit(self, result == Qt.DropAction.MoveAction)
+
+    def eventFilter(self, watched, event):
+        drag_handle = getattr(self, "drag_handle", None)
+        if drag_handle is not None and watched is drag_handle:
+            if event.type() == QEvent.Type.MouseButtonPress:
+                if event.button() == Qt.MouseButton.LeftButton:
+                    self._drag_start_pos = self.drag_handle.mapTo(
+                        self,
+                        event.position().toPoint(),
+                    )
+                    self.drag_handle.setCursor(Qt.CursorShape.ClosedHandCursor)
+                    return True
+            elif event.type() == QEvent.Type.MouseMove:
+                if event.buttons() & Qt.MouseButton.LeftButton:
+                    current_pos = self.drag_handle.mapTo(
+                        self,
+                        event.position().toPoint(),
+                    )
+                    if (
+                        self._drag_start_pos is not None
+                        and (current_pos - self._drag_start_pos).manhattanLength()
+                        >= QApplication.startDragDistance()
+                    ):
+                        self._start_drag(current_pos)
+                    return True
+            elif event.type() == QEvent.Type.MouseButtonRelease:
+                self._drag_start_pos = None
+                self.drag_handle.setCursor(Qt.CursorShape.OpenHandCursor)
+                return True
+        return super().eventFilter(watched, event)
 
     def collapse(self):
         """Toggle between collapsed and expanded states."""
@@ -492,8 +688,13 @@ class MakeDataCard(MakeDataCardWidget):
         self.settingLayout.setContentsMargins(5, 0, 5, 0)
         self.settingLayout.setSpacing(3)
         self.summary_label = CaptionLabel("", self)
-        self.summary_label.setWordWrap(True)
-        self.summary_label.setStyleSheet("color:#8a95a0; padding: 0 3px;")
+        self.summary_label.setWordWrap(False)
+        self.summary_label.setMinimumWidth(0)
+        self.summary_label.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
+        self.summary_label.setStyleSheet("color:#7b8990; padding: 0 6px;")
         self.summary_label.setVisible(False)
         self.viewLayout.addWidget(self.summary_label)
         self.status_label = ProcessLabel(self)
@@ -502,22 +703,69 @@ class MakeDataCard(MakeDataCardWidget):
 
     def show_setting(self):
         """Show the configuration panel expanded, or a one-line summary collapsed."""
-        self.setting_widget.setVisible(self.window_state == "expand")
+        if bool(self.setting_widget.property("workflowInspectorHosted")):
+            self.setting_widget.show()
+        else:
+            self.setting_widget.setVisible(self.window_state == "expand")
         self._refresh_collapsed_summary()
 
     def _refresh_collapsed_summary(self) -> None:
-        """Keep the collapsed-state summary line and the status bar mutually
-        exclusive, so a collapsed card shows exactly one line of info -- the
-        parameter summary before it has run, the real result once it has.
-        """
-        show_summary = False
-        if self.window_state != "expand" and self.run_outcome == "idle":
-            summary = self.get_summary_text()
-            if summary:
-                self.summary_label.setText(summary)
-                show_summary = True
+        """Show one compact detail line when parameters live in the inspector."""
+        inspector_hosted = bool(
+            self.setting_widget.property("workflowInspectorHosted")
+        )
+        compact = inspector_hosted or self.window_state != "expand"
+        summary = self._compact_detail_text() if compact else ""
+        show_summary = bool(summary)
+        if show_summary:
+            self.summary_label.setText(summary)
+            self.summary_label.setToolTip(summary)
         self.summary_label.setVisible(show_summary)
-        self.status_label.setVisible(not show_summary)
+        self.status_label.setVisible(not compact)
+
+    def _compact_detail_text(self) -> str:
+        """Return the stable single-line settings summary for the canvas."""
+        summary = str(self.get_summary_text() or "").strip()
+        if not summary:
+            summary = self.summary_label.text().strip()
+        if summary:
+            return summary
+
+        metadata = CardManager.get_card_metadata(self.__class__.__name__)
+        return (
+            localized_card_description(metadata).strip()
+            if metadata is not None
+            else str(getattr(self, "description", "") or "").strip()
+        )
+
+    def refresh_compact_presentation(self) -> None:
+        """Refresh the canvas summary after parameters or inspector state change."""
+        self._refresh_collapsed_summary()
+
+    @staticmethod
+    def _safe_count(value) -> int:
+        try:
+            return len(value)
+        except TypeError:
+            return 0
+
+    def _status_count_detail(self) -> str:
+        return (
+            f"{self._safe_count(self.dataset)}"
+            f"→{self._safe_count(self.result_dataset)}"
+        )
+
+    def _set_card_status(
+        self,
+        state: str,
+        detail: str = "",
+        *,
+        tooltip: str = "",
+    ) -> None:
+        """Synchronize the nested dot and top-level text badge."""
+        self.status_dot.set_state(state)
+        self.status_badge.set_state(state, detail)
+        self.status_badge.setToolTip(tooltip or self.status_badge.label.text())
 
     def get_summary_text(self) -> str:
         """Return a one-line description of this card's current settings.
@@ -541,7 +789,8 @@ class MakeDataCard(MakeDataCardWidget):
         self._last_elapsed_seconds = None
         self.run_outcome = "idle"
         self._cancel_requested = False
-        self.status_dot.set_state("idle")
+        self._set_card_status("idle")
+        self.summary_label.clear()
 
         self.update_dataset_info()
 
@@ -633,6 +882,7 @@ class MakeDataCard(MakeDataCardWidget):
                 self.set_output_available(False)
                 self.status_label.set_colors(["#d49b26"])
                 self.status_label.setText(self.tr("Stopping…"))
+                self._set_card_status("canceling")
                 return True, False
 
         if not discard_results:
@@ -670,6 +920,8 @@ class MakeDataCard(MakeDataCardWidget):
             self.result_dataset = []
             self._last_elapsed_seconds = None
             self.set_output_available(False)
+            self.status_label.setText(self.tr("Processing 0%"))
+            self._set_card_status("running", "0%")
             self._refresh_collapsed_summary()
             operation = self.create_operation()
             params = self.get_params()
@@ -693,7 +945,6 @@ class MakeDataCard(MakeDataCardWidget):
                     self.process_structure,
                 )
             self.status_label.set_colors(["#59745A"])
-            self.status_dot.set_state("running")
 
             self.worker_thread.progressSignal.connect(self.update_progress)
             self.worker_thread.finishSignal.connect(self.on_processing_finished)
@@ -704,7 +955,7 @@ class MakeDataCard(MakeDataCardWidget):
             self.result_dataset = self.dataset
             self._last_elapsed_seconds = 0.0
             self.run_outcome = "succeeded"
-            self.status_dot.set_state("disabled")
+            self._set_card_status("disabled")
             self.update_dataset_info()
             self.runFinishedSignal.emit(self.index)
 
@@ -720,6 +971,8 @@ class MakeDataCard(MakeDataCardWidget):
             return
         self.status_label.setText(self.tr("Processing {progress}%").format(progress=progress))
         self.status_label.set_progress(progress)
+        self._set_card_status("running", f"{progress}%")
+        self._refresh_collapsed_summary()
 
     def on_processing_finished(self):
         """Handle a successful run and emit the completion signal."""
@@ -736,7 +989,7 @@ class MakeDataCard(MakeDataCardWidget):
         self.run_outcome = "succeeded"
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
-        self.status_dot.set_state("succeeded")
+        self._set_card_status("succeeded", self._status_count_detail())
         self.runFinishedSignal.emit(self.index)
         del self.worker_thread
 
@@ -751,7 +1004,6 @@ class MakeDataCard(MakeDataCardWidget):
         self.close_button.setEnabled(True)
 
         self.status_label.set_colors(["red"])
-        self.status_dot.set_state("failed")
         worker_thread = self._wait_for_worker_thread()
         if worker_thread is None:
             return
@@ -764,6 +1016,7 @@ class MakeDataCard(MakeDataCardWidget):
         failure_text = self.tr("Failed: {error}").format(error=translated_error)
         self.status_label.setText(failure_text)
         self.status_label.setToolTip(failure_text)
+        self._set_card_status("failed", tooltip=failure_text)
         self._refresh_collapsed_summary()
         self.runFinishedSignal.emit(self.index)
 
@@ -776,11 +1029,14 @@ class MakeDataCard(MakeDataCardWidget):
         self.run_outcome = "canceled"
         self.set_output_available(False)
         self.status_label.set_colors(["#d49b26"])
-        self.status_dot.set_state("canceled")
         self.status_label.setText(
             self.tr("Stopped | Partial output: {output_count}").format(
                 output_count=len(self.result_dataset),
             )
+        )
+        self._set_card_status(
+            "canceled",
+            self.tr("{count} partial").format(count=len(self.result_dataset)),
         )
         self._refresh_collapsed_summary()
 
@@ -793,8 +1049,8 @@ class MakeDataCard(MakeDataCardWidget):
     def _format_dataset_info(self) -> str:
         """Return the compact input/output/time summary shown below the card."""
         text = self.tr("Input: {input_count} -> Output: {output_count}").format(
-            input_count=len(self.dataset),
-            output_count=len(self.result_dataset),
+            input_count=self._safe_count(self.dataset),
+            output_count=self._safe_count(self.result_dataset),
         )
         if self._last_elapsed_seconds is not None:
             text = self.tr("{summary} | Time: {seconds:.2f} s").format(
@@ -824,6 +1080,8 @@ class FilterDataCard(MakeDataCard):
             return
         self.status_label.setText(self.tr("Processing {progress}%").format(progress=progress))
         self.status_label.set_progress(progress)
+        self._set_card_status("running", f"{progress}%")
+        self._refresh_collapsed_summary()
 
     def on_processing_finished(self):
         """Refresh status once filtering completes."""

@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor, QPainter
-from PySide6.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
-from qfluentwidgets import CaptionLabel, themeColor
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QVBoxLayout, QWidget
+from qfluentwidgets import CaptionLabel, isDarkTheme, themeColor
 
 # Mirrors the colors `MakeDataCard` already uses for `status_label.set_colors(...)`
 # (see ui/widgets/card_widget.py) so the header dot and the footer status text
@@ -29,6 +29,8 @@ STATUS_DOT_COLORS = {
 
 class StatusDot(QWidget):
     """Small colored dot summarizing a card's run state at a glance."""
+
+    stateChanged = Signal(str)
 
     def __init__(self, parent=None, diameter: int = 8):
         """Create the dot at a fixed pixel diameter, starting idle.
@@ -51,7 +53,7 @@ class StatusDot(QWidget):
         """Return the last state passed to `set_state`."""
         return self._state
 
-    def set_state(self, state: str) -> None:
+    def set_state(self, state: str, detail: str = "") -> None:
         """Recolor the dot for a `MakeDataCard.run_outcome`-style state.
 
         Unknown states fall back to the idle color rather than raising, since
@@ -60,6 +62,7 @@ class StatusDot(QWidget):
         self._state = state
         self._color = QColor(STATUS_DOT_COLORS.get(state, STATUS_DOT_COLORS["idle"]))
         self.update()
+        self.stateChanged.emit(state)
 
     def paintEvent(self, event) -> None:  # noqa: N802 - Qt override
         painter = QPainter(self)
@@ -67,6 +70,67 @@ class StatusDot(QWidget):
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self._color)
         painter.drawEllipse(self.rect())
+
+
+class StatusBadge(QFrame):
+    """Compact text badge that communicates workflow state without colour alone."""
+
+    _LIGHT_COLORS = {
+        "idle": (88, 105, 113),
+        "running": (16, 112, 166),
+        "succeeded": (28, 137, 83),
+        "failed": (190, 48, 48),
+        "canceled": (166, 105, 16),
+        "canceling": (166, 105, 16),
+        "disabled": (100, 112, 118),
+    }
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._state = "idle"
+        self.label = CaptionLabel(self)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(8, 0, 8, 0)
+        layout.addWidget(self.label)
+        self.setFixedHeight(22)
+        self.set_state("idle")
+
+    def state(self) -> str:
+        return self._state
+
+    def set_state(self, state: str, detail: str = "") -> None:
+        self._state = state
+        labels = {
+            "idle": self.tr("Ready"),
+            "running": self.tr("Running"),
+            "succeeded": self.tr("Done"),
+            "failed": self.tr("Failed"),
+            "canceled": self.tr("Stopped"),
+            "canceling": self.tr("Stopping"),
+            "disabled": self.tr("Skipped"),
+        }
+        role = state if state in labels else "idle"
+        base_text = labels[role]
+        detail = str(detail or "").strip()
+        text = f"{base_text} · {detail}" if detail else base_text
+        self.label.setText(text)
+        # Runtime counts are part of the status contract; do not let the
+        # header layout silently clip e.g. ``24→120`` into ``24→``.
+        self.label.setFixedWidth(self.label.sizeHint().width())
+        self.setAccessibleName(self.tr("Card status: {status}").format(status=text))
+        red, green, blue = self._LIGHT_COLORS[role]
+        text_color = (
+            f"rgb({min(255, red + 80)}, {min(255, green + 80)}, {min(255, blue + 80)})"
+            if isDarkTheme()
+            else f"rgb({red}, {green}, {blue})"
+        )
+        self.setStyleSheet(
+            "StatusBadge {"
+            f"background: rgba({red}, {green}, {blue}, 24);"
+            f"border: 1px solid rgba({red}, {green}, {blue}, 62);"
+            "border-radius: 11px; }"
+        )
+        self.label.setStyleSheet(f"color: {text_color}; font-weight: 600;")
 
 
 class CategoryTag(QWidget):
@@ -90,7 +154,7 @@ class CategoryTag(QWidget):
         """
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 0, 8, 0)
+        layout.setContentsMargins(5, 0, 7, 0)
         layout.setSpacing(0)
         self.label = CaptionLabel(text, self)
         layout.addWidget(self.label)

@@ -42,6 +42,7 @@ from .fps_filter_card import FPSFilterDataCard
 from .geometry_filter_card import GeometryFilterCard
 from NepTrainKit.ui.widgets.card_widget import FilterDataCard
 from .card_group import CardGroup
+from .workflow_fork import WorkflowFork
 
 __all__ = [
     "SuperCellCard",
@@ -86,5 +87,6 @@ __all__ = [
     "GeometryFilterCard",
     "FilterDataCard",
     "CardGroup",
+    "WorkflowFork",
 
 ]

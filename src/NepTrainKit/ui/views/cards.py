@@ -2,13 +2,13 @@
 
 from PySide6.QtCore import QPoint, Signal
 from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QGridLayout, QWidget
+from PySide6.QtWidgets import QGridLayout, QSizePolicy, QWidget
 from qfluentwidgets import (
     RoundMenu,
     PrimaryDropDownPushButton,
     PushButton,
+    TransparentPushButton,
     CommandBar,
-    Action,
     FluentIcon,
     MenuAnimationType,
     ToolTipFilter,
@@ -59,8 +59,6 @@ class ConsoleWidget(QWidget):
     ----------
     newCardSignal : Signal
         Emitted with the selected card class name when a menu entry is chosen.
-    pasteSignal : Signal
-        Emitted when the user requests card creation from clipboard JSON.
     stopSignal : Signal
         Emitted when the stop action is triggered.
     runSignal : Signal
@@ -68,8 +66,6 @@ class ConsoleWidget(QWidget):
     """
 
     newCardSignal = Signal(str)
-    pasteSignal = Signal()
-    copySignal = Signal()
     viewOutputSignal = Signal()
     stopSignal = Signal()
     runSignal = Signal()
@@ -78,13 +74,20 @@ class ConsoleWidget(QWidget):
         """Initialize the widget and populate the initial actions."""
         super().__init__(parent)
         self.setObjectName("ConsoleWidget")
-        self.setMinimumHeight(50)
+        self.setFixedHeight(54)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setStyleSheet(
+            "QWidget#ConsoleWidget {"
+            "border: 1px solid rgba(100,120,128,38); border-radius: 10px;"
+            "background: rgba(255,255,255,232); }"
+        )
         self.init_ui()
 
     def init_ui(self):
         """Construct layouts, configure menus, and wire up actions."""
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName("console_gridLayout")
+        self.gridLayout.setContentsMargins(8, 3, 8, 3)
         self.setting_command = CommandBar(self)
         self.new_card_button = PrimaryDropDownPushButton(
             FluentIcon.ADD,
@@ -154,9 +157,8 @@ class ConsoleWidget(QWidget):
         self.menu.view.setMaxVisibleItems(_CARD_MENU_MAX_VISIBLE_ITEMS)
         self.menu.triggered.connect(self.menu_clicked)
         self.new_card_button.setMenu(self.menu)
-        self.setting_command.addWidget(self.new_card_button)
 
-        self.find_card_button = PushButton(
+        self.find_card_button = TransparentPushButton(
             FluentIcon.SEARCH,
             self.tr("Find card"),
             self,
@@ -168,31 +170,8 @@ class ConsoleWidget(QWidget):
             ToolTipFilter(self.find_card_button, 300, ToolTipPosition.TOP)
         )
         self.find_card_button.clicked.connect(self.show_card_library)
-        self.setting_command.addWidget(self.find_card_button)
 
-        paste_action = Action(
-            FluentIcon.PASTE,
-            self.tr("Paste JSON"),
-            triggered=self.paste,
-        )
-        paste_action.setToolTip(self.tr("Create card(s) from clipboard JSON"))
-        paste_action.installEventFilter(
-            ToolTipFilter(paste_action, 300, ToolTipPosition.TOP)
-        )
-        self.setting_command.addAction(paste_action)
-
-        copy_action = Action(
-            FluentIcon.COPY,
-            self.tr("Copy JSON"),
-            triggered=self.copy,
-        )
-        copy_action.setToolTip(self.tr("Copy current workflow card JSON"))
-        copy_action.installEventFilter(
-            ToolTipFilter(copy_action, 300, ToolTipPosition.TOP)
-        )
-        self.setting_command.addAction(copy_action)
-
-        self.view_output_button = PushButton(
+        self.view_output_button = TransparentPushButton(
             QIcon(r":/images/src/images/show_nep.svg"),
             self.tr("View selected outputs"),
             self,
@@ -207,31 +186,36 @@ class ConsoleWidget(QWidget):
         self.view_output_button.clicked.connect(self.view_output)
         self.setting_command.addWidget(self.view_output_button)
 
-        self.setting_command.addSeparator()
-        run_action = Action(
+        self.run_button = PushButton(
             QIcon(r":/images/src/images/run.svg"),
             self.tr("Run"),
-            triggered=self.run,
+            self,
         )
-        run_action.setToolTip(self.tr("Run selected cards"))
-        run_action.installEventFilter(
-            ToolTipFilter(run_action, 300, ToolTipPosition.TOP)
+        self.run_button.setToolTip(self.tr("Run selected cards"))
+        self.run_button.setAccessibleName(self.tr("Run selected cards"))
+        self.run_button.installEventFilter(
+            ToolTipFilter(self.run_button, 300, ToolTipPosition.TOP)
         )
+        self.run_button.clicked.connect(self.run)
 
-        self.setting_command.addAction(run_action)
-        stop_action = Action(
+        self.stop_button = PushButton(
             QIcon(r":/images/src/images/stop.svg"),
             self.tr("Stop"),
-            triggered=self.stop,
+            self,
         )
-        stop_action.setToolTip(self.tr("Stop running cards"))
-        stop_action.installEventFilter(
-            ToolTipFilter(stop_action, 300, ToolTipPosition.TOP)
+        self.stop_button.setToolTip(self.tr("Stop running cards"))
+        self.stop_button.setAccessibleName(self.tr("Stop running cards"))
+        self.stop_button.installEventFilter(
+            ToolTipFilter(self.stop_button, 300, ToolTipPosition.TOP)
         )
+        self.stop_button.clicked.connect(self.stop)
 
-        self.setting_command.addAction(stop_action)
-
-        self.gridLayout.addWidget(self.setting_command, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.new_card_button, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.find_card_button, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.setting_command, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.run_button, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.stop_button, 0, 4, 1, 1)
+        self.gridLayout.setColumnStretch(2, 1)
 
     def menu_clicked(self, action):
         """Emit the card selection signal.
@@ -252,14 +236,6 @@ class ConsoleWidget(QWidget):
     def run(self, *args, **kwargs):
         """Emit the run signal to start card execution."""
         self.runSignal.emit()
-
-    def paste(self, *args, **kwargs):
-        """Emit the paste signal to append cards from clipboard JSON."""
-        self.pasteSignal.emit()
-
-    def copy(self, *args, **kwargs):
-        """Emit the copy signal to copy workflow JSON to the clipboard."""
-        self.copySignal.emit()
 
     def view_output(self, *args, **kwargs):
         """Request opening outputs from all checked workflow cards."""

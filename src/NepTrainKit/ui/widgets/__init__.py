@@ -45,6 +45,7 @@ from .card_widget import (
 from .doping_rule import DopingRulesWidget
 from .vacancy_rule import VacancyRulesWidget
 from .docker import MakeWorkflowArea
+from .workflow_library import WorkflowLibraryPanel
 from .search_widget import ConfigTypeSearchLineEdit
 from .filter_bar import TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog
 from .structure_filter_bar import StructureFilterBar, StructureFilterEditorPopup
@@ -88,6 +89,7 @@ __all__ = [
     "MakeDataCard",
     "FilterDataCard",
     "MakeWorkflowArea",
+    "WorkflowLibraryPanel",
     "ConfigTypeSearchLineEdit",
     "TagFilterDialog",
     "ElementsFilterDialog",

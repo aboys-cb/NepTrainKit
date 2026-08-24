@@ -132,6 +132,7 @@ categories/workflow-metadata
 | 从干净候选池中选代表结构 | [代表性采样（FPS）](cards/fps-filter-card.md) | 先清洗异常结构，再采样 |
 | 为后续规则或 AFM 标记 A/B 组 | [分组标记](cards/group-label-card.md) | 放在读取 `group` 的卡片之前 |
 | 合并共享同一输入的多个分支 | [分支合并组](cards/card-group.md) | 子卡并行接收同一输入，不是顺序流水线 |
+| 建立持续独立的多条卡片链 | [永久分叉](cards/workflow-fork.md) | 分支保持独立，只有显式 Merge 后才形成共同下游 |
 
 ## 易混卡片对比
 

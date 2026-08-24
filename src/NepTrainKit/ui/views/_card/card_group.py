@@ -111,11 +111,23 @@ class CardGroup(MakeDataCardWidget):
             return False
         self.filter_card=card
         self.filter_layout.addWidget(card)
+        card.close_button.clicked.connect(
+            lambda _checked=False, closed=card: self._forget_closed_filter(closed)
+        )
         card.state_checkbox.stateChanged.connect(self._refresh_summary)
         if self.dataset is not None:
             card.set_dataset([])
         self._refresh_summary()
         return True
+
+    def _forget_closed_filter(self, card):
+        if card.isVisible():
+            return
+        if self.filter_card is not card:
+            return
+        self.filter_layout.removeWidget(card)
+        self.filter_card = None
+        self._refresh_summary()
 
     def state_changed(self, state):
         """Enable or bypass the group without changing child-card choices.
@@ -143,11 +155,12 @@ class CardGroup(MakeDataCardWidget):
         return any([getattr(card, "requires_input_dataset", True)  for card in self.card_list])
 
     def show_card_setting(self):
-        """Propagate window state changes to every child card.
-        """
-        for card in self.card_list:
-            card.window_state = self.window_state
-            card.windowStateChangedSignal.emit()
+        """Collapse the composite as one workflow step without changing children."""
+        expanded = self.window_state == "expand"
+        self.branch_widget.setVisible(expanded)
+        self.filter_hint.setVisible(expanded)
+        self.filter_widget.setVisible(expanded)
+        self.summary_label.setVisible(True)
     def set_dataset(self,dataset):
         """Store the shared dataset reference and clear accumulated results.
         
@@ -178,12 +191,24 @@ class CardGroup(MakeDataCardWidget):
             return self.set_filter_card(card)
         if card is self or card in self.card_list:
             return False
+        card.set_compact_header(True)
         self.group_layout.addWidget(card)
+        card.close_button.clicked.connect(
+            lambda _checked=False, closed=card: self._forget_closed_card(closed)
+        )
         card.state_checkbox.stateChanged.connect(self._refresh_summary)
         if self.dataset is not None:
             card.set_dataset(self.dataset)
         self._refresh_summary()
         return True
+
+    def _forget_closed_card(self, card):
+        if card.isVisible():
+            return
+        if card not in self.card_list:
+            return
+        self.group_layout.removeWidget(card)
+        self._refresh_summary()
 
     def remove_card(self, card):
         """Remove a card widget from the group layout.
@@ -237,6 +262,12 @@ class CardGroup(MakeDataCardWidget):
             )
         )
 
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Every enabled child receives the same group input. Child outputs are "
+            "concatenated immediately; use Permanent Fork when each path must continue independently."
+        )
+
     def closeEvent(self, event):
         """Close nested cards before destroying the group widget.
         
@@ -262,10 +293,55 @@ class CardGroup(MakeDataCardWidget):
 
         if widget == self:
             return
-        if isinstance(widget, (MakeDataCard,CardGroup)):
+        if (
+            isinstance(widget, MakeDataCardWidget)
+            and widget.__class__.__name__ not in ("CardGroup", "WorkflowFork")
+        ):
+            self._set_drop_highlight(True)
+            workflow_area = self._workflow_area()
+            if workflow_area is not None:
+                workflow_area.canvas.set_drop_index(None)
+                workflow_area._drag_canvas_point = None
             event.acceptProposedAction()
         else:
             event.ignore()
+
+    def dragMoveEvent(self, event):
+        widget = event.source()
+        if (
+            not isinstance(widget, MakeDataCardWidget)
+            or widget.__class__.__name__ in ("CardGroup", "WorkflowFork")
+        ):
+            event.ignore()
+            return
+        workflow_area = self._workflow_area()
+        if workflow_area is not None:
+            viewport_point = workflow_area.scroll_area.viewport().mapFromGlobal(
+                self.mapToGlobal(event.position().toPoint())
+            )
+            workflow_area._update_drag_auto_scroll(viewport_point.y())
+        event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        self._set_drop_highlight(False)
+        super().dragLeaveEvent(event)
+
+    def _set_drop_highlight(self, active: bool) -> None:
+        self.branch_hint.setStyleSheet(
+            "padding: 7px; border-radius: 6px;"
+            + (
+                "color: #087f81; background: rgba(15,143,145,22);"
+                "border: 1px dashed rgba(15,143,145,150);"
+                if active
+                else "color: palette(text); background: transparent; border: 0;"
+            )
+        )
+
+    def _workflow_area(self):
+        parent = self.parentWidget()
+        while parent is not None and not hasattr(parent, "_update_drag_auto_scroll"):
+            parent = parent.parentWidget()
+        return parent
 
     def dropEvent(self, event):
         """Handle dropped cards by inserting them or assigning the filter card.
@@ -275,13 +351,20 @@ class CardGroup(MakeDataCardWidget):
         event : QDropEvent
             Drop event containing the dragged widget.
         """
+        self._set_drop_highlight(False)
         widget = event.source()
         if widget == self:
             return
-        if isinstance(widget, FilterDataCard):
+        workflow_area = self.parentWidget()
+        while workflow_area is not None and not hasattr(
+            workflow_area, "move_card_to_group"
+        ):
+            workflow_area = workflow_area.parentWidget()
+        if workflow_area is not None and isinstance(widget, MakeDataCardWidget):
+            accepted = bool(workflow_area.move_card_to_group(widget, self))
+        elif isinstance(widget, FilterDataCard):
             accepted = self.set_filter_card(widget)
-
-        elif isinstance(widget, (MakeDataCard,CardGroup)):
+        elif isinstance(widget, (MakeDataCard, CardGroup)):
             accepted = self.add_card(widget)
         else:
             accepted = False

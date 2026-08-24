@@ -268,6 +268,15 @@ class PerturbCard(MakeDataCard):
             parts.append(self.tr("seed {seed}").format(seed=params.seed))
         return " · ".join(parts)
 
+    def get_guidance_text(self) -> str:
+        """Return bounded guidance without inventing a chemistry-independent optimum."""
+        params = self.get_params()
+        engine = self.tr("Sobol") if params.engine_type == 0 else self.tr("Uniform")
+        return self.tr(
+            "{engine} engine · {distance} Å is a hard displacement ceiling. "
+            "Inspect shortest distances in a small output sample before scaling up."
+        ).format(engine=engine, distance=f"{params.max_distance:.4g}")
+
     def create_operation(self):
         """Return the UI-independent atomic perturbation operation."""
         return PerturbOperation()

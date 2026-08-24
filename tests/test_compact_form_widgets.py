@@ -10,6 +10,7 @@ from NepTrainKit.ui.widgets.compact_form import (
     CategoryTag,
     CompactField,
     SegmentedControl,
+    StatusBadge,
     StatusDot,
 )
 
@@ -29,6 +30,19 @@ class CompactFormWidgetsTest(unittest.TestCase):
         # Unknown states fall back to idle rather than raising.
         dot.set_state("not-a-real-state")
         self.assertEqual(dot.state(), "not-a-real-state")
+
+    def test_status_badge_pairs_state_colour_with_readable_text(self):
+        badge = StatusBadge()
+        self.assertEqual(badge.state(), "idle")
+        self.assertEqual(badge.label.text(), "Ready")
+
+        badge.set_state("succeeded")
+        self.assertEqual(badge.state(), "succeeded")
+        self.assertEqual(badge.label.text(), "Done")
+        self.assertIn("Done", badge.accessibleName())
+
+        badge.set_state("succeeded", "12→48")
+        self.assertEqual(badge.label.text(), "Done · 12→48")
 
     def test_category_tag_hides_when_empty_and_shows_when_set(self):
         tag = CategoryTag("")

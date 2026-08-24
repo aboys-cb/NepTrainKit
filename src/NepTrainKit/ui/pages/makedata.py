@@ -15,8 +15,13 @@ from PySide6.QtWidgets import (
     QAbstractSpinBox,
     QApplication,
     QGridLayout,
+    QHBoxLayout,
+    QFileDialog,
+    QInputDialog,
     QLineEdit,
+    QMessageBox,
     QPlainTextEdit,
+    QSizePolicy,
     QTextEdit,
     QWidget,
 )
@@ -24,6 +29,7 @@ from ase import Atoms, Atom
 from qfluentwidgets import FluentIcon, HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.core import MessageManager, CardManager
+from NepTrainKit.core.workflow_library import WorkflowEntry, WorkflowLibrary
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.config import Config
 from NepTrainKit.ui.widgets import MakeWorkflowArea
@@ -66,7 +72,7 @@ class MakeDataWidget(QWidget):
 
     finalOutputRequestedSignal = Signal(list)
 
-    def __init__(self,parent=None):
+    def __init__(self, parent=None, workflow_library: WorkflowLibrary | None = None):
         """Initialise the workflow editor and runtime state.
 
         Parameters
@@ -81,6 +87,10 @@ class MakeDataWidget(QWidget):
         self.nep_result_data=None
         self._last_completed_card_index = None
         self._clipboard_shortcut_filter_installed = False
+        self.workflow_library = workflow_library or WorkflowLibrary()
+        self._active_workflow_id: str | None = None
+        self._active_workflow_name: str | None = None
+        self._workflow_dirty = False
         self.init_action()
         self.init_ui()
         self.dataset=None
@@ -268,13 +278,14 @@ class MakeDataWidget(QWidget):
         self.gridLayout.setObjectName("make_data_gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.workspace_card_widget = MakeWorkflowArea(self)
+        self._connect_workflow_library()
+        self.workspace_card_widget.workflowChanged.connect(self._mark_workflow_dirty)
         self.setting_group=ConsoleWidget(self)
         self.setting_group.runSignal.connect(self.run_card)
         self.setting_group.stopSignal.connect(self.stop_run_card)
         self.setting_group.newCardSignal.connect(self.add_card)
-        self.setting_group.pasteSignal.connect(self.paste_card_config_from_clipboard)
-        self.setting_group.copySignal.connect(self.copy_card_config_to_clipboard)
         self.setting_group.viewOutputSignal.connect(self.request_selected_outputs)
+        self.workspace_card_widget.set_command_bar(self.setting_group)
 
         self.path_label = HyperlinkLabel(self)
         self.path_label.setFixedHeight(30)
@@ -286,11 +297,311 @@ class MakeDataWidget(QWidget):
         self.dataset_info_label = BodyLabel(self)
         self.dataset_info_label.setFixedHeight(30)
 
-        self.gridLayout.addWidget(self.setting_group, 0, 0, 1, 2)
-        self.gridLayout.addWidget(self.workspace_card_widget, 1, 0, 1, 2)
-        self.gridLayout.addWidget(self.dataset_info_label, 2, 0, 1, 1)
-        self.gridLayout.addWidget(self.path_label, 2, 1, 1, 1,alignment=Qt.AlignmentFlag.AlignRight)
+        status_bar = QWidget(self)
+        status_bar.setObjectName("makeDataStatusBar")
+        status_bar.setFixedHeight(30)
+        status_bar.setStyleSheet(
+            "QWidget#makeDataStatusBar {"
+            "border-top: 1px solid rgba(100,120,128,38);"
+            "background: rgba(255,255,255,232); }"
+        )
+        status_bar_layout = QHBoxLayout(status_bar)
+        status_bar_layout.setContentsMargins(10, 0, 10, 0)
+        status_bar_layout.setSpacing(8)
+        status_bar_layout.addWidget(self.dataset_info_label, 1)
+        status_bar_layout.addWidget(
+            self.path_label, 0, Qt.AlignmentFlag.AlignRight
+        )
+        self.workspace_card_widget.set_status_bar(status_bar)
+
+        self.gridLayout.addWidget(self.workspace_card_widget, 0, 0)
+        self.gridLayout.setRowStretch(0, 1)
+        self.workspace_card_widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
         self.setLayout(self.gridLayout)
+
+    def _connect_workflow_library(self) -> None:
+        panel = self.workspace_card_widget.library_panel
+        panel.newRequested.connect(self.new_workflow)
+        panel.copyRequested.connect(self.copy_card_config_to_clipboard)
+        panel.pasteRequested.connect(self.paste_card_config_from_clipboard)
+        panel.saveRequested.connect(self.save_workflow)
+        panel.saveAsRequested.connect(self.save_workflow_as)
+        panel.openRequested.connect(self.open_library_workflow)
+        panel.renameRequested.connect(self.rename_library_workflow)
+        panel.duplicateRequested.connect(self.duplicate_library_workflow)
+        panel.deleteRequested.connect(self.delete_library_workflow)
+        panel.importRequested.connect(self.import_library_workflow)
+        panel.exportRequested.connect(self.export_library_workflow)
+        self._refresh_workflow_library()
+
+    def _refresh_workflow_library(self) -> None:
+        self.workspace_card_widget.library_panel.set_entries(
+            self.workflow_library.list("workflow"),
+            self.workflow_library.list("template"),
+        )
+        self.workspace_card_widget.library_panel.set_current(
+            self._active_workflow_name,
+            dirty=self._workflow_dirty,
+            workflow_id=self._active_workflow_id,
+            has_cards=bool(self.workspace_card_widget.cards),
+        )
+
+    def _set_active_workflow(
+        self,
+        entry: WorkflowEntry | None,
+        *,
+        dirty: bool,
+        display_name: str | None = None,
+    ) -> None:
+        self._active_workflow_id = (
+            entry.workflow_id if entry is not None and entry.kind == "workflow" else None
+        )
+        self._active_workflow_name = display_name or (
+            entry.name if entry is not None and entry.kind == "workflow" else None
+        )
+        self._workflow_dirty = dirty
+        self._refresh_workflow_library()
+
+    def _mark_workflow_dirty(self) -> None:
+        if self._workflow_dirty:
+            self.workspace_card_widget.library_panel.set_current(
+                self._active_workflow_name,
+                dirty=True,
+                workflow_id=self._active_workflow_id,
+                has_cards=bool(self.workspace_card_widget.cards),
+            )
+            return
+        self._workflow_dirty = True
+        self.workspace_card_widget.library_panel.set_current(
+            self._active_workflow_name,
+            dirty=True,
+            workflow_id=self._active_workflow_id,
+            has_cards=bool(self.workspace_card_widget.cards),
+        )
+
+    def _track_card_parameter_changes(self, card) -> None:
+        """Mark named workflows dirty when an editable card control changes."""
+        widgets = [card, *card.findChildren(QWidget)]
+        editor = getattr(card, "setting_widget", None)
+        if editor is not None and editor not in widgets:
+            widgets.extend([editor, *editor.findChildren(QWidget)])
+        for widget in widgets:
+            if bool(widget.property("workflowDirtyTracked")):
+                continue
+            connected = False
+            for signal_name in (
+                "toggled",
+                "textChanged",
+                "valueChanged",
+                "currentIndexChanged",
+            ):
+                signal = getattr(widget, signal_name, None)
+                if signal is None or not hasattr(signal, "connect"):
+                    continue
+                try:
+                    signal.connect(
+                        lambda *_args, selected=card: self._on_card_parameter_changed(
+                            selected
+                        )
+                    )
+                    connected = True
+                except (RuntimeError, TypeError):
+                    continue
+            if connected:
+                widget.setProperty("workflowDirtyTracked", True)
+
+    def _on_card_parameter_changed(self, card) -> None:
+        """Refresh the compact canvas readout and mark its workflow dirty."""
+        refresh = getattr(card, "refresh_compact_presentation", None)
+        if callable(refresh):
+            refresh()
+        self._mark_workflow_dirty()
+
+    def _confirm_discard_workflow_changes(self) -> bool:
+        if not self._workflow_dirty or not self.workspace_card_widget.cards:
+            return True
+        answer = QMessageBox.question(
+            self,
+            self.tr("Unsaved workflow"),
+            self.tr("Discard the unsaved workflow changes?"),
+            QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        return answer == QMessageBox.StandardButton.Discard
+
+    def new_workflow(self) -> None:
+        if not self._confirm_discard_workflow_changes():
+            return
+        self.workspace_card_widget.clear_cards()
+        self._set_active_workflow(None, dirty=False)
+
+    def save_workflow(self) -> None:
+        if self._active_workflow_id is None:
+            self.save_workflow_as("workflow")
+            return
+        try:
+            entry = self.workflow_library.save(
+                self._active_workflow_name or self.tr("Untitled workflow"),
+                self._current_card_config_payload(),
+                workflow_id=self._active_workflow_id,
+            )
+        except (OSError, ValueError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        self._set_active_workflow(entry, dirty=False)
+        MessageManager.send_success_message(self.tr("Workflow saved."))
+
+    def save_workflow_as(self, kind: str) -> None:
+        default_name = self._active_workflow_name or self.tr("Untitled workflow")
+        name, accepted = QInputDialog.getText(
+            self,
+            self.tr("Save workflow"),
+            self.tr("Workflow name"),
+            text=default_name,
+        )
+        if not accepted or not name.strip():
+            return
+        try:
+            entry = self.workflow_library.save(
+                name,
+                self._current_card_config_payload(),
+                kind=kind,
+            )
+        except (OSError, ValueError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        if kind == "workflow":
+            self._set_active_workflow(entry, dirty=False)
+        else:
+            self._refresh_workflow_library()
+        MessageManager.send_success_message(
+            self.tr("Workflow template saved.")
+            if kind == "template"
+            else self.tr("Workflow saved.")
+        )
+
+    def _load_library_entry(self, entry: WorkflowEntry) -> None:
+        cards = self._normalise_card_config_payload(entry.workflow)
+        self.workspace_card_widget.clear_cards()
+        self._add_card_configs(cards, notify=False)
+        if entry.kind == "template":
+            self._set_active_workflow(
+                None,
+                dirty=True,
+                display_name=self.tr("New from {name}").format(name=entry.name),
+            )
+        else:
+            self._set_active_workflow(entry, dirty=False)
+
+    def open_library_workflow(self, workflow_id: str, kind: str) -> None:
+        if not self._confirm_discard_workflow_changes():
+            return
+        try:
+            self._load_library_entry(self.workflow_library.get(workflow_id, kind))
+        except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+            MessageManager.send_error_message(str(exc))
+
+    def rename_library_workflow(self, workflow_id: str, kind: str) -> None:
+        try:
+            entry = self.workflow_library.get(workflow_id, kind)
+        except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        name, accepted = QInputDialog.getText(
+            self,
+            self.tr("Rename workflow"),
+            self.tr("Workflow name"),
+            text=entry.name,
+        )
+        if not accepted or not name.strip():
+            return
+        try:
+            renamed = self.workflow_library.rename(workflow_id, kind, name)
+        except (OSError, ValueError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        if workflow_id == self._active_workflow_id and kind == "workflow":
+            self._active_workflow_name = renamed.name
+        self._refresh_workflow_library()
+
+    def duplicate_library_workflow(self, workflow_id: str, kind: str) -> None:
+        try:
+            entry = self.workflow_library.get(workflow_id, kind)
+        except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        name, accepted = QInputDialog.getText(
+            self,
+            self.tr("Duplicate workflow"),
+            self.tr("Workflow name"),
+            text=self.tr("{name} copy").format(name=entry.name),
+        )
+        if not accepted or not name.strip():
+            return
+        try:
+            self.workflow_library.duplicate(workflow_id, kind, name=name)
+        except (OSError, ValueError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        self._refresh_workflow_library()
+
+    def delete_library_workflow(self, workflow_id: str, kind: str) -> None:
+        answer = QMessageBox.question(
+            self,
+            self.tr("Delete workflow"),
+            self.tr("Delete this saved workflow? This cannot be undone."),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            self.workflow_library.delete(workflow_id, kind)
+        except (OSError, ValueError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        if workflow_id == self._active_workflow_id and kind == "workflow":
+            self._active_workflow_id = None
+            self._workflow_dirty = True
+        self._refresh_workflow_library()
+
+    def import_library_workflow(self, kind: str) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Import workflow"),
+            str(Config.get_path()),
+            self.tr("Workflow JSON (*.json)"),
+        )
+        if not path:
+            return
+        try:
+            self.workflow_library.import_file(Path(path), kind=kind)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        self._refresh_workflow_library()
+
+    def export_library_workflow(self, workflow_id: str, kind: str) -> None:
+        try:
+            entry = self.workflow_library.get(workflow_id, kind)
+        except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+            MessageManager.send_error_message(str(exc))
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            self.tr("Export workflow"),
+            f"{entry.name}.json",
+            self.tr("Workflow JSON (*.json)"),
+        )
+        if not path:
+            return
+        try:
+            self.workflow_library.export_file(workflow_id, kind, Path(path))
+        except (OSError, ValueError) as exc:
+            MessageManager.send_error_message(str(exc))
 
     def load_base_structure(self,paths):
         """Load structures from disk and normalise metadata fields.
@@ -391,13 +702,20 @@ class MakeDataWidget(QWidget):
                     return []
             else:
                 final_card = enabled_cards[-1]
-            final_output = getattr(final_card, "result_dataset", None) or []
-            return [final_card] if len(final_output) > 0 else []
-        return [
-            card
-            for card in enabled_cards
-            if len(getattr(card, "result_dataset", None) or []) > 0
-        ]
+            return MakeDataWidget._available_output_cards(final_card)
+        outputs = []
+        for card in enabled_cards:
+            outputs.extend(MakeDataWidget._available_output_cards(card))
+        return outputs
+
+    @staticmethod
+    def _available_output_cards(card):
+        """Return concrete output-owning cards for a card or structural node."""
+        getter = getattr(card, "available_output_cards", None)
+        if callable(getter):
+            return list(getter())
+        output = getattr(card, "result_dataset", None) or []
+        return [card] if output else []
 
     def _export_file(self, path, cards):
         """Write the explicitly selected card outputs to the given path.
@@ -467,6 +785,13 @@ class MakeDataWidget(QWidget):
                 )
             MessageManager.send_info_message(message)
             return
+        if not include_all and len(cards) > 1:
+            MessageManager.send_info_message(
+                self.tr(
+                    "The workflow has multiple independent branch outputs. Export each branch separately or insert an explicit Merge."
+                )
+            )
+            return
         path = call_path_dialog(
             self,
             self.tr("Choose a file save location"),
@@ -499,6 +824,21 @@ class MakeDataWidget(QWidget):
         self.setting_group.set_output_available(False)
         for card in self.workspace_card_widget.cards:
             card.set_dataset([])
+        for index, card in enumerate(self.workspace_card_widget.cards):
+            if (
+                card.__class__.__name__ == "WorkflowFork"
+                and not bool(getattr(card, "merge_enabled", False))
+                and any(
+                    later.check_state
+                    for later in self.workspace_card_widget.cards[index + 1 :]
+                )
+            ):
+                MessageManager.send_info_message(
+                    self.tr(
+                        "A permanent fork without Merge must be the final workflow node. Insert an explicit Merge before adding a shared downstream card."
+                    )
+                )
+                return
         first_card=self._next_card(-1)
         if first_card:
             needs_input = bool(getattr(first_card, "requires_input_dataset", True))
@@ -527,6 +867,10 @@ class MakeDataWidget(QWidget):
         for child in getattr(card, "card_list", []):
             if self._card_is_running(child):
                 return True
+        for branch in getattr(card, "branches", []):
+            for child in getattr(branch, "cards", []):
+                if self._card_is_running(child):
+                    return True
         filter_card = getattr(card, "filter_card", None)
         return bool(filter_card is not None and self._card_is_running(filter_card))
 
@@ -633,13 +977,21 @@ class MakeDataWidget(QWidget):
             card._output_actions_owner = self
         for child in getattr(card, "card_list", []):
             self._connect_card_output_actions(child)
+        for branch in getattr(card, "branches", []):
+            for child in getattr(branch, "cards", []):
+                self._connect_card_output_actions(child)
         filter_card = getattr(card, "filter_card", None)
         if filter_card is not None:
             self._connect_card_output_actions(filter_card)
 
     def request_card_output(self, card) -> None:
         """Send one card's current output to the main-window handoff."""
-        outputs = list(getattr(card, "result_dataset", None) or [])
+        output_cards = self._available_output_cards(card)
+        outputs = [
+            structure
+            for output_card in output_cards
+            for structure in (getattr(output_card, "result_dataset", None) or [])
+        ]
         if not outputs:
             card.set_output_available(False)
             MessageManager.send_info_message(
@@ -687,6 +1039,8 @@ class MakeDataWidget(QWidget):
         card=CardManager.card_info_dict[card_name](self)
         self._connect_card_output_actions(card)
         self.workspace_card_widget.add_card(card)
+        self._track_card_parameter_changes(card)
+        self._mark_workflow_dirty()
         return card
 
     def export_card_config(self):
@@ -715,6 +1069,7 @@ class MakeDataWidget(QWidget):
         """Return the current workflow card configuration payload."""
         return {
             "software_version": __version__,
+            "workflow_schema": 2,
             "cards": [card.to_dict() for card in self.workspace_card_widget.cards],
         }
 
@@ -792,6 +1147,7 @@ class MakeDataWidget(QWidget):
             return
         self.workspace_card_widget.clear_cards()
         self._add_card_configs(cards)
+        self._set_active_workflow(None, dirty=True)
 
     def _normalise_card_config_payload(self, payload):
         """Return a validated list of card dictionaries from supported JSON shapes."""
@@ -821,7 +1177,7 @@ class MakeDataWidget(QWidget):
             normalised_cards.append(card_data)
         return normalised_cards
 
-    def _add_card_configs(self, cards):
+    def _add_card_configs(self, cards, *, notify: bool = True):
         """Create cards from validated card configuration dictionaries."""
         added_count = 0
         for card in cards:
@@ -836,9 +1192,10 @@ class MakeDataWidget(QWidget):
                         self.tr("Failed to load {name}: {error}").format(name=name, error=exc)
                     )
                     continue
+                self._track_card_parameter_changes(card_widget)
                 self._connect_card_output_actions(card_widget)
                 added_count += 1
-        if added_count:
+        if added_count and notify:
             MessageManager.send_success_message(
                 self.tr("Added {count} card configuration(s).").format(count=added_count)
             )

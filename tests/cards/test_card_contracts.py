@@ -4,7 +4,7 @@ from dataclasses import fields, is_dataclass
 from unittest.mock import patch
 import time
 
-from PySide6.QtCore import QEvent, QPointF, Qt
+from PySide6.QtCore import QEvent, QPoint, QPointF, Qt, qInstallMessageHandler
 from PySide6.QtGui import QMouseEvent
 
 from NepTrainKit.core.cards.operation import (
@@ -187,6 +187,35 @@ class TestCardContracts(BaseCardTest):
 
             card.mouseMoveEvent(large_move_event)
             self.assertEqual(FakeDrag.calls, 1)
+
+    def test_drag_handle_maps_child_coordinates_without_qt_hierarchy_warning(self):
+        card = _ExternalTestCard()
+        card.resize(420, 160)
+        card.show()
+        self._app.processEvents()
+        local_pos = QPoint(5, 6)
+        expected = card.drag_handle.mapTo(card, local_pos)
+        messages = []
+        previous_handler = qInstallMessageHandler(
+            lambda _type, _context, message: messages.append(message)
+        )
+        try:
+            press_event = QMouseEvent(
+                QEvent.Type.MouseButtonPress,
+                QPointF(local_pos),
+                QPointF(card.drag_handle.mapToGlobal(local_pos)),
+                Qt.MouseButton.LeftButton,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.NoModifier,
+            )
+            QApplication.sendEvent(card.drag_handle, press_event)
+        finally:
+            qInstallMessageHandler(previous_handler)
+
+        self.assertEqual(card._drag_start_pos, expected)
+        self.assertFalse(
+            any("parent must be in parent hierarchy" in message for message in messages)
+        )
 
     def test_operation_cards_write_only_params(self):
         for class_name, card_cls in CardManager.card_info_dict.items():

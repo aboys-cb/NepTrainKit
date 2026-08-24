@@ -45,6 +45,13 @@ def _localized_catalog(_language_marker: str):
                 "Run several independent child branches one at a time from the same input, merge their outputs, and optionally apply one post-filter; child cards do not feed one another.",
             ),
         ),
+        "WorkflowFork": (
+            QCoreApplication.translate("CardCatalog", "Permanent Fork"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Split one input into independent linear branch pipelines; outputs remain separate until an explicit Merge is enabled.",
+            ),
+        ),
         "CellScalingCard": (
             QCoreApplication.translate("CardCatalog", "Lattice Perturb"),
             QCoreApplication.translate("CardCatalog", "Generate perturbed lattice structures using stochastic scaling factors."),

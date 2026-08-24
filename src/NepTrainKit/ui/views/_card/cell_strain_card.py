@@ -107,6 +107,26 @@ class CellStrainCard(MakeDataCard):
         """Return the UI-independent strain operation."""
         return CellStrainOperation()
 
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        active = {
+            "x": params.x_range,
+            "y": params.y_range,
+            "z": params.z_range,
+        }
+        ranges = ", ".join(
+            f"{axis.upper()} {values[0]:g}…{values[1]:g}%"
+            for axis, values in active.items()
+            if axis in params.axes.lower() or params.axes in ("triaxial", "isotropic")
+        )
+        return self.tr("{axes} · {ranges}").format(axes=params.axes, ranges=ranges)
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Strain values modify the cell before relaxation. Validate volume, symmetry, "
+            "and shortest distances in the generated structures."
+        )
+
     def get_params(self) -> CellStrainParams:
         """Read strain parameters from the UI controls."""
         return CellStrainParams(
@@ -165,7 +185,6 @@ class CellStrainCard(MakeDataCard):
                 identify_organic=data_dict.get("organic", False),
             )
         self.set_params(params)
-
 
 
 

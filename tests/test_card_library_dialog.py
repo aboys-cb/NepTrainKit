@@ -224,7 +224,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             self.assertEqual(dialog.detail_title_label.text(), "随机空位")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "按元素、已有 group 和数量规则随机选择位点并删除；其余原子坐标保持不变。",
+                "按元素、已有分组标签和数量规则随机删除位点；其余原子坐标保持不变。",
             )
 
             global_vacancy_item = next(

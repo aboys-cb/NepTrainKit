@@ -6,10 +6,13 @@ from functools import lru_cache
 from html import escape
 from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication, Qt, Signal
+from PySide6.QtCore import QCoreApplication, QPoint, Qt, Signal
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
+    QApplication,
     QDialog,
     QFrame,
+    QGraphicsDropShadowEffect,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -21,6 +24,21 @@ from PySide6.QtWidgets import (
     QSplitter,
     QTextBrowser,
     QVBoxLayout,
+    QWidget,
+)
+from qfluentwidgets import (
+    CaptionLabel,
+    FlyoutViewBase,
+    FluentIcon,
+    IconWidget,
+    InfoBadge,
+    SearchLineEdit,
+    SimpleCardWidget,
+    StrongBodyLabel,
+    ScrollArea,
+    TransparentPushButton,
+    isDarkTheme,
+    themeColor,
 )
 
 from NepTrainKit.core import CardManager, CardMetadata
@@ -687,6 +705,325 @@ class CardMetadataDialog(QDialog):
         layout.addWidget(
             close_button, alignment=Qt.AlignmentFlag.AlignRight
         )
+
+
+class _CardCatalogButton(TransparentPushButton):
+    """Compact catalog item that previews on pointer or keyboard focus."""
+
+    previewRequested = Signal(str)
+
+    def __init__(self, class_name: str, text: str, parent=None):
+        TransparentPushButton.__init__(self, parent)
+        self.setText(text)
+        self.class_name = class_name
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setFixedHeight(27)
+        self._hover_shadow = QGraphicsDropShadowEffect(self)
+        self._hover_shadow.setBlurRadius(14)
+        self._hover_shadow.setOffset(0, 2)
+        self._hover_shadow.setColor(QColor(0, 0, 0, 58))
+        self._hover_shadow.setEnabled(False)
+        self.setGraphicsEffect(self._hover_shadow)
+        self._set_raised(False)
+
+    def _set_raised(self, raised: bool) -> None:
+        accent = themeColor()
+        fill_alpha = 38 if isDarkTheme() else 24
+        border_alpha = 105 if isDarkTheme() else 72
+        if raised:
+            background = (
+                f"rgba({accent.red()}, {accent.green()}, {accent.blue()}, "
+                f"{fill_alpha})"
+            )
+            border = (
+                f"rgba({accent.red()}, {accent.green()}, {accent.blue()}, "
+                f"{border_alpha})"
+            )
+        else:
+            background = "transparent"
+            border = "transparent"
+        self.setStyleSheet(
+            "QPushButton {"
+            " text-align: left; padding: 0 7px; border-radius: 6px;"
+            f" background: {background}; border: 1px solid {border};"
+            "}"
+        )
+        self._hover_shadow.setEnabled(raised)
+
+    def enterEvent(self, event) -> None:  # noqa: N802 - Qt override
+        self._set_raised(True)
+        self.previewRequested.emit(self.class_name)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event) -> None:  # noqa: N802 - Qt override
+        super().leaveEvent(event)
+        self._set_raised(self.hasFocus())
+
+    def focusInEvent(self, event) -> None:  # noqa: N802 - Qt override
+        self._set_raised(True)
+        self.previewRequested.emit(self.class_name)
+        super().focusInEvent(event)
+
+    def focusOutEvent(self, event) -> None:  # noqa: N802 - Qt override
+        super().focusOutEvent(event)
+        self._set_raised(self.underMouse())
+
+
+class CardLibraryPopup(FlyoutViewBase):
+    """Screen-safe categorized card picker anchored to the Add Card button."""
+
+    cardRequested = Signal(str)
+    _COLUMN_COUNT = 4
+    _GROUP_ICONS = {
+        "Alloy": FluentIcon.PIE_SINGLE,
+        "Container": FluentIcon.SHARE,
+        "Defect": FluentIcon.CLEAR_SELECTION,
+        "Filter": FluentIcon.FILTER,
+        "Lattice": FluentIcon.TILES,
+        "Magnetism": FluentIcon.ROTATE,
+        "Organic": FluentIcon.LEAF,
+        "Perturbation": FluentIcon.MOVE,
+        "Structure": FluentIcon.IOT,
+        "Surface": FluentIcon.ALIGNMENT,
+    }
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowFlags(
+            Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self._metadata_by_class = {
+            class_name: metadata
+            for class_name, metadata in CardManager.card_metadata_dict.items()
+            if getattr(
+                CardManager.card_info_dict.get(class_name),
+                "discoverable",
+                True,
+            )
+        }
+        self._buttons_by_class: dict[str, _CardCatalogButton] = {}
+        self._section_frames: dict[str, SimpleCardWidget] = {}
+        self._section_classes: dict[str, list[str]] = {}
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        root = QVBoxLayout(self)
+        root.setContentsMargins(12, 12, 12, 10)
+        root.setSpacing(10)
+
+        self.search_edit = SearchLineEdit(self)
+        self.search_edit.setPlaceholderText(
+            self.tr("Search by card name, group, or description")
+        )
+        self.search_edit.textChanged.connect(self._filter_cards)
+        self.search_edit.returnPressed.connect(self._activate_first_visible)
+        root.addWidget(self.search_edit)
+
+        scroll = ScrollArea(self)
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setStyleSheet("QScrollArea { background: transparent; border: 0; }")
+        self.catalog_widget = QWidget(scroll)
+        self.catalog_widget.setStyleSheet("background: transparent;")
+        columns_layout = QHBoxLayout(self.catalog_widget)
+        columns_layout.setContentsMargins(0, 0, 0, 0)
+        columns_layout.setSpacing(8)
+        column_layouts: list[QVBoxLayout] = []
+        column_loads = [0] * self._COLUMN_COUNT
+        column_heights = [0] * self._COLUMN_COUNT
+        for _index in range(self._COLUMN_COUNT):
+            column = QWidget(self.catalog_widget)
+            column.setMinimumWidth(0)
+            layout = QVBoxLayout(column)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(8)
+            layout.addStretch(1)
+            columns_layout.addWidget(column, 1)
+            column_layouts.append(layout)
+
+        grouped: dict[str, list[tuple[str, CardMetadata]]] = {}
+        for class_name, metadata in self._metadata_by_class.items():
+            group = localized_card_group(metadata) or self.tr("Other")
+            grouped.setdefault(group, []).append((class_name, metadata))
+
+        for group, entries in sorted(grouped.items()):
+            entries.sort(key=lambda item: localized_card_name(item[1]))
+            column_index = min(
+                range(self._COLUMN_COUNT), key=column_loads.__getitem__
+            )
+            section = self._create_section(
+                group,
+                entries,
+                entries[0][1].group or "",
+            )
+            column_layouts[column_index].insertWidget(
+                column_layouts[column_index].count() - 1, section
+            )
+            column_loads[column_index] += len(entries) + 2
+            if column_heights[column_index]:
+                column_heights[column_index] += columns_layout.spacing()
+            column_heights[column_index] += section.sizeHint().height()
+
+        self._catalog_content_height = max(column_heights, default=0)
+
+        scroll.setWidget(self.catalog_widget)
+        root.addWidget(scroll, 1)
+
+        footer = QHBoxLayout()
+        footer.setContentsMargins(2, 0, 2, 0)
+        footer.setSpacing(10)
+        self.description_label = CaptionLabel(
+            self.tr("Hover or focus a card to see what it does."), self
+        )
+        self.description_label.setObjectName("cardCatalogDescription")
+        self.description_label.setWordWrap(True)
+        footer.addWidget(self.description_label, 1)
+        self.result_count_label = CaptionLabel(self)
+        self.result_count_label.setObjectName("cardCatalogCount")
+        footer.addWidget(
+            self.result_count_label, 0, Qt.AlignmentFlag.AlignRight
+        )
+        root.addLayout(footer)
+        self._update_result_count()
+
+    def _create_section(
+        self,
+        group: str,
+        entries: list[tuple[str, CardMetadata]],
+        group_key: str,
+    ) -> SimpleCardWidget:
+        section = SimpleCardWidget(self.catalog_widget)
+        section.setObjectName("cardCatalogSection")
+        section.setBorderRadius(8)
+        layout = QVBoxLayout(section)
+        layout.setContentsMargins(7, 7, 7, 8)
+        layout.setSpacing(2)
+        header = QHBoxLayout()
+        header.setContentsMargins(7, 1, 5, 4)
+        header.setSpacing(7)
+        icon = IconWidget(section)
+        icon.setIcon(self._GROUP_ICONS.get(group_key, FluentIcon.TAG))
+        icon.setFixedSize(15, 15)
+        header.addWidget(icon, 0, Qt.AlignmentFlag.AlignVCenter)
+        title = StrongBodyLabel(group, section)
+        title.setObjectName("cardCatalogGroup")
+        header.addWidget(title, 1)
+        badge = InfoBadge.attension(str(len(entries)), section)
+        badge.setFixedHeight(18)
+        header.addWidget(badge, 0, Qt.AlignmentFlag.AlignVCenter)
+        layout.addLayout(header)
+        self._section_classes[group] = []
+        for class_name, metadata in entries:
+            button = _CardCatalogButton(
+                class_name,
+                localized_card_name(metadata),
+                section,
+            )
+            button.setObjectName("cardCatalogItem")
+            button.setToolTip(card_tooltip(metadata))
+            button.previewRequested.connect(self._preview_card)
+            button.clicked.connect(
+                lambda _checked=False, selected=class_name: self._choose_card(selected)
+            )
+            layout.addWidget(button)
+            self._buttons_by_class[class_name] = button
+            self._section_classes[group].append(class_name)
+        self._section_frames[group] = section
+        return section
+
+    def _searchable_text(self, class_name: str, metadata: CardMetadata) -> str:
+        return " ".join(
+            (
+                class_name,
+                metadata.card_name,
+                metadata.group or "",
+                metadata.description or "",
+                localized_card_name(metadata),
+                localized_card_group(metadata),
+                localized_card_description(metadata),
+            )
+        ).casefold()
+
+    def _filter_cards(self, text: str) -> None:
+        query = text.strip().casefold()
+        for class_name, button in self._buttons_by_class.items():
+            metadata = self._metadata_by_class[class_name]
+            button.setVisible(
+                not query or query in self._searchable_text(class_name, metadata)
+            )
+        for group, section in self._section_frames.items():
+            section.setVisible(
+                any(
+                    not self._buttons_by_class[class_name].isHidden()
+                    for class_name in self._section_classes[group]
+                )
+            )
+        self._update_result_count()
+
+    def _visible_class_names(self) -> list[str]:
+        return [
+            class_name
+            for class_name, button in self._buttons_by_class.items()
+            if not button.isHidden()
+        ]
+
+    def _update_result_count(self) -> None:
+        count = len(self._visible_class_names())
+        self.result_count_label.setText(
+            self.tr("{count} cards").format(count=count)
+        )
+        if count == 0:
+            self.description_label.setText(self.tr("No cards found."))
+
+    def _preview_card(self, class_name: str) -> None:
+        metadata = self._metadata_by_class.get(class_name)
+        if metadata is None:
+            return
+        description = localized_card_description(metadata)
+        self.description_label.setText(
+            description or self.tr("No description provided.")
+        )
+
+    def _activate_first_visible(self) -> None:
+        visible = self._visible_class_names()
+        if visible:
+            self._choose_card(visible[0])
+
+    def _choose_card(self, class_name: str) -> None:
+        if class_name not in self._metadata_by_class:
+            return
+        self.cardRequested.emit(class_name)
+        self.hide()
+
+    def show_for(self, anchor: QWidget) -> None:
+        """Show below ``anchor``, flipping above it when the screen is tight."""
+        screen = anchor.screen() or QApplication.primaryScreen()
+        if screen is None:
+            return
+        available = screen.availableGeometry()
+        popup_width = max(320, min(860, available.width() - 24))
+        ideal_height = self._catalog_content_height + 78
+        popup_height = max(
+            400,
+            min(560, ideal_height, available.height() - 24),
+        )
+        top_left = anchor.mapToGlobal(QPoint(0, anchor.height() + 6))
+        x = min(
+            max(top_left.x(), available.left() + 12),
+            available.right() - popup_width + 1,
+        )
+        y = top_left.y()
+        if y + popup_height > available.bottom() + 1:
+            above = anchor.mapToGlobal(QPoint(0, -popup_height - 6)).y()
+            y = max(available.top() + 12, above)
+        self.setGeometry(x, y, popup_width, popup_height)
+        self.search_edit.clear()
+        self.show()
+        self.raise_()
+        self.search_edit.setFocus(Qt.FocusReason.PopupFocusReason)
 
 
 class CardLibraryDialog(QDialog):

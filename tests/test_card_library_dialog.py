@@ -4,9 +4,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from PySide6.QtCore import QObject, QPoint, Qt, QTranslator, Signal
+from PySide6.QtCore import QObject, Qt, QTranslator, Signal
 from PySide6.QtWidgets import QApplication
-from qfluentwidgets import MenuAnimationType, RoundMenu
 from qfluentwidgets.components.widgets.command_bar import CommandMenu
 
 from NepTrainKit.ui.views.cards import ConsoleWidget
@@ -14,6 +13,7 @@ from NepTrainKit.ui.views._card.group_label_card import GroupLabelCard
 from NepTrainKit.ui.views._card.magnetic_order_card import MagneticOrderCard
 from NepTrainKit.ui.widgets.card_metadata import (
     CardLibraryDialog,
+    CardLibraryPopup,
     localized_card_description,
     localized_card_name,
 )
@@ -261,7 +261,7 @@ class TestCardLibraryDialog(unittest.TestCase):
         finally:
             self._app.removeTranslator(translator)
 
-    def test_chinese_add_card_dropdown_localizes_card_names(self):
+    def test_chinese_add_card_popup_localizes_card_names(self):
         translator = QTranslator(self._app)
         qm_path = (
             Path(__file__).parents[1]
@@ -273,61 +273,25 @@ class TestCardLibraryDialog(unittest.TestCase):
         self.assertTrue(translator.load(str(qm_path)))
         self._app.installTranslator(translator)
         try:
-            console = ConsoleWidget()
-            action = next(
-                action
-                for action in console.menu.actions()
-                if action.objectName() == "CompositionGradientCard"
-            )
-            self.assertEqual(action.text(), "成分梯度")
-            global_vacancy_action = next(
-                action
-                for action in console.menu.actions()
-                if action.objectName() == "VacancyDefectCard"
+            popup = CardLibraryPopup()
+            self.assertEqual(
+                popup._buttons_by_class["CompositionGradientCard"].text(),
+                "成分梯度",
             )
             self.assertEqual(
-                global_vacancy_action.text(),
+                popup._buttons_by_class["VacancyDefectCard"].text(),
                 "全局随机空位",
             )
-            insert_action = next(
-                action
-                for action in console.menu.actions()
-                if action.objectName() == "InsertDefectCard"
-            )
             self.assertEqual(
-                insert_action.text(),
+                popup._buttons_by_class["InsertDefectCard"].text(),
                 "插隙与表面吸附",
             )
-            strict_gsfe_action = next(
-                action
-                for action in console.menu.actions()
-                if action.objectName() == "StrictGSFEPathCard"
-            )
             self.assertEqual(
-                strict_gsfe_action.text(),
+                popup._buttons_by_class["StrictGSFEPathCard"].text(),
                 "层错 / GSFE 路径",
             )
-            self.assertNotIn(
-                "StackingFaultCard",
-                {action.objectName() for action in console.menu.actions()},
-            )
-
-            with patch(
-                "NepTrainKit.ui.views.cards.Config.getboolean",
-                return_value=True,
-            ):
-                grouped_console = ConsoleWidget()
-            alloy_menu = next(
-                menu
-                for menu in grouped_console.menu._subMenus
-                if menu.title() == "合金与组分"
-            )
-            grouped_action = next(
-                action
-                for action in alloy_menu.menuActions()
-                if action.objectName() == "CompositionGradientCard"
-            )
-            self.assertEqual(grouped_action.text(), "成分梯度")
+            self.assertNotIn("StackingFaultCard", popup._buttons_by_class)
+            self.assertIn("合金与组分", popup._section_frames)
         finally:
             self._app.removeTranslator(translator)
 
@@ -403,50 +367,60 @@ class TestCardLibraryDialog(unittest.TestCase):
         self.assertIn("layer-copy-card.html", dialog.detail_docs_label.text())
 
     def test_console_forwards_library_add_request(self):
-        class FakeLibraryDialog(QObject):
+        class FakeLibraryPopup(QObject):
             cardRequested = Signal(str)
 
             def __init__(self, parent=None):
                 super().__init__(parent)
 
-            def exec(self):
+            def show_for(self, _anchor):
                 self.cardRequested.emit("CrystalPrototypeBuilderCard")
 
-        console = ConsoleWidget()
         requested = []
-        console.newCardSignal.connect(requested.append)
         with patch(
-            "NepTrainKit.ui.views.cards.CardLibraryDialog", FakeLibraryDialog
+            "NepTrainKit.ui.views.cards.CardLibraryPopup", FakeLibraryPopup
         ):
+            console = ConsoleWidget()
+            console.newCardSignal.connect(requested.append)
             console.show_card_library()
 
         self.assertEqual(requested, ["CrystalPrototypeBuilderCard"])
 
-    def test_console_exposes_labeled_card_search_button(self):
+    def test_console_uses_one_labeled_card_picker_button(self):
         console = ConsoleWidget()
 
-        self.assertEqual(console.find_card_button.text(), "Find card")
-        self.assertTrue(console.find_card_button.isEnabled())
+        self.assertEqual(console.new_card_button.text(), "Add new card")
+        self.assertTrue(console.new_card_button.isEnabled())
+        self.assertFalse(hasattr(console, "find_card_button"))
 
-    def test_console_card_menu_scrolls_instead_of_exceeding_screen_height(self):
-        console = ConsoleWidget()
+    def test_popup_groups_cards_and_filters_across_metadata(self):
+        popup = CardLibraryPopup()
 
-        self.assertEqual(console.menu.view.maxVisibleItems(), 16)
-        self.assertGreater(len(console.menu.actions()), 16)
-
-    def test_console_card_menu_skips_off_screen_start_animation(self):
-        console = ConsoleWidget()
-        with patch.object(RoundMenu, "exec") as exec_mock:
-            console.menu.exec(
-                QPoint(10, 20),
-                aniType=MenuAnimationType.DROP_DOWN,
-            )
-
-        exec_mock.assert_called_once_with(
-            QPoint(10, 20),
-            ani=False,
-            aniType=MenuAnimationType.NONE,
+        self.assertGreater(len(popup._section_frames), 1)
+        self.assertGreater(len(popup._buttons_by_class), 16)
+        popup.search_edit.setText("CrystalPrototypeBuilderCard")
+        self.assertEqual(
+            popup._visible_class_names(), ["CrystalPrototypeBuilderCard"]
         )
+
+    def test_popup_emits_clicked_card_and_updates_keyboard_preview(self):
+        popup = CardLibraryPopup()
+        requested = []
+        popup.cardRequested.connect(requested.append)
+        class_name = "CrystalPrototypeBuilderCard"
+        button = popup._buttons_by_class[class_name]
+
+        popup.show()
+        self._app.processEvents()
+        button.setFocus()
+        self._app.processEvents()
+        self.assertTrue(button._hover_shadow.isEnabled())
+        self.assertEqual(
+            popup.description_label.text(),
+            localized_card_description(popup._metadata_by_class[class_name]),
+        )
+        button.click()
+        self.assertEqual(requested, [class_name])
 
     def test_console_exposes_selected_output_handoff_action(self):
         console = ConsoleWidget()

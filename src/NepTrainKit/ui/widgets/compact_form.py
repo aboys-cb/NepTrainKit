@@ -675,6 +675,16 @@ class SegmentedControl(QWidget):
             return self._buttons[self._current].text()
         return ""
 
+    def itemText(self, index: int) -> str:  # noqa: N802 - ComboBox-compatible API
+        if 0 <= index < len(self._buttons):
+            return self._buttons[index].text()
+        return ""
+
+    def itemData(self, index: int):  # noqa: N802 - ComboBox-compatible API
+        if 0 <= index < len(self._data):
+            return self._data[index]
+        return None
+
     def addItem(self, text: str, userData=None) -> None:  # noqa: N802 - ComboBox-compatible API
         self._append_button(text, text if userData is None else userData)
         self._apply_style()

@@ -1908,6 +1908,16 @@
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="174" />
+        <source>Alternating layers</source>
+        <translation>分数坐标交替分层</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
+        <source>Half-grid parity</source>
+        <translation>当前晶胞半网格奇偶</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
         <source>100 (along lattice a)</source>
         <translation>100（沿晶格 a）</translation>
     </message>
@@ -2006,6 +2016,39 @@
         <location filename="../ui/views/_card/card_group.py" line="510" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
+    </message>
+</context>
+<context>
+    <name>CardLibraryPopup</name>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="760" />
+        <source>Search by card name, group, or description</source>
+        <translation>按卡片名称、分组或说明搜索</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="798" />
+        <source>Other</source>
+        <translation>其他</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="820" />
+        <source>Hover or focus a card to see what it does.</source>
+        <translation>悬停或聚焦卡片以查看功能说明。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="931" />
+        <source>{count} cards</source>
+        <translation>{count} 张卡片</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="934" />
+        <source>No cards found.</source>
+        <translation>未找到卡片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="943" />
+        <source>No description provided.</source>
+        <translation>暂无说明。</translation>
     </message>
 </context>
 <context>

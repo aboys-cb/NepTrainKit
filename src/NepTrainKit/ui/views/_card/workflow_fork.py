@@ -5,10 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from ase.io import write as ase_write
 from PySide6.QtCore import QEvent, QPointF, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import (
     QBoxLayout,
+    QButtonGroup,
     QCheckBox,
     QFrame,
     QHBoxLayout,
@@ -18,8 +20,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import BodyLabel, CaptionLabel, StrongBodyLabel
-from ase.io import write as ase_write
+from qfluentwidgets import CaptionLabel, StrongBodyLabel
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
@@ -168,6 +169,7 @@ class WorkflowBranchWidget(QFrame):
 
     cardDropRequested = Signal(object, object, int)
     cardSelected = Signal(object)
+    branchSelected = Signal(object)
 
     def __init__(self, spec: WorkflowBranch, parent=None):
         super().__init__(parent)
@@ -183,6 +185,9 @@ class WorkflowBranchWidget(QFrame):
             "QFrame#workflowBranchLane {"
             "border: 1px solid rgba(110, 130, 138, 45);"
             "border-radius: 10px; background: rgba(255,255,255,150); }"
+            "QFrame#workflowBranchLane[workflowBranchSelected=\"true\"] {"
+            "border: 1px solid rgba(79,127,189,190);"
+            "background: rgba(79,127,189,12); }"
         )
 
         self.enabled_checkbox = QCheckBox(self)
@@ -226,6 +231,19 @@ class WorkflowBranchWidget(QFrame):
         layout.addWidget(self.cards_host)
 
         self.enabled_checkbox.toggled.connect(self._sync_enabled)
+        for widget in (
+            self.enabled_checkbox,
+            self.badge_label,
+            self.name_label,
+            self.output_label,
+        ):
+            widget.installEventFilter(self)
+
+    def set_selected(self, selected: bool) -> None:
+        self.setProperty("workflowBranchSelected", bool(selected))
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()
 
     def _sync_enabled(self, enabled: bool) -> None:
         self.spec.enabled = bool(enabled)
@@ -376,6 +394,13 @@ class WorkflowBranchWidget(QFrame):
 
     def eventFilter(self, watched, event):
         if event.type() == QEvent.Type.MouseButtonPress:
+            if watched in (
+                self.enabled_checkbox,
+                self.badge_label,
+                self.name_label,
+                self.output_label,
+            ):
+                self.branchSelected.emit(self)
             card = next(
                 (
                     item
@@ -385,6 +410,10 @@ class WorkflowBranchWidget(QFrame):
                 None,
             )
             if card is not None:
+                if card.__class__.__name__ == "CardGroup":
+                    card.collapse()
+                    self.cardSelected.emit(card)
+                    return True
                 self.cardSelected.emit(card)
         return super().eventFilter(watched, event)
 
@@ -445,12 +474,15 @@ class WorkflowFork(MakeDataCardWidget):
     runFinishedSignal = Signal(int)
     cardDropRequested = Signal(object, object, int)
     cardSelected = Signal(object)
+    branchSelected = Signal(object)
+    structureChanged = Signal()
     _MAX_BRANCHES = 3
     _STACK_BRANCHES_BREAKPOINT = 760
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle(self.tr("Permanent Fork"))
+        self.setAcceptDrops(True)
         self.dataset: Any = []
         self.result_dataset: list[Any] = []
         self.branch_results: dict[str, list[Any]] = {}
@@ -484,12 +516,73 @@ class WorkflowFork(MakeDataCardWidget):
             self.tr("When enabled, concatenate successful branch outputs in branch order.")
         )
         self.merge_checkbox.toggled.connect(self._set_merge_enabled)
+        self.merge_checkbox.hide()
         self.add_branch_button = QPushButton(self.tr("+ Add branch"), self)
         self.add_branch_button.clicked.connect(self.add_branch)
         footer = QHBoxLayout()
-        footer.addWidget(self.merge_checkbox)
         footer.addStretch(1)
         footer.addWidget(self.add_branch_button)
+
+        self.output_mode_frame = QFrame(self)
+        self.output_mode_frame.setObjectName("forkOutputMode")
+        self.output_mode_frame.setStyleSheet(
+            "QFrame#forkOutputMode {"
+            "border-top: 1px dashed rgba(110,130,138,70); background: transparent; }"
+            "QFrame#forkOutputMode QPushButton {"
+            "border: 1px solid rgba(110,130,138,55); padding: 0 13px;"
+            "background: rgba(232,237,238,210); color: #627078; }"
+            "QFrame#forkOutputMode QPushButton:checked {"
+            "border-color: rgba(15,143,145,120); background: white;"
+            "color: #176f70; font-weight: 600; }"
+        )
+        output_layout = QVBoxLayout(self.output_mode_frame)
+        output_layout.setContentsMargins(0, 12, 0, 0)
+        output_layout.setSpacing(8)
+        mode_row = QHBoxLayout()
+        mode_row.setSpacing(0)
+        self.keep_separate_button = QPushButton(
+            self.tr("Keep independent outputs"), self.output_mode_frame
+        )
+        self.merge_output_button = QPushButton(
+            self.tr("Merge into one output"), self.output_mode_frame
+        )
+        for button in (self.keep_separate_button, self.merge_output_button):
+            button.setCheckable(True)
+            button.setFixedHeight(32)
+        self.output_mode_group = QButtonGroup(self.output_mode_frame)
+        self.output_mode_group.setExclusive(True)
+        self.output_mode_group.addButton(self.keep_separate_button)
+        self.output_mode_group.addButton(self.merge_output_button)
+        self.keep_separate_button.setChecked(True)
+        self.keep_separate_button.clicked.connect(
+            lambda: self.merge_checkbox.setChecked(False)
+        )
+        self.merge_output_button.clicked.connect(
+            lambda: self.merge_checkbox.setChecked(True)
+        )
+        mode_row.addStretch(1)
+        mode_row.addWidget(self.keep_separate_button)
+        mode_row.addWidget(self.merge_output_button)
+        mode_row.addStretch(1)
+        output_layout.addLayout(mode_row)
+
+        self.output_terminal = QFrame(self.output_mode_frame)
+        self.output_terminal.setObjectName("forkOutputTerminal")
+        terminal_layout = QHBoxLayout(self.output_terminal)
+        terminal_layout.setContentsMargins(10, 7, 10, 7)
+        self.output_terminal_title = StrongBodyLabel(
+            self.tr("Independent branch outputs"), self.output_terminal
+        )
+        self.output_terminal_detail = CaptionLabel(
+            self.tr("Shared downstream cards are unavailable"),
+            self.output_terminal,
+        )
+        terminal_layout.addStretch(1)
+        terminal_layout.addWidget(self.output_terminal_title)
+        terminal_layout.addWidget(self.output_terminal_detail)
+        terminal_layout.addStretch(1)
+        output_layout.addWidget(self.output_terminal)
+        self._refresh_output_terminal()
 
         self.body_widget = QWidget(self)
         body_layout = QVBoxLayout(self.body_widget)
@@ -499,6 +592,7 @@ class WorkflowFork(MakeDataCardWidget):
         body_layout.addWidget(self.connector)
         body_layout.addWidget(self.branch_host)
         body_layout.addLayout(footer)
+        body_layout.addWidget(self.output_mode_frame)
         self.viewLayout.addWidget(self.body_widget)
         self.collapsed_summary = CaptionLabel("", self)
         self.collapsed_summary.setWordWrap(True)
@@ -529,7 +623,37 @@ class WorkflowFork(MakeDataCardWidget):
 
     def _set_merge_enabled(self, enabled: bool) -> None:
         self.merge_enabled = bool(enabled)
+        self._refresh_output_terminal()
         self.set_export_available(self.merge_enabled and bool(self.result_dataset))
+        self.structureChanged.emit()
+
+    def _refresh_output_terminal(self) -> None:
+        if not hasattr(self, "output_terminal"):
+            return
+        self.keep_separate_button.setChecked(not self.merge_enabled)
+        self.merge_output_button.setChecked(self.merge_enabled)
+        if self.merge_enabled:
+            self.output_terminal_title.setText(self.tr("Explicit merge"))
+            self.output_terminal_detail.setText(
+                self.tr("Shared downstream cards are available")
+            )
+            self.output_terminal.setStyleSheet(
+                "QFrame#forkOutputTerminal {"
+                "border: 1px solid rgba(46,150,96,90); border-radius: 8px;"
+                "background: rgba(46,150,96,18); }"
+            )
+        else:
+            self.output_terminal_title.setText(
+                self.tr("Independent branch outputs")
+            )
+            self.output_terminal_detail.setText(
+                self.tr("Shared downstream cards are unavailable")
+            )
+            self.output_terminal.setStyleSheet(
+                "QFrame#forkOutputTerminal {"
+                "border: 1px solid rgba(110,130,138,55); border-radius: 8px;"
+                "background: rgba(248,250,251,220); }"
+            )
 
     def get_summary_text(self) -> str:
         enabled = sum(branch.spec.enabled for branch in self.branches)
@@ -551,6 +675,33 @@ class WorkflowFork(MakeDataCardWidget):
             "Add an explicit Merge before any shared downstream card."
         )
 
+    def get_inspector_overview_text(self) -> str:
+        rows = [
+            self.tr("Flow structure"),
+            self.tr("Common input → independent linear branch pipelines"),
+            "",
+            self.tr("Branches"),
+        ]
+        for branch in self.branches:
+            rows.append(
+                self.tr("{id} · {name} · {count} cards · {status}").format(
+                    id=branch.spec.branch_id,
+                    name=branch.spec.name,
+                    count=len(branch.cards),
+                    status=branch.output_label.text(),
+                )
+            )
+        rows.extend(
+            [
+                "",
+                self.tr("Output mode"),
+                self.tr("Explicit merge")
+                if self.merge_enabled
+                else self.tr("Independent outputs"),
+            ]
+        )
+        return "\n".join(rows)
+
     def add_branch(
         self,
         branch_id: str | None = None,
@@ -568,10 +719,15 @@ class WorkflowFork(MakeDataCardWidget):
         )
         branch.cardDropRequested.connect(self.cardDropRequested)
         branch.cardSelected.connect(self.cardSelected)
+        branch.branchSelected.connect(self.branchSelected)
+        branch.enabled_checkbox.toggled.connect(
+            lambda _enabled: self.structureChanged.emit()
+        )
         self.branches.append(branch)
         self.branch_layout.addWidget(branch, 1, Qt.AlignmentFlag.AlignTop)
         self.connector.set_branch_count(len(self.branches))
         self.add_branch_button.setEnabled(len(self.branches) < self._MAX_BRANCHES)
+        self.structureChanged.emit()
         return branch
 
     def add_card(
@@ -589,11 +745,13 @@ class WorkflowFork(MakeDataCardWidget):
         card.setMinimumWidth(0)
         card.setMaximumWidth(16777215)
         target.add_card(card, index)
+        self.structureChanged.emit()
         return True
 
     def remove_card(self, card: MakeDataCardWidget) -> bool:
         for branch in self.branches:
             if branch.remove_card(card):
+                self.structureChanged.emit()
                 return True
         return False
 
@@ -830,6 +988,66 @@ class WorkflowFork(MakeDataCardWidget):
             self.branch_layout.setDirection(direction)
         self.connector.setVisible(not stacked)
         super().resizeEvent(event)
+
+    def _nearest_branch(self, point) -> WorkflowBranchWidget | None:
+        visible = [branch for branch in self.branches if branch.isVisible()]
+        if not visible:
+            return None
+        host_point = self.branch_host.mapFrom(self, point)
+        stacked = self.branch_layout.direction() == QBoxLayout.Direction.TopToBottom
+        return min(
+            visible,
+            key=lambda branch: abs(
+                (
+                    branch.geometry().center().y() - host_point.y()
+                    if stacked
+                    else branch.geometry().center().x() - host_point.x()
+                )
+            ),
+        )
+
+    def dragEnterEvent(self, event) -> None:
+        source = event.source()
+        if (
+            not isinstance(source, MakeDataCardWidget)
+            or isinstance(source, WorkflowFork)
+            or source is self
+        ):
+            event.ignore()
+            return
+        if self.window_state != "expand":
+            self.window_state = "expand"
+            self.windowStateChangedSignal.emit()
+        event.acceptProposedAction()
+
+    def dragMoveEvent(self, event) -> None:
+        source = event.source()
+        if isinstance(source, MakeDataCardWidget) and not isinstance(
+            source, WorkflowFork
+        ):
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event) -> None:
+        source = event.source()
+        if not isinstance(source, MakeDataCardWidget) or isinstance(
+            source, WorkflowFork
+        ):
+            event.ignore()
+            return
+        branch = self._nearest_branch(event.position().toPoint())
+        if branch is None:
+            event.ignore()
+            return
+        global_point = self.mapToGlobal(event.position().toPoint())
+        branch_point = branch.cards_host.mapFromGlobal(global_point)
+        self.cardDropRequested.emit(
+            source,
+            branch,
+            branch._drop_slot(branch_point.y()),
+        )
+        event.acceptProposedAction()
 
     def closeEvent(self, event) -> None:
         self.stop()

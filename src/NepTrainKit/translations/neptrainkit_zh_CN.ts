@@ -2909,6 +2909,11 @@
         <translation>查看勾选输出</translation>
     </message>
     <message>
+        <location filename="../ui/views/cards.py" line="194" />
+        <source>View output</source>
+        <translation>查看输出</translation>
+    </message>
+    <message>
         <location filename="../ui/views/cards.py" line="209" />
         <source>Open outputs from all checked cards in NEP Dataset Display</source>
         <translation>在 NEP 数据集查看中打开所有已勾选卡片的输出</translation>

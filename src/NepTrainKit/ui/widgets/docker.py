@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QEvent, QPoint, QPointF, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QEvent, QPoint, QPointF, QSize, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -16,8 +16,6 @@ from PySide6.QtWidgets import (
     QApplication,
     QFrame,
     QHBoxLayout,
-    QPushButton,
-    QScrollArea,
     QSizePolicy,
     QSplitter,
     QTabWidget,
@@ -28,6 +26,10 @@ from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
     FluentIcon,
+    Flyout,
+    FlyoutAnimationType,
+    ScrollArea,
+    ScrollBarHandleDisplayMode,
     StrongBodyLabel,
     TransparentToolButton,
 )
@@ -41,6 +43,7 @@ from .card_metadata import (
     localized_card_group,
 )
 from .card_widget import FilterDataCard, MakeDataCardWidget
+from .compact_form import adapt_legacy_inspector_form
 from .workflow_library import WorkflowLibraryPanel
 
 
@@ -138,8 +141,13 @@ class WorkflowGuidancePanel(QFrame):
         super().__init__(parent)
         self._card: MakeDataCardWidget | None = None
         self._editor_widget: QWidget | None = None
+        self._editor_size_policy: QSizePolicy | None = None
+        self._context_signal_connections: list[tuple[object, object]] = []
         self.setObjectName("workflowGuidancePanel")
-        self.setMinimumWidth(400)
+        # The workbench assigns this pane a stable width while it is visible.
+        # A hard minimum here prevents the main window from ever reaching the
+        # breakpoint that hides the pane on narrow screens.
+        self.setMinimumWidth(0)
         self.setMaximumWidth(460)
         self.setStyleSheet(
             "QFrame#workflowGuidancePanel {"
@@ -152,92 +160,101 @@ class WorkflowGuidancePanel(QFrame):
         self.title_label = StrongBodyLabel(self.tr("Select a card"), self)
         self.copy_card_button = TransparentToolButton(FluentIcon.COPY, self)
         self.copy_card_button.setFixedSize(28, 28)
+        self.copy_card_button.setIconSize(QSize(14, 14))
         self.copy_card_button.setToolTip(self.tr("Copy card JSON"))
         self.copy_card_button.setAccessibleName(self.tr("Copy card JSON"))
         self.copy_card_button.clicked.connect(self._copy_card_json)
         self.copy_card_button.setEnabled(False)
-        self.description_label = BodyLabel(
-            self.tr("Select a workflow card to edit its parameters and review guidance."),
-            self,
-        )
-        self.description_label.setWordWrap(True)
-
+        self.docs_button = TransparentToolButton(FluentIcon.DOCUMENT, self)
+        self.docs_button.setFixedSize(28, 28)
+        self.docs_button.setIconSize(QSize(14, 14))
+        self.docs_button.setToolTip(self.tr("Open full documentation"))
+        self.docs_button.setAccessibleName(self.tr("Open full documentation"))
+        self.docs_button.clicked.connect(self._open_docs)
+        self.docs_button.setEnabled(False)
+        self.info_button = TransparentToolButton(FluentIcon.INFO, self)
+        self.info_button.setFixedSize(28, 28)
+        self.info_button.setIconSize(QSize(14, 14))
+        self.info_button.setToolTip(self.tr("Card information and contributors"))
+        self.info_button.setAccessibleName(self.tr("Card information and contributors"))
+        self.info_button.clicked.connect(self._show_card_info)
+        self.info_button.setEnabled(False)
+        self._card_description = ""
+        self._about_text = ""
+        self._citation = ""
         self.tabs = QTabWidget(self)
         self.tabs.setDocumentMode(True)
-        self.tabs.setStyleSheet(
-            "QTabWidget::pane { border: 0; }"
-            "QTabBar::tab { padding: 8px 12px; border: 0; color: #5d6c72; }"
-            "QTabBar::tab:selected { color: #087f81; font-weight: 600;"
-            "border-bottom: 2px solid #0f8f91; }"
-        )
+        self.tabs.setStyleSheet("QTabWidget::pane { border: 0; }")
 
         self.parameter_page = QWidget(self.tabs)
         parameter_page_layout = QVBoxLayout(self.parameter_page)
-        parameter_page_layout.setContentsMargins(0, 8, 0, 0)
-        self.parameter_scroll = QScrollArea(self.parameter_page)
+        parameter_page_layout.setContentsMargins(0, 4, 0, 0)
+        self.parameter_scroll = ScrollArea(self.parameter_page)
+        self.parameter_scroll.scrollDelagate.vScrollBar.setHandleDisplayMode(
+            ScrollBarHandleDisplayMode.ON_HOVER
+        )
         self.parameter_scroll.setWidgetResizable(True)
         self.parameter_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.parameter_scroll.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.parameter_host = QWidget(self.parameter_scroll)
+        self.parameter_host.setObjectName("workflowParameterHost")
+        self.parameter_scroll.setStyleSheet(
+            "QScrollArea { background: transparent; }"
+            "QWidget#workflowParameterHost { background: transparent; }"
+        )
         self.parameter_layout = QVBoxLayout(self.parameter_host)
         self.parameter_layout.setContentsMargins(4, 4, 4, 4)
         self.parameter_layout.setSpacing(8)
+
+        self.context_widget = QWidget(self.parameter_host)
+        context_layout = QVBoxLayout(self.context_widget)
+        context_layout.setContentsMargins(0, 4, 0, 0)
+        context_layout.setSpacing(7)
+
+        self.current_context_caption = CaptionLabel(
+            self.tr("Current configuration"),
+            self.context_widget,
+        )
+        self.current_context_label = BodyLabel("", self.context_widget)
+        self.current_context_label.setWordWrap(True)
+        self.current_context_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.current_context_label.setStyleSheet(
+            "padding: 8px; border-left: 3px solid #0f8f91;"
+            "background: rgba(15,143,145,14);"
+        )
+
+        self.recommend_caption = CaptionLabel(self.tr("Recommended checks"), self.context_widget)
+        self.recommend_label = BodyLabel("", self.context_widget)
+        self.recommend_label.setWordWrap(True)
+        self.recommend_label.setStyleSheet(
+            "padding: 8px; border-left: 3px solid #d49b26;"
+            "background: rgba(212,155,38,14);"
+        )
+
+        context_layout.addWidget(self.current_context_caption)
+        context_layout.addWidget(self.current_context_label)
+        context_layout.addWidget(self.recommend_caption)
+        context_layout.addWidget(self.recommend_label)
+        self.context_widget.hide()
+
         self.parameter_placeholder = BodyLabel(
             self.tr("Select a parameter card to edit it here."),
             self.parameter_host,
         )
         self.parameter_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.parameter_placeholder.setWordWrap(True)
+        self.parameter_layout.addWidget(self.context_widget)
         self.parameter_layout.addWidget(self.parameter_placeholder)
         self.parameter_layout.addStretch(1)
         self.parameter_scroll.setWidget(self.parameter_host)
         parameter_page_layout.addWidget(self.parameter_scroll)
 
-        self.guidance_page = QWidget(self.tabs)
-        guidance_layout = QVBoxLayout(self.guidance_page)
-        guidance_layout.setContentsMargins(4, 10, 4, 4)
-        guidance_layout.setSpacing(9)
-        guidance_layout.addWidget(self.description_label)
-
-        self.recommend_caption = CaptionLabel(self.tr("Recommendation"), self)
-        self.recommend_label = BodyLabel(self.tr("No card-specific recommendation."), self)
-        self.recommend_label.setWordWrap(True)
-        self.recommend_label.setStyleSheet(
-            "padding: 8px; border-left: 3px solid #078b8d;"
-            "background: rgba(7,139,141,18);"
-        )
-        self.docs_button = QPushButton(self.tr("Open full documentation"), self)
-        self.docs_button.clicked.connect(self._open_docs)
-        self.docs_button.setEnabled(False)
-
-        self.about_caption = CaptionLabel(self.tr("About this card"), self)
-        self.about_label = BodyLabel("—", self)
-        self.about_label.setWordWrap(True)
-        self.about_label.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextSelectableByMouse
-        )
-        self.about_card = QFrame(self)
-        self.about_card.setObjectName("cardInspectorAbout")
-        self.about_card.setStyleSheet(
-            "QFrame#cardInspectorAbout {"
-            "border: 1px solid rgba(100,120,128,35); border-radius: 7px;"
-            "background: rgba(245,248,249,210); }"
-        )
-        about_layout = QVBoxLayout(self.about_card)
-        about_layout.setContentsMargins(9, 7, 9, 7)
-        about_layout.addWidget(self.about_label)
-
-        guidance_layout.addWidget(self.recommend_caption)
-        guidance_layout.addWidget(self.recommend_label)
-        guidance_layout.addWidget(self.about_caption)
-        guidance_layout.addWidget(self.about_card)
-        guidance_layout.addStretch(1)
-        guidance_layout.addWidget(self.docs_button)
-
         self.tabs.addTab(self.parameter_page, self.tr("Parameters"))
-        self.tabs.addTab(self.guidance_page, self.tr("Guidance"))
+        self.tabs.tabBar().hide()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(15, 15, 15, 15)
@@ -245,8 +262,10 @@ class WorkflowGuidancePanel(QFrame):
         layout.addWidget(self.eyebrow)
         title_layout = QHBoxLayout()
         title_layout.setContentsMargins(0, 0, 0, 0)
-        title_layout.setSpacing(6)
+        title_layout.setSpacing(2)
         title_layout.addWidget(self.title_label, 1)
+        title_layout.addWidget(self.docs_button)
+        title_layout.addWidget(self.info_button)
         title_layout.addWidget(self.copy_card_button)
         layout.addLayout(title_layout)
         layout.addWidget(self.tabs, 1)
@@ -257,19 +276,21 @@ class WorkflowGuidancePanel(QFrame):
         self._card = card
         if card is None:
             self.title_label.setText(self.tr("Select a card"))
-            self.description_label.setText(
-                self.tr("Select a workflow card to edit its parameters and review guidance.")
-            )
-            self.recommend_label.setText(self.tr("No card-specific recommendation."))
-            self.about_label.setText("—")
-            self.about_label.setToolTip("")
+            self.current_context_label.clear()
+            self.recommend_label.clear()
+            self._card_description = ""
+            self._about_text = ""
+            self._citation = ""
             self.docs_button.setEnabled(False)
+            self.info_button.setEnabled(False)
             self.copy_card_button.setEnabled(False)
+            self.context_widget.hide()
             self.parameter_placeholder.setText(
                 self.tr("Select a parameter card to edit it here.")
             )
+            self.parameter_placeholder.setStyleSheet("")
+            self.parameter_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.parameter_placeholder.show()
-            self.tabs.setCurrentWidget(self.parameter_page)
             return
 
         if self._editor_widget is None:
@@ -279,18 +300,93 @@ class WorkflowGuidancePanel(QFrame):
         description = localized_card_description(metadata) if metadata is not None else ""
         description = description or str(getattr(card, "description", "") or "")
         self.title_label.setText(card.getTitle())
-        self.description_label.setText(
-            description or self.tr("No concise description is available for this card yet.")
-        )
-        guidance_getter = getattr(card, "get_guidance_text", None)
-        guidance = str(guidance_getter() or "").strip() if callable(guidance_getter) else ""
-        self.recommend_label.setText(
-            guidance or self.tr("Use the card documentation and validate a small output sample first.")
-        )
+        self._card_description = description
         self._set_about_metadata(card, metadata)
         url_getter = getattr(card, "get_online_doc_url", None)
         self.docs_button.setEnabled(bool(url_getter and url_getter()))
+        self.info_button.setEnabled(True)
         self.copy_card_button.setEnabled(True)
+        self.context_widget.show()
+        self._refresh_context()
+
+    def _show_card_info(self) -> None:
+        if self._card is None:
+            return
+        sections = [text for text in (self._card_description, self._about_text) if text]
+        if self._citation:
+            sections.append(self.tr("Citation: {citation}").format(citation=self._citation))
+        Flyout.create(
+            title=self.tr("Card information"),
+            content="\n\n".join(sections) or self.tr("No additional card information."),
+            icon=FluentIcon.INFO,
+            isClosable=True,
+            target=self.info_button,
+            parent=self,
+            aniType=FlyoutAnimationType.DROP_DOWN,
+        )
+
+    def _refresh_context(self) -> None:
+        card = self._card
+        if card is None or not isValid(card):
+            return
+        summary_getter = getattr(card, "get_summary_text", None)
+        summary = str(summary_getter() or "").strip() if callable(summary_getter) else ""
+        self.current_context_label.setText(summary)
+        self.current_context_caption.setVisible(bool(summary))
+        self.current_context_label.setVisible(bool(summary))
+
+        guidance_getter = getattr(card, "get_guidance_text", None)
+        guidance = str(guidance_getter() or "").strip() if callable(guidance_getter) else ""
+        self.recommend_label.setText(guidance)
+        self.recommend_caption.setVisible(bool(guidance))
+        self.recommend_label.setVisible(bool(guidance))
+        if getattr(card, "setting_widget", None) is None:
+            self._set_container_overview(card)
+
+    def _set_container_overview(self, card: MakeDataCardWidget) -> None:
+        overview_getter = getattr(card, "get_inspector_overview_text", None)
+        overview = (
+            str(overview_getter() or "").strip()
+            if callable(overview_getter)
+            else ""
+        )
+        self.parameter_placeholder.setText(
+            overview
+            or self.tr("This workflow container is edited directly on the canvas.")
+        )
+        self.parameter_placeholder.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
+        )
+        self.parameter_placeholder.setStyleSheet(
+            "padding: 10px; border: 1px solid rgba(110,130,138,45);"
+            "border-radius: 8px; background: rgba(248,250,251,190);"
+        )
+
+    def _schedule_context_refresh(self, *_args) -> None:
+        QTimer.singleShot(0, self._refresh_context)
+
+    def _connect_context_signals(self, editor: QWidget) -> None:
+        self._disconnect_context_signals()
+        signal_names = ("valueChanged", "currentIndexChanged", "textChanged", "toggled", "stateChanged")
+        for widget in [editor, *editor.findChildren(QWidget)]:
+            for name in signal_names:
+                signal = getattr(widget, name, None)
+                if signal is None or not hasattr(signal, "connect"):
+                    continue
+                try:
+                    signal.connect(self._schedule_context_refresh)
+                except (RuntimeError, TypeError):
+                    continue
+                self._context_signal_connections.append((signal, self._schedule_context_refresh))
+                break
+
+    def _disconnect_context_signals(self) -> None:
+        for signal, slot in self._context_signal_connections:
+            try:
+                signal.disconnect(slot)
+            except (RuntimeError, TypeError):
+                pass
+        self._context_signal_connections.clear()
 
     def _copy_card_json(self) -> None:
         """Copy the selected card without duplicating actions in its header."""
@@ -322,33 +418,37 @@ class WorkflowGuidancePanel(QFrame):
             lines.append(self.tr("Version: {version}").format(version=version))
         if license_name:
             lines.append(self.tr("License: {license}").format(license=license_name))
-        self.about_label.setText("\n".join(lines))
-        self.about_label.setToolTip(
-            self.tr("Citation: {citation}").format(citation=citation)
-            if citation
-            else ""
-        )
+        self._about_text = "\n".join(lines)
+        self._citation = citation
 
     def _attach_editor(self, card: MakeDataCardWidget) -> None:
         editor = getattr(card, "setting_widget", None)
         if editor is None:
-            self.parameter_placeholder.setText(
-                self.tr("This workflow container is edited directly on the canvas.")
-            )
+            self._set_container_overview(card)
             self.parameter_placeholder.show()
-            self.tabs.setCurrentWidget(self.guidance_page)
+            self.context_widget.show()
             return
+        adapt_legacy_inspector_form(editor, getattr(card, "settingLayout", None))
         card.viewLayout.removeWidget(editor)
         editor.setParent(self.parameter_host)
+        self._editor_size_policy = QSizePolicy(editor.sizePolicy())
         editor.setMinimumWidth(0)
         editor.setMaximumWidth(16777215)
-        self.parameter_layout.insertWidget(0, editor)
+        editor.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        self.parameter_layout.insertWidget(
+            0,
+            editor,
+            0,
+            Qt.AlignmentFlag.AlignTop,
+        )
         editor.setProperty("workflowInspectorHosted", True)
         editor.show()
         card.refresh_compact_presentation()
         self.parameter_placeholder.hide()
+        self.parameter_placeholder.setStyleSheet("")
+        self.parameter_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._editor_widget = editor
-        self.tabs.setCurrentWidget(self.parameter_page)
+        self._connect_context_signals(editor)
 
     def _release_editor(self) -> None:
         editor = self._editor_widget
@@ -356,8 +456,12 @@ class WorkflowGuidancePanel(QFrame):
         self._editor_widget = None
         if editor is None:
             return
+        self._disconnect_context_signals()
         self.parameter_layout.removeWidget(editor)
         editor.setProperty("workflowInspectorHosted", False)
+        if self._editor_size_policy is not None:
+            editor.setSizePolicy(self._editor_size_policy)
+        self._editor_size_policy = None
         if card is not None and isValid(card):
             editor.setParent(card.view)
             card.viewLayout.insertWidget(0, editor)
@@ -388,10 +492,9 @@ class MakeWorkflowArea(QWidget):
 
     workflowChanged = Signal()
 
-    _GUIDANCE_BREAKPOINT = 760
-    _LIBRARY_BREAKPOINT = 1100
     _CARD_MAX_WIDTH = 520
     _FORK_MAX_WIDTH = 920
+    _CARD_MIN_WIDTH = 120
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -404,6 +507,7 @@ class MakeWorkflowArea(QWidget):
         self._drag_slot_index: int | None = None
         self._drag_scroll_speed = 0
         self._drag_canvas_point: QPoint | None = None
+        self._explicit_branch_context = None
         self.setObjectName("MakeWorkflowArea")
         self.setAcceptDrops(True)
         self.setStyleSheet(
@@ -432,7 +536,10 @@ class MakeWorkflowArea(QWidget):
         self.canvas_layout.addWidget(self.empty_label)
         self.canvas_layout.addStretch(1)
 
-        self.scroll_area = QScrollArea(self)
+        self.scroll_area = ScrollArea(self)
+        self.scroll_area.scrollDelagate.vScrollBar.setHandleDisplayMode(
+            ScrollBarHandleDisplayMode.ON_HOVER
+        )
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -442,7 +549,19 @@ class MakeWorkflowArea(QWidget):
 
         self.guidance_panel = WorkflowGuidancePanel(self)
         self.library_panel = WorkflowLibraryPanel(self)
+        for panel in (self.library_panel, self.guidance_panel):
+            panel.setSizePolicy(
+                QSizePolicy.Policy.Ignored,
+                QSizePolicy.Policy.Expanding,
+            )
+        self.library_panel.setMinimumWidth(220)
+        self.guidance_panel.setMinimumWidth(380)
         self.canvas_column = QWidget(self)
+        self.canvas_column.setMinimumWidth(0)
+        self.canvas_column.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Expanding,
+        )
         self.canvas_column_layout = QVBoxLayout(self.canvas_column)
         self.canvas_column_layout.setContentsMargins(0, 0, 0, 0)
         self.canvas_column_layout.setSpacing(8)
@@ -458,12 +577,25 @@ class MakeWorkflowArea(QWidget):
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
         self.splitter.setStretchFactor(2, 0)
-        self.splitter.setSizes([250, 800, 410])
+        for handle_index in (1, 2):
+            self.splitter.handle(handle_index).setEnabled(False)
+        self.splitter.setSizes([220, 800, 330])
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
         self.main_layout.addWidget(self.splitter, 1)
+
+    def _apply_responsive_splitter_sizes(self) -> None:
+        """Reset pane proportions after a responsive visibility transition."""
+        width = max(0, self.splitter.width() - self.splitter.handleWidth() * 2)
+        spacious = width >= 1320
+        library_width = 250 if spacious else 220
+        guidance_width = 410 if spacious else 380
+        canvas_width = max(0, width - library_width - guidance_width)
+        self.splitter.setSizes([library_width, canvas_width, guidance_width])
+        self._update_card_widths()
+        self._width_update_timer.start(0)
 
     def set_command_bar(self, widget: QWidget) -> None:
         """Place the workflow command bar inside the center workbench column."""
@@ -537,6 +669,17 @@ class MakeWorkflowArea(QWidget):
         return [item for root in self._cards for item in self._iter_nested_cards(root)]
 
     def add_card(self, card: MakeDataCardWidget) -> None:
+        group = self._selected_group_context()
+        if group is not None and not self._is_structural(card):
+            if group.add_card(card):
+                for nested in self._iter_nested_cards(card):
+                    self._configure_node_presentation(nested)
+                    self._connect_guidance_refresh(nested)
+                    self._connect_close_cleanup(nested)
+                    self._connect_drag_lifecycle(nested)
+                self.select_card(card, expand=True, ensure_visible=False)
+                self.workflowChanged.emit()
+            return
         branch_context = self._selected_branch_context()
         if branch_context is not None and not self._is_fork(card):
             fork, branch, index = branch_context
@@ -560,6 +703,12 @@ class MakeWorkflowArea(QWidget):
         self.workflowChanged.emit()
 
     def _selected_branch_context(self):
+        explicit = self._explicit_branch_context
+        if explicit is not None:
+            fork, branch = explicit
+            if fork in self._cards and branch in getattr(fork, "branches", []):
+                return fork, branch, len(branch.cards)
+            self._explicit_branch_context = None
         selected = self._selected_card
         if selected is None:
             return None
@@ -570,6 +719,17 @@ class MakeWorkflowArea(QWidget):
                 for index, child in enumerate(branch.cards):
                     if selected in list(self._iter_nested_cards(child)):
                         return root, branch, index + 1
+        return None
+
+    def _selected_group_context(self):
+        selected = self._selected_card
+        if selected is None:
+            return None
+        for candidate in self.all_cards():
+            if not self._is_card_group(candidate):
+                continue
+            if selected is candidate or selected in getattr(candidate, "card_list", []):
+                return candidate
         return None
 
     def _insert_card(self, index: int, card: MakeDataCardWidget) -> None:
@@ -599,7 +759,19 @@ class MakeWorkflowArea(QWidget):
         card.headerLabel.installEventFilter(self)
         if self._is_fork(card):
             card.cardDropRequested.connect(self._move_card_to_branch)
-            card.cardSelected.connect(lambda selected: self.select_card(selected, expand=True))
+            card.cardSelected.connect(lambda selected: self.select_card(selected))
+            card.branchSelected.connect(
+                lambda branch, fork=card: self._activate_branch(fork, branch)
+            )
+        if self._is_card_group(card):
+            card.cardSelected.connect(
+                lambda selected: self.select_card(selected, expand=True)
+            )
+        structure_changed = getattr(card, "structureChanged", None)
+        if structure_changed is not None:
+            structure_changed.connect(
+                lambda selected=card: self._refresh_guidance_for(selected)
+            )
         card.show()
         self._width_update_timer.start(0)
         self.canvas.update()
@@ -744,10 +916,29 @@ class MakeWorkflowArea(QWidget):
         card.setProperty("workflowCloseCleanupConnected", True)
 
     def _update_card_widths(self) -> None:
-        available_width = max(240, self.scroll_area.viewport().width() - 72)
+        viewport_width = self.scroll_area.viewport().width()
+        if viewport_width >= 360:
+            side_margin = 36
+        elif viewport_width >= 240:
+            side_margin = 20
+        else:
+            side_margin = 8
+        margins = self.canvas_layout.contentsMargins()
+        self.canvas_layout.setContentsMargins(
+            side_margin,
+            margins.top(),
+            side_margin,
+            margins.bottom(),
+        )
+        available_width = max(
+            self._CARD_MIN_WIDTH,
+            viewport_width - side_margin * 2,
+        )
         for card in self._cards:
             preferred_width = (
-                self._FORK_MAX_WIDTH if self._is_fork(card) else self._CARD_MAX_WIDTH
+                self._FORK_MAX_WIDTH
+                if self._is_structural(card)
+                else self._CARD_MAX_WIDTH
             )
             card.setFixedWidth(min(preferred_width, available_width))
         self.canvas_layout.invalidate()
@@ -779,6 +970,11 @@ class MakeWorkflowArea(QWidget):
     ) -> None:
         if card not in self.all_cards():
             return
+        self._explicit_branch_context = None
+        for root in self._cards:
+            if self._is_fork(root):
+                for branch in root.branches:
+                    branch.set_selected(False)
         self._configure_node_presentation(card)
         self._connect_guidance_refresh(card)
         self._selected_card = card
@@ -786,6 +982,12 @@ class MakeWorkflowArea(QWidget):
         if not expand:
             self.guidance_panel.set_card(card)
             return
+        expanded_path = {
+            candidate
+            for candidate in self.all_cards()
+            if self._is_structural(candidate)
+            and card in list(self._iter_nested_cards(candidate))
+        }
         self._accordion_updating = True
         try:
             for root in self._cards:
@@ -793,20 +995,26 @@ class MakeWorkflowArea(QWidget):
                 for candidate in descendants:
                     target_state = (
                         "expand"
-                        if candidate is card and self._is_structural(candidate)
+                        if candidate in expanded_path
                         else "collapse"
                     )
                     if candidate.window_state != target_state:
                         candidate.window_state = target_state
                         candidate.windowStateChangedSignal.emit()
-                if self._is_fork(root) and card in descendants and root.window_state != "expand":
-                    root.window_state = "expand"
-                    root.windowStateChangedSignal.emit()
         finally:
             self._accordion_updating = False
         self.guidance_panel.set_card(card)
         if ensure_visible:
             self.scroll_area.ensureWidgetVisible(card, 18, 18)
+
+    def _activate_branch(self, fork, branch) -> None:
+        if fork not in self._cards or branch not in getattr(fork, "branches", []):
+            return
+        self.select_card(fork, expand=True, ensure_visible=False)
+        self._explicit_branch_context = (fork, branch)
+        for candidate in fork.branches:
+            candidate.set_selected(candidate is branch)
+        self.guidance_panel.refresh()
 
     def move_card(self, card: MakeDataCardWidget, target_index: int) -> None:
         if card not in self._cards:
@@ -899,9 +1107,7 @@ class MakeWorkflowArea(QWidget):
         self._detach_card(card)
         accepted = bool(group.add_card(card))
         if accepted:
-            card.setMinimumWidth(0)
-            card.setMaximumWidth(16777215)
-            self.select_card(group, expand=True)
+            self.select_card(card, expand=True)
             self.workflowChanged.emit()
         return accepted
 
@@ -999,7 +1205,11 @@ class MakeWorkflowArea(QWidget):
                 None,
             )
             if card is not None:
-                self.select_card(card)
+                if self._is_structural(card):
+                    card.collapse()
+                    return True
+                else:
+                    self.select_card(card)
         return super().eventFilter(watched, event)
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
@@ -1038,29 +1248,11 @@ class MakeWorkflowArea(QWidget):
         return None
 
     def resizeEvent(self, event) -> None:
-        width = event.size().width()
-        guidance_visible = width >= self._GUIDANCE_BREAKPOINT
-        visibility_changed = self.guidance_panel.isVisible() != guidance_visible
-        if visibility_changed and not guidance_visible and self._selected_card is not None:
-            selected = self._selected_card
-            self.guidance_panel.set_card(None)
-            if not self._is_structural(selected):
-                self._accordion_updating = True
-                try:
-                    selected.window_state = "expand"
-                    selected.windowStateChangedSignal.emit()
-                finally:
-                    self._accordion_updating = False
-        self.guidance_panel.setVisible(guidance_visible)
-        self.library_panel.setVisible(width >= self._LIBRARY_BREAKPOINT)
+        self.guidance_panel.show()
+        self.library_panel.show()
         super().resizeEvent(event)
         self._width_update_timer.start(0)
-        if visibility_changed and guidance_visible and self._selected_card is not None:
-            self.select_card(
-                self._selected_card,
-                expand=True,
-                ensure_visible=False,
-            )
+        self._apply_responsive_splitter_sizes()
 
 
 if __name__ == "__main__":

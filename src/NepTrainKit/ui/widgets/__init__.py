@@ -33,8 +33,22 @@ from .dialog import (
     AdvancedModelSearchDialog,
     TrainingOverlayDialog,
 )
-from .input import SpinBoxUnitInputFrame
-from .compact_form import StatusDot, CategoryTag, CompactField, SegmentedControl
+from .input import (
+    AdaptiveCompactDoubleSpinBox,
+    AdaptiveCompactSpinBox,
+    AdaptiveInlineDoubleSpinBox,
+    RangeTripletInputFrame,
+    SpinBoxUnitInputFrame,
+)
+from .compact_form import (
+    StatusDot,
+    CategoryTag,
+    CompactField,
+    InspectorSection,
+    ResponsiveFormGrid,
+    SegmentedControl,
+    adapt_legacy_inspector_form,
+)
 from .card_widget import (
     CheckableHeaderCardWidget,
     ShareCheckableHeaderCardWidget,
@@ -76,10 +90,17 @@ __all__ = [
     "ProgressDialog",
     "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",
+    "RangeTripletInputFrame",
+    "AdaptiveCompactDoubleSpinBox",
+    "AdaptiveCompactSpinBox",
+    "AdaptiveInlineDoubleSpinBox",
     "StatusDot",
     "CategoryTag",
     "CompactField",
+    "InspectorSection",
+    "ResponsiveFormGrid",
     "SegmentedControl",
+    "adapt_legacy_inspector_form",
     "ModelInfoMessageBox",
     "AdvancedModelSearchDialog",
     "TrainingOverlayDialog",

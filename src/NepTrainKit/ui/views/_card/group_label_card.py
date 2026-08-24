@@ -7,7 +7,6 @@ from collections import Counter
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 from qfluentwidgets import (
-    BodyLabel,
     CaptionLabel,
     CheckBox,
     ComboBox,
@@ -20,7 +19,13 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import GroupLabelOperation, GroupLabelParams
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import MakeDataCard
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SegmentedControl,
+)
 
 
 @CardManager.register_card
@@ -50,29 +55,18 @@ class GroupLabelCard(MakeDataCard):
         self.settingLayout.setVerticalSpacing(4)
         self.settingLayout.setColumnStretch(1, 1)
 
-        self.mode_label = BodyLabel(self.tr("Grouping rule"), self.setting_widget)
-        self.mode_label.setToolTip(
-            self.tr("Assign two group labels from the current cell's fractional coordinates")
-        )
-        self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
-        self.mode_combo = ComboBox(self.setting_widget)
+        self.mode_combo = SegmentedControl(parent=self.setting_widget)
         add_translated_items(
             self,
             self.mode_combo,
             [
-                ("k_vector", "Alternating fractional-coordinate layers"),
-                ("fractional_parity", "Current-cell half-grid parity"),
+                ("k_vector", "Alternating layers"),
+                ("fractional_parity", "Half-grid parity"),
             ],
         )
-        self.mode_combo.setMinimumWidth(280)
-        self.mode_combo.setMaximumWidth(380)
+        self.mode_combo.setMinimumWidth(0)
         self.mode_combo.setFixedHeight(28)
 
-        self.kvec_label = BodyLabel(self.tr("Layer vector"), self.setting_widget)
-        self.kvec_label.setToolTip(
-            self.tr("Direction of the alternating phase in fractional coordinates")
-        )
-        self.kvec_label.installEventFilter(ToolTipFilter(self.kvec_label, 300, ToolTipPosition.TOP))
         self.kvec_combo = ComboBox(self.setting_widget)
         add_translated_items(
             self,
@@ -86,30 +80,18 @@ class GroupLabelCard(MakeDataCard):
             ],
         )
         set_combo_value(self.kvec_combo, "111")
-        self.kvec_combo.setMaximumWidth(380)
+        self.kvec_combo.setMinimumWidth(0)
         self.kvec_combo.setFixedHeight(28)
 
-        self.group_a_label = BodyLabel(
-            self.tr("Group A label (even phase)"),
-            self.setting_widget,
-        )
-        self.group_a_label.setToolTip(self.tr("Label assigned where the phase parity is even"))
-        self.group_a_label.installEventFilter(ToolTipFilter(self.group_a_label, 300, ToolTipPosition.TOP))
         self.group_a_edit = LineEdit(self.setting_widget)
         self.group_a_edit.setText("A")
-        self.group_a_edit.setMaximumWidth(380)
+        self.group_a_edit.setMinimumWidth(0)
         self.group_a_edit.setFixedHeight(28)
         self.group_a_edit.setAccessibleName(self.tr("Group A label (even phase)"))
 
-        self.group_b_label = BodyLabel(
-            self.tr("Group B label (odd phase)"),
-            self.setting_widget,
-        )
-        self.group_b_label.setToolTip(self.tr("Label assigned where the phase parity is odd"))
-        self.group_b_label.installEventFilter(ToolTipFilter(self.group_b_label, 300, ToolTipPosition.TOP))
         self.group_b_edit = LineEdit(self.setting_widget)
         self.group_b_edit.setText("B")
-        self.group_b_edit.setMaximumWidth(380)
+        self.group_b_edit.setMinimumWidth(0)
         self.group_b_edit.setFixedHeight(28)
         self.group_b_edit.setAccessibleName(self.tr("Group B label (odd phase)"))
 
@@ -126,16 +108,34 @@ class GroupLabelCard(MakeDataCard):
         )
         self.preview_label.setObjectName("groupLabelPreview")
 
-        self.settingLayout.addWidget(self.mode_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.mode_combo, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.kvec_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.kvec_combo, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.group_a_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.group_a_edit, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.group_b_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.group_b_edit, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.overwrite_checkbox, 4, 0, 1, 2)
-        self.settingLayout.addWidget(self.preview_label, 5, 0, 1, 3)
+        rule_section = InspectorSection(self.tr("Grouping"), self.setting_widget)
+        mode_field = CompactField(
+            self.tr("Grouping rule"),
+            self.mode_combo,
+            rule_section,
+            self.tr("Assign labels from fractional coordinates in the current cell."),
+        )
+        self.kvec_field = CompactField(
+            self.tr("Layer vector"),
+            self.kvec_combo,
+            rule_section,
+            self.tr("Direction of the alternating phase."),
+        )
+        rule_section.addWidget(mode_field)
+        rule_section.addWidget(self.kvec_field)
+
+        labels_section = InspectorSection(self.tr("Output labels"), self.setting_widget)
+        labels_grid = ResponsiveFormGrid(labels_section)
+        self.group_a_field = CompactField(self.tr("Even phase"), self.group_a_edit, labels_section)
+        self.group_b_field = CompactField(self.tr("Odd phase"), self.group_b_edit, labels_section)
+        labels_grid.add_field(self.group_a_field)
+        labels_grid.add_field(self.group_b_field)
+        labels_section.addWidget(labels_grid)
+        labels_section.addWidget(self.overwrite_checkbox)
+        labels_section.addWidget(self.preview_label)
+
+        self.settingLayout.addWidget(rule_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(labels_section, 1, 0, 1, 3)
 
         self.mode_combo.currentIndexChanged.connect(self._on_mode_changed)
         self.kvec_combo.currentIndexChanged.connect(self._refresh_preview)
@@ -147,7 +147,7 @@ class GroupLabelCard(MakeDataCard):
 
     def _on_mode_changed(self) -> None:
         uses_kvec = combo_value(self.mode_combo) == "k_vector"
-        self.kvec_label.setEnabled(uses_kvec)
+        self.kvec_field.setEnabled(uses_kvec)
         self.kvec_combo.setEnabled(uses_kvec)
         self._refresh_preview()
         self._update_tab_order()

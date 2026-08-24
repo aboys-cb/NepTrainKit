@@ -22,7 +22,13 @@ from qfluentwidgets import (
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import FiniteCellAlloyOccupancyOperation, FiniteCellAlloyOccupancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 from NepTrainKit.ui.widgets.alloy_site_rules import AlloySiteRulesEditor
 
 
@@ -67,11 +73,11 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             self.tr("Arrangements per composition"),
             self.setting_widget,
         )
+        self.arrangements_label.hide()
         self.arrangements_frame = SpinBoxUnitInputFrame(self)
         self.arrangements_frame.set_input("", 1, "int")
         self.arrangements_frame.setRange(1, 999999)
         self.arrangements_frame.set_input_value([1])
-        self.arrangements_frame.setMaximumWidth(220)
 
         self.seed_checkbox = CheckBox(self.tr("Use fixed seed"), self.setting_widget)
         self.seed_checkbox.setChecked(True)
@@ -79,17 +85,16 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self.seed_frame.set_input("", 1, "int")
         self.seed_frame.setRange(0, 2**31 - 1)
         self.seed_frame.set_input_value([0])
-        self.seed_frame.setMaximumWidth(220)
 
         self.max_outputs_label = BodyLabel(
             self.tr("Max outputs per input"),
             self.setting_widget,
         )
+        self.max_outputs_label.hide()
         self.max_outputs_frame = SpinBoxUnitInputFrame(self)
         self.max_outputs_frame.set_input("", 1, "int")
         self.max_outputs_frame.setRange(1, 999999)
         self.max_outputs_frame.set_input_value([200])
-        self.max_outputs_frame.setMaximumWidth(220)
 
         self.estimate_label = BodyLabel("", self.setting_widget)
         self.estimate_label.setWordWrap(True)
@@ -134,17 +139,47 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         advanced_layout.addWidget(self.json_error_label)
         self.advanced_widget.hide()
 
-        self.settingLayout.addWidget(self.rules_editor, 0, 0, 1, 3)
-        self.settingLayout.addWidget(self.auto_match_label, 1, 0, 1, 3)
-        self.settingLayout.addWidget(self.arrangements_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.arrangements_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_outputs_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_outputs_frame, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.estimate_label, 5, 0, 1, 3)
-        self.settingLayout.addWidget(self.advanced_button, 6, 0, 1, 3)
-        self.settingLayout.addWidget(self.advanced_widget, 7, 0, 1, 3)
+        rules_section = InspectorSection(
+            self.tr("Site rules"),
+            self.setting_widget,
+            self.tr("Choose the site partition, then edit allowed elements and integer-feasible ranges."),
+        )
+        rules_section.addWidget(self.rules_editor)
+        rules_section.addWidget(self.auto_match_label)
+
+        generation_section = InspectorSection(self.tr("Generation"), self.setting_widget)
+        generation_grid = ResponsiveFormGrid(generation_section)
+        arrangements_field = CompactField(
+            self.tr("Arrangements per composition"),
+            self.arrangements_frame,
+            generation_section,
+        )
+        seed_row = QWidget(generation_section)
+        seed_layout = QHBoxLayout(seed_row)
+        seed_layout.setContentsMargins(0, 0, 0, 0)
+        seed_layout.setSpacing(6)
+        seed_layout.addWidget(self.seed_checkbox)
+        seed_layout.addWidget(self.seed_frame, 1)
+        seed_field = CompactField(self.tr("Reproducibility"), seed_row, generation_section)
+        max_outputs_field = CompactField(
+            self.tr("Max outputs per input"),
+            self.max_outputs_frame,
+            generation_section,
+        )
+        generation_grid.add_field(arrangements_field)
+        generation_grid.add_field(max_outputs_field)
+        generation_grid.add_field(seed_field, span=2)
+        generation_section.addWidget(generation_grid)
+        generation_section.addWidget(self.estimate_label)
+
+        advanced_section = InspectorSection(self.tr("Advanced"), self.setting_widget)
+        advanced_section.addWidget(self.advanced_button)
+        advanced_section.addWidget(self.advanced_widget)
+
+        self.settingLayout.setVerticalSpacing(12)
+        self.settingLayout.addWidget(rules_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(generation_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(advanced_section, 2, 0, 1, 3)
 
         self.seed_checkbox.stateChanged.connect(self._on_seed_changed)
         self.arrangements_frame.object_list[0].valueChanged.connect(self._refresh_validation_and_estimate)

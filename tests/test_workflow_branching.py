@@ -3,9 +3,19 @@ from __future__ import annotations
 from unittest.mock import patch
 
 from ase import Atoms
-from PySide6.QtCore import QCoreApplication, QEvent, QEventLoop, QPoint, QTimer
+from PySide6.QtCore import (
+    QCoreApplication,
+    QEvent,
+    QEventLoop,
+    QPoint,
+    QPointF,
+    Qt,
+    QTimer,
+)
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
+from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import StructureOperation
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
 from NepTrainKit.ui.views._card.card_group import CardGroup
@@ -87,13 +97,21 @@ def test_compact_workflow_nodes_edit_the_selected_card_in_the_inspector():
     assert second.window_state == "collapse"
     assert area.guidance_panel._editor_widget is second.setting_widget
     assert area.guidance_panel.title_label.text() == second.getTitle()
-    assert "Type: Lattice" in area.guidance_panel.about_label.text()
-    assert "Contributors: NepTrainKit" in area.guidance_panel.about_label.text()
+    assert "Type: Lattice" in area.guidance_panel._about_text
+    assert "Contributors: NepTrainKit" in area.guidance_panel._about_text
     assert area.guidance_panel.docs_button.isEnabled()
+    assert area.guidance_panel.info_button.isEnabled()
     assert area.guidance_panel.copy_card_button.isEnabled()
-    assert area.guidance_panel.tabs.count() == 2
+    assert area.guidance_panel.docs_button.size().width() == 28
+    assert area.guidance_panel.info_button.size().width() == 28
+    with patch("NepTrainKit.ui.widgets.docker.Flyout.create") as create_flyout:
+        area.guidance_panel.info_button.click()
+        assert "Contributors: NepTrainKit" in create_flyout.call_args.kwargs["content"]
+    assert area.guidance_panel.tabs.count() == 1
     assert area.guidance_panel.tabs.tabText(0) == "Parameters"
-    assert area.guidance_panel.tabs.tabText(1) == "Guidance"
+    assert area.guidance_panel.tabs.tabBar().isHidden()
+    assert area.guidance_panel.context_widget.isVisible()
+    assert area.guidance_panel.current_context_label.text() == second.get_summary_text()
 
     area.select_card(first, expand=True)
     app.processEvents()
@@ -101,6 +119,9 @@ def test_compact_workflow_nodes_edit_the_selected_card_in_the_inspector():
     assert second.window_state == "collapse"
     assert area.guidance_panel._editor_widget is first.setting_widget
     assert area.guidance_panel.title_label.text() == first.getTitle()
+    first.num_condition_frame.set_input_value([3])
+    app.processEvents()
+    assert area.guidance_panel.current_context_label.text() == first.get_summary_text()
     area.guidance_panel.copy_card_button.click()
     assert QApplication.clipboard().text() == first.to_json_text()
     _dispose(area)
@@ -117,6 +138,33 @@ def test_workflow_cards_use_a_centered_readable_width_on_wide_windows():
 
     assert card.width() == area._CARD_MAX_WIDTH
     assert card.geometry().left() > 80
+    _dispose(area)
+
+
+def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal_scroll():
+    app = _app()
+    area = MakeWorkflowArea()
+    area.resize(1280, 900)
+    area.show()
+    app.processEvents()
+
+    checked = []
+    for class_name, card_cls in sorted(CardManager.card_info_dict.items()):
+        metadata = CardManager.card_metadata_dict[class_name]
+        if "_card" not in metadata.source_path:
+            continue
+        card = card_cls()
+        if not hasattr(card, "setting_widget"):
+            continue
+        area.add_card(card)
+        area.select_card(card)
+        app.processEvents()
+        assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0, class_name
+        checked.append(class_name)
+        area.remove_card(card)
+        app.processEvents()
+
+    assert len(checked) >= 35
     _dispose(area)
 
 
@@ -139,6 +187,358 @@ def test_fork_keeps_extra_width_needed_for_parallel_lanes():
     assert fork.width() > card.width()
     assert fork.connector.isVisible()
     _dispose(area)
+
+
+def test_fanout_merge_uses_parallel_paths_and_keeps_new_cards_in_group():
+    app = _app()
+    area = MakeWorkflowArea()
+    group = CardGroup()
+    first = PerturbCard()
+    second = CellStrainCard()
+    group.add_card(first)
+    group.add_card(second)
+    area.add_card(group)
+    area.resize(1600, 820)
+    area.show()
+    area.select_card(group, expand=True)
+    app.processEvents()
+    app.processEvents()
+
+    assert group.width() == min(
+        area._FORK_MAX_WIDTH,
+        area.scroll_area.viewport().width() - 72,
+    )
+    assert first.geometry().top() == second.geometry().top()
+    assert first.geometry().right() < second.geometry().left()
+    assert group.merge_frame.isVisible()
+    assert "automatic merge" in area.guidance_panel.parameter_placeholder.text().lower()
+
+    inserted = PerturbCard()
+    area.add_card(inserted)
+    app.processEvents()
+    assert area.cards == [group]
+    assert group.card_list == [first, second, inserted]
+    assert area.guidance_panel._editor_widget is inserted.setting_widget
+    _dispose(area)
+
+
+def test_real_window_width_and_wide_restore_keep_structural_cards_stable():
+    app = _app()
+    area = MakeWorkflowArea()
+    group = CardGroup()
+    first = PerturbCard()
+    second = CellStrainCard()
+    group.add_card(first)
+    group.add_card(second)
+    area.add_card(group)
+
+    area.resize(1550, 900)
+    area.show()
+    area.select_card(group, expand=True)
+    for _ in range(3):
+        app.processEvents()
+    assert area.library_panel.isVisible()
+    assert area.guidance_panel.isVisible()
+    assert first.geometry().top() == second.geometry().top()
+
+    # This is the Make Dataset page width inside the default 1200 px main window.
+    area.resize(1151, 651)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.library_panel.isVisible()
+    assert area.guidance_panel.isVisible()
+    assert area.canvas_column.width() >= 540
+    assert group._grid_columns == 2
+    assert first.geometry().top() == second.geometry().top()
+    assert first.width() > 210
+    assert second.width() > 210
+    _dispose(area)
+
+
+def test_three_path_group_keeps_portrait_tiles_in_one_parallel_row():
+    app = _app()
+    area = MakeWorkflowArea()
+    group = CardGroup()
+    cards = [PerturbCard(), CellStrainCard(), PerturbCard()]
+    for card in cards:
+        group.add_card(card)
+    area.add_card(group)
+    area.resize(1151, 700)
+    area.show()
+    area.select_card(group, expand=True)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.library_panel.isVisible()
+    assert group._grid_columns == 3
+    assert len({card.geometry().top() for card in cards}) == 1
+    assert all(card._group_tile_enabled for card in cards)
+    assert all(140 <= card.width() <= 150 for card in cards)
+
+    area.resize(1550, 900)
+    for _ in range(3):
+        app.processEvents()
+    assert group._grid_columns == 3
+    assert len({card.geometry().top() for card in cards}) == 1
+    assert cards[0].geometry().right() < cards[1].geometry().left()
+    assert cards[1].geometry().right() < cards[2].geometry().left()
+    assert all(card.width() == 220 for card in cards)
+
+    area.resize(1151, 700)
+    for _ in range(3):
+        app.processEvents()
+    assert area.library_panel.isVisible()
+    assert group._grid_columns == 3
+    assert len({card.geometry().top() for card in cards}) == 1
+    assert all(140 <= card.width() <= 150 for card in cards)
+    _dispose(area)
+
+
+def test_empty_fork_lane_selection_controls_where_the_next_card_is_added():
+    app = _app()
+    area = MakeWorkflowArea()
+    fork = WorkflowFork()
+    area.add_card(fork)
+    area.resize(1500, 820)
+    area.show()
+    app.processEvents()
+
+    target = fork.branches[1]
+    area._activate_branch(fork, target)
+    inserted = PerturbCard()
+    area.add_card(inserted)
+    app.processEvents()
+
+    assert fork.branches[0].cards == []
+    assert target.cards == [inserted]
+    assert target.property("workflowBranchSelected") is False
+    assert area.guidance_panel._editor_widget is inserted.setting_widget
+    _dispose(area)
+
+
+def test_collapsed_fork_reopens_from_header_and_drag_hover_accepts_a_card():
+    app = _app()
+    area = MakeWorkflowArea()
+    source = PerturbCard()
+    fork = WorkflowFork()
+    area.add_card(source)
+    area.add_card(fork)
+    area.resize(1500, 820)
+    area.show()
+    area.select_card(source, expand=True)
+    app.processEvents()
+    assert fork.window_state == "collapse"
+
+    QTest.mouseClick(fork.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert fork.window_state == "expand"
+
+    area.select_card(source, expand=True)
+    assert fork.window_state == "collapse"
+
+    class DragEvent:
+        accepted = False
+
+        def __init__(self, position):
+            self._position = QPointF(position)
+
+        def source(self):
+            return source
+
+        def position(self):
+            return self._position
+
+        def acceptProposedAction(self):
+            self.accepted = True
+
+        def ignore(self):
+            self.accepted = False
+
+    target = fork.branches[1]
+    target_point = target.mapTo(fork, target.rect().center())
+    drag = DragEvent(target_point)
+    fork.dragEnterEvent(drag)
+    app.processEvents()
+    assert drag.accepted
+    assert fork.window_state == "expand"
+
+    drag._position = QPointF(target.mapTo(fork, target.rect().center()))
+    fork.dropEvent(drag)
+    app.processEvents()
+    assert drag.accepted
+    assert source not in area.cards
+    assert target.cards == [source]
+    _dispose(area)
+
+
+def test_structural_headers_and_arrows_toggle_both_directions_manually():
+    app = _app()
+    area = MakeWorkflowArea()
+    group = CardGroup()
+    fork = WorkflowFork()
+    area.add_card(group)
+    area.add_card(fork)
+    area.resize(1500, 900)
+    area.show()
+    app.processEvents()
+
+    assert group.window_state == "collapse"
+    assert fork.window_state == "expand"
+
+    QTest.mouseClick(group.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert group.window_state == "expand"
+    assert fork.window_state == "collapse"
+
+    QTest.mouseClick(group.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert group.window_state == "collapse"
+
+    QTest.mouseClick(fork.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert fork.window_state == "expand"
+    assert group.window_state == "collapse"
+
+    QTest.mouseClick(fork.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert fork.window_state == "collapse"
+
+    QTest.mouseClick(group.collapse_button, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert group.window_state == "expand"
+    QTest.mouseClick(group.collapse_button, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert group.window_state == "collapse"
+    _dispose(area)
+
+
+def test_group_nested_in_fork_keeps_group_context_and_manual_toggle():
+    app = _app()
+    area = MakeWorkflowArea()
+    fork = WorkflowFork()
+    area.add_card(fork)
+    target = fork.branches[0]
+    area._activate_branch(fork, target)
+
+    group = CardGroup()
+    area.add_card(group)
+    assert target.cards == [group]
+
+    first = PerturbCard()
+    area.add_card(first)
+    assert group.card_list == [first]
+    assert target.cards == [group]
+
+    second = CellStrainCard()
+    area.add_card(second)
+    app.processEvents()
+    assert group.card_list == [first, second]
+    assert target.cards == [group]
+    assert fork.window_state == "expand"
+    assert group.window_state == "expand"
+
+    QTest.mouseClick(group.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert group.window_state == "collapse"
+    assert fork.window_state == "expand"
+    QTest.mouseClick(group.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert group.window_state == "expand"
+
+    other_branch = fork.branches[1]
+    area._move_card_to_branch(group, other_branch, 0)
+    app.processEvents()
+    assert target.cards == []
+    assert other_branch.cards == [group]
+    assert group.card_list == [first, second]
+    assert all(card._group_tile_enabled for card in group.card_list)
+
+    area.select_card(first, expand=True)
+    app.processEvents()
+    assert fork.window_state == "expand"
+    assert group.window_state == "expand"
+
+    payload = fork.to_dict()
+    restored = WorkflowFork()
+    restored.from_dict(payload)
+    restored_group = restored.branches[1].cards[0]
+    assert isinstance(restored_group, CardGroup)
+    assert [type(card) for card in restored_group.card_list] == [
+        PerturbCard,
+        CellStrainCard,
+    ]
+    assert all(card._group_tile_enabled for card in restored_group.card_list)
+    _dispose(restored)
+    _dispose(area)
+
+
+def test_group_inside_fork_runs_as_one_branch_pipeline_stage():
+    fork = WorkflowFork()
+    group = CardGroup()
+    group.add_card(_OperationCard(_HistoryOperation("A1")))
+    group.add_card(_OperationCard(_HistoryOperation("A2")))
+    fork.add_card(group, fork.branches[0])
+    fork.add_card(_OperationCard(_HistoryOperation("after")), fork.branches[0])
+    fork.add_card(_OperationCard(_HistoryOperation("B")), fork.branches[1])
+    fork.set_dataset([Atoms("H")])
+
+    fork.run()
+    assert _wait_until(lambda: fork.run_outcome == "succeeded")
+
+    assert [item.info["history"] for item in fork.branch_results["A"]] == [
+        ["A1", "after"],
+        ["A2", "after"],
+    ]
+    assert [item.info["history"] for item in fork.branch_results["B"]] == [["B"]]
+    _dispose(fork)
+
+
+def test_fork_output_mode_control_preserves_json_merge_contract():
+    app = _app()
+    fork = WorkflowFork()
+    fork.add_card(PerturbCard(), fork.branches[0])
+    fork.add_card(CellStrainCard(), fork.branches[1])
+
+    assert fork.merge_checkbox.isHidden()
+    assert fork.keep_separate_button.isChecked()
+    assert fork.merge_enabled is False
+
+    fork.merge_output_button.click()
+    app.processEvents()
+    payload = fork.to_dict()
+    assert fork.merge_checkbox.isChecked()
+    assert fork.merge_enabled is True
+    assert fork.output_terminal_title.text() == "Explicit merge"
+    assert payload["merge"] is True
+
+    payload["metadata"]["card_name"] = "Permanent Fork"
+    restored = WorkflowFork()
+    restored.from_dict(payload)
+    app.processEvents()
+    assert restored.merge_enabled is True
+    assert restored.merge_output_button.isChecked()
+    assert [len(branch.cards) for branch in restored.branches] == [1, 1]
+    _dispose(fork)
+    _dispose(restored)
+
+
+def test_legacy_card_group_json_loads_into_fanout_merge_without_schema_change():
+    app = _app()
+    source = CardGroup()
+    source.add_card(PerturbCard())
+    payload = source.to_dict()
+    payload["metadata"]["card_name"] = "Card Group"
+
+    restored = CardGroup()
+    restored.from_dict(payload)
+    app.processEvents()
+
+    assert restored.to_dict()["class"] == "CardGroup"
+    assert [card.__class__.__name__ for card in restored.card_list] == ["PerturbCard"]
+    assert restored.filter_card is None
+    _dispose(source)
+    _dispose(restored)
 
 
 def test_close_removes_root_card_state_and_new_cards_still_work():
@@ -276,7 +676,9 @@ def test_top_level_drop_reorders_against_visible_insertion_position():
             self.accepted = False
 
     canvas_point = QPoint(third.geometry().center().x(), third.geometry().bottom() + 8)
-    viewport_point = area.scroll_area.viewport().mapFrom(area.canvas, canvas_point)
+    viewport_point = area.scroll_area.viewport().mapFromGlobal(
+        area.canvas.mapToGlobal(canvas_point)
+    )
     event = DropEvent()
     area.canvas.set_drop_index(3)
     area._handle_top_level_drop(event, viewport_point)
@@ -359,7 +761,9 @@ def test_top_level_drag_placeholder_reorders_and_cancel_restores_source():
             self.accepted = False
 
     canvas_point = QPoint(third.geometry().center().x(), third.geometry().bottom() + 12)
-    viewport_point = area.scroll_area.viewport().mapFrom(area.canvas, canvas_point)
+    viewport_point = area.scroll_area.viewport().mapFromGlobal(
+        area.canvas.mapToGlobal(canvas_point)
+    )
     event = DropEvent()
     area._handle_top_level_drop(event, viewport_point)
     app.processEvents()
@@ -438,7 +842,7 @@ def test_drag_edge_auto_scroll_moves_long_workflow_viewport():
     _dispose(area)
 
 
-def test_guidance_panel_hides_before_main_canvas_becomes_too_narrow():
+def test_guidance_panel_stays_visible_while_narrow_window_compresses_canvas():
     app = _app()
     area = MakeWorkflowArea()
     card = PerturbCard()
@@ -449,12 +853,26 @@ def test_guidance_panel_hides_before_main_canvas_becomes_too_narrow():
     assert area.guidance_panel.isVisible()
     assert area.guidance_panel._editor_widget is card.setting_widget
 
-    area.resize(700, 700)
-    app.processEvents()
-    assert not area.guidance_panel.isVisible()
-    assert area.guidance_panel._editor_widget is None
-    assert card.window_state == "expand"
-    assert card.setting_widget.parent() is card.view
+    # The page is about 728 px wide at the main window's minimum width.
+    area.resize(728, 700)
+    for _ in range(3):
+        app.processEvents()
+    assert area.library_panel.isVisible()
+    assert area.guidance_panel.isVisible()
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert card.setting_widget.parent() is area.guidance_panel.parameter_host
+    assert area.library_panel.width() == 220
+    assert area.guidance_panel.width() == 380
+    assert area.canvas_column.width() < 140
+    assert card.width() <= area.scroll_area.viewport().width()
+
+    area.resize(1151, 700)
+    for _ in range(3):
+        app.processEvents()
+    assert area.guidance_panel.isVisible()
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert card.setting_widget.parent() is area.guidance_panel.parameter_host
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
     _dispose(area)
 
 
@@ -501,10 +919,13 @@ def test_workflow_can_move_existing_card_into_group_and_fork_branch():
     assert area.move_card_to_group(card, group)
     assert card in group.card_list
     assert card not in area.cards
+    assert card._group_tile_enabled
+    assert card.headerView.height() == 140
 
     area._move_card_to_branch(card, fork.branches[0], 0)
     assert card not in group.card_list
     assert fork.branches[0].cards == [card]
+    assert not card._group_tile_enabled
     assert card.category_tag.isHidden()
     assert card.copy_json_button.isHidden()
     assert card.status_badge.isHidden()

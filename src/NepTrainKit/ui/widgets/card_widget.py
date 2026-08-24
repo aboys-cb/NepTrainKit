@@ -3,39 +3,37 @@
 import inspect
 import json
 from pathlib import Path
+from typing import Any
 from urllib.parse import urljoin
 
-from typing import Any, Iterable
-
-from PySide6.QtCore import QCoreApplication, QEvent, Qt, Signal, QMimeData, Property, QUrl, QPoint, QSize
-from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont, QDesktopServices
-from PySide6.QtWidgets import QApplication, QWidget, QFrame, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSizePolicy
-
+from ase.io import write as ase_write
+from PySide6.QtCore import Property, QCoreApplication, QEvent, QMimeData, QPoint, QSize, Qt, QUrl, Signal
+from PySide6.QtGui import QDesktopServices, QDrag, QFont, QIcon
+from PySide6.QtWidgets import QApplication, QGridLayout, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 from qfluentwidgets import (
     CaptionLabel,
     CheckBox,
-    TransparentToolButton,
+    FluentIcon,
+    FluentStyleSheet,
     ToolTipFilter,
     ToolTipPosition,
-    FluentStyleSheet,
+    TransparentToolButton,
     setFont,
-    FluentIcon,
 )
-
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
-from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.card_manager import build_card_metadata
+from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
+from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_message
-from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, BackgroundTask
+from NepTrainKit.ui.threads import BackgroundTask, DataProcessingThread, FilterProcessingThread
 from NepTrainKit.version import DOCS_BASE_URL
+
 from .card_metadata import CardMetadataDialog, localized_card_description
 from .compact_form import CategoryTag, StatusBadge, StatusDot
 from .label import ProcessLabel
-from ase.io import write as ase_write
 
 
 class HeaderCardWidget(SimpleCardWidget):
@@ -393,6 +391,8 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         self.window_state = "expand"
         self._drag_start_pos = None
         self._two_row_header = False
+        self._group_tile_enabled = False
+        self._group_tile_content: QWidget | None = None
         self._workflow_selected = False
         self._header_hovered = False
         self._close_icon = self.close_button.icon()
@@ -446,6 +446,107 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         self.headerLayout.insertWidget(0, self.drag_handle, 0, Qt.AlignmentFlag.AlignLeft)
         self.windowStateChangedSignal.connect(self.update_window_state)
         self._update_close_affordance()
+
+    def set_group_tile_presentation(self, enabled: bool) -> None:
+        """Render a nested group child as a compact portrait tile."""
+        enabled = bool(enabled)
+        if enabled == self._group_tile_enabled:
+            return
+        self._group_tile_enabled = enabled
+        summary_label = getattr(self, "summary_label", None)
+        if enabled:
+            self.set_compact_header(True)
+            if self._group_tile_content is None:
+                self._group_tile_content = QWidget(self.headerTopView)
+                self._group_tile_content.setObjectName("groupCardTileContent")
+                self._group_tile_layout = QVBoxLayout(self._group_tile_content)
+                self._group_tile_layout.setContentsMargins(7, 6, 7, 7)
+                self._group_tile_layout.setSpacing(3)
+                self._group_tile_top = QWidget(self._group_tile_content)
+                self._group_tile_top_layout = QHBoxLayout(self._group_tile_top)
+                self._group_tile_top_layout.setContentsMargins(0, 0, 0, 0)
+                self._group_tile_top_layout.setSpacing(2)
+                self._group_tile_layout.addWidget(self._group_tile_top)
+            self.headerLayout.addWidget(self._group_tile_content, 1)
+            while self._group_tile_top_layout.count():
+                self._group_tile_top_layout.takeAt(0)
+            self._group_tile_top_layout.addWidget(self.drag_handle)
+            self._group_tile_top_layout.addWidget(self.state_checkbox)
+            self._group_tile_top_layout.addStretch(1)
+            self._group_tile_top_layout.addWidget(self.status_dot)
+            self._group_tile_top_layout.addWidget(self.close_button)
+            self._group_tile_layout.addWidget(self.category_tag, 0, Qt.AlignmentFlag.AlignLeft)
+            self._group_tile_layout.addWidget(self.headerLabel)
+            if summary_label is not None:
+                self.viewLayout.removeWidget(summary_label)
+                self.headerInfoLayout.removeWidget(summary_label)
+                self._group_tile_layout.addWidget(summary_label)
+                summary_label.setWordWrap(True)
+                summary_label.setFixedHeight(30)
+                summary_label.show()
+            self.drag_handle.setFixedWidth(18)
+            self.close_button.setFixedSize(24, 24)
+            self.close_button.setIconSize(QSize(10, 10))
+            self.category_tag.show()
+            self.headerLabel.setWordWrap(True)
+            self.headerLabel.setAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
+            )
+            self.headerLabel.setFixedHeight(38)
+            self.headerLayout.setContentsMargins(0, 0, 0, 0)
+            self.headerTopView.setFixedHeight(140)
+            self.headerView.setFixedHeight(140)
+            self.view.hide()
+            self.separator.hide()
+            self._group_tile_content.show()
+        else:
+            tile_content = self._group_tile_content
+            if tile_content is not None:
+                self.headerLayout.removeWidget(tile_content)
+                tile_content.hide()
+            for widget in (
+                self.drag_handle,
+                self.collapse_button,
+                self.state_checkbox,
+                self.category_tag,
+                self.headerLabel,
+                self.status_dot,
+                self.status_badge,
+                self.result_action_group,
+                self.close_button,
+            ):
+                self.headerLayout.removeWidget(widget)
+            self.headerLayout.addWidget(self.drag_handle)
+            self.headerLayout.addWidget(self.collapse_button)
+            self.headerLayout.addWidget(self.state_checkbox)
+            self.headerLayout.addWidget(self.category_tag)
+            self.headerLayout.addWidget(self.headerLabel, 1)
+            self.headerLayout.addWidget(self.status_dot)
+            self.headerLayout.addWidget(self.status_badge)
+            self.headerLayout.addWidget(self.result_action_group)
+            self.headerLayout.addWidget(self.close_button)
+            if summary_label is not None:
+                self._group_tile_layout.removeWidget(summary_label)
+                self.viewLayout.addWidget(summary_label)
+                summary_label.setWordWrap(False)
+                summary_label.setMinimumHeight(0)
+                summary_label.setMaximumHeight(16777215)
+            self.drag_handle.setFixedWidth(24)
+            self.close_button.setFixedSize(28, 28)
+            self.close_button.setIconSize(QSize(11, 11))
+            self.headerLabel.setWordWrap(False)
+            self.headerLabel.setAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+            )
+            self.headerLabel.setMinimumHeight(0)
+            self.headerLabel.setMaximumHeight(16777215)
+            self.headerLayout.setContentsMargins(10, 0, 3, 0)
+            self.headerTopView.setFixedHeight(48)
+            self.headerView.setFixedHeight(48)
+            self.view.show()
+            self.separator.show()
+            self.set_compact_header(True)
+            self.refresh_compact_presentation()
 
     def set_two_row_header(self, enabled: bool) -> None:
         """Place runtime context on a dedicated row for root operation cards."""

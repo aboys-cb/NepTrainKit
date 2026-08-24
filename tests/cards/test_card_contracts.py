@@ -14,7 +14,7 @@ from NepTrainKit.core.cards.operation import (
 )
 from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.ui.threads import DataProcessingThread
-from NepTrainKit.ui.widgets import FilterDataCard
+from NepTrainKit.ui.widgets import FilterDataCard, adapt_legacy_inspector_form
 
 
 class TestCardContracts(BaseCardTest):
@@ -246,6 +246,32 @@ class TestCardContracts(BaseCardTest):
                 card.get_params(),
                 f"{class_name} should preserve params through to_dict/from_dict",
             )
+
+    def test_inspector_reflow_preserves_builtin_card_json_and_params(self):
+        for class_name, card_cls in CardManager.card_info_dict.items():
+            metadata = CardManager.card_metadata_dict[class_name]
+            if "_card" not in metadata.source_path:
+                continue
+            card = card_cls()
+            if not hasattr(card, "setting_widget"):
+                continue
+
+            payload = card.to_dict()
+            adapt_legacy_inspector_form(card.setting_widget, card.settingLayout)
+            self.assertEqual(
+                card.to_dict(),
+                payload,
+                f"{class_name} JSON changed after inspector-only reflow",
+            )
+
+            restored = card_cls()
+            restored.from_dict(payload)
+            if hasattr(card, "get_params") and hasattr(restored, "get_params"):
+                self.assertEqual(
+                    restored.get_params(),
+                    card.get_params(),
+                    f"{class_name} old JSON no longer restores the same params",
+                )
 
     def test_builtin_operation_cards_expose_complete_frozen_params_contract(self):
         operation_types = (StructureOperation, DatasetOperation, GeneratorOperation)

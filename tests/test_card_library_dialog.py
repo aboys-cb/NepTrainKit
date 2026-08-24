@@ -7,6 +7,7 @@ from unittest.mock import patch
 from PySide6.QtCore import QObject, QPoint, Qt, QTranslator, Signal
 from PySide6.QtWidgets import QApplication
 from qfluentwidgets import MenuAnimationType, RoundMenu
+from qfluentwidgets.components.widgets.command_bar import CommandMenu
 
 from NepTrainKit.ui.views.cards import ConsoleWidget
 from NepTrainKit.ui.views._card.group_label_card import GroupLabelCard
@@ -453,11 +454,57 @@ class TestCardLibraryDialog(unittest.TestCase):
         console.viewOutputSignal.connect(lambda: requests.append(True))
 
         self.assertFalse(console.view_output_button.isEnabled())
-        self.assertEqual(console.view_output_button.text(), "View selected outputs")
+        self.assertEqual(console.view_output_button.text(), "View output")
+        self.assertEqual(
+            console.view_output_action.text(), "View selected outputs"
+        )
         console.set_output_available(True)
         console.view_output_button.click()
 
         self.assertEqual(requests, [True])
+
+    def test_console_keeps_output_visible_at_default_chinese_width(self):
+        translator = QTranslator(self._app)
+        qm_path = (
+            Path(__file__).parents[1]
+            / "src"
+            / "NepTrainKit"
+            / "translations"
+            / "neptrainkit_zh_CN.qm"
+        )
+        self.assertTrue(translator.load(str(qm_path)))
+        self._app.installTranslator(translator)
+        try:
+            console = ConsoleWidget()
+            console.resize(549, console.height())
+            console.show()
+            self._app.processEvents()
+
+            self.assertTrue(console.view_output_button.isVisible())
+            self.assertEqual(console.view_output_button.text(), "查看输出")
+            self.assertFalse(console.setting_command.moreButton.isVisible())
+        finally:
+            self._app.removeTranslator(translator)
+
+    def test_console_output_action_survives_command_bar_overflow(self):
+        console = ConsoleWidget()
+        console.setting_command.resize(20, console.setting_command.height())
+        console.setting_command.updateGeometry()
+
+        self.assertTrue(console.view_output_button.isHidden())
+        self.assertIn(
+            console.view_output_action,
+            [
+                widget.action()
+                for widget in console.setting_command._hiddenWidgets
+                if hasattr(widget, "action")
+            ],
+        )
+        with patch.object(CommandMenu, "exec", autospec=True) as exec_mock:
+            console.setting_command.moreButton.click()
+
+        overflow_menu = exec_mock.call_args.args[0]
+        self.assertIn(console.view_output_action, overflow_menu.actions())
 
 
 if __name__ == "__main__":

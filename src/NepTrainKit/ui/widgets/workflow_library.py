@@ -29,7 +29,6 @@ from qfluentwidgets import (
 
 from NepTrainKit.core.workflow_library import WorkflowEntry
 
-
 _ENTRY_ROLE = int(Qt.ItemDataRole.UserRole)
 _NAME_ROLE = _ENTRY_ROLE + 1
 _META_ROLE = _ENTRY_ROLE + 2
@@ -121,7 +120,9 @@ class WorkflowLibraryPanel(QFrame):
         self._current_id: str | None = None
         self._can_start_new = False
         self.setObjectName("workflowLibraryPanel")
-        self.setMinimumWidth(248)
+        # Responsive splitter sizing owns the visible width. Keeping this at
+        # zero lets the main window cross the breakpoint that hides the panel.
+        self.setMinimumWidth(0)
         self.setMaximumWidth(310)
         self.setStyleSheet(
             "QFrame#workflowLibraryPanel {"

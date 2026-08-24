@@ -13,7 +13,13 @@ from qfluentwidgets import (
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.lattice import PerturbOperation, PerturbParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, CompactField, SegmentedControl
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    ResponsiveFormGrid,
+    SegmentedControl,
+    SpinBoxUnitInputFrame,
+)
 from NepTrainKit.ui.widgets import MakeDataCard
 
 
@@ -94,13 +100,12 @@ class PerturbCard(MakeDataCard):
     def init_ui(self):
         """Build the form controls that expose the card configuration.
 
-        Fields are grouped into a dense two-column grid (`CompactField`
-        pairs) instead of one long single-column list, so the card stays
-        readable as it grows more options.
+        Related fields are separated into sections and reflow to one column
+        inside the right inspector.
         """
         self.setObjectName("perturb_card_widget")
-        self.settingLayout.setHorizontalSpacing(10)
-        self.settingLayout.setVerticalSpacing(10)
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setVerticalSpacing(12)
 
         self.engine_type_combo = SegmentedControl(
             [self.tr("Sobol"), self.tr("Uniform")], self.setting_widget
@@ -191,17 +196,27 @@ class PerturbCard(MakeDataCard):
         seed_row_layout.addWidget(self.seed_frame, 1)
         seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
 
-        self.settingLayout.addWidget(engine_field, 0, 0, 1, 1)
-        self.settingLayout.addWidget(optional_field, 0, 1, 1, 1)
+        basics_section = InspectorSection(self.tr("Perturbation"), self.setting_widget)
+        basics_grid = ResponsiveFormGrid(basics_section)
+        basics_grid.add_field(engine_field, span=2)
+        basics_grid.add_field(distance_field)
+        basics_grid.add_field(optional_field)
+        basics_section.addWidget(basics_grid)
 
-        self.settingLayout.addWidget(distance_field, 1, 0, 1, 1)
-        self.settingLayout.addWidget(element_field, 1, 1, 1, 1)
+        element_section = InspectorSection(self.tr("Element limits"), self.setting_widget)
+        element_section.addWidget(element_field)
+        element_section.addWidget(self.element_scaling_label)
+        element_section.addWidget(self.element_rows_frame)
 
-        self.settingLayout.addWidget(self.element_scaling_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.element_rows_frame, 2, 1, 1, 1)
+        output_section = InspectorSection(self.tr("Generation"), self.setting_widget)
+        output_grid = ResponsiveFormGrid(output_section)
+        output_grid.add_field(num_field)
+        output_grid.add_field(seed_field, span=2)
+        output_section.addWidget(output_grid)
 
-        self.settingLayout.addWidget(num_field, 3, 0, 1, 1)
-        self.settingLayout.addWidget(seed_field, 3, 1, 1, 1)
+        self.settingLayout.addWidget(basics_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(element_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(output_section, 2, 0, 1, 3)
 
         self.add_element_button.clicked.connect(self._add_element_row)
         self.element_scaling_checkbox.toggled.connect(self._toggle_element_scaling_frame)

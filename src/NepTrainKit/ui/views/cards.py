@@ -1,6 +1,6 @@
 """Console toolbar for managing registered card widgets."""
 
-from PySide6.QtCore import QPoint, Signal
+from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QGridLayout, QSizePolicy, QWidget
 from qfluentwidgets import (
@@ -87,7 +87,7 @@ class ConsoleWidget(QWidget):
         """Construct layouts, configure menus, and wire up actions."""
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName("console_gridLayout")
-        self.gridLayout.setContentsMargins(8, 3, 8, 3)
+        self.gridLayout.setContentsMargins(6, 3, 6, 3)
         self.setting_command = CommandBar(self)
         self.new_card_button = PrimaryDropDownPushButton(
             FluentIcon.ADD,
@@ -171,20 +171,25 @@ class ConsoleWidget(QWidget):
         )
         self.find_card_button.clicked.connect(self.show_card_library)
 
-        self.view_output_button = TransparentPushButton(
+        self.view_output_action = QAction(
             QIcon(r":/images/src/images/show_nep.svg"),
             self.tr("View selected outputs"),
             self,
         )
-        self.view_output_button.setToolTip(
-            self.tr(
-                "Open outputs from all checked cards in NEP Dataset Display"
-            )
+        self.view_output_action.setToolTip(
+            self.tr("Open outputs from all checked cards in NEP Dataset Display")
         )
+        self.view_output_action.setEnabled(False)
+        self.view_output_action.triggered.connect(self.view_output)
+        self.view_output_button = self.setting_command.addAction(
+            self.view_output_action
+        )
+        self.view_output_button.setText(self.tr("View output"))
+        self.view_output_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.view_output_button.adjustSize()
         self.view_output_button.setAccessibleName(self.tr("View selected outputs"))
-        self.view_output_button.setEnabled(False)
-        self.view_output_button.clicked.connect(self.view_output)
-        self.setting_command.addWidget(self.view_output_button)
 
         self.run_button = PushButton(
             QIcon(r":/images/src/images/run.svg"),
@@ -243,7 +248,7 @@ class ConsoleWidget(QWidget):
 
     def set_output_available(self, available: bool) -> None:
         """Keep the output handoff action aligned with workflow state."""
-        self.view_output_button.setEnabled(bool(available))
+        self.view_output_action.setEnabled(bool(available))
 
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""

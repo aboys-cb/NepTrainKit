@@ -1,6 +1,6 @@
 ---
 name: make-dataset-card-dev
-description: 设计、审查、实现和维护 NepTrainKit 的 Make Dataset 卡片。适用于逐卡审核功能边界、控件、参数、默认值、轴/参考系、文案、翻译和功能重复，也适用于把需求或脚本新增/迁移为卡片、修复卡片缺陷、优化预览性能，并按 Operation/Params 架构完成序列化、文档和严格测试。
+description: 设计、审查、实现和维护 NepTrainKit 的 Make Dataset 卡片及其工作流界面。适用于逐卡审核功能边界、控件、参数、默认值、轴/参考系、文案和翻译，把需求或脚本新增/迁移为卡片，维护右侧检查器、卡片目录、分流合并、永久分叉和工作流库，并按普通卡片或工作流容器的真实契约完成序列化、文档和严格测试。
 ---
 
 # Make Dataset Card Dev
@@ -14,6 +14,7 @@ description: 设计、审查、实现和维护 NepTrainKit 的 Make Dataset 卡�
 3. `Params dataclass`、operation、UI、文档、测试保持同一套参数契约。
 4. 注册、在线文档路径、测试和文档审计闭环。
 5. 卡片先通过用户场景、功能边界和参数设计审查，再进入实现。
+6. 参数卡、工作流容器和工作流编辑器按各自边界实现，不把编排逻辑伪装成 operation。
 
 ## 协作规则
 
@@ -28,13 +29,14 @@ description: 设计、审查、实现和维护 NepTrainKit 的 Make Dataset 卡�
 
 ## 先判定卡片语义
 
-不要强行把所有卡片塞进同一个接口。先选 operation 类型：
+不要强行把所有节点塞进同一个接口。先判定节点类型：
 
 - `StructureOperation`: 单结构变换，签名为 `run_structure(structure, params) -> list[Atoms]`。
 - `DatasetOperation`: 全数据集过滤或排序，签名为 `run_dataset(dataset, params) -> list[Atoms]`。
 - `GeneratorOperation`: 无输入生成结构，签名为 `generate(params) -> list[Atoms]`。
+- 工作流容器：组织子卡、分支和合并语义，不要求 `Params dataclass` 或 `create_operation()`；当前包括立即合并的 `CardGroup` 和保持独立路径的 `WorkflowFork`。
 
-对应参数必须用 frozen dataclass 表达，例如 `FooParams`。UI 通过 `get_params()` 构造 dataclass，通过 `set_params(params)` 恢复控件。
+普通参数卡的参数必须用 frozen dataclass 表达，例如 `FooParams`。UI 通过 `get_params()` 构造 dataclass，通过 `set_params(params)` 恢复控件。修改工作流容器、右侧检查器、卡片头、卡片目录或工作流库时，先读 `references/workflow-ui-contract.md`。
 
 ## 工作流
 
@@ -47,7 +49,7 @@ description: 设计、审查、实现和维护 NepTrainKit 的 Make Dataset 卡�
 - 每个参数是否必要，名称、单位、参考系、默认值、范围、精度和禁用语义是否合理；
 - 方向参数是否区分笛卡尔轴、晶格轴、Miller 面、滑移方向和局部法向，是否不必要地限制任意取向；
 - 控件联动、渐进披露、输出数量预览是否顺手且不会留下“可编辑但不生效”；
-- 查找卡片弹窗是否有一句简述，新增卡片下拉框、分组、枚举和提示是否完整翻译；
+- Fluent 卡片目录是否有一句简述，分类、卡片名、枚举、提示和状态是否完整翻译；
 - 文档是否准确说明原理、限制和适用场景，而不是替未实现的自动识别或物理能力背书。
 
 先输出“发现 / 用户影响 / 建议 / 是否改变旧行为”的短表。纯文案、翻译、明显死参数和无歧义控件联动可直接修；会改变物理语义、默认值或旧 JSON 时再询问用户。
@@ -57,8 +59,8 @@ description: 设计、审查、实现和维护 NepTrainKit 的 Make Dataset 卡�
 先产出一个“卡片规格草案”，至少包含：
 
 - `card_name`、`group`、`menu_icon`、`requires_input_dataset`
-- 面向查找弹窗的一句简述
-- operation 类型：`StructureOperation` / `DatasetOperation` / `GeneratorOperation`
+- 面向卡片目录的一句简述
+- 节点类型：普通参数卡或工作流容器；普通卡再选 `StructureOperation` / `DatasetOperation` / `GeneratorOperation`
 - `Params dataclass` 字段清单：名称、类型、默认值、范围、是否必填
 - 处理逻辑摘要：输入对象 -> 输出结构列表
 - 随机性与 seed 策略
@@ -97,7 +99,11 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
 
 - 新卡片默认继承 `MakeDataCard`。不要因为 operation 是 dataset 级别就新建 `FilterDataCard` 子类；当前 `FilterDataCard` 只保留给既有过滤卡的显示差异。
 - `init_ui()` 构建控件。
-- 数值参数用 `SpinBoxUnitInputFrame`，枚举用 `ComboBox`，开关用 `CheckBox` / `RadioButton`，字符串用 `LineEdit`。
+- 参数编辑器会被移动到右侧检查器；新 UI 使用 `CompactField`、`InspectorSection` 和 `ResponsiveFormGrid` 组织信息，不依赖原父对象坐标或固定宽度。
+- 数值参数优先复用 `SpinBoxUnitInputFrame`；2-4 个短且固定的互斥选项用 `SegmentedControl`，更长、动态或解释性选项用 `ComboBox`；开关用 `CheckBox` / `RadioButton`，字符串用 `LineEdit`。
+- 为右侧检查器提供简洁且随参数更新的 `get_summary_text()` 和 `get_guidance_text()`；高成本内容遵守后台预览规则。
+- 不在单卡重复添加文档、卡片信息或复制 JSON；这些动作属于右侧检查器。查看输出和可用结果的导出属于顶层卡片头，工作流复制/粘贴属于左侧管理区。
+- 新卡必须在默认主窗口的右侧检查器中无横向滚动，数值不被步进按钮或单位遮挡，并通过宽屏 → 默认尺寸的往返缩放。
 - 提供 `create_operation()`、`get_params()`、`set_params(params)`。
 - 所有卡片禁止覆盖 `run()`：基类 `MakeDataCard.run()` 已根据 `create_operation()` 返回的 operation 类型自动分发到正确线程。
 - `process_structure()` 若保留，只能作为兼容委托层。结构卡调用 `run_structure(...)`；dataset/generator 卡片不要新增伪 `process_structure()` 通路。
@@ -111,6 +117,7 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
 - 保留必要的旧 key，保证旧 JSON 可加载。旧 key 双写是过渡态；新增持久化格式时再引入版本字段清理。
 - `from_dict()` 优先读 `params`，没有时按旧 key 构造 Params，再调用 `set_params(params)`。
 - 文档里的 `serialized_keys`、默认值和运行时 `to_dict()` 一致。
+- 工作流容器递归保存子卡、分支标识/名称/启用状态和合并方式；工作流库只保存配置，不保存 dataset、result_dataset、run_outcome 等运行态数据。具体契约见 `references/workflow-ui-contract.md`。
 
 ### 5. 注册、文档和在线路径
 
@@ -153,7 +160,9 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
 - 范围参数会换算为原子数、缺陷数或其他离散资源时，按“固定/范围 × 上界可行/不可行”四格真值表测试；若上界是否可行能由输入确定，必须在 RNG 前校验，不能让 seed 决定成功或失败。
 - 分别断言成功有输出、合法空输出和失败；错误必须可见，partial output 按卡片合同处理，不能用空列表伪装成功。
 - `preview/summary` 先声明精确还是估算，再测试与正式运行的对应关系；高成本预览必须覆盖后台执行、防抖/合并、只采用最新结果和关闭时的线程生命周期。
-- 新旧 JSON 都要走 UI 往返；每个下拉值还必须从控件读成 Params 后直接运行 core 的对应分支，不能用“UI 往返一套字符串、operation 单测另一套字符串”冒充覆盖。动态检查注册、文档 URL、查找简述和翻译，不硬编码卡片总数。
+- 新旧 JSON 都要走 UI 往返；每个枚举值还必须从真实控件数据读成 Params 后直接运行 core 的对应分支，不能用“UI 往返一套字符串、operation 单测另一套字符串”冒充覆盖。动态检查注册、文档 URL、卡片目录简述和翻译，不硬编码卡片总数。
+- 改动右侧检查器或共享控件时，动态遍历所有内置参数卡，断言窄检查器无横向滚动；改动分组/分叉时覆盖空路径选择、拖入目标、组间移动、折叠再展开、运行/停止和递归 JSON。
+- 响应式 UI 至少在真实 `MakeDataWidget` 默认尺寸和宽屏尺寸间往返一次，侧栏不能靠隐藏规避挤压，卡片和数值控件恢复后不得错位或截断。
 - 改动共享 arrays/info 或导出路径时，对比卡片导出、内存 handoff 和再保存产物。
 - 测试使用 tmp 目录，不写仓库 fixture 或运行产物；轮询终态，不用脆弱固定 sleep。
 
@@ -175,7 +184,7 @@ Make Dataset 是 UI 工作流的一部分。生成类、采样类、过滤类和
 
 ## 验证
 
-从仓库根目录运行 `python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick`。更多模式见 `references/validation-playbook.md`。
+普通卡片从仓库根目录运行 `python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick`。涉及检查器、卡片头、目录、分组、分叉、工作流库或翻译时加 `--ui`。更多模式见 `references/validation-playbook.md`。
 
 ## 交付格式
 
@@ -184,7 +193,7 @@ Make Dataset 是 UI 工作流的一部分。生成类、采样类、过滤类和
 1. 卡片规格摘要
 2. 实现清单
 3. 验证结果
-4. 性能与响应时间结果
+4. 性能与响应时间结果（只在 operation、预览或明显热点变化时）
 5. 未覆盖风险
 
 ## 质量门槛
@@ -201,7 +210,9 @@ Make Dataset 是 UI 工作流的一部分。生成类、采样类、过滤类和
 - preview/summary 的精确或估算语义明确，高成本路径不阻塞 UI 且不回写过期结果。
 - 对潜在长耗时卡片有 operation-only 性能检查；迁移脚本时有同输入同参数 A/B。
 - 性能优化不改变核心输出语义、失败语义或 seed 可复现性。
-- 查找简述、新增下拉项、枚举和状态文案完成翻译；测试不污染工作树。
+- 卡片目录简述、分类、枚举和状态文案完成翻译；测试不污染工作树。
+- 右侧检查器无横向滚动，默认尺寸和缩放往返不截断控件；操作入口没有在卡片头、检查器和工作流管理区重复出现。
+- 工作流容器的公共输入、独立路径、合并方式、失败/停止和递归 JSON 语义明确；工作流库不持久化运行数据。
 - `tools/docs/audit_card_docs.py` 和相关 pytest 通过。
 
 ## Resources
@@ -213,6 +224,7 @@ Make Dataset 是 UI 工作流的一部分。生成类、采样类、过滤类和
 - `references/validation-playbook.md`：验证与排错路径。
 - `references/requirements-to-card-spec-template.md`：把需求/脚本先落成实现规格。
 - `references/test-rigor-checklist.md`：按卡片风险选择测试矩阵，覆盖真实缺陷容易逃逸的交互与边界。
+- `references/workflow-ui-contract.md`：右侧检查器、卡片头、Fluent 卡片目录、工作流容器、工作流库和响应式验证契约。
 
 ### scripts/
 

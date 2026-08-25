@@ -148,7 +148,11 @@ def run_commands(commands: list[list[str]], cwd: Path) -> int:
     return 0
 
 
-def build_commands(full: bool, with_docs: bool) -> list[list[str]]:
+def build_commands(
+    full: bool,
+    with_docs: bool,
+    ui: bool = False,
+) -> list[list[str]]:
     """Build command list based on mode flags."""
     py = sys.executable
     if full:
@@ -170,6 +174,21 @@ def build_commands(full: bool, with_docs: bool) -> list[list[str]]:
         ],
         [py, "tools/docs/audit_card_docs.py"],
     ]
+    if ui:
+        commands.insert(
+            1,
+            [
+                py,
+                "-m",
+                "pytest",
+                "tests/test_compact_form_widgets.py",
+                "tests/test_card_library_dialog.py",
+                "tests/test_workflow_branching.py",
+                "tests/test_workflow_library.py",
+                "tests/test_i18n.py",
+                "-q",
+            ],
+        )
     if with_docs:
         commands.append([py, "-m", "sphinx", "-W", "-b", "html", "docs/source", "docs/build/html"])
     return commands
@@ -193,6 +212,11 @@ def parse_args() -> argparse.Namespace:
         help="Run full test suite plus docs audit and docs build.",
     )
     parser.add_argument(
+        "--ui",
+        action="store_true",
+        help="Add inspector, card catalog, workflow container, library, resize, and i18n tests.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print commands without executing them.",
@@ -208,7 +232,11 @@ def main() -> int:
 
     script_path = Path(__file__).resolve()
     repo_root = find_repo_root(script_path.parent)
-    commands = build_commands(full=args.full, with_docs=args.with_docs)
+    commands = build_commands(
+        full=args.full,
+        with_docs=args.with_docs,
+        ui=args.ui,
+    )
 
     if args.dry_run:
         print(f"[info] repo root: {repo_root}")

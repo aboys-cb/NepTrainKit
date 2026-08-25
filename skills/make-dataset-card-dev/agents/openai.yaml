@@ -1,4 +1,4 @@
 interface:
   display_name: "NepTrainKit Make Dataset 卡片开发"
-  short_description: "设计、审查并验证 Make Dataset 卡片的物理语义和交互契约"
-  default_prompt: "使用 $make-dataset-card-dev 逐卡审查或实现 Make Dataset 卡片，打磨功能边界、参数控件、文档和严格测试。"
+  short_description: "设计并验证 Make Dataset 卡片、检查器和工作流容器"
+  default_prompt: "使用 $make-dataset-card-dev 审查或实现 Make Dataset 卡片及工作流界面，维护物理语义、参数检查器、分组分叉、JSON 兼容、文档和严格测试。"

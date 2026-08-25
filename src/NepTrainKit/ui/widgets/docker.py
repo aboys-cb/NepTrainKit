@@ -142,6 +142,7 @@ class WorkflowGuidancePanel(QFrame):
         self._card: MakeDataCardWidget | None = None
         self._editor_widget: QWidget | None = None
         self._editor_size_policy: QSizePolicy | None = None
+        self._editor_maximum_width: int | None = None
         self._context_signal_connections: list[tuple[object, object]] = []
         self.setObjectName("workflowGuidancePanel")
         # The workbench assigns this pane a stable width while it is visible.
@@ -200,6 +201,11 @@ class WorkflowGuidancePanel(QFrame):
         )
         self.parameter_host = QWidget(self.parameter_scroll)
         self.parameter_host.setObjectName("workflowParameterHost")
+        self.parameter_host.setMinimumWidth(0)
+        self.parameter_host.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
         self.parameter_scroll.setStyleSheet(
             "QScrollArea { background: transparent; }"
             "QWidget#workflowParameterHost { background: transparent; }"
@@ -432,6 +438,7 @@ class WorkflowGuidancePanel(QFrame):
         card.viewLayout.removeWidget(editor)
         editor.setParent(self.parameter_host)
         self._editor_size_policy = QSizePolicy(editor.sizePolicy())
+        self._editor_maximum_width = editor.maximumWidth()
         editor.setMinimumWidth(0)
         editor.setMaximumWidth(16777215)
         editor.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
@@ -449,6 +456,28 @@ class WorkflowGuidancePanel(QFrame):
         self.parameter_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._editor_widget = editor
         self._connect_context_signals(editor)
+        QTimer.singleShot(0, self._fit_editor_width)
+
+    def _fit_editor_width(self) -> None:
+        """Keep editor size hints from widening the scroll area's viewport."""
+        editor = self._editor_widget
+        if editor is None or not isValid(editor):
+            return
+        margins = self.parameter_layout.contentsMargins()
+        available = max(
+            0,
+            self.parameter_scroll.viewport().width()
+            - margins.left()
+            - margins.right(),
+        )
+        editor.setMaximumWidth(available or 16777215)
+        if available:
+            editor.resize(available, editor.height())
+            editor.updateGeometry()
+
+    def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
+        super().resizeEvent(event)
+        QTimer.singleShot(0, self._fit_editor_width)
 
     def _release_editor(self) -> None:
         editor = self._editor_widget
@@ -462,6 +491,9 @@ class WorkflowGuidancePanel(QFrame):
         if self._editor_size_policy is not None:
             editor.setSizePolicy(self._editor_size_policy)
         self._editor_size_policy = None
+        if self._editor_maximum_width is not None:
+            editor.setMaximumWidth(self._editor_maximum_width)
+        self._editor_maximum_width = None
         if card is not None and isValid(card):
             editor.setParent(card.view)
             card.viewLayout.insertWidget(0, editor)

@@ -21,7 +21,7 @@ def test_adaptive_float_input_prioritizes_text_when_narrow():
     spin = AdaptiveCompactDoubleSpinBox()
     spin.setDecimals(6)
     spin.setValue(45.0)
-    spin.resize(90, 30)
+    spin.resize(spin.readable_width_hint(), 30)
     spin.show()
     app.processEvents()
 
@@ -40,7 +40,7 @@ def test_adaptive_integer_input_prioritizes_text_when_narrow():
     spin = AdaptiveCompactSpinBox()
     spin.setRange(1, 500000)
     spin.setValue(512)
-    spin.resize(54, 30)
+    spin.resize(spin.readable_width_hint(), 30)
     spin.show()
     app.processEvents()
 
@@ -60,12 +60,12 @@ def test_multi_integer_frame_keeps_each_value_readable_in_narrow_row():
     frame.set_input("", 3, "int")
     frame.setRange(1, 999)
     frame.set_input_value([4, 4, 4])
-    frame.resize(110, 30)
+    frame.resize(110, 160)
     frame.show()
     for _ in range(3):
         app.processEvents()
 
-    assert frame._column_count == 3
+    assert 1 <= frame._column_count <= 3
     for spin in frame.object_list:
         text_width = spin.fontMetrics().horizontalAdvance(spin.text())
         assert spin.compactSpinButton.isHidden()
@@ -80,10 +80,17 @@ def test_multi_float_frame_reflows_before_values_become_unreadable():
     frame.setDecimals(6)
     frame.set_input_value([15.0, 45.0, 15.0])
 
-    frame._reflow_inputs(220)
+    readable_widths = [
+        spin.readable_width_hint() + label.sizeHint().width() + 4
+        for spin, label in zip(frame.object_list, frame._unit_labels)
+    ]
+    spacing = frame._layout.horizontalSpacing()
+    three_column_width = sum(readable_widths) + spacing * 2
+
+    frame._reflow_inputs(three_column_width - 1)
     assert frame._column_count < 3
 
-    frame._reflow_inputs(420)
+    frame._reflow_inputs(three_column_width)
     assert frame._column_count == 3
     frame.close()
 

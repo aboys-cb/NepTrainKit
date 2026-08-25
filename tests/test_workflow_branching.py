@@ -83,6 +83,7 @@ def test_compact_workflow_nodes_edit_the_selected_card_in_the_inspector():
     area = MakeWorkflowArea()
     first = PerturbCard()
     second = CellStrainCard()
+    second_editor_maximum = second.setting_widget.maximumWidth()
 
     area.add_card(first)
     area.add_card(second)
@@ -119,6 +120,7 @@ def test_compact_workflow_nodes_edit_the_selected_card_in_the_inspector():
     assert second.window_state == "collapse"
     assert area.guidance_panel._editor_widget is first.setting_widget
     assert area.guidance_panel.title_label.text() == first.getTitle()
+    assert second.setting_widget.maximumWidth() == second_editor_maximum
     first.num_condition_frame.set_input_value([3])
     app.processEvents()
     assert area.guidance_panel.current_context_label.text() == first.get_summary_text()
@@ -890,9 +892,11 @@ def test_console_stays_toolbar_height_while_canvas_takes_remaining_space():
 
 def test_fork_stacks_branches_on_narrow_canvas_and_limits_branch_count():
     app = _app()
+    area = MakeWorkflowArea()
     fork = WorkflowFork()
-    fork.resize(1100, 700)
-    fork.show()
+    area.add_card(fork)
+    area.resize(1600, 900)
+    area.show()
     app.processEvents()
     assert fork.connector.isVisible()
 
@@ -900,11 +904,13 @@ def test_fork_stacks_branches_on_narrow_canvas_and_limits_branch_count():
     assert len(fork.branches) == 3
     assert not fork.add_branch_button.isEnabled()
 
-    fork.resize(700, 900)
-    app.processEvents()
+    area.resize(1280, 900)
+    for _ in range(3):
+        app.processEvents()
+    assert fork.width() < fork._STACK_BRANCHES_BREAKPOINT
     assert not fork.connector.isVisible()
     assert fork.branches[1].geometry().top() >= fork.branches[0].geometry().bottom()
-    _dispose(fork)
+    _dispose(area)
 
 
 def test_workflow_can_move_existing_card_into_group_and_fork_branch():

@@ -82,8 +82,9 @@ class CompactFormWidgetsTest(unittest.TestCase):
 
         control.setCurrentIndex(1)
         self.assertEqual(control.currentIndex(), 1)
-        # setCurrentIndex is a programmatic set and should not re-emit.
-        self.assertEqual(received, [2])
+        # Match QComboBox: a programmatic value change emits so dependent
+        # visibility and preview logic stays synchronized during JSON restore.
+        self.assertEqual(received, [2, 1])
 
     def test_segmented_control_replacing_options_resets_selection(self):
         control = SegmentedControl(["A", "B"])

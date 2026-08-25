@@ -705,7 +705,10 @@ class TestOrderedAlloyCards(BaseCardTest):
                     self.assertTrue(card.estimate_label.wordWrap())
                     self.assertTrue(card.rules_editor.status_label.wordWrap())
                     self.assertTrue(all(editor.error_label.wordWrap() for editor in card.rules_editor.site_editors))
-                    self.assertGreaterEqual(card.rules_editor.site_editors[0].mode_combo.minimumWidth(), 136)
+                    self.assertEqual(
+                        card.rules_editor.site_editors[0].mode_combo.minimumWidth(),
+                        0,
+                    )
                     self.assertLessEqual(
                         card.rules_editor.site_editors[0].element_rows[0].element_edit.height(),
                         28,

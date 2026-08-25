@@ -23,6 +23,7 @@ class AdaptiveCompactSpinBox(CompactSpinBox):
     """Keep integer text readable before reserving space for step controls."""
 
     _TEXT_PADDING = 18
+    _TEXT_FIELD_CHROME = 20
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -47,6 +48,13 @@ class AdaptiveCompactSpinBox(CompactSpinBox):
                 max(0, self.width() - 12),
                 max(0, self.height() - 2),
             )
+
+    def readable_width_hint(self) -> int:
+        """Return the width needed to show the current value without controls."""
+        return (
+            self.fontMetrics().horizontalAdvance(self.text())
+            + self._TEXT_FIELD_CHROME
+        )
 
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
         super().resizeEvent(event)
@@ -91,6 +99,7 @@ class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
     """Keep the numeric text readable before reserving space for step controls."""
 
     _TEXT_PADDING = 18
+    _TEXT_FIELD_CHROME = 20
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -123,6 +132,14 @@ class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
                 max(0, self.width() - 12),
                 max(0, self.height() - 2),
             )
+
+    def readable_width_hint(self) -> int:
+        """Return the width needed to show the widest synchronized value."""
+        text_width = max(
+            self._shared_text_width,
+            self.fontMetrics().horizontalAdvance(self.text()),
+        )
+        return text_width + self._TEXT_FIELD_CHROME
 
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
         super().resizeEvent(event)
@@ -259,11 +276,10 @@ class SpinBoxUnitInputFrame(QFrame):
             return
         readable_widths = []
         for input_object, unit_label in zip(self.object_list, self._unit_labels):
-            text_width = input_object.fontMetrics().horizontalAdvance(
-                input_object.text()
-            )
             readable_widths.append(
-                text_width + 16 + unit_label.sizeHint().width() + 4
+                input_object.readable_width_hint()
+                + unit_label.sizeHint().width()
+                + 4
             )
         spacing = self._layout.horizontalSpacing()
         if width >= sum(readable_widths) + spacing * (count - 1):

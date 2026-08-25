@@ -25,6 +25,24 @@ Adds:
 
 - `python -m sphinx -W -b html docs/source docs/build/html`
 
+## Include workflow UI checks
+
+Use this whenever the change touches the right inspector, shared compact controls, card header, Fluent card catalog, grouping/forking, workflow library, responsive sizing, or translations:
+
+```bash
+python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick --ui
+```
+
+Adds:
+
+- `tests/test_compact_form_widgets.py`
+- `tests/test_card_library_dialog.py`
+- `tests/test_workflow_branching.py`
+- `tests/test_workflow_library.py`
+- `tests/test_i18n.py`
+
+These tests exercise the real `MakeWorkflowArea` / `MakeDataWidget`, including narrow inspector width and wide-to-default resize cycles. A standalone card widget screenshot is not sufficient UI validation.
+
 ## Full regression path
 
 ```bash
@@ -58,8 +76,9 @@ python tools/benchmark_card_operations.py --only slab --json card_bench.json
 
 1. Fix operation architecture violations first; do not leave core logic in UI cards.
 2. Fix code/runtime errors from pytest.
-3. Fix schema/section mismatches reported by `audit_card_docs.py`.
-4. Fix docs warnings or broken references from Sphinx.
+3. For UI changes, fix parent hierarchy, insertion/drag target, resize and horizontal-overflow failures before visual polish.
+4. Fix schema/section mismatches reported by `audit_card_docs.py`.
+5. Fix docs warnings or broken references from Sphinx.
 
 ## New card test bar
 

@@ -705,12 +705,15 @@ class TestOrderedAlloyCards(BaseCardTest):
                     self.assertTrue(card.estimate_label.wordWrap())
                     self.assertTrue(card.rules_editor.status_label.wordWrap())
                     self.assertTrue(all(editor.error_label.wordWrap() for editor in card.rules_editor.site_editors))
-                    self.assertGreaterEqual(card.rules_editor.site_editors[0].mode_combo.minimumWidth(), 136)
+                    self.assertEqual(
+                        card.rules_editor.site_editors[0].mode_combo.minimumWidth(),
+                        0,
+                    )
                     self.assertLessEqual(
                         card.rules_editor.site_editors[0].element_rows[0].element_edit.height(),
                         28,
                     )
-                    self.assertLessEqual(card.arrangements_frame.maximumWidth(), 220)
+                    self.assertEqual(card.arrangements_frame.minimumWidth(), 0)
                     text_widgets = [
                         card.rules_editor.single_template_button,
                         card.rules_editor.ab_template_button,
@@ -750,15 +753,26 @@ class TestOrderedAlloyCards(BaseCardTest):
             },
         }
         self.assertTrue(card.apply_rule_json(json.dumps(rules)))
-        card.show()
+        from NepTrainKit.ui.widgets import MakeWorkflowArea
+
+        area = MakeWorkflowArea()
+        area.add_card(card)
+        area.resize(1280, 760)
+        area.show()
         self._app.processEvents()
-        self.assertLessEqual(card.sizeHint().height(), 520)
+        viewport = area.guidance_panel.parameter_scroll.viewport()
+        self.assertLessEqual(card.setting_widget.width(), viewport.width())
+        self.assertEqual(
+            area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum(),
+            0,
+        )
         self.assertEqual(
             [editor._expanded for editor in card.rules_editor.site_editors],
             [True, False],
         )
         card.rules_editor.site_editors[1].toggle_expanded()
         self.assertTrue(card.rules_editor.site_editors[1]._expanded)
+        area.close()
 
     def test_operation_performance_smoke_32_64_128_atoms(self):
         operation = FiniteCellAlloyOccupancyOperation()

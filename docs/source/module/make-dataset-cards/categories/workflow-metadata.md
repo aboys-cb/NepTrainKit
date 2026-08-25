@@ -6,10 +6,12 @@
 | --- | --- |
 | 给原子写入可复用的 `group` 标签 | `Group Label` |
 | 让同一输入进入多个分支并汇总结果 | `Card Group` |
+| 让多个分支继续独立处理并分别输出或显式合并 | `Permanent Fork` |
 
 ```{toctree}
 :maxdepth: 1
 
 ../cards/group-label-card
 ../cards/card-group
+../cards/workflow-fork
 ```

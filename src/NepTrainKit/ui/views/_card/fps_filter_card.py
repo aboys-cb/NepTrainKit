@@ -251,6 +251,27 @@ class FPSFilterDataCard(FilterDataCard):
         """Return the UI-independent FPS operation."""
         return FPSFilterOperation()
 
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        return self.tr("keep at most {count} · {strategy}").format(
+            count=params.n_samples,
+            strategy=params.strategy,
+        )
+
+    def get_guidance_text(self) -> str:
+        params = self.get_params()
+        cutoff = (
+            self.tr("distance early-stop disabled")
+            if params.min_distance == 0.0
+            else self.tr("model-dependent cutoff {value}").format(
+                value=f"{params.min_distance:.4g}"
+            )
+        )
+        return self.tr(
+            "Use a descriptor model relevant to the candidate chemistry; {cutoff}. "
+            "The structure count is an upper bound."
+        ).format(cutoff=cutoff)
+
     def get_params(self) -> FPSFilterParams:
         """Read FPS parameters from UI controls."""
         strategy = str(self.strategy_combo.currentData() or "global")

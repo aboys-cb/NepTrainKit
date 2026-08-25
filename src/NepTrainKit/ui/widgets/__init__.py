@@ -33,7 +33,22 @@ from .dialog import (
     AdvancedModelSearchDialog,
     TrainingOverlayDialog,
 )
-from .input import SpinBoxUnitInputFrame
+from .input import (
+    AdaptiveCompactDoubleSpinBox,
+    AdaptiveCompactSpinBox,
+    AdaptiveInlineDoubleSpinBox,
+    RangeTripletInputFrame,
+    SpinBoxUnitInputFrame,
+)
+from .compact_form import (
+    StatusDot,
+    CategoryTag,
+    CompactField,
+    InspectorSection,
+    ResponsiveFormGrid,
+    SegmentedControl,
+    adapt_legacy_inspector_form,
+)
 from .card_widget import (
     CheckableHeaderCardWidget,
     ShareCheckableHeaderCardWidget,
@@ -44,6 +59,7 @@ from .card_widget import (
 from .doping_rule import DopingRulesWidget
 from .vacancy_rule import VacancyRulesWidget
 from .docker import MakeWorkflowArea
+from .workflow_library import WorkflowLibraryPanel
 from .search_widget import ConfigTypeSearchLineEdit
 from .filter_bar import TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog
 from .structure_filter_bar import StructureFilterBar, StructureFilterEditorPopup
@@ -74,6 +90,17 @@ __all__ = [
     "ProgressDialog",
     "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",
+    "RangeTripletInputFrame",
+    "AdaptiveCompactDoubleSpinBox",
+    "AdaptiveCompactSpinBox",
+    "AdaptiveInlineDoubleSpinBox",
+    "StatusDot",
+    "CategoryTag",
+    "CompactField",
+    "InspectorSection",
+    "ResponsiveFormGrid",
+    "SegmentedControl",
+    "adapt_legacy_inspector_form",
     "ModelInfoMessageBox",
     "AdvancedModelSearchDialog",
     "TrainingOverlayDialog",
@@ -83,6 +110,7 @@ __all__ = [
     "MakeDataCard",
     "FilterDataCard",
     "MakeWorkflowArea",
+    "WorkflowLibraryPanel",
     "ConfigTypeSearchLineEdit",
     "TagFilterDialog",
     "ElementsFilterDialog",

@@ -171,6 +171,8 @@ def _translation_catalog() -> None:
     QCoreApplication.translate("CardCombo", "squared exponential")
     QCoreApplication.translate("CardCombo", "Alternating fractional-coordinate layers")
     QCoreApplication.translate("CardCombo", "Current-cell half-grid parity")
+    QCoreApplication.translate("CardCombo", "Alternating layers")
+    QCoreApplication.translate("CardCombo", "Half-grid parity")
     QCoreApplication.translate("CardCombo", "100 (along lattice a)")
     QCoreApplication.translate("CardCombo", "010 (along lattice b)")
     QCoreApplication.translate("CardCombo", "001 (along lattice c)")

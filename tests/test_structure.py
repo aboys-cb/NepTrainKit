@@ -458,7 +458,11 @@ H 0 0 0
 
         shutil.rmtree("./npy64")
 
-    def test_deepmd_roundtrip_preserves_pbc_dtypes_metadata_and_alignment(self):
+    @patch("NepTrainKit.core.structure.Config.getboolean", return_value=True)
+    def test_deepmd_roundtrip_preserves_pbc_dtypes_metadata_and_alignment(
+        self,
+        _preserve_subfolders,
+    ):
         properties = [
             {"name": "species", "type": "S", "count": 1},
             {"name": "pos", "type": "R", "count": 3},
@@ -569,7 +573,11 @@ H 0 0 0
             with self.assertRaisesRegex(ValueError, "type.raw declares 2 atoms"):
                 load_npy_structure(root)
 
-    def test_deepmd_export_fails_closed_for_unrepresentable_pbc_and_mixed_contracts(self):
+    @patch("NepTrainKit.core.structure.Config.getboolean", return_value=True)
+    def test_deepmd_export_fails_closed_for_unrepresentable_pbc_and_mixed_contracts(
+        self,
+        _preserve_subfolders,
+    ):
         base = Structure(
             np.eye(3),
             {"species": ["H"], "pos": np.zeros((1, 3))},

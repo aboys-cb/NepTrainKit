@@ -65,7 +65,7 @@ def test_multi_integer_frame_keeps_each_value_readable_in_narrow_row():
     for _ in range(3):
         app.processEvents()
 
-    assert 1 <= frame._column_count <= 3
+    assert frame._column_count < 3
     for spin in frame.object_list:
         text_width = spin.fontMetrics().horizontalAdvance(spin.text())
         assert spin.compactSpinButton.isHidden()

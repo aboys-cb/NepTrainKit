@@ -248,10 +248,9 @@ class SpinBoxUnitInputFrame(QFrame):
             self._input_hosts.append(host)
             self._unit_labels.append(unit_label)
         for input_object in self.object_list:
-            if isinstance(input_object, AdaptiveCompactDoubleSpinBox):
-                input_object.lineEdit().textChanged.connect(
-                    self._sync_float_symbol_visibility
-                )
+            input_object.lineEdit().textChanged.connect(
+                self._sync_float_symbol_visibility
+            )
         self._sync_float_symbol_visibility()
         self._reflow_inputs(self.width())
 
@@ -261,13 +260,12 @@ class SpinBoxUnitInputFrame(QFrame):
             for item in self.object_list
             if isinstance(item, AdaptiveCompactDoubleSpinBox)
         ]
-        if not floats:
-            return
-        shared_width = max(
-            item.fontMetrics().horizontalAdvance(item.text()) for item in floats
-        )
-        for item in floats:
-            item.set_shared_text_width(shared_width)
+        if floats:
+            shared_width = max(
+                item.fontMetrics().horizontalAdvance(item.text()) for item in floats
+            )
+            for item in floats:
+                item.set_shared_text_width(shared_width)
         self._reflow_inputs(self.width())
 
     def _reflow_inputs(self, width: int) -> None:

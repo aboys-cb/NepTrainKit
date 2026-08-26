@@ -7,6 +7,12 @@ from .magnetism_test_base import *
 
 
 class TestMagnetismOrderCards(MagnetismCardTest):
+    def test_set_magnetic_moments_card_fails_closed_for_invalid_map(self):
+        card = SetMagneticMomentsCard()
+        card.map_edit.setText("Fe:not-a-number")
+        with self.assertRaises(ValueError):
+            card.process_structure(self._spin_chain())
+
     def test_magnetic_order_card_fm_afm(self):
         proto = CrystalPrototypeBuilderCard()
         proto.structure_combo.setCurrentText("bcc")

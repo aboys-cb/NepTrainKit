@@ -129,6 +129,7 @@ def test_legacy_inspector_reflows_when_conditional_fields_change():
     phase_index = card.phase_mode_combo.findData("Layer-locked")
     source_index = card.source_combo.findData("Map/default magnitude")
     assert min(mode_index, phase_index, source_index) >= 0
+    card.advanced_checkbox.setChecked(True)
     card.parameter_mode_combo.setCurrentIndex(mode_index)
     card.phase_mode_combo.setCurrentIndex(phase_index)
     card.source_combo.setCurrentIndex(source_index)

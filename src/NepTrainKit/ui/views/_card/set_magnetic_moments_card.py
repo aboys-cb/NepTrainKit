@@ -7,7 +7,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.magnetism import SetMagneticMomentsOperation, SetMagneticMomentsParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
@@ -63,8 +63,9 @@ class SetMagneticMomentsCard(MakeDataCard):
             self.tr('Per-element moments, e.g. "Fe:2.2,Co:1.7" or JSON such as {"Cr":[0,0,1.0]}')
         )
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
-        self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Co:1.7"))
+        self.map_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Moment or vector"), self.setting_widget
+        )
 
         self.use_element_dir_checkbox = CheckBox(self.tr("Use element vector directions"), self.setting_widget)
         self.use_element_dir_checkbox.setChecked(False)
@@ -183,11 +184,7 @@ class SetMagneticMomentsCard(MakeDataCard):
         self._update_source_widgets()
 
     def process_structure(self, structure):
-        try:
-            result = self.create_operation().run_structure(structure, self.get_params())
-        except Exception as exc:  # noqa: BLE001
-            MessageManager.send_warning_message(f"SetMagneticMoments: invalid magmom map: {exc}")
-            return [structure.copy()]
+        result = self.create_operation().run_structure(structure, self.get_params())
         if len(result) == 1 and result[0] is not structure and "MagSet(" not in str(result[0].info.get("Config_type", "")):
             MessageManager.send_warning_message("SetMagneticMoments: no usable initial_magmoms found.")
         return result

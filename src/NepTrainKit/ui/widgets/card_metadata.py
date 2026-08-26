@@ -170,6 +170,13 @@ def _localized_catalog(_language_marker: str):
                 "Insert solvent molecules around selected host atoms using a fallback COM shell or ion-specific first-shell distances, with collision checks and optional flexible-solvent sampling.",
             ),
         ),
+        "LocalMagneticResponseCard": (
+            QCoreApplication.translate("CardCatalog", "Local Magnetic Response"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Build complete local spin-rotation or moment-scale response groups with stable lineage.",
+            ),
+        ),
         "MagneticMomentRotationCard": (
             QCoreApplication.translate("CardCatalog", "Magmom Rotation"),
             QCoreApplication.translate("CardCatalog", "Rotate and optionally rescale atomic magnetic moments for selected species."),
@@ -179,6 +186,13 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate(
                 "CardCatalog",
                 "Generate FM, AFM, and random PM initial spin states from element moments without changing coordinates or elements.",
+            ),
+        ),
+        "MagnetoelasticResponseCard": (
+            QCoreApplication.translate("CardCatalog", "Magnetoelastic Response"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Combine each strain or volume coordinate with the same complete set of spin probes.",
             ),
         ),
         "OrganicMolConfigPBCCard": (
@@ -252,6 +266,13 @@ def _localized_catalog(_language_marker: str):
         "SpinSpiralCard": (
             QCoreApplication.translate("CardCatalog", "Spin Spiral"),
             QCoreApplication.translate("CardCatalog", "Assign non-collinear spiral magnetic moments using a 1D phase field."),
+        ),
+        "SOCTextureResponseCard": (
+            QCoreApplication.translate("CardCatalog", "SOC / Texture Response"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Build rigid anisotropy and signed finite-q texture response paths with commensurability checks.",
+            ),
         ),
         "StackingFaultCard": (
             QCoreApplication.translate("CardCatalog", "Legacy Stacking Fault"),

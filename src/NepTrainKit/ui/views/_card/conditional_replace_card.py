@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+import re
 
 from PySide6.QtWidgets import QGridLayout
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
@@ -10,7 +11,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import ConditionalReplaceOperation, ConditionalReplaceParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
@@ -39,8 +40,9 @@ class ConditionalReplaceCard(MakeDataCard):
         self.target_edit.setPlaceholderText(self.tr("e.g., O"))
 
         self.replacements_label = BodyLabel(self.tr("Replacement mixture"), self.setting_widget)
-        self.replacements_edit = LineEdit(self.setting_widget)
-        self.replacements_edit.setPlaceholderText(self.tr("Cs:0.6,Na:0.4 or Ni"))
+        self.replacements_edit = KeyValueTableInput(
+            self.tr("Replacement element"), self.tr("Relative ratio"), self.setting_widget
+        )
         self.replacements_label.setToolTip(
             self.tr(
                 "Every matching site is replaced. Ratios only distribute the replacement elements; "
@@ -67,6 +69,21 @@ class ConditionalReplaceCard(MakeDataCard):
         self.condition_edit.setPlaceholderText(
             self.tr('all, z>=8, or z>=8 and z<=10')
         )
+        self.condition_mode_combo = ComboBox(self.setting_widget)
+        self.condition_mode_combo.addItem(self.tr("All target atoms"), userData="all")
+        self.condition_mode_combo.addItem(self.tr("One coordinate boundary"), userData="simple")
+        self.condition_mode_combo.addItem(self.tr("Advanced expression"), userData="advanced")
+        self.condition_axis_combo = ComboBox(self.setting_widget)
+        for axis in ("x", "y", "z"):
+            self.condition_axis_combo.addItem(axis.upper(), userData=axis)
+        self.condition_operator_combo = ComboBox(self.setting_widget)
+        for operator in (">=", "<=", ">", "<", "=="):
+            self.condition_operator_combo.addItem(operator, userData=operator)
+        self.condition_value_frame = SpinBoxUnitInputFrame(self)
+        self.condition_value_frame.set_input("A", 1, "float")
+        self.condition_value_frame.setRange(-1000000.0, 1000000.0)
+        self.condition_value_frame.setDecimals(6)
+        self.condition_value_frame.set_input_value([0.0])
         self.condition_label.setToolTip(
             self.tr(
                 'Use Cartesian x, y, and z coordinates in angstrom. '
@@ -98,9 +115,71 @@ class ConditionalReplaceCard(MakeDataCard):
         layout.addWidget(self.mode_label, 2, 0, 1, 1)
         layout.addWidget(self.mode_combo, 2, 1, 1, 2)
         layout.addWidget(self.condition_label, 3, 0, 1, 1)
-        layout.addWidget(self.condition_edit, 3, 1, 1, 2)
-        layout.addWidget(self.seed_checkbox, 4, 0, 1, 1)
-        layout.addWidget(self.seed_frame, 4, 1, 1, 2)
+        layout.addWidget(self.condition_mode_combo, 3, 1, 1, 2)
+        layout.addWidget(self.condition_axis_combo, 4, 0, 1, 1)
+        layout.addWidget(self.condition_operator_combo, 4, 1, 1, 1)
+        layout.addWidget(self.condition_value_frame, 4, 2, 1, 1)
+        layout.addWidget(self.condition_edit, 5, 0, 1, 3)
+        layout.addWidget(self.seed_checkbox, 6, 0, 1, 1)
+        layout.addWidget(self.seed_frame, 6, 1, 1, 2)
+
+        self._syncing_condition = False
+        self.condition_mode_combo.currentIndexChanged.connect(self._update_condition_widgets)
+        self.condition_axis_combo.currentIndexChanged.connect(self._write_simple_condition)
+        self.condition_operator_combo.currentIndexChanged.connect(self._write_simple_condition)
+        self.condition_value_frame.object_list[0].valueChanged.connect(self._write_simple_condition)
+        self.condition_edit.textChanged.connect(self._read_condition_text)
+        self._set_condition("all")
+
+    def _set_condition(self, condition: str) -> None:
+        text = str(condition or "").strip() or "all"
+        match = re.fullmatch(
+            r"([xyzXYZ])\s*(>=|<=|>|<|==)\s*([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)",
+            text,
+        )
+        self._syncing_condition = True
+        self.condition_edit.setText(text)
+        if text.lower() == "all":
+            self.condition_mode_combo.setCurrentIndex(self.condition_mode_combo.findData("all"))
+        elif match:
+            axis, operator, value = match.groups()
+            self.condition_mode_combo.setCurrentIndex(self.condition_mode_combo.findData("simple"))
+            self.condition_axis_combo.setCurrentIndex(self.condition_axis_combo.findData(axis.lower()))
+            self.condition_operator_combo.setCurrentIndex(self.condition_operator_combo.findData(operator))
+            self.condition_value_frame.set_input_value([float(value)])
+        else:
+            self.condition_mode_combo.setCurrentIndex(self.condition_mode_combo.findData("advanced"))
+        self._syncing_condition = False
+        self._update_condition_widgets()
+
+    def _read_condition_text(self, text: str) -> None:
+        if not self._syncing_condition:
+            self._set_condition(text)
+
+    def _write_simple_condition(self, *_args) -> None:
+        if self._syncing_condition or self.condition_mode_combo.currentData() != "simple":
+            return
+        axis = self.condition_axis_combo.currentData()
+        operator = self.condition_operator_combo.currentData()
+        value = float(self.condition_value_frame.get_input_value()[0])
+        self._syncing_condition = True
+        self.condition_edit.setText(f"{axis}{operator}{value:.12g}")
+        self._syncing_condition = False
+
+    def _update_condition_widgets(self, *_args) -> None:
+        mode = self.condition_mode_combo.currentData()
+        simple = mode == "simple"
+        for widget in (self.condition_axis_combo, self.condition_operator_combo, self.condition_value_frame):
+            widget.setVisible(simple)
+        self.condition_edit.setVisible(mode == "advanced")
+        if self._syncing_condition:
+            return
+        if mode == "all":
+            self._syncing_condition = True
+            self.condition_edit.setText("all")
+            self._syncing_condition = False
+        elif simple:
+            self._write_simple_condition()
 
     def create_operation(self):
         """Return the UI-independent conditional replacement operation."""
@@ -124,7 +203,7 @@ class ConditionalReplaceCard(MakeDataCard):
         """Apply replacement parameters to UI controls."""
         self.target_edit.setText(params.target)
         self.replacements_edit.setText(params.replacements)
-        self.condition_edit.setText(params.condition.strip() or "all")
+        self._set_condition(params.condition)
         seed = int(params.seed)
         self.seed_checkbox.setChecked(seed != 0)
         self.seed_frame.set_input_value([seed if seed != 0 else 1])

@@ -70,7 +70,7 @@ $\mathbf n\sim\operatorname{Multinomial}(N,\mathbf p)$ 抽取计数，再打乱�
 
 ### 手动（manual）
 
-`str`，默认空。成分字符串，如 `Co:0.333,Cr:0.333,Ni:0.334`，仅在 `source=Manual` 时生效。比例会被自动归一化。只输入单个元素如 `Ge` 时按 `Ge:1.0` 处理；输入 `Ge,C` 则两个元素默认权重都是 1.0。
+`str`，默认空。仅在 `source=Manual` 时显示“元素 / 目标比例”表格；序列化仍保存为 `Co:0.333,Cr:0.333,Ni:0.334`。比例会被自动归一化，旧字符串工作流仍可直接恢复。
 
 ### 模式（mode）
 

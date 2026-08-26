@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from qfluentwidgets import BodyLabel, CheckBox, LineEdit, ToolTipFilter, ToolTipPosition
+from qfluentwidgets import BodyLabel, CheckBox, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import RandomPackingOperation, RandomPackingParams
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
@@ -40,8 +40,9 @@ class RandomPackingCard(MakeDataCard):
         self.composition_label = BodyLabel(self.tr("Composition"), self.setting_widget)
         self.composition_label.setToolTip(self.tr("Empty keeps input atom counts; otherwise use exact counts such as Fe:32,O:64"))
         self.composition_label.installEventFilter(ToolTipFilter(self.composition_label, 300, ToolTipPosition.TOP))
-        self.composition_edit = LineEdit(self.setting_widget)
-        self.composition_edit.setPlaceholderText(self.tr("Fe:32,O:64"))
+        self.composition_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Atom count"), self.setting_widget
+        )
 
         self.min_distance_label = BodyLabel(self.tr("Min distance"), self.setting_widget)
         self.min_distance_label.setToolTip(self.tr("Global minimum interatomic distance in Angstrom"))
@@ -55,8 +56,9 @@ class RandomPackingCard(MakeDataCard):
         self.pair_distance_label = BodyLabel(self.tr("Pair distances"), self.setting_widget)
         self.pair_distance_label.setToolTip(self.tr("Optional pair-specific overrides, for example Fe-O:1.8,O-O:1.2"))
         self.pair_distance_label.installEventFilter(ToolTipFilter(self.pair_distance_label, 300, ToolTipPosition.TOP))
-        self.pair_distance_edit = LineEdit(self.setting_widget)
-        self.pair_distance_edit.setPlaceholderText(self.tr("Fe-O:1.8, O-O:1.2"))
+        self.pair_distance_edit = KeyValueTableInput(
+            self.tr("Element pair"), self.tr("Minimum distance (A)"), self.setting_widget
+        )
 
         self.attempts_label = BodyLabel(self.tr("Attempts/atom"), self.setting_widget)
         self.attempts_label.setToolTip(self.tr("Maximum random placement attempts for each atom"))
@@ -69,6 +71,11 @@ class RandomPackingCard(MakeDataCard):
         self.strict_checkbox = CheckBox(self.tr("Strict mode"), self.setting_widget)
         self.strict_checkbox.setToolTip(self.tr("Fail the whole card when any requested sample cannot be packed"))
         self.strict_checkbox.setChecked(True)
+
+        self.advanced_checkbox = CheckBox(
+            self.tr("Show pair-specific distances and packing controls"), self.setting_widget
+        )
+        self.advanced_checkbox.setChecked(False)
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
@@ -85,13 +92,28 @@ class RandomPackingCard(MakeDataCard):
         self.settingLayout.addWidget(self.composition_edit, 1, 1, 1, 2)
         self.settingLayout.addWidget(self.min_distance_label, 2, 0, 1, 1)
         self.settingLayout.addWidget(self.min_distance_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.pair_distance_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.pair_distance_edit, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.attempts_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.attempts_frame, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.strict_checkbox, 5, 0, 1, 3)
-        self.settingLayout.addWidget(self.seed_checkbox, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 6, 1, 1, 2)
+        self.settingLayout.addWidget(self.advanced_checkbox, 3, 0, 1, 3)
+        self.settingLayout.addWidget(self.pair_distance_label, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.pair_distance_edit, 4, 1, 1, 2)
+        self.settingLayout.addWidget(self.attempts_label, 5, 0, 1, 1)
+        self.settingLayout.addWidget(self.attempts_frame, 5, 1, 1, 2)
+        self.settingLayout.addWidget(self.strict_checkbox, 6, 0, 1, 3)
+        self.settingLayout.addWidget(self.seed_checkbox, 7, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 7, 1, 1, 2)
+        self.advanced_checkbox.toggled.connect(self._update_advanced_widgets)
+        self._update_advanced_widgets()
+
+    def _update_advanced_widgets(self):
+        visible = self.advanced_checkbox.isChecked()
+        for widget in (
+            self.pair_distance_label,
+            self.pair_distance_edit,
+            self.attempts_label,
+            self.attempts_frame,
+            self.strict_checkbox,
+        ):
+            widget.setVisible(visible)
+            widget.setEnabled(visible)
 
     def create_operation(self):
         return RandomPackingOperation()
@@ -115,6 +137,11 @@ class RandomPackingCard(MakeDataCard):
         self.pair_distance_edit.setText(params.pair_min_distances)
         self.attempts_frame.set_input_value([int(params.max_attempts_per_atom)])
         self.strict_checkbox.setChecked(bool(params.strict_mode))
+        self.advanced_checkbox.setChecked(
+            bool(params.pair_min_distances.strip())
+            or int(params.max_attempts_per_atom) != 500
+            or not bool(params.strict_mode)
+        )
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
         self.seed_frame.setEnabled(self.seed_checkbox.isChecked())

@@ -9,7 +9,7 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import CompositionGradientOperation, CompositionGradientParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import CompositionPathTableInput, MakeDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
@@ -49,6 +49,19 @@ class CompositionGradientCard(MakeDataCard):
         self.end_label.installEventFilter(ToolTipFilter(self.end_label, 300, ToolTipPosition.TOP))
         self.end_edit = LineEdit(self.setting_widget)
         self.end_edit.setText("Ni:0,Co:1")
+        self.start_label.hide()
+        self.end_label.hide()
+        self.elements_edit.hide()
+        self.start_edit.hide()
+        self.end_edit.hide()
+
+        self.composition_table = CompositionPathTableInput(self.setting_widget)
+        self.composition_table.set_values(
+            self.elements_edit.text(), self.start_edit.text(), self.end_edit.text()
+        )
+        self.elements_edit.textChanged.connect(self._sync_legacy_composition_fields)
+        self.start_edit.textChanged.connect(self._sync_legacy_composition_fields)
+        self.end_edit.textChanged.connect(self._sync_legacy_composition_fields)
 
         self.axis_label = BodyLabel(self.tr("Gradient direction"), self.setting_widget)
         self.axis_label.setToolTip(self.tr("Lattice-coordinate direction used to order and layer atoms"))
@@ -107,26 +120,27 @@ class CompositionGradientCard(MakeDataCard):
         self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
 
         self.settingLayout.addWidget(self.elements_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.elements_edit, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.start_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.start_edit, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.end_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.end_edit, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.axis_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.axis_combo, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.direction_hint_label, 4, 0, 1, 3)
-        self.settingLayout.addWidget(self.bins_label, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.bins_frame, 5, 1, 1, 2)
-        self.settingLayout.addWidget(self.target_label, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.target_edit, 6, 1, 1, 2)
-        self.settingLayout.addWidget(self.target_hint_label, 7, 0, 1, 3)
-        self.settingLayout.addWidget(self.samples_label, 8, 0, 1, 1)
-        self.settingLayout.addWidget(self.samples_frame, 8, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 9, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 9, 1, 1, 2)
+        self.settingLayout.addWidget(self.composition_table, 0, 1, 1, 2)
+        self.settingLayout.addWidget(self.axis_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.axis_combo, 1, 1, 1, 2)
+        self.settingLayout.addWidget(self.direction_hint_label, 2, 0, 1, 3)
+        self.settingLayout.addWidget(self.bins_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.bins_frame, 3, 1, 1, 2)
+        self.settingLayout.addWidget(self.target_label, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.target_edit, 4, 1, 1, 2)
+        self.settingLayout.addWidget(self.target_hint_label, 5, 0, 1, 3)
+        self.settingLayout.addWidget(self.samples_label, 6, 0, 1, 1)
+        self.settingLayout.addWidget(self.samples_frame, 6, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 7, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 7, 1, 1, 2)
 
         self.axis_combo.currentIndexChanged.connect(self._update_direction_hint)
         self._update_direction_hint()
+
+    def _sync_legacy_composition_fields(self, *_args) -> None:
+        self.composition_table.set_values(
+            self.elements_edit.text(), self.start_edit.text(), self.end_edit.text()
+        )
 
     def _update_direction_hint(self) -> None:
         direction = combo_value(self.axis_combo, "a")
@@ -141,10 +155,11 @@ class CompositionGradientCard(MakeDataCard):
         return CompositionGradientOperation()
 
     def get_params(self) -> CompositionGradientParams:
+        elements, start_composition, end_composition = self.composition_table.values()
         return CompositionGradientParams(
-            elements=self.elements_edit.text(),
-            start_composition=self.start_edit.text(),
-            end_composition=self.end_edit.text(),
+            elements=elements,
+            start_composition=start_composition,
+            end_composition=end_composition,
             axis=combo_value(self.axis_combo),
             bins=int(self.bins_frame.get_input_value()[0]),
             target_elements=self.target_edit.text(),
@@ -157,6 +172,9 @@ class CompositionGradientCard(MakeDataCard):
         self.elements_edit.setText(params.elements)
         self.start_edit.setText(params.start_composition)
         self.end_edit.setText(params.end_composition)
+        self.composition_table.set_values(
+            params.elements, params.start_composition, params.end_composition
+        )
         legacy_axis = {"x": "a", "y": "b", "z": "c"}.get(
             str(params.axis).strip().lower(),
             str(params.axis).strip().lower(),

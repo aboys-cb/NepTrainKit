@@ -6,6 +6,13 @@ from .magnetism_test_base import *
 
 
 class TestMagnetismTiltDisorderCards(MagnetismCardTest):
+    def test_small_angle_card_fails_closed_for_invalid_moment_map(self):
+        card = SmallAngleSpinTiltCard()
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("not-an-element:2")
+        with self.assertRaises(ValueError):
+            card.process_structure(self._spin_chain())
+
     def test_small_angle_spin_tilt_fast_pair_distance_matches_ase(self):
         structure = self._spin_chain()
         positions = np.asarray(structure.get_positions(), dtype=float)

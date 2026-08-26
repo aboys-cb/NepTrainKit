@@ -80,7 +80,7 @@ $\mathbf m_i=m_i s_i\hat{\mathbf a}$。三类磁序的符号/方向规则为：
 
 #### 元素磁矩（magmom_map）
 
-`str`，默认空。用于指定逐元素磁矩，单位为 $\mu_\mathrm{B}$：
+`str`，默认空。界面使用“元素 / 磁矩模长”表格，单位为 $\mu_\mathrm{B}$；序列化仍使用逐元素映射：
 
 ```text
 Fe:2.2,Co:1.7,Ni:0.6

@@ -7,7 +7,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import SpinDisorderOperation, SpinDisorderParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, NumericScanInput, SpinBoxUnitInputFrame
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
@@ -38,10 +38,12 @@ class SpinDisorderCard(MakeDataCard):
         set_combo_value(self.mode_combo, "Flip fraction")
 
         self.fractions_label = BodyLabel(self.tr("Fractions"), self.setting_widget)
-        self.fractions_label.setToolTip(self.tr("Comma-separated disorder fractions, for example 0.1,0.3,0.5,0.7"))
+        self.fractions_label.setToolTip(self.tr("Minimum, maximum, and step for the fraction of moments to disorder"))
         self.fractions_label.installEventFilter(ToolTipFilter(self.fractions_label, 300, ToolTipPosition.TOP))
-        self.fractions_edit = LineEdit(self.setting_widget)
-        self.fractions_edit.setText("0.1,0.3,0.5,0.7")
+        self.fractions_edit = NumericScanInput(
+            self.setting_widget, minimum=0.0, maximum=1.0, decimals=3
+        )
+        self.fractions_edit.set_range(0.1, 0.7, 0.2)
 
         self.samples_label = BodyLabel(self.tr("Samples/fraction"), self.setting_widget)
         self.samples_label.setToolTip(self.tr("Number of independent selections emitted for each disorder fraction"))
@@ -70,8 +72,9 @@ class SpinDisorderCard(MakeDataCard):
         self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
         self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
-        self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Ni:0.6"))
+        self.map_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+        )
 
         self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
         self.default_label.setToolTip(self.tr("Magnitude used for elements not listed in the magmom map"))
@@ -101,6 +104,11 @@ class SpinDisorderCard(MakeDataCard):
         self.apply_edit = LineEdit(self.setting_widget)
         self.apply_edit.setPlaceholderText(self.tr("Fe,Co"))
 
+        self.advanced_checkbox = CheckBox(
+            self.tr("Show magnetic-moment source and element filter"), self.setting_widget
+        )
+        self.advanced_checkbox.setChecked(False)
+
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
@@ -126,24 +134,26 @@ class SpinDisorderCard(MakeDataCard):
         self.settingLayout.addWidget(self.samples_frame, 2, 1, 1, 2)
         self.settingLayout.addWidget(self.cone_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.cone_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.source_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.source_combo, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.map_label, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.map_edit, 5, 1, 1, 2)
-        self.settingLayout.addWidget(self.default_label, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.default_frame, 6, 1, 1, 2)
-        self.settingLayout.addWidget(self.lift_scalar_checkbox, 7, 0, 1, 3)
-        self.settingLayout.addWidget(self.axis_label, 8, 0, 1, 1)
-        self.settingLayout.addWidget(self.axis_frame, 8, 1, 1, 2)
-        self.settingLayout.addWidget(self.apply_label, 9, 0, 1, 1)
-        self.settingLayout.addWidget(self.apply_edit, 9, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 10, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 10, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_output_label, 11, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_output_frame, 11, 1, 1, 2)
+        self.settingLayout.addWidget(self.advanced_checkbox, 4, 0, 1, 3)
+        self.settingLayout.addWidget(self.source_label, 5, 0, 1, 1)
+        self.settingLayout.addWidget(self.source_combo, 5, 1, 1, 2)
+        self.settingLayout.addWidget(self.map_label, 6, 0, 1, 1)
+        self.settingLayout.addWidget(self.map_edit, 6, 1, 1, 2)
+        self.settingLayout.addWidget(self.default_label, 7, 0, 1, 1)
+        self.settingLayout.addWidget(self.default_frame, 7, 1, 1, 2)
+        self.settingLayout.addWidget(self.lift_scalar_checkbox, 8, 0, 1, 3)
+        self.settingLayout.addWidget(self.axis_label, 9, 0, 1, 1)
+        self.settingLayout.addWidget(self.axis_frame, 9, 1, 1, 2)
+        self.settingLayout.addWidget(self.apply_label, 10, 0, 1, 1)
+        self.settingLayout.addWidget(self.apply_edit, 10, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 11, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 11, 1, 1, 2)
+        self.settingLayout.addWidget(self.max_output_label, 12, 0, 1, 1)
+        self.settingLayout.addWidget(self.max_output_frame, 12, 1, 1, 2)
 
         self.mode_combo.currentTextChanged.connect(self._update_mode_widgets)
         self.source_combo.currentTextChanged.connect(self._update_source_widgets)
+        self.advanced_checkbox.toggled.connect(self._update_source_widgets)
         self._update_mode_widgets()
         self._update_source_widgets()
 
@@ -155,7 +165,19 @@ class SpinDisorderCard(MakeDataCard):
         self.cone_frame.setEnabled(show_cone)
 
     def _update_source_widgets(self):
-        use_map = combo_value(self.source_combo) == "Map/default magnitude"
+        show_advanced = self.advanced_checkbox.isChecked()
+        for widget in (
+            self.source_label,
+            self.source_combo,
+            self.lift_scalar_checkbox,
+            self.axis_label,
+            self.axis_frame,
+            self.apply_label,
+            self.apply_edit,
+        ):
+            widget.setVisible(show_advanced)
+            widget.setEnabled(show_advanced)
+        use_map = show_advanced and combo_value(self.source_combo) == "Map/default magnitude"
         for widget in (self.map_label, self.map_edit, self.default_label, self.default_frame):
             widget.setVisible(use_map)
             widget.setEnabled(use_map)
@@ -166,7 +188,7 @@ class SpinDisorderCard(MakeDataCard):
     def get_params(self) -> SpinDisorderParams:
         return SpinDisorderParams(
             mode=combo_value(self.mode_combo),
-            fractions=self.fractions_edit.text(),
+            fractions=self.fractions_edit.scan_text(),
             samples_per_fraction=int(self.samples_frame.get_input_value()[0]),
             cone_angle=float(self.cone_frame.get_input_value()[0]),
             magnitude_source=combo_value(self.source_combo),
@@ -182,7 +204,7 @@ class SpinDisorderCard(MakeDataCard):
 
     def set_params(self, params: SpinDisorderParams) -> None:
         set_combo_value(self.mode_combo, params.mode)
-        self.fractions_edit.setText(params.fractions)
+        self.fractions_edit.set_scan_text(params.fractions)
         self.samples_frame.set_input_value([int(params.samples_per_fraction)])
         self.cone_frame.set_input_value([float(params.cone_angle)])
         set_combo_value(self.source_combo, params.magnitude_source)
@@ -191,6 +213,12 @@ class SpinDisorderCard(MakeDataCard):
         self.lift_scalar_checkbox.setChecked(bool(params.lift_scalar))
         self.axis_frame.set_input_value([float(v) for v in params.axis])
         self.apply_edit.setText(params.apply_elements)
+        self.advanced_checkbox.setChecked(
+            params.magnitude_source != "Existing initial magmoms"
+            or bool(params.apply_elements.strip())
+            or tuple(float(value) for value in params.axis) != (0.0, 0.0, 1.0)
+            or not bool(params.lift_scalar)
+        )
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
         self.max_output_frame.set_input_value([int(params.max_outputs)])

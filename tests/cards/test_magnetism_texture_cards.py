@@ -2,6 +2,20 @@ from .magnetism_test_base import *
 
 
 class TestMagnetismTextureCards(MagnetismCardTest):
+    def test_spin_spiral_card_fails_closed_for_invalid_moment_map(self):
+        card = SpinSpiralCard()
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("Fe:not-a-number")
+        with self.assertRaises(ValueError):
+            card.process_structure(self._spin_chain())
+
+    def test_folded_helix_card_fails_closed_for_invalid_moment_map(self):
+        card = FoldedHelixCard()
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("Fe:not-a-number")
+        with self.assertRaises(ValueError):
+            card.process_structure(self._spin_chain())
+
     def test_spin_spiral_card_periods_and_chirality(self):
         structure = self._spin_chain()
 

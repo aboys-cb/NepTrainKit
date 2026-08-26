@@ -7,7 +7,7 @@ from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTip
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import RandomOccupancyOperation, RandomOccupancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
@@ -37,8 +37,9 @@ class RandomOccupancyCard(MakeDataCard):
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
 
         self.manual_label = BodyLabel(self.tr("Manual comp"), self.setting_widget)
-        self.manual_edit = LineEdit(self.setting_widget)
-        self.manual_edit.setPlaceholderText(self.tr("Co:0.33,Cr:0.33,Ni:0.34"))
+        self.manual_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Target fraction"), self.setting_widget
+        )
         self.manual_label.setToolTip(self.tr("Element fractions. Used when 'Manual' is selected or Config_type lacks Comp(...)."))
         self.manual_label.installEventFilter(ToolTipFilter(self.manual_label, 300, ToolTipPosition.TOP))
 
@@ -70,6 +71,7 @@ class RandomOccupancyCard(MakeDataCard):
         self.seed_frame.set_input_value([0])
         self.seed_frame.setEnabled(False)
         self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+        self.source_combo.currentIndexChanged.connect(self._update_source_widgets)
 
         self.settingLayout.addWidget(self.source_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.source_combo, 0, 1, 1, 2)
@@ -83,6 +85,12 @@ class RandomOccupancyCard(MakeDataCard):
         self.settingLayout.addWidget(self.group_edit, 4, 1, 1, 2)
         self.settingLayout.addWidget(self.seed_checkbox, 5, 0, 1, 1)
         self.settingLayout.addWidget(self.seed_frame, 5, 1, 1, 2)
+        self._update_source_widgets()
+
+    def _update_source_widgets(self, *_args) -> None:
+        manual = combo_value(self.source_combo) == "Manual"
+        self.manual_label.setVisible(manual)
+        self.manual_edit.setVisible(manual)
 
     def create_operation(self):
         """Return the UI-independent random occupancy operation."""

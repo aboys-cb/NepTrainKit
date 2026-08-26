@@ -8,7 +8,7 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import CorrelatedRandomSpinOperation, CorrelatedRandomSpinParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
@@ -84,8 +84,9 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
         self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
-        self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Ni:0.6"))
+        self.map_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+        )
 
         self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
         self.default_label.setToolTip(self.tr("Magnitude used for elements not listed in the magmom map"))
@@ -132,6 +133,11 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.seed_frame.setEnabled(False)
         self.seed_checkbox.stateChanged.connect(lambda _state: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
 
+        self.advanced_checkbox = CheckBox(
+            self.tr("Show kernel, magnetic-moment source, and exact-size limit"), self.setting_widget
+        )
+        self.advanced_checkbox.setChecked(False)
+
         self.settingLayout.addWidget(self.mode_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.mode_combo, 0, 1, 1, 2)
         self.settingLayout.addWidget(self.kernel_label, 1, 0, 1, 1)
@@ -157,9 +163,11 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.settingLayout.addWidget(self.max_atoms_frame, 11, 1, 1, 2)
         self.settingLayout.addWidget(self.seed_checkbox, 12, 0, 1, 1)
         self.settingLayout.addWidget(self.seed_frame, 12, 1, 1, 2)
+        self.settingLayout.addWidget(self.advanced_checkbox, 13, 0, 1, 3)
 
         self.mode_combo.currentTextChanged.connect(self._update_mode_widgets)
         self.source_combo.currentTextChanged.connect(self._update_source_widgets)
+        self.advanced_checkbox.toggled.connect(self._update_source_widgets)
         self._update_mode_widgets()
         self._update_source_widgets()
 
@@ -171,7 +179,23 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.cone_frame.setEnabled(show_cone)
 
     def _update_source_widgets(self):
-        use_map = combo_value(self.source_combo) == "Map/default magnitude"
+        show_advanced = self.advanced_checkbox.isChecked()
+        for widget in (
+            self.kernel_label,
+            self.kernel_combo,
+            self.source_label,
+            self.source_combo,
+            self.lift_scalar_checkbox,
+            self.axis_label,
+            self.axis_frame,
+            self.apply_label,
+            self.apply_edit,
+            self.max_atoms_label,
+            self.max_atoms_frame,
+        ):
+            widget.setVisible(show_advanced)
+            widget.setEnabled(show_advanced)
+        use_map = show_advanced and combo_value(self.source_combo) == "Map/default magnitude"
         for widget in (self.map_label, self.map_edit, self.default_label, self.default_frame):
             widget.setVisible(use_map)
             widget.setEnabled(use_map)
@@ -210,6 +234,16 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.axis_frame.set_input_value([float(v) for v in params.axis])
         self.apply_edit.setText(params.apply_elements)
         self.max_atoms_frame.set_input_value([int(params.max_atoms_for_full)])
+        self.advanced_checkbox.setChecked(
+            params.correlation_kernel != "exponential"
+            or params.magnitude_source != "Existing initial magmoms"
+            or bool(params.magmom_map.strip())
+            or float(params.default_moment) != 0.0
+            or not bool(params.lift_scalar)
+            or tuple(float(v) for v in params.axis) != (0.0, 0.0, 1.0)
+            or bool(params.apply_elements.strip())
+            or int(params.max_atoms_for_full) != 200
+        )
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
         self.seed_frame.setEnabled(self.seed_checkbox.isChecked())

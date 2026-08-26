@@ -14,4 +14,7 @@
 ../cards/small-angle-spin-tilt-card
 ../cards/spin-spiral-card
 ../cards/folded-helix-card
+../cards/local-magnetic-response-card
+../cards/soc-texture-response-card
+../cards/magnetoelastic-response-card
 ```

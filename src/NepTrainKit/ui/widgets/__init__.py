@@ -40,6 +40,12 @@ from .input import (
     RangeTripletInputFrame,
     SpinBoxUnitInputFrame,
 )
+from .parameter_inputs import (
+    CompositionPathTableInput,
+    DirectionInput,
+    KeyValueTableInput,
+    NumericScanInput,
+)
 from .compact_form import (
     StatusDot,
     CategoryTag,
@@ -91,6 +97,10 @@ __all__ = [
     "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",
     "RangeTripletInputFrame",
+    "DirectionInput",
+    "KeyValueTableInput",
+    "CompositionPathTableInput",
+    "NumericScanInput",
     "AdaptiveCompactDoubleSpinBox",
     "AdaptiveCompactSpinBox",
     "AdaptiveInlineDoubleSpinBox",

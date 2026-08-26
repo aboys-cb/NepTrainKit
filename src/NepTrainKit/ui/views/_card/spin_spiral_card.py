@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
-from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import (
     SpinSpiralOperation,
     SpinSpiralParams,
@@ -13,7 +13,7 @@ from NepTrainKit.core.cards.magnetism import (
 )
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
@@ -158,8 +158,9 @@ class SpinSpiralCard(MakeDataCard):
         self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
         self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
-        self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Ni:0.6"))
+        self.map_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+        )
 
         self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
         self.default_label.setToolTip(self.tr("Magnitude used for elements not listed in the magmom map"))
@@ -183,6 +184,11 @@ class SpinSpiralCard(MakeDataCard):
         self.max_output_frame.set_input("unit", 1, "int")
         self.max_output_frame.setRange(1, 999999)
         self.max_output_frame.set_input_value([100])
+
+        self.advanced_checkbox = CheckBox(
+            self.tr("Show phase, cone, layer, magnitude, and output controls"), self.setting_widget
+        )
+        self.advanced_checkbox.setChecked(False)
 
         self.settingLayout.addWidget(self.axis_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.axis_frame, 0, 1, 1, 2)
@@ -214,16 +220,19 @@ class SpinSpiralCard(MakeDataCard):
         self.settingLayout.addWidget(self.apply_edit, 13, 1, 1, 2)
         self.settingLayout.addWidget(self.max_output_label, 14, 0, 1, 1)
         self.settingLayout.addWidget(self.max_output_frame, 14, 1, 1, 2)
+        self.settingLayout.addWidget(self.advanced_checkbox, 15, 0, 1, 3)
 
         self.source_combo.currentTextChanged.connect(self._update_magnitude_source_widgets)
         self.parameter_mode_combo.currentTextChanged.connect(self._update_parameter_mode_widgets)
         self.phase_mode_combo.currentTextChanged.connect(self._update_phase_mode_widgets)
+        self.advanced_checkbox.toggled.connect(self._update_advanced_widgets)
         self._update_magnitude_source_widgets()
         self._update_parameter_mode_widgets()
         self._update_phase_mode_widgets()
+        self._update_advanced_widgets()
 
     def _update_magnitude_source_widgets(self):
-        use_map = combo_value(self.source_combo) == "Map/default magnitude"
+        use_map = self.advanced_checkbox.isChecked() and combo_value(self.source_combo) == "Map/default magnitude"
         self.map_label.setEnabled(use_map)
         self.map_edit.setEnabled(use_map)
         self.map_label.setVisible(use_map)
@@ -246,18 +255,37 @@ class SpinSpiralCard(MakeDataCard):
         self.angle_gradient_frame.setVisible(not use_period)
 
     def _update_phase_mode_widgets(self):
-        layer_locked = combo_value(self.phase_mode_combo) == "Layer-locked"
+        layer_locked = self.advanced_checkbox.isChecked() and combo_value(self.phase_mode_combo) == "Layer-locked"
         self.layer_tol_label.setEnabled(layer_locked)
         self.layer_tol_frame.setEnabled(layer_locked)
         self.layer_tol_label.setVisible(layer_locked)
         self.layer_tol_frame.setVisible(layer_locked)
 
+    def _update_advanced_widgets(self):
+        visible = self.advanced_checkbox.isChecked()
+        for widget in (
+            self.phase_label,
+            self.phase_frame,
+            self.mz_label,
+            self.mz_frame,
+            self.phase_mode_label,
+            self.phase_mode_combo,
+            self.commensurate_label,
+            self.commensurate_checkbox,
+            self.source_label,
+            self.source_combo,
+            self.apply_label,
+            self.apply_edit,
+            self.max_output_label,
+            self.max_output_frame,
+        ):
+            widget.setVisible(visible)
+            widget.setEnabled(visible)
+        self._update_magnitude_source_widgets()
+        self._update_phase_mode_widgets()
+
     def process_structure(self, structure):
-        try:
-            return self.create_operation().run_structure(structure, self.get_params())
-        except Exception as exc:  # noqa: BLE001
-            MessageManager.send_warning_message(f"SpinSpiral: invalid magmom map: {exc}")
-            return [structure.copy()]
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def create_operation(self):
         return SpinSpiralOperation()
@@ -297,9 +325,21 @@ class SpinSpiralCard(MakeDataCard):
         self.default_frame.set_input_value([float(params.default_moment)])
         self.apply_edit.setText(params.apply_elements)
         self.max_output_frame.set_input_value([int(params.max_outputs)])
+        self.advanced_checkbox.setChecked(
+            tuple(float(v) for v in params.phase_range) != (0.0, 0.0, 15.0)
+            or tuple(float(v) for v in params.mz) != (0.0, 0.0, 0.1)
+            or params.phase_mode != "Continuous by position"
+            or bool(params.only_commensurate_periods)
+            or params.magnitude_source != "Existing initial magmoms"
+            or bool(params.magmom_map.strip())
+            or float(params.default_moment) != 0.0
+            or bool(params.apply_elements.strip())
+            or int(params.max_outputs) != 100
+        )
         self._update_magnitude_source_widgets()
         self._update_parameter_mode_widgets()
         self._update_phase_mode_widgets()
+        self._update_advanced_widgets()
 
     def to_dict(self):
         data = super().to_dict()

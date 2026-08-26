@@ -18,7 +18,7 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import MagneticOrderOperation, MagneticOrderParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
@@ -78,8 +78,9 @@ class MagneticOrderCard(MakeDataCard):
             self.tr('Moment magnitudes such as "Fe:2.2,Co:1.7"; vector values such as Cr:[0,0,1] are also accepted')
         )
         self._install_tooltip(self.map_label)
-        self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText(self.tr("Fe:2.2, Co:1.7"))
+        self.map_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+        )
         self.map_edit.setAccessibleName(self.tr("Element moments (μB)"))
         self._size_control(self.map_edit)
 

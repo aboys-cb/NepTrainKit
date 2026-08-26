@@ -280,6 +280,7 @@ class MakeDataWidget(QWidget):
         self.workspace_card_widget = MakeWorkflowArea(self)
         self._connect_workflow_library()
         self.workspace_card_widget.workflowChanged.connect(self._mark_workflow_dirty)
+        self.workspace_card_widget.workflowChanged.connect(self._refresh_input_count_previews)
         self.setting_group=ConsoleWidget(self)
         self.setting_group.runSignal.connect(self.run_card)
         self.setting_group.stopSignal.connect(self.stop_run_card)
@@ -653,12 +654,32 @@ class MakeDataWidget(QWidget):
         if len(structures_list)==0:
             return
         self.dataset=structures_list
+        self._refresh_input_count_previews()
         MessageManager.send_success_message(
             self.tr("success load {count} structures.").format(count=len(structures_list))
         )
         self.dataset_info_label.setText(
             self.tr("Success load {count} structures.").format(count=len(structures_list))
         )
+
+    def _refresh_input_count_previews(self) -> None:
+        """Expose the imported count only where the first enabled card receives it exactly."""
+        exact_target_found = False
+        selected = getattr(self.workspace_card_widget.guidance_panel, "_card", None)
+        for card in self.workspace_card_widget.cards:
+            setter = getattr(card, "set_preview_input_count", None)
+            if not callable(setter):
+                if card.check_state:
+                    exact_target_found = True
+                continue
+            exact_count = None
+            if not exact_target_found and card.check_state:
+                if bool(getattr(card, "requires_input_dataset", True)):
+                    exact_count = len(self.dataset or [])
+                exact_target_found = True
+            setter(exact_count)
+        if selected is not None:
+            self.workspace_card_widget.guidance_panel._refresh_context()
 
     def open_file(self):
         """Open a file dialog and load selected structures.

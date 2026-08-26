@@ -314,6 +314,7 @@ class ResponsiveFormGrid(QWidget):
 
     def _reflow(self, width: int) -> None:
         columns = 2 if width >= self._threshold else 1
+        previous_columns = max(self._column_count, self._layout.columnCount())
         while self._layout.count():
             self._layout.takeAt(0)
         visible_fields = [
@@ -353,8 +354,9 @@ class ResponsiveFormGrid(QWidget):
                 if column >= columns:
                     row += 1
                     column = 0
-        for index in range(columns):
-            self._layout.setColumnStretch(index, 1)
+        for index in range(max(previous_columns, columns)):
+            self._layout.setColumnStretch(index, 1 if index < columns else 0)
+            self._layout.setColumnMinimumWidth(index, 0)
         self._column_count = columns
 
 

@@ -14,6 +14,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
+from qfluentwidgets import ScrollBarHandleDisplayMode
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import StructureOperation
@@ -168,6 +169,44 @@ def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal
 
     assert len(checked) >= 35
     _dispose(area)
+
+
+def test_parameter_inspector_scroll_handle_is_discoverable_without_hover():
+    app = _app()
+    area = MakeWorkflowArea()
+    area.resize(1024, 640)
+    area.show()
+    card = PerturbCard()
+    area.add_card(card)
+    area.select_card(card)
+    card.element_scaling_checkbox.setChecked(True)
+    card._add_element_row("H", 0.1)
+    app.processEvents()
+
+    scroll = area.guidance_panel.parameter_scroll
+    assert scroll.verticalScrollBar().maximum() > 0
+    assert (
+        scroll.scrollDelagate.vScrollBar.handleDisplayMode
+        == ScrollBarHandleDisplayMode.ALWAYS
+    )
+    assert scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
+def test_first_perturb_card_previews_exact_imported_output_count():
+    app = _app()
+    widget = MakeDataWidget()
+    widget.dataset = [Atoms("H"), Atoms("He")]
+    card = widget.add_card("PerturbCard")
+    card.num_condition_frame.set_input_value([3])
+    widget._refresh_input_count_previews()
+    app.processEvents()
+
+    assert "2 × 3 = 6 outputs" in card.get_guidance_text()
+    assert "2 × 3 = 6 outputs" in widget.workspace_card_widget.guidance_panel.recommend_label.text()
+    widget.close()
+    widget.deleteLater()
+    app.processEvents()
 
 
 def test_fork_keeps_extra_width_needed_for_parallel_lanes():

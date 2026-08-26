@@ -192,7 +192,7 @@ class WorkflowGuidancePanel(QFrame):
         parameter_page_layout.setContentsMargins(0, 4, 0, 0)
         self.parameter_scroll = ScrollArea(self.parameter_page)
         self.parameter_scroll.scrollDelagate.vScrollBar.setHandleDisplayMode(
-            ScrollBarHandleDisplayMode.ON_HOVER
+            ScrollBarHandleDisplayMode.ALWAYS
         )
         self.parameter_scroll.setWidgetResizable(True)
         self.parameter_scroll.setFrameShape(QFrame.Shape.NoFrame)

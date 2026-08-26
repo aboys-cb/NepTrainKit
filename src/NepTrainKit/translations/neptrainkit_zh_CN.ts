@@ -2553,26 +2553,41 @@
     </message>
     <message>
         <location filename="../ui/messages.py" line="333" />
+        <source>Perturb: {element} is not a valid element symbol for a displacement limit.</source>
+        <translation>原子扰动：{element} 不是可用于位移上限的有效元素符号。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="337" />
+        <source>Perturb: element {element} has more than one displacement limit; keep only one row.</source>
+        <translation>原子扰动：元素 {element} 设置了多个位移上限；请只保留一行。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="341" />
+        <source>Perturb: the displacement limit for {element} must be finite and non-negative.</source>
+        <translation>原子扰动：元素 {element} 的位移上限必须是有限的非负数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="345" />
         <source>Unsupported crystal prototype: {lattice}.</source>
         <translation>不支持的晶体原型：{lattice}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="334" />
+        <location filename="../ui/messages.py" line="346" />
         <source>Maximum outputs must be at least 1.</source>
         <translation>最大输出数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="335" />
+        <location filename="../ui/messages.py" line="347" />
         <source>The hcp c/a ratio must be a positive finite number.</source>
         <translation>HCP c/a 轴比必须是有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="349" />
+        <location filename="../ui/messages.py" line="361" />
         <source>Enter one element symbol or the X placeholder for every visible sublattice.</source>
         <translation>请为每个可见子晶格输入一个元素符号或 X 占位符。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="353" />
+        <location filename="../ui/messages.py" line="365" />
         <source>Invalid element or placeholder {element}; use a chemical element symbol or X.</source>
         <translation>无效的元素或占位符 {element}；请使用化学元素符号或 X。</translation>
     </message>
@@ -2585,22 +2600,22 @@
         <translation type="vanished">手动重复倍率必须包含三个正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="338" />
+        <location filename="../ui/messages.py" line="350" />
         <source>Enter one valid chemical element symbol, for example Cu, Fe, or Mg.</source>
         <translation>请输入一个有效的元素符号，例如 Cu、Fe 或 Mg。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="342" />
+        <location filename="../ui/messages.py" line="354" />
         <source>The lattice-constant range must contain finite numbers.</source>
         <translation>晶格常数范围必须包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="345" />
+        <location filename="../ui/messages.py" line="357" />
         <source>Lattice constants must be positive.</source>
         <translation>晶格常数必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="346" />
+        <location filename="../ui/messages.py" line="358" />
         <source>The lattice-constant step must be positive.</source>
         <translation>晶格常数步长必须为正数。</translation>
     </message>
@@ -4359,12 +4374,27 @@
 <context>
     <name>ElementScalingRow</name>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="36" />
+        <location filename="../ui/views/_card/perturb_card.py" line="37" />
         <source>Fe</source>
         <translation>Fe</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="46" />
+        <location filename="../ui/views/_card/perturb_card.py" line="38" />
+        <source>Element symbol, for example H, Si, or Fe</source>
+        <translation>元素符号，例如 H、Si 或 Fe</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="39" />
+        <source>Element</source>
+        <translation>元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="47" />
+        <source>Maximum displacement for this element</source>
+        <translation>该元素的最大位移</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="50" />
         <source>Remove this element scaling</source>
         <translation>移除此元素缩放</translation>
     </message>
@@ -7678,23 +7708,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="393" />
-        <location filename="../ui/messages.py" line="433" />
+        <location filename="../ui/messages.py" line="405" />
+        <location filename="../ui/messages.py" line="445" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="403" />
+        <location filename="../ui/messages.py" line="415" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="413" />
+        <location filename="../ui/messages.py" line="425" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="423" />
+        <location filename="../ui/messages.py" line="435" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -8961,7 +8991,7 @@ All child items will also be deleted.</source>
 <context>
     <name>PerturbCard</name>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="96" />
+        <location filename="../ui/views/_card/perturb_card.py" line="100" />
         <source>Make Atomic Perturb</source>
         <translation>生成原子扰动</translation>
     </message>
@@ -8970,14 +9000,15 @@ All child items will also be deleted.</source>
         <translation type="vanished">随机引擎：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="111" />
-        <location filename="../ui/views/_card/perturb_card.py" line="289" />
+        <location filename="../ui/views/_card/perturb_card.py" line="115" />
+        <location filename="../ui/views/_card/perturb_card.py" line="342" />
+        <location filename="../ui/views/_card/perturb_card.py" line="367" />
         <source>Sobol</source>
         <translation>Sobol</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="111" />
-        <location filename="../ui/views/_card/perturb_card.py" line="289" />
+        <location filename="../ui/views/_card/perturb_card.py" line="115" />
+        <location filename="../ui/views/_card/perturb_card.py" line="367" />
         <source>Uniform</source>
         <translation>均匀随机</translation>
     </message>
@@ -8986,138 +9017,223 @@ All child items will also be deleted.</source>
         <translation type="vanished">选择随机引擎</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="117" />
+        <location filename="../ui/views/_card/perturb_card.py" line="121" />
         <source>Uniform is the general default; Sobol improves small-sample coverage for up to 7,067 atoms</source>
         <translation>均匀随机是通用默认方式；Sobol 可改善不超过 7,067 个原子时的小样本覆盖</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="124" />
         <source>Optional</source>
-        <translation>可选</translation>
+        <translation type="vanished">可选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="122" />
         <source>Identify organic</source>
-        <translation>识别有机分子</translation>
+        <translation type="vanished">识别有机分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="114" />
+        <location filename="../ui/views/_card/perturb_card.py" line="118" />
         <source>Random engine</source>
         <translation>随机引擎</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="125" />
         <source>Treat organic molecules as rigid units</source>
-        <translation>将有机分子作为刚体处理</translation>
+        <translation type="vanished">将有机分子作为刚体处理</translation>
     </message>
     <message>
         <source>Max distance:</source>
         <translation type="vanished">最大距离：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="134" />
         <source>Max distance</source>
-        <translation>最大距离</translation>
+        <translation type="vanished">最大距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="135" />
         <source>Maximum displacement distance</source>
-        <translation>最大位移距离</translation>
+        <translation type="vanished">最大位移距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="138" />
         <source>Element Scaling:</source>
-        <translation>元素缩放：</translation>
+        <translation type="vanished">元素缩放：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="140" />
         <source>Set maximum displacement per element; unlisted elements use Max distance</source>
-        <translation>为不同元素设置最大位移；未列出的元素使用“最大距离”</translation>
+        <translation type="vanished">为不同元素设置最大位移；未列出的元素使用“最大距离”</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="143" />
         <source>Enable Scaling</source>
-        <translation>启用缩放</translation>
+        <translation type="vanished">启用缩放</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="146" />
         <source>Enable element-specific maximum displacement</source>
-        <translation>启用按元素设置最大位移</translation>
+        <translation type="vanished">启用按元素设置最大位移</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="152" />
+        <location filename="../ui/views/_card/perturb_card.py" line="163" />
         <source>Add Element Scaling</source>
         <translation>添加元素缩放</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="163" />
         <source>Element scaling</source>
-        <translation>元素缩放</translation>
+        <translation type="vanished">元素缩放</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="177" />
         <source>Structures</source>
-        <translation>结构数</translation>
+        <translation type="vanished">结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="178" />
         <source>Number of perturbed structures to generate</source>
-        <translation>要生成的扰动结构数量</translation>
+        <translation type="vanished">要生成的扰动结构数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="181" />
+        <location filename="../ui/views/_card/perturb_card.py" line="127" />
+        <source>Move detected organic molecules rigidly</source>
+        <translation>有机分子刚体平移</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="130" />
+        <source>Molecules</source>
+        <translation>分子处理</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="132" />
+        <source>Automatically detected organic connected clusters share one translation</source>
+        <translation>自动识别的有机连通簇共用一个平移向量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="142" />
+        <source>Displacement limit</source>
+        <translation>位移上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="143" />
+        <source>Maximum Cartesian displacement-vector length for each atom</source>
+        <translation>每个原子的最大笛卡尔位移向量长度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="148" />
+        <source>Each row sets Element → maximum displacement (Å). Unlisted elements use the global limit.</source>
+        <translation>每行设置“元素 → 最大位移（Å）”。未列出的元素使用全局上限。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="154" />
+        <source>Use per-element limits</source>
+        <translation>使用逐元素上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="157" />
+        <source>Override the displacement limit for selected elements</source>
+        <translation>为选定元素覆盖位移上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="174" />
+        <source>Overrides</source>
+        <translation>元素覆盖</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="192" />
+        <source>Structures per input</source>
+        <translation>每个输入生成</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="193" />
+        <source>Number of perturbed outputs generated from each input structure</source>
+        <translation>每个输入结构生成的扰动输出数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="196" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="183" />
+        <location filename="../ui/views/_card/perturb_card.py" line="198" />
         <source>Enable reproducible random perturbations</source>
         <translation>启用可复现的随机扰动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="197" />
+        <location filename="../ui/views/_card/perturb_card.py" line="212" />
         <source>Reproducibility</source>
         <translation>可复现性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="199" />
+        <location filename="../ui/views/_card/perturb_card.py" line="214" />
         <source>Perturbation</source>
         <translation>扰动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="206" />
-        <source>Element limits</source>
-        <translation>元素位移上限</translation>
+        <location filename="../ui/views/_card/perturb_card.py" line="222" />
+        <source>Each displacement is sampled inside a 3D ball of this radius. Only Cartesian coordinates change; the cell and PBC stay unchanged.</source>
+        <translation>每个位移都在该半径的三维球内采样。只改变笛卡尔坐标；晶胞和 PBC 保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="211" />
+        <location filename="../ui/views/_card/perturb_card.py" line="230" />
+        <source>Per-element displacement limits</source>
+        <translation>逐元素位移上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="352" />
+        <source>{inputs} × {count} = {total} outputs</source>
+        <translation>{inputs} × {count} = {total} 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="359" />
+        <source>{count} per input</source>
+        <translation>每个输入 {count} 个</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="370" />
+        <source>{engine} engine · {distance} Å is a hard displacement-vector ceiling.</source>
+        <translation>{engine} 引擎 · {distance} Å 是位移向量的硬上限。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="373" />
+        <source>No collision check is performed; inspect shortest distances in a small output sample.</source>
+        <translation>本卡不做碰撞检测；请先在少量输出中检查最短原子间距。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="379" />
+        <source>For near-equilibrium sampling, 0.05–0.15 Å is a common starting range.</source>
+        <translation>近平衡采样通常可从 0.05–0.15 Å 开始。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="385" />
+        <source>Sobol coverage is best with 4, 8, 16, … outputs; the requested count is still preserved.</source>
+        <translation>Sobol 在输出数为 4、8、16……时覆盖性质最好；程序仍会保留请求的数量。</translation>
+    </message>
+    <message>
+        <source>Element limits</source>
+        <translation type="vanished">元素位移上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="236" />
         <source>Generation</source>
         <translation>生成设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="276" />
+        <location filename="../ui/views/_card/perturb_card.py" line="340" />
         <source>max {distance} Å</source>
         <translation>最大 {distance} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="279" />
+        <location filename="../ui/views/_card/perturb_card.py" line="344" />
+        <source>rigid organic molecules</source>
+        <translation>有机分子刚体平移</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="347" />
         <source>{count} element overrides</source>
         <translation>{count} 个元素使用单独上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="281" />
         <source>{count} structures</source>
-        <translation>{count} 个结构</translation>
+        <translation type="vanished">{count} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="283" />
+        <location filename="../ui/views/_card/perturb_card.py" line="361" />
         <source>seed {seed}</source>
         <translation>随机种子 {seed}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="291" />
         <source>{engine} engine · {distance} Å is a hard displacement ceiling. Inspect shortest distances in a small output sample before scaling up.</source>
-        <translation>{engine} 引擎 · {distance} Å 为位移硬上限。批量生成前，建议先检查少量输出的最短原子间距。</translation>
+        <translation type="vanished">{engine} 引擎 · {distance} Å 为位移硬上限。批量生成前，建议先检查少量输出的最短原子间距。</translation>
     </message>
 </context>
 <context>

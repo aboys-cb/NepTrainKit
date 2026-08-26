@@ -259,7 +259,7 @@ def build_cases() -> list[BenchCase]:
             "CrystalPrototypeBuilder",
             run_generator(
                 CrystalPrototypeBuilderOperation(),
-                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.55, 3.65, 0.05), max_atoms=256, max_outputs=3),
+                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.55, 3.65, 0.05), max_outputs=3),
             ),
             require_count_and_tag(3, "Proto("),
         ),
@@ -569,7 +569,7 @@ def build_count50_cases() -> list[BenchCase]:
             "CrystalPrototypeBuilder:50",
             run_generator(
                 CrystalPrototypeBuilderOperation(),
-                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.50, 3.99, 0.01), max_atoms=256, max_outputs=50),
+                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.50, 3.99, 0.01), max_outputs=50),
             ),
             require_count_and_tag(50, "Proto("),
         ),

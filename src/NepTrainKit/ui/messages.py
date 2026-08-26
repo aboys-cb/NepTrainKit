@@ -330,6 +330,18 @@ def _card_operation_error_catalog() -> None:
         "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
         "use Uniform sampling for larger structures.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: {element} is not a valid element symbol for a displacement limit.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: element {element} has more than one displacement limit; keep only one row.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: the displacement limit for {element} must be finite and non-negative.",
+    )
     QCoreApplication.translate("CardOperationError", "Unsupported crystal prototype: {lattice}.")
     QCoreApplication.translate("CardOperationError", "Maximum outputs must be at least 1.")
     QCoreApplication.translate(

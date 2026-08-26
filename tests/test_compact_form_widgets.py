@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import unittest
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QLineEdit, QVBoxLayout, QWidget
 
 from NepTrainKit.ui.widgets.compact_form import (
     CategoryTag,
     CompactField,
+    ResponsiveFormGrid,
     SegmentedControl,
     StatusBadge,
     StatusDot,
@@ -94,6 +95,28 @@ class CompactFormWidgetsTest(unittest.TestCase):
         self.assertEqual(control.currentIndex(), 0)
         self.assertEqual(control.currentText(), "X")
         self.assertEqual(len(control._buttons), 3)
+
+    def test_responsive_grid_clears_stale_second_column_after_narrowing(self):
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        grid = ResponsiveFormGrid(host, two_column_threshold=320)
+        first = CompactField("First", QLineEdit(), grid)
+        second = CompactField("Second", QLineEdit(), grid)
+        grid.add_field(first)
+        grid.add_field(second)
+        layout.addWidget(grid)
+
+        host.resize(420, 180)
+        host.show()
+        self._app.processEvents()
+        self.assertEqual(grid.column_count(), 2)
+
+        host.resize(280, 180)
+        self._app.processEvents()
+        self.assertEqual(grid.column_count(), 1)
+        self.assertEqual(grid._layout.columnStretch(1), 0)
+        self.assertGreater(first.width(), grid.width() * 0.8)
+        host.close()
 
 
 if __name__ == "__main__":

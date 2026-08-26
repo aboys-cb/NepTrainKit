@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import warnings
 from dataclasses import dataclass
 from itertools import combinations
-from typing import Literal
+from typing import Literal, Mapping
 
 import numpy as np
 from ase.build import make_supercell
+from ase.data import atomic_numbers
 from ase.geometry import cell_to_cellpar
 from scipy.stats.qmc import Sobol
 
@@ -415,6 +417,43 @@ class PerturbOperation(StructureOperation):
     _MAX_SOBOL_ATOMS = Sobol.MAXDIM // 3
 
     @staticmethod
+    def normalize_element_limits(
+        raw_limits: Mapping[str, float] | list[tuple[str, float]] | None,
+    ) -> dict[str, float]:
+        normalized: dict[str, float] = {}
+        entries = raw_limits.items() if isinstance(raw_limits, Mapping) else (raw_limits or [])
+        for raw_symbol, raw_limit in entries:
+            token = str(raw_symbol).strip()
+            if token.startswith("__duplicate__:"):
+                raise CardOperationError(
+                    "perturb.duplicate_element_limit",
+                    "Perturb: element {element} has more than one displacement limit; keep only one row.",
+                    element=token.split(":", 1)[1] or "?",
+                )
+            symbol = token[:1].upper() + token[1:].lower()
+            if not symbol or atomic_numbers.get(symbol, 0) <= 0:
+                raise CardOperationError(
+                    "perturb.invalid_element_limit",
+                    "Perturb: {element} is not a valid element symbol for a displacement limit.",
+                    element=token or "?",
+                )
+            if symbol in normalized:
+                raise CardOperationError(
+                    "perturb.duplicate_element_limit",
+                    "Perturb: element {element} has more than one displacement limit; keep only one row.",
+                    element=symbol,
+                )
+            limit = float(raw_limit)
+            if not np.isfinite(limit) or limit < 0.0:
+                raise CardOperationError(
+                    "perturb.invalid_element_distance",
+                    "Perturb: the displacement limit for {element} must be finite and non-negative.",
+                    element=symbol,
+                )
+            normalized[symbol] = limit
+        return normalized
+
+    @staticmethod
     def unit_ball_displacements(samples: np.ndarray, radii: np.ndarray) -> np.ndarray:
         """Map [0, 1]^3 samples to displacement vectors inside per-atom balls."""
         raw = np.asarray(samples, dtype=float)
@@ -453,6 +492,10 @@ class PerturbOperation(StructureOperation):
         engine_type = int(params.engine_type)
         if engine_type not in {0, 1}:
             raise ValueError("Perturb: engine_type must be 0 (Sobol) or 1 (Uniform).")
+        max_distance = float(params.max_distance)
+        if not np.isfinite(max_distance) or max_distance < 0.0:
+            raise ValueError("Perturb: max_distance values must be finite and non-negative.")
+        element_scalings = self.normalize_element_limits(params.element_scalings) if params.use_element_scaling else {}
         if n_atoms == 0:
             return [structure.copy()]
         dim = n_atoms * 3
@@ -464,11 +507,10 @@ class PerturbOperation(StructureOperation):
                 max_atoms=self._MAX_SOBOL_ATOMS,
             )
         symbols = structure.get_chemical_symbols()
-        element_scalings = params.element_scalings or {}
         per_atom_scaling = (
-            np.array([element_scalings.get(sym, params.max_distance) for sym in symbols])
+            np.array([element_scalings.get(sym, max_distance) for sym in symbols])
             if params.use_element_scaling
-            else np.full(n_atoms, params.max_distance)
+            else np.full(n_atoms, max_distance)
         )
         if not np.all(np.isfinite(per_atom_scaling)) or np.any(per_atom_scaling < 0.0):
             raise ValueError("Perturb: max_distance values must be finite and non-negative.")
@@ -480,17 +522,29 @@ class PerturbOperation(StructureOperation):
         )
         rng = np.random.default_rng(base_seed)
 
-        if engine_type == 0:
-            sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
-            unit_samples = sobol_engine.random(max_num).reshape(max_num, n_atoms, 3)
-        else:
-            unit_samples = rng.random((max_num, n_atoms, 3))
-        displacements = self.unit_ball_displacements(unit_samples, per_atom_scaling)
-
+        organic_clusters = []
+        inorganic_clusters = []
+        sampling_scaling = per_atom_scaling
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
             organic_clusters = [cluster for cluster, is_org in zip(clusters, is_organic_list) if is_org]
             inorganic_clusters = [cluster for cluster, is_org in zip(clusters, is_organic_list) if not is_org]
+            sampling_scaling = per_atom_scaling.copy()
+            for cluster in organic_clusters:
+                sampling_scaling[cluster] = float(np.min(per_atom_scaling[cluster]))
+
+        if engine_type == 0:
+            sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="The balance properties of Sobol.*",
+                    category=UserWarning,
+                )
+                unit_samples = sobol_engine.random(max_num).reshape(max_num, n_atoms, 3)
+        else:
+            unit_samples = rng.random((max_num, n_atoms, 3))
+        displacements = self.unit_ball_displacements(unit_samples, sampling_scaling)
 
         orig_positions = structure.positions
         for i in range(max_num):
@@ -509,6 +563,20 @@ class PerturbOperation(StructureOperation):
             new_structure = structure.copy()
             new_structure.set_positions(self.wrapped_positions(structure, new_positions))
             eng = "U" if engine_type == 1 else "S"
+            new_structure.info["atomic_perturb"] = json.dumps(
+                {
+                    "engine": "uniform" if engine_type == 1 else "sobol",
+                    "max_distance": max_distance,
+                    "structures_per_input": max_num,
+                    "identify_organic": bool(params.identify_organic),
+                    "element_limits": element_scalings,
+                    "seed": int(params.seed) if params.use_seed else None,
+                    "derived_seed": int(base_seed) if base_seed is not None else None,
+                    "sample_index": i,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
             append_config_tag(new_structure, f"Pert(d={params.max_distance},{eng})")
             structure_list.append(new_structure)
 

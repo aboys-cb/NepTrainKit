@@ -1057,6 +1057,11 @@
         <translation>沿晶格矢量完整复制输入晶胞，可按指定倍率、目标长度或严格原子预算生成超胞。</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/card_metadata.py" line="311" />
+        <source>Sample correlated atomic displacements from vibrational modes already stored on each input structure.</source>
+        <translation>从每个输入结构已有的振动模式中采样协同原子位移。</translation>
+    </message>
+    <message>
         <source>Fill an existing periodic cell with solvent molecules.</source>
         <translation type="vanished">向现有周期性晶胞填充溶剂分子。</translation>
     </message>
@@ -1146,72 +1151,71 @@
         <translation>振动模式扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="311" />
         <source>Generate perturbations along precomputed vibrational modes.</source>
-        <translation>沿预先计算的振动模式生成扰动结构。</translation>
+        <translation type="vanished">沿预先计算的振动模式生成扰动结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="315" />
+        <location filename="../ui/widgets/card_metadata.py" line="318" />
         <source>Alloy</source>
         <translation>合金与组分</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="316" />
+        <location filename="../ui/widgets/card_metadata.py" line="319" />
         <source>Container</source>
         <translation>容器</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="317" />
+        <location filename="../ui/widgets/card_metadata.py" line="320" />
         <source>Defect</source>
         <translation>缺陷</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="318" />
+        <location filename="../ui/widgets/card_metadata.py" line="321" />
         <source>Filter</source>
         <translation>筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="319" />
+        <location filename="../ui/widgets/card_metadata.py" line="322" />
         <source>Lattice</source>
         <translation>晶格</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="320" />
+        <location filename="../ui/widgets/card_metadata.py" line="323" />
         <source>Magnetism</source>
         <translation>磁性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="321" />
+        <location filename="../ui/widgets/card_metadata.py" line="324" />
         <source>Organic</source>
         <translation>分子与溶剂</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="322" />
+        <location filename="../ui/widgets/card_metadata.py" line="325" />
         <source>Perturbation</source>
         <translation>扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="323" />
+        <location filename="../ui/widgets/card_metadata.py" line="326" />
         <source>Structure</source>
         <translation>结构</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="324" />
+        <location filename="../ui/widgets/card_metadata.py" line="327" />
         <source>Surface</source>
         <translation>表面</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="327" />
+        <location filename="../ui/widgets/card_metadata.py" line="330" />
         <source>author</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="328" />
+        <location filename="../ui/widgets/card_metadata.py" line="331" />
         <source>maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="329" />
+        <location filename="../ui/widgets/card_metadata.py" line="332" />
         <source>contributor</source>
         <translation>贡献者</translation>
     </message>
@@ -2307,98 +2311,98 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1064" />
+        <location filename="../ui/widgets/card_metadata.py" line="1067" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1081" />
+        <location filename="../ui/widgets/card_metadata.py" line="1084" />
         <source>Make Dataset cards</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1091" />
+        <location filename="../ui/widgets/card_metadata.py" line="1094" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1193" />
+        <location filename="../ui/widgets/card_metadata.py" line="1196" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1205" />
+        <location filename="../ui/widgets/card_metadata.py" line="1208" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1206" />
+        <location filename="../ui/widgets/card_metadata.py" line="1209" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1207" />
+        <location filename="../ui/widgets/card_metadata.py" line="1210" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1208" />
+        <location filename="../ui/widgets/card_metadata.py" line="1211" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1209" />
+        <location filename="../ui/widgets/card_metadata.py" line="1212" />
         <source>Documentation</source>
         <translation>文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1235" />
-        <location filename="../ui/widgets/card_metadata.py" line="1395" />
+        <location filename="../ui/widgets/card_metadata.py" line="1238" />
+        <location filename="../ui/widgets/card_metadata.py" line="1398" />
         <source>Technical details</source>
         <translation>技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1259" />
+        <location filename="../ui/widgets/card_metadata.py" line="1262" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1265" />
+        <location filename="../ui/widgets/card_metadata.py" line="1268" />
         <source>Source file</source>
         <translation>源文件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1288" />
+        <location filename="../ui/widgets/card_metadata.py" line="1291" />
         <source>Add selected card</source>
         <translation>添加所选卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1293" />
+        <location filename="../ui/widgets/card_metadata.py" line="1296" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1338" />
+        <location filename="../ui/widgets/card_metadata.py" line="1341" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1353" />
+        <location filename="../ui/widgets/card_metadata.py" line="1356" />
         <source>Open documentation</source>
         <translation>打开文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1365" />
+        <location filename="../ui/widgets/card_metadata.py" line="1368" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1393" />
+        <location filename="../ui/widgets/card_metadata.py" line="1396" />
         <source>Hide technical details</source>
         <translation>收起技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1429" />
+        <location filename="../ui/widgets/card_metadata.py" line="1432" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -2406,32 +2410,32 @@
 <context>
     <name>CardLibraryPopup</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="846" />
+        <location filename="../ui/widgets/card_metadata.py" line="849" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="877" />
+        <location filename="../ui/widgets/card_metadata.py" line="880" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="907" />
+        <location filename="../ui/widgets/card_metadata.py" line="910" />
         <source>Hover or focus a card to see what it does.</source>
         <translation>悬停或聚焦卡片以查看功能说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1004" />
+        <location filename="../ui/widgets/card_metadata.py" line="1007" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1007" />
+        <location filename="../ui/widgets/card_metadata.py" line="1010" />
         <source>No cards found.</source>
         <translation>未找到卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1015" />
+        <location filename="../ui/widgets/card_metadata.py" line="1018" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
@@ -2439,94 +2443,94 @@
 <context>
     <name>CardMetadata</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="335" />
-        <location filename="../ui/widgets/card_metadata.py" line="388" />
+        <location filename="../ui/widgets/card_metadata.py" line="338" />
+        <location filename="../ui/widgets/card_metadata.py" line="391" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="369" />
+        <location filename="../ui/widgets/card_metadata.py" line="372" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="379" />
+        <location filename="../ui/widgets/card_metadata.py" line="382" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="381" />
+        <location filename="../ui/widgets/card_metadata.py" line="384" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="390" />
+        <location filename="../ui/widgets/card_metadata.py" line="393" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="391" />
+        <location filename="../ui/widgets/card_metadata.py" line="394" />
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="402" />
-        <location filename="../ui/widgets/card_metadata.py" line="435" />
+        <location filename="../ui/widgets/card_metadata.py" line="405" />
+        <location filename="../ui/widgets/card_metadata.py" line="438" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="403" />
+        <location filename="../ui/widgets/card_metadata.py" line="406" />
         <source>No public contributor metadata yet.</source>
         <translation>暂无公开贡献者元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="446" />
+        <location filename="../ui/widgets/card_metadata.py" line="449" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="447" />
+        <location filename="../ui/widgets/card_metadata.py" line="450" />
         <source>Group</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="448" />
+        <location filename="../ui/widgets/card_metadata.py" line="451" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="449" />
+        <location filename="../ui/widgets/card_metadata.py" line="452" />
         <source>Maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="450" />
+        <location filename="../ui/widgets/card_metadata.py" line="453" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="451" />
+        <location filename="../ui/widgets/card_metadata.py" line="454" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="452" />
+        <location filename="../ui/widgets/card_metadata.py" line="455" />
         <source>Source path</source>
         <translation>源路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="659" />
+        <location filename="../ui/widgets/card_metadata.py" line="662" />
         <source>Make Dataset Card</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="690" />
+        <location filename="../ui/widgets/card_metadata.py" line="693" />
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="702" />
+        <location filename="../ui/widgets/card_metadata.py" line="705" />
         <source>Citation</source>
         <translation>引用</translation>
     </message>
@@ -2534,12 +2538,12 @@
 <context>
     <name>CardMetadataDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="715" />
+        <location filename="../ui/widgets/card_metadata.py" line="718" />
         <source>Card info - {card_name}</source>
         <translation>卡片信息 - {card_name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="730" />
+        <location filename="../ui/widgets/card_metadata.py" line="733" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -2590,6 +2594,56 @@
         <location filename="../ui/messages.py" line="365" />
         <source>Invalid element or placeholder {element}; use a chemical element symbol or X.</source>
         <translation>无效的元素或占位符 {element}；请使用化学元素符号或 X。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="369" />
+        <source>The mode coefficient scale must be a positive finite number.</source>
+        <translation>模态系数尺度必须是有限正数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="372" />
+        <source>Modes combined per sample must be at least 1.</source>
+        <translation>每个样本至少需要组合 1 个模式。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="375" />
+        <source>Structures per input must be an integer.</source>
+        <translation>每个输入生成的结构数必须是整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="376" />
+        <source>Structures per input must be at least 1.</source>
+        <translation>每个输入至少需要生成 1 个结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="377" />
+        <source>Coefficient distribution must be Normal or Uniform.</source>
+        <translation>系数分布必须是正态分布或均匀分布。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="380" />
+        <source>The absolute frequency cutoff must be a finite non-negative number.</source>
+        <translation>绝对频率截止值必须是有限非负数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="383" />
+        <source>Vibrational perturbation needs at least one usable mode on every input structure.</source>
+        <translation>每个输入结构至少需要包含一个可用的振动模式。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="387" />
+        <source>Finite frequencies are required when frequency filtering or scaling is enabled.</source>
+        <translation>启用频率筛选或加权时，所有模式都必须包含有限频率值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="391" />
+        <source>Frequency weighting requires non-zero frequencies for every usable mode.</source>
+        <translation>频率加权要求每个可用模式的频率都不为零。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="395" />
+        <source>Modes per sample is {requested}, but only {available} usable modes are available.</source>
+        <translation>每个样本请求组合 {requested} 个模式，但筛选后只有 {available} 个可用模式。</translation>
     </message>
     <message>
         <source>The atom limit ({limit}) is smaller than the {base_atoms}-atom prototype cell.</source>
@@ -4003,7 +4057,7 @@
     <message>
         <location filename="../ui/widgets/distribution.py" line="114" />
         <source>Normal</source>
-        <translation>正态曲线</translation>
+        <translation>正态分布</translation>
     </message>
     <message>
         <location filename="../ui/widgets/distribution.py" line="112" />
@@ -7450,172 +7504,172 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>粘贴卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="293" />
+        <location filename="../ui/pages/makedata.py" line="294" />
         <source>Folder for Custom Cards</source>
         <translation>自定义卡片目录</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="428" />
+        <location filename="../ui/pages/makedata.py" line="429" />
         <source>Unsaved workflow</source>
         <translation>未保存的工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="429" />
+        <location filename="../ui/pages/makedata.py" line="430" />
         <source>Discard the unsaved workflow changes?</source>
         <translation>放弃尚未保存的工作流改动吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="447" />
-        <location filename="../ui/pages/makedata.py" line="458" />
+        <location filename="../ui/pages/makedata.py" line="448" />
+        <location filename="../ui/pages/makedata.py" line="459" />
         <source>Untitled workflow</source>
         <translation>未命名工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="455" />
-        <location filename="../ui/pages/makedata.py" line="483" />
+        <location filename="../ui/pages/makedata.py" line="456" />
+        <location filename="../ui/pages/makedata.py" line="484" />
         <source>Workflow saved.</source>
         <translation>工作流已保存。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="461" />
+        <location filename="../ui/pages/makedata.py" line="462" />
         <source>Save workflow</source>
         <translation>保存工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="462" />
-        <location filename="../ui/pages/makedata.py" line="516" />
-        <location filename="../ui/pages/makedata.py" line="539" />
+        <location filename="../ui/pages/makedata.py" line="463" />
+        <location filename="../ui/pages/makedata.py" line="517" />
+        <location filename="../ui/pages/makedata.py" line="540" />
         <source>Workflow name</source>
         <translation>工作流名称</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="481" />
+        <location filename="../ui/pages/makedata.py" line="482" />
         <source>Workflow template saved.</source>
         <translation>工作流模板已保存。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="494" />
+        <location filename="../ui/pages/makedata.py" line="495" />
         <source>New from {name}</source>
         <translation>基于 {name} 新建</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="515" />
+        <location filename="../ui/pages/makedata.py" line="516" />
         <source>Rename workflow</source>
         <translation>重命名工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="538" />
+        <location filename="../ui/pages/makedata.py" line="539" />
         <source>Duplicate workflow</source>
         <translation>复制工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="540" />
+        <location filename="../ui/pages/makedata.py" line="541" />
         <source>{name} copy</source>
         <translation>{name} 副本</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="554" />
+        <location filename="../ui/pages/makedata.py" line="555" />
         <source>Delete workflow</source>
         <translation>删除工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="555" />
+        <location filename="../ui/pages/makedata.py" line="556" />
         <source>Delete this saved workflow? This cannot be undone.</source>
         <translation>删除这个已保存的工作流吗？此操作无法撤销。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="574" />
+        <location filename="../ui/pages/makedata.py" line="575" />
         <source>Import workflow</source>
         <translation>导入工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="576" />
-        <location filename="../ui/pages/makedata.py" line="597" />
+        <location filename="../ui/pages/makedata.py" line="577" />
+        <location filename="../ui/pages/makedata.py" line="598" />
         <source>Workflow JSON (*.json)</source>
         <translation>工作流 JSON (*.json)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="595" />
+        <location filename="../ui/pages/makedata.py" line="596" />
         <source>Export workflow</source>
         <translation>导出工作流</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="626" />
+        <location filename="../ui/pages/makedata.py" line="627" />
         <source>Load structure failed: {path}</source>
         <translation>加载结构失败：{path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="657" />
+        <location filename="../ui/pages/makedata.py" line="659" />
         <source>success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="660" />
+        <location filename="../ui/pages/makedata.py" line="662" />
         <source>Success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="673" />
+        <location filename="../ui/pages/makedata.py" line="694" />
         <source>Please choose the structure files</source>
         <translation>请选择结构文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="676" />
+        <location filename="../ui/pages/makedata.py" line="697" />
         <source>Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)</source>
         <translation>结构文件 (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="777" />
+        <location filename="../ui/pages/makedata.py" line="798" />
         <source>No enabled cards to export.</source>
         <translation>没有可导出的已启用卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="780" />
+        <location filename="../ui/pages/makedata.py" line="801" />
         <source>No enabled card has output. Run the workflow first.</source>
         <translation>已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="784" />
+        <location filename="../ui/pages/makedata.py" line="805" />
         <source>The final enabled card has no output. Run the workflow first.</source>
         <translation>最后一张已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="791" />
+        <location filename="../ui/pages/makedata.py" line="812" />
         <source>The workflow has multiple independent branch outputs. Export each branch separately or insert an explicit Merge.</source>
         <translation>工作流包含多个独立分支输出。请分别导出各分支，或插入显式合并。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="797" />
+        <location filename="../ui/pages/makedata.py" line="818" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="805" />
+        <location filename="../ui/pages/makedata.py" line="826" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="819" />
+        <location filename="../ui/pages/makedata.py" line="840" />
         <source>Cards are still running. Please wait for the current run to finish.</source>
         <translation>卡片仍在运行，请等待当前任务完成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="838" />
+        <location filename="../ui/pages/makedata.py" line="859" />
         <source>A permanent fork without Merge must be the final workflow node. Insert an explicit Merge before adding a shared downstream card.</source>
         <translation>未合并的永久分叉必须是工作流终点。添加共同下游卡片前，请先插入显式合并。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="847" />
+        <location filename="../ui/pages/makedata.py" line="868" />
         <source>Please import the structure file first. You can drag it in directly or import it from the upper left corner!</source>
         <translation>请先导入结构文件。你可以直接拖入，或从左上角导入。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="856" />
+        <location filename="../ui/pages/makedata.py" line="877" />
         <source>No card selected. Please select a card in the workspace.</source>
         <translation>尚未选择卡片，请先在工作区选择一个卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="941" />
+        <location filename="../ui/pages/makedata.py" line="962" />
         <source>Training structures generated.</source>
         <translation>训练结构已生成。</translation>
     </message>
@@ -7624,58 +7678,58 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">扰动训练集已创建。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="950" />
+        <location filename="../ui/pages/makedata.py" line="971" />
         <source>No checked card has output. Run the workflow first.</source>
         <translation>已勾选的卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="953" />
+        <location filename="../ui/pages/makedata.py" line="974" />
         <source>No checked cards to view.</source>
         <translation>没有可查看的已勾选卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="998" />
+        <location filename="../ui/pages/makedata.py" line="1019" />
         <source>Run this card to create an output first.</source>
         <translation>请先运行此卡片生成输出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1037" />
+        <location filename="../ui/pages/makedata.py" line="1058" />
         <source>no card</source>
         <translation>没有卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1056" />
-        <location filename="../ui/pages/makedata.py" line="1080" />
+        <location filename="../ui/pages/makedata.py" line="1077" />
+        <location filename="../ui/pages/makedata.py" line="1101" />
         <source>No cards in workspace.</source>
         <translation>工作区中没有卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1065" />
+        <location filename="../ui/pages/makedata.py" line="1086" />
         <source>Card configuration exported successfully.</source>
         <translation>卡片配置已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1084" />
+        <location filename="../ui/pages/makedata.py" line="1105" />
         <source>Card configuration JSON copied to clipboard.</source>
         <translation>卡片配置 JSON 已复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1115" />
+        <location filename="../ui/pages/makedata.py" line="1136" />
         <source>Clipboard does not contain card JSON.</source>
         <translation>剪贴板中没有卡片 JSON。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1145" />
+        <location filename="../ui/pages/makedata.py" line="1166" />
         <source>Invalid card configuration file: {error}</source>
         <translation>卡片配置文件无效：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1192" />
+        <location filename="../ui/pages/makedata.py" line="1213" />
         <source>Failed to load {name}: {error}</source>
         <translation>加载 {name} 失败：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1200" />
+        <location filename="../ui/pages/makedata.py" line="1221" />
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>
@@ -7708,23 +7762,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="405" />
-        <location filename="../ui/messages.py" line="445" />
+        <location filename="../ui/messages.py" line="435" />
+        <location filename="../ui/messages.py" line="475" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="415" />
+        <location filename="../ui/messages.py" line="445" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="425" />
+        <location filename="../ui/messages.py" line="455" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="435" />
+        <location filename="../ui/messages.py" line="465" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -9002,13 +9056,13 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="115" />
         <location filename="../ui/views/_card/perturb_card.py" line="342" />
-        <location filename="../ui/views/_card/perturb_card.py" line="367" />
+        <location filename="../ui/views/_card/perturb_card.py" line="362" />
         <source>Sobol</source>
         <translation>Sobol</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="115" />
-        <location filename="../ui/views/_card/perturb_card.py" line="367" />
+        <location filename="../ui/views/_card/perturb_card.py" line="362" />
         <source>Uniform</source>
         <translation>均匀随机</translation>
     </message>
@@ -9169,32 +9223,32 @@ All child items will also be deleted.</source>
         <translation>逐元素位移上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="352" />
+        <location filename="../ui/views/_card/perturb_card.py" line="378" />
         <source>{inputs} × {count} = {total} outputs</source>
         <translation>{inputs} × {count} = {total} 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="359" />
+        <location filename="../ui/views/_card/perturb_card.py" line="349" />
         <source>{count} per input</source>
         <translation>每个输入 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="370" />
+        <location filename="../ui/views/_card/perturb_card.py" line="365" />
         <source>{engine} engine · {distance} Å is a hard displacement-vector ceiling.</source>
         <translation>{engine} 引擎 · {distance} Å 是位移向量的硬上限。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="373" />
+        <location filename="../ui/views/_card/perturb_card.py" line="368" />
         <source>No collision check is performed; inspect shortest distances in a small output sample.</source>
         <translation>本卡不做碰撞检测；请先在少量输出中检查最短原子间距。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="379" />
+        <location filename="../ui/views/_card/perturb_card.py" line="387" />
         <source>For near-equilibrium sampling, 0.05–0.15 Å is a common starting range.</source>
         <translation>近平衡采样通常可从 0.05–0.15 Å 开始。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="385" />
+        <location filename="../ui/views/_card/perturb_card.py" line="393" />
         <source>Sobol coverage is best with 4, 8, 16, … outputs; the requested count is still preserved.</source>
         <translation>Sobol 在输出数为 4、8、16……时覆盖性质最好；程序仍会保留请求的数量。</translation>
     </message>
@@ -9227,7 +9281,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">{count} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="361" />
+        <location filename="../ui/views/_card/perturb_card.py" line="351" />
         <source>seed {seed}</source>
         <translation>随机种子 {seed}</translation>
     </message>
@@ -16921,109 +16975,260 @@ Magnetic: {magnetic}</source>
 <context>
     <name>VibrationModePerturbCard</name>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="28" />
         <source>Make Vibrational Perturb</source>
-        <translation>生成振动扰动</translation>
+        <translation type="vanished">生成振动扰动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="36" />
         <source>Amplitude distribution:</source>
-        <translation>振幅分布：</translation>
+        <translation type="vanished">振幅分布：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="38" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="32" />
+        <source>Vibrational Mode Perturbation</source>
+        <translation>振动模式扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="43" />
+        <source>Required input</source>
+        <translation>输入要求</translation>
+    </message>
+    <message>
+        <source>Every input structure must carry recognizable vibrational-mode arrays. Finite frequencies are also required when filtering or frequency weighting is enabled.</source>
+        <translation type="vanished">每个输入结构都必须包含可识别的振动模式数组。启用频率筛选或加权时，还必须提供有限频率值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="46" />
+        <source>Every input structure must carry recognizable vibrational-mode arrays. Frequency options require finite values, and weighting also requires non-zero values.</source>
+        <translation>每个输入结构都必须包含可识别的振动模式数组。频率相关选项要求频率值有限，频率加权还要求频率不为零。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="52" />
+        <source>This card samples correlated motion inside the supplied mode subspace. Use Atomic Perturb when no mode data is available.</source>
+        <translation>本卡在已有模式张成的子空间内采样协同运动。没有模式数据时请使用“原子扰动”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="61" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="199" />
         <source>Normal</source>
-        <translation>正态曲线</translation>
+        <translation>正态分布</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="38" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="61" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="199" />
         <source>Uniform</source>
         <translation>均匀随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="40" />
-        <source>Select random distribution used for mode amplitudes</source>
-        <translation>选择模式振幅使用的随机分布</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="43" />
-        <source>Mode amplitude:</source>
-        <translation>模式振幅：</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="50" />
-        <source>Global scaling factor applied to the combined vibrational displacement</source>
-        <translation>应用到组合振动位移的全局缩放因子</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="53" />
-        <source>Modes per sample:</source>
-        <translation>每个样本的模式数：</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="58" />
-        <source>Number of vibrational modes combined for each generated structure</source>
-        <translation>每个生成结构组合的振动模式数量</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="61" />
-        <source>Min frequency:</source>
-        <translation>最小频率：</translation>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="65" />
+        <source>Coefficient distribution</source>
+        <translation>系数分布</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/vibration_perturb_card.py" line="68" />
-        <source>Discard modes whose |frequency| is below this threshold</source>
-        <translation>丢弃 |frequency| 低于该阈值的模式</translation>
+        <source>Normal is unbounded; Uniform samples each coefficient from −1 to 1.</source>
+        <translation>正态分布无界；均匀分布在 −1 到 1 之间采样每个系数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="71" />
-        <source>Structures</source>
-        <translation>结构数</translation>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="72" />
+        <source>× mode</source>
+        <translation>× 模态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="76" />
-        <source>Number of vibrationally perturbed structures to generate</source>
-        <translation>要生成的振动扰动结构数量</translation>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="78" />
+        <source>Mode coefficient scale</source>
+        <translation>模态系数尺度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="79" />
-        <source>Options</source>
-        <translation>选项</translation>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="81" />
+        <source>A multiplier for the combined mode vectors, not a maximum atomic displacement.</source>
+        <translation>组合模态矢量的乘数，不是原子最大位移。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="80" />
-        <source>Optional controls for how vibrational amplitudes are scaled</source>
-        <translation>振动振幅缩放方式的可选控制项</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="88" />
-        <source>Scale by 1/sqrt(|freq|)</source>
-        <translation>按 1/sqrt(|freq|) 缩放</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="90" />
-        <source>Divide sampled amplitudes by sqrt(|frequency|) to favour softer modes</source>
-        <translation>将采样振幅除以 sqrt(|frequency|)，偏向较软模式</translation>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="89" />
+        <source>Modes combined per sample</source>
+        <translation>每个样本组合模式数</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/vibration_perturb_card.py" line="92" />
+        <source>Modes are selected without replacement from those that pass the filter.</source>
+        <translation>从筛选后的可用模式中无放回选择。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="95" />
+        <source>Mode sampling</source>
+        <translation>模式采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="102" />
+        <source>Use 1/√|frequency|</source>
+        <translation>使用 1/√|频率|</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="105" />
+        <source>Frequency weighting</source>
+        <translation>频率加权</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="108" />
+        <source>Reduces coefficients for higher-frequency modes using the stored frequency values.</source>
+        <translation>使用输入频率值减小高频模式的系数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="111" />
+        <source>Apply cutoff</source>
+        <translation>应用截止值</translation>
+    </message>
+    <message>
+        <source>Apply frequency cutoff</source>
+        <translation type="vanished">应用频率截止值</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="114" />
+        <source>Near-zero modes</source>
+        <translation>近零频模式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="124" />
+        <source>Absolute frequency cutoff</source>
+        <translation>绝对频率截止值</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="127" />
+        <source>Uses the same numerical unit as the frequencies stored in the input.</source>
+        <translation>数值单位与输入中保存的频率单位相同。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="130" />
+        <source>Frequency handling</source>
+        <translation>频率处理</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="142" />
+        <source>Structures per input</source>
+        <translation>每个输入生成</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="158" />
+        <source>Reproducibility</source>
+        <translation>可复现性</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="160" />
+        <source>Generation</source>
+        <translation>生成设置</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="192" />
+        <source>Discard modes with |frequency| below this value.</source>
+        <translation>丢弃 |频率| 低于此值的模式。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="194" />
+        <source>Disabled because frequency cutoff is not applied.</source>
+        <translation>未应用频率截止值，因此此项不生效。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="201" />
+        <source>{distribution} · scale {scale} · {modes} modes</source>
+        <translation>{distribution} · 尺度 {scale} · {modes} 个模式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="206" />
+        <source>{count} per input</source>
+        <translation>每个输入 {count} 个</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="209" />
+        <source>seed {seed}</source>
+        <translation>随机种子 {seed}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="221" />
+        <source>{inputs} × {count} = {total} outputs</source>
+        <translation>{inputs} × {count} = {total} 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="229" />
+        <source>The scale multiplies the supplied mode vectors; the resulting maximum atomic displacement depends on their normalization and sampled coefficients.</source>
+        <translation>该尺度乘在输入模态矢量上；最终最大原子位移取决于模态归一化和抽样系数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="235" />
+        <source>Frequency values must use one consistent input unit; weighting also requires non-zero values.</source>
+        <translation>频率值必须统一使用同一种输入单位；频率加权还要求频率不为零。</translation>
+    </message>
+    <message>
+        <source>Frequency values must be finite and use one consistent input unit.</source>
+        <translation type="vanished">频率值必须有限，并统一使用同一种输入单位。</translation>
+    </message>
+    <message>
+        <source>Select random distribution used for mode amplitudes</source>
+        <translation type="vanished">选择模式振幅使用的随机分布</translation>
+    </message>
+    <message>
+        <source>Mode amplitude:</source>
+        <translation type="vanished">模式振幅：</translation>
+    </message>
+    <message>
+        <source>Global scaling factor applied to the combined vibrational displacement</source>
+        <translation type="vanished">应用到组合振动位移的全局缩放因子</translation>
+    </message>
+    <message>
+        <source>Modes per sample:</source>
+        <translation type="vanished">每个样本的模式数：</translation>
+    </message>
+    <message>
+        <source>Number of vibrational modes combined for each generated structure</source>
+        <translation type="vanished">每个生成结构组合的振动模式数量</translation>
+    </message>
+    <message>
+        <source>Min frequency:</source>
+        <translation type="vanished">最小频率：</translation>
+    </message>
+    <message>
+        <source>Discard modes whose |frequency| is below this threshold</source>
+        <translation type="vanished">丢弃 |frequency| 低于该阈值的模式</translation>
+    </message>
+    <message>
+        <source>Structures</source>
+        <translation type="vanished">结构数</translation>
+    </message>
+    <message>
+        <source>Number of vibrationally perturbed structures to generate</source>
+        <translation type="vanished">要生成的振动扰动结构数量</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="vanished">选项</translation>
+    </message>
+    <message>
+        <source>Optional controls for how vibrational amplitudes are scaled</source>
+        <translation type="vanished">振动振幅缩放方式的可选控制项</translation>
+    </message>
+    <message>
+        <source>Scale by 1/sqrt(|freq|)</source>
+        <translation type="vanished">按 1/sqrt(|freq|) 缩放</translation>
+    </message>
+    <message>
+        <source>Divide sampled amplitudes by sqrt(|frequency|) to favour softer modes</source>
+        <translation type="vanished">将采样振幅除以 sqrt(|frequency|)，偏向较软模式</translation>
+    </message>
+    <message>
         <source>Drop near-zero modes</source>
-        <translation>丢弃近零模式</translation>
+        <translation type="vanished">丢弃近零模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="94" />
         <source>Ignore translational modes below the minimum frequency threshold</source>
-        <translation>忽略低于最小频率阈值的平移模式</translation>
+        <translation type="vanished">忽略低于最小频率阈值的平移模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="99" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="145" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="101" />
         <source>Enable reproducible random sampling</source>
-        <translation>启用可复现的随机采样</translation>
+        <translation type="vanished">启用可复现的随机采样</translation>
     </message>
 </context>
 <context>

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import math
 import re
 from dataclasses import dataclass
@@ -30,6 +31,7 @@ from NepTrainKit.core.torsion_guard_pbc import (
 from .geometry import scaled_positions, wrapped_positions as fast_wrapped_positions
 from .errors import CardOperationError
 from .operation import GeneratorOperation, StructureOperation
+from .sampling import derived_structure_seed
 
 
 _NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -399,40 +401,82 @@ class VibrationModePerturbOperation(StructureOperation):
 
     def run_structure(self, structure, params: VibrationModePerturbParams) -> list:
         amplitude = float(params.amplitude)
-        if amplitude <= 0.0:
-            raise ValueError("VibrationModePerturb: amplitude must be positive.")
+        if not np.isfinite(amplitude) or amplitude <= 0.0:
+            raise CardOperationError(
+                "vibration-mode-perturb-amplitude",
+                "The mode coefficient scale must be a positive finite number.",
+            )
 
         modes_per_sample = int(params.modes_per_sample)
         if modes_per_sample <= 0:
-            raise ValueError("VibrationModePerturb: modes_per_sample must be >= 1.")
+            raise CardOperationError(
+                "vibration-mode-perturb-mode-count",
+                "Modes combined per sample must be at least 1.",
+            )
         max_num_value = float(params.max_num)
         if not np.isfinite(max_num_value) or not max_num_value.is_integer():
-            raise ValueError("VibrationModePerturb: max_num must be an integer.")
+            raise CardOperationError(
+                "vibration-mode-perturb-output-integer",
+                "Structures per input must be an integer.",
+            )
         max_num = int(max_num_value)
         if max_num <= 0:
-            raise ValueError("VibrationModePerturb: max_num must be >= 1.")
+            raise CardOperationError(
+                "vibration-mode-perturb-output-count",
+                "Structures per input must be at least 1.",
+            )
         distribution = int(params.distribution)
         if distribution not in {0, 1}:
-            raise ValueError(
-                "VibrationModePerturb: distribution must be 0 (Normal) or 1 (Uniform)."
+            raise CardOperationError(
+                "vibration-mode-perturb-distribution",
+                "Coefficient distribution must be Normal or Uniform.",
             )
 
         min_frequency = float(params.min_frequency) if params.exclude_near_zero else 0.0
+        if not np.isfinite(min_frequency) or min_frequency < 0.0:
+            raise CardOperationError(
+                "vibration-mode-perturb-frequency-cutoff",
+                "The absolute frequency cutoff must be a finite non-negative number.",
+            )
         frequencies, modes = get_vibration_modes(structure, min_frequency=min_frequency)
         if modes.size == 0:
-            logger.warning("VibrationModePerturbOperation: no vibrational modes found on structure.")
-            return []
+            raise CardOperationError(
+                "vibration-mode-perturb-no-modes",
+                "Vibrational perturbation needs at least one usable mode on every input structure.",
+            )
 
-        base_seed = int(params.seed) if params.use_seed else None
+        needs_frequencies = bool(params.scale_by_frequency or params.exclude_near_zero)
+        if needs_frequencies and not np.all(np.isfinite(frequencies)):
+            raise CardOperationError(
+                "vibration-mode-perturb-missing-frequencies",
+                "Finite frequencies are required when frequency filtering or scaling is enabled.",
+            )
+        if params.scale_by_frequency and np.any(np.abs(frequencies) <= 0.0):
+            raise CardOperationError(
+                "vibration-mode-perturb-zero-frequency",
+                "Frequency weighting requires non-zero frequencies for every usable mode.",
+            )
+        if modes_per_sample > modes.shape[0]:
+            raise CardOperationError(
+                "vibration-mode-perturb-too-many-modes",
+                "Modes per sample is {requested}, but only {available} usable modes are available.",
+                requested=modes_per_sample,
+                available=modes.shape[0],
+            )
+
+        base_seed = (
+            derived_structure_seed(int(params.seed), structure)
+            if params.use_seed
+            else None
+        )
         rng = np.random.default_rng(base_seed)
         freq_for_scaling = np.abs(frequencies)
         freq_for_scaling[~np.isfinite(freq_for_scaling)] = 0.0
-        replace = modes_per_sample > modes.shape[0]
         orig_positions = structure.get_positions()
 
         generated = []
-        for _ in range(max_num):
-            indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=replace)
+        for sample_index in range(max_num):
+            indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=False)
             if distribution == 0:
                 coeffs = rng.normal(loc=0.0, scale=1.0, size=modes_per_sample)
             else:
@@ -448,6 +492,26 @@ class VibrationModePerturbOperation(StructureOperation):
             new_positions = orig_positions + amplitude * displacement
             new_structure.set_positions(self.wrapped_positions(structure, new_positions))
             append_config_tag(new_structure, f"Vib(a={amplitude:.3f},m={modes_per_sample})")
+            new_structure.info["vibration_mode_perturb"] = json.dumps(
+                {
+                    "distribution": "normal" if distribution == 0 else "uniform",
+                    "amplitude": amplitude,
+                    "modes_per_sample": modes_per_sample,
+                    "min_frequency": min_frequency,
+                    "scale_by_frequency": bool(params.scale_by_frequency),
+                    "exclude_near_zero": bool(params.exclude_near_zero),
+                    "seed": int(params.seed) if params.use_seed else None,
+                    "derived_seed": base_seed,
+                    "sample_index": sample_index,
+                    "candidate_mode_count": int(modes.shape[0]),
+                    "selected_mode_indices": [int(index) for index in indices],
+                    "selected_frequencies": [
+                        float(frequencies[index]) if np.isfinite(frequencies[index]) else None
+                        for index in indices
+                    ],
+                },
+                separators=(",", ":"),
+            )
             generated.append(new_structure)
         return generated
 

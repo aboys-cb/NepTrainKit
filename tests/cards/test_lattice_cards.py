@@ -1,6 +1,8 @@
 from .card_test_base import *
 from ase.geometry import cell_to_cellpar, cellpar_to_cell
+from ase.io import read as ase_read, write as ase_write
 from unittest.mock import patch
+import io
 import json
 import re
 import warnings
@@ -949,6 +951,41 @@ class TestLatticeCards(BaseCardTest):
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
 
+    def test_vibration_mode_vector_columns_survive_extxyz_and_run(self):
+        structure = Atoms(
+            "Si2",
+            positions=[[0.0, 0.0, 0.0], [2.3, 0.0, 0.0]],
+            cell=[10.0, 10.0, 10.0],
+            pbc=True,
+        )
+        structure.new_array(
+            "vibration_mode_0",
+            np.array([[0.1, 0.0, 0.0], [-0.1, 0.0, 0.0]]),
+        )
+        structure.new_array("vibration_frequency_0", np.array([100.0, 100.0]))
+
+        buffer = io.StringIO()
+        ase_write(buffer, structure, format="extxyz")
+        extxyz = buffer.getvalue()
+        self.assertIn("vibration_mode_0:R:3", extxyz)
+        restored = ase_read(io.StringIO(extxyz), format="extxyz")
+
+        results = VibrationModePerturbOperation().run_structure(
+            restored,
+            VibrationModePerturbParams(
+                amplitude=0.05,
+                modes_per_sample=1,
+                min_frequency=1.0,
+                max_num=2,
+                use_seed=True,
+                seed=5,
+            ),
+        )
+        self.assertEqual(len(results), 2)
+        self.assertTrue(
+            all(not np.allclose(atoms.positions, restored.positions) for atoms in results)
+        )
+
     def test_vibration_mode_distribution_and_frequency_scaling_contract(self):
         structure = Atoms(
             "H",
@@ -1025,6 +1062,7 @@ class TestLatticeCards(BaseCardTest):
             VibrationModePerturbOperation().run_structure(
                 structure,
                 VibrationModePerturbParams(
+                    modes_per_sample=1,
                     min_frequency=12.5,
                     exclude_near_zero=True,
                     max_num=1,
@@ -1037,6 +1075,7 @@ class TestLatticeCards(BaseCardTest):
             VibrationModePerturbOperation().run_structure(
                 structure,
                 VibrationModePerturbParams(
+                    modes_per_sample=1,
                     min_frequency=12.5,
                     exclude_near_zero=False,
                     max_num=1,
@@ -1045,3 +1084,84 @@ class TestLatticeCards(BaseCardTest):
                 ),
             )
             self.assertEqual(get_modes.call_args.kwargs["min_frequency"], 0.0)
+
+    def test_vibration_mode_perturb_fails_closed_for_unusable_input(self):
+        operation = VibrationModePerturbOperation()
+        plain = Atoms("H", positions=[[0.0, 0.0, 0.0]])
+
+        with self.assertRaisesRegex(ValueError, "at least one usable mode"):
+            operation.run_structure(plain, VibrationModePerturbParams(max_num=1))
+
+        mode_only = plain.copy()
+        mode_only.new_array("vibration_mode_0_x", np.array([1.0]))
+        mode_only.new_array("vibration_mode_0_y", np.array([0.0]))
+        mode_only.new_array("vibration_mode_0_z", np.array([0.0]))
+        with self.assertRaisesRegex(ValueError, "Finite frequencies"):
+            operation.run_structure(
+                mode_only,
+                VibrationModePerturbParams(modes_per_sample=1, max_num=1),
+            )
+
+        with_frequency = mode_only.copy()
+        with_frequency.new_array("vibration_frequency_0", np.array([100.0]))
+        with self.assertRaisesRegex(ValueError, "only 1 usable modes"):
+            operation.run_structure(
+                with_frequency,
+                VibrationModePerturbParams(modes_per_sample=2, max_num=1),
+            )
+
+        zero_frequency = mode_only.copy()
+        zero_frequency.new_array("vibration_frequency_0", np.array([0.0]))
+        with self.assertRaisesRegex(ValueError, "non-zero frequencies"):
+            operation.run_structure(
+                zero_frequency,
+                VibrationModePerturbParams(
+                    modes_per_sample=1,
+                    max_num=1,
+                    scale_by_frequency=True,
+                    exclude_near_zero=False,
+                ),
+            )
+
+    def test_vibration_mode_perturb_records_provenance_and_uses_structure_seed(self):
+        operation = VibrationModePerturbOperation()
+
+        def make_structure(x: float) -> Atoms:
+            atoms = Atoms("H", positions=[[x, 0.0, 0.0]], pbc=False)
+            for mode_index, vector in enumerate(((1.0, 0.0, 0.0), (0.0, 1.0, 0.0))):
+                for axis, value in zip("xyz", vector):
+                    atoms.new_array(
+                        f"vibration_mode_{mode_index}_{axis}", np.array([value])
+                    )
+                atoms.new_array(
+                    f"vibration_frequency_{mode_index}", np.array([100.0 + mode_index])
+                )
+            return atoms
+
+        params = VibrationModePerturbParams(
+            distribution=1,
+            amplitude=0.1,
+            modes_per_sample=1,
+            max_num=2,
+            scale_by_frequency=False,
+            exclude_near_zero=False,
+            use_seed=True,
+            seed=42,
+        )
+        left = make_structure(0.0)
+        right = make_structure(0.2)
+        left_results = operation.run_structure(left, params)
+        repeated = operation.run_structure(left, params)
+        right_results = operation.run_structure(right, params)
+
+        for first, second in zip(left_results, repeated):
+            np.testing.assert_allclose(first.positions, second.positions)
+        left_displacements = np.array([atoms.positions - left.positions for atoms in left_results])
+        right_displacements = np.array([atoms.positions - right.positions for atoms in right_results])
+        self.assertFalse(np.allclose(left_displacements, right_displacements))
+
+        metadata = json.loads(left_results[0].info["vibration_mode_perturb"])
+        self.assertEqual(metadata["candidate_mode_count"], 2)
+        self.assertEqual(len(metadata["selected_mode_indices"]), 1)
+        self.assertEqual(metadata["seed"], 42)
+        self.assertEqual(metadata["sample_index"], 0)

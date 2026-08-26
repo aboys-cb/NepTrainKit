@@ -308,7 +308,10 @@ def _localized_catalog(_language_marker: str):
         ),
         "VibrationModePerturbCard": (
             QCoreApplication.translate("CardCatalog", "Vib Mode Perturb"),
-            QCoreApplication.translate("CardCatalog", "Generate perturbations along precomputed vibrational modes."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Sample correlated atomic displacements from vibrational modes already stored on each input structure.",
+            ),
         ),
     }
     groups = {

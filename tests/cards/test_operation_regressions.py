@@ -143,7 +143,7 @@ class TestOperationRegressionEdges(BaseCardTest):
                 vibration,
                 VibrationModePerturbParams(distribution=7, max_num=1),
             )
-        with self.assertRaisesRegex(ValueError, "max_num must be >= 1"):
+        with self.assertRaisesRegex(ValueError, "Structures per input must be at least 1"):
             VibrationModePerturbOperation().run_structure(
                 vibration,
                 VibrationModePerturbParams(max_num=0),

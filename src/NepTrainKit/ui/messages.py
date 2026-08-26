@@ -366,6 +366,36 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "Invalid element or placeholder {element}; use a chemical element symbol or X.",
     )
+    QCoreApplication.translate(
+        "CardOperationError", "The mode coefficient scale must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Modes combined per sample must be at least 1."
+    )
+    QCoreApplication.translate("CardOperationError", "Structures per input must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Structures per input must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError", "Coefficient distribution must be Normal or Uniform."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The absolute frequency cutoff must be a finite non-negative number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vibrational perturbation needs at least one usable mode on every input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Finite frequencies are required when frequency filtering or scaling is enabled.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Frequency weighting requires non-zero frequencies for every usable mode.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Modes per sample is {requested}, but only {available} usable modes are available.",
+    )
 
 
 class MessageManager(QObject):

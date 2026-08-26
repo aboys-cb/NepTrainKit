@@ -1654,9 +1654,20 @@ def get_vibration_modes(
             break
 
     if modes_source is None:
+        vector_pattern = re.compile(
+            r"(?:vibration|normal)?[_-]?mode[_-]?(\d+)$",
+            re.IGNORECASE,
+        )
         component_pattern = re.compile(r"(?:vibration|normal)?[_-]?mode[_-]?(\d+)[_-]?([xyz])$", re.IGNORECASE)
+        vector_store: dict[int, npt.NDArray[np.float64]] = {}
         component_store: dict[int, dict[str, npt.NDArray[np.float64]]] = defaultdict(dict)
         for name, values in arrays.items():
+            vector_match = vector_pattern.match(name)
+            if vector_match:
+                array = np.asarray(values, dtype=np.float64)
+                if array.shape == (len(structure), 3):
+                    vector_store[int(vector_match.group(1))] = array
+                continue
             match = component_pattern.match(name)
             if not match:
                 continue
@@ -1669,7 +1680,11 @@ def get_vibration_modes(
 
         ordered_modes: list[npt.NDArray[np.float64]] = []
         ordered_indices: list[int] = []
-        for idx in sorted(component_store.keys()):
+        for idx in sorted(set(vector_store) | set(component_store)):
+            if idx in vector_store:
+                ordered_modes.append(vector_store[idx])
+                ordered_indices.append(idx)
+                continue
             comp = component_store[idx]
             if not {"x", "y", "z"}.issubset(comp.keys()):
                 continue

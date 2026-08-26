@@ -2,125 +2,240 @@
 
 from __future__ import annotations
 
-from PySide6.QtWidgets import QFrame, QGridLayout
-from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
+from PySide6.QtWidgets import QHBoxLayout, QWidget
+from qfluentwidgets import BodyLabel, CheckBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import VibrationModePerturbOperation, VibrationModePerturbParams
-from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
-from NepTrainKit.ui.widgets import MakeDataCard
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SegmentedControl,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
 class VibrationModePerturbCard(MakeDataCard):
-    """Generate perturbations along precomputed vibrational modes."""
+    """Generate correlated displacements from modes stored on each input."""
 
     group = "Perturbation"
     card_name = "Vib Mode Perturb"
     menu_icon = r":/images/src/images/perturb.svg"
-    contributors = [
-        {"name": "NepTrainKit", "role": "author"},
-    ]
+    contributors = [{"name": "NepTrainKit", "role": "author"}]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Make Vibrational Perturb"))
+        self.setTitle(self.tr("Vibrational Mode Perturbation"))
+        self._preview_input_count: int | None = None
         self.init_ui()
 
     def init_ui(self):
-        """Construct UI controls for vibrational perturbation settings."""
-
+        """Build a responsive inspector with the input contract kept visible."""
         self.setObjectName("vibration_perturb_card_widget")
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setVerticalSpacing(12)
 
-        self.distribution_label = BodyLabel(self.tr("Amplitude distribution:"), self.setting_widget)
-        self.distribution_combo = ComboBox(self.setting_widget)
-        self.distribution_combo.addItems([self.tr("Normal"), self.tr("Uniform")])
+        input_section = InspectorSection(
+            self.tr("Required input"),
+            self.setting_widget,
+            self.tr(
+                "Every input structure must carry recognizable vibrational-mode arrays. "
+                "Frequency options require finite values, and weighting also requires non-zero values."
+            ),
+        )
+        boundary_label = BodyLabel(
+            self.tr(
+                "This card samples correlated motion inside the supplied mode subspace. "
+                "Use Atomic Perturb when no mode data is available."
+            ),
+            input_section,
+        )
+        boundary_label.setWordWrap(True)
+        input_section.addWidget(boundary_label)
+
+        self.distribution_combo = SegmentedControl(
+            [self.tr("Normal"), self.tr("Uniform")], self.setting_widget
+        )
         self.distribution_combo.setCurrentIndex(0)
-        self.distribution_label.setToolTip(self.tr("Select random distribution used for mode amplitudes"))
-        self.distribution_label.installEventFilter(ToolTipFilter(self.distribution_label, 300, ToolTipPosition.TOP))
+        distribution_field = CompactField(
+            self.tr("Coefficient distribution"),
+            self.distribution_combo,
+            self.setting_widget,
+            self.tr("Normal is unbounded; Uniform samples each coefficient from −1 to 1."),
+        )
 
-        self.amplitude_label = BodyLabel(self.tr("Mode amplitude:"), self.setting_widget)
         self.amplitude_frame = SpinBoxUnitInputFrame(self)
-        self.amplitude_frame.set_input("Å", 1, "float")
+        self.amplitude_frame.set_input(self.tr("× mode"), 1, "float")
         self.amplitude_frame.setDecimals(4)
         self.amplitude_frame.setSingleStep(0.01)
         self.amplitude_frame.setRange(0.0, 1.0)
         self.amplitude_frame.set_input_value([0.05])
-        self.amplitude_label.setToolTip(self.tr("Global scaling factor applied to the combined vibrational displacement"))
-        self.amplitude_label.installEventFilter(ToolTipFilter(self.amplitude_label, 300, ToolTipPosition.TOP))
+        amplitude_field = CompactField(
+            self.tr("Mode coefficient scale"),
+            self.amplitude_frame,
+            self.setting_widget,
+            self.tr("A multiplier for the combined mode vectors, not a maximum atomic displacement."),
+        )
 
-        self.modes_label = BodyLabel(self.tr("Modes per sample:"), self.setting_widget)
         self.modes_frame = SpinBoxUnitInputFrame(self)
-        self.modes_frame.set_input("mode", 1, "int")
+        self.modes_frame.set_input("", 1, "int")
         self.modes_frame.setRange(1, 999)
         self.modes_frame.set_input_value([2])
-        self.modes_label.setToolTip(self.tr("Number of vibrational modes combined for each generated structure"))
-        self.modes_label.installEventFilter(ToolTipFilter(self.modes_label, 300, ToolTipPosition.TOP))
+        modes_field = CompactField(
+            self.tr("Modes combined per sample"),
+            self.modes_frame,
+            self.setting_widget,
+            self.tr("Modes are selected without replacement from those that pass the filter."),
+        )
 
-        self.min_freq_label = BodyLabel(self.tr("Min frequency:"), self.setting_widget)
+        perturb_section = InspectorSection(self.tr("Mode sampling"), self.setting_widget)
+        perturb_grid = ResponsiveFormGrid(perturb_section)
+        perturb_grid.add_field(distribution_field, span=2)
+        perturb_grid.add_field(amplitude_field)
+        perturb_grid.add_field(modes_field)
+        perturb_section.addWidget(perturb_grid)
+
+        self.scale_checkbox = CheckBox(self.tr("Use 1/√|frequency|"), self.setting_widget)
+        self.scale_checkbox.setChecked(True)
+        scale_field = CompactField(
+            self.tr("Frequency weighting"),
+            self.scale_checkbox,
+            self.setting_widget,
+            self.tr("Reduces coefficients for higher-frequency modes using the stored frequency values."),
+        )
+
+        self.exclude_checkbox = CheckBox(self.tr("Apply cutoff"), self.setting_widget)
+        self.exclude_checkbox.setChecked(True)
+        cutoff_toggle_field = CompactField(
+            self.tr("Near-zero modes"), self.exclude_checkbox, self.setting_widget
+        )
+
         self.min_freq_frame = SpinBoxUnitInputFrame(self)
-        self.min_freq_frame.set_input("cm^-1", 1, "float")
+        self.min_freq_frame.set_input("", 1, "float")
         self.min_freq_frame.setDecimals(3)
         self.min_freq_frame.setSingleStep(1.0)
         self.min_freq_frame.setRange(0.0, 1e5)
         self.min_freq_frame.set_input_value([10.0])
-        self.min_freq_label.setToolTip(self.tr("Discard modes whose |frequency| is below this threshold"))
-        self.min_freq_label.installEventFilter(ToolTipFilter(self.min_freq_label, 300, ToolTipPosition.TOP))
+        self.min_freq_field = CompactField(
+            self.tr("Absolute frequency cutoff"),
+            self.min_freq_frame,
+            self.setting_widget,
+            self.tr("Uses the same numerical unit as the frequencies stored in the input."),
+        )
 
-        self.num_label = BodyLabel(self.tr("Structures"), self.setting_widget)
+        frequency_section = InspectorSection(self.tr("Frequency handling"), self.setting_widget)
+        frequency_grid = ResponsiveFormGrid(frequency_section)
+        frequency_grid.add_field(scale_field)
+        frequency_grid.add_field(cutoff_toggle_field)
+        frequency_grid.add_field(self.min_freq_field, span=2)
+        frequency_section.addWidget(frequency_grid)
+
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
-        self.num_condition_frame.set_input("unit", 1, "int")
+        self.num_condition_frame.set_input("", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([32])
-        self.num_label.setToolTip(self.tr("Number of vibrationally perturbed structures to generate"))
-        self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
-
-        self.optional_label = BodyLabel(self.tr("Options"), self.setting_widget)
-        self.optional_label.setToolTip(self.tr("Optional controls for how vibrational amplitudes are scaled"))
-        self.optional_label.installEventFilter(ToolTipFilter(self.optional_label, 300, ToolTipPosition.TOP))
-
-        self.optional_frame = QFrame(self.setting_widget)
-        self.optional_frame_layout = QGridLayout(self.optional_frame)
-        self.optional_frame_layout.setContentsMargins(0, 0, 0, 0)
-        self.optional_frame_layout.setSpacing(2)
-
-        self.scale_checkbox = CheckBox(self.tr("Scale by 1/sqrt(|freq|)"), self.optional_frame)
-        self.scale_checkbox.setChecked(True)
-        self.scale_checkbox.setToolTip(self.tr("Divide sampled amplitudes by sqrt(|frequency|) to favour softer modes"))
-
-        self.exclude_checkbox = CheckBox(self.tr("Drop near-zero modes"), self.optional_frame)
-        self.exclude_checkbox.setChecked(True)
-        self.exclude_checkbox.setToolTip(self.tr("Ignore translational modes below the minimum frequency threshold"))
-
-        self.optional_frame_layout.addWidget(self.scale_checkbox, 0, 0, 1, 1)
-        self.optional_frame_layout.addWidget(self.exclude_checkbox, 0, 1, 1, 1)
+        num_field = CompactField(
+            self.tr("Structures per input"), self.num_condition_frame, self.setting_widget
+        )
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
-        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
         self.seed_frame.setRange(0, 2**31 - 1)
         self.seed_frame.set_input_value([0])
         self.seed_frame.setEnabled(False)
-        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+        seed_row = QWidget(self.setting_widget)
+        seed_layout = QHBoxLayout(seed_row)
+        seed_layout.setContentsMargins(0, 0, 0, 0)
+        seed_layout.setSpacing(6)
+        seed_layout.addWidget(self.seed_checkbox)
+        seed_layout.addWidget(self.seed_frame, 1)
+        seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
 
-        self.settingLayout.addWidget(self.distribution_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.distribution_combo, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.amplitude_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.amplitude_frame, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.modes_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.modes_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.min_freq_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.min_freq_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.num_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.num_condition_frame, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.optional_label, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.optional_frame, 5, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 6, 1, 1, 2)
+        output_section = InspectorSection(self.tr("Generation"), self.setting_widget)
+        output_grid = ResponsiveFormGrid(output_section)
+        output_grid.add_field(num_field)
+        output_grid.add_field(seed_field, span=2)
+        output_section.addWidget(output_grid)
+
+        self.settingLayout.addWidget(input_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(perturb_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(frequency_section, 2, 0, 1, 3)
+        self.settingLayout.addWidget(output_section, 3, 0, 1, 3)
+
+        self.exclude_checkbox.toggled.connect(self._update_frequency_controls)
+        self.seed_checkbox.toggled.connect(self.seed_frame.setEnabled)
+        self.distribution_combo.currentIndexChanged.connect(
+            lambda _index: self.refresh_compact_presentation()
+        )
+        for frame in (
+            self.amplitude_frame,
+            self.modes_frame,
+            self.min_freq_frame,
+            self.num_condition_frame,
+            self.seed_frame,
+        ):
+            for control in frame.object_list:
+                control.valueChanged.connect(lambda _value: self.refresh_compact_presentation())
+        for checkbox in (self.scale_checkbox, self.exclude_checkbox, self.seed_checkbox):
+            checkbox.toggled.connect(lambda _checked: self.refresh_compact_presentation())
+        self._update_frequency_controls(self.exclude_checkbox.isChecked())
+
+    def _update_frequency_controls(self, enabled: bool) -> None:
+        self.min_freq_frame.setEnabled(bool(enabled))
+        self.min_freq_field.setToolTip(
+            self.tr("Discard modes with |frequency| below this value.")
+            if enabled
+            else self.tr("Disabled because frequency cutoff is not applied.")
+        )
+
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        distribution = self.tr("Normal") if params.distribution == 0 else self.tr("Uniform")
+        parts = [
+            self.tr("{distribution} · scale {scale} · {modes} modes").format(
+                distribution=distribution,
+                scale=f"{params.amplitude:.4g}",
+                modes=params.modes_per_sample,
+            ),
+            self.tr("{count} per input").format(count=params.max_num),
+        ]
+        if params.use_seed:
+            parts.append(self.tr("seed {seed}").format(seed=params.seed))
+        return " · ".join(parts)
+
+    def set_preview_input_count(self, count: int | None) -> None:
+        self._preview_input_count = None if count is None else max(0, int(count))
+        self.refresh_compact_presentation()
+
+    def get_guidance_text(self) -> str:
+        params = self.get_params()
+        notes = []
+        if self._preview_input_count:
+            notes.append(
+                self.tr("{inputs} × {count} = {total} outputs").format(
+                    inputs=self._preview_input_count,
+                    count=params.max_num,
+                    total=self._preview_input_count * params.max_num,
+                )
+            )
+        notes.append(
+            self.tr(
+                "The scale multiplies the supplied mode vectors; the resulting maximum atomic displacement depends on their normalization and sampled coefficients."
+            )
+        )
+        if params.scale_by_frequency or params.exclude_near_zero:
+            notes.append(
+                self.tr(
+                    "Frequency values must use one consistent input unit; weighting also requires non-zero values."
+                )
+            )
+        return " ".join(notes)
 
     def create_operation(self):
         return VibrationModePerturbOperation()
@@ -148,9 +263,9 @@ class VibrationModePerturbCard(MakeDataCard):
         self.exclude_checkbox.setChecked(bool(params.exclude_near_zero))
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
+        self._update_frequency_controls(bool(params.exclude_near_zero))
 
     def process_structure(self, structure):
-        """Create perturbed structures aligned with available vibrational modes."""
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
@@ -159,7 +274,6 @@ class VibrationModePerturbCard(MakeDataCard):
         return data
 
     def from_dict(self, data_dict):
-        """Restore the card configuration from serialized values."""
         super().from_dict(data_dict)
         raw_params = data_dict.get("params")
         if raw_params:

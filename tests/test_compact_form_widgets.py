@@ -68,6 +68,23 @@ class CompactFormWidgetsTest(unittest.TestCase):
         field.set_label("Dopants")
         self.assertEqual(field.caption.text(), "Dopants")
 
+    def test_compact_field_can_opt_into_a_bounded_inline_control(self):
+        line_edit = QLineEdit()
+        field = CompactField(
+            "Short scalar",
+            line_edit,
+            inline=True,
+            input_max_width=132,
+        )
+
+        self.assertFalse(field.caption.wordWrap())
+        self.assertEqual(line_edit.maximumWidth(), 132)
+        self.assertIs(field.input_widget, line_edit)
+        inline_layout = field.layout().itemAt(0).widget().layout()
+        self.assertIs(inline_layout.itemAt(0).widget(), field.caption)
+        self.assertIs(inline_layout.itemAt(1).widget(), line_edit)
+        self.assertIsNotNone(inline_layout.itemAt(2).spacerItem())
+
     def test_segmented_control_selection(self):
         control = SegmentedControl(["Atomic %", "Mass %", "Count"])
         self.assertEqual(control.currentIndex(), 0)

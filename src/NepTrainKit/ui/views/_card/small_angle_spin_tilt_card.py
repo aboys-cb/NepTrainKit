@@ -16,7 +16,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
     """Generate deterministic controlled spin-canting configurations."""
 
     group = "Magnetism"
-    card_name = "Spin Canting Scan"
+    card_name = "Canting Scan"
     menu_icon = r":/images/src/images/perturb.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -24,7 +24,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Spin Canting Scan"))
+        self.setTitle(self.tr("Canting Scan"))
         self.init_ui()
 
     def init_ui(self):

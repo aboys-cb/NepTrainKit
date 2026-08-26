@@ -109,7 +109,7 @@ class PerturbCard(MakeDataCard):
         """
         self.setObjectName("perturb_card_widget")
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(12)
+        self.settingLayout.setVerticalSpacing(4)
 
         self.engine_type_combo = SegmentedControl(
             [self.tr("Sobol"), self.tr("Uniform")], self.setting_widget
@@ -127,11 +127,12 @@ class PerturbCard(MakeDataCard):
             self.tr("Move detected organic molecules rigidly"), self.setting_widget
         )
         self.organic_checkbox.setChecked(False)
-        optional_field = CompactField(self.tr("Molecules"), self.organic_checkbox, self.setting_widget)
-        optional_field.setToolTip(
+        self.organic_checkbox.setToolTip(
             self.tr("Automatically detected organic connected clusters share one translation")
         )
-        optional_field.installEventFilter(ToolTipFilter(optional_field, 300, ToolTipPosition.TOP))
+        self.organic_checkbox.installEventFilter(
+            ToolTipFilter(self.organic_checkbox, 300, ToolTipPosition.TOP)
+        )
 
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
         self.scaling_condition_frame.set_input("Å", 1, "float")
@@ -139,7 +140,14 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.setSingleStep(0.01)
         self.scaling_condition_frame.setRange(0, 1)
         self.scaling_condition_frame.set_input_value([0.3])
-        distance_field = CompactField(self.tr("Displacement limit"), self.scaling_condition_frame, self.setting_widget)
+        distance_field = CompactField(
+            self.tr("Displacement limit"),
+            self.scaling_condition_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
+        )
+        self.scaling_condition_frame.setFixedWidth(132)
         distance_field.setToolTip(self.tr("Maximum Cartesian displacement-vector length for each atom"))
         distance_field.installEventFilter(ToolTipFilter(distance_field, 300, ToolTipPosition.TOP))
 
@@ -171,8 +179,6 @@ class PerturbCard(MakeDataCard):
         element_toggle_layout.addWidget(self.element_scaling_checkbox)
         element_toggle_layout.addWidget(self.add_element_button)
         element_toggle_layout.addStretch(1)
-        element_field = CompactField(self.tr("Overrides"), element_toggle_row, self.setting_widget)
-
         self.element_rows_frame = QFrame(self.setting_widget)
         self.element_rows_layout = QVBoxLayout(self.element_rows_frame)
         self.element_rows_layout.setContentsMargins(0, 0, 0, 0)
@@ -189,7 +195,14 @@ class PerturbCard(MakeDataCard):
         self.num_condition_frame.set_input("", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([50])
-        num_field = CompactField(self.tr("Structures per input"), self.num_condition_frame, self.setting_widget)
+        num_field = CompactField(
+            self.tr("Structures per input"),
+            self.num_condition_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
+        )
+        self.num_condition_frame.setFixedWidth(132)
         num_field.setToolTip(self.tr("Number of perturbed outputs generated from each input structure"))
         num_field.installEventFilter(ToolTipFilter(num_field, 300, ToolTipPosition.TOP))
 
@@ -208,14 +221,15 @@ class PerturbCard(MakeDataCard):
         seed_row_layout.setContentsMargins(0, 0, 0, 0)
         seed_row_layout.setSpacing(6)
         seed_row_layout.addWidget(self.seed_checkbox)
-        seed_row_layout.addWidget(self.seed_frame, 1)
-        seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
+        self.seed_frame.setFixedWidth(132)
+        seed_row_layout.addWidget(self.seed_frame)
+        seed_row_layout.addStretch(1)
 
         basics_section = InspectorSection(self.tr("Perturbation"), self.setting_widget)
         basics_grid = ResponsiveFormGrid(basics_section)
         basics_grid.add_field(engine_field, span=2)
         basics_grid.add_field(distance_field)
-        basics_grid.add_field(optional_field, span=2)
+        basics_grid.add_field(self.organic_checkbox, span=2)
         basics_section.addWidget(basics_grid)
         self.displacement_explainer = BodyLabel(
             self.tr(
@@ -228,15 +242,15 @@ class PerturbCard(MakeDataCard):
         basics_section.addWidget(self.displacement_explainer)
 
         element_section = InspectorSection(self.tr("Per-element displacement limits"), self.setting_widget)
-        element_section.addWidget(element_field)
+        element_section.addWidget(element_toggle_row)
         element_section.addWidget(self.element_scaling_label)
         element_section.addWidget(self.element_rows_frame)
         element_section.addWidget(self.element_validation_label)
 
         output_section = InspectorSection(self.tr("Generation"), self.setting_widget)
         output_grid = ResponsiveFormGrid(output_section)
-        output_grid.add_field(num_field)
-        output_grid.add_field(seed_field, span=2)
+        output_grid.add_field(num_field, span=2)
+        output_grid.add_field(seed_row, span=2)
         output_section.addWidget(output_grid)
 
         self.settingLayout.addWidget(basics_section, 0, 0, 1, 3)

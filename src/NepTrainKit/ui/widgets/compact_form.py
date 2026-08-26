@@ -202,6 +202,8 @@ class CompactField(QWidget):
         input_widget: QWidget,
         parent=None,
         helper_text: str = "",
+        inline: bool = False,
+        input_max_width: int | None = None,
     ):
         """Stack a caption above the given input widget.
 
@@ -218,11 +220,24 @@ class CompactField(QWidget):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(3)
+        layout.setSpacing(2)
         self.caption = CaptionLabel(label, self)
         self.caption.setStyleSheet("color:#8a95a0;")
-        layout.addWidget(self.caption)
-        layout.addWidget(input_widget)
+        if inline:
+            row = QWidget(self)
+            row_layout = QHBoxLayout(row)
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            row_layout.setSpacing(8)
+            self.caption.setWordWrap(False)
+            row_layout.addWidget(self.caption)
+            if input_max_width is not None:
+                input_widget.setMaximumWidth(input_max_width)
+            row_layout.addWidget(input_widget)
+            row_layout.addStretch(1)
+            layout.addWidget(row)
+        else:
+            layout.addWidget(self.caption)
+            layout.addWidget(input_widget)
         self.input_widget = input_widget
         self.setMinimumWidth(0)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
@@ -254,8 +269,8 @@ class InspectorSection(QWidget):
             "border-radius: 7px; }"
         )
         root = QVBoxLayout(self)
-        root.setContentsMargins(8, 7, 8, 8)
-        root.setSpacing(6)
+        root.setContentsMargins(7, 4, 7, 4)
+        root.setSpacing(4)
         self.title_label = StrongBodyLabel(title, self)
         root.addWidget(self.title_label)
         self.description_label = CaptionLabel(description, self)
@@ -266,7 +281,7 @@ class InspectorSection(QWidget):
         self.content_widget = QWidget(self)
         self.content_layout = QVBoxLayout(self.content_widget)
         self.content_layout.setContentsMargins(0, 0, 0, 0)
-        self.content_layout.setSpacing(6)
+        self.content_layout.setSpacing(4)
         root.addWidget(self.content_widget)
 
     def addWidget(self, widget: QWidget) -> None:  # noqa: N802 - Qt-style API
@@ -290,7 +305,7 @@ class ResponsiveFormGrid(QWidget):
         self._layout = QGridLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setHorizontalSpacing(10)
-        self._layout.setVerticalSpacing(6)
+        self._layout.setVerticalSpacing(4)
 
     def add_field(self, widget: QWidget, span: int = 1) -> None:
         widget.setMinimumWidth(0)

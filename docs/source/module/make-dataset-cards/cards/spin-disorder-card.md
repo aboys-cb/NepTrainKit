@@ -6,7 +6,7 @@
 
 ## 功能说明
 
-`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆盖 FM/AFM 到 PM 之间的离散翻转、随机方向和 cone disorder，不把这些离散无序混进 `Spin Perturbation` 的局部连续扰动语义里。
+`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆盖 FM/AFM 到 PM 之间的离散翻转、随机方向和 cone disorder，不把这些离散无序混进 `Spin Perturb` 的局部连续扰动语义里。
 
 ## 原理与公式
 
@@ -158,7 +158,7 @@ FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻�
 ## 推荐组合
 
 - `Magnetic Order → Spin Disorder`：先建立 FM/AFM 参考态，再生成中间无序比例。
-- `Set Magnetic Moments → Spin Disorder → Spin Canting Scan`：先统一磁矩模长，再做无序化和可控偏转。
+- `Set Magnetic Moments → Spin Disorder → Canting Scan`：先统一磁矩模长，再做无序化和可控偏转。
 - `Spin Disorder → Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何清洗。
 
 ## 常见问题

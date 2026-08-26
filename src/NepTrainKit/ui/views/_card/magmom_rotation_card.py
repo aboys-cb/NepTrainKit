@@ -25,20 +25,20 @@ class MagneticMomentRotationCard(MakeDataCard):
     """Sample random directions around an existing magnetic state."""
 
     group = "Magnetism"
-    card_name = "Spin Perturbation"
+    card_name = "Spin Perturb"
     menu_icon = r":/images/src/images/perturb.svg"
     contributors = [{"name": "NepTrainKit", "role": "author"}]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Spin Perturbation"))
+        self.setTitle(self.tr("Spin Perturb"))
         self._preview_input_count: int | None = None
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("magmom_rotation_card_widget")
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(12)
+        self.settingLayout.setVerticalSpacing(4)
 
         input_section = InspectorSection(
             self.tr("Input and targets"),
@@ -69,18 +69,15 @@ class MagneticMomentRotationCard(MakeDataCard):
             self.angle_frame,
             self.setting_widget,
             self.tr("Sample each direction uniformly inside this angular cap around its input moment."),
+            inline=True,
+            input_max_width=132,
         )
+        self.angle_frame.setFixedWidth(132)
 
         self.lift_scalar_checkbox = CheckBox(
             self.tr("Lift scalar moments to vectors"), self.setting_widget
         )
         self.lift_scalar_checkbox.setChecked(True)
-        lift_field = CompactField(
-            self.tr("Collinear input"),
-            self.lift_scalar_checkbox,
-            self.setting_widget,
-        )
-
         self.axis_frame = SpinBoxUnitInputFrame(self)
         self.axis_frame.set_input("", 3, "float")
         self.axis_frame.setRange(-1.0, 1.0)
@@ -96,7 +93,7 @@ class MagneticMomentRotationCard(MakeDataCard):
         rotation_section = InspectorSection(self.tr("Direction sampling"), self.setting_widget)
         rotation_grid = ResponsiveFormGrid(rotation_section)
         rotation_grid.add_field(angle_field, span=2)
-        rotation_grid.add_field(lift_field, span=2)
+        rotation_grid.add_field(self.lift_scalar_checkbox, span=2)
         rotation_grid.add_field(self.axis_field, span=2)
         rotation_section.addWidget(rotation_grid)
 
@@ -104,12 +101,6 @@ class MagneticMomentRotationCard(MakeDataCard):
             self.tr("Vary magnetic-moment magnitude"), self.setting_widget
         )
         self.magnitude_checkbox.setChecked(True)
-        magnitude_toggle_field = CompactField(
-            self.tr("Magnitude sampling"),
-            self.magnitude_checkbox,
-            self.setting_widget,
-        )
-
         self.magnitude_factor_frame = SpinBoxUnitInputFrame(self)
         self.magnitude_factor_frame.set_input(["min", "max"], 2, "float")
         self.magnitude_factor_frame.setRange(0.0, 10.0)
@@ -125,7 +116,7 @@ class MagneticMomentRotationCard(MakeDataCard):
 
         magnitude_section = InspectorSection(self.tr("Magnitude"), self.setting_widget)
         magnitude_grid = ResponsiveFormGrid(magnitude_section)
-        magnitude_grid.add_field(magnitude_toggle_field, span=2)
+        magnitude_grid.add_field(self.magnitude_checkbox, span=2)
         magnitude_grid.add_field(self.magnitude_factor_field, span=2)
         magnitude_section.addWidget(magnitude_grid)
 
@@ -134,8 +125,13 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.count_frame.setRange(1, 10000)
         self.count_frame.set_input_value([5])
         count_field = CompactField(
-            self.tr("Structures per input"), self.count_frame, self.setting_widget
+            self.tr("Structures per input"),
+            self.count_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
         )
+        self.count_frame.setFixedWidth(132)
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
@@ -149,13 +145,13 @@ class MagneticMomentRotationCard(MakeDataCard):
         seed_layout.setContentsMargins(0, 0, 0, 0)
         seed_layout.setSpacing(6)
         seed_layout.addWidget(self.seed_checkbox)
-        seed_layout.addWidget(self.seed_frame, 1)
-        seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
-
+        self.seed_frame.setFixedWidth(132)
+        seed_layout.addWidget(self.seed_frame)
+        seed_layout.addStretch(1)
         generation_section = InspectorSection(self.tr("Generation"), self.setting_widget)
         generation_grid = ResponsiveFormGrid(generation_section)
-        generation_grid.add_field(count_field)
-        generation_grid.add_field(seed_field, span=2)
+        generation_grid.add_field(count_field, span=2)
+        generation_grid.add_field(seed_row, span=2)
         generation_section.addWidget(generation_grid)
 
         sampling_note = BodyLabel(

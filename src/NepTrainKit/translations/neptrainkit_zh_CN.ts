@@ -951,8 +951,17 @@
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="184" />
+        <source>Spin Perturb</source>
+        <translation>磁矩扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="258" />
+        <source>Canting Scan</source>
+        <translation>倾斜扫描</translation>
+    </message>
+    <message>
         <source>Spin Perturbation</source>
-        <translation>随机磁矩扰动</translation>
+        <translation type="vanished">随机磁矩扰动</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="185" />
@@ -960,9 +969,8 @@
         <translation>在局部球冠内采样选中的非零磁矩，并可选扰动其模长。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="258" />
         <source>Spin Canting Scan</source>
-        <translation>可控自旋倾斜</translation>
+        <translation type="vanished">可控自旋倾斜</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="259" />
@@ -2331,98 +2339,98 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1073" />
+        <location filename="../ui/widgets/card_metadata.py" line="1076" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1090" />
+        <location filename="../ui/widgets/card_metadata.py" line="1093" />
         <source>Make Dataset cards</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1100" />
+        <location filename="../ui/widgets/card_metadata.py" line="1103" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1202" />
+        <location filename="../ui/widgets/card_metadata.py" line="1205" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1214" />
+        <location filename="../ui/widgets/card_metadata.py" line="1217" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1215" />
+        <location filename="../ui/widgets/card_metadata.py" line="1218" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1216" />
+        <location filename="../ui/widgets/card_metadata.py" line="1219" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1217" />
+        <location filename="../ui/widgets/card_metadata.py" line="1220" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1218" />
+        <location filename="../ui/widgets/card_metadata.py" line="1221" />
         <source>Documentation</source>
         <translation>文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1244" />
-        <location filename="../ui/widgets/card_metadata.py" line="1404" />
+        <location filename="../ui/widgets/card_metadata.py" line="1247" />
+        <location filename="../ui/widgets/card_metadata.py" line="1407" />
         <source>Technical details</source>
         <translation>技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1268" />
+        <location filename="../ui/widgets/card_metadata.py" line="1271" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1274" />
+        <location filename="../ui/widgets/card_metadata.py" line="1277" />
         <source>Source file</source>
         <translation>源文件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1297" />
+        <location filename="../ui/widgets/card_metadata.py" line="1300" />
         <source>Add selected card</source>
         <translation>添加所选卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1302" />
+        <location filename="../ui/widgets/card_metadata.py" line="1305" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1347" />
+        <location filename="../ui/widgets/card_metadata.py" line="1350" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1362" />
+        <location filename="../ui/widgets/card_metadata.py" line="1365" />
         <source>Open documentation</source>
         <translation>打开文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1374" />
+        <location filename="../ui/widgets/card_metadata.py" line="1377" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1402" />
+        <location filename="../ui/widgets/card_metadata.py" line="1405" />
         <source>Hide technical details</source>
         <translation>收起技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1438" />
+        <location filename="../ui/widgets/card_metadata.py" line="1441" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -2430,32 +2438,32 @@
 <context>
     <name>CardLibraryPopup</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="855" />
+        <location filename="../ui/widgets/card_metadata.py" line="857" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="886" />
+        <location filename="../ui/widgets/card_metadata.py" line="889" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="916" />
+        <location filename="../ui/widgets/card_metadata.py" line="919" />
         <source>Hover or focus a card to see what it does.</source>
         <translation>悬停或聚焦卡片以查看功能说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1013" />
+        <location filename="../ui/widgets/card_metadata.py" line="1016" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1016" />
+        <location filename="../ui/widgets/card_metadata.py" line="1019" />
         <source>No cards found.</source>
         <translation>未找到卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1024" />
+        <location filename="../ui/widgets/card_metadata.py" line="1027" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
@@ -2671,6 +2679,16 @@
         <translation>最大扰动角必须在 0 到 180 度之间。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="402" />
+        <source>Spin Perturb requires spin or initial magnetic moments on every input structure.</source>
+        <translation>磁矩扰动要求每个输入结构都包含 spin 或初始磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="417" />
+        <source>Spin Perturb could not convert the input magnetic moments to vectors.</source>
+        <translation>磁矩扰动无法将输入磁矩转换为矢量。</translation>
+    </message>
+    <message>
         <location filename="../ui/messages.py" line="427" />
         <source>Increase the perturbation angle or enable a magnitude scale range that changes the moments.</source>
         <translation>请增大扰动角，或启用能够改变磁矩的模长缩放范围。</translation>
@@ -2680,14 +2698,12 @@
         <translation type="vanished">最大旋转角必须在 0 到 180 度之间。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="402" />
         <source>Spin Perturbation requires spin or initial magnetic moments on every input structure.</source>
-        <translation>随机磁矩扰动要求每个输入结构都包含 spin 或初始磁矩。</translation>
+        <translation type="vanished">随机磁矩扰动要求每个输入结构都包含 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="417" />
         <source>Spin Perturbation could not convert the input magnetic moments to vectors.</source>
-        <translation>随机磁矩扰动无法将输入磁矩转换为矢量。</translation>
+        <translation type="vanished">随机磁矩扰动无法将输入磁矩转换为矢量。</translation>
     </message>
     <message>
         <source>Magmom Rotation requires spin or initial magnetic moments on every input structure.</source>
@@ -6951,9 +6967,8 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">每个目标原子独立采样随机轴，并在 0 到该上限之间采样角度。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="34" />
         <source>Spin Perturbation</source>
-        <translation>随机磁矩扰动</translation>
+        <translation type="vanished">随机磁矩扰动</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/magmom_rotation_card.py" line="47" />
@@ -6988,6 +7003,11 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     <message>
         <source>Used only to turn scalar moments into vectors; it is not the random rotation axis.</source>
         <translation type="vanished">仅用于将标量磁矩转为矢量；它不是随机旋转轴。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="34" />
+        <source>Spin Perturb</source>
+        <translation>磁矩扰动</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/magmom_rotation_card.py" line="93" />
@@ -11478,9 +11498,13 @@ Do you want to continue?</source>
         <translation type="vanished">小角度自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="27" />
         <source>Spin Canting Scan</source>
-        <translation>可控自旋倾斜</translation>
+        <translation type="vanished">可控自旋倾斜</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="27" />
+        <source>Canting Scan</source>
+        <translation>倾斜扫描</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="33" />

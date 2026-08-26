@@ -99,7 +99,10 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
             self.covera_frame,
             self.setting_widget,
             self.tr("Only A3/HCP and L1₀ use c/a; cubic prototypes keep c/a = 1."),
+            inline=True,
+            input_max_width=132,
         )
+        self.covera_frame.setFixedWidth(132)
 
         prototype_section = InspectorSection(
             self.tr("Prototype"),
@@ -122,7 +125,10 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
             self.element_a_edit,
             self.setting_widget,
             self.tr("Use a real element for direct ordered occupancy, or X as a placeholder for a later occupancy card."),
+            inline=True,
+            input_max_width=132,
         )
+        self.element_a_edit.setFixedWidth(132)
 
         self.element_b_edit = LineEdit(self.setting_widget)
         self.element_b_edit.setText("X")
@@ -132,7 +138,10 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
             self.element_b_edit,
             self.setting_widget,
             self.tr("Shown only for two-sublattice prototypes; A and B are crystallographic site identities."),
+            inline=True,
+            input_max_width=132,
         )
+        self.element_b_edit.setFixedWidth(132)
 
         occupant_section = InspectorSection(
             self.tr("Sublattice occupants"),
@@ -153,7 +162,10 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
             self.max_outputs_frame,
             self.setting_widget,
             self.tr("If the a scan has more points, only the first values in ascending scan order are kept."),
+            inline=True,
+            input_max_width=176,
         )
+        self.max_outputs_frame.setFixedWidth(176)
         self.output_preview = CaptionLabel("", self.setting_widget)
         self.output_preview.setWordWrap(True)
         output_section = InspectorSection(self.tr("Output preview"), self.setting_widget)
@@ -172,7 +184,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         next_step_section.addWidget(self.legacy_expansion_notice)
 
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(10)
+        self.settingLayout.setVerticalSpacing(4)
         self.settingLayout.addWidget(prototype_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(occupant_section, 1, 0, 1, 3)
         self.settingLayout.addWidget(output_section, 2, 0, 1, 3)

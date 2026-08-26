@@ -135,7 +135,7 @@ class LocalMagneticResponseCard(MakeDataCard):
         output_section.addWidget(self.output_preview)
 
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(10)
+        self.settingLayout.setVerticalSpacing(4)
         self.settingLayout.addWidget(response_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(selection_section, 1, 0, 1, 3)
         self.settingLayout.addWidget(self.advanced_checkbox, 2, 0, 1, 3)

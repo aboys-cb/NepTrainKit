@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QHBoxLayout, QWidget
-from qfluentwidgets import BodyLabel, CheckBox
+from qfluentwidgets import CaptionLabel, CheckBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -37,7 +37,7 @@ class VibrationModePerturbCard(MakeDataCard):
         """Build a responsive inspector with the input contract kept visible."""
         self.setObjectName("vibration_perturb_card_widget")
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(12)
+        self.settingLayout.setVerticalSpacing(4)
 
         input_section = InspectorSection(
             self.tr("Required input"),
@@ -47,15 +47,6 @@ class VibrationModePerturbCard(MakeDataCard):
                 "Frequency options require finite values, and weighting also requires non-zero values."
             ),
         )
-        boundary_label = BodyLabel(
-            self.tr(
-                "This card samples correlated motion inside the supplied mode subspace. "
-                "Use Atomic Perturb when no mode data is available."
-            ),
-            input_section,
-        )
-        boundary_label.setWordWrap(True)
-        input_section.addWidget(boundary_label)
 
         self.distribution_combo = SegmentedControl(
             [self.tr("Normal"), self.tr("Uniform")], self.setting_widget
@@ -79,7 +70,10 @@ class VibrationModePerturbCard(MakeDataCard):
             self.amplitude_frame,
             self.setting_widget,
             self.tr("A multiplier for the combined mode vectors, not a maximum atomic displacement."),
+            inline=True,
+            input_max_width=144,
         )
+        self.amplitude_frame.setFixedWidth(144)
 
         self.modes_frame = SpinBoxUnitInputFrame(self)
         self.modes_frame.set_input("", 1, "int")
@@ -90,30 +84,29 @@ class VibrationModePerturbCard(MakeDataCard):
             self.modes_frame,
             self.setting_widget,
             self.tr("Modes are selected without replacement from those that pass the filter."),
+            inline=True,
+            input_max_width=132,
         )
+        self.modes_frame.setFixedWidth(132)
 
         perturb_section = InspectorSection(self.tr("Mode sampling"), self.setting_widget)
         perturb_grid = ResponsiveFormGrid(perturb_section)
         perturb_grid.add_field(distribution_field, span=2)
-        perturb_grid.add_field(amplitude_field)
-        perturb_grid.add_field(modes_field)
+        perturb_grid.add_field(amplitude_field, span=2)
+        perturb_grid.add_field(modes_field, span=2)
         perturb_section.addWidget(perturb_grid)
 
         self.scale_checkbox = CheckBox(self.tr("Use 1/√|frequency|"), self.setting_widget)
         self.scale_checkbox.setChecked(True)
-        scale_field = CompactField(
-            self.tr("Frequency weighting"),
-            self.scale_checkbox,
-            self.setting_widget,
+        scale_helper = CaptionLabel(
             self.tr("Reduces coefficients for higher-frequency modes using the stored frequency values."),
+            self.setting_widget,
         )
+        scale_helper.setWordWrap(True)
+        scale_helper.setStyleSheet("color:#8a95a0;")
 
         self.exclude_checkbox = CheckBox(self.tr("Apply cutoff"), self.setting_widget)
         self.exclude_checkbox.setChecked(True)
-        cutoff_toggle_field = CompactField(
-            self.tr("Near-zero modes"), self.exclude_checkbox, self.setting_widget
-        )
-
         self.min_freq_frame = SpinBoxUnitInputFrame(self)
         self.min_freq_frame.set_input("", 1, "float")
         self.min_freq_frame.setDecimals(3)
@@ -125,22 +118,29 @@ class VibrationModePerturbCard(MakeDataCard):
             self.min_freq_frame,
             self.setting_widget,
             self.tr("Uses the same numerical unit as the frequencies stored in the input."),
+            inline=True,
+            input_max_width=132,
         )
+        self.min_freq_frame.setFixedWidth(132)
 
         frequency_section = InspectorSection(self.tr("Frequency handling"), self.setting_widget)
-        frequency_grid = ResponsiveFormGrid(frequency_section)
-        frequency_grid.add_field(scale_field)
-        frequency_grid.add_field(cutoff_toggle_field)
-        frequency_grid.add_field(self.min_freq_field, span=2)
-        frequency_section.addWidget(frequency_grid)
+        frequency_section.addWidget(self.scale_checkbox)
+        frequency_section.addWidget(scale_helper)
+        frequency_section.addWidget(self.exclude_checkbox)
+        frequency_section.addWidget(self.min_freq_field)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([32])
         num_field = CompactField(
-            self.tr("Structures per input"), self.num_condition_frame, self.setting_widget
+            self.tr("Structures per input"),
+            self.num_condition_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
         )
+        self.num_condition_frame.setFixedWidth(132)
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
@@ -154,13 +154,14 @@ class VibrationModePerturbCard(MakeDataCard):
         seed_layout.setContentsMargins(0, 0, 0, 0)
         seed_layout.setSpacing(6)
         seed_layout.addWidget(self.seed_checkbox)
-        seed_layout.addWidget(self.seed_frame, 1)
-        seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
+        self.seed_frame.setFixedWidth(132)
+        seed_layout.addWidget(self.seed_frame)
+        seed_layout.addStretch(1)
 
         output_section = InspectorSection(self.tr("Generation"), self.setting_widget)
         output_grid = ResponsiveFormGrid(output_section)
-        output_grid.add_field(num_field)
-        output_grid.add_field(seed_field, span=2)
+        output_grid.add_field(num_field, span=2)
+        output_grid.add_field(seed_row, span=2)
         output_section.addWidget(output_grid)
 
         self.settingLayout.addWidget(input_section, 0, 0, 1, 3)

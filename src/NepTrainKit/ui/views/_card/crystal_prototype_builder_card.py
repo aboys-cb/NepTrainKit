@@ -67,7 +67,10 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
             self.element_edit,
             self.setting_widget,
             self.tr("Enter exactly one real chemical element symbol, such as Cu, Fe, or Mg."),
+            inline=True,
+            input_max_width=132,
         )
+        self.element_edit.setFixedWidth(132)
 
         self.a_frame = SpinBoxUnitInputFrame(self)
         self.a_frame.set_input(["–", self.tr("step"), "Å"], 3, "float")
@@ -91,7 +94,10 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
             self.covera_frame,
             self.setting_widget,
             self.tr("Only HCP uses this ratio; c = a × (c/a)."),
+            inline=True,
+            input_max_width=132,
         )
+        self.covera_frame.setFixedWidth(132)
 
         prototype_section = InspectorSection(
             self.tr("Prototype"),
@@ -114,7 +120,10 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
             self.max_output_frame,
             self.setting_widget,
             self.tr("If the a scan has more points, only the first values in ascending scan order are kept."),
+            inline=True,
+            input_max_width=176,
         )
+        self.max_output_frame.setFixedWidth(176)
 
         self.output_preview = CaptionLabel("", self.setting_widget)
         self.output_preview.setWordWrap(True)
@@ -139,7 +148,7 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         next_step_section.addWidget(self.legacy_expansion_notice)
 
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(10)
+        self.settingLayout.setVerticalSpacing(4)
         self.settingLayout.addWidget(prototype_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(output_section, 1, 0, 1, 3)
         self.settingLayout.addWidget(next_step_section, 2, 0, 1, 3)

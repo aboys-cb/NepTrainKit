@@ -87,7 +87,7 @@
 | 生成 FM、AFM 或 PM 分支 | [磁序](cards/magnetic-order-card.md) | AFM 可能需要先做分组标记 |
 | 从有序磁态逐步增加无序度 | [自旋无序](cards/spin-disorder-card.md) | 输入已有有效磁矩 |
 | 生成具有空间相关长度的非共线磁矩 | [关联随机自旋](cards/correlated-random-spin-card.md) | 这是相关随机场，不应直接称为自旋玻璃 |
-| 随机扰动、可控 canting 或生成螺旋磁序 | [随机磁矩扰动](cards/magmom-rotation-card.md) / [可控自旋倾斜](cards/small-angle-spin-tilt-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋磁序](cards/folded-helix-card.md) | 不要对没有磁矩的空白结构直接操作 |
+| 随机扰动、可控 canting 或生成螺旋磁序 | [磁矩扰动](cards/magmom-rotation-card.md) / [倾斜扫描](cards/small-angle-spin-tilt-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋磁序](cards/folded-helix-card.md) | 不要对没有磁矩的空白结构直接操作 |
 
 ### 处理分子和溶剂
 
@@ -143,7 +143,7 @@
 
 - `Set Magnetic Moments` 只负责把磁矩写进去，适合静态初始化。
 - `Magnetic Order` 会生成 FM / AFM / PM 等多磁态分支。
-- `Spin Perturbation` 在已有磁矩周围随机补样，适合覆盖参考磁态附近的局部涨落。
+- `Spin Perturb` 在已有磁矩周围随机补样，适合覆盖参考磁态附近的局部涨落。
 
 磁性卡片对外统一使用 NEP / Show NEP 的 `spin:R:3` EXTXYZ 字段。卡片内部仍同步维护 ASE 的 `initial_magmoms`，用于兼容 ASE 操作和旧工作流；导出文件只保留 `spin`。读取已有磁矩时优先使用 `spin`，只有输入没有 `spin` 时才回退到旧的 `initial_magmoms`。标量模式会按卡片中明确设置的 `Axis` 转成三分量 `spin`；零向量 Axis 会明确失败，不会静默假设方向。
 

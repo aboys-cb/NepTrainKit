@@ -1,6 +1,6 @@
-<!-- card-schema: {"card_name": "Spin Canting Scan", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params"]} -->
+<!-- card-schema: {"card_name": "Canting Scan", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params"]} -->
 
-# 可控自旋倾斜（Spin Canting Scan）
+# 倾斜扫描（Canting Scan）
 
 **分类：** 磁性
 
@@ -18,7 +18,7 @@ $\hat{\mathbf t}$ 是与参考磁矩 $\hat{\mathbf m}_0$ 正交的单位倾斜�
 把总夹角 $\theta$ 平分到左右自旋，使两者相对角度可控；正负手性通过翻转
 $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 
-**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Spin Perturbation`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。
+**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Spin Perturb`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。
 
 ## 操作示例
 
@@ -57,7 +57,7 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 - 分子动力学显示特定原子对的磁矩夹角出现非物理振荡
 
 **不加：**
-- 只需要随机方向扰动覆盖 → 用 `Spin Perturbation`
+- 只需要随机方向扰动覆盖 → 用 `Spin Perturb`
 - 需要离散比例翻转或从有序到无序的梯度 → 用 `Spin Disorder`
 - 需要整体磁序翻转（不是局部 canting）→ 用 `Magnetic Order` 的 AFM 分支
 - 需要连续螺旋调制 → 用 `Spin Spiral`
@@ -317,9 +317,9 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 
 ## 推荐组合
 
-- `Set Magnetic Moments` → `Spin Canting Scan`：先统一向量磁矩，再批量生成成对 canting
-- `Magnetic Order` → `Spin Canting Scan`：先生成稳定参考磁态，再做局部 canting
-- `Group Label` → `Magnetic Order` → `Spin Canting Scan`：先分组再切到 `Group pair canting`
+- `Set Magnetic Moments` → `Canting Scan`：先统一向量磁矩，再批量生成成对 canting
+- `Magnetic Order` → `Canting Scan`：先生成稳定参考磁态，再做局部 canting
+- `Group Label` → `Magnetic Order` → `Canting Scan`：先分组再切到 `Group pair canting`
 
 ## 常见问题
 

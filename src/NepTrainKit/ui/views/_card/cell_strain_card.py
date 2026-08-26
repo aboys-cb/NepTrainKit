@@ -109,7 +109,7 @@ class CellStrainCard(MakeDataCard):
         ranges_section.addWidget(ranges_grid)
 
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(12)
+        self.settingLayout.setVerticalSpacing(4)
         self.settingLayout.addWidget(setup_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(ranges_section, 1, 0, 1, 3)
 

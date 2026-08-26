@@ -109,7 +109,10 @@ class SuperCellCard(MakeDataCard):
                 "A strict upper bound. Single output first maximizes atom count; ties minimize the "
                 "longest/shortest output-vector ratio. A limit below the input atom count is invalid."
             ),
+            inline=True,
+            input_max_width=176,
         )
+        self.max_atoms_condition_frame.setFixedWidth(176)
 
         self.output_mode_control = SegmentedControl(parent=self.setting_widget)
         self.output_mode_control.addItem(self.tr("One supercell"), userData="single")
@@ -183,7 +186,7 @@ class SuperCellCard(MakeDataCard):
         preview_section.addWidget(self.output_preview)
 
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(10)
+        self.settingLayout.setVerticalSpacing(4)
         self.settingLayout.addWidget(strategy_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(axes_section, 1, 0, 1, 3)
         self.settingLayout.addWidget(preview_section, 2, 0, 1, 3)

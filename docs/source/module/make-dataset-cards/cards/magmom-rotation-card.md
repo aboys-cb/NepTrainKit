@@ -1,6 +1,6 @@
-<!-- card-schema: {"card_name": "Spin Perturbation", "source_file": "src/NepTrainKit/ui/views/_card/magmom_rotation_card.py", "serialized_keys": ["params"]} -->
+<!-- card-schema: {"card_name": "Spin Perturb", "source_file": "src/NepTrainKit/ui/views/_card/magmom_rotation_card.py", "serialized_keys": ["params"]} -->
 
-# 随机磁矩扰动（Spin Perturbation）
+# 磁矩扰动（Spin Perturb）
 
 **分类：** 磁性
 

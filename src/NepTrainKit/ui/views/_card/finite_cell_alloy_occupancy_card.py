@@ -176,7 +176,7 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         advanced_section.addWidget(self.advanced_button)
         advanced_section.addWidget(self.advanced_widget)
 
-        self.settingLayout.setVerticalSpacing(12)
+        self.settingLayout.setVerticalSpacing(4)
         self.settingLayout.addWidget(rules_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(generation_section, 1, 0, 1, 3)
         self.settingLayout.addWidget(advanced_section, 2, 0, 1, 3)

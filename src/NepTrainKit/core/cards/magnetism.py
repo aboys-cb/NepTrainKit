@@ -268,7 +268,7 @@ class MagneticMomentRotationOperation(StructureOperation):
         if raw_magmoms is None:
             raise CardOperationError(
                 "magmom-rotation-missing-moments",
-                "Spin Perturbation requires spin or initial magnetic moments on every input structure.",
+                "Spin Perturb requires spin or initial magnetic moments on every input structure.",
             )
 
         is_vector = raw_magmoms.ndim == 2 and raw_magmoms.shape == (len(structure), 3)
@@ -299,7 +299,7 @@ class MagneticMomentRotationOperation(StructureOperation):
         if base_vectors is None:
             raise CardOperationError(
                 "magmom-rotation-unusable-moments",
-                "Spin Perturbation could not convert the input magnetic moments to vectors.",
+                "Spin Perturb could not convert the input magnetic moments to vectors.",
             )
 
         min_factor, max_factor = [float(v) for v in params.magnitude_factor]

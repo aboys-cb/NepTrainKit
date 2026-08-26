@@ -401,7 +401,7 @@ def _card_operation_error_catalog() -> None:
     )
     QCoreApplication.translate(
         "CardOperationError",
-        "Spin Perturbation requires spin or initial magnetic moments on every input structure.",
+        "Spin Perturb requires spin or initial magnetic moments on every input structure.",
     )
     QCoreApplication.translate(
         "CardOperationError",
@@ -416,7 +416,7 @@ def _card_operation_error_catalog() -> None:
     )
     QCoreApplication.translate(
         "CardOperationError",
-        "Spin Perturbation could not convert the input magnetic moments to vectors.",
+        "Spin Perturb could not convert the input magnetic moments to vectors.",
     )
     QCoreApplication.translate(
         "CardOperationError", "Magnitude scale bounds must be finite and non-negative."

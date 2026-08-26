@@ -181,7 +181,7 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "MagneticMomentRotationCard": (
-            QCoreApplication.translate("CardCatalog", "Spin Perturbation"),
+            QCoreApplication.translate("CardCatalog", "Spin Perturb"),
             QCoreApplication.translate(
                 "CardCatalog",
                 "Sample selected non-zero moments inside local angular caps and optionally perturb their magnitudes.",
@@ -255,7 +255,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Apply shear matrices along the principal lattice planes."),
         ),
         "SmallAngleSpinTiltCard": (
-            QCoreApplication.translate("CardCatalog", "Spin Canting Scan"),
+            QCoreApplication.translate("CardCatalog", "Canting Scan"),
             QCoreApplication.translate(
                 "CardCatalog",
                 "Generate deterministic angle scans for selected spins, atom pairs, or magnetic groups.",

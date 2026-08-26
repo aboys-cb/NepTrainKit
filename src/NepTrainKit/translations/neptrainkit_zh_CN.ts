@@ -795,9 +795,8 @@
         <translation>有序合金原型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="210" />
         <source>Generate periodic A1, A2, A3, L12, B2, and L10 prototypes with sublattice labels.</source>
-        <translation>生成带子晶格标签的周期 A1、A2、A3、L1₂、B2 和 L1₀ 原型。</translation>
+        <translation type="vanished">生成带子晶格标签的周期 A1、A2、A3、L1₂、B2 和 L1₀ 原型。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="216" />
@@ -966,6 +965,11 @@
         <location filename="../ui/widgets/card_metadata.py" line="203" />
         <source>Detect molecular bonds, rotate eligible single-bond subtrees, add optional Gaussian noise, and skip conformers that fail bond-length or clash guards.</source>
         <translation>检测分子键，旋转可用单键一侧的子树，按需添加高斯噪声，并跳过未通过键长或碰撞检查的构象。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="210" />
+        <source>Generate unexpanded A1, A2, A3, L12, B2, and L10 base cells with explicit A/B sublattice labels.</source>
+        <translation>生成未扩展的 A1、A2、A3、L1₂、B2 和 L1₀ 基础晶胞，并写入明确的 A/B 子晶格标签。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="237" />
@@ -1706,31 +1710,61 @@
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="131" />
+        <source>A1 / FCC (single sublattice)</source>
+        <translation>A1 / FCC（单子晶格）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
+        <source>A2 / BCC (single sublattice)</source>
+        <translation>A2 / BCC（单子晶格）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
+        <source>A3 / HCP (single sublattice)</source>
+        <translation>A3 / HCP（单子晶格）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
+        <source>L1₂ / A₃B</source>
+        <translation>L1₂ / A₃B</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
+        <source>B2 / AB</source>
+        <translation>B2 / AB</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
+        <source>L1₀ / AB</source>
+        <translation>L1₀ / AB</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
         <source>Auto (Comp tag)</source>
         <translation>自动（Comp 标签）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
         <source>Auto detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
         <source>Manual</source>
         <translation>手动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
         <source>Exact</source>
         <translation>精确</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
         <source>Random</source>
         <translation>随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
         <source>Fraction of slip vector</source>
         <translation>滑移向量分数</translation>
     </message>
@@ -1739,162 +1773,162 @@
         <translation type="vanished">投影滑移向量的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
         <source>Actual distance (Å)</source>
         <translation>实际距离（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
         <source>Middle interlayer gap</source>
         <translation>中间层间隙</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
         <source>Fraction of projected thickness</source>
         <translation>投影厚度的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
         <source>After a layer index</source>
         <translation>指定原子层之后</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
         <source>Auto (follow input PBC)</source>
         <translation>自动（跟随输入 PBC）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
         <source>Force full 3D PBC</source>
         <translation>强制全三维 PBC</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
         <source>Nonperiodic molecule</source>
         <translation>非周期分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
         <source>Auto-detect solvent / ion</source>
         <translation>自动识别溶剂 / 离子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
         <source>General random orientation</source>
         <translation>通用随机取向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
         <source>Water dipole orientation</source>
         <translation>水分子偶极取向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
         <source>Ion-water first shell</source>
         <translation>离子-水第一配位壳</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
         <source>Loose collision profile</source>
         <translation>宽松碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
         <source>Dense collision profile</source>
         <translation>紧密碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
         <source>All host atoms</source>
         <translation>全部宿主原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
         <source>By element</source>
         <translation>按元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
         <source>By 1-based atom index</source>
         <translation>按从 1 开始的原子索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
         <source>By Cartesian z range</source>
         <translation>按笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
         <source>Fixed molecule count</source>
         <translation>固定分子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
         <source>Nominal solvent density</source>
         <translation>名义溶剂密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
         <source>Auto-detect solvent type</source>
         <translation>自动识别溶剂类型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
         <source>General collision profile</source>
         <translation>通用碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
         <source>Water collision profile</source>
         <translation>水分子碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
         <source>Flat stack (no warp)</source>
         <translation>平整堆叠（不形变）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
         <source>2D sine ripple</source>
         <translation>二维正弦波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
         <source>Gaussian bump</source>
         <translation>高斯凸起</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
         <source>Paraboloid</source>
         <translation>抛物面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
         <source>Stripe ripple</source>
         <translation>条纹波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
         <source>Step (x&gt;0)</source>
         <translation>阶跃（x&gt;0）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
         <source>All atoms</source>
         <translation>所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
         <source>Selected elements</source>
         <translation>指定元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
@@ -1919,22 +1953,22 @@
         <translation type="vanished">层索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
         <source>all</source>
         <translation>全部</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
         <source>elements</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
         <source>indices</source>
         <translation>索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
         <source>z_range</source>
         <translation>z 范围</translation>
     </message>
@@ -1947,155 +1981,155 @@
         <translation type="vanished">否</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
         <source>Global canting</source>
         <translation>全局 canting</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="31" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
         <source>Single-spin tilt</source>
         <translation>单自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
         <source>Atom-pair canting</source>
         <translation>原子对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
         <source>Group-pair canting</source>
         <translation>分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
         <source>All eligible atoms</source>
         <translation>所有候选原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
         <source>Explicit indices</source>
         <translation>显式索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="35" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
         <source>Manual indices</source>
         <translation>手动索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="36" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
         <source>Auto by neighbor shell</source>
         <translation>按近邻壳自动选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
         <source>Any</source>
         <translation>任意</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
         <source>Near axis</source>
         <translation>接近轴向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
         <source>In plane (normal)</source>
         <translation>位于平面内（法向）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
         <source>Positive only</source>
         <translation>仅正向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
         <source>Negative only</source>
         <translation>仅负向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
         <source>Both (+/- pair)</source>
         <translation>正负成对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
         <source>Auto from layer count</source>
         <translation>按层数自动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
         <source>Clockwise then counterclockwise</source>
         <translation>先顺时针再逆时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
         <source>Counterclockwise then clockwise</source>
         <translation>先逆时针再顺时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
         <source>Cone around reference</source>
         <translation>围绕参考锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
         <source>Full random directions</source>
         <translation>全随机方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
         <source>exponential</source>
         <translation>指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
         <source>squared exponential</source>
         <translation>平方指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
         <source>Alternating fractional-coordinate layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
         <source>Current-cell half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
         <source>Alternating layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="203" />
         <source>Half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="204" />
         <source>100 (along lattice a)</source>
         <translation>100（沿晶格 a）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="205" />
         <source>010 (along lattice b)</source>
         <translation>010（沿晶格 b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="206" />
         <source>001 (along lattice c)</source>
         <translation>001（沿晶格 c）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="207" />
         <source>110 (along lattice a+b)</source>
         <translation>110（沿晶格 a+b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="208" />
         <source>111 (along lattice a+b+c)</source>
         <translation>111（沿晶格 a+b+c）</translation>
     </message>
@@ -2531,6 +2565,16 @@
         <location filename="../ui/messages.py" line="335" />
         <source>The hcp c/a ratio must be a positive finite number.</source>
         <translation>HCP c/a 轴比必须是有限正数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="349" />
+        <source>Enter one element symbol or the X placeholder for every visible sublattice.</source>
+        <translation>请为每个可见子晶格输入一个元素符号或 X 占位符。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="353" />
+        <source>Invalid element or placeholder {element}; use a chemical element symbol or X.</source>
+        <translation>无效的元素或占位符 {element}；请使用化学元素符号或 X。</translation>
     </message>
     <message>
         <source>The atom limit ({limit}) is smaller than the {base_atoms}-atom prototype cell.</source>
@@ -3557,7 +3601,7 @@
     </message>
     <message>
         <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="59" />
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="159" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="164" />
         <source>Choose one single-element ideal prototype; generated coordinates are not relaxed.</source>
         <translation>选择一种单元素理想原型；生成的坐标未经弛豫。</translation>
     </message>
@@ -3612,22 +3656,22 @@
         <translation>该生成器创建三维周期的单元素起始结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="170" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="175" />
         <source>{shown} base-cell output(s); {atoms} atoms each; first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å.</source>
         <translation>预计输出 {shown} 个基础晶胞；每个 {atoms} 个原子；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="195" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="200" />
         <source>{element} · {lattice} · {count} base-cell output(s)</source>
         <translation>{element} · {lattice} · {count} 个基础晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="207" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="212" />
         <source>Use prototype-specific lattice constants. In particular, HCP a is not the FCC conventional-cell a. Add Super Cell next when downstream operations need a larger structure.</source>
         <translation>请使用与原型匹配的晶格常数；尤其是 HCP 的 a 不等于 FCC 常规晶胞的 a。后续操作需要更大结构时，请连接“扩胞”卡。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="260" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="264" />
         <source>This saved Crystal Prototype Builder used the removed expansion settings. They were ignored; add a Super Cell card after it to restore the intended cell size.</source>
         <translation>该晶体原型构建配置使用了已移除的扩胞参数，这些参数已被忽略。请在后面添加“扩胞”卡，以恢复所需的晶胞尺寸。</translation>
     </message>
@@ -3697,12 +3741,12 @@
         <translation>需要更大的晶胞？请在本卡后添加“扩胞”卡，再选择重复倍率、目标长度或原子预算。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="133" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="137" />
         <source>Next step</source>
         <translation>下一步</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="157" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="162" />
         <source>Fully periodic (PBC x/y/z), with no vacuum; the third cell vector is normal to FCC (111).</source>
         <translation>三维周期（PBC x/y/z），无真空；第三晶格向量垂直于 FCC (111) 面。</translation>
     </message>
@@ -3711,7 +3755,7 @@
         <translation type="vanished">预计输出 {shown} 个结构；重复 {a} × {b} × {c}；每个 {atoms} 个原子；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="180" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="185" />
         <source>The scan has {total} points; later a values are truncated.</source>
         <translation>扫描共有 {total} 个点；后续较大的 a 值将被截断。</translation>
     </message>
@@ -3736,12 +3780,12 @@
         <translation type="vanished">{element} · {lattice} · {mode} · {count} 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="196" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="201" />
         <source>invalid element</source>
         <translation>无效元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="201" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="206" />
         <source>{lattice} · parameters need attention</source>
         <translation>{lattice} · 参数需要检查</translation>
     </message>
@@ -7634,23 +7678,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="385" />
-        <location filename="../ui/messages.py" line="425" />
+        <location filename="../ui/messages.py" line="393" />
+        <location filename="../ui/messages.py" line="433" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="395" />
+        <location filename="../ui/messages.py" line="403" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="405" />
+        <location filename="../ui/messages.py" line="413" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="415" />
+        <location filename="../ui/messages.py" line="423" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -8314,89 +8358,234 @@ All child items will also be deleted.</source>
 <context>
     <name>OrderedAlloyPrototypeCard</name>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="33" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="44" />
         <source>Ordered Alloy Prototype</source>
         <translation>有序合金原型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="39" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="65" />
+        <source>Ordered prototype</source>
+        <translation>有序原型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="68" />
+        <source>Choose the fixed crystallographic sites and A/B sublattice topology.</source>
+        <translation>选择固定的晶体学位点与 A/B 子晶格拓扑。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="81" />
+        <source>step</source>
+        <translation>步长</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="86" />
+        <source>Lattice constant a (min, max, step)</source>
+        <translation>晶格常数 a（最小值、最大值、步长）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="89" />
+        <source>Each sampled a value produces one unexpanded base cell.</source>
+        <translation>每个采样的 a 值生成一个未扩展的基础晶胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="98" />
+        <source>c/a ratio</source>
+        <translation>c/a 轴比</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="101" />
+        <source>Only A3/HCP and L1₀ use c/a; cubic prototypes keep c/a = 1.</source>
+        <translation>仅 A3/HCP 和 L1₀ 使用 c/a；立方原型固定 c/a = 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="105" />
         <source>Prototype</source>
         <translation>原型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="47" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="107" />
+        <source>The output is an ideal, fully periodic base cell with a per-atom sublattice array.</source>
+        <translation>输出是理想的三维周期基础晶胞，并带逐原子子晶格数组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="119" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="129" />
+        <source>Element or X</source>
+        <translation>元素或 X</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="121" />
+        <source>Sublattice A element</source>
+        <translation>子晶格 A 元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="124" />
+        <source>Use a real element for direct ordered occupancy, or X as a placeholder for a later occupancy card.</source>
+        <translation>填写真实元素可直接生成有序占位；填写 X 则留给后续占位卡处理。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="131" />
+        <source>Sublattice B element</source>
+        <translation>子晶格 B 元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="134" />
+        <source>Shown only for two-sublattice prototypes; A and B are crystallographic site identities.</source>
+        <translation>仅双子晶格原型显示；A 和 B 表示晶体学位点身份。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="138" />
+        <source>Sublattice occupants</source>
+        <translation>子晶格占位</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="140" />
+        <source>X is an unresolved site placeholder and is not a trainable chemical element.</source>
+        <translation>X 是尚未确定的位点占位符，不是可用于训练的化学元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="148" />
+        <source>structures</source>
+        <translation>个结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="152" />
+        <source>Maximum outputs</source>
+        <translation>最大输出数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="155" />
+        <source>If the a scan has more points, only the first values in ascending scan order are kept.</source>
+        <translation>若 a 扫描点更多，只保留按升序排列的前几个值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="159" />
+        <source>Output preview</source>
+        <translation>输出预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="170" />
+        <source>Next step</source>
+        <translation>下一步</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="227" />
+        <source>Base-cell sites: {ratio}. The sublattice array stores these sublattice identities.</source>
+        <translation>基础晶胞位点：{ratio}。sublattice 数组保存这些子晶格身份。</translation>
+    </message>
+    <message>
+        <source>Base-cell sites: {ratio}. The sublattice array stores these A/B identities.</source>
+        <translation type="vanished">基础晶胞位点：{ratio}。sublattice 数组保存这些 A/B 身份。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="235" />
+        <source>A1/A2/A3 overlap geometrically with the Crystal Prototype Builder. Use them here only when downstream steps need sublattice A labels or X placeholders.</source>
+        <translation>A1/A2/A3 在几何上与“晶体原型构建”重复。仅当后续步骤需要子晶格 A 标签或 X 占位符时才在本卡使用。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="264" />
+        <source>{shown} base-cell output(s); {atoms} sites each: {sites}; first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å.</source>
+        <translation>预计输出 {shown} 个基础晶胞；每个 {atoms} 个位点：{sites}；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="276" />
+        <source>The scan has {total} points; later a values are truncated.</source>
+        <translation>扫描共有 {total} 个点；后续较大的 a 值将被截断。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="282" />
+        <source>X placeholders are not ready for training. Add Super Cell if a larger cell is needed, then use Finite-Cell Alloy Occupancy to assign real elements.</source>
+        <translation>含 X 的结构不能直接训练。需要更大晶胞时先添加“扩胞”卡，再用“有限晶胞合金占位”分配真实元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="287" />
+        <source>Real elements produce a fixed-stoichiometry ordered base cell. Add Super Cell next when a larger cell is needed.</source>
+        <translation>真实元素会生成固定化学计量的有序基础晶胞；需要更大晶胞时请后接“扩胞”卡。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="293" />
+        <source>Fix the highlighted parameter meaning before continuing downstream.</source>
+        <translation>请先修正当前参数含义，再继续后续流程。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="306" />
+        <source>{prototype} · {occupants} · {count} base-cell output(s)</source>
+        <translation>{prototype} · {occupants} · {count} 个基础晶胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="312" />
+        <source>{prototype} · parameters need attention</source>
+        <translation>{prototype} · 参数需要检查</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="318" />
+        <source>This card defines crystallographic A/B site identities. It does not expand the cell; use Super Cell afterward, and replace every X before training.</source>
+        <translation>本卡定义晶体学 A/B 位点身份，不负责扩胞；请后接“扩胞”卡，并在训练前替换所有 X。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="369" />
+        <source>This saved Ordered Alloy Prototype used the removed expansion settings. They were ignored; add a Super Cell card after it to restore the intended cell size.</source>
+        <translation>该有序合金原型配置使用了已移除的扩胞参数，这些参数已被忽略。请在后面添加“扩胞”卡，以恢复所需的晶胞尺寸。</translation>
+    </message>
+    <message>
         <source>Ordered or elemental crystal prototype</source>
-        <translation>有序合金或单元素晶体原型</translation>
+        <translation type="vanished">有序合金或单元素晶体原型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="53" />
         <source>a (Å)</source>
-        <translation>a (Å)</translation>
+        <translation type="vanished">a (Å)</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="60" />
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="173" />
         <source>c/a</source>
-        <translation>c/a</translation>
+        <translation type="vanished">c/a</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="66" />
         <source>Used by A3/hcp and L10/AB; cubic prototypes use 1</source>
-        <translation>A3/hcp 和 L1₀/AB 使用该值；立方原型固定使用 1</translation>
+        <translation type="vanished">A3/hcp 和 L1₀/AB 使用该值；立方原型固定使用 1</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="69" />
         <source>Sublattice elements</source>
-        <translation>子晶格元素</translation>
+        <translation type="vanished">子晶格元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="72" />
         <source>A:X,B:X (use X as a placeholder)</source>
-        <translation>A:X,B:X（可用 X 作为占位符）</translation>
+        <translation type="vanished">A:X,B:X（可用 X 作为占位符）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="167" />
         <source>Required sublattices: {labels}. Conventional-cell sites: {ratio}.</source>
-        <translation>所需子晶格：{labels}。常规晶胞位点：{ratio}。</translation>
+        <translation type="vanished">所需子晶格：{labels}。常规晶胞位点：{ratio}。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="177" />
         <source>c/a (fixed at 1)</source>
-        <translation>c/a（固定为 1）</translation>
+        <translation type="vanished">c/a（固定为 1）</translation>
     </message>
     <message>
         <source>A:Cu,B:Au (use X as a placeholder)</source>
         <translation type="vanished">A:Cu,B:Au（可用 X 作为占位符）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="73" />
         <source>Element or X placeholder assigned to each crystallographic sublattice</source>
-        <translation>为每个晶体学子晶格指定元素或 X 占位符</translation>
+        <translation type="vanished">为每个晶体学子晶格指定元素或 X 占位符</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="76" />
         <source>Auto supercell (max atoms)</source>
-        <translation>自动超胞（最大原子数）</translation>
+        <translation type="vanished">自动超胞（最大原子数）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="78" />
         <source>Manual supercell</source>
-        <translation>手动超胞</translation>
+        <translation type="vanished">手动超胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="80" />
         <source>Max atoms</source>
-        <translation>最大原子数</translation>
+        <translation type="vanished">最大原子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="86" />
         <source>Rep (na,nb,nc)</source>
-        <translation>重复数 (na,nb,nc)</translation>
+        <translation type="vanished">重复数 (na,nb,nc)</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="92" />
         <source>Max outputs</source>
-        <translation>最大输出数</translation>
+        <translation type="vanished">最大输出数</translation>
     </message>
 </context>
 <context>

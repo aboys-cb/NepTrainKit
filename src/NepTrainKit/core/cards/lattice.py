@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from itertools import combinations
 from typing import Literal
@@ -821,5 +822,28 @@ class SuperCellOperation(StructureOperation):
     def _make_supercell(self, structure, na: int, nb: int, nc: int):
         supercell = make_supercell(structure, np.diag([na, nb, nc]), order="atom-major")
         supercell.info["Config_type"] = structure.info.get("Config_type", "")
+        self._preserve_ordered_alloy_provenance(structure, supercell)
         append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
         return supercell
+
+    @staticmethod
+    def _preserve_ordered_alloy_provenance(structure, supercell) -> None:
+        raw_metadata = structure.info.get("ordered_alloy_prototype")
+        if raw_metadata is None:
+            return
+        try:
+            metadata = json.loads(raw_metadata)
+        except (TypeError, json.JSONDecodeError):
+            supercell.info["ordered_alloy_prototype"] = raw_metadata
+            return
+        labels = np.asarray(supercell.arrays.get("sublattice", ()), dtype=str)
+        if labels.size:
+            metadata["sublattice_counts"] = {
+                label: int(np.count_nonzero(labels == label))
+                for label in sorted(set(labels.tolist()))
+            }
+        supercell.info["ordered_alloy_prototype"] = json.dumps(
+            metadata,
+            sort_keys=True,
+            separators=(",", ":"),
+        )

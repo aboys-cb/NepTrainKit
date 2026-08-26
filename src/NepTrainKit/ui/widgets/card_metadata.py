@@ -209,7 +209,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Ordered Alloy Prototype"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Generate periodic A1, A2, A3, L12, B2, and L10 prototypes with sublattice labels.",
+                "Generate unexpanded A1, A2, A3, L12, B2, and L10 base cells with explicit A/B sublattice labels.",
             ),
         ),
         "PerturbCard": (

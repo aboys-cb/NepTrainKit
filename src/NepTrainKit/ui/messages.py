@@ -346,6 +346,14 @@ def _card_operation_error_catalog() -> None:
     QCoreApplication.translate(
         "CardOperationError", "The lattice-constant step must be positive."
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Enter one element symbol or the X placeholder for every visible sublattice.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Invalid element or placeholder {element}; use a chemical element symbol or X.",
+    )
 
 
 class MessageManager(QObject):

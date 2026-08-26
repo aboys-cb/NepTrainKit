@@ -2,29 +2,34 @@ import json
 import tempfile
 import time
 from pathlib import Path
+from unittest.mock import patch
 
 from ase.io import read, write
 
 from NepTrainKit.core.alloy import simplex_sobol_points
 from NepTrainKit.i18n import install_translator
+from NepTrainKit.ui.views._card.i18n_utils import set_combo_value
 
 from .card_test_base import *
 
 
 class TestOrderedAlloyCards(BaseCardTest):
     @staticmethod
-    def _prototype(prototype: str, rep=(1, 1, 1), max_atoms=128):
-        return OrderedAlloyPrototypeOperation().generate(
+    def _prototype(prototype: str, rep=(1, 1, 1)):
+        base = OrderedAlloyPrototypeOperation().generate(
             OrderedAlloyPrototypeParams(
                 prototype=prototype,
                 a_range=(3.6, 3.6, 0.1),
                 covera=1.2 if prototype == "L10/AB" else 1.633,
                 sublattice_elements="A:Cu,B:Au",
-                auto_supercell=False,
-                rep=rep,
-                max_atoms=max_atoms,
                 max_outputs=1,
             )
+        )[0]
+        if tuple(rep) == (1, 1, 1):
+            return base
+        return SuperCellOperation().run_structure(
+            base,
+            SuperCellParams(mode="scale", super_scale=tuple(rep)),
         )[0]
 
     @staticmethod
@@ -52,34 +57,55 @@ class TestOrderedAlloyCards(BaseCardTest):
                 self.assertIn("OrderedProto(", atoms.info["Config_type"])
 
     def test_l12_32_atoms_preserves_24_to_8_sublattices(self):
-        atoms = self._prototype("L12/A3B", rep=(2, 2, 2), max_atoms=32)
+        atoms = self._prototype("L12/A3B", rep=(2, 2, 2))
         self.assertEqual(len(atoms), 32)
         self.assertEqual(int(np.count_nonzero(atoms.arrays["sublattice"] == "A")), 24)
         self.assertEqual(int(np.count_nonzero(atoms.arrays["sublattice"] == "B")), 8)
+        metadata = json.loads(atoms.info["ordered_alloy_prototype"])
+        self.assertEqual(metadata["prototype"], "L12")
+        self.assertEqual(metadata["sublattice_elements"], {"A": "Cu", "B": "Au"})
+        self.assertEqual(metadata["sublattice_counts"], {"A": 24, "B": 8})
 
-    def test_ordered_prototype_enforces_atom_and_output_limits(self):
-        with self.assertRaisesRegex(ValueError, "exceeding max_atoms=31"):
-            self._prototype("L12/A3B", rep=(2, 2, 2), max_atoms=31)
-
+    def test_ordered_prototype_limits_only_lattice_scan_outputs(self):
         outputs = OrderedAlloyPrototypeOperation().generate(
             OrderedAlloyPrototypeParams(
                 prototype="B2/AB",
                 a_range=(2.8, 3.2, 0.1),
                 sublattice_elements="A:Fe,B:Al",
-                auto_supercell=True,
-                max_atoms=64,
                 max_outputs=2,
             )
         )
         self.assertEqual(len(outputs), 2)
-        self.assertTrue(all(len(atoms) <= 64 for atoms in outputs))
+        self.assertTrue(all(len(atoms) == 2 for atoms in outputs))
+        self.assertNotIn("rep=", outputs[0].info["Config_type"])
+
+    def test_ordered_prototype_plan_matches_base_cell_and_truncation(self):
+        params = OrderedAlloyPrototypeParams(
+            prototype="L12/A3B",
+            a_range=(3.5, 3.9, 0.1),
+            sublattice_elements="A:Cu,B:Au",
+            max_outputs=2,
+        )
+        operation = OrderedAlloyPrototypeOperation()
+        plan = operation.plan(params)
+        outputs = operation.generate(params)
+
+        self.assertEqual(len(plan.a_values), 5)
+        self.assertEqual(plan.atoms_per_output, 4)
+        self.assertEqual(plan.sublattice_counts, {"B": 1, "A": 3})
+        self.assertEqual(plan.sublattice_elements, {"B": "Au", "A": "Cu"})
+        self.assertTrue(plan.truncated)
+        self.assertEqual(len(outputs), 2)
+        self.assertTrue(all(len(atoms) == 4 for atoms in outputs))
 
     def test_sublattice_survives_supercell_occupancy_and_extxyz(self):
-        primitive = self._prototype("B2/AB", max_atoms=2)
+        primitive = self._prototype("B2/AB")
         supercell = SuperCellOperation().run_structure(
             primitive,
             SuperCellParams(mode="scale", super_scale=(2, 2, 2)),
         )[0]
+        prototype_metadata = json.loads(supercell.info["ordered_alloy_prototype"])
+        self.assertEqual(prototype_metadata["sublattice_counts"], {"A": 8, "B": 8})
         rules = json.dumps(
             {
                 "A": {
@@ -99,6 +125,10 @@ class TestOrderedAlloyCards(BaseCardTest):
             FiniteCellAlloyOccupancyParams(site_rules=rules, use_seed=True, seed=5, max_outputs=1),
         )[0]
         np.testing.assert_array_equal(occupied.arrays["sublattice"], supercell.arrays["sublattice"])
+        self.assertEqual(
+            json.loads(occupied.info["ordered_alloy_prototype"]),
+            prototype_metadata,
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "occupied.extxyz"
@@ -106,9 +136,10 @@ class TestOrderedAlloyCards(BaseCardTest):
             restored = read(path, format="extxyz")
         np.testing.assert_array_equal(restored.arrays["sublattice"], occupied.arrays["sublattice"])
         self.assertEqual(json.loads(restored.info["finite_cell_alloy"]), json.loads(occupied.info["finite_cell_alloy"]))
+        self.assertEqual(json.loads(restored.info["ordered_alloy_prototype"]), prototype_metadata)
 
     def test_single_site_integer_compositions_are_unique_and_sum_to_32(self):
-        atoms = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)
+        atoms = self._prototype("A1/fcc", rep=(2, 2, 2))
         del atoms.arrays["sublattice"]
         rules = json.dumps(
             {
@@ -140,7 +171,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertEqual(len(count_plans), len(set(count_plans)))
 
     def test_multisublattice_counts_are_independently_satisfied(self):
-        atoms = self._prototype("L12/A3B", rep=(2, 2, 2), max_atoms=32)
+        atoms = self._prototype("L12/A3B", rep=(2, 2, 2))
         atoms.new_array("group", np.asarray(["even" if index % 2 == 0 else "odd" for index in range(32)], dtype="U8"))
         rules = json.dumps(
             {
@@ -167,7 +198,7 @@ class TestOrderedAlloyCards(BaseCardTest):
             np.testing.assert_array_equal(output.arrays["group"], atoms.arrays["group"])
 
     def test_fixed_fraction_reports_nearest_integer_instead_of_exact(self):
-        atoms = self._prototype("B2/AB", rep=(2, 2, 2), max_atoms=16)
+        atoms = self._prototype("B2/AB", rep=(2, 2, 2))
         rules = json.dumps(
             {
                 "A": {
@@ -192,7 +223,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertAlmostEqual(sum(metadata["fractions"]["A"].values()), 1.0)
 
     def test_seed_reproducibility_and_arrangement_tracking(self):
-        atoms = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)
+        atoms = self._prototype("A1/fcc", rep=(2, 2, 2))
         rules = json.dumps(
             {
                 "A": {
@@ -231,7 +262,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertEqual(self._metadata(first[0])["counts"], self._metadata(different[0])["counts"])
 
     def test_theoretical_arrangement_limit_and_max_outputs_are_strict(self):
-        atoms = self._prototype("A2/bcc", max_atoms=2)
+        atoms = self._prototype("A2/bcc")
         rules = json.dumps(
             {
                 "A": {
@@ -268,7 +299,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertEqual(len(limited), 1)
 
     def test_placeholder_element_x_is_never_emitted(self):
-        atoms = self._prototype("A2/bcc", max_atoms=2)
+        atoms = self._prototype("A2/bcc")
         rules = json.dumps(
             {
                 "A": {
@@ -285,7 +316,7 @@ class TestOrderedAlloyCards(BaseCardTest):
             )
 
     def test_output_budget_covers_compositions_before_extra_arrangements(self):
-        atoms = self._prototype("A1/fcc", max_atoms=4)
+        atoms = self._prototype("A1/fcc")
         rules = json.dumps(
             {
                 "A": {
@@ -312,7 +343,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         )
 
     def test_estimate_and_invalid_site_rules(self):
-        atoms = self._prototype("B2/AB", rep=(2, 2, 2), max_atoms=16)
+        atoms = self._prototype("B2/AB", rep=(2, 2, 2))
         rules = json.dumps(
             {
                 "A": {
@@ -352,13 +383,11 @@ class TestOrderedAlloyCards(BaseCardTest):
     def test_cards_roundtrip_all_fields(self):
         prototype = OrderedAlloyPrototypeCard()
         self.assertEqual(prototype.get_params(), OrderedAlloyPrototypeParams())
-        prototype.prototype_combo.setCurrentText("L10/AB")
+        set_combo_value(prototype.prototype_combo, "L10/AB")
         prototype.a_frame.set_input_value([3.5, 3.7, 0.1])
         prototype.covera_frame.set_input_value([1.18])
-        prototype.elements_edit.setText("A:Fe,B:Pt")
-        prototype.manual_supercell_button.setChecked(True)
-        prototype.max_atoms_frame.set_input_value([64])
-        prototype.rep_frame.set_input_value([2, 2, 1])
+        prototype.element_a_edit.setText("Fe")
+        prototype.element_b_edit.setText("Pt")
         prototype.max_outputs_frame.set_input_value([3])
         prototype_restored = OrderedAlloyPrototypeCard()
         prototype_restored.from_dict(prototype.to_dict())
@@ -381,6 +410,59 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertIn(
             "Load an upstream structure",
             occupancy_restored.estimate_label.text(),
+        )
+
+    def test_ordered_prototype_ui_previews_scope_and_x_next_step(self):
+        card = OrderedAlloyPrototypeCard()
+        card.show()
+        self._app.processEvents()
+
+        self.assertIn("4 sites", card.output_preview.text())
+        self.assertIn("A=3 (X)", card.output_preview.text())
+        self.assertIn("B=1 (X)", card.output_preview.text())
+        self.assertIn("not ready for training", card.next_step_tip.text())
+        self.assertFalse(hasattr(card, "max_atoms_frame"))
+        self.assertFalse(hasattr(card, "rep_frame"))
+
+        card.element_a_edit.setText("Cu")
+        card.element_b_edit.setText("Au")
+        self._app.processEvents()
+        self.assertIn("fixed-stoichiometry", card.next_step_tip.text())
+        self.assertIn("Cu/Au", card.get_summary_text())
+
+        card.element_a_edit.clear()
+        self._app.processEvents()
+        self.assertIn("Enter one element symbol", card.output_preview.text())
+        self.assertIn("parameters need attention", card.get_summary_text())
+
+    def test_ordered_prototype_warns_and_ignores_removed_expansion_settings(self):
+        card = OrderedAlloyPrototypeCard()
+        legacy = {
+            "class": "OrderedAlloyPrototypeCard",
+            "check_state": True,
+            "params": {
+                "prototype": "B2/AB",
+                "a_range": [3.0, 3.0, 0.1],
+                "covera": 1.0,
+                "sublattice_elements": "A:Fe,B:Al",
+                "auto_supercell": False,
+                "max_atoms": 128,
+                "rep": [3, 3, 3],
+                "max_outputs": 1,
+            },
+        }
+        with patch(
+            "NepTrainKit.ui.views._card.ordered_alloy_prototype_card.MessageManager.send_warning_message"
+        ) as warning:
+            card.from_dict(legacy)
+
+        warning.assert_called_once()
+        self.assertFalse(card.legacy_expansion_notice.isHidden())
+        self.assertIn("Super Cell", card.legacy_expansion_notice.text())
+        self.assertEqual(len(card.create_operation().generate(card.get_params())[0]), 2)
+        self.assertEqual(
+            set(card.to_dict()["params"]),
+            {"prototype", "a_range", "covera", "sublattice_elements", "max_outputs"},
         )
 
     def test_visual_rule_editor_generates_each_mode_and_roundtrips(self):
@@ -459,7 +541,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertIn("JSON was not applied", card.json_error_label.text())
 
     def test_dataset_counts_estimate_and_missing_sublattice_rules_are_visible(self):
-        atoms = self._prototype("L12/A3B", rep=(2, 2, 2), max_atoms=32)
+        atoms = self._prototype("L12/A3B", rep=(2, 2, 2))
         rules = {
             "A": {
                 "elements": ["Fe", "Co"],
@@ -505,19 +587,19 @@ class TestOrderedAlloyCards(BaseCardTest):
 
     def test_default_templates_match_their_input_partition(self):
         card = FiniteCellAlloyOccupancyCard()
-        plain = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)
+        plain = self._prototype("A1/fcc", rep=(2, 2, 2))
         del plain.arrays["sublattice"]
         card.set_dataset([plain])
         self.assertFalse(card.rules_editor.validation_errors(card._input_counts))
         self.assertIn("First input sites: all=32", card.estimate_label.text())
 
-        ordered = self._prototype("B2/AB", rep=(2, 2, 2), max_atoms=16)
+        ordered = self._prototype("B2/AB", rep=(2, 2, 2))
         card.set_dataset([ordered])
         self.assertFalse(card.rules_editor.validation_errors(card._input_counts))
         self.assertIn("A=8, B=8", card.estimate_label.text())
 
     def test_auto_rules_use_current_elements_and_fractions(self):
-        atoms = self._prototype("A1/fcc", max_atoms=4)
+        atoms = self._prototype("A1/fcc")
         del atoms.arrays["sublattice"]
         atoms.set_chemical_symbols(["Fe", "Fe", "Fe", "Co"])
         card = FiniteCellAlloyOccupancyCard()
@@ -528,7 +610,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertNotIn("X", card.get_params().site_rules)
 
     def test_visual_fixed_fractions_require_sum_one_but_core_keeps_legacy_weights(self):
-        atoms = self._prototype("A1/fcc", max_atoms=4)
+        atoms = self._prototype("A1/fcc")
         del atoms.arrays["sublattice"]
         rules = {
             "all": {
@@ -587,7 +669,7 @@ class TestOrderedAlloyCards(BaseCardTest):
 
     def test_untouched_rules_auto_match_all_a_and_ab_inputs(self):
         card = FiniteCellAlloyOccupancyCard()
-        ordered = self._prototype("L12/A3B", rep=(2, 2, 2), max_atoms=32)
+        ordered = self._prototype("L12/A3B", rep=(2, 2, 2))
         card.set_dataset([ordered])
         ordered_rules = json.loads(card.get_params().site_rules)
         self.assertEqual(set(ordered_rules), {"A", "B"})
@@ -597,7 +679,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         card.rules_editor.ab_template_button.click()
         self.assertNotIn("X", card.get_params().site_rules)
 
-        single_a = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)
+        single_a = self._prototype("A1/fcc", rep=(2, 2, 2))
         card.set_dataset([single_a])
         single_rules = json.loads(card.get_params().site_rules)
         self.assertEqual(set(single_rules), {"A"})
@@ -615,7 +697,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertIn("First input sites: all=32", card.estimate_label.text())
 
     def test_user_owned_rules_are_never_auto_overwritten(self):
-        single_a = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)
+        single_a = self._prototype("A1/fcc", rep=(2, 2, 2))
         rules = {
             "A": {
                 "elements": ["Fe"],
@@ -667,13 +749,15 @@ class TestOrderedAlloyCards(BaseCardTest):
         card = FiniteCellAlloyOccupancyCard()
         card.rules_editor.site_editors[1].toggle_expanded()
         self.assertTrue(card._rules_are_auto_managed)
-        single_a = self._prototype("A1/fcc", max_atoms=4)
+        single_a = self._prototype("A1/fcc")
         card.set_dataset([single_a])
         self.assertEqual(set(json.loads(card.get_params().site_rules)), {"A"})
 
     def test_prototype_switch_controls_covera_and_visible_sublattices(self):
         card = OrderedAlloyPrototypeCard()
-        for prototype, enabled, expected_elements in [
+        card.show()
+        self._app.processEvents()
+        for prototype, uses_covera, expected_elements in [
             ("A1/fcc", False, "A:X"),
             ("A2/bcc", False, "A:X"),
             ("A3/hcp", True, "A:X"),
@@ -683,15 +767,13 @@ class TestOrderedAlloyCards(BaseCardTest):
         ]:
             with self.subTest(prototype=prototype):
                 card.prototype_combo.setCurrentIndex(card.prototype_combo.findData(prototype))
-                self.assertEqual(card.covera_frame.isEnabled(), enabled)
-                self.assertEqual(card.elements_edit.text(), expected_elements)
-                if enabled:
-                    self.assertEqual(card.covera_label.text(), "c/a")
-                else:
-                    self.assertEqual(card.covera_label.text(), "c/a (fixed at 1)")
-                    self.assertEqual(card.covera_frame.get_input_value(), [1.0])
-                required = "A, B" if ",B:" in expected_elements else "A"
-                self.assertIn(f"Required sublattices: {required}", card.sublattice_hint_label.text())
+                self._app.processEvents()
+                self.assertEqual(card.covera_field.isVisible(), uses_covera)
+                self.assertEqual(card.get_params().sublattice_elements, expected_elements)
+                has_b = ",B:" in expected_elements
+                self.assertEqual(card.element_b_field.isVisible(), has_b)
+                self.assertIn("Base-cell sites:", card.sublattice_hint_label.text())
+                self.assertEqual(card.single_sublattice_tip.isVisible(), not has_b)
 
     def test_rule_editor_text_layout_and_tab_order_are_explicit(self):
         try:
@@ -778,7 +860,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         operation = FiniteCellAlloyOccupancyOperation()
         for rep, atom_count in [((2, 2, 2), 32), ((2, 2, 4), 64), ((2, 4, 4), 128)]:
             with self.subTest(atom_count=atom_count):
-                atoms = self._prototype("A1/fcc", rep=rep, max_atoms=atom_count)
+                atoms = self._prototype("A1/fcc", rep=rep)
                 half = atom_count // 2
                 rules = json.dumps(
                     {

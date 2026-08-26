@@ -21,7 +21,6 @@ from ase.data import atomic_masses, atomic_numbers
 
 from NepTrainKit.core.alloy import (
     assign_random_occupancy,
-    best_supercell_factors_max_atoms,
     fractions_to_counts_exact,
     parse_composition,
     parse_element_list,
@@ -777,10 +776,20 @@ class OrderedAlloyPrototypeParams:
     a_range: tuple[float, float, float] = (3.6, 3.6, 0.1)
     covera: float = 1.0
     sublattice_elements: str = "A:X,B:X"
-    auto_supercell: bool = True
-    max_atoms: int = 128
-    rep: tuple[int, int, int] = (2, 2, 2)
     max_outputs: int = 200
+
+
+@dataclass(frozen=True)
+class OrderedAlloyPrototypePlan:
+    """Exact base-cell preview for an ordered-alloy prototype request."""
+
+    prototype: str
+    a_values: tuple[float, ...]
+    atoms_per_output: int
+    cell_lengths: tuple[float, float, float]
+    sublattice_counts: dict[str, int]
+    sublattice_elements: dict[str, str]
+    truncated: bool
 
 
 @dataclass(frozen=True)
@@ -860,12 +869,16 @@ def _canonical_prototype_name(text: str) -> str:
 def _canonical_element(text: str) -> str:
     symbol = str(text or "").strip()
     if not symbol:
-        symbol = "X"
+        raise CardOperationError(
+            "ordered-alloy-element-empty",
+            "Enter one element symbol or the X placeholder for every visible sublattice.",
+        )
     symbol = symbol[0].upper() + symbol[1:].lower()
     if symbol not in atomic_numbers:
-        raise ValueError(
-            f"Ordered Alloy Prototype: invalid element or placeholder {text!r}. "
-            "Use an element symbol or X."
+        raise CardOperationError(
+            "ordered-alloy-element-invalid",
+            "Invalid element or placeholder {element}; use a chemical element symbol or X.",
+            element=repr(text),
         )
     return symbol
 
@@ -892,7 +905,7 @@ def _parse_sublattice_elements(text: str, labels: tuple[str, ...]) -> dict[str, 
             label, value = token.split(":", 1)
             raw[label.strip()] = value.strip()
 
-    required = tuple(dict.fromkeys(labels))
+    required = tuple(sorted(dict.fromkeys(labels)))
     known_labels = {label for definition in _ORDERED_PROTOTYPES.values() for label in definition.labels}
     extra = sorted(set(str(key) for key in raw) - known_labels)
     if extra:
@@ -915,45 +928,20 @@ class OrderedAlloyPrototypeOperation(GeneratorOperation):
     """Generate periodic prototypes with an independent crystallographic sublattice array."""
 
     def generate(self, params: OrderedAlloyPrototypeParams) -> list:
-        prototype = _canonical_prototype_name(params.prototype)
+        plan = self.plan(params)
+        prototype = plan.prototype
         definition = _ORDERED_PROTOTYPES[prototype]
-        occupants = _parse_sublattice_elements(params.sublattice_elements, definition.labels)
-        max_atoms = int(params.max_atoms)
+        occupants = plan.sublattice_elements
         max_outputs = int(params.max_outputs)
-        if max_atoms <= 0:
-            raise ValueError("Ordered Alloy Prototype: max_atoms must be >= 1.")
-        if max_outputs <= 0:
-            raise ValueError("Ordered Alloy Prototype: max_outputs must be >= 1.")
-        if len(definition.labels) > max_atoms:
-            raise ValueError(
-                f"Ordered Alloy Prototype: {prototype} primitive/conventional cell has "
-                f"{len(definition.labels)} atoms, exceeding max_atoms={max_atoms}."
-            )
 
         outputs = []
-        for a in _scan_lattice_values(params.a_range):
-            base = self._build_base(definition, occupants, a, float(params.covera))
-            if params.auto_supercell:
-                factors = best_supercell_factors_max_atoms(base, max_atoms)
-                rep = (factors.na, factors.nb, factors.nc)
-            else:
-                rep = tuple(int(value) for value in params.rep)
-                if len(rep) != 3 or any(value <= 0 for value in rep):
-                    raise ValueError("Ordered Alloy Prototype: rep must contain three positive integers.")
-            atom_count = len(base) * math.prod(rep)
-            if atom_count > max_atoms:
-                raise ValueError(
-                    f"Ordered Alloy Prototype: rep={rep} produces {atom_count} atoms, "
-                    f"exceeding max_atoms={max_atoms}."
-                )
-
-            atoms = make_supercell(base, np.diag(rep))
+        for a in plan.a_values[:max_outputs]:
+            atoms = self._build_base(definition, occupants, a, float(params.covera))
             atoms.wrap()
             metadata = {
                 "prototype": prototype,
                 "a": float(a),
                 "covera": self._effective_covera(definition, float(params.covera)),
-                "rep": list(rep),
                 "sublattice_elements": occupants,
                 "sublattice_counts": {
                     label: int(np.count_nonzero(np.asarray(atoms.arrays["sublattice"], dtype=str) == label))
@@ -961,11 +949,35 @@ class OrderedAlloyPrototypeOperation(GeneratorOperation):
                 },
             }
             atoms.info["ordered_alloy_prototype"] = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
-            append_config_tag(atoms, f"OrderedProto({prototype},a={a:.6g},rep={rep[0]}x{rep[1]}x{rep[2]})")
+            append_config_tag(atoms, f"OrderedProto({prototype},a={a:.6g})")
             outputs.append(atoms)
             if len(outputs) >= max_outputs:
                 break
         return outputs
+
+    def plan(self, params: OrderedAlloyPrototypeParams) -> OrderedAlloyPrototypePlan:
+        """Validate parameters and return the exact first base-cell preview."""
+        prototype = _canonical_prototype_name(params.prototype)
+        definition = _ORDERED_PROTOTYPES[prototype]
+        occupants = _parse_sublattice_elements(params.sublattice_elements, definition.labels)
+        max_outputs = int(params.max_outputs)
+        if max_outputs <= 0:
+            raise ValueError("Ordered Alloy Prototype: max_outputs must be >= 1.")
+        a_values = tuple(_scan_lattice_values(params.a_range))
+        base = self._build_base(definition, occupants, a_values[0], float(params.covera))
+        labels = np.asarray(base.arrays["sublattice"], dtype=str)
+        return OrderedAlloyPrototypePlan(
+            prototype=prototype,
+            a_values=a_values,
+            atoms_per_output=len(base),
+            cell_lengths=tuple(float(value) for value in base.cell.lengths()),
+            sublattice_counts={
+                label: int(np.count_nonzero(labels == label))
+                for label in sorted(dict.fromkeys(definition.labels))
+            },
+            sublattice_elements=dict(occupants),
+            truncated=len(a_values) > max_outputs,
+        )
 
     @staticmethod
     def _effective_covera(definition: _PrototypeDefinition, covera: float) -> float:

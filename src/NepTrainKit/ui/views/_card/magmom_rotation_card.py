@@ -1,129 +1,251 @@
-"""Card for rotating magnetic moments of selected atoms."""
+"""Card for sampling random local spin perturbations."""
 
 from __future__ import annotations
 
-from qfluentwidgets import BodyLabel, CheckBox, LineEdit, ToolTipFilter, ToolTipPosition
+from PySide6.QtWidgets import QHBoxLayout, QWidget
+from qfluentwidgets import BodyLabel, CheckBox, LineEdit
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.magnetism import MagneticMomentRotationOperation, MagneticMomentRotationParams
+from NepTrainKit.core.cards.magnetism import (
+    MagneticMomentRotationOperation,
+    MagneticMomentRotationParams,
+)
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
 class MagneticMomentRotationCard(MakeDataCard):
-    """Rotate and optionally rescale atomic magnetic moments for selected species."""
+    """Sample random directions around an existing magnetic state."""
 
     group = "Magnetism"
-    card_name = "Magmom Rotation"
+    card_name = "Spin Perturbation"
     menu_icon = r":/images/src/images/perturb.svg"
-    contributors = [
-        {"name": "NepTrainKit", "role": "author"},
-    ]
+    contributors = [{"name": "NepTrainKit", "role": "author"}]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Rotate Magnetic Moments"))
+        self.setTitle(self.tr("Spin Perturbation"))
+        self._preview_input_count: int | None = None
         self.init_ui()
 
     def init_ui(self):
-        """Build card controls for magnetic moment perturbations."""
         self.setObjectName("magmom_rotation_card_widget")
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setVerticalSpacing(12)
 
-        self.elements_label = BodyLabel(self.tr("Elements"), self.setting_widget)
-        self.elements_label.setToolTip(self.tr("Comma separated element symbols; empty means all atoms"))
-        self.elements_label.installEventFilter(ToolTipFilter(self.elements_label, 300, ToolTipPosition.TOP))
+        input_section = InspectorSection(
+            self.tr("Input and targets"),
+            self.setting_widget,
+            self.tr(
+                "Each input must contain spin:R:3 or ASE initial magnetic moments. "
+                "Selected non-zero moments are sampled independently around their current directions."
+            ),
+        )
         self.elements_input = LineEdit(self.setting_widget)
-        self.elements_input.setPlaceholderText(self.tr("Fe,Ni"))
+        self.elements_input.setPlaceholderText(self.tr("All elements"))
+        elements_field = CompactField(
+            self.tr("Target elements"),
+            self.elements_input,
+            self.setting_widget,
+            self.tr("Comma-separated symbols such as Fe,Ni; empty selects every element."),
+        )
+        input_section.addWidget(elements_field)
 
-
-        self.angle_label = BodyLabel(self.tr("Max rotation"), self.setting_widget)
-        self.angle_label.setToolTip(self.tr("Upper bound for random rotation angles in degrees"))
-        self.angle_label.installEventFilter(ToolTipFilter(self.angle_label, 300, ToolTipPosition.TOP))
         self.angle_frame = SpinBoxUnitInputFrame(self)
-        self.angle_frame.set_input("deg", 1, "float")
-        self.angle_frame.setRange(-180, 180)
-        self.angle_frame.object_list[0].setDecimals(2)  # pyright:ignore
+        self.angle_frame.set_input("°", 1, "float")
+        self.angle_frame.setRange(0.0, 180.0)
+        self.angle_frame.setDecimals(2)
+        self.angle_frame.setSingleStep(1.0)
         self.angle_frame.set_input_value([10.0])
+        angle_field = CompactField(
+            self.tr("Maximum perturbation angle"),
+            self.angle_frame,
+            self.setting_widget,
+            self.tr("Sample each direction uniformly inside this angular cap around its input moment."),
+        )
 
-        self.count_label = BodyLabel(self.tr("Structures"), self.setting_widget)
-        self.count_label.setToolTip(self.tr("Number of perturbed structures to generate"))
-        self.count_label.installEventFilter(ToolTipFilter(self.count_label, 300, ToolTipPosition.TOP))
+        self.lift_scalar_checkbox = CheckBox(
+            self.tr("Lift scalar moments to vectors"), self.setting_widget
+        )
+        self.lift_scalar_checkbox.setChecked(True)
+        lift_field = CompactField(
+            self.tr("Collinear input"),
+            self.lift_scalar_checkbox,
+            self.setting_widget,
+        )
+
+        self.axis_frame = SpinBoxUnitInputFrame(self)
+        self.axis_frame.set_input("", 3, "float")
+        self.axis_frame.setRange(-1.0, 1.0)
+        self.axis_frame.setDecimals(6)
+        self.axis_frame.set_input_value([0.0, 0.0, 1.0])
+        self.axis_field = CompactField(
+            self.tr("Scalar lift direction (Cartesian)"),
+            self.axis_frame,
+            self.setting_widget,
+            self.tr("Used only to turn scalar moments into vectors; it does not control perturbation directions."),
+        )
+
+        rotation_section = InspectorSection(self.tr("Direction sampling"), self.setting_widget)
+        rotation_grid = ResponsiveFormGrid(rotation_section)
+        rotation_grid.add_field(angle_field, span=2)
+        rotation_grid.add_field(lift_field, span=2)
+        rotation_grid.add_field(self.axis_field, span=2)
+        rotation_section.addWidget(rotation_grid)
+
+        self.magnitude_checkbox = CheckBox(
+            self.tr("Vary magnetic-moment magnitude"), self.setting_widget
+        )
+        self.magnitude_checkbox.setChecked(True)
+        magnitude_toggle_field = CompactField(
+            self.tr("Magnitude sampling"),
+            self.magnitude_checkbox,
+            self.setting_widget,
+        )
+
+        self.magnitude_factor_frame = SpinBoxUnitInputFrame(self)
+        self.magnitude_factor_frame.set_input(["min", "max"], 2, "float")
+        self.magnitude_factor_frame.setRange(0.0, 10.0)
+        self.magnitude_factor_frame.setDecimals(3)
+        self.magnitude_factor_frame.setSingleStep(0.01)
+        self.magnitude_factor_frame.set_input_value([0.95, 1.05])
+        self.magnitude_factor_field = CompactField(
+            self.tr("Magnitude scale range"),
+            self.magnitude_factor_frame,
+            self.setting_widget,
+            self.tr("Each selected moment is multiplied by an independent factor in this interval."),
+        )
+
+        magnitude_section = InspectorSection(self.tr("Magnitude"), self.setting_widget)
+        magnitude_grid = ResponsiveFormGrid(magnitude_section)
+        magnitude_grid.add_field(magnitude_toggle_field, span=2)
+        magnitude_grid.add_field(self.magnitude_factor_field, span=2)
+        magnitude_section.addWidget(magnitude_grid)
+
         self.count_frame = SpinBoxUnitInputFrame(self)
-        self.count_frame.set_input("unit", 1, "int")
-        self.count_frame.setRange(1, 100)
+        self.count_frame.set_input("", 1, "int")
+        self.count_frame.setRange(1, 10000)
         self.count_frame.set_input_value([5])
+        count_field = CompactField(
+            self.tr("Structures per input"), self.count_frame, self.setting_widget
+        )
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
-        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
         self.seed_frame.setRange(0, 2**31 - 1)
         self.seed_frame.set_input_value([0])
         self.seed_frame.setEnabled(False)
-        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+        seed_row = QWidget(self.setting_widget)
+        seed_layout = QHBoxLayout(seed_row)
+        seed_layout.setContentsMargins(0, 0, 0, 0)
+        seed_layout.setSpacing(6)
+        seed_layout.addWidget(self.seed_checkbox)
+        seed_layout.addWidget(self.seed_frame, 1)
+        seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
 
-        self.lift_scalar_checkbox = CheckBox(self.tr("Rotate scalar magmoms (lift to vector)"), self.setting_widget)
-        self.lift_scalar_checkbox.setChecked(True)
-        self.lift_scalar_checkbox.setToolTip(self.tr("If magmoms are scalars, treat them as vectors along Axis before rotating"))
-        self.lift_scalar_checkbox.installEventFilter(
-            ToolTipFilter(self.lift_scalar_checkbox, 300, ToolTipPosition.TOP)
+        generation_section = InspectorSection(self.tr("Generation"), self.setting_widget)
+        generation_grid = ResponsiveFormGrid(generation_section)
+        generation_grid.add_field(count_field)
+        generation_grid.add_field(seed_field, span=2)
+        generation_section.addWidget(generation_grid)
+
+        sampling_note = BodyLabel(
+            self.tr(
+                "The atomic coordinates and cell are carried through unchanged; outputs differ in their spin vectors."
+            ),
+            generation_section,
         )
+        sampling_note.setWordWrap(True)
+        generation_section.addWidget(sampling_note)
 
-        self.axis_label = BodyLabel(self.tr("Axis (x,y,z)"), self.setting_widget)
-        self.axis_label.setToolTip(self.tr("Axis used when lifting scalar magmoms to vectors"))
-        self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
-        self.axis_frame = SpinBoxUnitInputFrame(self)
-        self.axis_frame.set_input("", 3, "float")
-        self.axis_frame.setRange(-1.0, 1.0)
-        for obj in self.axis_frame.object_list:
-            obj.setDecimals(6)  # pyright:ignore
-        self.axis_frame.set_input_value([0.0, 0.0, 1.0])
+        self.settingLayout.addWidget(input_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(rotation_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(magnitude_section, 2, 0, 1, 3)
+        self.settingLayout.addWidget(generation_section, 3, 0, 1, 3)
 
-        self.magnitude_checkbox = CheckBox(self.tr("Randomise magnitude"), self.setting_widget)
-        self.magnitude_checkbox.setChecked(True)
-        self.magnitude_checkbox.setToolTip(self.tr("Enable scaling of magnetic-moment magnitudes"))
-        self.magnitude_checkbox.installEventFilter(ToolTipFilter(self.magnitude_checkbox, 300, ToolTipPosition.TOP))
-        self.magnitude_checkbox.stateChanged.connect(self._toggle_magnitude_inputs)
+        self.lift_scalar_checkbox.toggled.connect(self._update_scalar_controls)
+        self.magnitude_checkbox.toggled.connect(self._update_magnitude_controls)
+        self.seed_checkbox.toggled.connect(self.seed_frame.setEnabled)
+        self.elements_input.textChanged.connect(
+            lambda _text: self.refresh_compact_presentation()
+        )
+        for frame in (
+            self.angle_frame,
+            self.axis_frame,
+            self.magnitude_factor_frame,
+            self.count_frame,
+            self.seed_frame,
+        ):
+            for control in frame.object_list:
+                control.valueChanged.connect(
+                    lambda _value: self.refresh_compact_presentation()
+                )
+        for checkbox in (
+            self.lift_scalar_checkbox,
+            self.magnitude_checkbox,
+            self.seed_checkbox,
+        ):
+            checkbox.toggled.connect(
+                lambda _checked: self.refresh_compact_presentation()
+            )
+        self._update_scalar_controls(self.lift_scalar_checkbox.isChecked())
+        self._update_magnitude_controls(self.magnitude_checkbox.isChecked())
 
-        self.min_factor_label = BodyLabel(self.tr("magnitude scaling factor"), self.setting_widget)
-        self.min_factor_label.setToolTip(self.tr("magnitude scaling factor"))
-        self.min_factor_label.installEventFilter(ToolTipFilter(self.min_factor_label, 300, ToolTipPosition.TOP))
-        self.magnitude_factor_frame = SpinBoxUnitInputFrame(self)
-        self.magnitude_factor_frame.set_input(["-", ""], 2, "float")
-        self.magnitude_factor_frame.setRange(0, 10)
-        self.magnitude_factor_frame.set_input_value([0.95,1.05])
-        self.magnitude_factor_frame.object_list[0].setDecimals(3)  # pyright:ignore
+    def _update_scalar_controls(self, enabled: bool) -> None:
+        self.axis_field.setVisible(bool(enabled))
 
+    def _update_magnitude_controls(self, enabled: bool) -> None:
+        self.magnitude_factor_field.setVisible(bool(enabled))
 
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        target = params.elements.strip() or self.tr("all moments")
+        summary = self.tr("≤ {angle}° · {target} · {count}/input").format(
+            angle=f"{params.max_angle:.4g}", target=target, count=params.num_structures
+        )
+        if params.disturb_magnitude:
+            summary += self.tr(" · {minimum}–{maximum}×").format(
+                minimum=f"{float(params.magnitude_factor[0]):.4g}",
+                maximum=f"{float(params.magnitude_factor[1]):.4g}",
+            )
+        return summary
 
+    def set_preview_input_count(self, count: int | None) -> None:
+        self._preview_input_count = None if count is None else max(0, int(count))
+        self.refresh_compact_presentation()
 
-        self.settingLayout.addWidget(self.elements_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.elements_input, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.angle_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.angle_frame, 1, 1, 1, 2)
-
-        self.settingLayout.addWidget(self.lift_scalar_checkbox, 2, 0, 1, 3)
-        self.settingLayout.addWidget(self.axis_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.axis_frame, 3, 1, 1, 2)
-
-        self.settingLayout.addWidget(self.magnitude_checkbox, 4, 0, 1, 3)
-        self.settingLayout.addWidget(self.min_factor_label, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.magnitude_factor_frame, 5, 1, 1, 2)
-        self.settingLayout.addWidget(self.count_label, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.count_frame, 6, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 7, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 7, 1, 1, 2)
-
-        self._toggle_magnitude_inputs(self.magnitude_checkbox.checkState())
-
-    def _toggle_magnitude_inputs(self, state):
-        enabled = bool(state)
-        self.min_factor_label.setEnabled(enabled)
-        self.magnitude_factor_frame.setEnabled(enabled)
-
+    def get_guidance_text(self) -> str:
+        params = self.get_params()
+        notes = []
+        if self._preview_input_count:
+            notes.append(
+                self.tr(
+                    "Planned (valid input): {inputs} × {count} = {total} outputs"
+                ).format(
+                    inputs=self._preview_input_count,
+                    count=params.num_structures,
+                    total=self._preview_input_count * params.num_structures,
+                )
+            )
+        notes.append(
+            self.tr(
+                "Each selected moment is sampled independently inside its angular cap; the scalar lift direction only initializes collinear input."
+            )
+        )
+        if params.max_angle == 0.0 and not params.disturb_magnitude:
+            notes.append(
+                self.tr("Increase the perturbation angle or enable magnitude sampling before running.")
+            )
+        return " ".join(notes)
 
     def create_operation(self):
         return MagneticMomentRotationOperation()
@@ -146,13 +268,16 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.angle_frame.set_input_value([float(params.max_angle)])
         self.count_frame.set_input_value([int(params.num_structures)])
         self.lift_scalar_checkbox.setChecked(bool(params.lift_scalar))
-        self.axis_frame.set_input_value([float(v) for v in params.axis])
+        self.axis_frame.set_input_value([float(value) for value in params.axis])
         self.magnitude_checkbox.setChecked(bool(params.disturb_magnitude))
-        self.magnitude_factor_frame.set_input_value([float(v) for v in params.magnitude_factor])
+        self.magnitude_factor_frame.set_input_value(
+            [float(value) for value in params.magnitude_factor]
+        )
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
         self.seed_frame.setEnabled(self.seed_checkbox.isChecked())
-        self._toggle_magnitude_inputs(self.magnitude_checkbox.checkState())
+        self._update_scalar_controls(self.lift_scalar_checkbox.isChecked())
+        self._update_magnitude_controls(self.magnitude_checkbox.isChecked())
 
     def process_structure(self, structure):
         return self.create_operation().run_structure(structure, self.get_params())

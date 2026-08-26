@@ -302,7 +302,7 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 - `Group Label` → `Magnetic Order`：已有 coordinate-based group 时，用 `group_ab` 生成对应 AFM 正负号。
 - `Magnetic Order` → `Spin Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。
-- `Magnetic Order` → `Small-Angle Spin Tilt`：在端点附近补充确定性小角偏转。
+- `Magnetic Order` → `Spin Canting Scan`：在端点附近补充确定性小角偏转。
 - `Magnetic Order` → `Spin Spiral`：复用元素磁矩幅值，生成位置连续的螺旋磁序。
 
 ## 常见问题

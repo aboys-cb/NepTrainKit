@@ -403,6 +403,17 @@ class TestCardLibraryDialog(unittest.TestCase):
             popup._visible_class_names(), ["CrystalPrototypeBuilderCard"]
         )
 
+    def test_popup_catalog_fits_without_hidden_horizontal_overflow(self):
+        popup = CardLibraryPopup()
+        popup.resize(776, 543)
+        popup.show()
+        self._app.processEvents()
+
+        self.assertEqual(popup.catalog_scroll.horizontalScrollBar().maximum(), 0)
+        for class_name in ("MagneticMomentRotationCard", "SmallAngleSpinTiltCard"):
+            button = popup._buttons_by_class[class_name]
+            self.assertGreaterEqual(button.width(), button.sizeHint().width())
+
     def test_popup_emits_clicked_card_and_updates_keyboard_preview(self):
         popup = CardLibraryPopup()
         requested = []

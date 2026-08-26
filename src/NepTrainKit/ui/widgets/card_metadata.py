@@ -181,8 +181,11 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "MagneticMomentRotationCard": (
-            QCoreApplication.translate("CardCatalog", "Magmom Rotation"),
-            QCoreApplication.translate("CardCatalog", "Rotate and optionally rescale atomic magnetic moments for selected species."),
+            QCoreApplication.translate("CardCatalog", "Spin Perturbation"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Sample selected non-zero moments inside local angular caps and optionally perturb their magnitudes.",
+            ),
         ),
         "MagneticOrderCard": (
             QCoreApplication.translate("CardCatalog", "Magnetic Order"),
@@ -252,8 +255,11 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Apply shear matrices along the principal lattice planes."),
         ),
         "SmallAngleSpinTiltCard": (
-            QCoreApplication.translate("CardCatalog", "Small-Angle Spin Tilt"),
-            QCoreApplication.translate("CardCatalog", "Generate deterministic single-spin small-angle tilt configurations."),
+            QCoreApplication.translate("CardCatalog", "Spin Canting Scan"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Generate deterministic angle scans for selected spins, atom pairs, or magnetic groups.",
+            ),
         ),
         "SolventBoxFillCard": (
             QCoreApplication.translate("CardCatalog", "Solvent Box Fill"),
@@ -805,7 +811,7 @@ class CardLibraryPopup(FlyoutViewBase):
     """Screen-safe categorized card picker anchored to the Add Card button."""
 
     cardRequested = Signal(str)
-    _COLUMN_COUNT = 4
+    _COLUMN_COUNT = 3
     _GROUP_ICONS = {
         "Alloy": FluentIcon.PIE_SINGLE,
         "Container": FluentIcon.SHARE,
@@ -857,6 +863,7 @@ class CardLibraryPopup(FlyoutViewBase):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setStyleSheet("QScrollArea { background: transparent; border: 0; }")
+        self.catalog_scroll = scroll
         self.catalog_widget = QWidget(scroll)
         self.catalog_widget.setStyleSheet("background: transparent;")
         columns_layout = QHBoxLayout(self.catalog_widget)

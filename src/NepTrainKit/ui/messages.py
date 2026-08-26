@@ -396,6 +396,44 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "Modes per sample is {requested}, but only {available} usable modes are available.",
     )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum perturbation angle must be between 0 and 180 degrees."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Perturbation requires spin or initial magnetic moments on every input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Scalar magnetic moments must be lifted to vectors before they can be rotated.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The scalar lift direction must contain three finite Cartesian components.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The scalar lift direction must be non-zero."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Perturbation could not convert the input magnetic moments to vectors.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Magnitude scale bounds must be finite and non-negative."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Magnitude scale minimum must not exceed the maximum."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Increase the perturbation angle or enable a magnitude scale range that changes the moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Invalid element symbols in the target list: {elements}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "No non-zero magnetic moments match the selected elements."
+    )
 
 
 class MessageManager(QObject):

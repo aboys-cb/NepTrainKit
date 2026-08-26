@@ -492,9 +492,9 @@ def build_cases() -> list[BenchCase]:
         ),
         BenchCase(
             "magnetism",
-            "MagmomRotation:16",
+            "RandomSpinPerturbation:16",
             run_structure(MagneticMomentRotationOperation(), spin, MagneticMomentRotationParams(num_structures=16, use_seed=True, seed=15)),
-            require_count_and_tag(16, "MMR("),
+            require_count_and_tag(16, "SpinPert("),
         ),
         BenchCase(
             "magnetism",
@@ -770,9 +770,9 @@ def build_count50_cases() -> list[BenchCase]:
         ),
         BenchCase(
             "magnetism",
-            "MagmomRotation:50",
+            "RandomSpinPerturbation:50",
             run_structure(MagneticMomentRotationOperation(), spin, MagneticMomentRotationParams(num_structures=50, use_seed=True, seed=15)),
-            require_count_and_tag(50, "MMR("),
+            require_count_and_tag(50, "SpinPert("),
         ),
         BenchCase(
             "magnetism",

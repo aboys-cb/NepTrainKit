@@ -757,17 +757,15 @@
         <translation type="vanished">在选定原子周围生成局域溶剂壳层。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="184" />
         <source>Magmom Rotation</source>
-        <translation>磁矩旋转</translation>
+        <translation type="vanished">磁矩旋转</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="185" />
         <source>Rotate and optionally rescale atomic magnetic moments for selected species.</source>
-        <translation>旋转选定元素的原子磁矩，并可调整其大小。</translation>
+        <translation type="vanished">旋转选定元素的原子磁矩，并可调整其大小。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="188" />
+        <location filename="../ui/widgets/card_metadata.py" line="191" />
         <source>Magnetic Order</source>
         <translation>磁序</translation>
     </message>
@@ -776,12 +774,12 @@
         <translation type="vanished">设置初始磁矩并生成常见共线磁序构型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="189" />
+        <location filename="../ui/widgets/card_metadata.py" line="192" />
         <source>Generate FM, AFM, and random PM initial spin states from element moments without changing coordinates or elements.</source>
         <translation>根据元素磁矩生成 FM、AFM 和随机 PM 初始自旋构型；不改变坐标和元素。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="202" />
+        <location filename="../ui/widgets/card_metadata.py" line="205" />
         <source>Organic Mol Config</source>
         <translation>有机构象采样</translation>
     </message>
@@ -790,7 +788,7 @@
         <translation type="vanished">使用 TorsionGuard 周期性边界流程生成扭转驱动的分子构型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="209" />
+        <location filename="../ui/widgets/card_metadata.py" line="212" />
         <source>Ordered Alloy Prototype</source>
         <translation>有序合金原型</translation>
     </message>
@@ -799,57 +797,57 @@
         <translation type="vanished">生成带子晶格标签的周期 A1、A2、A3、L1₂、B2 和 L1₀ 原型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="216" />
+        <location filename="../ui/widgets/card_metadata.py" line="219" />
         <source>Atomic Perturb</source>
         <translation>原子扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="217" />
+        <location filename="../ui/widgets/card_metadata.py" line="220" />
         <source>Apply random atomic displacements within a configurable distance budget.</source>
         <translation>在可配置的位移范围内随机扰动原子位置。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="220" />
+        <location filename="../ui/widgets/card_metadata.py" line="223" />
         <source>Random Doping</source>
         <translation>随机掺杂</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="221" />
+        <location filename="../ui/widgets/card_metadata.py" line="224" />
         <source>Perform random atomic substitutions according to user-specified doping rules.</source>
         <translation>按用户设定的掺杂规则随机替换原子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="224" />
+        <location filename="../ui/widgets/card_metadata.py" line="227" />
         <source>Random Occupancy</source>
         <translation>随机占位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="225" />
+        <location filename="../ui/widgets/card_metadata.py" line="228" />
         <source>Assign alloy elements to all or grouped lattice sites using a target composition.</source>
         <translation>按目标组分向全部或指定分组的晶格位点分配合金元素。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="228" />
+        <location filename="../ui/widgets/card_metadata.py" line="231" />
         <source>Random Packing</source>
         <translation>随机原子堆积</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="229" />
+        <location filename="../ui/widgets/card_metadata.py" line="232" />
         <source>Generate random atomic coordinates while preserving cell constraints.</source>
         <translation>在保持晶胞约束的前提下生成随机原子坐标。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="232" />
+        <location filename="../ui/widgets/card_metadata.py" line="235" />
         <source>Random Slab</source>
         <translation>随机表面板层</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="233" />
+        <location filename="../ui/widgets/card_metadata.py" line="236" />
         <source>Construct surface slabs across multiple Miller indices and thicknesses.</source>
         <translation>按不同米勒指数和厚度构建表面板层。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="236" />
+        <location filename="../ui/widgets/card_metadata.py" line="239" />
         <source>Random Vacancy</source>
         <translation>随机空位</translation>
     </message>
@@ -952,112 +950,134 @@
         <translation>生成谱系稳定且组内完整的局域自旋旋转或磁矩模长响应数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="195" />
+        <location filename="../ui/widgets/card_metadata.py" line="184" />
+        <source>Spin Perturbation</source>
+        <translation>随机磁矩扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="185" />
+        <source>Sample selected non-zero moments inside local angular caps and optionally perturb their magnitudes.</source>
+        <translation>在局部球冠内采样选中的非零磁矩，并可选扰动其模长。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="258" />
+        <source>Spin Canting Scan</source>
+        <translation>可控自旋倾斜</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="259" />
+        <source>Generate deterministic angle scans for selected spins, atom pairs, or magnetic groups.</source>
+        <translation>对选定自旋、原子对或磁性分组生成确定性角度扫描。</translation>
+    </message>
+    <message>
+        <source>Randomly rotate and optionally rescale selected non-zero moments around an existing magnetic state.</source>
+        <translation type="vanished">围绕已有磁态随机旋转并可选缩放目标非零磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="198" />
         <source>Magnetoelastic Response</source>
         <translation>磁弹响应</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="196" />
+        <location filename="../ui/widgets/card_metadata.py" line="199" />
         <source>Combine each strain or volume coordinate with the same complete set of spin probes.</source>
         <translation>为每个应变或体积坐标组合一套完全相同且完整的自旋探针。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="203" />
+        <location filename="../ui/widgets/card_metadata.py" line="206" />
         <source>Detect molecular bonds, rotate eligible single-bond subtrees, add optional Gaussian noise, and skip conformers that fail bond-length or clash guards.</source>
         <translation>检测分子键，旋转可用单键一侧的子树，按需添加高斯噪声，并跳过未通过键长或碰撞检查的构象。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="210" />
+        <location filename="../ui/widgets/card_metadata.py" line="213" />
         <source>Generate unexpanded A1, A2, A3, L12, B2, and L10 base cells with explicit A/B sublattice labels.</source>
         <translation>生成未扩展的 A1、A2、A3、L1₂、B2 和 L1₀ 基础晶胞，并写入明确的 A/B 子晶格标签。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="237" />
+        <location filename="../ui/widgets/card_metadata.py" line="240" />
         <source>Remove randomly selected sites using element, existing group, and count rules; other atomic coordinates stay unchanged.</source>
         <translation>按元素、已有分组标签和数量规则随机删除位点；其余原子坐标保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="243" />
+        <location filename="../ui/widgets/card_metadata.py" line="246" />
         <source>Set Magnetic Moments</source>
         <translation>设置磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="244" />
+        <location filename="../ui/widgets/card_metadata.py" line="247" />
         <source>Set or convert magnetic moments into a consistent scalar or vector representation.</source>
         <translation>设置磁矩，或在标量与矢量表示之间转换。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="247" />
+        <location filename="../ui/widgets/card_metadata.py" line="250" />
         <source>Shear Angle Strain</source>
         <translation>剪切角应变</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="248" />
+        <location filename="../ui/widgets/card_metadata.py" line="251" />
         <source>Perturb lattice angles while preserving cell lengths.</source>
         <translation>保持晶胞边长不变，扰动晶格角度。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="251" />
+        <location filename="../ui/widgets/card_metadata.py" line="254" />
         <source>Shear Matrix Strain</source>
         <translation>剪切矩阵应变</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="252" />
+        <location filename="../ui/widgets/card_metadata.py" line="255" />
         <source>Apply shear matrices along the principal lattice planes.</source>
         <translation>沿主要晶格平面施加剪切矩阵。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="255" />
         <source>Small-Angle Spin Tilt</source>
-        <translation>小角度自旋倾斜</translation>
+        <translation type="vanished">小角度自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="256" />
         <source>Generate deterministic single-spin small-angle tilt configurations.</source>
-        <translation>生成确定性的单自旋小角度倾斜构型。</translation>
+        <translation type="vanished">生成确定性的单自旋小角度倾斜构型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="259" />
+        <location filename="../ui/widgets/card_metadata.py" line="265" />
         <source>Solvent Box Fill</source>
         <translation>周期溶剂盒</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="274" />
+        <location filename="../ui/widgets/card_metadata.py" line="280" />
         <source>SOC / Texture Response</source>
         <translation>SOC / 纹理响应</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="275" />
+        <location filename="../ui/widgets/card_metadata.py" line="281" />
         <source>Build rigid anisotropy and signed finite-q texture response paths with commensurability checks.</source>
         <translation>生成带共格检查的刚性各向异性和有符号有限 q 自旋纹理响应路径。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="281" />
+        <location filename="../ui/widgets/card_metadata.py" line="287" />
         <source>Legacy Stacking Fault</source>
         <translation>旧版层错位移</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="282" />
+        <location filename="../ui/widgets/card_metadata.py" line="288" />
         <source>Load and reproduce existing workflows that used the old automatic-direction layer shift; this compatibility card is hidden from new-card entry points.</source>
         <translation>载入并复现使用旧版自动方向层移的工作流；这张兼容卡不会出现在新建卡片入口中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="288" />
+        <location filename="../ui/widgets/card_metadata.py" line="294" />
         <source>Stacking Fault / GSFE Path</source>
         <translation>层错 / GSFE 路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="289" />
+        <location filename="../ui/widgets/card_metadata.py" line="295" />
         <source>Shift atoms above an interlayer cut along an explicit in-plane direction to generate stacking-fault structures or an unrelaxed GSFE path; the input cell must already be oriented to the fault plane.</source>
         <translation>沿显式面内方向移动层间切面上方的原子，生成层错结构或未弛豫 GSFE 路径；输入晶胞必须已按层错面定向。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="296" />
+        <location filename="../ui/widgets/card_metadata.py" line="302" />
         <source>Repeat complete input cells along lattice vectors using explicit factors, target lengths, or a strict atom budget.</source>
         <translation>沿晶格矢量完整复制输入晶胞，可按指定倍率、目标长度或严格原子预算生成超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="311" />
+        <location filename="../ui/widgets/card_metadata.py" line="317" />
         <source>Sample correlated atomic displacements from vibrational modes already stored on each input structure.</source>
         <translation>从每个输入结构已有的振动模式中采样协同原子位移。</translation>
     </message>
@@ -1066,22 +1086,22 @@
         <translation type="vanished">向现有周期性晶胞填充溶剂分子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="266" />
+        <location filename="../ui/widgets/card_metadata.py" line="272" />
         <source>Spin Disorder</source>
         <translation>自旋无序</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="267" />
+        <location filename="../ui/widgets/card_metadata.py" line="273" />
         <source>Generate spin states with explicit disorder fractions.</source>
         <translation>按明确的无序比例生成自旋状态。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="270" />
+        <location filename="../ui/widgets/card_metadata.py" line="276" />
         <source>Spin Spiral</source>
         <translation>自旋螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="271" />
+        <location filename="../ui/widgets/card_metadata.py" line="277" />
         <source>Assign non-collinear spiral magnetic moments using a 1D phase field.</source>
         <translation>使用一维相位场设置非共线螺旋磁矩。</translation>
     </message>
@@ -1106,7 +1126,7 @@
         <translation type="vanished">按明确的滑移面和滑移方向生成未弛豫 GSFE 结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="295" />
+        <location filename="../ui/widgets/card_metadata.py" line="301" />
         <source>Super Cell</source>
         <translation>扩胞</translation>
     </message>
@@ -1115,12 +1135,12 @@
         <translation type="vanished">按固定扩胞倍数、目标晶格长度或原子数上限生成超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="303" />
+        <location filename="../ui/widgets/card_metadata.py" line="309" />
         <source>Global Random Vacancy</source>
         <translation>全局随机空位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="304" />
+        <location filename="../ui/widgets/card_metadata.py" line="310" />
         <source>Delete sites globally by an overall count or fraction without distinguishing elements; remaining coordinates are unchanged.</source>
         <translation>不区分元素，按整体数量或比例随机删除位点；其余原子坐标保持不变。</translation>
     </message>
@@ -1133,7 +1153,7 @@
         <translation type="vanished">按空位浓度或明确数量采样空位缺陷。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="260" />
+        <location filename="../ui/widgets/card_metadata.py" line="266" />
         <source>Randomly place solvent molecules throughout an existing periodic cell by a fixed target count or a nominal pure-solvent density estimate, while rejecting short contacts.</source>
         <translation>按固定目标数或名义纯溶剂密度估算，在已有周期晶胞内随机放置溶剂分子，并排除过短接触。</translation>
     </message>
@@ -1146,7 +1166,7 @@
         <translation type="vanished">为兼容旧工作流而保留投影层位移算法；其滑移方向由笛卡尔轴导出，不是晶体学 GSFE 路径，新任务应使用“显式 GSFE 路径”。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="310" />
+        <location filename="../ui/widgets/card_metadata.py" line="316" />
         <source>Vib Mode Perturb</source>
         <translation>振动模式扰动</translation>
     </message>
@@ -1155,67 +1175,67 @@
         <translation type="vanished">沿预先计算的振动模式生成扰动结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="318" />
+        <location filename="../ui/widgets/card_metadata.py" line="324" />
         <source>Alloy</source>
         <translation>合金与组分</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="319" />
+        <location filename="../ui/widgets/card_metadata.py" line="325" />
         <source>Container</source>
         <translation>容器</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="320" />
+        <location filename="../ui/widgets/card_metadata.py" line="326" />
         <source>Defect</source>
         <translation>缺陷</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="321" />
+        <location filename="../ui/widgets/card_metadata.py" line="327" />
         <source>Filter</source>
         <translation>筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="322" />
+        <location filename="../ui/widgets/card_metadata.py" line="328" />
         <source>Lattice</source>
         <translation>晶格</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="323" />
+        <location filename="../ui/widgets/card_metadata.py" line="329" />
         <source>Magnetism</source>
         <translation>磁性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="324" />
+        <location filename="../ui/widgets/card_metadata.py" line="330" />
         <source>Organic</source>
         <translation>分子与溶剂</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="325" />
+        <location filename="../ui/widgets/card_metadata.py" line="331" />
         <source>Perturbation</source>
         <translation>扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="326" />
+        <location filename="../ui/widgets/card_metadata.py" line="332" />
         <source>Structure</source>
         <translation>结构</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="327" />
+        <location filename="../ui/widgets/card_metadata.py" line="333" />
         <source>Surface</source>
         <translation>表面</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="330" />
+        <location filename="../ui/widgets/card_metadata.py" line="336" />
         <source>author</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="331" />
+        <location filename="../ui/widgets/card_metadata.py" line="337" />
         <source>maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="332" />
+        <location filename="../ui/widgets/card_metadata.py" line="338" />
         <source>contributor</source>
         <translation>贡献者</translation>
     </message>
@@ -2311,98 +2331,98 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1067" />
+        <location filename="../ui/widgets/card_metadata.py" line="1073" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1084" />
+        <location filename="../ui/widgets/card_metadata.py" line="1090" />
         <source>Make Dataset cards</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1094" />
+        <location filename="../ui/widgets/card_metadata.py" line="1100" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1196" />
+        <location filename="../ui/widgets/card_metadata.py" line="1202" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1208" />
+        <location filename="../ui/widgets/card_metadata.py" line="1214" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1209" />
+        <location filename="../ui/widgets/card_metadata.py" line="1215" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1210" />
+        <location filename="../ui/widgets/card_metadata.py" line="1216" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1211" />
+        <location filename="../ui/widgets/card_metadata.py" line="1217" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1212" />
+        <location filename="../ui/widgets/card_metadata.py" line="1218" />
         <source>Documentation</source>
         <translation>文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1238" />
-        <location filename="../ui/widgets/card_metadata.py" line="1398" />
+        <location filename="../ui/widgets/card_metadata.py" line="1244" />
+        <location filename="../ui/widgets/card_metadata.py" line="1404" />
         <source>Technical details</source>
         <translation>技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1262" />
+        <location filename="../ui/widgets/card_metadata.py" line="1268" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1268" />
+        <location filename="../ui/widgets/card_metadata.py" line="1274" />
         <source>Source file</source>
         <translation>源文件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1291" />
+        <location filename="../ui/widgets/card_metadata.py" line="1297" />
         <source>Add selected card</source>
         <translation>添加所选卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1296" />
+        <location filename="../ui/widgets/card_metadata.py" line="1302" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1341" />
+        <location filename="../ui/widgets/card_metadata.py" line="1347" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1356" />
+        <location filename="../ui/widgets/card_metadata.py" line="1362" />
         <source>Open documentation</source>
         <translation>打开文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1368" />
+        <location filename="../ui/widgets/card_metadata.py" line="1374" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1396" />
+        <location filename="../ui/widgets/card_metadata.py" line="1402" />
         <source>Hide technical details</source>
         <translation>收起技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1432" />
+        <location filename="../ui/widgets/card_metadata.py" line="1438" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -2410,32 +2430,32 @@
 <context>
     <name>CardLibraryPopup</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="849" />
+        <location filename="../ui/widgets/card_metadata.py" line="855" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="880" />
+        <location filename="../ui/widgets/card_metadata.py" line="886" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="910" />
+        <location filename="../ui/widgets/card_metadata.py" line="916" />
         <source>Hover or focus a card to see what it does.</source>
         <translation>悬停或聚焦卡片以查看功能说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1007" />
+        <location filename="../ui/widgets/card_metadata.py" line="1013" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1010" />
+        <location filename="../ui/widgets/card_metadata.py" line="1016" />
         <source>No cards found.</source>
         <translation>未找到卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1018" />
+        <location filename="../ui/widgets/card_metadata.py" line="1024" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
@@ -2443,94 +2463,94 @@
 <context>
     <name>CardMetadata</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="338" />
-        <location filename="../ui/widgets/card_metadata.py" line="391" />
+        <location filename="../ui/widgets/card_metadata.py" line="344" />
+        <location filename="../ui/widgets/card_metadata.py" line="397" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="372" />
+        <location filename="../ui/widgets/card_metadata.py" line="378" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="382" />
+        <location filename="../ui/widgets/card_metadata.py" line="388" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="384" />
+        <location filename="../ui/widgets/card_metadata.py" line="390" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="393" />
+        <location filename="../ui/widgets/card_metadata.py" line="399" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="394" />
+        <location filename="../ui/widgets/card_metadata.py" line="400" />
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="405" />
-        <location filename="../ui/widgets/card_metadata.py" line="438" />
+        <location filename="../ui/widgets/card_metadata.py" line="411" />
+        <location filename="../ui/widgets/card_metadata.py" line="444" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="406" />
+        <location filename="../ui/widgets/card_metadata.py" line="412" />
         <source>No public contributor metadata yet.</source>
         <translation>暂无公开贡献者元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="449" />
+        <location filename="../ui/widgets/card_metadata.py" line="455" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="450" />
+        <location filename="../ui/widgets/card_metadata.py" line="456" />
         <source>Group</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="451" />
+        <location filename="../ui/widgets/card_metadata.py" line="457" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="452" />
+        <location filename="../ui/widgets/card_metadata.py" line="458" />
         <source>Maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="453" />
+        <location filename="../ui/widgets/card_metadata.py" line="459" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="454" />
+        <location filename="../ui/widgets/card_metadata.py" line="460" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="455" />
+        <location filename="../ui/widgets/card_metadata.py" line="461" />
         <source>Source path</source>
         <translation>源路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="662" />
+        <location filename="../ui/widgets/card_metadata.py" line="668" />
         <source>Make Dataset Card</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="693" />
+        <location filename="../ui/widgets/card_metadata.py" line="699" />
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="705" />
+        <location filename="../ui/widgets/card_metadata.py" line="711" />
         <source>Citation</source>
         <translation>引用</translation>
     </message>
@@ -2538,12 +2558,12 @@
 <context>
     <name>CardMetadataDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="718" />
+        <location filename="../ui/widgets/card_metadata.py" line="724" />
         <source>Card info - {card_name}</source>
         <translation>卡片信息 - {card_name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="733" />
+        <location filename="../ui/widgets/card_metadata.py" line="739" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -2644,6 +2664,77 @@
         <location filename="../ui/messages.py" line="395" />
         <source>Modes per sample is {requested}, but only {available} usable modes are available.</source>
         <translation>每个样本请求组合 {requested} 个模式，但筛选后只有 {available} 个可用模式。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="399" />
+        <source>Maximum perturbation angle must be between 0 and 180 degrees.</source>
+        <translation>最大扰动角必须在 0 到 180 度之间。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="427" />
+        <source>Increase the perturbation angle or enable a magnitude scale range that changes the moments.</source>
+        <translation>请增大扰动角，或启用能够改变磁矩的模长缩放范围。</translation>
+    </message>
+    <message>
+        <source>Maximum rotation angle must be between 0 and 180 degrees.</source>
+        <translation type="vanished">最大旋转角必须在 0 到 180 度之间。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="402" />
+        <source>Spin Perturbation requires spin or initial magnetic moments on every input structure.</source>
+        <translation>随机磁矩扰动要求每个输入结构都包含 spin 或初始磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="417" />
+        <source>Spin Perturbation could not convert the input magnetic moments to vectors.</source>
+        <translation>随机磁矩扰动无法将输入磁矩转换为矢量。</translation>
+    </message>
+    <message>
+        <source>Magmom Rotation requires spin or initial magnetic moments on every input structure.</source>
+        <translation type="vanished">磁矩旋转要求每个输入结构都包含 spin 或初始磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="406" />
+        <source>Scalar magnetic moments must be lifted to vectors before they can be rotated.</source>
+        <translation>标量磁矩必须先转为矢量才能旋转。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="410" />
+        <source>The scalar lift direction must contain three finite Cartesian components.</source>
+        <translation>标量抬升方向必须包含三个有限的笛卡尔分量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="414" />
+        <source>The scalar lift direction must be non-zero.</source>
+        <translation>标量抬升方向不能为零向量。</translation>
+    </message>
+    <message>
+        <source>Magmom Rotation could not convert the input magnetic moments to vectors.</source>
+        <translation type="vanished">磁矩旋转无法将输入磁矩转换为矢量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="421" />
+        <source>Magnitude scale bounds must be finite and non-negative.</source>
+        <translation>模长缩放范围必须有限且非负。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="424" />
+        <source>Magnitude scale minimum must not exceed the maximum.</source>
+        <translation>模长缩放下限不能大于上限。</translation>
+    </message>
+    <message>
+        <source>Increase the rotation angle or enable a magnitude scale range that changes the moments.</source>
+        <translation type="vanished">请增大旋转角，或启用能够改变磁矩的模长缩放范围。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="431" />
+        <source>Invalid element symbols in the target list: {elements}.</source>
+        <translation>目标元素中包含无效元素符号：{elements}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="434" />
+        <source>No non-zero magnetic moments match the selected elements.</source>
+        <translation>所选元素没有匹配到非零磁矩。</translation>
     </message>
     <message>
         <source>The atom limit ({limit}) is smaller than the {base_atoms}-atom prototype cell.</source>
@@ -6788,90 +6879,269 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MagneticMomentRotationCard</name>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="26" />
         <source>Rotate Magnetic Moments</source>
-        <translation>旋转磁矩</translation>
+        <translation type="vanished">旋转磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="33" />
         <source>Elements</source>
-        <translation>元素</translation>
+        <translation type="vanished">元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="34" />
         <source>Comma separated element symbols; empty means all atoms</source>
-        <translation>元素符号用逗号分隔；留空表示所有原子</translation>
+        <translation type="vanished">元素符号用逗号分隔；留空表示所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="37" />
         <source>Fe,Ni</source>
-        <translation>Fe,Ni</translation>
+        <translation type="vanished">Fe,Ni</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="40" />
         <source>Max rotation</source>
-        <translation>最大旋转角</translation>
+        <translation type="vanished">最大旋转角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="41" />
         <source>Upper bound for random rotation angles in degrees</source>
-        <translation>随机旋转角度上限（度）</translation>
+        <translation type="vanished">随机旋转角度上限（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="49" />
         <source>Structures</source>
-        <translation>结构数</translation>
+        <translation type="vanished">结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="50" />
         <source>Number of perturbed structures to generate</source>
-        <translation>要生成的扰动结构数量</translation>
+        <translation type="vanished">要生成的扰动结构数量</translation>
+    </message>
+    <message>
+        <source>Magnetic Moment Rotation</source>
+        <translation type="vanished">磁矩旋转</translation>
+    </message>
+    <message>
+        <source>Magmom Rotation</source>
+        <translation type="vanished">磁矩旋转</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="44" />
+        <source>Input and targets</source>
+        <translation>输入与目标</translation>
+    </message>
+    <message>
+        <source>Each input must contain spin:R:3 or ASE initial magnetic moments. Only selected atoms with non-zero moments are changed.</source>
+        <translation type="vanished">每个输入都必须包含 spin:R:3 或 ASE 初始磁矩。只有命中的非零磁矩原子会被改变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="52" />
+        <source>All elements</source>
+        <translation>全部元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="54" />
+        <source>Target elements</source>
+        <translation>目标元素</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/magmom_rotation_card.py" line="57" />
+        <source>Comma-separated symbols such as Fe,Ni; empty selects every element.</source>
+        <translation>用逗号分隔元素符号，如 Fe,Ni；留空选择全部元素。</translation>
+    </message>
+    <message>
+        <source>Maximum rotation angle</source>
+        <translation type="vanished">最大旋转角</translation>
+    </message>
+    <message>
+        <source>For each selected atom, sample an independent random axis and an angle from 0 to this bound.</source>
+        <translation type="vanished">每个目标原子独立采样随机轴，并在 0 到该上限之间采样角度。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="34" />
+        <source>Spin Perturbation</source>
+        <translation>随机磁矩扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="47" />
+        <source>Each input must contain spin:R:3 or ASE initial magnetic moments. Selected non-zero moments are sampled independently around their current directions.</source>
+        <translation>每个输入都必须包含 spin:R:3 或 ASE 初始磁矩。选中的非零磁矩会在各自当前方向周围独立采样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="68" />
+        <source>Maximum perturbation angle</source>
+        <translation>最大扰动角</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="71" />
+        <source>Sample each direction uniformly inside this angular cap around its input moment.</source>
+        <translation>在以输入磁矩方向为中心的该角度球冠内均匀采样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="75" />
+        <source>Lift scalar moments to vectors</source>
+        <translation>将标量磁矩转为矢量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="79" />
+        <source>Collinear input</source>
+        <translation>共线输入</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="90" />
+        <source>Scalar lift direction (Cartesian)</source>
+        <translation>标量抬升方向（笛卡尔）</translation>
+    </message>
+    <message>
+        <source>Used only to turn scalar moments into vectors; it is not the random rotation axis.</source>
+        <translation type="vanished">仅用于将标量磁矩转为矢量；它不是随机旋转轴。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="93" />
+        <source>Used only to turn scalar moments into vectors; it does not control perturbation directions.</source>
+        <translation>只用于将标量磁矩转为矢量；不控制扰动方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="96" />
+        <source>Direction sampling</source>
+        <translation>方向采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="104" />
+        <source>Vary magnetic-moment magnitude</source>
+        <translation>随机改变磁矩模长</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="108" />
+        <source>Magnitude sampling</source>
+        <translation>模长采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="120" />
+        <source>Magnitude scale range</source>
+        <translation>模长缩放范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="123" />
+        <source>Each selected moment is multiplied by an independent factor in this interval.</source>
+        <translation>每个目标磁矩独立乘以该区间内的随机因子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="126" />
+        <source>Magnitude</source>
+        <translation>模长</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="137" />
+        <source>Structures per input</source>
+        <translation>每个输入生成</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="140" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="59" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="153" />
+        <source>Reproducibility</source>
+        <translation>可复现性</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="155" />
+        <source>Generation</source>
+        <translation>生成设置</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="163" />
+        <source>The atomic coordinates and cell are carried through unchanged; outputs differ in their spin vectors.</source>
+        <translation>原子坐标和晶胞保持不变；各输出的自旋矢量不同。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="211" />
+        <source>all moments</source>
+        <translation>全部磁矩</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="212" />
+        <source>≤ {angle}° · {target} · {count}/input</source>
+        <translation>≤ {angle}° · {target} · {count}/输入</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="216" />
+        <source> · {minimum}–{maximum}×</source>
+        <translation> · {minimum}–{maximum}×</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="232" />
+        <source>Planned (valid input): {inputs} × {count} = {total} outputs</source>
+        <translation>计划输出（输入有效时）：{inputs} × {count} = {total}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="241" />
+        <source>Each selected moment is sampled independently inside its angular cap; the scalar lift direction only initializes collinear input.</source>
+        <translation>每个选中磁矩都在各自的角度球冠内独立采样；标量抬升方向只用于初始化共线输入。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="246" />
+        <source>Increase the perturbation angle or enable magnitude sampling before running.</source>
+        <translation>运行前请增大扰动角，或启用模长采样。</translation>
+    </message>
+    <message>
+        <source>all magnetic atoms</source>
+        <translation type="vanished">全部磁性原子</translation>
+    </message>
+    <message>
+        <source>≤ {angle}° · {target}</source>
+        <translation type="vanished">≤ {angle}° · {target}</translation>
+    </message>
+    <message>
+        <source>{count} per input</source>
+        <translation type="vanished">每个输入 {count} 个</translation>
+    </message>
+    <message>
+        <source>magnitude {minimum}–{maximum}×</source>
+        <translation type="vanished">模长 {minimum}–{maximum}×</translation>
+    </message>
+    <message>
+        <source>seed {seed}</source>
+        <translation type="vanished">随机种子 {seed}</translation>
+    </message>
+    <message>
+        <source>{inputs} × {count} = {total} outputs</source>
+        <translation type="vanished">{inputs} × {count} = {total} 个输出</translation>
+    </message>
+    <message>
+        <source>Each selected non-zero moment gets its own random axis and angle; the scalar lift direction only initializes collinear input.</source>
+        <translation type="vanished">每个目标非零磁矩独立获得随机轴和角度；标量抬升方向只用于初始化共线输入。</translation>
+    </message>
+    <message>
+        <source>Increase the angle or enable magnitude sampling before running.</source>
+        <translation type="vanished">运行前请增大角度或启用模长采样。</translation>
+    </message>
+    <message>
         <source>Enable reproducible random sampling</source>
-        <translation>启用可复现的随机采样</translation>
+        <translation type="vanished">启用可复现的随机采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="68" />
         <source>Rotate scalar magmoms (lift to vector)</source>
-        <translation>旋转标量 magmoms（提升为矢量）</translation>
+        <translation type="vanished">旋转标量 magmoms（提升为矢量）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="70" />
         <source>If magmoms are scalars, treat them as vectors along Axis before rotating</source>
-        <translation>如果 magmoms 是标量，旋转前先沿“轴”方向作为矢量处理</translation>
+        <translation type="vanished">如果 magmoms 是标量，旋转前先沿“轴”方向作为矢量处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="75" />
         <source>Axis (x,y,z)</source>
-        <translation>轴（x,y,z）</translation>
+        <translation type="vanished">轴（x,y,z）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="76" />
         <source>Axis used when lifting scalar magmoms to vectors</source>
-        <translation>将标量 magmoms 提升为矢量时使用的轴</translation>
+        <translation type="vanished">将标量 magmoms 提升为矢量时使用的轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="85" />
         <source>Randomise magnitude</source>
-        <translation>随机化磁矩大小</translation>
+        <translation type="vanished">随机化磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="87" />
         <source>Enable scaling of magnetic-moment magnitudes</source>
-        <translation>启用磁矩大小缩放</translation>
+        <translation type="vanished">启用磁矩大小缩放</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="91" />
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="92" />
         <source>magnitude scaling factor</source>
-        <translation>磁矩大小缩放因子</translation>
+        <translation type="vanished">磁矩大小缩放因子</translation>
     </message>
 </context>
 <context>
@@ -7762,23 +8032,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="435" />
-        <location filename="../ui/messages.py" line="475" />
+        <location filename="../ui/messages.py" line="473" />
+        <location filename="../ui/messages.py" line="513" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="445" />
+        <location filename="../ui/messages.py" line="483" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="455" />
+        <location filename="../ui/messages.py" line="493" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="465" />
+        <location filename="../ui/messages.py" line="503" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -11204,9 +11474,13 @@ Do you want to continue?</source>
 <context>
     <name>SmallAngleSpinTiltCard</name>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="27" />
         <source>Small-Angle Spin Tilt</source>
-        <translation>小角度自旋倾斜</translation>
+        <translation type="vanished">小角度自旋倾斜</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="27" />
+        <source>Spin Canting Scan</source>
+        <translation>可控自旋倾斜</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="33" />

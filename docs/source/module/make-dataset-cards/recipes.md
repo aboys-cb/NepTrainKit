@@ -326,7 +326,7 @@
 
 ### 卡片顺序
 
-`Group Label → Magnetic Order → Magmom Rotation`
+`Group Label → Magnetic Order → Spin Perturbation`
 
 ### 每步 JSON 配置
 
@@ -380,7 +380,7 @@
 
 **每步预期输出：** 得到 1 个 FM、1 个 AFM 和 8 个 PM 候选；`afm_mode=group_ab` 时，真正起作用的是 `afm_group_a/b`，不是 `afm_kvec`。
 
-#### Step 3. `Magmom Rotation`
+#### Step 3. `Spin Perturbation`
 
 ```json
 {
@@ -411,7 +411,7 @@
 
 - 没有先提供 `magmom_map` 或合理 `default_moment`：生成的磁矩幅值会退化。
 - `afm_mode` 设成 `group A/B` 却没有 `group` 数组：AFM 分支会失去预期分组信息。
-- 直接用 `Magmom Rotation` 处理没有初始磁矩的结构：旋转对象本身就不存在。
+- 直接用 `Spin Perturbation` 处理没有初始磁矩的结构：扰动对象本身就不存在。
 
 ## 有机构象
 

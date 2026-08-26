@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from dataclasses import dataclass
 
 import numpy as np
+from ase.data import atomic_numbers
 from ase.geometry import get_distances
 
 from NepTrainKit.core.config_type import append_config_tag, sanitize_config_tag, stable_config_id
@@ -30,7 +32,9 @@ from NepTrainKit.core.magnetism import (
     spiral_unit_vectors,
 )
 
+from .errors import CardOperationError
 from .operation import StructureOperation
+from .sampling import derived_structure_seed
 
 
 def parse_angle_list(text: str) -> list[float]:
@@ -197,55 +201,37 @@ class MagneticMomentRotationParams:
 
 
 class MagneticMomentRotationOperation(StructureOperation):
-    """Rotate and optionally rescale atomic magnetic moments."""
+    """Sample random spin directions in spherical caps and optionally rescale them."""
 
     @staticmethod
-    def rotate_vector(vector: np.ndarray, angle_deg: float, rng: np.random.Generator) -> np.ndarray:
-        vec = np.asarray(vector, dtype=float)
-        if not np.any(vec) or angle_deg <= 0:
-            return vec.copy()
-
-        axis = rng.normal(size=3)
-        axis_norm = np.linalg.norm(axis)
-        axis = np.array([0.0, 0.0, 1.0]) if axis_norm <= 1e-12 else axis / axis_norm
-
-        theta = math.radians(angle_deg)
-        cos_t = math.cos(theta)
-        sin_t = math.sin(theta)
-        ux, uy, uz = axis
-        rotation_matrix = np.array([
-            [cos_t + ux * ux * (1 - cos_t), ux * uy * (1 - cos_t) - uz * sin_t, ux * uz * (1 - cos_t) + uy * sin_t],
-            [uy * ux * (1 - cos_t) + uz * sin_t, cos_t + uy * uy * (1 - cos_t), uy * uz * (1 - cos_t) - ux * sin_t],
-            [uz * ux * (1 - cos_t) - uy * sin_t, uz * uy * (1 - cos_t) + ux * sin_t, cos_t + uz * uz * (1 - cos_t)],
-        ])
-        return rotation_matrix @ vec
-
-    @staticmethod
-    def rescale_vector(vector: np.ndarray, target_length: float) -> np.ndarray:
-        vec = np.asarray(vector, dtype=float)
-        current = np.linalg.norm(vec)
-        if current == 0 or target_length == 0:
-            return np.zeros_like(vec)
-        return vec / current * target_length
-
-    @staticmethod
-    def rotate_vectors(vectors: np.ndarray, angle_deg: np.ndarray, axes: np.ndarray) -> np.ndarray:
+    def sample_spherical_cap(
+        vectors: np.ndarray,
+        max_angle_deg: float,
+        rng: np.random.Generator,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Sample directions uniformly in solid angle around each input vector."""
         vec = np.asarray(vectors, dtype=float)
         if vec.size == 0:
-            return vec.copy()
+            return vec.copy(), np.empty(0, dtype=float)
 
-        axis = np.asarray(axes, dtype=float)
-        axis_norm = np.linalg.norm(axis, axis=1)
-        safe_axis = np.zeros_like(axis)
-        nonzero_axis = axis_norm > 1e-12
-        safe_axis[nonzero_axis] = axis[nonzero_axis] / axis_norm[nonzero_axis, None]
-        safe_axis[~nonzero_axis] = np.array([0.0, 0.0, 1.0], dtype=float)
+        lengths = np.linalg.norm(vec, axis=1)
+        base = vec / lengths[:, None]
+        reference = np.zeros_like(base)
+        use_x = np.abs(base[:, 2]) > 0.9
+        reference[~use_x, 2] = 1.0
+        reference[use_x, 0] = 1.0
+        tangent_x = np.cross(reference, base)
+        tangent_x /= np.linalg.norm(tangent_x, axis=1)[:, None]
+        tangent_y = np.cross(base, tangent_x)
 
-        theta = np.deg2rad(np.asarray(angle_deg, dtype=float))
-        cos_t = np.cos(theta)[:, None]
-        sin_t = np.sin(theta)[:, None]
-        dot = np.sum(safe_axis * vec, axis=1)[:, None]
-        return vec * cos_t + np.cross(safe_axis, vec) * sin_t + safe_axis * dot * (1.0 - cos_t)
+        cos_min = math.cos(math.radians(float(max_angle_deg)))
+        cos_theta = rng.uniform(cos_min, 1.0, size=len(vec))
+        sin_theta = np.sqrt(np.clip(1.0 - cos_theta * cos_theta, 0.0, 1.0))
+        phi = rng.uniform(0.0, 2.0 * math.pi, size=len(vec))
+        radial = np.cos(phi)[:, None] * tangent_x + np.sin(phi)[:, None] * tangent_y
+        directions = cos_theta[:, None] * base + sin_theta[:, None] * radial
+        angles = np.degrees(np.arccos(np.clip(cos_theta, -1.0, 1.0)))
+        return directions * lengths[:, None], angles
 
     @staticmethod
     def rescale_vectors(vectors: np.ndarray, target_lengths: np.ndarray) -> np.ndarray:
@@ -258,59 +244,166 @@ class MagneticMomentRotationOperation(StructureOperation):
         return out
 
     def run_structure(self, structure, params: MagneticMomentRotationParams) -> list:
-        num_structures = int(params.num_structures)
+        num_structures_value = float(params.num_structures)
+        if not np.isfinite(num_structures_value) or not num_structures_value.is_integer():
+            raise CardOperationError(
+                "magmom-rotation-output-integer",
+                "Structures per input must be an integer.",
+            )
+        num_structures = int(num_structures_value)
         if num_structures <= 0:
-            return [structure.copy()]
+            raise CardOperationError(
+                "magmom-rotation-output-count",
+                "Structures per input must be at least 1.",
+            )
+
+        max_angle = float(params.max_angle)
+        if not np.isfinite(max_angle) or not 0.0 <= max_angle <= 180.0:
+            raise CardOperationError(
+                "magmom-rotation-angle",
+                "Maximum perturbation angle must be between 0 and 180 degrees.",
+            )
 
         raw_magmoms = existing_moments(structure)
         if raw_magmoms is None:
-            return [structure.copy()]
+            raise CardOperationError(
+                "magmom-rotation-missing-moments",
+                "Spin Perturbation requires spin or initial magnetic moments on every input structure.",
+            )
 
         is_vector = raw_magmoms.ndim == 2 and raw_magmoms.shape == (len(structure), 3)
-        can_rotate = float(params.max_angle) > 0 and (is_vector or params.lift_scalar)
-        axis = normalize_vector(np.array(params.axis, dtype=float))
-        base_vectors = existing_moment_vectors(structure, axis=axis, lift_scalar=True)
+        if not is_vector and not params.lift_scalar:
+            raise CardOperationError(
+                "magmom-rotation-scalar-disabled",
+                "Scalar magnetic moments must be lifted to vectors before they can be rotated.",
+            )
+        axis = np.array([0.0, 0.0, 1.0])
+        if not is_vector:
+            axis_values = np.asarray(params.axis, dtype=float)
+            if axis_values.shape != (3,) or not np.isfinite(axis_values).all():
+                raise CardOperationError(
+                    "magmom-rotation-axis-finite",
+                    "The scalar lift direction must contain three finite Cartesian components.",
+                )
+            if np.linalg.norm(axis_values) <= 1e-12:
+                raise CardOperationError(
+                    "magmom-rotation-axis-zero",
+                    "The scalar lift direction must be non-zero.",
+                )
+            axis = normalize_vector(axis_values)
+        base_vectors = existing_moment_vectors(
+            structure,
+            axis=axis,
+            lift_scalar=bool(params.lift_scalar),
+        )
         if base_vectors is None:
-            return [structure.copy()]
-
-        base_seed = int(params.seed) if params.use_seed else None
-        rng = np.random.default_rng(base_seed)
-        elements = parse_element_set(params.elements)
-        if not elements:
-            elements = set(structure.get_chemical_symbols())
+            raise CardOperationError(
+                "magmom-rotation-unusable-moments",
+                "Spin Perturbation could not convert the input magnetic moments to vectors.",
+            )
 
         min_factor, max_factor = [float(v) for v in params.magnitude_factor]
-        if min_factor > max_factor:
-            min_factor, max_factor = max_factor, min_factor
+        if params.disturb_magnitude:
+            if (
+                not np.isfinite([min_factor, max_factor]).all()
+                or min_factor < 0.0
+                or max_factor < 0.0
+            ):
+                raise CardOperationError(
+                    "magmom-rotation-magnitude-range",
+                    "Magnitude scale bounds must be finite and non-negative.",
+                )
+            if min_factor > max_factor:
+                raise CardOperationError(
+                    "magmom-rotation-magnitude-order",
+                    "Magnitude scale minimum must not exceed the maximum.",
+                )
+        else:
+            min_factor = max_factor = 1.0
+        if max_angle == 0.0 and (
+            not params.disturb_magnitude
+            or (min_factor == 1.0 and max_factor == 1.0)
+        ):
+            raise CardOperationError(
+                "magmom-rotation-no-change",
+                "Increase the perturbation angle or enable a magnitude scale range that changes the moments.",
+            )
+
+        base_seed = (
+            derived_structure_seed(int(params.seed), structure)
+            if params.use_seed
+            else None
+        )
+        rng = np.random.default_rng(base_seed)
+        elements = parse_element_set(params.elements)
+        invalid_elements = sorted(symbol for symbol in elements if atomic_numbers.get(symbol, 0) <= 0)
+        if invalid_elements:
+            raise CardOperationError(
+                "magmom-rotation-invalid-elements",
+                "Invalid element symbols in the target list: {elements}.",
+                elements=", ".join(invalid_elements),
+            )
 
         results = []
         symbols = structure.get_chemical_symbols()
+        if not elements:
+            elements = set(symbols)
         selected_mask = np.array([symbol in elements for symbol in symbols], dtype=bool)
-        selected_indices = np.nonzero(selected_mask)[0]
         base_lengths = np.linalg.norm(base_vectors, axis=1)
-        for _ in range(num_structures):
+        selected_mask &= base_lengths > 1e-12
+        selected_indices = np.nonzero(selected_mask)[0]
+        if selected_indices.size == 0:
+            raise CardOperationError(
+                "magmom-rotation-no-targets",
+                "No non-zero magnetic moments match the selected elements.",
+            )
+
+        can_rotate = max_angle > 0.0
+        for sample_index in range(num_structures):
             new_structure = structure.copy()
             moment_array = np.array(base_vectors, copy=True)
-            if selected_indices.size:
-                if can_rotate:
-                    angles = rng.uniform(0.0, float(params.max_angle), size=selected_indices.size)
-                    axes = rng.normal(size=(selected_indices.size, 3))
-                    rotated = self.rotate_vectors(base_vectors[selected_indices], angles, axes)
-                    if params.disturb_magnitude:
-                        scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
-                        rotated = self.rescale_vectors(rotated, base_lengths[selected_indices] * scales)
-                    moment_array[selected_indices] = rotated
-                elif params.disturb_magnitude:
+            scales = np.ones(selected_indices.size, dtype=float)
+            realized_angles = np.zeros(selected_indices.size, dtype=float)
+            if can_rotate:
+                rotated, realized_angles = self.sample_spherical_cap(
+                    base_vectors[selected_indices], max_angle, rng
+                )
+                if params.disturb_magnitude:
                     scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
-                    moment_array[selected_indices] *= scales[:, None]
+                    rotated = self.rescale_vectors(rotated, base_lengths[selected_indices] * scales)
+                moment_array[selected_indices] = rotated
+            elif params.disturb_magnitude:
+                scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
+                moment_array[selected_indices] *= scales[:, None]
             set_initial_magmoms_safe(new_structure, moment_array)
-            label = "MMR" if can_rotate else "MMS"
+            label = "SpinPert" if can_rotate else "SpinScale"
             details = []
             if can_rotate:
                 details.append(f"a={float(params.max_angle):.1f}")
             if params.disturb_magnitude:
                 details.append(f"s={min_factor:.2f}-{max_factor:.2f}")
             append_config_tag(new_structure, label + (("(" + ",".join(details) + ")") if details else ""))
+            new_structure.info["spin_perturbation"] = json.dumps(
+                {
+                    "direction_distribution": "uniform_spherical_cap",
+                    "elements": sorted(elements),
+                    "max_angle": max_angle,
+                    "num_structures": num_structures,
+                    "lifted_scalar": not is_vector,
+                    "scalar_lift_direction": axis.tolist() if not is_vector else None,
+                    "disturb_magnitude": bool(params.disturb_magnitude),
+                    "magnitude_factor": [min_factor, max_factor],
+                    "seed": int(params.seed) if params.use_seed else None,
+                    "derived_seed": base_seed,
+                    "sample_index": sample_index,
+                    "selected_count": int(selected_indices.size),
+                    "realized_angle_max": float(np.max(realized_angles)),
+                    "realized_angle_mean": float(np.mean(realized_angles)),
+                    "sampled_scale_min": float(np.min(scales)),
+                    "sampled_scale_max": float(np.max(scales)),
+                },
+                separators=(",", ":"),
+            )
             results.append(new_structure)
         return results
 

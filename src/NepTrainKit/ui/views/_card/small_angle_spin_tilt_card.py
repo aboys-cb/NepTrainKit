@@ -1,4 +1,4 @@
-"""Card for generating single-spin small-angle tilt configurations."""
+"""Card for generating controlled spin-canting scans."""
 
 from __future__ import annotations
 
@@ -13,10 +13,10 @@ from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 @CardManager.register_card
 class SmallAngleSpinTiltCard(MakeDataCard):
-    """Generate deterministic single-spin small-angle tilt configurations."""
+    """Generate deterministic controlled spin-canting configurations."""
 
     group = "Magnetism"
-    card_name = "Small-Angle Spin Tilt"
+    card_name = "Spin Canting Scan"
     menu_icon = r":/images/src/images/perturb.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -24,7 +24,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Small-Angle Spin Tilt"))
+        self.setTitle(self.tr("Spin Canting Scan"))
         self.init_ui()
 
     def init_ui(self):

@@ -674,12 +674,11 @@
         <translation>晶体原型构建</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="108" />
         <source>Generate simple bulk crystal prototypes without requiring input structures.</source>
-        <translation>无需输入结构即可生成常见块体晶体原型。</translation>
+        <translation type="vanished">无需输入结构即可生成常见块体晶体原型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="111" />
+        <location filename="../ui/widgets/card_metadata.py" line="114" />
         <source>Finite-Cell Alloy Occupancy</source>
         <translation>有限晶胞合金占位</translation>
     </message>
@@ -688,7 +687,7 @@
         <translation type="vanished">在各晶体学子晶格上独立分配可实现的合金整数计数。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="112" />
+        <location filename="../ui/widgets/card_metadata.py" line="115" />
         <source>Generate real alloy occupancies from integer compositions achievable in the finite cell, with optional independent sublattice constraints.</source>
         <translation>按有限位点可实现的整数组成生成真实合金占位，并可分别约束各子晶格。</translation>
     </message>
@@ -701,12 +700,12 @@
         <translation type="vanished">基于 NEP 描述符计算最远点采样，筛选数据集结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="125" />
+        <location filename="../ui/widgets/card_metadata.py" line="128" />
         <source>Folded Helix</source>
         <translation>折返螺旋磁序</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="126" />
+        <location filename="../ui/widgets/card_metadata.py" line="129" />
         <source>Assign symmetric clockwise-then-counterclockwise layered helix moments.</source>
         <translation>分层设置先顺时针后逆时针的对称折返螺旋磁矩。</translation>
     </message>
@@ -719,7 +718,7 @@
         <translation type="vanished">剔除违反明确几何质量阈值的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="136" />
+        <location filename="../ui/widgets/card_metadata.py" line="139" />
         <source>Group Label</source>
         <translation>分组标记</translation>
     </message>
@@ -728,7 +727,7 @@
         <translation type="vanished">按通用且不依赖晶格的规则写入 atoms.arrays['group'] 分组标签。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="137" />
+        <location filename="../ui/widgets/card_metadata.py" line="140" />
         <source>Divide atoms into two coordinate-based groups for downstream magnetic, doping, or vacancy operations; coordinates and elements are unchanged.</source>
         <translation>按坐标规则将原子分成两组，供磁序、掺杂或空位操作使用；不改变坐标和元素。</translation>
     </message>
@@ -749,7 +748,7 @@
         <translation type="vanished">先按 dz=f(x,y) 翘曲结构，再沿 z 方向复制平移并合并为堆叠结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="167" />
+        <location filename="../ui/widgets/card_metadata.py" line="170" />
         <source>Local Solvation</source>
         <translation>局部溶剂壳</translation>
     </message>
@@ -758,17 +757,17 @@
         <translation type="vanished">在选定原子周围生成局域溶剂壳层。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="181" />
+        <location filename="../ui/widgets/card_metadata.py" line="184" />
         <source>Magmom Rotation</source>
         <translation>磁矩旋转</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="182" />
+        <location filename="../ui/widgets/card_metadata.py" line="185" />
         <source>Rotate and optionally rescale atomic magnetic moments for selected species.</source>
         <translation>旋转选定元素的原子磁矩，并可调整其大小。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="185" />
+        <location filename="../ui/widgets/card_metadata.py" line="188" />
         <source>Magnetic Order</source>
         <translation>磁序</translation>
     </message>
@@ -777,12 +776,12 @@
         <translation type="vanished">设置初始磁矩并生成常见共线磁序构型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="186" />
+        <location filename="../ui/widgets/card_metadata.py" line="189" />
         <source>Generate FM, AFM, and random PM initial spin states from element moments without changing coordinates or elements.</source>
         <translation>根据元素磁矩生成 FM、AFM 和随机 PM 初始自旋构型；不改变坐标和元素。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="199" />
+        <location filename="../ui/widgets/card_metadata.py" line="202" />
         <source>Organic Mol Config</source>
         <translation>有机构象采样</translation>
     </message>
@@ -791,67 +790,67 @@
         <translation type="vanished">使用 TorsionGuard 周期性边界流程生成扭转驱动的分子构型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="206" />
+        <location filename="../ui/widgets/card_metadata.py" line="209" />
         <source>Ordered Alloy Prototype</source>
         <translation>有序合金原型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="207" />
+        <location filename="../ui/widgets/card_metadata.py" line="210" />
         <source>Generate periodic A1, A2, A3, L12, B2, and L10 prototypes with sublattice labels.</source>
         <translation>生成带子晶格标签的周期 A1、A2、A3、L1₂、B2 和 L1₀ 原型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="213" />
+        <location filename="../ui/widgets/card_metadata.py" line="216" />
         <source>Atomic Perturb</source>
         <translation>原子扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="214" />
+        <location filename="../ui/widgets/card_metadata.py" line="217" />
         <source>Apply random atomic displacements within a configurable distance budget.</source>
         <translation>在可配置的位移范围内随机扰动原子位置。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="217" />
+        <location filename="../ui/widgets/card_metadata.py" line="220" />
         <source>Random Doping</source>
         <translation>随机掺杂</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="218" />
+        <location filename="../ui/widgets/card_metadata.py" line="221" />
         <source>Perform random atomic substitutions according to user-specified doping rules.</source>
         <translation>按用户设定的掺杂规则随机替换原子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="221" />
+        <location filename="../ui/widgets/card_metadata.py" line="224" />
         <source>Random Occupancy</source>
         <translation>随机占位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="222" />
+        <location filename="../ui/widgets/card_metadata.py" line="225" />
         <source>Assign alloy elements to all or grouped lattice sites using a target composition.</source>
         <translation>按目标组分向全部或指定分组的晶格位点分配合金元素。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="225" />
+        <location filename="../ui/widgets/card_metadata.py" line="228" />
         <source>Random Packing</source>
         <translation>随机原子堆积</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="226" />
+        <location filename="../ui/widgets/card_metadata.py" line="229" />
         <source>Generate random atomic coordinates while preserving cell constraints.</source>
         <translation>在保持晶胞约束的前提下生成随机原子坐标。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="229" />
+        <location filename="../ui/widgets/card_metadata.py" line="232" />
         <source>Random Slab</source>
         <translation>随机表面板层</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="230" />
+        <location filename="../ui/widgets/card_metadata.py" line="233" />
         <source>Construct surface slabs across multiple Miller indices and thicknesses.</source>
         <translation>按不同米勒指数和厚度构建表面板层。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="233" />
+        <location filename="../ui/widgets/card_metadata.py" line="236" />
         <source>Random Vacancy</source>
         <translation>随机空位</translation>
     </message>
@@ -880,186 +879,200 @@
         <translation>将一个输入拆分为多条独立的线性分支；只有启用显式合并后，输出才会汇合。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="118" />
+        <source>Generate fully periodic single-element FCC, BCC, HCP, or FCC (111)-oriented prototype cells without input structures.</source>
+        <translation type="vanished">无需输入结构，生成三维周期的单元素 FCC、BCC、HCP 或 FCC (111) 定向原型晶胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="108" />
+        <source>Generate fully periodic single-element FCC, BCC, HCP, or FCC (111)-oriented base cells; add Super Cell afterward when expansion is needed.</source>
+        <translation>无需输入结构，生成三维周期的单元素 FCC、BCC、HCP 或 FCC (111) 定向基础晶胞；需要扩胞时在后面连接“扩胞”卡。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="121" />
         <source>Representative Sampling (FPS)</source>
         <translation>代表性采样（FPS）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="119" />
+        <location filename="../ui/widgets/card_metadata.py" line="122" />
         <source>Keep a descriptor-space representative subset using a chosen NEP model, with either one global budget or guaranteed quotas for every element set; an existing training set can seed coverage.</source>
         <translation>使用指定 NEP 模型在描述符空间保留代表性子集；可以让全部结构共享一个预算，也可以保证每种元素集合都有名额，并可用已有训练集初始化覆盖范围。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="129" />
+        <location filename="../ui/widgets/card_metadata.py" line="132" />
         <source>Geometry Sanity Filter</source>
         <translation>几何健全性过滤</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="130" />
+        <location filename="../ui/widgets/card_metadata.py" line="133" />
         <source>Reject empty or non-finite structures and optionally enforce a chemistry-independent shortest-pair cutoff plus bulk cell, volume-per-atom, and mass-density limits.</source>
         <translation>删除空结构或含非有限坐标的结构，并可选地应用与化学元素无关的最短原子对阈值，以及体相晶胞、单原子体积和质量密度限制。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="143" />
+        <location filename="../ui/widgets/card_metadata.py" line="146" />
         <source>Interface Layer Mixing</source>
         <translation>界面随机互混</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="144" />
+        <location filename="../ui/widgets/card_metadata.py" line="147" />
         <source>Detect a bilayer interface, pick near-interface layers on both sides, and swap their atom species at a target or gradient concentration.</source>
         <translation>识别双层结构的界面，选中界面两侧薄层，按固定或梯度浓度交换两侧原子元素类型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="150" />
+        <location filename="../ui/widgets/card_metadata.py" line="153" />
         <source>Interstitial and Surface Adsorption</source>
         <translation>插隙与表面吸附</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="154" />
+        <location filename="../ui/widgets/card_metadata.py" line="157" />
         <source>Sample random interstitial candidates inside a cell or random adsorbates above a selected upper surface; only a minimum-distance constraint is enforced.</source>
         <translation>在晶胞内随机生成插隙候选，或在指定上表面生成随机吸附候选；仅保证最小原子间距，不识别晶体学位点。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="160" />
+        <location filename="../ui/widgets/card_metadata.py" line="163" />
         <source>Layer Stack</source>
         <translation>分层堆叠</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="161" />
+        <location filename="../ui/widgets/card_metadata.py" line="164" />
         <source>Build one multilayer structure by translating the complete input slab along Cartesian z; an optional dz=f(x,y,z) expression can warp selected atoms before every full-slab copy.</source>
         <translation>将完整输入薄层沿笛卡尔 z 方向平移复制，构造一个多层结构；还可在复制完整薄层前，用可选的 dz=f(x,y,z) 表达式形变指定原子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="168" />
+        <location filename="../ui/widgets/card_metadata.py" line="171" />
         <source>Insert solvent molecules around selected host atoms using a fallback COM shell or ion-specific first-shell distances, with collision checks and optional flexible-solvent sampling.</source>
         <translation>按备用质心壳层或离子专属第一壳距离，在选中的宿主原子周围插入溶剂分子，并提供碰撞检查和可选的柔性溶剂采样。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="174" />
+        <location filename="../ui/widgets/card_metadata.py" line="177" />
         <source>Local Magnetic Response</source>
         <translation>局域磁响应</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="175" />
+        <location filename="../ui/widgets/card_metadata.py" line="178" />
         <source>Build complete local spin-rotation or moment-scale response groups with stable lineage.</source>
         <translation>生成谱系稳定且组内完整的局域自旋旋转或磁矩模长响应数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="192" />
+        <location filename="../ui/widgets/card_metadata.py" line="195" />
         <source>Magnetoelastic Response</source>
         <translation>磁弹响应</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="193" />
+        <location filename="../ui/widgets/card_metadata.py" line="196" />
         <source>Combine each strain or volume coordinate with the same complete set of spin probes.</source>
         <translation>为每个应变或体积坐标组合一套完全相同且完整的自旋探针。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="200" />
+        <location filename="../ui/widgets/card_metadata.py" line="203" />
         <source>Detect molecular bonds, rotate eligible single-bond subtrees, add optional Gaussian noise, and skip conformers that fail bond-length or clash guards.</source>
         <translation>检测分子键，旋转可用单键一侧的子树，按需添加高斯噪声，并跳过未通过键长或碰撞检查的构象。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="234" />
+        <location filename="../ui/widgets/card_metadata.py" line="237" />
         <source>Remove randomly selected sites using element, existing group, and count rules; other atomic coordinates stay unchanged.</source>
         <translation>按元素、已有分组标签和数量规则随机删除位点；其余原子坐标保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="240" />
+        <location filename="../ui/widgets/card_metadata.py" line="243" />
         <source>Set Magnetic Moments</source>
         <translation>设置磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="241" />
+        <location filename="../ui/widgets/card_metadata.py" line="244" />
         <source>Set or convert magnetic moments into a consistent scalar or vector representation.</source>
         <translation>设置磁矩，或在标量与矢量表示之间转换。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="244" />
+        <location filename="../ui/widgets/card_metadata.py" line="247" />
         <source>Shear Angle Strain</source>
         <translation>剪切角应变</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="245" />
+        <location filename="../ui/widgets/card_metadata.py" line="248" />
         <source>Perturb lattice angles while preserving cell lengths.</source>
         <translation>保持晶胞边长不变，扰动晶格角度。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="248" />
+        <location filename="../ui/widgets/card_metadata.py" line="251" />
         <source>Shear Matrix Strain</source>
         <translation>剪切矩阵应变</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="249" />
+        <location filename="../ui/widgets/card_metadata.py" line="252" />
         <source>Apply shear matrices along the principal lattice planes.</source>
         <translation>沿主要晶格平面施加剪切矩阵。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="252" />
+        <location filename="../ui/widgets/card_metadata.py" line="255" />
         <source>Small-Angle Spin Tilt</source>
         <translation>小角度自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="253" />
+        <location filename="../ui/widgets/card_metadata.py" line="256" />
         <source>Generate deterministic single-spin small-angle tilt configurations.</source>
         <translation>生成确定性的单自旋小角度倾斜构型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="256" />
+        <location filename="../ui/widgets/card_metadata.py" line="259" />
         <source>Solvent Box Fill</source>
         <translation>周期溶剂盒</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="271" />
+        <location filename="../ui/widgets/card_metadata.py" line="274" />
         <source>SOC / Texture Response</source>
         <translation>SOC / 纹理响应</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="272" />
+        <location filename="../ui/widgets/card_metadata.py" line="275" />
         <source>Build rigid anisotropy and signed finite-q texture response paths with commensurability checks.</source>
         <translation>生成带共格检查的刚性各向异性和有符号有限 q 自旋纹理响应路径。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="278" />
+        <location filename="../ui/widgets/card_metadata.py" line="281" />
         <source>Legacy Stacking Fault</source>
         <translation>旧版层错位移</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="279" />
+        <location filename="../ui/widgets/card_metadata.py" line="282" />
         <source>Load and reproduce existing workflows that used the old automatic-direction layer shift; this compatibility card is hidden from new-card entry points.</source>
         <translation>载入并复现使用旧版自动方向层移的工作流；这张兼容卡不会出现在新建卡片入口中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="285" />
+        <location filename="../ui/widgets/card_metadata.py" line="288" />
         <source>Stacking Fault / GSFE Path</source>
         <translation>层错 / GSFE 路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="286" />
+        <location filename="../ui/widgets/card_metadata.py" line="289" />
         <source>Shift atoms above an interlayer cut along an explicit in-plane direction to generate stacking-fault structures or an unrelaxed GSFE path; the input cell must already be oriented to the fault plane.</source>
         <translation>沿显式面内方向移动层间切面上方的原子，生成层错结构或未弛豫 GSFE 路径；输入晶胞必须已按层错面定向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="296" />
+        <source>Repeat complete input cells along lattice vectors using explicit factors, target lengths, or a strict atom budget.</source>
+        <translation>沿晶格矢量完整复制输入晶胞，可按指定倍率、目标长度或严格原子预算生成超胞。</translation>
     </message>
     <message>
         <source>Fill an existing periodic cell with solvent molecules.</source>
         <translation type="vanished">向现有周期性晶胞填充溶剂分子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="263" />
+        <location filename="../ui/widgets/card_metadata.py" line="266" />
         <source>Spin Disorder</source>
         <translation>自旋无序</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="264" />
+        <location filename="../ui/widgets/card_metadata.py" line="267" />
         <source>Generate spin states with explicit disorder fractions.</source>
         <translation>按明确的无序比例生成自旋状态。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="267" />
+        <location filename="../ui/widgets/card_metadata.py" line="270" />
         <source>Spin Spiral</source>
         <translation>自旋螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="268" />
+        <location filename="../ui/widgets/card_metadata.py" line="271" />
         <source>Assign non-collinear spiral magnetic moments using a 1D phase field.</source>
         <translation>使用一维相位场设置非共线螺旋磁矩。</translation>
     </message>
@@ -1084,22 +1097,21 @@
         <translation type="vanished">按明确的滑移面和滑移方向生成未弛豫 GSFE 结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="292" />
+        <location filename="../ui/widgets/card_metadata.py" line="295" />
         <source>Super Cell</source>
         <translation>扩胞</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="293" />
         <source>Create supercells from fixed scale factors, target lattice lengths, or atom limits.</source>
-        <translation>按固定扩胞倍数、目标晶格长度或原子数上限生成超胞。</translation>
+        <translation type="vanished">按固定扩胞倍数、目标晶格长度或原子数上限生成超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="296" />
+        <location filename="../ui/widgets/card_metadata.py" line="303" />
         <source>Global Random Vacancy</source>
         <translation>全局随机空位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="297" />
+        <location filename="../ui/widgets/card_metadata.py" line="304" />
         <source>Delete sites globally by an overall count or fraction without distinguishing elements; remaining coordinates are unchanged.</source>
         <translation>不区分元素，按整体数量或比例随机删除位点；其余原子坐标保持不变。</translation>
     </message>
@@ -1112,7 +1124,7 @@
         <translation type="vanished">按空位浓度或明确数量采样空位缺陷。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="257" />
+        <location filename="../ui/widgets/card_metadata.py" line="260" />
         <source>Randomly place solvent molecules throughout an existing periodic cell by a fixed target count or a nominal pure-solvent density estimate, while rejecting short contacts.</source>
         <translation>按固定目标数或名义纯溶剂密度估算，在已有周期晶胞内随机放置溶剂分子，并排除过短接触。</translation>
     </message>
@@ -1125,77 +1137,77 @@
         <translation type="vanished">为兼容旧工作流而保留投影层位移算法；其滑移方向由笛卡尔轴导出，不是晶体学 GSFE 路径，新任务应使用“显式 GSFE 路径”。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="303" />
+        <location filename="../ui/widgets/card_metadata.py" line="310" />
         <source>Vib Mode Perturb</source>
         <translation>振动模式扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="304" />
+        <location filename="../ui/widgets/card_metadata.py" line="311" />
         <source>Generate perturbations along precomputed vibrational modes.</source>
         <translation>沿预先计算的振动模式生成扰动结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="308" />
+        <location filename="../ui/widgets/card_metadata.py" line="315" />
         <source>Alloy</source>
         <translation>合金与组分</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="309" />
+        <location filename="../ui/widgets/card_metadata.py" line="316" />
         <source>Container</source>
         <translation>容器</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="310" />
+        <location filename="../ui/widgets/card_metadata.py" line="317" />
         <source>Defect</source>
         <translation>缺陷</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="311" />
+        <location filename="../ui/widgets/card_metadata.py" line="318" />
         <source>Filter</source>
         <translation>筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="312" />
+        <location filename="../ui/widgets/card_metadata.py" line="319" />
         <source>Lattice</source>
         <translation>晶格</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="313" />
+        <location filename="../ui/widgets/card_metadata.py" line="320" />
         <source>Magnetism</source>
         <translation>磁性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="314" />
+        <location filename="../ui/widgets/card_metadata.py" line="321" />
         <source>Organic</source>
         <translation>分子与溶剂</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="315" />
+        <location filename="../ui/widgets/card_metadata.py" line="322" />
         <source>Perturbation</source>
         <translation>扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="316" />
+        <location filename="../ui/widgets/card_metadata.py" line="323" />
         <source>Structure</source>
         <translation>结构</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="317" />
+        <location filename="../ui/widgets/card_metadata.py" line="324" />
         <source>Surface</source>
         <translation>表面</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="320" />
+        <location filename="../ui/widgets/card_metadata.py" line="327" />
         <source>author</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="321" />
+        <location filename="../ui/widgets/card_metadata.py" line="328" />
         <source>maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="322" />
+        <location filename="../ui/widgets/card_metadata.py" line="329" />
         <source>contributor</source>
         <translation>贡献者</translation>
     </message>
@@ -1594,96 +1606,131 @@
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="111" />
+        <source>Repeat factors</source>
+        <translation>指定重复倍率</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="112" />
+        <source>Target lengths</source>
+        <translation>指定目标长度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="113" />
+        <source>Atom budget</source>
+        <translation>指定原子预算</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="114" />
         <source>Balance component counts</source>
         <translation>均衡各元数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="112" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="115" />
         <source>Favor larger composition spaces</source>
         <translation>侧重更大的成分空间</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="113" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="116" />
         <source>Legacy equal split</source>
         <translation>旧版均分</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="114" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="117" />
         <source>fcc</source>
         <translation>fcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="115" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="118" />
         <source>bcc</source>
         <translation>bcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="116" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="119" />
         <source>hcp</source>
         <translation>hcp</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="117" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="120" />
         <source>fcc111</source>
         <translation>fcc111</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="118" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="121" />
+        <source>FCC conventional cell</source>
+        <translation>FCC 常规晶胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="122" />
+        <source>BCC conventional cell</source>
+        <translation>BCC 常规晶胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="123" />
+        <source>HCP primitive cell</source>
+        <translation>HCP 原胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="124" />
+        <source>FCC (111)-oriented periodic cell</source>
+        <translation>FCC (111) 定向周期晶胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="125" />
         <source>A1/fcc</source>
         <translation>A1/fcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="119" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="126" />
         <source>A2/bcc</source>
         <translation>A2/bcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="120" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="127" />
         <source>A3/hcp</source>
         <translation>A3/hcp</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="121" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="128" />
         <source>L12/A3B</source>
         <translation>L1₂/A3B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="122" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="129" />
         <source>B2/AB</source>
         <translation>B2/AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="123" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="130" />
         <source>L10/AB</source>
         <translation>L1₀/AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="124" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="131" />
         <source>Auto (Comp tag)</source>
         <translation>自动（Comp 标签）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="125" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
         <source>Auto detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="126" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
         <source>Manual</source>
         <translation>手动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="127" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
         <source>Exact</source>
         <translation>精确</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="128" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
         <source>Random</source>
         <translation>随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="129" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
         <source>Fraction of slip vector</source>
         <translation>滑移向量分数</translation>
     </message>
@@ -1692,162 +1739,162 @@
         <translation type="vanished">投影滑移向量的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="130" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
         <source>Actual distance (Å)</source>
         <translation>实际距离（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="131" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
         <source>Middle interlayer gap</source>
         <translation>中间层间隙</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
         <source>Fraction of projected thickness</source>
         <translation>投影厚度的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
         <source>After a layer index</source>
         <translation>指定原子层之后</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
         <source>Auto (follow input PBC)</source>
         <translation>自动（跟随输入 PBC）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
         <source>Force full 3D PBC</source>
         <translation>强制全三维 PBC</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
         <source>Nonperiodic molecule</source>
         <translation>非周期分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
         <source>Auto-detect solvent / ion</source>
         <translation>自动识别溶剂 / 离子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
         <source>General random orientation</source>
         <translation>通用随机取向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
         <source>Water dipole orientation</source>
         <translation>水分子偶极取向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
         <source>Ion-water first shell</source>
         <translation>离子-水第一配位壳</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
         <source>Loose collision profile</source>
         <translation>宽松碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
         <source>Dense collision profile</source>
         <translation>紧密碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
         <source>All host atoms</source>
         <translation>全部宿主原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
         <source>By element</source>
         <translation>按元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
         <source>By 1-based atom index</source>
         <translation>按从 1 开始的原子索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
         <source>By Cartesian z range</source>
         <translation>按笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
         <source>Fixed molecule count</source>
         <translation>固定分子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
         <source>Nominal solvent density</source>
         <translation>名义溶剂密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
         <source>Auto-detect solvent type</source>
         <translation>自动识别溶剂类型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
         <source>General collision profile</source>
         <translation>通用碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
         <source>Water collision profile</source>
         <translation>水分子碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
         <source>Flat stack (no warp)</source>
         <translation>平整堆叠（不形变）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
         <source>2D sine ripple</source>
         <translation>二维正弦波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
         <source>Gaussian bump</source>
         <translation>高斯凸起</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
         <source>Paraboloid</source>
         <translation>抛物面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
         <source>Stripe ripple</source>
         <translation>条纹波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
         <source>Step (x&gt;0)</source>
         <translation>阶跃（x&gt;0）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
         <source>All atoms</source>
         <translation>所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
         <source>Selected elements</source>
         <translation>指定元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
@@ -1872,22 +1919,22 @@
         <translation type="vanished">层索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
         <source>all</source>
         <translation>全部</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
         <source>elements</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
         <source>indices</source>
         <translation>索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
         <source>z_range</source>
         <translation>z 范围</translation>
     </message>
@@ -1900,155 +1947,155 @@
         <translation type="vanished">否</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
         <source>Global canting</source>
         <translation>全局 canting</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="31" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
         <source>Single-spin tilt</source>
         <translation>单自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
         <source>Atom-pair canting</source>
         <translation>原子对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
         <source>Group-pair canting</source>
         <translation>分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
         <source>All eligible atoms</source>
         <translation>所有候选原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
         <source>Explicit indices</source>
         <translation>显式索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="35" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
         <source>Manual indices</source>
         <translation>手动索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="36" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
         <source>Auto by neighbor shell</source>
         <translation>按近邻壳自动选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
         <source>Any</source>
         <translation>任意</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
         <source>Near axis</source>
         <translation>接近轴向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
         <source>In plane (normal)</source>
         <translation>位于平面内（法向）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
         <source>Positive only</source>
         <translation>仅正向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
         <source>Negative only</source>
         <translation>仅负向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
         <source>Both (+/- pair)</source>
         <translation>正负成对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
         <source>Auto from layer count</source>
         <translation>按层数自动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
         <source>Clockwise then counterclockwise</source>
         <translation>先顺时针再逆时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
         <source>Counterclockwise then clockwise</source>
         <translation>先逆时针再顺时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
         <source>Cone around reference</source>
         <translation>围绕参考锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
         <source>Full random directions</source>
         <translation>全随机方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
         <source>exponential</source>
         <translation>指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
         <source>squared exponential</source>
         <translation>平方指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
         <source>Alternating fractional-coordinate layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
         <source>Current-cell half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
         <source>Alternating layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
         <source>Half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
         <source>100 (along lattice a)</source>
         <translation>100（沿晶格 a）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
         <source>010 (along lattice b)</source>
         <translation>010（沿晶格 b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
         <source>001 (along lattice c)</source>
         <translation>001（沿晶格 c）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
         <source>110 (along lattice a+b)</source>
         <translation>110（沿晶格 a+b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
         <source>111 (along lattice a+b+c)</source>
         <translation>111（沿晶格 a+b+c）</translation>
     </message>
@@ -2226,98 +2273,98 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1057" />
+        <location filename="../ui/widgets/card_metadata.py" line="1064" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1074" />
+        <location filename="../ui/widgets/card_metadata.py" line="1081" />
         <source>Make Dataset cards</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1084" />
+        <location filename="../ui/widgets/card_metadata.py" line="1091" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1186" />
+        <location filename="../ui/widgets/card_metadata.py" line="1193" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1198" />
+        <location filename="../ui/widgets/card_metadata.py" line="1205" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1199" />
+        <location filename="../ui/widgets/card_metadata.py" line="1206" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1200" />
+        <location filename="../ui/widgets/card_metadata.py" line="1207" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1201" />
+        <location filename="../ui/widgets/card_metadata.py" line="1208" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1202" />
+        <location filename="../ui/widgets/card_metadata.py" line="1209" />
         <source>Documentation</source>
         <translation>文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1228" />
-        <location filename="../ui/widgets/card_metadata.py" line="1388" />
+        <location filename="../ui/widgets/card_metadata.py" line="1235" />
+        <location filename="../ui/widgets/card_metadata.py" line="1395" />
         <source>Technical details</source>
         <translation>技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1252" />
+        <location filename="../ui/widgets/card_metadata.py" line="1259" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1258" />
+        <location filename="../ui/widgets/card_metadata.py" line="1265" />
         <source>Source file</source>
         <translation>源文件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1281" />
+        <location filename="../ui/widgets/card_metadata.py" line="1288" />
         <source>Add selected card</source>
         <translation>添加所选卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1286" />
+        <location filename="../ui/widgets/card_metadata.py" line="1293" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1331" />
+        <location filename="../ui/widgets/card_metadata.py" line="1338" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1346" />
+        <location filename="../ui/widgets/card_metadata.py" line="1353" />
         <source>Open documentation</source>
         <translation>打开文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1358" />
+        <location filename="../ui/widgets/card_metadata.py" line="1365" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1386" />
+        <location filename="../ui/widgets/card_metadata.py" line="1393" />
         <source>Hide technical details</source>
         <translation>收起技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1422" />
+        <location filename="../ui/widgets/card_metadata.py" line="1429" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -2325,32 +2372,32 @@
 <context>
     <name>CardLibraryPopup</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="839" />
+        <location filename="../ui/widgets/card_metadata.py" line="846" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="870" />
+        <location filename="../ui/widgets/card_metadata.py" line="877" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="900" />
+        <location filename="../ui/widgets/card_metadata.py" line="907" />
         <source>Hover or focus a card to see what it does.</source>
         <translation>悬停或聚焦卡片以查看功能说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="997" />
+        <location filename="../ui/widgets/card_metadata.py" line="1004" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1000" />
+        <location filename="../ui/widgets/card_metadata.py" line="1007" />
         <source>No cards found.</source>
         <translation>未找到卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1008" />
+        <location filename="../ui/widgets/card_metadata.py" line="1015" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
@@ -2358,94 +2405,94 @@
 <context>
     <name>CardMetadata</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="328" />
-        <location filename="../ui/widgets/card_metadata.py" line="381" />
+        <location filename="../ui/widgets/card_metadata.py" line="335" />
+        <location filename="../ui/widgets/card_metadata.py" line="388" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="362" />
+        <location filename="../ui/widgets/card_metadata.py" line="369" />
         <source>Not specified</source>
-        <translation>未指定</translation>
+        <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="372" />
+        <location filename="../ui/widgets/card_metadata.py" line="379" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="374" />
+        <location filename="../ui/widgets/card_metadata.py" line="381" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="383" />
+        <location filename="../ui/widgets/card_metadata.py" line="390" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="384" />
+        <location filename="../ui/widgets/card_metadata.py" line="391" />
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="395" />
-        <location filename="../ui/widgets/card_metadata.py" line="428" />
+        <location filename="../ui/widgets/card_metadata.py" line="402" />
+        <location filename="../ui/widgets/card_metadata.py" line="435" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="396" />
+        <location filename="../ui/widgets/card_metadata.py" line="403" />
         <source>No public contributor metadata yet.</source>
         <translation>暂无公开贡献者元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="439" />
+        <location filename="../ui/widgets/card_metadata.py" line="446" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="440" />
+        <location filename="../ui/widgets/card_metadata.py" line="447" />
         <source>Group</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="441" />
+        <location filename="../ui/widgets/card_metadata.py" line="448" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="442" />
+        <location filename="../ui/widgets/card_metadata.py" line="449" />
         <source>Maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="443" />
+        <location filename="../ui/widgets/card_metadata.py" line="450" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="444" />
+        <location filename="../ui/widgets/card_metadata.py" line="451" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="445" />
+        <location filename="../ui/widgets/card_metadata.py" line="452" />
         <source>Source path</source>
         <translation>源路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="652" />
+        <location filename="../ui/widgets/card_metadata.py" line="659" />
         <source>Make Dataset Card</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="683" />
+        <location filename="../ui/widgets/card_metadata.py" line="690" />
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="695" />
+        <location filename="../ui/widgets/card_metadata.py" line="702" />
         <source>Citation</source>
         <translation>引用</translation>
     </message>
@@ -2453,12 +2500,12 @@
 <context>
     <name>CardMetadataDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="708" />
+        <location filename="../ui/widgets/card_metadata.py" line="715" />
         <source>Card info - {card_name}</source>
         <translation>卡片信息 - {card_name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="723" />
+        <location filename="../ui/widgets/card_metadata.py" line="730" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -2469,6 +2516,49 @@
         <location filename="../ui/messages.py" line="328" />
         <source>Perturb: Sobol sampling supports at most {max_atoms} atoms; use Uniform sampling for larger structures.</source>
         <translation>原子扰动：Sobol 采样最多支持 {max_atoms} 个原子；更大的结构请使用 Uniform 采样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="333" />
+        <source>Unsupported crystal prototype: {lattice}.</source>
+        <translation>不支持的晶体原型：{lattice}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="334" />
+        <source>Maximum outputs must be at least 1.</source>
+        <translation>最大输出数必须至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="335" />
+        <source>The hcp c/a ratio must be a positive finite number.</source>
+        <translation>HCP c/a 轴比必须是有限正数。</translation>
+    </message>
+    <message>
+        <source>The atom limit ({limit}) is smaller than the {base_atoms}-atom prototype cell.</source>
+        <translation type="vanished">原子数上限（{limit}）小于原型晶胞的 {base_atoms} 个原子。</translation>
+    </message>
+    <message>
+        <source>Manual repeats must contain three positive integers.</source>
+        <translation type="vanished">手动重复倍率必须包含三个正整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="338" />
+        <source>Enter one valid chemical element symbol, for example Cu, Fe, or Mg.</source>
+        <translation>请输入一个有效的元素符号，例如 Cu、Fe 或 Mg。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="342" />
+        <source>The lattice-constant range must contain finite numbers.</source>
+        <translation>晶格常数范围必须包含有限数值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="345" />
+        <source>Lattice constants must be positive.</source>
+        <translation>晶格常数必须为正数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="346" />
+        <source>The lattice-constant step must be positive.</source>
+        <translation>晶格常数步长必须为正数。</translation>
     </message>
 </context>
 <context>
@@ -3456,79 +3546,264 @@
 <context>
     <name>CrystalPrototypeBuilderCard</name>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="29" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="37" />
         <source>Crystal Prototype Builder</source>
         <translation>晶体原型构建器</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="35" />
-        <source>Lattice</source>
-        <translation>晶格</translation>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="56" />
+        <source>Crystal prototype</source>
+        <translation>晶体原型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="38" />
-        <source>Crystal structure prototype</source>
-        <translation>晶体结构原型</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="41" />
-        <source>Base element</source>
-        <translation>基础元素</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="43" />
-        <source>Cu</source>
-        <translation>Cu</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="45" />
-        <source>Temporary element used to build the lattice sites</source>
-        <translation>用于构建晶格位点的临时元素</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="48" />
-        <source>a (Å)</source>
-        <translation>a (Å)</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="54" />
-        <source>Lattice parameter a range [min, max, step]</source>
-        <translation>晶格参数 a 的范围：[min, max, step]</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="57" />
-        <source>c/a</source>
-        <translation>c/a</translation>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="59" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="159" />
+        <source>Choose one single-element ideal prototype; generated coordinates are not relaxed.</source>
+        <translation>选择一种单元素理想原型；生成的坐标未经弛豫。</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="63" />
-        <source>hcp only: c/a ratio (ideal ~1.633)</source>
-        <translation>仅 hcp：c/a 比值（理想值约 1.633）</translation>
+        <source>e.g. Cu</source>
+        <translation>例如 Cu</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="66" />
-        <source>Auto supercell (max atoms)</source>
-        <translation>自动超胞（最大原子数）</translation>
+        <source>Element symbol</source>
+        <translation>元素符号</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="68" />
-        <source>Manual supercell</source>
-        <translation>手动超胞</translation>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="69" />
+        <source>Enter exactly one real chemical element symbol, such as Cu, Fe, or Mg.</source>
+        <translation>只输入一个真实元素符号，例如 Cu、Fe 或 Mg。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="70" />
-        <source>Max atoms</source>
-        <translation>最大原子数</translation>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="73" />
+        <source>step</source>
+        <translation>步长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="76" />
-        <source>Rep (na,nb,nc)</source>
-        <translation>重复数 (na,nb,nc)</translation>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="78" />
+        <source>Lattice constant a (min, max, step)</source>
+        <translation>晶格常数 a（最小值、最大值、步长）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="82" />
-        <source>Max outputs</source>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="81" />
+        <source>Endpoints are included when reached by the positive step; reversed endpoints are normalized.</source>
+        <translation>正步长恰好到达终点时包含终点；反向端点会自动交换。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="90" />
+        <source>HCP c/a ratio</source>
+        <translation>HCP c/a 轴比</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="93" />
+        <source>Only HCP uses this ratio; c = a × (c/a).</source>
+        <translation>仅 HCP 使用该轴比；c = a × (c/a)。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="97" />
+        <source>Prototype</source>
+        <translation>原型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="99" />
+        <source>This generator creates a fully periodic, single-element starting structure.</source>
+        <translation>该生成器创建三维周期的单元素起始结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="170" />
+        <source>{shown} base-cell output(s); {atoms} atoms each; first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å.</source>
+        <translation>预计输出 {shown} 个基础晶胞；每个 {atoms} 个原子；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="195" />
+        <source>{element} · {lattice} · {count} base-cell output(s)</source>
+        <translation>{element} · {lattice} · {count} 个基础晶胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="207" />
+        <source>Use prototype-specific lattice constants. In particular, HCP a is not the FCC conventional-cell a. Add Super Cell next when downstream operations need a larger structure.</source>
+        <translation>请使用与原型匹配的晶格常数；尤其是 HCP 的 a 不等于 FCC 常规晶胞的 a。后续操作需要更大结构时，请连接“扩胞”卡。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="260" />
+        <source>This saved Crystal Prototype Builder used the removed expansion settings. They were ignored; add a Super Cell card after it to restore the intended cell size.</source>
+        <translation>该晶体原型构建配置使用了已移除的扩胞参数，这些参数已被忽略。请在后面添加“扩胞”卡，以恢复所需的晶胞尺寸。</translation>
+    </message>
+    <message>
+        <source>Atom limit</source>
+        <translation type="vanished">原子数上限</translation>
+    </message>
+    <message>
+        <source>Manual repeats</source>
+        <translation type="vanished">手动重复</translation>
+    </message>
+    <message>
+        <source>Expansion method</source>
+        <translation type="vanished">扩胞方式</translation>
+    </message>
+    <message>
+        <source>Automatic mode maximizes atom use first; only equal-atom candidates are compared by cell aspect ratio.</source>
+        <translation type="vanished">自动模式先尽量用满原子预算；只有原子数相同时才比较晶胞长宽比。</translation>
+    </message>
+    <message>
+        <source>atoms</source>
+        <translation type="vanished">个原子</translation>
+    </message>
+    <message>
+        <source>Strict upper bound; it cannot be smaller than the selected prototype cell.</source>
+        <translation type="vanished">严格上限；不能小于所选原型晶胞的原子数。</translation>
+    </message>
+    <message>
+        <source>Repeats (a, b, c)</source>
+        <translation type="vanished">重复倍率（a、b、c）</translation>
+    </message>
+    <message>
+        <source>Repeat the complete prototype cell along its three lattice vectors.</source>
+        <translation type="vanished">沿三个晶格向量重复完整的原型晶胞。</translation>
+    </message>
+    <message>
+        <source>Cell expansion</source>
+        <translation type="vanished">晶胞扩展</translation>
+    </message>
+    <message>
+        <source>Expansion changes cell size and atom count, but does not strain the prototype.</source>
+        <translation type="vanished">扩胞会改变晶胞尺寸和原子数，但不会应变原型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="109" />
+        <source>structures</source>
+        <translation>个结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="113" />
+        <source>Maximum outputs</source>
         <translation>最大输出数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="116" />
+        <source>If the a scan has more points, only the first values in ascending scan order are kept.</source>
+        <translation>若 a 扫描点更多，只保留按升序排列的前几个值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="121" />
+        <source>Output preview</source>
+        <translation>输出预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="127" />
+        <source>Need a larger cell? Add a Super Cell card after this card to choose repeats, target lengths, or an atom budget.</source>
+        <translation>需要更大的晶胞？请在本卡后添加“扩胞”卡，再选择重复倍率、目标长度或原子预算。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="133" />
+        <source>Next step</source>
+        <translation>下一步</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="157" />
+        <source>Fully periodic (PBC x/y/z), with no vacuum; the third cell vector is normal to FCC (111).</source>
+        <translation>三维周期（PBC x/y/z），无真空；第三晶格向量垂直于 FCC (111) 面。</translation>
+    </message>
+    <message>
+        <source>{shown} output(s); repeat {a} × {b} × {c}; {atoms} atoms each; first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å.</source>
+        <translation type="vanished">预计输出 {shown} 个结构；重复 {a} × {b} × {c}；每个 {atoms} 个原子；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="180" />
+        <source>The scan has {total} points; later a values are truncated.</source>
+        <translation>扫描共有 {total} 个点；后续较大的 a 值将被截断。</translation>
+    </message>
+    <message>
+        <source>⚠ The predicted cell is highly elongated (aspect ratio {ratio:.1f}). Switch to Manual repeats and adjust the three multipliers.</source>
+        <translation type="vanished">⚠ 预计晶胞明显细长（长宽比 {ratio:.1f}）。请切换到“手动重复”，并调整三个倍率。</translation>
+    </message>
+    <message>
+        <source>Warning: the predicted cell is highly elongated (aspect ratio {ratio:.1f}).</source>
+        <translation type="vanished">警告：预计晶胞明显细长（长宽比 {ratio:.1f}）。</translation>
+    </message>
+    <message>
+        <source>automatic</source>
+        <translation type="vanished">自动</translation>
+    </message>
+    <message>
+        <source>manual</source>
+        <translation type="vanished">手动</translation>
+    </message>
+    <message>
+        <source>{element} · {lattice} · {mode} · {count} output(s)</source>
+        <translation type="vanished">{element} · {lattice} · {mode} · {count} 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="196" />
+        <source>invalid element</source>
+        <translation>无效元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="201" />
+        <source>{lattice} · parameters need attention</source>
+        <translation>{lattice} · 参数需要检查</translation>
+    </message>
+    <message>
+        <source>Use prototype-specific lattice constants. In particular, HCP a is not the FCC conventional-cell a. Inspect the exact repeat and cell lengths before sending the structure to defects or surfaces.</source>
+        <translation type="vanished">请使用与原型匹配的晶格常数；尤其是 HCP 的 a 不等于 FCC 常规晶胞的 a。进入缺陷或表面流程前，请检查准确的重复倍率和晶胞边长。</translation>
+    </message>
+    <message>
+        <source>Lattice</source>
+        <translation type="vanished">晶格</translation>
+    </message>
+    <message>
+        <source>Crystal structure prototype</source>
+        <translation type="vanished">晶体结构原型</translation>
+    </message>
+    <message>
+        <source>Base element</source>
+        <translation type="vanished">基础元素</translation>
+    </message>
+    <message>
+        <source>Cu</source>
+        <translation type="vanished">Cu</translation>
+    </message>
+    <message>
+        <source>Temporary element used to build the lattice sites</source>
+        <translation type="vanished">用于构建晶格位点的临时元素</translation>
+    </message>
+    <message>
+        <source>a (Å)</source>
+        <translation type="vanished">a (Å)</translation>
+    </message>
+    <message>
+        <source>Lattice parameter a range [min, max, step]</source>
+        <translation type="vanished">晶格参数 a 的范围：[min, max, step]</translation>
+    </message>
+    <message>
+        <source>c/a</source>
+        <translation type="vanished">c/a</translation>
+    </message>
+    <message>
+        <source>hcp only: c/a ratio (ideal ~1.633)</source>
+        <translation type="vanished">仅 hcp：c/a 比值（理想值约 1.633）</translation>
+    </message>
+    <message>
+        <source>Auto supercell (max atoms)</source>
+        <translation type="vanished">自动超胞（最大原子数）</translation>
+    </message>
+    <message>
+        <source>Manual supercell</source>
+        <translation type="vanished">手动超胞</translation>
+    </message>
+    <message>
+        <source>Max atoms</source>
+        <translation type="vanished">最大原子数</translation>
+    </message>
+    <message>
+        <source>Rep (na,nb,nc)</source>
+        <translation type="vanished">重复数 (na,nb,nc)</translation>
+    </message>
+    <message>
+        <source>Max outputs</source>
+        <translation type="vanished">最大输出数</translation>
     </message>
 </context>
 <context>
@@ -7359,23 +7634,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="369" />
-        <location filename="../ui/messages.py" line="409" />
+        <location filename="../ui/messages.py" line="385" />
+        <location filename="../ui/messages.py" line="425" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="379" />
+        <location filename="../ui/messages.py" line="395" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="389" />
+        <location filename="../ui/messages.py" line="405" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="399" />
+        <location filename="../ui/messages.py" line="415" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -12545,114 +12820,274 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>SuperCellCard</name>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="39" />
         <source>Make Supercell</source>
-        <translation>生成超胞</translation>
+        <translation type="vanished">生成超胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="47" />
         <source>Maximum</source>
-        <translation>最大</translation>
+        <translation type="vanished">最大</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="48" />
         <source>Iteration</source>
-        <translation>迭代</translation>
+        <translation type="vanished">迭代</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="49" />
         <source>Minimum</source>
-        <translation>最小</translation>
+        <translation type="vanished">最小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="51" />
         <source>Behavior:</source>
-        <translation>行为：</translation>
+        <translation type="vanished">行为：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="52" />
         <source>Select supercell generation method</source>
-        <translation>选择 super晶胞 generation method</translation>
+        <translation type="vanished">选择 super晶胞 generation method</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="55" />
         <source>Super scale</source>
-        <translation>超胞倍率</translation>
+        <translation type="vanished">超胞倍率</translation>
+    </message>
+    <message>
+        <source>Scale factors along axes</source>
+        <translation type="vanished">沿各轴的缩放倍率</translation>
+    </message>
+    <message>
+        <source>Super cell</source>
+        <translation type="vanished">目标超胞</translation>
+    </message>
+    <message>
+        <source>Target lattice constant in Å</source>
+        <translation type="vanished">目标晶格常数（Å）</translation>
+    </message>
+    <message>
+        <source>Max atoms</source>
+        <translation type="vanished">最大原子数</translation>
+    </message>
+    <message>
+        <source>Limit cell size by atom count</source>
+        <translation type="vanished">按原子数限制晶胞大小</translation>
+    </message>
+    <message>
+        <source>Fixed axes:</source>
+        <translation type="vanished">固定轴：</translation>
+    </message>
+    <message>
+        <source>Keep selected axes at a fixed multiplier in all supercell modes</source>
+        <translation type="vanished">在所有超胞模式中将选定轴保持为固定倍数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="40" />
+        <source>Super Cell</source>
+        <translation>扩胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="58" />
+        <source>Expansion basis</source>
+        <translation>扩胞依据</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/super_cell_card.py" line="61" />
-        <source>Scale factors along axes</source>
-        <translation>沿各轴的缩放倍率</translation>
+        <source>Choose explicit repeats, target lattice-vector lengths, or a strict atom limit.</source>
+        <translation>选择指定重复倍率、目标晶格矢量长度或严格原子数上限。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="64" />
-        <source>Super cell</source>
-        <translation>目标超胞</translation>
+        <location filename="../ui/views/_card/super_cell_card.py" line="69" />
+        <source>Repeat factors (a, b, c)</source>
+        <translation>重复倍率（a、b、c）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="70" />
-        <source>Target lattice constant in Å</source>
-        <translation>目标晶格常数（Å）</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="80" />
-        <source>Max atoms</source>
-        <translation>最大原子数</translation>
+        <location filename="../ui/views/_card/super_cell_card.py" line="72" />
+        <source>Each value repeats the complete input cell along one lattice vector.</source>
+        <translation>每个数值表示沿对应晶格矢量完整复制输入晶胞的次数。</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/super_cell_card.py" line="81" />
-        <source>Limit cell size by atom count</source>
-        <translation>按原子数限制晶胞大小</translation>
+        <source>Target lengths (a, b, c)</source>
+        <translation>目标长度（a、b、c）</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/super_cell_card.py" line="84" />
-        <source>Fixed axes:</source>
-        <translation>固定轴：</translation>
+        <source>Integer repeats are derived from the norms of the three input lattice vectors.</source>
+        <translation>根据输入三根晶格矢量的长度计算整数重复倍率。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="85" />
-        <source>Keep selected axes at a fixed multiplier in all supercell modes</source>
-        <translation>在所有超胞模式中将选定轴保持为固定倍数</translation>
+        <location filename="../ui/views/_card/super_cell_card.py" line="88" />
+        <source>At least</source>
+        <translation>至少达到</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="93" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="89" />
+        <source>At most</source>
+        <translation>不超过</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="91" />
+        <source>Length constraint</source>
+        <translation>长度约束</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="95" />
+        <source>At least uses ceiling; at most uses floor, and exact multiples give the same factor. This card cannot shrink a cell, so an input already longer than an at-most target stays unchanged.</source>
+        <translation>“至少达到”向上取整，“不超过”向下取整；恰好整除时两者得到相同倍率。此卡片不能缩小晶胞；若输入长度已超过“不超过”目标，将保留原长度。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="101" />
+        <source>atoms</source>
+        <translation>个原子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="105" />
+        <source>Atom limit</source>
+        <translation>原子数上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="109" />
+        <source>A strict upper bound. Single output first maximizes atom count; ties minimize the longest/shortest output-vector ratio. A limit below the input atom count is invalid.</source>
+        <translation>这是严格上限。单输出先最大化原子数；若并列，再最小化输出晶格矢量的最长/最短比。上限小于输入原子数时无法扩胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="115" />
+        <source>One supercell</source>
+        <translation>单个超胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="116" />
+        <source>Enumerate sizes</source>
+        <translation>枚举尺寸</translation>
+    </message>
+    <message>
+        <source>Outputs per input</source>
+        <translation type="vanished">每个输入的输出数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="118" />
+        <source>Output mode</source>
+        <translation>输出方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="121" />
+        <source>Enumeration includes every integer repeat combination up to the selected target.</source>
+        <translation>枚举会包含不超过所选目标的全部整数重复倍率组合。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="125" />
+        <source>Expansion strategy</source>
+        <translation>扩胞策略</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="127" />
+        <source>The operation only repeats complete cells; it never strains lattice vectors.</source>
+        <translation>此操作只完整复制晶胞，不会对晶格矢量施加应变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="145" />
         <source>a</source>
         <translation>a</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="94" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="146" />
         <source>b</source>
         <translation>b</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="95" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="147" />
         <source>c</source>
         <translation>c</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="97" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="156" />
+        <source>Lock lattice-vector repeats</source>
+        <translation>锁定晶格矢量倍率</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="159" />
+        <source>A locked axis ignores the active target and uses its multiplier below.</source>
+        <translation>被锁定的轴忽略当前目标，直接使用下方对应倍率。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="167" />
+        <source>Locked multipliers (a, b, c)</source>
+        <translation>固定倍率（a、b、c）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="173" />
+        <source>Axis overrides</source>
+        <translation>轴向覆盖</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="175" />
+        <source>Useful for slabs: lock the non-periodic normal while expanding in-plane.</source>
+        <translation>适用于 slab：锁定非周期法向，只扩展面内方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="182" />
+        <source>Output preview</source>
+        <translation>输出预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="239" />
+        <source>Enumeration lists every feasible integer repeat triple and stops above 1000 outputs.</source>
+        <translation>枚举会列出全部可行整数倍率组合；超过 1000 个输出时停止并报错。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="241" />
+        <source>Enumeration includes every integer repeat combination from 1 up to the target factors.</source>
+        <translation>枚举会包含从 1 到目标倍率的全部整数重复组合。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="272" />
+        <source>Per input: {count} output(s); largest repeat is {a} × {b} × {c}; atom count scales by {factor}.</source>
+        <translation>每个输入：{count} 个输出；最大倍率为 {a} × {b} × {c}；原子数变为原来的 {factor} 倍。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="284" />
+        <source>Attach an input structure to resolve exact repeat factors and atom counts.</source>
+        <translation>连接输入结构后可计算准确倍率和原子数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="294" />
+        <source>First input: {count} output(s); largest repeat is {a} × {b} × {c}; {input_atoms} → {output_atoms} atoms.</source>
+        <translation>首个输入：{count} 个输出；最大倍率为 {a} × {b} × {c}；原子数 {input_atoms} → {output_atoms}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="320" />
+        <source>{a:g} × {b:g} × {c:g} Å</source>
+        <translation>{a:g} × {b:g} × {c:g} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="324" />
+        <source>≤ {count} atoms</source>
+        <translation>≤ {count} 个原子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="325" />
+        <source>{mode} · {detail} · {outputs}</source>
+        <translation>{mode} · {detail} · {outputs}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/super_cell_card.py" line="333" />
+        <source>Supercell repeats use lattice vectors a, b, and c, not Cartesian x, y, and z. Lock a non-periodic slab normal explicitly before expanding in-plane.</source>
+        <translation>超胞倍率沿晶格矢量 a、b、c，而不是 Cartesian x、y、z。扩展 slab 面内尺寸前，请明确锁定非周期法向。</translation>
+    </message>
+    <message>
         <source>Lock the a-axis multiplier to the fixed scale below</source>
-        <translation>将 a 轴倍数锁定为下方固定缩放值</translation>
+        <translation type="vanished">将 a 轴倍数锁定为下方固定缩放值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="98" />
         <source>Lock the b-axis multiplier to the fixed scale below</source>
-        <translation>将 b 轴倍数锁定为下方固定缩放值</translation>
+        <translation type="vanished">将 b 轴倍数锁定为下方固定缩放值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="99" />
         <source>Lock the c-axis multiplier to the fixed scale below</source>
-        <translation>将 c 轴倍数锁定为下方固定缩放值</translation>
+        <translation type="vanished">将 c 轴倍数锁定为下方固定缩放值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="105" />
         <source>Fixed scale:</source>
-        <translation>固定倍率：</translation>
+        <translation type="vanished">固定倍率：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="106" />
         <source>Multipliers used for the locked a/b/c axes</source>
-        <translation>锁定 a/b/c 轴使用的倍率</translation>
+        <translation type="vanished">锁定 a/b/c 轴使用的倍率</translation>
     </message>
 </context>
 <context>

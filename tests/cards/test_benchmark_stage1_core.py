@@ -317,14 +317,12 @@ class TestBenchmarkStage1Core(unittest.TestCase):
                 lattice="fcc111",
                 element="Ni",
                 a_range=(3.6, 3.6, 0.1),
-                auto_supercell=False,
-                rep=(2, 2, 2),
                 max_outputs=1,
             )
         )
 
         self.assertEqual(len(frames), 1)
-        self.assertEqual(len(frames[0]), 48)
+        self.assertEqual(len(frames[0]), 6)
         self.assertAlmostEqual(frames[0].get_volume() / len(frames[0]), 11.664, places=12)
         self.assertAlmostEqual(frames[0].cell.angles()[0], 90.0, places=12)
         self.assertIn("Proto(fcc111", frames[0].info.get("Config_type", ""))

@@ -4,10 +4,21 @@
 这些操作拆成卡片，让你把一批可信初始结构扩展成候选池。
 
 ```{toctree}
-:maxdepth: 3
+:maxdepth: 4
 :hidden:
 
-make-dataset-cards/index
+如何选择卡片 <make-dataset-cards/index>
+配方示例 <make-dataset-cards/recipes>
+晶格 <make-dataset-cards/categories/structure-cell>
+结构 <make-dataset-cards/categories/structure>
+表面 <make-dataset-cards/categories/surface>
+缺陷 <make-dataset-cards/categories/defect-surface>
+扰动 <make-dataset-cards/categories/deformation-perturbation>
+合金与组分 <make-dataset-cards/categories/composition-alloy>
+磁性 <make-dataset-cards/categories/magnetism>
+分子与溶剂 <make-dataset-cards/categories/molecule-solvation>
+筛选 <make-dataset-cards/categories/filter-sampling>
+容器 <make-dataset-cards/categories/workflow-metadata>
 ```
 
 它的输出通常还不是最终训练集。更稳的路线是：
@@ -54,22 +65,6 @@ Super Cell → Lattice Strain → Atomic Perturb
 如果同一个输入结构要走多条分支，例如一支做表面、一支做空位，可以用 `Card Group`。
 组内卡片共享同一输入，输出再汇总。
 
-## 第一次选哪张卡
-
-| 目标 | 先看这些卡 |
-| --- | --- |
-| 扩大晶胞 | `Super Cell` |
-| 从标准晶体原型开始 | `Crystal Prototype Builder` |
-| 补弹性响应 | `Lattice Strain` / `Shear Matrix Strain` / `Shear Angle Strain` |
-| 补四方相变或层错 / GSFE 路径 | `Bain Path` / `Stacking Fault / GSFE Path` |
-| 补近平衡扰动 | `Atomic Perturb` / `Vibration Perturb` |
-| 做缺陷 | `Random Vacancy` / `Vacancy Defect` / `Insert Defect` |
-| 做表面或层错 | `Random Slab` / `Stacking Fault / GSFE Path` |
-| 做合金或占位变化 | `Random Doping` / `Random Occupancy` / `Composition Space Sampling` |
-| 做磁性构型 | `Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral` |
-
-完整选择表见 [生成数据集卡片手册](make-dataset-cards/index.md)。
-
 ## 什么时候导出
 
 每张卡运行后都应该先看输出数量。数量符合预期，再导出为中间文件，例如：
@@ -82,28 +77,12 @@ candidate_pool_fps.xyz
 
 这样后续发现问题时，可以追溯到底是生成阶段、清洗阶段还是采样阶段引入的。
 
-## FPS Filter 放在哪里
-
-`FPS Filter` 适合在候选结构已经基本干净后做代表性采样。它不负责判断结构是否物理合理。
-
-如果候选池来自强扰动、随机缺陷、表面切片或随机占位，建议先导出候选结构，
-到 `NEP Dataset Display` 里清洗，再回来或继续使用 `FPS Filter` 采样。
-
-完整流程见 [候选结构清洗后再进入 DFT](../workflows/clean-candidate-structures.md)。
-
 ## 保存和恢复工作区
 
 顶部 `Save` / `Load` 会把当前工作区的卡片顺序、参数和启停状态保存成 JSON。
 这适合保存一条可复用的生成方案，例如“某个合金体系的缺陷候选池生成流程”。
 
 保存工作区不等于保存生成结构。结构结果仍需要从卡片导出。
-
-## 文档入口
-
-- [快速开始](../quickstart.md)：从安装到生成第一批候选结构。
-- [选择卡片与查看参考](make-dataset-cards/index.md)：按目标选卡、易混卡片对比，并按功能进入每张卡的参考页。
-- [配方示例](make-dataset-cards/recipes.md)：多卡组合示例。
-- [自定义卡片开发](custom-card-development.md)：把已有脚本封装成 生成数据集卡片。
 
 ## 从文档 JSON 直接创建卡片
 

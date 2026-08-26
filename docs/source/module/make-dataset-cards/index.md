@@ -1,4 +1,4 @@
-# 选择生成数据集卡片
+# 如何选择卡片
 
 这页先帮你选对卡片。选定后，再进入对应分类查看输入前提、参数、输出和检查方法：
 
@@ -6,39 +6,10 @@
 - 这张卡在什么场景下值得加
 - 输出后我该怎么看结果是否合理
 
-```{toctree}
-:maxdepth: 1
-:hidden:
-
-recipes
-categories/structure-cell
-categories/deformation-perturbation
-categories/composition-alloy
-categories/defect-surface
-categories/magnetism
-categories/molecule-solvation
-categories/filter-sampling
-categories/workflow-metadata
-```
-
 ```{contents} 本页目录
 :local:
 :depth: 1
 ```
-
-## 快速上手路径
-
-如果你是第一次使用“生成数据集”，推荐先按下面顺序理解：
-
-1. 先看“按目标选卡”，确定主卡片。
-2. 再看对应卡片页里的“操作示例”，确认参数量级。
-3. 最后参考 [配方示例（Recipes）](recipes.md) 组织多卡流程。
-
-:::{tip}
-涉及 `FPS Filter` 的高通量流程，通常先导出 `xyz`，在 `NEP Dataset Display`
-里清洗明显异常结构，再做代表性采样。清洗时可以用内置 NEP89 或当前体系已有模型做预筛，
-但不要把它们当作 DFT 标签。`FPS Filter` 本身适合做末端代表性筛选，不适合替代结构生成卡片。
-:::
 
 ## 30 秒确定方向
 
@@ -46,16 +17,18 @@ categories/workflow-metadata
 
 ```text
 没有初始结构
-├─ 从标准晶型开始 → 晶体原型构建
-└─ 从随机坐标开始 → 随机原子堆积
+└─ 从标准晶型开始 → 晶体原型构建
 
 已经有初始结构
-├─ 改晶胞或坐标 → 晶胞、应变与扰动
-├─ 改元素和组成 → 合金与组成
-├─ 改原子数或表面 → 缺陷与表面
-├─ 改磁矩 → 磁性构型
+├─ 改晶胞 → 晶格
+├─ 重排坐标或复制层状结构 → 结构
+├─ 生成自由表面 → 表面
+├─ 加随机位移或模态位移 → 扰动
+├─ 改元素和组成 → 合金与组分
+├─ 删位、插入原子、吸附或层错 → 缺陷
+├─ 改磁矩 → 磁性
 ├─ 做分子或溶剂 → 分子与溶剂
-└─ 不再生成，只想清洗或选代表结构 → 过滤与采样
+└─ 不再生成，只想清洗或选代表结构 → 筛选
 ```
 
 如果一条任务跨越多步，例如“生成表面并加入吸附原子”，先找改变边界条件的主卡，
@@ -178,14 +151,16 @@ categories/workflow-metadata
 
 | 我正在处理什么 | 进入这里 |
 | --- | --- |
-| 初始结构、晶胞大小或层状结构 | [结构来源与晶胞](categories/structure-cell.md) |
-| 应变、相变路径、原子或模态扰动 | [应变、路径与扰动](categories/deformation-perturbation.md) |
-| 合金原型、配比、占位或替换 | [合金与组成](categories/composition-alloy.md) |
-| 表面、空位、插隙、吸附或层错 | [缺陷与表面](categories/defect-surface.md) |
-| 共线、非共线和空间相关磁构型 | [磁性构型](categories/magnetism.md) |
+| 晶格、晶胞、应变或相变路径 | [晶格](categories/structure-cell.md) |
+| 随机原子坐标或层状结构 | [结构](categories/structure.md) |
+| 生成自由表面 | [表面](categories/surface.md) |
+| 空位、插隙、吸附或层错 | [缺陷](categories/defect-surface.md) |
+| 原子坐标或振动模态扰动 | [扰动](categories/deformation-perturbation.md) |
+| 合金原型、配比、占位、分组或替换 | [合金与组分](categories/composition-alloy.md) |
+| 共线、非共线和空间相关磁构型 | [磁性](categories/magnetism.md) |
 | 有机构象、局部溶剂壳和周期溶剂盒 | [分子与溶剂](categories/molecule-solvation.md) |
-| 几何清洗或代表性采样 | [过滤与代表性采样](categories/filter-sampling.md) |
-| 分组标签、分支和输出合并 | [工作流与元数据](categories/workflow-metadata.md) |
+| 几何清洗或代表性采样 | [筛选](categories/filter-sampling.md) |
+| 分支和输出合并 | [容器](categories/workflow-metadata.md) |
 
 旧版 `Stacking Fault` 只用于载入历史 JSON，不再属于新任务的卡片目录。迁移方法见
 [旧版层错位移](cards/stacking-fault-card.md)。

@@ -1,12 +1,11 @@
-# 缺陷与表面
+# 缺陷
 
-这组卡片改变表面边界或原子数，也包含显式层错路径。表面生成、删位、插入原子和层间滑移
-是不同操作；需要组合时，按“先构造边界，再引入局部缺陷”的顺序执行。
+与卡片 UI 的“缺陷”分组一致。这些卡片负责删位、插入原子、加入吸附原子或生成层错路径。
+自由表面的构造单独放在“表面”分组；表面缺陷通常先建表面，再接这里的局部操作。
 
 ```{toctree}
 :maxdepth: 1
 
-../cards/random-slab-card
 ../cards/random-vacancy-card
 ../cards/vacancy-defect-card
 ../cards/interstitial-adsorbate-card

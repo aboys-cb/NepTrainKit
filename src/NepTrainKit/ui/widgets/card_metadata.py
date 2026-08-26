@@ -105,7 +105,10 @@ def _localized_catalog(_language_marker: str):
         ),
         "CrystalPrototypeBuilderCard": (
             QCoreApplication.translate("CardCatalog", "Crystal Prototype Builder"),
-            QCoreApplication.translate("CardCatalog", "Generate simple bulk crystal prototypes without requiring input structures."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Generate fully periodic single-element FCC, BCC, HCP, or FCC (111)-oriented base cells; add Super Cell afterward when expansion is needed.",
+            ),
         ),
         "FiniteCellAlloyOccupancyCard": (
             QCoreApplication.translate("CardCatalog", "Finite-Cell Alloy Occupancy"),
@@ -290,7 +293,11 @@ def _localized_catalog(_language_marker: str):
         ),
         "SuperCellCard": (
             QCoreApplication.translate("CardCatalog", "Super Cell"),
-            QCoreApplication.translate("CardCatalog", "Create supercells from fixed scale factors, target lattice lengths, or atom limits."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Repeat complete input cells along lattice vectors using explicit factors, "
+                "target lengths, or a strict atom budget.",
+            ),
         ),
         "VacancyDefectCard": (
             QCoreApplication.translate("CardCatalog", "Global Random Vacancy"),

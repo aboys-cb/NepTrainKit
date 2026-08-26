@@ -10,11 +10,11 @@ from typing import Any
 
 import numpy as np
 from ase import Atoms
-from ase.build import bulk, fcc111, make_supercell
+from ase.build import bulk, fcc111
+from ase.data import atomic_numbers
 from ase.geometry import get_distances
 from loguru import logger
 
-from NepTrainKit.core.alloy import best_supercell_factors_max_atoms
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.config_type import stable_config_id
 from NepTrainKit.core.magnetism import kvec_signs, parse_kvec
@@ -28,6 +28,7 @@ from NepTrainKit.core.torsion_guard_pbc import (
 )
 
 from .geometry import scaled_positions, wrapped_positions as fast_wrapped_positions
+from .errors import CardOperationError
 from .operation import GeneratorOperation, StructureOperation
 
 
@@ -1169,45 +1170,78 @@ class CrystalPrototypeBuilderParams:
     element: str = "Cu"
     a_range: tuple[float, float, float] = (3.6, 3.6, 0.1)
     covera: float = 1.633
-    auto_supercell: bool = True
-    max_atoms: int = 512
-    rep: tuple[int, int, int] = (4, 4, 4)
     max_outputs: int = 200
+
+
+@dataclass(frozen=True)
+class CrystalPrototypePlan:
+    """Exact output plan for a crystal-prototype request."""
+
+    a_values: tuple[float, ...]
+    atoms_per_output: int
+    cell_lengths: tuple[float, float, float]
+    truncated: bool
 
 
 class CrystalPrototypeBuilderOperation(GeneratorOperation):
     """Generate fcc/bcc/hcp prototype structures without input data."""
 
     def generate(self, params: CrystalPrototypeBuilderParams) -> list:
+        plan = self.plan(params)
         element = self._canonical_element(params.element)
         lattice = params.lattice.strip().lower()
         out = []
-        supercell_factors = None
-        for a in self._a_values(params.a_range):
-            base = self._build_base(element, lattice, float(a), float(params.covera))
-            base.pbc = True
-            base.set_positions(fast_wrapped_positions(base, base.positions))
-
-            if params.auto_supercell:
-                if supercell_factors is None:
-                    supercell_factors = best_supercell_factors_max_atoms(base, int(params.max_atoms))
-                na, nb, nc = supercell_factors.na, supercell_factors.nb, supercell_factors.nc
-            else:
-                na, nb, nc = [int(value) for value in params.rep]
-
-            matrix = np.diag([max(na, 1), max(nb, 1), max(nc, 1)])
-            atoms = make_supercell(base, matrix)
+        for a in plan.a_values[: int(params.max_outputs)]:
+            atoms = self._build_base(element, lattice, float(a), float(params.covera))
+            atoms.pbc = True
             atoms.set_positions(fast_wrapped_positions(atoms, atoms.positions))
-            append_config_tag(atoms, f"Proto({lattice},a={float(a):.6g},rep={int(na)}x{int(nb)}x{int(nc)})")
+            append_config_tag(atoms, f"Proto({lattice},a={float(a):.6g})")
             out.append(atoms)
             if len(out) >= int(params.max_outputs):
                 break
         return out
 
+    def plan(self, params: CrystalPrototypeBuilderParams) -> CrystalPrototypePlan:
+        """Validate parameters and return the exact base-cell/count preview."""
+        element = self._canonical_element(params.element)
+        lattice = params.lattice.strip().lower()
+        if lattice not in {"fcc", "bcc", "hcp", "fcc111"}:
+            raise CardOperationError(
+                "crystal-prototype-lattice",
+                "Unsupported crystal prototype: {lattice}.",
+                lattice=params.lattice,
+            )
+        a_values = tuple(self._a_values(params.a_range))
+        max_outputs = int(params.max_outputs)
+        if max_outputs < 1:
+            raise CardOperationError(
+                "crystal-prototype-output-limit",
+                "Maximum outputs must be at least 1.",
+            )
+        if lattice == "hcp" and (not math.isfinite(float(params.covera)) or float(params.covera) <= 0):
+            raise CardOperationError(
+                "crystal-prototype-covera",
+                "The hcp c/a ratio must be a positive finite number.",
+            )
+
+        base = self._build_base(element, lattice, a_values[0], float(params.covera))
+        return CrystalPrototypePlan(
+            a_values=a_values,
+            atoms_per_output=len(base),
+            cell_lengths=tuple(float(value) for value in base.cell.lengths()),
+            truncated=len(a_values) > max_outputs,
+        )
+
     @staticmethod
     def _canonical_element(element: str) -> str:
-        element = element.strip() or "Cu"
-        return element[0].upper() + element[1:].lower()
+        raw = element.strip()
+        canonical = raw[0].upper() + raw[1:].lower() if raw else ""
+        if not canonical or atomic_numbers.get(canonical, 0) <= 0:
+            raise CardOperationError(
+                "crystal-prototype-element",
+                "Enter one valid chemical element symbol, for example Cu, Fe, or Mg.",
+            )
+        return canonical
 
     @staticmethod
     def _build_base(element: str, lattice: str, a: float, covera: float):
@@ -1220,8 +1254,21 @@ class CrystalPrototypeBuilderOperation(GeneratorOperation):
     @staticmethod
     def _a_values(values: tuple[float, float, float]) -> list[float]:
         a_min, a_max, a_step = [float(value) for value in values]
+        if not all(math.isfinite(value) for value in (a_min, a_max, a_step)):
+            raise CardOperationError(
+                "crystal-prototype-a-finite",
+                "The lattice-constant range must contain finite numbers.",
+            )
+        if a_min <= 0 or a_max <= 0:
+            raise CardOperationError(
+                "crystal-prototype-a-positive",
+                "Lattice constants must be positive.",
+            )
         if a_step <= 0:
-            return [a_min]
+            raise CardOperationError(
+                "crystal-prototype-a-step",
+                "The lattice-constant step must be positive.",
+            )
         if a_max < a_min:
             a_min, a_max = a_max, a_min
         if abs(a_max - a_min) <= 1e-12:

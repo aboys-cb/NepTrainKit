@@ -2,6 +2,7 @@ import tempfile
 
 from NepTrainKit.core.io.importers import import_structures
 from NepTrainKit.core.magnetism import parse_magmom_map_any
+from NepTrainKit.ui.views._card.i18n_utils import set_combo_value
 
 from .magnetism_test_base import *
 
@@ -15,14 +16,11 @@ class TestMagnetismOrderCards(MagnetismCardTest):
 
     def test_magnetic_order_card_fm_afm(self):
         proto = CrystalPrototypeBuilderCard()
-        proto.structure_combo.setCurrentText("bcc")
+        set_combo_value(proto.structure_combo, "bcc")
         proto.element_edit.setText("Fe")
         proto.a_frame.set_input_value([2.9, 2.9, 0.1])
-        proto.manual_supercell_button.setChecked(True)
-        proto.auto_supercell_button.setChecked(False)
-        proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.create_operation().generate(proto.get_params())[0]
+        base = proto.create_operation().generate(proto.get_params())[0].repeat((2, 2, 2))
 
         card = MagneticOrderCard()
         card.map_edit.setText("Fe:2.2")
@@ -161,11 +159,9 @@ class TestMagnetismOrderCards(MagnetismCardTest):
                 lattice="bcc",
                 element="Fe",
                 a_range=(2.9, 2.9, 0.1),
-                auto_supercell=False,
-                rep=(4, 4, 4),
                 max_outputs=1,
             )
-        )[0]
+        )[0].repeat((4, 4, 4))
         params = MagneticOrderParams(
             magmom_map="Fe:2.2",
             gen_fm=False,
@@ -201,11 +197,9 @@ class TestMagnetismOrderCards(MagnetismCardTest):
                 lattice="bcc",
                 element="Fe",
                 a_range=(2.9, 2.9, 0.1),
-                auto_supercell=False,
-                rep=(2, 2, 2),
                 max_outputs=1,
             )
-        )[0]
+        )[0].repeat((2, 2, 2))
         result = MagneticOrderOperation().run_structure(
             structure,
             MagneticOrderParams(
@@ -481,14 +475,11 @@ class TestMagnetismOrderCards(MagnetismCardTest):
 
     def test_magnetic_order_card_noncollinear_pm(self):
         proto = CrystalPrototypeBuilderCard()
-        proto.structure_combo.setCurrentText("fcc")
+        set_combo_value(proto.structure_combo, "fcc")
         proto.element_edit.setText("Ni")
         proto.a_frame.set_input_value([3.5, 3.5, 0.1])
-        proto.manual_supercell_button.setChecked(True)
-        proto.auto_supercell_button.setChecked(False)
-        proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.create_operation().generate(proto.get_params())[0]
+        base = proto.create_operation().generate(proto.get_params())[0].repeat((2, 2, 2))
 
         card = MagneticOrderCard()
         card.format_combo.setCurrentIndex(1)
@@ -630,14 +621,11 @@ class TestMagnetismOrderCards(MagnetismCardTest):
 
     def test_magmom_rotation_lifts_scalar_to_vector(self):
         proto = CrystalPrototypeBuilderCard()
-        proto.structure_combo.setCurrentText("bcc")
+        set_combo_value(proto.structure_combo, "bcc")
         proto.element_edit.setText("Fe")
         proto.a_frame.set_input_value([2.9, 2.9, 0.1])
-        proto.manual_supercell_button.setChecked(True)
-        proto.auto_supercell_button.setChecked(False)
-        proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.create_operation().generate(proto.get_params())[0]
+        base = proto.create_operation().generate(proto.get_params())[0].repeat((2, 2, 2))
 
         order = MagneticOrderCard()
         order.format_combo.setCurrentIndex(0)

@@ -121,10 +121,10 @@ class TestOperationRegressionEdges(BaseCardTest):
                 self.structure,
                 PerturbParams(engine_type=7, max_num=1),
             )
-        with self.assertRaisesRegex(ValueError, "behavior_type"):
+        with self.assertRaisesRegex(ValueError, "output_mode"):
             SuperCellOperation().run_structure(
                 self.structure,
-                SuperCellParams(behavior_type=7),
+                SuperCellParams(output_mode="typo"),  # type: ignore[arg-type]
             )
         with self.assertRaisesRegex(ValueError, "mode must be"):
             SuperCellOperation().run_structure(

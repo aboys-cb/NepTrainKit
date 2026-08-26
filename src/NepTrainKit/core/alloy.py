@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from dataclasses import dataclass
 from typing import Iterable, Mapping
@@ -394,18 +395,33 @@ def best_supercell_factors_max_atoms(atoms: Atoms, max_atoms: int) -> SupercellF
     a_len, b_len, c_len = atoms.cell.lengths()
     base_lengths = np.array([a_len, b_len, c_len], dtype=float)
 
+    def positive_divisors(value: int) -> list[int]:
+        small = []
+        large = []
+        root = int(math.isqrt(value))
+        for divisor in range(1, root + 1):
+            if value % divisor != 0:
+                continue
+            small.append(divisor)
+            paired = value // divisor
+            if paired != divisor:
+                large.append(paired)
+        return small + large[::-1]
+
+    # ``(max_n, 1, 1)`` is always feasible, so the primary atom-count
+    # objective is exactly ``base_n * max_n``.  Only factor triples whose
+    # product is ``max_n`` can win; enumerate those divisors instead of the
+    # former O(max_n^3) cube while preserving the same score and tie-break.
     best: tuple[int, float, tuple[int, int, int]] | None = None
-    for na in range(1, max_n + 1):
-        for nb in range(1, max_n + 1):
-            for nc in range(1, max_n + 1):
-                total = base_n * na * nb * nc
-                if total > max_atoms:
-                    continue
-                lengths = base_lengths * np.array([na, nb, nc], dtype=float)
-                aspect = float(lengths.max() / max(lengths.min(), 1e-12))
-                score = (int(total), -aspect, (na, nb, nc))
-                if best is None or score > best:
-                    best = score
+    for na in positive_divisors(max_n):
+        remaining = max_n // na
+        for nb in positive_divisors(remaining):
+            nc = remaining // nb
+            lengths = base_lengths * np.array([na, nb, nc], dtype=float)
+            aspect = float(lengths.max() / max(lengths.min(), 1e-12))
+            score = (int(base_n * max_n), -aspect, (na, nb, nc))
+            if best is None or score > best:
+                best = score
     if best is None:
         return SupercellFactors(1, 1, 1)
     _, _, (na, nb, nc) = best

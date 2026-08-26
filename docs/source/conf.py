@@ -88,9 +88,8 @@ language = {
 
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
-    # Keep the global sidebar as a document tree.  Page-local headings belong
-    # in the page's own contents block; mixing both makes long reference pages
-    # unreadable in the navigation.
+    # Keep the generated tree limited to document titles.  The docs script
+    # adds only the current page's H2 headings beneath its active node.
     'collapse_navigation': True,
     'navigation_depth': 5,
     'includehidden': True,

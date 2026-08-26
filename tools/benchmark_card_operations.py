@@ -293,7 +293,7 @@ def build_cases() -> list[BenchCase]:
         BenchCase(
             "lattice",
             "SuperCell:max_atoms",
-            run_structure(SuperCellOperation(), si, SuperCellParams(behavior_type=1, mode="max_atoms", max_atoms=512)),
+            run_structure(SuperCellOperation(), si, SuperCellParams(mode="max_atoms", max_atoms=512)),
             require_count_and_tag(1, "SC("),
         ),
         BenchCase(

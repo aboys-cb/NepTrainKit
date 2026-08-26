@@ -14,8 +14,8 @@ from scipy.stats.qmc import Sobol
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 
-from .geometry import wrapped_positions as fast_wrapped_positions
 from .errors import CardOperationError
+from .geometry import wrapped_positions as fast_wrapped_positions
 from .operation import StructureOperation
 from .sampling import derived_structure_seed
 
@@ -515,14 +515,17 @@ class PerturbOperation(StructureOperation):
 
 
 SuperCellMode = Literal["scale", "cell", "max_atoms"]
+SuperCellOutputMode = Literal["single", "enumerate"]
+SuperCellTargetPolicy = Literal["at_least", "at_most"]
 
 
 @dataclass(frozen=True)
 class SuperCellParams:
     """Parameters for supercell generation."""
 
-    behavior_type: int = 0
     mode: SuperCellMode = "scale"
+    output_mode: SuperCellOutputMode = "single"
+    target_policy: SuperCellTargetPolicy = "at_least"
     super_scale: tuple[int, int, int] = (3, 3, 3)
     target_cell: tuple[float, float, float] = (20.0, 20.0, 20.0)
     max_atoms: int = 100
@@ -533,9 +536,19 @@ class SuperCellParams:
 class SuperCellOperation(StructureOperation):
     """Create supercells without depending on Qt widget state."""
 
+    MAX_ENUMERATED_OUTPUTS = 1000
+
     def run_structure(self, structure, params: SuperCellParams) -> list:
-        if int(params.behavior_type) not in {0, 1, 2}:
-            raise ValueError("SuperCell: behavior_type must be 0, 1, or 2.")
+        expansion_factors = self.plan_factors(structure, params)
+        return [self._make_supercell_or_copy(structure, factors) for factors in expansion_factors]
+
+    def plan_factors(
+        self,
+        structure,
+        params: SuperCellParams,
+    ) -> list[tuple[int, int, int]]:
+        """Return the exact integer repeat factors without building output structures."""
+        self._validate_params(structure, params)
         if params.mode == "scale":
             expansion_factors = self._get_scale_factors(params)
         elif params.mode == "cell":
@@ -546,7 +559,59 @@ class SuperCellOperation(StructureOperation):
             raise ValueError("SuperCell: mode must be scale, cell, or max_atoms.")
 
         expansion_factors = self._dedupe_factors(expansion_factors, params)
-        return self._generate_structures(structure, expansion_factors, params)
+        if params.output_mode == "single":
+            expansion_factors = [self._select_single_factor(structure, expansion_factors)]
+        elif len(expansion_factors) > self.MAX_ENUMERATED_OUTPUTS:
+            raise CardOperationError(
+                "supercell_too_many_outputs",
+                "Supercell enumeration would create {count} structures; the limit is {limit}. "
+                "Use single-output mode or reduce the requested size.",
+                count=len(expansion_factors),
+                limit=self.MAX_ENUMERATED_OUTPUTS,
+            )
+        return expansion_factors
+
+    def _validate_params(self, structure, params: SuperCellParams) -> None:
+        if params.mode not in {"scale", "cell", "max_atoms"}:
+            raise ValueError("SuperCell: mode must be scale, cell, or max_atoms.")
+        if params.output_mode not in {"single", "enumerate"}:
+            raise ValueError("SuperCell: output_mode must be single or enumerate.")
+        if params.target_policy not in {"at_least", "at_most"}:
+            raise ValueError("SuperCell: target_policy must be at_least or at_most.")
+        if len(structure) <= 0:
+            raise CardOperationError(
+                "supercell_empty_input",
+                "Supercell generation requires an input structure with at least one atom.",
+            )
+        active_triplets = [("fixed_axis_scale", params.fixed_axis_scale)]
+        if params.mode == "scale":
+            active_triplets.append(("super_scale", params.super_scale))
+        elif params.mode == "cell":
+            active_triplets.append(("target_cell", params.target_cell))
+        for name, values in active_triplets:
+            if len(values) != 3 or not np.all(np.isfinite(values)):
+                raise ValueError(f"SuperCell: {name} must contain three finite values.")
+        if params.mode == "scale" and any(int(value) < 1 for value in params.super_scale):
+            raise ValueError("SuperCell: super_scale values must be positive integers.")
+        if params.mode == "cell" and any(float(value) <= 0.0 for value in params.target_cell):
+            raise ValueError("SuperCell: target_cell values must be positive.")
+        if any(int(value) < 1 for value in params.fixed_axis_scale):
+            raise ValueError("SuperCell: fixed_axis_scale values must be positive integers.")
+        if len(params.fixed_axis_flags) != 3:
+            raise ValueError("SuperCell: fixed_axis_flags must contain three values.")
+        cell_lengths = np.asarray(structure.cell.lengths(), dtype=float)
+        if not np.all(np.isfinite(cell_lengths)) or np.any(cell_lengths <= 0.0):
+            raise CardOperationError(
+                "supercell_invalid_cell",
+                "Supercell generation requires three finite, non-zero lattice vectors.",
+            )
+        if params.mode == "max_atoms" and int(params.max_atoms) < len(structure):
+            raise CardOperationError(
+                "supercell_atom_budget_below_input",
+                "The atom limit ({limit}) is smaller than the input structure ({input_atoms} atoms).",
+                limit=int(params.max_atoms),
+                input_atoms=len(structure),
+            )
 
     def _apply_fixed_axes(
         self,
@@ -588,7 +653,16 @@ class SuperCellOperation(StructureOperation):
 
     def _get_scale_factors(self, params: SuperCellParams) -> list[tuple[int, int, int]]:
         na, nb, nc = params.super_scale
-        return [self._apply_fixed_axes((int(na), int(nb), int(nc)), params)]
+        scale_factors = self._apply_fixed_axes((int(na), int(nb), int(nc)), params)
+        if params.output_mode == "single":
+            return [scale_factors]
+        axis_values = self._get_iteration_axis_values(scale_factors, params)
+        return [
+            (na, nb, nc)
+            for na in axis_values[0]
+            for nb in axis_values[1]
+            for nc in axis_values[2]
+        ]
 
     def _get_cell_factors(self, structure, params: SuperCellParams) -> list[tuple[int, int, int]]:
         target_a, target_b, target_c = params.target_cell
@@ -597,18 +671,27 @@ class SuperCellOperation(StructureOperation):
         b_len = np.linalg.norm(lattice[1])
         c_len = np.linalg.norm(lattice[2])
 
-        if params.behavior_type == 2:
-            na = self._fixed_or_minimum_factor(0, target_a, a_len, params)
-            nb = self._fixed_or_minimum_factor(1, target_b, b_len, params)
-            nc = self._fixed_or_minimum_factor(2, target_c, c_len, params)
+        if params.target_policy == "at_least":
+            na = self._fixed_or_at_least_factor(0, target_a, a_len, params)
+            nb = self._fixed_or_at_least_factor(1, target_b, b_len, params)
+            nc = self._fixed_or_at_least_factor(2, target_c, c_len, params)
         else:
-            na = self._fixed_or_maximum_factor(0, target_a, a_len, params)
-            nb = self._fixed_or_maximum_factor(1, target_b, b_len, params)
-            nc = self._fixed_or_maximum_factor(2, target_c, c_len, params)
+            na = self._fixed_or_at_most_factor(0, target_a, a_len, params)
+            nb = self._fixed_or_at_most_factor(1, target_b, b_len, params)
+            nc = self._fixed_or_at_most_factor(2, target_c, c_len, params)
 
-        return [(max(na, 1), max(nb, 1), max(nc, 1))]
+        factors = (max(na, 1), max(nb, 1), max(nc, 1))
+        if params.output_mode == "single":
+            return [factors]
+        axis_values = self._get_iteration_axis_values(factors, params)
+        return [
+            (na, nb, nc)
+            for na in axis_values[0]
+            for nb in axis_values[1]
+            for nc in axis_values[2]
+        ]
 
-    def _fixed_or_minimum_factor(
+    def _fixed_or_at_least_factor(
         self,
         axis: int,
         target: float,
@@ -617,9 +700,9 @@ class SuperCellOperation(StructureOperation):
     ) -> int:
         if params.fixed_axis_flags[axis]:
             return int(params.fixed_axis_scale[axis])
-        return int(target / length) + 1 if length > 0 else 1
+        return max(int(np.ceil(float(target) / float(length) - 1e-12)), 1)
 
-    def _fixed_or_maximum_factor(
+    def _fixed_or_at_most_factor(
         self,
         axis: int,
         target: float,
@@ -628,79 +711,112 @@ class SuperCellOperation(StructureOperation):
     ) -> int:
         if params.fixed_axis_flags[axis]:
             return int(params.fixed_axis_scale[axis])
-        value = max(int(target / length) if length > 0 else 0, 1)
-        if value * length > target and value > 1:
-            value -= 1
-        return value
+        return max(int(np.floor(float(target) / float(length) + 1e-12)), 1)
 
     def _get_max_atoms_factors(self, structure, params: SuperCellParams) -> list[tuple[int, int, int]]:
         num_atoms_orig = len(structure)
-        if num_atoms_orig <= 0:
-            return []
+        max_n = max(int(params.max_atoms // num_atoms_orig), 1)
+        axis_ranges = [
+            range(int(params.fixed_axis_scale[axis]), int(params.fixed_axis_scale[axis]) + 1)
+            if is_fixed
+            else range(1, max_n + 1)
+            for axis, is_fixed in enumerate(params.fixed_axis_flags)
+        ]
 
-        max_n = max(int(params.max_atoms / num_atoms_orig), 1)
-        axis_ranges = []
-        for axis, is_fixed in enumerate(params.fixed_axis_flags):
-            if is_fixed:
-                fixed = int(params.fixed_axis_scale[axis])
-                axis_ranges.append(range(fixed, fixed + 1))
-            else:
-                axis_ranges.append(range(1, max_n + 1))
+        if params.output_mode == "single":
+            best_factor = None
+            best_score = None
+            base_lengths = tuple(float(value) for value in structure.cell.lengths())
+            for na in axis_ranges[0]:
+                for nb in axis_ranges[1]:
+                    remaining = int(params.max_atoms) // (num_atoms_orig * na * nb)
+                    if remaining < 1:
+                        break
+                    nc = (
+                        int(params.fixed_axis_scale[2])
+                        if params.fixed_axis_flags[2]
+                        else min(max_n, remaining)
+                    )
+                    factor = (na, nb, nc)
+                    total_atoms = num_atoms_orig * na * nb * nc
+                    if total_atoms > params.max_atoms:
+                        continue
+                    output_lengths = (
+                        base_lengths[0] * na,
+                        base_lengths[1] * nb,
+                        base_lengths[2] * nc,
+                    )
+                    aspect = max(output_lengths) / min(output_lengths)
+                    score = (total_atoms, -aspect, tuple(-value for value in factor))
+                    if best_score is None or score > best_score:
+                        best_factor = factor
+                        best_score = score
+            if best_factor is None:
+                raise CardOperationError(
+                    "supercell_fixed_axes_over_budget",
+                    "The fixed-axis multipliers require more than the {limit}-atom budget.",
+                    limit=int(params.max_atoms),
+                )
+            return [best_factor]
 
         expansion_factors = []
         for na in axis_ranges[0]:
             for nb in axis_ranges[1]:
-                for nc in axis_ranges[2]:
+                remaining = int(params.max_atoms) // (num_atoms_orig * na * nb)
+                if remaining < 1:
+                    break
+                nc_values = axis_ranges[2]
+                if not params.fixed_axis_flags[2]:
+                    nc_values = range(1, min(max_n, remaining) + 1)
+                for nc in nc_values:
                     total_atoms = num_atoms_orig * na * nb * nc
                     if total_atoms <= params.max_atoms:
                         expansion_factors.append((na, nb, nc))
+                        if len(expansion_factors) > self.MAX_ENUMERATED_OUTPUTS:
+                            raise CardOperationError(
+                                "supercell_too_many_outputs",
+                                "Supercell enumeration would create more than {limit} structures. "
+                                "Use single-output mode or reduce the atom limit.",
+                                limit=self.MAX_ENUMERATED_OUTPUTS,
+                            )
 
-        expansion_factors.sort(key=lambda value: num_atoms_orig * value[0] * value[1] * value[2])
+        if not expansion_factors:
+            raise CardOperationError(
+                "supercell_fixed_axes_over_budget",
+                "The fixed-axis multipliers require more than the {limit}-atom budget.",
+                limit=int(params.max_atoms),
+            )
         return expansion_factors
 
-    def _generate_structures(
+    @staticmethod
+    def _shape_ratio(structure, factors: tuple[int, int, int]) -> float:
+        base_lengths = structure.cell.lengths()
+        lengths = tuple(float(base_lengths[index]) * factors[index] for index in range(3))
+        positive = tuple(length for length in lengths if length > 1e-12)
+        if len(positive) < 2:
+            return float("inf")
+        return max(positive) / min(positive)
+
+    def _select_single_factor(
         self,
         structure,
         expansion_factors: list[tuple[int, int, int]],
-        params: SuperCellParams,
-    ) -> list:
+    ) -> tuple[int, int, int]:
         if not expansion_factors:
-            return [structure.copy()]
+            return (1, 1, 1)
+        return max(
+            expansion_factors,
+            key=lambda factors: (
+                len(structure) * int(np.prod(factors)),
+                -self._shape_ratio(structure, factors),
+                tuple(-value for value in factors),
+            ),
+        )
 
-        structure_list = []
-        if params.behavior_type == 0:
-            na, nb, nc = expansion_factors[-1]
-            if na == 1 and nb == 1 and nc == 1:
-                return [structure.copy()]
-            structure_list.append(self._make_supercell(structure, na, nb, nc))
-
-        elif params.behavior_type == 1:
-            if params.mode == "max_atoms":
-                for na, nb, nc in expansion_factors:
-                    if na == 1 and nb == 1 and nc == 1:
-                        supercell = structure.copy()
-                    else:
-                        supercell = self._make_supercell(structure, na, nb, nc)
-                    structure_list.append(supercell)
-            else:
-                na, nb, nc = expansion_factors[0]
-                a_values, b_values, c_values = self._get_iteration_axis_values((na, nb, nc), params)
-                for i in a_values:
-                    for j in b_values:
-                        for k in c_values:
-                            if i == 1 and j == 1 and k == 1:
-                                supercell = structure.copy()
-                            else:
-                                supercell = self._make_supercell(structure, i, j, k)
-                            structure_list.append(supercell)
-
-        elif params.behavior_type == 2:
-            na, nb, nc = expansion_factors[0]
-            if na == 1 and nb == 1 and nc == 1:
-                return [structure.copy()]
-            structure_list.append(self._make_supercell(structure, na, nb, nc))
-
-        return structure_list
+    def _make_supercell_or_copy(self, structure, factors: tuple[int, int, int]):
+        if factors == (1, 1, 1):
+            return structure.copy()
+        return self._make_supercell(structure, *factors)
 
     def _make_supercell(self, structure, na: int, nb: int, nc: int):
         supercell = make_supercell(structure, np.diag([na, nb, nc]), order="atom-major")

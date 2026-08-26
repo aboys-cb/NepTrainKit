@@ -330,6 +330,22 @@ def _card_operation_error_catalog() -> None:
         "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
         "use Uniform sampling for larger structures.",
     )
+    QCoreApplication.translate("CardOperationError", "Unsupported crystal prototype: {lattice}.")
+    QCoreApplication.translate("CardOperationError", "Maximum outputs must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError", "The hcp c/a ratio must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Enter one valid chemical element symbol, for example Cu, Fe, or Mg.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The lattice-constant range must contain finite numbers."
+    )
+    QCoreApplication.translate("CardOperationError", "Lattice constants must be positive.")
+    QCoreApplication.translate(
+        "CardOperationError", "The lattice-constant step must be positive."
+    )
 
 
 class MessageManager(QObject):

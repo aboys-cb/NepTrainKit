@@ -755,6 +755,8 @@ class _CardCatalogButton(TransparentPushButton):
         self.class_name = class_name
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.setFixedHeight(27)
         self._hover_shadow = QGraphicsDropShadowEffect(self)
         self._hover_shadow.setBlurRadius(14)
@@ -811,7 +813,7 @@ class CardLibraryPopup(FlyoutViewBase):
     """Screen-safe categorized card picker anchored to the Add Card button."""
 
     cardRequested = Signal(str)
-    _COLUMN_COUNT = 3
+    _COLUMN_COUNT = 4
     _GROUP_ICONS = {
         "Alloy": FluentIcon.PIE_SINGLE,
         "Container": FluentIcon.SHARE,
@@ -1042,11 +1044,11 @@ class CardLibraryPopup(FlyoutViewBase):
         if screen is None:
             return
         available = screen.availableGeometry()
-        popup_width = max(320, min(860, available.width() - 24))
-        ideal_height = self._catalog_content_height + 78
+        popup_width = max(320, min(980, available.width() - 24))
+        ideal_height = self._catalog_content_height + 110
         popup_height = max(
             400,
-            min(560, ideal_height, available.height() - 24),
+            min(620, ideal_height, available.height() - 24),
         )
         top_left = anchor.mapToGlobal(QPoint(0, anchor.height() + 6))
         x = min(

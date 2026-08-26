@@ -4,6 +4,9 @@
 
 **分类：** 磁性
 
+> [!WARNING]
+> 这是一张仅用于加载旧工作流的兼容卡片，已从“新建卡片”目录隐藏。单自旋、原子对和分组对扫描请迁移到“局域磁响应”；全局倾斜请迁移到“SOC / 纹理响应”；随机方向采样请使用“磁矩扰动”。
+
 ## 功能说明
 
 对选定目标原子、全局磁序或原子对做确定性小角度磁矩偏转（canting）。支持四种模式：单自旋偏转、Global tilt、显式原子对 canting、两组原子的 group-pair canting。pair 模式显式构造 S_i x S_j 的正/负手性对，可用于研究或验证手性响应；是否学到 DMI 类响应仍需独立验证。Global tilt 用于集体偏转角扫描。
@@ -315,11 +318,11 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 }
 ```
 
-## 推荐组合
+## 旧工作流迁移
 
-- `Set Magnetic Moments` → `Canting Scan`：先统一向量磁矩，再批量生成成对 canting
-- `Magnetic Order` → `Canting Scan`：先生成稳定参考磁态，再做局部 canting
-- `Group Label` → `Magnetic Order` → `Canting Scan`：先分组再切到 `Group pair canting`
+- 单自旋、原子对和分组对扫描：迁移到 `Local Magnetic Response`。
+- 全局倾斜：迁移到 `SOC / Texture Response`。
+- 随机方向采样：迁移到 `Spin Perturb`。
 
 ## 常见问题
 

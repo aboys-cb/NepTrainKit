@@ -87,7 +87,7 @@
 | 生成 FM、AFM 或 PM 分支 | [磁序](cards/magnetic-order-card.md) | AFM 可能需要先做分组标记 |
 | 从有序磁态逐步增加无序度 | [自旋无序](cards/spin-disorder-card.md) | 输入已有有效磁矩 |
 | 生成具有空间相关长度的非共线磁矩 | [关联随机自旋](cards/correlated-random-spin-card.md) | 这是相关随机场，不应直接称为自旋玻璃 |
-| 随机扰动、可控 canting 或生成螺旋磁序 | [磁矩扰动](cards/magmom-rotation-card.md) / [倾斜扫描](cards/small-angle-spin-tilt-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋磁序](cards/folded-helix-card.md) | 不要对没有磁矩的空白结构直接操作 |
+| 随机扰动、局域响应或生成螺旋磁序 | [磁矩扰动](cards/magmom-rotation-card.md) / [局域磁响应](cards/local-magnetic-response-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋磁序](cards/folded-helix-card.md) | 不要对没有磁矩的空白结构直接操作 |
 
 ### 处理分子和溶剂
 

@@ -11,7 +11,6 @@
 ../cards/spin-disorder-card
 ../cards/correlated-random-spin-card
 ../cards/magmom-rotation-card
-../cards/small-angle-spin-tilt-card
 ../cards/spin-spiral-card
 ../cards/folded-helix-card
 ../cards/local-magnetic-response-card

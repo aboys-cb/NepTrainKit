@@ -6,6 +6,25 @@ from .magnetism_test_base import *
 
 
 class TestMagnetismTiltDisorderCards(MagnetismCardTest):
+    def test_retired_canting_card_remains_loadable_with_migration_guidance(self):
+        self.assertFalse(SmallAngleSpinTiltCard.discoverable)
+
+        card = SmallAngleSpinTiltCard()
+        card.from_dict(
+            {
+                "check_state": True,
+                "canting_mode": "Atom pair canting",
+                "pair_left_indices": "1",
+                "pair_right_indices": "2",
+                "angle_list": "5",
+            }
+        )
+
+        self.assertEqual(card.get_params().canting_mode, "Atom pair canting")
+        self.assertEqual(card.get_params().pair_left_indices, "1")
+        self.assertIn("Legacy", card.getTitle())
+        self.assertIn("Local Magnetic Response", card.get_guidance_text())
+
     def test_small_angle_card_fails_closed_for_invalid_moment_map(self):
         card = SmallAngleSpinTiltCard()
         card.source_combo.setCurrentText("Map/default magnitude")

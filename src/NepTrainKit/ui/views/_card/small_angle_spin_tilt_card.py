@@ -17,6 +17,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
 
     group = "Magnetism"
     card_name = "Canting Scan"
+    discoverable = False
     menu_icon = r":/images/src/images/perturb.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -24,8 +25,17 @@ class SmallAngleSpinTiltCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Canting Scan"))
+        self.setTitle(self.tr("Legacy Canting Scan"))
         self.init_ui()
+
+    def get_summary_text(self) -> str:
+        return self.tr("Compatibility card loaded from an existing workflow.")
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Migrate single-spin, atom-pair, and group-pair scans to Local Magnetic Response; "
+            "migrate global tilt to SOC / Texture Response. Use Spin Perturb for random sampling."
+        )
 
     def init_ui(self):
         self.setObjectName("small_angle_spin_tilt_card_widget")

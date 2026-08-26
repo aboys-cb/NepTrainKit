@@ -2479,7 +2479,7 @@
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="378" />
         <source>Not specified</source>
-        <translation>未填写</translation>
+        <translation>未指定</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="388" />
@@ -3777,7 +3777,7 @@
     </message>
     <message>
         <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="59" />
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="164" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="173" />
         <source>Choose one single-element ideal prototype; generated coordinates are not relaxed.</source>
         <translation>选择一种单元素理想原型；生成的坐标未经弛豫。</translation>
     </message>
@@ -3797,57 +3797,57 @@
         <translation>只输入一个真实元素符号，例如 Cu、Fe 或 Mg。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="73" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="76" />
         <source>step</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="78" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="81" />
         <source>Lattice constant a (min, max, step)</source>
         <translation>晶格常数 a（最小值、最大值、步长）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="81" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="84" />
         <source>Endpoints are included when reached by the positive step; reversed endpoints are normalized.</source>
         <translation>正步长恰好到达终点时包含终点；反向端点会自动交换。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="90" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="93" />
         <source>HCP c/a ratio</source>
         <translation>HCP c/a 轴比</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="93" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="96" />
         <source>Only HCP uses this ratio; c = a × (c/a).</source>
         <translation>仅 HCP 使用该轴比；c = a × (c/a)。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="97" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="103" />
         <source>Prototype</source>
         <translation>原型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="99" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="105" />
         <source>This generator creates a fully periodic, single-element starting structure.</source>
         <translation>该生成器创建三维周期的单元素起始结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="175" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="184" />
         <source>{shown} base-cell output(s); {atoms} atoms each; first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å.</source>
         <translation>预计输出 {shown} 个基础晶胞；每个 {atoms} 个原子；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="200" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="209" />
         <source>{element} · {lattice} · {count} base-cell output(s)</source>
         <translation>{element} · {lattice} · {count} 个基础晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="212" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="221" />
         <source>Use prototype-specific lattice constants. In particular, HCP a is not the FCC conventional-cell a. Add Super Cell next when downstream operations need a larger structure.</source>
         <translation>请使用与原型匹配的晶格常数；尤其是 HCP 的 a 不等于 FCC 常规晶胞的 a。后续操作需要更大结构时，请连接“扩胞”卡。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="264" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="273" />
         <source>This saved Crystal Prototype Builder used the removed expansion settings. They were ignored; add a Super Cell card after it to restore the intended cell size.</source>
         <translation>该晶体原型构建配置使用了已移除的扩胞参数，这些参数已被忽略。请在后面添加“扩胞”卡，以恢复所需的晶胞尺寸。</translation>
     </message>
@@ -3892,37 +3892,37 @@
         <translation type="vanished">扩胞会改变晶胞尺寸和原子数，但不会应变原型。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="109" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="115" />
         <source>structures</source>
         <translation>个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="113" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="119" />
         <source>Maximum outputs</source>
         <translation>最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="116" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="122" />
         <source>If the a scan has more points, only the first values in ascending scan order are kept.</source>
         <translation>若 a 扫描点更多，只保留按升序排列的前几个值。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="121" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="130" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="127" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="136" />
         <source>Need a larger cell? Add a Super Cell card after this card to choose repeats, target lengths, or an atom budget.</source>
         <translation>需要更大的晶胞？请在本卡后添加“扩胞”卡，再选择重复倍率、目标长度或原子预算。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="137" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="146" />
         <source>Next step</source>
         <translation>下一步</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="162" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="171" />
         <source>Fully periodic (PBC x/y/z), with no vacuum; the third cell vector is normal to FCC (111).</source>
         <translation>三维周期（PBC x/y/z），无真空；第三晶格向量垂直于 FCC (111) 面。</translation>
     </message>
@@ -3931,7 +3931,7 @@
         <translation type="vanished">预计输出 {shown} 个结构；重复 {a} × {b} × {c}；每个 {atoms} 个原子；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="185" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="194" />
         <source>The scan has {total} points; later a values are truncated.</source>
         <translation>扫描共有 {total} 个点；后续较大的 a 值将被截断。</translation>
     </message>
@@ -3956,12 +3956,12 @@
         <translation type="vanished">{element} · {lattice} · {mode} · {count} 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="201" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="210" />
         <source>invalid element</source>
         <translation>无效元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="206" />
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="215" />
         <source>{lattice} · parameters need attention</source>
         <translation>{lattice} · 参数需要检查</translation>
     </message>
@@ -6986,17 +6986,16 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>在以输入磁矩方向为中心的该角度球冠内均匀采样。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="75" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="78" />
         <source>Lift scalar moments to vectors</source>
         <translation>将标量磁矩转为矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="79" />
         <source>Collinear input</source>
-        <translation>共线输入</translation>
+        <translation type="vanished">共线输入</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="90" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="87" />
         <source>Scalar lift direction (Cartesian)</source>
         <translation>标量抬升方向（笛卡尔）</translation>
     </message>
@@ -7010,92 +7009,90 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>磁矩扰动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="93" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="90" />
         <source>Used only to turn scalar moments into vectors; it does not control perturbation directions.</source>
         <translation>只用于将标量磁矩转为矢量；不控制扰动方向。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="96" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="93" />
         <source>Direction sampling</source>
         <translation>方向采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="104" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="101" />
         <source>Vary magnetic-moment magnitude</source>
         <translation>随机改变磁矩模长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="108" />
         <source>Magnitude sampling</source>
-        <translation>模长采样</translation>
+        <translation type="vanished">模长采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="120" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="111" />
         <source>Magnitude scale range</source>
         <translation>模长缩放范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="123" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="114" />
         <source>Each selected moment is multiplied by an independent factor in this interval.</source>
         <translation>每个目标磁矩独立乘以该区间内的随机因子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="126" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="117" />
         <source>Magnitude</source>
         <translation>模长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="137" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="128" />
         <source>Structures per input</source>
         <translation>每个输入生成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="140" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="136" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="153" />
         <source>Reproducibility</source>
-        <translation>可复现性</translation>
+        <translation type="vanished">可复现性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="155" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="151" />
         <source>Generation</source>
         <translation>生成设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="163" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="159" />
         <source>The atomic coordinates and cell are carried through unchanged; outputs differ in their spin vectors.</source>
         <translation>原子坐标和晶胞保持不变；各输出的自旋矢量不同。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="211" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="207" />
         <source>all moments</source>
         <translation>全部磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="212" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="208" />
         <source>≤ {angle}° · {target} · {count}/input</source>
         <translation>≤ {angle}° · {target} · {count}/输入</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="216" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="212" />
         <source> · {minimum}–{maximum}×</source>
         <translation> · {minimum}–{maximum}×</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="232" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="228" />
         <source>Planned (valid input): {inputs} × {count} = {total} outputs</source>
         <translation>计划输出（输入有效时）：{inputs} × {count} = {total}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="241" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="237" />
         <source>Each selected moment is sampled independently inside its angular cap; the scalar lift direction only initializes collinear input.</source>
         <translation>每个选中磁矩都在各自的角度球冠内独立采样；标量抬升方向只用于初始化共线输入。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magmom_rotation_card.py" line="246" />
+        <location filename="../ui/views/_card/magmom_rotation_card.py" line="242" />
         <source>Increase the perturbation angle or enable magnitude sampling before running.</source>
         <translation>运行前请增大扰动角，或启用模长采样。</translation>
     </message>
@@ -8772,78 +8769,78 @@ All child items will also be deleted.</source>
         <translation>仅 A3/HCP 和 L1₀ 使用 c/a；立方原型固定 c/a = 1。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="105" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="108" />
         <source>Prototype</source>
         <translation>原型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="107" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="110" />
         <source>The output is an ideal, fully periodic base cell with a per-atom sublattice array.</source>
         <translation>输出是理想的三维周期基础晶胞，并带逐原子子晶格数组。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="119" />
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="129" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="122" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="135" />
         <source>Element or X</source>
         <translation>元素或 X</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="121" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="124" />
         <source>Sublattice A element</source>
         <translation>子晶格 A 元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="124" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="127" />
         <source>Use a real element for direct ordered occupancy, or X as a placeholder for a later occupancy card.</source>
         <translation>填写真实元素可直接生成有序占位；填写 X 则留给后续占位卡处理。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="131" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="137" />
         <source>Sublattice B element</source>
         <translation>子晶格 B 元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="134" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="140" />
         <source>Shown only for two-sublattice prototypes; A and B are crystallographic site identities.</source>
         <translation>仅双子晶格原型显示；A 和 B 表示晶体学位点身份。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="138" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="147" />
         <source>Sublattice occupants</source>
         <translation>子晶格占位</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="140" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="149" />
         <source>X is an unresolved site placeholder and is not a trainable chemical element.</source>
         <translation>X 是尚未确定的位点占位符，不是可用于训练的化学元素。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="148" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="157" />
         <source>structures</source>
         <translation>个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="152" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="161" />
         <source>Maximum outputs</source>
         <translation>最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="155" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="164" />
         <source>If the a scan has more points, only the first values in ascending scan order are kept.</source>
         <translation>若 a 扫描点更多，只保留按升序排列的前几个值。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="159" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="171" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="170" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="182" />
         <source>Next step</source>
         <translation>下一步</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="227" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="239" />
         <source>Base-cell sites: {ratio}. The sublattice array stores these sublattice identities.</source>
         <translation>基础晶胞位点：{ratio}。sublattice 数组保存这些子晶格身份。</translation>
     </message>
@@ -8852,52 +8849,52 @@ All child items will also be deleted.</source>
         <translation type="vanished">基础晶胞位点：{ratio}。sublattice 数组保存这些 A/B 身份。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="235" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="247" />
         <source>A1/A2/A3 overlap geometrically with the Crystal Prototype Builder. Use them here only when downstream steps need sublattice A labels or X placeholders.</source>
         <translation>A1/A2/A3 在几何上与“晶体原型构建”重复。仅当后续步骤需要子晶格 A 标签或 X 占位符时才在本卡使用。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="264" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="276" />
         <source>{shown} base-cell output(s); {atoms} sites each: {sites}; first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å.</source>
         <translation>预计输出 {shown} 个基础晶胞；每个 {atoms} 个位点：{sites}；首个晶胞边长 {la:.3f} × {lb:.3f} × {lc:.3f} Å。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="276" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="288" />
         <source>The scan has {total} points; later a values are truncated.</source>
         <translation>扫描共有 {total} 个点；后续较大的 a 值将被截断。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="282" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="294" />
         <source>X placeholders are not ready for training. Add Super Cell if a larger cell is needed, then use Finite-Cell Alloy Occupancy to assign real elements.</source>
         <translation>含 X 的结构不能直接训练。需要更大晶胞时先添加“扩胞”卡，再用“有限晶胞合金占位”分配真实元素。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="287" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="299" />
         <source>Real elements produce a fixed-stoichiometry ordered base cell. Add Super Cell next when a larger cell is needed.</source>
         <translation>真实元素会生成固定化学计量的有序基础晶胞；需要更大晶胞时请后接“扩胞”卡。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="293" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="305" />
         <source>Fix the highlighted parameter meaning before continuing downstream.</source>
         <translation>请先修正当前参数含义，再继续后续流程。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="306" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="318" />
         <source>{prototype} · {occupants} · {count} base-cell output(s)</source>
         <translation>{prototype} · {occupants} · {count} 个基础晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="312" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="324" />
         <source>{prototype} · parameters need attention</source>
         <translation>{prototype} · 参数需要检查</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="318" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="330" />
         <source>This card defines crystallographic A/B site identities. It does not expand the cell; use Super Cell afterward, and replace every X before training.</source>
         <translation>本卡定义晶体学 A/B 位点身份，不负责扩胞；请后接“扩胞”卡，并在训练前替换所有 X。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="369" />
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="381" />
         <source>This saved Ordered Alloy Prototype used the removed expansion settings. They were ignored; add a Super Cell card after it to restore the intended cell size.</source>
         <translation>该有序合金原型配置使用了已移除的扩胞参数，这些参数已被忽略。请在后面添加“扩胞”卡，以恢复所需的晶胞尺寸。</translation>
     </message>
@@ -9345,14 +9342,14 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="115" />
-        <location filename="../ui/views/_card/perturb_card.py" line="342" />
-        <location filename="../ui/views/_card/perturb_card.py" line="362" />
+        <location filename="../ui/views/_card/perturb_card.py" line="356" />
+        <location filename="../ui/views/_card/perturb_card.py" line="376" />
         <source>Sobol</source>
         <translation>Sobol</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="115" />
-        <location filename="../ui/views/_card/perturb_card.py" line="362" />
+        <location filename="../ui/views/_card/perturb_card.py" line="376" />
         <source>Uniform</source>
         <translation>均匀随机</translation>
     </message>
@@ -9411,7 +9408,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">启用按元素设置最大位移</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="163" />
+        <location filename="../ui/views/_card/perturb_card.py" line="171" />
         <source>Add Element Scaling</source>
         <translation>添加元素缩放</translation>
     </message>
@@ -9433,112 +9430,109 @@ All child items will also be deleted.</source>
         <translation>有机分子刚体平移</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="130" />
         <source>Molecules</source>
-        <translation>分子处理</translation>
+        <translation type="vanished">分子处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="132" />
+        <location filename="../ui/views/_card/perturb_card.py" line="131" />
         <source>Automatically detected organic connected clusters share one translation</source>
         <translation>自动识别的有机连通簇共用一个平移向量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="142" />
+        <location filename="../ui/views/_card/perturb_card.py" line="144" />
         <source>Displacement limit</source>
         <translation>位移上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="143" />
+        <location filename="../ui/views/_card/perturb_card.py" line="151" />
         <source>Maximum Cartesian displacement-vector length for each atom</source>
         <translation>每个原子的最大笛卡尔位移向量长度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="148" />
+        <location filename="../ui/views/_card/perturb_card.py" line="156" />
         <source>Each row sets Element → maximum displacement (Å). Unlisted elements use the global limit.</source>
         <translation>每行设置“元素 → 最大位移（Å）”。未列出的元素使用全局上限。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="154" />
+        <location filename="../ui/views/_card/perturb_card.py" line="162" />
         <source>Use per-element limits</source>
         <translation>使用逐元素上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="157" />
+        <location filename="../ui/views/_card/perturb_card.py" line="165" />
         <source>Override the displacement limit for selected elements</source>
         <translation>为选定元素覆盖位移上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="174" />
         <source>Overrides</source>
-        <translation>元素覆盖</translation>
+        <translation type="vanished">元素覆盖</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="192" />
+        <location filename="../ui/views/_card/perturb_card.py" line="199" />
         <source>Structures per input</source>
         <translation>每个输入生成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="193" />
+        <location filename="../ui/views/_card/perturb_card.py" line="206" />
         <source>Number of perturbed outputs generated from each input structure</source>
         <translation>每个输入结构生成的扰动输出数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="196" />
+        <location filename="../ui/views/_card/perturb_card.py" line="209" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="198" />
+        <location filename="../ui/views/_card/perturb_card.py" line="211" />
         <source>Enable reproducible random perturbations</source>
         <translation>启用可复现的随机扰动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="212" />
         <source>Reproducibility</source>
-        <translation>可复现性</translation>
+        <translation type="vanished">可复现性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="214" />
+        <location filename="../ui/views/_card/perturb_card.py" line="228" />
         <source>Perturbation</source>
         <translation>扰动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="222" />
+        <location filename="../ui/views/_card/perturb_card.py" line="236" />
         <source>Each displacement is sampled inside a 3D ball of this radius. Only Cartesian coordinates change; the cell and PBC stay unchanged.</source>
         <translation>每个位移都在该半径的三维球内采样。只改变笛卡尔坐标；晶胞和 PBC 保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="230" />
+        <location filename="../ui/views/_card/perturb_card.py" line="244" />
         <source>Per-element displacement limits</source>
         <translation>逐元素位移上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="378" />
+        <location filename="../ui/views/_card/perturb_card.py" line="392" />
         <source>{inputs} × {count} = {total} outputs</source>
         <translation>{inputs} × {count} = {total} 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="349" />
+        <location filename="../ui/views/_card/perturb_card.py" line="363" />
         <source>{count} per input</source>
         <translation>每个输入 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="365" />
+        <location filename="../ui/views/_card/perturb_card.py" line="379" />
         <source>{engine} engine · {distance} Å is a hard displacement-vector ceiling.</source>
         <translation>{engine} 引擎 · {distance} Å 是位移向量的硬上限。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="368" />
+        <location filename="../ui/views/_card/perturb_card.py" line="382" />
         <source>No collision check is performed; inspect shortest distances in a small output sample.</source>
         <translation>本卡不做碰撞检测；请先在少量输出中检查最短原子间距。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="387" />
+        <location filename="../ui/views/_card/perturb_card.py" line="401" />
         <source>For near-equilibrium sampling, 0.05–0.15 Å is a common starting range.</source>
         <translation>近平衡采样通常可从 0.05–0.15 Å 开始。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="393" />
+        <location filename="../ui/views/_card/perturb_card.py" line="407" />
         <source>Sobol coverage is best with 4, 8, 16, … outputs; the requested count is still preserved.</source>
         <translation>Sobol 在输出数为 4、8、16……时覆盖性质最好；程序仍会保留请求的数量。</translation>
     </message>
@@ -9547,22 +9541,22 @@ All child items will also be deleted.</source>
         <translation type="vanished">元素位移上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="236" />
+        <location filename="../ui/views/_card/perturb_card.py" line="250" />
         <source>Generation</source>
         <translation>生成设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="340" />
+        <location filename="../ui/views/_card/perturb_card.py" line="354" />
         <source>max {distance} Å</source>
         <translation>最大 {distance} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="344" />
+        <location filename="../ui/views/_card/perturb_card.py" line="358" />
         <source>rigid organic molecules</source>
         <translation>有机分子刚体平移</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="347" />
+        <location filename="../ui/views/_card/perturb_card.py" line="361" />
         <source>{count} element overrides</source>
         <translation>{count} 个元素使用单独上限</translation>
     </message>
@@ -9571,7 +9565,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">{count} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="351" />
+        <location filename="../ui/views/_card/perturb_card.py" line="365" />
         <source>seed {seed}</source>
         <translation>随机种子 {seed}</translation>
     </message>
@@ -11502,252 +11496,266 @@ Do you want to continue?</source>
         <translation type="vanished">可控自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="27" />
         <source>Canting Scan</source>
-        <translation>倾斜扫描</translation>
+        <translation type="vanished">倾斜扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="33" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="28" />
+        <source>Legacy Canting Scan</source>
+        <translation>旧版倾斜扫描</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="32" />
+        <source>Compatibility card loaded from an existing workflow.</source>
+        <translation>从现有工作流加载的兼容卡片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="36" />
+        <source>Migrate single-spin, atom-pair, and group-pair scans to Local Magnetic Response; migrate global tilt to SOC / Texture Response. Use Spin Perturb for random sampling.</source>
+        <translation>单自旋、原子对和分组对扫描请迁移到“局域磁响应”；全局倾斜请迁移到“SOC / 纹理响应”。随机采样请使用“磁矩扰动”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="43" />
         <source>Canting mode</source>
         <translation>倾斜模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="34" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="44" />
         <source>Choose global tilt, single-spin tilt, atom-pair canting, or group-pair canting</source>
         <translation>选择全局倾斜、单自旋倾斜、原子对 canting 或分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="44" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="54" />
         <source>Target atoms</source>
         <translation>目标原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="45" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="55" />
         <source>Choose which atoms receive the single-spin tilt</source>
         <translation>选择哪些原子接受单自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="55" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="65" />
         <source>Atom indices</source>
         <translation>原子索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="56" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="66" />
         <source>Used when Target atoms = Explicit indices (1-based), for example 1,3-5</source>
         <translation>目标原子为 Explicit indices 时使用（1-based），例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="61" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="71" />
         <source>1,3-5</source>
         <translation>1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="63" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="73" />
         <source>Pair left indices</source>
         <translation>左侧原子对索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="64" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="74" />
         <source>1-based indices for the left side of each atom pair, for example 1,3-5</source>
         <translation>每个原子对左侧的 1-based 索引，例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="67" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="77" />
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="69" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="79" />
         <source>Pair right indices</source>
         <translation>右侧原子对索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="70" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="80" />
         <source>1-based indices for the right side of each atom pair, paired in order with left indices</source>
         <translation>每个原子对右侧的 1-based 索引，按顺序与左侧索引配对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="73" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="83" />
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="75" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="85" />
         <source>Pair source</source>
         <translation>原子对来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="76" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="86" />
         <source>Use explicit atom indices or auto-select unique neighbor-shell pairs</source>
         <translation>使用显式原子索引，或自动选择唯一近邻壳原子对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="82" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="92" />
         <source>Neighbor shell</source>
         <translation>近邻壳层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="83" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="93" />
         <source>1 = first-neighbor shell, 2 = second-neighbor shell, etc.</source>
         <translation>1 = 第一近邻壳，2 = 第二近邻壳，依此类推。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="90" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="100" />
         <source>Shell tolerance</source>
         <translation>壳层容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="91" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="101" />
         <source>Distances within this tolerance belong to the same neighbor shell</source>
         <translation>距离差在该容差内的原子属于同一邻近壳层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="99" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="109" />
         <source>Pair elements</source>
         <translation>原子对元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="100" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="110" />
         <source>Optional pair filter such as Fe-Fe,Fe-Co; empty means any element pair</source>
         <translation>可选原子对筛选，例如 Fe-Fe、Fe-Co；留空表示任意元素对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="103" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="113" />
         <source>Fe-Fe,Fe-Co</source>
         <translation>Fe-Fe,Fe-Co</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="105" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="115" />
         <source>Pair groups</source>
         <translation>原子对分组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="106" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="116" />
         <source>Optional group-pair filter such as A-B,A-A; requires arrays['group']</source>
         <translation>可选分组对筛选，例如 A-B、A-A；需要 arrays['group']</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="109" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="119" />
         <source>A-B</source>
         <translation>A-B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="111" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="121" />
         <source>Bond filter</source>
         <translation>键方向筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="112" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="122" />
         <source>Optional bond-direction filter for auto pairs</source>
         <translation>auto 配对的可选键方向筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="118" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="128" />
         <source>Bond reference</source>
         <translation>键方向参考</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="119" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="129" />
         <source>Reference axis or plane normal used by the bond-direction filter</source>
         <translation>键方向筛选使用的参考轴或平面法向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="128" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="138" />
         <source>Bond angle tol</source>
         <translation>键角容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="129" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="139" />
         <source>Angular tolerance in degrees for the bond-direction filter</source>
         <translation>键方向筛选的角度容差（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="137" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="147" />
         <source>Group A</source>
         <translation>A 组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="138" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="148" />
         <source>Atoms with arrays['group']==Group A rotate by +theta/2 in group-pair mode</source>
         <translation>group-pair 模式下，arrays['group'] == Group A 的原子旋转 +theta/2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="143" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="153" />
         <source>Group B</source>
         <translation>B 组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="144" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="154" />
         <source>Atoms with arrays['group']==Group B rotate by -theta/2 in group-pair mode</source>
         <translation>group-pair 模式下，arrays['group'] == Group B 的原子旋转 -theta/2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="149" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="159" />
         <source>Tilt angles</source>
         <translation>倾斜角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="150" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="160" />
         <source>Comma-separated tilt angles in degrees, for example 1,2,5,10</source>
         <translation>逗号分隔的倾斜角，单位为度，例如 1,2,5,10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="153" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="163" />
         <source>1,2,5,10</source>
         <translation>1,2,5,10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="156" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="166" />
         <source>Tilt signs</source>
         <translation>倾斜符号</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="157" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="167" />
         <source>Choose whether to emit +theta only, -theta only, or paired +/-theta variants</source>
         <translation>选择仅生成 +theta、仅生成 -theta，或成对生成 +/-theta 变体</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="163" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="173" />
         <source>Include reference state</source>
         <translation>包含参考态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="165" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="175" />
         <source>Emit the un-tilted reference magnetic state before tilted variants</source>
         <translation>在倾斜变体之前输出未倾斜的参考磁态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="171" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="181" />
         <source>Show magnetic-moment setup, axes, and output limit</source>
         <translation>显示磁矩设置、方向和输出上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="175" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="185" />
         <source>Magnitude source</source>
         <translation>磁矩大小来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="176" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="186" />
         <source>Use existing initial magmoms or build a ferromagnetic reference from map/default</source>
         <translation>使用现有初始 magmoms，或从映射/默认值构造铁磁参考态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="182" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="192" />
         <source>Magmom map</source>
         <translation>元素磁矩表</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="183" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="193" />
         <source>Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"</source>
         <translation>当来源为映射/默认磁矩大小时使用，例如 "Fe:2.2,Ni:0.6"</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="186" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="196" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="186" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="196" />
         <source>Moment magnitude</source>
         <translation>磁矩模长</translation>
     </message>
@@ -11756,67 +11764,67 @@ Do you want to continue?</source>
         <translation type="vanished">Fe:2.2,Ni:0.6</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="189" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="199" />
         <source>Default |m|</source>
         <translation>默认 |m|</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="190" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="200" />
         <source>Magnitude used for elements not listed in the magmom map</source>
         <translation>未在 magmom 映射中列出的元素使用该磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="198" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="208" />
         <source>Lift scalar magmoms to vectors</source>
         <translation>将标量 magmoms 提升为矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="200" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="210" />
         <source>If input magmoms are scalars, place them along Base axis before tilting</source>
         <translation>如果输入 magmoms 是标量，倾斜前先放在 Base 轴方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="205" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="215" />
         <source>Base axis</source>
         <translation>基准轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="206" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="216" />
         <source>Reference axis for lifted scalar magmoms and map/default ferromagnetic states</source>
         <translation>标量 magmoms 提升和映射/默认铁磁态使用的参考轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="215" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="225" />
         <source>Tilt reference</source>
         <translation>倾斜参考</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="216" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="226" />
         <source>Preferred direction that defines the tilt plane; it is orthogonalised automatically</source>
         <translation>用于定义倾斜平面的优选方向；会自动正交化</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="225" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="235" />
         <source>Apply elements</source>
         <translation>应用元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="226" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="236" />
         <source>Optional comma-separated element list; empty means all atoms are eligible targets</source>
         <translation>可选元素列表，用逗号分隔；留空表示所有原子都可作为目标</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="229" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="239" />
         <source>Fe,Co,Ni</source>
         <translation>Fe,Co,Ni</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="231" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="241" />
         <source>Max outputs</source>
         <translation>最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="232" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="242" />
         <source>Stop after this many generated structures</source>
         <translation>生成到此数量后停止</translation>
     </message>
@@ -13603,12 +13611,12 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation>这是严格上限。单输出先最大化原子数；若并列，再最小化输出晶格矢量的最长/最短比。上限小于输入原子数时无法扩胞。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="115" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="118" />
         <source>One supercell</source>
         <translation>单个超胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="116" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="119" />
         <source>Enumerate sizes</source>
         <translation>枚举尺寸</translation>
     </message>
@@ -13617,112 +13625,112 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">每个输入的输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="118" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="121" />
         <source>Output mode</source>
         <translation>输出方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="121" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="124" />
         <source>Enumeration includes every integer repeat combination up to the selected target.</source>
         <translation>枚举会包含不超过所选目标的全部整数重复倍率组合。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="125" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="128" />
         <source>Expansion strategy</source>
         <translation>扩胞策略</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="127" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="130" />
         <source>The operation only repeats complete cells; it never strains lattice vectors.</source>
         <translation>此操作只完整复制晶胞，不会对晶格矢量施加应变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="145" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="148" />
         <source>a</source>
         <translation>a</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="146" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="149" />
         <source>b</source>
         <translation>b</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="147" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="150" />
         <source>c</source>
         <translation>c</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="156" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="159" />
         <source>Lock lattice-vector repeats</source>
         <translation>锁定晶格矢量倍率</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="159" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="162" />
         <source>A locked axis ignores the active target and uses its multiplier below.</source>
         <translation>被锁定的轴忽略当前目标，直接使用下方对应倍率。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="167" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="170" />
         <source>Locked multipliers (a, b, c)</source>
         <translation>固定倍率（a、b、c）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="173" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="176" />
         <source>Axis overrides</source>
         <translation>轴向覆盖</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="175" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="178" />
         <source>Useful for slabs: lock the non-periodic normal while expanding in-plane.</source>
         <translation>适用于 slab：锁定非周期法向，只扩展面内方向。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="182" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="185" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="239" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="242" />
         <source>Enumeration lists every feasible integer repeat triple and stops above 1000 outputs.</source>
         <translation>枚举会列出全部可行整数倍率组合；超过 1000 个输出时停止并报错。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="241" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="244" />
         <source>Enumeration includes every integer repeat combination from 1 up to the target factors.</source>
         <translation>枚举会包含从 1 到目标倍率的全部整数重复组合。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="272" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="275" />
         <source>Per input: {count} output(s); largest repeat is {a} × {b} × {c}; atom count scales by {factor}.</source>
         <translation>每个输入：{count} 个输出；最大倍率为 {a} × {b} × {c}；原子数变为原来的 {factor} 倍。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="284" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="287" />
         <source>Attach an input structure to resolve exact repeat factors and atom counts.</source>
         <translation>连接输入结构后可计算准确倍率和原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="294" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="297" />
         <source>First input: {count} output(s); largest repeat is {a} × {b} × {c}; {input_atoms} → {output_atoms} atoms.</source>
         <translation>首个输入：{count} 个输出；最大倍率为 {a} × {b} × {c}；原子数 {input_atoms} → {output_atoms}。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="320" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="323" />
         <source>{a:g} × {b:g} × {c:g} Å</source>
         <translation>{a:g} × {b:g} × {c:g} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="324" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="327" />
         <source>≤ {count} atoms</source>
         <translation>≤ {count} 个原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="325" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="328" />
         <source>{mode} · {detail} · {outputs}</source>
         <translation>{mode} · {detail} · {outputs}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/super_cell_card.py" line="333" />
+        <location filename="../ui/views/_card/super_cell_card.py" line="336" />
         <source>Supercell repeats use lattice vectors a, b, and c, not Cartesian x, y, and z. Lock a non-periodic slab normal explicitly before expanding in-plane.</source>
         <translation>超胞倍率沿晶格矢量 a、b、c，而不是 Cartesian x、y、z。扩展 slab 面内尺寸前，请明确锁定非周期法向。</translation>
     </message>
@@ -17300,79 +17308,77 @@ Magnetic: {magnetic}</source>
         <translation>每个输入结构都必须包含可识别的振动模式数组。频率相关选项要求频率值有限，频率加权还要求频率不为零。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="52" />
         <source>This card samples correlated motion inside the supplied mode subspace. Use Atomic Perturb when no mode data is available.</source>
-        <translation>本卡在已有模式张成的子空间内采样协同运动。没有模式数据时请使用“原子扰动”。</translation>
+        <translation type="vanished">本卡在已有模式张成的子空间内采样协同运动。没有模式数据时请使用“原子扰动”。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="61" />
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="199" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="52" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="200" />
         <source>Normal</source>
         <translation>正态分布</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="61" />
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="199" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="52" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="200" />
         <source>Uniform</source>
         <translation>均匀随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="65" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="56" />
         <source>Coefficient distribution</source>
         <translation>系数分布</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="68" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="59" />
         <source>Normal is unbounded; Uniform samples each coefficient from −1 to 1.</source>
         <translation>正态分布无界；均匀分布在 −1 到 1 之间采样每个系数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="72" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="63" />
         <source>× mode</source>
         <translation>× 模态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="78" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="69" />
         <source>Mode coefficient scale</source>
         <translation>模态系数尺度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="81" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="72" />
         <source>A multiplier for the combined mode vectors, not a maximum atomic displacement.</source>
         <translation>组合模态矢量的乘数，不是原子最大位移。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="89" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="83" />
         <source>Modes combined per sample</source>
         <translation>每个样本组合模式数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="92" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="86" />
         <source>Modes are selected without replacement from those that pass the filter.</source>
         <translation>从筛选后的可用模式中无放回选择。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="95" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="92" />
         <source>Mode sampling</source>
         <translation>模式采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="102" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="99" />
         <source>Use 1/√|frequency|</source>
         <translation>使用 1/√|频率|</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="105" />
         <source>Frequency weighting</source>
-        <translation>频率加权</translation>
+        <translation type="vanished">频率加权</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="108" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="102" />
         <source>Reduces coefficients for higher-frequency modes using the stored frequency values.</source>
         <translation>使用输入频率值减小高频模式的系数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="111" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="108" />
         <source>Apply cutoff</source>
         <translation>应用截止值</translation>
     </message>
@@ -17381,77 +17387,75 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">应用频率截止值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="114" />
         <source>Near-zero modes</source>
-        <translation>近零频模式</translation>
+        <translation type="vanished">近零频模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="124" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="117" />
         <source>Absolute frequency cutoff</source>
         <translation>绝对频率截止值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="127" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="120" />
         <source>Uses the same numerical unit as the frequencies stored in the input.</source>
         <translation>数值单位与输入中保存的频率单位相同。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="130" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="126" />
         <source>Frequency handling</source>
         <translation>频率处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="142" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="137" />
         <source>Structures per input</source>
         <translation>每个输入生成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="158" />
         <source>Reproducibility</source>
-        <translation>可复现性</translation>
+        <translation type="vanished">可复现性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="160" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="161" />
         <source>Generation</source>
         <translation>生成设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="192" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="193" />
         <source>Discard modes with |frequency| below this value.</source>
         <translation>丢弃 |频率| 低于此值的模式。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="194" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="195" />
         <source>Disabled because frequency cutoff is not applied.</source>
         <translation>未应用频率截止值，因此此项不生效。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="201" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="202" />
         <source>{distribution} · scale {scale} · {modes} modes</source>
         <translation>{distribution} · 尺度 {scale} · {modes} 个模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="206" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="207" />
         <source>{count} per input</source>
         <translation>每个输入 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="209" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="210" />
         <source>seed {seed}</source>
         <translation>随机种子 {seed}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="221" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="222" />
         <source>{inputs} × {count} = {total} outputs</source>
         <translation>{inputs} × {count} = {total} 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="229" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="230" />
         <source>The scale multiplies the supplied mode vectors; the resulting maximum atomic displacement depends on their normalization and sampled coefficients.</source>
         <translation>该尺度乘在输入模态矢量上；最终最大原子位移取决于模态归一化和抽样系数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="235" />
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="236" />
         <source>Frequency values must use one consistent input unit; weighting also requires non-zero values.</source>
         <translation>频率值必须统一使用同一种输入单位；频率加权还要求频率不为零。</translation>
     </message>

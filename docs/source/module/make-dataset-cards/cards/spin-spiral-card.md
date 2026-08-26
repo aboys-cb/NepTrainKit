@@ -56,7 +56,7 @@ $0<|m_z|<1$ 为 conical spiral，$|m_z|=1$ 是完全沿轴的共线极限。
 
 **不加：**
 - 体系只有共线磁序 → `Magnetic Order` 够用
-- 需要局部可控偏转而非长程螺旋 → 用 `Canting Scan`
+- 需要局部可控响应而非长程螺旋 → 用 `Local Magnetic Response`
 - 晶体结构本身需要扩胞才能容纳目标周期 → 先扩胞再回来
 
 ## 参数说明

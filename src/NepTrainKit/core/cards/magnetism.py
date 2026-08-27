@@ -1980,20 +1980,45 @@ class FoldedHelixOperation(StructureOperation):
         angle_steps = range_values(list(params.angle_step_range), minimum=0.0)
         phases = range_values(list(params.phase_range))
         max_outputs = int(params.max_outputs)
+        sequences = self.sequence_values(params)
+        minimum_budget = len(sequences)
+        if max_outputs < minimum_budget:
+            raise CardOperationError(
+                "folded_helix_incomplete_sequence_budget",
+                "Maximum outputs must be at least {minimum} for the selected folded-helix sequence mode.",
+                minimum=minimum_budget,
+            )
 
         mags = self.magnitudes(structure, params)
         if mags.shape[0] != len(structure) or not np.any(mags > 0):
-            return [structure.copy()]
+            raise CardOperationError(
+                "folded_helix_no_moments",
+                "Folded Helix requires at least one non-zero magnetic moment. "
+                "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+            )
 
         layer_axis = normalize_vector(np.array(params.layer_axis, dtype=float))
         plane_normal = normalize_vector(np.array(params.plane_normal, dtype=float))
         e1, e2, plane_hat = orthonormal_frame(plane_normal)
+        existing_vectors = existing_moment_vectors(structure, axis=plane_normal)
+        base_moments = (
+            np.zeros((len(structure), 3), dtype=float)
+            if existing_vectors is None
+            else np.asarray(existing_vectors, dtype=float).copy()
+        )
         layer_ids = SpinSpiralOperation.layer_ids(
             np.asarray(structure.get_positions(), dtype=float),
             layer_axis,
             float(params.layer_tolerance),
         )
         layer_count = int(layer_ids.max()) + 1 if layer_ids.size else 0
+        if layer_count < 3:
+            raise CardOperationError(
+                "folded_helix_too_few_layers",
+                "Folded Helix needs at least 3 detected layers along the layer axis; "
+                "the current settings detect {actual}. Check the layer axis and tolerance.",
+                actual=layer_count,
+            )
         half_periods = self.half_period_values(params, layer_count=layer_count)
         auto_mode = params.half_period_mode == "Auto from layer count"
 
@@ -2009,14 +2034,20 @@ class FoldedHelixOperation(StructureOperation):
 
             for angle_step in angle_steps:
                 for phase_deg in phases:
-                    for seq_tag, seq_sign in self.sequence_values(params):
+                    if len(outputs) + len(sequences) > max_outputs:
+                        reached_limit = True
+                        break
+                    for seq_tag, seq_sign in sequences:
                         atoms = structure.copy()
                         phase_rad = np.deg2rad(float(phase_deg) + seq_sign * folded_steps * float(angle_step))
                         unit_vectors = (
                             np.cos(phase_rad)[:, None] * e1[None, :]
                             + np.sin(phase_rad)[:, None] * e2[None, :]
                         )
-                        set_initial_magmoms_safe(atoms, mags[:, None] * unit_vectors)
+                        moments = base_moments.copy()
+                        target_mask = mags > 0.0
+                        moments[target_mask] = mags[target_mask, None] * unit_vectors[target_mask]
+                        set_initial_magmoms_safe(atoms, moments)
                         append_config_tag(
                             atoms,
                             (
@@ -2037,6 +2068,22 @@ class FoldedHelixOperation(StructureOperation):
                 break
 
         return outputs or [structure.copy()]
+
+    @classmethod
+    def output_counts(cls, params: FoldedHelixParams) -> tuple[int, int]:
+        """Return theoretical and budget-capped counts per valid input."""
+        half_period_count = (
+            len(int_range_values(list(params.half_period_layers), minimum=1))
+            if params.half_period_mode == "Manual"
+            else 1
+        )
+        angle_count = len(range_values(list(params.angle_step_range), minimum=0.0))
+        phase_count = len(range_values(list(params.phase_range)))
+        sequence_count = len(cls.sequence_values(params))
+        theoretical = half_period_count * angle_count * phase_count * sequence_count
+        max_outputs = max(0, int(params.max_outputs))
+        capped_budget = max_outputs - max_outputs % sequence_count
+        return theoretical, min(theoretical, capped_budget)
 
     @staticmethod
     def sequence_values(params: FoldedHelixParams) -> list[tuple[str, int]]:
@@ -2070,6 +2117,7 @@ class FoldedHelixOperation(StructureOperation):
             if mags is not None:
                 mask = element_mask(structure.get_chemical_symbols(), apply_elements)
                 return np.where(mask, mags, 0.0)
+            return np.zeros(len(structure), dtype=float)
         return mapped_moment_magnitudes(
             structure,
             parse_magmom_map_any(params.magmom_map),

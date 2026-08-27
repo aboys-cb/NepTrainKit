@@ -452,6 +452,20 @@ def _card_operation_error_catalog() -> None:
         "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
     )
     QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum outputs must be at least {minimum} for the selected folded-helix sequence mode.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Folded Helix requires at least one non-zero magnetic moment. "
+        "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Folded Helix needs at least 3 detected layers along the layer axis; "
+        "the current settings detect {actual}. Check the layer axis and tolerance.",
+    )
+    QCoreApplication.translate(
         "CardOperationError", "Invalid element symbols in the target list: {elements}."
     )
     QCoreApplication.translate(

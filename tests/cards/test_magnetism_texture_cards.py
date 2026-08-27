@@ -60,10 +60,116 @@ class TestMagnetismTextureCards(MagnetismCardTest):
 
     def test_folded_helix_card_fails_closed_for_invalid_moment_map(self):
         card = FoldedHelixCard()
-        card.source_combo.setCurrentText("Map/default magnitude")
+        card.source_combo.setCurrentIndex(card.source_combo.findData("Map/default magnitude"))
         card.map_edit.setText("Fe:not-a-number")
         with self.assertRaises(ValueError):
             card.process_structure(self._spin_chain())
+
+    def test_folded_helix_fails_without_moments_or_a_real_fold(self):
+        no_moments = self._spin_chain()
+        no_moments.arrays.pop("initial_magmoms", None)
+        no_moments.arrays.pop("spin", None)
+        with self.assertRaises(CardOperationError) as missing:
+            FoldedHelixOperation().run_structure(no_moments, FoldedHelixParams())
+        self.assertEqual(missing.exception.code, "folded_helix_no_moments")
+
+        two_layers = Atoms(
+            "Fe2",
+            positions=[[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]],
+            cell=np.diag([4.0, 4.0, 4.0]),
+            pbc=[False, False, True],
+        )
+        two_layers.set_initial_magnetic_moments([2.0, 2.0])
+        with self.assertRaises(CardOperationError) as too_few:
+            FoldedHelixOperation().run_structure(two_layers, FoldedHelixParams())
+        self.assertEqual(too_few.exception.code, "folded_helix_too_few_layers")
+        self.assertEqual(too_few.exception.values["actual"], 2)
+
+    def test_folded_helix_both_mode_never_splits_a_pair(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0] * len(structure))
+        base = dict(
+            half_period_mode="Manual",
+            half_period_layers=[2, 2, 1],
+            angle_step_range=[30.0, 30.0, 1.0],
+            phase_range=[0.0, 0.0, 1.0],
+            sequence_mode="Both",
+        )
+
+        with self.assertRaises(CardOperationError) as budget:
+            FoldedHelixOperation().run_structure(
+                structure, FoldedHelixParams(**base, max_outputs=1)
+            )
+        self.assertEqual(budget.exception.code, "folded_helix_incomplete_sequence_budget")
+
+        outputs = FoldedHelixOperation().run_structure(
+            structure, FoldedHelixParams(**base, max_outputs=3)
+        )
+        self.assertEqual(len(outputs), 2)
+        tags = [str(atoms.info.get("Config_type", "")) for atoms in outputs]
+        self.assertTrue(any("seq=cw-ccw" in tag for tag in tags))
+        self.assertTrue(any("seq=ccw-cw" in tag for tag in tags))
+
+    def test_folded_helix_preserves_non_target_moments(self):
+        structure = Atoms(
+            "FeOFe",
+            positions=[[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 2.0]],
+            cell=np.diag([4.0, 4.0, 4.0]),
+            pbc=[False, False, True],
+        )
+        original = np.array([[0.0, 0.0, 2.0], [0.0, 1.25, 0.0], [0.0, 0.0, 2.0]])
+        structure.set_initial_magnetic_moments(original)
+
+        result = FoldedHelixOperation().run_structure(
+            structure,
+            FoldedHelixParams(
+                angle_step_range=[30.0, 30.0, 1.0],
+                phase_range=[0.0, 0.0, 1.0],
+                apply_elements="Fe",
+                max_outputs=1,
+            ),
+        )[0]
+        moments = np.asarray(result.get_initial_magnetic_moments(), dtype=float)
+        self.assertTrue(np.allclose(moments[1], original[1], atol=1e-12))
+        self.assertTrue(np.allclose(np.linalg.norm(moments[[0, 2]], axis=1), 2.0))
+
+    def test_folded_helix_output_count_and_dynamic_fields(self):
+        params = FoldedHelixParams(
+            half_period_mode="Manual",
+            half_period_layers=[2, 4, 1],
+            angle_step_range=[15.0, 45.0, 15.0],
+            phase_range=[0.0, 0.0, 15.0],
+            sequence_mode="Both",
+            max_outputs=17,
+        )
+        self.assertEqual(FoldedHelixOperation.output_counts(params), (18, 16))
+
+        card = FoldedHelixCard()
+        self.assertEqual(card.plane_mode_combo.currentData(), "Follow layer direction")
+        self.assertFalse(card.plane_normal_field.isVisibleTo(card))
+        card.layer_axis_frame.set_input_value([1.0, 0.0, 0.0])
+        self.assertEqual(card.get_params().plane_normal, [1.0, 0.0, 0.0])
+        self.assertFalse(card.half_period_field.isVisibleTo(card))
+        self.assertFalse(card.phase_field.isVisibleTo(card))
+        card.half_period_mode_combo.setCurrentText("Manual")
+        self.assertTrue(card.half_period_field.isVisibleTo(card))
+        card.advanced_checkbox.setChecked(True)
+        self.assertTrue(card.phase_field.isVisibleTo(card))
+        self.assertTrue(card.source_section.isVisibleTo(card))
+        self.assertTrue(card.generation_section.isVisibleTo(card))
+        card.source_combo.setCurrentIndex(card.source_combo.findData("Map/default magnitude"))
+        self.assertTrue(card.map_field.isVisibleTo(card))
+        self.assertTrue(card.default_field.isVisibleTo(card))
+
+        card.set_params(
+            FoldedHelixParams(
+                layer_axis=[0.0, 0.0, 1.0],
+                plane_normal=[1.0, 0.0, 0.0],
+            )
+        )
+        self.assertEqual(card.plane_mode_combo.currentData(), "Custom plane normal")
+        self.assertTrue(card.plane_normal_field.isVisibleTo(card))
+        self.assertEqual(card.get_params().plane_normal, [1.0, 0.0, 0.0])
 
     def test_spin_spiral_card_periods_and_chirality(self):
         structure = self._spin_chain()
@@ -304,7 +410,7 @@ class TestMagnetismTextureCards(MagnetismCardTest):
         structure = self._spin_bilayer_chain()
 
         card = FoldedHelixCard()
-        card.source_combo.setCurrentText("Map/default magnitude")
+        card.source_combo.setCurrentIndex(card.source_combo.findData("Map/default magnitude"))
         card.map_edit.setText("Fe:2.0")
         card.layer_axis_frame.set_input_value([0.0, 0.0, 1.0])
         card.plane_normal_frame.set_input_value([0.0, 0.0, 1.0])
@@ -394,4 +500,4 @@ class TestMagnetismTextureCards(MagnetismCardTest):
         self.assertEqual(restored.angle_step_frame.get_input_value(), [45.0, 45.0, 15.0])
         self.assertEqual(restored.phase_frame.get_input_value(), [15.0, 15.0, 15.0])
         self.assertEqual(restored.apply_edit.text(), "Fe")
-        self.assertFalse(restored.map_label.isVisible())
+        self.assertFalse(restored.map_field.isVisible())

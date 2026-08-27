@@ -86,6 +86,8 @@ def _translation_catalog() -> None:
     QCoreApplication.translate("CardCombo", "Replace with random directions")
     QCoreApplication.translate("CardCombo", "Exponential (longer tail)")
     QCoreApplication.translate("CardCombo", "Squared exponential (smoother nearby)")
+    QCoreApplication.translate("CardCombo", "Rotate in the layer plane")
+    QCoreApplication.translate("CardCombo", "Custom spin plane")
     QCoreApplication.translate("CardCombo", "x")
     QCoreApplication.translate("CardCombo", "y")
     QCoreApplication.translate("CardCombo", "z")

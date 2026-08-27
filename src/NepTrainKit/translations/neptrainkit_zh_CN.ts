@@ -1010,6 +1010,16 @@
         <translation>整体旋转输入自旋纹理，或重新生成与晶胞相容的有符号 q 纹理路径。</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/card_metadata.py" line="300" />
+        <source>GSFE Path</source>
+        <translation>层错路径</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="301" />
+        <source>Shift atoms above an interlayer cut along a direction in the current ab plane to generate an unrelaxed GSFE path.</source>
+        <translation>沿当前晶胞 ab 面内的指定方向移动层间切面上方的原子，生成未弛豫的 GSFE 路径。</translation>
+    </message>
+    <message>
         <source>Spin Perturbation</source>
         <translation type="vanished">随机磁矩扰动</translation>
     </message>
@@ -1120,14 +1130,12 @@
         <translation>载入并复现使用旧版自动方向层移的工作流；这张兼容卡不会出现在新建卡片入口中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="300" />
         <source>Stacking Fault / GSFE Path</source>
-        <translation>层错 / GSFE 路径</translation>
+        <translation type="vanished">层错 / GSFE 路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="301" />
         <source>Shift atoms above an interlayer cut along an explicit in-plane direction to generate stacking-fault structures or an unrelaxed GSFE path; the input cell must already be oriented to the fault plane.</source>
-        <translation>沿显式面内方向移动层间切面上方的原子，生成层错结构或未弛豫 GSFE 路径；输入晶胞必须已按层错面定向。</translation>
+        <translation type="vanished">沿显式面内方向移动层间切面上方的原子，生成层错结构或未弛豫 GSFE 路径；输入晶胞必须已按层错面定向。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="308" />
@@ -2749,353 +2757,453 @@
 <context>
     <name>CardOperationError</name>
     <message>
-        <location filename="../ui/messages.py" line="318" />
+        <location filename="../ui/messages.py" line="300" />
         <source>Perturb: Sobol sampling supports at most {max_atoms} atoms; use Uniform sampling for larger structures.</source>
         <translation>原子扰动：Sobol 采样最多支持 {max_atoms} 个原子；更大的结构请使用 Uniform 采样。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="323" />
+        <location filename="../ui/messages.py" line="305" />
         <source>Perturb: {element} is not a valid element symbol for a displacement limit.</source>
         <translation>原子扰动：{element} 不是可用于位移上限的有效元素符号。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="327" />
+        <location filename="../ui/messages.py" line="309" />
         <source>Perturb: element {element} has more than one displacement limit; keep only one row.</source>
         <translation>原子扰动：元素 {element} 设置了多个位移上限；请只保留一行。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="331" />
+        <location filename="../ui/messages.py" line="313" />
         <source>Perturb: the displacement limit for {element} must be finite and non-negative.</source>
         <translation>原子扰动：元素 {element} 的位移上限必须是有限的非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="335" />
+        <location filename="../ui/messages.py" line="317" />
         <source>Unsupported crystal prototype: {lattice}.</source>
         <translation>不支持的晶体原型：{lattice}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="336" />
+        <location filename="../ui/messages.py" line="318" />
         <source>Maximum outputs must be at least 1.</source>
         <translation>最大输出数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="337" />
+        <location filename="../ui/messages.py" line="319" />
         <source>The hcp c/a ratio must be a positive finite number.</source>
         <translation>HCP c/a 轴比必须是有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="351" />
+        <location filename="../ui/messages.py" line="333" />
         <source>Enter one element symbol or the X placeholder for every visible sublattice.</source>
         <translation>请为每个可见子晶格输入一个元素符号或 X 占位符。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="355" />
+        <location filename="../ui/messages.py" line="337" />
         <source>Invalid element or placeholder {element}; use a chemical element symbol or X.</source>
         <translation>无效的元素或占位符 {element}；请使用化学元素符号或 X。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="359" />
+        <location filename="../ui/messages.py" line="341" />
         <source>The mode coefficient scale must be a positive finite number.</source>
         <translation>模态系数尺度必须是有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="362" />
+        <location filename="../ui/messages.py" line="344" />
         <source>Modes combined per sample must be at least 1.</source>
         <translation>每个样本至少需要组合 1 个模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="365" />
+        <location filename="../ui/messages.py" line="347" />
         <source>Structures per input must be an integer.</source>
         <translation>每个输入生成的结构数必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="366" />
+        <location filename="../ui/messages.py" line="348" />
         <source>Structures per input must be at least 1.</source>
         <translation>每个输入至少需要生成 1 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="367" />
+        <location filename="../ui/messages.py" line="349" />
         <source>Coefficient distribution must be Normal or Uniform.</source>
         <translation>系数分布必须是正态分布或均匀分布。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="370" />
+        <location filename="../ui/messages.py" line="352" />
         <source>The absolute frequency cutoff must be a finite non-negative number.</source>
         <translation>绝对频率截止值必须是有限非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="373" />
+        <location filename="../ui/messages.py" line="355" />
         <source>Vibrational perturbation needs at least one usable mode on every input structure.</source>
         <translation>每个输入结构至少需要包含一个可用的振动模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="377" />
+        <location filename="../ui/messages.py" line="359" />
         <source>Finite frequencies are required when frequency filtering or scaling is enabled.</source>
         <translation>启用频率筛选或加权时，所有模式都必须包含有限频率值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="381" />
+        <location filename="../ui/messages.py" line="363" />
         <source>Frequency weighting requires non-zero frequencies for every usable mode.</source>
         <translation>频率加权要求每个可用模式的频率都不为零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="385" />
+        <location filename="../ui/messages.py" line="367" />
         <source>Modes per sample is {requested}, but only {available} usable modes are available.</source>
         <translation>每个样本请求组合 {requested} 个模式，但筛选后只有 {available} 个可用模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="389" />
+        <location filename="../ui/messages.py" line="371" />
         <source>Maximum perturbation angle must be between 0 and 180 degrees.</source>
         <translation>最大扰动角必须在 0 到 180 度之间。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="392" />
+        <location filename="../ui/messages.py" line="374" />
         <source>Spin Perturb requires spin or initial magnetic moments on every input structure.</source>
         <translation>磁矩扰动要求每个输入结构都包含 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="407" />
+        <location filename="../ui/messages.py" line="389" />
         <source>Spin Perturb could not convert the input magnetic moments to vectors.</source>
         <translation>磁矩扰动无法将输入磁矩转换为矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="417" />
+        <location filename="../ui/messages.py" line="399" />
         <source>Increase the perturbation angle or enable a magnitude scale range that changes the moments.</source>
         <translation>请增大扰动角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="421" />
+        <location filename="../ui/messages.py" line="403" />
         <source>Exact correlated sampling supports at most {maximum} eligible non-zero moments; the current selection has {actual}. Reduce the target elements or use a smaller structure.</source>
         <translation>精确关联采样最多支持 {maximum} 个符合条件的非零磁矩；当前选择了 {actual} 个。请减少目标元素或使用更小的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="426" />
+        <location filename="../ui/messages.py" line="408" />
         <source>Spin Spiral maximum outputs must be at least 1.</source>
         <translation>旧版自旋螺旋的最大输出数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="429" />
+        <location filename="../ui/messages.py" line="411" />
         <source>No lattice-compatible spin-spiral period exists in the requested range. For a period of {period} Å, try a {multipliers} supercell.</source>
         <translation>请求范围内没有与晶格相容的自旋螺旋周期。对于 {period} Å 周期，可尝试 {multipliers} 超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="434" />
+        <location filename="../ui/messages.py" line="416" />
         <source>No lattice-compatible spin-spiral period exists in the requested range. Change the period range or expand the cell along the propagation axis.</source>
         <translation>请求范围内没有与晶格相容的自旋螺旋周期。请修改周期范围，或沿传播轴扩胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="439" />
+        <location filename="../ui/messages.py" line="421" />
         <source>Spin Spiral requires at least one non-zero magnetic moment. Add moments upstream or select the element-map source and enter a non-zero magnitude.</source>
         <translation>旧版自旋螺旋要求输入至少包含一个非零磁矩。请在上游添加磁矩，或选择元素表来源并填写非零模长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="444" />
+        <location filename="../ui/messages.py" line="426" />
         <source>Maximum outputs must be at least {minimum} for the selected folded-helix sequence mode.</source>
         <translation>当前折返方向模式要求最大输出数至少为 {minimum}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="448" />
+        <location filename="../ui/messages.py" line="430" />
         <source>Folded Helix requires at least one non-zero magnetic moment. Add moments upstream or select the element-map source and enter a non-zero magnitude.</source>
         <translation>折返螺旋要求输入至少包含一个非零磁矩。请在上游添加磁矩，或选择元素表来源并填写非零模长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="453" />
+        <location filename="../ui/messages.py" line="435" />
         <source>Folded Helix needs at least 3 detected layers along the layer axis; the current settings detect {actual}. Check the layer axis and tolerance.</source>
         <translation>折返螺旋沿分层方向至少需要识别出 3 层；当前设置识别出 {actual} 层。请检查层方向和分层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="458" />
+        <location filename="../ui/messages.py" line="440" />
         <source>Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. Expand the cell, choose another plane, or reduce the layer tolerance.</source>
         <translation>原子层分组至少需要检测到两层；当前设置检测到 {actual} 层。请扩胞、更换晶面或减小层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="463" />
+        <location filename="../ui/messages.py" line="445" />
         <source>Layer Groups needs a finite, non-singular 3D cell.</source>
         <translation>原子层分组需要有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="466" />
+        <location filename="../ui/messages.py" line="448" />
         <source>Layer tolerance must be a positive finite distance.</source>
         <translation>层容差必须是正的有限距离。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="469" />
+        <location filename="../ui/messages.py" line="451" />
         <source>Plane index must be 100, 010, 001, 110, or 111.</source>
         <translation>晶面指数必须是 100、010、001、110 或 111。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="472" />
+        <location filename="../ui/messages.py" line="454" />
         <source>Layer group labels must be non-empty.</source>
         <translation>原子层分组标签不能为空。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="475" />
+        <location filename="../ui/messages.py" line="457" />
         <source>Layer group A and B labels must be different.</source>
         <translation>原子层分组的 A、B 标签不能相同。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="478" />
+        <location filename="../ui/messages.py" line="460" />
         <source>Targeted Vacancy requires at least one vacancy rule.</source>
         <translation>定向空位至少需要一条空位规则。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="481" />
+        <location filename="../ui/messages.py" line="463" />
         <source>Targeted Vacancy requires at least two atoms.</source>
         <translation>定向空位的输入结构至少需要两个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="484" />
+        <location filename="../ui/messages.py" line="466" />
         <source>Vacancy rule {rule} is invalid.</source>
         <translation>空位规则 {rule} 无效。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="487" />
+        <location filename="../ui/messages.py" line="469" />
         <source>Vacancy rule {rule} requires an element.</source>
         <translation>空位规则 {rule} 必须填写元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="490" />
+        <location filename="../ui/messages.py" line="472" />
         <source>Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.</source>
         <translation>空位规则 {rule} 需要一个整数数量，或按从小到大填写最小值和最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="494" />
+        <location filename="../ui/messages.py" line="476" />
         <source>Vacancy rule {rule} count must be at least 0.</source>
         <translation>空位规则 {rule} 的数量不能小于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="497" />
+        <location filename="../ui/messages.py" line="479" />
         <source>Vacancy rule {rule} count mode must be Fixed count or Random range.</source>
         <translation>空位规则 {rule} 的数量模式必须是“固定数量”或“随机范围”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="501" />
+        <location filename="../ui/messages.py" line="483" />
         <source>Vacancy rule {rule} fixed count must use the same minimum and maximum.</source>
         <translation>空位规则 {rule} 使用固定数量时，最小值和最大值必须相同。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="505" />
+        <location filename="../ui/messages.py" line="487" />
         <source>Vacancy rule {rule} fixed count must be at least 1.</source>
         <translation>空位规则 {rule} 的固定数量至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="508" />
+        <location filename="../ui/messages.py" line="490" />
         <source>Vacancy rule {rule} random range must allow at least one vacancy.</source>
         <translation>空位规则 {rule} 的随机范围必须允许至少删除一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="512" />
+        <location filename="../ui/messages.py" line="494" />
         <source>Vacancy rule {rule} group must contain at least one non-empty label.</source>
         <translation>空位规则 {rule} 的分组条件至少需要一个非空标签。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="516" />
+        <location filename="../ui/messages.py" line="498" />
         <source>Vacancy rule {rule} requests group labels, but the input structure has no group array.</source>
         <translation>空位规则 {rule} 使用了分组条件，但输入结构没有 group 数组。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="520" />
+        <location filename="../ui/messages.py" line="502" />
         <source>Vacancy rule {rule} matched no atoms ({target}).</source>
         <translation>空位规则 {rule} 没有匹配到原子（{target}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="523" />
+        <location filename="../ui/messages.py" line="505" />
         <source>Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).</source>
         <translation>空位规则 {rule} 最多要求删除 {requested} 个原子，但只有 {available} 个原子匹配（{target}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="527" />
+        <location filename="../ui/messages.py" line="509" />
         <source>Maximum outputs per input must be at least 1.</source>
         <translation>每个输入的最大输出数至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="530" />
-        <location filename="../ui/messages.py" line="568" />
+        <location filename="../ui/messages.py" line="512" />
+        <location filename="../ui/messages.py" line="550" />
         <source>Random seed must be at least 0.</source>
         <translation>随机种子不能小于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="533" />
+        <location filename="../ui/messages.py" line="515" />
         <source>Targeted Vacancy could not generate a valid non-empty structure. Reduce overlapping rule counts, broaden the groups, or expand the structure.</source>
         <translation>定向空位无法生成有效的非空结构。请减少重叠规则的删除数量、扩大分组范围或扩展结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="538" />
+        <location filename="../ui/messages.py" line="520" />
         <source>Global Vacancy requires at least two atoms.</source>
         <translation>全局空位的输入结构至少需要两个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="541" />
+        <location filename="../ui/messages.py" line="523" />
         <source>Site sampling must be Uniform or Sobol.</source>
         <translation>位点采样方式必须是“均匀随机”或“Sobol”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="544" />
+        <location filename="../ui/messages.py" line="526" />
         <source>Vacancies per output must be Fixed or Variable.</source>
         <translation>每个输出的空位数必须选择“固定”或“变化”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="547" />
+        <location filename="../ui/messages.py" line="529" />
         <source>Maximum outputs per input must be a positive integer.</source>
         <translation>每个输入的最大输出数必须是正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="550" />
+        <location filename="../ui/messages.py" line="532" />
         <source>Vacancies must be an integer.</source>
         <translation>空位数量必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="551" />
+        <location filename="../ui/messages.py" line="533" />
         <source>Vacancies must be at least 1.</source>
         <translation>空位数量至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="552" />
+        <location filename="../ui/messages.py" line="534" />
         <source>Vacancies must be at most {maximum} for this input so at least one atom remains.</source>
         <translation>当前输入的空位数量最多为 {maximum}，以确保至少保留一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="556" />
+        <location filename="../ui/messages.py" line="538" />
         <source>Vacancy fraction must be greater than 0 and less than 1.</source>
         <translation>空位比例必须大于 0 且小于 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="559" />
+        <location filename="../ui/messages.py" line="541" />
         <source>Vacancy fraction is too small for this input; use at least {minimum} to remove one atom.</source>
         <translation>空位比例对当前输入过小；至少使用 {minimum} 才能删除一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="563" />
+        <location filename="../ui/messages.py" line="545" />
         <source>Sobol sampling supports at most {maximum} atoms; use Uniform for larger inputs.</source>
         <translation>Sobol 采样最多支持 {maximum} 个原子；更大的输入请使用均匀随机采样。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="567" />
+        <location filename="../ui/messages.py" line="549" />
         <source>Random seed must be an integer.</source>
         <translation>随机种子必须是整数。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="551" />
+        <source>GSFE Path requires at least one atom.</source>
+        <translation>层错路径要求输入结构至少包含一个原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="554" />
+        <source>GSFE Path requires a finite, nonsingular 3×3 cell.</source>
+        <translation>层错路径要求输入结构具有有限且非奇异的 3×3 晶胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="557" />
+        <source>The fault-plane indices must not all be zero.</source>
+        <translation>层错面指数不能全为零。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="560" />
+        <source>The in-plane direction must not be zero.</source>
+        <translation>面内方向不能为零。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="563" />
+        <source>The in-plane indices produce a zero shift vector.</source>
+        <translation>输入的面内指数对应零位移矢量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="566" />
+        <source>The shift direction must lie in the fault plane.</source>
+        <translation>位移方向必须位于层错面内。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="569" />
+        <source>Displacement unit must be Vector fraction or Å distance.</source>
+        <translation>位移单位必须是“矢量分数”或“Å 距离”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="572" />
+        <source>GSFE Path requires finite Cartesian atom positions.</source>
+        <translation>层错路径要求原子的笛卡尔坐标均为有限值。</translation>
+    </message>
+    <message>
         <location filename="../ui/messages.py" line="575" />
+        <source>Displacement path needs a start, end, and positive step.</source>
+        <translation>位移路径需要起点、终点和正步长。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="578" />
+        <source>{label} must contain exactly three integers.</source>
+        <translation>{label} 必须恰好包含三个整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="581" />
+        <source>The fault-plane indices produce a zero normal.</source>
+        <translation>输入的层错面指数对应零法向量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="584" />
+        <source>GSFE Path requires a nonzero third cell vector.</source>
+        <translation>层错路径要求第三晶胞矢量非零。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="587" />
+        <source>The third cell vector must be normal to the current ab fault plane.</source>
+        <translation>第三晶胞矢量必须垂直于当前 ab 层错面。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="590" />
+        <source>GSFE Path requires finite projected atom coordinates.</source>
+        <translation>层错路径要求原子的投影坐标均为有限值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="593" />
+        <source>GSFE Path requires atoms on at least two distinct layers.</source>
+        <translation>层错路径要求原子至少分布在两个不同的原子层上。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="596" />
+        <source>Thickness fraction must be between 0 and 1.</source>
+        <translation>厚度分数必须位于 0 与 1 之间。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="599" />
+        <source>Lower layer index must select a layer below the top layer.</source>
+        <translation>下方原子层索引必须选中最高层以下的原子层。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="602" />
+        <source>Cut position must be Middle, Thickness, or Layer index.</source>
+        <translation>切面位置必须是“中间”“厚度”或“层索引”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="605" />
+        <source>The cut must leave atoms on both sides; adjust its position.</source>
+        <translation>切面两侧都必须保留原子；请调整切面位置。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="608" />
+        <source>{label} must be an integer.</source>
+        <translation>{label} 必须是整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="617" />
         <source>Magnetic response needs vector spin or initial magnetic moments on the input structure.</source>
         <translation>磁响应要求输入结构带有矢量 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="579" />
+        <location filename="../ui/messages.py" line="621" />
         <source>Magnetic response needs finite magnetic moments with at least one non-zero vector.</source>
         <translation>磁响应要求磁矩数值有限，并且至少包含一个非零矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="583" />
+        <location filename="../ui/messages.py" line="625" />
         <source>Maximum structures is smaller than the coordinate count of one complete response group.</source>
         <translation>最大结构数小于一个完整响应组所需的坐标数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="587" />
+        <location filename="../ui/messages.py" line="629" />
         <source>No non-zero magnetic moments match the selected atoms and elements.</source>
         <translation>所选原子和元素中没有匹配的非零磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="591" />
+        <location filename="../ui/messages.py" line="633" />
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Layer Groups upstream.</source>
         <translation>输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“原子层分组”卡片。</translation>
     </message>
@@ -3104,57 +3212,57 @@
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="596" />
+        <location filename="../ui/messages.py" line="638" />
         <source>No atom pairs match the selected neighbor shell and automatic-pair filters.</source>
         <translation>没有原子对同时满足所选近邻壳层和自动配对筛选条件。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="600" />
+        <location filename="../ui/messages.py" line="642" />
         <source>No valid magnetic atom pairs match the left and right indices.</source>
         <translation>左右索引没有匹配到有效的磁性原子对。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="604" />
+        <location filename="../ui/messages.py" line="646" />
         <source>Maximum structures must be at least {required} for the selected texture response path.</source>
         <translation>所选纹理响应路径至少需要 {required} 个结构，请提高最大结构数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="608" />
+        <location filename="../ui/messages.py" line="650" />
         <source>Cell-reciprocal q needs a finite, non-singular 3D cell.</source>
         <translation>晶胞倒空间 q 要求输入具有数值有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="611" />
+        <location filename="../ui/messages.py" line="653" />
         <source>The reciprocal-cell index must contain three finite integers.</source>
         <translation>晶胞倒空间索引必须包含三个数值有限的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="614" />
+        <location filename="../ui/messages.py" line="656" />
         <source>The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.</source>
         <translation>螺旋响应的晶胞倒空间索引不能为 (0, 0, 0)。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="618" />
+        <location filename="../ui/messages.py" line="660" />
         <source>q definition must be Cell reciprocal vector or Cartesian vector.</source>
         <translation>q 定义方式必须是晶胞倒空间矢量或笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="622" />
+        <location filename="../ui/messages.py" line="664" />
         <source>The Cartesian base q vector must be non-zero for a spiral response.</source>
         <translation>螺旋响应的笛卡尔基准 q 矢量必须非零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="626" />
+        <location filename="../ui/messages.py" line="668" />
         <source>q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, or change q and the supercell together.</source>
         <translation>q 沿第 {index} 根周期晶格矢量不能闭合。请使用晶胞倒空间 q，或同时调整 q 和超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="631" />
+        <location filename="../ui/messages.py" line="673" />
         <source>The two symmetric-shear directions must be perpendicular Cartesian vectors.</source>
         <translation>对称剪切的两个方向必须是互相垂直的笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="635" />
+        <location filename="../ui/messages.py" line="677" />
         <source>The Bain lattice axis must be a, b, or c.</source>
         <translation>Bain 晶格轴必须为 a、b 或 c。</translation>
     </message>
@@ -3175,17 +3283,17 @@
         <translation type="vanished">磁矩旋转要求每个输入结构都包含 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="396" />
+        <location filename="../ui/messages.py" line="378" />
         <source>Scalar magnetic moments must be lifted to vectors before they can be rotated.</source>
         <translation>标量磁矩必须先转为矢量才能旋转。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="400" />
+        <location filename="../ui/messages.py" line="382" />
         <source>The scalar lift direction must contain three finite Cartesian components.</source>
         <translation>标量抬升方向必须包含三个有限的笛卡尔分量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="404" />
+        <location filename="../ui/messages.py" line="386" />
         <source>The scalar lift direction must be non-zero.</source>
         <translation>标量抬升方向不能为零向量。</translation>
     </message>
@@ -3194,12 +3302,12 @@
         <translation type="vanished">磁矩旋转无法将输入磁矩转换为矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="411" />
+        <location filename="../ui/messages.py" line="393" />
         <source>Magnitude scale bounds must be finite and non-negative.</source>
         <translation>模长缩放范围必须有限且非负。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="414" />
+        <location filename="../ui/messages.py" line="396" />
         <source>Magnitude scale minimum must not exceed the maximum.</source>
         <translation>模长缩放下限不能大于上限。</translation>
     </message>
@@ -3208,12 +3316,12 @@
         <translation type="vanished">请增大旋转角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="569" />
+        <location filename="../ui/messages.py" line="611" />
         <source>Invalid element symbols in the target list: {elements}.</source>
         <translation>目标元素中包含无效元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="572" />
+        <location filename="../ui/messages.py" line="614" />
         <source>No non-zero magnetic moments match the selected elements.</source>
         <translation>所选元素没有匹配到非零磁矩。</translation>
     </message>
@@ -3226,22 +3334,22 @@
         <translation type="vanished">手动重复倍率必须包含三个正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="340" />
+        <location filename="../ui/messages.py" line="322" />
         <source>Enter one valid chemical element symbol, for example Cu, Fe, or Mg.</source>
         <translation>请输入一个有效的元素符号，例如 Cu、Fe 或 Mg。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="344" />
+        <location filename="../ui/messages.py" line="326" />
         <source>The lattice-constant range must contain finite numbers.</source>
         <translation>晶格常数范围必须包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="347" />
+        <location filename="../ui/messages.py" line="329" />
         <source>Lattice constants must be positive.</source>
         <translation>晶格常数必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="348" />
+        <location filename="../ui/messages.py" line="330" />
         <source>The lattice-constant step must be positive.</source>
         <translation>晶格常数步长必须为正数。</translation>
     </message>
@@ -9243,23 +9351,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="674" />
-        <location filename="../ui/messages.py" line="714" />
+        <location filename="../ui/messages.py" line="716" />
+        <location filename="../ui/messages.py" line="756" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="684" />
+        <location filename="../ui/messages.py" line="726" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="694" />
+        <location filename="../ui/messages.py" line="736" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="704" />
+        <location filename="../ui/messages.py" line="746" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -11394,7 +11502,7 @@ All child items will also be deleted.</source>
     <name>RuntimeMessage</name>
     <message>
         <location filename="../ui/messages.py" line="17" />
-        <location filename="../ui/messages.py" line="307" />
+        <location filename="../ui/messages.py" line="289" />
         <source>__language_probe__</source>
         <translation>zh_CN</translation>
     </message>
@@ -14159,9 +14267,13 @@ Do you want to continue?</source>
         <translation>旧版层错位移</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/stacking_fault_card.py" line="32" />
         <source>Compatibility card for existing workflows. It shifts one side of a projected cut along an automatically chosen Cartesian direction; use Stacking Fault / GSFE Path to specify the physical slip direction.</source>
-        <translation>用于现有工作流的兼容卡片。它沿自动选择的笛卡尔方向移动投影切面一侧的原子；新任务请用“层错 / GSFE 路径”明确指定物理滑移方向。</translation>
+        <translation type="vanished">用于现有工作流的兼容卡片。它沿自动选择的笛卡尔方向移动投影切面一侧的原子；新任务请用“层错 / GSFE 路径”明确指定物理滑移方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/stacking_fault_card.py" line="32" />
+        <source>Compatibility card for existing workflows. It shifts one side of a projected cut along an automatically chosen Cartesian direction; use GSFE Path to specify the physical slip direction.</source>
+        <translation>用于兼容现有工作流。它沿自动选择的笛卡尔方向移动投影切面一侧的原子；新任务请使用“层错路径”指定实际滑移方向。</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/stacking_fault_card.py" line="38" />
@@ -14280,8 +14392,9 @@ Do you want to continue?</source>
         <translation type="vanished">切面比例</translation>
     </message>
     <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="114" />
         <source>Layer index</source>
-        <translation type="vanished">层索引</translation>
+        <translation>层索引</translation>
     </message>
     <message>
         <source>Wrap</source>
@@ -14292,129 +14405,284 @@ Do you want to continue?</source>
         <translation type="vanished">显式 GSFE 路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="55" />
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="68" />
         <source>Fault plane (h k l)</source>
-        <translation>层错面 (h k l)</translation>
+        <translation type="vanished">层错面 (h k l)</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="60" />
         <source>Plane indices in the current cell; the third cell vector must be normal to this plane</source>
-        <translation>当前晶胞中的晶面指数；第三晶胞矢量必须垂直于该晶面</translation>
+        <translation type="vanished">当前晶胞中的晶面指数；第三晶胞矢量必须垂直于该晶面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="71" />
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="84" />
         <source>Slip direction [u v w]</source>
-        <translation>滑移方向 [u v w]</translation>
+        <translation type="vanished">滑移方向 [u v w]</translation>
     </message>
     <message>
         <source>Direction in the current cell basis; any normal component is projected out</source>
         <translation type="vanished">当前晶胞基矢下的方向；程序会去掉它沿晶面法向的分量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="87" />
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="99" />
         <source>Displacement range</source>
-        <translation>位移范围</translation>
+        <translation type="vanished">位移范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="91" />
         <source>Start, end, and positive step; both endpoints are included</source>
-        <translation>依次填写起点、终点和正步长；起点与终点都包含在内</translation>
+        <translation type="vanished">依次填写起点、终点和正步长；起点与终点都包含在内</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="95" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="37" />
+        <source>GSFE Path</source>
+        <translation>层错路径</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="50" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="52" />
+        <source>In-plane direction [u v]</source>
+        <translation>面内方向 [u v]</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="55" />
+        <source>The shift vector is u·a + v·b in the current oriented cell.</source>
+        <translation>位移矢量为当前已定向晶胞中的 u·a + v·b。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="64" />
+        <source>Slip geometry</source>
+        <translation>滑移几何</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="67" />
+        <source>The current cell's ab plane is the fault plane (stored as 001); the third cell vector must be normal to it.</source>
+        <translation>当前晶胞的 ab 面就是层错面（保存为 001）；第三晶胞矢量必须垂直于该平面。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="77" />
         <source>step</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="102" />
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="120" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="83" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="105" />
+        <source>Displacement path</source>
+        <translation>位移路径</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="85" />
+        <source>Path (start, end, step)</source>
+        <translation>路径（起点、终点、步长）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="88" />
+        <source>Both endpoints are included; step must be positive.</source>
+        <translation>包含两个端点；步长必须为正数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="92" />
+        <source>Vector fraction</source>
+        <translation>矢量分数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="93" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="374" />
+        <source>Å distance</source>
+        <translation>Å 距离</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="94" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="97" />
         <source>Displacement unit</source>
         <translation>位移单位</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="101" />
+        <source>A vector fraction scales u·a + v·b; Å distance uses only its direction.</source>
+        <translation>“矢量分数”按比例缩放 u·a + v·b；“Å 距离”只使用该矢量的方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="112" />
+        <source>Middle</source>
+        <translation>中间</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="113" />
+        <source>Thickness</source>
+        <translation>厚度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="115" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="155" />
+        <source>Interlayer cut</source>
+        <translation>层间切面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="121" />
+        <source>Atoms above the resolved interlayer cut move together.</source>
+        <translation>解析出的层间切面上方的原子会整体移动。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="135" />
+        <source>0 is the lowest projected layer and 1 is the highest.</source>
+        <translation>0 表示最低投影原子层，1 表示最高投影原子层。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="150" />
+        <source>Zero-based; the cut is placed after this projected layer.</source>
+        <translation>从 0 开始计数；切面位于该投影原子层之后。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="167" />
+        <source>Coordinates</source>
+        <translation>坐标处理</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="170" />
+        <source>Wrapping keeps periodic coordinates inside the cell; disable it only to inspect the raw Cartesian shift.</source>
+        <translation>周期回绕会将坐标保持在晶胞内；仅在检查原始笛卡尔位移时关闭。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="181" />
+        <source>Output preview</source>
+        <translation>输出预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="239" />
+        <source>thickness {fraction}, cut at {position} Å</source>
+        <translation>厚度分数 {fraction}，切面位于 {position} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="243" />
+        <source>after layer {layer}, cut at {position} Å</source>
+        <translation>第 {layer} 层之后，切面位于 {position} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="246" />
+        <source>middle cut at {position} Å</source>
+        <translation>中间切面位于 {position} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="254" />
+        <source>Load an oriented structure to preview the cut, displacement, and output count.</source>
+        <translation>请载入已定向结构，以预览切面、位移和输出数量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="275" />
+        <source>{start}→{end} × vector = {a0}→{a1} Å</source>
+        <translation>{start}→{end} 倍滑移矢量 = {a0}→{a1} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="282" />
+        <source>{start}→{end} Å</source>
+        <translation>{start}→{end} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="287" />
+        <source>First input: {layers} layers · {cut} · move {moved}, keep {stationary} · {path} · {outputs} outputs</source>
+        <translation>首个输入：{layers} 个原子层 · {cut} · 移动 {moved} 个，保持 {stationary} 个 · {path} · 输出 {outputs} 个结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="359" />
+        <source>Loaded legacy geometry: plane {plane}, direction {direction}. It is preserved until the in-plane direction is edited.</source>
+        <translation>已载入旧版几何：晶面 {plane}、方向 {direction}。编辑面内方向前将保留这些参数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="369" />
+        <source>direction {direction} · {unit} · {cut}</source>
+        <translation>方向 {direction} · {unit} · {cut}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="372" />
+        <source>vector fraction</source>
+        <translation>矢量分数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="377" />
+        <source>middle cut</source>
+        <translation>中间切面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="378" />
+        <source>thickness cut</source>
+        <translation>厚度切面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="379" />
+        <source>layer-index cut</source>
+        <translation>层索引切面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="385" />
+        <source>Indices use the current oriented cell. The third cell vector must be normal to the ab fault plane.</source>
+        <translation>方向指数基于当前已定向晶胞；第三晶胞矢量必须垂直于 ab 层错面。</translation>
     </message>
     <message>
         <source>Use a fraction of the projected slip vector for a periodic path, or an actual distance in angstrom</source>
         <translation type="vanished">周期路径可使用投影滑移向量的分数，也可使用以 Å 为单位的实际距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="35" />
         <source>Stacking Fault / GSFE Path</source>
-        <translation>层错 / GSFE 路径</translation>
+        <translation type="vanished">层错 / GSFE 路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="48" />
         <source>Shift all atoms above an interlayer cut along an explicit in-plane direction. The input cell must already be oriented with its third vector normal to the fault plane.</source>
-        <translation>沿显式面内方向整体移动层间切面上方的原子。输入晶胞必须已定向，使第三晶胞矢量垂直于层错面。</translation>
+        <translation type="vanished">沿显式面内方向整体移动层间切面上方的原子。输入晶胞必须已定向，使第三晶胞矢量垂直于层错面。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="76" />
         <source>Direction in the current cell basis; it must lie in the fault plane</source>
-        <translation>当前晶胞基矢下的方向；必须位于层错面内</translation>
+        <translation type="vanished">当前晶胞基矢下的方向；必须位于层错面内</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="107" />
         <source>Use a fraction of the slip vector for a periodic path, or an actual distance in angstrom</source>
-        <translation>周期路径可使用滑移向量分数，也可使用以 Å 为单位的实际距离</translation>
+        <translation type="vanished">周期路径可使用滑移向量分数，也可使用以 Å 为单位的实际距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="123" />
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="140" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="118" />
         <source>Cut position</source>
         <translation>切面位置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="127" />
         <source>Atoms above this interlayer cut are displaced together</source>
-        <translation>层间切面上方的原子会作为整体一起移动</translation>
+        <translation type="vanished">层间切面上方的原子会作为整体一起移动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="143" />
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="155" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="130" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="132" />
         <source>Thickness fraction</source>
         <translation>厚度分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="147" />
         <source>0 is the lowest projected atom plane and 1 is the highest</source>
-        <translation>0 表示最低投影原子层，1 表示最高投影原子层</translation>
+        <translation type="vanished">0 表示最低投影原子层，1 表示最高投影原子层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="158" />
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="171" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="145" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="147" />
         <source>Lower layer index</source>
         <translation>下方原子层索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="163" />
         <source>Zero-based projected layer; the cut is placed between this layer and the next</source>
-        <translation>从 0 开始计数；切面位于该原子层与下一层之间</translation>
+        <translation type="vanished">从 0 开始计数；切面位于该原子层与下一层之间</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="174" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="163" />
         <source>Wrap displaced atoms into the cell</source>
         <translation>将移动后的原子包回晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="180" />
         <source>Disable only when you need to inspect the unwrapped Cartesian displacement</source>
-        <translation>仅在需要检查未包回的笛卡尔位移时关闭</translation>
+        <translation type="vanished">仅在需要检查未包回的笛卡尔位移时关闭</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="267" />
         <source>Load an upstream slab-oriented structure to preview the cut and output count.</source>
-        <translation>请载入上游已定向结构，以预览切面和输出数量。</translation>
+        <translation type="vanished">请载入上游已定向结构，以预览切面和输出数量。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="279" />
+        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="265" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/strict_gsfe_path_card.py" line="287" />
         <source>First input: {atoms} atoms / {layers} projected layers · move {moved}, keep {stationary} · slip vector length {length} Å · {outputs} outputs</source>
-        <translation>首个输入：{atoms} 个原子 / {layers} 个投影层 · 移动 {moved}，保持 {stationary} · 滑移向量长度 {length} Å · {outputs} 个输出</translation>
+        <translation type="vanished">首个输入：{atoms} 个原子 / {layers} 个投影层 · 移动 {moved}，保持 {stationary} · 滑移向量长度 {length} Å · {outputs} 个输出</translation>
     </message>
     <message>
         <source>First input: {atoms} atoms / {layers} projected layers · move {moved}, keep {stationary} · projected slip length {length} Å · {outputs} outputs</source>

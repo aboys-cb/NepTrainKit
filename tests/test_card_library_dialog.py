@@ -281,7 +281,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             )
             self.assertEqual(
                 popup._buttons_by_class["StrictGSFEPathCard"].text(),
-                "层错 / GSFE 路径",
+                "层错路径",
             )
             self.assertNotIn("StackingFaultCard", popup._buttons_by_class)
             self.assertIn("合金与组分", popup._section_frames)

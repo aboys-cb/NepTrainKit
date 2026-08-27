@@ -257,7 +257,7 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder(fcc111) → Stacking Fault / GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
+`Crystal Prototype Builder(fcc111) → GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
 
 ### 每步 JSON 配置
 
@@ -281,7 +281,7 @@
 
 **每步预期输出：** 1 个 slab-oriented 周期 cell。当前 cell 的 `(001)` 面对应原始 fcc 的 `(111)` 面，第三晶胞方向已经垂直于层错面。
 
-#### Step 2. `Stacking Fault / GSFE Path`
+#### Step 2. `GSFE Path`
 
 ```json
 {
@@ -309,7 +309,7 @@
 
 ### 常见失败点
 
-- 直接把普通 `fcc` cubic cell 送进 `Stacking Fault / GSFE Path`：第三晶胞方向不垂直于目标 `(111)` 面，程序会报 slab-oriented 错误。
+- 直接把普通 `fcc` cubic cell 送进 `GSFE Path`：第三晶胞方向没有按目标 `(111)` 面定向，程序会报错。
 - 把这里的 `fcc111` 当成真空表面：它是周期 cell，不含真空层；如果要自由表面，用 `Random Slab`。
 - 位移步长太粗：0.1 适合第一轮覆盖；如果峰值附近曲线不平滑，把步长缩到 0.05。
 

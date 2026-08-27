@@ -151,24 +151,6 @@ _RUNTIME_TEXT_REPLACEMENTS = (
     ("InsertDefect: species must contain at least one element.", "插隙与表面吸附：请至少填写一种插入元素。"),
     ("InsertDefect: seed must be an integer.", "插隙与表面吸附：随机种子必须是整数。"),
     ("InsertDefect: seed must be >= 0.", "插隙与表面吸附：随机种子必须 >= 0。"),
-    ("StrictGSFEPath requires at least one atom.", "显式 GSFE 路径至少需要一个原子。"),
-    ("StrictGSFEPath requires a finite, nonsingular 3x3 cell.", "显式 GSFE 路径需要有限且非奇异的 3x3 晶胞。"),
-    ("StrictGSFEPath plane_hkl must contain exactly three integers.", "显式 GSFE 路径：层错面必须包含三个整数。"),
-    ("StrictGSFEPath slip_uvw must contain exactly three integers.", "显式 GSFE 路径：滑移方向必须包含三个整数。"),
-    ("StrictGSFEPath plane_hkl must not be (0,0,0).", "显式 GSFE 路径：层错面不能是 (0,0,0)。"),
-    ("StrictGSFEPath slip_uvw must not be (0,0,0).", "显式 GSFE 路径：滑移方向不能是 (0,0,0)。"),
-    ("StrictGSFEPath slip_uvw produced a zero vector.", "层错 / GSFE 路径：滑移方向产生了零向量。"),
-    ("StrictGSFEPath slip_uvw must lie in the fault plane.", "层错 / GSFE 路径：滑移方向必须位于层错面内。"),
-    ("StrictGSFEPath displacement_unit must be fraction_of_vector or angstrom.", "显式 GSFE 路径：位移单位必须是滑移向量分数或 Å。"),
-    ("StrictGSFEPath requires finite Cartesian atom positions.", "显式 GSFE 路径需要有限的笛卡尔原子坐标。"),
-    ("StrictGSFEPath requires atoms on at least two distinct planes.", "显式 GSFE 路径至少需要两个不同的投影原子层。"),
-    ("StrictGSFEPath cut_fraction must be between 0 and 1.", "显式 GSFE 路径：厚度分数必须在 0 到 1 之间。"),
-    ("StrictGSFEPath layer_index must be an integer.", "显式 GSFE 路径：原子层索引必须是整数。"),
-    ("StrictGSFEPath layer_index must select a layer below the top layer.", "显式 GSFE 路径：原子层索引必须位于最高层以下。"),
-    ("StrictGSFEPath cut_mode must be middle, fractional, or layer_index.", "显式 GSFE 路径：切面位置模式无效。"),
-    ("StrictGSFEPath cut must leave atoms on both sides; adjust the cut position.", "显式 GSFE 路径：切面两侧都必须有原子，请调整切面位置。"),
-    ("StrictGSFEPath requires a nonzero third cell vector.", "显式 GSFE 路径需要非零的第三晶胞矢量。"),
-    ("StrictGSFEPath requires a slab-oriented cell: the third cell vector must be normal to plane_hkl.", "显式 GSFE 路径需要已定向晶胞：第三晶胞矢量必须垂直于层错面。"),
     ("OrganicMolConfig requires at least one atom.", "有机构象采样至少需要一个原子。"),
     ("OrganicMolConfig requires finite Cartesian atom positions.", "有机构象采样需要有限的笛卡尔原子坐标。"),
     ("OrganicMolConfig: pbc_mode must be auto, yes, or no.", "有机构象采样：边界处理模式必须是 auto、yes 或 no。"),
@@ -566,6 +548,66 @@ def _card_operation_error_catalog() -> None:
     )
     QCoreApplication.translate("CardOperationError", "Random seed must be an integer.")
     QCoreApplication.translate("CardOperationError", "Random seed must be at least 0.")
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires at least one atom."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires a finite, nonsingular 3×3 cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The fault-plane indices must not all be zero."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The in-plane direction must not be zero."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The in-plane indices produce a zero shift vector."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The shift direction must lie in the fault plane."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Displacement unit must be Vector fraction or Å distance."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires finite Cartesian atom positions."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Displacement path needs a start, end, and positive step."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{label} must contain exactly three integers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The fault-plane indices produce a zero normal."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires a nonzero third cell vector."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The third cell vector must be normal to the current ab fault plane."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires finite projected atom coordinates."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires atoms on at least two distinct layers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Thickness fraction must be between 0 and 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Lower layer index must select a layer below the top layer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Cut position must be Middle, Thickness, or Layer index."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The cut must leave atoms on both sides; adjust its position."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{label} must be an integer."
+    )
     QCoreApplication.translate(
         "CardOperationError", "Invalid element symbols in the target list: {elements}."
     )

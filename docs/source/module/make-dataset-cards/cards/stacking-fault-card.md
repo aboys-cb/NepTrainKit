@@ -10,10 +10,10 @@
 
 这张卡保留早期 NepTrainKit 的固定晶胞半区平移算法，用于载入和复现已有工作流。它的“切面一侧整体滑移”思路可以生成层错，也与常见 Atomsk 脚本采用同一种几何操作；问题在于卡片没有让用户显式指定滑移方向，切面参数也容易误解，因此不再出现在“添加新卡片”和“查找卡片”中。
 
-旧 JSON 中的 `StackingFaultCard` 仍可正常载入和运行。新任务请使用 `Stacking Fault / GSFE Path`（序列化类名仍为 `StrictGSFEPathCard`）。后者显式要求：
+旧 JSON 中的 `StackingFaultCard` 仍可正常载入和运行。新任务请使用 `GSFE Path`（序列化类名仍为 `StrictGSFEPathCard`）。后者显式要求：
 
-- 层错面 `plane_hkl`；
-- 滑移方向 `slip_uvw`；
+- 当前晶胞的 `ab` 层错面；
+- 当前晶胞基矢下的面内方向；
 - 位移单位；
 - 切面位置；
 - 输入晶胞与目标层错面的定向一致性。

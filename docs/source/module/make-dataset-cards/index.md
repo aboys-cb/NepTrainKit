@@ -77,7 +77,7 @@
 | 在全部原子中按数量或比例随机删位 | [全局空位](cards/vacancy-defect-card.md) | 通常先扩胞 |
 | 只删除指定元素或 `group` 中的位点 | [定向空位](cards/random-vacancy-card.md) | 需要时先做原子层分组 |
 | 插入间隙原子或表面吸附原子 | [插隙与表面吸附](cards/interstitial-adsorbate-card.md) | 体相通常先扩胞，吸附通常先建表面 |
-| 扫描指定晶面和滑移方向的层错路径 | [层错 / GSFE 路径](cards/strict-gsfe-path-card.md) | 输入必须已经按目标晶面定向 |
+| 扫描当前 `ab` 面内的层错位移路径 | [层错路径](cards/strict-gsfe-path-card.md) | 输入必须已经按目标晶面定向 |
 
 ### 生成磁性构型
 
@@ -135,8 +135,8 @@
 
 ### 层错只保留一个新建入口
 
-- 新任务统一使用 `Stacking Fault / GSFE Path`，显式填写 `plane_hkl`、位于面内的 `slip_uvw`、切面位置和位移路径。
-- 它不限材料和晶面，但要求输入已经定向：第三晶胞方向必须垂直于 `plane_hkl`。普通 cubic fcc cell 若要扫原始 `(111)` 面，应先用 `Crystal Prototype Builder` 的 `fcc111` 原型或自行构造已定向晶胞。
+- 新任务统一使用 `GSFE Path`，当前晶胞的 `ab` 面就是层错面；用户填写面内方向 `[u v]`、切面位置和位移路径。
+- 它不限材料，但要求输入已经定向：第三晶胞方向必须垂直于当前 `ab` 面。普通 cubic fcc cell 若要扫原始 `(111)` 面，应先用 `Crystal Prototype Builder` 的 `fcc111` 原型或自行构造已定向晶胞。
 - 旧 `StackingFaultCard` 仍保留在序列化注册表中，用于载入历史 JSON；因为它自动从全局笛卡尔轴推导滑移方向，所以不再显示在“添加新卡片”和“查找卡片”中。
 
 ### 设置磁矩 vs 磁序 vs 磁矩旋转

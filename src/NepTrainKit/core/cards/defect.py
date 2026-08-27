@@ -759,6 +759,7 @@ class StrictGSFEPathOperation(StructureOperation):
             "slip_length": settings["slip_norm"],
             "output_count": len(settings["values"]),
             "cut_position": settings["cut_position"],
+            "values": tuple(float(value) for value in settings["values"]),
         }
 
     @classmethod
@@ -768,32 +769,48 @@ class StrictGSFEPathOperation(StructureOperation):
         params: StrictGSFEPathParams,
     ) -> dict[str, Any]:
         if len(structure) == 0:
-            raise ValueError("StrictGSFEPath requires at least one atom.")
+            raise CardOperationError(
+                "gsfe_empty_input",
+                "GSFE Path requires at least one atom.",
+            )
         cell = np.asarray(structure.cell.array, dtype=float)
         if (
             cell.shape != (3, 3)
             or not np.all(np.isfinite(cell))
             or abs(float(np.linalg.det(cell))) <= 1e-12
         ):
-            raise ValueError("StrictGSFEPath requires a finite, nonsingular 3x3 cell.")
+            raise CardOperationError(
+                "gsfe_invalid_cell",
+                "GSFE Path requires a finite, nonsingular 3×3 cell.",
+            )
 
-        hkl = cls._int_triplet(params.plane_hkl, "plane_hkl")
-        uvw = cls._int_triplet(params.slip_uvw, "slip_uvw")
+        hkl = cls._int_triplet(params.plane_hkl, "Fault-plane indices")
+        uvw = cls._int_triplet(params.slip_uvw, "Shift-direction indices")
         if not np.any(hkl):
-            raise ValueError("StrictGSFEPath plane_hkl must not be (0,0,0).")
+            raise CardOperationError(
+                "gsfe_zero_plane",
+                "The fault-plane indices must not all be zero.",
+            )
         if not np.any(uvw):
-            raise ValueError("StrictGSFEPath slip_uvw must not be (0,0,0).")
+            raise CardOperationError(
+                "gsfe_zero_direction",
+                "The in-plane direction must not be zero.",
+            )
 
         normal = cls.plane_normal(cell, hkl)
         cls._validate_slab_oriented(cell, normal)
         slip = np.asarray(uvw, dtype=float) @ cell
         slip_norm = float(np.linalg.norm(slip))
         if slip_norm <= 1e-12:
-            raise ValueError("StrictGSFEPath slip_uvw produced a zero vector.")
+            raise CardOperationError(
+                "gsfe_zero_slip_vector",
+                "The in-plane indices produce a zero shift vector.",
+            )
         normal_component = float(np.dot(slip, normal))
         if abs(normal_component) > 1e-8 * slip_norm:
-            raise ValueError(
-                "StrictGSFEPath slip_uvw must lie in the fault plane."
+            raise CardOperationError(
+                "gsfe_direction_out_of_plane",
+                "The shift direction must lie in the fault plane.",
             )
 
         unit = str(params.displacement_unit)
@@ -802,14 +819,26 @@ class StrictGSFEPathOperation(StructureOperation):
         elif unit == "angstrom":
             displacement_vector = slip / slip_norm
         else:
-            raise ValueError("StrictGSFEPath displacement_unit must be fraction_of_vector or angstrom.")
+            raise CardOperationError(
+                "gsfe_invalid_unit",
+                "Displacement unit must be Vector fraction or Å distance.",
+            )
 
         positions = np.asarray(structure.get_positions(), dtype=float)
         if positions.shape != (len(structure), 3) or not np.all(np.isfinite(positions)):
-            raise ValueError("StrictGSFEPath requires finite Cartesian atom positions.")
+            raise CardOperationError(
+                "gsfe_invalid_positions",
+                "GSFE Path requires finite Cartesian atom positions.",
+            )
         coord = positions @ normal
         mask, cut_position, layer_count = cls._resolved_cut(coord, params)
-        values = _range_values(params.displacement_range)
+        try:
+            values = _range_values(params.displacement_range)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "gsfe_invalid_displacement_path",
+                "Displacement path needs a start, end, and positive step.",
+            ) from exc
         return {
             "cell": cell,
             "hkl": hkl,
@@ -850,18 +879,26 @@ class StrictGSFEPathOperation(StructureOperation):
     @staticmethod
     def _int_triplet(values: Sequence[int], label: str) -> tuple[int, int, int]:
         if len(values) != 3:
-            raise ValueError(f"StrictGSFEPath {label} must contain exactly three integers.")
+            raise CardOperationError(
+                "gsfe_invalid_index_triplet",
+                "{label} must contain exactly three integers.",
+                label=label,
+            )
         resolved = []
         for value in values:
             try:
                 numeric = float(value)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    f"StrictGSFEPath {label} must contain exactly three integers."
+                raise CardOperationError(
+                    "gsfe_invalid_index_triplet",
+                    "{label} must contain exactly three integers.",
+                    label=label,
                 ) from exc
             if not np.isfinite(numeric) or not numeric.is_integer():
-                raise ValueError(
-                    f"StrictGSFEPath {label} must contain exactly three integers."
+                raise CardOperationError(
+                    "gsfe_invalid_index_triplet",
+                    "{label} must contain exactly three integers.",
+                    label=label,
                 )
             resolved.append(int(numeric))
         return tuple(resolved)  # pyright: ignore[reportReturnType]
@@ -876,7 +913,10 @@ class StrictGSFEPathOperation(StructureOperation):
         normal = np.asarray(hkl, dtype=float) @ recip
         norm = float(np.linalg.norm(normal))
         if norm <= 1e-12:
-            raise ValueError("StrictGSFEPath plane_hkl produced a zero normal.")
+            raise CardOperationError(
+                "gsfe_zero_plane_normal",
+                "The fault-plane indices produce a zero normal.",
+            )
         return normal / norm
 
     @staticmethod
@@ -884,11 +924,15 @@ class StrictGSFEPathOperation(StructureOperation):
         c_axis = np.asarray(cell, dtype=float)[2]
         c_norm = float(np.linalg.norm(c_axis))
         if c_norm <= 1e-12:
-            raise ValueError("StrictGSFEPath requires a nonzero third cell vector.")
+            raise CardOperationError(
+                "gsfe_zero_third_vector",
+                "GSFE Path requires a nonzero third cell vector.",
+            )
         parallel_error = float(np.linalg.norm(np.cross(c_axis / c_norm, normal)))
         if parallel_error > 1e-6:
-            raise ValueError(
-                "StrictGSFEPath requires a slab-oriented cell: the third cell vector must be normal to plane_hkl."
+            raise CardOperationError(
+                "gsfe_cell_not_oriented",
+                "The third cell vector must be normal to the current ab fault plane.",
             )
 
     @staticmethod
@@ -898,12 +942,16 @@ class StrictGSFEPathOperation(StructureOperation):
     ) -> tuple[np.ndarray, float, int]:
         coord = np.asarray(coord, dtype=float)
         if coord.ndim != 1 or len(coord) == 0 or not np.all(np.isfinite(coord)):
-            raise ValueError("StrictGSFEPath requires finite projected atom coordinates.")
+            raise CardOperationError(
+                "gsfe_invalid_projected_coordinates",
+                "GSFE Path requires finite projected atom coordinates.",
+            )
         layers = np.unique(np.round(coord, 8))
         layers.sort()
         if len(layers) < 2:
-            raise ValueError(
-                "StrictGSFEPath requires atoms on at least two distinct planes."
+            raise CardOperationError(
+                "gsfe_too_few_layers",
+                "GSFE Path requires atoms on at least two distinct layers.",
             )
 
         mode = str(params.cut_mode).strip().lower()
@@ -913,23 +961,33 @@ class StrictGSFEPathOperation(StructureOperation):
         elif mode == "fractional":
             fraction = float(params.cut_fraction)
             if not np.isfinite(fraction) or fraction < 0.0 or fraction > 1.0:
-                raise ValueError("StrictGSFEPath cut_fraction must be between 0 and 1.")
+                raise CardOperationError(
+                    "gsfe_invalid_cut_fraction",
+                    "Thickness fraction must be between 0 and 1.",
+                )
             cut = float(coord.min() + fraction * (coord.max() - coord.min()))
         elif mode == "layer_index":
             index = StrictGSFEPathOperation._strict_integer(
                 params.layer_index,
-                "layer_index",
+                "Lower layer index",
             )
             if index < 0 or index >= len(layers) - 1:
-                raise ValueError("StrictGSFEPath layer_index must select a layer below the top layer.")
+                raise CardOperationError(
+                    "gsfe_invalid_layer_index",
+                    "Lower layer index must select a layer below the top layer.",
+                )
             cut = float(0.5 * (layers[index] + layers[index + 1]))
         else:
-            raise ValueError("StrictGSFEPath cut_mode must be middle, fractional, or layer_index.")
+            raise CardOperationError(
+                "gsfe_invalid_cut_mode",
+                "Cut position must be Middle, Thickness, or Layer index.",
+            )
         mask = coord > cut + 1e-10
         moved = int(np.count_nonzero(mask))
         if moved == 0 or moved == len(coord):
-            raise ValueError(
-                "StrictGSFEPath cut must leave atoms on both sides; adjust the cut position."
+            raise CardOperationError(
+                "gsfe_empty_cut_side",
+                "The cut must leave atoms on both sides; adjust its position.",
             )
         return mask, cut, len(layers)
 
@@ -938,9 +996,17 @@ class StrictGSFEPathOperation(StructureOperation):
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"StrictGSFEPath {label} must be an integer.") from exc
+            raise CardOperationError(
+                "gsfe_noninteger_value",
+                "{label} must be an integer.",
+                label=label,
+            ) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"StrictGSFEPath {label} must be an integer.")
+            raise CardOperationError(
+                "gsfe_noninteger_value",
+                "{label} must be an integer.",
+                label=label,
+            )
         return int(numeric)
 
     @classmethod

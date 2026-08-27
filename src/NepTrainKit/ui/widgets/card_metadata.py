@@ -297,10 +297,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "StrictGSFEPathCard": (
-            QCoreApplication.translate("CardCatalog", "Stacking Fault / GSFE Path"),
+            QCoreApplication.translate("CardCatalog", "GSFE Path"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Shift atoms above an interlayer cut along an explicit in-plane direction to generate stacking-fault structures or an unrelaxed GSFE path; the input cell must already be oriented to the fault plane.",
+                "Shift atoms above an interlayer cut along a direction in the current ab plane to generate an unrelaxed GSFE path.",
             ),
         ),
         "SuperCellCard": (

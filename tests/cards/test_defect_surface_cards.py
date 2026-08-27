@@ -1314,9 +1314,10 @@ class TestDefectSurfaceCards(BaseCardTest):
 
     def test_strict_gsfe_path_card_roundtrip(self):
         card = StrictGSFEPathCard()
-        self.assertTrue(card.cut_fraction_frame.isHidden())
-        self.assertTrue(card.layer_frame.isHidden())
-        self.assertIn("Load an upstream", card.preview_label.text())
+        self.assertTrue(card.cut_fraction_field.isHidden())
+        self.assertTrue(card.layer_field.isHidden())
+        self.assertGreater(card.disp_frame.object_list[2].minimum(), 0.0)
+        self.assertIn("Load an oriented structure", card.preview_label.text())
 
         card.set_dataset(
             Atoms(
@@ -1326,17 +1327,17 @@ class TestDefectSurfaceCards(BaseCardTest):
                 pbc=True,
             )
         )
-        self.assertIn("4 atoms / 4 projected layers", card.preview_label.text())
+        self.assertIn("4 layers", card.preview_label.text())
         self.assertIn("move 2, keep 2", card.preview_label.text())
+        self.assertIn("0→1 × vector = 0→8 Å", card.preview_label.text())
         self.assertIn("3 outputs", card.preview_label.text())
 
-        card.hkl_frame.set_input_value([1, 1, 0])
-        card.uvw_frame.set_input_value([1, -1, 0])
+        card.slip_uv_frame.set_input_value([1, -1])
         card.disp_frame.set_input_value([0.0, 0.5, 0.25])
-        card.unit_combo.setCurrentIndex(card.unit_combo.findData("angstrom"))
-        card.cut_combo.setCurrentIndex(card.cut_combo.findData("layer_index"))
-        self.assertTrue(card.cut_fraction_frame.isHidden())
-        self.assertFalse(card.layer_frame.isHidden())
+        card.unit_control.setCurrentIndex(card.unit_control.findData("angstrom"))
+        card.cut_control.setCurrentIndex(card.cut_control.findData("layer_index"))
+        self.assertTrue(card.cut_fraction_field.isHidden())
+        self.assertFalse(card.layer_field.isHidden())
         card.cut_fraction_frame.set_input_value([0.25])
         card.layer_frame.set_input_value([2])
         card.wrap_checkbox.setChecked(False)
@@ -1345,6 +1346,46 @@ class TestDefectSurfaceCards(BaseCardTest):
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_strict_gsfe_cut_mode_fields_are_visible_and_operable(self):
+        card = StrictGSFEPathCard()
+        card.show()
+        QApplication.processEvents()
+
+        card.cut_control.setCurrentIndex(card.cut_control.findData("fractional"))
+        QApplication.processEvents()
+        self.assertTrue(card.cut_fraction_frame.isVisible())
+        self.assertFalse(card.layer_field.isVisible())
+        card.cut_fraction_frame.set_input_value([0.25])
+        self.assertEqual(card.get_params().cut_fraction, 0.25)
+
+        card.cut_control.setCurrentIndex(card.cut_control.findData("layer_index"))
+        QApplication.processEvents()
+        self.assertFalse(card.cut_fraction_field.isVisible())
+        self.assertTrue(card.layer_frame.isVisible())
+        card.layer_frame.set_input_value([2])
+        self.assertEqual(card.get_params().layer_index, 2)
+
+        card.cut_control.setCurrentIndex(card.cut_control.findData("middle"))
+        QApplication.processEvents()
+        self.assertFalse(card.cut_fraction_field.isVisible())
+        self.assertFalse(card.layer_field.isVisible())
+
+    def test_strict_gsfe_preserves_legacy_geometry_until_direction_edit(self):
+        card = StrictGSFEPathCard()
+        legacy = StrictGSFEPathParams(
+            plane_hkl=(1, 1, 0),
+            slip_uvw=(1, -1, 2),
+        )
+        card.set_params(legacy)
+
+        self.assertEqual(card.get_params(), legacy)
+        self.assertFalse(card.legacy_geometry_label.isHidden())
+
+        card.slip_uv_frame.object_list[0].setValue(2)
+        self.assertEqual(card.get_params().plane_hkl, (0, 0, 1))
+        self.assertEqual(card.get_params().slip_uvw, (2, -1, 0))
+        self.assertTrue(card.legacy_geometry_label.isHidden())
 
     def test_layer_copy_operation_is_ui_independent(self):
         structure = self.structure.copy()

@@ -13,4 +13,4 @@
 ```
 
 旧版 `Stacking Fault` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用
-`Stacking Fault / GSFE Path`。
+`GSFE Path`。

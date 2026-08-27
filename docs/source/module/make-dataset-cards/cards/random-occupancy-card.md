@@ -144,7 +144,7 @@ $\mathbf n\sim\operatorname{Multinomial}(N,\mathbf p)$ 抽取计数，再打乱�
 ## 推荐组合
 
 - `Composition Space Sampling` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。
-- `Group Label` → `Random Occupancy`：先打 group 标签，再限制占位区域。
+- `Layer Groups` → `Random Occupancy`：先按原子层写入 group 标签，再限制占位区域。
 - `Random Occupancy` → `Atomic Perturb`：占位后加坐标噪声松驰局部应力。
 
 ## 常见问题

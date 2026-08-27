@@ -152,7 +152,7 @@ $$
 
 ## 推荐组合
 
-- `Group Label` → `Random Vacancy`：可按坐标规则生成 A/B 两组后定向删位；`Group Label` 不会自动识别 surface/bulk 或化学子晶格
+- `Layer Groups` → `Random Vacancy`：按逐层交替的 A/B 分组定向删位
 - 已有 `surface` / `bulk` / `sublattice` 标签 → `Random Vacancy`：直接填写已有标签定向删位
 - `Super Cell` → `Random Vacancy`：先扩胞到足够大，避免小胞里缺陷相互作用过强
 - `Random Vacancy` → `FPS Filter`：大批量生成后做代表性筛选

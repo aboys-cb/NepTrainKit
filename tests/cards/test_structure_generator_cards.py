@@ -977,8 +977,7 @@ H 2.6700 0.5000 -0.8660
         base = proto.create_operation().generate(proto.get_params())[0].repeat((2, 2, 2))
 
         gl = GroupLabelCard()
-        gl.mode_combo.setCurrentIndex(0)
-        gl.kvec_combo.setCurrentIndex(4)
+        set_combo_value(gl.plane_combo, "111")
         gl.group_a_edit.setText("A")
         gl.group_b_edit.setText("B")
         labeled = gl.process_structure(base)[0]
@@ -1014,8 +1013,7 @@ H 2.6700 0.5000 -0.8660
         labeled = GroupLabelOperation().run_structure(
             base,
             GroupLabelParams(
-                mode="k-vector layers (recommended)",
-                kvec="111",
+                miller_index="111",
                 group_a="up",
                 group_b="down",
             ),
@@ -1023,67 +1021,98 @@ H 2.6700 0.5000 -0.8660
 
         self.assertIn("group", labeled.arrays)
         self.assertEqual(set(str(value) for value in labeled.arrays["group"]), {"up", "down"})
-        self.assertIn("Grp(k111,up/down)", labeled.info.get("Config_type", ""))
+        self.assertIn("Grp(hkl111,tol=0.05,up/down)", labeled.info.get("Config_type", ""))
 
-    def test_group_label_parity_uses_half_up_rounding(self):
-        base = CrystalPrototypeBuilderOperation().generate(
-            CrystalPrototypeBuilderParams(
-                lattice="bcc",
-                element="Fe",
-                a_range=(2.9, 2.9, 0.1),
-                max_outputs=1,
-            )
-        )[0].repeat((2, 2, 2))
+    def test_group_label_alternates_detected_layers_after_expansion(self):
+        base = Atoms(
+            symbols=["Fe"] * 4,
+            positions=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0], [3.0, 0.0, 0.0]],
+            cell=np.diag([4.0, 2.0, 2.0]),
+            pbc=True,
+        )
+        params = GroupLabelParams(miller_index="100")
+        labeled = GroupLabelOperation().run_structure(base, params)[0]
+        self.assertEqual(list(labeled.arrays["group"]), ["A", "B", "A", "B"])
+
+        expanded = base.repeat((2, 1, 1))
+        repeated = GroupLabelOperation().run_structure(expanded, params)[0]
+        self.assertEqual(
+            list(repeated.arrays["group"]),
+            ["A", "B", "A", "B", "A", "B", "A", "B"],
+        )
+
+    def test_group_label_uses_reciprocal_normal_in_nonorthogonal_cell(self):
+        cell = np.array([[4.0, 0.0, 0.0], [1.5, 3.0, 0.0], [0.4, 0.7, 5.0]])
+        base = Atoms(
+            symbols=["Fe"] * 4,
+            scaled_positions=[[0.0, 0.2, 0.3], [0.25, 0.2, 0.3], [0.5, 0.2, 0.3], [0.75, 0.2, 0.3]],
+            cell=cell,
+            pbc=[True, True, False],
+        )
+        base.new_array("foo", np.arange(4))
         labeled = GroupLabelOperation().run_structure(
             base,
-            GroupLabelParams(
-                mode="fractional_parity",
-                overwrite=True,
-            ),
+            GroupLabelParams(miller_index="100", layer_tolerance=0.05),
         )[0]
-        counts = {
-            label: int(np.count_nonzero(labeled.arrays["group"] == label))
-            for label in ("A", "B")
-        }
-        self.assertEqual(counts, {"A": 8, "B": 8})
+        self.assertEqual(list(labeled.arrays["group"]), ["A", "B", "A", "B"])
+        np.testing.assert_allclose(labeled.cell.array, base.cell.array)
+        np.testing.assert_allclose(labeled.positions, base.positions)
+        np.testing.assert_array_equal(labeled.arrays["foo"], base.arrays["foo"])
 
-    def test_group_label_k_vector_is_stable_on_repeated_cell_boundaries(self):
-        base = CrystalPrototypeBuilderOperation().generate(
-            CrystalPrototypeBuilderParams(
-                lattice="bcc",
-                element="Fe",
-                a_range=(2.9, 2.9, 0.1),
-                max_outputs=1,
-            )
-        )[0].repeat((4, 4, 4))
-        labeled = GroupLabelOperation().run_structure(
+    def test_group_label_merges_a_thermally_split_periodic_boundary_layer(self):
+        base = Atoms(
+            symbols=["Fe"] * 5,
+            scaled_positions=[
+                [0.005, 0.0, 0.0],
+                [0.995, 0.0, 0.0],
+                [0.25, 0.0, 0.0],
+                [0.50, 0.0, 0.0],
+                [0.75, 0.0, 0.0],
+            ],
+            cell=np.diag([4.0, 2.0, 2.0]),
+            pbc=True,
+        )
+        operation = GroupLabelOperation()
+        layer_ids = operation.layer_ids(base, "100", 0.05)
+        self.assertEqual(int(layer_ids.max()) + 1, 4)
+        self.assertEqual(layer_ids[0], layer_ids[1])
+        labeled = operation.run_structure(
             base,
-            GroupLabelParams(mode="k_vector", kvec="111"),
+            GroupLabelParams(miller_index="100", layer_tolerance=0.05),
         )[0]
-        counts = {
-            label: int(np.count_nonzero(labeled.arrays["group"] == label))
-            for label in ("A", "B")
-        }
-        self.assertEqual(counts, {"A": 64, "B": 64})
+        self.assertEqual(list(labeled.arrays["group"]), ["A", "A", "B", "A", "B"])
 
-    def test_group_label_rejects_ambiguous_modes_and_labels(self):
+    def test_group_label_counts_periodic_110_layers_without_parallelepiped_duplicates(self):
+        base = Atoms(
+            symbols=["Fe"] * 4,
+            scaled_positions=[
+                [0.0, 0.0, 0.0],
+                [0.5, 0.0, 0.0],
+                [0.0, 0.5, 0.0],
+                [0.5, 0.5, 0.0],
+            ],
+            cell=np.diag([4.0, 4.0, 2.0]),
+            pbc=True,
+        )
+        layer_ids = GroupLabelOperation().layer_ids(base, "110", 0.05)
+        self.assertEqual(int(layer_ids.max()) + 1, 2)
+        self.assertEqual(list(layer_ids), [0, 1, 1, 0])
+
+    def test_group_label_rejects_invalid_settings_and_single_layer(self):
         base = self.structure.copy()
         operation = GroupLabelOperation()
-        with self.assertRaisesRegex(ValueError, "unsupported mode"):
-            operation.run_structure(base, GroupLabelParams(mode="typo"))
+        with self.assertRaisesRegex(ValueError, "Plane index"):
+            operation.run_structure(base, GroupLabelParams(miller_index="112"))
+        with self.assertRaisesRegex(ValueError, "positive finite"):
+            operation.run_structure(base, GroupLabelParams(layer_tolerance=0.0))
         with self.assertRaisesRegex(ValueError, "must be non-empty"):
             operation.run_structure(base, GroupLabelParams(group_a=""))
         with self.assertRaisesRegex(ValueError, "must be different"):
             operation.run_structure(base, GroupLabelParams(group_a="same", group_b="same"))
 
-        legacy = operation.run_structure(
-            base,
-            GroupLabelParams(
-                mode="k-vector layers (recommended)",
-                overwrite=True,
-            ),
-        )[0]
-        self.assertIn("group", legacy.arrays)
+        single_layer = Atoms("Fe", positions=[[0.0, 0.0, 0.0]], cell=np.eye(3), pbc=True)
+        with self.assertRaisesRegex(ValueError, "at least two detected atomic layers"):
+            operation.run_structure(single_layer, GroupLabelParams())
 
     def test_group_label_default_preserves_existing_groups(self):
         base = self.structure.copy()
@@ -1101,8 +1130,8 @@ H 2.6700 0.5000 -0.8660
 
     def test_group_label_card_roundtrip(self):
         card = GroupLabelCard()
-        card.mode_combo.setCurrentIndex(1)
-        card.kvec_combo.setCurrentIndex(3)
+        set_combo_value(card.plane_combo, "110")
+        card.tolerance_frame.set_input_value([0.08])
         card.group_a_edit.setText("alpha")
         card.group_b_edit.setText("beta")
         card.overwrite_checkbox.setChecked(False)
@@ -1111,26 +1140,30 @@ H 2.6700 0.5000 -0.8660
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())
-        self.assertEqual(restored.get_params().mode, "fractional_parity")
-        self.assertEqual(restored.get_params().kvec, "110")
-        self.assertFalse(restored.kvec_combo.isEnabled())
+        self.assertEqual(restored.get_params().miller_index, "110")
+        self.assertAlmostEqual(restored.get_params().layer_tolerance, 0.08)
 
         legacy = GroupLabelCard()
-        legacy.from_dict(
-            {
-                "class": "GroupLabelCard",
-                "check_state": True,
-                "mode": "k-vector layers (recommended)",
-                "kvec": "100",
-                "group_a": "old_a",
-                "group_b": "old_b",
-            }
-        )
-        self.assertEqual(legacy.get_params().mode, "k_vector")
-        self.assertEqual(legacy.get_params().kvec, "100")
+        with patch(
+            "NepTrainKit.ui.views._card.group_label_card.MessageManager.send_warning_message"
+        ) as warning:
+            legacy.from_dict(
+                {
+                    "class": "GroupLabelCard",
+                    "check_state": True,
+                    "mode": "k-vector layers (recommended)",
+                    "kvec": "100",
+                    "group_a": "old_a",
+                    "group_b": "old_b",
+                }
+            )
+        warning.assert_called_once()
+        self.assertFalse(legacy.legacy_notice.isHidden())
+        self.assertIn("real atomic layers", legacy.legacy_notice.text())
+        self.assertEqual(legacy.get_params().miller_index, "100")
         self.assertTrue(legacy.get_params().overwrite)
 
-    def test_group_label_preview_warns_for_one_group_and_existing_labels(self):
+    def test_group_label_preview_shows_layer_sequence_and_existing_labels(self):
         fcc = Atoms(
             symbols=["Ni"] * 4,
             scaled_positions=[
@@ -1144,9 +1177,11 @@ H 2.6700 0.5000 -0.8660
         )
         card = GroupLabelCard()
         card.set_dataset([fcc])
+        self.assertIn("1 layers", card.preview_label.text())
+        self.assertIn("A(4)", card.preview_label.text())
         self.assertIn("A=4", card.preview_label.text())
         self.assertIn("B=0", card.preview_label.text())
-        self.assertIn("Only one group", card.preview_label.text())
+        self.assertIn("At least two layers", card.preview_label.text())
 
         existing = fcc.copy()
         existing.new_array(

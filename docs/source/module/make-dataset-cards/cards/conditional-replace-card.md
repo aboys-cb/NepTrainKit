@@ -8,7 +8,7 @@
 
 按空间坐标条件对指定元素做区域选择性替换。用笛卡尔 `x/y/z` 坐标表达式（如 `z>=8 and z<=10`）筛选候选位点；所有命中位点都会被替换，未命中区域保持原样。多个替换元素后面的比例只决定它们如何分配到命中位点，不表示“替换多少位点”。适合表面钝化、界面修饰、层状材料选择性改性等场景。
 
-与 `Random Doping` 的区别：`Conditional Replace` 用坐标表达式精确划定空间区域，输出一个结构并替换全部命中位点；`Random Doping` 按数量或浓度做部分替位，可以生成多个结构，也可以读取 `Group Label` 写入的 group 标签。
+与 `Random Doping` 的区别：`Conditional Replace` 用坐标表达式精确划定空间区域，输出一个结构并替换全部命中位点；`Random Doping` 按数量或浓度做部分替位，可以生成多个结构，也可以读取 `Layer Groups` 写入的 group 标签。
 
 ## 原理与公式
 
@@ -147,7 +147,7 @@ $|\mathcal I|$ 个位点使用最大余数法确定每种替换元素的整数�
 - `Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松弛替换引入的局部应力。
 - `Conditional Replace` → `Random Doping`：先做区域选择性替换覆盖表面化学，再做全局替位补样。
 
-如果需要按 group 标签选择位点，应使用 `Group Label` → `Random Doping`；本卡不读取 group 标签。
+如果需要按交替原子层选择位点，应使用 `Layer Groups` → `Random Doping`；本卡不读取 group 标签。
 
 ## 常见问题
 

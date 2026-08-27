@@ -139,10 +139,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "GroupLabelCard": (
-            QCoreApplication.translate("CardCatalog", "Group Label"),
+            QCoreApplication.translate("CardCatalog", "Layer Groups"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Divide atoms into two coordinate-based groups for downstream magnetic, doping, or vacancy operations; coordinates and elements are unchanged.",
+                "Detect atomic planes along a selected (hkl) normal and label adjacent layers alternately for downstream magnetic, doping, or vacancy operations.",
             ),
         ),
         "InterfaceLayerMixCard": (

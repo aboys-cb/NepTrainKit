@@ -438,7 +438,7 @@ class MagneticResponseScanOperation(StructureOperation):
                 raise CardOperationError(
                     "local_response_no_group_pair",
                     "The input needs a non-zero magnetic moment in both group '{group_a}' and group "
-                    "'{group_b}'. Check the group labels or add Group Label upstream.",
+                    "'{group_b}'. Check the group labels or add Layer Groups upstream.",
                     group_a=params.group_a,
                     group_b=params.group_b,
                 )

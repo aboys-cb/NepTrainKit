@@ -330,7 +330,7 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 
 **提示没有有效 pair。** 手动模式检查左右索引数量和磁矩是否非零；自动模式调整 `近邻壳层容差`（`pair_shell_tolerance`）——太大把不同壳层并到一起，太小把同一壳层拆开。再检查 `原子对元素筛选`（`pair_element_filter`）、`原子对分组筛选`（`pair_group_filter`）和键方向筛选是否过紧。
 
-**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `A 组`（`group_a`）和 `B 组`（`group_b`）中都要有至少一个非零磁矩原子。可以用 `Group Label` 先生成坐标分组，但它不会自动识别化学子晶格。
+**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `A 组`（`group_a`）和 `B 组`（`group_b`）中都要有至少一个非零磁矩原子。可以用 `Layer Groups` 先生成逐层交替分组。
 
 **输出数量多于预期。** `Target Mode = All eligible atoms` + `Both (+/- pair)` 会快速膨胀。设 `最大输出数`（`max_outputs`）上限或改用 `First eligible atom`。
 

@@ -466,6 +466,26 @@ def _card_operation_error_catalog() -> None:
         "the current settings detect {actual}. Check the layer axis and tolerance.",
     )
     QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. "
+        "Expand the cell, choose another plane, or reduce the layer tolerance.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer Groups needs a finite, non-singular 3D cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer tolerance must be a positive finite distance."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Plane index must be 100, 010, 001, 110, or 111."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer group labels must be non-empty."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer group A and B labels must be different."
+    )
+    QCoreApplication.translate(
         "CardOperationError", "Invalid element symbols in the target list: {elements}."
     )
     QCoreApplication.translate(
@@ -490,7 +510,7 @@ def _card_operation_error_catalog() -> None:
     QCoreApplication.translate(
         "CardOperationError",
         "The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. "
-        "Check the group labels or add Group Label upstream.",
+        "Check the group labels or add Layer Groups upstream.",
     )
     QCoreApplication.translate(
         "CardOperationError",

@@ -326,18 +326,18 @@
 
 ### 卡片顺序
 
-`Group Label → Magnetic Order → Spin Perturb`
+`Layer Groups → Magnetic Order → Spin Perturb`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Group Label`
+#### Step 1. `Layer Groups`
 
 ```json
 {
   "class": "GroupLabelCard",
   "params": {
-    "mode": "k_vector",
-    "kvec": "111",
+    "miller_index": "111",
+    "layer_tolerance": 0.05,
     "group_a": "A",
     "group_b": "B",
     "overwrite": false

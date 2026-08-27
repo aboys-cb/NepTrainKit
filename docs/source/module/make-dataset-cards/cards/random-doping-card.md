@@ -174,7 +174,7 @@ rule 内的典型字段：`target`（被替换元素）、`dopants`（替换元�
 
 ## 推荐组合
 
-- `Group Label` → `Random Doping`：只掺杂特定子晶格/层，不污染其他区域
+- `Layer Groups` → `Random Doping`：只掺杂交替原子层中的一组
 - `Composition Space Sampling` → `Random Occupancy` → `Random Doping`：先扫配比 → 落位 → 再补局部随机替换
 - `Random Doping` → `Atomic Perturb`：掺杂后加坐标噪声，松驰局部应力
 

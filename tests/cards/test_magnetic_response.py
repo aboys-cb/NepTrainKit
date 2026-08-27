@@ -128,7 +128,7 @@ def test_local_response_reports_actionable_input_errors():
             ),
         )
     assert groups.value.code == "local_response_no_group_pair"
-    assert "Group Label" in str(groups.value)
+    assert "Layer Groups" in str(groups.value)
 
 
 def test_local_automatic_pair_filters_change_the_selected_response_groups():

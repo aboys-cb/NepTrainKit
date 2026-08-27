@@ -767,7 +767,7 @@ class MagneticOrderOperation(StructureOperation):
         if "group" not in structure.arrays:
             raise ValueError(
                 "MagneticOrder: AFM group mode requires atoms.arrays['group']; "
-                "add Group Label upstream or choose k-vector mode."
+                "add Layer Groups upstream or choose k-vector mode."
             )
         group_a = str(params.afm_group_a or "").strip()
         group_b = str(params.afm_group_b or "").strip()

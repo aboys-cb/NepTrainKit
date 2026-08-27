@@ -167,24 +167,17 @@ class TestCardLibraryDialog(unittest.TestCase):
                 == "GroupLabelCard"
             )
             dialog.card_list.setCurrentItem(group_item)
-            self.assertEqual(dialog.detail_title_label.text(), "分组标记")
+            self.assertEqual(dialog.detail_title_label.text(), "原子层分组")
+            self.assertEqual(dialog.detail_group_label.text(), "结构")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "按坐标规则将原子分成两组，供磁序、掺杂或空位操作使用；不改变坐标和元素。",
+                "沿所选 (hkl) 法向识别原子层并交替标记，供磁序、掺杂或空位操作使用。",
             )
 
             group_card = GroupLabelCard()
             self.assertEqual(
-                group_card.mode_combo.itemText(0),
-                "分数坐标交替分层",
-            )
-            self.assertEqual(
-                group_card.mode_combo.itemText(1),
-                "当前晶胞半网格奇偶",
-            )
-            self.assertEqual(
-                group_card.kvec_combo.itemText(4),
-                "111（沿晶格 a+b+c）",
+                group_card.plane_combo.itemText(4),
+                "(111) 晶面",
             )
 
             magnetic_item = next(

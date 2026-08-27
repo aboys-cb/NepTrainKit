@@ -300,7 +300,7 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 ## 推荐组合
 
-- `Group Label` → `Magnetic Order`：已有 coordinate-based group 时，用 `group_ab` 生成对应 AFM 正负号。
+- `Layer Groups` → `Magnetic Order`：先生成逐层交替的 A/B 标签，再用 `group_ab` 赋予 AFM 正负号。
 - `Magnetic Order` → `Moment Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。
 - `Magnetic Order` → `Local Magnetic Response`：在端点附近补充确定性小角响应。
 - `Magnetic Order` → `SOC / Texture Response`：先建立参考磁态，再生成位置连续的有限 q 磁纹理。

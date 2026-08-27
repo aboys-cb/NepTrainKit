@@ -8,9 +8,11 @@
 
 ../cards/set-magnetic-moments-card
 ../cards/magnetic-order-card
+../cards/small-angle-spin-tilt-card
 ../cards/spin-disorder-card
 ../cards/correlated-random-spin-card
 ../cards/magmom-rotation-card
+../cards/spin-spiral-card
 ../cards/folded-helix-card
 ../cards/local-magnetic-response-card
 ../cards/soc-texture-response-card

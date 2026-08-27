@@ -716,18 +716,16 @@
         <translation type="vanished">剔除违反明确几何质量阈值的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="142" />
         <source>Group Label</source>
-        <translation>分组标记</translation>
+        <translation type="vanished">分组标记</translation>
     </message>
     <message>
         <source>Attach atoms.arrays['group'] labels using common, lattice-agnostic rules.</source>
         <translation type="vanished">按通用且不依赖晶格的规则写入 atoms.arrays['group'] 分组标签。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="143" />
         <source>Divide atoms into two coordinate-based groups for downstream magnetic, doping, or vacancy operations; coordinates and elements are unchanged.</source>
-        <translation>按坐标规则将原子分成两组，供磁序、掺杂或空位操作使用；不改变坐标和元素。</translation>
+        <translation type="vanished">按坐标规则将原子分成两组，供磁序、掺杂或空位操作使用；不改变坐标和元素。</translation>
     </message>
     <message>
         <source>Insert Defect</source>
@@ -911,6 +909,16 @@
         <location filename="../ui/widgets/card_metadata.py" line="136" />
         <source>Reject empty or non-finite structures and optionally enforce a chemistry-independent shortest-pair cutoff plus bulk cell, volume-per-atom, and mass-density limits.</source>
         <translation>删除空结构或含非有限坐标的结构，并可选地应用与化学元素无关的最短原子对阈值，以及体相晶胞、单原子体积和质量密度限制。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="142" />
+        <source>Layer Groups</source>
+        <translation>原子层分组</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="143" />
+        <source>Detect atomic planes along a selected (hkl) normal and label adjacent layers alternately for downstream magnetic, doping, or vacancy operations.</source>
+        <translation>沿所选 (hkl) 法向识别原子层并交替标记，供磁序、掺杂或空位操作使用。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="149" />
@@ -1866,6 +1874,31 @@
         <translation>滑移向量分数</translation>
     </message>
     <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="218" />
+        <source>(100) planes</source>
+        <translation>(100) 晶面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="219" />
+        <source>(010) planes</source>
+        <translation>(010) 晶面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="220" />
+        <source>(001) planes</source>
+        <translation>(001) 晶面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="221" />
+        <source>(110) planes</source>
+        <translation>(110) 晶面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="222" />
+        <source>(111) planes</source>
+        <translation>(111) 晶面</translation>
+    </message>
+    <message>
         <source>Fraction of projected slip vector</source>
         <translation type="vanished">投影滑移向量的分数</translation>
     </message>
@@ -2251,49 +2284,40 @@
         <translation>平方指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="218" />
         <source>Alternating fractional-coordinate layers</source>
-        <translation>分数坐标交替分层</translation>
+        <translation type="vanished">分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="219" />
         <source>Current-cell half-grid parity</source>
-        <translation>当前晶胞半网格奇偶</translation>
+        <translation type="vanished">当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="220" />
         <source>Alternating layers</source>
-        <translation>分数坐标交替分层</translation>
+        <translation type="vanished">分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="221" />
         <source>Half-grid parity</source>
-        <translation>当前晶胞半网格奇偶</translation>
+        <translation type="vanished">当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="222" />
         <source>100 (along lattice a)</source>
-        <translation>100（沿晶格 a）</translation>
+        <translation type="vanished">100（沿晶格 a）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="223" />
         <source>010 (along lattice b)</source>
-        <translation>010（沿晶格 b）</translation>
+        <translation type="vanished">010（沿晶格 b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="224" />
         <source>001 (along lattice c)</source>
-        <translation>001（沿晶格 c）</translation>
+        <translation type="vanished">001（沿晶格 c）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="225" />
         <source>110 (along lattice a+b)</source>
-        <translation>110（沿晶格 a+b）</translation>
+        <translation type="vanished">110（沿晶格 a+b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="226" />
         <source>111 (along lattice a+b+c)</source>
-        <translation>111（沿晶格 a+b+c）</translation>
+        <translation type="vanished">111（沿晶格 a+b+c）</translation>
     </message>
 </context>
 <context>
@@ -2609,7 +2633,7 @@
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="384" />
         <source>Not specified</source>
-        <translation>未填写</translation>
+        <translation>未指定</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="394" />
@@ -2864,82 +2888,116 @@
         <translation>折返螺旋沿分层方向至少需要识别出 3 层；当前设置识别出 {actual} 层。请检查层方向和分层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="474" />
+        <location filename="../ui/messages.py" line="468" />
+        <source>Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. Expand the cell, choose another plane, or reduce the layer tolerance.</source>
+        <translation>原子层分组至少需要检测到两层；当前设置检测到 {actual} 层。请扩胞、更换晶面或减小层容差。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="473" />
+        <source>Layer Groups needs a finite, non-singular 3D cell.</source>
+        <translation>原子层分组需要有限且非奇异的三维晶胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="476" />
+        <source>Layer tolerance must be a positive finite distance.</source>
+        <translation>层容差必须是正的有限距离。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="479" />
+        <source>Plane index must be 100, 010, 001, 110, or 111.</source>
+        <translation>晶面指数必须是 100、010、001、110 或 111。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="482" />
+        <source>Layer group labels must be non-empty.</source>
+        <translation>原子层分组标签不能为空。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="485" />
+        <source>Layer group A and B labels must be different.</source>
+        <translation>原子层分组的 A、B 标签不能相同。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="494" />
         <source>Magnetic response needs vector spin or initial magnetic moments on the input structure.</source>
         <translation>磁响应要求输入结构带有矢量 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="478" />
+        <location filename="../ui/messages.py" line="498" />
         <source>Magnetic response needs finite magnetic moments with at least one non-zero vector.</source>
         <translation>磁响应要求磁矩数值有限，并且至少包含一个非零矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="482" />
+        <location filename="../ui/messages.py" line="502" />
         <source>Maximum structures is smaller than the coordinate count of one complete response group.</source>
         <translation>最大结构数小于一个完整响应组所需的坐标数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="486" />
+        <location filename="../ui/messages.py" line="506" />
         <source>No non-zero magnetic moments match the selected atoms and elements.</source>
         <translation>所选原子和元素中没有匹配的非零磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="490" />
-        <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
-        <translation>输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
+        <location filename="../ui/messages.py" line="510" />
+        <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Layer Groups upstream.</source>
+        <translation>输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“原子层分组”卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="495" />
+        <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
+        <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="515" />
         <source>No atom pairs match the selected neighbor shell and automatic-pair filters.</source>
         <translation>没有原子对同时满足所选近邻壳层和自动配对筛选条件。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="499" />
+        <location filename="../ui/messages.py" line="519" />
         <source>No valid magnetic atom pairs match the left and right indices.</source>
         <translation>左右索引没有匹配到有效的磁性原子对。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="503" />
+        <location filename="../ui/messages.py" line="523" />
         <source>Maximum structures must be at least {required} for the selected texture response path.</source>
         <translation>所选纹理响应路径至少需要 {required} 个结构，请提高最大结构数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="507" />
+        <location filename="../ui/messages.py" line="527" />
         <source>Cell-reciprocal q needs a finite, non-singular 3D cell.</source>
         <translation>晶胞倒空间 q 要求输入具有数值有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="510" />
+        <location filename="../ui/messages.py" line="530" />
         <source>The reciprocal-cell index must contain three finite integers.</source>
         <translation>晶胞倒空间索引必须包含三个数值有限的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="513" />
+        <location filename="../ui/messages.py" line="533" />
         <source>The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.</source>
         <translation>螺旋响应的晶胞倒空间索引不能为 (0, 0, 0)。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="517" />
+        <location filename="../ui/messages.py" line="537" />
         <source>q definition must be Cell reciprocal vector or Cartesian vector.</source>
         <translation>q 定义方式必须是晶胞倒空间矢量或笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="521" />
+        <location filename="../ui/messages.py" line="541" />
         <source>The Cartesian base q vector must be non-zero for a spiral response.</source>
         <translation>螺旋响应的笛卡尔基准 q 矢量必须非零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="525" />
+        <location filename="../ui/messages.py" line="545" />
         <source>q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, or change q and the supercell together.</source>
         <translation>q 沿第 {index} 根周期晶格矢量不能闭合。请使用晶胞倒空间 q，或同时调整 q 和超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="530" />
+        <location filename="../ui/messages.py" line="550" />
         <source>The two symmetric-shear directions must be perpendicular Cartesian vectors.</source>
         <translation>对称剪切的两个方向必须是互相垂直的笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="534" />
+        <location filename="../ui/messages.py" line="554" />
         <source>The Bain lattice axis must be a, b, or c.</source>
         <translation>Bain 晶格轴必须为 a、b 或 c。</translation>
     </message>
@@ -2993,12 +3051,12 @@
         <translation type="vanished">请增大旋转角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="468" />
+        <location filename="../ui/messages.py" line="488" />
         <source>Invalid element symbols in the target list: {elements}.</source>
         <translation>目标元素中包含无效元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="471" />
+        <location filename="../ui/messages.py" line="491" />
         <source>No non-zero magnetic moments match the selected elements.</source>
         <translation>所选元素没有匹配到非零磁矩。</translation>
     </message>
@@ -6130,80 +6188,125 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">覆盖现有 group</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="48" />
         <source>Group Label</source>
-        <translation>分组标记</translation>
+        <translation type="vanished">分组标记</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="113" />
         <source>Grouping rule</source>
-        <translation>分组规则</translation>
+        <translation type="vanished">分组规则</translation>
     </message>
     <message>
         <source>Assign two group labels from the current cell's fractional coordinates</source>
         <translation type="vanished">按当前晶胞的分数坐标分配两种 group 标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="119" />
         <source>Layer vector</source>
-        <translation>层向量</translation>
+        <translation type="vanished">层向量</translation>
     </message>
     <message>
         <source>Direction of the alternating phase in fractional coordinates</source>
         <translation type="vanished">交替相位在分数坐标中的方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="90" />
         <source>Group A label (even phase)</source>
-        <translation>A 组标签（偶相）</translation>
+        <translation type="vanished">A 组标签（偶相）</translation>
     </message>
     <message>
         <source>Label assigned where the phase parity is even</source>
         <translation type="vanished">相位奇偶为偶数的位置使用此标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="96" />
         <source>Group B label (odd phase)</source>
-        <translation>B 组标签（奇相）</translation>
+        <translation type="vanished">B 组标签（奇相）</translation>
     </message>
     <message>
         <source>Label assigned where the phase parity is odd</source>
         <translation type="vanished">相位奇偶为奇数的位置使用此标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="99" />
+        <location filename="../ui/views/_card/group_label_card.py" line="94" />
         <source>Overwrite existing group labels</source>
         <translation>覆盖已有分组标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="111" />
         <source>Grouping</source>
-        <translation>分组规则</translation>
+        <translation type="vanished">分组规则</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="116" />
         <source>Assign labels from fractional coordinates in the current cell.</source>
-        <translation>依据当前晶胞的分数坐标分配标签。</translation>
+        <translation type="vanished">依据当前晶胞的分数坐标分配标签。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="122" />
         <source>Direction of the alternating phase.</source>
-        <translation>交替相位方向。</translation>
+        <translation type="vanished">交替相位方向。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="127" />
+        <location filename="../ui/views/_card/group_label_card.py" line="133" />
         <source>Output labels</source>
         <translation>输出标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="129" />
         <source>Even phase</source>
-        <translation>偶相</translation>
+        <translation type="vanished">偶相</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="130" />
         <source>Odd phase</source>
-        <translation>奇相</translation>
+        <translation type="vanished">奇相</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="48" />
+        <source>Layer Groups</source>
+        <translation>原子层分组</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="85" />
+        <source>Group A label (even layer)</source>
+        <translation>A 组标签（偶数层）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="91" />
+        <source>Group B label (odd layer)</source>
+        <translation>B 组标签（奇数层）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="112" />
+        <source>Layer detection</source>
+        <translation>原子层识别</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="114" />
+        <source>Atoms in each detected plane receive the same label; adjacent planes alternate A/B.</source>
+        <translation>同一原子层使用相同标签，相邻层按 A/B 交替。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="117" />
+        <source>Crystal plane (hkl)</source>
+        <translation>晶面 (hkl)</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="120" />
+        <source>The plane normal is computed from the reciprocal lattice, including non-orthogonal cells.</source>
+        <translation>晶面法向由倒格矢计算，同样适用于非正交晶胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="123" />
+        <source>Layer tolerance</source>
+        <translation>层容差</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="126" />
+        <source>Atoms whose normal projections differ by no more than this distance share one layer.</source>
+        <translation>沿法向投影距离之差不超过该值的原子归为同一层。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="135" />
+        <source>Even layers</source>
+        <translation>偶数层</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="136" />
+        <source>Odd layers</source>
+        <translation>奇数层</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/group_label_card.py" line="184" />
@@ -6211,27 +6314,55 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>请载入上游结构以预览各组原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="196" />
+        <location filename="../ui/views/_card/group_label_card.py" line="211" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="203" />
+        <location filename="../ui/views/_card/group_label_card.py" line="230" />
+        <source>First input: {layers} layers · Layer sequence (atoms): {sequence} · {a}={a_count} · {b}={b_count}</source>
+        <translation>首个输入：{layers} 层 · 层序（原子数）：{sequence} · {a}={a_count} · {b}={b_count}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="245" />
+        <source>At least two layers are required; expand the cell, choose another plane, or reduce the tolerance.</source>
+        <translation>至少需要两层；请扩胞、更换晶面或减小层容差。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="250" />
+        <source>Odd layer count: periodic A/B order does not close across the boundary.</source>
+        <translation>层数为奇数：周期边界两侧无法保持 A/B 交替。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="293" />
+        <source>({hkl}) · {tolerance} Å · {a}/{b}</source>
+        <translation>({hkl}) · {tolerance} Å · {a}/{b}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="302" />
+        <source>Check the detected layer sequence. Periodic A/B magnetic order needs an even number of layers.</source>
+        <translation>请检查识别出的层序；周期 A/B 磁序需要偶数层。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="345" />
+        <source>Legacy Group Label loaded: the old cell-phase and half-grid rules were removed. This card now detects real atomic layers; verify the preview before rerunning the workflow.</source>
+        <translation>已载入旧版分组配置：原有的晶胞相位和半网格规则已移除。当前卡片会识别真实原子层，重新运行工作流前请核对预览。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/group_label_card.py" line="192" />
         <source>First input already has group labels. Overwrite is off, so output will be unchanged · Existing counts: {counts}</source>
         <translation>首个输入已有分组标签；当前未启用覆盖，输出将保持不变 · 已有计数：{counts}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="212" />
         <source>First input preview: {a}={a_count} · {b}={b_count}</source>
-        <translation>首个输入预览：{a}={a_count} · {b}={b_count}</translation>
+        <translation type="vanished">首个输入预览：{a}={a_count} · {b}={b_count}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="224" />
         <source>Only one group would be produced; expand the cell or choose another rule.</source>
-        <translation>只会生成一个分组；请扩胞或改用其他规则。</translation>
+        <translation type="vanished">只会生成一个分组；请扩胞或改用其他规则。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="228" />
+        <location filename="../ui/views/_card/group_label_card.py" line="253" />
         <source>Existing group labels will be overwritten.</source>
         <translation>将覆盖已有分组标签。</translation>
     </message>
@@ -8955,23 +9086,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="573" />
-        <location filename="../ui/messages.py" line="613" />
+        <location filename="../ui/messages.py" line="593" />
+        <location filename="../ui/messages.py" line="633" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="583" />
+        <location filename="../ui/messages.py" line="603" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="593" />
+        <location filename="../ui/messages.py" line="613" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="603" />
+        <location filename="../ui/messages.py" line="623" />
         <source>Error</source>
         <translation>错误</translation>
     </message>

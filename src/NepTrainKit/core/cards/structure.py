@@ -18,7 +18,7 @@ from loguru import logger
 
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.config_type import stable_config_id
-from NepTrainKit.core.magnetism import kvec_signs, parse_kvec
+from NepTrainKit.core.magnetism import parse_kvec
 from NepTrainKit.core.structure import get_vibration_modes
 from NepTrainKit.core.torsion_guard_pbc import (
     TorsionGuardParams,
@@ -518,79 +518,143 @@ class VibrationModePerturbOperation(StructureOperation):
 
 @dataclass(frozen=True)
 class GroupLabelParams:
-    """Parameters for assigning atoms.arrays['group'] labels."""
+    """Parameters for assigning alternating atomic-layer group labels."""
 
-    mode: str = "k_vector"
-    kvec: str = "111"
+    miller_index: str = "111"
+    layer_tolerance: float = 0.05
     group_a: str = "A"
     group_b: str = "B"
     overwrite: bool = False
 
 
 class GroupLabelOperation(StructureOperation):
-    """Attach group labels using lattice-coordinate rules."""
-
-    _MODE_ALIASES = {
-        "k_vector": "k_vector",
-        "k-vector": "k_vector",
-        "k-vector layers": "k_vector",
-        "k-vector layers (recommended)": "k_vector",
-        "fractional_parity": "fractional_parity",
-        "fractional parity": "fractional_parity",
-        "fractional parity (2x rounding)": "fractional_parity",
-    }
+    """Detect atomic planes normal to ``(hkl)`` and label them A/B in order."""
 
     def run_structure(self, structure, params: GroupLabelParams) -> list:
-        mode = self.normalize_mode(params.mode)
         a_label, b_label = self._validated_labels(params.group_a, params.group_b)
         if (not params.overwrite) and "group" in structure.arrays:
             return [structure.copy()]
-        if structure.cell is None or np.linalg.det(structure.cell.array) == 0:
-            raise ValueError("GroupLabel: structure has no valid cell.")
 
         atoms = structure.copy()
-        if mode == "fractional_parity":
-            flags = self._label_by_parity(atoms)
-            tag = "par"
-        else:
-            flags = self._label_by_kvec(atoms, params.kvec)
-            tag = f"k{params.kvec}"
-
-        atoms.arrays["group"] = np.where(flags == 0, a_label, b_label).astype(object)
-        append_config_tag(atoms, f"Grp({tag},{a_label}/{b_label})")
-        return [atoms]
-
-    @classmethod
-    def normalize_mode(cls, mode: str) -> str:
-        value = str(mode or "").strip()
-        normalized = cls._MODE_ALIASES.get(value)
-        if normalized is None:
-            raise ValueError(
-                f"GroupLabel: unsupported mode {value!r}; "
-                "use k_vector or fractional_parity."
+        layer_ids = self.layer_ids(
+            atoms,
+            params.miller_index,
+            params.layer_tolerance,
+        )
+        layer_count = int(layer_ids.max()) + 1 if layer_ids.size else 0
+        if layer_count < 2:
+            raise CardOperationError(
+                "group_label_too_few_layers",
+                "Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. "
+                "Expand the cell, choose another plane, or reduce the layer tolerance.",
+                actual=layer_count,
             )
-        return normalized
+
+        atoms.arrays["group"] = np.where((layer_ids % 2) == 0, a_label, b_label).astype(object)
+        append_config_tag(
+            atoms,
+            f"Grp(hkl{params.miller_index},tol={float(params.layer_tolerance):.4g},{a_label}/{b_label})",
+        )
+        return [atoms]
 
     @staticmethod
     def _validated_labels(group_a: str, group_b: str) -> tuple[str, str]:
         a_label = str(group_a or "").strip()
         b_label = str(group_b or "").strip()
         if not a_label or not b_label:
-            raise ValueError("GroupLabel: group labels must be non-empty.")
+            raise CardOperationError(
+                "group_label_empty_labels",
+                "Layer group labels must be non-empty.",
+            )
         if a_label == b_label:
-            raise ValueError("GroupLabel: group A and group B labels must be different.")
+            raise CardOperationError(
+                "group_label_duplicate_labels",
+                "Layer group A and B labels must be different.",
+            )
         return a_label, b_label
 
     @staticmethod
-    def _label_by_kvec(atoms, kvec: str) -> np.ndarray:
-        signs = kvec_signs(atoms, parse_kvec(kvec))
-        return np.where(signs > 0.0, 0, 1).astype(int)
+    def layer_ids(atoms, miller_index: str, tolerance: float) -> np.ndarray:
+        """Return ordered atomic-plane indices along the reciprocal ``(hkl)`` normal."""
+        cell = np.asarray(atoms.cell.array, dtype=float)
+        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)) or abs(np.linalg.det(cell)) <= 1e-12:
+            raise CardOperationError(
+                "group_label_invalid_cell",
+                "Layer Groups needs a finite, non-singular 3D cell.",
+            )
+        tolerance = float(tolerance)
+        if not np.isfinite(tolerance) or tolerance <= 0.0:
+            raise CardOperationError(
+                "group_label_invalid_tolerance",
+                "Layer tolerance must be a positive finite distance.",
+            )
+        try:
+            hkl = np.asarray(parse_kvec(miller_index), dtype=float)
+        except ValueError as exc:
+            raise CardOperationError(
+                "group_label_invalid_miller_index",
+                "Plane index must be 100, 010, 001, 110, or 111.",
+            ) from exc
+
+        reciprocal_normal = np.linalg.solve(cell, hkl)
+        reciprocal_norm = float(np.linalg.norm(reciprocal_normal))
+        if not np.isfinite(reciprocal_norm) or reciprocal_norm <= 1e-12:
+            raise CardOperationError(
+                "group_label_invalid_miller_index",
+                "Plane index must be 100, 010, 001, 110, or 111.",
+            )
+
+        scaled = scaled_positions(atoms, wrap=True)
+        periodic_axes = np.asarray(atoms.pbc, dtype=bool)
+        scaled[:, periodic_axes] = np.where(
+            np.isclose(scaled[:, periodic_axes], 1.0, atol=1e-10, rtol=0.0),
+            0.0,
+            scaled[:, periodic_axes],
+        )
+        phase = scaled @ hkl
+        periodic_phase = bool(np.any(periodic_axes & (hkl != 0.0)))
+        if periodic_phase:
+            phase %= 1.0
+            phase = np.where(
+                np.isclose(phase, 1.0, atol=1e-10, rtol=0.0),
+                0.0,
+                phase,
+            )
+        projections = phase / reciprocal_norm
+        if projections.size == 0:
+            return np.zeros(0, dtype=int)
+
+        order = np.argsort(projections, kind="stable")
+        sorted_projections = projections[order]
+        layer_ids = np.zeros(len(projections), dtype=int)
+        current_layer = 0
+        start = 0
+        bounds: list[tuple[int, int]] = []
+        while start < len(order):
+            upper = float(sorted_projections[start]) + tolerance
+            stop = int(np.searchsorted(sorted_projections, upper, side="right"))
+            layer_ids[order[start:stop]] = current_layer
+            bounds.append((start, stop))
+            current_layer += 1
+            start = stop
+
+        if periodic_phase and len(bounds) > 1:
+            first_start, first_stop = bounds[0]
+            last_start, last_stop = bounds[-1]
+            period = 1.0 / reciprocal_norm
+            boundary_span = (
+                float(sorted_projections[first_stop - 1])
+                + period
+                - float(sorted_projections[last_start])
+            )
+            if boundary_span <= tolerance:
+                layer_ids[order[last_start:last_stop]] = 0
+        return layer_ids
 
     @staticmethod
-    def _label_by_parity(atoms) -> np.ndarray:
-        scaled = scaled_positions(atoms, wrap=True)
-        ints = np.floor(2.0 * scaled + 0.5 + 1e-12).astype(int)
-        return (ints.sum(axis=1) % 2).astype(int)
+    def has_periodic_layer_axis(atoms, miller_index: str) -> bool:
+        hkl = np.asarray(parse_kvec(miller_index), dtype=int)
+        return bool(np.any(np.asarray(atoms.pbc, dtype=bool) & (hkl != 0)))
 
 
 @dataclass(frozen=True)

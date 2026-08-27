@@ -217,6 +217,19 @@ def test_global_anisotropy_preserves_spin_topology_geometry_and_time_reversal():
         assert all(np.allclose(frame.arrays["spin"] @ frame.arrays["spin"].T, dots) for frame in frames)
 
 
+def test_global_time_reversal_budget_must_fit_both_requested_groups():
+    with pytest.raises(CardOperationError) as raised:
+        MagneticResponseScanOperation().run_structure(
+            magnetic_pair(pbc=False),
+            TextureMagneticResponseParams(
+                coordinate_scan="-90,0,90",
+                include_time_reversal=True,
+                max_outputs=5,
+            ),
+        )
+    assert raised.value.code == "texture_response_budget_too_small"
+
+
 @pytest.mark.parametrize(
     "kind,extra",
     [
@@ -251,14 +264,83 @@ def test_symmetric_q_scans_record_chirality_and_spiral_contract(kind, extra):
     )
 
 
+def test_cell_reciprocal_q_is_exactly_commensurate_for_a_nonorthogonal_mixed_pbc_cell():
+    atoms = Atoms(
+        "Fe2",
+        positions=[[0.0, 0.0, 0.0], [1.0, 0.5, 0.4]],
+        cell=[[4.0, 0.0, 0.0], [1.0, 3.0, 0.0], [0.5, 0.2, 5.0]],
+        pbc=[True, True, False],
+    )
+    atoms.set_initial_magnetic_moments([[0.0, 0.0, 2.0], [0.0, 0.0, 3.0]])
+    reciprocal_index = np.asarray([1, -1, 0])
+    reciprocal = 2.0 * math.pi * np.linalg.inv(atoms.cell.array).T
+    expected_q = reciprocal.T @ reciprocal_index
+
+    operation = MagneticResponseScanOperation()
+    output = operation.run_structure(
+        atoms,
+        TextureMagneticResponseParams(
+            response_kind="Bulk / Bloch",
+            coordinate_scan="-1,0,1",
+            q_definition="Cell reciprocal vector",
+            q_reciprocal_index=(1, -1, 0),
+        ),
+    )
+
+    assert [frame.info["response_coordinate"] for frame in output] == pytest.approx(
+        [-np.linalg.norm(expected_q), 0.0, np.linalg.norm(expected_q)]
+    )
+    record = operation.last_manifest.records[0]
+    assert record.metadata["q_definition"] == "Cell reciprocal vector"
+    assert record.metadata["q_reciprocal_index"] == [1, -1, 0]
+    assert record.metadata["q_cartesian_1_per_angstrom"][2] == pytest.approx(expected_q)
+    assert all(np.array_equal(frame.cell.array, atoms.cell.array) for frame in output)
+    assert all(np.array_equal(frame.pbc, atoms.pbc) for frame in output)
+
+
+@pytest.mark.parametrize("kind", ["Bulk / Bloch", "Interfacial / Cycloidal", "General spiral"])
+def test_default_card_reciprocal_q_runs_on_an_ordinary_periodic_cell(kind):
+    from PySide6.QtWidgets import QApplication
+
+    from NepTrainKit.ui.views._card.i18n_utils import set_combo_value
+    from NepTrainKit.ui.views._card.soc_texture_response_card import SOCTextureResponseCard
+
+    app = QApplication.instance() or QApplication([])
+    card = SOCTextureResponseCard()
+    set_combo_value(card.kind_combo, kind)
+
+    output = card.create_operation().run_structure(magnetic_pair(), card.get_params())
+
+    assert len(output) == 5
+    assert card.get_params().q_definition == "Cell reciprocal vector"
+    assert output[0].info["response_branch"] == "minus"
+    card.deleteLater()
+    app.processEvents()
+
+
+def test_zero_cell_reciprocal_index_is_rejected_with_a_structured_error():
+    with pytest.raises(CardOperationError) as raised:
+        MagneticResponseScanOperation().run_structure(
+            magnetic_pair(),
+            TextureMagneticResponseParams(
+                response_kind="Bulk / Bloch",
+                q_definition="Cell reciprocal vector",
+                q_reciprocal_index=(0, 0, 0),
+            ),
+        )
+    assert raised.value.code == "texture_response_zero_reciprocal_index"
+
+
 def test_incommensurate_q_fails_closed_with_actionable_message():
-    with pytest.raises(ValueError, match="not commensurate"):
+    with pytest.raises(CardOperationError) as raised:
         MagneticResponseScanOperation().run_structure(
             magnetic_pair(),
             TextureMagneticResponseParams(
                 response_kind="Bulk / Bloch", q_vector_cart=(0, 0, 0.2)
             ),
         )
+    assert raised.value.code == "texture_response_incommensurate_q"
+    assert "cell-reciprocal q mode" in str(raised.value)
 
 
 def test_magnetoelastic_grid_preserves_probe_correspondence_and_lineage():

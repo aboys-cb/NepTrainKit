@@ -56,13 +56,15 @@ class SOCTextureResponseCard(MakeDataCard):
             self.tr("A single ordered path rotates the complete spin texture relative to the fixed lattice."),
         )
 
-        path_section = InspectorSection(
+        self.path_section = InspectorSection(
             self.tr("Texture path"),
             self.setting_widget,
-            self.tr("Choose anisotropy or a spiral geometry; the scan meaning and required directions update automatically."),
+            "",
         )
-        path_section.addWidget(CompactField(self.tr("Preset"), self.kind_combo, path_section))
-        path_section.addWidget(self.scan_field)
+        self.path_section.addWidget(
+            CompactField(self.tr("Preset"), self.kind_combo, self.path_section)
+        )
+        self.path_section.addWidget(self.scan_field)
 
         self.axis_input = DirectionInput(self.setting_widget, default=(0.0, 1.0, 0.0))
         self.axis_field = CompactField(
@@ -70,12 +72,35 @@ class SOCTextureResponseCard(MakeDataCard):
         )
         self.time_reversal = CheckBox(self.tr("Include global time-reversal control S → −S"), self.setting_widget)
 
+        self.q_definition_combo = ComboBox(self.setting_widget)
+        add_translated_items(
+            self,
+            self.q_definition_combo,
+            ["Cell reciprocal vector", "Cartesian vector"],
+        )
+        set_combo_value(self.q_definition_combo, "Cell reciprocal vector")
+        self.q_definition_field = CompactField(
+            self.tr("Base q definition"), self.q_definition_combo, self.setting_widget
+        )
+        self.q_reciprocal_frame = SpinBoxUnitInputFrame(self.setting_widget)
+        self.q_reciprocal_frame.set_input("", 3, "int")
+        self.q_reciprocal_frame.setRange(-100, 100)
+        self.q_reciprocal_frame.set_input_value([1, 0, 0])
+        self.q_reciprocal_field = CompactField(
+            self.tr("Cell-reciprocal index (h, k, l)"),
+            self.q_reciprocal_frame,
+            self.setting_widget,
+            self.tr("Integer indices derive q from the current cell and close exactly across its periodic vectors."),
+        )
         self.q_direction = DirectionInput(self.setting_widget, default=(0.0, 0.0, 1.0))
         self.q_direction_field = CompactField(
-            self.tr("Propagation direction q (Cartesian)"), self.q_direction, self.setting_widget
+            self.tr("Cartesian q direction"),
+            self.q_direction,
+            self.setting_widget,
+            self.tr("This is a laboratory Cartesian direction, not a Miller index or lattice axis."),
         )
-        self.q_magnitude_frame = SpinBoxUnitInputFrame(self)
-        self.q_magnitude_frame.set_input("1/A", 1, "float")
+        self.q_magnitude_frame = SpinBoxUnitInputFrame(self.setting_widget)
+        self.q_magnitude_frame.set_input(self.tr("Å⁻¹"), 1, "float")
         self.q_magnitude_frame.setRange(0.0, 100.0)
         self.q_magnitude_frame.setDecimals(8)
         self.q_magnitude_frame.set_input_value([0.1])
@@ -83,7 +108,9 @@ class SOCTextureResponseCard(MakeDataCard):
             self.tr("Base |q|"),
             self.q_magnitude_frame,
             self.setting_widget,
-            self.tr("The signed scan multiplies this base wave-vector magnitude."),
+            self.tr("The signed scan multiplies this magnitude; periodic closure depends on the input cell."),
+            inline=True,
+            input_max_width=170,
         )
         self.plane_input = DirectionInput(self.setting_widget, default=(0.0, 1.0, 0.0))
         self.plane_field = CompactField(
@@ -101,6 +128,8 @@ class SOCTextureResponseCard(MakeDataCard):
         geometry_grid = ResponsiveFormGrid(geometry_section, two_column_threshold=520)
         for field in (
             self.axis_field,
+            self.q_definition_field,
+            self.q_reciprocal_field,
             self.q_direction_field,
             self.q_magnitude_field,
             self.plane_field,
@@ -110,22 +139,44 @@ class SOCTextureResponseCard(MakeDataCard):
         geometry_section.addWidget(geometry_grid)
         geometry_section.addWidget(self.time_reversal)
 
-        self.advanced_checkbox = CheckBox(self.tr("Show phase, cone, closure check, and output limit"), self.setting_widget)
-        self.cone_frame = SpinBoxUnitInputFrame(self)
+        self.advanced_checkbox = CheckBox(self.tr("Show advanced texture controls"), self.setting_widget)
+        self.cone_frame = SpinBoxUnitInputFrame(self.setting_widget)
         self.cone_frame.set_input("", 1, "float")
         self.cone_frame.setRange(-1.0, 1.0)
         self.cone_frame.setDecimals(6)
         self.cone_frame.set_input_value([0.0])
-        self.cone_field = CompactField(self.tr("Cone component"), self.cone_frame, self.setting_widget)
-        self.phase_frame = SpinBoxUnitInputFrame(self)
-        self.phase_frame.set_input("deg", 1, "float")
+        self.cone_field = CompactField(
+            self.tr("Normal spin component m∥/|m|"),
+            self.cone_frame,
+            self.setting_widget,
+            self.tr("0 gives a planar spiral; ±1 removes the rotating in-plane component."),
+            inline=True,
+            input_max_width=150,
+        )
+        self.cone_frame.setMinimumWidth(132)
+        self.phase_frame = SpinBoxUnitInputFrame(self.setting_widget)
+        self.phase_frame.set_input(self.tr("°"), 1, "float")
         self.phase_frame.setRange(-360.0, 360.0)
         self.phase_frame.setDecimals(6)
         self.phase_frame.set_input_value([0.0])
-        self.phase_field = CompactField(self.tr("Initial phase"), self.phase_frame, self.setting_widget)
-        self.commensurate = CheckBox(self.tr("Require the spiral to close in the current periodic cell"), self.setting_widget)
+        self.phase_field = CompactField(
+            self.tr("Initial phase φ₀"),
+            self.phase_frame,
+            self.setting_widget,
+            self.tr("The generated texture uses φᵢ = q·rᵢ + φ₀ with current Cartesian positions."),
+            inline=True,
+            input_max_width=150,
+        )
+        self.phase_frame.setMinimumWidth(150)
+        self.commensurate = CheckBox(self.tr("Require periodic closure"), self.setting_widget)
         self.commensurate.setChecked(True)
-        self.limit_frame = SpinBoxUnitInputFrame(self)
+        self.commensurate_field = CompactField(
+            self.tr("Periodic boundary"),
+            self.commensurate,
+            self.setting_widget,
+            self.tr("For every periodic cell vector aᵢ, q·aᵢ/(2π) must be an integer."),
+        )
+        self.limit_frame = SpinBoxUnitInputFrame(self.setting_widget)
         self.limit_frame.set_input("", 1, "int")
         self.limit_frame.setRange(3, 999999)
         self.limit_frame.set_input_value([100])
@@ -134,14 +185,16 @@ class SOCTextureResponseCard(MakeDataCard):
             self.limit_frame,
             self.setting_widget,
             self.tr("Only complete signed-q or rotation groups are retained."),
+            inline=True,
+            input_max_width=150,
         )
         self.advanced_section = InspectorSection(self.tr("Advanced texture controls"), self.setting_widget)
         advanced_grid = ResponsiveFormGrid(self.advanced_section)
-        advanced_grid.add_field(self.cone_field)
-        advanced_grid.add_field(self.phase_field)
+        advanced_grid.add_field(self.cone_field, span=2)
+        advanced_grid.add_field(self.phase_field, span=2)
+        advanced_grid.add_field(self.commensurate_field, span=2)
         advanced_grid.add_field(self.limit_field, span=2)
         self.advanced_section.addWidget(advanced_grid)
-        self.advanced_section.addWidget(self.commensurate)
         self.advanced_section.hide()
 
         self.output_preview = CaptionLabel("", self.setting_widget)
@@ -151,16 +204,23 @@ class SOCTextureResponseCard(MakeDataCard):
 
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
         self.settingLayout.setVerticalSpacing(4)
-        self.settingLayout.addWidget(path_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(self.path_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(geometry_section, 1, 0, 1, 3)
         self.settingLayout.addWidget(self.advanced_checkbox, 2, 0, 1, 3)
         self.settingLayout.addWidget(self.advanced_section, 3, 0, 1, 3)
         self.settingLayout.addWidget(output_section, 4, 0, 1, 3)
 
         self.kind_combo.currentIndexChanged.connect(self._update_widgets)
+        self.q_definition_combo.currentIndexChanged.connect(self._update_widgets)
         self.time_reversal.toggled.connect(self._update_output_preview)
         self.advanced_checkbox.toggled.connect(self.advanced_section.setVisible)
         for spin in self.scan_input.range_frame.object_list:
+            spin.valueChanged.connect(self._update_output_preview)
+        for spin in (
+            *self.q_reciprocal_frame.object_list,
+            *self.q_magnitude_frame.object_list,
+            *self.limit_frame.object_list,
+        ):
             spin.valueChanged.connect(self._update_output_preview)
         self.scan_input.custom_edit.textChanged.connect(self._update_output_preview)
         self._update_widgets()
@@ -168,6 +228,23 @@ class SOCTextureResponseCard(MakeDataCard):
     def _update_widgets(self, *_args):
         kind = combo_value(self.kind_combo)
         global_scan = kind == "Global anisotropy"
+        reciprocal_q = combo_value(self.q_definition_combo) == "Cell reciprocal vector"
+        descriptions = {
+            "Global anisotropy": self.tr(
+                "Rigidly rotate every input spin together; relative spin angles and the lattice stay fixed."
+            ),
+            "Bulk / Bloch": self.tr(
+                "Regenerate a finite-q texture from the input moment magnitudes; the rotation-plane normal is q."
+            ),
+            "Interfacial / Cycloidal": self.tr(
+                "Regenerate a finite-q texture whose spins rotate in the plane spanned by q and the surface normal."
+            ),
+            "General spiral": self.tr(
+                "Regenerate a finite-q texture in the plane specified by its normal."
+            ),
+        }
+        self.path_section.description_label.setText(descriptions[kind])
+        self.path_section.description_label.show()
         self.scan_field.set_label(
             self.tr("Rigid rotation scan (degrees)") if global_scan else self.tr("Signed q scan (multiples of base q)")
         )
@@ -178,13 +255,15 @@ class SOCTextureResponseCard(MakeDataCard):
         )
         self.axis_field.setVisible(global_scan)
         self.time_reversal.setVisible(global_scan)
-        self.q_direction_field.setVisible(not global_scan)
-        self.q_magnitude_field.setVisible(not global_scan)
+        self.q_definition_field.setVisible(not global_scan)
+        self.q_reciprocal_field.setVisible(not global_scan and reciprocal_q)
+        self.q_direction_field.setVisible(not global_scan and not reciprocal_q)
+        self.q_magnitude_field.setVisible(not global_scan and not reciprocal_q)
         self.plane_field.setVisible(kind == "General spiral")
         self.surface_field.setVisible(kind == "Interfacial / Cycloidal")
         self.cone_field.setVisible(not global_scan)
         self.phase_field.setVisible(not global_scan)
-        self.commensurate.setVisible(not global_scan)
+        self.commensurate_field.setVisible(not global_scan)
         self._update_output_preview()
 
     def _update_output_preview(self, *_args):
@@ -192,23 +271,55 @@ class SOCTextureResponseCard(MakeDataCard):
             count = self.scan_input.count()
             groups = 2 if combo_value(self.kind_combo) == "Global anisotropy" and self.time_reversal.isChecked() else 1
             total = count * groups
-            detail = self.tr(" across the normal and time-reversed groups") if groups == 2 else ""
-            self.output_preview.setText(
-                self.tr("{total} structures{detail}; each group contains {count} ordered coordinates.").format(
-                    total=total, detail=detail, count=count
+            limit = int(self.limit_frame.get_input_value()[0])
+            if limit < total:
+                self.output_preview.setText(
+                    self.tr(
+                        "This path needs {total} structures, but the current limit is {limit}."
+                    ).format(total=total, limit=limit)
                 )
+                return
+            kind = combo_value(self.kind_combo)
+            if groups == 2:
+                detail = self.tr("two complete groups: normal and time reversed")
+            elif kind == "Global anisotropy":
+                detail = self.tr("one complete rigid-rotation group")
+            elif combo_value(self.q_definition_combo) == "Cell reciprocal vector":
+                detail = self.tr("one signed-q group; base q is derived from the input cell")
+            else:
+                q_magnitude = float(self.q_magnitude_frame.get_input_value()[0])
+                if q_magnitude <= 1.0e-12:
+                    self.output_preview.setText(
+                        self.tr("The Cartesian base q vector must be non-zero.")
+                    )
+                    return
+                period = 2.0 * math.pi / q_magnitude
+                detail = self.tr("one signed-q group; base period {period:.3f} Å").format(
+                    period=period
+                )
+            self.output_preview.setText(
+                self.tr("{total} structures in {detail}.").format(total=total, detail=detail)
             )
         except ValueError as exc:
             self.output_preview.setText(str(exc))
 
     def get_summary_text(self) -> str:
-        return self.tr("{preset} · {count} ordered coordinates").format(
+        return self.tr("{preset} · {count} per group").format(
             preset=self.kind_combo.currentText(), count=self.scan_input.count()
         )
 
     def get_guidance_text(self) -> str:
+        kind = combo_value(self.kind_combo)
+        if kind == "Global anisotropy":
+            return self.tr(
+                "Compare the reference and rotated frames after an SOC-enabled calculation; all relative spin angles should stay fixed."
+            )
+        if combo_value(self.q_definition_combo) == "Cell reciprocal vector":
+            return self.tr(
+                "The integer reciprocal index closes in the current cell. The q=0 frame is a generated collinear reference, not the input spin directions."
+            )
         return self.tr(
-            "Bloch, cycloidal, and general are generation presets, not fixed Hamiltonian models. Non-commensurate periodic spirals fail closed."
+            "Check periodic closure for Cartesian q. The q=0 frame is a generated collinear reference, not the input spin directions."
         )
 
     def create_operation(self):
@@ -222,6 +333,10 @@ class SOCTextureResponseCard(MakeDataCard):
             response_kind=combo_value(self.kind_combo),
             coordinate_scan=self.scan_input.scan_text(),
             rotation_axis=self.axis_input.vector(),
+            q_definition=combo_value(self.q_definition_combo),
+            q_reciprocal_index=tuple(
+                int(value) for value in self.q_reciprocal_frame.get_input_value()
+            ),
             q_vector_cart=q_vector,
             plane_normal=self.plane_input.vector(),
             surface_normal=self.surface_input.vector(),
@@ -236,6 +351,13 @@ class SOCTextureResponseCard(MakeDataCard):
         set_combo_value(self.kind_combo, params.response_kind)
         self.scan_input.set_scan_text(params.coordinate_scan)
         self.axis_input.set_vector(params.rotation_axis)
+        set_combo_value(
+            self.q_definition_combo,
+            params.q_definition or "Cartesian vector",
+        )
+        self.q_reciprocal_frame.set_input_value(
+            [int(value) for value in params.q_reciprocal_index]
+        )
         q_vector = tuple(float(value) for value in params.q_vector_cart)
         q_magnitude = math.sqrt(sum(value * value for value in q_vector))
         self.q_magnitude_frame.set_input_value([q_magnitude])
@@ -247,6 +369,17 @@ class SOCTextureResponseCard(MakeDataCard):
         self.time_reversal.setChecked(params.include_time_reversal)
         self.commensurate.setChecked(params.require_commensurate)
         self.limit_frame.set_input_value([params.max_outputs])
+        self.advanced_checkbox.setChecked(
+            (
+                params.response_kind != "Global anisotropy"
+                and (
+                    params.cone_component != 0.0
+                    or params.phase_deg != 0.0
+                    or not params.require_commensurate
+                )
+            )
+            or params.max_outputs != 100
+        )
         self._update_widgets()
 
     def process_structure(self, structure):

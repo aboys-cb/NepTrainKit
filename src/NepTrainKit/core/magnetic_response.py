@@ -234,6 +234,8 @@ class TextureMagneticResponseParams:
     response_kind: str = "Global anisotropy"
     coordinate_scan: str = "-2,-1,0,1,2"
     rotation_axis: tuple[float, float, float] = (0.0, 1.0, 0.0)
+    q_definition: str | None = None
+    q_reciprocal_index: tuple[int, int, int] = (1, 0, 0)
     q_vector_cart: tuple[float, float, float] = (0.0, 0.0, 0.1)
     plane_normal: tuple[float, float, float] = (0.0, 1.0, 0.0)
     surface_normal: tuple[float, float, float] = (0.0, 0.0, 1.0)
@@ -493,6 +495,13 @@ class MagneticResponseScanOperation(StructureOperation):
                 (math.radians(angle), moments @ _rotation_matrix(axis, math.radians(angle)).T, structure)
                 for angle in angles_deg
             ]
+            required = len(frames) * (2 if params.include_time_reversal else 1)
+            if int(params.max_outputs) < required:
+                raise CardOperationError(
+                    "texture_response_budget_too_small",
+                    "Maximum structures must be at least {required} for the selected texture response path.",
+                    required=required,
+                )
             self._emit_group(
                 structure, source_id=source_id, parent=parent, group_key=["anisotropy", axis.tolist()],
                 probe="rotation", kind="global_anisotropy", frames=frames,
@@ -520,10 +529,47 @@ class MagneticResponseScanOperation(StructureOperation):
         multipliers = _parse_scan(params.coordinate_scan, minimum_points=3)
         if 0.0 not in multipliers:
             raise ValueError("q response scan must include q=0")
-        q0 = np.asarray(params.q_vector_cart, dtype=float)
+        q_definition = params.q_definition or "Cartesian vector"
+        if q_definition == "Cell reciprocal vector":
+            cell = np.asarray(structure.cell.array, dtype=float)
+            if cell.shape != (3, 3) or not np.isfinite(cell).all() or abs(np.linalg.det(cell)) <= 1.0e-14:
+                raise CardOperationError(
+                    "texture_response_invalid_cell",
+                    "Cell-reciprocal q needs a finite, non-singular 3D cell.",
+                )
+            raw_index = np.asarray(params.q_reciprocal_index, dtype=float)
+            if raw_index.shape != (3,) or not np.isfinite(raw_index).all():
+                raise CardOperationError(
+                    "texture_response_invalid_reciprocal_index",
+                    "The reciprocal-cell index must contain three finite integers.",
+                )
+            reciprocal_index = np.rint(raw_index)
+            if not np.allclose(raw_index, reciprocal_index, atol=1.0e-12):
+                raise CardOperationError(
+                    "texture_response_invalid_reciprocal_index",
+                    "The reciprocal-cell index must contain three finite integers.",
+                )
+            if not np.any(reciprocal_index):
+                raise CardOperationError(
+                    "texture_response_zero_reciprocal_index",
+                    "The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.",
+                )
+            reciprocal = 2.0 * math.pi * np.linalg.inv(cell).T
+            q0 = reciprocal.T @ reciprocal_index
+        elif q_definition == "Cartesian vector":
+            reciprocal_index = None
+            q0 = np.asarray(params.q_vector_cart, dtype=float)
+        else:
+            raise CardOperationError(
+                "texture_response_invalid_q_definition",
+                "q definition must be Cell reciprocal vector or Cartesian vector.",
+            )
         q0_norm = float(np.linalg.norm(q0))
         if q0_norm <= 1.0e-12:
-            raise ValueError("q_vector_cart must be nonzero for a spiral scan")
+            raise CardOperationError(
+                "texture_response_zero_q",
+                "The Cartesian base q vector must be non-zero for a spiral response.",
+            )
         q_hat = q0 / q0_norm
         if params.response_kind == "Bulk / Bloch":
             plane_normal = q_hat
@@ -557,15 +603,17 @@ class MagneticResponseScanOperation(StructureOperation):
                     if periodic:
                         turns = float(np.dot(q, structure.cell.array[index]) / (2.0 * math.pi))
                         if abs(turns - round(turns)) > 1.0e-7:
-                            suggestion = max(1, int(round(1.0 / max(abs(turns - round(turns)), 1.0e-12))))
-                            raise ValueError(
-                                f"q is not commensurate with periodic cell vector {index}; "
-                                f"use a compatible q or expand that lattice direction (candidate multiplier {suggestion})"
+                            raise CardOperationError(
+                                "texture_response_incommensurate_q",
+                                "q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, or change q and the supercell together.",
+                                index=index + 1,
                             )
             phases = structure.positions @ q + phase0
             unit = radial * (np.cos(phases)[:, None] * e1 + np.sin(phases)[:, None] * e2) + cone * plane_normal
             frames.append((float(np.sign(multiplier) * np.linalg.norm(q)), magnitudes[:, None] * unit, structure))
-            q_fractional_records.append(None if reciprocal is None else np.linalg.solve(reciprocal, q).tolist())
+            q_fractional_records.append(
+                None if reciprocal is None else np.linalg.solve(reciprocal.T, q).tolist()
+            )
         q0_period = 2.0 * math.pi / q0_norm
         self._emit_group(
             structure, source_id=source_id, parent=parent, group_key=[kind_map[params.response_kind], q0.tolist(), phase0],
@@ -575,6 +623,8 @@ class MagneticResponseScanOperation(StructureOperation):
             metadata={
                 "q_cartesian_1_per_angstrom": [np.asarray(multiplier * q0).tolist() for multiplier in multipliers],
                 "q_reciprocal_fractional": q_fractional_records,
+                "q_definition": q_definition,
+                "q_reciprocal_index": None if reciprocal_index is None else reciprocal_index.astype(int).tolist(),
                 "period_angstrom": q0_period,
                 "chirality": [int(np.sign(value)) for value in multipliers],
                 "phase_radian": phase0,

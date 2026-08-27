@@ -10,7 +10,7 @@ from NepTrainKit.core.magnetic_response import (
     MagnetoelasticResponseParams,
     TextureMagneticResponseParams,
 )
-from NepTrainKit.ui.views._card.i18n_utils import set_combo_value
+from NepTrainKit.ui.views._card.i18n_utils import combo_value, set_combo_value
 from NepTrainKit.ui.views._card.local_magnetic_response_card import LocalMagneticResponseCard
 from NepTrainKit.ui.views._card.magnetoelastic_response_card import MagnetoelasticResponseCard
 from NepTrainKit.ui.views._card.soc_texture_response_card import SOCTextureResponseCard
@@ -146,3 +146,42 @@ def test_soc_response_roundtrip_splits_q_direction_and_magnitude():
     assert restored.phase_deg == pytest.approx(12.5)
     assert card.scan_field.caption.text() == card.tr("Signed q scan (multiples of base q)")
     assert not card.plane_field.isHidden()
+
+
+def test_soc_response_defaults_to_cell_reciprocal_q_and_reveals_only_active_inputs():
+    card = SOCTextureResponseCard()
+    set_combo_value(card.kind_combo, "Bulk / Bloch")
+
+    assert combo_value(card.q_definition_combo) == "Cell reciprocal vector"
+    assert not card.q_reciprocal_field.isHidden()
+    assert card.q_direction_field.isHidden()
+    assert card.get_params().q_reciprocal_index == (1, 0, 0)
+
+    set_combo_value(card.q_definition_combo, "Cartesian vector")
+    assert card.q_reciprocal_field.isHidden()
+    assert not card.q_direction_field.isHidden()
+    assert not card.q_magnitude_field.isHidden()
+
+
+def test_soc_response_restores_legacy_cartesian_q_and_opens_nondefault_advanced_values():
+    card = SOCTextureResponseCard()
+    payload = card.to_dict()
+    payload["params"].update(
+        response_kind="General spiral",
+        q_vector_cart=[0.1, 0.2, 0.0],
+        cone_component=0.25,
+        phase_deg=30.0,
+        require_commensurate=False,
+        max_outputs=12,
+    )
+    payload["params"].pop("q_definition", None)
+    payload["params"].pop("q_reciprocal_index", None)
+
+    card.from_dict(payload)
+    restored = card.get_params()
+
+    assert combo_value(card.q_definition_combo) == "Cartesian vector"
+    assert restored.q_definition == "Cartesian vector"
+    assert restored.q_vector_cart == pytest.approx((0.1, 0.2, 0.0))
+    assert card.advanced_checkbox.isChecked()
+    assert not card.advanced_section.isHidden()

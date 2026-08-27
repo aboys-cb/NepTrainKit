@@ -500,6 +500,33 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "No valid magnetic atom pairs match the left and right indices.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum structures must be at least {required} for the selected texture response path.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Cell-reciprocal q needs a finite, non-singular 3D cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The reciprocal-cell index must contain three finite integers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "q definition must be Cell reciprocal vector or Cartesian vector.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The Cartesian base q vector must be non-zero for a spiral response.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, "
+        "or change q and the supercell together.",
+    )
 
 
 class MessageManager(QObject):

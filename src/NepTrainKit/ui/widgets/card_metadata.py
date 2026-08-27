@@ -286,7 +286,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "SOC / Texture Response"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Build rigid anisotropy and signed finite-q texture response paths with commensurability checks.",
+                "Rigidly rotate an input spin texture or regenerate a cell-compatible signed-q texture path.",
             ),
         ),
         "StackingFaultCard": (

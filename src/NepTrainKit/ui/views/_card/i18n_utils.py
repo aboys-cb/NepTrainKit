@@ -38,6 +38,8 @@ def _translation_catalog() -> None:
     QCoreApplication.translate("CardCombo", "Bulk / Bloch")
     QCoreApplication.translate("CardCombo", "Interfacial / Cycloidal")
     QCoreApplication.translate("CardCombo", "General spiral")
+    QCoreApplication.translate("CardCombo", "Cell reciprocal vector")
+    QCoreApplication.translate("CardCombo", "Cartesian vector")
     QCoreApplication.translate("CardCombo", "Isotropic volume")
     QCoreApplication.translate("CardCombo", "Uniaxial strain")
     QCoreApplication.translate("CardCombo", "Biaxial strain")

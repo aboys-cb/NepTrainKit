@@ -37,6 +37,60 @@ class TestBenchmarkStage1Core(unittest.TestCase):
             self.assertAlmostEqual(item.get_volume(), volume, places=12)
             self.assertIn("Bain(ax=z", item.info.get("Config_type", ""))
 
+    def test_bain_relative_ca_is_the_actual_relative_axis_ratio(self):
+        atoms = Atoms("H", positions=[[0, 0, 0]], cell=[2, 3, 4], pbc=True)
+        original_lengths = atoms.cell.lengths()
+
+        out = BainPathOperation().run_structure(
+            atoms,
+            BainPathParams(
+                axis="z",
+                ca_range=(1.2, 1.2, 1.0),
+                coordinate_mode="relative_ca",
+                mode="constant_volume",
+            ),
+        )[0]
+
+        lengths = out.cell.lengths()
+        relative_ratio = (lengths[2] / lengths[0]) / (original_lengths[2] / original_lengths[0])
+        self.assertAlmostEqual(relative_ratio, 1.2, places=12)
+        self.assertAlmostEqual(out.get_volume(), atoms.get_volume(), places=12)
+        self.assertIn("ca=1.2", out.info.get("Config_type", ""))
+
+    def test_bain_legacy_axis_scale_preserves_previous_geometry(self):
+        atoms = Atoms("H", positions=[[0, 0, 0]], cell=[2, 3, 4], pbc=True)
+        out = BainPathOperation().run_structure(
+            atoms,
+            BainPathParams(
+                axis="z",
+                ca_range=(1.2, 1.2, 1.0),
+                coordinate_mode="axis_scale",
+                mode="constant_volume",
+            ),
+        )[0]
+
+        np.testing.assert_allclose(
+            out.cell.lengths(),
+            atoms.cell.lengths() * [1 / np.sqrt(1.2), 1 / np.sqrt(1.2), 1.2],
+        )
+        self.assertIn("s=1.2", out.info.get("Config_type", ""))
+
+    def test_bain_default_and_shape_volume_grid_have_multiple_points(self):
+        default = BainPathOperation.sampling_summary(BainPathParams())
+        grid = BainPathOperation.sampling_summary(
+            BainPathParams(
+                ca_range=(0.9, 1.1, 0.1),
+                mode="scale_volume",
+                volume_scale_range=(0.95, 1.05, 0.05),
+            )
+        )
+
+        self.assertEqual(default["path_points"], 3)
+        self.assertEqual(default["outputs_per_input"], 3)
+        self.assertEqual(grid["path_points"], 3)
+        self.assertEqual(grid["volume_points"], 3)
+        self.assertEqual(grid["outputs_per_input"], 9)
+
     def test_bain_free_c_only_changes_selected_cell_vector(self):
         atoms = Atoms("H", positions=[[0.1, 0.2, 0.3]], cell=[[2, 0, 0], [0.5, 3, 0], [0.2, 0.4, 4]], pbc=True)
         cell = atoms.cell.array.copy()

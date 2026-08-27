@@ -54,7 +54,10 @@ def _localized_catalog(_language_marker: str):
     names_and_descriptions = {
         "BainPathCard": (
             QCoreApplication.translate("CardCatalog", "Bain Path"),
-            QCoreApplication.translate("CardCatalog", "Generate fixed-structure Bain/tetragonal distortion paths."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Generate constant-volume, shape-volume-grid, or free-axis tetragonal paths along a selected lattice vector.",
+            ),
         ),
         "CardGroup": (
             QCoreApplication.translate("CardCatalog", "Branch Merge"),

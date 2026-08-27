@@ -698,6 +698,7 @@ class MagneticResponseScanOperation(StructureOperation):
                     BainPathParams(
                         axis={"a": "x", "b": "y", "c": "z"}[bain_axis],
                         ca_range=(1.0 + float(strain), 1.0 + float(strain), 1.0),
+                        coordinate_mode="axis_scale",
                         mode="constant_volume",
                     ),
                 )

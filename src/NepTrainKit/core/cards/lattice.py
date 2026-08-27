@@ -70,7 +70,8 @@ class BainPathParams:
     """Parameters for Bain/tetragonal distortion path generation."""
 
     axis: Literal["x", "y", "z"] = "z"
-    ca_range: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    ca_range: tuple[float, float, float] = (0.95, 1.05, 0.05)
+    coordinate_mode: Literal["relative_ca", "axis_scale"] = "relative_ca"
     mode: Literal["constant_volume", "scale_volume", "free_c"] = "constant_volume"
     volume_scale_range: tuple[float, float, float] = (1.0, 1.0, 1.0)
     scale_atoms: bool = True
@@ -78,6 +79,49 @@ class BainPathParams:
 
 class BainPathOperation(StructureOperation):
     """Generate fixed-structure Bain/tetragonal distortion structures."""
+
+    @staticmethod
+    def _shape_factors(value: float, c_axis: int, params: BainPathParams) -> np.ndarray:
+        """Resolve lattice-vector factors from the selected path coordinate."""
+        factors = np.ones(3, dtype=float)
+        if params.coordinate_mode == "relative_ca":
+            if params.mode == "free_c":
+                axial_factor = value
+                transverse_factor = 1.0
+            else:
+                axial_factor = value ** (2.0 / 3.0)
+                transverse_factor = value ** (-1.0 / 3.0)
+        elif params.coordinate_mode == "axis_scale":
+            axial_factor = value
+            transverse_factor = 1.0 if params.mode == "free_c" else 1.0 / np.sqrt(value)
+        else:
+            raise ValueError("BainPath coordinate_mode must be relative_ca or axis_scale.")
+        factors.fill(transverse_factor)
+        factors[c_axis] = axial_factor
+        return factors
+
+    @classmethod
+    def sampling_summary(cls, params: BainPathParams) -> dict[str, object]:
+        """Return validated path values and exact outputs per input."""
+        values = _scan_values(params.ca_range, label="ca_range")
+        if np.any(values <= 0.0):
+            raise ValueError("BainPath ca_range values must be positive.")
+        volume_values = (
+            _scan_values(params.volume_scale_range, label="volume_scale_range")
+            if params.mode == "scale_volume"
+            else np.array([1.0], dtype=float)
+        )
+        if np.any(volume_values <= 0.0):
+            raise ValueError("BainPath volume_scale_range values must be positive.")
+        if params.coordinate_mode not in {"relative_ca", "axis_scale"}:
+            raise ValueError("BainPath coordinate_mode must be relative_ca or axis_scale.")
+        return {
+            "path_values": values,
+            "volume_values": volume_values,
+            "path_points": len(values),
+            "volume_points": len(volume_values),
+            "outputs_per_input": len(values) * len(volume_values),
+        }
 
     def run_structure(self, structure, params: BainPathParams) -> list:
         axis_map = {"x": 0, "y": 1, "z": 2}
@@ -91,27 +135,15 @@ class BainPathOperation(StructureOperation):
         if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
             raise ValueError("BainPath requires a nonsingular 3x3 cell.")
 
-        ca_values = _scan_values(params.ca_range, label="ca_range")
-        if np.any(ca_values <= 0.0):
-            raise ValueError("BainPath ca_range values must be positive.")
-        volume_values = (
-            _scan_values(params.volume_scale_range, label="volume_scale_range")
-            if params.mode == "scale_volume"
-            else np.array([1.0], dtype=float)
-        )
-        if np.any(volume_values <= 0.0):
-            raise ValueError("BainPath volume_scale_range values must be positive.")
+        summary = self.sampling_summary(params)
+        ca_values = summary["path_values"]
+        volume_values = summary["volume_values"]
 
         c_axis = axis_map[axis]
         out = []
         base_volume = abs(float(np.linalg.det(cell)))
         for r in ca_values:
-            factors = np.ones(3, dtype=float)
-            factors[c_axis] = float(r)
-            if params.mode != "free_c":
-                for i in range(3):
-                    if i != c_axis:
-                        factors[i] = 1.0 / np.sqrt(float(r))
+            factors = self._shape_factors(float(r), c_axis, params)
             for vscale in volume_values:
                 new_cell = cell * factors[:, None]
                 if params.mode == "scale_volume":
@@ -119,7 +151,11 @@ class BainPathOperation(StructureOperation):
                 atoms = structure.copy()
                 atoms.set_cell(new_cell, scale_atoms=bool(params.scale_atoms))
                 v_over_v0 = abs(float(np.linalg.det(new_cell))) / base_volume
-                append_config_tag(atoms, f"Bain(ax={axis},ca={float(r):g},V={v_over_v0:g},mode={params.mode})")
+                coordinate = "ca" if params.coordinate_mode == "relative_ca" else "s"
+                append_config_tag(
+                    atoms,
+                    f"Bain(ax={axis},{coordinate}={float(r):g},V={v_over_v0:g},mode={params.mode})",
+                )
                 out.append(atoms)
         return out
 
@@ -282,7 +318,7 @@ class CellScalingOperation(StructureOperation):
                 cy = new_lengths[2] * (
                     np.cos(new_angles[0]) - np.cos(new_angles[1]) * np.cos(new_angles[2])
                 ) / np.sin(new_angles[2])
-                cz = np.sqrt(max(new_lengths[2] ** 2 - cx ** 2 - cy ** 2, 0))
+                cz = np.sqrt(max(new_lengths[2] ** 2 - cx**2 - cy**2, 0))
                 new_lattice[2] = [cx, cy, cz]
 
             eng = "U" if engine_type == 1 else "S"

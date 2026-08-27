@@ -19,6 +19,7 @@ from qfluentwidgets import ScrollBarHandleDisplayMode
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import StructureOperation
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
+from NepTrainKit.ui.views._card.bain_path_card import BainPathCard
 from NepTrainKit.ui.views._card.card_group import CardGroup
 from NepTrainKit.ui.views._card.cell_strain_card import CellStrainCard
 from NepTrainKit.ui.views._card.interstitial_adsorbate_card import InsertDefectCard
@@ -154,6 +155,31 @@ def test_insert_defect_adsorption_fields_remain_visible_in_real_inspector():
     assert card.offset_field.isVisibleTo(area)
     assert card.axis_combo.isVisibleTo(area)
     assert card.offset_frame.isVisibleTo(area)
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
+def test_bain_volume_scan_only_appears_for_the_shape_volume_grid():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = BainPathCard()
+    area.add_card(card)
+    area.resize(1024, 640)
+    area.show()
+    area.select_card(card)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert card.volume_field.isHidden()
+    assert "3 path points = 3 outputs/input" in card.preview_label.text()
+
+    card.mode_combo.setCurrentIndex(card.mode_combo.findData("scale_volume"))
+    for _ in range(3):
+        app.processEvents()
+
+    assert card.volume_field.isVisibleTo(area)
+    assert card.volume_frame.isVisibleTo(area)
     assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
     _dispose(area)
 

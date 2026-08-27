@@ -297,6 +297,25 @@ def test_structured_card_error_translates_interpolated_field_name():
     assert translate_runtime_message(error) == "成键检测半径必须为正数。"
 
 
+def test_local_solvation_structured_errors_are_fully_chinese():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    field_error = CardOperationError(
+        "local-solvation-solvent-count-minimum",
+        "{field} must be at least {minimum}.",
+        field="Total solvent molecules per output",
+        minimum=1,
+    )
+    mode_error = CardOperationError(
+        "local-solvation-ion-water-requires-water",
+        "Supported ion hydration requires a water solvent molecule.",
+    )
+
+    assert translate_runtime_message(field_error) == "每个输出的溶剂分子总数必须至少为 1。"
+    assert translate_runtime_message(mode_error) == "受支持的离子水合模式要求溶剂分子为水。"
+
+
 def test_translation_path_uses_runtime_resource_root(monkeypatch, tmp_path):
     monkeypatch.setattr(i18n, "module_path", tmp_path)
 

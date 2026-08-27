@@ -170,10 +170,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "LocalSolvationCard": (
-            QCoreApplication.translate("CardCatalog", "Local Solvation"),
+            QCoreApplication.translate("CardCatalog", "Solvent Shell"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Insert solvent molecules around selected host atoms using a fallback COM shell or ion-specific first-shell distances, with collision checks and optional flexible-solvent sampling.",
+                "Place a shared total of solvent molecules around selected host atoms using local shells and collision checks.",
             ),
         ),
         "LocalMagneticResponseCard": (

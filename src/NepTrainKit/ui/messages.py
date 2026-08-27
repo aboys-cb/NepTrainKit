@@ -562,6 +562,28 @@ def _card_operation_error_catalog() -> None:
     QCoreApplication.translate(
         "CardOperationError", "All requested conformers failed the geometry guards; narrow the torsion range, reduce coordinate noise, or inspect the distance limits."
     )
+    QCoreApplication.translate("CardOperationError", "Solvent Shell requires at least one host atom.")
+    QCoreApplication.translate("CardOperationError", "Solvent Shell requires finite Cartesian atom positions.")
+    QCoreApplication.translate("CardOperationError", "Periodic input requires a finite, nonsingular 3×3 cell.")
+    QCoreApplication.translate("CardOperationError", "Solvent XYZ must describe one valid non-empty molecule.")
+    QCoreApplication.translate("CardOperationError", "Cartesian z range must contain a minimum and maximum.")
+    QCoreApplication.translate("CardOperationError", "The center selection does not match any host atoms.")
+    QCoreApplication.translate("CardOperationError", "Fallback center-to-COM shell must contain an inner and outer radius.")
+    QCoreApplication.translate("CardOperationError", "Fallback shell outer radius must be larger than its inner radius.")
+    QCoreApplication.translate("CardOperationError", "Fixed box size must be positive.")
+    QCoreApplication.translate("CardOperationError", "Flexible torsion range must contain a minimum and maximum.")
+    QCoreApplication.translate("CardOperationError", "Flexible torsion minimum must not exceed its maximum.")
+    QCoreApplication.translate("CardOperationError", "No solvent molecule could be placed; adjust the centers, shell, collision rule, or free volume.")
+    QCoreApplication.translate("CardOperationError", "No solvent molecule could be placed; adjust the centers, shell, collision rule, or free volume. The periodic structure appears to have no solvent-accessible void; use a structure with free volume or a larger periodic cell.")
+    QCoreApplication.translate("CardOperationError", "Only {placed} of {requested} solvent molecules could be placed.")
+    QCoreApplication.translate("CardOperationError", "Unsupported placement method: {mode}.")
+    QCoreApplication.translate("CardOperationError", "Supported ion hydration requires a water solvent molecule.")
+    QCoreApplication.translate("CardOperationError", "Supported ion hydration requires every selected center to be Li, Na, K, Mg, Ca, Sr, Ba, or Zn.")
+    QCoreApplication.translate("CardOperationError", "Enter at least one center element.")
+    QCoreApplication.translate("CardOperationError", "Unsupported center selection: {mode}.")
+    QCoreApplication.translate("CardOperationError", "Enter at least one 1-based center index.")
+    QCoreApplication.translate("CardOperationError", "Center index {index} is outside the valid range 1–{natoms}.")
+    QCoreApplication.translate("CardOperationError", "Center indices must use 1-based integers and ranges such as 1,3,5-8.")
     QCoreApplication.translate(
         "CardOperationError",
         "Targeted Vacancy could not generate a valid non-empty structure. "
@@ -747,6 +769,20 @@ def _card_operation_field_catalog() -> None:
     QCoreApplication.translate("CardOperationField", "Pauling decay length")
     QCoreApplication.translate("CardOperationField", "Bond-order threshold")
     QCoreApplication.translate("CardOperationField", "Random seed")
+    QCoreApplication.translate("CardOperationField", "Independent outputs per input")
+    QCoreApplication.translate("CardOperationField", "Total solvent molecules per output")
+    QCoreApplication.translate("CardOperationField", "Placement attempts per output")
+    QCoreApplication.translate("CardOperationField", "Cartesian z range")
+    QCoreApplication.translate("CardOperationField", "Fallback center-to-COM shell")
+    QCoreApplication.translate("CardOperationField", "Uniform minimum distance")
+    QCoreApplication.translate("CardOperationField", "Element-radius collision scale")
+    QCoreApplication.translate("CardOperationField", "Fixed box size")
+    QCoreApplication.translate("CardOperationField", "Auto-box padding")
+    QCoreApplication.translate("CardOperationField", "Minimum auto-box edge")
+    QCoreApplication.translate("CardOperationField", "Flexible conformer pool")
+    QCoreApplication.translate("CardOperationField", "Flexible torsions per conformer")
+    QCoreApplication.translate("CardOperationField", "Flexible conformer noise")
+    QCoreApplication.translate("CardOperationField", "Flexible torsion range")
 
 
 class MessageManager(QObject):

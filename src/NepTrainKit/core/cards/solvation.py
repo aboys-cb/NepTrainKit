@@ -15,7 +15,13 @@ from ase.io import read as ase_read
 
 from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 
-from .geometry import wrapped_positions as wrap_structure_positions
+from .errors import CardOperationError
+from .geometry import (
+    MinimumImageContext,
+    minimum_image_context,
+    minimum_image_delta as exact_minimum_image_delta,
+    wrapped_positions as wrap_structure_positions,
+)
 from .operation import StructureOperation
 from .structure import OrganicMolConfigPBCOperation, OrganicMolConfigPBCParams
 
@@ -28,8 +34,6 @@ O 0.00000000 0.00000000 0.00000000
 H 0.95720000 0.00000000 0.00000000
 H -0.23998720 0.92662721 0.00000000
 """
-
-ION_ELEMENTS = {"Li", "Na", "K", "Rb", "Cs", "Mg", "Ca", "Sr", "Ba", "Zn", "Fe", "Cu", "Al"}
 
 COLLISION_RADIUS = {
     "H": 0.75,
@@ -111,7 +115,7 @@ ION_WATER_PROFILES = {
     "Zn": {"coordination": 6, "ion_o": (1.95, 2.25), "first_shell_com": (2.3, 3.1)},
 }
 
-DEFAULT_ION_WATER_PROFILE = {"coordination": 6, "ion_o": (2.30, 2.60), "first_shell_com": (2.5, 3.4)}
+ION_WATER_ELEMENTS = frozenset(ION_WATER_PROFILES)
 
 
 @dataclass(frozen=True)
@@ -187,45 +191,88 @@ class LocalSolvationOperation(StructureOperation):
     @staticmethod
     def _integer(
         value,
-        label: str,
+        key: str,
+        field: str | None = None,
         *,
         minimum: int,
-        prefix: str = "Local Solvation",
+        prefix: str | None = None,
     ) -> int:
+        if prefix is not None:
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"{prefix}: {key} must be an integer.") from exc
+            if not np.isfinite(numeric) or not numeric.is_integer():
+                raise ValueError(f"{prefix}: {key} must be an integer.")
+            integer = int(numeric)
+            if integer < minimum:
+                raise ValueError(f"{prefix}: {key} must be >= {minimum}.")
+            return integer
+        assert field is not None
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"{prefix}: {label} must be an integer.") from exc
+            raise CardOperationError(
+                f"local-solvation-{key}-integer",
+                "{field} must be an integer.",
+                field=field,
+            ) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"{prefix}: {label} must be an integer.")
+            raise CardOperationError(
+                f"local-solvation-{key}-integer",
+                "{field} must be an integer.",
+                field=field,
+            )
         integer = int(numeric)
         if integer < minimum:
-            raise ValueError(
-                f"{prefix}: {label} must be >= {minimum}."
+            raise CardOperationError(
+                f"local-solvation-{key}-minimum",
+                "{field} must be at least {minimum}.",
+                field=field,
+                minimum=minimum,
             )
         return integer
 
     @staticmethod
     def _finite(
         value,
-        label: str,
+        key: str,
+        field: str | None = None,
         *,
         minimum: float | None = None,
-        prefix: str = "Local Solvation",
+        prefix: str | None = None,
     ) -> float:
+        if prefix is not None:
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"{prefix}: {key} must be a finite number.") from exc
+            if not np.isfinite(numeric):
+                raise ValueError(f"{prefix}: {key} must be a finite number.")
+            if minimum is not None and numeric < minimum:
+                raise ValueError(f"{prefix}: {key} must be >= {minimum:g}.")
+            return numeric
+        assert field is not None
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(
-                f"{prefix}: {label} must be a finite number."
+            raise CardOperationError(
+                f"local-solvation-{key}-finite",
+                "{field} must be a finite number.",
+                field=field,
             ) from exc
         if not np.isfinite(numeric):
-            raise ValueError(
-                f"{prefix}: {label} must be a finite number."
+            raise CardOperationError(
+                f"local-solvation-{key}-finite",
+                "{field} must be a finite number.",
+                field=field,
             )
         if minimum is not None and numeric < minimum:
-            raise ValueError(
-                f"{prefix}: {label} must be >= {minimum:g}."
+            raise CardOperationError(
+                f"local-solvation-{key}-minimum",
+                "{field} must be at least {minimum}.",
+                field=field,
+                minimum=f"{minimum:g}",
             )
         return numeric
 
@@ -236,34 +283,54 @@ class LocalSolvationOperation(StructureOperation):
         params: LocalSolvationParams,
     ) -> dict:
         if len(structure) == 0:
-            raise ValueError("Local Solvation requires at least one host atom.")
+            raise CardOperationError(
+                "local-solvation-empty-input",
+                "Solvent Shell requires at least one host atom.",
+            )
         positions = np.asarray(structure.get_positions(), dtype=float)
         if positions.shape != (len(structure), 3) or not np.all(np.isfinite(positions)):
-            raise ValueError("Local Solvation requires finite Cartesian atom positions.")
+            raise CardOperationError(
+                "local-solvation-invalid-positions",
+                "Solvent Shell requires finite Cartesian atom positions.",
+            )
         pbc = np.asarray(structure.pbc, dtype=bool)
         if np.any(pbc) and not has_valid_cell(structure):
-            raise ValueError(
-                "Local Solvation: periodic input requires a finite, nonsingular 3x3 cell."
+            raise CardOperationError(
+                "local-solvation-invalid-periodic-cell",
+                "Periodic input requires a finite, nonsingular 3×3 cell.",
             )
 
-        structures = cls._integer(params.structures, "structures", minimum=1)
+        structures = cls._integer(
+            params.structures, "outputs", "Independent outputs per input", minimum=1
+        )
         solvent_count = cls._integer(
             params.solvent_count,
-            "solvent_count",
+            "solvent-count",
+            "Total solvent molecules per output",
             minimum=1,
         )
         max_attempts = cls._integer(
             params.max_attempts,
-            "max_attempts",
+            "attempts",
+            "Placement attempts per output",
             minimum=1,
         )
-        solvent = parse_solvent_xyz(params.solvent_xyz)
+        try:
+            solvent = parse_solvent_xyz(params.solvent_xyz)
+        except ValueError as exc:
+            raise CardOperationError(
+                "local-solvation-invalid-solvent",
+                "Solvent XYZ must describe one valid non-empty molecule.",
+            ) from exc
+        if len(params.z_range) != 2:
+            raise CardOperationError(
+                "local-solvation-z-range-size",
+                "Cartesian z range must contain a minimum and maximum.",
+            )
         z_range = tuple(
-            cls._finite(value, "z_range")
+            cls._finite(value, "z-range", "Cartesian z range")
             for value in params.z_range
         )
-        if len(z_range) != 2:
-            raise ValueError("Local Solvation: z_range must contain two values.")
         centers = select_center_indices(
             structure,
             params.center_mode,
@@ -272,7 +339,10 @@ class LocalSolvationOperation(StructureOperation):
             z_range,
         )
         if not centers:
-            raise ValueError("Local Solvation: no center atoms selected.")
+            raise CardOperationError(
+                "local-solvation-no-centers",
+                "The center selection does not match any host atoms.",
+            )
 
         selected_elements = {structure.get_chemical_symbols()[idx] for idx in centers}
         mode = resolve_mode(
@@ -282,19 +352,30 @@ class LocalSolvationOperation(StructureOperation):
         )
         profile = MODE_PROFILES[mode]
         if len(params.shell) != 2:
-            raise ValueError("Local Solvation: shell must contain two values.")
-        shell = tuple(cls._finite(value, "shell", minimum=0.0) for value in params.shell)
+            raise CardOperationError(
+                "local-solvation-shell-size",
+                "Fallback center-to-COM shell must contain an inner and outer radius.",
+            )
+        shell = tuple(
+            cls._finite(value, "shell", "Fallback center-to-COM shell", minimum=0.0)
+            for value in params.shell
+        )
         if shell[1] <= shell[0]:
-            raise ValueError("Local Solvation: shell outer radius must be larger than inner radius.")
+            raise CardOperationError(
+                "local-solvation-shell-order",
+                "Fallback shell outer radius must be larger than its inner radius.",
+            )
 
         min_distance = cls._finite(
             params.min_distance,
-            "min_distance",
+            "minimum-distance",
+            "Uniform minimum distance",
             minimum=0.0,
         )
         collision_override = cls._finite(
             params.collision_scale,
-            "collision_scale",
+            "collision-scale",
+            "Element-radius collision scale",
             minimum=0.0,
         )
         collision_scale = (
@@ -302,39 +383,53 @@ class LocalSolvationOperation(StructureOperation):
             if collision_override > 0.0
             else float(profile["collision_scale"])
         )
-        box_size = cls._finite(params.box_size, "box_size", minimum=0.0)
+        box_size = cls._finite(
+            params.box_size, "box-size", "Fixed box size", minimum=0.0
+        )
         if box_size <= 0.0:
-            raise ValueError("Local Solvation: box_size must be positive.")
+            raise CardOperationError(
+                "local-solvation-box-positive",
+                "Fixed box size must be positive.",
+            )
         box_padding = cls._finite(
             params.box_padding,
-            "box_padding",
+            "box-padding",
+            "Auto-box padding",
             minimum=0.0,
         )
-        min_box = cls._finite(params.min_box, "min_box", minimum=0.0)
-        seed = cls._integer(params.seed, "seed", minimum=0)
+        min_box = cls._finite(
+            params.min_box, "minimum-box", "Minimum auto-box edge", minimum=0.0
+        )
+        seed = cls._integer(params.seed, "seed", "Random seed", minimum=0)
 
-        flex_pool = cls._integer(params.flex_pool, "flex_pool", minimum=1)
+        flex_pool = cls._integer(
+            params.flex_pool, "flex-pool", "Flexible conformer pool", minimum=1
+        )
         flex_max_torsions = cls._integer(
             params.flex_max_torsions,
-            "flex_max_torsions",
+            "flex-max-torsions",
+            "Flexible torsions per conformer",
             minimum=0,
         )
         flex_sigma = cls._finite(
             params.flex_gaussian_sigma,
-            "flex_gaussian_sigma",
+            "flex-noise",
+            "Flexible conformer noise",
             minimum=0.0,
         )
         if len(params.flex_torsion_range) != 2:
-            raise ValueError(
-                "Local Solvation: flex_torsion_range must contain two values."
+            raise CardOperationError(
+                "local-solvation-flex-range-size",
+                "Flexible torsion range must contain a minimum and maximum.",
             )
         flex_torsion_range = tuple(
-            cls._finite(value, "flex_torsion_range")
+            cls._finite(value, "flex-range", "Flexible torsion range")
             for value in params.flex_torsion_range
         )
         if flex_torsion_range[0] > flex_torsion_range[1]:
-            raise ValueError(
-                "Local Solvation: flex_torsion_range minimum must not exceed maximum."
+            raise CardOperationError(
+                "local-solvation-flex-range-order",
+                "Flexible torsion minimum must not exceed its maximum.",
             )
 
         return {
@@ -369,13 +464,19 @@ class LocalSolvationOperation(StructureOperation):
         """Return resolved center, solvent, mode, and collision information."""
         settings = cls._validated_settings(structure, params)
         formula = settings["solvent"].get_chemical_formula()
+        center_symbols = [
+            structure.get_chemical_symbols()[index]
+            for index in settings["centers"]
+        ]
+        first_shell_capacity = sum(
+            int(ION_WATER_PROFILES[symbol]["coordination"])
+            for symbol in center_symbols
+            if symbol in ION_WATER_ELEMENTS
+        )
         ion_ranges = {
-            symbol: ION_WATER_PROFILES.get(
-                symbol,
-                DEFAULT_ION_WATER_PROFILE,
-            )["ion_o"]
+            symbol: ION_WATER_PROFILES[symbol]["ion_o"]
             for symbol in settings["selected_elements"]
-            if symbol in ION_ELEMENTS
+            if symbol in ION_WATER_ELEMENTS
         }
         return {
             "host_atoms": len(structure),
@@ -390,6 +491,11 @@ class LocalSolvationOperation(StructureOperation):
             "structures": settings["structures"],
             "solvent_count": settings["solvent_count"],
             "ion_oxygen_ranges": ion_ranges,
+            "first_shell_capacity": first_shell_capacity,
+            "fallback_needed": (
+                settings["mode"] != "ion-water"
+                or settings["solvent_count"] > first_shell_capacity
+            ),
             "periodic": bool(np.any(np.asarray(structure.pbc, dtype=bool))),
         }
 
@@ -435,14 +541,23 @@ class LocalSolvationOperation(StructureOperation):
                         "solvent-accessible void; use a slab/box with free volume, "
                         "lower solvent_count, or use Solvent Box Fill on a larger cell."
                     )
-                raise ValueError(
-                    "Local Solvation: no solvent molecule could be placed; "
-                    "adjust the centers, shell, collision rule, or free volume."
-                    + hint
+                raise CardOperationError(
+                    "local-solvation-none-placed-periodic"
+                    if hint
+                    else "local-solvation-none-placed",
+                    "No solvent molecule could be placed; adjust the centers, shell, collision rule, or free volume."
+                    + (
+                        " The periodic structure appears to have no solvent-accessible void; use a structure with free volume or a larger periodic cell."
+                        if hint
+                        else ""
+                    ),
                 )
             if params.strict_count and placed != target_count:
-                raise ValueError(
-                    f"Local Solvation: placed {placed}/{target_count} solvent molecules."
+                raise CardOperationError(
+                    "local-solvation-partial-count",
+                    "Only {placed} of {requested} solvent molecules could be placed.",
+                    placed=placed,
+                    requested=target_count,
                 )
             if not has_valid_cell(structure):
                 if params.auto_box:
@@ -573,8 +688,8 @@ class LocalSolvationOperation(StructureOperation):
         center = center_positions[local_center_idx]
         center_symbol = center_symbols[local_center_idx]
 
-        if mode == "ion-water" and center_symbol in ION_ELEMENTS and solvent.water_like:
-            ion_profile = ION_WATER_PROFILES.get(center_symbol, DEFAULT_ION_WATER_PROFILE)
+        if mode == "ion-water" and center_symbol in ION_WATER_ELEMENTS and solvent.water_like:
+            ion_profile = ION_WATER_PROFILES[center_symbol]
             if ion_counts.get(center_index, 0) >= int(ion_profile["coordination"]):
                 inner, outer = shell
             else:
@@ -975,13 +1090,30 @@ def prepare_solvent_conformers(solvent_pool: list[Atoms]) -> list[SolventConform
 
 def resolve_mode(mode: str, solvent: Atoms, selected_elements: set[str]) -> str:
     if mode not in {"auto", "general", "water", "ion-water", "loose", "dense"}:
-        raise ValueError(f"Solvation: unsupported sampling_mode '{mode}'.")
+        raise CardOperationError(
+            "local-solvation-unsupported-placement",
+            "Unsupported placement method: {mode}.",
+            mode=mode,
+        )
+    water_like = is_water_like(solvent.get_chemical_symbols())
+    supported_ions = selected_elements & ION_WATER_ELEMENTS
+    if mode == "ion-water":
+        if not water_like:
+            raise CardOperationError(
+                "local-solvation-ion-water-requires-water",
+                "Supported ion hydration requires a water solvent molecule.",
+            )
+        if not selected_elements or selected_elements != supported_ions:
+            raise CardOperationError(
+                "local-solvation-ion-water-requires-profile",
+                "Supported ion hydration requires every selected center to be Li, Na, K, Mg, Ca, Sr, Ba, or Zn.",
+            )
+        return mode
     if mode != "auto":
         return mode
-    symbols = solvent.get_chemical_symbols()
-    if is_water_like(symbols) and selected_elements & ION_ELEMENTS:
+    if water_like and selected_elements and selected_elements == supported_ions:
         return "ion-water"
-    if is_water_like(symbols):
+    if water_like:
         return "water"
     return "general"
 
@@ -999,7 +1131,10 @@ def select_center_indices(
     if mode == "elements":
         elements = {normalize_symbol(part) for part in re.split(r"[,;\s]+", elements_text) if part.strip()}
         if not elements:
-            raise ValueError("Local Solvation: center_elements is empty.")
+            raise CardOperationError(
+                "local-solvation-empty-elements",
+                "Enter at least one center element.",
+            )
         return [idx for idx, symbol in enumerate(atoms.get_chemical_symbols()) if symbol in elements]
     if mode == "indices":
         return parse_index_ranges(indices_text, len(atoms))
@@ -1007,32 +1142,57 @@ def select_center_indices(
         z0, z1 = sorted(float(v) for v in z_range)
         z = np.asarray(atoms.get_positions(), dtype=float)[:, 2]
         return [int(idx) for idx in np.where((z >= z0) & (z <= z1))[0]]
-    raise ValueError(f"Local Solvation: unsupported center_mode '{mode}'.")
+    raise CardOperationError(
+        "local-solvation-unsupported-center-mode",
+        "Unsupported center selection: {mode}.",
+        mode=mode,
+    )
 
 
 def parse_index_ranges(text: str, natoms: int) -> list[int]:
     selected: set[int] = set()
     if not text.strip():
-        raise ValueError("Local Solvation: center_indices is empty.")
+        raise CardOperationError(
+            "local-solvation-empty-indices",
+            "Enter at least one 1-based center index.",
+        )
     for chunk in re.split(r"[,;\s]+", text.strip()):
         if not chunk:
             continue
         if "-" in chunk:
-            start_text, end_text = chunk.split("-", 1)
-            start = int(start_text)
-            end = int(end_text)
+            try:
+                start_text, end_text = chunk.split("-", 1)
+                start = int(start_text)
+                end = int(end_text)
+            except ValueError as exc:
+                raise CardOperationError(
+                    "local-solvation-invalid-index-expression",
+                    "Center indices must use 1-based integers and ranges such as 1,3,5-8.",
+                ) from exc
             if start > end:
                 start, end = end, start
             for value in range(start, end + 1):
                 add_1based_index(selected, value, natoms)
         else:
-            add_1based_index(selected, int(chunk), natoms)
+            try:
+                value = int(chunk)
+            except ValueError as exc:
+                raise CardOperationError(
+                    "local-solvation-invalid-index-expression",
+                    "Center indices must use 1-based integers and ranges such as 1,3,5-8.",
+                ) from exc
+            add_1based_index(selected, value, natoms)
     return sorted(selected)
 
 
 def add_1based_index(selected: set[int], value: int, natoms: int) -> None:
     if value < 1 or value > natoms:
-        raise ValueError(f"Local Solvation: atom index {value} out of range 1..{natoms}.")
+        raise CardOperationError(
+            "local-solvation-index-out-of-range",
+            "Center index {index} is outside the valid range 1–{natoms}.",
+            index=value,
+            natoms=natoms,
+        )
     selected.add(value - 1)
 
 
@@ -1215,11 +1375,19 @@ def has_collision(
                 return True
         return False
 
+    mic_context = minimum_image_context(cell, pbc)
     inv_cell_t = np.linalg.inv(cell.T)
     ortho_lengths = orthorhombic_lengths(cell)
     for symbol, position in zip(trial_symbols, trial_positions):
         for other_symbol, other_position in zip(existing_symbols, existing_positions):
-            delta = minimum_image_delta_fast(np.asarray(position) - np.asarray(other_position), cell, pbc, inv_cell_t, ortho_lengths)
+            delta = minimum_image_delta_fast(
+                np.asarray(position) - np.asarray(other_position),
+                cell,
+                pbc,
+                inv_cell_t,
+                ortho_lengths,
+                mic_context,
+            )
             distance = float(np.linalg.norm(delta))
             cutoff = pair_cutoff(symbol, other_symbol, collision_scale, min_distance)
             if distance < cutoff:
@@ -1273,20 +1441,30 @@ class PeriodicSpatialHash:
     def __init__(self, symbols: list[str], positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray, cutoff: float):
         self.cell = np.asarray(cell, dtype=float)
         self.pbc = np.asarray(pbc, dtype=bool)
+        self.mic_context = minimum_image_context(self.cell, self.pbc)
         self.inv_cell_t = np.linalg.inv(self.cell.T)
         self.ortho_lengths = orthorhombic_lengths(self.cell)
+        self.brute_force = self.ortho_lengths is None and not bool(np.all(self.pbc))
+        self.hash_cell = (
+            self.mic_context.reduced_cell
+            if self.mic_context.reduced_cell is not None
+            else self.cell
+        )
+        self.hash_inv_cell_t = np.linalg.inv(self.hash_cell.T)
         self.cutoff = max(float(cutoff), 1e-6)
-        lengths = np.abs(self.ortho_lengths) if self.ortho_lengths is not None else np.linalg.norm(self.cell, axis=1)
+        lengths = np.abs(self.ortho_lengths) if self.ortho_lengths is not None else np.linalg.norm(self.hash_cell, axis=1)
         self.grid_shape = tuple(max(1, int(math.floor(float(length) / self.cutoff))) for length in lengths)
         min_bin = min(float(length) / n for length, n in zip(lengths, self.grid_shape) if length > 1e-12)
         self.neighbor_range = 1 if self.ortho_lengths is not None else max(1, int(math.ceil(self.cutoff / max(min_bin, 1e-6))) + 1)
         neighbor_axis = range(-self.neighbor_range, self.neighbor_range + 1)
         self.neighbor_offsets = [(dx, dy, dz) for dx in neighbor_axis for dy in neighbor_axis for dz in neighbor_axis]
         self.buckets: dict[tuple[int, int, int], list[tuple[str, np.ndarray]]] = {}
+        self.all_atoms: list[tuple[str, np.ndarray]] = []
         self.add_atoms(symbols, positions)
 
     def add_atoms(self, symbols: list[str], positions: np.ndarray) -> None:
         for symbol, position in zip(symbols, np.asarray(positions, dtype=float)):
+            self.all_atoms.append((symbol, np.asarray(position, dtype=float)))
             key = self._bucket_key(position)
             self.buckets.setdefault(key, []).append((symbol, np.asarray(position, dtype=float)))
 
@@ -1299,13 +1477,34 @@ class PeriodicSpatialHash:
         min_distance: float,
     ) -> bool:
         for symbol, position in zip(trial_symbols, np.asarray(trial_positions, dtype=float)):
+            if self.brute_force:
+                for other_symbol, other_position in self.all_atoms:
+                    delta = minimum_image_delta_fast(
+                        position - other_position,
+                        self.cell,
+                        self.pbc,
+                        self.inv_cell_t,
+                        self.ortho_lengths,
+                        self.mic_context,
+                    )
+                    cutoff = pair_cutoff(symbol, other_symbol, collision_scale, min_distance)
+                    if float(np.dot(delta, delta)) < cutoff * cutoff:
+                        return True
+                continue
             base = self._bucket_key(position)
             for dx, dy, dz in self.neighbor_offsets:
                 bucket = self.buckets.get(self._offset_key(base, dx, dy, dz))
                 if not bucket:
                     continue
                 for other_symbol, other_position in bucket:
-                    delta = minimum_image_delta_fast(position - other_position, self.cell, self.pbc, self.inv_cell_t, self.ortho_lengths)
+                    delta = minimum_image_delta_fast(
+                        position - other_position,
+                        self.cell,
+                        self.pbc,
+                        self.inv_cell_t,
+                        self.ortho_lengths,
+                        self.mic_context,
+                    )
                     cutoff = pair_cutoff(symbol, other_symbol, collision_scale, min_distance)
                     if float(np.dot(delta, delta)) < cutoff * cutoff:
                         return True
@@ -1325,7 +1524,7 @@ class PeriodicSpatialHash:
         if self.ortho_lengths is not None:
             frac = position / self.ortho_lengths
         else:
-            frac = self.inv_cell_t @ position
+            frac = self.hash_inv_cell_t @ position
         x = int(math.floor((frac[0] % 1.0 if self.pbc[0] else frac[0]) * self.grid_shape[0]))
         y = int(math.floor((frac[1] % 1.0 if self.pbc[1] else frac[1]) * self.grid_shape[1]))
         z = int(math.floor((frac[2] % 1.0 if self.pbc[2] else frac[2]) * self.grid_shape[2]))
@@ -1380,7 +1579,7 @@ def orthorhombic_lengths(cell: np.ndarray) -> np.ndarray | None:
 def minimum_image_delta(delta: np.ndarray, cell: np.ndarray, pbc: np.ndarray) -> np.ndarray:
     if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12 or not np.any(pbc):
         return delta
-    return minimum_image_delta_fast(delta, cell, pbc, np.linalg.inv(cell.T), orthorhombic_lengths(cell))
+    return exact_minimum_image_delta(delta, minimum_image_context(cell, pbc))
 
 
 def minimum_image_delta_fast(
@@ -1389,6 +1588,7 @@ def minimum_image_delta_fast(
     pbc: np.ndarray,
     inv_cell_t: np.ndarray,
     ortho_lengths: np.ndarray | None,
+    mic_context: MinimumImageContext | None = None,
 ) -> np.ndarray:
     delta = np.asarray(delta, dtype=float)
     if ortho_lengths is not None:
@@ -1397,11 +1597,9 @@ def minimum_image_delta_fast(
             if pbc[axis]:
                 out[axis] -= np.rint(out[axis] / ortho_lengths[axis]) * ortho_lengths[axis]
         return out
-    frac = inv_cell_t @ delta
-    for axis in range(3):
-        if pbc[axis]:
-            frac[axis] -= np.rint(frac[axis])
-    return frac @ cell
+    del inv_cell_t
+    context = mic_context or minimum_image_context(cell, pbc)
+    return exact_minimum_image_delta(delta, context)
 
 
 def pair_cutoff(left: str, right: str, collision_scale: float, min_distance: float) -> float:

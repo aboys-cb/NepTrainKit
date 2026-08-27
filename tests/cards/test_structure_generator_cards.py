@@ -61,7 +61,7 @@ class TestStructureGeneratorCards(BaseCardTest):
             cell=np.diag([8.0, 8.0, 8.0]),
             pbc=False,
         )
-        with self.assertRaisesRegex(ValueError, "no center atoms selected"):
+        with self.assertRaisesRegex(ValueError, "does not match any host atoms"):
             LocalSolvationOperation().run_structure(
                 structure,
                 LocalSolvationParams(
@@ -86,7 +86,7 @@ class TestStructureGeneratorCards(BaseCardTest):
             pbc=True,
         )
 
-        with self.assertRaisesRegex(ValueError, "periodic dense structure"):
+        with self.assertRaisesRegex(ValueError, "no solvent-accessible void"):
             LocalSolvationOperation().run_structure(
                 structure,
                 LocalSolvationParams(
@@ -100,7 +100,7 @@ class TestStructureGeneratorCards(BaseCardTest):
                     seed=3,
                 ),
             )
-        with self.assertRaisesRegex(ValueError, "no solvent molecule"):
+        with self.assertRaisesRegex(ValueError, "No solvent molecule"):
             LocalSolvationOperation().run_structure(
                 structure,
                 LocalSolvationParams(
@@ -118,29 +118,30 @@ class TestStructureGeneratorCards(BaseCardTest):
 
     def test_local_solvation_card_roundtrip(self):
         card = LocalSolvationCard()
-        self.assertTrue(card.solvent_edit.isHidden())
-        self.assertTrue(card.min_distance_frame.isHidden())
-        self.assertTrue(card.elements_edit.isHidden())
-        self.assertIn("Load an upstream structure", card.preview_label.text())
+        self.assertTrue(card.solvent_section.isHidden())
+        self.assertTrue(card.collision_section.isHidden())
+        self.assertTrue(card.elements_field.isHidden())
+        self.assertIn("No input loaded", card.preview_label.text())
 
         card.center_mode_combo.setCurrentIndex(
             card.center_mode_combo.findData("elements")
         )
-        self.assertFalse(card.elements_edit.isHidden())
+        self.assertFalse(card.elements_field.isHidden())
         card.elements_edit.setText("Ca")
         card.set_dataset([Atoms("Ca", positions=[[0, 0, 0]], pbc=False)])
-        self.assertIn("centers 1 (Ca)", card.preview_label.text())
-        self.assertIn("resolved profile Ion-water first shell", card.preview_label.text())
-        self.assertIn("Ca 2.3–2.6 Å", card.preview_label.text())
+        self.assertIn("1 center(s) (Ca)", card.preview_label.text())
+        self.assertIn("Supported ion hydration", card.preview_label.text())
+        self.assertIn("Ca 2.3–2.6 Å", card.placement_note.text())
+        self.assertTrue(card.shell_field.isHidden())
 
         card.advanced_checkbox.setChecked(True)
-        self.assertFalse(card.min_distance_frame.isHidden())
-        self.assertFalse(card.auto_box_checkbox.isHidden())
-        self.assertFalse(card.box_size_frame.isHidden())
-        self.assertTrue(card.box_frame.isHidden())
+        self.assertFalse(card.collision_section.isHidden())
+        self.assertFalse(card.box_section.isHidden())
+        self.assertFalse(card.box_size_field.isHidden())
+        self.assertTrue(card.box_field.isHidden())
         card.auto_box_checkbox.setChecked(True)
-        self.assertTrue(card.box_size_frame.isHidden())
-        self.assertFalse(card.box_frame.isHidden())
+        self.assertTrue(card.box_size_field.isHidden())
+        self.assertFalse(card.box_field.isHidden())
 
         card.structures_frame.set_input_value([2])
         card.count_frame.set_input_value([3])
@@ -250,7 +251,7 @@ class TestStructureGeneratorCards(BaseCardTest):
             0.0,
         )
 
-        with self.assertRaisesRegex(ValueError, "structures must be an integer"):
+        with self.assertRaisesRegex(ValueError, "Independent outputs per input must be an integer"):
             operation.run_structure(
                 periodic,
                 LocalSolvationParams(structures=1.5),  # type: ignore[arg-type]
@@ -260,11 +261,124 @@ class TestStructureGeneratorCards(BaseCardTest):
             positions=[[0, 0, 0]],
             pbc=True,
         )
-        with self.assertRaisesRegex(ValueError, "periodic input"):
+        with self.assertRaisesRegex(ValueError, "Periodic input"):
             operation.run_structure(
                 invalid_periodic,
                 LocalSolvationParams(solvent_count=1),
             )
+
+    def test_local_solvation_uses_exact_triclinic_minimum_images(self):
+        cell = np.array(
+            [[8.0, 0.0, 0.0], [7.0, 2.0, 0.0], [0.0, 0.0, 8.0]],
+            dtype=float,
+        )
+        pbc = np.array([True, True, True])
+        delta = np.array([2.191387, -3.68341258, -7.34442362])
+        reference = find_mic(delta, cell, pbc=pbc)[0]
+        self.assertLess(float(np.linalg.norm(reference)), 1.2)
+
+        self.assertTrue(
+            has_collision(
+                ["H"],
+                np.zeros((1, 3)),
+                ["H"],
+                np.asarray([-delta]),
+                cell=cell,
+                pbc=pbc,
+                collision_scale=0.0,
+                min_distance=1.2,
+            )
+        )
+        spatial_hash = PeriodicSpatialHash(
+            ["H"], np.asarray([-delta]), cell=cell, pbc=pbc, cutoff=1.2
+        )
+        self.assertTrue(
+            spatial_hash.has_collision(
+                ["H"],
+                np.zeros((1, 3)),
+                collision_scale=0.0,
+                min_distance=1.2,
+            )
+        )
+
+        mixed_pbc = np.array([True, False, True])
+        mixed_delta = np.array([-3.8345117, -6.86969904, -7.80144916])
+        mixed_reference = min(
+            (
+                mixed_delta - i * cell[0] - k * cell[2]
+                for i in range(-5, 6)
+                for k in range(-5, 6)
+            ),
+            key=np.linalg.norm,
+        )
+        mixed_hash = PeriodicSpatialHash(
+            ["H"],
+            np.asarray([-mixed_delta]),
+            cell=cell,
+            pbc=mixed_pbc,
+            cutoff=8.0,
+        )
+        self.assertAlmostEqual(
+            float(np.linalg.norm(mixed_reference)), 7.869921684088001, places=9
+        )
+        self.assertTrue(
+            mixed_hash.has_collision(
+                ["H"],
+                np.zeros((1, 3)),
+                collision_scale=0.0,
+                min_distance=8.0,
+            )
+        )
+
+    def test_local_solvation_ion_hydration_is_fail_closed(self):
+        operation = LocalSolvationOperation()
+        methane = """5
+methane
+C 0 0 0
+H 0.6 0.6 0.6
+H -0.6 -0.6 0.6
+H -0.6 0.6 -0.6
+H 0.6 -0.6 -0.6
+"""
+        ca = Atoms("Ca", positions=[[0.0, 0.0, 0.0]], pbc=False)
+        with self.assertRaises(CardOperationError) as nonwater:
+            operation.placement_summary(
+                ca,
+                LocalSolvationParams(
+                    solvent_xyz=methane,
+                    sampling_mode="ion-water",
+                    solvent_count=1,
+                ),
+            )
+        self.assertEqual(
+            nonwater.exception.code,
+            "local-solvation-ion-water-requires-water",
+        )
+
+        fe = Atoms("Fe", positions=[[0.0, 0.0, 0.0]], pbc=False)
+        auto_summary = operation.placement_summary(
+            fe, LocalSolvationParams(sampling_mode="auto", solvent_count=1)
+        )
+        self.assertEqual(auto_summary["mode"], "water")
+        self.assertEqual(auto_summary["ion_oxygen_ranges"], {})
+        with self.assertRaises(CardOperationError) as unsupported:
+            operation.placement_summary(
+                fe,
+                LocalSolvationParams(
+                    sampling_mode="ion-water", solvent_count=1
+                ),
+            )
+        self.assertEqual(
+            unsupported.exception.code,
+            "local-solvation-ion-water-requires-profile",
+        )
+
+        ca_summary = operation.placement_summary(
+            ca, LocalSolvationParams(sampling_mode="auto", solvent_count=6)
+        )
+        self.assertEqual(ca_summary["mode"], "ion-water")
+        self.assertEqual(ca_summary["first_shell_capacity"], 6)
+        self.assertFalse(ca_summary["fallback_needed"])
 
     def test_solvent_box_fill_fixed_count_preserves_cell_and_is_reproducible(self):
         structure = Atoms(

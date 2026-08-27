@@ -22,6 +22,7 @@ class SpinSpiralCard(MakeDataCard):
 
     group = "Magnetism"
     card_name = "Spin Spiral"
+    discoverable = False
     menu_icon = r":/images/src/images/perturb.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -31,8 +32,17 @@ class SpinSpiralCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Spin Spiral Generator"))
+        self.setTitle(self.tr("Legacy Spin Spiral"))
         self.init_ui()
+
+    def get_summary_text(self) -> str:
+        return self.tr("Compatibility card loaded from an existing workflow.")
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Use SOC / Texture Response for new finite-q spiral paths. "
+            "This legacy card remains available only to reproduce existing workflows."
+        )
 
     def init_ui(self):
         self.setObjectName("spin_spiral_card_widget")

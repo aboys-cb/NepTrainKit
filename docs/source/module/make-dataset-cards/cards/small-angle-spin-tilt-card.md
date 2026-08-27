@@ -63,7 +63,7 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 - 只需要随机方向扰动覆盖 → 用 `Spin Perturb`
 - 需要按比例翻转磁矩或生成从有序到无序的梯度 → 用 `Moment Disorder`
 - 需要整体磁序翻转（不是局部 canting）→ 用 `Magnetic Order` 的 AFM 分支
-- 需要连续螺旋调制 → 用 `Spin Spiral`
+- 需要连续有限 q 螺旋调制 → 用 `SOC / Texture Response`
 
 ## 参数说明
 

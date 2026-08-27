@@ -1,7 +1,56 @@
+from NepTrainKit.core.cards.errors import CardOperationError
+
 from .magnetism_test_base import *
 
 
 class TestMagnetismTextureCards(MagnetismCardTest):
+    def test_retired_spin_spiral_remains_loadable_with_migration_guidance(self):
+        self.assertFalse(SpinSpiralCard.discoverable)
+
+        card = SpinSpiralCard()
+        card.from_dict(
+            {
+                "check_state": True,
+                "period_range": [6.0, 6.0, 1.0],
+                "chirality": "Clockwise",
+            }
+        )
+
+        self.assertEqual(card.get_params().period_range, [6.0, 6.0, 1.0])
+        self.assertEqual(card.get_params().chirality, "Clockwise")
+        self.assertIn("Legacy", card.getTitle())
+        self.assertIn("SOC / Texture Response", card.get_guidance_text())
+
+    def test_spin_spiral_fails_when_input_has_no_moments(self):
+        structure = self._spin_chain()
+        structure.arrays.pop("initial_magmoms", None)
+        structure.arrays.pop("spin", None)
+
+        with self.assertRaises(CardOperationError) as raised:
+            SpinSpiralOperation().run_structure(structure, SpinSpiralParams())
+
+        self.assertEqual(raised.exception.code, "spin_spiral_no_moments")
+
+    def test_spin_spiral_fails_when_no_commensurate_period_exists(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0] * len(structure))
+        structure.set_cell(np.diag([6.0, 6.0, 10.0]))
+
+        with self.assertRaises(CardOperationError) as raised:
+            SpinSpiralOperation().run_structure(
+                structure,
+                SpinSpiralParams(
+                    period_range=[6.0, 6.0, 1.0],
+                    only_commensurate_periods=True,
+                ),
+            )
+
+        self.assertEqual(
+            raised.exception.code,
+            "spin_spiral_no_commensurate_period_with_suggestion",
+        )
+        self.assertEqual(raised.exception.values["multipliers"], "1 × 1 × 3")
+
     def test_spin_spiral_card_fails_closed_for_invalid_moment_map(self):
         card = SpinSpiralCard()
         card.source_combo.setCurrentText("Map/default magnitude")

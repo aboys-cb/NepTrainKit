@@ -87,7 +87,7 @@
 | 生成 FM、AFM 或 PM 分支 | [磁序](cards/magnetic-order-card.md) | AFM 可能需要先做分组标记 |
 | 从有序磁态逐步增加无序度 | [磁矩无序采样](cards/spin-disorder-card.md) | 输入已有有效磁矩 |
 | 让相邻原子的磁矩方向一起变化 | [空间关联磁矩](cards/correlated-random-spin-card.md) | 输入已有磁矩；相关性应在多份样本上统计检查 |
-| 随机扰动、局域响应或生成螺旋磁序 | [磁矩扰动](cards/magmom-rotation-card.md) / [局域磁响应](cards/local-magnetic-response-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋磁序](cards/folded-helix-card.md) | 不要对没有磁矩的空白结构直接操作 |
+| 随机扰动、局域响应或生成有限 q 磁纹理 | [磁矩扰动](cards/magmom-rotation-card.md) / [局域磁响应](cards/local-magnetic-response-card.md) / [SOC / 纹理响应](cards/soc-texture-response-card.md) / [折返螺旋磁序](cards/folded-helix-card.md) | 不要对没有磁矩的空白结构直接操作 |
 
 ### 处理分子和溶剂
 

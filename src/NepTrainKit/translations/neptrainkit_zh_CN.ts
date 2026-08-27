@@ -2772,6 +2772,26 @@
         <translation>精确关联采样最多支持 {maximum} 个符合条件的非零磁矩；当前选择了 {actual} 个。请减少目标元素或使用更小的结构。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="436" />
+        <source>Spin Spiral maximum outputs must be at least 1.</source>
+        <translation>旧版自旋螺旋的最大输出数必须至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="439" />
+        <source>No lattice-compatible spin-spiral period exists in the requested range. For a period of {period} Å, try a {multipliers} supercell.</source>
+        <translation>请求范围内没有与晶格相容的自旋螺旋周期。对于 {period} Å 周期，可尝试 {multipliers} 超胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="444" />
+        <source>No lattice-compatible spin-spiral period exists in the requested range. Change the period range or expand the cell along the propagation axis.</source>
+        <translation>请求范围内没有与晶格相容的自旋螺旋周期。请修改周期范围，或沿传播轴扩胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="449" />
+        <source>Spin Spiral requires at least one non-zero magnetic moment. Add moments upstream or select the element-map source and enter a non-zero magnitude.</source>
+        <translation>旧版自旋螺旋要求输入至少包含一个非零磁矩。请在上游添加磁矩，或选择元素表来源并填写非零模长。</translation>
+    </message>
+    <message>
         <source>Maximum rotation angle must be between 0 and 180 degrees.</source>
         <translation type="vanished">最大旋转角必须在 0 到 180 度之间。</translation>
     </message>
@@ -2821,12 +2841,12 @@
         <translation type="vanished">请增大旋转角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="436" />
+        <location filename="../ui/messages.py" line="454" />
         <source>Invalid element symbols in the target list: {elements}.</source>
         <translation>目标元素中包含无效元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="439" />
+        <location filename="../ui/messages.py" line="457" />
         <source>No non-zero magnetic moments match the selected elements.</source>
         <translation>所选元素没有匹配到非零磁矩。</translation>
     </message>
@@ -8291,23 +8311,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="478" />
-        <location filename="../ui/messages.py" line="518" />
+        <location filename="../ui/messages.py" line="496" />
+        <location filename="../ui/messages.py" line="536" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="488" />
+        <location filename="../ui/messages.py" line="506" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="498" />
+        <location filename="../ui/messages.py" line="516" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="508" />
+        <location filename="../ui/messages.py" line="526" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -12800,152 +12820,166 @@ Do you want to continue?</source>
 <context>
     <name>SpinSpiralCard</name>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="34" />
         <source>Spin Spiral Generator</source>
-        <translation>自旋螺旋生成器</translation>
+        <translation type="vanished">自旋螺旋生成器</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="40" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="35" />
+        <source>Legacy Spin Spiral</source>
+        <translation>旧版自旋螺旋</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="39" />
+        <source>Compatibility card loaded from an existing workflow.</source>
+        <translation>从现有工作流加载的兼容卡片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="43" />
+        <source>Use SOC / Texture Response for new finite-q spiral paths. This legacy card remains available only to reproduce existing workflows.</source>
+        <translation>新建有限 q 螺旋路径请使用 SOC / 纹理响应。本兼容卡片仅用于复现已有工作流。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="50" />
         <source>Propagation axis</source>
         <translation>传播轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="41" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="51" />
         <source>Axis used to project atomic positions before building the spiral phase</source>
         <translation>构建螺旋相位前用于投影原子位置的轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="50" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="60" />
         <source>Spiral parameter</source>
         <translation>螺旋参数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="51" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="61" />
         <source>Choose whether the spiral is defined by period L_D or by phase gradient</source>
         <translation>选择用周期 L_D 还是相位梯度定义螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="57" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="67" />
         <source>Period range</source>
         <translation>周期范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="58" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="68" />
         <source>Spiral period L_D in angstrom: [min, max, step]</source>
         <translation>自旋螺旋周期 L_D（Angstrom）：[min, max, step]</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="67" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="77" />
         <source>Angle gradient range</source>
         <translation>角度梯度范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="68" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="78" />
         <source>Phase change per angstrom: [min, max, step]. Equivalent to 360/L_D</source>
         <translation>每 Angstrom 的相位变化：[min, max, step]。等价于 360/L_D</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="77" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="87" />
         <source>Phase range</source>
         <translation>相位范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="78" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="88" />
         <source>Phase offset phi0 in degrees: [min, max, step]</source>
         <translation>相位偏移 phi0（度）：[min, max, step]</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="87" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="97" />
         <source>m_parallel range</source>
         <translation>m_parallel 范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="90" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="100" />
         <source>Normalized, dimensionless axial component m_parallel/|m|: [min, max, step], range [-1, 1]. m_parallel=0 gives a helix; nonzero values give conical spirals</source>
         <translation>Normalized, dimensionless axial component m_parallel/|m|: [min, max, 步长], 范围 [-1, 1]. m_parallel=0 gives a 螺旋; nonzero 值 give 锥形螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="102" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="112" />
         <source>Chirality</source>
         <translation>手性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="103" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="113" />
         <source>CW uses -2pi*u/L_D; CCW uses +2pi*u/L_D when looking along +axis</source>
         <translation>沿 +axis 方向看时，CW 使用 -2pi*u/L_D；CCW 使用 +2pi*u/L_D</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="109" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="119" />
         <source>Phase mode</source>
         <translation>相位模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="112" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="122" />
         <source>Continuous by position uses each atom's projected coordinate; Layer-locked gives one shared phase per layer</source>
         <translation>按位置连续变化时使用每个原子的投影坐标；锁定到层时每层共享一个相位</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="120" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="130" />
         <source>Layer tolerance</source>
         <translation>层容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="123" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="133" />
         <source>Used only in Layer-locked mode: atoms whose projected coordinates differ by &lt;= tolerance share one phase</source>
         <translation>仅 Layer-locked 模式使用：投影坐标差不超过容差的原子共享一个相位</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="133" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="143" />
         <source>Period filter</source>
         <translation>周期筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="136" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="146" />
         <source>Keep only periods whose phase advance over each periodic lattice vector is an integer multiple of 360 deg</source>
         <translation>仅保留沿每个周期晶格矢量的相位推进为 360 度整数倍的周期</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="142" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="152" />
         <source>Only lattice-compatible periods</source>
         <translation>仅晶格兼容周期</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="145" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="155" />
         <source>Use only periods commensurate with the current cell, pbc, and propagation axis</source>
         <translation>仅使用与当前晶胞、PBC 和传播轴相称的周期</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="151" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="161" />
         <source>Magnitude source</source>
         <translation>磁矩大小来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="152" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="162" />
         <source>Use existing initial magmoms or build magnitudes from the map/default below</source>
         <translation>使用现有初始 magmoms，或从下方映射/默认值构造磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="158" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="168" />
         <source>Magmom map</source>
         <translation>元素磁矩表</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="159" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="169" />
         <source>Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"</source>
         <translation>当来源为映射/默认磁矩大小时使用，例如 "Fe:2.2,Ni:0.6"</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="162" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="172" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="162" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="172" />
         <source>Moment magnitude</source>
         <translation>磁矩模长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="189" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="199" />
         <source>Show phase, cone, layer, magnitude, and output controls</source>
         <translation>显示相位、锥分量、分层、磁矩和输出控制</translation>
     </message>
@@ -12954,37 +12988,37 @@ Do you want to continue?</source>
         <translation type="vanished">Fe:2.2,Ni:0.6</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="165" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="175" />
         <source>Default |m|</source>
         <translation>默认 |m|</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="166" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="176" />
         <source>Magnitude used for elements not listed in the magmom map</source>
         <translation>未在 magmom 映射中列出的元素使用该磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="174" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="184" />
         <source>Apply elements</source>
         <translation>应用元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="175" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="185" />
         <source>Optional comma-separated element list; empty means all atoms</source>
         <translation>可选 逗号分隔的 element list; 留空表示所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="178" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="188" />
         <source>Fe,Co,Ni</source>
         <translation>Fe,Co,Ni</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="180" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="190" />
         <source>Max outputs</source>
         <translation>最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="181" />
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="191" />
         <source>Stop after this many generated structures</source>
         <translation>生成到此数量后停止</translation>
     </message>

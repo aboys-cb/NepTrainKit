@@ -434,6 +434,24 @@ def _card_operation_error_catalog() -> None:
         "the current selection has {actual}. Reduce the target elements or use a smaller structure.",
     )
     QCoreApplication.translate(
+        "CardOperationError", "Spin Spiral maximum outputs must be at least 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No lattice-compatible spin-spiral period exists in the requested range. "
+        "For a period of {period} Å, try a {multipliers} supercell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No lattice-compatible spin-spiral period exists in the requested range. "
+        "Change the period range or expand the cell along the propagation axis.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Spiral requires at least one non-zero magnetic moment. "
+        "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+    )
+    QCoreApplication.translate(
         "CardOperationError", "Invalid element symbols in the target list: {elements}."
     )
     QCoreApplication.translate(

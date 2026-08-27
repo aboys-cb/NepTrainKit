@@ -873,18 +873,42 @@ class SpinSpiralOperation(StructureOperation):
         phases = range_values(list(params.phase_range))
         mz_values = self.mz_values(params)
         max_outputs = int(params.max_outputs)
+        if max_outputs < 1:
+            raise CardOperationError(
+                "spin_spiral_invalid_output_limit",
+                "Spin Spiral maximum outputs must be at least 1.",
+            )
         axis = normalize_vector(np.array(params.axis, dtype=float))
 
         if params.only_commensurate_periods:
             discovered_periods = discover_commensurate_periods_in_bounds(period_bounds, structure=structure, axis=axis)
             periods = periods if discovered_periods is None else discovered_periods
             if not periods:
-                suggest_supercell_multipliers(original_periods, structure=structure, axis=axis)
-                return [structure.copy()]
+                suggestion = suggest_supercell_multipliers(
+                    original_periods, structure=structure, axis=axis
+                )
+                if suggestion is not None:
+                    period, multipliers = suggestion
+                    raise CardOperationError(
+                        "spin_spiral_no_commensurate_period_with_suggestion",
+                        "No lattice-compatible spin-spiral period exists in the requested range. "
+                        "For a period of {period} Å, try a {multipliers} supercell.",
+                        period=f"{period:.6g}",
+                        multipliers=" × ".join(str(value) for value in multipliers),
+                    )
+                raise CardOperationError(
+                    "spin_spiral_no_commensurate_period",
+                    "No lattice-compatible spin-spiral period exists in the requested range. "
+                    "Change the period range or expand the cell along the propagation axis.",
+                )
 
         mags = self.magnitudes(structure, params)
         if mags.shape[0] != len(structure) or not np.any(mags > 0):
-            return [structure.copy()]
+            raise CardOperationError(
+                "spin_spiral_no_moments",
+                "Spin Spiral requires at least one non-zero magnetic moment. "
+                "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+            )
 
         positions = np.asarray(structure.get_positions(), dtype=float)
         phase_positions = self.phase_positions(positions, axis, params)
@@ -1019,6 +1043,7 @@ class SpinSpiralOperation(StructureOperation):
             mags = existing_moment_magnitudes(structure)
             if mags is not None:
                 return mags
+            return np.zeros(len(structure), dtype=float)
         return mapped_moment_magnitudes(
             structure,
             parse_magmom_map_any(params.magmom_map),

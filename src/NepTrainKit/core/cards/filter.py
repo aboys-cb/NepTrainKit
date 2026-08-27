@@ -20,6 +20,7 @@ from NepTrainKit.core.io import (
 from NepTrainKit.core.io.importers import import_structures
 from NepTrainKit.core.types import parse_nep_backend
 
+from .errors import CardOperationError
 from .operation import DatasetOperation
 
 
@@ -171,6 +172,17 @@ class FPSFilterOperation(DatasetOperation):
             "model_exists": settings["model_path"].is_file(),
             "model_name": settings["model_path"].name or str(settings["model_path"]),
             "existing_path": settings["existing_path"],
+            "existing_configured": settings["existing_path"] is not None,
+            "existing_exists": (
+                settings["existing_path"].is_file()
+                if settings["existing_path"] is not None
+                else False
+            ),
+            "existing_name": (
+                settings["existing_path"].name
+                if settings["existing_path"] is not None
+                else ""
+            ),
             "min_distance": settings["min_distance"],
         }
 
@@ -304,6 +316,16 @@ class FPSFilterOperation(DatasetOperation):
         n_samples: int,
     ) -> dict:
         """Allocate one slot per group, then distribute the rest by sqrt(size)."""
+        nonempty_groups = sum(int(size) > 0 for size in group_sizes.values())
+        budget = min(int(n_samples), sum(max(0, int(size)) for size in group_sizes.values()))
+        if nonempty_groups and budget < nonempty_groups:
+            raise CardOperationError(
+                "fps_budget_smaller_than_groups",
+                "Maximum output {budget} is smaller than the {groups} element sets. "
+                "Increase the output limit or remove unneeded systems.",
+                budget=budget,
+                groups=nonempty_groups,
+            )
         return allocate_sqrt_quotas(group_sizes, n_samples)
 
     @staticmethod

@@ -304,6 +304,11 @@ def _card_operation_error_catalog() -> None:
     """Literal catalog for structured card errors discovered by lupdate."""
     QCoreApplication.translate(
         "CardOperationError",
+        "Maximum output {budget} is smaller than the {groups} element sets. "
+        "Increase the output limit or remove unneeded systems.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
         "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
         "use Uniform sampling for larger structures.",
     )

@@ -121,10 +121,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "FPSFilterDataCard": (
-            QCoreApplication.translate("CardCatalog", "Representative Sampling (FPS)"),
+            QCoreApplication.translate("CardCatalog", "FPS Sampling"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Keep a descriptor-space representative subset using a chosen NEP model, with either one global budget or guaranteed quotas for every element set; an existing training set can seed coverage.",
+                "Select a representative NEP-descriptor subset with global or element-set-balanced budgets and optional existing coverage.",
             ),
         ),
         "FoldedHelixCard": (

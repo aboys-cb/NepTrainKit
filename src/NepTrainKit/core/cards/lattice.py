@@ -11,7 +11,7 @@ from typing import Literal, Mapping
 import numpy as np
 from ase.build import make_supercell
 from ase.data import atomic_numbers
-from ase.geometry import cell_to_cellpar
+from ase.geometry import cell_to_cellpar, cellpar_to_cell
 from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
@@ -289,8 +289,14 @@ class CellScalingOperation(StructureOperation):
 
         for i in range(max_num):
             new_structure = structure.copy()
+            unchanged = bool(np.all(perturbation_factors[i] == 1.0))
             length_factors = perturbation_factors[i, :3]
             new_lengths = orig_lengths * length_factors
+            if np.any(~np.isfinite(new_lengths)) or np.any(new_lengths <= 1e-12):
+                raise CardOperationError(
+                    "cell_scaling.invalid_cell",
+                    "Lattice perturbation produced an invalid or singular cell. Reduce the maximum relative change.",
+                )
             new_lattice = unit_vectors * new_lengths[:, np.newaxis]
 
             if params.perturb_angle:
@@ -305,27 +311,49 @@ class CellScalingOperation(StructureOperation):
                 )
                 angles = np.arccos(np.clip(cosines, -1.0, 1.0))
                 new_angles = angles * angle_factors
-                if abs(float(np.sin(new_angles[2]))) <= 1e-12:
-                    raise ValueError("CellScaling produced a singular gamma angle.")
-                new_lattice = np.zeros((3, 3), dtype=np.float32)
-                new_lattice[0] = [new_lengths[0], 0, 0]
-                new_lattice[1] = [
-                    new_lengths[1] * np.cos(new_angles[2]),
-                    new_lengths[1] * np.sin(new_angles[2]),
-                    0,
-                ]
-                cx = new_lengths[2] * np.cos(new_angles[1])
-                cy = new_lengths[2] * (
-                    np.cos(new_angles[0]) - np.cos(new_angles[1]) * np.cos(new_angles[2])
-                ) / np.sin(new_angles[2])
-                cz = np.sqrt(max(new_lengths[2] ** 2 - cx**2 - cy**2, 0))
-                new_lattice[2] = [cx, cy, cz]
+                cos_alpha, cos_beta, cos_gamma = np.cos(new_angles)
+                volume_factor_sq = (
+                    1.0
+                    + 2.0 * cos_alpha * cos_beta * cos_gamma
+                    - cos_alpha**2
+                    - cos_beta**2
+                    - cos_gamma**2
+                )
+                if (
+                    np.any(~np.isfinite(new_angles))
+                    or np.any(new_angles <= 0.0)
+                    or np.any(new_angles >= np.pi)
+                    or volume_factor_sq <= 1e-12
+                ):
+                    raise CardOperationError(
+                        "cell_scaling.invalid_cell",
+                        "Lattice perturbation produced an invalid or singular cell. Reduce the maximum relative change.",
+                    )
+                if unchanged:
+                    new_lattice = orig_lattice.copy()
+                else:
+                    # ASE's orientation arguments retain the input lattice's
+                    # global frame. Rebuilding in the default triangular frame
+                    # would introduce an unrelated rigid rotation.
+                    new_lattice = cellpar_to_cell(
+                        [*new_lengths, *np.degrees(new_angles)],
+                        ab_normal=np.cross(orig_lattice[0], orig_lattice[1]),
+                        a_direction=orig_lattice[0],
+                    )
+
+            determinant = abs(float(np.linalg.det(new_lattice)))
+            if not np.all(np.isfinite(new_lattice)) or determinant <= 1e-12:
+                raise CardOperationError(
+                    "cell_scaling.invalid_cell",
+                    "Lattice perturbation produced an invalid or singular cell. Reduce the maximum relative change.",
+                )
 
             eng = "U" if engine_type == 1 else "S"
             append_config_tag(new_structure, f"LSc(max={params.max_scaling},{eng})")
-            new_structure.set_cell(new_lattice, scale_atoms=True)
-            if params.identify_organic:
-                process_organic_clusters(structure, new_structure, clusters, is_organic_list)
+            if not unchanged:
+                new_structure.set_cell(new_lattice, scale_atoms=True)
+                if params.identify_organic:
+                    process_organic_clusters(structure, new_structure, clusters, is_organic_list)
 
             structure_list.append(new_structure)
         return structure_list

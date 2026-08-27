@@ -338,6 +338,10 @@ def _card_operation_error_catalog() -> None:
     )
     QCoreApplication.translate("CardOperationError", "Lattice constants must be positive.")
     QCoreApplication.translate(
+        "CardOperationError",
+        "Lattice perturbation produced an invalid or singular cell. Reduce the maximum relative change.",
+    )
+    QCoreApplication.translate(
         "CardOperationError", "The lattice-constant step must be positive."
     )
     QCoreApplication.translate(

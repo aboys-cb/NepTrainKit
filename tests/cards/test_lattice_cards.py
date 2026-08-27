@@ -594,7 +594,7 @@ class TestLatticeCards(BaseCardTest):
         card.organic_checkbox.setChecked(True)
         card.perturb_angle_checkbox.setChecked(False)
         card.engine_type_combo.setCurrentIndex(1)
-        card.scaling_condition_frame.set_input_value([0.05])
+        card.scaling_condition_frame.set_input_value([5.0])
         card.num_condition_frame.set_input_value([2])
 
         results = card.process_structure(structure)
@@ -665,6 +665,54 @@ class TestLatticeCards(BaseCardTest):
             )
             self.assertIn("LSc(max=0.08,S)", left.info.get("Config_type", ""))
         self.assertTrue(changed_angle)
+
+    def test_cell_scaling_zero_angle_perturbation_preserves_global_frame(self):
+        structure = self.structure.copy()
+        base_cell = np.array(
+            [
+                [2.4591, 0.7518, -1.5451],
+                [0.3314, 2.8161, 0.5386],
+                [2.5667, -0.4913, 3.0693],
+            ]
+        )
+        structure.set_cell(base_cell, scale_atoms=True)
+        structure.arrays["spin"] = np.tile([0.0, 0.0, 1.0], (len(structure), 1))
+        original_positions = structure.positions.copy()
+        original_spin = structure.arrays["spin"].copy()
+
+        result = CellScalingOperation().run_structure(
+            structure,
+            CellScalingParams(max_scaling=0.0, max_num=1, perturb_angle=True),
+        )[0]
+
+        np.testing.assert_array_equal(result.cell.array, base_cell)
+        np.testing.assert_array_equal(result.positions, original_positions)
+        np.testing.assert_array_equal(result.arrays["spin"], original_spin)
+
+    def test_cell_scaling_card_uses_percent_display_and_exact_preview(self):
+        card = CellScalingCard()
+        card.scaling_condition_frame.set_input_value([4.0])
+        card.num_condition_frame.set_input_value([50])
+        card.set_preview_input_count(2)
+
+        self.assertAlmostEqual(card.get_params().max_scaling, 0.04)
+        self.assertIn("±4%", card.get_summary_text())
+        self.assertIn("2 × 50 = 100", card.get_guidance_text())
+
+    def test_cell_scaling_rejects_singular_angle_samples(self):
+        structure = self.structure.copy()
+        structure.set_cell([[3.0, 0.0, 0.0], [0.7, 2.8, 0.0], [0.4, 0.3, 4.0]])
+        with self.assertRaisesRegex(ValueError, "invalid or singular cell"):
+            CellScalingOperation().run_structure(
+                structure,
+                CellScalingParams(
+                    max_scaling=1.0,
+                    max_num=500,
+                    perturb_angle=True,
+                    use_seed=True,
+                    seed=0,
+                ),
+            )
 
     def test_cell_strain_card_uniaxial(self):
         card = CellStrainCard()

@@ -133,7 +133,7 @@ h/k 设 [0,1,1] 只出低指数面，[0,2,1] 覆盖中等取向，[0,3,1] 进入
 ## 推荐组合
 
 - `Random Slab` → `Insert Defect`：先切表面，再加吸附原子
-- `Random Slab` → `Random Vacancy`：先切表面，再删表面原子构造空位
+- `Random Slab` → `Targeted Vacancy`：先切表面，再按元素或已有 group 构造空位
 - `Super Cell` → `Random Slab`：先扩胞到足够大面内尺寸，再切片
 
 ## 常见问题

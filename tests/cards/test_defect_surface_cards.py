@@ -1,6 +1,7 @@
 import warnings
 
 from ase.geometry import geometry
+from NepTrainKit.core.cards.errors import CardOperationError
 
 from .card_test_base import *
 
@@ -136,6 +137,12 @@ class TestDefectSurfaceCards(BaseCardTest):
 
     def test_vacancy_rule_count_mode_distinguishes_fixed_and_range(self):
         item = VacancyRuleItem()
+        item.show()
+        QApplication.processEvents()
+        self.assertEqual(item.fixed_count_frame.object_list[0].minimum(), 1)
+        self.assertEqual(item.count_range_frame.object_list[0].minimum(), 0)
+        self.assertTrue(item.fixed_count_frame.isVisible())
+        self.assertFalse(item.count_range_frame.isVisible())
         item.element_edit.setText("Si")
         item.fixed_count_frame.set_input_value([2])
         fixed = item.to_rule()
@@ -143,6 +150,10 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertEqual(fixed["count_mode"], "fixed")
 
         item.count_mode_combo.setCurrentText("Random range")
+        QApplication.processEvents()
+        self.assertFalse(item.fixed_count_frame.isVisible())
+        self.assertTrue(item.count_range_frame.isVisible())
+        self.assertTrue(all(spin.isVisible() for spin in item.count_range_frame.object_list))
         item.count_range_frame.set_input_value([1, 3])
         ranged = item.to_rule()
         self.assertEqual(ranged["count"], [1, 3])
@@ -231,36 +242,66 @@ class TestDefectSurfaceCards(BaseCardTest):
         )
         operation = RandomVacancyOperation()
 
-        with self.assertRaisesRegex(ValueError, "at least one vacancy rule"):
+        with self.assertRaises(CardOperationError) as missing_rules:
             operation.run_structure(structure, RandomVacancyParams(rules=[]))
-        with self.assertRaisesRegex(ValueError, "count_mode must be fixed or random"):
+        self.assertEqual(missing_rules.exception.code, "targeted_vacancy_missing_rules")
+        with self.assertRaises(CardOperationError) as invalid_mode:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [1, 2], "count_mode": "typo"}]
                 ),
             )
-        with self.assertRaisesRegex(ValueError, "count must be >= 0"):
+        self.assertEqual(invalid_mode.exception.code, "targeted_vacancy_invalid_count_mode")
+        with self.assertRaises(CardOperationError) as negative_count:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [-1, 2], "count_mode": "random"}]
                 ),
             )
-        with self.assertRaisesRegex(ValueError, "only 4 atoms match"):
+        self.assertEqual(negative_count.exception.code, "targeted_vacancy_negative_count")
+        with self.assertRaises(CardOperationError) as excessive_count:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [5, 5], "count_mode": "fixed"}]
                 ),
             )
-        with self.assertRaisesRegex(ValueError, "remove every atom"):
+        self.assertEqual(
+            excessive_count.exception.code,
+            "targeted_vacancy_count_exceeds_matches",
+        )
+        with self.assertRaises(CardOperationError) as destructive_count:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [4, 4], "count_mode": "fixed"}]
                 ),
             )
+        self.assertEqual(
+            destructive_count.exception.code,
+            "targeted_vacancy_no_valid_output",
+        )
+
+    def test_random_vacancy_preview_marks_overlapping_rule_upper_bound(self):
+        structure = Atoms(
+            "O3",
+            positions=np.arange(9, dtype=float).reshape(3, 3),
+            cell=[10, 10, 10],
+            pbc=True,
+        )
+        card = RandomVacancyCard()
+        card.rules_widget.from_rules(
+            [
+                {"element": "O", "count": [1, 1], "count_mode": "fixed"},
+                {"element": "O", "count": [1, 1], "count_mode": "fixed"},
+            ]
+        )
+        card.max_atoms_condition_frame.set_input_value([20])
+        card.set_dataset([structure])
+        self.assertIn("up to 9 unique outputs", card.preview_label.text())
+        self.assertIn("combinatorial upper bound", card.preview_label.text())
 
     def test_random_vacancy_operation_deduplicates_limited_site_combinations(self):
         structure = Atoms(

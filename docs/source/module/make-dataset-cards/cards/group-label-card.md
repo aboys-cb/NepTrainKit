@@ -86,7 +86,7 @@ $$
 2. 查看首个输入的层序预览，例如 `A(2) → B(3) → A(2) → B(3)`。
 3. 如果只检测到一层，先扩胞、换晶面或减小层容差。
 4. 周期 AFM 使用时优先保证一个周期内的层数为偶数；奇数层会在周期边界出现同组相接，界面会给出提示。
-5. 运行后再把结果接入 `Magnetic Order`、`Random Doping` 或 `Random Vacancy`。
+5. 运行后再把结果接入 `Magnetic Order`、`Random Doping` 或 `Targeted Vacancy`。
 
 典型工作流：
 

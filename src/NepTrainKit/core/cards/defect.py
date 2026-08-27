@@ -17,6 +17,7 @@ from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
 
+from .errors import CardOperationError
 from .geometry import wrapped_positions
 from .operation import StructureOperation
 from .sampling import derived_structure_seed
@@ -121,37 +122,80 @@ class RandomVacancyOperation(StructureOperation):
     @classmethod
     def _validated_rules(cls, structure, rules: Any) -> list[dict[str, Any]]:
         if not isinstance(rules, list) or not rules:
-            raise ValueError("RandomVacancy requires at least one vacancy rule.")
+            raise CardOperationError(
+                "targeted_vacancy_missing_rules",
+                "Targeted Vacancy requires at least one vacancy rule.",
+            )
         if len(structure) <= 1:
-            raise ValueError("RandomVacancy requires at least two atoms.")
+            raise CardOperationError(
+                "targeted_vacancy_too_few_atoms",
+                "Targeted Vacancy requires at least two atoms.",
+            )
 
         symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
         normalized: list[dict[str, Any]] = []
         for rule_index, rule in enumerate(rules, start=1):
-            label = f"RandomVacancy rule {rule_index}"
             if not isinstance(rule, dict):
-                raise ValueError(f"{label} must be a mapping.")
+                raise CardOperationError(
+                    "targeted_vacancy_invalid_rule",
+                    "Vacancy rule {rule} is invalid.",
+                    rule=rule_index,
+                )
 
             element = str(rule.get("element", "") or "").strip()
             if not element:
-                raise ValueError(f"{label} requires an element.")
+                raise CardOperationError(
+                    "targeted_vacancy_missing_element",
+                    "Vacancy rule {rule} requires an element.",
+                    rule=rule_index,
+                )
 
-            count_min, count_max = _count_range(rule.get("count", []), label=f"{label} count")
+            try:
+                count_min, count_max = _count_range(
+                    rule.get("count", []),
+                    label=f"Vacancy rule {rule_index} count",
+                )
+            except (TypeError, ValueError) as exc:
+                raise CardOperationError(
+                    "targeted_vacancy_invalid_count_range",
+                    "Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.",
+                    rule=rule_index,
+                ) from exc
             if count_min < 0:
-                raise ValueError(f"{label} count must be >= 0.")
+                raise CardOperationError(
+                    "targeted_vacancy_negative_count",
+                    "Vacancy rule {rule} count must be at least 0.",
+                    rule=rule_index,
+                )
 
             count_mode = str(rule.get("count_mode", "") or "").strip().lower()
             if not count_mode:
                 count_mode = "fixed" if count_min == count_max else "random"
             if count_mode not in {"fixed", "random"}:
-                raise ValueError(f"{label} count_mode must be fixed or random.")
+                raise CardOperationError(
+                    "targeted_vacancy_invalid_count_mode",
+                    "Vacancy rule {rule} count mode must be Fixed count or Random range.",
+                    rule=rule_index,
+                )
             if count_mode == "fixed":
                 if count_min != count_max:
-                    raise ValueError(f"{label} fixed count must use the same minimum and maximum.")
+                    raise CardOperationError(
+                        "targeted_vacancy_fixed_count_mismatch",
+                        "Vacancy rule {rule} fixed count must use the same minimum and maximum.",
+                        rule=rule_index,
+                    )
                 if count_min == 0:
-                    raise ValueError(f"{label} fixed count must be >= 1.")
+                    raise CardOperationError(
+                        "targeted_vacancy_zero_fixed_count",
+                        "Vacancy rule {rule} fixed count must be at least 1.",
+                        rule=rule_index,
+                    )
             elif count_max == 0:
-                raise ValueError(f"{label} random range must allow at least one vacancy.")
+                raise CardOperationError(
+                    "targeted_vacancy_empty_random_range",
+                    "Vacancy rule {rule} random range must allow at least one vacancy.",
+                    rule=rule_index,
+                )
 
             raw_groups = rule.get("group")
             groups = [str(value).strip() for value in _as_list(raw_groups) if str(value).strip()]
@@ -163,10 +207,16 @@ class RandomVacancyOperation(StructureOperation):
                 group_constraint_requested = False
             if group_constraint_requested:
                 if not groups:
-                    raise ValueError(f"{label} group must contain at least one non-empty label.")
+                    raise CardOperationError(
+                        "targeted_vacancy_empty_group",
+                        "Vacancy rule {rule} group must contain at least one non-empty label.",
+                        rule=rule_index,
+                    )
                 if "group" not in structure.arrays:
-                    raise ValueError(
-                        f"{label} requests group labels, but the input structure has no group array."
+                    raise CardOperationError(
+                        "targeted_vacancy_missing_group_array",
+                        "Vacancy rule {rule} requests group labels, but the input structure has no group array.",
+                        rule=rule_index,
                     )
                 group_values = np.asarray(structure.arrays["group"], dtype=object)
                 candidate_mask &= np.isin(group_values, groups)
@@ -174,11 +224,20 @@ class RandomVacancyOperation(StructureOperation):
             candidate_count = int(np.count_nonzero(candidate_mask))
             target = element if not groups else f"{element} in group {','.join(groups)}"
             if candidate_count == 0:
-                raise ValueError(f"{label} matched no atoms ({target}).")
+                raise CardOperationError(
+                    "targeted_vacancy_no_matches",
+                    "Vacancy rule {rule} matched no atoms ({target}).",
+                    rule=rule_index,
+                    target=target,
+                )
             if count_max > candidate_count:
-                raise ValueError(
-                    f"{label} requests up to {count_max} vacancies, but only "
-                    f"{candidate_count} atoms match ({target})."
+                raise CardOperationError(
+                    "targeted_vacancy_count_exceeds_matches",
+                    "Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).",
+                    rule=rule_index,
+                    requested=count_max,
+                    available=candidate_count,
+                    target=target,
                 )
 
             normalized.append(
@@ -229,16 +288,57 @@ class RandomVacancyOperation(StructureOperation):
         """Return a safe upper bound for distinct deletion patterns."""
         requested = int(requested)
         if requested <= 0:
-            raise ValueError("RandomVacancy: max_structures must be >= 1.")
+            raise CardOperationError(
+                "targeted_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be at least 1.",
+            )
         return cls._output_upper_bound(cls._validated_rules(structure, rules), requested)
+
+    @classmethod
+    def preview_summary(cls, structure, rules: Any, requested: int) -> dict[str, Any]:
+        """Return rule counts, an output upper bound, and candidate-pool overlap."""
+        requested = int(requested)
+        if requested <= 0:
+            raise CardOperationError(
+                "targeted_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be at least 1.",
+            )
+        normalized = cls._validated_rules(structure, rules)
+        overlap = any(
+            bool(np.any(left["candidate_mask"] & right["candidate_mask"]))
+            for index, left in enumerate(normalized)
+            for right in normalized[index + 1 :]
+        )
+        rule_summaries = [
+            {
+                "element": rule["element"],
+                "groups": list(rule["groups"]),
+                "count_mode": rule["count_mode"],
+                "count_min": rule["count_min"],
+                "count_max": rule["count_max"],
+                "candidate_count": rule["candidate_count"],
+            }
+            for rule in normalized
+        ]
+        return {
+            "rules": rule_summaries,
+            "maximum_outputs": cls._output_upper_bound(normalized, requested),
+            "overlapping_candidates": overlap,
+        }
 
     def run_structure(self, structure, params: RandomVacancyParams) -> list:
         max_structures = int(params.max_structures)
         if max_structures <= 0:
-            raise ValueError("RandomVacancy: max_structures must be >= 1.")
+            raise CardOperationError(
+                "targeted_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be at least 1.",
+            )
         seed = int(params.seed)
         if params.use_seed and seed < 0:
-            raise ValueError("RandomVacancy: seed must be >= 0.")
+            raise CardOperationError(
+                "targeted_vacancy_invalid_seed",
+                "Random seed must be at least 0.",
+            )
 
         rules = self._validated_rules(structure, params.rules)
         if params.use_seed:
@@ -252,13 +352,12 @@ class RandomVacancyOperation(StructureOperation):
         seen_deletions: set[tuple[int, ...]] = set()
         target_outputs = self._output_upper_bound(rules, max_structures)
         max_attempts = max(100, target_outputs * self._MAX_ATTEMPTS_PER_OUTPUT)
-        last_invalid_reason: str | None = None
         for _ in range(max_attempts):
             new_structure = structure.copy()
             keep_mask = np.ones(len(new_structure), dtype=bool)
             total_remove = 0
             attempt_is_valid = True
-            for rule_index, rule in enumerate(rules, start=1):
+            for rule in rules:
                 if rule["count_mode"] == "fixed":
                     remove_num = rule["count_min"]
                 else:
@@ -268,10 +367,6 @@ class RandomVacancyOperation(StructureOperation):
 
                 candidate_indices = np.nonzero(keep_mask & rule["candidate_mask"])[0]
                 if remove_num > len(candidate_indices):
-                    last_invalid_reason = (
-                        f"RandomVacancy rule {rule_index} sampled {remove_num} vacancies, "
-                        f"but only {len(candidate_indices)} eligible atoms remain after earlier rules."
-                    )
                     attempt_is_valid = False
                     break
 
@@ -282,9 +377,6 @@ class RandomVacancyOperation(StructureOperation):
             if not attempt_is_valid:
                 continue
             if total_remove >= len(structure):
-                last_invalid_reason = (
-                    "RandomVacancy sampled a combination that would remove every atom from the structure."
-                )
                 continue
 
             deletion_key = tuple(int(index) for index in np.nonzero(~keep_mask)[0])
@@ -299,10 +391,10 @@ class RandomVacancyOperation(StructureOperation):
             if len(structure_list) >= target_outputs:
                 break
         if not structure_list:
-            detail = last_invalid_reason or "no distinct deletion pattern could be sampled."
-            raise ValueError(
-                "RandomVacancy could not generate a valid non-empty structure from the rules: "
-                f"{detail}"
+            raise CardOperationError(
+                "targeted_vacancy_no_valid_output",
+                "Targeted Vacancy could not generate a valid non-empty structure. "
+                "Reduce overlapping rule counts, broaden the groups, or expand the structure.",
             )
         return structure_list
 

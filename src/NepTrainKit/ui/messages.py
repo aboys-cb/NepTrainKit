@@ -486,6 +486,66 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError", "Layer group A and B labels must be different."
     )
     QCoreApplication.translate(
+        "CardOperationError", "Targeted Vacancy requires at least one vacancy rule."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Targeted Vacancy requires at least two atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} is invalid."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} requires an element."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} count must be at least 0."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} count mode must be Fixed count or Random range.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} fixed count must use the same minimum and maximum.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} fixed count must be at least 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} random range must allow at least one vacancy.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} group must contain at least one non-empty label.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} requests group labels, but the input structure has no group array.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} matched no atoms ({target})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum outputs per input must be at least 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random seed must be at least 0."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Targeted Vacancy could not generate a valid non-empty structure. "
+        "Reduce overlapping rule counts, broaden the groups, or expand the structure.",
+    )
+    QCoreApplication.translate(
         "CardOperationError", "Invalid element symbols in the target list: {elements}."
     )
     QCoreApplication.translate(

@@ -75,7 +75,7 @@
 | --- | --- | --- |
 | 生成不同晶面的表面板层 | [随机表面板层](cards/random-slab-card.md) | 先确认晶胞和 Miller 指数 |
 | 在全部原子中按数量或比例随机删位 | [全局随机空位](cards/vacancy-defect-card.md) | 通常先扩胞 |
-| 只删除指定元素或 `group` 中的位点 | [随机空位](cards/random-vacancy-card.md) | 需要时先做分组标记 |
+| 只删除指定元素或 `group` 中的位点 | [定向空位](cards/random-vacancy-card.md) | 需要时先做原子层分组 |
 | 插入间隙原子或表面吸附原子 | [插隙与表面吸附](cards/interstitial-adsorbate-card.md) | 体相通常先扩胞，吸附通常先建表面 |
 | 扫描指定晶面和滑移方向的层错路径 | [层错 / GSFE 路径](cards/strict-gsfe-path-card.md) | 输入必须已经按目标晶面定向 |
 

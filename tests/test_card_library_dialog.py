@@ -214,10 +214,10 @@ class TestCardLibraryDialog(unittest.TestCase):
                 == "RandomVacancyCard"
             )
             dialog.card_list.setCurrentItem(vacancy_item)
-            self.assertEqual(dialog.detail_title_label.text(), "随机空位")
+            self.assertEqual(dialog.detail_title_label.text(), "定向空位")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "按元素、已有分组标签和数量规则随机删除位点；其余原子坐标保持不变。",
+                "按元素、可选的已有分组和数量规则随机删除位点。",
             )
 
             global_vacancy_item = next(

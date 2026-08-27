@@ -239,10 +239,10 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Construct surface slabs across multiple Miller indices and thicknesses."),
         ),
         "RandomVacancyCard": (
-            QCoreApplication.translate("CardCatalog", "Random Vacancy"),
+            QCoreApplication.translate("CardCatalog", "Targeted Vacancy"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Remove randomly selected sites using element, existing group, and count rules; other atomic coordinates stay unchanged.",
+                "Remove randomly selected sites using element, optional existing-group, and count rules.",
             ),
         ),
         "SetMagneticMomentsCard": (

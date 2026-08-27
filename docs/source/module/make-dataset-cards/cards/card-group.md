@@ -34,11 +34,11 @@ $F(\mathcal D_{\mathrm{merge}})$。因此子卡之间不能依赖前一张子卡
 
 **输入：** 一个弛豫好的 Ni 4×4×4 超胞
 
-**目标：** 把 `Random Slab` 和 `Random Vacancy` 放入同一组，共享输入，生成两个独立分支并统一导出
+**目标：** 把 `Random Slab` 和 `Targeted Vacancy` 放入同一组，共享输入，生成两个独立分支并统一导出
 
 **参数设置：**
 - 将 `Random Slab` 卡片拖入组内，配置好 slab 参数
-- 将 `Random Vacancy` 卡片拖入组内，配置好空位规则
+- 将 `Targeted Vacancy` 卡片拖入组内，配置好空位规则
 - `card_list` 自动维护为 `[{RandomSlabCard...}, {RandomVacancyCard...}]`
 
 **输出：** 两个分支的并集——一批不同取向表面 slab + 一批不同空位结构，各自带独立标签

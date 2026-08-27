@@ -843,9 +843,8 @@
         <translation>按不同米勒指数和厚度构建表面板层。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="242" />
         <source>Random Vacancy</source>
-        <translation>随机空位</translation>
+        <translation type="vanished">随机空位</translation>
     </message>
     <message>
         <source>Create vacancy structures by probabilistically removing atoms according to rules.</source>
@@ -981,6 +980,16 @@
         <translation>将晶格变形路径与每个晶格点上相同的目标自旋旋转扫描组合起来。</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/card_metadata.py" line="242" />
+        <source>Targeted Vacancy</source>
+        <translation>定向空位</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="243" />
+        <source>Remove randomly selected sites using element, optional existing-group, and count rules.</source>
+        <translation>按元素、可选的已有分组和数量规则随机删除位点。</translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/card_metadata.py" line="261" />
         <source>Canting Scan</source>
         <translation>倾斜扫描</translation>
@@ -1041,9 +1050,8 @@
         <translation>生成未扩展的 A1、A2、A3、L1₂、B2 和 L1₀ 基础晶胞，并写入明确的 A/B 子晶格标签。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="243" />
         <source>Remove randomly selected sites using element, existing group, and count rules; other atomic coordinates stay unchanged.</source>
-        <translation>按元素、已有分组标签和数量规则随机删除位点；其余原子坐标保持不变。</translation>
+        <translation type="vanished">按元素、已有分组标签和数量规则随机删除位点；其余原子坐标保持不变。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="249" />
@@ -2918,27 +2926,112 @@
         <translation>原子层分组的 A、B 标签不能相同。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="488" />
+        <source>Targeted Vacancy requires at least one vacancy rule.</source>
+        <translation>定向空位至少需要一条空位规则。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="491" />
+        <source>Targeted Vacancy requires at least two atoms.</source>
+        <translation>定向空位的输入结构至少需要两个原子。</translation>
+    </message>
+    <message>
         <location filename="../ui/messages.py" line="494" />
+        <source>Vacancy rule {rule} is invalid.</source>
+        <translation>空位规则 {rule} 无效。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="497" />
+        <source>Vacancy rule {rule} requires an element.</source>
+        <translation>空位规则 {rule} 必须填写元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="500" />
+        <source>Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.</source>
+        <translation>空位规则 {rule} 需要一个整数数量，或按从小到大填写最小值和最大值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="504" />
+        <source>Vacancy rule {rule} count must be at least 0.</source>
+        <translation>空位规则 {rule} 的数量不能小于 0。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="507" />
+        <source>Vacancy rule {rule} count mode must be Fixed count or Random range.</source>
+        <translation>空位规则 {rule} 的数量模式必须是“固定数量”或“随机范围”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="511" />
+        <source>Vacancy rule {rule} fixed count must use the same minimum and maximum.</source>
+        <translation>空位规则 {rule} 使用固定数量时，最小值和最大值必须相同。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="515" />
+        <source>Vacancy rule {rule} fixed count must be at least 1.</source>
+        <translation>空位规则 {rule} 的固定数量至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="518" />
+        <source>Vacancy rule {rule} random range must allow at least one vacancy.</source>
+        <translation>空位规则 {rule} 的随机范围必须允许至少删除一个原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="522" />
+        <source>Vacancy rule {rule} group must contain at least one non-empty label.</source>
+        <translation>空位规则 {rule} 的分组条件至少需要一个非空标签。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="526" />
+        <source>Vacancy rule {rule} requests group labels, but the input structure has no group array.</source>
+        <translation>空位规则 {rule} 使用了分组条件，但输入结构没有 group 数组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="530" />
+        <source>Vacancy rule {rule} matched no atoms ({target}).</source>
+        <translation>空位规则 {rule} 没有匹配到原子（{target}）。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="533" />
+        <source>Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).</source>
+        <translation>空位规则 {rule} 最多要求删除 {requested} 个原子，但只有 {available} 个原子匹配（{target}）。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="537" />
+        <source>Maximum outputs per input must be at least 1.</source>
+        <translation>每个输入的最大输出数至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="540" />
+        <source>Random seed must be at least 0.</source>
+        <translation>随机种子不能小于 0。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="543" />
+        <source>Targeted Vacancy could not generate a valid non-empty structure. Reduce overlapping rule counts, broaden the groups, or expand the structure.</source>
+        <translation>定向空位无法生成有效的非空结构。请减少重叠规则的删除数量、扩大分组范围或扩展结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="554" />
         <source>Magnetic response needs vector spin or initial magnetic moments on the input structure.</source>
         <translation>磁响应要求输入结构带有矢量 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="498" />
+        <location filename="../ui/messages.py" line="558" />
         <source>Magnetic response needs finite magnetic moments with at least one non-zero vector.</source>
         <translation>磁响应要求磁矩数值有限，并且至少包含一个非零矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="502" />
+        <location filename="../ui/messages.py" line="562" />
         <source>Maximum structures is smaller than the coordinate count of one complete response group.</source>
         <translation>最大结构数小于一个完整响应组所需的坐标数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="506" />
+        <location filename="../ui/messages.py" line="566" />
         <source>No non-zero magnetic moments match the selected atoms and elements.</source>
         <translation>所选原子和元素中没有匹配的非零磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="510" />
+        <location filename="../ui/messages.py" line="570" />
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Layer Groups upstream.</source>
         <translation>输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“原子层分组”卡片。</translation>
     </message>
@@ -2947,57 +3040,57 @@
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="515" />
+        <location filename="../ui/messages.py" line="575" />
         <source>No atom pairs match the selected neighbor shell and automatic-pair filters.</source>
         <translation>没有原子对同时满足所选近邻壳层和自动配对筛选条件。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="519" />
+        <location filename="../ui/messages.py" line="579" />
         <source>No valid magnetic atom pairs match the left and right indices.</source>
         <translation>左右索引没有匹配到有效的磁性原子对。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="523" />
+        <location filename="../ui/messages.py" line="583" />
         <source>Maximum structures must be at least {required} for the selected texture response path.</source>
         <translation>所选纹理响应路径至少需要 {required} 个结构，请提高最大结构数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="527" />
+        <location filename="../ui/messages.py" line="587" />
         <source>Cell-reciprocal q needs a finite, non-singular 3D cell.</source>
         <translation>晶胞倒空间 q 要求输入具有数值有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="530" />
+        <location filename="../ui/messages.py" line="590" />
         <source>The reciprocal-cell index must contain three finite integers.</source>
         <translation>晶胞倒空间索引必须包含三个数值有限的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="533" />
+        <location filename="../ui/messages.py" line="593" />
         <source>The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.</source>
         <translation>螺旋响应的晶胞倒空间索引不能为 (0, 0, 0)。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="537" />
+        <location filename="../ui/messages.py" line="597" />
         <source>q definition must be Cell reciprocal vector or Cartesian vector.</source>
         <translation>q 定义方式必须是晶胞倒空间矢量或笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="541" />
+        <location filename="../ui/messages.py" line="601" />
         <source>The Cartesian base q vector must be non-zero for a spiral response.</source>
         <translation>螺旋响应的笛卡尔基准 q 矢量必须非零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="545" />
+        <location filename="../ui/messages.py" line="605" />
         <source>q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, or change q and the supercell together.</source>
         <translation>q 沿第 {index} 根周期晶格矢量不能闭合。请使用晶胞倒空间 q，或同时调整 q 和超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="550" />
+        <location filename="../ui/messages.py" line="610" />
         <source>The two symmetric-shear directions must be perpendicular Cartesian vectors.</source>
         <translation>对称剪切的两个方向必须是互相垂直的笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="554" />
+        <location filename="../ui/messages.py" line="614" />
         <source>The Bain lattice axis must be a, b, or c.</source>
         <translation>Bain 晶格轴必须为 a、b 或 c。</translation>
     </message>
@@ -3051,12 +3144,12 @@
         <translation type="vanished">请增大旋转角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="488" />
+        <location filename="../ui/messages.py" line="548" />
         <source>Invalid element symbols in the target list: {elements}.</source>
         <translation>目标元素中包含无效元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="491" />
+        <location filename="../ui/messages.py" line="551" />
         <source>No non-zero magnetic moments match the selected elements.</source>
         <translation>所选元素没有匹配到非零磁矩。</translation>
     </message>
@@ -6329,22 +6422,22 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>至少需要两层；请扩胞、更换晶面或减小层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="250" />
+        <location filename="../ui/views/_card/group_label_card.py" line="256" />
         <source>Odd layer count: periodic A/B order does not close across the boundary.</source>
         <translation>层数为奇数：周期边界两侧无法保持 A/B 交替。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="293" />
+        <location filename="../ui/views/_card/group_label_card.py" line="299" />
         <source>({hkl}) · {tolerance} Å · {a}/{b}</source>
         <translation>({hkl}) · {tolerance} Å · {a}/{b}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="302" />
+        <location filename="../ui/views/_card/group_label_card.py" line="308" />
         <source>Check the detected layer sequence. Periodic A/B magnetic order needs an even number of layers.</source>
         <translation>请检查识别出的层序；周期 A/B 磁序需要偶数层。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="345" />
+        <location filename="../ui/views/_card/group_label_card.py" line="351" />
         <source>Legacy Group Label loaded: the old cell-phase and half-grid rules were removed. This card now detects real atomic layers; verify the preview before rerunning the workflow.</source>
         <translation>已载入旧版分组配置：原有的晶胞相位和半网格规则已移除。当前卡片会识别真实原子层，重新运行工作流前请核对预览。</translation>
     </message>
@@ -6362,7 +6455,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">只会生成一个分组；请扩胞或改用其他规则。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/group_label_card.py" line="253" />
+        <location filename="../ui/views/_card/group_label_card.py" line="259" />
         <source>Existing group labels will be overwritten.</source>
         <translation>将覆盖已有分组标签。</translation>
     </message>
@@ -9086,23 +9179,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="593" />
-        <location filename="../ui/messages.py" line="633" />
+        <location filename="../ui/messages.py" line="653" />
+        <location filename="../ui/messages.py" line="693" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="603" />
+        <location filename="../ui/messages.py" line="663" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="613" />
+        <location filename="../ui/messages.py" line="673" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="623" />
+        <location filename="../ui/messages.py" line="683" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -11025,69 +11118,101 @@ All child items will also be deleted.</source>
         <translation type="vanished">要生成的空位结构数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="39" />
         <source>Rule-based Vacancy</source>
-        <translation>按规则生成空位</translation>
+        <translation type="vanished">按规则生成空位</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="50" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="75" />
         <source>Vacancy rules</source>
         <translation>空位规则</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="53" />
         <source>Each rule removes one element, optionally within existing group labels</source>
-        <translation>每条规则删除一种元素，也可限制在输入已有的 group 标签内</translation>
+        <translation type="vanished">每条规则删除一种元素，也可限制在输入已有的 group 标签内</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="57" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="91" />
         <source>Maximum outputs per input</source>
         <translation>每个输入最多生成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="63" />
         <source>Duplicate vacancy placements are removed, so the actual count can be lower</source>
-        <translation>重复空位组合会被去除，因此实际输出数可能更少</translation>
+        <translation type="vanished">重复空位组合会被去除，因此实际输出数可能更少</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="67" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="58" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="69" />
         <source>Enable reproducible random sampling</source>
-        <translation>启用可复现的随机采样</translation>
+        <translation type="vanished">启用可复现的随机采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="76" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="40" />
+        <source>Targeted Vacancy</source>
+        <translation>定向空位</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="65" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="96" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="136" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="78" />
+        <source>Choose an element, optional existing groups, and a fixed or random removal count. A random minimum of 0 may keep the input unchanged.</source>
+        <translation>选择元素、可选的已有分组，以及固定或随机删除数量。随机范围最小值为 0 时可能保留原结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="85" />
+        <source>Generation</source>
+        <translation>生成设置</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="87" />
+        <source>Deletion patterns are deduplicated, so the actual output count can be lower.</source>
+        <translation>删除位点相同的结果会去重，因此实际输出数可能更少。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="147" />
         <source>Add an element to the vacancy rule before running.</source>
         <translation>运行前请先在空位规则中填写元素。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="141" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="152" />
         <source>Load an upstream structure to preview matched atom counts.</source>
         <translation>加载上游结构后可预览规则命中的原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="161" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="169" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="176" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="186" />
         <source>{target}: {matches} matches, remove {count}</source>
         <translation>{target}：命中 {matches} 个，删除 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="183" />
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="193" />
         <source>First input preview: {rules} · up to {outputs} unique outputs</source>
         <translation>首个输入预览：{rules} · 最多生成 {outputs} 个不重复结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="200" />
+        <source>Rules share candidate atoms; this is a combinatorial upper bound and the actual count may be lower.</source>
+        <translation>多条规则共享候选原子；当前数值是组合数上限，实际输出可能更少。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="272" />
+        <source>{rules} rules · up to {outputs} outputs</source>
+        <translation>{rules} 条规则 · 最多 {outputs} 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="279" />
+        <source>Use this card when deletion must be restricted by element or existing group labels; use Global Random Vacancy for all-site sampling.</source>
+        <translation>需要按元素或已有分组限制删除范围时使用本卡；所有位点共同采样时使用“全局随机空位”。</translation>
     </message>
 </context>
 <context>
@@ -18555,59 +18680,87 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">Cs</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="47" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="46" />
         <source>O</source>
         <translation>O</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="50" />
         <source>Optional, for example surface</source>
-        <translation>可选，例如 surface</translation>
+        <translation type="vanished">可选，例如 surface</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="51" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="49" />
+        <source>Optional: surface,bulk</source>
+        <translation>可选：surface,bulk</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/vacancy_rule.py" line="50" />
         <source>Existing group labels</source>
         <translation>已有分组标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="54" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="53" />
         <source>Fixed count</source>
         <translation>固定数量</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="55" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="54" />
         <source>Random range</source>
         <translation>随机范围</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="59" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="58" />
         <source>Fixed count removes exactly this many atoms. Random range samples between min and max.</source>
         <translation>固定数量会精确移除指定数量的原子；随机范围会在最小值和最大值之间采样。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="68" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="67" />
         <source>Vacancy count</source>
         <translation>空位数量</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="74" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="73" />
         <source>Vacancy count range</source>
         <translation>空位数量范围</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/vacancy_rule.py" line="78" />
         <location filename="../ui/widgets/vacancy_rule.py" line="79" />
-        <location filename="../ui/widgets/vacancy_rule.py" line="80" />
         <source>Delete rule</source>
         <translation>删除规则</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="86" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="89" />
+        <source>Vacancy rule</source>
+        <translation>空位规则</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/vacancy_rule.py" line="95" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="48" />
-        <location filename="../ui/widgets/vacancy_rule.py" line="87" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="100" />
+        <source>Existing groups (optional)</source>
+        <translation>已有分组（可选）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/vacancy_rule.py" line="105" />
+        <source>Vacancy amount</source>
+        <translation>空位数量模式</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/vacancy_rule.py" line="110" />
+        <source>Vacancies to remove</source>
+        <translation>删除数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/vacancy_rule.py" line="115" />
+        <source>Vacancy range</source>
+        <translation>空位数量范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/vacancy_rule.py" line="47" />
         <source>Element to remove</source>
         <translation>要移除的元素</translation>
     </message>
@@ -18620,51 +18773,45 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">可选分组名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="57" />
-        <location filename="../ui/widgets/vacancy_rule.py" line="94" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="56" />
         <source>Count mode</source>
         <translation>数量模式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="89" />
         <source>Existing group (optional)</source>
-        <translation>已有 group（可选）</translation>
+        <translation type="vanished">已有 group（可选）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="91" />
         <source>Only match labels already stored in the input structure's group array</source>
-        <translation>只匹配输入结构 group 数组中已经存在的标签</translation>
+        <translation type="vanished">只匹配输入结构 group 数组中已经存在的标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="95" />
         <source>Choose exact vacancy count or a random count range</source>
-        <translation>选择精确空位数量或随机数量范围</translation>
+        <translation type="vanished">选择精确空位数量或随机数量范围</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="97" />
         <source>Count</source>
-        <translation>数量</translation>
+        <translation type="vanished">数量</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="98" />
         <source>Vacancies removed per generated structure</source>
-        <translation>每个生成结构中移除的空位数</translation>
+        <translation type="vanished">每个生成结构中移除的空位数</translation>
     </message>
 </context>
 <context>
     <name>VacancyRulesWidget</name>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="207" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="225" />
         <source>Add rule</source>
         <translation>添加规则</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="209" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="227" />
         <source>Add vacancy rule</source>
         <translation>添加空位规则</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="210" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="228" />
         <source>Add another element or group-specific vacancy rule</source>
         <translation>添加另一条按元素或 group 限定的空位规则</translation>
     </message>

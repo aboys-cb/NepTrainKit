@@ -4,18 +4,19 @@ import json
 
 from PySide6.QtCore import Qt
 from qfluentwidgets import (
-    BodyLabel,
     CaptionLabel,
     CheckBox,
-    ToolTipFilter,
-    ToolTipPosition,
 )
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.defect import RandomVacancyOperation, RandomVacancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
     MakeDataCard,
+    ResponsiveFormGrid,
     SpinBoxUnitInputFrame,
     VacancyRulesWidget,
 )
@@ -27,7 +28,7 @@ class RandomVacancyCard(MakeDataCard):
 
     group = "Defect"
 
-    card_name = "Random Vacancy"
+    card_name = "Targeted Vacancy"
     menu_icon = r":/images/src/images/defect.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -36,7 +37,7 @@ class RandomVacancyCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._input_structure = None
-        self.setTitle(self.tr("Rule-based Vacancy"))
+        self.setTitle(self.tr("Targeted Vacancy"))
         self.init_ui()
 
     def init_ui(self):
@@ -47,27 +48,15 @@ class RandomVacancyCard(MakeDataCard):
         self.settingLayout.setVerticalSpacing(5)
         self.settingLayout.setColumnStretch(1, 1)
 
-        self.rules_label = BodyLabel(self.tr("Vacancy rules"), self.setting_widget)
         self.rules_widget = VacancyRulesWidget(self.setting_widget)
-        self.rules_label.setToolTip(
-            self.tr("Each rule removes one element, optionally within existing group labels")
-        )
-        self.rules_label.installEventFilter(ToolTipFilter(self.rules_label, 300, ToolTipPosition.TOP))
 
-        self.max_atoms_label = BodyLabel(self.tr("Maximum outputs per input"), self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("", 1)
         self.max_atoms_condition_frame.setRange(1, 10000)
         self.max_atoms_condition_frame.set_input_value([1])
-        self.max_atoms_label.setToolTip(
-            self.tr("Duplicate vacancy placements are removed, so the actual count can be lower")
-        )
-        self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
-        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
         self.seed_frame.setRange(0, 2**31 - 1)
@@ -82,20 +71,40 @@ class RandomVacancyCard(MakeDataCard):
         )
         self.preview_label.setObjectName("randomVacancyPreview")
 
-        self.settingLayout.addWidget(
-            self.rules_label,
-            0,
-            0,
-            1,
-            1,
-            Qt.AlignmentFlag.AlignTop,
+        rules_section = InspectorSection(
+            self.tr("Vacancy rules"),
+            self.setting_widget,
+            self.tr(
+                "Choose an element, optional existing groups, and a fixed or random removal count. "
+                "A random minimum of 0 may keep the input unchanged."
+            ),
         )
-        self.settingLayout.addWidget(self.rules_widget, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_atoms_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_condition_frame, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.preview_label, 3, 0, 1, 3)
+        rules_section.addWidget(self.rules_widget)
+
+        generation_section = InspectorSection(
+            self.tr("Generation"),
+            self.setting_widget,
+            self.tr("Deletion patterns are deduplicated, so the actual output count can be lower."),
+        )
+        generation_grid = ResponsiveFormGrid(generation_section)
+        self.max_outputs_field = CompactField(
+            self.tr("Maximum outputs per input"),
+            self.max_atoms_condition_frame,
+            generation_section,
+        )
+        self.seed_field = CompactField(
+            self.tr("Random seed"),
+            self.seed_frame,
+            generation_section,
+        )
+        generation_grid.add_field(self.max_outputs_field)
+        generation_grid.add_field(self.seed_field)
+        generation_section.addWidget(generation_grid)
+        generation_section.addWidget(self.seed_checkbox)
+        generation_section.addWidget(self.preview_label)
+
+        self.settingLayout.addWidget(rules_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(generation_section, 1, 0, 1, 3)
 
         self.rules_widget.rulesChanged.connect(self._refresh_preview)
         self.rules_widget.rulesChanged.connect(self._update_tab_order)
@@ -108,7 +117,9 @@ class RandomVacancyCard(MakeDataCard):
         self._update_tab_order()
 
     def _on_seed_changed(self) -> None:
-        self.seed_frame.setEnabled(self.seed_checkbox.isChecked())
+        enabled = self.seed_checkbox.isChecked()
+        self.seed_frame.setEnabled(enabled)
+        self.seed_field.setVisible(enabled)
         self._update_tab_order()
 
     @staticmethod
@@ -144,26 +155,25 @@ class RandomVacancyCard(MakeDataCard):
 
         try:
             operation = self.create_operation()
-            summary = operation.rule_match_summary(
-                self._input_structure,
-                rules,
-            )
             requested_outputs = int(
                 self.max_atoms_condition_frame.get_input_value()[0]
             )
-            maximum_outputs = operation.maximum_unique_outputs(
+            preview = operation.preview_summary(
                 self._input_structure,
                 rules,
                 requested_outputs,
             )
         except ValueError as exc:
             self.preview_label.setText(
-                "⚠ " + self.tr("Preview unavailable: {error}").format(error=str(exc))
+                "⚠ "
+                + self.tr("Preview unavailable: {error}").format(
+                    error=translate_runtime_message(exc)
+                )
             )
             return
 
         parts = []
-        for item in summary:
+        for item in preview["rules"]:
             target = item["element"]
             if item["groups"]:
                 target += "/" + ",".join(item["groups"])
@@ -179,12 +189,17 @@ class RandomVacancyCard(MakeDataCard):
                     count=count_text,
                 )
             )
-        self.preview_label.setText(
+        message = (
             self.tr("First input preview: {rules} · up to {outputs} unique outputs").format(
                 rules="; ".join(parts),
-                outputs=maximum_outputs,
+                outputs=preview["maximum_outputs"],
             )
         )
+        if preview["overlapping_candidates"]:
+            message += " · " + self.tr(
+                "Rules share candidate atoms; this is a combinatorial upper bound and the actual count may be lower."
+            )
+        self.preview_label.setText(message)
 
     def _update_tab_order(self) -> None:
         widgets = []
@@ -251,6 +266,18 @@ class RandomVacancyCard(MakeDataCard):
             Structures with vacancies applied according to the rule set.
         """
         return self.create_operation().run_structure(structure, self.get_params())
+
+    def get_summary_text(self) -> str:
+        rules = self.rules_widget.to_rules()
+        return self.tr("{rules} rules · up to {outputs} outputs").format(
+            rules=len(rules),
+            outputs=int(self.max_atoms_condition_frame.get_input_value()[0]),
+        )
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Use this card when deletion must be restricted by element or existing group labels; use Global Random Vacancy for all-site sampling."
+        )
 
     def to_dict(self):
         data = super().to_dict()

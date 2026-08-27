@@ -453,15 +453,15 @@ class GeometryFilterOperation(DatasetOperation):
         if volume > 0.0:
             volume_per_atom = volume / float(natoms)
             if params.min_volume_per_atom > 0.0 and volume_per_atom < params.min_volume_per_atom:
-                return "volume_per_atom"
+                return "volume_too_small"
             if params.max_volume_per_atom > 0.0 and volume_per_atom > params.max_volume_per_atom:
-                return "volume_per_atom"
+                return "volume_too_large"
 
             density = cls.mass_density(structure, volume)
             if params.min_density > 0.0 and density < params.min_density:
-                return "density"
+                return "density_too_low"
             if params.max_density > 0.0 and density > params.max_density:
-                return "density"
+                return "density_too_high"
 
         return None
 
@@ -473,6 +473,7 @@ class GeometryFilterOperation(DatasetOperation):
     ) -> list[str | None]:
         """Return first-failure reasons with one native pair scan per dataset."""
         close_pair_rows: set[int] = set()
+        fallback_pair_rows: list[int] = []
         if params.min_pair_distance > 0.0:
             checks_need_cell = (
                 bool(params.require_finite_cell)
@@ -503,6 +504,14 @@ class GeometryFilterOperation(DatasetOperation):
                 )
                 if checks_need_cell and not valid_cell:
                     continue
+                if not valid_cell:
+                    if np.any(np.asarray(structure.pbc, dtype=bool)):
+                        fallback_pair_rows.append(source_row)
+                        continue
+                    # Cell geometry is irrelevant without periodic axes.  Give
+                    # the batch primitive a harmless finite cell so molecular
+                    # datasets still use one native scan.
+                    cell = np.eye(3, dtype=float)
                 source_rows.append(source_row)
                 positions_by_structure.append(positions)
                 cells.append(cell)
@@ -525,6 +534,12 @@ class GeometryFilterOperation(DatasetOperation):
                     source_rows[relative_row]
                     for relative_row in relative_rows
                 }
+            for source_row in fallback_pair_rows:
+                if (
+                    cls.shortest_pair_distance(structures[source_row])
+                    < params.min_pair_distance
+                ):
+                    close_pair_rows.add(source_row)
 
         return [
             cls._rejection_reason(
@@ -544,8 +559,10 @@ class GeometryFilterOperation(DatasetOperation):
             "nonfinite_positions": 0,
             "invalid_cell": 0,
             "pair_distance": 0,
-            "volume_per_atom": 0,
-            "density": 0,
+            "volume_too_small": 0,
+            "volume_too_large": 0,
+            "density_too_low": 0,
+            "density_too_high": 0,
         }
         kept = 0
         structures = list(dataset) if dataset is not None else []
@@ -573,8 +590,25 @@ class GeometryFilterOperation(DatasetOperation):
 
     @staticmethod
     def has_pair_closer_than(structure, cutoff: float) -> bool:
+        cell = np.asarray(structure.cell.array, dtype=float)
+        valid_cell = (
+            cell.shape == (3, 3)
+            and np.all(np.isfinite(cell))
+            and abs(float(np.linalg.det(cell))) > 1e-12
+        )
+        if np.any(np.asarray(structure.pbc, dtype=bool)) and not valid_cell:
+            return (
+                GeometryFilterOperation.shortest_pair_distance(structure)
+                < float(cutoff)
+            )
         try:
-            indices = neighbor_list("i", structure, float(cutoff), self_interaction=False)
+            strict_cutoff = float(np.nextafter(float(cutoff), -np.inf))
+            indices = neighbor_list(
+                "i",
+                structure,
+                strict_cutoff,
+                self_interaction=False,
+            )
         except Exception:
             return GeometryFilterOperation.shortest_pair_distance(structure) < float(cutoff)
         return bool(len(indices) > 0)

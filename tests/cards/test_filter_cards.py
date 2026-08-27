@@ -302,6 +302,35 @@ class TestFilterCards(BaseCardTest):
             [any(structure is item for item in expected) for structure in structures],
         )
 
+    def test_geometry_filter_pair_only_matches_single_check_for_singular_periodic_cells(self):
+        structures = [
+            Atoms(
+                "HH",
+                positions=[[0.0, 0.0, 0.0], [distance, 0.0, 0.0]],
+                cell=np.zeros((3, 3)),
+                pbc=pbc,
+            )
+            for distance, pbc in (
+                (0.0, True),
+                (0.5, True),
+                (1.0, True),
+                (0.5, [True, False, False]),
+            )
+        ]
+        params = GeometryFilterParams(min_pair_distance=1.0)
+
+        expected = [
+            GeometryFilterOperation.keep_structure(structure, params)
+            for structure in structures
+        ]
+        kept = GeometryFilterOperation().run_dataset(structures, params)
+
+        self.assertEqual(expected, [False, False, True, False])
+        self.assertEqual(
+            [any(structure is item for item in kept) for structure in structures],
+            expected,
+        )
+
     def test_geometry_filter_batch_scan_runs_once_and_keeps_exact_cutoff(self):
         structures = [
             Atoms("HH", positions=[[0, 0, 0], [0.5, 0, 0]]),
@@ -400,8 +429,8 @@ class TestFilterCards(BaseCardTest):
         self.assertEqual(summary["input_count"], 4)
         self.assertEqual(summary["kept_count"], len(kept))
         self.assertEqual(summary["rejected_count"], 3)
-        self.assertEqual(summary["reasons"]["volume_per_atom"], 1)
-        self.assertEqual(summary["reasons"]["density"], 1)
+        self.assertEqual(summary["reasons"]["volume_too_large"], 1)
+        self.assertEqual(summary["reasons"]["density_too_high"], 1)
         self.assertEqual(summary["reasons"]["invalid_cell"], 1)
 
         density_only = GeometryFilterParams(
@@ -412,7 +441,8 @@ class TestFilterCards(BaseCardTest):
             [low_density, accepted, high_density],
             density_only,
         )
-        self.assertEqual(density_summary["reasons"]["density"], 2)
+        self.assertEqual(density_summary["reasons"]["density_too_low"], 1)
+        self.assertEqual(density_summary["reasons"]["density_too_high"], 1)
         self.assertEqual(density_summary["kept_count"], 1)
 
     def test_geometry_filter_preview_and_progressive_bulk_controls(self):
@@ -427,15 +457,21 @@ class TestFilterCards(BaseCardTest):
         card = GeometryFilterCard()
         card.set_dataset([good, overlap])
 
-        self.assertTrue(card.min_vpa_frame.isHidden())
+        self.assertTrue(card.bulk_section.isHidden())
+        self.assertIn("0 active", card.bulk_checkbox.text())
         self.assertTrue(_wait_until(lambda: "keep 2" in card.preview_label.text()))
         self.assertIn("keep 2", card.preview_label.text())
         card.min_pair_frame.set_input_value([1.0])
         self.assertTrue(_wait_until(lambda: "keep 1" in card.preview_label.text()))
         self.assertIn("keep 1", card.preview_label.text())
         self.assertIn("short pairs 1", card.preview_label.text())
+        self.assertIn("Current settings", card.preview_label.text())
         card.bulk_checkbox.setChecked(True)
-        self.assertFalse(card.min_vpa_frame.isHidden())
+        self.assertFalse(card.bulk_section.isHidden())
+        card.min_vpa_frame.set_input_value([5.0])
+        self.assertIn("1 active", card.bulk_checkbox.text())
+        self.assertIn("pair distance", card.get_summary_text())
+        self.assertIn("complete input", card.get_guidance_text())
         card.close()
         QApplication.processEvents()
 
@@ -468,8 +504,10 @@ class TestFilterCards(BaseCardTest):
                     "nonfinite_positions": 0,
                     "invalid_cell": 0,
                     "pair_distance": rejected,
-                    "volume_per_atom": 0,
-                    "density": 0,
+                    "volume_too_small": 0,
+                    "volume_too_large": 0,
+                    "density_too_low": 0,
+                    "density_too_high": 0,
                 },
             }
 

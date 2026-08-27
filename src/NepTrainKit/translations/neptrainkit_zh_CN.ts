@@ -6680,8 +6680,9 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>GeometryFilterCard</name>
     <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="47" />
         <source>Geometry Filter</source>
-        <translation type="vanished">几何筛选</translation>
+        <translation>几何筛选</translation>
     </message>
     <message>
         <source>Min pair distance</source>
@@ -6692,138 +6693,249 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">剔除最短原子间距低于该值的结构；0 表示禁用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="41" />
         <source>Geometry Sanity Filter</source>
-        <translation>几何健全性过滤</translation>
+        <translation type="vanished">几何健全性过滤</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="51" />
         <source>Shortest allowed pair distance</source>
-        <translation>允许的最短原子对距离</translation>
+        <translation type="vanished">允许的最短原子对距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="54" />
         <source>Reject any structure with a closer atom pair; 0 disables this chemistry-independent hard cutoff</source>
-        <translation>删除含有更近原子对的结构；设为 0 时关闭这个与化学元素无关的硬阈值</translation>
+        <translation type="vanished">删除含有更近原子对的结构；设为 0 时关闭这个与化学元素无关的硬阈值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="65" />
         <source>Show bulk cell, volume, and density limits</source>
-        <translation>显示体相晶胞、体积与密度限制</translation>
+        <translation type="vanished">显示体相晶胞、体积与密度限制</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="70" />
         <source>Min volume/atom</source>
-        <translation>最小体积/原子</translation>
+        <translation type="vanished">最小体积/原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="71" />
         <source>Reject structures below this per-atom volume in A^3; 0 disables</source>
-        <translation>剔除低于该单原子体积的结构，单位 A^3；0 表示禁用</translation>
+        <translation type="vanished">剔除低于该单原子体积的结构，单位 A^3；0 表示禁用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="79" />
         <source>Max volume/atom</source>
-        <translation>最大体积/原子</translation>
+        <translation type="vanished">最大体积/原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="80" />
         <source>Reject structures above this per-atom volume in A^3; 0 disables</source>
-        <translation>剔除高于该单原子体积的结构，单位 A^3；0 表示禁用</translation>
+        <translation type="vanished">剔除高于该单原子体积的结构，单位 A^3；0 表示禁用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="88" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="116" />
         <source>Min density</source>
         <translation>最小密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="89" />
         <source>Reject structures below this mass density in g/cm^3; 0 disables</source>
-        <translation>剔除低于该质量密度的结构，单位 g/cm^3；0 表示禁用</translation>
+        <translation type="vanished">剔除低于该质量密度的结构，单位 g/cm^3；0 表示禁用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="97" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="117" />
         <source>Max density</source>
         <translation>最大密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="98" />
         <source>Reject structures above this mass density in g/cm^3; 0 disables</source>
-        <translation>剔除高于该质量密度的结构，单位 g/cm^3；0 表示禁用</translation>
+        <translation type="vanished">剔除高于该质量密度的结构，单位 g/cm^3；0 表示禁用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="107" />
         <source>Require a finite, nonzero-volume cell</source>
-        <translation>要求有限且非零体积的晶胞</translation>
+        <translation type="vanished">要求有限且非零体积的晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="179" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="61" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="63" />
+        <source>Minimum pair distance</source>
+        <translation>最小原子对距离</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="66" />
+        <source>Rejects pairs strictly below this value; 0 disables the limit.</source>
+        <translation>原子对距离严格低于该值时删除；0 表示关闭。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="71" />
+        <source>Atomic distances</source>
+        <translation>原子间距</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="74" />
+        <source>Empty structures and non-finite coordinates are always removed. The distance limit is the same for every element pair.</source>
+        <translation>空结构和含非有限坐标的结构始终删除。所有元素对共用同一距离门槛。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="91" />
+        <source>Minimum volume per atom</source>
+        <translation>最小单原子体积</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="98" />
+        <source>Maximum volume per atom</source>
+        <translation>最大单原子体积</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="105" />
+        <source>Minimum density</source>
+        <translation>最小密度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="112" />
+        <source>Maximum density</source>
+        <translation>最大密度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="114" />
+        <source>Min volume / atom</source>
+        <translation>最小体积 / 原子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="115" />
+        <source>Max volume / atom</source>
+        <translation>最大体积 / 原子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="120" />
+        <source>Reject invalid cells</source>
+        <translation>删除无效晶胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="125" />
+        <source>Reject zero-volume, singular, or non-finite cells even when no bulk limit is active.</source>
+        <translation>即使未启用体相门槛，也删除零体积、奇异或含非有限值的晶胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="129" />
+        <source>Cell and bulk limits</source>
+        <translation>晶胞与体相门槛</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="132" />
+        <source>Volume and density use the full cell, including vacuum. A value of 0 disables that limit.</source>
+        <translation>体积和密度按完整晶胞计算，真空也计入；0 表示关闭该项。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="147" />
+        <source>Exact preview</source>
+        <translation>精确预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="203" />
+        <source>Cell and bulk limits · {count} active</source>
+        <translation>晶胞与体相门槛 · 已启用 {count} 项</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="222" />
         <source>Load upstream structures to preview how many pass each active geometry limit.</source>
         <translation>载入上游结构后，可预览有多少结构通过当前启用的几何限制。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="183" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="226" />
         <source>Calculating preview in background…</source>
         <translation>正在后台计算预览…</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="237" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="280" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="260" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="303" />
         <source>empty structures</source>
         <translation>空结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="261" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="304" />
         <source>non-finite positions</source>
         <translation>非有限坐标</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="262" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="305" />
         <source>invalid cells</source>
         <translation>无效晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="263" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="306" />
         <source>short pairs</source>
         <translation>过短原子对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="264" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="307" />
+        <source>volume below minimum</source>
+        <translation>体积低于下限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="308" />
+        <source>volume above maximum</source>
+        <translation>体积高于上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="309" />
+        <source>density below minimum</source>
+        <translation>密度低于下限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="310" />
+        <source>density above maximum</source>
+        <translation>密度高于上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="324" />
+        <source>Current settings: input {input} → keep {kept} / reject {rejected_count} · {reasons}</source>
+        <translation>当前参数：输入 {input} 个 → 保留 {kept} 个 / 删除 {rejected_count} 个 · {reasons}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="383" />
+        <source>pair distance ≥ {value} Å</source>
+        <translation>原子对距离 ≥ {value} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="385" />
+        <source>pair limit off</source>
+        <translation>距离门槛已关闭</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="387" />
+        <source>{distance} · {count} cell/bulk limits</source>
+        <translation>{distance} · {count} 项晶胞/体相门槛</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="394" />
+        <source>Preview checks the complete input. For slabs or molecules with vacuum, leave volume and density limits off unless the full-cell values are meaningful.</source>
+        <translation>预览会检查完整输入。对于 slab 或带真空的分子，只有完整晶胞数值有意义时才启用体积和密度门槛。</translation>
+    </message>
+    <message>
         <source>volume/atom</source>
-        <translation>单原子体积</translation>
+        <translation type="vanished">单原子体积</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="265" />
         <source>density</source>
-        <translation>按密度</translation>
+        <translation type="vanished">按密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="273" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="318" />
         <source>rejected: {details}</source>
         <translation>删除原因：{details}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="275" />
+        <location filename="../ui/views/_card/geometry_filter_card.py" line="320" />
         <source>no structures rejected</source>
         <translation>没有结构被删除</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="279" />
         <source>First pass: input {input} → keep {kept} / reject {rejected_count} · {reasons}</source>
-        <translation>首轮检查：输入 {input} 个 → 保留 {kept} 个 / 删除 {rejected_count} 个 · {reasons}</translation>
+        <translation type="vanished">首轮检查：输入 {input} 个 → 保留 {kept} 个 / 删除 {rejected_count} 个 · {reasons}</translation>
     </message>
     <message>
         <source>Require finite cell</source>
         <translation type="vanished">要求有限晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/geometry_filter_card.py" line="111" />
         <source>Reject zero-volume or invalid-cell structures even when volume/density thresholds are disabled</source>
-        <translation>即使禁用体积/密度阈值，也剔除零体积或无效晶胞结构</translation>
+        <translation type="vanished">即使禁用体积/密度阈值，也剔除零体积或无效晶胞结构</translation>
     </message>
 </context>
 <context>

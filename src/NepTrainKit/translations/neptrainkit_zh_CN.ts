@@ -1331,262 +1331,262 @@
 <context>
     <name>CardCombo</name>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="39" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="44" />
         <source>Period (L_D)</source>
         <translation>周期（L_D）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="41" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="46" />
         <source>Atom pair canting</source>
         <translation>原子对倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="42" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="47" />
         <source>Group pair canting</source>
         <translation>分组对倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="43" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="48" />
         <source>Moment magnitude</source>
         <translation>磁矩模长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="46" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="51" />
         <source>Global anisotropy</source>
         <translation>全局各向异性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="47" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="52" />
         <source>Bulk / Bloch</source>
         <translation>体相 / Bloch</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="48" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="53" />
         <source>Interfacial / Cycloidal</source>
         <translation>界面 / Cycloidal</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="49" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="54" />
         <source>General spiral</source>
         <translation>一般螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="50" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="55" />
         <source>Cell reciprocal vector</source>
         <translation>晶胞倒空间矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="51" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="56" />
         <source>Cartesian vector</source>
         <translation>笛卡尔矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="52" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="57" />
         <source>Isotropic volume</source>
         <translation>各向同性体积</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="53" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="58" />
         <source>Uniaxial strain</source>
         <translation>单轴应变</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="54" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="59" />
         <source>Biaxial strain</source>
         <translation>双轴应变</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="55" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="60" />
         <source>Symmetric shear</source>
         <translation>对称剪切</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="56" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="61" />
         <source>Bain / tetragonal</source>
         <translation>Bain / 四方路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="57" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="62" />
         <source>Angle gradient (deg/A)</source>
         <translation>角度梯度（deg/A）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="58" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="63" />
         <source>Both</source>
         <translation>两者都生成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="59" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="64" />
         <source>Clockwise</source>
         <translation>顺时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="60" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="65" />
         <source>Counterclockwise</source>
         <translation>逆时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="61" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="66" />
         <source>Continuous by position</source>
         <translation>按位置连续</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="62" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="67" />
         <source>Layer-locked</source>
         <translation>锁定到层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="63" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="68" />
         <source>Existing initial magmoms</source>
         <translation>现有初始 magmoms</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="64" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="69" />
         <source>Map/default magnitude</source>
         <translation>映射/默认磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="65" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="70" />
         <source>Existing moments</source>
         <translation>现有磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="66" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="71" />
         <source>Element map / default</source>
         <translation>元素表 / 默认值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="67" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="72" />
         <source>Existing magmoms</source>
         <translation>现有 magmoms</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="68" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="73" />
         <source>Element map/default</source>
         <translation>元素映射/默认值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="69" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="74" />
         <source>Constant magnitude</source>
         <translation>恒定磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="70" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="75" />
         <source>Collinear (scalar)</source>
         <translation>Collinear（标量）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="71" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="76" />
         <source>Non-collinear (vector)</source>
         <translation>Non-collinear（矢量）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="72" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="77" />
         <source>Collinear along reference axis</source>
         <translation>共线（沿参考轴）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="73" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="78" />
         <source>Non-collinear 3D vectors</source>
         <translation>非共线（三维矢量）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="74" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="79" />
         <source>uniaxial</source>
         <translation>单轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="75" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="80" />
         <source>biaxial</source>
         <translation>双轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="76" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="81" />
         <source>triaxial</source>
         <translation>三轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="77" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="82" />
         <source>isotropic</source>
         <translation>各向同性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="78" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="83" />
         <source>k-vector</source>
         <translation>k-vector</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="79" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="84" />
         <source>group A/B</source>
         <translation>A/B 分组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="80" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="85" />
         <source>Coordinate-layer k-vector</source>
         <translation>坐标分层 k-vector</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="81" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="86" />
         <source>Existing group labels</source>
         <translation>已有分组标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="82" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="87" />
         <source>sphere</source>
         <translation>球面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="83" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="88" />
         <source>cone</source>
         <translation>锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="84" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="89" />
         <source>plane</source>
         <translation>平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="85" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="90" />
         <source>axis</source>
         <translation>轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="86" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="91" />
         <source>Full sphere</source>
         <translation>完整球面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="87" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="92" />
         <source>Cone around reference axis</source>
         <translation>参考轴周围锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="88" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="93" />
         <source>Plane perpendicular to reference axis</source>
         <translation>垂直参考轴的平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="89" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="94" />
         <source>Along +/- reference axis</source>
         <translation>沿正负参考轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="90" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="95" />
         <source>Flip fraction</source>
         <translation>按比例翻转</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="91" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="96" />
         <source>Randomize fraction</source>
         <translation>按比例随机化</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="92" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="97" />
         <source>Cone disorder</source>
         <translation>圆锥无序</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="93" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="98" />
         <source>Flip selected moments</source>
         <translation>翻转选中的磁矩</translation>
     </message>
@@ -1599,342 +1599,342 @@
         <translation type="vanished">在圆锥内偏转选中磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="102" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="107" />
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="103" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="108" />
         <source>y</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="104" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="109" />
         <source>z</source>
         <translation>z</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="105" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="110" />
         <source>Lattice a</source>
         <translation>晶格 a 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="106" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="111" />
         <source>Lattice b</source>
         <translation>晶格 b 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="107" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="112" />
         <source>Lattice c</source>
         <translation>晶格 c 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="108" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="113" />
         <source>constant volume</source>
         <translation>恒体积</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="109" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="114" />
         <source>scale volume</source>
         <translation>缩放体积</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="110" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="115" />
         <source>free c</source>
         <translation>自由 c</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="111" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="116" />
         <source>fixed</source>
         <translation>固定数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="112" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="117" />
         <source>density</source>
         <translation>按密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="113" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="118" />
         <source>auto</source>
         <translation>自动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="114" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="119" />
         <source>general</source>
         <translation>通用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="115" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="120" />
         <source>water</source>
         <translation>水</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="116" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="121" />
         <source>ion-water</source>
         <translation>离子-水</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="117" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="122" />
         <source>loose</source>
         <translation>宽松</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="118" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="123" />
         <source>dense</source>
         <translation>紧密</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="119" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="124" />
         <source>Grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="120" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="125" />
         <source>Sobol</source>
         <translation>Sobol</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="121" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="126" />
         <source>Equal+Reflow</source>
         <translation>均分并回流</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="122" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="127" />
         <source>Capacity-weighted</source>
         <translation>按容量加权</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="123" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="128" />
         <source>Equal (legacy)</source>
         <translation>均分（旧版）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="124" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="129" />
         <source>Binary (2)</source>
         <translation>二元（2）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="125" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="130" />
         <source>Ternary (3)</source>
         <translation>三元（3）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="126" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="131" />
         <source>Quaternary (4)</source>
         <translation>四元（4）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="127" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
         <source>Quinary (5)</source>
         <translation>五元（5）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="128" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
         <source>Binary + ternary (2,3)</source>
         <translation>二元 + 三元（2,3）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="129" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
         <source>Binary to quaternary (2-4)</source>
         <translation>二元至四元（2–4）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="130" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
         <source>Quaternary + quinary (4,5)</source>
         <translation>四元 + 五元（4,5）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="131" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
         <source>All feasible (2-5)</source>
         <translation>全部可行元数（2–5）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
         <source>All feasible, high-order first (5-2)</source>
         <translation>全部可行元数，高元优先（5–2）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
         <source>Repeat factors</source>
         <translation>指定重复倍率</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
         <source>Target lengths</source>
         <translation>指定目标长度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
         <source>Atom budget</source>
         <translation>指定原子预算</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
         <source>Balance component counts</source>
         <translation>均衡各元数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
         <source>Favor larger composition spaces</source>
         <translation>侧重更大的成分空间</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
         <source>Legacy equal split</source>
         <translation>旧版均分</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
         <source>fcc</source>
         <translation>fcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
         <source>bcc</source>
         <translation>bcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
         <source>hcp</source>
         <translation>hcp</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
         <source>fcc111</source>
         <translation>fcc111</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
         <source>FCC conventional cell</source>
         <translation>FCC 常规晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
         <source>BCC conventional cell</source>
         <translation>BCC 常规晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
         <source>HCP primitive cell</source>
         <translation>HCP 原胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
         <source>FCC (111)-oriented periodic cell</source>
         <translation>FCC (111) 定向周期晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
         <source>A1/fcc</source>
         <translation>A1/fcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
         <source>A2/bcc</source>
         <translation>A2/bcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
         <source>A3/hcp</source>
         <translation>A3/hcp</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
         <source>L12/A3B</source>
         <translation>L1₂/A3B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
         <source>B2/AB</source>
         <translation>B2/AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
         <source>L10/AB</source>
         <translation>L1₀/AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
         <source>A1 / FCC (single sublattice)</source>
         <translation>A1 / FCC（单子晶格）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
         <source>A2 / BCC (single sublattice)</source>
         <translation>A2 / BCC（单子晶格）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
         <source>A3 / HCP (single sublattice)</source>
         <translation>A3 / HCP（单子晶格）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
         <source>L1₂ / A₃B</source>
         <translation>L1₂ / A₃B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
         <source>B2 / AB</source>
         <translation>B2 / AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
         <source>L1₀ / AB</source>
         <translation>L1₀ / AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
         <source>Auto (Comp tag)</source>
         <translation>自动（Comp 标签）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
         <source>Auto detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
         <source>Manual</source>
         <translation>手动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
         <source>Exact</source>
         <translation>精确</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
         <source>Random</source>
         <translation>随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
         <source>Fraction of slip vector</source>
         <translation>滑移向量分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="227" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="232" />
         <source>(100) planes</source>
         <translation>(100) 晶面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="228" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="233" />
         <source>(010) planes</source>
         <translation>(010) 晶面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="229" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="234" />
         <source>(001) planes</source>
         <translation>(001) 晶面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="230" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="235" />
         <source>(110) planes</source>
         <translation>(110) 晶面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="231" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="236" />
         <source>(111) planes</source>
         <translation>(111) 晶面</translation>
     </message>
@@ -1943,163 +1943,164 @@
         <translation type="vanished">投影滑移向量的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
         <source>Actual distance (Å)</source>
         <translation>实际距离（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
         <source>Middle interlayer gap</source>
         <translation>中间层间隙</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
         <source>Fraction of projected thickness</source>
         <translation>投影厚度的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
         <source>After a layer index</source>
         <translation>指定原子层之后</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
         <source>Auto (follow input PBC)</source>
         <translation>自动（跟随输入 PBC）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
         <source>Force full 3D PBC</source>
         <translation>强制全三维 PBC</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
         <source>Nonperiodic molecule</source>
         <translation>非周期分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
         <source>Auto-detect solvent / ion</source>
         <translation>自动识别溶剂 / 离子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
         <source>General random orientation</source>
         <translation>通用随机取向</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="35" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
         <source>Water dipole orientation</source>
         <translation>水分子偶极取向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
         <source>Ion-water first shell</source>
         <translation>离子-水第一配位壳</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
         <source>Loose collision profile</source>
         <translation>宽松碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
         <source>Dense collision profile</source>
         <translation>紧密碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
         <source>All host atoms</source>
         <translation>全部宿主原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
         <source>By element</source>
         <translation>按元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
         <source>By 1-based atom index</source>
         <translation>按从 1 开始的原子索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
         <source>By Cartesian z range</source>
         <translation>按笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="39" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
         <source>Fixed molecule count</source>
         <translation>固定分子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
         <source>Nominal solvent density</source>
         <translation>名义溶剂密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
         <source>Auto-detect solvent type</source>
         <translation>自动识别溶剂类型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
         <source>General collision profile</source>
         <translation>通用碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
         <source>Water collision profile</source>
         <translation>水分子碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
         <source>Flat stack (no warp)</source>
         <translation>平整堆叠（不形变）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
         <source>2D sine ripple</source>
         <translation>二维正弦波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
         <source>Gaussian bump</source>
         <translation>高斯凸起</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
         <source>Paraboloid</source>
         <translation>抛物面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
         <source>Stripe ripple</source>
         <translation>条纹波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
         <source>Step (x&gt;0)</source>
         <translation>阶跃（x&gt;0）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="203" />
         <source>All atoms</source>
         <translation>所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="204" />
         <source>Selected elements</source>
         <translation>指定元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="205" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
@@ -2124,22 +2125,22 @@
         <translation type="vanished">层索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
         <source>all</source>
         <translation>全部</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
         <source>elements</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
         <source>indices</source>
         <translation>索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
         <source>z_range</source>
         <translation>z 范围</translation>
     </message>
@@ -2152,39 +2153,39 @@
         <translation type="vanished">否</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="206" />
         <source>Global canting</source>
         <translation>全局 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="40" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="45" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="207" />
         <source>Single-spin tilt</source>
         <translation>单自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="203" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="208" />
         <source>Atom-pair canting</source>
         <translation>原子对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="204" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="209" />
         <source>Group-pair canting</source>
         <translation>分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="206" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="211" />
         <source>All eligible atoms</source>
         <translation>所有候选原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="207" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="212" />
         <source>Explicit indices</source>
         <translation>显式索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="44" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="208" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="49" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="213" />
         <source>Manual indices</source>
         <translation>手动索引</translation>
     </message>
@@ -2229,138 +2230,158 @@
         <translation>致密水分子放置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="45" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="209" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="40" />
+        <source>Nominal density from full cell</source>
+        <translation>按完整 cell 的名义密度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="41" />
+        <source>Compact clearance (0.62×)</source>
+        <translation>紧凑间距（0.62×）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="42" />
+        <source>Standard clearance (0.70×)</source>
+        <translation>标准间距（0.70×）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="43" />
+        <source>Conservative clearance (0.78×)</source>
+        <translation>保守间距（0.78×）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="50" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="214" />
         <source>Auto by neighbor shell</source>
         <translation>按近邻壳自动选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="94" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="99" />
         <source>Assign random directions</source>
         <translation>赋予随机方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="95" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="100" />
         <source>Deflect within a cone</source>
         <translation>在圆锥内偏转</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="96" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="101" />
         <source>Perturb around current directions</source>
         <translation>在当前方向附近扰动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="97" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="102" />
         <source>Replace with random directions</source>
         <translation>替换为随机方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="98" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="103" />
         <source>Exponential (longer tail)</source>
         <translation>指数（长距离尾部更长）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="99" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="104" />
         <source>Squared exponential (smoother nearby)</source>
         <translation>平方指数（近距离更平滑）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="100" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="105" />
         <source>Rotate in the layer plane</source>
         <translation>沿层面旋转</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="101" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="106" />
         <source>Custom spin plane</source>
         <translation>自定义磁矩平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="205" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="210" />
         <source>First eligible atom</source>
         <translation>首个合格原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="210" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="215" />
         <source>Any</source>
         <translation>任意</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="211" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="216" />
         <source>Near axis</source>
         <translation>接近轴向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="212" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="217" />
         <source>Near plane</source>
         <translation>靠近平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="213" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="218" />
         <source>Any direction</source>
         <translation>不限方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="214" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="219" />
         <source>Near an axis</source>
         <translation>靠近轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="215" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="220" />
         <source>Near a plane</source>
         <translation>靠近平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="216" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="221" />
         <source>In plane (normal)</source>
         <translation>位于平面内（法向）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="217" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="222" />
         <source>Positive only</source>
         <translation>仅正向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="218" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="223" />
         <source>Negative only</source>
         <translation>仅负向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="219" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="224" />
         <source>Both (+/- pair)</source>
         <translation>正负成对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="220" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="225" />
         <source>Auto from layer count</source>
         <translation>按层数自动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="221" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="226" />
         <source>Clockwise then counterclockwise</source>
         <translation>先顺时针再逆时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="222" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="227" />
         <source>Counterclockwise then clockwise</source>
         <translation>先逆时针再顺时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="223" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="228" />
         <source>Cone around reference</source>
         <translation>围绕参考锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="224" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="229" />
         <source>Full random directions</source>
         <translation>全随机方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="225" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="230" />
         <source>exponential</source>
         <translation>指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="226" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="231" />
         <source>squared exponential</source>
         <translation>平方指数核</translation>
     </message>
@@ -14143,51 +14164,45 @@ Do you want to continue?</source>
         <translation type="vanished">溶剂盒填充</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="63" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="149" />
         <source>Solvent XYZ</source>
         <translation>溶剂 XYZ</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="64" />
         <source>Single solvent molecule in XYZ/extxyz text</source>
-        <translation>单个溶剂分子的 XYZ/extxyz 文本</translation>
+        <translation type="vanished">单个溶剂分子的 XYZ/extxyz 文本</translation>
     </message>
     <message>
         <source>Structures</source>
         <translation type="vanished">结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="74" />
         <source>Independent filled boxes generated per input structure</source>
-        <translation>每个输入结构生成的独立填充盒数量</translation>
+        <translation type="vanished">每个输入结构生成的独立填充盒数量</translation>
     </message>
     <message>
         <source>Count mode</source>
         <translation type="vanished">数量模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="85" />
         <source>fixed uses solvent count; density derives the count from box volume</source>
-        <translation>fixed 使用溶剂数量；density 根据盒体积推导数量</translation>
+        <translation type="vanished">fixed 使用溶剂数量；density 根据盒体积推导数量</translation>
     </message>
     <message>
         <source>Solvent count</source>
         <translation type="vanished">溶剂分子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="101" />
         <source>Number of solvent molecules inserted when count mode is fixed</source>
-        <translation>计数模式为 fixed 时插入的溶剂分子数</translation>
+        <translation type="vanished">计数模式为 fixed 时插入的溶剂分子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="111" />
         <source>Density</source>
-        <translation>密度</translation>
+        <translation type="vanished">密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="112" />
         <source>Solvent mass density in g/cm^3 when count mode is density</source>
-        <translation>计数模式为 density 时的溶剂质量密度，单位 g/cm^3</translation>
+        <translation type="vanished">计数模式为 density 时的溶剂质量密度，单位 g/cm^3</translation>
     </message>
     <message>
         <source>Sampling mode</source>
@@ -14222,173 +14237,401 @@ Do you want to continue?</source>
         <translation type="vanished">0 表示使用所选模式配置；正值会覆盖半径缩放</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="186" />
         <source>Attempts/solvent</source>
-        <translation>每个溶剂的尝试次数</translation>
+        <translation type="vanished">每个溶剂的尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="187" />
         <source>Maximum placement attempts per requested solvent molecule</source>
-        <translation>每个请求溶剂分子的最大放置尝试次数</translation>
+        <translation type="vanished">每个请求溶剂分子的最大放置尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="197" />
         <source>Strict count</source>
-        <translation>严格数量</translation>
+        <translation type="vanished">严格数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="198" />
         <source>Fail if the requested solvent count cannot be placed</source>
-        <translation>无法放置请求数量的溶剂时直接失败</translation>
+        <translation type="vanished">无法放置请求数量的溶剂时直接失败</translation>
     </message>
     <message>
         <source>Flexible solvent</source>
         <translation type="vanished">柔性溶剂</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="38" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="30" />
         <source>Periodic Solvent Box</source>
         <translation>周期溶剂盒</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="50" />
         <source>Edit solvent XYZ (default: water)</source>
-        <translation>编辑溶剂 XYZ（默认：水）</translation>
+        <translation type="vanished">编辑溶剂 XYZ（默认：水）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="73" />
         <source>Independent outputs per input</source>
-        <translation>每个输入的独立输出数</translation>
+        <translation type="vanished">每个输入的独立输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="84" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="50" />
+        <source>Requires a finite cell and at least one periodic axis. Keeps the host and fills the whole cell.</source>
+        <translation>需要有限晶胞并至少开启一个周期方向；保留宿主并填充整个 cell。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="57" />
+        <source>Independent boxes per input</source>
+        <translation>每个输入的独立溶剂盒</translation>
+    </message>
+    <message>
+        <source>Each box uses an independent random placement.</source>
+        <translation type="vanished">每个溶剂盒使用独立的随机放置。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="67" />
         <source>Target amount</source>
         <translation>目标用量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="100" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="68" />
+        <source>Density mode uses the complete cell volume without subtracting the host.</source>
+        <translation>密度模式使用完整 cell 体积，不扣除宿主占据。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="72" />
         <source>Target solvent molecules</source>
         <translation>目标溶剂分子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="123" />
-        <source>Collision profile</source>
-        <translation>碰撞配置</translation>
+        <source>Total molecules added to each output box.</source>
+        <translation type="vanished">添加到每个输出盒中的溶剂分子总数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="77" />
+        <source>Nominal pure-solvent density</source>
+        <translation>名义纯溶剂密度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="82" />
+        <source>Full-cell count factor</source>
+        <translation>完整 cell 计数系数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="83" />
+        <source>Multiply the full-cell density estimate by a value in (0, 1].</source>
+        <translation>将完整 cell 的密度估算数量乘以 (0, 1] 范围内的系数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="86" />
+        <source>Require the full requested count</source>
+        <translation>必须放满请求数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="88" />
+        <source>Fail instead of returning a partially filled box.</source>
+        <translation>未插满时失败，而不是返回部分填充的溶剂盒。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="89" />
+        <source>Use reproducible seed</source>
+        <translation>使用可复现种子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="91" />
+        <source>Random seed</source>
+        <translation>随机种子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="93" />
+        <source>Output and amount</source>
+        <translation>输出与数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="110" />
+        <source>Placement clearance</source>
+        <translation>放置间距</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="111" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="274" />
+        <source>Sets the default element-radius pair cutoff.</source>
+        <translation>设置默认的元素半径原子对截断距离。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="115" />
+        <source>Placement</source>
+        <translation>放置方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="116" />
+        <source>Molecule centers and orientations are sampled randomly throughout the cell.</source>
+        <translation>在整个 cell 内随机采样分子中心和整体取向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="122" />
+        <source>Show manual collision and solvent details</source>
+        <translation>显示手动碰撞与溶剂细节</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/solvent_box_fill_card.py" line="124" />
-        <source>Controls the default element-radius collision scale; all box orientations remain random</source>
-        <translation>控制默认的元素半径碰撞缩放；盒内分子的取向始终随机</translation>
+        <source>Uniform minimum distance</source>
+        <translation>统一最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="142" />
-        <source>Density count multiplier</source>
-        <translation>密度计数系数</translation>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="125" />
+        <source>0 uses element radii; a positive value overrides every pair cutoff.</source>
+        <translation>0 使用元素半径；正数会覆盖所有原子对的碰撞距离。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="143" />
-        <source>Multiply the nominal pure-solvent molecule count by a value in (0, 1]</source>
-        <translation>用 (0, 1] 范围内的系数乘以名义纯溶剂分子数</translation>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="129" />
+        <source>Manual element-radius scale</source>
+        <translation>手动元素半径倍率</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="130" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="275" />
+        <source>0 uses the selected placement clearance.</source>
+        <translation>0 使用所选放置间距。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="134" />
+        <source>Attempts per requested molecule</source>
+        <translation>每个目标分子的尝试次数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="135" />
+        <source>The total attempt budget is this value times the target count.</source>
+        <translation>总尝试预算为该值乘以目标分子数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="138" />
+        <source>Collision checks</source>
+        <translation>碰撞检查</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="144" />
+        <source>Edit solvent molecule (default: water)</source>
+        <translation>编辑溶剂分子（默认：水）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="150" />
+        <source>One molecule in XYZ or extxyz text.</source>
+        <translation>输入一个分子的 XYZ 或 extxyz 文本。</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/solvent_box_fill_card.py" line="155" />
+        <source>Flexible conformer pool</source>
+        <translation>柔性构象池</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="158" />
+        <source>Torsion increment minimum</source>
+        <translation>扭转增量下限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="161" />
+        <source>Torsion increment maximum</source>
+        <translation>扭转增量上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="164" />
+        <source>Maximum torsions per conformer</source>
+        <translation>每个构象的最大扭转键数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="167" />
+        <source>Coordinate noise sigma</source>
+        <translation>坐标噪声 σ</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="169" />
+        <source>Solvent template</source>
+        <translation>溶剂模板</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="182" />
+        <source>Output preview</source>
+        <translation>输出预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="267" />
+        <source>Ignored while a uniform minimum distance is active.</source>
+        <translation>启用统一最小距离时，此参数不生效。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="271" />
+        <source>Ignored while a manual element-radius scale is active.</source>
+        <translation>启用手动元素半径倍率时忽略此项。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="272" />
+        <source>This value overrides the selected placement clearance.</source>
+        <translation>该值会覆盖所选放置间距。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="311" />
+        <source>target {count} molecule(s)</source>
+        <translation>目标 {count} 个分子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="313" />
+        <source>target count resolves after a cell is loaded</source>
+        <translation>加载晶胞后解析目标数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="314" />
+        <source>No input loaded · {outputs} box(es) per input · {target}</source>
+        <translation>未加载输入 · 每个输入 {outputs} 个溶剂盒 · {target}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="323" />
+        <source>uniform minimum {distance} Å</source>
+        <translation>统一最小距离 {distance} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="327" />
+        <source>First input: {host} host atoms · cell {volume} Å³ / PBC {axes}</source>
+        <translation>首个输入：{host} 个宿主原子 · cell {volume} Å³ / PBC {axes}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="330" />
+        <source>Target {count} {formula} molecule(s) (+{added} atoms) per box · up to {outputs} dataset output(s)</source>
+        <translation>每盒目标 {count} 个 {formula} 分子（新增 {added} 个原子）· 当前数据集最多 {outputs} 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="334" />
+        <source>Full-cell density estimate: {density} g/cm³ × {factor}; host occupancy is not subtracted.</source>
+        <translation>完整 cell 密度估算：{density} g/cm³ × {factor}；不扣除宿主占据。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="338" />
+        <source>The fixed target corresponds to {density} g/cm³ if the full cell contained only this solvent.</source>
+        <translation>若完整 cell 仅含该溶剂，当前固定数量对应 {density} g/cm³。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="342" />
+        <source>Generation fails unless every requested molecule fits.</source>
+        <translation>只有全部目标分子都能放入时才会生成成功。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="344" />
+        <source>A non-empty partial box may be returned if placement is exhausted.</source>
+        <translation>尝试耗尽时可以返回非空的部分填充盒。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="425" />
+        <source>{count} molecule(s)</source>
+        <translation>{count} 个分子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="427" />
+        <source>density {density} g/cm³</source>
+        <translation>密度 {density} g/cm³</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="429" />
+        <source>{outputs} box(es) · {amount} · {clearance}</source>
+        <translation>{outputs} 个溶剂盒 · {amount} · {clearance}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="434" />
+        <source>Check the resolved count, full-cell density assumption, collision rule, and strict-count behavior before generating.</source>
+        <translation>生成前检查解析后的数量、完整 cell 密度假设、碰撞规则和严格数量行为。</translation>
+    </message>
+    <message>
+        <source>Collision profile</source>
+        <translation type="vanished">碰撞配置</translation>
+    </message>
+    <message>
+        <source>Controls the default element-radius collision scale; all box orientations remain random</source>
+        <translation type="vanished">控制默认的元素半径碰撞缩放；盒内分子的取向始终随机</translation>
+    </message>
+    <message>
+        <source>Density count multiplier</source>
+        <translation type="vanished">密度计数系数</translation>
+    </message>
+    <message>
+        <source>Multiply the nominal pure-solvent molecule count by a value in (0, 1]</source>
+        <translation type="vanished">用 (0, 1] 范围内的系数乘以名义纯溶剂分子数</translation>
+    </message>
+    <message>
         <source>Show collision and flexible-solvent settings</source>
-        <translation>显示碰撞与柔性溶剂设置</translation>
+        <translation type="vanished">显示碰撞与柔性溶剂设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="162" />
         <source>Uniform minimum-distance override</source>
-        <translation>统一最小距离覆盖值</translation>
+        <translation type="vanished">统一最小距离覆盖值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="163" />
         <source>A positive value replaces all element-radius collision cutoffs; 0 disables</source>
-        <translation>正值会取代所有基于元素半径的碰撞阈值；0 表示关闭</translation>
+        <translation type="vanished">正值会取代所有基于元素半径的碰撞阈值；0 表示关闭</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="174" />
         <source>Element-radius collision scale</source>
-        <translation>元素半径碰撞缩放</translation>
+        <translation type="vanished">元素半径碰撞缩放</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="175" />
         <source>0 uses the collision profile; ignored when a uniform minimum distance is positive</source>
-        <translation>设为 0 时使用碰撞配置；统一最小距离为正值时忽略此项</translation>
+        <translation type="vanished">设为 0 时使用碰撞配置；统一最小距离为正值时忽略此项</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="203" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="153" />
         <source>Pre-sample flexible solvent conformers</source>
         <translation>预先采样柔性溶剂构象</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="205" />
         <source>Use the existing torsion-guard core to pre-generate solvent conformers</source>
-        <translation>使用现有 torsion-guard 核心预生成溶剂构象</translation>
+        <translation type="vanished">使用现有 torsion-guard 核心预生成溶剂构象</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="209" />
         <source>Flex pool</source>
-        <translation>柔性构象池</translation>
+        <translation type="vanished">柔性构象池</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="210" />
         <source>Number of pre-generated solvent conformers</source>
-        <translation>预生成的溶剂构象数量</translation>
+        <translation type="vanished">预生成的溶剂构象数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="220" />
         <source>Flex torsion</source>
-        <translation>柔性扭转</translation>
+        <translation type="vanished">柔性扭转</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="221" />
         <source>Torsion angle range for flexible solvent conformers</source>
-        <translation>柔性溶剂构象的扭转角范围</translation>
+        <translation type="vanished">柔性溶剂构象的扭转角范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="231" />
         <source>Flex max/sigma</source>
-        <translation>柔性最大扭转数/sigma</translation>
+        <translation type="vanished">柔性最大扭转数/sigma</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="232" />
         <source>Max torsions per conformer and Gaussian coordinate noise</source>
-        <translation>每个构象的最大扭转数和高斯坐标噪声</translation>
+        <translation type="vanished">每个构象的最大扭转数和高斯坐标噪声</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="243" />
         <source>Use seed</source>
-        <translation>使用随机种子</translation>
+        <translation type="vanished">使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="387" />
         <source>Load an upstream periodic cell to preview the resolved solvent count and added atom count.</source>
-        <translation>载入上游周期晶胞后，可预览实际采用的溶剂分子数和新增原子数。</translation>
+        <translation type="vanished">载入上游周期晶胞后，可预览实际采用的溶剂分子数和新增原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="399" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="319" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="406" />
         <source>uniform minimum distance {distance} Å</source>
-        <translation>统一最小距离 {distance} Å</translation>
+        <translation type="vanished">统一最小距离 {distance} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="410" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="325" />
         <source>element-radius scale {scale}</source>
         <translation>元素半径缩放 {scale}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="420" />
         <source>First input: {host} existing atoms · cell {volume} Å³ / PBC {axes} · solvent {formula} / {solvent_atoms} atoms · target {count} molecules (+{added} atoms) × {outputs} outputs · {profile} · {collision}</source>
-        <translation>首个输入：已有 {host} 个原子 · 晶胞 {volume} Å³ / 周期方向 {axes} · 溶剂 {formula} / 每个分子 {solvent_atoms} 个原子 · 目标 {count} 个分子（新增 {added} 个原子）× {outputs} 个输出 · {profile} · {collision}</translation>
+        <translation type="vanished">首个输入：已有 {host} 个原子 · 晶胞 {volume} Å³ / 周期方向 {axes} · 溶剂 {formula} / 每个分子 {solvent_atoms} 个原子 · 目标 {count} 个分子（新增 {added} 个原子）× {outputs} 个输出 · {profile} · {collision}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="435" />
         <source>nominal density count uses the full cell volume and does not subtract host occupancy</source>
-        <translation>名义密度计数使用完整晶胞体积，不扣除主体结构占据的空间</translation>
+        <translation type="vanished">名义密度计数使用完整晶胞体积，不扣除主体结构占据的空间</translation>
     </message>
 </context>
 <context>

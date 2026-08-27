@@ -405,7 +405,63 @@ H 0.6 -0.6 -0.6
         self.assertTrue(np.allclose(first.cell.array, structure.cell.array))
         self.assertTrue(first.pbc.all())
         self.assertTrue(np.allclose(first.get_positions(), second.get_positions()))
-        self.assertIn("SolvBox(mode=water,req=2,ok=2)", first.info.get("Config_type", ""))
+        self.assertIn("SolvBox(mode=general,req=2,ok=2)", first.info.get("Config_type", ""))
+
+    def test_solvent_box_fill_preserves_molecules_along_nonperiodic_axes(self):
+        structure = Atoms(cell=[10.0, 4.0, 10.0], pbc=[True, False, True])
+        for seed in range(20):
+            result = SolventBoxFillOperation().run_structure(
+                structure,
+                SolventBoxFillParams(
+                    solvent_count=1,
+                    min_distance=0.1,
+                    use_seed=True,
+                    seed=seed,
+                ),
+            )[0]
+
+            self.assertTrue(np.array_equal(result.pbc, structure.pbc))
+            self.assertLess(abs(result.positions[1, 1] - result.positions[0, 1]), 1.1)
+            self.assertLess(abs(result.positions[2, 1] - result.positions[0, 1]), 1.1)
+            self.assertAlmostEqual(result.get_distance(0, 1, mic=True), 0.9572, places=6)
+            self.assertAlmostEqual(result.get_distance(0, 2, mic=True), 0.9572, places=6)
+
+    def test_solvent_box_fill_ui_exposes_only_distinct_clearance_presets(self):
+        card = SolventBoxFillCard()
+        self.assertEqual(
+            [card.mode_combo.itemData(index) for index in range(card.mode_combo.count())],
+            ["loose", "general", "dense"],
+        )
+        structure = Atoms(cell=[12.0, 12.0, 12.0], pbc=True)
+        for mode, expected_scale in (
+            ("loose", 0.62),
+            ("general", 0.70),
+            ("dense", 0.78),
+        ):
+            card.mode_combo.setCurrentIndex(card.mode_combo.findData(mode))
+            summary = SolventBoxFillOperation().capacity_summary(
+                structure,
+                card.get_params(),
+            )
+            self.assertEqual(summary["mode"], mode)
+            self.assertAlmostEqual(summary["collision_scale"], expected_scale)
+        card.from_dict(
+            {
+                "check_state": True,
+                "params": params_to_dict(
+                    SolventBoxFillParams(sampling_mode="water")
+                )
+            }
+        )
+        self.assertEqual(card.mode_combo.currentData(), "general")
+
+        card.advanced_checkbox.setChecked(True)
+        card.collision_frame.set_input_value([0.8])
+        self.assertFalse(card.mode_field.isEnabled())
+        self.assertTrue(card.collision_field.isEnabled())
+        card.min_distance_frame.set_input_value([0.9])
+        self.assertFalse(card.mode_field.isEnabled())
+        self.assertFalse(card.collision_field.isEnabled())
 
     def test_solvent_box_fill_density_mode_and_card_roundtrip(self):
         structure = Atoms(
@@ -430,11 +486,11 @@ H 0.6 -0.6 -0.6
         self.assertTrue(card.solvent_edit.isHidden())
         self.assertTrue(card.density_frame.isHidden())
         self.assertTrue(card.min_distance_frame.isHidden())
-        self.assertIn("Load an upstream periodic cell", card.preview_label.text())
+        self.assertIn("No input loaded", card.preview_label.text())
 
         card.set_dataset([structure])
         self.assertIn("cell 1000 Å³", card.preview_label.text())
-        self.assertIn("target 100 molecules", card.preview_label.text())
+        self.assertIn("Target 100", card.preview_label.text())
 
         card.count_mode_combo.setCurrentIndex(
             card.count_mode_combo.findData("density")
@@ -445,7 +501,7 @@ H 0.6 -0.6 -0.6
         card.density_frame.set_input_value([0.7])
         card.mode_combo.setCurrentIndex(card.mode_combo.findData("loose"))
         card.fill_packing_frame.set_input_value([0.8])
-        self.assertIn("nominal density count", card.preview_label.text())
+        self.assertIn("Full-cell density estimate", card.preview_label.text())
 
         card.advanced_checkbox.setChecked(True)
         self.assertFalse(card.min_distance_frame.isHidden())
@@ -478,7 +534,7 @@ H 0.6 -0.6 -0.6
 
         self.assertEqual(len(output), 3)
         self.assertIn(
-            "SolvBox(mode=water,req=1,ok=1)",
+            "SolvBox(mode=general,req=1,ok=1)",
             output.info.get("Config_type", ""),
         )
         with self.assertRaisesRegex(ValueError, "at most 1"):

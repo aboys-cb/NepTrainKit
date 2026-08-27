@@ -157,7 +157,7 @@ class SolventBoxFillParams:
     count_mode: str = "fixed"
     solvent_count: int = 100
     density: float = 1.0
-    sampling_mode: str = "auto"
+    sampling_mode: str = "general"
     fill_packing: float = 1.0
     min_distance: float = 0.0
     collision_scale: float = 0.0
@@ -904,6 +904,11 @@ class SolventBoxFillOperation(StructureOperation):
             "collision_scale": settings["collision_scale"],
             "density": settings["density"],
             "fill_packing": settings["fill_packing"],
+            "nominal_density": nominal_density_from_count(
+                settings["solvent"],
+                settings["target_count"],
+                settings["cell"],
+            ),
         }
 
     def run_structure(self, structure, params: SolventBoxFillParams) -> list[Atoms]:
@@ -991,7 +996,12 @@ class SolventBoxFillOperation(StructureOperation):
             solvent = conformers[int(rng.integers(0, len(conformers)))]
             target = rng.random(3) @ cell
             cand_positions = orient_centered_by_center(solvent.centered_positions, target, dipolar=False, center=target, rng=rng)
-            cand_positions = wrap_positions(cand_positions, cell, wrap_lengths)
+            cand_positions = wrap_positions(
+                cand_positions,
+                cell,
+                wrap_lengths,
+                pbc=pbc,
+            )
             if spatial_hash.has_collision(
                 solvent.symbols,
                 cand_positions,
@@ -1612,14 +1622,22 @@ def collision_radius(symbol: str) -> float:
     return COLLISION_RADIUS.get(symbol, 1.20)
 
 
-def wrap_positions(positions: np.ndarray, cell: np.ndarray, ortho_lengths: np.ndarray | None = None) -> np.ndarray:
+def wrap_positions(
+    positions: np.ndarray,
+    cell: np.ndarray,
+    ortho_lengths: np.ndarray | None = None,
+    *,
+    pbc: np.ndarray | tuple[bool, bool, bool] | bool = True,
+) -> np.ndarray:
     positions = np.asarray(positions, dtype=float)
+    periodic = np.asarray(np.broadcast_to(pbc, (3,)), dtype=bool)
     lengths = ortho_lengths if ortho_lengths is not None else orthorhombic_lengths(cell)
     if lengths is not None:
         frac = positions / lengths
-        return (frac - np.floor(frac)) * lengths
+        frac[:, periodic] -= np.floor(frac[:, periodic])
+        return frac * lengths
     frac = np.linalg.solve(cell.T, positions.T).T
-    frac = frac - np.floor(frac)
+    frac[:, periodic] -= np.floor(frac[:, periodic])
     return frac @ cell
 
 
@@ -1634,6 +1652,15 @@ def estimate_solvent_count_from_density(solvent: Atoms, density: float, cell: np
     molecule_mass_g = mass_g_per_mol / AVOGADRO
     packing = max(0.0, min(float(packing), 1.0))
     return max(1, int(round(float(density) * volume_cm3 * packing / molecule_mass_g)))
+
+
+def nominal_density_from_count(solvent: Atoms, count: int, cell: np.ndarray) -> float:
+    """Return the pure-solvent density implied by a molecule count and full cell."""
+    volume_cm3 = abs(float(np.linalg.det(cell))) * 1e-24
+    if volume_cm3 <= 0.0:
+        return float("nan")
+    molecule_mass_g = molecule_mass(solvent.get_chemical_symbols()) / AVOGADRO
+    return float(count) * molecule_mass_g / volume_cm3
 
 
 def molecule_mass(symbols: Iterable[str]) -> float:

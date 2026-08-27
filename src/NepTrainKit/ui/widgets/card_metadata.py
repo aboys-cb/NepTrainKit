@@ -100,8 +100,11 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "CorrelatedRandomSpinCard": (
-            QCoreApplication.translate("CardCatalog", "Correlated Random Spin"),
-            QCoreApplication.translate("CardCatalog", "Generate non-collinear random spins with an explicit spatial correlation length."),
+            QCoreApplication.translate("CardCatalog", "Correlated Spins"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Change every eligible moment using a distance-correlated direction field.",
+            ),
         ),
         "CrystalPrototypeBuilderCard": (
             QCoreApplication.translate("CardCatalog", "Crystal Prototype Builder"),

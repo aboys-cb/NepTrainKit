@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 from ase.geometry import get_distances
 
+from NepTrainKit.core.cards.errors import CardOperationError
+
 from .magnetism_test_base import *
 
 
@@ -603,20 +605,22 @@ class TestMagnetismTiltDisorderCards(MagnetismCardTest):
         self.assertTrue(np.allclose(np.linalg.norm(exp_moments, axis=1), 2.0, atol=1e-8))
         self.assertFalse(np.allclose(exp_moments, sq_moments, atol=1e-8))
 
-        with self.assertRaisesRegex(ValueError, "exact full covariance"):
+        with self.assertRaises(CardOperationError) as raised:
             CorrelatedRandomSpinOperation().run_structure(
                 structure,
                 CorrelatedRandomSpinParams(max_atoms_for_full=2),
             )
+        self.assertEqual(raised.exception.code, "correlated_spin_too_many_eligible")
+        self.assertEqual(raised.exception.values, {"maximum": 2, "actual": 4})
 
     def test_correlated_random_spin_card_roundtrip(self):
         card = CorrelatedRandomSpinCard()
-        card.mode_combo.setCurrentText("Full random directions")
-        card.kernel_combo.setCurrentText("squared_exponential")
+        card.mode_combo.setCurrentIndex(card.mode_combo.findData("Full random directions"))
+        card.kernel_combo.setCurrentIndex(card.kernel_combo.findData("squared_exponential"))
         card.xi_frame.set_input_value([4.5])
         card.samples_frame.set_input_value([3])
         card.cone_frame.set_input_value([15.0])
-        card.source_combo.setCurrentText("Map/default magnitude")
+        card.source_combo.setCurrentIndex(card.source_combo.findData("Map/default magnitude"))
         card.map_edit.setText("Fe:2.2")
         card.default_frame.set_input_value([0.1])
         card.apply_edit.setText("Fe")
@@ -627,3 +631,34 @@ class TestMagnetismTiltDisorderCards(MagnetismCardTest):
         restored = CorrelatedRandomSpinCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_correlated_random_spin_card_dynamic_fields_remain_reachable(self):
+        card = CorrelatedRandomSpinCard()
+        self.assertTrue(card.cone_field.isVisibleTo(card))
+        self.assertFalse(card.field_section.isVisibleTo(card))
+
+        card.mode_combo.setCurrentIndex(card.mode_combo.findData("Full random directions"))
+        self.assertFalse(card.cone_field.isVisibleTo(card))
+        card.mode_combo.setCurrentIndex(card.mode_combo.findData("Cone around reference"))
+        self.assertTrue(card.cone_field.isVisibleTo(card))
+
+        card.advanced_checkbox.setChecked(True)
+        self.assertTrue(card.field_section.isVisibleTo(card))
+        self.assertTrue(card.source_section.isVisibleTo(card))
+        self.assertTrue(card.max_atoms_field.isVisibleTo(card))
+        self.assertTrue(card.lift_scalar_checkbox.isVisibleTo(card))
+        self.assertTrue(card.axis_field.isVisibleTo(card))
+
+        card.source_combo.setCurrentIndex(card.source_combo.findData("Map/default magnitude"))
+        self.assertTrue(card.map_field.isVisibleTo(card))
+        self.assertTrue(card.default_field.isVisibleTo(card))
+        self.assertFalse(card.lift_scalar_checkbox.isVisibleTo(card))
+
+        card.mode_combo.setCurrentIndex(card.mode_combo.findData("Full random directions"))
+        self.assertFalse(card.axis_field.isVisibleTo(card))
+
+    def test_correlated_random_spin_card_output_preview_tracks_samples(self):
+        card = CorrelatedRandomSpinCard()
+        card.samples_frame.set_input_value([4])
+        self.assertIn("4", card.output_preview.text())
+        self.assertIn("n=4", card.get_summary_text())

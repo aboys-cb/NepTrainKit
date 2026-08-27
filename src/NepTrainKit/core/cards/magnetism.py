@@ -1796,9 +1796,12 @@ class CorrelatedRandomSpinOperation(StructureOperation):
         if selected.size == 0:
             raise ValueError("Correlated Random Spin found no eligible nonzero magnetic moments.")
         if selected.size > max_atoms:
-            raise ValueError(
-                "Correlated Random Spin exact full covariance is limited to "
-                f"{max_atoms} eligible atoms; got {selected.size}. Reduce the selection or use a smaller structure."
+            raise CardOperationError(
+                "correlated_spin_too_many_eligible",
+                "Exact correlated sampling supports at most {maximum} eligible non-zero moments; "
+                "the current selection has {actual}. Reduce the target elements or use a smaller structure.",
+                maximum=max_atoms,
+                actual=selected.size,
             )
 
         positions = np.asarray(structure.get_positions(), dtype=float)[selected]

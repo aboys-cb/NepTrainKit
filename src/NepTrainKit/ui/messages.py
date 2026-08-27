@@ -429,6 +429,11 @@ def _card_operation_error_catalog() -> None:
         "Increase the perturbation angle or enable a magnitude scale range that changes the moments.",
     )
     QCoreApplication.translate(
+        "CardOperationError",
+        "Exact correlated sampling supports at most {maximum} eligible non-zero moments; "
+        "the current selection has {actual}. Reduce the target elements or use a smaller structure.",
+    )
+    QCoreApplication.translate(
         "CardOperationError", "Invalid element symbols in the target list: {elements}."
     )
     QCoreApplication.translate(

@@ -8,7 +8,7 @@
 
 `Random Packing` 是原子坐标卡，不是磁性卡。它保留输入结构的 `cell` 和 `pbc`，按输入组成或手动精确组成在 cell 内重新随机放置原子，并用全局和 pair-specific 最小距离约束挡掉明显不可能的短键初态。
 
-这张卡解决的是“训练集缺少无序初始构型”，不是“缺少磁矩无序”。磁矩无序使用 `Moment Disorder` 或 `Correlated Random Spin`。
+这张卡解决的是“训练集缺少无序初始构型”。磁矩方向的无序采样使用 `Moment Disorder` 或 `Correlated Spins`。
 
 ## 原理与公式
 

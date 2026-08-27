@@ -1,182 +1,115 @@
-<!-- card-schema: {"card_name": "Correlated Random Spin", "source_file": "src/NepTrainKit/ui/views/_card/correlated_random_spin_card.py", "serialized_keys": ["params"]} -->
+<!-- card-schema: {"card_name": "Correlated Spins", "source_file": "src/NepTrainKit/ui/views/_card/correlated_random_spin_card.py", "serialized_keys": ["params"]} -->
 
-# 关联随机自旋（Correlated Random Spin）
+# 空间关联磁矩（Correlated Spins）
 
 **分类：** 磁性
 
 ## 功能说明
 
-`Correlated Random Spin` 从已有磁矩或元素磁矩表出发，生成带空间相关长度的非共线随机磁矩。它保持每个原子的磁矩模长，只改变方向；相关性由距离核函数和 `相关长度`（`correlation_length`）控制。
+这张卡让**所有符合条件的非零磁矩**改变方向，并使相邻原子的方向变化具有统计相关性。它保持每个磁矩的模长不变，适合生成带短程磁关联的非共线结构。
 
-这张卡不叫 `Spin Glass`，因为它没有引入交换哈密顿量、frustration 约束或动力学冷却过程。它只表达一个清楚的训练集状态：空间相关的随机非共线自旋场。
+它与相邻两张卡的区别是：
+
+| 卡片 | 哪些磁矩会变 | 方向变化是否空间相关 | 模长是否可变 |
+| --- | --- | --- | --- |
+| 磁矩无序采样 | 随机选中的指定比例 | 否 | 否 |
+| 磁矩扰动 | 所有目标磁矩 | 否 | 可选 |
+| 空间关联磁矩 | 所有符合条件的磁矩 | 是 | 否 |
 
 ## 原理与公式
 
-程序先按周期最小镜像距离 $r_{ij}$ 构造空间协方差矩阵。两种核分别是
+程序先计算参与原子间的周期最小镜像距离 $r_{ij}$，再构造协方差矩阵：
 
 $$
 K_{ij}^{\mathrm{exp}}=\exp(-r_{ij}/\xi),\qquad
-K_{ij}^{\mathrm{SE}}=\exp\!\left[-\frac12(r_{ij}/\xi)^2\right],
+K_{ij}^{\mathrm{SE}}=\exp\!\left[-\frac12(r_{ij}/\xi)^2\right].
 $$
 
-其中 $\xi$ 是相关长度，单位 Å。对 $K=\mathbf L\mathbf L^\mathsf T$ 做 Cholesky 分解，
-再令 $\mathbf u=\mathbf L\mathbf z$，$\mathbf z$ 为独立标准高斯随机场，于是相邻原子的
-随机方向变化彼此相关。`参考方向圆锥`模式只取 $\mathbf u$ 在原磁矩横向平面内的方向，
-并把偏转角限制在圆锥半角内；`完全随机方向`直接归一化相关场。两种模式都保持每个原磁矩
-的模长不变。该算法使用完整 $N\times N$ 协方差矩阵，因此有明确的最大原子数限制。
+$\xi$ 是 `correlation_length`。程序对 $K=LL^\mathsf{T}$ 做 Cholesky 分解，并用 $u=Lz$ 把独立高斯随机数 $z$ 变为空间相关的三维随机场。
+
+- **替换为随机方向：** 直接归一化 $u_i$，再乘回原磁矩模长。
+- **在当前方向附近扰动：** 相关场决定横向偏转的方位；每个原子的偏转角大小仍在圆锥范围内独立抽样。
+
+因此，$\xi$ 是**归一化前随机场的协方差长度**，不是输出自旋点积的精确衰减长度。应在同一组参数生成的多份结构上，统计 $\langle\hat s_i\cdot\hat s_j\rangle$ 随距离的变化；只看一份结构不能判断相关长度是否合理。
+
+同一 $\xi$ 下，平方指数核在近距离更平滑、相关更强，但远距离衰减更快；指数核的远距离尾部更长。
 
 ## 操作示例
 
-### 场景：训练集有 PM 随机态，但缺少有限相关长度的非共线态
+假设输入是一条原子间距约 1 Å 的 Fe 链，已有模长为 2 的矢量磁矩。选择“替换为随机方向”、指数核、$\xi=3$ Å，并让每个输入生成 5 份结构：近邻磁矩通常比远距离磁矩更相似，而所有磁矩模长仍为 2。
 
-模型在完全随机 PM 和有序 FM/AFM 上都能跑，但在短程相关的高温磁态上磁力误差明显偏大。用 `Correlated Random Spin` 可以生成相关长度为 3 Angstrom 的非共线扰动，让相邻原子磁矩方向更相近，远距离方向逐渐失相关。
+检查结果时建议：
 
-参数设置：`mode=Cone around reference`，`correlation_kernel=exponential`，`correlation_length=3.0`，`samples=5`，`cone_angle=30.0`，`magnitude_source=Existing initial magmoms`，`max_atoms_for_full=200`。
-
-输出结构的 `spin` 为 `(N, 3)`，`Config_type` 追加 `CorrSpin(...)`。检查时看磁矩模长是否保持、cone 角度是否符合设定，以及不同 `相关长度`（`correlation_length`）下相邻自旋相似度是否变化。
+1. 确认每个输入确实得到 5 份结构。
+2. 检查输出 `spin` 的形状为 `(N, 3)`，磁矩模长与输入一致。
+3. 对多份样本按原子间距分箱，比较归一化磁矩点积；增大 $\xi$ 后，近邻方向应更一致。
 
 ## 参数说明
 
-### 相关随机场
+### 变化方式（mode）
 
-#### 模式（mode）
+默认 `Cone around reference`。选择“在当前方向附近扰动”时保留原磁态的大致方向；选择“替换为随机方向”时，所有符合条件的磁矩都改为相关随机方向。
 
-`str`，默认 `'Cone around reference'`。`Cone around reference` 保留有序态的方向，只叠加有限温非共线涨落；`PM-like random field` 不再围绕参考方向，适合补 PM 附近但带空间相关长度的样本。
+### 相关轮廓（correlation_kernel）
 
-#### 相关核函数（correlation_kernel）
+默认 `exponential`。指数核具有更长的远距离尾部；`squared_exponential` 在近距离更平滑，但远处衰减更快。
 
-`str`，默认 `'exponential'`。自旋空间相关函数。`exponential` 衰减更慢，保留更长尾的自旋关联；`squared_exponential` 更平滑但远距离衰减更快。有限相关长度磁无序优先选 exponential。
+### 空间相关长度（correlation_length）
 
-#### 相关长度（correlation_length）
+默认 3.0 Å。它控制潜在随机场随距离共同变化的尺度。远小于最近邻距离时，各原子的方向趋近独立；增大后会形成更大的同向变化区域。
 
-`float`，默认 3.0 Å。自旋随机场的空间相关长度。设得比最近邻距离还小 → 近似独立随机；放大到几倍晶格常数 → 形成平滑磁畴。做有限温磁无序时不要一上来就跳到无限长相关。
+### 每个输入的结构数（samples）
 
-#### 完整协方差最大原子数（max_atoms_for_full）
+默认 1。每个有效输入生成多少份独立随机结构。要判断空间相关性，通常需要多份样本进行统计。
 
-`int`，默认 200。full covariance 方法能处理的最大原子数，因为需要 O(N³) 的 Cholesky 分解。小体系保持默认即可；超过几百个磁性原子时先缩小结构，不要盲目调大这个值。
+### 最大偏转角（cone_angle）
 
-### 输出和角度
+默认 30°，仅在 `mode=Cone around reference` 时使用。它是相对输入方向的偏转上限；设为 0° 会生成保持参考方向的结构。
 
-#### 样本数（samples）
+### 磁矩来源（magnitude_source）
 
-`int`，默认 1。每个相关长度下生成几个随机场样本。1~3 个覆盖趋势，5 个以上才开始给同一相关长度做统计。
+默认 `Existing initial magmoms`。该模式只读取输入中的 `spin:R:3` 或 ASE 初始磁矩；输入没有磁矩时会报错，**不会**自动使用元素表。
 
-#### 锥角（cone_angle）
+选择 `Map/default magnitude` 后，程序才会根据元素表和默认值建立初始模长。
 
-`float`，默认 30.0°。cone 模式下偏离参考方向的最大角度。10~30° 是有序态附近的扰动，60° 以上更接近强非共线无序。
+### 元素磁矩表（magmom_map）
 
-生效条件：`模式`（`mode`）为 cone 模式时。
+仅在元素表模式下使用。格式如 `Fe:2.2, Co:1.7`，为指定元素设置磁矩模长。
 
-### 磁矩幅值
+### 默认磁矩（default_moment）
 
-#### 磁矩大小来源（magnitude_source）
+默认 0.0，仅在元素表模式下使用。它用于表中未列出的元素；设为 0 的原子不参与相关采样。
 
-`str`，默认 `'Existing initial magmoms'`。磁矩幅值的来源。输入有 `spin:R:3` 时优先复用，没有时兼容旧 `initial_magmoms`；两者都没有时用 `元素磁矩表`（`magmom_map`）和 `默认磁矩`（`default_moment`）构造。不要用默认幅值替代已知元素的实测磁矩。
+### 标量磁矩转矢量（lift_scalar）
 
-#### 元素磁矩表（magmom_map）
+默认开启，仅在读取已有磁矩时使用。输入只有标量磁矩时，沿 `axis` 把它们提升为三维矢量；关闭后，标量输入无法进行方向采样。
 
-`str`，默认空。按元素显式指定磁矩幅值，格式如 `Fe:2.2, Ni:0.6`。已知元素局域磁矩就填进去，未知元素别用默认值伪造先验。
+### 标量参考方向（axis）
 
-#### 默认磁矩（default_moment）
+默认 `(0, 0, 1)`。它只用于把标量磁矩或元素表生成的模长初始化为矢量；已有三维磁矩的方向不会被覆盖。
 
-`float`，默认 0.0。作为 `元素磁矩表`（`magmom_map`）没命中的元素的兜底幅值。关键磁性元素应显式列在 magmom_map 里，非磁元素通常保持 0。
+### 目标元素（apply_elements）
 
-#### 标量磁矩转为矢量（lift_scalar）
+默认留空，表示选择所有非零磁矩。可填写逗号分隔的元素符号，如 `Fe,Co`。未选中的原子保持不变。
 
-`bool`，默认 true。把标量磁矩提升为非共线向量。输入是标量但下游需要向量时打开；如果原始数据本身已有方向信息，不要重新提升覆盖它。
+### 最大参与磁矩数（max_atoms_for_full）
 
-#### 轴（axis）
+默认 200。这是参与相关采样的**非零磁矩数量**上限，不是结构总原子数，也不是精度参数。因为精确协方差采样需要 $N\times N$ 矩阵和 $O(N^3)$ Cholesky 分解，超过上限时程序会停止并提示缩小目标元素或结构。
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。cone 模式下的参考磁矩方向。这不是普通数值——改它会影响分层、表面法向或磁矩取向；使用前先确认 cell 取向和目标物理方向。
+### 使用随机种子（use_seed）
 
-生效条件：涉及方向、分层、表面或向量初始化的模式。
+默认关闭。开启后，相同输入、参数和种子会生成相同结果，便于复现和对比。
 
-#### 应用元素（apply_elements）
+### 随机种子（seed）
 
-`str`，默认空（全部生效）。逗号分隔限定只处理指定元素。含非磁基底时显式列出 Fe/Co/Ni/Mn 等磁性元素，避免给无关原子写磁矩。
-
-### 随机性
-
-#### 使用随机种子（use_seed）
-
-`bool`，默认 false。需要可复现训练集、测试或对比实验时打开；最终大规模随机探索可以关，但结果不能逐帧复现。
-
-#### 随机种子（seed）
-
-`int`，默认 0。固定随机种子值。相同输入、相同参数和相同 seed 生成同一批候选；只有 `use_seed=True` 时改它才会改变输出。
-
-生效条件：`use_seed=True`。
-
-## 推荐预设
-
-### 有序态附近的有限温扰动
-
-```json
-{
-  "class": "CorrelatedRandomSpinCard",
-  "params": {
-    "mode": "Cone around reference",
-    "correlation_kernel": "exponential",
-    "correlation_length": 3.0,
-    "samples": 5,
-    "cone_angle": 25.0,
-    "magnitude_source": "Existing initial magmoms",
-    "magmom_map": "",
-    "default_moment": 0.0,
-    "lift_scalar": true,
-    "axis": [0.0, 0.0, 1.0],
-    "apply_elements": "",
-    "max_atoms_for_full": 200,
-    "use_seed": true,
-    "seed": 42
-  }
-}
-```
-
-### PM-like 相关随机方向
-
-```json
-{
-  "class": "CorrelatedRandomSpinCard",
-  "params": {
-    "mode": "Full random directions",
-    "correlation_kernel": "exponential",
-    "correlation_length": 5.0,
-    "samples": 3,
-    "cone_angle": 30.0,
-    "magnitude_source": "Map/default magnitude",
-    "magmom_map": "Fe:2.2,Co:1.7",
-    "default_moment": 0.0,
-    "lift_scalar": true,
-    "axis": [0.0, 0.0, 1.0],
-    "apply_elements": "Fe,Co",
-    "max_atoms_for_full": 200,
-    "use_seed": true,
-    "seed": 7
-  }
-}
-```
-
-## 推荐组合
-
-- `Set Magnetic Moments → Correlated Random Spin`：先统一磁矩模长来源，再生成相关非共线态。
-- `Magnetic Order → Correlated Random Spin`：从 FM/AFM 参考态生成有限温 cone disorder。
-- `Moment Disorder → Correlated Random Spin`：先做离散翻转比例，再对局部方向加空间相关扰动。
+默认 0，仅在 `use_seed=True` 时生效。样本序号会参与派生种子的计算，因此同一输入生成的多份结构仍彼此不同。
 
 ## 常见问题
 
-**为什么超过 `完整协方差最大原子数`（`max_atoms_for_full`）直接失败？** 当前实现是精确协方差采样，需要 full matrix 和 Cholesky，复杂度随原子数快速增长。自动切换近似算法会让同一张卡在不同体系大小下改变物理语义，所以 v1 明确失败。
+**为什么单份结构看不出设定的相关长度？** $\xi$ 控制随机场的统计协方差。应对多份样本统计磁矩点积随距离的变化，而不是把单帧中的某个区域尺寸直接当作 $\xi$。
 
-**`exponential` 和 `squared_exponential` 怎么选？** 默认用 `exponential`。如果你明确希望更平滑的随机场，再选 `squared_exponential`。
+**为什么达到数量上限后直接停止？** 当前算法构造完整协方差矩阵并做 Cholesky 分解。上限约束的是参与采样的非零磁矩数；可缩小目标元素或使用更小的结构。
 
-**没有磁矩会怎样？** 输入没有可用 `spin` 或旧 `initial_magmoms`，且没有通过 `magmom_map/default_moment` 提供非零模长时，卡片会失败，不会生成零磁矩伪结果。
+## 输出
 
-## 输出标签
-
-`CorrSpin(xi={correlation_length},ker={kernel},mode={cone|full},n={eligible_atoms},s={seed},a={cone_angle})`。`s` 只在 `use_seed=True` 时出现，`a` 只在 cone 模式出现。
-
-所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。
-
-## 可复现性
-
-开启 `使用随机种子`（`use_seed`）后，相关随机场由 `随机种子`（`seed`）、输入结构稳定 ID 和 sample 序号共同决定。相同输入、相同参数、相同 seed 会生成相同磁矩方向。
+每个有效输入输出 `samples` 份结构。结果写入 `spin:R:3`，并同步 ASE 初始磁矩；`Config_type` 追加 `CorrSpin(...)` 标签。未被选中的原子保持原磁矩不变。

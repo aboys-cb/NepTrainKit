@@ -45,6 +45,10 @@ class CompactFormWidgetsTest(unittest.TestCase):
         badge.set_state("succeeded", "12→48")
         self.assertEqual(badge.label.text(), "Done · 12→48")
 
+        badge.set_state("partial")
+        self.assertEqual(badge.state(), "partial")
+        self.assertEqual(badge.label.text(), "Partial")
+
     def test_category_tag_hides_when_empty_and_shows_when_set(self):
         tag = CategoryTag("")
         self.assertTrue(tag.isHidden())

@@ -607,7 +607,7 @@ class CardGroup(MakeDataCardWidget):
     def get_guidance_text(self) -> str:
         return self.tr(
             "Every enabled child receives the same group input. Child outputs are "
-            "concatenated immediately; use Permanent Fork when each path must continue independently."
+            "concatenated immediately; use Branch Fork when each path must continue independently."
         )
 
     def get_inspector_overview_text(self) -> str:

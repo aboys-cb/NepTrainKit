@@ -857,14 +857,12 @@
         <translation type="vanished">让多个独立子分支从同一输入逐张运行，合并其输出，并可选地应用一张后置过滤卡；子卡片之间不会传递数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="67" />
         <source>Permanent Fork</source>
-        <translation>永久分叉</translation>
+        <translation type="vanished">永久分叉</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="68" />
         <source>Split one input into independent linear branch pipelines; outputs remain separate until an explicit Merge is enabled.</source>
-        <translation>将一个输入拆分为多条独立的线性分支；只有启用显式合并后，输出才会汇合。</translation>
+        <translation type="vanished">将一个输入拆分为多条独立的线性分支；只有启用显式合并后，输出才会汇合。</translation>
     </message>
     <message>
         <source>Generate fully periodic single-element FCC, BCC, HCP, or FCC (111)-oriented prototype cells without input structures.</source>
@@ -966,6 +964,16 @@
         <location filename="../ui/widgets/card_metadata.py" line="61" />
         <source>Run independent cards from one shared input, merge their outputs, then optionally apply one filter.</source>
         <translation>让多张独立卡片读取同一输入，合并输出后可选用一张过滤卡统一筛选。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="67" />
+        <source>Branch Fork</source>
+        <translation>永久分叉</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="68" />
+        <source>Build independent multi-card branches from one input; keep their outputs separate or merge them explicitly.</source>
+        <translation>从同一输入建立多卡片独立分支，并选择保留各自输出或显式合并。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="124" />
@@ -2592,9 +2600,8 @@
         <translation>{enabled}/{total} 条路径 · 自动合并 · {filter}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="609" />
         <source>Every enabled child receives the same group input. Child outputs are concatenated immediately; use Permanent Fork when each path must continue independently.</source>
-        <translation>每个启用的子卡都接收同一份组输入，子卡输出会立即拼接；如果每条路径需要继续独立处理，请使用永久分叉。</translation>
+        <translation type="vanished">每个启用的子卡都接收同一份组输入，子卡输出会立即拼接；如果每条路径需要继续独立处理，请使用永久分叉。</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/card_group.py" line="615" />
@@ -2643,6 +2650,11 @@
         <location filename="../ui/views/_card/card_group.py" line="623" />
         <source>disabled</source>
         <translation>已停用</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="609" />
+        <source>Every enabled child receives the same group input. Child outputs are concatenated immediately; use Branch Fork when each path must continue independently.</source>
+        <translation>每张启用的子卡接收同一组输入，输出会立即拼接；每条路径需要继续独立处理时，请使用永久分叉。</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/card_group.py" line="630" />
@@ -15734,42 +15746,47 @@ Do you want to continue?</source>
 <context>
     <name>StatusBadge</name>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="117" />
+        <location filename="../ui/widgets/compact_form.py" line="119" />
         <source>Ready</source>
         <translation>就绪</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="118" />
+        <location filename="../ui/widgets/compact_form.py" line="120" />
         <source>Running</source>
         <translation>运行中</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="119" />
+        <location filename="../ui/widgets/compact_form.py" line="121" />
         <source>Done</source>
         <translation>完成</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="120" />
+        <location filename="../ui/widgets/compact_form.py" line="122" />
         <source>Failed</source>
         <translation>失败</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="121" />
+        <location filename="../ui/widgets/compact_form.py" line="123" />
+        <source>Partial</source>
+        <translation>部分可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/compact_form.py" line="124" />
         <source>Stopped</source>
         <translation>已停止</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="122" />
+        <location filename="../ui/widgets/compact_form.py" line="125" />
         <source>Stopping</source>
         <translation>正在停止</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="123" />
+        <location filename="../ui/widgets/compact_form.py" line="126" />
         <source>Skipped</source>
         <translation>已跳过</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/compact_form.py" line="133" />
+        <location filename="../ui/widgets/compact_form.py" line="136" />
         <source>Card status: {status}</source>
         <translation>卡片状态：{status}</translation>
     </message>
@@ -20944,38 +20961,48 @@ Magnetic: {magnetic}</source>
 <context>
     <name>WorkflowBranchWidget</name>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="195" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="197" />
         <source>Enable branch</source>
         <translation>启用分支</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="204" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="389" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="206" />
+        <source>Branch name</source>
+        <translation>分支名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="207" />
+        <source>Edit branch name</source>
+        <translation>编辑分支名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="212" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="410" />
         <source>Not run</source>
         <translation>未运行</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="220" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="228" />
         <source>Drop cards here to build this branch.</source>
         <translation>将卡片拖到这里以构建该分支。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="293" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="314" />
         <source>Move card here</source>
         <translation>将卡片移动到此处</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="385" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="406" />
         <source>Failed</source>
         <translation>失败</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="387" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="408" />
         <source>Stopped</source>
         <translation>已停止</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="392" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="413" />
         <source>{count} structures</source>
         <translation>{count} 个结构</translation>
     </message>
@@ -20983,159 +21010,213 @@ Magnetic: {magnetic}</source>
 <context>
     <name>WorkflowFork</name>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="484" />
         <source>Permanent Fork</source>
-        <translation>永久分叉</translation>
+        <translation type="vanished">永久分叉</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="502" />
         <source>Each branch receives the same input and keeps its own linear data flow.</source>
-        <translation>每条分支接收相同输入，并保持各自的线性数据流。</translation>
+        <translation type="vanished">每条分支接收相同输入，并保持各自的线性数据流。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="514" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="537" />
         <source>Explicitly merge branch outputs</source>
         <translation>显式合并分支输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="516" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="539" />
         <source>When enabled, concatenate successful branch outputs in branch order.</source>
         <translation>启用后，按分支顺序拼接成功的分支输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="520" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="543" />
         <source>+ Add branch</source>
         <translation>+ 添加分支</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="544" />
         <source>Keep independent outputs</source>
-        <translation>保留各分支独立输出</translation>
+        <translation type="vanished">保留各分支独立输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="547" />
         <source>Merge into one output</source>
-        <translation>合并为一个输出</translation>
+        <translation type="vanished">合并为一个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="574" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="647" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="606" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="698" />
         <source>Independent branch outputs</source>
         <translation>各分支独立输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="577" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="650" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="609" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="720" />
         <source>Shared downstream cards are unavailable</source>
         <translation>不可添加共享下游卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="605" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="976" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="639" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1093" />
         <source>Branch A</source>
         <translation>分支 A</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="606" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="977" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="640" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1094" />
         <source>Branch B</source>
         <translation>分支 B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="636" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="698" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="670" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="768" />
         <source>Explicit merge</source>
         <translation>显式合并</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="638" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="689" />
         <source>Shared downstream cards are available</source>
         <translation>可添加共享下游卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="660" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="730" />
         <source>explicit Merge</source>
         <translation>显式合并</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="660" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="730" />
         <source>independent outputs</source>
         <translation>独立输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="661" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="731" />
         <source>{enabled}/{total} branches · {mode}</source>
         <translation>{enabled}/{total} 条分支 · {mode}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="670" />
         <source>Branches keep independent linear pipelines until the explicit Merge, which concatenates successful outputs in branch order.</source>
-        <translation>各分支在显式合并前保持独立线性流程；合并会按分支顺序拼接成功输出。</translation>
+        <translation type="vanished">各分支在显式合并前保持独立线性流程；合并会按分支顺序拼接成功输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="674" />
         <source>Branches keep independent linear pipelines and final outputs. Add an explicit Merge before any shared downstream card.</source>
-        <translation>各分支保持独立的线性流程和最终输出。添加共同下游卡片前，请先插入显式合并。</translation>
+        <translation type="vanished">各分支保持独立的线性流程和最终输出。添加共同下游卡片前，请先插入显式合并。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="680" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="507" />
+        <source>Branch Fork</source>
+        <translation>永久分叉</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="525" />
+        <source>Common input → independent card chains. Unlike Branch Merge, each branch can continue through multiple cards.</source>
+        <translation>共同输入 → 独立卡片链。与分支合并不同，每条分支可以继续串联多张卡片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="548" />
+        <source>Add a branch (up to 3).</source>
+        <translation>添加分支（最多 3 条）。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="572" />
+        <source>Keep separate</source>
+        <translation>保留独立输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="575" />
+        <source>Merge outputs</source>
+        <translation>合并输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="678" />
+        <source>{counts} → {total} merged</source>
+        <translation>{counts} → 合并 {total}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="685" />
+        <source>Merge unavailable because a branch failed</source>
+        <translation>存在失败分支，无法合并</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="709" />
+        <source>{succeeded}/{total} branches completed · successful outputs remain available</source>
+        <translation>{succeeded}/{total} 条分支完成 · 成功分支的输出仍可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="740" />
+        <source>Each branch can chain multiple cards until the explicit Merge, which concatenates successful outputs in branch order.</source>
+        <translation>每条分支可以串联多张卡片；显式合并会按分支顺序拼接成功输出。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="744" />
+        <source>Each branch can chain multiple cards and keep its final output. Add an explicit Merge before any shared downstream card.</source>
+        <translation>每条分支可以串联多张卡片并保留最终输出；连接共同下游前需要显式合并。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="750" />
         <source>Flow structure</source>
         <translation>流程结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="681" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="751" />
         <source>Common input → independent linear branch pipelines</source>
         <translation>共享输入 → 各分支独立线性处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="683" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="753" />
         <source>Branches</source>
         <translation>分支</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="687" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="757" />
         <source>{id} · {name} · {count} cards · {status}</source>
         <translation>{id} · {name} · {count} 张卡片 · {status}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="697" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="767" />
         <source>Output mode</source>
         <translation>输出方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="700" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="770" />
         <source>Independent outputs</source>
         <translation>独立输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="712" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="959" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="782" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1076" />
         <source>A permanent fork supports up to three branches.</source>
         <translation>永久分叉最多支持三个分支。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="716" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="964" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="786" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1081" />
         <source>Branch {branch}</source>
         <translation>分支 {branch}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="777" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="848" />
         <source>Merge branch outputs before exporting one combined file.</source>
         <translation>导出单个合并文件前，请先合并分支输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="788" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="859" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="795" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="866" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="971" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="901" />
+        <source>Enable at least one branch before running.</source>
+        <translation>运行前请至少启用一条分支。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="920" />
+        <source>Add at least one enabled card to: {branches}.</source>
+        <translation>请为以下分支添加至少一张启用的卡片：{branches}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/workflow_fork.py" line="1088" />
         <source>Invalid card in permanent branch: {name}</source>
         <translation>永久分支中存在无效卡片：{name}</translation>
     </message>

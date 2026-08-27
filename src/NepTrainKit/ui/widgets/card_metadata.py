@@ -64,10 +64,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "WorkflowFork": (
-            QCoreApplication.translate("CardCatalog", "Permanent Fork"),
+            QCoreApplication.translate("CardCatalog", "Branch Fork"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Split one input into independent linear branch pipelines; outputs remain separate until an explicit Merge is enabled.",
+                "Build independent multi-card branches from one input; keep their outputs separate or merge them explicitly.",
             ),
         ),
         "CellScalingCard": (

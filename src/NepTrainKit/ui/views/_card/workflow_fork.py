@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QPushButton,
     QSizePolicy,
     QVBoxLayout,
@@ -22,7 +23,7 @@ from PySide6.QtWidgets import (
 )
 from qfluentwidgets import CaptionLabel, StrongBodyLabel
 
-from NepTrainKit.core import CardManager
+from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
@@ -170,6 +171,7 @@ class WorkflowBranchWidget(QFrame):
     cardDropRequested = Signal(object, object, int)
     cardSelected = Signal(object)
     branchSelected = Signal(object)
+    branchNameChanged = Signal()
 
     def __init__(self, spec: WorkflowBranch, parent=None):
         super().__init__(parent)
@@ -200,7 +202,13 @@ class WorkflowBranchWidget(QFrame):
             "border: 0; border-radius: 6px; color: #28709c;"
             "background: #eaf3fb; font-weight: 700;"
         )
-        self.name_label = StrongBodyLabel(spec.name, self)
+        self.name_edit = QLineEdit(spec.name, self)
+        self.name_edit.setAccessibleName(self.tr("Branch name"))
+        self.name_edit.setToolTip(self.tr("Edit branch name"))
+        self.name_edit.setMinimumWidth(72)
+        self.name_edit.setMaximumWidth(140)
+        self.name_edit.setFixedHeight(26)
+        self.name_label = self.name_edit
         self.output_label = CaptionLabel(self.tr("Not run"), self)
 
         header_layout = QHBoxLayout()
@@ -231,11 +239,14 @@ class WorkflowBranchWidget(QFrame):
         layout.addWidget(self.cards_host)
 
         self.enabled_checkbox.toggled.connect(self._sync_enabled)
+        self.name_edit.editingFinished.connect(self._commit_branch_name)
         for widget in (
             self.enabled_checkbox,
             self.badge_label,
-            self.name_label,
+            self.name_edit,
             self.output_label,
+            self.empty_label,
+            self.cards_host,
         ):
             widget.installEventFilter(self)
 
@@ -248,6 +259,16 @@ class WorkflowBranchWidget(QFrame):
     def _sync_enabled(self, enabled: bool) -> None:
         self.spec.enabled = bool(enabled)
         self.cards_host.setEnabled(enabled)
+
+    def _commit_branch_name(self) -> None:
+        name = self.name_edit.text().strip()
+        if not name:
+            self.name_edit.setText(self.spec.name)
+            return
+        if name == self.spec.name:
+            return
+        self.spec.name = name
+        self.branchNameChanged.emit()
 
     def add_card(self, card: MakeDataCardWidget, index: int | None = None) -> None:
         if card in self.cards:
@@ -397,8 +418,10 @@ class WorkflowBranchWidget(QFrame):
             if watched in (
                 self.enabled_checkbox,
                 self.badge_label,
-                self.name_label,
+                self.name_edit,
                 self.output_label,
+                self.empty_label,
+                self.cards_host,
             ):
                 self.branchSelected.emit(self)
             card = next(
@@ -464,7 +487,7 @@ class WorkflowFork(MakeDataCardWidget):
 
     group = "Container"
     separator = True
-    card_name = "Permanent Fork"
+    card_name = "Branch Fork"
     menu_icon = r":/images/src/images/group.svg"
     contributors = [{"name": "NepTrainKit", "role": "author"}]
     description = (
@@ -481,7 +504,7 @@ class WorkflowFork(MakeDataCardWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Permanent Fork"))
+        self.setTitle(self.tr("Branch Fork"))
         self.setAcceptDrops(True)
         self.dataset: Any = []
         self.result_dataset: list[Any] = []
@@ -499,7 +522,7 @@ class WorkflowFork(MakeDataCardWidget):
 
         self.description_label = CaptionLabel(
             self.tr(
-                "Each branch receives the same input and keeps its own linear data flow."
+                "Common input → independent card chains. Unlike Branch Merge, each branch can continue through multiple cards."
             ),
             self,
         )
@@ -518,7 +541,12 @@ class WorkflowFork(MakeDataCardWidget):
         self.merge_checkbox.toggled.connect(self._set_merge_enabled)
         self.merge_checkbox.hide()
         self.add_branch_button = QPushButton(self.tr("+ Add branch"), self)
-        self.add_branch_button.clicked.connect(self.add_branch)
+        self.add_branch_button.clicked.connect(
+            lambda _checked=False: self.add_branch()
+        )
+        self.add_branch_button.setToolTip(
+            self.tr("Add a branch (up to 3).")
+        )
         footer = QHBoxLayout()
         footer.addStretch(1)
         footer.addWidget(self.add_branch_button)
@@ -541,10 +569,10 @@ class WorkflowFork(MakeDataCardWidget):
         mode_row = QHBoxLayout()
         mode_row.setSpacing(0)
         self.keep_separate_button = QPushButton(
-            self.tr("Keep independent outputs"), self.output_mode_frame
+            self.tr("Keep separate"), self.output_mode_frame
         )
         self.merge_output_button = QPushButton(
-            self.tr("Merge into one output"), self.output_mode_frame
+            self.tr("Merge outputs"), self.output_mode_frame
         )
         for button in (self.keep_separate_button, self.merge_output_button):
             button.setCheckable(True)
@@ -568,8 +596,12 @@ class WorkflowFork(MakeDataCardWidget):
 
         self.output_terminal = QFrame(self.output_mode_frame)
         self.output_terminal.setObjectName("forkOutputTerminal")
-        terminal_layout = QHBoxLayout(self.output_terminal)
-        terminal_layout.setContentsMargins(10, 7, 10, 7)
+        self.output_terminal_layout = QBoxLayout(
+            QBoxLayout.Direction.LeftToRight,
+            self.output_terminal,
+        )
+        self.output_terminal_layout.setContentsMargins(10, 7, 10, 7)
+        self.output_terminal_layout.setSpacing(8)
         self.output_terminal_title = StrongBodyLabel(
             self.tr("Independent branch outputs"), self.output_terminal
         )
@@ -577,10 +609,13 @@ class WorkflowFork(MakeDataCardWidget):
             self.tr("Shared downstream cards are unavailable"),
             self.output_terminal,
         )
-        terminal_layout.addStretch(1)
-        terminal_layout.addWidget(self.output_terminal_title)
-        terminal_layout.addWidget(self.output_terminal_detail)
-        terminal_layout.addStretch(1)
+        self.output_terminal_detail.setWordWrap(True)
+        self.output_terminal_detail.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.output_terminal_detail.setMinimumWidth(140)
+        self.output_terminal_layout.addStretch(1)
+        self.output_terminal_layout.addWidget(self.output_terminal_title)
+        self.output_terminal_layout.addWidget(self.output_terminal_detail)
+        self.output_terminal_layout.addStretch(1)
         output_layout.addWidget(self.output_terminal)
         self._refresh_output_terminal()
 
@@ -634,9 +669,26 @@ class WorkflowFork(MakeDataCardWidget):
         self.merge_output_button.setChecked(self.merge_enabled)
         if self.merge_enabled:
             self.output_terminal_title.setText(self.tr("Explicit merge"))
-            self.output_terminal_detail.setText(
-                self.tr("Shared downstream cards are available")
-            )
+            enabled = [branch for branch in self.branches if branch.spec.enabled]
+            if self.run_outcome == "succeeded" and self.branch_results:
+                counts = " + ".join(
+                    f"{branch.spec.branch_id} {len(self.branch_results.get(branch.spec.branch_id, []))}"
+                    for branch in enabled
+                )
+                self.output_terminal_detail.setText(
+                    self.tr("{counts} → {total} merged").format(
+                        counts=counts,
+                        total=len(self.result_dataset),
+                    )
+                )
+            elif self.run_outcome == "failed":
+                self.output_terminal_detail.setText(
+                    self.tr("Merge unavailable because a branch failed")
+                )
+            else:
+                self.output_terminal_detail.setText(
+                    self.tr("Shared downstream cards are available")
+                )
             self.output_terminal.setStyleSheet(
                 "QFrame#forkOutputTerminal {"
                 "border: 1px solid rgba(46,150,96,90); border-radius: 8px;"
@@ -646,9 +698,28 @@ class WorkflowFork(MakeDataCardWidget):
             self.output_terminal_title.setText(
                 self.tr("Independent branch outputs")
             )
-            self.output_terminal_detail.setText(
-                self.tr("Shared downstream cards are unavailable")
-            )
+            enabled = [branch for branch in self.branches if branch.spec.enabled]
+            succeeded = [
+                branch
+                for branch in enabled
+                if self.branch_outcomes.get(branch.spec.branch_id) == "succeeded"
+            ]
+            if self.run_outcome == "partial_failed":
+                self.output_terminal_detail.setText(
+                    self.tr(
+                        "{succeeded}/{total} branches completed · successful outputs remain available"
+                    ).format(succeeded=len(succeeded), total=len(enabled))
+                )
+            elif self.run_outcome == "succeeded" and self.branch_results:
+                counts = " · ".join(
+                    f"{branch.spec.branch_id} {len(self.branch_results.get(branch.spec.branch_id, []))}"
+                    for branch in enabled
+                )
+                self.output_terminal_detail.setText(counts)
+            else:
+                self.output_terminal_detail.setText(
+                    self.tr("Shared downstream cards are unavailable")
+                )
             self.output_terminal.setStyleSheet(
                 "QFrame#forkOutputTerminal {"
                 "border: 1px solid rgba(110,130,138,55); border-radius: 8px;"
@@ -667,11 +738,11 @@ class WorkflowFork(MakeDataCardWidget):
     def get_guidance_text(self) -> str:
         if self.merge_enabled:
             return self.tr(
-                "Branches keep independent linear pipelines until the explicit Merge, "
+                "Each branch can chain multiple cards until the explicit Merge, "
                 "which concatenates successful outputs in branch order."
             )
         return self.tr(
-            "Branches keep independent linear pipelines and final outputs. "
+            "Each branch can chain multiple cards and keep its final output. "
             "Add an explicit Merge before any shared downstream card."
         )
 
@@ -720,6 +791,7 @@ class WorkflowFork(MakeDataCardWidget):
         branch.cardDropRequested.connect(self.cardDropRequested)
         branch.cardSelected.connect(self.cardSelected)
         branch.branchSelected.connect(self.branchSelected)
+        branch.branchNameChanged.connect(self.structureChanged)
         branch.enabled_checkbox.toggled.connect(
             lambda _enabled: self.structureChanged.emit()
         )
@@ -802,15 +874,55 @@ class WorkflowFork(MakeDataCardWidget):
         self.branch_outcomes = {}
         self.run_outcome = "idle"
         self.set_output_available(False)
+        self._set_run_status("idle")
         for branch in self.branches:
             branch.set_output_count(None)
             for card in branch.cards:
                 card.set_dataset([])
+        self._refresh_output_terminal()
+
+    def _set_run_status(self, state: str) -> None:
+        self.status_dot.set_state(state)
+        self.status_badge.set_state(state)
 
     def run(self) -> None:
         if not self.check_state:
             self.result_dataset = list(self.dataset)
             self.run_outcome = "succeeded"
+            self._set_run_status("disabled")
+            self.runFinishedSignal.emit(self.index)
+            return
+        enabled = [branch for branch in self.branches if branch.spec.enabled]
+        if not enabled:
+            self.result_dataset = []
+            self.run_outcome = "failed"
+            self.set_output_available(False)
+            self._set_run_status("failed")
+            MessageManager.send_error_message(
+                self.tr("Enable at least one branch before running.")
+            )
+            self._refresh_output_terminal()
+            self.runFinishedSignal.emit(self.index)
+            return
+        empty = [
+            branch
+            for branch in enabled
+            if not any(card.check_state for card in branch.cards)
+        ]
+        if empty:
+            names = ", ".join(branch.spec.name for branch in empty)
+            self.result_dataset = []
+            self.run_outcome = "failed"
+            self.set_output_available(False)
+            self._set_run_status("failed")
+            for branch in empty:
+                branch.set_output_count(0, "failed")
+            MessageManager.send_error_message(
+                self.tr("Add at least one enabled card to: {branches}.").format(
+                    branches=names
+                )
+            )
+            self._refresh_output_terminal()
             self.runFinishedSignal.emit(self.index)
             return
         self._stopping = False
@@ -818,7 +930,8 @@ class WorkflowFork(MakeDataCardWidget):
         self.branch_results = {}
         self.branch_outcomes = {}
         self.run_outcome = "running"
-        self.status_dot.set_state("running")
+        self._set_run_status("running")
+        self._refresh_output_terminal()
         self._running_branch_index = 0
         self._start_next_branch()
 
@@ -889,6 +1002,8 @@ class WorkflowFork(MakeDataCardWidget):
             self.run_outcome = "failed"
             self.set_output_available(False)
             self.status_dot.set_state("failed")
+            self.status_badge.set_state("failed")
+            self._refresh_output_terminal()
             self.runFinishedSignal.emit(self.index)
             return
         if self.merge_enabled:
@@ -907,9 +1022,11 @@ class WorkflowFork(MakeDataCardWidget):
             self.run_outcome = "partial_failed" if failures else "succeeded"
         self.set_output_available(bool(self.available_output_cards()))
         self.set_export_available(self.merge_enabled and bool(self.result_dataset))
-        self.status_dot.set_state(
-            "failed" if self.run_outcome in ("failed", "partial_failed") else "succeeded"
-        )
+        if self.run_outcome == "partial_failed":
+            self._set_run_status("partial")
+        else:
+            self._set_run_status(self.run_outcome)
+        self._refresh_output_terminal()
         self.runFinishedSignal.emit(self.index)
 
     def stop(self) -> None:
@@ -928,7 +1045,8 @@ class WorkflowFork(MakeDataCardWidget):
         self.run_outcome = "canceled"
         self.result_dataset = []
         self.set_output_available(False)
-        self.status_dot.set_state("canceled")
+        self._set_run_status("canceled")
+        self._refresh_output_terminal()
 
     def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
@@ -986,6 +1104,16 @@ class WorkflowFork(MakeDataCardWidget):
         )
         if self.branch_layout.direction() != direction:
             self.branch_layout.setDirection(direction)
+        if not self._nested_header:
+            self.set_two_row_header(event.size().width() < 500)
+        if hasattr(self, "output_terminal_layout"):
+            terminal_direction = (
+                QBoxLayout.Direction.TopToBottom
+                if event.size().width() < 500
+                else QBoxLayout.Direction.LeftToRight
+            )
+            if self.output_terminal_layout.direction() != terminal_direction:
+                self.output_terminal_layout.setDirection(terminal_direction)
         self.connector.setVisible(not stacked)
         super().resizeEvent(event)
 

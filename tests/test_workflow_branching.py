@@ -358,6 +358,27 @@ def test_empty_fork_lane_selection_controls_where_the_next_card_is_added():
     _dispose(area)
 
 
+def test_clicking_empty_fork_lane_selects_it_for_the_next_card():
+    app = _app()
+    area = MakeWorkflowArea()
+    fork = WorkflowFork()
+    area.add_card(fork)
+    area.resize(1200, 700)
+    area.show()
+    app.processEvents()
+
+    target = fork.branches[1]
+    QTest.mouseClick(target.empty_label, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    inserted = PerturbCard()
+    area.add_card(inserted)
+    app.processEvents()
+
+    assert fork.branches[0].cards == []
+    assert target.cards == [inserted]
+    _dispose(area)
+
+
 def test_collapsed_fork_reopens_from_header_and_drag_hover_accepts_a_card():
     app = _app()
     area = MakeWorkflowArea()
@@ -939,8 +960,10 @@ def test_fork_stacks_branches_on_narrow_canvas_and_limits_branch_count():
     app.processEvents()
     assert fork.connector.isVisible()
 
-    fork.add_branch()
+    fork.add_branch_button.click()
     assert len(fork.branches) == 3
+    assert fork.branches[2].spec.branch_id == "C"
+    assert fork.branches[2].spec.name == "Branch C"
     assert not fork.add_branch_button.isEnabled()
 
     area.resize(1280, 900)
@@ -949,6 +972,12 @@ def test_fork_stacks_branches_on_narrow_canvas_and_limits_branch_count():
     assert fork.width() < fork._STACK_BRANCHES_BREAKPOINT
     assert not fork.connector.isVisible()
     assert fork.branches[1].geometry().top() >= fork.branches[0].geometry().bottom()
+
+    area.resize(1024, 640)
+    for _ in range(3):
+        app.processEvents()
+    assert fork._two_row_header
+    assert fork.headerLabel.width() >= fork.headerLabel.sizeHint().width()
     _dispose(area)
 
 
@@ -1009,6 +1038,8 @@ def test_explicit_merge_concatenates_in_stable_branch_order():
 
     assert [item.info["history"] for item in fork.result_dataset] == [["A"], ["B"]]
     assert fork.available_output_cards() == [fork]
+    assert fork.status_badge.state() == "succeeded"
+    assert fork.output_terminal_detail.text() == "A 1 + B 1 → 2 merged"
     _dispose(fork)
 
 
@@ -1027,7 +1058,33 @@ def test_unmerged_fork_preserves_successful_branch_when_another_fails():
     assert fork.branch_results["A"] == []
     assert fork.branch_results["B"][0].info["history"] == ["B"]
     assert fork.available_output_cards() == [fork.branches[1].cards[-1]]
+    assert fork.status_badge.state() == "partial"
+    assert fork.status_badge.label.text() == "Partial"
+    assert "1/2 branches completed" in fork.output_terminal_detail.text()
     _dispose(fork)
+
+
+def test_fork_rejects_enabled_empty_branches_before_running_other_branches():
+    fork = WorkflowFork()
+    card = _OperationCard(_HistoryOperation("A"))
+    fork.add_card(card, fork.branches[0])
+    fork.set_dataset([Atoms("H")])
+    completions = []
+    fork.runFinishedSignal.connect(completions.append)
+
+    with patch.object(card, "run") as card_run, patch(
+        "NepTrainKit.ui.views._card.workflow_fork.MessageManager.send_error_message"
+    ) as error_message:
+        fork.run()
+
+    assert fork.run_outcome == "failed"
+    assert fork.status_badge.state() == "failed"
+    assert fork.branches[1].output_label.text() == "Failed"
+    assert completions == [fork.index]
+    card_run.assert_not_called()
+    error_message.assert_called_once_with(
+        "Add at least one enabled card to: Branch B."
+    )
 
 
 def test_fork_json_round_trip_preserves_branches_cards_and_merge():
@@ -1049,6 +1106,18 @@ def test_fork_json_round_trip_preserves_branches_cards_and_merge():
     assert [card.__class__.__name__ for card in restored.branches[1].cards] == ["CellStrainCard"]
     _dispose(fork)
     _dispose(restored)
+
+
+def test_fork_branch_name_editor_updates_saved_display_name():
+    fork = WorkflowFork()
+    branch = fork.branches[0]
+
+    branch.name_edit.setText("Surface path")
+    branch.name_edit.editingFinished.emit()
+
+    assert branch.spec.name == "Surface path"
+    assert fork.to_dict()["branches"][0]["name"] == "Surface path"
+    _dispose(fork)
 
 
 def test_page_rejects_shared_downstream_after_unmerged_fork():

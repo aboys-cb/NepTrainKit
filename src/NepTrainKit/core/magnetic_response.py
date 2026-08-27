@@ -19,6 +19,7 @@ from typing import Any, Iterable, Sequence
 import numpy as np
 from ase import Atoms
 
+from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.core.cards.lattice import BainPathOperation, BainPathParams
 from NepTrainKit.core.cards.magnetism import (
     SmallAngleSpinTiltOperation,
@@ -273,9 +274,15 @@ class MagneticResponseScanOperation(StructureOperation):
     def _base(self, structure: Atoms) -> tuple[np.ndarray, str, str]:
         moments = existing_moment_vectors(structure, lift_scalar=True)
         if moments is None or moments.shape != (len(structure), 3):
-            raise ValueError("magnetic response generation requires spin or initial_magmoms")
+            raise CardOperationError(
+                "magnetic_response_missing_moments",
+                "Magnetic response needs vector spin or initial magnetic moments on the input structure.",
+            )
         if not np.isfinite(moments).all() or not np.any(np.linalg.norm(moments, axis=1) > 1.0e-12):
-            raise ValueError("magnetic response generation requires finite nonzero spins")
+            raise CardOperationError(
+                "magnetic_response_invalid_moments",
+                "Magnetic response needs finite magnetic moments with at least one non-zero vector.",
+            )
         fingerprint = structure_fingerprint(structure)
         explicit_id = next(
             (str(structure.info[key]) for key in ("source_structure_id", "structure_id", "Config_id") if structure.info.get(key)),
@@ -344,7 +351,10 @@ class MagneticResponseScanOperation(StructureOperation):
 
     def _finish(self, outputs: list[Atoms], records: list[ResponseManifestRecord]) -> list[Atoms]:
         if not outputs:
-            raise ValueError("max_outputs is smaller than one complete response group")
+            raise CardOperationError(
+                "magnetic_response_budget_too_small",
+                "Maximum structures is smaller than the coordinate count of one complete response group.",
+            )
         self.last_manifest = ResponseManifest([*self.last_manifest.records, *records])
         report = audit_response_groups(outputs)
         if report["invalid_groups"]:
@@ -387,7 +397,10 @@ class MagneticResponseScanOperation(StructureOperation):
                 raise ValueError("moment magnitude response must include scale factor 1.0")
             targets = helper.candidate_indices(structure, moments, helper_params)
             if not targets:
-                raise ValueError("moment magnitude response matched no target atoms")
+                raise CardOperationError(
+                    "local_response_no_target_moments",
+                    "No non-zero magnetic moments match the selected atoms and elements.",
+                )
             frames = []
             for scale in scales:
                 spins = moments.copy()
@@ -417,16 +430,44 @@ class MagneticResponseScanOperation(StructureOperation):
         else:
             raise ValueError(f"unsupported local response kind: {params.response_kind}")
         if not target_sets:
-            raise ValueError("local magnetic response matched no valid target or pair")
+            if params.response_kind == "Group pair canting":
+                raise CardOperationError(
+                    "local_response_no_group_pair",
+                    "The input needs a non-zero magnetic moment in both group '{group_a}' and group "
+                    "'{group_b}'. Check the group labels or add Group Label upstream.",
+                    group_a=params.group_a,
+                    group_b=params.group_b,
+                )
+            if params.response_kind == "Atom pair canting" and params.pair_source == "Auto by neighbor shell":
+                raise CardOperationError(
+                    "local_response_no_auto_pair",
+                    "No atom pairs match the selected neighbor shell and automatic-pair filters.",
+                )
+            if params.response_kind == "Atom pair canting":
+                raise CardOperationError(
+                    "local_response_no_manual_pair",
+                    "No valid magnetic atom pairs match the left and right indices.",
+                )
+            raise CardOperationError(
+                "local_response_no_target_moments",
+                "No non-zero magnetic moments match the selected atoms and elements.",
+            )
         for target_no, (left, right) in enumerate(target_sets):
             frames = []
             for angle_deg in angles_deg:
+                spins = moments.copy()
                 if right:
-                    spins = helper.apply_pair_canting(moments, left, right, abs(angle_deg), helper_params, sign=np.sign(angle_deg) or 1.0)
+                    left_rotation = _rotation_matrix(
+                        params.rotation_axis, math.radians(angle_deg) * 0.5
+                    )
+                    right_rotation = _rotation_matrix(
+                        params.rotation_axis, -math.radians(angle_deg) * 0.5
+                    )
+                    spins[left] = spins[left] @ left_rotation.T
+                    spins[right] = spins[right] @ right_rotation.T
                 else:
-                    spins = moments.copy()
-                    for idx in left:
-                        spins[idx] = helper.tilted_vector(spins[idx], abs(angle_deg), helper_params, sign=np.sign(angle_deg) or 1.0)
+                    rotation = _rotation_matrix(params.rotation_axis, math.radians(angle_deg))
+                    spins[left] = spins[left] @ rotation.T
                 frames.append((math.radians(angle_deg), spins, structure))
             emitted = self._emit_group(
                 structure, source_id=source_id, parent=parent,

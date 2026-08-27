@@ -2077,24 +2077,24 @@
         <translation>分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
         <source>All eligible atoms</source>
         <translation>所有候选原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
         <source>Explicit indices</source>
         <translation>显式索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="35" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
         <source>Manual indices</source>
         <translation>手动索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="36" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
         <source>Auto by neighbor shell</source>
         <translation>按近邻壳自动选择</translation>
     </message>
@@ -2139,112 +2139,137 @@
         <translation>自定义磁矩平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
+        <source>First eligible atom</source>
+        <translation>首个合格原子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
         <source>Any</source>
         <translation>任意</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
         <source>Near axis</source>
         <translation>接近轴向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
+        <source>Near plane</source>
+        <translation>靠近平面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
+        <source>Any direction</source>
+        <translation>不限方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="203" />
+        <source>Near an axis</source>
+        <translation>靠近轴</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="204" />
+        <source>Near a plane</source>
+        <translation>靠近平面</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="205" />
         <source>In plane (normal)</source>
         <translation>位于平面内（法向）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="206" />
         <source>Positive only</source>
         <translation>仅正向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="207" />
         <source>Negative only</source>
         <translation>仅负向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="203" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="208" />
         <source>Both (+/- pair)</source>
         <translation>正负成对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="204" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="209" />
         <source>Auto from layer count</source>
         <translation>按层数自动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="205" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="210" />
         <source>Clockwise then counterclockwise</source>
         <translation>先顺时针再逆时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="206" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="211" />
         <source>Counterclockwise then clockwise</source>
         <translation>先逆时针再顺时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="207" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="212" />
         <source>Cone around reference</source>
         <translation>围绕参考锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="208" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="213" />
         <source>Full random directions</source>
         <translation>全随机方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="209" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="214" />
         <source>exponential</source>
         <translation>指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="210" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="215" />
         <source>squared exponential</source>
         <translation>平方指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="211" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="216" />
         <source>Alternating fractional-coordinate layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="212" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="217" />
         <source>Current-cell half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="213" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="218" />
         <source>Alternating layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="214" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="219" />
         <source>Half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="215" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="220" />
         <source>100 (along lattice a)</source>
         <translation>100（沿晶格 a）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="216" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="221" />
         <source>010 (along lattice b)</source>
         <translation>010（沿晶格 b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="217" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="222" />
         <source>001 (along lattice c)</source>
         <translation>001（沿晶格 c）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="218" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="223" />
         <source>110 (along lattice a+b)</source>
         <translation>110（沿晶格 a+b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="219" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="224" />
         <source>111 (along lattice a+b+c)</source>
         <translation>111（沿晶格 a+b+c）</translation>
     </message>
@@ -2815,6 +2840,41 @@
         <location filename="../ui/messages.py" line="463" />
         <source>Folded Helix needs at least 3 detected layers along the layer axis; the current settings detect {actual}. Check the layer axis and tolerance.</source>
         <translation>折返螺旋沿分层方向至少需要识别出 3 层；当前设置识别出 {actual} 层。请检查层方向和分层容差。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="474" />
+        <source>Magnetic response needs vector spin or initial magnetic moments on the input structure.</source>
+        <translation>磁响应要求输入结构带有矢量 spin 或初始磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="478" />
+        <source>Magnetic response needs finite magnetic moments with at least one non-zero vector.</source>
+        <translation>磁响应要求磁矩数值有限，并且至少包含一个非零矢量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="482" />
+        <source>Maximum structures is smaller than the coordinate count of one complete response group.</source>
+        <translation>最大结构数小于一个完整响应组所需的坐标数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="486" />
+        <source>No non-zero magnetic moments match the selected atoms and elements.</source>
+        <translation>所选原子和元素中没有匹配的非零磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="490" />
+        <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
+        <translation>输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="495" />
+        <source>No atom pairs match the selected neighbor shell and automatic-pair filters.</source>
+        <translation>没有原子对同时满足所选近邻壳层和自动配对筛选条件。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="499" />
+        <source>No valid magnetic atom pairs match the left and right indices.</source>
+        <translation>左右索引没有匹配到有效的磁性原子对。</translation>
     </message>
     <message>
         <source>Maximum rotation angle must be between 0 and 180 degrees.</source>
@@ -6887,125 +6947,264 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>局域磁响应</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="49" />
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="173" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="52" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="285" />
         <source>Rotation-angle scan (degrees)</source>
         <translation>旋转角扫描（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="52" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="55" />
         <source>Production default is a symmetric five-point path: -2°, -1°, 0°, +1°, +2°.</source>
         <translation>生产默认采用五点对称路径：-2°、-1°、0°、+1°、+2°。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="56" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="59" />
         <source>Response path</source>
         <translation>响应路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="58" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="61" />
         <source>Choose the physical probe first; only parameters used by that probe are shown.</source>
         <translation>先选择物理探针；界面只显示该探针实际使用的参数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="60" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="63" />
         <source>Probe</source>
         <translation>探针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="64" />
         <source>For example: 1 or 1,3-5; empty selects the first eligible atom</source>
-        <translation>例如：1 或 1,3-5；留空选择第一个可用原子</translation>
+        <translation type="vanished">例如：1 或 1,3-5；留空选择第一个可用原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="66" />
         <source>Target atoms (1-based)</source>
-        <translation>目标原子（从 1 开始）</translation>
+        <translation type="vanished">目标原子（从 1 开始）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="77" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="67" />
+        <source>For example: 1 or 1,3-5</source>
+        <translation>例如：1 或 1,3-5</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="76" />
+        <source>Target selection</source>
+        <translation>目标选择</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="79" />
+        <source>Atom indices (1-based)</source>
+        <translation>原子索引（从 1 开始）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="82" />
+        <source>Ranges are allowed, for example 1,3-5.</source>
+        <translation>支持范围写法，例如 1,3-5。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="86" />
+        <source>For example: Fe,Co; empty includes every element</source>
+        <translation>例如 Fe,Co；留空包含全部元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="88" />
+        <source>Eligible elements</source>
+        <translation>合格元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="91" />
+        <source>Only atoms with non-zero moments and one of these elements can be selected.</source>
+        <translation>只有属于这些元素且磁矩非零的原子可以被选中。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="102" />
         <source>Left atom(s), 1-based</source>
         <translation>左侧原子（从 1 开始）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="78" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="103" />
         <source>Right atom(s), 1-based</source>
         <translation>右侧原子（从 1 开始）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="87" />
         <source>One independent complete response group is generated for every selected pair.</source>
-        <translation>每个选中的原子对都会生成一个独立且完整的响应组。</translation>
+        <translation type="vanished">每个选中的原子对都会生成一个独立且完整的响应组。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="93" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="117" />
+        <source>Filter automatic pairs</source>
+        <translation>筛选自动原子对</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="120" />
+        <source>Å</source>
+        <translation>Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="125" />
+        <source>Shell tolerance</source>
+        <translation>壳层容差</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="128" />
+        <source>Distances within this tolerance are treated as the same neighbor shell.</source>
+        <translation>距离差不超过此容差的原子对归入同一近邻壳层。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="133" />
+        <source>For example: Fe-Co or Fe-Fe,Fe-Co</source>
+        <translation>例如 Fe-Co 或 Fe-Fe,Fe-Co</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="135" />
+        <source>Element pairs</source>
+        <translation>元素对</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="138" />
+        <source>Leave empty to accept every element pair.</source>
+        <translation>留空接受全部元素对。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="141" />
+        <source>For example: A-B</source>
+        <translation>例如 A-B</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="143" />
+        <source>Label pairs</source>
+        <translation>标签对</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="146" />
+        <source>Uses atoms.arrays['group']; leave empty to ignore group labels.</source>
+        <translation>读取 atoms.arrays['group']；留空忽略分组标签。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="160" />
+        <source>Bond direction</source>
+        <translation>键方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="166" />
+        <source>Reference axis / plane normal (Cartesian)</source>
+        <translation>参考轴 / 平面法向（笛卡尔）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="171" />
+        <source>°</source>
+        <translation>°</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="176" />
+        <source>Angular tolerance</source>
+        <translation>角度容差</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="183" />
+        <source>Automatic pair filters</source>
+        <translation>自动原子对筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="185" />
+        <source>Optional filters are applied after the neighbor shell is selected.</source>
+        <translation>先选择近邻壳层，再应用以下可选筛选条件。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="200" />
         <source>Left group name</source>
         <translation>左侧分组名称</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="94" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="201" />
         <source>Right group name</source>
         <translation>右侧分组名称</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="96" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="203" />
         <source>Targets</source>
         <translation>目标选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="110" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="221" />
         <source>Show rotation axis and output limit</source>
         <translation>显示旋转轴和输出上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="120" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="231" />
         <source>Maximum structures</source>
         <translation>最大结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="123" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="234" />
         <source>Complete groups are kept together when the limit is reached.</source>
         <translation>达到上限时只在完整响应组之间截断。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="125" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="238" />
         <source>Axis and limit</source>
         <translation>旋转轴与上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="134" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="247" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="173" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="285" />
         <source>Moment scale scan</source>
         <translation>磁矩尺度扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="176" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="288" />
         <source>Scale 1.0 preserves the original moment magnitude; direction is fixed.</source>
         <translation>尺度 1.0 保持原始磁矩模长，方向始终固定。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="178" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="290" />
         <source>Angles are displayed in degrees and stored as radians in the response metadata.</source>
         <translation>界面以度显示角度，响应元数据中以弧度保存。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="197" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="321" />
+        <source>{count} structures per complete group, including one reference; the current limit can keep at most {groups} groups.</source>
+        <translation>每个完整组生成 {count} 个结构，其中包含一个参考帧；当前上限最多保留 {groups} 个完整组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="329" />
+        <source>{probe} · {count} per group</source>
+        <translation>{probe} · 每组 {count} 个</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="337" />
+        <source>Scale 1.0 is the reference. Check that the selected magnitudes vary while their directions stay fixed.</source>
+        <translation>比例 1.0 是参考帧。请检查所选磁矩的模长发生变化，而方向保持不变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="341" />
+        <source>Use a symmetric scan: the left atom rotates by +θ/2 and the right atom by −θ/2.</source>
+        <translation>使用对称扫描：左原子旋转 +θ/2，右原子旋转 −θ/2。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="345" />
+        <source>The two group labels must exist on the input; group A rotates by +θ/2 and group B by −θ/2.</source>
+        <translation>输入中必须存在两个分组标签；A 组旋转 +θ/2，B 组旋转 −θ/2。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="348" />
+        <source>Use a symmetric scan and verify that only the selected moment rotates around the Cartesian axis.</source>
+        <translation>使用对称扫描，并确认只有所选磁矩绕指定笛卡尔轴旋转。</translation>
+    </message>
+    <message>
         <source>{count} structures per selected atom, pair, or group pair; every target gets its own reference.</source>
-        <translation>每个选中原子、原子对或分组对生成 {count} 个结构；每个目标都有独立参考态。</translation>
+        <translation type="vanished">每个选中原子、原子对或分组对生成 {count} 个结构；每个目标都有独立参考态。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="203" />
         <source>{probe} · {count} coordinates per complete group</source>
-        <translation>{probe} · 每个完整组 {count} 个坐标</translation>
+        <translation type="vanished">{probe} · 每个完整组 {count} 个坐标</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="209" />
         <source>Use symmetric scans for rotation probes. Pair canting rotates the left side by +θ/2 and the right side by −θ/2.</source>
-        <translation>旋转探针应使用对称扫描。原子对倾斜中左侧旋转 +θ/2，右侧旋转 −θ/2。</translation>
+        <translation type="vanished">旋转探针应使用对称扫描。原子对倾斜中左侧旋转 +θ/2，右侧旋转 −θ/2。</translation>
     </message>
     <message>
         <source>Response preset</source>
@@ -7028,7 +7227,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">从 1 开始的索引，例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="72" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="97" />
         <source>Pair selection</source>
         <translation>原子对选择</translation>
     </message>
@@ -7041,7 +7240,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">右侧原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="84" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="109" />
         <source>Neighbor shell</source>
         <translation>近邻壳层</translation>
     </message>
@@ -7054,7 +7253,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">右侧分组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="113" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="224" />
         <source>Rotation axis (Cartesian)</source>
         <translation>旋转轴（笛卡尔）</translation>
     </message>
@@ -8538,23 +8737,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="510" />
-        <location filename="../ui/messages.py" line="550" />
+        <location filename="../ui/messages.py" line="539" />
+        <location filename="../ui/messages.py" line="579" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="520" />
+        <location filename="../ui/messages.py" line="549" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="530" />
+        <location filename="../ui/messages.py" line="559" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="540" />
+        <location filename="../ui/messages.py" line="569" />
         <source>Error</source>
         <translation>错误</translation>
     </message>

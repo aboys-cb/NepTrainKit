@@ -33,6 +33,9 @@ class LocalMagneticResponseCard(MakeDataCard):
 
     def init_ui(self):
         self.setObjectName("local_magnetic_response_card_widget")
+        self._active_kind = "Atom pair canting"
+        self._rotation_scan_text = "-2,-1,0,1,2"
+        self._magnitude_scan_text = "0.8,0.9,1.0,1.1,1.2"
         self.kind_combo = ComboBox(self.setting_widget)
         add_translated_items(
             self,
@@ -61,9 +64,31 @@ class LocalMagneticResponseCard(MakeDataCard):
         response_section.addWidget(self.scan_field)
 
         self.target_edit = LineEdit(self.setting_widget)
-        self.target_edit.setPlaceholderText(self.tr("For example: 1 or 1,3-5; empty selects the first eligible atom"))
+        self.target_edit.setPlaceholderText(self.tr("For example: 1 or 1,3-5"))
+        self.target_mode_combo = ComboBox(self.setting_widget)
+        add_translated_items(
+            self,
+            self.target_mode_combo,
+            ["First eligible atom", "All eligible atoms", "Explicit indices"],
+        )
+        set_combo_value(self.target_mode_combo, "First eligible atom")
+        self.target_mode_field = CompactField(
+            self.tr("Target selection"), self.target_mode_combo, self.setting_widget
+        )
         self.target_field = CompactField(
-            self.tr("Target atoms (1-based)"), self.target_edit, self.setting_widget
+            self.tr("Atom indices (1-based)"),
+            self.target_edit,
+            self.setting_widget,
+            self.tr("Ranges are allowed, for example 1,3-5."),
+        )
+
+        self.apply_edit = LineEdit(self.setting_widget)
+        self.apply_edit.setPlaceholderText(self.tr("For example: Fe,Co; empty includes every element"))
+        self.apply_field = CompactField(
+            self.tr("Eligible elements"),
+            self.apply_edit,
+            self.setting_widget,
+            self.tr("Only atoms with non-zero moments and one of these elements can be selected."),
         )
 
         self.pair_source_combo = ComboBox(self.setting_widget)
@@ -84,8 +109,90 @@ class LocalMagneticResponseCard(MakeDataCard):
             self.tr("Neighbor shell"),
             self.shell_frame,
             self.setting_widget,
-            self.tr("One independent complete response group is generated for every selected pair."),
+            inline=True,
+            input_max_width=132,
         )
+
+        self.pair_filters_checkbox = CheckBox(
+            self.tr("Filter automatic pairs"), self.setting_widget
+        )
+        self.pair_tol_frame = SpinBoxUnitInputFrame(self.setting_widget)
+        self.pair_tol_frame.set_input(self.tr("Å"), 1, "float")
+        self.pair_tol_frame.setRange(0.0001, 5.0)
+        self.pair_tol_frame.object_list[0].setDecimals(4)
+        self.pair_tol_frame.set_input_value([0.05])
+        self.pair_tol_field = CompactField(
+            self.tr("Shell tolerance"),
+            self.pair_tol_frame,
+            self.setting_widget,
+            self.tr("Distances within this tolerance are treated as the same neighbor shell."),
+            inline=True,
+            input_max_width=150,
+        )
+        self.pair_element_edit = LineEdit(self.setting_widget)
+        self.pair_element_edit.setPlaceholderText(self.tr("For example: Fe-Co or Fe-Fe,Fe-Co"))
+        self.pair_element_field = CompactField(
+            self.tr("Element pairs"),
+            self.pair_element_edit,
+            self.setting_widget,
+            self.tr("Leave empty to accept every element pair."),
+        )
+        self.pair_group_edit = LineEdit(self.setting_widget)
+        self.pair_group_edit.setPlaceholderText(self.tr("For example: A-B"))
+        self.pair_group_field = CompactField(
+            self.tr("Label pairs"),
+            self.pair_group_edit,
+            self.setting_widget,
+            self.tr("Uses atoms.arrays['group']; leave empty to ignore group labels."),
+        )
+        self.bond_mode_combo = ComboBox(self.setting_widget)
+        add_translated_items(
+            self,
+            self.bond_mode_combo,
+            [
+                ("Any", "Any direction"),
+                ("Near axis", "Near an axis"),
+                ("Near plane", "Near a plane"),
+            ],
+        )
+        set_combo_value(self.bond_mode_combo, "Any")
+        self.bond_mode_field = CompactField(
+            self.tr("Bond direction"), self.bond_mode_combo, self.setting_widget
+        )
+        self.bond_axis_input = DirectionInput(
+            self.setting_widget, default=(0.0, 0.0, 1.0)
+        )
+        self.bond_axis_field = CompactField(
+            self.tr("Reference axis / plane normal (Cartesian)"),
+            self.bond_axis_input,
+            self.setting_widget,
+        )
+        self.bond_tol_frame = SpinBoxUnitInputFrame(self.setting_widget)
+        self.bond_tol_frame.set_input(self.tr("°"), 1, "float")
+        self.bond_tol_frame.setRange(0.1, 90.0)
+        self.bond_tol_frame.object_list[0].setDecimals(1)
+        self.bond_tol_frame.set_input_value([20.0])
+        self.bond_tol_field = CompactField(
+            self.tr("Angular tolerance"),
+            self.bond_tol_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=150,
+        )
+        self.pair_filters_section = InspectorSection(
+            self.tr("Automatic pair filters"),
+            self.setting_widget,
+            self.tr("Optional filters are applied after the neighbor shell is selected."),
+        )
+        pair_filters_grid = ResponsiveFormGrid(self.pair_filters_section)
+        pair_filters_grid.add_field(self.pair_tol_field)
+        pair_filters_grid.add_field(self.bond_mode_field)
+        pair_filters_grid.add_field(self.pair_element_field)
+        pair_filters_grid.add_field(self.pair_group_field)
+        pair_filters_grid.add_field(self.bond_axis_field, span=2)
+        pair_filters_grid.add_field(self.bond_tol_field)
+        self.pair_filters_section.addWidget(pair_filters_grid)
+        self.pair_filters_section.hide()
         self.group_a_edit = LineEdit(self.setting_widget)
         self.group_a_edit.setText("A")
         self.group_b_edit = LineEdit(self.setting_widget)
@@ -95,17 +202,21 @@ class LocalMagneticResponseCard(MakeDataCard):
 
         selection_section = InspectorSection(self.tr("Targets"), self.setting_widget)
         selection_grid = ResponsiveFormGrid(selection_section)
-        for field in (
-            self.target_field,
-            self.pair_source_field,
-            self.left_field,
-            self.right_field,
-            self.shell_field,
-            self.group_a_field,
-            self.group_b_field,
+        for field, span in (
+            (self.target_mode_field, 1),
+            (self.target_field, 2),
+            (self.apply_field, 2),
+            (self.pair_source_field, 2),
+            (self.left_field, 1),
+            (self.right_field, 1),
+            (self.shell_field, 2),
+            (self.group_a_field, 1),
+            (self.group_b_field, 1),
         ):
-            selection_grid.add_field(field)
+            selection_grid.add_field(field, span=span)
         selection_section.addWidget(selection_grid)
+        selection_section.addWidget(self.pair_filters_checkbox)
+        selection_section.addWidget(self.pair_filters_section)
 
         self.advanced_checkbox = CheckBox(self.tr("Show rotation axis and output limit"), self.setting_widget)
         self.axis_input = DirectionInput(self.setting_widget, default=(0.0, 1.0, 0.0))
@@ -121,6 +232,8 @@ class LocalMagneticResponseCard(MakeDataCard):
             self.limit_frame,
             self.setting_widget,
             self.tr("Complete groups are kept together when the limit is reached."),
+            inline=True,
+            input_max_width=150,
         )
         self.advanced_section = InspectorSection(self.tr("Axis and limit"), self.setting_widget)
         advanced_grid = ResponsiveFormGrid(self.advanced_section)
@@ -144,6 +257,9 @@ class LocalMagneticResponseCard(MakeDataCard):
 
         self.kind_combo.currentIndexChanged.connect(self._on_kind_changed)
         self.pair_source_combo.currentIndexChanged.connect(self._update_widgets)
+        self.target_mode_combo.currentIndexChanged.connect(self._update_widgets)
+        self.bond_mode_combo.currentIndexChanged.connect(self._update_widgets)
+        self.pair_filters_checkbox.toggled.connect(self._update_widgets)
         self.advanced_checkbox.toggled.connect(self.advanced_section.setVisible)
         for spin in self.scan_input.range_frame.object_list:
             spin.valueChanged.connect(self._update_output_preview)
@@ -152,18 +268,14 @@ class LocalMagneticResponseCard(MakeDataCard):
 
     def _on_kind_changed(self, *_args):
         kind = combo_value(self.kind_combo)
-        is_magnitude = kind == "Moment magnitude"
-        values = self.scan_input.values()
-        rotation_default = [-2.0, -1.0, 0.0, 1.0, 2.0]
-        magnitude_default = [0.8, 0.9, 1.0, 1.1, 1.2]
-        if is_magnitude and len(values) == 5 and all(
-            abs(value - expected) < 1.0e-9 for value, expected in zip(values, rotation_default)
-        ):
-            self.scan_input.set_range(0.8, 1.2, 0.1)
-        elif not is_magnitude and len(values) == 5 and all(
-            abs(value - expected) < 1.0e-9 for value, expected in zip(values, magnitude_default)
-        ):
-            self.scan_input.set_range(-2.0, 2.0, 1.0)
+        if self._active_kind == "Moment magnitude":
+            self._magnitude_scan_text = self.scan_input.scan_text()
+        else:
+            self._rotation_scan_text = self.scan_input.scan_text()
+        self.scan_input.set_scan_text(
+            self._magnitude_scan_text if kind == "Moment magnitude" else self._rotation_scan_text
+        )
+        self._active_kind = kind
         self._update_widgets()
 
     def _update_widgets(self, *_args):
@@ -180,11 +292,21 @@ class LocalMagneticResponseCard(MakeDataCard):
         is_pair = kind == "Atom pair canting"
         is_group = kind == "Group pair canting"
         auto = is_pair and combo_value(self.pair_source_combo) == "Auto by neighbor shell"
-        self.target_field.setVisible(kind in {"Single-spin tilt", "Moment magnitude"})
+        is_atom_target = kind in {"Single-spin tilt", "Moment magnitude"}
+        explicit = is_atom_target and combo_value(self.target_mode_combo) == "Explicit indices"
+        self.target_mode_field.setVisible(is_atom_target)
+        self.target_field.setVisible(explicit)
+        self.apply_field.setVisible(is_atom_target or auto)
         self.pair_source_field.setVisible(is_pair)
         self.left_field.setVisible(is_pair and not auto)
         self.right_field.setVisible(is_pair and not auto)
         self.shell_field.setVisible(auto)
+        self.pair_filters_checkbox.setVisible(auto)
+        show_pair_filters = auto and self.pair_filters_checkbox.isChecked()
+        self.pair_filters_section.setVisible(show_pair_filters)
+        show_bond_details = show_pair_filters and combo_value(self.bond_mode_combo) != "Any"
+        self.bond_axis_field.setVisible(show_bond_details)
+        self.bond_tol_field.setVisible(show_bond_details)
         self.group_a_field.setVisible(is_group)
         self.group_b_field.setVisible(is_group)
         self.axis_field.setVisible(not is_magnitude)
@@ -193,20 +315,37 @@ class LocalMagneticResponseCard(MakeDataCard):
     def _update_output_preview(self, *_args):
         try:
             count = self.scan_input.count()
+            groups = max(0, int(self.limit_frame.get_input_value()[0]) // count)
             self.output_preview.setText(
-                self.tr("{count} structures per selected atom, pair, or group pair; every target gets its own reference.").format(count=count)
+                self.tr(
+                    "{count} structures per complete group, including one reference; "
+                    "the current limit can keep at most {groups} groups."
+                ).format(count=count, groups=groups)
             )
         except ValueError as exc:
             self.output_preview.setText(str(exc))
 
     def get_summary_text(self) -> str:
-        return self.tr("{probe} · {count} coordinates per complete group").format(
+        return self.tr("{probe} · {count} per group").format(
             probe=self.kind_combo.currentText(), count=self.scan_input.count()
         )
 
     def get_guidance_text(self) -> str:
+        kind = combo_value(self.kind_combo)
+        if kind == "Moment magnitude":
+            return self.tr(
+                "Scale 1.0 is the reference. Check that the selected magnitudes vary while their directions stay fixed."
+            )
+        if kind == "Atom pair canting":
+            return self.tr(
+                "Use a symmetric scan: the left atom rotates by +θ/2 and the right atom by −θ/2."
+            )
+        if kind == "Group pair canting":
+            return self.tr(
+                "The two group labels must exist on the input; group A rotates by +θ/2 and group B by −θ/2."
+            )
         return self.tr(
-            "Use symmetric scans for rotation probes. Pair canting rotates the left side by +θ/2 and the right side by −θ/2."
+            "Use a symmetric scan and verify that only the selected moment rotates around the Cartesian axis."
         )
 
     def create_operation(self):
@@ -215,36 +354,69 @@ class LocalMagneticResponseCard(MakeDataCard):
     def get_params(self) -> LocalMagneticResponseParams:
         kind = combo_value(self.kind_combo)
         scan_text = self.scan_input.scan_text()
+        if kind == "Moment magnitude":
+            self._magnitude_scan_text = scan_text
+        else:
+            self._rotation_scan_text = scan_text
         return LocalMagneticResponseParams(
             response_kind=kind,
-            coordinate_scan_deg=scan_text if kind != "Moment magnitude" else "-2,-1,0,1,2",
-            target_mode="Explicit indices" if self.target_edit.text().strip() else "First eligible atom",
+            coordinate_scan_deg=self._rotation_scan_text,
+            target_mode=combo_value(self.target_mode_combo),
             target_indices=self.target_edit.text(),
             pair_source=combo_value(self.pair_source_combo),
             pair_left_indices=self.left_edit.text(),
             pair_right_indices=self.right_edit.text(),
             pair_shell=int(self.shell_frame.get_input_value()[0]),
+            pair_shell_tolerance=float(self.pair_tol_frame.get_input_value()[0]),
+            pair_element_filter=self.pair_element_edit.text(),
+            pair_group_filter=self.pair_group_edit.text(),
+            bond_filter_mode=combo_value(self.bond_mode_combo),
+            bond_filter_axis=self.bond_axis_input.vector(),
+            bond_filter_tolerance=float(self.bond_tol_frame.get_input_value()[0]),
             group_a=self.group_a_edit.text(),
             group_b=self.group_b_edit.text(),
             rotation_axis=self.axis_input.vector(),
-            moment_scale_scan=scan_text if kind == "Moment magnitude" else "0.8,0.9,1.0,1.1,1.2",
+            apply_elements=self.apply_edit.text(),
+            moment_scale_scan=self._magnitude_scan_text,
             max_outputs=int(self.limit_frame.get_input_value()[0]),
         )
 
     def set_params(self, params: LocalMagneticResponseParams):
         set_combo_value(self.kind_combo, params.response_kind)
+        self._rotation_scan_text = params.coordinate_scan_deg
+        self._magnitude_scan_text = params.moment_scale_scan
+        self._active_kind = params.response_kind
         self.scan_input.set_scan_text(
             params.moment_scale_scan if params.response_kind == "Moment magnitude" else params.coordinate_scan_deg
         )
+        set_combo_value(self.target_mode_combo, params.target_mode)
         self.target_edit.setText(params.target_indices)
         set_combo_value(self.pair_source_combo, params.pair_source)
         self.left_edit.setText(params.pair_left_indices)
         self.right_edit.setText(params.pair_right_indices)
         self.shell_frame.set_input_value([params.pair_shell])
+        self.pair_tol_frame.set_input_value([params.pair_shell_tolerance])
+        self.pair_element_edit.setText(params.pair_element_filter)
+        self.pair_group_edit.setText(params.pair_group_filter)
+        set_combo_value(self.bond_mode_combo, params.bond_filter_mode)
+        self.bond_axis_input.set_vector(params.bond_filter_axis)
+        self.bond_tol_frame.set_input_value([params.bond_filter_tolerance])
+        self.pair_filters_checkbox.setChecked(
+            params.pair_shell_tolerance != 0.05
+            or bool(params.pair_element_filter.strip())
+            or bool(params.pair_group_filter.strip())
+            or params.bond_filter_mode != "Any"
+            or tuple(params.bond_filter_axis) != (0.0, 0.0, 1.0)
+            or params.bond_filter_tolerance != 20.0
+        )
         self.group_a_edit.setText(params.group_a)
         self.group_b_edit.setText(params.group_b)
         self.axis_input.set_vector(params.rotation_axis)
+        self.apply_edit.setText(params.apply_elements)
         self.limit_frame.set_input_value([params.max_outputs])
+        self.advanced_checkbox.setChecked(
+            tuple(params.rotation_axis) != (0.0, 1.0, 0.0) or params.max_outputs != 100
+        )
         self._update_widgets()
 
     def process_structure(self, structure):

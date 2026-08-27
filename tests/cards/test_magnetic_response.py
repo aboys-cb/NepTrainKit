@@ -8,6 +8,7 @@ import pytest
 from ase import Atoms
 from ase.io import read, write
 
+from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.core.magnetic_response import (
     LocalMagneticResponseParams,
     MagneticResponseScanOperation,
@@ -76,10 +77,100 @@ def test_output_limit_never_leaves_partial_group():
     )
     assert len(output) == 5
     assert audit_response_groups(output)["invalid_groups"] == {}
-    with pytest.raises(ValueError, match="smaller than one complete"):
+    with pytest.raises(CardOperationError) as raised:
         MagneticResponseScanOperation().run_structure(
             atoms, LocalMagneticResponseParams(max_outputs=4)
         )
+    assert raised.value.code == "magnetic_response_budget_too_small"
+
+
+def test_local_rotation_axis_controls_the_actual_rodrigues_rotation():
+    atoms = magnetic_pair(pbc=False)
+    y_axis = MagneticResponseScanOperation().run_structure(
+        atoms,
+        LocalMagneticResponseParams(
+            response_kind="Single-spin tilt",
+            coordinate_scan_deg="-90,0,90",
+            rotation_axis=(0.0, 1.0, 0.0),
+        ),
+    )
+    z_axis = MagneticResponseScanOperation().run_structure(
+        atoms,
+        LocalMagneticResponseParams(
+            response_kind="Single-spin tilt",
+            coordinate_scan_deg="-90,0,90",
+            rotation_axis=(0.0, 0.0, 1.0),
+        ),
+    )
+
+    assert y_axis[-1].arrays["spin"][0] == pytest.approx([2.0, 0.0, 0.0], abs=1.0e-12)
+    assert z_axis[-1].arrays["spin"][0] == pytest.approx([0.0, 0.0, 2.0], abs=1.0e-12)
+    assert all(
+        np.array_equal(frame.arrays["spin"][1], atoms.get_initial_magnetic_moments()[1])
+        for frame in y_axis
+    )
+
+
+def test_local_response_reports_actionable_input_errors():
+    without_moments = Atoms("Fe", positions=[[0.0, 0.0, 0.0]])
+    with pytest.raises(CardOperationError) as missing:
+        MagneticResponseScanOperation().run_structure(
+            without_moments, LocalMagneticResponseParams()
+        )
+    assert missing.value.code == "magnetic_response_missing_moments"
+
+    atoms = magnetic_pair(pbc=False)
+    with pytest.raises(CardOperationError) as groups:
+        MagneticResponseScanOperation().run_structure(
+            atoms,
+            LocalMagneticResponseParams(
+                response_kind="Group pair canting", group_a="A", group_b="B"
+            ),
+        )
+    assert groups.value.code == "local_response_no_group_pair"
+    assert "Group Label" in str(groups.value)
+
+
+def test_local_automatic_pair_filters_change_the_selected_response_groups():
+    atoms = Atoms(
+        ["Fe", "Co", "Co", "Fe"],
+        positions=[[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]],
+        cell=[4, 4, 4],
+        pbc=False,
+    )
+    atoms.set_initial_magnetic_moments([[0, 0, 2]] * 4)
+    atoms.set_array("group", np.asarray(["A", "B", "B", "A"]))
+    common = dict(
+        pair_source="Auto by neighbor shell",
+        pair_element_filter="Fe-Co",
+        pair_group_filter="A-B",
+        bond_filter_axis=(1.0, 0.0, 0.0),
+        bond_filter_tolerance=1.0,
+    )
+
+    in_plane = MagneticResponseScanOperation().run_structure(
+        atoms,
+        LocalMagneticResponseParams(bond_filter_mode="Near plane", **common),
+    )
+    along_axis = MagneticResponseScanOperation().run_structure(
+        atoms,
+        LocalMagneticResponseParams(bond_filter_mode="Near axis", **common),
+    )
+
+    assert len({frame.info["response_group"] for frame in in_plane}) == 2
+    assert len({frame.info["response_group"] for frame in along_axis}) == 2
+    assert len(in_plane) == len(along_axis) == 10
+
+    all_directions = MagneticResponseScanOperation().run_structure(
+        atoms,
+        LocalMagneticResponseParams(
+            bond_filter_mode="Any",
+            pair_source="Auto by neighbor shell",
+            pair_element_filter="Fe-Co",
+            pair_group_filter="A-B",
+        ),
+    )
+    assert len(all_directions) == 20
 
 
 def test_reused_operation_assigns_unique_deterministic_parents_to_duplicate_inputs():

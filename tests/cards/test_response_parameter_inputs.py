@@ -10,6 +10,7 @@ from NepTrainKit.core.magnetic_response import (
     MagnetoelasticResponseParams,
     TextureMagneticResponseParams,
 )
+from NepTrainKit.ui.views._card.i18n_utils import set_combo_value
 from NepTrainKit.ui.views._card.local_magnetic_response_card import LocalMagneticResponseCard
 from NepTrainKit.ui.views._card.magnetoelastic_response_card import MagnetoelasticResponseCard
 from NepTrainKit.ui.views._card.soc_texture_response_card import SOCTextureResponseCard
@@ -70,6 +71,64 @@ def test_local_response_switches_scan_meaning_without_losing_serialized_values()
     assert not card.target_field.isHidden()
     assert card.scan_input.custom_checkbox.isChecked()
     assert card.get_params() == params
+
+
+def test_local_response_round_trip_preserves_every_automatic_pair_filter():
+    card = LocalMagneticResponseCard()
+    params = LocalMagneticResponseParams(
+        response_kind="Atom pair canting",
+        coordinate_scan_deg="-3,-1,0,1,3",
+        target_mode="All eligible atoms",
+        target_indices="2,4",
+        pair_source="Auto by neighbor shell",
+        pair_left_indices="2,4",
+        pair_right_indices="3,5",
+        pair_shell=2,
+        pair_shell_tolerance=0.125,
+        pair_element_filter="Fe-Co",
+        pair_group_filter="A-B",
+        bond_filter_mode="Near plane",
+        bond_filter_axis=(1.0, 0.0, 0.0),
+        bond_filter_tolerance=7.5,
+        group_a="up",
+        group_b="down",
+        rotation_axis=(0.0, 0.0, 1.0),
+        apply_elements="Fe,Co",
+        moment_scale_scan="0.7,1.0,1.3",
+        max_outputs=45,
+    )
+
+    card.set_params(params)
+
+    assert card.get_params() == params
+    assert card.pair_filters_checkbox.isChecked()
+    assert not card.pair_filters_section.isHidden()
+    assert not card.bond_axis_field.isHidden()
+    assert card.advanced_checkbox.isChecked()
+
+
+def test_local_response_only_shows_controls_used_by_the_selected_mode():
+    card = LocalMagneticResponseCard()
+
+    set_combo_value(card.kind_combo, "Single-spin tilt")
+    set_combo_value(card.target_mode_combo, "First eligible atom")
+    assert card.target_field.isHidden()
+    assert not card.apply_field.isHidden()
+
+    set_combo_value(card.target_mode_combo, "Explicit indices")
+    assert not card.target_field.isHidden()
+
+    set_combo_value(card.kind_combo, "Atom pair canting")
+    set_combo_value(card.pair_source_combo, "Auto by neighbor shell")
+    assert not card.pair_filters_checkbox.isHidden()
+    assert card.pair_filters_section.isHidden()
+
+    card.pair_filters_checkbox.setChecked(True)
+    assert not card.pair_filters_section.isHidden()
+    assert card.bond_axis_field.isHidden()
+
+    set_combo_value(card.bond_mode_combo, "Near axis")
+    assert not card.bond_axis_field.isHidden()
 
 
 def test_soc_response_roundtrip_splits_q_direction_and_magnitude():

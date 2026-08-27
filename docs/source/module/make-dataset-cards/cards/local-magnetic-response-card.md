@@ -4,127 +4,140 @@
 
 **分类：** 磁性
 
-## 功能说明
+## 这张卡做什么
 
-把一个已有 `spin:R:3` 或矢量磁矩的结构展开成完整、对称且可追踪的局域响应组。单自旋、原子对和 group-pair 使用一致的小角旋转定义；每个目标拥有自己的零角参考帧，输出预算只按完整组截断。Moment magnitude preset 固定方向，只扫描模长。
+输入一帧带矢量磁矩的结构，围绕指定原子、原子对或 group 生成一条受控响应路径。每个目标对应一个完整 group，group 内含零扰动参考帧，适合比较局域磁矩变化前后的能量和磁力响应。
+
+它与“自旋扰动”的区别是：这里的坐标有顺序、正负分支成对且每组自带参考帧；自旋扰动用于随机扩充构型。
 
 ## 原理与公式
 
-原子对模式把总角度平分：
+设输入磁矩为 $\mathbf S_i$，笛卡尔旋转轴的单位向量为 $\hat{\mathbf n}$。旋转使用 Rodrigues 公式：
 
-$$\theta_L=+\theta/2,\qquad\theta_R=-\theta/2.$$
+$$
+R_{\hat{\mathbf n}}(\theta)\mathbf S
+=\mathbf S\cos\theta
++(\hat{\mathbf n}\times\mathbf S)\sin\theta
++\hat{\mathbf n}(\hat{\mathbf n}\cdot\mathbf S)(1-\cos\theta).
+$$
 
-训练预处理从同组 $\mathbf S(\theta)$ 数值反推 $d\mathbf S/d\theta$，再使用 $g(\theta)=\sum_i\mathbf m_i^{\mathrm{force}}\cdot d\mathbf S_i/d\theta$。卡片不生成 J/D 标签，也不持久化 `spin_tangent`。
+- **单原子倾斜：** 选中磁矩变为 $R_{\hat{\mathbf n}}(\theta)\mathbf S_i$。
+- **原子对倾斜：** 左原子旋转 $+\theta/2$，右原子旋转 $-\theta/2$；$\theta$ 是两侧的总相对转角。
+- **分组对倾斜：** 对两个 `group` 中的全部非零磁矩执行相同的 $+\theta/2$ 与 $-\theta/2$ 旋转。
+- **磁矩模长：** 方向不变，选中磁矩变为 $\mathbf S_i(s)=s\mathbf S_i$。元数据中的响应坐标记录为 $s-1$，因此参考帧仍位于 0。
+
+旋转模式的界面角度单位为度，输出 `response_coordinate` 使用弧度。
+
+## 输出数量怎么算
+
+每个目标、原子对或分组对各生成一个完整 group：
+
+$$N_{\mathrm{out}}=N_{\mathrm{group}}\times N_{\mathrm{coordinate}}.$$
+
+例如五点扫描 `-2,-1,0,1,2`：
+
+- 首个合格原子：$1\times5=5$ 帧；
+- 显式选择原子 `1,3`：$2\times5=10$ 帧；
+- 自动找到 4 对近邻：$4\times5=20$ 帧；
+- group A/B：$1\times5=5$ 帧。
+
+“最大结构数”只在 group 之间截断，不会留下不完整的扫描。如果上限小于一个 group 的坐标数，运行会报错。
 
 ## 操作示例
 
-### 场景：总 RMSE 不高，但相邻自旋的小角响应符号不稳定
-
-普通随机非共线帧没有提供可排序的局部扫描曲线。输入带自旋的目标结构，选择 `Atom pair canting`，手动给出 `1` 和 `2`，扫描 `-2,-1,0,1,2` 度。输出五帧构成一个 group；DFT 回填后检查正负角分支和 $g(\theta)$ 的奇偶部分。结果只证明这条受控路径可辨识，不能单独证明所有 J/D 已学准。
+1. 确认输入含 `spin:R:3` 或可转换为三分量的初始磁矩。
+2. 选择响应类型，再选择目标原子、原子对或 group。
+3. 旋转响应使用含 0 的对称角度扫描；模长响应使用含 1.0 的比例扫描。
+4. 运行后按 `response_group` 检查每组是否同时含 minus、reference 和 plus 分支。
 
 ## 参数说明
 
-### Response Kind（response_kind）
+### 响应类型（response_kind）
 
-`str`，默认 `Atom pair canting`。可选 `Single-spin tilt`、`Atom pair canting`、`Group pair canting` 和 `Moment magnitude`；它决定目标是一颗自旋、一对自旋、两组自旋还是模长缩放。
+默认 `Atom pair canting`。可选 `Single-spin tilt`、`Atom pair canting`、`Group pair canting`、`Moment magnitude`。
 
-### Coordinate Scan Degrees（coordinate_scan_deg）
+### 旋转角扫描（coordinate_scan_deg）
 
-`str`，默认 `-2,-1,0,1,2`。界面使用“最小值 / 最大值 / 步长”的角度范围控件，单位度；非等距旧扫描可打开“自定义坐标列表”。输出元数据换成弧度。必须至少三个不同点并包含零点，正负分支必须配对。
+默认 `-2,-1,0,1,2` 度，仅用于三种旋转响应。至少三个不同坐标并包含 0；输出元数据换算为弧度。
 
-### Target Mode（target_mode）
+### 目标选择（target_mode）
 
-`str`，默认 `First eligible atom`。单自旋或模长扫描的目标选择；填写 Target atoms 后界面使用显式索引。
+默认 `First eligible atom`。单原子倾斜和磁矩模长可选择首个合格原子、全部合格原子或显式索引。
 
-### Target Indices（target_indices）
+### 原子索引（target_indices）
 
-`str`，默认空。1-based 原子索引，例如 `1,3-5`。
+默认空，仅在 `Explicit indices` 下显示。使用 1-based 索引，例如 `1,3-5`。
 
-### Pair Source（pair_source）
+### 原子对来源（pair_source）
 
-`str`，默认 `Manual indices`。原子对可手动指定，也可按近邻壳层自动选择。
+默认 `Manual indices`。可手动配对，也可按近邻壳层自动选取无重复原子对。
 
-### Pair Left Indices（pair_left_indices）
+### 左侧原子索引（pair_left_indices）
 
-`str`，默认 `1`。手动 pair 的左侧 1-based 索引，与右侧逐项配对。
+默认 `1`。手动配对时使用 1-based 索引；数量必须与右侧一致。
 
-### Pair Right Indices（pair_right_indices）
+### 右侧原子索引（pair_right_indices）
 
-`str`，默认 `2`。手动 pair 的右侧 1-based 索引。
+默认 `2`。按顺序与左侧索引一一配对。
 
-### Pair Shell（pair_shell）
+### 近邻壳层（pair_shell）
 
-`int`，默认 `1`。自动 pair 使用的近邻壳层。
+默认 `1`，仅用于自动配对。`1` 表示最近邻壳层，`2` 表示第二近邻壳层。
 
-### Pair Shell Tolerance（pair_shell_tolerance）
+### 分壳容差（pair_shell_tolerance）
 
-`float`，默认 `0.05` Å。距离分壳容差。
+默认 `0.05` Å。距离差不超过此值的原子对归入同一近邻壳层。
 
-### Pair Element Filter（pair_element_filter）
+### 元素对筛选（pair_element_filter）
 
-`str`，默认空。自动 pair 的元素对筛选，例如 `Fe-Co`。
+默认空，表示不筛选。可写 `Fe-Co` 或 `Fe-Fe,Fe-Co`。
 
-### Pair Group Filter（pair_group_filter）
+### 标签对筛选（pair_group_filter）
 
-`str`，默认空。按 `atoms.arrays['group']` 筛选自动 pair。
+默认空，表示不筛选。可写 `A-B`；输入必须含 `atoms.arrays['group']`。
 
-### Bond Filter Mode（bond_filter_mode）
+### 键方向筛选（bond_filter_mode）
 
-`str`，默认 `Any`。可限制为靠近指定轴或平面的键。
+默认 `Any`。可选 `Any`、`Near axis`、`Near plane`，分别表示不限方向、靠近参考轴、靠近以参考向量为法向的平面。
 
-### Bond Filter Axis（bond_filter_axis）
+### 键方向参考（bond_filter_axis）
 
-三维 Cartesian 向量，默认 `[0,0,1]`。键方向筛选的参考轴。
+默认 `[0,0,1]`，为笛卡尔向量；在 `Near axis` 中表示轴，在 `Near plane` 中表示平面法向。
 
-### Bond Filter Tolerance（bond_filter_tolerance）
+### 键方向容差（bond_filter_tolerance）
 
-`float`，默认 `20` 度。键方向允许偏离参考方向的角度。
+默认 `20` 度。只在启用方向筛选时生效。
 
-### Group A（group_a）
+### 左分组（group_a）
 
-`str`，默认 `A`。group-pair 左组标签。
+默认 `A`。group A 的非零磁矩旋转 $+\theta/2$。
 
-### Group B（group_b）
+### 右分组（group_b）
 
-`str`，默认 `B`。group-pair 右组标签。
+默认 `B`。group B 的非零磁矩旋转 $-\theta/2$。
 
-### Rotation Axis（rotation_axis）
+### 旋转轴（rotation_axis）
 
-三维 Cartesian 向量，默认 `[0,1,0]`。定义确定性的旋转平面法向。
+默认 `[0,1,0]`，为笛卡尔向量，仅用于旋转响应。若磁矩平行于旋转轴，该磁矩不会改变。
 
-### Apply Elements（apply_elements）
+### 合格元素（apply_elements）
 
-`str`，默认空。限制可参与目标选择的元素。
+默认空，表示所有元素。只允许所列元素中模长非零的磁矩成为单原子目标或自动原子对候选，例如 `Fe,Co`。
 
-### Moment Scale Scan（moment_scale_scan）
+### 模长比例扫描（moment_scale_scan）
 
-`str`，默认 `0.8,0.9,1.0,1.1,1.2`。只在 Moment magnitude preset 生效；保持方向并按比例缩放模长。
+默认 `0.8,0.9,1.0,1.1,1.2`，仅用于磁矩模长响应。比例必须非负、互不重复并包含 1.0。
 
-### Max Outputs（max_outputs）
+### 最大结构数（max_outputs）
 
-`int`，默认 `100`。预算不足一个完整 group 会报错；能容纳多个 group 时只保留完整 group。
-
-## 推荐预设
-
-```json
-{"class":"LocalMagneticResponseCard","params":{"response_kind":"Atom pair canting","coordinate_scan_deg":"-2,-1,0,1,2","pair_left_indices":"1","pair_right_indices":"2","rotation_axis":[0,1,0],"max_outputs":100}}
-```
-
-## 推荐组合
-
-- `Set Magnetic Moments → Local Magnetic Response`：先建立明确的参考自旋，再做局域扫描。
-- `Group Label → Local Magnetic Response`：为 AFM 子晶格建立 group-pair 扫描。
+默认 `100`。只保留能完整放入预算的 group。
 
 ## 常见问题
 
-- 找不到 pair：检查 1-based 索引、近邻壳层、元素/group 和键方向筛选。
-- 输出少于预期：上限只按完整 group 截断；提高 Max outputs。
-- group 被判 invalid：检查扫描是否含零点、正负是否成对，以及 DFT 后同组磁矩是否坍缩或翻转。
+- **没有可用目标：** 检查输入磁矩是否为非零三分量向量，以及原子索引和合格元素是否匹配。
+- **自动配对为空：** 先关闭可选筛选并确认近邻壳层，再逐项加入元素对、标签对或键方向限制。
+- **分组对为空：** 先用“分组标签”卡写入 `group`，并确认两个标签中都存在非零磁矩。
 
-## 输出标签
+## 输出字段
 
-`Config_type` 追加 `MagResponse(<kind>,<branch>)`；最小 header 同时含 `response_schema/group/probe/coordinate/branch`。
-
-## 可复现性
-
-操作不使用随机数；相同结构和参数得到相同 group/task id 与相同自旋。
+输出保留结构的原子、坐标、晶胞和 PBC，磁矩统一写入 `spin:R:3`。每帧带有 `response_group`、`response_coordinate`、`response_branch`、`response_task_id` 和来源结构标识；相同输入与参数会得到确定性的响应内容和任务标识。

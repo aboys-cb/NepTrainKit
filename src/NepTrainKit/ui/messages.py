@@ -471,6 +471,35 @@ def _card_operation_error_catalog() -> None:
     QCoreApplication.translate(
         "CardOperationError", "No non-zero magnetic moments match the selected elements."
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic response needs vector spin or initial magnetic moments on the input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic response needs finite magnetic moments with at least one non-zero vector.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum structures is smaller than the coordinate count of one complete response group.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No non-zero magnetic moments match the selected atoms and elements.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. "
+        "Check the group labels or add Group Label upstream.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No atom pairs match the selected neighbor shell and automatic-pair filters.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No valid magnetic atom pairs match the left and right indices.",
+    )
 
 
 class MessageManager(QObject):

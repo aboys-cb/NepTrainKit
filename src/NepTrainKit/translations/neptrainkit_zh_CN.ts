@@ -849,14 +849,12 @@
         <translation type="vanished">按规则以概率方式移除原子，生成空位结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="60" />
         <source>Branch Merge Group</source>
-        <translation>分支合并组</translation>
+        <translation type="vanished">分支合并组</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="61" />
         <source>Run several independent child branches one at a time from the same input, merge their outputs, and optionally apply one post-filter; child cards do not feed one another.</source>
-        <translation>让多个独立子分支从同一输入逐张运行，合并其输出，并可选地应用一张后置过滤卡；子卡片之间不会传递数据。</translation>
+        <translation type="vanished">让多个独立子分支从同一输入逐张运行，合并其输出，并可选地应用一张后置过滤卡；子卡片之间不会传递数据。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="67" />
@@ -958,6 +956,16 @@
     <message>
         <source>Insert solvent molecules around selected host atoms using a fallback COM shell or ion-specific first-shell distances, with collision checks and optional flexible-solvent sampling.</source>
         <translation type="vanished">按备用质心壳层或离子专属第一壳距离，在选中的宿主原子周围插入溶剂分子，并提供碰撞检查和可选的柔性溶剂采样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="60" />
+        <source>Branch Merge</source>
+        <translation>分支合并</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="61" />
+        <source>Run independent cards from one shared input, merge their outputs, then optionally apply one filter.</source>
+        <translation>让多张独立卡片读取同一输入，合并输出后可选用一张过滤卡统一筛选。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="124" />
@@ -2453,149 +2461,211 @@
         <translation type="vanished">可选后置过滤：拖入一张过滤卡，处理所有分支的合并输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="148" />
         <source>Fan-out Merge</source>
-        <translation>分流合并</translation>
+        <translation type="vanished">分流合并</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/card_group.py" line="160" />
-        <location filename="../ui/views/_card/card_group.py" line="503" />
+        <location filename="../ui/views/_card/card_group.py" line="538" />
         <source>Common input · not loaded</source>
         <translation>共享输入 · 尚未载入</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="181" />
         <source>Drop cards here. Each card receives the common input.</source>
-        <translation>将卡片拖到这里；每张卡片都会接收同一份输入。</translation>
+        <translation type="vanished">将卡片拖到这里；每张卡片都会接收同一份输入。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="198" />
+        <location filename="../ui/views/_card/card_group.py" line="200" />
         <source>Automatic merge</source>
         <translation>自动合并</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="200" />
+        <location filename="../ui/views/_card/card_group.py" line="202" />
         <source>Waiting for branch outputs</source>
         <translation>等待各分支输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="214" />
         <source>Optional post-merge filter</source>
-        <translation>可选的合并后筛选</translation>
+        <translation type="vanished">可选的合并后筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="251" />
+        <location filename="../ui/views/_card/card_group.py" line="260" />
         <source>This group already has a post-filter. Close or move it before adding another.</source>
         <translation>这个组已经有后置过滤卡。请先关闭或移走它，再添加另一张。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="468" />
+        <location filename="../ui/views/_card/card_group.py" line="483" />
         <source>input not loaded</source>
         <translation>尚未载入输入</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="471" />
+        <location filename="../ui/views/_card/card_group.py" line="486" />
         <source>{count} input structures</source>
         <translation>{count} 个输入结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="475" />
+        <location filename="../ui/views/_card/card_group.py" line="490" />
         <source>input loaded</source>
         <translation>已载入输入</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="477" />
+        <location filename="../ui/views/_card/card_group.py" line="501" />
         <source>post-filter: {name}</source>
         <translation>合并后筛选：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="481" />
-        <location filename="../ui/views/_card/card_group.py" line="522" />
+        <location filename="../ui/views/_card/card_group.py" line="503" />
+        <location filename="../ui/views/_card/card_group.py" line="601" />
         <source>no post-filter</source>
         <translation>无合并后筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="485" />
+        <location filename="../ui/views/_card/card_group.py" line="509" />
+        <source>{input_count} input → {merged_count} merged → {result_count} kept</source>
+        <translation>输入 {input_count} → 合并 {merged_count} → 保留 {result_count}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="516" />
+        <source>{input_count} input → {result_count} merged</source>
+        <translation>输入 {input_count} → 合并 {result_count}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="521" />
+        <location filename="../ui/views/_card/card_group.py" line="563" />
+        <source>Run failed · no output</source>
+        <translation>运行失败 · 无输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="523" />
+        <location filename="../ui/views/_card/card_group.py" line="565" />
+        <source>Run canceled · no output</source>
+        <translation>运行已取消 · 无输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="526" />
         <source>{input} · {enabled}/{total} branch cards enabled · merged output · {filter}</source>
         <translation>{input} · 已启用 {enabled}/{total} 张分支卡 · 合并输出 · {filter}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="501" />
+        <location filename="../ui/views/_card/card_group.py" line="536" />
         <source>Common input · {count} structures</source>
         <translation>共享输入 · {count} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="507" />
+        <location filename="../ui/views/_card/card_group.py" line="542" />
+        <source>{merged} merged → {kept} kept</source>
+        <translation>合并 {merged} → 保留 {kept}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="549" />
         <source>{count} merged structures</source>
         <translation>已合并 {count} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="513" />
+        <location filename="../ui/views/_card/card_group.py" line="554" />
+        <source>Applying post-merge filter</source>
+        <translation>正在执行后置过滤</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="557" />
+        <source>Running branch {current}/{total}</source>
+        <translation>正在运行分支 {current}/{total}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="568" />
         <source>{enabled} enabled branches</source>
         <translation>已启用 {enabled} 条分支</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="520" />
+        <location filename="../ui/views/_card/card_group.py" line="573" />
+        <source>Post-merge filter · {name} · {state}</source>
+        <translation>后置过滤 · {name} · {state}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="599" />
         <source>post-filter enabled</source>
         <translation>已启用合并后筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="525" />
+        <location filename="../ui/views/_card/card_group.py" line="604" />
         <source>{enabled}/{total} paths · automatic merge · {filter}</source>
         <translation>{enabled}/{total} 条路径 · 自动合并 · {filter}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="530" />
+        <location filename="../ui/views/_card/card_group.py" line="609" />
         <source>Every enabled child receives the same group input. Child outputs are concatenated immediately; use Permanent Fork when each path must continue independently.</source>
         <translation>每个启用的子卡都接收同一份组输入，子卡输出会立即拼接；如果每条路径需要继续独立处理，请使用永久分叉。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="536" />
+        <location filename="../ui/views/_card/card_group.py" line="615" />
         <source>Flow structure</source>
         <translation>流程结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="537" />
+        <location filename="../ui/views/_card/card_group.py" line="616" />
         <source>Common input → independent transforms → automatic merge</source>
         <translation>共享输入 → 各路径独立处理 → 自动合并</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="539" />
+        <location filename="../ui/views/_card/card_group.py" line="618" />
         <source>Paths</source>
         <translation>处理路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="542" />
+        <location filename="../ui/views/_card/card_group.py" line="621" />
         <source>{name} · {state}</source>
         <translation>{name} · {state}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="544" />
+        <location filename="../ui/views/_card/card_group.py" line="571" />
+        <location filename="../ui/views/_card/card_group.py" line="623" />
         <source>enabled</source>
         <translation>已启用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="544" />
+        <location filename="../ui/views/_card/card_group.py" line="148" />
+        <source>Branch Merge</source>
+        <translation>分支合并</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="182" />
+        <source>Select this group, then add or drop cards here. Each card receives the common input.</source>
+        <translation>选中该组后，在此添加或拖入卡片；每张卡片接收同一输入。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="216" />
+        <location filename="../ui/views/_card/card_group.py" line="580" />
+        <source>Post-merge filter · Drop one filter card here (optional).</source>
+        <translation>后置过滤 · 可在此拖入一张过滤卡</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="571" />
+        <location filename="../ui/views/_card/card_group.py" line="623" />
         <source>disabled</source>
         <translation>已停用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="551" />
+        <location filename="../ui/views/_card/card_group.py" line="630" />
         <source>Post-merge filter</source>
         <translation>合并后筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="554" />
+        <location filename="../ui/views/_card/card_group.py" line="633" />
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="816" />
+        <location filename="../ui/views/_card/card_group.py" line="899" />
+        <source>Branch Merge needs at least one enabled branch.</source>
+        <translation>分支合并至少需要一个已启用的分支。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/card_group.py" line="934" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/card_group.py" line="825" />
+        <location filename="../ui/views/_card/card_group.py" line="943" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
@@ -10140,67 +10210,72 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>尚未选择卡片，请先在工作区选择一个卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="962" />
+        <location filename="../ui/pages/makedata.py" line="963" />
         <source>Training structures generated.</source>
         <translation>训练结构已生成。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="967" />
+        <source>Workflow completed with 0 output structures.</source>
+        <translation>工作流已完成，输出 0 个结构。</translation>
     </message>
     <message>
         <source>Perturbation training set created successfully.</source>
         <translation type="vanished">扰动训练集已创建。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="971" />
+        <location filename="../ui/pages/makedata.py" line="976" />
         <source>No checked card has output. Run the workflow first.</source>
         <translation>已勾选的卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="974" />
+        <location filename="../ui/pages/makedata.py" line="979" />
         <source>No checked cards to view.</source>
         <translation>没有可查看的已勾选卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1019" />
+        <location filename="../ui/pages/makedata.py" line="1024" />
         <source>Run this card to create an output first.</source>
         <translation>请先运行此卡片生成输出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1058" />
+        <location filename="../ui/pages/makedata.py" line="1063" />
         <source>no card</source>
         <translation>没有卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1077" />
-        <location filename="../ui/pages/makedata.py" line="1101" />
+        <location filename="../ui/pages/makedata.py" line="1082" />
+        <location filename="../ui/pages/makedata.py" line="1106" />
         <source>No cards in workspace.</source>
         <translation>工作区中没有卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1086" />
+        <location filename="../ui/pages/makedata.py" line="1091" />
         <source>Card configuration exported successfully.</source>
         <translation>卡片配置已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1105" />
+        <location filename="../ui/pages/makedata.py" line="1110" />
         <source>Card configuration JSON copied to clipboard.</source>
         <translation>卡片配置 JSON 已复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1136" />
+        <location filename="../ui/pages/makedata.py" line="1141" />
         <source>Clipboard does not contain card JSON.</source>
         <translation>剪贴板中没有卡片 JSON。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1166" />
+        <location filename="../ui/pages/makedata.py" line="1171" />
         <source>Invalid card configuration file: {error}</source>
         <translation>卡片配置文件无效：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1213" />
+        <location filename="../ui/pages/makedata.py" line="1218" />
         <source>Failed to load {name}: {error}</source>
         <translation>加载 {name} 失败：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1221" />
+        <location filename="../ui/pages/makedata.py" line="1226" />
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>

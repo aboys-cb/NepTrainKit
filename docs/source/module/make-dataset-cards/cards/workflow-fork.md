@@ -10,7 +10,7 @@
 
 永久分叉表达的是**数据流并行**，不是同时启动多个计算线程。当前实现依次调度各分支，避免重型卡片争抢 CPU、GPU 和内存。
 
-它不同于 [分支合并组](card-group.md)：`Card Group` 的子卡共享一次输入并立即合并；永久分叉中的每条路径可以继续执行完整的后续卡片链。
+它不同于 [分支合并](card-group.md)：`Branch Merge` 的子卡共享一次输入并立即合并；永久分叉中的每条路径可以继续执行完整的后续卡片链。
 
 ## 工作原理
 
@@ -31,7 +31,7 @@ $$
 Crystal Prototype
         │
 Permanent Fork
-  ├─ A: Random Slab → Card Group(Vacancy, Adsorbate) → Atomic Perturb
+  ├─ A: Random Slab → Branch Merge(Vacancy, Adsorbate) → Atomic Perturb
   └─ B: Lattice Strain → Atomic Perturb → FPS Filter
 ```
 
@@ -43,7 +43,7 @@ Permanent Fork
 
 分支列表。每条分支保存稳定的 `id`、显示名称、启用状态和内部卡片序列。分支内部按界面顺序串行传递数据；不同分支始终从同一份 Fork 输入开始。
 
-第一版不允许在分支内部再次嵌套 `Permanent Fork`，但允许使用 `Card Group`。
+第一版不允许在分支内部再次嵌套 `Permanent Fork`，但允许使用 `Branch Merge`。
 
 ### 显式合并（merge）
 
@@ -78,6 +78,6 @@ Permanent Fork
 
 不会。分支在数据语义上并行，但当前版本依次调度，以避免多个重型卡片争抢计算资源。
 
-### 什么时候应该使用 Card Group？
+### 什么时候应该使用 Branch Merge？
 
-如果多张子卡只需共享同一份输入，并在这一层立即合并结果，使用 `Card Group`。如果每条路径还要继续经过不同的卡片链，使用永久分叉。
+如果多张子卡只需共享同一份输入，并在这一层立即合并结果，使用 `Branch Merge`。如果每条路径还要继续经过不同的卡片链，使用永久分叉。

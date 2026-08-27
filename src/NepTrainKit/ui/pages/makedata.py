@@ -958,9 +958,14 @@ class MakeDataWidget(QWidget):
             self.setting_group.set_output_available(
                 bool(self._cards_for_export(include_all=True))
             )
-            MessageManager.send_success_message(
-                self.tr("Training structures generated.")
-            )
+            if current_card.result_dataset:
+                MessageManager.send_success_message(
+                    self.tr("Training structures generated.")
+                )
+            else:
+                MessageManager.send_info_message(
+                    self.tr("Workflow completed with 0 output structures.")
+                )
 
     def request_selected_outputs(self) -> None:
         """Send all checked card outputs to the main-window handoff."""

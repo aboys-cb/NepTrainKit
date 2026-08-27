@@ -131,6 +131,7 @@ _TASK5_TRANSLATIONS = {
         "Please import the structure file first. You can drag it in directly or import it from the upper left corner!": "请先导入结构文件。你可以直接拖入，或从左上角导入。",
         "No card selected. Please select a card in the workspace.": "尚未选择卡片，请先在工作区选择一个卡片。",
         "Training structures generated.": "训练结构已生成。",
+        "Workflow completed with 0 output structures.": "工作流已完成，输出 0 个结构。",
         "no card": "没有卡片",
         "No cards in workspace.": "工作区中没有卡片。",
         "Card configuration exported successfully.": "卡片配置已导出。",

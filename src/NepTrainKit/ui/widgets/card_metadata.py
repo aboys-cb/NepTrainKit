@@ -57,10 +57,10 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Generate fixed-structure Bain/tetragonal distortion paths."),
         ),
         "CardGroup": (
-            QCoreApplication.translate("CardCatalog", "Branch Merge Group"),
+            QCoreApplication.translate("CardCatalog", "Branch Merge"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Run several independent child branches one at a time from the same input, merge their outputs, and optionally apply one post-filter; child cards do not feed one another.",
+                "Run independent cards from one shared input, merge their outputs, then optionally apply one filter.",
             ),
         ),
         "WorkflowFork": (

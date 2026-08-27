@@ -419,11 +419,13 @@ class TestDefectSurfaceCards(BaseCardTest):
         card.engine_type_combo.setCurrentIndex(
             card.engine_type_combo.findData(1)
         )
-        card.concentration_radio_button.setChecked(True)
+        card.amount_mode_control.setCurrentIndex(
+            card.amount_mode_control.findData("fraction")
+        )
         card.concentration_condition_frame.set_input_value([0.6])
         card.num_condition_frame.set_input_value([1])
-        card.count_mode_combo.setCurrentIndex(
-            card.count_mode_combo.findData("random")
+        card.count_mode_control.setCurrentIndex(
+            card.count_mode_control.findData("random")
         )
         card.max_atoms_condition_frame.set_input_value([2])
 
@@ -434,9 +436,9 @@ class TestDefectSurfaceCards(BaseCardTest):
     def test_vacancy_defect_card_defaults_and_previews_first_input(self):
         card = VacancyDefectCard()
 
-        self.assertEqual(card.getTitle(), "Global Random Vacancy")
-        self.assertTrue(card.num_condition_frame.isEnabled())
-        self.assertFalse(card.concentration_condition_frame.isEnabled())
+        self.assertEqual(card.getTitle(), "Global Vacancy")
+        self.assertFalse(card.num_condition_field.isHidden())
+        self.assertTrue(card.concentration_condition_field.isHidden())
         self.assertEqual(card.get_params(), VacancyDefectParams())
         self.assertIn("Load an upstream structure", card.preview_label.text())
 
@@ -452,11 +454,55 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertIn("remove 1 atoms", card.preview_label.text())
         self.assertIn("all elements eligible", card.preview_label.text())
 
-        card.concentration_radio_button.setChecked(True)
+        card.amount_mode_control.setCurrentIndex(
+            card.amount_mode_control.findData("fraction")
+        )
         card.concentration_condition_frame.set_input_value([0.4])
-        self.assertFalse(card.num_condition_frame.isEnabled())
-        self.assertTrue(card.concentration_condition_frame.isEnabled())
+        self.assertTrue(card.num_condition_field.isHidden())
+        self.assertFalse(card.concentration_condition_field.isHidden())
+        self.assertFalse(card.get_params().use_num)
         self.assertIn("remove 2 atoms", card.preview_label.text())
+
+    def test_vacancy_defect_amount_and_generation_modes_are_unambiguous(self):
+        card = VacancyDefectCard()
+        card.show()
+        QApplication.processEvents()
+
+        card.amount_mode_control.setCurrentIndex(
+            card.amount_mode_control.findData("fraction")
+        )
+        card.count_mode_control.setCurrentIndex(
+            card.count_mode_control.findData("random")
+        )
+        QApplication.processEvents()
+
+        self.assertFalse(card.get_params().use_num)
+        self.assertTrue(card.num_condition_field.isHidden())
+        self.assertTrue(card.concentration_condition_frame.isVisible())
+        self.assertEqual(
+            card.concentration_condition_field.caption.text(),
+            "Maximum vacancy fraction",
+        )
+        self.assertEqual(card.get_params().count_mode, "random")
+
+        card.count_mode_control.setCurrentIndex(
+            card.count_mode_control.findData("fixed")
+        )
+        self.assertEqual(
+            card.concentration_condition_field.caption.text(),
+            "Vacancy fraction",
+        )
+
+    def test_vacancy_defect_seed_value_is_progressively_disclosed(self):
+        card = VacancyDefectCard()
+        card.show()
+        QApplication.processEvents()
+        self.assertFalse(card.seed_frame.isVisible())
+
+        card.seed_checkbox.setChecked(True)
+        QApplication.processEvents()
+        self.assertTrue(card.seed_frame.isVisible())
+        self.assertTrue(card.seed_frame.isEnabled())
 
     def test_vacancy_defect_card_roundtrip_and_legacy_restore(self):
         card = VacancyDefectCard()
@@ -585,44 +631,45 @@ class TestDefectSurfaceCards(BaseCardTest):
         cases = [
             (
                 VacancyDefectParams(engine_type=99),
-                "engine_type",
+                "global_vacancy_invalid_engine",
             ),
             (
                 VacancyDefectParams(count_mode="typo"),
-                "count_mode",
+                "global_vacancy_invalid_count_mode",
             ),
             (
                 VacancyDefectParams(max_structures=0),
-                "max_structures",
+                "global_vacancy_invalid_output_limit",
             ),
             (
                 VacancyDefectParams(num_condition=5),
-                "at least one atom remains",
+                "global_vacancy_count_exceeds_atoms",
             ),
             (
                 VacancyDefectParams(
                     use_num=False,
                     concentration_condition=0.19,
                 ),
-                "too small",
+                "global_vacancy_fraction_too_small",
             ),
             (
                 VacancyDefectParams(
                     use_num=False,
                     concentration_condition=1.0,
                 ),
-                "less than 1",
+                "global_vacancy_invalid_fraction",
             ),
             (
                 VacancyDefectParams(use_seed=True, seed=-1),
-                "seed must be >= 0",
+                "global_vacancy_negative_seed",
             ),
         ]
 
-        for params, message in cases:
+        for params, code in cases:
             with self.subTest(params=params):
-                with self.assertRaisesRegex(ValueError, message):
+                with self.assertRaises(CardOperationError) as caught:
                     VacancyDefectOperation().run_structure(structure, params)
+                self.assertEqual(caught.exception.code, code)
 
     def test_vacancy_defect_deduplicates_when_request_exceeds_combinations(self):
         structure = Atoms(

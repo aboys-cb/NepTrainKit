@@ -424,77 +424,116 @@ class VacancyDefectOperation(StructureOperation):
     def _validated_settings(cls, structure, params: VacancyDefectParams) -> dict[str, Any]:
         n_atoms = len(structure)
         if n_atoms <= 1:
-            raise ValueError("VacancyDefect requires at least two atoms.")
+            raise CardOperationError(
+                "global_vacancy_too_few_atoms",
+                "Global Vacancy requires at least two atoms.",
+            )
 
         try:
             engine_type = int(params.engine_type)
         except (TypeError, ValueError) as exc:
-            raise ValueError("VacancyDefect: engine_type must be 0 (Sobol) or 1 (Uniform).") from exc
+            raise CardOperationError(
+                "global_vacancy_invalid_engine",
+                "Site sampling must be Uniform or Sobol.",
+            ) from exc
         if engine_type not in {0, 1}:
-            raise ValueError("VacancyDefect: engine_type must be 0 (Sobol) or 1 (Uniform).")
+            raise CardOperationError(
+                "global_vacancy_invalid_engine",
+                "Site sampling must be Uniform or Sobol.",
+            )
 
         count_mode = str(params.count_mode).strip().lower()
         if count_mode not in {"fixed", "random"}:
-            raise ValueError("VacancyDefect: count_mode must be fixed or random.")
+            raise CardOperationError(
+                "global_vacancy_invalid_count_mode",
+                "Vacancies per output must be Fixed or Variable.",
+            )
 
         try:
             max_structures_value = float(params.max_structures)
         except (TypeError, ValueError) as exc:
-            raise ValueError(
-                "VacancyDefect: max_structures must be an integer."
+            raise CardOperationError(
+                "global_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be a positive integer.",
             ) from exc
         if not np.isfinite(max_structures_value) or not max_structures_value.is_integer():
-            raise ValueError("VacancyDefect: max_structures must be an integer.")
+            raise CardOperationError(
+                "global_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be a positive integer.",
+            )
         max_structures = int(max_structures_value)
         if max_structures <= 0:
-            raise ValueError("VacancyDefect: max_structures must be >= 1.")
+            raise CardOperationError(
+                "global_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be a positive integer.",
+            )
 
         if params.use_num:
             try:
                 count_value = float(params.num_condition)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    "VacancyDefect: vacancy count must be an integer."
+                raise CardOperationError(
+                    "global_vacancy_noninteger_count",
+                    "Vacancies must be an integer.",
                 ) from exc
             if not np.isfinite(count_value) or not count_value.is_integer():
-                raise ValueError("VacancyDefect: vacancy count must be an integer.")
+                raise CardOperationError(
+                    "global_vacancy_noninteger_count",
+                    "Vacancies must be an integer.",
+                )
             max_defects = int(count_value)
             if max_defects <= 0:
-                raise ValueError("VacancyDefect: vacancy count must be >= 1.")
+                raise CardOperationError(
+                    "global_vacancy_invalid_count",
+                    "Vacancies must be at least 1.",
+                )
             if max_defects >= n_atoms:
-                raise ValueError(
-                    f"VacancyDefect: vacancy count must be <= {n_atoms - 1} "
-                    "so at least one atom remains."
+                raise CardOperationError(
+                    "global_vacancy_count_exceeds_atoms",
+                    "Vacancies must be at most {maximum} for this input so at least one atom remains.",
+                    maximum=n_atoms - 1,
                 )
         else:
             try:
                 fraction = float(params.concentration_condition)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    "VacancyDefect: vacancy fraction must be greater than 0 and less than 1."
+                raise CardOperationError(
+                    "global_vacancy_invalid_fraction",
+                    "Vacancy fraction must be greater than 0 and less than 1.",
                 ) from exc
             if not np.isfinite(fraction) or not 0.0 < fraction < 1.0:
-                raise ValueError("VacancyDefect: vacancy fraction must be greater than 0 and less than 1.")
+                raise CardOperationError(
+                    "global_vacancy_invalid_fraction",
+                    "Vacancy fraction must be greater than 0 and less than 1.",
+                )
             max_defects = int(fraction * n_atoms)
             if max_defects <= 0:
                 minimum = 1.0 / n_atoms
-                raise ValueError(
-                    "VacancyDefect: vacancy fraction is too small for this structure; "
-                    f"use at least {minimum:.6g} to remove one atom."
+                raise CardOperationError(
+                    "global_vacancy_fraction_too_small",
+                    "Vacancy fraction is too small for this input; use at least {minimum} to remove one atom.",
+                    minimum=f"{minimum:.6g}",
                 )
 
         if engine_type == 0 and n_atoms > cls._MAX_SOBOL_ATOMS:
-            raise ValueError(
-                f"VacancyDefect: Sobol sampling supports at most {cls._MAX_SOBOL_ATOMS} atoms; "
-                "use Uniform sampling for larger structures."
+            raise CardOperationError(
+                "global_vacancy_sobol_too_large",
+                "Sobol sampling supports at most {maximum} atoms; use Uniform for larger inputs.",
+                maximum=cls._MAX_SOBOL_ATOMS,
             )
 
         try:
             seed = int(params.seed)
         except (TypeError, ValueError) as exc:
-            raise ValueError("VacancyDefect: seed must be an integer.") from exc
+            raise CardOperationError(
+                "global_vacancy_invalid_seed",
+                "Random seed must be an integer.",
+            ) from exc
         if params.use_seed and seed < 0:
-            raise ValueError("VacancyDefect: seed must be >= 0.")
+            raise CardOperationError(
+                "global_vacancy_negative_seed",
+                "Random seed must be at least 0.",
+            )
         derived_seed = None
         if params.use_seed:
             derived_seed = derived_structure_seed(seed, structure)

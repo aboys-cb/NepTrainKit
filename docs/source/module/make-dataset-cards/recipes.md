@@ -149,7 +149,7 @@
 
 ### 卡片顺序
 
-`Super Cell → Random Slab → Insert Defect → Vacancy Defect Generation → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`Super Cell → Random Slab → Insert Defect → Global Vacancy → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
@@ -211,7 +211,7 @@
 
 **每步预期输出：** 每个 slab 再生成 2 个上表面随机吸附候选；这里只做连续横向采样和最小距离约束，不识别顶位、桥位或空位。
 
-#### Step 4. `Vacancy Defect Generation`
+#### Step 4. `Global Vacancy`
 
 ```json
 {

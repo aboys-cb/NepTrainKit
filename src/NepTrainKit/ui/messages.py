@@ -136,16 +136,6 @@ _RUNTIME_TEXT_REPLACEMENTS = (
     ("CellScaling: max_num must be >= 1.", "CellScaling：max_num 必须 >= 1。"),
     ("CellScaling requires three nonzero lattice vectors.", "CellScaling 需要三条非零晶格矢量。"),
     ("Perturb: max_num must be >= 1.", "Perturb：max_num 必须 >= 1。"),
-    ("VacancyDefect requires at least two atoms.", "VacancyDefect 至少需要两个原子。"),
-    ("VacancyDefect: engine_type must be 0 (Sobol) or 1 (Uniform).", "全局随机空位：采样方式必须是 Sobol（0）或均匀随机（1）。"),
-    ("VacancyDefect: count_mode must be fixed or random.", "全局随机空位：每个输出的空位数模式必须是 fixed 或 random。"),
-    ("VacancyDefect: max_structures must be an integer.", "全局随机空位：最大输出数必须是整数。"),
-    ("VacancyDefect: max_structures must be >= 1.", "全局随机空位：最大输出数必须 >= 1。"),
-    ("VacancyDefect: vacancy count must be an integer.", "全局随机空位：空位数量必须是整数。"),
-    ("VacancyDefect: vacancy count must be >= 1.", "全局随机空位：空位数量必须 >= 1。"),
-    ("VacancyDefect: vacancy fraction must be greater than 0 and less than 1.", "全局随机空位：空位比例必须大于 0 且小于 1。"),
-    ("VacancyDefect: seed must be an integer.", "全局随机空位：随机种子必须是整数。"),
-    ("VacancyDefect: seed must be >= 0.", "全局随机空位：随机种子必须 >= 0。"),
     ("InsertDefect requires at least one host atom.", "插隙与表面吸附至少需要一个宿主原子。"),
     ("InsertDefect requires a finite, non-singular 3x3 cell.", "插隙与表面吸附需要有限且非奇异的 3x3 晶胞。"),
     ("InsertDefect: mode must be 0 (Interstitial) or 1 (Adsorption).", "插隙与表面吸附：模式必须是体相插隙（0）或表面吸附（1）。"),
@@ -545,6 +535,37 @@ def _card_operation_error_catalog() -> None:
         "Targeted Vacancy could not generate a valid non-empty structure. "
         "Reduce overlapping rule counts, broaden the groups, or expand the structure.",
     )
+    QCoreApplication.translate(
+        "CardOperationError", "Global Vacancy requires at least two atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Site sampling must be Uniform or Sobol."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancies per output must be Fixed or Variable."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum outputs per input must be a positive integer."
+    )
+    QCoreApplication.translate("CardOperationError", "Vacancies must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Vacancies must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancies must be at most {maximum} for this input so at least one atom remains.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy fraction must be greater than 0 and less than 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy fraction is too small for this input; use at least {minimum} to remove one atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Sobol sampling supports at most {maximum} atoms; use Uniform for larger inputs.",
+    )
+    QCoreApplication.translate("CardOperationError", "Random seed must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Random seed must be at least 0.")
     QCoreApplication.translate(
         "CardOperationError", "Invalid element symbols in the target list: {elements}."
     )

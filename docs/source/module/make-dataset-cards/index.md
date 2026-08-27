@@ -74,7 +74,7 @@
 | 我的需求 | 推荐卡片 | 常见前置步骤 |
 | --- | --- | --- |
 | 生成不同晶面的表面板层 | [随机表面板层](cards/random-slab-card.md) | 先确认晶胞和 Miller 指数 |
-| 在全部原子中按数量或比例随机删位 | [全局随机空位](cards/vacancy-defect-card.md) | 通常先扩胞 |
+| 在全部原子中按数量或比例随机删位 | [全局空位](cards/vacancy-defect-card.md) | 通常先扩胞 |
 | 只删除指定元素或 `group` 中的位点 | [定向空位](cards/random-vacancy-card.md) | 需要时先做原子层分组 |
 | 插入间隙原子或表面吸附原子 | [插隙与表面吸附](cards/interstitial-adsorbate-card.md) | 体相通常先扩胞，吸附通常先建表面 |
 | 扫描指定晶面和滑移方向的层错路径 | [层错 / GSFE 路径](cards/strict-gsfe-path-card.md) | 输入必须已经按目标晶面定向 |
@@ -109,11 +109,11 @@
 
 ## 易混卡片对比
 
-### 随机表面板层 vs 全局随机空位
+### 随机表面板层 vs 全局空位
 
 - `Random Slab` 改的是边界条件和表面取向，结果会引入真空层与自由表面。
-- `Vacancy Defect Generation` 改的是体相或表面内部的删位强度，不会自动生成表面。
-- 想研究“表面缺陷”，通常先 `Random Slab`，再 `Insert Defect` 或 `Vacancy Defect Generation`。
+- `Global Vacancy` 控制体相或表面结构中的整体删位数量。
+- 想研究表面空位，通常先 `Random Slab`，再接 `Global Vacancy` 或 `Targeted Vacancy`。
 
 ### 随机掺杂 vs 成分空间采样 vs 随机占位
 

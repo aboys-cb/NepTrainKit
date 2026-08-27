@@ -276,7 +276,7 @@ class RandomVacancyCard(MakeDataCard):
 
     def get_guidance_text(self) -> str:
         return self.tr(
-            "Use this card when deletion must be restricted by element or existing group labels; use Global Random Vacancy for all-site sampling."
+            "Use this card when deletion must be restricted by element or existing group labels; use Global Vacancy for all-site sampling."
         )
 
     def to_dict(self):

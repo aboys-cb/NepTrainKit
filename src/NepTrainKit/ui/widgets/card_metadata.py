@@ -312,10 +312,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "VacancyDefectCard": (
-            QCoreApplication.translate("CardCatalog", "Global Random Vacancy"),
+            QCoreApplication.translate("CardCatalog", "Global Vacancy"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Delete sites globally by an overall count or fraction without distinguishing elements; remaining coordinates are unchanged.",
+                "Delete randomly sampled sites from all elements using an overall count or fraction.",
             ),
         ),
         "VibrationModePerturbCard": (

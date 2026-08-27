@@ -229,11 +229,11 @@ class TestCardLibraryDialog(unittest.TestCase):
             dialog.card_list.setCurrentItem(global_vacancy_item)
             self.assertEqual(
                 dialog.detail_title_label.text(),
-                "全局随机空位",
+                "全局空位",
             )
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "不区分元素，按整体数量或比例随机删除位点；其余原子坐标保持不变。",
+                "从所有元素中按整体数量或比例随机删除位点。",
             )
 
             insert_item = next(
@@ -273,7 +273,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             )
             self.assertEqual(
                 popup._buttons_by_class["VacancyDefectCard"].text(),
-                "全局随机空位",
+                "全局空位",
             )
             self.assertEqual(
                 popup._buttons_by_class["InsertDefectCard"].text(),

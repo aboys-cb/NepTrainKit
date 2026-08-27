@@ -1135,6 +1135,16 @@
         <translation>沿晶格矢量完整复制输入晶胞，可按指定倍率、目标长度或严格原子预算生成超胞。</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/card_metadata.py" line="315" />
+        <source>Global Vacancy</source>
+        <translation>全局空位</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="316" />
+        <source>Delete randomly sampled sites from all elements using an overall count or fraction.</source>
+        <translation>从所有元素中按整体数量或比例随机删除位点。</translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/card_metadata.py" line="323" />
         <source>Sample correlated atomic displacements from vibrational modes already stored on each input structure.</source>
         <translation>从每个输入结构已有的振动模式中采样协同原子位移。</translation>
@@ -1191,14 +1201,12 @@
         <translation type="vanished">按固定扩胞倍数、目标晶格长度或原子数上限生成超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="315" />
         <source>Global Random Vacancy</source>
-        <translation>全局随机空位</translation>
+        <translation type="vanished">全局随机空位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="316" />
         <source>Delete sites globally by an overall count or fraction without distinguishing elements; remaining coordinates are unchanged.</source>
-        <translation>不区分元素，按整体数量或比例随机删除位点；其余原子坐标保持不变。</translation>
+        <translation type="vanished">不区分元素，按整体数量或比例随机删除位点；其余原子坐标保持不变。</translation>
     </message>
     <message>
         <source>Vacancy Defect Generation</source>
@@ -2741,297 +2749,353 @@
 <context>
     <name>CardOperationError</name>
     <message>
-        <location filename="../ui/messages.py" line="328" />
+        <location filename="../ui/messages.py" line="318" />
         <source>Perturb: Sobol sampling supports at most {max_atoms} atoms; use Uniform sampling for larger structures.</source>
         <translation>原子扰动：Sobol 采样最多支持 {max_atoms} 个原子；更大的结构请使用 Uniform 采样。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="333" />
+        <location filename="../ui/messages.py" line="323" />
         <source>Perturb: {element} is not a valid element symbol for a displacement limit.</source>
         <translation>原子扰动：{element} 不是可用于位移上限的有效元素符号。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="337" />
+        <location filename="../ui/messages.py" line="327" />
         <source>Perturb: element {element} has more than one displacement limit; keep only one row.</source>
         <translation>原子扰动：元素 {element} 设置了多个位移上限；请只保留一行。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="341" />
+        <location filename="../ui/messages.py" line="331" />
         <source>Perturb: the displacement limit for {element} must be finite and non-negative.</source>
         <translation>原子扰动：元素 {element} 的位移上限必须是有限的非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="345" />
+        <location filename="../ui/messages.py" line="335" />
         <source>Unsupported crystal prototype: {lattice}.</source>
         <translation>不支持的晶体原型：{lattice}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="346" />
+        <location filename="../ui/messages.py" line="336" />
         <source>Maximum outputs must be at least 1.</source>
         <translation>最大输出数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="347" />
+        <location filename="../ui/messages.py" line="337" />
         <source>The hcp c/a ratio must be a positive finite number.</source>
         <translation>HCP c/a 轴比必须是有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="361" />
+        <location filename="../ui/messages.py" line="351" />
         <source>Enter one element symbol or the X placeholder for every visible sublattice.</source>
         <translation>请为每个可见子晶格输入一个元素符号或 X 占位符。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="365" />
+        <location filename="../ui/messages.py" line="355" />
         <source>Invalid element or placeholder {element}; use a chemical element symbol or X.</source>
         <translation>无效的元素或占位符 {element}；请使用化学元素符号或 X。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="369" />
+        <location filename="../ui/messages.py" line="359" />
         <source>The mode coefficient scale must be a positive finite number.</source>
         <translation>模态系数尺度必须是有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="372" />
+        <location filename="../ui/messages.py" line="362" />
         <source>Modes combined per sample must be at least 1.</source>
         <translation>每个样本至少需要组合 1 个模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="375" />
+        <location filename="../ui/messages.py" line="365" />
         <source>Structures per input must be an integer.</source>
         <translation>每个输入生成的结构数必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="376" />
+        <location filename="../ui/messages.py" line="366" />
         <source>Structures per input must be at least 1.</source>
         <translation>每个输入至少需要生成 1 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="377" />
+        <location filename="../ui/messages.py" line="367" />
         <source>Coefficient distribution must be Normal or Uniform.</source>
         <translation>系数分布必须是正态分布或均匀分布。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="380" />
+        <location filename="../ui/messages.py" line="370" />
         <source>The absolute frequency cutoff must be a finite non-negative number.</source>
         <translation>绝对频率截止值必须是有限非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="383" />
+        <location filename="../ui/messages.py" line="373" />
         <source>Vibrational perturbation needs at least one usable mode on every input structure.</source>
         <translation>每个输入结构至少需要包含一个可用的振动模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="387" />
+        <location filename="../ui/messages.py" line="377" />
         <source>Finite frequencies are required when frequency filtering or scaling is enabled.</source>
         <translation>启用频率筛选或加权时，所有模式都必须包含有限频率值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="391" />
+        <location filename="../ui/messages.py" line="381" />
         <source>Frequency weighting requires non-zero frequencies for every usable mode.</source>
         <translation>频率加权要求每个可用模式的频率都不为零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="395" />
+        <location filename="../ui/messages.py" line="385" />
         <source>Modes per sample is {requested}, but only {available} usable modes are available.</source>
         <translation>每个样本请求组合 {requested} 个模式，但筛选后只有 {available} 个可用模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="399" />
+        <location filename="../ui/messages.py" line="389" />
         <source>Maximum perturbation angle must be between 0 and 180 degrees.</source>
         <translation>最大扰动角必须在 0 到 180 度之间。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="402" />
+        <location filename="../ui/messages.py" line="392" />
         <source>Spin Perturb requires spin or initial magnetic moments on every input structure.</source>
         <translation>磁矩扰动要求每个输入结构都包含 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="417" />
+        <location filename="../ui/messages.py" line="407" />
         <source>Spin Perturb could not convert the input magnetic moments to vectors.</source>
         <translation>磁矩扰动无法将输入磁矩转换为矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="427" />
+        <location filename="../ui/messages.py" line="417" />
         <source>Increase the perturbation angle or enable a magnitude scale range that changes the moments.</source>
         <translation>请增大扰动角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="431" />
+        <location filename="../ui/messages.py" line="421" />
         <source>Exact correlated sampling supports at most {maximum} eligible non-zero moments; the current selection has {actual}. Reduce the target elements or use a smaller structure.</source>
         <translation>精确关联采样最多支持 {maximum} 个符合条件的非零磁矩；当前选择了 {actual} 个。请减少目标元素或使用更小的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="436" />
+        <location filename="../ui/messages.py" line="426" />
         <source>Spin Spiral maximum outputs must be at least 1.</source>
         <translation>旧版自旋螺旋的最大输出数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="439" />
+        <location filename="../ui/messages.py" line="429" />
         <source>No lattice-compatible spin-spiral period exists in the requested range. For a period of {period} Å, try a {multipliers} supercell.</source>
         <translation>请求范围内没有与晶格相容的自旋螺旋周期。对于 {period} Å 周期，可尝试 {multipliers} 超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="444" />
+        <location filename="../ui/messages.py" line="434" />
         <source>No lattice-compatible spin-spiral period exists in the requested range. Change the period range or expand the cell along the propagation axis.</source>
         <translation>请求范围内没有与晶格相容的自旋螺旋周期。请修改周期范围，或沿传播轴扩胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="449" />
+        <location filename="../ui/messages.py" line="439" />
         <source>Spin Spiral requires at least one non-zero magnetic moment. Add moments upstream or select the element-map source and enter a non-zero magnitude.</source>
         <translation>旧版自旋螺旋要求输入至少包含一个非零磁矩。请在上游添加磁矩，或选择元素表来源并填写非零模长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="454" />
+        <location filename="../ui/messages.py" line="444" />
         <source>Maximum outputs must be at least {minimum} for the selected folded-helix sequence mode.</source>
         <translation>当前折返方向模式要求最大输出数至少为 {minimum}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="458" />
+        <location filename="../ui/messages.py" line="448" />
         <source>Folded Helix requires at least one non-zero magnetic moment. Add moments upstream or select the element-map source and enter a non-zero magnitude.</source>
         <translation>折返螺旋要求输入至少包含一个非零磁矩。请在上游添加磁矩，或选择元素表来源并填写非零模长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="463" />
+        <location filename="../ui/messages.py" line="453" />
         <source>Folded Helix needs at least 3 detected layers along the layer axis; the current settings detect {actual}. Check the layer axis and tolerance.</source>
         <translation>折返螺旋沿分层方向至少需要识别出 3 层；当前设置识别出 {actual} 层。请检查层方向和分层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="468" />
+        <location filename="../ui/messages.py" line="458" />
         <source>Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. Expand the cell, choose another plane, or reduce the layer tolerance.</source>
         <translation>原子层分组至少需要检测到两层；当前设置检测到 {actual} 层。请扩胞、更换晶面或减小层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="473" />
+        <location filename="../ui/messages.py" line="463" />
         <source>Layer Groups needs a finite, non-singular 3D cell.</source>
         <translation>原子层分组需要有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="476" />
+        <location filename="../ui/messages.py" line="466" />
         <source>Layer tolerance must be a positive finite distance.</source>
         <translation>层容差必须是正的有限距离。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="479" />
+        <location filename="../ui/messages.py" line="469" />
         <source>Plane index must be 100, 010, 001, 110, or 111.</source>
         <translation>晶面指数必须是 100、010、001、110 或 111。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="482" />
+        <location filename="../ui/messages.py" line="472" />
         <source>Layer group labels must be non-empty.</source>
         <translation>原子层分组标签不能为空。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="485" />
+        <location filename="../ui/messages.py" line="475" />
         <source>Layer group A and B labels must be different.</source>
         <translation>原子层分组的 A、B 标签不能相同。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="488" />
+        <location filename="../ui/messages.py" line="478" />
         <source>Targeted Vacancy requires at least one vacancy rule.</source>
         <translation>定向空位至少需要一条空位规则。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="491" />
+        <location filename="../ui/messages.py" line="481" />
         <source>Targeted Vacancy requires at least two atoms.</source>
         <translation>定向空位的输入结构至少需要两个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="494" />
+        <location filename="../ui/messages.py" line="484" />
         <source>Vacancy rule {rule} is invalid.</source>
         <translation>空位规则 {rule} 无效。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="497" />
+        <location filename="../ui/messages.py" line="487" />
         <source>Vacancy rule {rule} requires an element.</source>
         <translation>空位规则 {rule} 必须填写元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="500" />
+        <location filename="../ui/messages.py" line="490" />
         <source>Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.</source>
         <translation>空位规则 {rule} 需要一个整数数量，或按从小到大填写最小值和最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="504" />
+        <location filename="../ui/messages.py" line="494" />
         <source>Vacancy rule {rule} count must be at least 0.</source>
         <translation>空位规则 {rule} 的数量不能小于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="507" />
+        <location filename="../ui/messages.py" line="497" />
         <source>Vacancy rule {rule} count mode must be Fixed count or Random range.</source>
         <translation>空位规则 {rule} 的数量模式必须是“固定数量”或“随机范围”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="511" />
+        <location filename="../ui/messages.py" line="501" />
         <source>Vacancy rule {rule} fixed count must use the same minimum and maximum.</source>
         <translation>空位规则 {rule} 使用固定数量时，最小值和最大值必须相同。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="515" />
+        <location filename="../ui/messages.py" line="505" />
         <source>Vacancy rule {rule} fixed count must be at least 1.</source>
         <translation>空位规则 {rule} 的固定数量至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="518" />
+        <location filename="../ui/messages.py" line="508" />
         <source>Vacancy rule {rule} random range must allow at least one vacancy.</source>
         <translation>空位规则 {rule} 的随机范围必须允许至少删除一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="522" />
+        <location filename="../ui/messages.py" line="512" />
         <source>Vacancy rule {rule} group must contain at least one non-empty label.</source>
         <translation>空位规则 {rule} 的分组条件至少需要一个非空标签。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="526" />
+        <location filename="../ui/messages.py" line="516" />
         <source>Vacancy rule {rule} requests group labels, but the input structure has no group array.</source>
         <translation>空位规则 {rule} 使用了分组条件，但输入结构没有 group 数组。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="530" />
+        <location filename="../ui/messages.py" line="520" />
         <source>Vacancy rule {rule} matched no atoms ({target}).</source>
         <translation>空位规则 {rule} 没有匹配到原子（{target}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="533" />
+        <location filename="../ui/messages.py" line="523" />
         <source>Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).</source>
         <translation>空位规则 {rule} 最多要求删除 {requested} 个原子，但只有 {available} 个原子匹配（{target}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="537" />
+        <location filename="../ui/messages.py" line="527" />
         <source>Maximum outputs per input must be at least 1.</source>
         <translation>每个输入的最大输出数至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="540" />
+        <location filename="../ui/messages.py" line="530" />
+        <location filename="../ui/messages.py" line="568" />
         <source>Random seed must be at least 0.</source>
         <translation>随机种子不能小于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="543" />
+        <location filename="../ui/messages.py" line="533" />
         <source>Targeted Vacancy could not generate a valid non-empty structure. Reduce overlapping rule counts, broaden the groups, or expand the structure.</source>
         <translation>定向空位无法生成有效的非空结构。请减少重叠规则的删除数量、扩大分组范围或扩展结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="554" />
+        <location filename="../ui/messages.py" line="538" />
+        <source>Global Vacancy requires at least two atoms.</source>
+        <translation>全局空位的输入结构至少需要两个原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="541" />
+        <source>Site sampling must be Uniform or Sobol.</source>
+        <translation>位点采样方式必须是“均匀随机”或“Sobol”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="544" />
+        <source>Vacancies per output must be Fixed or Variable.</source>
+        <translation>每个输出的空位数必须选择“固定”或“变化”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="547" />
+        <source>Maximum outputs per input must be a positive integer.</source>
+        <translation>每个输入的最大输出数必须是正整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="550" />
+        <source>Vacancies must be an integer.</source>
+        <translation>空位数量必须是整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="551" />
+        <source>Vacancies must be at least 1.</source>
+        <translation>空位数量至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="552" />
+        <source>Vacancies must be at most {maximum} for this input so at least one atom remains.</source>
+        <translation>当前输入的空位数量最多为 {maximum}，以确保至少保留一个原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="556" />
+        <source>Vacancy fraction must be greater than 0 and less than 1.</source>
+        <translation>空位比例必须大于 0 且小于 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="559" />
+        <source>Vacancy fraction is too small for this input; use at least {minimum} to remove one atom.</source>
+        <translation>空位比例对当前输入过小；至少使用 {minimum} 才能删除一个原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="563" />
+        <source>Sobol sampling supports at most {maximum} atoms; use Uniform for larger inputs.</source>
+        <translation>Sobol 采样最多支持 {maximum} 个原子；更大的输入请使用均匀随机采样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="567" />
+        <source>Random seed must be an integer.</source>
+        <translation>随机种子必须是整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="575" />
         <source>Magnetic response needs vector spin or initial magnetic moments on the input structure.</source>
         <translation>磁响应要求输入结构带有矢量 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="558" />
+        <location filename="../ui/messages.py" line="579" />
         <source>Magnetic response needs finite magnetic moments with at least one non-zero vector.</source>
         <translation>磁响应要求磁矩数值有限，并且至少包含一个非零矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="562" />
+        <location filename="../ui/messages.py" line="583" />
         <source>Maximum structures is smaller than the coordinate count of one complete response group.</source>
         <translation>最大结构数小于一个完整响应组所需的坐标数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="566" />
+        <location filename="../ui/messages.py" line="587" />
         <source>No non-zero magnetic moments match the selected atoms and elements.</source>
         <translation>所选原子和元素中没有匹配的非零磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="570" />
+        <location filename="../ui/messages.py" line="591" />
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Layer Groups upstream.</source>
         <translation>输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“原子层分组”卡片。</translation>
     </message>
@@ -3040,57 +3104,57 @@
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="575" />
+        <location filename="../ui/messages.py" line="596" />
         <source>No atom pairs match the selected neighbor shell and automatic-pair filters.</source>
         <translation>没有原子对同时满足所选近邻壳层和自动配对筛选条件。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="579" />
+        <location filename="../ui/messages.py" line="600" />
         <source>No valid magnetic atom pairs match the left and right indices.</source>
         <translation>左右索引没有匹配到有效的磁性原子对。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="583" />
+        <location filename="../ui/messages.py" line="604" />
         <source>Maximum structures must be at least {required} for the selected texture response path.</source>
         <translation>所选纹理响应路径至少需要 {required} 个结构，请提高最大结构数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="587" />
+        <location filename="../ui/messages.py" line="608" />
         <source>Cell-reciprocal q needs a finite, non-singular 3D cell.</source>
         <translation>晶胞倒空间 q 要求输入具有数值有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="590" />
+        <location filename="../ui/messages.py" line="611" />
         <source>The reciprocal-cell index must contain three finite integers.</source>
         <translation>晶胞倒空间索引必须包含三个数值有限的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="593" />
+        <location filename="../ui/messages.py" line="614" />
         <source>The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.</source>
         <translation>螺旋响应的晶胞倒空间索引不能为 (0, 0, 0)。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="597" />
+        <location filename="../ui/messages.py" line="618" />
         <source>q definition must be Cell reciprocal vector or Cartesian vector.</source>
         <translation>q 定义方式必须是晶胞倒空间矢量或笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="601" />
+        <location filename="../ui/messages.py" line="622" />
         <source>The Cartesian base q vector must be non-zero for a spiral response.</source>
         <translation>螺旋响应的笛卡尔基准 q 矢量必须非零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="605" />
+        <location filename="../ui/messages.py" line="626" />
         <source>q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, or change q and the supercell together.</source>
         <translation>q 沿第 {index} 根周期晶格矢量不能闭合。请使用晶胞倒空间 q，或同时调整 q 和超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="610" />
+        <location filename="../ui/messages.py" line="631" />
         <source>The two symmetric-shear directions must be perpendicular Cartesian vectors.</source>
         <translation>对称剪切的两个方向必须是互相垂直的笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="614" />
+        <location filename="../ui/messages.py" line="635" />
         <source>The Bain lattice axis must be a, b, or c.</source>
         <translation>Bain 晶格轴必须为 a、b 或 c。</translation>
     </message>
@@ -3111,17 +3175,17 @@
         <translation type="vanished">磁矩旋转要求每个输入结构都包含 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="406" />
+        <location filename="../ui/messages.py" line="396" />
         <source>Scalar magnetic moments must be lifted to vectors before they can be rotated.</source>
         <translation>标量磁矩必须先转为矢量才能旋转。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="410" />
+        <location filename="../ui/messages.py" line="400" />
         <source>The scalar lift direction must contain three finite Cartesian components.</source>
         <translation>标量抬升方向必须包含三个有限的笛卡尔分量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="414" />
+        <location filename="../ui/messages.py" line="404" />
         <source>The scalar lift direction must be non-zero.</source>
         <translation>标量抬升方向不能为零向量。</translation>
     </message>
@@ -3130,12 +3194,12 @@
         <translation type="vanished">磁矩旋转无法将输入磁矩转换为矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="421" />
+        <location filename="../ui/messages.py" line="411" />
         <source>Magnitude scale bounds must be finite and non-negative.</source>
         <translation>模长缩放范围必须有限且非负。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="424" />
+        <location filename="../ui/messages.py" line="414" />
         <source>Magnitude scale minimum must not exceed the maximum.</source>
         <translation>模长缩放下限不能大于上限。</translation>
     </message>
@@ -3144,12 +3208,12 @@
         <translation type="vanished">请增大旋转角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="548" />
+        <location filename="../ui/messages.py" line="569" />
         <source>Invalid element symbols in the target list: {elements}.</source>
         <translation>目标元素中包含无效元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="551" />
+        <location filename="../ui/messages.py" line="572" />
         <source>No non-zero magnetic moments match the selected elements.</source>
         <translation>所选元素没有匹配到非零磁矩。</translation>
     </message>
@@ -3162,22 +3226,22 @@
         <translation type="vanished">手动重复倍率必须包含三个正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="350" />
+        <location filename="../ui/messages.py" line="340" />
         <source>Enter one valid chemical element symbol, for example Cu, Fe, or Mg.</source>
         <translation>请输入一个有效的元素符号，例如 Cu、Fe 或 Mg。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="354" />
+        <location filename="../ui/messages.py" line="344" />
         <source>The lattice-constant range must contain finite numbers.</source>
         <translation>晶格常数范围必须包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="357" />
+        <location filename="../ui/messages.py" line="347" />
         <source>Lattice constants must be positive.</source>
         <translation>晶格常数必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="358" />
+        <location filename="../ui/messages.py" line="348" />
         <source>The lattice-constant step must be positive.</source>
         <translation>晶格常数步长必须为正数。</translation>
     </message>
@@ -9179,23 +9243,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="653" />
-        <location filename="../ui/messages.py" line="693" />
+        <location filename="../ui/messages.py" line="674" />
+        <location filename="../ui/messages.py" line="714" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="663" />
+        <location filename="../ui/messages.py" line="684" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="673" />
+        <location filename="../ui/messages.py" line="694" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="683" />
+        <location filename="../ui/messages.py" line="704" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -11211,8 +11275,12 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/_card/random_vacancy_card.py" line="279" />
+        <source>Use this card when deletion must be restricted by element or existing group labels; use Global Vacancy for all-site sampling.</source>
+        <translation>需要按元素或已有分组限制删除范围时使用本卡；所有位点共同采样时使用“全局空位”。</translation>
+    </message>
+    <message>
         <source>Use this card when deletion must be restricted by element or existing group labels; use Global Random Vacancy for all-site sampling.</source>
-        <translation>需要按元素或已有分组限制删除范围时使用本卡；所有位点共同采样时使用“全局随机空位”。</translation>
+        <translation type="vanished">需要按元素或已有分组限制删除范围时使用本卡；所有位点共同采样时使用“全局随机空位”。</translation>
     </message>
 </context>
 <context>
@@ -11326,7 +11394,7 @@ All child items will also be deleted.</source>
     <name>RuntimeMessage</name>
     <message>
         <location filename="../ui/messages.py" line="17" />
-        <location filename="../ui/messages.py" line="317" />
+        <location filename="../ui/messages.py" line="307" />
         <source>__language_probe__</source>
         <translation>zh_CN</translation>
     </message>
@@ -18505,135 +18573,252 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">选择随机引擎</translation>
     </message>
     <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="131" />
         <source>Sobol</source>
-        <translation type="vanished">Sobol</translation>
+        <translation>Sobol</translation>
     </message>
     <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="130" />
         <source>Uniform</source>
-        <translation type="vanished">均匀随机</translation>
+        <translation>均匀随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="34" />
         <source>Global Random Vacancy</source>
-        <translation>全局随机空位</translation>
+        <translation type="vanished">全局随机空位</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="46" />
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="58" />
         <source>Vacancy count</source>
-        <translation>空位数量</translation>
+        <translation type="vanished">空位数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="51" />
         <source>Use an absolute vacancy count for every input structure</source>
-        <translation>每个输入结构都使用绝对空位数量</translation>
+        <translation type="vanished">每个输入结构都使用绝对空位数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="61" />
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="75" />
         <source>Vacancy fraction (0–1)</source>
-        <translation>空位比例（0–1）</translation>
+        <translation type="vanished">空位比例（0–1）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="65" />
         <source>The atom count multiplied by this fraction is rounded down</source>
-        <translation>输入原子数乘以该比例后向下取整</translation>
+        <translation type="vanished">输入原子数乘以该比例后向下取整</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="79" />
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="96" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="98" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="100" />
         <source>Vacancies per output</source>
         <translation>每个输出的空位数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="83" />
         <source>Use the resolved amount exactly, or sample from 1 up to that amount</source>
-        <translation>固定使用解析值，或在 1 到解析值之间随机取值</translation>
+        <translation type="vanished">固定使用解析值，或在 1 到解析值之间随机取值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="88" />
         <source>Fixed at the set value</source>
-        <translation>固定为设置值</translation>
+        <translation type="vanished">固定为设置值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="92" />
         <source>Random from 1 to the set value</source>
-        <translation>在 1 到设置值之间随机</translation>
+        <translation type="vanished">在 1 到设置值之间随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="99" />
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="111" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="113" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="115" />
         <source>Maximum outputs per input</source>
         <translation>每个输入最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="103" />
         <source>Duplicate vacancy placements are removed, so the actual count can be lower</source>
-        <translation>重复空位组合会被去除，因此实际输出数可能更少</translation>
+        <translation type="vanished">重复空位组合会被去除，因此实际输出数可能更少</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="115" />
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="132" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="133" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="135" />
         <source>Site sampling</source>
         <translation>位点采样方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="119" />
         <source>Uniform is the general default; Sobol gives quasi-random coverage for up to 21,200 atoms</source>
-        <translation>通常使用均匀随机；Sobol 可对不超过 21,200 个原子的结构做准随机覆盖</translation>
+        <translation type="vanished">通常使用均匀随机；Sobol 可对不超过 21,200 个原子的结构做准随机覆盖</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="124" />
         <source>Uniform random (recommended)</source>
-        <translation>均匀随机（推荐）</translation>
+        <translation type="vanished">均匀随机（推荐）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="128" />
         <source>Sobol quasi-random</source>
-        <translation>Sobol 准随机</translation>
+        <translation type="vanished">Sobol 准随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="140" />
         <source>Enable reproducible per-structure vacancy sampling</source>
-        <translation>使每个输入结构的空位采样可复现</translation>
+        <translation type="vanished">使每个输入结构的空位采样可复现</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="148" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="36" />
+        <source>Global Vacancy</source>
+        <translation>全局空位</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="46" />
+        <source>Count</source>
+        <translation>数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="47" />
+        <source>Fraction</source>
+        <translation>占比</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="48" />
+        <source>Vacancy amount basis</source>
+        <translation>空位数量依据</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="49" />
+        <source>Amount basis</source>
+        <translation>数量依据</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="52" />
+        <source>atoms</source>
+        <translation>个原子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="56" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="58" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="203" />
+        <source>Vacancies</source>
+        <translation>空位数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="82" />
+        <source>Vacancy amount</source>
+        <translation>空位数量模式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="85" />
+        <source>Choose an absolute number or a fraction of all atoms. Fractions are multiplied by the input atom count and rounded down.</source>
+        <translation>选择绝对数量或全部原子的比例。比例乘以输入原子数后向下取整。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="96" />
+        <source>Fixed</source>
+        <translation>固定</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="97" />
+        <source>Variable</source>
+        <translation>随机范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="104" />
+        <source>Fixed uses the resolved amount. Variable samples an integer from 1 to that amount for each output.</source>
+        <translation>“固定”使用解析出的数量；“随机范围”为每个输出从 1 到该数量间抽取整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="118" />
+        <source>Duplicate deletion patterns are removed.</source>
+        <translation>删除位点相同的结果会被去重。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="123" />
+        <source>Generation</source>
+        <translation>生成设置</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="139" />
+        <source>Uniform is the general default. Sobol gives quasi-random coverage and supports up to 21,200 atoms.</source>
+        <translation>通常使用均匀随机；Sobol 提供准随机覆盖，最多支持 21,200 个原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="150" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="248" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="159" />
+        <source>Sampling and reproducibility</source>
+        <translation>采样与复现</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="169" />
+        <source>Output preview</source>
+        <translation>输出预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="203" />
+        <source>Maximum vacancies</source>
+        <translation>最大空位数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="205" />
+        <source>Maximum vacancy fraction</source>
+        <translation>最大空位比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="234" />
         <source>Load an upstream structure to preview the resolved vacancy count.</source>
         <translation>载入上游结构后可预览实际空位数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="259" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="240" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="264" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="245" />
         <source>remove {count} atoms</source>
         <translation>删除 {count} 个原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="268" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="247" />
         <source>remove {minimum}–{maximum} atoms</source>
         <translation>删除 {minimum}–{maximum} 个原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="274" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="252" />
         <source>First input: {atoms} atoms · {vacancies} · up to {outputs} unique outputs · all elements eligible</source>
         <translation>首个输入：{atoms} 个原子 · {vacancies} · 最多 {outputs} 个唯一输出 · 所有元素均可删除</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="312" />
+        <source>{count} vacancies</source>
+        <translation>{count} 个空位</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="314" />
+        <source>fraction {fraction}</source>
+        <translation>比例 {fraction}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="316" />
+        <source>fixed</source>
+        <translation>固定数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="316" />
+        <source>variable</source>
+        <translation>随机范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="317" />
+        <source>{amount} · {mode} · up to {outputs} outputs</source>
+        <translation>{amount} · {mode} · 最多 {outputs} 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="323" />
+        <source>All elements are eligible. Use Targeted Vacancy when deletion must be restricted by element or existing group labels.</source>
+        <translation>所有元素均可删除；需要按元素或已有分组限制范围时，请使用“定向空位”。</translation>
     </message>
     <message>
         <source>Use atom count as the vacancy amount control</source>
         <translation type="vanished">用原子数量控制空位数</translation>
     </message>
     <message>
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="72" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="74" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="205" />
         <source>Vacancy fraction</source>
-        <translation type="vanished">空位比例</translation>
+        <translation>空位比例</translation>
     </message>
     <message>
         <source>Use fraction of atoms as the vacancy amount control</source>
@@ -18664,7 +18849,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">要生成的空位结构数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vacancy_defect_card.py" line="135" />
+        <location filename="../ui/views/_card/vacancy_defect_card.py" line="143" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
@@ -18801,17 +18986,17 @@ Magnetic: {magnetic}</source>
 <context>
     <name>VacancyRulesWidget</name>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="225" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="229" />
         <source>Add rule</source>
         <translation>添加规则</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="227" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="231" />
         <source>Add vacancy rule</source>
         <translation>添加空位规则</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/vacancy_rule.py" line="228" />
+        <location filename="../ui/widgets/vacancy_rule.py" line="232" />
         <source>Add another element or group-specific vacancy rule</source>
         <translation>添加另一条按元素或 group 限定的空位规则</translation>
     </message>

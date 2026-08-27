@@ -922,14 +922,12 @@
         <translation>识别双层结构的界面，选中界面两侧薄层，按固定或梯度浓度交换两侧原子元素类型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="156" />
         <source>Interstitial and Surface Adsorption</source>
-        <translation>插隙与表面吸附</translation>
+        <translation type="vanished">插隙与表面吸附</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="160" />
         <source>Sample random interstitial candidates inside a cell or random adsorbates above a selected upper surface; only a minimum-distance constraint is enforced.</source>
-        <translation>在晶胞内随机生成插隙候选，或在指定上表面生成随机吸附候选；仅保证最小原子间距，不识别晶体学位点。</translation>
+        <translation type="vanished">在晶胞内随机生成插隙候选，或在指定上表面生成随机吸附候选；仅保证最小原子间距，不识别晶体学位点。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="166" />
@@ -984,6 +982,16 @@
         <location filename="../ui/widgets/card_metadata.py" line="125" />
         <source>Select a representative NEP-descriptor subset with global or element-set-balanced budgets and optional existing coverage.</source>
         <translation>选择具有代表性的 NEP 描述符子集，可使用全局或按元素集合均衡预算，并可加入已有覆盖。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="156" />
+        <source>Interstitial &amp; Adsorbate</source>
+        <translation>插隙与吸附</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="160" />
+        <source>Sample random interstitials in the full cell or adsorbates above a selected upper surface with a minimum-distance rule.</source>
+        <translation>在整个晶胞内随机生成插隙，或在指定上表面生成吸附候选，并检查最小原子间距。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="180" />
@@ -7523,175 +7531,291 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">每个插入原子的最大随机尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="36" />
         <source>Interstitial and Surface Adsorption</source>
-        <translation>插隙与表面吸附</translation>
+        <translation type="vanished">插隙与表面吸附</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="48" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="66" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="53" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="55" />
         <source>Insertion mode</source>
         <translation>插入模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="53" />
         <source>Interstitial samples inside the cell; adsorption samples above the upper surface</source>
-        <translation>插隙在晶胞内部采样；吸附在指定上表面上方采样</translation>
+        <translation type="vanished">插隙在晶胞内部采样；吸附在指定上表面上方采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="59" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="46" />
         <source>Random bulk interstitial</source>
         <translation>体相随机插隙</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="63" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="50" />
         <source>Random upper-surface adsorption</source>
         <translation>上表面随机吸附</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="69" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="84" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="63" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="65" />
         <source>Inserted species and weights</source>
         <translation>插入元素与权重</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="74" />
         <source>Use relative weights such as Li:7, Na:3; each inserted atom is sampled independently</source>
-        <translation>可填写 Li:7, Na:3 这类相对权重；每个插入原子独立抽样</translation>
+        <translation type="vanished">可填写 Li:7, Na:3 这类相对权重；每个插入原子独立抽样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="80" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="61" />
         <source>e.g. Li or Li:7, Na:3</source>
         <translation>例如 Li 或 Li:7, Na:3</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="88" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="100" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="76" />
         <source>Atoms inserted per output</source>
         <translation>每个输出插入原子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="92" />
         <source>Every successful output contains exactly this many added atoms</source>
-        <translation>每个成功输出都必须完整插入该数量的原子</translation>
+        <translation type="vanished">每个成功输出都必须完整插入该数量的原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="104" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="115" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="90" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="92" />
         <source>Outputs per input</source>
         <translation>每个输入的输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="108" />
         <source>Each input structure must produce this many complete outputs</source>
-        <translation>每个输入结构都必须生成该数量的完整输出</translation>
+        <translation type="vanished">每个输入结构都必须生成该数量的完整输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="118" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="133" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="105" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="107" />
         <source>Minimum atom distance</source>
         <translation>最小原子间距</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="123" />
         <source>Minimum distance from a candidate to both host atoms and earlier inserted atoms</source>
-        <translation>候选点到宿主原子和此前已插入原子的最小距离</translation>
+        <translation type="vanished">候选点到宿主原子和此前已插入原子的最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="137" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="151" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="120" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="122" />
         <source>Placement attempts per atom</source>
         <translation>每个原子的放置尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="142" />
         <source>Stop with an error if one atom cannot be placed within this many trials</source>
-        <translation>任一原子在该次数内无法放置时停止并报错</translation>
+        <translation type="vanished">任一原子在该次数内无法放置时停止并报错</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="155" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="131" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="160" />
         <source>Enable reproducible per-structure insertion sampling</source>
-        <translation>使每个输入结构的插入采样可复现</translation>
+        <translation type="vanished">使每个输入结构的插入采样可复现</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="168" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="141" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="171" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="191" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="153" />
+        <source>Lattice a</source>
+        <translation>晶格 a 方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="154" />
+        <source>Lattice b</source>
+        <translation>晶格 b 方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="155" />
+        <source>Lattice c</source>
+        <translation>晶格 c 方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="160" />
         <source>Vacuum / surface-normal direction</source>
         <translation>真空／表面法向方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="176" />
         <source>Choose the lattice direction containing the slab vacuum; adsorption uses its upper surface</source>
-        <translation>选择 slab 真空所在的晶格方向；吸附使用该方向的上表面</translation>
+        <translation type="vanished">选择 slab 真空所在的晶格方向；吸附使用该方向的上表面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="183" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="35" />
+        <source>Interstitial &amp; Adsorbate</source>
+        <translation>插隙与吸附</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="68" />
+        <source>Each inserted atom is sampled independently from these relative weights.</source>
+        <translation>每个插入原子都按这些相对权重独立抽样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="78" />
+        <source>Atoms per output</source>
+        <translation>每个输出插入原子数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="110" />
+        <source>Checked against host atoms and atoms inserted earlier in the same output.</source>
+        <translation>同时检查宿主原子和同一输出中先插入的原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="125" />
+        <source>A search budget; increasing it does not change the distance rule.</source>
+        <translation>这是搜索预算；提高次数不会改变距离规则。</translation>
+    </message>
+    <message>
         <source>Lattice a direction</source>
-        <translation>晶格 a 方向</translation>
+        <translation type="vanished">晶格 a 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="184" />
         <source>Lattice b direction</source>
-        <translation>晶格 b 方向</translation>
+        <translation type="vanished">晶格 b 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="185" />
         <source>Lattice c direction</source>
-        <translation>晶格 c 方向</translation>
+        <translation type="vanished">晶格 c 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="195" />
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="210" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="162" />
+        <source>Vacuum direction</source>
+        <translation>真空方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="165" />
+        <source>Choose the lattice direction that contains the slab vacuum.</source>
+        <translation>选择 slab 真空层所在的晶格方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="176" />
         <source>Height above top atomic plane</source>
         <translation>高于最高原子平面的距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="200" />
-        <source>All adsorbates use this normal distance above the original host surface</source>
-        <translation>所有吸附原子都以原始宿主表面为基准使用该法向距离</translation>
+        <source>Height above top plane</source>
+        <translation type="vanished">高于最高原子平面的距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="323" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="187" />
+        <source>Placement</source>
+        <translation>放置方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="197" />
+        <source>Generation</source>
+        <translation>生成设置</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="203" />
+        <source>Advanced settings</source>
+        <translation>高级设置</translation>
+    </message>
+    <message>
+        <source>Placement search</source>
+        <translation type="vanished">放置搜索</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="178" />
+        <source>Adsorption height</source>
+        <translation>吸附高度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="212" />
+        <source>Output preview</source>
+        <translation>输出预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="244" />
+        <source>Samples above the original upper atomic plane along the selected lattice-normal direction.</source>
+        <translation>沿所选晶格方向的真实法向，在原始最高原子平面上方采样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="246" />
+        <source>Samples the full periodic cell uniformly; for a slab, this includes its vacuum region.</source>
+        <translation>在整个周期晶胞内均匀采样；若输入为 slab，也会包含真空区域。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="324" />
+        <source>insert {count} × {species} · {inputs} inputs × {per_input} = {total} outputs · minimum distance {distance} Å</source>
+        <translation>插入 {count} × {species} · {inputs} 个输入 × {per_input} = {total} 个输出 · 最小间距 {distance} Å</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="418" />
+        <source>Upper adsorption</source>
+        <translation>上表面吸附</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="418" />
+        <source>Bulk interstitial</source>
+        <translation>体相插隙</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="419" />
+        <source>{mode} · {atoms} atoms × {outputs}/input</source>
+        <translation>{mode} · {atoms} 个原子 × {outputs}/输入</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="430" />
+        <source>{inputs} inputs × {outputs} outputs/input = {total} outputs.</source>
+        <translation>{inputs} 个输入 × 每个输入 {outputs} 个输出 = 共 {total} 个输出。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="436" />
+        <source>Load input structures; each input produces {outputs} outputs.</source>
+        <translation>请载入输入结构；每个输入将生成 {outputs} 个输出。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="440" />
+        <source>Choose the slab vacuum direction and adsorption height.</source>
+        <translation>请选择 slab 的真空方向和吸附高度。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="442" />
+        <source>Bulk mode samples the full cell, including slab vacuum.</source>
+        <translation>体相模式会采样整个晶胞，包括 slab 的真空区域。</translation>
+    </message>
+    <message>
+        <source>All adsorbates use this normal distance above the original host surface</source>
+        <translation type="vanished">所有吸附原子都以原始宿主表面为基准使用该法向距离</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="301" />
         <source>Enter at least one inserted species, for example Li or Li:7, Na:3.</source>
         <translation>请至少填写一种插入元素，例如 Li 或 Li:7, Na:3。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="330" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="305" />
         <source>Load an upstream structure to preview insertion geometry.</source>
         <translation>载入上游结构后可预览插入几何。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="343" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="314" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="354" />
         <source>insert {count} × {species} · {outputs} outputs · minimum distance {distance} Å</source>
-        <translation>插入 {count} × {species} · {outputs} 个输出 · 最小间距 {distance} Å</translation>
+        <translation type="vanished">插入 {count} × {species} · {outputs} 个输出 · 最小间距 {distance} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="362" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="334" />
         <source>random positions inside the cell</source>
         <translation>晶胞内随机位置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="366" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="337" />
         <source>upper surface along lattice {axis} · height {height} Å</source>
         <translation>晶格 {axis} 方向的上表面 · 高度 {height} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="372" />
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="342" />
         <source>First input: {atoms} atoms · {detail} · {common}</source>
         <translation>首个输入：{atoms} 个原子 · {detail} · {common}</translation>
     </message>
@@ -21042,51 +21166,51 @@ Magnetic: {magnetic}</source>
     </message>
     <message>
         <location filename="../ui/views/_card/workflow_fork.py" line="606" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="698" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="699" />
         <source>Independent branch outputs</source>
         <translation>各分支独立输出</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/workflow_fork.py" line="609" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="720" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="721" />
         <source>Shared downstream cards are unavailable</source>
         <translation>不可添加共享下游卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="639" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="1093" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="640" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1094" />
         <source>Branch A</source>
         <translation>分支 A</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="640" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="1094" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="641" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1095" />
         <source>Branch B</source>
         <translation>分支 B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="670" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="768" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="671" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="769" />
         <source>Explicit merge</source>
         <translation>显式合并</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="689" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="690" />
         <source>Shared downstream cards are available</source>
         <translation>可添加共享下游卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="730" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="731" />
         <source>explicit Merge</source>
         <translation>显式合并</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="730" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="731" />
         <source>independent outputs</source>
         <translation>独立输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="731" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="732" />
         <source>{enabled}/{total} branches · {mode}</source>
         <translation>{enabled}/{total} 条分支 · {mode}</translation>
     </message>
@@ -21124,99 +21248,99 @@ Magnetic: {magnetic}</source>
         <translation>合并输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="678" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="679" />
         <source>{counts} → {total} merged</source>
         <translation>{counts} → 合并 {total}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="685" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="686" />
         <source>Merge unavailable because a branch failed</source>
         <translation>存在失败分支，无法合并</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="709" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="710" />
         <source>{succeeded}/{total} branches completed · successful outputs remain available</source>
         <translation>{succeeded}/{total} 条分支完成 · 成功分支的输出仍可用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="740" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="741" />
         <source>Each branch can chain multiple cards until the explicit Merge, which concatenates successful outputs in branch order.</source>
         <translation>每条分支可以串联多张卡片；显式合并会按分支顺序拼接成功输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="744" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="745" />
         <source>Each branch can chain multiple cards and keep its final output. Add an explicit Merge before any shared downstream card.</source>
         <translation>每条分支可以串联多张卡片并保留最终输出；连接共同下游前需要显式合并。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="750" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="751" />
         <source>Flow structure</source>
         <translation>流程结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="751" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="752" />
         <source>Common input → independent linear branch pipelines</source>
         <translation>共享输入 → 各分支独立线性处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="753" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="754" />
         <source>Branches</source>
         <translation>分支</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="757" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="758" />
         <source>{id} · {name} · {count} cards · {status}</source>
         <translation>{id} · {name} · {count} 张卡片 · {status}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="767" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="768" />
         <source>Output mode</source>
         <translation>输出方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="770" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="771" />
         <source>Independent outputs</source>
         <translation>独立输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="782" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="1076" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="783" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1077" />
         <source>A permanent fork supports up to three branches.</source>
         <translation>永久分叉最多支持三个分支。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="786" />
-        <location filename="../ui/views/_card/workflow_fork.py" line="1081" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="787" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1082" />
         <source>Branch {branch}</source>
         <translation>分支 {branch}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="848" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="849" />
         <source>Merge branch outputs before exporting one combined file.</source>
         <translation>导出单个合并文件前，请先合并分支输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="859" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="860" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="866" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="867" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="901" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="902" />
         <source>Enable at least one branch before running.</source>
         <translation>运行前请至少启用一条分支。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="920" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="921" />
         <source>Add at least one enabled card to: {branches}.</source>
         <translation>请为以下分支添加至少一张启用的卡片：{branches}。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/workflow_fork.py" line="1088" />
+        <location filename="../ui/views/_card/workflow_fork.py" line="1089" />
         <source>Invalid card in permanent branch: {name}</source>
         <translation>永久分支中存在无效卡片：{name}</translation>
     </message>

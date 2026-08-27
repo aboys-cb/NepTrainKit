@@ -1236,10 +1236,12 @@ class TestDefectSurfaceCards(BaseCardTest):
         card = InsertDefectCard()
         self.assertEqual(
             card.getTitle(),
-            "Interstitial and Surface Adsorption",
+            "Interstitial & Adsorbate",
         )
         self.assertEqual(card.get_params(), InsertDefectParams())
         self.assertTrue(card.axis_label.isHidden())
+        self.assertTrue(card.max_attempts_field.isHidden())
+        self.assertFalse(card.seed_frame.isVisible())
         self.assertIn(
             "Enter at least one inserted species",
             card.preview_label.text(),
@@ -1256,11 +1258,18 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertIn("First input: 4 atoms", card.preview_label.text())
         self.assertIn("Li 70% / Na 30%", card.preview_label.text())
         self.assertIn("random positions inside the cell", card.preview_label.text())
+        self.assertIn("1 inputs × 10 = 10 outputs", card.preview_label.text())
+        self.assertIn("1 inputs × 10 outputs/input = 10 outputs", card.get_guidance_text())
+        self.assertIn("Bulk interstitial", card.get_summary_text())
 
         card.mode_combo.setCurrentIndex(card.mode_combo.findData(1))
         self.assertFalse(card.axis_label.isHidden())
         self.assertIn("upper surface along lattice c", card.preview_label.text())
         self.assertIn("height 1.5 Å", card.preview_label.text())
+        self.assertIn("Choose the slab vacuum direction", card.get_guidance_text())
+
+        card.advanced_checkbox.setChecked(True)
+        self.assertFalse(card.max_attempts_field.isHidden())
 
     def test_insert_defect_card_roundtrip(self):
         card = InsertDefectCard()

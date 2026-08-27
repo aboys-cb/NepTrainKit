@@ -245,11 +245,11 @@ class TestCardLibraryDialog(unittest.TestCase):
             dialog.card_list.setCurrentItem(insert_item)
             self.assertEqual(
                 dialog.detail_title_label.text(),
-                "插隙与表面吸附",
+                "插隙与吸附",
             )
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "在晶胞内随机生成插隙候选，或在指定上表面生成随机吸附候选；仅保证最小原子间距，不识别晶体学位点。",
+                "在整个晶胞内随机生成插隙，或在指定上表面生成吸附候选，并检查最小原子间距。",
             )
         finally:
             self._app.removeTranslator(translator)
@@ -277,7 +277,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             )
             self.assertEqual(
                 popup._buttons_by_class["InsertDefectCard"].text(),
-                "插隙与表面吸附",
+                "插隙与吸附",
             )
             self.assertEqual(
                 popup._buttons_by_class["StrictGSFEPathCard"].text(),

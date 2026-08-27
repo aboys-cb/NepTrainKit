@@ -21,6 +21,7 @@ from NepTrainKit.core.cards.operation import StructureOperation
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
 from NepTrainKit.ui.views._card.card_group import CardGroup
 from NepTrainKit.ui.views._card.cell_strain_card import CellStrainCard
+from NepTrainKit.ui.views._card.interstitial_adsorbate_card import InsertDefectCard
 from NepTrainKit.ui.views._card.perturb_card import PerturbCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
 from NepTrainKit.ui.widgets import MakeDataCard, MakeWorkflowArea
@@ -127,6 +128,33 @@ def test_compact_workflow_nodes_edit_the_selected_card_in_the_inspector():
     assert area.guidance_panel.current_context_label.text() == first.get_summary_text()
     area.guidance_panel.copy_card_button.click()
     assert QApplication.clipboard().text() == first.to_json_text()
+    _dispose(area)
+
+
+def test_insert_defect_adsorption_fields_remain_visible_in_real_inspector():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = InsertDefectCard()
+    area.add_card(card)
+    area.resize(1024, 640)
+    area.show()
+    area.select_card(card)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert card.axis_field.isHidden()
+    assert card.offset_field.isHidden()
+
+    card.mode_combo.setCurrentIndex(card.mode_combo.findData(1))
+    for _ in range(3):
+        app.processEvents()
+
+    assert card.axis_field.isVisibleTo(area)
+    assert card.offset_field.isVisibleTo(area)
+    assert card.axis_combo.isVisibleTo(area)
+    assert card.offset_frame.isVisibleTo(area)
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
     _dispose(area)
 
 

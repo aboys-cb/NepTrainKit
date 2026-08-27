@@ -155,11 +155,11 @@ def _localized_catalog(_language_marker: str):
         "InsertDefectCard": (
             QCoreApplication.translate(
                 "CardCatalog",
-                "Interstitial and Surface Adsorption",
+                "Interstitial & Adsorbate",
             ),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Sample random interstitial candidates inside a cell or random adsorbates above a selected upper surface; only a minimum-distance constraint is enforced.",
+                "Sample random interstitials in the full cell or adsorbates above a selected upper surface with a minimum-distance rule.",
             ),
         ),
         "LayerCopyCard": (

@@ -963,6 +963,16 @@
         <translation>磁矩扰动</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/card_metadata.py" line="201" />
+        <source>Magnetoelastic Grid</source>
+        <translation>磁弹响应网格</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="202" />
+        <source>Combine a lattice-deformation path with the same selected-spin rotation scan at every lattice point.</source>
+        <translation>将晶格变形路径与每个晶格点上相同的目标自旋旋转扫描组合起来。</translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/card_metadata.py" line="261" />
         <source>Canting Scan</source>
         <translation>倾斜扫描</translation>
@@ -1005,14 +1015,12 @@
         <translation type="vanished">围绕已有磁态随机旋转并可选缩放目标非零磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="201" />
         <source>Magnetoelastic Response</source>
-        <translation>磁弹响应</translation>
+        <translation type="vanished">磁弹响应</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="202" />
         <source>Combine each strain or volume coordinate with the same complete set of spin probes.</source>
-        <translation>为每个应变或体积坐标组合一套完全相同且完整的自旋探针。</translation>
+        <translation type="vanished">为每个应变或体积坐标组合一套完全相同且完整的自旋探针。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="209" />
@@ -2924,6 +2932,16 @@
         <location filename="../ui/messages.py" line="525" />
         <source>q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, or change q and the supercell together.</source>
         <translation>q 沿第 {index} 根周期晶格矢量不能闭合。请使用晶胞倒空间 q，或同时调整 q 和超胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="530" />
+        <source>The two symmetric-shear directions must be perpendicular Cartesian vectors.</source>
+        <translation>对称剪切的两个方向必须是互相垂直的笛卡尔矢量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="534" />
+        <source>The Bain lattice axis must be a, b, or c.</source>
+        <translation>Bain 晶格轴必须为 a、b 或 c。</translation>
     </message>
     <message>
         <source>Maximum rotation angle must be between 0 and 180 degrees.</source>
@@ -8248,135 +8266,287 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MagnetoelasticResponseCard</name>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="35" />
         <source>Magnetoelastic Response</source>
-        <translation>磁弹响应</translation>
+        <translation type="vanished">磁弹响应</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="53" />
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="143" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="73" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="222" />
         <source>Volume change (%)</source>
         <translation>体积变化（%）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="56" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="76" />
         <source>Minimum, maximum, and step. Values are converted to strain fractions internally.</source>
         <translation>输入最小值、最大值和步长；内部会转换为应变小数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="64" />
         <source>Matched spin rotation (degrees)</source>
-        <translation>配套自旋旋转（度）</translation>
+        <translation type="vanished">配套自旋旋转（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="67" />
         <source>The same complete reference/minus/plus spin probes are generated at every structural point.</source>
-        <translation>每个结构坐标点都生成同一套完整的参考、负向和正向自旋探针。</translation>
+        <translation type="vanished">每个结构坐标点都生成同一套完整的参考、负向和正向自旋探针。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="72" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="92" />
         <source>For example: 1 or 1,3-5</source>
         <translation>例如：1 或 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="74" />
         <source>Rotated atoms (1-based)</source>
-        <translation>旋转原子（从 1 开始）</translation>
+        <translation type="vanished">旋转原子（从 1 开始）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="77" />
         <source>Choose the atoms used for the local spin probe; ranges such as 3-5 are accepted.</source>
-        <translation>选择用于局域自旋探针的原子；支持 3-5 这样的范围。</translation>
+        <translation type="vanished">选择用于局域自旋探针的原子；支持 3-5 这样的范围。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="81" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="101" />
         <source>Response grid</source>
         <translation>响应网格</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="83" />
         <source>Choose the lattice path, then define the structural and spin scans with explicit units.</source>
-        <translation>先选择晶格路径，再用明确单位设置结构扫描和自旋扫描。</translation>
+        <translation type="vanished">先选择晶格路径，再用明确单位设置结构扫描和自旋扫描。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="85" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="106" />
         <source>Lattice path</source>
         <translation>晶格路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="90" />
         <source>Show directions and output limit</source>
-        <translation>显示方向和输出上限</translation>
+        <translation type="vanished">显示方向和输出上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="93" />
         <source>Spin rotation axis (Cartesian)</source>
-        <translation>自旋旋转轴（笛卡尔）</translation>
+        <translation type="vanished">自旋旋转轴（笛卡尔）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="100" />
         <source>Used by directional strain paths; isotropic volume does not use this direction.</source>
-        <translation>方向性应变路径使用该方向；各向同性体积路径不使用。</translation>
+        <translation type="vanished">方向性应变路径使用该方向；各向同性体积路径不使用。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="107" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="172" />
         <source>Maximum structures</source>
         <translation>最大结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="110" />
         <source>The limit is applied only between complete response groups.</source>
-        <translation>输出上限只在完整响应组之间生效。</translation>
+        <translation type="vanished">输出上限只在完整响应组之间生效。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="112" />
         <source>Directions and limit</source>
-        <translation>方向与上限</translation>
+        <translation type="vanished">方向与上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="122" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="55" />
+        <source>Magnetoelastic Grid</source>
+        <translation>磁弹响应网格</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="84" />
+        <source>Spin rotation scan (degrees)</source>
+        <translation>自旋旋转扫描（度）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="87" />
+        <source>The same signed rotation scan is repeated at every lattice point.</source>
+        <translation>每个晶格点都重复同一套有符号旋转扫描。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="94" />
+        <source>Atoms rotated together (1-based)</source>
+        <translation>共同旋转的原子（从 1 开始）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="97" />
+        <source>All listed atoms rotate together in each frame; ranges such as 3-5 are accepted.</source>
+        <translation>列出的原子在每一帧中一起旋转；支持 3-5 这样的范围。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="114" />
+        <source>Spin axis</source>
+        <translation>自旋轴</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="117" />
+        <source>The selected spins rotate rigidly about this laboratory Cartesian axis.</source>
+        <translation>选中的自旋绕该实验室笛卡尔轴刚性旋转。</translation>
+    </message>
+    <message>
+        <source>Loading direction (Cartesian)</source>
+        <translation type="vanished">加载方向（笛卡尔）</translation>
+    </message>
+    <message>
+        <source>Second shear direction (Cartesian)</source>
+        <translation type="vanished">第二剪切方向（笛卡尔）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="136" />
+        <source>The two shear directions must be perpendicular.</source>
+        <translation>两个剪切方向必须互相垂直。</translation>
+    </message>
+    <message>
+        <source>Tetragonal lattice axis</source>
+        <translation type="vanished">四方晶格轴</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="123" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="249" />
+        <source>Loading direction</source>
+        <translation>加载方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="133" />
+        <source>Shear direction v</source>
+        <translation>剪切方向 v</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="145" />
+        <source>Tetragonal axis</source>
+        <translation>四方轴</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="148" />
+        <source>Choose lattice vector a, b, or c; the Bain path preserves cell volume.</source>
+        <translation>选择晶格矢量 a、b 或 c；Bain 路径保持晶胞体积不变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="153" />
+        <source>Directions</source>
+        <translation>方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="165" />
+        <source>Show output limit</source>
+        <translation>显示输出上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="175" />
+        <source>Only complete spin-scan groups are retained.</source>
+        <translation>只保留完整的自旋扫描组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="181" />
+        <source>Output limit</source>
+        <translation>输出上限</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="195" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="144" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="223" />
         <source>Axial strain (%)</source>
         <translation>轴向应变（%）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="145" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="224" />
         <source>In-plane strain (%)</source>
         <translation>面内应变（%）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="146" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="225" />
         <source>Shear strain (%)</source>
         <translation>剪切应变（%）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="147" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="226" />
         <source>Tetragonal strain (%)</source>
         <translation>四方应变（%）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="149" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="230" />
+        <source>Change the total cell volume, then repeat one complete local spin-rotation scan at every volume.</source>
+        <translation>改变晶胞总体积，并在每个体积点重复一套完整的局域自旋旋转扫描。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="233" />
+        <source>Strain one Cartesian loading direction while leaving its perpendicular directions unchanged.</source>
+        <translation>沿一个笛卡尔加载方向施加应变，垂直方向保持不变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="236" />
+        <source>Apply equal strain in the Cartesian plane perpendicular to the selected normal.</source>
+        <translation>在垂直于所选法向的笛卡尔平面内施加等量应变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="239" />
+        <source>Apply a symmetric shear defined by two perpendicular Cartesian directions.</source>
+        <translation>使用两个互相垂直的笛卡尔方向定义对称剪切。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="242" />
+        <source>Change one lattice vector relative to the other two while preserving cell volume.</source>
+        <translation>在保持晶胞体积不变的同时，改变一根晶格矢量相对另外两根的比例。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="247" />
         <source>Structural coordinate (%)</source>
         <translation>结构坐标（%）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="159" />
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="251" />
+        <source>Unstrained normal</source>
+        <translation>未应变法向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="253" />
+        <source>Shear direction u</source>
+        <translation>剪切方向 u</translation>
+    </message>
+    <message>
+        <source>Unstrained plane normal (Cartesian)</source>
+        <translation type="vanished">未应变平面法向（笛卡尔）</translation>
+    </message>
+    <message>
+        <source>First shear direction (Cartesian)</source>
+        <translation type="vanished">第一剪切方向（笛卡尔）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="271" />
+        <source>One complete lattice point needs {spin} structures; the current limit is {limit}.</source>
+        <translation>一个完整晶格点需要 {spin} 个结构；当前上限为 {limit}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="275" />
+        <source>{total} requested; the limit keeps {kept} complete lattice points ({actual} structures).</source>
+        <translation>理论需要 {total} 个结构；当前上限保留 {kept} 个完整晶格点（{actual} 个结构）。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="283" />
+        <source>{structural} lattice points × {spin} spin rotations = {total} structures.</source>
+        <translation>{structural} 个晶格点 × {spin} 个自旋旋转 = {total} 个结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="294" />
+        <source>{mode} · {structural}×{spin} grid</source>
+        <translation>{mode} · {structural}×{spin} 网格</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="300" />
+        <source>Input structures need finite non-zero vector spins. Every listed atom rotates together about the Cartesian spin axis at each lattice point.</source>
+        <translation>输入结构需要有限、非零的矢量自旋。每个晶格点中，列出的原子都绕笛卡尔自旋轴一起旋转。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="356" />
+        <source>Legacy workflow loaded: spin probes now rotate about the saved Cartesian axis. Verify old and new response data before combining them.</source>
+        <translation>已加载旧工作流：自旋探针现在会真正绕保存的笛卡尔轴旋转。合并新旧响应数据前请先核对。</translation>
+    </message>
+    <message>
         <source>{structural} lattice points × {spin} spin probes = {total} structures per selected target.</source>
-        <translation>{structural} 个晶格点 × {spin} 个自旋探针 = 每个选中目标 {total} 个结构。</translation>
+        <translation type="vanished">{structural} 个晶格点 × {spin} 个自旋探针 = 每个选中目标 {total} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="167" />
         <source>{mode} · {structural} lattice points × {spin} spin probes</source>
-        <translation>{mode} · {structural} 个晶格点 × {spin} 个自旋探针</translation>
+        <translation type="vanished">{mode} · {structural} 个晶格点 × {spin} 个自旋探针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="173" />
         <source>Each lattice point receives the same complete spin scan. The structural percentage is converted to a deformation coordinate; spin angles remain in degrees in the UI.</source>
-        <translation>每个晶格点都使用同一套完整自旋扫描。结构百分比会转换为形变坐标；界面中的自旋角度仍以度表示。</translation>
+        <translation type="vanished">每个晶格点都使用同一套完整自旋扫描。结构百分比会转换为形变坐标；界面中的自旋角度仍以度表示。</translation>
     </message>
     <message>
         <source>Structural preset</source>
@@ -8399,9 +8569,8 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">旋转轴（笛卡尔）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="97" />
         <source>Strain axis (Cartesian)</source>
-        <translation>应变轴（笛卡尔）</translation>
+        <translation type="vanished">应变轴（笛卡尔）</translation>
     </message>
     <message>
         <source>Output limit (complete groups)</source>
@@ -8786,23 +8955,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="566" />
-        <location filename="../ui/messages.py" line="606" />
+        <location filename="../ui/messages.py" line="573" />
+        <location filename="../ui/messages.py" line="613" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="576" />
+        <location filename="../ui/messages.py" line="583" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="586" />
+        <location filename="../ui/messages.py" line="593" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="596" />
+        <location filename="../ui/messages.py" line="603" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -10915,7 +11084,7 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/_card/soc_texture_response_card.py" line="53" />
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="247" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="249" />
         <source>Rigid rotation scan (degrees)</source>
         <translation>刚性旋转扫描（度）</translation>
     </message>
@@ -11044,142 +11213,142 @@ All child items will also be deleted.</source>
         <translation>0 表示平面螺旋；±1 表示旋转平面分量完全消失。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="157" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="158" />
         <source>°</source>
         <translation>°</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="162" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="163" />
         <source>Initial phase φ₀</source>
         <translation>初始相位 φ₀</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="165" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="166" />
         <source>The generated texture uses φᵢ = q·rᵢ + φ₀ with current Cartesian positions.</source>
         <translation>生成纹理使用当前笛卡尔坐标，并按 φᵢ = q·rᵢ + φ₀ 计算相位。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="169" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="171" />
         <source>Require periodic closure</source>
         <translation>要求周期闭合</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="172" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="174" />
         <source>Periodic boundary</source>
         <translation>周期边界</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="175" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="177" />
         <source>For every periodic cell vector aᵢ, q·aᵢ/(2π) must be an integer.</source>
         <translation>对每根周期晶格矢量 aᵢ，q·aᵢ/(2π) 都必须为整数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="182" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="184" />
         <source>Maximum structures</source>
         <translation>最大结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="185" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="187" />
         <source>Only complete signed-q or rotation groups are retained.</source>
         <translation>只保留完整的带符号 q 组或旋转组。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="189" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="191" />
         <source>Advanced texture controls</source>
         <translation>高级纹理控制</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="200" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="202" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="232" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="234" />
         <source>Rigidly rotate every input spin together; relative spin angles and the lattice stay fixed.</source>
         <translation>整体旋转全部输入自旋；相对自旋夹角和晶格保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="235" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="237" />
         <source>Regenerate a finite-q texture from the input moment magnitudes; the rotation-plane normal is q.</source>
         <translation>根据输入磁矩模长重新生成有限 q 纹理；旋转平面法向自动取 q。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="238" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="240" />
         <source>Regenerate a finite-q texture whose spins rotate in the plane spanned by q and the surface normal.</source>
         <translation>重新生成有限 q 纹理；自旋在 q 与表面法向张成的平面内旋转。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="241" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="243" />
         <source>Regenerate a finite-q texture in the plane specified by its normal.</source>
         <translation>在用户指定法向的旋转平面内重新生成有限 q 纹理。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="247" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="249" />
         <source>Signed q scan (multiples of base q)</source>
         <translation>带符号 q 扫描（基准 q 的倍数）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="250" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="252" />
         <source>Angles form one sortable rigid-rotation path; the lattice and relative spin topology stay fixed.</source>
         <translation>所有角度构成一条可排序的刚性旋转路径；晶格和相对自旋拓扑保持固定。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="252" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="254" />
         <source>Use a symmetric scan such as -2, -1, 0, +1, +2 to compare opposite chirality and even/odd q response.</source>
         <translation>使用 -2、-1、0、+1、+2 等对称扫描，比较相反手性以及 q 响应的奇偶部分。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="276" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="278" />
         <source>This path needs {total} structures, but the current limit is {limit}.</source>
         <translation>该路径需要 {total} 个结构，但当前上限为 {limit}。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="282" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="284" />
         <source>two complete groups: normal and time reversed</source>
         <translation>两个完整组：正常组和时间反演组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="284" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="286" />
         <source>one complete rigid-rotation group</source>
         <translation>一个完整的刚性旋转组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="286" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="288" />
         <source>one signed-q group; base q is derived from the input cell</source>
         <translation>一个有符号 q 组；基准 q 由输入晶胞推导</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="291" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="293" />
         <source>The Cartesian base q vector must be non-zero.</source>
         <translation>笛卡尔基准 q 矢量必须非零。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="295" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="297" />
         <source>one signed-q group; base period {period:.3f} Å</source>
         <translation>一个有符号 q 组；基准周期为 {period:.3f} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="299" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="301" />
         <source>{total} structures in {detail}.</source>
         <translation>共生成 {total} 个结构，构成{detail}。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="305" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="307" />
         <source>{preset} · {count} per group</source>
         <translation>{preset} · 每组 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="313" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="315" />
         <source>Compare the reference and rotated frames after an SOC-enabled calculation; all relative spin angles should stay fixed.</source>
         <translation>完成含 SOC 的计算后比较参考帧与旋转帧；所有相对自旋夹角都应保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="317" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="319" />
         <source>The integer reciprocal index closes in the current cell. The q=0 frame is a generated collinear reference, not the input spin directions.</source>
         <translation>倒空间整数索引会在当前晶胞中闭合。q=0 是生成的共线参考帧，不是输入自旋方向。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="320" />
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="322" />
         <source>Check periodic closure for Cartesian q. The q=0 frame is a generated collinear reference, not the input spin directions.</source>
         <translation>请检查笛卡尔 q 的周期闭合性。q=0 是生成的共线参考帧，不是输入自旋方向。</translation>
     </message>

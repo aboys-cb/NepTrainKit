@@ -527,6 +527,13 @@ def _card_operation_error_catalog() -> None:
         "q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, "
         "or change q and the supercell together.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The two symmetric-shear directions must be perpendicular Cartesian vectors.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The Bain lattice axis must be a, b, or c."
+    )
 
 
 class MessageManager(QObject):

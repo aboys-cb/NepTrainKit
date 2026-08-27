@@ -198,10 +198,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "MagnetoelasticResponseCard": (
-            QCoreApplication.translate("CardCatalog", "Magnetoelastic Response"),
+            QCoreApplication.translate("CardCatalog", "Magnetoelastic Grid"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Combine each strain or volume coordinate with the same complete set of spin probes.",
+                "Combine a lattice-deformation path with the same selected-spin rotation scan at every lattice point.",
             ),
         ),
         "OrganicMolConfigPBCCard": (

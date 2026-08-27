@@ -50,12 +50,96 @@ def test_magnetoelastic_ui_exposes_percent_range_but_keeps_fraction_params():
     card.struct_scan.set_range(-2.0, 2.0, 1.0)
     params = card.get_params()
     assert params.structural_scan == "-0.02,-0.01,0,0.01,0.02"
-    assert "5 lattice points" in card.get_summary_text()
+    assert "5×3 grid" in card.get_summary_text()
 
     legacy = MagnetoelasticResponseParams(structural_scan="-0.02,-0.005,0,0.02")
     card.set_params(legacy)
     assert card.struct_scan.custom_checkbox.isChecked()
     assert card.get_params() == legacy
+
+
+def test_magnetoelastic_ui_reveals_only_mode_specific_direction_controls():
+    card = MagnetoelasticResponseCard()
+    assert card.strain_field.isHidden()
+    assert card.shear_direction_field.isHidden()
+    assert card.bain_axis_field.isHidden()
+
+    set_combo_value(card.mode_combo, "Biaxial strain")
+    assert not card.strain_field.isHidden()
+    assert card.strain_field.caption.text() == card.tr("Unstrained normal")
+    assert card.shear_direction_field.isHidden()
+
+    set_combo_value(card.mode_combo, "Symmetric shear")
+    assert not card.strain_field.isHidden()
+    assert not card.shear_direction_field.isHidden()
+    assert card.bain_axis_field.isHidden()
+
+    set_combo_value(card.mode_combo, "Bain / tetragonal")
+    assert card.strain_field.isHidden()
+    assert card.shear_direction_field.isHidden()
+    assert not card.bain_axis_field.isHidden()
+
+
+def test_magnetoelastic_preview_matches_complete_group_budget():
+    card = MagnetoelasticResponseCard()
+    card.limit_frame.set_input_value([8])
+    assert "2 complete lattice points (6 structures)" in card.output_preview.text()
+
+    card.spin_scan.set_scan_text("-4,-2,0,2,4")
+    card.limit_frame.set_input_value([3])
+    assert "needs 5 structures" in card.output_preview.text()
+
+
+def test_magnetoelastic_legacy_json_restores_hidden_shear_direction_and_warns(monkeypatch):
+    warnings = []
+    monkeypatch.setattr(
+        "NepTrainKit.ui.views._card.magnetoelastic_response_card.MessageManager.send_warning_message",
+        warnings.append,
+    )
+    card = MagnetoelasticResponseCard()
+    payload = card.to_dict()
+    payload["params"].update(
+        structural_mode="Symmetric shear",
+        strain_axis=[1.0, 1.0, 0.0],
+    )
+    payload["params"].pop("shear_direction")
+    payload["params"].pop("bain_axis")
+
+    card.from_dict(payload)
+
+    assert card.get_params().shear_direction == pytest.approx((0.0, 0.0, -1.0))
+    assert card.get_params().bain_axis == "c"
+    assert not card.legacy_notice.isHidden()
+    assert warnings
+
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "Isotropic volume",
+        "Uniaxial strain",
+        "Biaxial strain",
+        "Symmetric shear",
+        "Bain / tetragonal",
+    ],
+)
+def test_every_magnetoelastic_mode_from_the_real_combo_runs_with_its_ui_defaults(mode):
+    from ase import Atoms
+
+    card = MagnetoelasticResponseCard()
+    set_combo_value(card.mode_combo, mode)
+    atoms = Atoms(
+        "Fe2",
+        positions=[[0.0, 0.0, 0.0], [0.5, 0.5, 0.5]],
+        cell=[[4.0, 0.0, 0.0], [1.0, 3.0, 0.0], [0.5, 0.2, 5.0]],
+        pbc=[True, False, True],
+    )
+    atoms.set_initial_magnetic_moments([[0.0, 0.0, 2.0], [0.0, 0.0, 3.0]])
+
+    output = card.create_operation().run_structure(atoms, card.get_params())
+
+    assert len(output) == 15
+    assert combo_value(card.mode_combo) == mode
 
 
 def test_local_response_switches_scan_meaning_without_losing_serialized_values():

@@ -365,6 +365,170 @@ def test_magnetoelastic_grid_preserves_probe_correspondence_and_lineage():
     assert [tensor[2][2] for tensor in tensors] == pytest.approx([-0.02, 0.0, 0.02])
 
 
+def test_magnetoelastic_spin_axis_controls_a_true_selected_atom_rotation():
+    atoms = Atoms(
+        "Fe2",
+        positions=[[0.0, 0.0, 0.0], [0.5, 0.5, 0.5]],
+        cell=[4.0, 4.0, 4.0],
+        pbc=True,
+    )
+    moments = np.asarray([[0.3, 0.4, 1.5], [-0.2, 1.1, 0.7]])
+    atoms.set_initial_magnetic_moments(moments)
+    common = dict(
+        structural_scan="-0.01,0,0.01",
+        spin_scan_deg="-10,0,10",
+        target_indices="1",
+    )
+
+    about_y = MagneticResponseScanOperation().run_structure(
+        atoms,
+        MagnetoelasticResponseParams(rotation_axis=(0.0, 1.0, 0.0), **common),
+    )
+    about_z = MagneticResponseScanOperation().run_structure(
+        atoms,
+        MagnetoelasticResponseParams(rotation_axis=(0.0, 0.0, 1.0), **common),
+    )
+
+    theta = math.radians(10.0)
+    expected_y = np.asarray(
+        [
+            moments[0, 0] * math.cos(theta) + moments[0, 2] * math.sin(theta),
+            moments[0, 1],
+            -moments[0, 0] * math.sin(theta) + moments[0, 2] * math.cos(theta),
+        ]
+    )
+    assert about_y[2].arrays["spin"][0] == pytest.approx(expected_y)
+    assert not np.allclose(about_y[2].arrays["spin"][0], about_z[2].arrays["spin"][0])
+    assert np.array_equal(about_y[2].arrays["spin"][1], moments[1])
+    assert about_y[2].info["_response_manifest_record"]["rotation_axis"] == pytest.approx(
+        [0.0, 1.0, 0.0]
+    )
+
+
+@pytest.mark.parametrize(
+    "mode, expected",
+    [
+        ("Isotropic volume", lambda n, d, s: np.eye(3) * (1.0 + s) ** (1.0 / 3.0)),
+        ("Uniaxial strain", lambda n, d, s: np.eye(3) + s * np.outer(n, n)),
+        ("Biaxial strain", lambda n, d, s: np.eye(3) + s * (np.eye(3) - np.outer(n, n))),
+        (
+            "Symmetric shear",
+            lambda n, d, s: np.eye(3) + 0.5 * s * (np.outer(n, d) + np.outer(d, n)),
+        ),
+    ],
+)
+def test_magnetoelastic_cartesian_modes_match_their_documented_deformation(mode, expected):
+    atoms = Atoms(
+        "Fe2",
+        positions=[[0.0, 0.0, 0.0], [1.0, 0.5, 0.4]],
+        cell=[[4.0, 0.0, 0.0], [1.0, 3.0, 0.0], [0.5, 0.2, 5.0]],
+        pbc=[True, False, True],
+    )
+    atoms.set_initial_magnetic_moments([[0.0, 0.0, 2.0], [0.0, 0.0, 3.0]])
+    normal = np.asarray([1.0, 1.0, 0.0]) / math.sqrt(2.0)
+    direction = np.asarray([0.0, 0.0, 1.0])
+    output = MagneticResponseScanOperation().run_structure(
+        atoms,
+        MagnetoelasticResponseParams(
+            structural_mode=mode,
+            structural_scan="-0.02,0,0.02",
+            spin_scan_deg="-2,0,2",
+            strain_axis=tuple(normal),
+            shear_direction=tuple(direction),
+        ),
+    )
+
+    final = output[-1]
+    deformation = final.cell.array.T @ np.linalg.inv(atoms.cell.array.T)
+    assert deformation == pytest.approx(expected(normal, direction, 0.02))
+    assert np.array_equal(final.pbc, atoms.pbc)
+    assert final.get_scaled_positions(wrap=False) == pytest.approx(
+        atoms.get_scaled_positions(wrap=False)
+    )
+
+
+@pytest.mark.parametrize("axis,index", [("a", 0), ("b", 1), ("c", 2)])
+def test_magnetoelastic_bain_axis_selects_a_lattice_vector_at_constant_volume(axis, index):
+    atoms = magnetic_pair()
+    operation = MagneticResponseScanOperation()
+    output = operation.run_structure(
+        atoms,
+        MagnetoelasticResponseParams(
+            structural_mode="Bain / tetragonal",
+            structural_scan="-0.02,0,0.02",
+            spin_scan_deg="-2,0,2",
+            bain_axis=axis,
+        ),
+    )
+    final = output[-1]
+    factors = np.linalg.norm(final.cell.array, axis=1) / np.linalg.norm(atoms.cell.array, axis=1)
+    expected = np.full(3, 1.0 / math.sqrt(1.02))
+    expected[index] = 1.02
+    assert factors == pytest.approx(expected)
+    assert final.get_volume() == pytest.approx(atoms.get_volume())
+    assert operation.last_manifest.records[-1].metadata["bain_lattice_axis"] == axis
+
+
+def test_magnetoelastic_rejects_nonorthogonal_shear_directions():
+    with pytest.raises(CardOperationError) as raised:
+        MagneticResponseScanOperation().run_structure(
+            magnetic_pair(),
+            MagnetoelasticResponseParams(
+                structural_mode="Symmetric shear",
+                strain_axis=(0.0, 0.0, 1.0),
+                shear_direction=(0.0, 1.0, 1.0),
+            ),
+        )
+    assert raised.value.code == "magnetoelastic_nonorthogonal_shear_directions"
+
+    with pytest.raises(CardOperationError) as bain:
+        MagneticResponseScanOperation().run_structure(
+            magnetic_pair(),
+            MagnetoelasticResponseParams(
+                structural_mode="Bain / tetragonal", bain_axis="z"
+            ),
+        )
+    assert bain.value.code == "magnetoelastic_invalid_bain_axis"
+
+
+def test_magnetoelastic_multiple_targets_rotate_together_without_multiplying_groups():
+    atoms = magnetic_pair()
+    one = MagneticResponseScanOperation().run_structure(
+        atoms,
+        MagnetoelasticResponseParams(
+            structural_scan="-0.01,0,0.01",
+            spin_scan_deg="-10,0,10",
+            target_indices="1",
+        ),
+    )
+    both = MagneticResponseScanOperation().run_structure(
+        atoms,
+        MagnetoelasticResponseParams(
+            structural_scan="-0.01,0,0.01",
+            spin_scan_deg="-10,0,10",
+            target_indices="1,2",
+        ),
+    )
+    assert len(one) == len(both) == 9
+    assert not np.array_equal(one[2].arrays["spin"][0], atoms.get_initial_magnetic_moments()[0])
+    assert np.array_equal(one[2].arrays["spin"][1], atoms.get_initial_magnetic_moments()[1])
+    assert not np.array_equal(both[2].arrays["spin"][1], atoms.get_initial_magnetic_moments()[1])
+
+
+@pytest.mark.parametrize("limit, expected", [(3, 3), (4, 3), (8, 6), (9, 9)])
+def test_magnetoelastic_output_limit_keeps_only_complete_lattice_groups(limit, expected):
+    output = MagneticResponseScanOperation().run_structure(
+        magnetic_pair(),
+        MagnetoelasticResponseParams(
+            structural_scan="-0.01,0,0.01",
+            spin_scan_deg="-2,0,2",
+            max_outputs=limit,
+        ),
+    )
+    assert len(output) == expected
+    assert audit_response_groups(output)["invalid_groups"] == {}
+
+
 def test_manifest_round_trip_reattaches_only_matching_task(tmp_path):
     operation = MagneticResponseScanOperation()
     output = operation.run_structure(magnetic_pair(pbc=False), LocalMagneticResponseParams())
@@ -485,7 +649,7 @@ def test_response_cards_have_complete_chinese_catalog_labels_and_presets():
         expected = {
             LocalMagneticResponseCard: ("局域磁响应", "响应路径", "原子对倾斜"),
             SOCTextureResponseCard: ("SOC / 纹理响应", "纹理路径", "全局各向异性"),
-            MagnetoelasticResponseCard: ("磁弹响应", "响应网格", "各向同性体积"),
+            MagnetoelasticResponseCard: ("磁弹响应网格", "响应网格", "各向同性体积"),
         }
         for card_type, (name, first_section, preset) in expected.items():
             metadata = CardManager.card_metadata_dict[card_type.__name__]

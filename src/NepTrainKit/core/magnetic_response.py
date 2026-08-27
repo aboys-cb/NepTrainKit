@@ -254,6 +254,8 @@ class MagnetoelasticResponseParams:
     rotation_axis: tuple[float, float, float] = (0.0, 1.0, 0.0)
     target_indices: str = "1"
     strain_axis: tuple[float, float, float] = (0.0, 0.0, 1.0)
+    shear_direction: tuple[float, float, float] = (0.0, 1.0, 0.0)
+    bain_axis: str = "c"
     max_outputs: int = 100
 
 
@@ -653,27 +655,48 @@ class MagneticResponseScanOperation(StructureOperation):
             raise ValueError("magnetoelastic response matched no target atoms")
         outputs: list[Atoms] = []
         records: list[ResponseManifestRecord] = []
-        axis = normalize_vector(np.asarray(params.strain_axis, dtype=float))
+        rotation_axis = normalize_vector(np.asarray(params.rotation_axis, dtype=float))
+        strain_axis = None
+        shear_direction = None
+        if params.structural_mode in {"Uniaxial strain", "Biaxial strain", "Symmetric shear"}:
+            strain_axis = normalize_vector(np.asarray(params.strain_axis, dtype=float))
+        if params.structural_mode == "Symmetric shear":
+            shear_direction = normalize_vector(np.asarray(params.shear_direction, dtype=float))
+            if abs(float(np.dot(strain_axis, shear_direction))) > 1.0e-7:
+                raise CardOperationError(
+                    "magnetoelastic_nonorthogonal_shear_directions",
+                    "The two symmetric-shear directions must be perpendicular Cartesian vectors.",
+                )
+        bain_axis = str(params.bain_axis).strip().lower()
+        if params.structural_mode == "Bain / tetragonal" and bain_axis not in {"a", "b", "c"}:
+            raise CardOperationError(
+                "magnetoelastic_invalid_bain_axis",
+                "The Bain lattice axis must be a, b, or c.",
+            )
         for strain in strains:
             geometry = structure.copy()
             if params.structural_mode == "Isotropic volume":
                 deformation = np.eye(3) * (1.0 + float(strain)) ** (1.0 / 3.0)
                 structural_probe = "volume"
             elif params.structural_mode == "Uniaxial strain":
-                deformation = np.eye(3) + float(strain) * np.outer(axis, axis)
+                deformation = np.eye(3) + float(strain) * np.outer(strain_axis, strain_axis)
                 structural_probe = "strain"
             elif params.structural_mode == "Biaxial strain":
-                deformation = np.eye(3) + float(strain) * (np.eye(3) - np.outer(axis, axis))
+                deformation = np.eye(3) + float(strain) * (
+                    np.eye(3) - np.outer(strain_axis, strain_axis)
+                )
                 structural_probe = "strain"
             elif params.structural_mode == "Symmetric shear":
-                direction = normalize_vector(np.cross(axis, [1.0, 0.0, 0.0]) if abs(axis[0]) < 0.9 else np.cross(axis, [0.0, 1.0, 0.0]))
-                deformation = np.eye(3) + 0.5 * float(strain) * (np.outer(axis, direction) + np.outer(direction, axis))
+                deformation = np.eye(3) + 0.5 * float(strain) * (
+                    np.outer(strain_axis, shear_direction)
+                    + np.outer(shear_direction, strain_axis)
+                )
                 structural_probe = "strain"
             elif params.structural_mode == "Bain / tetragonal":
                 result = BainPathOperation().run_structure(
                     structure,
                     BainPathParams(
-                        axis="z",
+                        axis={"a": "x", "b": "y", "c": "z"}[bain_axis],
                         ca_range=(1.0 + float(strain), 1.0 + float(strain), 1.0),
                         mode="constant_volume",
                     ),
@@ -688,21 +711,32 @@ class MagneticResponseScanOperation(StructureOperation):
             frames = []
             for angle in angles:
                 spins = moments.copy()
-                for idx in targets:
-                    spins[idx] = target_helper.tilted_vector(spins[idx], abs(angle), tilt_params, sign=np.sign(angle) or 1.0)
+                rotation = _rotation_matrix(rotation_axis, math.radians(float(angle)))
+                spins[targets] = spins[targets] @ rotation.T
                 frames.append((math.radians(angle), spins, geometry))
             emitted = self._emit_group(
                 structure, source_id=source_id, parent=parent,
-                group_key=[params.structural_mode, float(strain), targets], probe="rotation",
+                group_key=[
+                    params.structural_mode,
+                    float(strain),
+                    targets,
+                    rotation_axis.tolist(),
+                    None if strain_axis is None else strain_axis.tolist(),
+                    None if shear_direction is None else shear_direction.tolist(),
+                    bain_axis if params.structural_mode == "Bain / tetragonal" else None,
+                ], probe="rotation",
                 kind="magnetoelastic_spin_probe", frames=frames,
                 max_outputs=params.max_outputs, records=records, outputs=outputs,
-                target_indices=targets, rotation_axis=params.rotation_axis,
+                target_indices=targets, rotation_axis=rotation_axis,
                 metadata={
                     "structural_probe": structural_probe,
                     "structural_coordinate": float(strain),
                     "deformation_gradient": deformation.tolist(),
                     "strain_tensor": (0.5 * (deformation + deformation.T) - np.eye(3)).tolist(),
                     "position_convention": "fractional coordinates fixed under cell deformation",
+                    "strain_axis_cartesian": None if strain_axis is None else strain_axis.tolist(),
+                    "shear_direction_cartesian": None if shear_direction is None else shear_direction.tolist(),
+                    "bain_lattice_axis": bain_axis if params.structural_mode == "Bain / tetragonal" else None,
                 },
             )
             if not emitted:

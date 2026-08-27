@@ -960,6 +960,16 @@
         <translation>倾斜扫描</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/card_metadata.py" line="272" />
+        <source>Moment Disorder</source>
+        <translation>磁矩无序采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="273" />
+        <source>For each requested fraction, randomly choose that share of existing non-zero moments and flip or redirect them while preserving their magnitudes.</source>
+        <translation>对每个指定比例，随机选择相应数量的现有非零磁矩并翻转或改变其方向，同时保持磁矩模长不变。</translation>
+    </message>
+    <message>
         <source>Spin Perturbation</source>
         <translation type="vanished">随机磁矩扰动</translation>
     </message>
@@ -1050,42 +1060,46 @@
         <translation>周期溶剂盒</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="280" />
+        <source>Flip or redirect a chosen fraction of existing non-zero moments while preserving their magnitudes.</source>
+        <translation type="vanished">翻转或重新定向一定比例的现有非零磁矩，并保持磁矩模长不变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="283" />
         <source>SOC / Texture Response</source>
         <translation>SOC / 纹理响应</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="281" />
+        <location filename="../ui/widgets/card_metadata.py" line="284" />
         <source>Build rigid anisotropy and signed finite-q texture response paths with commensurability checks.</source>
         <translation>生成带共格检查的刚性各向异性和有符号有限 q 自旋纹理响应路径。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="287" />
+        <location filename="../ui/widgets/card_metadata.py" line="290" />
         <source>Legacy Stacking Fault</source>
         <translation>旧版层错位移</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="288" />
+        <location filename="../ui/widgets/card_metadata.py" line="291" />
         <source>Load and reproduce existing workflows that used the old automatic-direction layer shift; this compatibility card is hidden from new-card entry points.</source>
         <translation>载入并复现使用旧版自动方向层移的工作流；这张兼容卡不会出现在新建卡片入口中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="294" />
+        <location filename="../ui/widgets/card_metadata.py" line="297" />
         <source>Stacking Fault / GSFE Path</source>
         <translation>层错 / GSFE 路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="295" />
+        <location filename="../ui/widgets/card_metadata.py" line="298" />
         <source>Shift atoms above an interlayer cut along an explicit in-plane direction to generate stacking-fault structures or an unrelaxed GSFE path; the input cell must already be oriented to the fault plane.</source>
         <translation>沿显式面内方向移动层间切面上方的原子，生成层错结构或未弛豫 GSFE 路径；输入晶胞必须已按层错面定向。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="302" />
+        <location filename="../ui/widgets/card_metadata.py" line="305" />
         <source>Repeat complete input cells along lattice vectors using explicit factors, target lengths, or a strict atom budget.</source>
         <translation>沿晶格矢量完整复制输入晶胞，可按指定倍率、目标长度或严格原子预算生成超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="317" />
+        <location filename="../ui/widgets/card_metadata.py" line="320" />
         <source>Sample correlated atomic displacements from vibrational modes already stored on each input structure.</source>
         <translation>从每个输入结构已有的振动模式中采样协同原子位移。</translation>
     </message>
@@ -1094,22 +1108,20 @@
         <translation type="vanished">向现有周期性晶胞填充溶剂分子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="272" />
         <source>Spin Disorder</source>
-        <translation>自旋无序</translation>
+        <translation type="vanished">自旋无序</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="273" />
         <source>Generate spin states with explicit disorder fractions.</source>
-        <translation>按明确的无序比例生成自旋状态。</translation>
+        <translation type="vanished">按明确的无序比例生成自旋状态。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="276" />
+        <location filename="../ui/widgets/card_metadata.py" line="279" />
         <source>Spin Spiral</source>
         <translation>自旋螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="277" />
+        <location filename="../ui/widgets/card_metadata.py" line="280" />
         <source>Assign non-collinear spiral magnetic moments using a 1D phase field.</source>
         <translation>使用一维相位场设置非共线螺旋磁矩。</translation>
     </message>
@@ -1134,7 +1146,7 @@
         <translation type="vanished">按明确的滑移面和滑移方向生成未弛豫 GSFE 结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="301" />
+        <location filename="../ui/widgets/card_metadata.py" line="304" />
         <source>Super Cell</source>
         <translation>扩胞</translation>
     </message>
@@ -1143,12 +1155,12 @@
         <translation type="vanished">按固定扩胞倍数、目标晶格长度或原子数上限生成超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="309" />
+        <location filename="../ui/widgets/card_metadata.py" line="312" />
         <source>Global Random Vacancy</source>
         <translation>全局随机空位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="310" />
+        <location filename="../ui/widgets/card_metadata.py" line="313" />
         <source>Delete sites globally by an overall count or fraction without distinguishing elements; remaining coordinates are unchanged.</source>
         <translation>不区分元素，按整体数量或比例随机删除位点；其余原子坐标保持不变。</translation>
     </message>
@@ -1174,7 +1186,7 @@
         <translation type="vanished">为兼容旧工作流而保留投影层位移算法；其滑移方向由笛卡尔轴导出，不是晶体学 GSFE 路径，新任务应使用“显式 GSFE 路径”。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="316" />
+        <location filename="../ui/widgets/card_metadata.py" line="319" />
         <source>Vib Mode Perturb</source>
         <translation>振动模式扰动</translation>
     </message>
@@ -1183,67 +1195,67 @@
         <translation type="vanished">沿预先计算的振动模式生成扰动结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="324" />
+        <location filename="../ui/widgets/card_metadata.py" line="327" />
         <source>Alloy</source>
         <translation>合金与组分</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="325" />
+        <location filename="../ui/widgets/card_metadata.py" line="328" />
         <source>Container</source>
         <translation>容器</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="326" />
+        <location filename="../ui/widgets/card_metadata.py" line="329" />
         <source>Defect</source>
         <translation>缺陷</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="327" />
+        <location filename="../ui/widgets/card_metadata.py" line="330" />
         <source>Filter</source>
         <translation>筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="328" />
+        <location filename="../ui/widgets/card_metadata.py" line="331" />
         <source>Lattice</source>
         <translation>晶格</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="329" />
+        <location filename="../ui/widgets/card_metadata.py" line="332" />
         <source>Magnetism</source>
         <translation>磁性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="330" />
+        <location filename="../ui/widgets/card_metadata.py" line="333" />
         <source>Organic</source>
         <translation>分子与溶剂</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="331" />
+        <location filename="../ui/widgets/card_metadata.py" line="334" />
         <source>Perturbation</source>
         <translation>扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="332" />
+        <location filename="../ui/widgets/card_metadata.py" line="335" />
         <source>Structure</source>
         <translation>结构</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="333" />
+        <location filename="../ui/widgets/card_metadata.py" line="336" />
         <source>Surface</source>
         <translation>表面</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="336" />
+        <location filename="../ui/widgets/card_metadata.py" line="339" />
         <source>author</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="337" />
+        <location filename="../ui/widgets/card_metadata.py" line="340" />
         <source>maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="338" />
+        <location filename="../ui/widgets/card_metadata.py" line="341" />
         <source>contributor</source>
         <translation>贡献者</translation>
     </message>
@@ -1357,446 +1369,469 @@
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="54" />
+        <source>Existing moments</source>
+        <translation>现有磁矩</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="55" />
+        <source>Element map / default</source>
+        <translation>元素表 / 默认值</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="56" />
         <source>Existing magmoms</source>
         <translation>现有 magmoms</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="55" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="57" />
         <source>Element map/default</source>
         <translation>元素映射/默认值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="56" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="58" />
         <source>Constant magnitude</source>
         <translation>恒定磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="57" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="59" />
         <source>Collinear (scalar)</source>
         <translation>Collinear（标量）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="58" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="60" />
         <source>Non-collinear (vector)</source>
         <translation>Non-collinear（矢量）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="59" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="61" />
         <source>Collinear along reference axis</source>
         <translation>共线（沿参考轴）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="60" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="62" />
         <source>Non-collinear 3D vectors</source>
         <translation>非共线（三维矢量）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="61" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="63" />
         <source>uniaxial</source>
         <translation>单轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="62" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="64" />
         <source>biaxial</source>
         <translation>双轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="63" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="65" />
         <source>triaxial</source>
         <translation>三轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="64" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="66" />
         <source>isotropic</source>
         <translation>各向同性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="65" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="67" />
         <source>k-vector</source>
         <translation>k-vector</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="66" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="68" />
         <source>group A/B</source>
         <translation>A/B 分组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="67" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="69" />
         <source>Coordinate-layer k-vector</source>
         <translation>坐标分层 k-vector</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="68" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="70" />
         <source>Existing group labels</source>
         <translation>已有分组标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="69" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="71" />
         <source>sphere</source>
         <translation>球面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="70" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="72" />
         <source>cone</source>
         <translation>锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="71" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="73" />
         <source>plane</source>
         <translation>平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="72" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="74" />
         <source>axis</source>
         <translation>轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="73" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="75" />
         <source>Full sphere</source>
         <translation>完整球面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="74" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="76" />
         <source>Cone around reference axis</source>
         <translation>参考轴周围锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="75" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="77" />
         <source>Plane perpendicular to reference axis</source>
         <translation>垂直参考轴的平面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="76" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="78" />
         <source>Along +/- reference axis</source>
         <translation>沿正负参考轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="77" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="79" />
         <source>Flip fraction</source>
         <translation>按比例翻转</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="78" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="80" />
         <source>Randomize fraction</source>
         <translation>按比例随机化</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="79" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="81" />
         <source>Cone disorder</source>
-        <translation>锥面无序</translation>
+        <translation>圆锥无序</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="80" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="82" />
+        <source>Flip selected moments</source>
+        <translation>翻转选中的磁矩</translation>
+    </message>
+    <message>
+        <source>Give selected moments random directions</source>
+        <translation type="vanished">给选中磁矩随机方向</translation>
+    </message>
+    <message>
+        <source>Deflect selected moments within a cone</source>
+        <translation type="vanished">在圆锥内偏转选中磁矩</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="85" />
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="81" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="86" />
         <source>y</source>
         <translation>y</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="82" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="87" />
         <source>z</source>
         <translation>z</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="83" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="88" />
         <source>Lattice a</source>
         <translation>晶格 a 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="84" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="89" />
         <source>Lattice b</source>
         <translation>晶格 b 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="85" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="90" />
         <source>Lattice c</source>
         <translation>晶格 c 方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="86" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="91" />
         <source>constant volume</source>
         <translation>恒体积</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="87" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="92" />
         <source>scale volume</source>
         <translation>缩放体积</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="88" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="93" />
         <source>free c</source>
         <translation>自由 c</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="89" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="94" />
         <source>fixed</source>
         <translation>固定数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="90" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="95" />
         <source>density</source>
         <translation>按密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="91" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="96" />
         <source>auto</source>
         <translation>自动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="92" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="97" />
         <source>general</source>
         <translation>通用</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="93" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="98" />
         <source>water</source>
         <translation>水</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="94" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="99" />
         <source>ion-water</source>
         <translation>离子-水</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="95" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="100" />
         <source>loose</source>
         <translation>宽松</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="96" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="101" />
         <source>dense</source>
         <translation>紧密</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="97" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="102" />
         <source>Grid</source>
         <translation>网格</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="98" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="103" />
         <source>Sobol</source>
         <translation>Sobol</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="99" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="104" />
         <source>Equal+Reflow</source>
         <translation>均分并回流</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="100" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="105" />
         <source>Capacity-weighted</source>
         <translation>按容量加权</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="101" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="106" />
         <source>Equal (legacy)</source>
         <translation>均分（旧版）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="102" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="107" />
         <source>Binary (2)</source>
         <translation>二元（2）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="103" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="108" />
         <source>Ternary (3)</source>
         <translation>三元（3）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="104" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="109" />
         <source>Quaternary (4)</source>
         <translation>四元（4）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="105" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="110" />
         <source>Quinary (5)</source>
         <translation>五元（5）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="106" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="111" />
         <source>Binary + ternary (2,3)</source>
         <translation>二元 + 三元（2,3）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="107" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="112" />
         <source>Binary to quaternary (2-4)</source>
         <translation>二元至四元（2–4）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="108" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="113" />
         <source>Quaternary + quinary (4,5)</source>
         <translation>四元 + 五元（4,5）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="109" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="114" />
         <source>All feasible (2-5)</source>
         <translation>全部可行元数（2–5）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="110" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="115" />
         <source>All feasible, high-order first (5-2)</source>
         <translation>全部可行元数，高元优先（5–2）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="111" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="116" />
         <source>Repeat factors</source>
         <translation>指定重复倍率</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="112" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="117" />
         <source>Target lengths</source>
         <translation>指定目标长度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="113" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="118" />
         <source>Atom budget</source>
         <translation>指定原子预算</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="114" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="119" />
         <source>Balance component counts</source>
         <translation>均衡各元数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="115" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="120" />
         <source>Favor larger composition spaces</source>
         <translation>侧重更大的成分空间</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="116" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="121" />
         <source>Legacy equal split</source>
         <translation>旧版均分</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="117" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="122" />
         <source>fcc</source>
         <translation>fcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="118" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="123" />
         <source>bcc</source>
         <translation>bcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="119" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="124" />
         <source>hcp</source>
         <translation>hcp</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="120" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="125" />
         <source>fcc111</source>
         <translation>fcc111</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="121" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="126" />
         <source>FCC conventional cell</source>
         <translation>FCC 常规晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="122" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="127" />
         <source>BCC conventional cell</source>
         <translation>BCC 常规晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="123" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="128" />
         <source>HCP primitive cell</source>
         <translation>HCP 原胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="124" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="129" />
         <source>FCC (111)-oriented periodic cell</source>
         <translation>FCC (111) 定向周期晶胞</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="125" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="130" />
         <source>A1/fcc</source>
         <translation>A1/fcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="126" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="131" />
         <source>A2/bcc</source>
         <translation>A2/bcc</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="127" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
         <source>A3/hcp</source>
         <translation>A3/hcp</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="128" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
         <source>L12/A3B</source>
         <translation>L1₂/A3B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="129" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
         <source>B2/AB</source>
         <translation>B2/AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="130" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
         <source>L10/AB</source>
         <translation>L1₀/AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="131" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
         <source>A1 / FCC (single sublattice)</source>
         <translation>A1 / FCC（单子晶格）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="132" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
         <source>A2 / BCC (single sublattice)</source>
         <translation>A2 / BCC（单子晶格）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="133" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
         <source>A3 / HCP (single sublattice)</source>
         <translation>A3 / HCP（单子晶格）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="134" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
         <source>L1₂ / A₃B</source>
         <translation>L1₂ / A₃B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="135" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
         <source>B2 / AB</source>
         <translation>B2 / AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="136" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
         <source>L1₀ / AB</source>
         <translation>L1₀ / AB</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="137" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
         <source>Auto (Comp tag)</source>
         <translation>自动（Comp 标签）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="138" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
         <source>Auto detect</source>
         <translation>自动检测</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="139" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
         <source>Manual</source>
         <translation>手动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="140" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
         <source>Exact</source>
         <translation>精确</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="141" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
         <source>Random</source>
         <translation>随机</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="142" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
         <source>Fraction of slip vector</source>
         <translation>滑移向量分数</translation>
     </message>
@@ -1805,162 +1840,162 @@
         <translation type="vanished">投影滑移向量的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="143" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
         <source>Actual distance (Å)</source>
         <translation>实际距离（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="144" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
         <source>Middle interlayer gap</source>
         <translation>中间层间隙</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="145" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
         <source>Fraction of projected thickness</source>
         <translation>投影厚度的分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="146" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
         <source>After a layer index</source>
         <translation>指定原子层之后</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="151" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
         <source>Auto (follow input PBC)</source>
         <translation>自动（跟随输入 PBC）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
         <source>Force full 3D PBC</source>
         <translation>强制全三维 PBC</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
         <source>Nonperiodic molecule</source>
         <translation>非周期分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
         <source>Auto-detect solvent / ion</source>
         <translation>自动识别溶剂 / 离子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
         <source>General random orientation</source>
         <translation>通用随机取向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="156" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
         <source>Water dipole orientation</source>
         <translation>水分子偶极取向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="157" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
         <source>Ion-water first shell</source>
         <translation>离子-水第一配位壳</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="158" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
         <source>Loose collision profile</source>
         <translation>宽松碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="159" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
         <source>Dense collision profile</source>
         <translation>紧密碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="160" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
         <source>All host atoms</source>
         <translation>全部宿主原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="161" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
         <source>By element</source>
         <translation>按元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="162" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
         <source>By 1-based atom index</source>
         <translation>按从 1 开始的原子索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="163" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
         <source>By Cartesian z range</source>
         <translation>按笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="164" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
         <source>Fixed molecule count</source>
         <translation>固定分子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="165" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
         <source>Nominal solvent density</source>
         <translation>名义溶剂密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="166" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
         <source>Auto-detect solvent type</source>
         <translation>自动识别溶剂类型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="167" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
         <source>General collision profile</source>
         <translation>通用碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="168" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
         <source>Water collision profile</source>
         <translation>水分子碰撞配置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="169" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="170" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
         <source>Flat stack (no warp)</source>
         <translation>平整堆叠（不形变）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="171" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
         <source>2D sine ripple</source>
         <translation>二维正弦波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="172" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
         <source>Gaussian bump</source>
         <translation>高斯凸起</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="173" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
         <source>Paraboloid</source>
         <translation>抛物面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="174" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
         <source>Stripe ripple</source>
         <translation>条纹波纹</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="175" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
         <source>Step (x&gt;0)</source>
         <translation>阶跃（x&gt;0）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="176" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
         <source>All atoms</source>
         <translation>所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="177" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
         <source>Selected elements</source>
         <translation>指定元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="178" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
@@ -1985,22 +2020,22 @@
         <translation type="vanished">层索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="147" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="152" />
         <source>all</source>
         <translation>全部</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="148" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="153" />
         <source>elements</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="149" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="154" />
         <source>indices</source>
         <translation>索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="150" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="155" />
         <source>z_range</source>
         <translation>z 范围</translation>
     </message>
@@ -2013,155 +2048,165 @@
         <translation type="vanished">否</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="179" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
         <source>Global canting</source>
         <translation>全局 canting</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="31" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="180" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
         <source>Single-spin tilt</source>
         <translation>单自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="181" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
         <source>Atom-pair canting</source>
         <translation>原子对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="182" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
         <source>Group-pair canting</source>
         <translation>分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="183" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
         <source>All eligible atoms</source>
         <translation>所有候选原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="184" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
         <source>Explicit indices</source>
         <translation>显式索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="35" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="185" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
         <source>Manual indices</source>
         <translation>手动索引</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="36" />
-        <location filename="../ui/views/_card/i18n_utils.py" line="186" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
         <source>Auto by neighbor shell</source>
         <translation>按近邻壳自动选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="187" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="83" />
+        <source>Assign random directions</source>
+        <translation>赋予随机方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="84" />
+        <source>Deflect within a cone</source>
+        <translation>在圆锥内偏转</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
         <source>Any</source>
         <translation>任意</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="188" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
         <source>Near axis</source>
         <translation>接近轴向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="189" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
         <source>In plane (normal)</source>
         <translation>位于平面内（法向）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="190" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
         <source>Positive only</source>
         <translation>仅正向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="191" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
         <source>Negative only</source>
         <translation>仅负向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="192" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
         <source>Both (+/- pair)</source>
         <translation>正负成对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="193" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
         <source>Auto from layer count</source>
         <translation>按层数自动</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="194" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
         <source>Clockwise then counterclockwise</source>
         <translation>先顺时针再逆时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="195" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
         <source>Counterclockwise then clockwise</source>
         <translation>先逆时针再顺时针</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="196" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
         <source>Cone around reference</source>
         <translation>围绕参考锥面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="197" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
         <source>Full random directions</source>
         <translation>全随机方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="198" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="203" />
         <source>exponential</source>
         <translation>指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="199" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="204" />
         <source>squared exponential</source>
         <translation>平方指数核</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="200" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="205" />
         <source>Alternating fractional-coordinate layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="201" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="206" />
         <source>Current-cell half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="202" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="207" />
         <source>Alternating layers</source>
         <translation>分数坐标交替分层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="203" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="208" />
         <source>Half-grid parity</source>
         <translation>当前晶胞半网格奇偶</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="204" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="209" />
         <source>100 (along lattice a)</source>
         <translation>100（沿晶格 a）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="205" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="210" />
         <source>010 (along lattice b)</source>
         <translation>010（沿晶格 b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="206" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="211" />
         <source>001 (along lattice c)</source>
         <translation>001（沿晶格 c）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="207" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="212" />
         <source>110 (along lattice a+b)</source>
         <translation>110（沿晶格 a+b）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/i18n_utils.py" line="208" />
+        <location filename="../ui/views/_card/i18n_utils.py" line="213" />
         <source>111 (along lattice a+b+c)</source>
         <translation>111（沿晶格 a+b+c）</translation>
     </message>
@@ -2339,98 +2384,98 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1076" />
+        <location filename="../ui/widgets/card_metadata.py" line="1079" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1093" />
+        <location filename="../ui/widgets/card_metadata.py" line="1096" />
         <source>Make Dataset cards</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1103" />
+        <location filename="../ui/widgets/card_metadata.py" line="1106" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1205" />
+        <location filename="../ui/widgets/card_metadata.py" line="1208" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1217" />
+        <location filename="../ui/widgets/card_metadata.py" line="1220" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1218" />
+        <location filename="../ui/widgets/card_metadata.py" line="1221" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1219" />
+        <location filename="../ui/widgets/card_metadata.py" line="1222" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1220" />
+        <location filename="../ui/widgets/card_metadata.py" line="1223" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1221" />
+        <location filename="../ui/widgets/card_metadata.py" line="1224" />
         <source>Documentation</source>
         <translation>文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1247" />
-        <location filename="../ui/widgets/card_metadata.py" line="1407" />
+        <location filename="../ui/widgets/card_metadata.py" line="1250" />
+        <location filename="../ui/widgets/card_metadata.py" line="1410" />
         <source>Technical details</source>
         <translation>技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1271" />
+        <location filename="../ui/widgets/card_metadata.py" line="1274" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1277" />
+        <location filename="../ui/widgets/card_metadata.py" line="1280" />
         <source>Source file</source>
         <translation>源文件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1300" />
+        <location filename="../ui/widgets/card_metadata.py" line="1303" />
         <source>Add selected card</source>
         <translation>添加所选卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1305" />
+        <location filename="../ui/widgets/card_metadata.py" line="1308" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1350" />
+        <location filename="../ui/widgets/card_metadata.py" line="1353" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1365" />
+        <location filename="../ui/widgets/card_metadata.py" line="1368" />
         <source>Open documentation</source>
         <translation>打开文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1377" />
+        <location filename="../ui/widgets/card_metadata.py" line="1380" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1405" />
+        <location filename="../ui/widgets/card_metadata.py" line="1408" />
         <source>Hide technical details</source>
         <translation>收起技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1441" />
+        <location filename="../ui/widgets/card_metadata.py" line="1444" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -2438,32 +2483,32 @@
 <context>
     <name>CardLibraryPopup</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="857" />
+        <location filename="../ui/widgets/card_metadata.py" line="860" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="889" />
+        <location filename="../ui/widgets/card_metadata.py" line="892" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="919" />
+        <location filename="../ui/widgets/card_metadata.py" line="922" />
         <source>Hover or focus a card to see what it does.</source>
         <translation>悬停或聚焦卡片以查看功能说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1016" />
+        <location filename="../ui/widgets/card_metadata.py" line="1019" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1019" />
+        <location filename="../ui/widgets/card_metadata.py" line="1022" />
         <source>No cards found.</source>
         <translation>未找到卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1027" />
+        <location filename="../ui/widgets/card_metadata.py" line="1030" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
@@ -2471,94 +2516,94 @@
 <context>
     <name>CardMetadata</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="344" />
-        <location filename="../ui/widgets/card_metadata.py" line="397" />
+        <location filename="../ui/widgets/card_metadata.py" line="347" />
+        <location filename="../ui/widgets/card_metadata.py" line="400" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="378" />
+        <location filename="../ui/widgets/card_metadata.py" line="381" />
         <source>Not specified</source>
         <translation>未指定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="388" />
+        <location filename="../ui/widgets/card_metadata.py" line="391" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="390" />
+        <location filename="../ui/widgets/card_metadata.py" line="393" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="399" />
+        <location filename="../ui/widgets/card_metadata.py" line="402" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="400" />
+        <location filename="../ui/widgets/card_metadata.py" line="403" />
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="411" />
-        <location filename="../ui/widgets/card_metadata.py" line="444" />
+        <location filename="../ui/widgets/card_metadata.py" line="414" />
+        <location filename="../ui/widgets/card_metadata.py" line="447" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="412" />
+        <location filename="../ui/widgets/card_metadata.py" line="415" />
         <source>No public contributor metadata yet.</source>
         <translation>暂无公开贡献者元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="455" />
+        <location filename="../ui/widgets/card_metadata.py" line="458" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="456" />
+        <location filename="../ui/widgets/card_metadata.py" line="459" />
         <source>Group</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="457" />
+        <location filename="../ui/widgets/card_metadata.py" line="460" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="458" />
+        <location filename="../ui/widgets/card_metadata.py" line="461" />
         <source>Maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="459" />
+        <location filename="../ui/widgets/card_metadata.py" line="462" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="460" />
+        <location filename="../ui/widgets/card_metadata.py" line="463" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="461" />
+        <location filename="../ui/widgets/card_metadata.py" line="464" />
         <source>Source path</source>
         <translation>源路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="668" />
+        <location filename="../ui/widgets/card_metadata.py" line="671" />
         <source>Make Dataset Card</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="699" />
+        <location filename="../ui/widgets/card_metadata.py" line="702" />
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="711" />
+        <location filename="../ui/widgets/card_metadata.py" line="714" />
         <source>Citation</source>
         <translation>引用</translation>
     </message>
@@ -2566,12 +2611,12 @@
 <context>
     <name>CardMetadataDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="724" />
+        <location filename="../ui/widgets/card_metadata.py" line="727" />
         <source>Card info - {card_name}</source>
         <translation>卡片信息 - {card_name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="739" />
+        <location filename="../ui/widgets/card_metadata.py" line="742" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -12216,147 +12261,343 @@ Do you want to continue?</source>
 <context>
     <name>SpinDisorderCard</name>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="27" />
         <source>Spin Disorder</source>
-        <translation>自旋无序</translation>
+        <translation type="vanished">自旋无序</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="33" />
         <source>Disorder mode</source>
-        <translation>无序模式</translation>
+        <translation type="vanished">无序模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="34" />
+        <source>Flip selected moments, randomize their directions, or sample around each current direction.</source>
+        <translation type="vanished">翻转选中的磁矩、随机化其方向，或在各自当前方向附近采样。</translation>
+    </message>
+    <message>
+        <source>Use custom fraction list</source>
+        <translation type="vanished">使用自定义比例列表</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="69" />
+        <source>For example: 0.1,0.3,0.5,0.7</source>
+        <translation>例如：0.1,0.3,0.5,0.7</translation>
+    </message>
+    <message>
+        <source>Disordered fraction</source>
+        <translation type="vanished">无序比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="74" />
+        <source>Set minimum, maximum, and step, or switch to a custom list. Every fraction must be greater than 0 and at most 1.</source>
+        <translation>设置最小值、最大值和步长，也可切换为自定义列表。每个比例必须大于 0 且不超过 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="83" />
+        <source>Samples per fraction</source>
+        <translation>每个比例的样本数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="86" />
+        <source>Independent random selections generated at each fraction.</source>
+        <translation>每个比例下独立随机选择并生成的样本数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="98" />
+        <source>Maximum cone angle</source>
+        <translation>最大圆锥角</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="101" />
+        <source>Selected moments are sampled uniformly inside this cone around their current directions.</source>
+        <translation>以各个选中磁矩的当前方向为轴，在此圆锥内均匀采样。</translation>
+    </message>
+    <message>
+        <source>Disorder sampling</source>
+        <translation type="vanished">无序采样</translation>
+    </message>
+    <message>
+        <source>Choose how many non-zero moments change and how their new directions are generated.</source>
+        <translation type="vanished">设置改变多少非零磁矩，以及如何生成新方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="36" />
+        <source>Moment Disorder</source>
+        <translation>磁矩无序采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="58" />
+        <source>How selected moments change</source>
+        <translation>选中的磁矩如何变化</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="61" />
+        <source>The fraction below decides which moments are selected; this option decides their new directions.</source>
+        <translation>下面的比例决定选择多少磁矩；此选项决定这些磁矩的新方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="68" />
+        <source>Specify fractions to generate</source>
+        <translation>指定要生成的无序比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="71" />
+        <source>Fraction of moments changed</source>
+        <translation>改变磁矩的比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="107" />
+        <source>Moment changes</source>
+        <translation>磁矩变化</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="109" />
+        <source>For every fraction, randomly choose that share of eligible non-zero moments and generate a separate set of structures.</source>
+        <translation>对每个比例，随机选择相应数量的非零磁矩，并分别生成一组结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="129" />
+        <source>Moment source</source>
+        <translation>磁矩来源</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="136" />
+        <source>Element moments</source>
+        <translation>元素磁矩</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="146" />
+        <source>Default moment magnitude</source>
+        <translation>默认磁矩模长</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="149" />
+        <source>Used only for elements missing from the table.</source>
+        <translation>仅用于元素磁矩表中未列出的元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="164" />
+        <source>Scalar lift direction (Cartesian)</source>
+        <translation>标量抬升方向（笛卡尔）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="167" />
+        <source>Used only to initialize scalar or map-based moments; existing vector directions are preserved.</source>
+        <translation>仅用于初始化标量磁矩或按元素表构造的磁矩；已有矢量方向保持不变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="171" />
+        <source>All non-zero moments</source>
+        <translation>所有非零磁矩</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="173" />
+        <source>Target elements</source>
+        <translation>目标元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="176" />
+        <source>Comma-separated symbols such as Fe,Co; empty selects all non-zero moments.</source>
+        <translation>用逗号分隔元素符号，如 Fe,Co；留空选择所有非零磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="180" />
+        <source>Show moment source and target filter</source>
+        <translation>显示磁矩来源和目标筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="184" />
+        <source>Moment source and targets</source>
+        <translation>磁矩来源和目标</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="217" />
+        <source>Maximum outputs per input</source>
+        <translation>每个输入的最大输出数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="226" />
+        <source>Generation</source>
+        <translation>生成设置</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="273" />
+        <source>The custom fraction list must contain finite numbers greater than 0 and at most 1.</source>
+        <translation>自定义比例列表只能包含大于 0 且不超过 1 的有限数值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="276" />
+        <source>Every disorder fraction must be greater than 0 and at most 1.</source>
+        <translation>每个无序比例必须大于 0 且不超过 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="296" />
+        <source>Per input: {allocation} = {emitted} structures.</source>
+        <translation>每个输入：{allocation} = {emitted} 张结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="300" />
+        <source>Per input: {allocation} = {emitted} structures ({requested} requested; output limit reached).</source>
+        <translation>每个输入：{allocation} = {emitted} 张结构（请求 {requested} 张，已达到输出上限）。</translation>
+    </message>
+    <message>
+        <source>Per input: {emitted} structures · fractions {fraction_list} · {samples} at each fraction.</source>
+        <translation type="vanished">每个输入生成 {emitted} 张结构 · 比例 {fraction_list} · 每档 {samples} 张。</translation>
+    </message>
+    <message>
+        <source>Per input: {emitted} of {requested} requested structures (output limit) · fractions {fraction_list} · {samples} at each fraction.</source>
+        <translation type="vanished">每个输入请求 {requested} 张，受输出上限限制实际生成 {emitted} 张 · 比例 {fraction_list} · 每档 {samples} 张。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="317" />
+        <source>{mode} · {fractions} fractions · {samples} each</source>
+        <translation>{mode} · {fractions} 个比例 · 每档 {samples} 张</translation>
+    </message>
+    <message>
+        <source>Fractions: {fractions} · samples each: {samples} · requested: {requested}; up to {emitted} structures per valid input.</source>
+        <translation type="vanished">比例数：{fractions} · 每个比例样本数：{samples} · 请求：{requested}；每个有效输入最多输出 {emitted} 张结构。</translation>
+    </message>
+    <message>
+        <source>{mode} · fractions {fractions} × samples {samples}</source>
+        <translation type="vanished">{mode} · {fractions} 个比例 × {samples} 个样本</translation>
+    </message>
+    <message>
+        <source>{fractions} fractions × {samples} samples = {requested} requested; up to {emitted} structures are emitted per valid input.</source>
+        <translation type="vanished">{fractions} 个比例 × {samples} 个样本 = 请求 {requested} 张；每个有效输入最多输出 {emitted} 张结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="316" />
+        <source>Fraction list needs attention</source>
+        <translation>比例列表需要修正</translation>
+    </message>
+    <message>
+        <source>{mode} · {fractions} fractions × {samples} samples</source>
+        <translation type="vanished">{mode} · {fractions} 个比例 × {samples} 个样本</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="331" />
+        <source>Enter one or more fractions between 0 and 1 before running.</source>
+        <translation>运行前请输入一个或多个大于 0 且不超过 1 的比例。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="335" />
+        <source>At fraction {fraction}, about {changed} of every 100 eligible non-zero moments change; moment magnitudes stay fixed.</source>
+        <translation>比例为 {fraction} 时，每 100 个符合条件的非零磁矩约改变 {changed} 个；磁矩模长保持不变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="342" />
+        <source>Planned maximum: {total} outputs.</source>
+        <translation>计划最多输出 {total} 张结构。</translation>
+    </message>
+    <message>
         <source>Flip selected moments, randomize selected directions, or sample within a cone</source>
-        <translation>翻转选中磁矩、随机化选中方向，或在锥内采样</translation>
+        <translation type="vanished">翻转选中磁矩、随机化选中方向，或在锥内采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="40" />
         <source>Fractions</source>
-        <translation>比例</translation>
+        <translation type="vanished">比例</translation>
     </message>
     <message>
         <source>Comma-separated disorder fractions, for example 0.1,0.3,0.5,0.7</source>
         <translation type="vanished">无序比例用逗号分隔，例如 0.1,0.3,0.5,0.7</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="41" />
         <source>Minimum, maximum, and step for the fraction of moments to disorder</source>
-        <translation>设置发生无序的磁矩比例最小值、最大值和步长</translation>
+        <translation type="vanished">设置发生无序的磁矩比例最小值、最大值和步长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="48" />
         <source>Samples/fraction</source>
-        <translation>每个比例的样本数</translation>
+        <translation type="vanished">每个比例的样本数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="49" />
         <source>Number of independent selections emitted for each disorder fraction</source>
-        <translation>每个无序比例生成的独立选择数量</translation>
+        <translation type="vanished">每个无序比例生成的独立选择数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="56" />
         <source>Cone angle</source>
-        <translation>锥角</translation>
+        <translation type="vanished">锥角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="57" />
         <source>Maximum cone angle in degrees for Cone disorder</source>
-        <translation>锥形无序的最大锥角（度）</translation>
+        <translation type="vanished">锥形无序的最大锥角（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="65" />
         <source>Magnitude source</source>
-        <translation>磁矩大小来源</translation>
+        <translation type="vanished">磁矩大小来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="66" />
         <source>Use existing initial magmoms or build a reference from map/default</source>
-        <translation>使用现有初始 magmoms，或从映射/默认值构造参考态</translation>
+        <translation type="vanished">使用现有初始 magmoms，或从映射/默认值构造参考态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="72" />
         <source>Magmom map</source>
-        <translation>元素磁矩表</translation>
+        <translation type="vanished">元素磁矩表</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="73" />
         <source>Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"</source>
-        <translation>当来源为映射/默认磁矩大小时使用，例如 "Fe:2.2,Ni:0.6"</translation>
+        <translation type="vanished">当来源为映射/默认磁矩大小时使用，例如 "Fe:2.2,Ni:0.6"</translation>
     </message>
     <message>
         <source>Fe:2.2,Ni:0.6</source>
         <translation type="vanished">Fe:2.2,Ni:0.6</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="76" />
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="133" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="76" />
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="133" />
         <source>Moment magnitude</source>
         <translation>磁矩模长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="79" />
         <source>Default |m|</source>
-        <translation>默认 |m|</translation>
+        <translation type="vanished">默认 |m|</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="80" />
         <source>Magnitude used for elements not listed in the magmom map</source>
-        <translation>未在 magmom 映射中列出的元素使用该磁矩大小</translation>
+        <translation type="vanished">未在 magmom 映射中列出的元素使用该磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="88" />
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="154" />
         <source>Lift scalar magmoms to vectors</source>
         <translation>将标量 magmoms 提升为矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="91" />
         <source>Reference axis</source>
-        <translation>参考轴</translation>
+        <translation type="vanished">参考轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="92" />
         <source>Axis for lifted scalar magmoms and map/default reference states</source>
-        <translation>标量 magmoms 提升和映射/默认参考态使用的轴</translation>
+        <translation type="vanished">标量 magmoms 提升和映射/默认参考态使用的轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="101" />
         <source>Apply elements</source>
-        <translation>应用元素</translation>
+        <translation type="vanished">应用元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="102" />
         <source>Optional comma-separated element list; empty means all nonzero moments</source>
-        <translation>可选 逗号分隔的 element list; 留空表示所有非零磁矩</translation>
+        <translation type="vanished">可选 逗号分隔的 element list; 留空表示所有非零磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="105" />
         <source>Fe,Co</source>
-        <translation>Fe,Co</translation>
+        <translation type="vanished">Fe,Co</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="108" />
         <source>Show magnetic-moment source and element filter</source>
-        <translation>显示磁矩来源和元素筛选</translation>
+        <translation type="vanished">显示磁矩来源和元素筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="112" />
+        <location filename="../ui/views/_card/spin_disorder_card.py" line="195" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="121" />
         <source>Max outputs</source>
-        <translation>最大输出数</translation>
+        <translation type="vanished">最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_disorder_card.py" line="122" />
         <source>Stop after this many generated structures</source>
-        <translation>生成到此数量后停止</translation>
+        <translation type="vanished">生成到此数量后停止</translation>
     </message>
 </context>
 <context>

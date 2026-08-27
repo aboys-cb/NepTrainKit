@@ -149,7 +149,7 @@ $$
 
 - `Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`：覆盖 L1₂、B2、L1₀ 的有序和分子晶格无序占位。
 - `Crystal Prototype Builder → Super Cell → Finite-Cell Alloy Occupancy`：普通 FCC/BCC 结构没有 `sublattice` 时使用 `all` 单 site set 生成随机固溶体。
-- `Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`：占位确定后再补坐标和晶格扰动；磁矩仍交给 Magnetic Order 或 Spin Disorder。
+- `Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`：占位确定后再补坐标和晶格扰动；磁矩仍交给 Magnetic Order 或 Moment Disorder。
 
 ## 常见问题
 

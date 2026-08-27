@@ -269,8 +269,11 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "SpinDisorderCard": (
-            QCoreApplication.translate("CardCatalog", "Spin Disorder"),
-            QCoreApplication.translate("CardCatalog", "Generate spin states with explicit disorder fractions."),
+            QCoreApplication.translate("CardCatalog", "Moment Disorder"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "For each requested fraction, randomly choose that share of existing non-zero moments and flip or redirect them while preserving their magnitudes.",
+            ),
         ),
         "SpinSpiralCard": (
             QCoreApplication.translate("CardCatalog", "Spin Spiral"),

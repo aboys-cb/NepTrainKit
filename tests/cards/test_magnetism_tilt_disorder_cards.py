@@ -337,6 +337,47 @@ class TestMagnetismTiltDisorderCards(MagnetismCardTest):
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
 
+    def test_spin_disorder_dynamic_controls_and_preview_are_reachable(self):
+        card = SpinDisorderCard()
+
+        self.assertEqual(card.getTitle(), "Moment Disorder")
+        self.assertEqual(card.mode_field.caption.text(), "How selected moments change")
+        self.assertEqual(card.fractions_field.caption.text(), "Fraction of moments changed")
+        self.assertEqual(card.fractions_edit.custom_checkbox.text(), "Specify fractions to generate")
+        self.assertTrue(card.cone_field.isHidden())
+        cone_index = card.mode_combo.findData("Cone disorder")
+        card.mode_combo.setCurrentIndex(cone_index)
+        self.assertFalse(card.cone_field.isHidden())
+
+        card.advanced_checkbox.setChecked(True)
+        self.assertFalse(card.source_section.isHidden())
+        map_index = card.source_combo.findData("Map/default magnitude")
+        card.source_combo.setCurrentIndex(map_index)
+        self.assertFalse(card.map_field.isHidden())
+        self.assertFalse(card.default_field.isHidden())
+        self.assertTrue(card.lift_scalar_checkbox.isHidden())
+
+        card.samples_frame.set_input_value([2])
+        self.assertIn("10% × 2 · 30% × 2 · 50% × 2 · 70% × 2", card.output_preview.text())
+        self.assertIn("= 8 structures", card.output_preview.text())
+        self.assertLessEqual(card.samples_frame.width(), 132)
+        self.assertLessEqual(card.max_output_frame.width(), 132)
+
+        card.max_output_frame.set_input_value([5])
+        self.assertIn("10% × 2 · 30% × 2 · 50% × 1 · 70% × 0", card.output_preview.text())
+        self.assertIn("= 5 structures (8 requested; output limit reached)", card.output_preview.text())
+
+    def test_spin_disorder_fraction_editing_is_fail_soft(self):
+        card = SpinDisorderCard()
+        card.fractions_edit.custom_checkbox.setChecked(True)
+
+        for text in ("", "abc", "0"):
+            with self.subTest(text=text):
+                card.fractions_edit.custom_edit.setText(text)
+                self.assertTrue(card.get_summary_text())
+                self.assertTrue(card.get_guidance_text())
+                self.assertTrue(card.output_preview.text())
+
     def test_spin_disorder_randomize_ui_value_runs_core_operation(self):
         structure = self._spin_chain()
         structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])

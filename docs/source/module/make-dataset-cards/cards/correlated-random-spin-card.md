@@ -161,7 +161,7 @@ $$
 
 - `Set Magnetic Moments → Correlated Random Spin`：先统一磁矩模长来源，再生成相关非共线态。
 - `Magnetic Order → Correlated Random Spin`：从 FM/AFM 参考态生成有限温 cone disorder。
-- `Spin Disorder → Correlated Random Spin`：先做离散翻转比例，再对局部方向加空间相关扰动。
+- `Moment Disorder → Correlated Random Spin`：先做离散翻转比例，再对局部方向加空间相关扰动。
 
 ## 常见问题
 

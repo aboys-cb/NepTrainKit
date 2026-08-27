@@ -6,15 +6,13 @@ from typing import Any
 
 from PySide6.QtCore import Qt, QTimer
 from qfluentwidgets import (
-    BodyLabel,
     CaptionLabel,
     ComboBox,
-    ToolTipFilter,
-    ToolTipPosition,
     CheckBox,
 )
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import (
     OrganicMolConfigPBCOperation,
@@ -23,8 +21,13 @@ from NepTrainKit.core.cards.structure import (
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
-from NepTrainKit.ui.widgets import MakeDataCard
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
@@ -64,263 +67,325 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self._preview_timer.setSingleShot(True)
         self._preview_timer.setInterval(self._PREVIEW_DEBOUNCE_MS)
         self._preview_timer.timeout.connect(self._start_preview)
-        self.setTitle(self.tr("Organic Conformer Sampling"))
+        self.setTitle(self.tr("Molecular Conformers"))
         self._init_ui()
 
     # ---------- UI ----------
     def _init_ui(self):
-        """Create all of the widgets required to configure the torsion-guard workflow.
-        """
+        """Build compact sampling, boundary, topology, and guard sections."""
         self.setObjectName("organic_mol_config_pbc_card")
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setHorizontalSpacing(6)
         self.settingLayout.setVerticalSpacing(4)
-        self.settingLayout.setColumnStretch(1, 1)
 
-        row = 0
-
-        # perturb_per_frame
-        self.perturb_label = BodyLabel(self.tr("Requested outputs per input"), self.setting_widget)
-        self.perturb_label.setToolTip(self.tr("Failed geometry checks are skipped, so the actual count can be lower"))
-        self.perturb_label.installEventFilter(ToolTipFilter(self.perturb_label, 300, ToolTipPosition.TOP))
         self.perturb_frame = SpinBoxUnitInputFrame(self)
         self.perturb_frame.set_input("", 1, "int")
         self.perturb_frame.setRange(1, 100000)
         self.perturb_frame.set_input_value([100])
-        self.settingLayout.addWidget(self.perturb_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.perturb_frame, row, 1, 1, 2)
-        row += 1
+        self.perturb_frame.setAccessibleName(self.tr("Maximum outputs per input"))
+        self.perturb_field = CompactField(
+            self.tr("Maximum outputs per input"),
+            self.perturb_frame,
+            self.setting_widget,
+            self.tr("Geometry guards can reduce the actual count."),
+            inline=True,
+            input_max_width=144,
+        )
 
-        # torsion_range_deg
-        self.torsion_label = BodyLabel(self.tr("Torsion angle increment"), self.setting_widget)
-        self.torsion_label.setToolTip(self.tr("Random rotation added around each selected rotatable bond, in degrees"))
-        self.torsion_label.installEventFilter(ToolTipFilter(self.torsion_label, 300, ToolTipPosition.TOP))
         self.torsion_frame = SpinBoxUnitInputFrame(self)
         self.torsion_frame.set_input(["°", "°"], 2, ["float", "float"])
         self.torsion_frame.setDecimals(3)
         self.torsion_frame.setSingleStep(1.0)
         self.torsion_frame.setRange(-360, 360)
         self.torsion_frame.set_input_value([-180.0, 180.0])
-        self.settingLayout.addWidget(self.torsion_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.torsion_frame, row, 1, 1, 2)
-        row += 1
+        self.torsion_frame.setAccessibleName(self.tr("Torsion increment range"))
+        self.torsion_field = CompactField(
+            self.tr("Torsion increment range"),
+            self.torsion_frame,
+            self.setting_widget,
+            self.tr("Random angle added around each selected rotatable bond."),
+        )
 
-        # max_torsions_per_conf
-        self.max_torsions_label = BodyLabel(self.tr("Rotatable bonds per output"), self.setting_widget)
-        self.max_torsions_label.setToolTip(self.tr("Maximum number of distinct rotatable bonds changed in one output"))
-        self.max_torsions_label.installEventFilter(ToolTipFilter(self.max_torsions_label, 300, ToolTipPosition.TOP))
         self.max_torsions_frame = SpinBoxUnitInputFrame(self)
         self.max_torsions_frame.set_input("", 1, "int")
         self.max_torsions_frame.setRange(0, 10000)
         self.max_torsions_frame.set_input_value([5])
-        self.settingLayout.addWidget(self.max_torsions_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_torsions_frame, row, 1, 1, 2)
-        row += 1
+        self.max_torsions_frame.setAccessibleName(self.tr("Bonds rotated per output"))
+        self.max_torsions_field = CompactField(
+            self.tr("Bonds rotated per output"),
+            self.max_torsions_frame,
+            self.setting_widget,
+            self.tr("0 disables torsion rotation but keeps coordinate noise."),
+            inline=True,
+            input_max_width=144,
+        )
 
-        # gaussian_sigma
-        self.sigma_label = BodyLabel(self.tr("Gaussian coordinate noise"), self.setting_widget)
-        self.sigma_label.setToolTip(self.tr("Independent Cartesian noise applied to every atom after torsion rotations"))
-        self.sigma_label.installEventFilter(ToolTipFilter(self.sigma_label, 300, ToolTipPosition.TOP))
         self.sigma_frame = SpinBoxUnitInputFrame(self)
         self.sigma_frame.set_input("Å", 1, "float")
         self.sigma_frame.setDecimals(4)
         self.sigma_frame.setSingleStep(0.005)
         self.sigma_frame.setRange(0, 5)
         self.sigma_frame.set_input_value([0.03])
-        self.settingLayout.addWidget(self.sigma_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.sigma_frame, row, 1, 1, 2)
-        row += 1
+        self.sigma_frame.setAccessibleName(self.tr("Coordinate noise σ"))
+        self.sigma_field = CompactField(
+            self.tr("Coordinate noise σ"),
+            self.sigma_frame,
+            self.setting_widget,
+            self.tr("Independent Cartesian noise applied after torsion rotations."),
+            inline=True,
+            input_max_width=144,
+        )
 
-        # pbc mode
-        self.pbc_label = BodyLabel(self.tr("Boundary handling"), self.setting_widget)
-        self.pbc_label.setToolTip(self.tr("Auto follows full 3D input PBC; mixed periodic boundaries are not supported"))
-        self.pbc_label.installEventFilter(ToolTipFilter(self.pbc_label, 300, ToolTipPosition.TOP))
+        sampling_section = InspectorSection(
+            self.tr("Conformer sampling"), self.setting_widget
+        )
+        sampling_grid = ResponsiveFormGrid(sampling_section)
+        sampling_grid.add_field(self.perturb_field, span=2)
+        sampling_grid.add_field(self.torsion_field, span=2)
+        sampling_grid.add_field(self.max_torsions_field, span=2)
+        sampling_grid.add_field(self.sigma_field, span=2)
+        sampling_section.addWidget(sampling_grid)
+
         self.pbc_combo = ComboBox(self.setting_widget)
         add_translated_items(
             self,
             self.pbc_combo,
             [
-                ("auto", "Auto (follow input PBC)"),
-                ("yes", "Force full 3D PBC"),
-                ("no", "Nonperiodic molecule"),
+                ("auto", "Follow input"),
+                ("yes", "3D periodic"),
+                ("no", "Nonperiodic"),
             ],
         )
         set_combo_value(self.pbc_combo, "auto")
-        self.settingLayout.addWidget(self.pbc_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.pbc_combo, row, 1, 1, 2)
-        row += 1
+        self.pbc_combo.setAccessibleName(self.tr("Output boundary"))
+        self.pbc_field = CompactField(
+            self.tr("Output boundary"),
+            self.pbc_combo,
+            self.setting_widget,
+            self.tr("Follow input accepts either full 3D PBC or a nonperiodic molecule."),
+        )
 
-        # local_mode_cutoff_atoms
-        self.local_cut_label = BodyLabel(self.tr("Local rotation threshold"), self.setting_widget)
-        self.local_cut_label.setToolTip(self.tr("Use capped local subtrees when the input has more atoms than this value"))
-        self.local_cut_label.installEventFilter(ToolTipFilter(self.local_cut_label, 300, ToolTipPosition.TOP))
-        self.local_cut_frame = SpinBoxUnitInputFrame(self)
-        self.local_cut_frame.set_input(self.tr("atoms"), 1, "int")
-        self.local_cut_frame.setRange(0, 1000000)
-        self.local_cut_frame.set_input_value([150])
-        self.settingLayout.addWidget(self.local_cut_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.local_cut_frame, row, 1, 1, 2)
-        row += 1
-
-        # local_torsion_max_subtree
-        self.local_sub_label = BodyLabel(self.tr("Local subtree atom cap"), self.setting_widget)
-        self.local_sub_label.setToolTip(self.tr("Maximum atoms rotated on one side of a bond in local mode"))
-        self.local_sub_label.installEventFilter(ToolTipFilter(self.local_sub_label, 300, ToolTipPosition.TOP))
-        self.local_sub_frame = SpinBoxUnitInputFrame(self)
-        self.local_sub_frame.set_input(self.tr("atoms"), 1, "int")
-        self.local_sub_frame.setRange(1, 100000)
-        self.local_sub_frame.set_input_value([40])
-        self.settingLayout.addWidget(self.local_sub_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.local_sub_frame, row, 1, 1, 2)
-        row += 1
-
-        # bond_detect_factor
-        self.bond_detect_label = BodyLabel(self.tr("Bond detection factor"), self.setting_widget)
-        self.bond_detect_label.setToolTip(self.tr("Maximum detected bond distance as a multiple of the covalent-radius sum"))
-        self.bond_detect_label.installEventFilter(ToolTipFilter(self.bond_detect_label, 300, ToolTipPosition.TOP))
-        self.bond_detect_frame = SpinBoxUnitInputFrame(self)
-        self.bond_detect_frame.set_input("x", 1, "float")
-        self.bond_detect_frame.setDecimals(4)
-        self.bond_detect_frame.setSingleStep(0.01)
-        self.bond_detect_frame.setRange(0, 5)
-        self.bond_detect_frame.set_input_value([1.15])
-        self.settingLayout.addWidget(self.bond_detect_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.bond_detect_frame, row, 1, 1, 2)
-        row += 1
-
-        # bond_keep_min_factor
-        self.bond_min_label = BodyLabel(self.tr("Minimum bond-length factor"), self.setting_widget)
-        self.bond_min_label.setToolTip(self.tr("Reject a candidate if an original bond is shorter than this covalent-radius factor; 0 disables"))
-        self.bond_min_label.installEventFilter(ToolTipFilter(self.bond_min_label, 300, ToolTipPosition.TOP))
-        self.bond_min_frame = SpinBoxUnitInputFrame(self)
-        self.bond_min_frame.set_input("x", 1, "float")
-        self.bond_min_frame.setDecimals(4)
-        self.bond_min_frame.setSingleStep(0.01)
-        self.bond_min_frame.setRange(0, 5)
-        self.bond_min_frame.set_input_value([0.60])
-        self.settingLayout.addWidget(self.bond_min_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.bond_min_frame, row, 1, 1, 2)
-        row += 1
-
-        # Pauling bond-order params
-        self.bo_c_label = BodyLabel(self.tr("Pauling decay constant"), self.setting_widget)
-        self.bo_c_label.setToolTip(self.tr("Bond order constant c in exp((r0-r)/c)"))
-        self.bo_c_label.installEventFilter(ToolTipFilter(self.bo_c_label, 300, ToolTipPosition.TOP))
-        self.bo_c_frame = SpinBoxUnitInputFrame(self)
-        self.bo_c_frame.set_input("", 1, "float")
-        self.bo_c_frame.setDecimals(4)
-        self.bo_c_frame.setSingleStep(0.01)
-        self.bo_c_frame.setRange(0.01, 2.0)
-        self.bo_c_frame.set_input_value([0.3])
-        self.settingLayout.addWidget(self.bo_c_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.bo_c_frame, row, 1, 1, 2)
-        row += 1
-
-        self.bo_thr_label = BodyLabel(self.tr("Bond-order threshold"), self.setting_widget)
-        self.bo_thr_label.setToolTip(self.tr("Minimum estimated Pauling bond order required to form a topology edge"))
-        self.bo_thr_label.installEventFilter(ToolTipFilter(self.bo_thr_label, 300, ToolTipPosition.TOP))
-        self.bo_thr_frame = SpinBoxUnitInputFrame(self)
-        self.bo_thr_frame.set_input("", 1, "float")
-        self.bo_thr_frame.setDecimals(6)
-        self.bo_thr_frame.setSingleStep(0.001)
-        self.bo_thr_frame.setRange(0.0, 1.0)
-        self.bo_thr_frame.set_input_value([0.2])
-        self.settingLayout.addWidget(self.bo_thr_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.bo_thr_frame, row, 1, 1, 2)
-        row += 1
-
-        # bond_keep_max_factor (optional)
-        self.bond_max_label = BodyLabel(self.tr("Maximum bond-length factor"), self.setting_widget)
-        self.bond_max_label.setToolTip(self.tr("Optional upper bound for original bonded pairs"))
-        self.bond_max_label.installEventFilter(ToolTipFilter(self.bond_max_label, 300, ToolTipPosition.TOP))
-        self.bond_max_frame = SpinBoxUnitInputFrame(self)
-        self.bond_max_frame.set_input("x", 1, "float")
-        self.bond_max_frame.setDecimals(4)
-        self.bond_max_frame.setSingleStep(0.01)
-        self.bond_max_frame.setRange(0, 5)
-        self.bond_max_frame.set_input_value([1.15])
-        self.bond_max_enable = CheckBox(self.tr("Enable upper bound"), self.setting_widget)
-        self.bond_max_enable.setChecked(False)
-        self.bond_max_frame.setEnabled(False)
-        self.settingLayout.addWidget(self.bond_max_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.bond_max_frame, row, 1, 1, 1)
-        self.settingLayout.addWidget(self.bond_max_enable, row, 2, 1, 1)
-        row += 1
-
-        # nonbond_min_factor
-        self.nonbond_min_label = BodyLabel(self.tr("Nonbonded distance factor"), self.setting_widget)
-        self.nonbond_min_label.setToolTip(self.tr("Reject nonbonded pairs closer than this covalent-radius-sum factor"))
-        self.nonbond_min_label.installEventFilter(ToolTipFilter(self.nonbond_min_label, 300, ToolTipPosition.TOP))
-        self.nonbond_min_frame = SpinBoxUnitInputFrame(self)
-        self.nonbond_min_frame.set_input("x", 1, "float")
-        self.nonbond_min_frame.setDecimals(4)
-        self.nonbond_min_frame.setSingleStep(0.01)
-        self.nonbond_min_frame.setRange(0, 5)
-        self.nonbond_min_frame.set_input_value([0.80])
-        self.settingLayout.addWidget(self.nonbond_min_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.nonbond_min_frame, row, 1, 1, 2)
-        row += 1
-
-        # max_retries_per_frame
-        self.retries_label = BodyLabel(self.tr("Guard retries per output"), self.setting_widget)
-        self.retries_label.setToolTip(self.tr("Each retry halves both torsion increments and Gaussian noise"))
-        self.retries_label.installEventFilter(ToolTipFilter(self.retries_label, 300, ToolTipPosition.TOP))
-        self.retries_frame = SpinBoxUnitInputFrame(self)
-        self.retries_frame.set_input("", 1, "int")
-        self.retries_frame.setRange(0, 100)
-        self.retries_frame.set_input_value([12])
-        self.settingLayout.addWidget(self.retries_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.retries_frame, row, 1, 1, 2)
-        row += 1
-
-        # MULT_BOND_FACTOR
-        self.multbond_label = BodyLabel(self.tr("Short-bond rotation cutoff"), self.setting_widget)
-        self.multbond_label.setToolTip(self.tr("Do not rotate bonds shorter than this covalent-radius-sum factor"))
-        self.multbond_label.installEventFilter(ToolTipFilter(self.multbond_label, 300, ToolTipPosition.TOP))
-        self.multbond_frame = SpinBoxUnitInputFrame(self)
-        self.multbond_frame.set_input("x", 1, "float")
-        self.multbond_frame.setDecimals(4)
-        self.multbond_frame.setSingleStep(0.01)
-        self.multbond_frame.setRange(0, 2)
-        self.multbond_frame.set_input_value([0.87])
-        self.settingLayout.addWidget(self.multbond_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.multbond_frame, row, 1, 1, 2)
-        row += 1
-
-        # nonpbc_box_size
-        self.box_label = BodyLabel(self.tr("Nonperiodic display box"), self.setting_widget)
-        self.box_label.setToolTip(self.tr("Cubic cell edge assigned to nonperiodic outputs; it is not a physical boundary"))
-        self.box_label.installEventFilter(ToolTipFilter(self.box_label, 300, ToolTipPosition.TOP))
         self.box_frame = SpinBoxUnitInputFrame(self)
         self.box_frame.set_input("Å", 1, "float")
         self.box_frame.setDecimals(3)
         self.box_frame.setSingleStep(1.0)
         self.box_frame.setRange(1, 100000)
         self.box_frame.set_input_value([100.0])
-        self.settingLayout.addWidget(self.box_label, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.box_frame, row, 1, 1, 2)
-        row += 1
+        self.box_frame.setAccessibleName(self.tr("Nonperiodic display box"))
+        self.box_field = CompactField(
+            self.tr("Nonperiodic display box"),
+            self.box_frame,
+            self.setting_widget,
+            self.tr("Cubic display cell only; output PBC remains off."),
+            inline=True,
+            input_max_width=144,
+        )
 
-        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
+        boundary_section = InspectorSection(self.tr("Boundary"), self.setting_widget)
+        boundary_grid = ResponsiveFormGrid(boundary_section)
+        boundary_grid.add_field(self.pbc_field, span=2)
+        boundary_grid.add_field(self.box_field, span=2)
+        boundary_section.addWidget(boundary_grid)
+
+        self.seed_checkbox = CheckBox(self.tr("Use reproducible seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip(self.tr("Enable reproducible torsion/noise sampling"))
-        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
         self.seed_frame.setRange(0, 2**31 - 1)
         self.seed_frame.set_input_value([0])
-        self.seed_frame.setEnabled(False)
-        self.settingLayout.addWidget(self.seed_checkbox, row, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, row, 1, 1, 2)
-        row += 1
+        self.seed_field = CompactField(
+            self.tr("Random seed"),
+            self.seed_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=144,
+        )
+        randomness_section = InspectorSection(self.tr("Randomness"), self.setting_widget)
+        randomness_section.addWidget(self.seed_checkbox)
+        randomness_section.addWidget(self.seed_field)
+
+        self.local_cut_frame = SpinBoxUnitInputFrame(self)
+        self.local_cut_frame.set_input(self.tr("atoms"), 1, "int")
+        self.local_cut_frame.setRange(0, 1000000)
+        self.local_cut_frame.set_input_value([150])
+        self.local_cut_field = CompactField(
+            self.tr("Large-molecule threshold"),
+            self.local_cut_frame,
+            self.setting_widget,
+            self.tr("Above this atom count, rotations use capped local subtrees."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.local_sub_frame = SpinBoxUnitInputFrame(self)
+        self.local_sub_frame.set_input(self.tr("atoms"), 1, "int")
+        self.local_sub_frame.setRange(1, 100000)
+        self.local_sub_frame.set_input_value([40])
+        self.local_sub_field = CompactField(
+            self.tr("Local subtree cap"),
+            self.local_sub_frame,
+            self.setting_widget,
+            self.tr("Maximum atoms rotated on one side of a bond in local mode."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.bond_detect_frame = SpinBoxUnitInputFrame(self)
+        self.bond_detect_frame.set_input("×", 1, "float")
+        self.bond_detect_frame.setDecimals(4)
+        self.bond_detect_frame.setSingleStep(0.01)
+        self.bond_detect_frame.setRange(0.0001, 5)
+        self.bond_detect_frame.set_input_value([1.15])
+        self.bond_detect_field = CompactField(
+            self.tr("Bond detection radius"),
+            self.bond_detect_frame,
+            self.setting_widget,
+            self.tr("Maximum distance as a multiple of the covalent-radius sum."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.bond_min_frame = SpinBoxUnitInputFrame(self)
+        self.bond_min_frame.set_input("×", 1, "float")
+        self.bond_min_frame.setDecimals(4)
+        self.bond_min_frame.setSingleStep(0.01)
+        self.bond_min_frame.setRange(0, 5)
+        self.bond_min_frame.set_input_value([0.60])
+        self.bond_min_field = CompactField(
+            self.tr("Minimum bond length"),
+            self.bond_min_frame,
+            self.setting_widget,
+            self.tr("0 disables the lower bond-length guard."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.bo_c_frame = SpinBoxUnitInputFrame(self)
+        self.bo_c_frame.set_input("Å", 1, "float")
+        self.bo_c_frame.setDecimals(4)
+        self.bo_c_frame.setSingleStep(0.01)
+        self.bo_c_frame.setRange(0.01, 2.0)
+        self.bo_c_frame.set_input_value([0.3])
+        self.bo_c_field = CompactField(
+            self.tr("Pauling decay length"),
+            self.bo_c_frame,
+            self.setting_widget,
+            self.tr("Length c in exp((r₀-r)/c)."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.bo_thr_frame = SpinBoxUnitInputFrame(self)
+        self.bo_thr_frame.set_input("", 1, "float")
+        self.bo_thr_frame.setDecimals(6)
+        self.bo_thr_frame.setSingleStep(0.001)
+        self.bo_thr_frame.setRange(0.0, 1.0)
+        self.bo_thr_frame.set_input_value([0.2])
+        self.bo_thr_field = CompactField(
+            self.tr("Bond-order threshold"),
+            self.bo_thr_frame,
+            self.setting_widget,
+            self.tr("Minimum estimated order required to create a topology edge."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.bond_max_frame = SpinBoxUnitInputFrame(self)
+        self.bond_max_frame.set_input("×", 1, "float")
+        self.bond_max_frame.setDecimals(4)
+        self.bond_max_frame.setSingleStep(0.01)
+        self.bond_max_frame.setRange(0, 5)
+        self.bond_max_frame.set_input_value([1.15])
+        self.bond_max_enable = CheckBox(
+            self.tr("Limit maximum bond length"), self.setting_widget
+        )
+        self.bond_max_enable.setChecked(False)
+        self.bond_max_frame.setEnabled(False)
+        self.bond_max_field = CompactField(
+            self.tr("Maximum bond length"),
+            self.bond_max_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.nonbond_min_frame = SpinBoxUnitInputFrame(self)
+        self.nonbond_min_frame.set_input("×", 1, "float")
+        self.nonbond_min_frame.setDecimals(4)
+        self.nonbond_min_frame.setSingleStep(0.01)
+        self.nonbond_min_frame.setRange(0, 5)
+        self.nonbond_min_frame.set_input_value([0.80])
+        self.nonbond_min_field = CompactField(
+            self.tr("Minimum nonbonded distance"),
+            self.nonbond_min_frame,
+            self.setting_widget,
+            self.tr("Reject closer nonbonded pairs; 0 disables this guard."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.retries_frame = SpinBoxUnitInputFrame(self)
+        self.retries_frame.set_input("", 1, "int")
+        self.retries_frame.setRange(0, 100)
+        self.retries_frame.set_input_value([12])
+        self.retries_field = CompactField(
+            self.tr("Retries per output"),
+            self.retries_frame,
+            self.setting_widget,
+            self.tr("Each retry halves both torsion increments and coordinate noise."),
+            inline=True,
+            input_max_width=144,
+        )
+
+        self.multbond_frame = SpinBoxUnitInputFrame(self)
+        self.multbond_frame.set_input("×", 1, "float")
+        self.multbond_frame.setDecimals(4)
+        self.multbond_frame.setSingleStep(0.01)
+        self.multbond_frame.setRange(0, 2)
+        self.multbond_frame.set_input_value([0.87])
+        self.multbond_field = CompactField(
+            self.tr("Short-bond rotation cutoff"),
+            self.multbond_frame,
+            self.setting_widget,
+            self.tr("Shorter bonds are treated as non-rotatable."),
+            inline=True,
+            input_max_width=144,
+        )
 
         self.advanced_checkbox = CheckBox(
-            self.tr("Show topology and geometry-guard settings"),
+            self.tr("Show topology and guards"),
             self.setting_widget,
         )
         self.advanced_checkbox.setChecked(False)
-        self.settingLayout.addWidget(self.advanced_checkbox, row, 0, 1, 3)
-        row += 1
+
+        topology_section = InspectorSection(
+            self.tr("Topology recognition"),
+            self.setting_widget,
+            self.tr("These heuristics decide which geometric contacts are treated as bonds."),
+        )
+        topology_grid = ResponsiveFormGrid(topology_section)
+        for field in (
+            self.local_cut_field,
+            self.local_sub_field,
+            self.bond_detect_field,
+            self.bo_c_field,
+            self.bo_thr_field,
+            self.multbond_field,
+        ):
+            topology_grid.add_field(field, span=2)
+        topology_section.addWidget(topology_grid)
+
+        guard_section = InspectorSection(
+            self.tr("Geometry guards"),
+            self.setting_widget,
+            self.tr("Candidates that violate these distance checks are retried or skipped."),
+        )
+        guard_grid = ResponsiveFormGrid(guard_section)
+        guard_grid.add_field(self.bond_min_field, span=2)
+        guard_section.addWidget(self.bond_max_enable)
+        guard_grid.add_field(self.bond_max_field, span=2)
+        guard_grid.add_field(self.nonbond_min_field, span=2)
+        guard_grid.add_field(self.retries_field, span=2)
+        guard_section.addWidget(guard_grid)
 
         self.preview_label = CaptionLabel("", self.setting_widget)
         self.preview_label.setWordWrap(True)
@@ -328,33 +393,21 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             Qt.TextInteractionFlag.TextSelectableByMouse
         )
         self.preview_label.setObjectName("organicConformerPreview")
-        self.settingLayout.addWidget(self.preview_label, row, 0, 1, 3)
+        preview_section = InspectorSection(self.tr("Output preview"), self.setting_widget)
+        preview_section.addWidget(self.preview_label)
 
-        self.advanced_controls = (
-            self.local_cut_label,
-            self.local_cut_frame,
-            self.local_sub_label,
-            self.local_sub_frame,
-            self.bond_detect_label,
-            self.bond_detect_frame,
-            self.bond_min_label,
-            self.bond_min_frame,
-            self.bo_c_label,
-            self.bo_c_frame,
-            self.bo_thr_label,
-            self.bo_thr_frame,
-            self.bond_max_label,
-            self.bond_max_frame,
-            self.bond_max_enable,
-            self.nonbond_min_label,
-            self.nonbond_min_frame,
-            self.retries_label,
-            self.retries_frame,
-            self.multbond_label,
-            self.multbond_frame,
-            self.box_label,
-            self.box_frame,
-        )
+        self.topology_section = topology_section
+        self.guard_section = guard_section
+        self.advanced_controls = (topology_section, guard_section)
+
+        self.settingLayout.addWidget(sampling_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(boundary_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(randomness_section, 2, 0, 1, 3)
+        self.settingLayout.addWidget(self.advanced_checkbox, 3, 0, 1, 3)
+        self.settingLayout.addWidget(topology_section, 4, 0, 1, 3)
+        self.settingLayout.addWidget(guard_section, 5, 0, 1, 3)
+        self.settingLayout.addWidget(preview_section, 6, 0, 1, 3)
+
         self.advanced_checkbox.stateChanged.connect(
             self._update_advanced_visibility
         )
@@ -362,7 +415,10 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             self._on_bond_max_changed
         )
         self.seed_checkbox.stateChanged.connect(self._on_seed_changed)
-        self.pbc_combo.currentIndexChanged.connect(self._refresh_preview)
+        self.pbc_combo.currentIndexChanged.connect(self._on_boundary_changed)
+        self.bond_min_frame.object_list[0].valueChanged.connect(
+            self._sync_bond_max_minimum
+        )
         for frame in (
             self.perturb_frame,
             self.torsion_frame,
@@ -387,6 +443,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self._update_advanced_visibility()
         self._on_bond_max_changed()
         self._on_seed_changed()
+        self._on_boundary_changed()
         self._refresh_preview()
 
     def _update_advanced_visibility(self, *_args) -> None:
@@ -397,12 +454,39 @@ class OrganicMolConfigPBCCard(MakeDataCard):
 
     def _on_bond_max_changed(self, *_args) -> None:
         self.bond_max_frame.setEnabled(self.bond_max_enable.isChecked())
+        self._sync_bond_max_minimum()
         self._update_tab_order()
         self._refresh_preview()
 
     def _on_seed_changed(self, *_args) -> None:
-        self.seed_frame.setEnabled(self.seed_checkbox.isChecked())
+        self.seed_field.setVisible(self.seed_checkbox.isChecked())
         self._update_tab_order()
+        self._refresh_preview()
+
+    def _sync_bond_max_minimum(self, *_args) -> None:
+        minimum = (
+            max(0.0001, float(self.bond_min_frame.get_input_value()[0]))
+            if self.bond_max_enable.isChecked()
+            else 0.0
+        )
+        self.bond_max_frame.object_list[0].setMinimum(minimum)
+
+    def _resolved_nonperiodic_output(self) -> bool | None:
+        mode = self._current_pbc_mode()
+        if mode == "no":
+            return True
+        if mode == "yes":
+            return False
+        if self._input_structure is None:
+            return None
+        flags = self._input_structure.get_pbc()
+        return not bool(all(flags))
+
+    def _on_boundary_changed(self, *_args) -> None:
+        resolved_nonperiodic = self._resolved_nonperiodic_output()
+        self.box_field.setVisible(resolved_nonperiodic is not False)
+        self._update_tab_order()
+        self._refresh_preview()
 
     @staticmethod
     def _first_structure(dataset):
@@ -418,7 +502,16 @@ class OrganicMolConfigPBCCard(MakeDataCard):
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)
-        self._refresh_preview()
+        if dataset is None:
+            self._input_count = 0
+        elif hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
+            self._input_count = 1
+        else:
+            try:
+                self._input_count = len(dataset)
+            except TypeError:
+                self._input_count = None
+        self._on_boundary_changed()
 
     def _refresh_preview(self, *_args) -> None:
         if not hasattr(self, "preview_label"):
@@ -469,12 +562,23 @@ class OrganicMolConfigPBCCard(MakeDataCard):
 
     @staticmethod
     def _calculate_preview(request_id, structure, params):
-        summary = OrganicMolConfigPBCOperation.topology_summary(structure, params)
+        try:
+            summary = OrganicMolConfigPBCOperation.topology_summary(structure, params)
+        except CardOperationError as exc:
+            return request_id, exc
         return request_id, summary
 
     def _on_preview_succeeded(self, result) -> None:
         request_id, summary = result
         if self._preview_closing or request_id != self._preview_generation:
+            return
+        if isinstance(summary, CardOperationError):
+            self.preview_label.setText(
+                "⚠ "
+                + self.tr("Preview unavailable: {error}").format(
+                    error=translate_runtime_message(summary)
+                )
+            )
             return
         self._apply_preview_summary(summary)
 
@@ -512,15 +616,27 @@ class OrganicMolConfigPBCCard(MakeDataCard):
 
     def _apply_preview_summary(self, summary) -> None:
         boundary = self.tr("3D periodic") if summary.pbc_active else self.tr("nonperiodic")
+        dataset_maximum = ""
+        input_count = getattr(self, "_input_count", None)
+        if input_count:
+            dataset_maximum = self.tr(" · dataset maximum {total}").format(
+                total=input_count * summary.requested_outputs
+            )
+        component_text = (
+            self.tr("{count} component")
+            if summary.component_count == 1
+            else self.tr("{count} components")
+        ).format(count=summary.component_count)
         message = self.tr(
-            "First input: {atoms} atoms · {bonds} detected bonds / {torsions} rotatable · {components} molecular components · {boundary} · request {outputs} outputs"
+            "First input: {atoms} atoms · {bonds} detected bonds / {torsions} rotatable · {components} · {boundary} · up to {outputs} outputs{dataset_maximum}"
         ).format(
             atoms=summary.atom_count,
             bonds=summary.bond_count,
             torsions=summary.torsion_count,
-            components=summary.component_count,
+            components=component_text,
             boundary=boundary,
             outputs=summary.requested_outputs,
+            dataset_maximum=dataset_maximum,
         )
         if not summary.torsion_active:
             message += " · " + self.tr(
@@ -555,9 +671,13 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             *self.max_torsions_frame.object_list,
             *self.sigma_frame.object_list,
             self.pbc_combo,
-            self.seed_checkbox,
         ]
-        if self.seed_frame.isEnabled():
+        if not self.box_field.isHidden():
+            widgets.extend(self.box_frame.object_list)
+        widgets.extend([
+            self.seed_checkbox,
+        ])
+        if not self.seed_field.isHidden():
             widgets.extend(self.seed_frame.object_list)
         widgets.append(self.advanced_checkbox)
         if self.advanced_checkbox.isChecked():
@@ -566,9 +686,10 @@ class OrganicMolConfigPBCCard(MakeDataCard):
                     *self.local_cut_frame.object_list,
                     *self.local_sub_frame.object_list,
                     *self.bond_detect_frame.object_list,
-                    *self.bond_min_frame.object_list,
                     *self.bo_c_frame.object_list,
                     *self.bo_thr_frame.object_list,
+                    *self.multbond_frame.object_list,
+                    *self.bond_min_frame.object_list,
                     self.bond_max_enable,
                 ]
             )
@@ -578,8 +699,6 @@ class OrganicMolConfigPBCCard(MakeDataCard):
                 [
                     *self.nonbond_min_frame.object_list,
                     *self.retries_frame.object_list,
-                    *self.multbond_frame.object_list,
-                    *self.box_frame.object_list,
                 ]
             )
         self.tab_order_widgets = widgets
@@ -642,7 +761,28 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.seed_frame.set_input_value([int(params.seed)])
         self._on_bond_max_changed()
         self._on_seed_changed()
+        self._on_boundary_changed()
         self._refresh_preview()
+
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        return self.tr(
+            "≤{outputs} outputs · {minimum}°→{maximum}° · {boundary}"
+        ).format(
+            outputs=params.perturb_per_frame,
+            minimum=f"{params.torsion_range_deg[0]:g}",
+            maximum=f"{params.torsion_range_deg[1]:g}",
+            boundary={
+                "auto": self.tr("follow input"),
+                "yes": self.tr("3D periodic"),
+                "no": self.tr("nonperiodic"),
+            }.get(params.pbc_mode, params.pbc_mode),
+        )
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Check the detected-bond and rotatable-bond counts before generating conformers."
+        )
 
     # ---------- Core ----------
     def process_structure(self, structure) -> list[Any]:

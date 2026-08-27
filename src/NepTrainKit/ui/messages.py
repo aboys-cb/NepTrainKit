@@ -265,7 +265,12 @@ def translate_runtime_message(message) -> str:
     """Translate late-bound UI messages and common runtime errors."""
     if isinstance(message, CardOperationError):
         template = QCoreApplication.translate("CardOperationError", message.template)
-        return template.format(**message.values)
+        values = dict(message.values)
+        if isinstance(values.get("field"), str):
+            values["field"] = QCoreApplication.translate(
+                "CardOperationField", values["field"]
+            )
+        return template.format(**values)
     text = str(message)
     translated = QCoreApplication.translate("RuntimeMessage", text)
     if translated != text:
@@ -513,6 +518,51 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError", "Random seed must be at least 0."
     )
     QCoreApplication.translate(
+        "CardOperationError", "{field} must be an integer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{field} must be at least {minimum}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{field} must be a finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{field} must be positive."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Molecular Conformers requires at least one atom."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Molecular Conformers requires finite Cartesian atom positions."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Output boundary must be Follow input, 3D periodic, or Nonperiodic."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Follow input does not support mixed periodic boundaries; choose Nonperiodic or provide full 3D PBC."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "3D periodic mode requires a finite, nonsingular 3×3 cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Torsion increment range must contain a minimum and maximum."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Torsion increment minimum must not exceed its maximum."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum bond length must not be smaller than minimum bond length."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Bond-order threshold must be between 0 and 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The current settings cannot change coordinates; add coordinate noise or provide an active rotatable bond."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "All requested conformers failed the geometry guards; narrow the torsion range, reduce coordinate noise, or inspect the distance limits."
+    )
+    QCoreApplication.translate(
         "CardOperationError",
         "Targeted Vacancy could not generate a valid non-empty structure. "
         "Reduce overlapping rule counts, broaden the groups, or expand the structure.",
@@ -677,6 +727,26 @@ def _card_operation_error_catalog() -> None:
     QCoreApplication.translate(
         "CardOperationError", "The Bain lattice axis must be a, b, or c."
     )
+
+
+def _card_operation_field_catalog() -> None:
+    """Literal field names interpolated into structured card errors."""
+    QCoreApplication.translate("CardOperationField", "Maximum outputs per input")
+    QCoreApplication.translate("CardOperationField", "Bonds rotated per output")
+    QCoreApplication.translate("CardOperationField", "Large-molecule threshold")
+    QCoreApplication.translate("CardOperationField", "Local subtree cap")
+    QCoreApplication.translate("CardOperationField", "Retries per output")
+    QCoreApplication.translate("CardOperationField", "Coordinate noise")
+    QCoreApplication.translate("CardOperationField", "Torsion increment range")
+    QCoreApplication.translate("CardOperationField", "Bond detection radius")
+    QCoreApplication.translate("CardOperationField", "Minimum bond length")
+    QCoreApplication.translate("CardOperationField", "Maximum bond length")
+    QCoreApplication.translate("CardOperationField", "Minimum nonbonded distance")
+    QCoreApplication.translate("CardOperationField", "Short-bond rotation cutoff")
+    QCoreApplication.translate("CardOperationField", "Nonperiodic display box")
+    QCoreApplication.translate("CardOperationField", "Pauling decay length")
+    QCoreApplication.translate("CardOperationField", "Bond-order threshold")
+    QCoreApplication.translate("CardOperationField", "Random seed")
 
 
 class MessageManager(QObject):

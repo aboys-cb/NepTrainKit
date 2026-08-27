@@ -93,7 +93,7 @@
 
 | 我的需求 | 推荐卡片 | 使用边界 |
 | --- | --- | --- |
-| 在周期边界中采样有机分子构象 | [有机构象采样](cards/organic-mol-config-pbc-card.md) | 输入应能识别分子和可旋转键 |
+| 在周期边界中采样有机分子构象 | [分子构象](cards/organic-mol-config-pbc-card.md) | 输入应能识别分子和可旋转键 |
 | 在溶质或离子周围补局部溶剂壳 | [局部溶剂壳](cards/local-solvation-card.md) | 只生成初始构型，不代表已经平衡 |
 | 在周期晶胞中填充整盒溶剂 | [周期溶剂盒](cards/solvent-box-fill-card.md) | 晶胞必须有效且体积非零 |
 

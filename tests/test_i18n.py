@@ -285,6 +285,18 @@ def test_structured_card_error_uses_qt_catalog_in_chinese():
     assert i18n.normalize_language(None) == "auto"
 
 
+def test_structured_card_error_translates_interpolated_field_name():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    error = CardOperationError(
+        "organic-bond-detection-radius-positive",
+        "{field} must be positive.",
+        field="Bond detection radius",
+    )
+
+    assert translate_runtime_message(error) == "成键检测半径必须为正数。"
+
+
 def test_translation_path_uses_runtime_resource_root(monkeypatch, tmp_path):
     monkeypatch.setattr(i18n, "module_path", tmp_path)
 

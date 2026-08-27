@@ -417,7 +417,7 @@
 
 ### 目标说明
 
-为有机分子或分子晶体生成构象样本，再叠加轻微原子扰动，得到更适合 NEP 训练的局部结构分布。
+为有机分子或分子晶体生成扭转构象，并在同一步中叠加可控的轻微坐标噪声。
 
 ### 输入假设
 
@@ -426,11 +426,11 @@
 
 ### 卡片顺序
 
-`Organic Mol Config → Atomic Perturb → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`Molecular Conformers → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Organic Mol Config`
+#### Step 1. `Molecular Conformers`
 
 ```json
 {
@@ -440,7 +440,7 @@
     "torsion_range_deg": [-25.0, 25.0],
     "max_torsions_per_conf": 2,
     "gaussian_sigma": 0.01,
-    "pbc_mode": "molecule in box",
+    "pbc_mode": "no",
     "local_cutoff": 5,
     "local_subtree": 100,
     "bond_detect_factor": 1.15,
@@ -461,26 +461,6 @@
 
 **每步预期输出：** 每帧输入扩出 8 个构象版本；主变化来自扭转角和局部高斯扰动，而不是晶格变形。
 
-#### Step 2. `Atomic Perturb`
-
-```json
-{
-  "class": "PerturbCard",
-  "params": {
-    "engine_type": 0,
-    "max_distance": 0.03,
-    "max_num": 3,
-    "identify_organic": true,
-    "use_element_scaling": false,
-    "element_scalings": {},
-    "use_seed": true,
-    "seed": 6
-  }
-}
-```
-
-**每步预期输出：** 每个有机构象再扩出 3 个轻微原子热扰动版本；`organic=true` 会尽量保持分子内部拓扑不被原子级随机位移破坏。
-
 ### 最终数据集特征
 
 - 同时覆盖扭转构象和局部热噪声
@@ -489,6 +469,5 @@
 
 ### 常见失败点
 
-- `organic` 没开：原子级扰动更容易拉坏分子内部键。
 - `torsion_range_deg` 设得太宽：容易生成明显高能或自相交构象。
-- 先做大幅原子扰动再做构象采样：会把构象变化和非物理断键混在一起。
+- 预览中的检测键数或连通分量明显不对，却直接批量生成：后续扭转对象会偏离预期。

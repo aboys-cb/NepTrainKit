@@ -205,10 +205,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "OrganicMolConfigPBCCard": (
-            QCoreApplication.translate("CardCatalog", "Organic Mol Config"),
+            QCoreApplication.translate("CardCatalog", "Molecular Conformers"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Detect molecular bonds, rotate eligible single-bond subtrees, add optional Gaussian noise, and skip conformers that fail bond-length or clash guards.",
+                "Detect rotatable molecular bonds and generate guarded torsion-driven conformers with optional coordinate noise.",
             ),
         ),
         "OrderedAlloyPrototypeCard": (

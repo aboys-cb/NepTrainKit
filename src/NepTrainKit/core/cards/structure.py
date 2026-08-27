@@ -701,24 +701,36 @@ class OrganicMolConfigPBCOperation(StructureOperation):
     """Generate torsion-driven molecular conformers using TorsionGuard PBC."""
 
     @staticmethod
-    def _integer(value: Any, label: str, *, minimum: int) -> int:
+    def _integer(value: Any, key: str, field: str, *, minimum: int) -> int:
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"OrganicMolConfig: {label} must be an integer.") from exc
+            raise CardOperationError(
+                f"organic-{key}-integer",
+                "{field} must be an integer.",
+                field=field,
+            ) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"OrganicMolConfig: {label} must be an integer.")
+            raise CardOperationError(
+                f"organic-{key}-integer",
+                "{field} must be an integer.",
+                field=field,
+            )
         integer = int(numeric)
         if integer < minimum:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be >= {minimum}."
+            raise CardOperationError(
+                f"organic-{key}-minimum",
+                "{field} must be at least {minimum}.",
+                field=field,
+                minimum=minimum,
             )
         return integer
 
     @staticmethod
     def _finite_float(
         value: Any,
-        label: str,
+        key: str,
+        field: str,
         *,
         minimum: float | None = None,
         strictly_positive: bool = False,
@@ -726,20 +738,29 @@ class OrganicMolConfigPBCOperation(StructureOperation):
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be a finite number."
+            raise CardOperationError(
+                f"organic-{key}-finite",
+                "{field} must be a finite number.",
+                field=field,
             ) from exc
         if not np.isfinite(numeric):
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be a finite number."
+            raise CardOperationError(
+                f"organic-{key}-finite",
+                "{field} must be a finite number.",
+                field=field,
             )
         if strictly_positive and numeric <= 0.0:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be positive."
+            raise CardOperationError(
+                f"organic-{key}-positive",
+                "{field} must be positive.",
+                field=field,
             )
         if minimum is not None and numeric < minimum:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be >= {minimum:g}."
+            raise CardOperationError(
+                f"organic-{key}-minimum",
+                "{field} must be at least {minimum}.",
+                field=field,
+                minimum=f"{minimum:g}",
             )
         return numeric
 
@@ -751,19 +772,28 @@ class OrganicMolConfigPBCOperation(StructureOperation):
     ) -> dict[str, Any]:
         symbols = structure.get_chemical_symbols()
         if not symbols:
-            raise ValueError("OrganicMolConfig requires at least one atom.")
+            raise CardOperationError(
+                "organic-empty-input",
+                "Molecular Conformers requires at least one atom.",
+            )
         coords = np.asarray(structure.get_positions(), dtype=float)
         if coords.shape != (len(symbols), 3) or not np.all(np.isfinite(coords)):
-            raise ValueError("OrganicMolConfig requires finite Cartesian atom positions.")
+            raise CardOperationError(
+                "organic-invalid-positions",
+                "Molecular Conformers requires finite Cartesian atom positions.",
+            )
 
         pbc_mode = str(params.pbc_mode).strip().lower()
         if pbc_mode not in {"auto", "yes", "no"}:
-            raise ValueError("OrganicMolConfig: pbc_mode must be auto, yes, or no.")
+            raise CardOperationError(
+                "organic-invalid-boundary",
+                "Output boundary must be Follow input, 3D periodic, or Nonperiodic.",
+            )
         pbc_flags = np.asarray(structure.pbc, dtype=bool)
         if pbc_mode == "auto" and np.any(pbc_flags) and not np.all(pbc_flags):
-            raise ValueError(
-                "OrganicMolConfig: mixed periodic boundaries are not supported; "
-                "use pbc_mode=no or provide a fully periodic molecular cell."
+            raise CardOperationError(
+                "organic-mixed-pbc",
+                "Follow input does not support mixed periodic boundaries; choose Nonperiodic or provide full 3D PBC.",
             )
         pbc_active = pbc_mode == "yes" or (
             pbc_mode == "auto" and bool(np.all(pbc_flags))
@@ -776,105 +806,126 @@ class OrganicMolConfigPBCOperation(StructureOperation):
                 or not np.all(np.isfinite(cell_mat))
                 or abs(float(np.linalg.det(cell_mat))) <= 1e-12
             ):
-                raise ValueError(
-                    "OrganicMolConfig: periodic mode requires a finite, "
-                    "nonsingular 3x3 cell."
+                raise CardOperationError(
+                    "organic-invalid-periodic-cell",
+                    "3D periodic mode requires a finite, nonsingular 3×3 cell.",
                 )
 
         perturb_per_frame = cls._integer(
             params.perturb_per_frame,
-            "perturb_per_frame",
+            "outputs",
+            "Maximum outputs per input",
             minimum=1,
         )
         max_torsions = cls._integer(
             params.max_torsions_per_conf,
-            "max_torsions_per_conf",
+            "torsions-per-output",
+            "Bonds rotated per output",
             minimum=0,
         )
         local_cutoff = cls._integer(
             params.local_cutoff,
-            "local_cutoff",
+            "large-molecule-threshold",
+            "Large-molecule threshold",
             minimum=0,
         )
         local_subtree = cls._integer(
             params.local_subtree,
-            "local_subtree",
+            "local-subtree-cap",
+            "Local subtree cap",
             minimum=1,
         )
         max_retries = cls._integer(
             params.max_retries,
-            "max_retries",
+            "retries",
+            "Retries per output",
             minimum=0,
         )
         gaussian_sigma = cls._finite_float(
             params.gaussian_sigma,
-            "gaussian_sigma",
+            "coordinate-noise",
+            "Coordinate noise",
             minimum=0.0,
         )
         if len(params.torsion_range_deg) != 2:
-            raise ValueError(
-                "OrganicMolConfig: torsion_range_deg must contain two values."
+            raise CardOperationError(
+                "organic-torsion-range-size",
+                "Torsion increment range must contain a minimum and maximum.",
             )
         torsion_range = tuple(
-            cls._finite_float(value, "torsion_range_deg")
+            cls._finite_float(
+                value,
+                "torsion-range",
+                "Torsion increment range",
+            )
             for value in params.torsion_range_deg
         )
         if torsion_range[0] > torsion_range[1]:
-            raise ValueError(
-                "OrganicMolConfig: torsion_range_deg minimum must not exceed maximum."
+            raise CardOperationError(
+                "organic-torsion-range-order",
+                "Torsion increment minimum must not exceed its maximum.",
             )
         bond_detect = cls._finite_float(
             params.bond_detect_factor,
-            "bond_detect_factor",
+            "bond-detection-radius",
+            "Bond detection radius",
             strictly_positive=True,
         )
         bond_min = cls._finite_float(
             params.bond_keep_min_factor,
-            "bond_keep_min_factor",
+            "minimum-bond-length",
+            "Minimum bond length",
             minimum=0.0,
         )
         bond_max = None
         if params.bond_keep_max_enable:
             bond_max = cls._finite_float(
                 params.bond_keep_max_factor,
-                "bond_keep_max_factor",
+                "maximum-bond-length",
+                "Maximum bond length",
                 strictly_positive=True,
             )
             if bond_max < bond_min:
-                raise ValueError(
-                    "OrganicMolConfig: bond_keep_max_factor must be >= "
-                    "bond_keep_min_factor."
+                raise CardOperationError(
+                    "organic-bond-length-order",
+                    "Maximum bond length must not be smaller than minimum bond length.",
                 )
         nonbond_min = cls._finite_float(
             params.nonbond_min_factor,
-            "nonbond_min_factor",
+            "minimum-nonbonded-distance",
+            "Minimum nonbonded distance",
             minimum=0.0,
         )
         mult_bond = cls._finite_float(
             params.mult_bond_factor,
-            "mult_bond_factor",
+            "short-bond-cutoff",
+            "Short-bond rotation cutoff",
             minimum=0.0,
         )
         box_size = cls._finite_float(
             params.nonpbc_box_size,
-            "nonpbc_box_size",
+            "nonperiodic-box",
+            "Nonperiodic display box",
             strictly_positive=True,
         )
         bo_c = cls._finite_float(
             params.bo_c_const,
-            "bo_c_const",
+            "pauling-decay-length",
+            "Pauling decay length",
             strictly_positive=True,
         )
         bo_threshold = cls._finite_float(
             params.bo_threshold,
-            "bo_threshold",
+            "bond-order-threshold",
+            "Bond-order threshold",
             minimum=0.0,
         )
         if bo_threshold > 1.0:
-            raise ValueError(
-                "OrganicMolConfig: bo_threshold must be between 0 and 1."
+            raise CardOperationError(
+                "organic-bond-order-range",
+                "Bond-order threshold must be between 0 and 1.",
             )
-        seed = cls._integer(params.seed, "seed", minimum=0)
+        seed = cls._integer(params.seed, "seed", "Random seed", minimum=0)
 
         if pbc_active:
             assert cell_mat is not None
@@ -908,9 +959,9 @@ class OrganicMolConfigPBCOperation(StructureOperation):
             and (torsion_range[0] != 0.0 or torsion_range[1] != 0.0)
         )
         if not torsion_active and gaussian_sigma == 0.0:
-            raise ValueError(
-                "OrganicMolConfig: the current settings cannot change any coordinates; "
-                "enable Gaussian noise or provide an active rotatable bond."
+            raise CardOperationError(
+                "organic-no-coordinate-change",
+                "The current settings cannot change coordinates; add coordinate noise or provide an active rotatable bond.",
             )
 
         components = 0
@@ -1008,8 +1059,9 @@ class OrganicMolConfigPBCOperation(StructureOperation):
             tg_params,
         )
         if not result_list:
-            raise ValueError(
-                "OrganicMolConfig: all requested conformers failed the geometry guards."
+            raise CardOperationError(
+                "organic-all-guards-failed",
+                "All requested conformers failed the geometry guards; narrow the torsion range, reduce coordinate noise, or inspect the distance limits.",
             )
 
         structures_out = []

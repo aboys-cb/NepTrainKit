@@ -27,6 +27,9 @@ def add_translated_items(owner, combo, items: Iterable[str | tuple[str, str]]) -
 
 def _translation_catalog() -> None:
     """Literal catalog for lupdate; add translated combo labels here."""
+    QCoreApplication.translate("CardCombo", "Follow input")
+    QCoreApplication.translate("CardCombo", "3D periodic")
+    QCoreApplication.translate("CardCombo", "Nonperiodic")
     QCoreApplication.translate("CardCombo", "Period (L_D)")
     QCoreApplication.translate("CardCombo", "Single-spin tilt")
     QCoreApplication.translate("CardCombo", "Atom pair canting")

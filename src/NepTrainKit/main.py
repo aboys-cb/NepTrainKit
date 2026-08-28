@@ -9,11 +9,17 @@ import tempfile
 if sys.platform == "darwin":
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
-from NepTrainKit.runtime_package import run_runtime_health_command
+from NepTrainKit.runtime_package import (
+    run_native_health_command,
+    run_runtime_health_command,
+)
 
 _runtime_health_exit = run_runtime_health_command()
 if _runtime_health_exit is not None:
     raise SystemExit(_runtime_health_exit)
+_native_health_exit = run_native_health_command()
+if _native_health_exit is not None:
+    raise SystemExit(_native_health_exit)
 
 from NepTrainKit.startup import load_config_class
 

@@ -6,10 +6,7 @@ import importlib
 from dataclasses import dataclass
 from importlib import metadata
 
-from NepTrainKit.runtime_package import NEP_ADAPTERS_SPEC
-
-
-_NATIVE_MODULES = ("_io", "_audit", "_phase", "_magnetism")
+from NepTrainKit.runtime_package import NATIVE_HELPER_MODULES, NEP_ADAPTERS_SPEC
 
 
 @dataclass(frozen=True)
@@ -78,7 +75,7 @@ def _adapter_capability(adapter_module, backend: str) -> RuntimeCapability:
 
 def inspect_runtime_health() -> RuntimeHealth:
     """Return a side-effect-free snapshot of packaged runtime capabilities."""
-    native = tuple(_native_capability(name) for name in _NATIVE_MODULES)
+    native = tuple(_native_capability(name) for name in NATIVE_HELPER_MODULES)
     try:
         adapters = importlib.import_module(NEP_ADAPTERS_SPEC.import_name)
     except Exception as exc:  # noqa: BLE001 - missing/broken package is report data
@@ -105,10 +102,16 @@ def inspect_runtime_health() -> RuntimeHealth:
             ),
         )
 
-    try:
-        version = metadata.version("nep-adapters")
-    except metadata.PackageNotFoundError:
-        version = getattr(adapters, "__version__", None)
+    # The managed sidecar is intentionally placed ahead of the packaged
+    # environment.  Frozen importlib.metadata can still report the seed
+    # distribution after a sidecar update, so the imported module is the
+    # authoritative source for the runtime actually in use.
+    version = getattr(adapters, "__version__", None)
+    if not version:
+        try:
+            version = metadata.version("nep-adapters")
+        except metadata.PackageNotFoundError:
+            version = None
 
     return RuntimeHealth(
         native=native,

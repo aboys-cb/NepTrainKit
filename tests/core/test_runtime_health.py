@@ -39,6 +39,31 @@ def test_runtime_health_reports_native_and_adapter_capabilities():
     assert report.cuda.reason == "module_missing"
 
 
+def test_runtime_health_prefers_the_loaded_adapter_version():
+    adapter = SimpleNamespace(
+        backend_status=lambda backend: SimpleNamespace(
+            available=True,
+            reason="available",
+            detail="",
+        ),
+        __version__="1.0.2",
+    )
+
+    def import_module(name):
+        if name == "nep_adapters":
+            return adapter
+        return object()
+
+    with (
+        patch.object(runtime_health.importlib, "import_module", side_effect=import_module),
+        patch.object(runtime_health.metadata, "version", return_value="1.0.1") as version,
+    ):
+        report = runtime_health.inspect_runtime_health()
+
+    assert report.adapters_version == "1.0.2"
+    version.assert_not_called()
+
+
 def test_runtime_health_reports_missing_adapter_without_raising():
     def import_module(name):
         if name == "nep_adapters":

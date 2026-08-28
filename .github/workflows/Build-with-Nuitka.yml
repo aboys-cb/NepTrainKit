@@ -38,6 +38,8 @@ jobs:
           pip install imageio
           python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
           python -m setuptools_scm  --force-write-version-files
+          python setup.py build_ext --inplace
+          python -c "import NepTrainKit._native._io, NepTrainKit._native._audit, NepTrainKit._native._phase, NepTrainKit._native._magnetism"
 
 
       - name: Build with Nuitka
@@ -46,6 +48,7 @@ jobs:
           nuitka-version: main
           script-name: NepTrainKit/main.py
           include-package: NepTrainKit
+          include-module: NepTrainKit._native._io,NepTrainKit._native._audit,NepTrainKit._native._phase,NepTrainKit._native._magnetism
           output-file: NepTrainKit.exe
           mode: standalone
           windows-console-mode: disable
@@ -106,6 +109,19 @@ jobs:
             -PassThru
           if ($process.ExitCode -ne 0) {
             throw "External nep-adapters health check failed with exit code $($process.ExitCode)."
+          }
+
+      - name: Verify packaged native helpers
+        shell: pwsh
+        run: |
+          $exe = "${{ github.workspace }}/src/build/main.dist/NepTrainKit.exe"
+          $process = Start-Process `
+            -FilePath $exe `
+            -ArgumentList "--neptrainkit-native-health-check" `
+            -Wait `
+            -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged native helper health check failed with exit code $($process.ExitCode)."
           }
 
       - name: Upload Artifact (backup)

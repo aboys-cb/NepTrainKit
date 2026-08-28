@@ -131,7 +131,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             )
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "在二至五元成分空间中采样目标配比；仅写入 Comp(...) 标签，需连接“随机占位”生成真实合金结构。",
+                "规划不重复的二元至五元目标成分；本卡只写入 Comp(...) 标签，需连接“随机占位”改变原子种类。",
             )
 
             replace_item = next(

@@ -896,9 +896,8 @@
         <translation>成分空间采样</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="96" />
         <source>Sample target ratios in binary-to-quinary composition spaces. This card only writes Comp(...) tags; add Random Occupancy to change atoms.</source>
-        <translation>在二至五元成分空间中采样目标配比；仅写入 Comp(...) 标签，需连接“随机占位”生成真实合金结构。</translation>
+        <translation type="vanished">在二至五元成分空间中采样目标配比；仅写入 Comp(...) 标签，需连接“随机占位”生成真实合金结构。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="102" />
@@ -1243,6 +1242,11 @@
         <location filename="../ui/widgets/card_metadata.py" line="89" />
         <source>Assign a composition transition across equal-count site groups ordered along lattice a, b, or c.</source>
         <translation>沿晶格 a、b 或 c 排序位点，并在等原子数组间分配成分过渡。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="96" />
+        <source>Plan unique binary-to-quinary target compositions. This card writes Comp(...) tags only; add Random Occupancy to change atoms.</source>
+        <translation>规划不重复的二元至五元目标成分；本卡只写入 Comp(...) 标签，需连接“随机占位”改变原子种类。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="130" />
@@ -3898,6 +3902,51 @@
         <translation>请为当前位点范围填写至少一种已有元素。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="791" />
+        <source>Composition Space Sampling requires at least two valid elements.</source>
+        <translation>成分空间采样至少需要两个有效元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="795" />
+        <source>Composition Space Sampling has unknown element symbol(s): {elements}.</source>
+        <translation>成分空间采样中包含未知元素符号：{elements}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="799" />
+        <source>None of the selected component counts is feasible for {count} elements.</source>
+        <translation>当前只有 {count} 个候选元素，所选组元数均不可行。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="803" />
+        <source>Maximum target compositions per input must be at least 1.</source>
+        <translation>每个输入的最大目标成分数必须至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="807" />
+        <source>Grid sampling for four or five components requires a step of 1/n, such as 0.1 or 0.05.</source>
+        <translation>四元或五元网格采样要求步长为 1/n，例如 0.1 或 0.05。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="811" />
+        <source>The current composition constraints produce no target compositions.</source>
+        <translation>当前成分约束无法生成任何目标成分。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="815" />
+        <source>The current settings produce no unique target compositions.</source>
+        <translation>当前设置无法生成任何唯一目标成分。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="819" />
+        <source>Maximum target compositions per input cannot exceed {maximum}.</source>
+        <translation>每个输入的最大目标成分数不能超过 {maximum}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="823" />
+        <source>The Grid settings require about {count} simplex points before budgeting. Increase the step or use Sobol; the safe limit is {maximum}.</source>
+        <translation>当前网格设置在应用预算前约需生成 {count} 个单纯形点。请增大步长或改用 Sobol；安全上限为 {maximum}。</translation>
+    </message>
+    <message>
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
@@ -4047,152 +4096,152 @@
 <context>
     <name>CardOperationField</name>
     <message>
-        <location filename="../ui/messages.py" line="795" />
+        <location filename="../ui/messages.py" line="831" />
         <source>Maximum outputs per input</source>
         <translation>每个输入的最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="796" />
+        <location filename="../ui/messages.py" line="832" />
         <source>Bonds rotated per output</source>
         <translation>每个输出旋转的键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="797" />
+        <location filename="../ui/messages.py" line="833" />
         <source>Large-molecule threshold</source>
         <translation>大分子阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="798" />
+        <location filename="../ui/messages.py" line="834" />
         <source>Local subtree cap</source>
         <translation>局部子树上限</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="799" />
+        <location filename="../ui/messages.py" line="835" />
         <source>Retries per output</source>
         <translation>每个输出的重试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="800" />
+        <location filename="../ui/messages.py" line="836" />
         <source>Coordinate noise</source>
         <translation>坐标噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="801" />
+        <location filename="../ui/messages.py" line="837" />
         <source>Torsion increment range</source>
         <translation>扭转增量范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="802" />
+        <location filename="../ui/messages.py" line="838" />
         <source>Bond detection radius</source>
         <translation>成键检测半径</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="803" />
+        <location filename="../ui/messages.py" line="839" />
         <source>Minimum bond length</source>
         <translation>最小键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="804" />
+        <location filename="../ui/messages.py" line="840" />
         <source>Maximum bond length</source>
         <translation>最大键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="805" />
+        <location filename="../ui/messages.py" line="841" />
         <source>Minimum nonbonded distance</source>
         <translation>最小非键距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="806" />
+        <location filename="../ui/messages.py" line="842" />
         <source>Short-bond rotation cutoff</source>
         <translation>短键旋转截止系数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="807" />
+        <location filename="../ui/messages.py" line="843" />
         <source>Nonperiodic display box</source>
         <translation>非周期显示盒</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="808" />
+        <location filename="../ui/messages.py" line="844" />
         <source>Pauling decay length</source>
         <translation>Pauling 衰减长度</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="809" />
+        <location filename="../ui/messages.py" line="845" />
         <source>Bond-order threshold</source>
         <translation>键级阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="810" />
+        <location filename="../ui/messages.py" line="846" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="811" />
+        <location filename="../ui/messages.py" line="847" />
         <source>Independent outputs per input</source>
         <translation>每个输入的独立输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="812" />
+        <location filename="../ui/messages.py" line="848" />
         <source>Total solvent molecules per output</source>
         <translation>每个输出的溶剂分子总数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="813" />
+        <location filename="../ui/messages.py" line="849" />
         <source>Placement attempts per output</source>
         <translation>每个输出的放置尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="814" />
+        <location filename="../ui/messages.py" line="850" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="815" />
+        <location filename="../ui/messages.py" line="851" />
         <source>Fallback center-to-COM shell</source>
         <translation>备用中心-质心壳层</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="816" />
+        <location filename="../ui/messages.py" line="852" />
         <source>Uniform minimum distance</source>
         <translation>统一最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="817" />
+        <location filename="../ui/messages.py" line="853" />
         <source>Element-radius collision scale</source>
         <translation>元素半径碰撞缩放</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="818" />
+        <location filename="../ui/messages.py" line="854" />
         <source>Fixed box size</source>
         <translation>固定盒尺寸</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="819" />
+        <location filename="../ui/messages.py" line="855" />
         <source>Auto-box padding</source>
         <translation>自动显示盒留白</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="820" />
+        <location filename="../ui/messages.py" line="856" />
         <source>Minimum auto-box edge</source>
         <translation>自动显示盒最小边长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="821" />
+        <location filename="../ui/messages.py" line="857" />
         <source>Flexible conformer pool</source>
         <translation>柔性构象池</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="822" />
+        <location filename="../ui/messages.py" line="858" />
         <source>Flexible torsions per conformer</source>
         <translation>每个柔性构象的扭转键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="823" />
+        <location filename="../ui/messages.py" line="859" />
         <source>Flexible conformer noise</source>
         <translation>柔性构象噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="824" />
+        <location filename="../ui/messages.py" line="860" />
         <source>Flexible torsion range</source>
         <translation>柔性扭转范围</translation>
     </message>
@@ -4964,89 +5013,191 @@
         <translation type="vanished">成分扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="31" />
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="34" />
         <source>Composition Space Sampling</source>
         <translation>成分空间采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="37" />
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="43" />
+        <source>For example: Co,Cr,Ni,Al</source>
+        <translation>例如：Co,Cr,Ni,Al</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="46" />
+        <source>Candidate elements</source>
+        <translation>候选元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="71" />
+        <source>Composition space</source>
+        <translation>成分空间</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="74" />
+        <source>Creates unique target ratios only. Atomic species change after a downstream Random Occupancy card.</source>
+        <translation>这里只生成不重复的目标配比；连接下游“随机占位”卡片后才会改变原子种类。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="88" />
+        <source>Grid fraction step</source>
+        <translation>网格比例步长</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="91" />
+        <source>For four or five components, use 1/n such as 0.1 or 0.05.</source>
+        <translation>四元或五元网格请使用 1/n 形式的步长，例如 0.1 或 0.05。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="97" />
+        <source>Sobol points per element combination</source>
+        <translation>每种元素组合的 Sobol 点数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="108" />
+        <source>Minimum fraction per included element</source>
+        <translation>每个已包含元素的最小比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="115" />
+        <source>Include simplex boundary points</source>
+        <translation>包含单纯形边界点</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="120" />
+        <source>Simplex sampling</source>
+        <translation>单纯形采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="132" />
+        <source>Maximum unique targets per input</source>
+        <translation>每个输入的最大唯一目标数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="155" />
+        <source>Output budget</source>
+        <translation>输出预算</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="157" />
+        <source>The limit applies independently to every input structure.</source>
+        <translation>该上限会分别应用于每个输入结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="166" />
+        <source>Random seed</source>
+        <translation>随机种子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="174" />
+        <source>Reproducibility</source>
+        <translation>可复现性</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="177" />
+        <source>The seed controls Sobol points and target ordering when the budget truncates the space.</source>
+        <translation>随机种子控制 Sobol 点集，以及预算截断成分空间时的目标顺序。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="261" />
+        <source>Complete the composition-space definition</source>
+        <translation>请完善成分空间定义</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="263" />
+        <source>{method} · orders {orders} · {count} unique/input</source>
+        <translation>{method} · 组元数 {orders} · 每个输入 {count} 个唯一目标</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="283" />
+        <source>Unique targets/input: {count}.</source>
+        <translation>每个输入的唯一目标数：{count}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="288" />
+        <source>Inputs {inputs} × targets/input {count} = outputs {total}.</source>
+        <translation>输入 {inputs} × 每个输入 {count} 个目标 = 输出 {total}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="300" />
+        <source>Unique targets by nominal order: {counts}.</source>
+        <translation>各名义组元数的唯一目标：{counts}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="307" />
+        <source>Skipped infeasible component counts: {orders}.</source>
+        <translation>已跳过不可行的组元数：{orders}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="313" />
+        <source>Only Comp(...) targets are written; add Random Occupancy next to change atomic species.</source>
+        <translation>这里只写入 Comp(...) 目标；下一步请添加“随机占位”以改变原子种类。</translation>
+    </message>
+    <message>
         <source>Elements</source>
-        <translation>元素</translation>
+        <translation type="vanished">元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="39" />
         <source>Co,Cr,Ni,Al</source>
-        <translation>Co,Cr,Ni,Al</translation>
+        <translation type="vanished">Co,Cr,Ni,Al</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="41" />
         <source>Candidate elements for binary/ternary/quaternary/quinary combinations</source>
-        <translation>用于二元、三元、四元、五元组合的候选元素</translation>
+        <translation type="vanished">用于二元、三元、四元、五元组合的候选元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="44" />
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="67" />
         <source>Component counts</source>
         <translation>组合元数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="63" />
         <source>Select binary, ternary, quaternary, or quinary composition spaces</source>
-        <translation>选择二元、三元、四元或五元成分空间</translation>
+        <translation type="vanished">选择二元、三元、四元或五元成分空间</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="67" />
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="83" />
         <source>Sampling method</source>
         <translation>采样方法</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="73" />
         <source>Composition step</source>
-        <translation>成分步长</translation>
+        <translation type="vanished">成分步长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="80" />
         <source>Grid spacing in fraction units; 0.1 means 10 percentage points</source>
-        <translation>网格的成分分数间隔；0.1 表示 10 个百分点</translation>
+        <translation type="vanished">网格的成分分数间隔；0.1 表示 10 个百分点</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="84" />
         <source>Points per combination</source>
-        <translation>每种元素组合的采样点数</translation>
+        <translation type="vanished">每种元素组合的采样点数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="90" />
         <source>Number of Sobol target ratios generated for each element combination</source>
-        <translation>每种元素组合生成的 Sobol 目标配比数</translation>
+        <translation type="vanished">每种元素组合生成的 Sobol 目标配比数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="94" />
         <source>Minimum element fraction</source>
-        <translation>元素最小占比</translation>
+        <translation type="vanished">元素最小占比</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="101" />
         <source>Include boundary points</source>
-        <translation>包含边界成分点</translation>
+        <translation type="vanished">包含边界成分点</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="104" />
         <source>Include pure-element endpoints and compositions with zero fraction</source>
-        <translation>包含纯元素端点和某一元素占比为零的边界成分</translation>
+        <translation type="vanished">包含纯元素端点和某一元素占比为零的边界成分</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="119" />
         <source>Max target compositions/input</source>
-        <translation>每个输入的最大目标成分数</translation>
+        <translation type="vanished">每个输入的最大目标成分数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="125" />
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="150" />
         <source>Budget allocation</source>
         <translation>输出预算分配</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="138" />
         <source>How the output limit is split across selected component counts</source>
-        <translation>输出上限在所选组合元数之间的分配方式</translation>
+        <translation type="vanished">输出上限在所选组合元数之间的分配方式</translation>
     </message>
     <message>
         <source>Order</source>
@@ -5061,9 +5212,8 @@
         <translation type="vanished">方法</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="70" />
         <source>Grid step scan or Sobol low-discrepancy sampling on simplex</source>
-        <translation>在单纯形上执行网格步长扫描或 Sobol 低差异采样</translation>
+        <translation type="vanished">在单纯形上执行网格步长扫描或 Sobol 低差异采样</translation>
     </message>
     <message>
         <source>Step</source>
@@ -5082,7 +5232,7 @@
         <translation type="vanished">包含端点</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="110" />
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="162" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
@@ -11144,23 +11294,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="861" />
-        <location filename="../ui/messages.py" line="901" />
+        <location filename="../ui/messages.py" line="897" />
+        <location filename="../ui/messages.py" line="937" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="871" />
+        <location filename="../ui/messages.py" line="907" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="881" />
+        <location filename="../ui/messages.py" line="917" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="891" />
+        <location filename="../ui/messages.py" line="927" />
         <source>Error</source>
         <translation>错误</translation>
     </message>

@@ -95,7 +95,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Composition Space Sampling"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Sample target ratios in binary-to-quinary composition spaces. This card only writes Comp(...) tags; add Random Occupancy to change atoms.",
+                "Plan unique binary-to-quinary target compositions. This card writes Comp(...) tags only; add Random Occupancy to change atoms.",
             ),
         ),
         "ConditionalReplaceCard": (

@@ -540,37 +540,100 @@ class CompositionSweepParams:
 class CompositionSweepOperation(StructureOperation):
     """Create composition-tagged copies of each input structure."""
 
-    def run_structure(self, structure, params: CompositionSweepParams) -> list:
+    MAX_OUTPUTS_PER_INPUT = 10_000
+    MAX_GRID_TEMPLATES = 100_000
+
+    def sampling_summary(self, params: CompositionSweepParams) -> dict[str, object]:
+        """Validate settings and build the exact unique target-composition plan."""
         elements = parse_element_list(params.elements)
         if len(elements) < 2:
-            return [structure.copy()]
+            raise CardOperationError(
+                "composition_sweep.too_few_elements",
+                "Composition Space Sampling requires at least two valid elements.",
+            )
+        invalid_elements = [element for element in elements if element not in atomic_numbers]
+        if invalid_elements:
+            raise CardOperationError(
+                "composition_sweep.invalid_elements",
+                "Composition Space Sampling has unknown element symbol(s): {elements}.",
+                elements=", ".join(invalid_elements),
+            )
 
-        orders = [order for order in self._target_orders(params.order) if len(elements) >= order]
+        requested_orders = self._target_orders(params.order)
+        orders = [order for order in requested_orders if len(elements) >= order]
+        skipped_orders = [order for order in requested_orders if len(elements) < order]
+        if not orders:
+            raise CardOperationError(
+                "composition_sweep.no_feasible_orders",
+                "None of the selected component counts is feasible for {count} elements.",
+                count=len(elements),
+            )
+        method = str(params.method or "").strip()
+        if method not in {"Grid", "Sobol"}:
+            raise ValueError("Composition Space Sampling method must be Grid or Sobol.")
         max_outputs = int(params.max_outputs)
-        if max_outputs <= 0 or not orders:
-            return [structure.copy()]
+        if max_outputs < 1:
+            raise CardOperationError(
+                "composition_sweep.invalid_budget",
+                "Maximum target compositions per input must be at least 1.",
+            )
+        if max_outputs > self.MAX_OUTPUTS_PER_INPUT:
+            raise CardOperationError(
+                "composition_sweep.budget_too_large",
+                "Maximum target compositions per input cannot exceed {maximum}.",
+                maximum=self.MAX_OUTPUTS_PER_INPUT,
+            )
+        min_fraction = float(params.min_fraction)
+        if not np.isfinite(min_fraction) or min_fraction < 0.0 or min_fraction > 1.0:
+            raise ValueError("Minimum element fraction must be between 0 and 1.")
+        if params.use_seed and int(params.seed) < 0:
+            raise ValueError("Composition Space Sampling seed must be non-negative.")
 
-        out = []
         seed = int(params.seed) if params.use_seed else None
         combo_rng = np.random.default_rng(seed) if seed is not None else None
 
-        order_data = []
-        capacities = {}
+        order_data: list[dict[str, object]] = []
+        capacities: dict[int, int] = {}
         for order in orders:
-            points = self._simplex_points(order, params)
+            try:
+                if method == "Grid":
+                    self._validate_grid_size(order, params)
+                points = self._simplex_points(
+                    order,
+                    params,
+                    point_limit=max_outputs if method == "Sobol" else None,
+                )
+            except NotImplementedError as exc:
+                raise CardOperationError(
+                    "composition_sweep.grid_step",
+                    "Grid sampling for four or five components requires a step of 1/n, such as 0.1 or 0.05.",
+                ) from exc
             if not points:
                 continue
             combos = list(combinations(elements, order))
             if combo_rng is not None and combos:
                 combo_rng.shuffle(combos)
-            unique_total = len(combos) * len(points)
-            if unique_total <= 0:
+            available_total = len(combos) * len(points)
+            if available_total <= 0:
                 continue
-            capacities[order] = int(unique_total)
-            order_data.append({"order": order, "points": points, "combos": combos, "capacity": int(unique_total)})
+            nominal_points = int(params.n_points) if method == "Sobol" else len(points)
+            nominal_total = len(combos) * nominal_points
+            capacities[order] = int(nominal_total)
+            order_data.append(
+                {
+                    "order": order,
+                    "points": points,
+                    "combos": combos,
+                    "capacity": int(nominal_total),
+                    "available_capacity": int(available_total),
+                }
+            )
 
         if not order_data:
-            return [structure.copy()]
+            raise CardOperationError(
+                "composition_sweep.no_targets",
+                "The current composition constraints produce no target compositions.",
+            )
 
         active_orders = [int(item["order"]) for item in order_data]
         mode = self._budget_mode(params.budget_mode)
@@ -590,30 +653,130 @@ class CompositionSweepOperation(StructureOperation):
         else:
             emit = self._reflow_budget(active_orders, budgets, capacities, max_outputs)
 
-        for item in order_data:
-            order = int(item["order"])
-            points = item["points"]
-            combos = item["combos"]
-            order_budget = int(emit.get(order, 0))
-            if order_budget <= 0:
-                continue
-            unique_total = int(item["capacity"])
-            n_emit = min(order_budget, unique_total)
-            slot_seed = None if seed is None else int(seed + order * 104729)
-            slots = self._spread_slots(unique_total, n_emit, seed=slot_seed)
-            for slot in slots:
-                combo_idx = int(slot % len(combos))
-                point_idx = int(slot // len(combos))
-                elems = combos[combo_idx]
-                frac = points[point_idx]
-                comp = {elem: float(value) for elem, value in zip(elems, frac)}
-                new_structure = structure.copy()
-                tag = ",".join(f"{elem}={comp[elem]:.4g}" for elem in elems)
-                append_config_tag(new_structure, f"Comp({tag})")
-                out.append(new_structure)
-                if len(out) >= max_outputs:
-                    return out
-        return out or [structure]
+        iterators = {
+            int(item["order"]): self._target_iterator(item, seed=seed)
+            for item in order_data
+        }
+        exhausted = {order: False for order in active_orders}
+        seen: set[tuple[tuple[str, float], ...]] = set()
+        targets: list[tuple[int, tuple[tuple[str, float], ...]]] = []
+        emitted_by_order = {order: 0 for order in active_orders}
+
+        def take_unique(order: int, limit: int) -> None:
+            iterator = iterators[order]
+            while emitted_by_order[order] < limit and len(targets) < max_outputs:
+                try:
+                    key = next(iterator)
+                except StopIteration:
+                    exhausted[order] = True
+                    return
+                if key in seen:
+                    continue
+                seen.add(key)
+                targets.append((order, key))
+                emitted_by_order[order] += 1
+
+        for order in active_orders:
+            take_unique(order, int(emit.get(order, 0)))
+
+        if mode != "equal_legacy":
+            while len(targets) < max_outputs:
+                progressed = False
+                for order in active_orders:
+                    if exhausted[order] or len(targets) >= max_outputs:
+                        continue
+                    before = len(targets)
+                    take_unique(order, emitted_by_order[order] + 1)
+                    progressed = progressed or len(targets) > before
+                if not progressed:
+                    break
+
+        if not targets:
+            raise CardOperationError(
+                "composition_sweep.no_unique_targets",
+                "The current settings produce no unique target compositions.",
+            )
+        return {
+            "elements": tuple(elements),
+            "method": method,
+            "requested_orders": tuple(requested_orders),
+            "active_orders": tuple(active_orders),
+            "skipped_orders": tuple(skipped_orders),
+            "nominal_capacities": dict(capacities),
+            "emitted_by_order": dict(emitted_by_order),
+            "targets": tuple(targets),
+            "outputs_per_input": len(targets),
+            "max_outputs": max_outputs,
+            "budget_mode": mode,
+        }
+
+    def run_structure(self, structure, params: CompositionSweepParams) -> list:
+        summary = self.sampling_summary(params)
+        out = []
+        for _order, composition in summary["targets"]:
+            new_structure = structure.copy()
+            tag = ",".join(
+                f"{element}={fraction:.12g}" for element, fraction in composition
+            )
+            self._replace_composition_tag(new_structure, f"Comp({tag})")
+            out.append(new_structure)
+        return out
+
+    @staticmethod
+    def _canonical_target(
+        elements: tuple[str, ...],
+        fractions: tuple[float, ...],
+    ) -> tuple[tuple[str, float], ...]:
+        positive = [
+            (element, float(fraction))
+            for element, fraction in zip(elements, fractions)
+            if float(fraction) > 1.0e-12
+        ]
+        total = float(sum(fraction for _element, fraction in positive))
+        return tuple(
+            sorted(
+                (element, round(fraction / total, 12))
+                for element, fraction in positive
+            )
+        )
+
+    def _target_iterator(self, item: dict[str, object], *, seed: int | None):
+        order = int(item["order"])
+        points = item["points"]
+        combos = item["combos"]
+        total = int(item["available_capacity"])
+        slot_seed = None if seed is None else int(seed + order * 104729)
+        for slot in self._spread_slot_order(total, seed=slot_seed):
+            combo_idx = int(slot % len(combos))
+            point_idx = int(slot // len(combos))
+            yield self._canonical_target(combos[combo_idx], points[point_idx])
+
+    @classmethod
+    def _spread_slot_order(cls, total: int, *, seed: int | None):
+        total = int(total)
+        if total <= 0:
+            return
+        if seed is None:
+            start = 0
+            stride_hint = int(total * 0.6180339887498949)
+        else:
+            rng = np.random.default_rng(int(seed))
+            start = int(rng.integers(0, total))
+            stride_hint = int(rng.integers(1, total)) if total > 1 else 1
+        stride = cls._coprime_stride(total, stride_hint)
+        for index in range(total):
+            yield int((start + index * stride) % total)
+
+    @staticmethod
+    def _replace_composition_tag(structure, tag: str) -> None:
+        current = str(structure.info.get("Config_type", "") or "")
+        tokens = [token.strip() for token in re.split(r"[|\s]+", current) if token.strip()]
+        structure.info["Config_type"] = "|".join(
+            token
+            for token in tokens
+            if not (token.startswith("Comp(") and token.endswith(")"))
+        )
+        append_config_tag(structure, tag)
 
     def _target_orders(self, text: str) -> list[int]:
         text = (text or "").strip()
@@ -640,12 +803,30 @@ class CompositionSweepOperation(StructureOperation):
                 continue
             if value not in orders:
                 orders.append(value)
-        return orders or [2, 3]
+        if not orders:
+            raise ValueError(
+                "Composition Space Sampling component counts must select 2, 3, 4, or 5."
+            )
+        return orders
 
-    def _simplex_points(self, order: int, params: CompositionSweepParams) -> list[tuple[float, ...]]:
+    def _simplex_points(
+        self,
+        order: int,
+        params: CompositionSweepParams,
+        *,
+        point_limit: int | None = None,
+    ) -> list[tuple[float, ...]]:
         seed = int(params.seed) if params.use_seed else None
         if params.method == "Sobol":
-            return simplex_sobol_points(order, int(params.n_points), seed=seed, min_fraction=float(params.min_fraction))
+            n_points = int(params.n_points)
+            if point_limit is not None:
+                n_points = min(n_points, int(point_limit))
+            return simplex_sobol_points(
+                order,
+                n_points,
+                seed=seed,
+                min_fraction=float(params.min_fraction),
+            )
         points = simplex_grid_points(
             order,
             float(params.step),
@@ -657,13 +838,52 @@ class CompositionSweepOperation(StructureOperation):
             rng.shuffle(points)
         return points
 
+    def _validate_grid_size(
+        self,
+        order: int,
+        params: CompositionSweepParams,
+    ) -> None:
+        """Reject grid templates that would block the synchronous exact preview."""
+        step = float(params.step)
+        if not np.isfinite(step) or step <= 0.0 or step > 1.0:
+            return
+        inverse = int(round(1.0 / step))
+        near_rational = inverse > 0 and abs(step - 1.0 / inverse) <= 1.0e-9
+        if near_rational:
+            min_each = 0 if params.include_endpoints else 1
+            if float(params.min_fraction) > 0.0:
+                min_each = max(
+                    min_each,
+                    int(math.ceil(float(params.min_fraction) * inverse - 1.0e-12)),
+                )
+            remaining = inverse - min_each * order
+            template_count = (
+                0
+                if remaining < 0
+                else math.comb(remaining + order - 1, order - 1)
+            )
+        else:
+            values = int(math.floor((1.0 + 1.0e-12) / step)) + 1
+            template_count = values if order == 2 else values * values
+        if template_count > self.MAX_GRID_TEMPLATES:
+            raise CardOperationError(
+                "composition_sweep.grid_too_dense",
+                "The Grid settings require about {count} simplex points before budgeting. Increase the step or use Sobol; the safe limit is {maximum}.",
+                count=template_count,
+                maximum=self.MAX_GRID_TEMPLATES,
+            )
+
     def _budget_mode(self, text: str) -> str:
         text = (text or "").strip().lower()
         if "legacy" in text:
             return "equal_legacy"
-        if "weight" in text:
+        if text in {"capacity-weighted", "favor larger composition spaces"}:
             return "weighted_reflow"
-        return "equal_reflow"
+        if text in {"equal+reflow", "balance component counts"}:
+            return "equal_reflow"
+        raise ValueError(
+            "Composition Space Sampling budget allocation must be Equal+Reflow, Capacity-weighted, or Equal (legacy)."
+        )
 
     @staticmethod
     def _allocate_equal(orders: list[int], max_outputs: int) -> dict[int, int]:
@@ -1842,7 +2062,7 @@ class RandomOccupancyOperation(StructureOperation):
         cfg = str(structure.info.get("Config_type", "") or "")
         if not cfg:
             return {}
-        for token in cfg.split("|"):
+        for token in reversed(cfg.split("|")):
             token = token.strip()
             if token.startswith("Comp(") and token.endswith(")"):
                 inner = token[5:-1].strip()

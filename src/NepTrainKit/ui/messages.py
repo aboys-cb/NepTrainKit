@@ -788,6 +788,42 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "List one or more existing elements for the selected site scope.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Space Sampling requires at least two valid elements.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Space Sampling has unknown element symbol(s): {elements}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "None of the selected component counts is feasible for {count} elements.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum target compositions per input must be at least 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Grid sampling for four or five components requires a step of 1/n, such as 0.1 or 0.05.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The current composition constraints produce no target compositions.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The current settings produce no unique target compositions.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum target compositions per input cannot exceed {maximum}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The Grid settings require about {count} simplex points before budgeting. Increase the step or use Sobol; the safe limit is {maximum}.",
+    )
 
 
 def _card_operation_field_catalog() -> None:

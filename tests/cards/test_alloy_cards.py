@@ -774,12 +774,145 @@ class TestAlloyCards(BaseCardTest):
 
                 self.assertEqual(len(first), 8)
                 self.assertEqual(tags, repeated_tags)
-                composition_orders = [
-                    tag.rsplit("Comp(", 1)[1].split(")", 1)[0].count(",") + 1
-                    for tag in tags
-                ]
-                self.assertIn(2, composition_orders)
-                self.assertIn(4, composition_orders)
+                summary = operation.sampling_summary(params)
+                self.assertGreater(summary["emitted_by_order"][2], 0)
+                self.assertGreater(summary["emitted_by_order"][4], 0)
+
+    def test_composition_sweep_summary_deduplicates_boundary_compositions(self):
+        operation = CompositionSweepOperation()
+        summary = operation.sampling_summary(CompositionSweepParams())
+
+        self.assertEqual(summary["active_orders"], (2, 3))
+        self.assertEqual(summary["skipped_orders"], (4, 5))
+        self.assertEqual(summary["outputs_per_input"], 66)
+        keys = [composition for _order, composition in summary["targets"]]
+        self.assertEqual(len(keys), len(set(keys)))
+
+        card = CompositionSweepCard()
+        card.set_preview_input_count(2)
+        self.assertIn("132", card.get_guidance_text())
+        self.assertIn("Random Occupancy", card.get_guidance_text())
+
+        card.method_combo.setCurrentIndex(card.method_combo.findData("Sobol"))
+        self.assertFalse(card.n_points_field.isHidden())
+        self.assertTrue(card.step_field.isHidden())
+        card.method_combo.setCurrentIndex(card.method_combo.findData("Grid"))
+        self.assertFalse(card.step_field.isHidden())
+        self.assertTrue(card.n_points_field.isHidden())
+
+    def test_composition_sweep_rejects_invalid_or_empty_plans(self):
+        operation = CompositionSweepOperation()
+        cases = (
+            CompositionSweepParams(elements="Co"),
+            CompositionSweepParams(elements="Co,Xx"),
+            CompositionSweepParams(elements="Co,Ni", order="5"),
+            CompositionSweepParams(elements="Co,Ni", min_fraction=0.6),
+            CompositionSweepParams(max_outputs=0),
+            CompositionSweepParams(max_outputs=10_001),
+            CompositionSweepParams(order="nonsense"),
+            CompositionSweepParams(
+                elements="Co,Cr,Ni,Al",
+                order="4",
+                method="Grid",
+                step=0.3,
+            ),
+        )
+        for params in cases:
+            with self.subTest(params=params):
+                with self.assertRaises(ValueError):
+                    operation.sampling_summary(params)
+
+    def test_composition_sweep_dense_sampling_stays_unique_and_budget_bounded(self):
+        operation = CompositionSweepOperation()
+        dense_sobol = CompositionSweepParams(
+            elements="Co,Ni",
+            order="2",
+            method="Sobol",
+            n_points=999_999,
+            use_seed=True,
+            seed=11,
+            max_outputs=1_000,
+        )
+
+        summary = operation.sampling_summary(dense_sobol)
+        self.assertEqual(summary["outputs_per_input"], 1_000)
+        outputs = operation.run_structure(self.structure, dense_sobol)
+        tags = [atoms.info["Config_type"].rsplit("|", 1)[-1] for atoms in outputs]
+        self.assertEqual(len(tags), len(set(tags)))
+
+        with self.assertRaisesRegex(ValueError, "safe limit"):
+            operation.sampling_summary(
+                CompositionSweepParams(step=1.0e-6, max_outputs=1)
+            )
+
+        constrained = operation.sampling_summary(
+            CompositionSweepParams(
+                elements="Co,Cr,Ni,Al,Fe",
+                order="5",
+                method="Sobol",
+                n_points=999_999,
+                min_fraction=0.19,
+                max_outputs=500,
+            )
+        )
+        self.assertEqual(constrained["outputs_per_input"], 500)
+        self.assertTrue(
+            all(
+                min(fraction for _element, fraction in composition) >= 0.19 - 1e-12
+                for _order, composition in constrained["targets"]
+            )
+        )
+
+    def test_composition_sweep_replaces_old_target_and_preserves_structure_arrays(self):
+        base = self.structure.copy()
+        base.info["Config_type"] = "base|Comp(Fe=1)|old"
+        spin = np.arange(len(base) * 3, dtype=float).reshape(-1, 3)
+        initial_magmoms = np.flip(spin, axis=1).copy()
+        base.new_array("spin", spin)
+        base.set_initial_magnetic_moments(initial_magmoms)
+        params = CompositionSweepParams(
+            elements="Co,Ni",
+            order="2",
+            method="Grid",
+            step=0.5,
+            max_outputs=3,
+        )
+
+        outputs = CompositionSweepOperation().run_structure(base, params)
+        self.assertEqual(len(outputs), 3)
+        for atoms in outputs:
+            tags = str(atoms.info["Config_type"]).split("|")
+            self.assertEqual(sum(tag.startswith("Comp(") for tag in tags), 1)
+            self.assertNotIn("Comp(Fe=1)", tags)
+            np.testing.assert_array_equal(atoms.positions, base.positions)
+            np.testing.assert_array_equal(atoms.cell.array, base.cell.array)
+            np.testing.assert_array_equal(atoms.arrays["spin"], spin)
+            np.testing.assert_array_equal(
+                atoms.arrays["initial_magmoms"], initial_magmoms
+            )
+
+        occupancy = RandomOccupancyOperation().run_structure(
+            outputs[1], RandomOccupancyParams(source="Auto (Comp tag)")
+        )[0]
+        self.assertNotIn("Fe", occupancy.get_chemical_symbols())
+
+    def test_composition_sweep_loads_legacy_flat_order_name(self):
+        card = CompositionSweepCard()
+        card.from_dict(
+            {
+                "class": "CompositionSweepCard",
+                "check_state": True,
+                "elements": "Co,Ni",
+                "order": "Binary",
+                "method": "Grid",
+                "step": [0.5],
+                "n_points": [20],
+                "min_fraction": [0.0],
+                "max_outputs": [10],
+                "seed": [0],
+            }
+        )
+        self.assertEqual(card.get_params().order, "2")
 
     def test_random_occupancy_group_filter_is_required_and_limits_assignment(self):
         structure = Atoms(

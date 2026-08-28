@@ -269,15 +269,9 @@ def simplex_sobol_points(
         )
 
     engine = Sobol(d=order - 1, scramble=True, seed=seed)
-    if min_fraction <= 0.0:
-        power = int(np.ceil(np.log2(n_points)))
-        u = engine.random_base2(power)[:n_points]
-        max_draws = n_points
-    else:
-        requested_budget = max(4096, int(n_points) * 1024)
-        power = int(np.ceil(np.log2(requested_budget)))
-        u = engine.random_base2(power)
-        max_draws = len(u)
+    power = int(np.ceil(np.log2(n_points)))
+    u = engine.random_base2(power)[:n_points]
+    free_fraction = 1.0 - float(order) * min_fraction
     out: list[tuple[float, ...]] = []
     for row in u:
         cuts = sorted(float(x) for x in row.tolist())
@@ -287,21 +281,15 @@ def simplex_sobol_points(
             parts.append(c - prev)
             prev = c
         parts.append(1.0 - prev)
-        fracs = tuple(float(x) for x in parts)
-        if any(f + 1e-12 < min_fraction for f in fracs):
-            continue
+        fracs = tuple(
+            min_fraction + free_fraction * float(value) for value in parts
+        )
         s = float(sum(fracs))
         if s <= 0:
             continue
         out.append(tuple(f / s for f in fracs))
         if len(out) >= n_points:
             return out
-    if len(out) < n_points:
-        raise ValueError(
-            f"Sobol simplex sampling accepted {len(out)}/{n_points} valid points after "
-            f"{max_draws} draws with min_fraction={min_fraction:g}; relax min_fraction "
-            "or request fewer points."
-        )
     return out
 
 

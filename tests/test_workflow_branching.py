@@ -23,6 +23,7 @@ from NepTrainKit.ui.views._card.bain_path_card import BainPathCard
 from NepTrainKit.ui.views._card.card_group import CardGroup
 from NepTrainKit.ui.views._card.cell_strain_card import CellStrainCard
 from NepTrainKit.ui.views._card.interstitial_adsorbate_card import InsertDefectCard
+from NepTrainKit.ui.views._card.interface_layer_mix_card import InterfaceLayerMixCard
 from NepTrainKit.ui.views._card.perturb_card import PerturbCard
 from NepTrainKit.ui.views._card.random_slab_card import RandomSlabCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
@@ -311,6 +312,75 @@ def test_first_composition_gradient_previews_imported_structure_details():
     widget.close()
     widget.deleteLater()
     app.processEvents()
+
+
+def test_first_interface_layer_mix_previews_imported_structure_and_output_count():
+    app = _app()
+    widget = MakeDataWidget()
+    positions = []
+    symbols = []
+    for z, element in [
+        (0.1, "Al"),
+        (0.2, "Al"),
+        (0.3, "Al"),
+        (0.7, "Ni"),
+        (0.8, "Ni"),
+        (0.9, "Ni"),
+    ]:
+        for x in (0.0, 0.5):
+            for y in (0.0, 0.5):
+                positions.append([x, y, z])
+                symbols.append(element)
+    structure = Atoms(
+        symbols,
+        scaled_positions=positions,
+        cell=[8.0, 8.0, 8.0],
+        pbc=True,
+    )
+    widget.dataset = [structure, structure.copy()]
+    card = widget.add_card("InterfaceLayerMixCard")
+    card.num_structures_frame.set_input_value([3])
+    widget._refresh_input_count_previews()
+    app.processEvents()
+
+    assert card.dataset is None
+    assert "fractional c @ 0.500" in card.get_summary_text()
+    assert "Inputs 2 × 3/input = 6 outputs" in card.get_guidance_text()
+    assert "second interface" in card.get_guidance_text()
+    _dispose(widget)
+
+
+def test_interface_layer_mix_fields_fit_real_inspector_after_resize_roundtrip():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = InterfaceLayerMixCard()
+    area.add_card(card)
+    area.resize(1600, 760)
+    area.show()
+    area.select_card(card)
+    for _ in range(3):
+        app.processEvents()
+
+    area.resize(1024, 640)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
+    assert card.concentration_field.isVisibleTo(area)
+    card.mode_combo.setCurrentIndex(card.mode_combo.findData("gradient"))
+    card.position_mode_combo.setCurrentIndex(
+        card.position_mode_combo.findData("manual")
+    )
+    card.seed_checkbox.setChecked(True)
+    for _ in range(3):
+        app.processEvents()
+    assert card.gradient_start_field.isVisibleTo(area)
+    assert card.gradient_end_field.isVisibleTo(area)
+    assert card.interface_position_field.isVisibleTo(area)
+    assert card.seed_field.isVisibleTo(area)
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
 
 
 def test_fork_keeps_extra_width_needed_for_parallel_lanes():

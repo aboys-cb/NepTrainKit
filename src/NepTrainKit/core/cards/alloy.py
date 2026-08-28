@@ -2693,6 +2693,7 @@ class InterfaceLayerMixParams:
     axis: str = "auto"
     auto_position: bool = True
     interface_position: float = 0.5
+    layer_tolerance: float = 0.25
     left_layers: int = 2
     right_layers: int = 2
     mode: str = "fixed"
@@ -2711,7 +2712,11 @@ class InterfaceLayerMixOperation(StructureOperation):
         resolved = self._resolve(structure, params)
         c_schedule = self._concentration_schedule(params, resolved["c_max"])
         outputs = []
-        base_seed = int(params.seed) if bool(params.use_seed) else None
+        base_seed = (
+            self._validated_integer(params.seed, "Random seed")
+            if bool(params.use_seed)
+            else None
+        )
         cfg_id = stable_config_id(structure)
         for sample_idx, c in enumerate(c_schedule):
             if base_seed is None:
@@ -2722,10 +2727,22 @@ class InterfaceLayerMixOperation(StructureOperation):
                 rng = np.random.default_rng(derived_seed)
                 seed_tag = f",s={derived_seed}"
             atoms = structure.copy()
-            self._swap_atoms(atoms, resolved, c, rng)
+            pair_count = self._pair_count(
+                c, resolved["n_total"], resolved["pair_capacity"]
+            )
+            c_effective = 2.0 * pair_count / resolved["n_total"]
+            changed = self._swap_atoms(atoms, resolved, pair_count, rng)
+            if changed:
+                self._invalidate_reference_labels(atoms)
+            target_tag = (
+                ""
+                if math.isclose(c_effective, c, rel_tol=0.0, abs_tol=CONC_TOLERANCE)
+                else f",target={c:.3g}"
+            )
             append_config_tag(
                 atoms,
-                f"IfaceMix(L={int(params.left_layers)},R={int(params.right_layers)},c={c:.3g}{seed_tag})",
+                f"IfaceMix(L={int(params.left_layers)},R={int(params.right_layers)},"
+                f"c={c_effective:.3g}{target_tag}{seed_tag})",
             )
             outputs.append(atoms)
         return outputs
@@ -2733,6 +2750,13 @@ class InterfaceLayerMixOperation(StructureOperation):
     def interface_summary(self, structure, params: InterfaceLayerMixParams) -> dict:
         """Deterministic geometry summary for the preview panel (no RNG)."""
         resolved = self._resolve(structure, params)
+        requested = self._concentration_schedule(params, resolved["c_max"])
+        effective = [
+            2.0
+            * self._pair_count(c, resolved["n_total"], resolved["pair_capacity"])
+            / resolved["n_total"]
+            for c in requested
+        ]
         return {
             "axis": resolved["axis"],
             "position": resolved["position"],
@@ -2746,6 +2770,9 @@ class InterfaceLayerMixOperation(StructureOperation):
             "n_right": resolved["n_right"],
             "n_total": resolved["n_total"],
             "c_max": resolved["c_max"],
+            "pair_capacity": resolved["pair_capacity"],
+            "requested_concentrations": requested,
+            "effective_concentrations": effective,
             "num_structures": int(params.num_structures),
             "mode": str(params.mode).strip(),
         }
@@ -2765,6 +2792,13 @@ class InterfaceLayerMixOperation(StructureOperation):
                 "interface.too_few_atoms",
                 "Interface Layer Mixing requires at least two atoms.",
             )
+        cell = np.asarray(structure.cell.array, dtype=float)
+        positions = np.asarray(structure.positions, dtype=float)
+        if not np.all(np.isfinite(cell)) or not np.all(np.isfinite(positions)):
+            raise CardOperationError(
+                "interface.non_finite_geometry",
+                "Interface Layer Mixing requires finite cell vectors and atom positions.",
+            )
 
         symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
         species = sorted(set(symbols.tolist()), key=lambda s: atomic_numbers.get(s, 200))
@@ -2776,8 +2810,12 @@ class InterfaceLayerMixOperation(StructureOperation):
                 element=species[0],
             )
 
-        left_layers = int(params.left_layers)
-        right_layers = int(params.right_layers)
+        left_layers = self._validated_integer(
+            params.left_layers, "L-side layer count"
+        )
+        right_layers = self._validated_integer(
+            params.right_layers, "R-side layer count"
+        )
         if left_layers < 1:
             raise CardOperationError(
                 "interface.left_layers",
@@ -2790,11 +2828,30 @@ class InterfaceLayerMixOperation(StructureOperation):
                 "R-side layer count must be >= 1 (got {value}).",
                 value=right_layers,
             )
-        if int(params.num_structures) < 1:
+        num_structures = self._validated_integer(
+            params.num_structures, "Number of structures"
+        )
+        if num_structures < 1:
             raise CardOperationError(
                 "interface.num_structures",
                 "Number of structures must be >= 1 (got {value}).",
-                value=int(params.num_structures),
+                value=num_structures,
+            )
+        if bool(params.use_seed):
+            seed = self._validated_integer(params.seed, "Random seed")
+            if seed < 0 or seed > 2**31 - 1:
+                raise CardOperationError(
+                    "interface.seed",
+                    "Random seed must be between 0 and {maximum} (got {value}).",
+                    maximum=2**31 - 1,
+                    value=seed,
+                )
+        layer_tolerance = float(params.layer_tolerance)
+        if not np.isfinite(layer_tolerance) or layer_tolerance <= 0.0:
+            raise CardOperationError(
+                "interface.layer_tolerance",
+                "Layer tolerance must be a finite distance greater than 0 Å (got {value}).",
+                value=params.layer_tolerance,
             )
 
         coord3 = scaled_positions(structure, wrap=True)
@@ -2839,10 +2896,10 @@ class InterfaceLayerMixOperation(StructureOperation):
                 )
         else:
             pos = float(params.interface_position)
-            if not (0.0 <= pos <= 1.0):
+            if not np.isfinite(pos) or not (0.0 < pos < 1.0):
                 raise CardOperationError(
                     "interface.invalid_position",
-                    "Interface fractional position must be in [0, 1] (got {pos}).",
+                    "Interface fractional position must be strictly between 0 and 1 (got {pos}).",
                     pos=f"{pos:.4g}",
                 )
 
@@ -2851,7 +2908,10 @@ class InterfaceLayerMixOperation(StructureOperation):
         r_mask = ~l_mask
         idx = np.arange(len(structure), dtype=int)
 
-        l_layer_id, n_left_avail = self._layer_ids(coord[l_mask])
+        normal_scale = 1.0 / float(np.linalg.norm(np.linalg.inv(cell)[:, axis_idx]))
+        l_layer_id, n_left_avail = self._layer_ids(
+            coord[l_mask], normal_scale, layer_tolerance
+        )
         if n_left_avail < left_layers:
             raise CardOperationError(
                 "interface.not_enough_layers",
@@ -2863,7 +2923,9 @@ class InterfaceLayerMixOperation(StructureOperation):
         l_sel = np.zeros(len(structure), dtype=bool)
         l_sel[l_mask] = n_left_avail - 1 - l_layer_id < left_layers
 
-        r_layer_id, n_right_avail = self._layer_ids(coord[r_mask])
+        r_layer_id, n_right_avail = self._layer_ids(
+            coord[r_mask], normal_scale, layer_tolerance
+        )
         if n_right_avail < right_layers:
             raise CardOperationError(
                 "interface.not_enough_layers",
@@ -2882,16 +2944,17 @@ class InterfaceLayerMixOperation(StructureOperation):
 
         l_elements = set(symbols[l_idx].tolist())
         r_elements = set(symbols[r_idx].tolist())
-        if l_elements == r_elements and len(l_elements) == 1:
+        pair_capacity = self._unlike_pair_capacity(symbols[l_idx], symbols[r_idx])
+        if pair_capacity == 0:
             raise CardOperationError(
                 "interface.same_elements",
                 "Both selected regions are the same single element {element}; "
                 "swapping would not change the structure.",
-                element=next(iter(l_elements)),
+                element=next(iter(l_elements & r_elements), "the same element"),
             )
 
         n_total = n_left + n_right
-        c_max = 2.0 * min(n_left, n_right) / n_total
+        c_max = 2.0 * pair_capacity / n_total
         return {
             "axis": axis_key,
             "position": pos,
@@ -2905,6 +2968,7 @@ class InterfaceLayerMixOperation(StructureOperation):
             "left_index": l_idx,
             "right_index": r_idx,
             "c_max": float(c_max),
+            "pair_capacity": int(pair_capacity),
         }
 
     def _concentration_schedule(self, params: InterfaceLayerMixParams, c_max: float) -> list[float]:
@@ -2912,7 +2976,7 @@ class InterfaceLayerMixOperation(StructureOperation):
         mode = str(params.mode).strip()
         if mode == "fixed":
             c = float(params.concentration)
-            if c < 0.0 or c > c_max + CONC_TOLERANCE:
+            if not np.isfinite(c) or c < 0.0 or c > c_max + CONC_TOLERANCE:
                 raise CardOperationError(
                     "interface.concentration_exceeds_max",
                     "Target concentration {c} exceeds this interface's swap capacity "
@@ -2925,7 +2989,12 @@ class InterfaceLayerMixOperation(StructureOperation):
             start = float(params.gradient_start)
             end = float(params.gradient_end)
             top = max(start, end)
-            if start < 0.0 or end < 0.0 or top > c_max + CONC_TOLERANCE:
+            if (
+                not np.all(np.isfinite([start, end]))
+                or start < 0.0
+                or end < 0.0
+                or top > c_max + CONC_TOLERANCE
+            ):
                 raise CardOperationError(
                     "interface.concentration_exceeds_max",
                     "Gradient concentration bound {top} exceeds this interface's swap "
@@ -2984,18 +3053,24 @@ class InterfaceLayerMixOperation(StructureOperation):
             return 0.0
         return float(np.dot(a, b)) / denom
 
-    @classmethod
-    def _layer_ids(cls, coords: np.ndarray) -> tuple[np.ndarray, int]:
-        """Assign each atom a layer id (ascending plane coordinate).
-
-        Atomic planes are resolved at 0.01 fractional resolution, matching the
-        stacking-fault cards' plane convention while tolerating in-plane noise
-        (relaxed atoms within one plane round to the same coordinate).
-        """
+    @staticmethod
+    def _layer_ids(
+        coords: np.ndarray, normal_scale: float, tolerance: float
+    ) -> tuple[np.ndarray, int]:
+        """Cluster nearby fractional coordinates using a physical Å tolerance."""
         if coords.size == 0:
             return np.zeros(0, dtype=int), 0
-        planes, inv = np.unique(np.round(coords, 2), return_inverse=True)
-        return inv, int(planes.size)
+        order = np.argsort(coords, kind="stable")
+        layer_ids = np.zeros(coords.size, dtype=int)
+        layer = 0
+        previous = float(coords[order[0]])
+        for atom_index in order[1:]:
+            current = float(coords[atom_index])
+            if (current - previous) * normal_scale > tolerance:
+                layer += 1
+            layer_ids[atom_index] = layer
+            previous = current
+        return layer_ids, layer + 1
 
     @staticmethod
     def _formula(symbols_subset: np.ndarray) -> str:
@@ -3011,17 +3086,160 @@ class InterfaceLayerMixOperation(StructureOperation):
         return "".join(parts)
 
     @staticmethod
-    def _swap_atoms(atoms, resolved: dict, c: float, rng: np.random.Generator) -> None:
+    def _validated_integer(value, label: str) -> int:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            raise CardOperationError(
+                "interface.integer_parameter",
+                "{label} must be an integer (got {value}).",
+                label=label,
+                value=value,
+            ) from None
+        if not np.isfinite(number) or not number.is_integer():
+            raise CardOperationError(
+                "interface.integer_parameter",
+                "{label} must be an integer (got {value}).",
+                label=label,
+                value=value,
+            )
+        return int(number)
+
+    @staticmethod
+    def _unlike_pair_capacity(
+        left_symbols: np.ndarray, right_symbols: np.ndarray
+    ) -> int:
+        left = Counter(left_symbols.tolist())
+        right = Counter(right_symbols.tolist())
+        n_left = int(len(left_symbols))
+        n_right = int(len(right_symbols))
+        dominant = max(
+            (left[element] + right[element] for element in set(left) | set(right)),
+            default=0,
+        )
+        return max(0, min(n_left, n_right, n_left + n_right - dominant))
+
+    @staticmethod
+    def _pair_count(c: float, n_total: int, capacity: int) -> int:
+        return min(int(np.round(float(c) * n_total / 2.0)), int(capacity))
+
+    @classmethod
+    def _swap_atoms(
+        cls, atoms, resolved: dict, pair_count: int, rng: np.random.Generator
+    ) -> bool:
+        if pair_count <= 0:
+            return False
         symbols = np.asarray(atoms.get_chemical_symbols(), dtype=object)
         l_idx = resolved["left_index"]
         r_idx = resolved["right_index"]
-        k_max = min(int(l_idx.size), int(r_idx.size))
-        k = min(int(np.round(c * resolved["n_total"] / 2.0)), k_max)
-        if k <= 0:
-            return
-        lp = rng.permutation(l_idx)[:k]
-        rp = rng.permutation(r_idx)[:k]
+        lp, rp = cls._sample_unlike_pairs(symbols, l_idx, r_idx, pair_count, rng)
         old_l = symbols[lp].copy()
         symbols[lp] = symbols[rp]
         symbols[rp] = old_l
+        for name in ("spin", "initial_magmoms", "initial_charges"):
+            values = atoms.arrays.get(name)
+            if values is None:
+                continue
+            old_values = np.asarray(values[lp]).copy()
+            values[lp] = values[rp]
+            values[rp] = old_values
         atoms.set_chemical_symbols(symbols.tolist())
+        return True
+
+    @staticmethod
+    def _sample_unlike_pairs(symbols, l_idx, r_idx, count, rng):
+        """Return exactly ``count`` cross-interface pairs with unlike species."""
+        left_groups = {
+            element: list(rng.permutation(l_idx[symbols[l_idx] == element]))
+            for element in sorted(set(symbols[l_idx].tolist()))
+        }
+        right_groups = {
+            element: list(rng.permutation(r_idx[symbols[r_idx] == element]))
+            for element in sorted(set(symbols[r_idx].tolist()))
+        }
+        left_species = list(rng.permutation(list(left_groups)))
+        right_species = list(rng.permutation(list(right_groups)))
+
+        source = 0
+        left_offset = 1
+        right_offset = left_offset + len(left_species)
+        sink = right_offset + len(right_species)
+        capacity = np.zeros((sink + 1, sink + 1), dtype=int)
+        for i, element in enumerate(left_species):
+            capacity[source, left_offset + i] = len(left_groups[element])
+        for j, element in enumerate(right_species):
+            capacity[right_offset + j, sink] = len(right_groups[element])
+        for i, left_element in enumerate(left_species):
+            for j, right_element in enumerate(right_species):
+                if left_element != right_element:
+                    capacity[left_offset + i, right_offset + j] = count
+
+        flow = np.zeros_like(capacity)
+        total_flow = 0
+        while total_flow < count:
+            parent = np.full(sink + 1, -1, dtype=int)
+            parent[source] = source
+            queue = [source]
+            for node in queue:
+                for nxt in range(sink + 1):
+                    if parent[nxt] < 0 and capacity[node, nxt] - flow[node, nxt] > 0:
+                        parent[nxt] = node
+                        queue.append(nxt)
+                        if nxt == sink:
+                            break
+                if parent[sink] >= 0:
+                    break
+            if parent[sink] < 0:
+                raise RuntimeError("Internal unlike-species matching failed.")
+            amount = count - total_flow
+            node = sink
+            while node != source:
+                prev = int(parent[node])
+                amount = min(amount, int(capacity[prev, node] - flow[prev, node]))
+                node = prev
+            node = sink
+            while node != source:
+                prev = int(parent[node])
+                flow[prev, node] += amount
+                flow[node, prev] -= amount
+                node = prev
+            total_flow += amount
+
+        left_pairs: list[int] = []
+        right_pairs: list[int] = []
+        for i, left_element in enumerate(left_species):
+            for j, right_element in enumerate(right_species):
+                amount = int(flow[left_offset + i, right_offset + j])
+                for _ in range(amount):
+                    left_pairs.append(left_groups[left_element].pop())
+                    right_pairs.append(right_groups[right_element].pop())
+        order = rng.permutation(len(left_pairs))
+        return (
+            np.asarray(left_pairs, dtype=int)[order],
+            np.asarray(right_pairs, dtype=int)[order],
+        )
+
+    @staticmethod
+    def _invalidate_reference_labels(atoms) -> None:
+        """Drop labels invalidated by changing chemical species at fixed sites."""
+        atoms.calc = None
+        for key in (
+            "energy",
+            "free_energy",
+            "virial",
+            "stress",
+            "dipole",
+            "magmom",
+        ):
+            atoms.info.pop(key, None)
+        for key in (
+            "forces",
+            "force",
+            "energies",
+            "atomic_energy",
+            "magmoms",
+            "charges",
+            "bec",
+            "born_effective_charges",
+        ):
+            atoms.arrays.pop(key, None)

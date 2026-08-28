@@ -566,6 +566,66 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError", "Layer group A and B labels must be different."
     )
     QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing requires a non-singular 3D cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing requires at least two atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing requires finite cell vectors and atom positions."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing found only one element ({element}); swapping would not change the structure."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "L-side layer count must be >= 1 (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "R-side layer count must be >= 1 (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Number of structures must be >= 1 (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer tolerance must be a finite distance greater than 0 Å (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface axis must be auto, a, b, or c (got {axis})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Auto-detection found no interface with distinct compositions (max contrast {contrast}). Check that the structure is a bilayer or pick the interface normal axis manually."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Lattice axis {axis} shows no distinct-composition split (contrast {contrast}). Try another axis, or disable auto-locate and type the interface position."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface fractional position must be strictly between 0 and 1 (got {pos})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Not enough atomic layers below the interface: need {need}, only {have} available. Reduce the L-side layer count."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Not enough atomic layers above the interface: need {need}, only {have} available. Reduce the R-side layer count."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Both selected regions are the same single element {element}; swapping would not change the structure."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Target concentration {c} exceeds this interface's swap capacity {c_max}. Lower the concentration or add more layers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Gradient concentration bound {top} exceeds this interface's swap capacity {c_max}. Lower the concentration or add more layers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Concentration mode must be fixed or gradient (got {mode})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{label} must be an integer (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random seed must be between 0 and {maximum} (got {value})."
+    )
+    QCoreApplication.translate(
         "CardOperationError", "Targeted Vacancy requires at least one vacancy rule."
     )
     QCoreApplication.translate(

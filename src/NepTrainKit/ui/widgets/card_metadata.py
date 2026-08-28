@@ -156,7 +156,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Interface Layer Mixing"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Detect a bilayer interface, pick near-interface layers on both sides, and swap their atom species at a target or gradient concentration.",
+                "Select one interface and exchange unlike species between nearby layers while preserving the total composition.",
             ),
         ),
         "InsertDefectCard": (

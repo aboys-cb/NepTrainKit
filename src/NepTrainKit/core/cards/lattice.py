@@ -36,21 +36,44 @@ def _scan_values(values, *, label: str) -> np.ndarray:
     return np.arange(start, stop + step * 0.5, step, dtype=float)
 
 
-def _cell_from_lengths_angles(lengths, angles_deg) -> np.ndarray:
-    """Build a cell from lengths and degree angles using ASE's default convention."""
-    a, b, c = [float(value) for value in lengths]
-    alpha, beta, gamma = np.radians(np.asarray(angles_deg, dtype=float))
-    sin_gamma = np.sin(gamma)
-    if abs(float(sin_gamma)) <= 1e-12:
-        raise ValueError("ShearAngle produced a singular gamma angle.")
-
-    cell = np.zeros((3, 3), dtype=float)
-    cell[0] = [a, 0.0, 0.0]
-    cell[1] = [b * np.cos(gamma), b * sin_gamma, 0.0]
-    cx = c * np.cos(beta)
-    cy = c * (np.cos(alpha) - np.cos(beta) * np.cos(gamma)) / sin_gamma
-    cz = np.sqrt(max(c * c - cx * cx - cy * cy, 0.0))
-    cell[2] = [cx, cy, cz]
+def _cell_from_lengths_angles(
+    lengths, angles_deg, *, reference_cell: np.ndarray
+) -> np.ndarray:
+    """Build a valid cell while retaining the reference cell's global frame."""
+    lengths = np.asarray(lengths, dtype=float)
+    angles_deg = np.asarray(angles_deg, dtype=float)
+    angles = np.radians(angles_deg)
+    cos_alpha, cos_beta, cos_gamma = np.cos(angles)
+    volume_factor_sq = (
+        1.0
+        + 2.0 * cos_alpha * cos_beta * cos_gamma
+        - cos_alpha**2
+        - cos_beta**2
+        - cos_gamma**2
+    )
+    if (
+        np.any(~np.isfinite(lengths))
+        or np.any(lengths <= 1e-12)
+        or np.any(~np.isfinite(angles_deg))
+        or np.any(angles_deg <= 0.0)
+        or np.any(angles_deg >= 180.0)
+        or volume_factor_sq <= 1e-12
+    ):
+        raise CardOperationError(
+            "shear_angle.invalid_cell",
+            "Angle strain produced an invalid or singular cell. Reduce the angle increments.",
+        )
+    reference_cell = np.asarray(reference_cell, dtype=float)
+    cell = cellpar_to_cell(
+        [*lengths, *angles_deg],
+        ab_normal=np.cross(reference_cell[0], reference_cell[1]),
+        a_direction=reference_cell[0],
+    )
+    if not np.all(np.isfinite(cell)) or float(np.linalg.det(cell)) <= 1e-12:
+        raise CardOperationError(
+            "shear_angle.invalid_cell",
+            "Angle strain produced an invalid or singular cell. Reduce the angle increments.",
+        )
     return cell
 
 
@@ -496,37 +519,59 @@ class ShearAngleParams:
 class ShearAngleOperation(StructureOperation):
     """Perturb lattice angles while preserving cell lengths."""
 
+    @staticmethod
+    def sampling_summary(params: ShearAngleParams) -> dict[str, object]:
+        alpha_values = _scan_values(params.alpha_range, label="alpha_range")
+        beta_values = _scan_values(params.beta_range, label="beta_range")
+        gamma_values = _scan_values(params.gamma_range, label="gamma_range")
+        return {
+            "alpha_values": alpha_values,
+            "beta_values": beta_values,
+            "gamma_values": gamma_values,
+            "alpha_points": len(alpha_values),
+            "beta_points": len(beta_values),
+            "gamma_points": len(gamma_values),
+            "outputs_per_input": len(alpha_values) * len(beta_values) * len(gamma_values),
+        }
+
     def run_structure(self, structure, params: ShearAngleParams) -> list:
-        structure_list = []
+        summary = self.sampling_summary(params)
+        reference_cell = np.asarray(structure.get_cell(), dtype=float)
+        if (
+            reference_cell.shape != (3, 3)
+            or np.any(~np.isfinite(reference_cell))
+            or float(np.linalg.det(reference_cell)) <= 1e-12
+        ):
+            raise ValueError("ShearAngle requires a finite, right-handed 3x3 cell.")
+        cellpar = cell_to_cellpar(reference_cell)
+        lengths = cellpar[:3]
+        angles0 = cellpar[3:]
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
 
-        alpha_range = _scan_values(params.alpha_range, label="alpha_range")
-        beta_range = _scan_values(params.beta_range, label="beta_range")
-        gamma_range = _scan_values(params.gamma_range, label="gamma_range")
-        cellpar = cell_to_cellpar(structure.get_cell())
-        lengths = cellpar[:3]
-        angles0 = cellpar[3:]
-
-        for da in alpha_range:
-            for db in beta_range:
-                for dg in gamma_range:
+        structure_list = []
+        for da in summary["alpha_values"]:
+            for db in summary["beta_values"]:
+                for dg in summary["gamma_values"]:
                     new_structure = structure.copy()
+                    unchanged = bool(da == 0.0 and db == 0.0 and dg == 0.0)
                     new_angles = angles0 + np.array([da, db, dg])
-                    new_lattice = _cell_from_lengths_angles(lengths, new_angles)
-                    new_structure.set_cell(new_lattice, scale_atoms=True)
-                    if params.identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)
-
-                    info_list = []
-                    if abs(da) > 1e-8:
-                        info_list.append(f"a={da:g}")
-                    if abs(db) > 1e-8:
-                        info_list.append(f"b={db:g}")
-                    if abs(dg) > 1e-8:
-                        info_list.append(f"g={dg:g}")
-                    info_str = ",".join(info_list)
-                    append_config_tag(new_structure, f"Ang({info_str})")
+                    if not unchanged:
+                        new_lattice = _cell_from_lengths_angles(
+                            lengths, new_angles, reference_cell=reference_cell
+                        )
+                        new_structure.set_cell(new_lattice, scale_atoms=True)
+                        if params.identify_organic:
+                            process_organic_clusters(
+                                structure,
+                                new_structure,
+                                clusters,
+                                is_organic_list,
+                            )
+                    append_config_tag(
+                        new_structure,
+                        f"Ang(alpha={float(da):g},beta={float(db):g},gamma={float(dg):g})",
+                    )
                     structure_list.append(new_structure)
         return structure_list
 

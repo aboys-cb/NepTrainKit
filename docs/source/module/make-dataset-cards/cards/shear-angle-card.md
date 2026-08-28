@@ -1,137 +1,104 @@
 <!-- card-schema: {"card_name": "Shear Angle Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_angle_card.py", "serialized_keys": ["params"]} -->
 
-# 剪切角应变（Shear Angle Strain）
+# 晶格角应变（Shear Angle Strain）
 
 **分类：** 晶格
 
 ## 功能说明
 
-在保持晶格长度不变的前提下扰动 alpha/beta/gamma 角，采样角度剪切自由度。每个角度通道独立控制 min/max/step（单位：度），扫描的是相对原始角度的增量。
+保持三条晶格矢量的长度不变，扫描晶格角的增量。适合单独补充角度形变数据，或检查模型对低对称晶胞的外推误差。
+
+三个角的定义是：
+
+- $\alpha=\angle(\mathbf b,\mathbf c)$
+- $\beta=\angle(\mathbf a,\mathbf c)$
+- $\gamma=\angle(\mathbf a,\mathbf b)$
+
+输入框填写的是相对原始角度的**增量**，不是最终角度，单位均为度。
 
 ## 原理与公式
 
-$$\alpha'=\alpha+\Delta\alpha,\quad \beta'=\beta+\Delta\beta,\quad \gamma'=\gamma+\Delta\gamma$$
+对每组增量 $(\Delta\alpha,\Delta\beta,\Delta\gamma)$：
 
-$$\mathbf{C}'=\mathrm{cellpar\_to\_cell}(a,b,c,\alpha',\beta',\gamma')$$
+$$
+\alpha'=\alpha+\Delta\alpha,\qquad
+\beta'=\beta+\Delta\beta,\qquad
+\gamma'=\gamma+\Delta\gamma.
+$$
 
-$a,b,c$ 保持原长度，三个 $\Delta$ 值单位均为度。程序从新的六个晶格参数重建晶胞，
-不是直接给某个矩阵元素加角度数值；原子分数坐标保持不变。
+程序用 $(a,b,c,\alpha',\beta',\gamma')$ 重建晶胞，其中 $a,b,c$ 保持原值。原子分数坐标随晶胞保持不变，因此笛卡尔位置会随形变移动。
+
+重建过程保留输入晶胞的全局取向，不额外施加刚体旋转。因此项目使用的 `spin:R:3` 和 ASE 的 `initial_magmoms` 均保留原笛卡尔分量。若输入同时含有这两类磁矩数据，两者都不会被角度应变改写。
+
+每个角范围按 `[min, max, step]` 取点。若三条范围分别产生 $N_\alpha$、$N_\beta$、$N_\gamma$ 个值，则：
+
+$$
+N_{\mathrm{out}}=N_{\mathrm{in}}N_\alpha N_\beta N_\gamma.
+$$
+
+默认每条范围为 `[-2, 2, 1]`，即每个输入生成 $5^3=125$ 个结构。界面会直接显示每个输入和全部输入的预计输出数。
+
+最终三个角必须都位于 $(0^\circ,180^\circ)$，并能组成非奇异、右手晶胞；不满足时会提示减小角度增量。
 
 ## 操作示例
 
-### 场景：模型在单斜晶系上预测崩了，但正交晶系没问题
+只扫描 $\beta$ 角的 $-4^\circ$ 到 $4^\circ$，步长 $2^\circ$：
 
-你在 HfO2 上训练了一个 NEP 模型。训练集里只有一个高温四方相（正交晶格），模型对四方相的能量和力预测很好。但一跑常温单斜相，能量误差跳了 3 倍——因为单斜相的 beta 角偏离 90 度约 10 度，模型没见过非正交的晶胞角度。
+```text
+Alpha increment: 0, 0, 1
+Beta increment: -4, 4, 2
+Gamma increment: 0, 0, 1
+```
 
-**诊断思路：** 不同晶系的本质区别是晶胞角度。模型只在正交晶格上训练，隐式地学会了"角度总是 90 度"的先验。只要 beta 偏离 90 度，晶格矢量在笛卡尔空间的投影关系就变了，原子间距分布也跟着变——模型全靠外推。解决办法是沿角度方向生成一组结构，让模型见过非 90 度的晶胞。
+每个输入得到 5 个结构，对应 $\Delta\beta=-4,-2,0,2,4^\circ$。三条晶格矢量长度不变；$\alpha$ 和 $\gamma$ 不变。
 
-**输入：** 一个弛豫好的 HfO2 四方相结构（alpha=beta=gamma=90°）
-
-**目标：** 沿 beta 方向生成 -6° 到 +6° 的角度扫描，步长 2°，覆盖单斜相可能出现的 beta 偏离
-
-**参数设置：**
-- `α 角范围`（`alpha_range`） = `[0, 0, 1]` （不扫 alpha）
-- `β 角范围`（`beta_range`） = `[-6, 6, 2]`
-- `γ 角范围`（`gamma_range`） = `[0, 0, 1]` （不扫 gamma）
-
-**输出：** 7 个结构（-6°, -4°, -2°, 0°, +2°, +4°, +6°），晶格长度不变，只有 beta 角偏离 90 度
-
-**怎么验证训练集质量改善：**
-- 重训后用单斜相参考数据做推理，能量误差应显著下降
-- 检查输出结构的体积：角度变化会轻微改变体积（晶格长度不变但矢量投影关系变了），确认体积变化 < 2%
-- 如果模型对更多角度方向仍不准，同时放开 alpha 和 gamma 做多角度联合扫描
-- 如果角度扫描范围 > ±10° 后结构明显非物理，可能是该体系不支持如此大的角度偏离
-
-### 什么时候加这张卡、什么时候不加
-
-**加：**
-- 训练集仅覆盖高对称晶系（立方、四方），但目标体系存在低对称相（单斜、三斜）
-- 模型在角度相关性质（如压电系数、角度依赖的弹性常数）上偏差大
-- 需要区分"角度变化"和"长度变化"对模型的影响
-
-**不加：**
-- 体系始终维持高对称、角度不可能偏离 90 度 —— 加了产生无物理意义结构
-- 需要同时控制长度和角度 → 用 `Lattice Perturb` 同时扰动两者更方便
-- 想用矩阵分量而非角度控制剪切 → `Shear Matrix Strain` 更适合
+不扫描某一通道时应填写 `[0, 0, 1]`。步长仍需为正数。
 
 ## 参数说明
 
-### α 角范围（alpha_range）
+### α 增量（alpha_range）
 
-`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。alpha 角相对于原始值的增量扫描区间，格式 `[min, max, step]`，单位度。注意最终角度 = 原始角度 + 增量，不是直接用增量替换。不扫的通道不能设 `[0, 0, 0]`，必须写 `[0, 0, 1]` 让 range 至少产生一个 0 点。
+默认 `[-2, 2, 1]`。$\alpha=\angle(\mathbf b,\mathbf c)$ 的增量范围，单位为度。
 
-### β 角范围（beta_range）
+### β 增量（beta_range）
 
-`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。beta 角增量扫描区间，单位和语法同上。不扫时写 `[0, 0, 1]`。
+默认 `[-2, 2, 1]`。$\beta=\angle(\mathbf a,\mathbf c)$ 的增量范围，单位为度。
 
-### γ 角范围（gamma_range）
+### γ 增量（gamma_range）
 
-`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。gamma 角增量扫描区间，同上。不扫时写 `[0, 0, 1]`。
+默认 `[-2, 2, 1]`。$\gamma=\angle(\mathbf a,\mathbf b)$ 的增量范围，单位为度。
 
-输出总数 = Nalpha * Nbeta * Ngamma。三个通道同时按默认值跑 = 5^3 = 125 个结构。步长减半会 8 倍增长，建议从单通道开始逐次加。
+### 保持识别出的分子刚性（identify_organic）
 
-### 识别有机分子（identify_organic）
+默认关闭。开启后，程序在晶胞仿射形变后恢复检测到的分子团内部几何，避免分子内键随晶胞一起拉伸。纯无机体系通常无需开启。
 
-`bool`，默认 `false`。分子晶体必须打开——角度变化会改变分子间相对取向，如果分子内键也被跟着拉伸就不对了。纯无机体系关着即可。
+## 配置示例
 
-## 推荐预设
-
-### 单角度探索（仅 beta，±4°，步长 1°）
 ```json
 {
   "class": "ShearAngleCard",
   "check_state": true,
-  "alpha_range": [0, 0, 1],
-  "beta_range": [-4, 4, 1],
-  "gamma_range": [0, 0, 1],
-  "identify_organic": false
+  "params": {
+    "alpha_range": [0, 0, 1],
+    "beta_range": [-4, 4, 2],
+    "gamma_range": [0, 0, 1],
+    "identify_organic": false
+  }
 }
 ```
-
-### 双角度覆盖（beta+gamma，±3°，步长 1°，~49 个输出）
-```json
-{
-  "class": "ShearAngleCard",
-  "check_state": true,
-  "alpha_range": [0, 0, 1],
-  "beta_range": [-3, 3, 1],
-  "gamma_range": [-3, 3, 1],
-  "identify_organic": false
-}
-```
-
-### 三角度全扫描（alpha+beta+gamma，±5°，步长 2°，~216 个输出）
-```json
-{
-  "class": "ShearAngleCard",
-  "check_state": true,
-  "alpha_range": [-5, 5, 2],
-  "beta_range": [-5, 5, 2],
-  "gamma_range": [-5, 5, 2],
-  "identify_organic": false
-}
-```
-
-## 推荐组合
-
-- `Lattice Strain` → `Shear Angle Strain`：先做长度应变，再补角度剪切
-- `Shear Angle Strain` → `Atomic Perturb`：角度畸变后加原子坐标噪声
-- `Shear Angle Strain` + `Shear Matrix Strain`：两者走不同形变路径，互补覆盖
 
 ## 常见问题
 
-**输出为空。** 检查每个 range 的步长是否 > 0。不扫的通道不能设 `[0, 0, 0]`，必须设 `[0, 0, 1]` 让 range 至少产生一个 0 点。
+**为什么角度改变后体积也变了？** 体积同时取决于晶格长度和夹角。长度固定不代表体积固定，这是正常的几何结果。
 
-**输出数量爆炸。** 三通道联扫 = Na * Nb * Ng。默认 `[-2, 2, 1]` 三通道 = 5^3 = 125 个结构。步长减半会 8 倍增长。建议从单通道开始逐次加。
+**为什么输出数很快变大？** 三个角采用笛卡尔积组合。默认是 $5\times5\times5=125$ 个结构/输入；建议先扫描单个角，再按需要增加通道。
 
-**角度变化后体积也变了。** 晶格长度保持不变但角度变化会改变笛卡尔空间的矢量投影，体积会轻微变化。这是正常的几何效应，不是 bug。如果体积变化超过预期，可能是角度步长太大——减小 step。
+**为什么提示晶胞无效？** 某组最终角度无法组成非奇异右手晶胞。缩小增量范围，尤其要检查原始角度已经接近 $0^\circ$ 或 $180^\circ$ 的情况。
 
-**输出晶格接近奇异。** 如果角度偏离过大导致 cellpar_to_cell 产生的晶格矩阵接近退化，结构会不可用。典型症状是晶格行列式接近 0。把角度 range 回调到更保守的范围。
+**磁矩会跟着晶胞转动吗？** 不会。这张卡只做角度应变并保留输入全局坐标系；`spin:R:3` 与 ASE `initial_magmoms` 的笛卡尔分量均保持不变。
 
 ## 输出标签
 
-`Ang(a={da}°,b={db}°,g={dg}°)` —— 只显示有非零变化的通道。
+`Ang(alpha={Δα},beta={Δβ},gamma={Δγ})`
 
-## 可复现性
-
-无随机性。同参数同输入 → 严格一致输出。所有角度按固定网格扫描。
+标签记录三个角的增量，单位为度。该操作无随机性，相同输入和参数会生成相同结果。

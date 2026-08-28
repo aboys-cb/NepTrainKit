@@ -764,6 +764,10 @@ def _card_operation_error_catalog() -> None:
     QCoreApplication.translate(
         "CardOperationError", "The Bain lattice axis must be a, b, or c."
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Angle strain produced an invalid or singular cell. Reduce the angle increments.",
+    )
 
 
 def _card_operation_field_catalog() -> None:

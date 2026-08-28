@@ -979,7 +979,22 @@ class TestLatticeCards(BaseCardTest):
         results = ShearAngleOperation().run_structure(self.structure.copy(), params)
 
         self.assertEqual(len(results), 1)
-        self.assertIn("Ang(a=1)", results[0].info.get("Config_type", ""))
+        self.assertIn(
+            "Ang(alpha=1,beta=0,gamma=0)",
+            results[0].info.get("Config_type", ""),
+        )
+
+    def test_shear_angle_summary_reports_cartesian_product(self):
+        summary = ShearAngleOperation.sampling_summary(ShearAngleParams())
+
+        self.assertEqual(summary["alpha_points"], 5)
+        self.assertEqual(summary["beta_points"], 5)
+        self.assertEqual(summary["gamma_points"], 5)
+        self.assertEqual(summary["outputs_per_input"], 125)
+
+        card = ShearAngleCard()
+        card.set_preview_input_count(2)
+        self.assertIn("250", card.get_guidance_text())
 
     def test_scaling_and_shear_cards_roundtrip_nondefault_params(self):
         cases = [
@@ -1043,12 +1058,81 @@ class TestLatticeCards(BaseCardTest):
 
         result = ShearAngleOperation().run_structure(structure.copy(), params)[0]
         cellpar = cell_to_cellpar(structure.get_cell())
-        expected_cell = cellpar_to_cell([*cellpar[:3], *(cellpar[3:] + np.array([1.0, -1.0, 0.5]))])
+        reference_cell = np.asarray(structure.get_cell(), dtype=float)
+        expected_cell = cellpar_to_cell(
+            [*cellpar[:3], *(cellpar[3:] + np.array([1.0, -1.0, 0.5]))],
+            ab_normal=np.cross(reference_cell[0], reference_cell[1]),
+            a_direction=reference_cell[0],
+        )
         expected = structure.copy()
         expected.set_cell(expected_cell, scale_atoms=True)
 
         np.testing.assert_allclose(result.cell.array, expected.cell.array, atol=1e-12)
         np.testing.assert_allclose(result.positions, expected.positions, atol=1e-12)
+
+    def test_shear_angle_preserves_spin_arrays_in_input_global_frame(self):
+        structure = self.structure.copy()
+        structure.set_cell(
+            np.array(
+                [
+                    [4.8, 1.1, 0.4],
+                    [-0.7, 5.2, 0.8],
+                    [0.3, -0.6, 5.9],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        spin = np.arange(len(structure) * 3, dtype=float).reshape(-1, 3) + 0.25
+        initial_magmoms = np.flip(spin, axis=1).copy()
+        structure.new_array("spin", spin)
+        structure.set_initial_magnetic_moments(initial_magmoms)
+        original_cell = structure.cell.array.copy()
+        original_positions = structure.positions.copy()
+
+        no_op = ShearAngleOperation().run_structure(
+            structure,
+            ShearAngleParams(
+                alpha_range=(0.0, 0.0, 1.0),
+                beta_range=(0.0, 0.0, 1.0),
+                gamma_range=(0.0, 0.0, 1.0),
+            ),
+        )[0]
+        np.testing.assert_array_equal(no_op.cell.array, original_cell)
+        np.testing.assert_array_equal(no_op.positions, original_positions)
+        np.testing.assert_array_equal(no_op.arrays["spin"], spin)
+        np.testing.assert_array_equal(no_op.arrays["initial_magmoms"], initial_magmoms)
+
+        strained = ShearAngleOperation().run_structure(
+            structure,
+            ShearAngleParams(
+                alpha_range=(1.0, 1.0, 1.0),
+                beta_range=(-0.5, -0.5, 1.0),
+                gamma_range=(0.5, 0.5, 1.0),
+            ),
+        )[0]
+        np.testing.assert_allclose(
+            strained.get_scaled_positions(),
+            structure.get_scaled_positions(),
+            atol=1e-12,
+        )
+        np.testing.assert_array_equal(strained.arrays["spin"], spin)
+        np.testing.assert_array_equal(
+            strained.arrays["initial_magmoms"], initial_magmoms
+        )
+
+    def test_shear_angle_rejects_invalid_final_angles(self):
+        structure = self.structure.copy()
+        structure.set_cell(cellpar_to_cell([5.0, 5.0, 5.0, 90.0, 90.0, 10.0]))
+
+        with self.assertRaisesRegex(ValueError, "invalid or singular cell"):
+            ShearAngleOperation().run_structure(
+                structure,
+                ShearAngleParams(
+                    alpha_range=(0.0, 0.0, 1.0),
+                    beta_range=(0.0, 0.0, 1.0),
+                    gamma_range=(-20.0, -20.0, 1.0),
+                ),
+            )
 
     def test_vibration_mode_perturb_card(self):
         card = VibrationModePerturbCard()

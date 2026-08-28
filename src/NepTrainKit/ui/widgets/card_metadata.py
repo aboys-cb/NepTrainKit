@@ -257,7 +257,10 @@ def _localized_catalog(_language_marker: str):
         ),
         "ShearAngleCard": (
             QCoreApplication.translate("CardCatalog", "Shear Angle Strain"),
-            QCoreApplication.translate("CardCatalog", "Perturb lattice angles while preserving cell lengths."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Scan alpha, beta, and gamma angle increments while preserving lattice-vector lengths.",
+            ),
         ),
         "ShearMatrixCard": (
             QCoreApplication.translate("CardCatalog", "Shear Matrix Strain"),

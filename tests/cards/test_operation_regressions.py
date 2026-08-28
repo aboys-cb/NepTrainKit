@@ -106,7 +106,7 @@ class TestOperationRegressionEdges(BaseCardTest):
         self.assertEqual(len(result), 0)
 
     def test_unsupported_lattice_modes_fail_instead_of_silently_falling_back(self):
-        with self.assertRaisesRegex(ValueError, "CellStrain axes"):
+        with self.assertRaisesRegex(ValueError, "unique lattice axes"):
             CellStrainOperation().run_structure(
                 self.structure,
                 CellStrainParams(axes="typo"),

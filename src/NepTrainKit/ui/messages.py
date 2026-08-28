@@ -410,6 +410,54 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "Spin Perturb could not convert the input magnetic moments to vectors.",
     )
+    QCoreApplication.translate("CardOperationError", "Structures per input must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Maximum attempts per atom must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Generated atom budget per input must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Random seed must be a non-negative integer.")
+    QCoreApplication.translate(
+        "CardOperationError", "Global minimum distance must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random Packing requires a finite, non-singular input cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition mode must be Use input composition or Manual atom counts.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Requested outputs contain {requested} generated atoms per input, exceeding the budget of {budget}. Reduce structures or atom counts, or raise the budget deliberately.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown chemical element {element} in the composition."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Invalid composition item {item}; use Element:count, for example Fe:32."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Atom count for {element} must be a positive integer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown chemical element {element} in a pair-distance rule."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Minimum distance for {left}-{right} must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Packing could not place {element} after {attempts} attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Packing could not generate any output after {failures} failed attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+    )
     QCoreApplication.translate(
         "CardOperationError", "Magnitude scale bounds must be finite and non-negative."
     )

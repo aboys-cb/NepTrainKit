@@ -1205,36 +1205,38 @@ class RandomPackingParams:
 
     structures: int = 1
     composition: str = ""
+    composition_mode: str = "input"
     min_distance: float = 1.5
     pair_min_distances: str = ""
     max_attempts_per_atom: int = 500
     strict_mode: bool = True
     use_seed: bool = False
     seed: int = 0
+    max_generated_atoms: int = 10_000
+
+
+@dataclass(frozen=True)
+class RandomPackingPlan:
+    """Validated, exact size plan for one input structure."""
+
+    symbols: tuple[str, ...]
+    structures: int
+    atoms_per_output: int
+    requested_generated_atoms: int
+    max_generated_atoms: int
 
 
 class RandomPackingOperation(StructureOperation):
     """Randomly repack atoms in the input cell under explicit distance constraints."""
 
     def run_structure(self, structure, params: RandomPackingParams) -> list:
-        n_structures = int(params.structures)
-        if n_structures <= 0:
-            raise ValueError("Random Packing: structures must be >= 1.")
-
+        plan = self.plan(structure, params)
+        n_structures = plan.structures
         min_distance = float(params.min_distance)
-        if min_distance <= 0.0:
-            raise ValueError("Random Packing: min_distance must be positive.")
-
         max_attempts = int(params.max_attempts_per_atom)
-        if max_attempts <= 0:
-            raise ValueError("Random Packing: max_attempts_per_atom must be >= 1.")
-
         cell = np.asarray(structure.cell.array, dtype=float)
-        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
-            raise ValueError("Random Packing requires a non-singular input cell.")
-
         pbc = np.asarray(structure.pbc, dtype=bool)
-        symbols = self.symbols_from_params(structure, params.composition)
+        symbols = list(plan.symbols)
         pair_rules = self.parse_pair_min_distances(params.pair_min_distances)
         order = self.placement_order(symbols, min_distance, pair_rules)
         ortho_lengths = self.orthorhombic_lengths(cell, pbc)
@@ -1262,25 +1264,150 @@ class RandomPackingOperation(StructureOperation):
                 failures += 1
                 if params.strict_mode:
                     raise
-                logger.warning("RandomPackingOperation: skipped failed sample {} for {}", sample_idx + 1, structure.info.get("Config_type", "structure"))
+                logger.warning(
+                    "RandomPackingOperation: skipped failed sample {} for {}",
+                    sample_idx + 1,
+                    structure.info.get("Config_type", "structure"),
+                )
                 continue
             seed_tag = f",s={int(base_seed + cfg_id * 1000003 + sample_idx)}" if base_seed is not None else ""
             append_config_tag(atoms, f"RandPack(n={len(symbols)},d={min_distance:.6g}{seed_tag})")
             outputs.append(atoms)
 
         if not outputs:
-            raise ValueError(f"Random Packing failed to generate any structures ({failures} failures).")
+            raise CardOperationError(
+                "random-packing-no-output",
+                "Random Packing could not generate any output after {failures} failed attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+                failures=failures,
+            )
         return outputs
 
+    def plan(self, structure, params: RandomPackingParams) -> RandomPackingPlan:
+        """Validate one input and return exact requested output sizes before RNG."""
+        n_structures = self._positive_integer(
+            params.structures,
+            code="random-packing-structures",
+            template="Structures per input must be a positive integer.",
+        )
+        self._positive_integer(
+            params.max_attempts_per_atom,
+            code="random-packing-attempts",
+            template="Maximum attempts per atom must be a positive integer.",
+        )
+        max_generated_atoms = self._positive_integer(
+            params.max_generated_atoms,
+            code="random-packing-budget",
+            template="Generated atom budget per input must be a positive integer.",
+        )
+        if params.use_seed:
+            self._nonnegative_integer(
+                params.seed,
+                code="random-packing-seed",
+                template="Random seed must be a non-negative integer.",
+            )
+
+        min_distance = float(params.min_distance)
+        if not math.isfinite(min_distance) or min_distance <= 0.0:
+            raise CardOperationError(
+                "random-packing-distance",
+                "Global minimum distance must be a positive finite number.",
+            )
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)) or abs(float(np.linalg.det(cell))) <= 1e-12:
+            raise CardOperationError(
+                "random-packing-cell",
+                "Random Packing requires a finite, non-singular input cell.",
+            )
+
+        composition_mode = str(params.composition_mode).strip().lower()
+        if composition_mode not in {"input", "manual"}:
+            raise CardOperationError(
+                "random-packing-composition-mode",
+                "Composition mode must be Use input composition or Manual atom counts.",
+            )
+        # Preserve direct callers and old serialized Params that supplied a
+        # composition before the explicit mode field existed.
+        if composition_mode == "input" and str(params.composition).strip():
+            composition_mode = "manual"
+        symbols = tuple(
+            self.symbols_from_params(
+                structure,
+                params.composition,
+                mode=composition_mode,
+            )
+        )
+        if not symbols:
+            raise CardOperationError(
+                "random-packing-empty-composition",
+                "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+            )
+        self.parse_pair_min_distances(params.pair_min_distances)
+        requested_generated_atoms = len(symbols) * n_structures
+        if requested_generated_atoms > max_generated_atoms:
+            raise CardOperationError(
+                "random-packing-budget-exceeded",
+                "Requested outputs contain {requested} generated atoms per input, exceeding the budget of {budget}. Reduce structures or atom counts, or raise the budget deliberately.",
+                requested=requested_generated_atoms,
+                budget=max_generated_atoms,
+            )
+        return RandomPackingPlan(
+            symbols=symbols,
+            structures=n_structures,
+            atoms_per_output=len(symbols),
+            requested_generated_atoms=requested_generated_atoms,
+            max_generated_atoms=max_generated_atoms,
+        )
+
     @staticmethod
-    def symbols_from_params(structure, composition: str) -> list[str]:
+    def _positive_integer(value, *, code: str, template: str) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            numeric = math.nan
+        if not math.isfinite(numeric) or numeric < 1 or not numeric.is_integer():
+            raise CardOperationError(
+                code,
+                template,
+            )
+        return int(numeric)
+
+    @staticmethod
+    def _nonnegative_integer(value, *, code: str, template: str) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            numeric = math.nan
+        if not math.isfinite(numeric) or numeric < 0 or not numeric.is_integer():
+            raise CardOperationError(
+                code,
+                template,
+            )
+        return int(numeric)
+
+    @staticmethod
+    def symbols_from_params(
+        structure,
+        composition: str,
+        *,
+        mode: str | None = None,
+    ) -> list[str]:
         text = (composition or "").strip()
-        if not text:
+        effective_mode = mode or ("manual" if text else "input")
+        if effective_mode == "input":
             return list(structure.get_chemical_symbols())
+        if effective_mode != "manual":
+            raise CardOperationError(
+                "random-packing-composition-mode",
+                "Composition mode must be Use input composition or Manual atom counts.",
+            )
 
         chunks = [chunk.strip() for chunk in re.split(r"[,;\n]+", text) if chunk.strip()]
         if not chunks:
-            raise ValueError("Random Packing: composition is empty.")
+            raise CardOperationError(
+                "random-packing-empty-composition",
+                "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+            )
 
         symbols: list[str] = []
         for chunk in chunks:
@@ -1289,19 +1416,46 @@ class RandomPackingOperation(StructureOperation):
             elif "=" in chunk:
                 raw_symbol, raw_count = chunk.split("=", 1)
             else:
-                raise ValueError(f"Random Packing: invalid composition item '{chunk}', expected Element:count.")
+                raise CardOperationError(
+                    "random-packing-composition-format",
+                    "Invalid composition item {item}; use Element:count, for example Fe:32.",
+                    item=chunk,
+                )
             symbol = raw_symbol.strip()
             if not symbol:
-                raise ValueError(f"Random Packing: invalid composition item '{chunk}'.")
+                raise CardOperationError(
+                    "random-packing-composition-format",
+                    "Invalid composition item {item}; use Element:count, for example Fe:32.",
+                    item=chunk,
+                )
             symbol = symbol[0].upper() + symbol[1:].lower()
-            count_value = float(raw_count)
-            count = int(round(count_value))
+            if symbol not in atomic_numbers:
+                raise CardOperationError(
+                    "random-packing-element",
+                    "Unknown chemical element {element} in the composition.",
+                    element=symbol,
+                )
+            try:
+                count_value = float(raw_count)
+            except (TypeError, ValueError):
+                count_value = math.nan
+            if not math.isfinite(count_value):
+                count = 0
+            else:
+                count = int(round(count_value))
             if count <= 0 or abs(count_value - count) > 1e-9:
-                raise ValueError(f"Random Packing: composition count for {symbol} must be a positive integer.")
+                raise CardOperationError(
+                    "random-packing-composition-count",
+                    "Atom count for {element} must be a positive integer.",
+                    element=symbol,
+                )
             symbols.extend([symbol] * count)
 
         if not symbols:
-            raise ValueError("Random Packing: composition produced no atoms.")
+            raise CardOperationError(
+                "random-packing-empty-composition",
+                "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+            )
         return symbols
 
     @staticmethod
@@ -1312,18 +1466,45 @@ class RandomPackingOperation(StructureOperation):
             if not item:
                 continue
             if ":" not in item:
-                raise ValueError(f"Random Packing: invalid pair distance '{item}', expected A-B:value.")
+                raise CardOperationError(
+                    "random-packing-pair-format",
+                    "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8.",
+                    item=item,
+                )
             pair_text, value_text = item.split(":", 1)
             if "-" not in pair_text:
-                raise ValueError(f"Random Packing: invalid pair '{pair_text}', expected A-B.")
+                raise CardOperationError(
+                    "random-packing-pair-format",
+                    "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8.",
+                    item=item,
+                )
             left, right = [part.strip() for part in pair_text.split("-", 1)]
             if not left or not right:
-                raise ValueError(f"Random Packing: invalid pair '{pair_text}'.")
+                raise CardOperationError(
+                    "random-packing-pair-format",
+                    "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8.",
+                    item=item,
+                )
             left = left[0].upper() + left[1:].lower()
             right = right[0].upper() + right[1:].lower()
-            value = float(value_text)
-            if value <= 0.0:
-                raise ValueError(f"Random Packing: pair distance for {left}-{right} must be positive.")
+            for symbol in (left, right):
+                if symbol not in atomic_numbers:
+                    raise CardOperationError(
+                        "random-packing-pair-element",
+                        "Unknown chemical element {element} in a pair-distance rule.",
+                        element=symbol,
+                    )
+            try:
+                value = float(value_text)
+            except (TypeError, ValueError):
+                value = math.nan
+            if not math.isfinite(value) or value <= 0.0:
+                raise CardOperationError(
+                    "random-packing-pair-distance",
+                    "Minimum distance for {left}-{right} must be a positive finite number.",
+                    left=left,
+                    right=right,
+                )
             rules[tuple(sorted((left, right)))] = value
         return rules
 
@@ -1332,12 +1513,16 @@ class RandomPackingOperation(StructureOperation):
         return float(pair_rules.get(tuple(sorted((left, right))), default))
 
     @classmethod
-    def placement_order(cls, symbols: list[str], min_distance: float, pair_rules: dict[tuple[str, str], float]) -> np.ndarray:
+    def placement_order(
+        cls, symbols: list[str], min_distance: float, pair_rules: dict[tuple[str, str], float]
+    ) -> np.ndarray:
         per_symbol = {
             symbol: max(cls.min_distance_for_pair(symbol, other, min_distance, pair_rules) for other in set(symbols))
             for symbol in set(symbols)
         }
-        return np.asarray(sorted(range(len(symbols)), key=lambda idx: (-per_symbol[symbols[idx]], symbols[idx], idx)), dtype=int)
+        return np.asarray(
+            sorted(range(len(symbols)), key=lambda idx: (-per_symbol[symbols[idx]], symbols[idx], idx)), dtype=int
+        )
 
     @classmethod
     def pack_one(
@@ -1381,9 +1566,11 @@ class RandomPackingOperation(StructureOperation):
                     placed = True
                     break
             if not placed:
-                raise ValueError(
-                    "Random Packing could not place "
-                    f"{symbol} after {int(max_attempts)} attempts. Reduce min distances, enlarge the cell, or lower atom count."
+                raise CardOperationError(
+                    "random-packing-placement",
+                    "Random Packing could not place {element} after {attempts} attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+                    element=symbol,
+                    attempts=int(max_attempts),
                 )
 
         atoms = Atoms(symbols=symbols, positions=positions_by_original, cell=cell, pbc=pbc)
@@ -1432,7 +1619,14 @@ class RandomPackingOperation(StructureOperation):
         return lengths
 
     @staticmethod
-    def candidate_distances(candidate: np.ndarray, positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray, ortho_lengths: np.ndarray | None = None) -> np.ndarray:
+    def candidate_distances(
+        candidate: np.ndarray,
+        positions: np.ndarray,
+        *,
+        cell: np.ndarray,
+        pbc: np.ndarray,
+        ortho_lengths: np.ndarray | None = None,
+    ) -> np.ndarray:
         cell_arr = np.asarray(cell, dtype=float)
         pbc_arr = np.asarray(pbc, dtype=bool)
         positions_arr = np.asarray(positions, dtype=float)

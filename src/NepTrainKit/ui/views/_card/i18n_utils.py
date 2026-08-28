@@ -199,6 +199,8 @@ def _translation_catalog() -> None:
     QCoreApplication.translate("CardCombo", "Step at x=0")
     QCoreApplication.translate("CardCombo", "Surface gap")
     QCoreApplication.translate("CardCombo", "Copy translation (legacy)")
+    QCoreApplication.translate("CardCombo", "Input composition")
+    QCoreApplication.translate("CardCombo", "Manual counts")
     QCoreApplication.translate("CardCombo", "2D sine ripple")
     QCoreApplication.translate("CardCombo", "Gaussian bump")
     QCoreApplication.translate("CardCombo", "Paraboloid")

@@ -241,7 +241,10 @@ def _localized_catalog(_language_marker: str):
         ),
         "RandomPackingCard": (
             QCoreApplication.translate("CardCatalog", "Random Packing"),
-            QCoreApplication.translate("CardCatalog", "Generate random atomic coordinates while preserving cell constraints."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Rebuild all atoms in each input cell using integer composition and minimum-distance constraints.",
+            ),
         ),
         "RandomSlabCard": (
             QCoreApplication.translate("CardCatalog", "Random Slab"),

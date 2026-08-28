@@ -13,7 +13,7 @@ from PySide6.QtCore import (
     QTimer,
 )
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 from qfluentwidgets import ScrollBarHandleDisplayMode
 
 from NepTrainKit.core import CardManager
@@ -28,7 +28,12 @@ from NepTrainKit.ui.views._card.perturb_card import PerturbCard
 from NepTrainKit.ui.views._card.random_doping_card import RandomDopingCard
 from NepTrainKit.ui.views._card.random_slab_card import RandomSlabCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
-from NepTrainKit.ui.widgets import MakeDataCard, MakeWorkflowArea
+from NepTrainKit.ui.widgets import (
+    AdaptiveCompactDoubleSpinBox,
+    AdaptiveCompactSpinBox,
+    MakeDataCard,
+    MakeWorkflowArea,
+)
 
 
 def _app():
@@ -227,7 +232,7 @@ def test_workflow_cards_use_a_centered_readable_width_on_wide_windows():
 def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal_scroll():
     app = _app()
     area = MakeWorkflowArea()
-    area.resize(1280, 900)
+    area.resize(1024, 900)
     area.show()
     app.processEvents()
 
@@ -241,8 +246,21 @@ def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal
             continue
         area.add_card(card)
         area.select_card(card)
-        app.processEvents()
+        for _ in range(3):
+            app.processEvents()
         assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0, class_name
+        title_width = card.headerLabel.fontMetrics().horizontalAdvance(
+            card.headerLabel.text()
+        )
+        assert card.headerLabel.width() >= title_width, class_name
+        for widget in card.setting_widget.findChildren(QWidget):
+            if not isinstance(
+                widget,
+                (AdaptiveCompactSpinBox, AdaptiveCompactDoubleSpinBox),
+            ):
+                continue
+            if widget.isVisibleTo(area):
+                assert not widget.compactSpinButton.isHidden(), class_name
         checked.append(class_name)
         area.remove_card(card)
         app.processEvents()
@@ -854,6 +872,7 @@ def test_close_removes_nested_branch_card_immediately():
 def test_cards_expose_drag_handle_and_canvas_tracks_insertion_slot():
     app = _app()
     area = MakeWorkflowArea()
+    area.resize(1280, 700)
     first = PerturbCard()
     second = CellStrainCard()
     area.add_card(first)

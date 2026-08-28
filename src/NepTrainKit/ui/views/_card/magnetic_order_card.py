@@ -406,6 +406,7 @@ class MagneticOrderCard(MakeDataCard):
             self.preview_label.setText(
                 self.tr("Load an upstream structure to preview magnetic atoms and output count.")
             )
+            self.refresh_compact_presentation()
             return
         try:
             summary = self.create_operation().preview(
@@ -416,6 +417,7 @@ class MagneticOrderCard(MakeDataCard):
             self.preview_label.setText(
                 "⚠ " + self.tr("Preview unavailable: {error}").format(error=str(exc))
             )
+            self.refresh_compact_presentation()
             return
 
         total = summary.output_count * max(self._input_count, 1)
@@ -434,6 +436,7 @@ class MagneticOrderCard(MakeDataCard):
                 zero=summary.afm_zero,
             )
         self.preview_label.setText(message)
+        self.refresh_compact_presentation()
 
     def _update_tab_order(self) -> None:
         widgets = [
@@ -469,6 +472,47 @@ class MagneticOrderCard(MakeDataCard):
 
     def create_operation(self):
         return MagneticOrderOperation()
+
+    def get_summary_text(self) -> str:
+        orders = []
+        if self.fm_checkbox.isChecked():
+            orders.append("FM")
+        if self.afm_checkbox.isChecked():
+            orders.append("AFM")
+        if self.pm_checkbox.isChecked():
+            orders.append("PM")
+        order_text = " + ".join(orders) or self.tr("no outputs")
+        output_count = int(self.fm_checkbox.isChecked()) + int(
+            self.afm_checkbox.isChecked()
+        )
+        if self.pm_checkbox.isChecked():
+            output_count += int(self.pm_count_frame.get_input_value()[0])
+        return self.tr("{orders} · {model} · n={count}").format(
+            orders=order_text,
+            model=self.format_combo.currentText(),
+            count=output_count,
+        )
+
+    def get_guidance_text(self) -> str:
+        if not any(
+            checkbox.isChecked()
+            for checkbox in (self.fm_checkbox, self.afm_checkbox, self.pm_checkbox)
+        ):
+            return self.tr("Select at least one magnetic order to generate output.")
+        if self.afm_checkbox.isChecked():
+            if combo_value(self.afm_mode_combo) == "group_ab":
+                return self.tr(
+                    "AFM uses existing group labels; confirm that both configured labels occur in the input."
+                )
+            return self.tr(
+                "Inspect the AFM sign preview to confirm that the selected lattice-layer vector produces both signs."
+            )
+        if self.pm_checkbox.isChecked():
+            return self.tr(
+                "Random PM creates the configured number of structures for each input. "
+                "Use a seed when the same directions must be reproduced."
+            )
+        return self.tr("FM creates one aligned magnetic structure for each input.")
 
     def get_params(self) -> MagneticOrderParams:
         return MagneticOrderParams(

@@ -412,6 +412,13 @@ class TestCardLibraryDialog(unittest.TestCase):
         popup.resize(776, 560)
         self._app.processEvents()
         self.assertEqual(popup.catalog_scroll.horizontalScrollBar().maximum(), 0)
+        self.assertEqual(popup._active_column_count, 3)
+        for button in popup._buttons_by_class.values():
+            self.assertGreaterEqual(button.width(), button.sizeHint().width())
+        self.assertEqual(
+            popup._buttons_by_class["InsertDefectCard"].text(),
+            "Interstitial & Adsorbate",
+        )
 
     def test_popup_emits_clicked_card_and_updates_keyboard_preview(self):
         popup = CardLibraryPopup()

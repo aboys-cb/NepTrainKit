@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
-from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
+from qfluentwidgets import CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.magnetism import SetMagneticMomentsOperation, SetMagneticMomentsParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    KeyValueTableInput,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
+
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
@@ -30,9 +38,6 @@ class SetMagneticMomentsCard(MakeDataCard):
     def init_ui(self):
         self.setObjectName("set_magnetic_moments_card_widget")
 
-        self.source_label = BodyLabel(self.tr("Source"), self.setting_widget)
-        self.source_label.setToolTip(self.tr("Choose whether to reuse existing magmoms, element map/default values, or a constant moment"))
-        self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
         self.source_combo = ComboBox(self.setting_widget)
         add_translated_items(
             self,
@@ -40,90 +45,146 @@ class SetMagneticMomentsCard(MakeDataCard):
             ["Existing initial magmoms", "Map/default magnitude", "Constant magnitude"],
         )
         set_combo_value(self.source_combo, "Map/default magnitude")
+        self.source_field = CompactField(
+            self.tr("Moment source"),
+            self.source_combo,
+            self.setting_widget,
+            self.tr("Reuse input moments, assign by element, or use one magnitude."),
+        )
+        self.source_label = self.source_field.caption
 
-        self.format_label = BodyLabel(self.tr("Format"), self.setting_widget)
-        self.format_label.setToolTip(self.tr("Collinear writes scalar MAGMOM; Non-collinear writes vector MAGMOM"))
-        self.format_label.installEventFilter(ToolTipFilter(self.format_label, 300, ToolTipPosition.TOP))
         self.format_combo = ComboBox(self.setting_widget)
         add_translated_items(self, self.format_combo, ["Collinear (scalar)", "Non-collinear (vector)"])
         set_combo_value(self.format_combo, "Non-collinear (vector)")
+        self.format_field = CompactField(
+            self.tr("Output representation"),
+            self.format_combo,
+            self.setting_widget,
+            self.tr("Write one scalar or a Cartesian three-component vector per atom."),
+        )
+        self.format_label = self.format_field.caption
 
-        self.axis_label = BodyLabel(self.tr("Axis (x,y,z)"), self.setting_widget)
-        self.axis_label.setToolTip(self.tr("Reference axis used for vector output and scalar-to-vector lifting"))
-        self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_frame = SpinBoxUnitInputFrame(self)
         self.axis_frame.set_input("", 3, "float")
         self.axis_frame.setRange(-1.0, 1.0)
         for obj in self.axis_frame.object_list:
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.axis_frame.set_input_value([0.0, 0.0, 1.0])
-
-        self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
-        self.map_label.setToolTip(
-            self.tr('Per-element moments, e.g. "Fe:2.2,Co:1.7" or JSON such as {"Cr":[0,0,1.0]}')
+        self.axis_field = CompactField(
+            self.tr("Reference axis (Cartesian x, y, z)"),
+            self.axis_frame,
+            self.setting_widget,
+            self.tr("Used to lift scalar moments into vectors; the direction is normalized."),
         )
-        self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
+        self.axis_label = self.axis_field.caption
+
         self.map_edit = KeyValueTableInput(
             self.tr("Element"), self.tr("Moment or vector"), self.setting_widget
         )
+        self.map_field = CompactField(
+            self.tr("Element moments (μB)"),
+            self.map_edit,
+            self.setting_widget,
+            self.tr("For example Fe:2.2, Co:1.7, or Cr:[0,0,1]."),
+        )
+        self.map_label = self.map_field.caption
 
         self.use_element_dir_checkbox = CheckBox(self.tr("Use element vector directions"), self.setting_widget)
         self.use_element_dir_checkbox.setChecked(False)
-        self.use_element_dir_checkbox.setToolTip(self.tr("If the map provides vectors, preserve their directions in vector output"))
-        self.use_element_dir_checkbox.installEventFilter(
-            ToolTipFilter(self.use_element_dir_checkbox, 300, ToolTipPosition.TOP)
+        self.use_element_dir_checkbox.setToolTip(
+            self.tr(
+                "If the map provides vectors, preserve their directions in vector output"
+            )
         )
 
-        self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
-        self.default_label.setToolTip(self.tr("Magnitude for elements not listed in Magmom map"))
-        self.default_label.installEventFilter(ToolTipFilter(self.default_label, 300, ToolTipPosition.TOP))
         self.default_frame = SpinBoxUnitInputFrame(self)
         self.default_frame.set_input("", 1, "float")
         self.default_frame.setRange(0.0, 20.0)
         self.default_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.default_frame.set_input_value([0.0])
+        self.default_field = CompactField(
+            self.tr("Unlisted element |m| (μB)"),
+            self.default_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=180,
+        )
+        self.default_label = self.default_field.caption
 
-        self.constant_label = BodyLabel(self.tr("Constant |m|"), self.setting_widget)
-        self.constant_label.setToolTip(self.tr("Uniform magnitude used when Source = Constant magnitude"))
-        self.constant_label.installEventFilter(ToolTipFilter(self.constant_label, 300, ToolTipPosition.TOP))
         self.constant_frame = SpinBoxUnitInputFrame(self)
         self.constant_frame.set_input("", 1, "float")
         self.constant_frame.setRange(0.0, 20.0)
         self.constant_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.constant_frame.set_input_value([2.0])
+        self.constant_field = CompactField(
+            self.tr("Constant |m| (μB)"),
+            self.constant_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=180,
+        )
+        self.constant_label = self.constant_field.caption
 
         self.lift_scalar_checkbox = CheckBox(self.tr("Lift scalar magmoms to vectors"), self.setting_widget)
         self.lift_scalar_checkbox.setChecked(True)
-        self.lift_scalar_checkbox.setToolTip(self.tr("When Source = Existing initial magmoms, lift scalar input onto Axis for vector output"))
-        self.lift_scalar_checkbox.installEventFilter(
-            ToolTipFilter(self.lift_scalar_checkbox, 300, ToolTipPosition.TOP)
+        self.lift_scalar_checkbox.setToolTip(
+            self.tr(
+                "When Source = Existing initial magmoms, lift scalar input onto Axis for vector output"
+            )
         )
 
-        self.apply_label = BodyLabel(self.tr("Apply elements"), self.setting_widget)
-        self.apply_label.setToolTip(self.tr("Optional comma-separated element list; empty means all atoms"))
-        self.apply_label.installEventFilter(ToolTipFilter(self.apply_label, 300, ToolTipPosition.TOP))
         self.apply_edit = LineEdit(self.setting_widget)
         self.apply_edit.setPlaceholderText(self.tr("Fe,Co,Ni"))
+        self.apply_field = CompactField(
+            self.tr("Apply only to elements"),
+            self.apply_edit,
+            self.setting_widget,
+            self.tr("Leave empty to apply to every atom."),
+        )
+        self.apply_label = self.apply_field.caption
 
-        self.settingLayout.addWidget(self.source_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.source_combo, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.format_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.format_combo, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.axis_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.axis_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.map_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.map_edit, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.use_element_dir_checkbox, 4, 0, 1, 3)
-        self.settingLayout.addWidget(self.default_label, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.default_frame, 5, 1, 1, 2)
-        self.settingLayout.addWidget(self.constant_label, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.constant_frame, 6, 1, 1, 2)
-        self.settingLayout.addWidget(self.lift_scalar_checkbox, 7, 0, 1, 3)
-        self.settingLayout.addWidget(self.apply_label, 8, 0, 1, 1)
-        self.settingLayout.addWidget(self.apply_edit, 8, 1, 1, 2)
+        self.representation_section = InspectorSection(
+            self.tr("Source and representation"), self.setting_widget
+        )
+        representation_form = ResponsiveFormGrid(
+            self.representation_section, two_column_threshold=430
+        )
+        representation_form.add_field(self.source_field, span=2)
+        representation_form.add_field(self.format_field, span=2)
+        representation_form.add_field(self.axis_field, span=2)
+        self.representation_section.addWidget(representation_form)
+
+        self.moments_section = InspectorSection(
+            self.tr("Moment values"), self.setting_widget
+        )
+        moments_form = ResponsiveFormGrid(
+            self.moments_section, two_column_threshold=430
+        )
+        moments_form.add_field(self.map_field, span=2)
+        moments_form.add_field(self.use_element_dir_checkbox, span=2)
+        moments_form.add_field(self.default_field, span=2)
+        moments_form.add_field(self.constant_field, span=2)
+        moments_form.add_field(self.lift_scalar_checkbox, span=2)
+        self.moments_section.addWidget(moments_form)
+
+        self.scope_section = InspectorSection(self.tr("Scope"), self.setting_widget)
+        self.scope_section.addWidget(self.apply_field)
+        self.settingLayout.addWidget(self.representation_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(self.moments_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(self.scope_section, 2, 0, 1, 3)
 
         self.source_combo.currentTextChanged.connect(self._update_source_widgets)
         self.format_combo.currentTextChanged.connect(self._update_source_widgets)
+        self.map_edit.editingFinished.connect(self.refresh_compact_presentation)
+        self.apply_edit.editingFinished.connect(self.refresh_compact_presentation)
+        for checkbox in (
+            self.use_element_dir_checkbox,
+            self.lift_scalar_checkbox,
+        ):
+            checkbox.stateChanged.connect(self.refresh_compact_presentation)
+        for frame in (self.axis_frame, self.default_frame, self.constant_frame):
+            for control in frame.object_list:
+                control.valueChanged.connect(self.refresh_compact_presentation)
         self._update_source_widgets()
 
     def _update_source_widgets(self):
@@ -134,26 +195,46 @@ class SetMagneticMomentsCard(MakeDataCard):
         use_constant = source == "Constant magnitude"
         use_existing = source == "Existing initial magmoms"
 
-        self.map_label.setEnabled(use_map)
+        self.map_field.setEnabled(use_map)
         self.map_edit.setEnabled(use_map)
-        self.map_label.setVisible(use_map)
-        self.map_edit.setVisible(use_map)
+        self.map_field.setVisible(use_map)
 
         self.use_element_dir_checkbox.setEnabled(use_map and vector_output)
         self.use_element_dir_checkbox.setVisible(use_map)
 
-        self.default_label.setEnabled(use_map)
+        self.default_field.setEnabled(use_map)
         self.default_frame.setEnabled(use_map)
-        self.default_label.setVisible(use_map)
-        self.default_frame.setVisible(use_map)
+        self.default_field.setVisible(use_map)
 
-        self.constant_label.setEnabled(use_constant)
+        self.constant_field.setEnabled(use_constant)
         self.constant_frame.setEnabled(use_constant)
-        self.constant_label.setVisible(use_constant)
-        self.constant_frame.setVisible(use_constant)
+        self.constant_field.setVisible(use_constant)
 
         self.lift_scalar_checkbox.setEnabled(use_existing and vector_output)
         self.lift_scalar_checkbox.setVisible(use_existing)
+        self.refresh_compact_presentation()
+
+    def get_summary_text(self) -> str:
+        source = self.source_combo.currentText()
+        representation = self.format_combo.currentText()
+        scope = self.apply_edit.text().strip() or self.tr("all elements")
+        return f"{source} · {representation} · {scope}"
+
+    def get_guidance_text(self) -> str:
+        source = combo_value(self.source_combo)
+        if source == "Existing initial magmoms":
+            return self.tr(
+                "The input must contain initial magnetic moments. Check the reference "
+                "axis when scalar moments are lifted to vectors."
+            )
+        if source == "Map/default magnitude":
+            return self.tr(
+                "List the elements that need explicit moments; the default magnitude "
+                "is used for every unlisted selected element."
+            )
+        return self.tr(
+            "The constant magnitude is assigned to every selected element along the reference axis."
+        )
 
     def create_operation(self):
         return SetMagneticMomentsOperation()
@@ -185,7 +266,11 @@ class SetMagneticMomentsCard(MakeDataCard):
 
     def process_structure(self, structure):
         result = self.create_operation().run_structure(structure, self.get_params())
-        if len(result) == 1 and result[0] is not structure and "MagSet(" not in str(result[0].info.get("Config_type", "")):
+        if (
+            len(result) == 1
+            and result[0] is not structure
+            and "MagSet(" not in str(result[0].info.get("Config_type", ""))
+        ):
             MessageManager.send_warning_message("SetMagneticMoments: no usable initial_magmoms found.")
         return result
 

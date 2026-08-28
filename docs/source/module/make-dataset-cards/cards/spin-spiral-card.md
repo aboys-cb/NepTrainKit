@@ -1,3 +1,5 @@
+:orphan:
+
 <!-- card-schema: {"card_name": "Spin Spiral", "source_file": "src/NepTrainKit/ui/views/_card/spin_spiral_card.py", "serialized_keys": ["params"]} -->
 
 # 旧版自旋螺旋（Spin Spiral）

@@ -8,13 +8,14 @@
 
 ../cards/set-magnetic-moments-card
 ../cards/magnetic-order-card
-../cards/small-angle-spin-tilt-card
 ../cards/spin-disorder-card
 ../cards/correlated-random-spin-card
 ../cards/magmom-rotation-card
-../cards/spin-spiral-card
 ../cards/folded-helix-card
 ../cards/local-magnetic-response-card
 ../cards/soc-texture-response-card
 ../cards/magnetoelastic-response-card
 ```
+
+旧工作流中的 {doc}`小角度磁矩倾斜 <../cards/small-angle-spin-tilt-card>` 和
+{doc}`自旋螺旋 <../cards/spin-spiral-card>` 仍可读取，但新流程请使用上面的对应卡片。

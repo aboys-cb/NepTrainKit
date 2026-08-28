@@ -1,3 +1,5 @@
+:orphan:
+
 <!-- card-schema: {"card_name": "Canting Scan", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params"]} -->
 
 # 倾斜扫描（Canting Scan）

@@ -778,7 +778,12 @@ class _CardCatalogButton(TransparentPushButton):
 
     def __init__(self, class_name: str, text: str, parent=None):
         TransparentPushButton.__init__(self, parent)
-        self.setText(text)
+        # QPushButton treats a single ampersand as a mnemonic marker.  Card
+        # names are data, so escape it to keep names such as
+        # "Interstitial & Adsorbate" visible verbatim.
+        self._catalog_text = text
+        self.setText(text.replace("&", "&&"))
+        self.setAccessibleName(text)
         self.class_name = class_name
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -792,6 +797,10 @@ class _CardCatalogButton(TransparentPushButton):
         self._hover_shadow.setEnabled(False)
         self.setGraphicsEffect(self._hover_shadow)
         self._set_raised(False)
+
+    def text(self) -> str:
+        """Return the semantic name without Qt's mnemonic escaping."""
+        return self._catalog_text
 
     def _set_raised(self, raised: bool) -> None:
         accent = themeColor()
@@ -840,7 +849,7 @@ class CardLibraryPopup(FlyoutViewBase):
     """Screen-safe categorized card picker anchored to the Add Card button."""
 
     cardRequested = Signal(str)
-    _COLUMN_COUNT = 4
+    _MAX_COLUMN_COUNT = 4
     _GROUP_ICONS = {
         "Alloy": FluentIcon.PIE_SINGLE,
         "Container": FluentIcon.SHARE,
@@ -872,6 +881,8 @@ class CardLibraryPopup(FlyoutViewBase):
         self._buttons_by_class: dict[str, _CardCatalogButton] = {}
         self._section_frames: dict[str, SimpleCardWidget] = {}
         self._section_classes: dict[str, list[str]] = {}
+        self._section_order: list[tuple[str, SimpleCardWidget, int]] = []
+        self._active_column_count = 0
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -898,18 +909,19 @@ class CardLibraryPopup(FlyoutViewBase):
         columns_layout = QHBoxLayout(self.catalog_widget)
         columns_layout.setContentsMargins(0, 0, 0, 0)
         columns_layout.setSpacing(8)
-        column_layouts: list[QVBoxLayout] = []
-        column_loads = [0] * self._COLUMN_COUNT
-        column_heights = [0] * self._COLUMN_COUNT
-        for _index in range(self._COLUMN_COUNT):
+        self._columns_layout = columns_layout
+        self._column_widgets: list[QWidget] = []
+        self._column_layouts: list[QVBoxLayout] = []
+        for _index in range(self._MAX_COLUMN_COUNT):
             column = QWidget(self.catalog_widget)
             column.setMinimumWidth(0)
             layout = QVBoxLayout(column)
             layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(8)
+            layout.setSpacing(7)
             layout.addStretch(1)
             columns_layout.addWidget(column, 1)
-            column_layouts.append(layout)
+            self._column_widgets.append(column)
+            self._column_layouts.append(layout)
 
         grouped: dict[str, list[tuple[str, CardMetadata]]] = {}
         for class_name, metadata in self._metadata_by_class.items():
@@ -918,23 +930,15 @@ class CardLibraryPopup(FlyoutViewBase):
 
         for group, entries in sorted(grouped.items()):
             entries.sort(key=lambda item: localized_card_name(item[1]))
-            column_index = min(
-                range(self._COLUMN_COUNT), key=column_loads.__getitem__
-            )
             section = self._create_section(
                 group,
                 entries,
                 entries[0][1].group or "",
             )
-            column_layouts[column_index].insertWidget(
-                column_layouts[column_index].count() - 1, section
-            )
-            column_loads[column_index] += len(entries) + 2
-            if column_heights[column_index]:
-                column_heights[column_index] += columns_layout.spacing()
-            column_heights[column_index] += section.sizeHint().height()
+            self._section_order.append((group, section, len(entries)))
 
-        self._catalog_content_height = max(column_heights, default=0)
+        self._catalog_content_height = 0
+        self._reflow_sections(self._column_count_for_width(980))
 
         scroll.setWidget(self.catalog_widget)
         root.addWidget(scroll, 1)
@@ -955,6 +959,51 @@ class CardLibraryPopup(FlyoutViewBase):
         )
         root.addLayout(footer)
         self._update_result_count()
+
+    @staticmethod
+    def _column_count_for_width(width: int) -> int:
+        """Choose columns wide enough for complete English card names."""
+        if width >= 940:
+            return 4
+        if width >= 680:
+            return 3
+        if width >= 440:
+            return 2
+        return 1
+
+    def _reflow_sections(self, column_count: int | None = None) -> None:
+        """Redistribute category sections without clipping their item labels."""
+        if not self._column_layouts:
+            return
+        count = max(
+            1,
+            min(
+                self._MAX_COLUMN_COUNT,
+                int(column_count or self._column_count_for_width(self.width())),
+            ),
+        )
+        if count == self._active_column_count:
+            return
+
+        for _group, section, _entry_count in self._section_order:
+            for layout in self._column_layouts:
+                layout.removeWidget(section)
+
+        loads = [0] * count
+        heights = [0] * count
+        for _group, section, entry_count in self._section_order:
+            column_index = min(range(count), key=loads.__getitem__)
+            layout = self._column_layouts[column_index]
+            layout.insertWidget(layout.count() - 1, section)
+            loads[column_index] += entry_count + 2
+            if heights[column_index]:
+                heights[column_index] += self._columns_layout.spacing()
+            heights[column_index] += section.sizeHint().height()
+
+        for index, column in enumerate(self._column_widgets):
+            column.setVisible(index < count)
+        self._active_column_count = count
+        self._catalog_content_height = max(heights, default=0)
 
     def _create_section(
         self,
@@ -1030,6 +1079,10 @@ class CardLibraryPopup(FlyoutViewBase):
             )
         self._update_result_count()
 
+    def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
+        super().resizeEvent(event)
+        self._reflow_sections(self._column_count_for_width(event.size().width()))
+
     def _visible_class_names(self) -> list[str]:
         return [
             class_name
@@ -1072,6 +1125,7 @@ class CardLibraryPopup(FlyoutViewBase):
             return
         available = screen.availableGeometry()
         popup_width = max(320, min(980, available.width() - 24))
+        self._reflow_sections(self._column_count_for_width(popup_width))
         ideal_height = self._catalog_content_height + 110
         popup_height = max(
             400,

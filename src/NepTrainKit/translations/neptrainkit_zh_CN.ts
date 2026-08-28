@@ -1311,32 +1311,37 @@
         <translation>扫描 α、β、γ 角增量，同时保持晶格矢量长度不变。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="270" />
+        <location filename="../ui/widgets/card_metadata.py" line="267" />
+        <source>Scan simple shear or symmetric strain components in fixed Cartesian coordinates.</source>
+        <translation>在固定笛卡尔坐标系中扫描简单剪切或对称应变分量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="273" />
         <source>Canting Scan</source>
         <translation>倾斜扫描</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="284" />
+        <location filename="../ui/widgets/card_metadata.py" line="287" />
         <source>Moment Disorder</source>
         <translation>磁矩无序采样</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="285" />
+        <location filename="../ui/widgets/card_metadata.py" line="288" />
         <source>For each requested fraction, randomly choose that share of existing non-zero moments and flip or redirect them while preserving their magnitudes.</source>
         <translation>对每个指定比例，随机选择相应数量的现有非零磁矩并翻转或改变其方向，同时保持磁矩模长不变。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="296" />
+        <location filename="../ui/widgets/card_metadata.py" line="299" />
         <source>Rigidly rotate an input spin texture or regenerate a cell-compatible signed-q texture path.</source>
         <translation>整体旋转输入自旋纹理，或重新生成与晶胞相容的有符号 q 纹理路径。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="309" />
+        <location filename="../ui/widgets/card_metadata.py" line="312" />
         <source>GSFE Path</source>
         <translation>层错路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="310" />
+        <location filename="../ui/widgets/card_metadata.py" line="313" />
         <source>Shift atoms above an interlayer cut along a direction in the current ab plane to generate an unrelaxed GSFE path.</source>
         <translation>沿当前晶胞 ab 面内的指定方向移动层间切面上方的原子，生成未弛豫的 GSFE 路径。</translation>
     </message>
@@ -1354,7 +1359,7 @@
         <translation type="vanished">可控自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="271" />
+        <location filename="../ui/widgets/card_metadata.py" line="274" />
         <source>Generate deterministic angle scans for selected spins, atom pairs, or magnetic groups.</source>
         <translation>对选定自旋、原子对或磁性分组生成确定性角度扫描。</translation>
     </message>
@@ -1408,9 +1413,8 @@
         <translation>剪切矩阵应变</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="267" />
         <source>Apply shear matrices along the principal lattice planes.</source>
-        <translation>沿主要晶格平面施加剪切矩阵。</translation>
+        <translation type="vanished">沿主要晶格平面施加剪切矩阵。</translation>
     </message>
     <message>
         <source>Small-Angle Spin Tilt</source>
@@ -1421,7 +1425,7 @@
         <translation type="vanished">生成确定性的单自旋小角度倾斜构型。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="277" />
+        <location filename="../ui/widgets/card_metadata.py" line="280" />
         <source>Solvent Box Fill</source>
         <translation>周期溶剂盒</translation>
     </message>
@@ -1430,7 +1434,7 @@
         <translation type="vanished">翻转或重新定向一定比例的现有非零磁矩，并保持磁矩模长不变。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="295" />
+        <location filename="../ui/widgets/card_metadata.py" line="298" />
         <source>SOC / Texture Response</source>
         <translation>SOC / 纹理响应</translation>
     </message>
@@ -1439,12 +1443,12 @@
         <translation type="vanished">生成带共格检查的刚性各向异性和有符号有限 q 自旋纹理响应路径。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="302" />
+        <location filename="../ui/widgets/card_metadata.py" line="305" />
         <source>Legacy Stacking Fault</source>
         <translation>旧版层错位移</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="303" />
+        <location filename="../ui/widgets/card_metadata.py" line="306" />
         <source>Load and reproduce existing workflows that used the old automatic-direction layer shift; this compatibility card is hidden from new-card entry points.</source>
         <translation>载入并复现使用旧版自动方向层移的工作流；这张兼容卡不会出现在新建卡片入口中。</translation>
     </message>
@@ -1457,22 +1461,22 @@
         <translation type="vanished">沿显式面内方向移动层间切面上方的原子，生成层错结构或未弛豫 GSFE 路径；输入晶胞必须已按层错面定向。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="317" />
+        <location filename="../ui/widgets/card_metadata.py" line="320" />
         <source>Repeat complete input cells along lattice vectors using explicit factors, target lengths, or a strict atom budget.</source>
         <translation>沿晶格矢量完整复制输入晶胞，可按指定倍率、目标长度或严格原子预算生成超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="324" />
+        <location filename="../ui/widgets/card_metadata.py" line="327" />
         <source>Global Vacancy</source>
         <translation>全局空位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="325" />
+        <location filename="../ui/widgets/card_metadata.py" line="328" />
         <source>Delete randomly sampled sites from all elements using an overall count or fraction.</source>
         <translation>从所有元素中按整体数量或比例随机删除位点。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="332" />
+        <location filename="../ui/widgets/card_metadata.py" line="335" />
         <source>Sample correlated atomic displacements from vibrational modes already stored on each input structure.</source>
         <translation>从每个输入结构已有的振动模式中采样协同原子位移。</translation>
     </message>
@@ -1489,12 +1493,12 @@
         <translation type="vanished">按明确的无序比例生成自旋状态。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="291" />
+        <location filename="../ui/widgets/card_metadata.py" line="294" />
         <source>Spin Spiral</source>
         <translation>自旋螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="292" />
+        <location filename="../ui/widgets/card_metadata.py" line="295" />
         <source>Assign non-collinear spiral magnetic moments using a 1D phase field.</source>
         <translation>使用一维相位场设置非共线螺旋磁矩。</translation>
     </message>
@@ -1519,7 +1523,7 @@
         <translation type="vanished">按明确的滑移面和滑移方向生成未弛豫 GSFE 结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="316" />
+        <location filename="../ui/widgets/card_metadata.py" line="319" />
         <source>Super Cell</source>
         <translation>扩胞</translation>
     </message>
@@ -1544,7 +1548,7 @@
         <translation type="vanished">按空位浓度或明确数量采样空位缺陷。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="278" />
+        <location filename="../ui/widgets/card_metadata.py" line="281" />
         <source>Randomly place solvent molecules throughout an existing periodic cell by a fixed target count or a nominal pure-solvent density estimate, while rejecting short contacts.</source>
         <translation>按固定目标数或名义纯溶剂密度估算，在已有周期晶胞内随机放置溶剂分子，并排除过短接触。</translation>
     </message>
@@ -1557,7 +1561,7 @@
         <translation type="vanished">为兼容旧工作流而保留投影层位移算法；其滑移方向由笛卡尔轴导出，不是晶体学 GSFE 路径，新任务应使用“显式 GSFE 路径”。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="331" />
+        <location filename="../ui/widgets/card_metadata.py" line="334" />
         <source>Vib Mode Perturb</source>
         <translation>振动模式扰动</translation>
     </message>
@@ -1566,67 +1570,67 @@
         <translation type="vanished">沿预先计算的振动模式生成扰动结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="339" />
+        <location filename="../ui/widgets/card_metadata.py" line="342" />
         <source>Alloy</source>
         <translation>合金与组分</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="340" />
+        <location filename="../ui/widgets/card_metadata.py" line="343" />
         <source>Container</source>
         <translation>容器</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="341" />
+        <location filename="../ui/widgets/card_metadata.py" line="344" />
         <source>Defect</source>
         <translation>缺陷</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="342" />
+        <location filename="../ui/widgets/card_metadata.py" line="345" />
         <source>Filter</source>
         <translation>筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="343" />
+        <location filename="../ui/widgets/card_metadata.py" line="346" />
         <source>Lattice</source>
         <translation>晶格</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="344" />
+        <location filename="../ui/widgets/card_metadata.py" line="347" />
         <source>Magnetism</source>
         <translation>磁性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="345" />
+        <location filename="../ui/widgets/card_metadata.py" line="348" />
         <source>Organic</source>
         <translation>分子与溶剂</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="346" />
+        <location filename="../ui/widgets/card_metadata.py" line="349" />
         <source>Perturbation</source>
         <translation>扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="347" />
+        <location filename="../ui/widgets/card_metadata.py" line="350" />
         <source>Structure</source>
         <translation>结构</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="348" />
+        <location filename="../ui/widgets/card_metadata.py" line="351" />
         <source>Surface</source>
         <translation>表面</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="351" />
+        <location filename="../ui/widgets/card_metadata.py" line="354" />
         <source>author</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="352" />
+        <location filename="../ui/widgets/card_metadata.py" line="355" />
         <source>maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="353" />
+        <location filename="../ui/widgets/card_metadata.py" line="356" />
         <source>contributor</source>
         <translation>贡献者</translation>
     </message>
@@ -2964,98 +2968,98 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1091" />
+        <location filename="../ui/widgets/card_metadata.py" line="1094" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1108" />
+        <location filename="../ui/widgets/card_metadata.py" line="1111" />
         <source>Make Dataset cards</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1118" />
+        <location filename="../ui/widgets/card_metadata.py" line="1121" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1220" />
+        <location filename="../ui/widgets/card_metadata.py" line="1223" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1232" />
+        <location filename="../ui/widgets/card_metadata.py" line="1235" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1233" />
+        <location filename="../ui/widgets/card_metadata.py" line="1236" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1234" />
+        <location filename="../ui/widgets/card_metadata.py" line="1237" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1235" />
+        <location filename="../ui/widgets/card_metadata.py" line="1238" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1236" />
+        <location filename="../ui/widgets/card_metadata.py" line="1239" />
         <source>Documentation</source>
         <translation>文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1262" />
-        <location filename="../ui/widgets/card_metadata.py" line="1422" />
+        <location filename="../ui/widgets/card_metadata.py" line="1265" />
+        <location filename="../ui/widgets/card_metadata.py" line="1425" />
         <source>Technical details</source>
         <translation>技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1286" />
+        <location filename="../ui/widgets/card_metadata.py" line="1289" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1292" />
+        <location filename="../ui/widgets/card_metadata.py" line="1295" />
         <source>Source file</source>
         <translation>源文件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1315" />
+        <location filename="../ui/widgets/card_metadata.py" line="1318" />
         <source>Add selected card</source>
         <translation>添加所选卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1320" />
+        <location filename="../ui/widgets/card_metadata.py" line="1323" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1365" />
+        <location filename="../ui/widgets/card_metadata.py" line="1368" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1380" />
+        <location filename="../ui/widgets/card_metadata.py" line="1383" />
         <source>Open documentation</source>
         <translation>打开文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1392" />
+        <location filename="../ui/widgets/card_metadata.py" line="1395" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1420" />
+        <location filename="../ui/widgets/card_metadata.py" line="1423" />
         <source>Hide technical details</source>
         <translation>收起技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1456" />
+        <location filename="../ui/widgets/card_metadata.py" line="1459" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -3063,32 +3067,32 @@
 <context>
     <name>CardLibraryPopup</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="872" />
+        <location filename="../ui/widgets/card_metadata.py" line="875" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="904" />
+        <location filename="../ui/widgets/card_metadata.py" line="907" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="934" />
+        <location filename="../ui/widgets/card_metadata.py" line="937" />
         <source>Hover or focus a card to see what it does.</source>
         <translation>悬停或聚焦卡片以查看功能说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1031" />
+        <location filename="../ui/widgets/card_metadata.py" line="1034" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1034" />
+        <location filename="../ui/widgets/card_metadata.py" line="1037" />
         <source>No cards found.</source>
         <translation>未找到卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1042" />
+        <location filename="../ui/widgets/card_metadata.py" line="1045" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
@@ -3096,94 +3100,94 @@
 <context>
     <name>CardMetadata</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="359" />
-        <location filename="../ui/widgets/card_metadata.py" line="412" />
+        <location filename="../ui/widgets/card_metadata.py" line="362" />
+        <location filename="../ui/widgets/card_metadata.py" line="415" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="393" />
+        <location filename="../ui/widgets/card_metadata.py" line="396" />
         <source>Not specified</source>
         <translation>未指定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="403" />
+        <location filename="../ui/widgets/card_metadata.py" line="406" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="405" />
+        <location filename="../ui/widgets/card_metadata.py" line="408" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="414" />
+        <location filename="../ui/widgets/card_metadata.py" line="417" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="415" />
+        <location filename="../ui/widgets/card_metadata.py" line="418" />
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="426" />
-        <location filename="../ui/widgets/card_metadata.py" line="459" />
+        <location filename="../ui/widgets/card_metadata.py" line="429" />
+        <location filename="../ui/widgets/card_metadata.py" line="462" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="427" />
+        <location filename="../ui/widgets/card_metadata.py" line="430" />
         <source>No public contributor metadata yet.</source>
         <translation>暂无公开贡献者元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="470" />
+        <location filename="../ui/widgets/card_metadata.py" line="473" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="471" />
+        <location filename="../ui/widgets/card_metadata.py" line="474" />
         <source>Group</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="472" />
+        <location filename="../ui/widgets/card_metadata.py" line="475" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="473" />
+        <location filename="../ui/widgets/card_metadata.py" line="476" />
         <source>Maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="474" />
+        <location filename="../ui/widgets/card_metadata.py" line="477" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="475" />
+        <location filename="../ui/widgets/card_metadata.py" line="478" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="476" />
+        <location filename="../ui/widgets/card_metadata.py" line="479" />
         <source>Source path</source>
         <translation>源路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="683" />
+        <location filename="../ui/widgets/card_metadata.py" line="686" />
         <source>Make Dataset Card</source>
         <translation>生成数据集卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="714" />
+        <location filename="../ui/widgets/card_metadata.py" line="717" />
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="726" />
+        <location filename="../ui/widgets/card_metadata.py" line="729" />
         <source>Citation</source>
         <translation>引用</translation>
     </message>
@@ -3191,12 +3195,12 @@
 <context>
     <name>CardMetadataDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="739" />
+        <location filename="../ui/widgets/card_metadata.py" line="742" />
         <source>Card info - {card_name}</source>
         <translation>卡片信息 - {card_name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="754" />
+        <location filename="../ui/widgets/card_metadata.py" line="757" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -3865,6 +3869,11 @@
         <translation>角度应变产生了无效或奇异晶胞，请减小角度增量。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="771" />
+        <source>Cartesian shear produced an invalid or singular cell. Reduce the shear components.</source>
+        <translation>笛卡尔剪切产生了无效或奇异晶胞，请减小剪切分量。</translation>
+    </message>
+    <message>
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
@@ -4014,152 +4023,152 @@
 <context>
     <name>CardOperationField</name>
     <message>
-        <location filename="../ui/messages.py" line="775" />
+        <location filename="../ui/messages.py" line="779" />
         <source>Maximum outputs per input</source>
         <translation>每个输入的最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="776" />
+        <location filename="../ui/messages.py" line="780" />
         <source>Bonds rotated per output</source>
         <translation>每个输出旋转的键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="777" />
+        <location filename="../ui/messages.py" line="781" />
         <source>Large-molecule threshold</source>
         <translation>大分子阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="778" />
+        <location filename="../ui/messages.py" line="782" />
         <source>Local subtree cap</source>
         <translation>局部子树上限</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="779" />
+        <location filename="../ui/messages.py" line="783" />
         <source>Retries per output</source>
         <translation>每个输出的重试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="780" />
+        <location filename="../ui/messages.py" line="784" />
         <source>Coordinate noise</source>
         <translation>坐标噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="781" />
+        <location filename="../ui/messages.py" line="785" />
         <source>Torsion increment range</source>
         <translation>扭转增量范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="782" />
+        <location filename="../ui/messages.py" line="786" />
         <source>Bond detection radius</source>
         <translation>成键检测半径</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="783" />
+        <location filename="../ui/messages.py" line="787" />
         <source>Minimum bond length</source>
         <translation>最小键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="784" />
+        <location filename="../ui/messages.py" line="788" />
         <source>Maximum bond length</source>
         <translation>最大键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="785" />
+        <location filename="../ui/messages.py" line="789" />
         <source>Minimum nonbonded distance</source>
         <translation>最小非键距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="786" />
+        <location filename="../ui/messages.py" line="790" />
         <source>Short-bond rotation cutoff</source>
         <translation>短键旋转截止系数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="787" />
+        <location filename="../ui/messages.py" line="791" />
         <source>Nonperiodic display box</source>
         <translation>非周期显示盒</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="788" />
+        <location filename="../ui/messages.py" line="792" />
         <source>Pauling decay length</source>
         <translation>Pauling 衰减长度</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="789" />
+        <location filename="../ui/messages.py" line="793" />
         <source>Bond-order threshold</source>
         <translation>键级阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="790" />
+        <location filename="../ui/messages.py" line="794" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="791" />
+        <location filename="../ui/messages.py" line="795" />
         <source>Independent outputs per input</source>
         <translation>每个输入的独立输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="792" />
+        <location filename="../ui/messages.py" line="796" />
         <source>Total solvent molecules per output</source>
         <translation>每个输出的溶剂分子总数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="793" />
+        <location filename="../ui/messages.py" line="797" />
         <source>Placement attempts per output</source>
         <translation>每个输出的放置尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="794" />
+        <location filename="../ui/messages.py" line="798" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="795" />
+        <location filename="../ui/messages.py" line="799" />
         <source>Fallback center-to-COM shell</source>
         <translation>备用中心-质心壳层</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="796" />
+        <location filename="../ui/messages.py" line="800" />
         <source>Uniform minimum distance</source>
         <translation>统一最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="797" />
+        <location filename="../ui/messages.py" line="801" />
         <source>Element-radius collision scale</source>
         <translation>元素半径碰撞缩放</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="798" />
+        <location filename="../ui/messages.py" line="802" />
         <source>Fixed box size</source>
         <translation>固定盒尺寸</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="799" />
+        <location filename="../ui/messages.py" line="803" />
         <source>Auto-box padding</source>
         <translation>自动显示盒留白</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="800" />
+        <location filename="../ui/messages.py" line="804" />
         <source>Minimum auto-box edge</source>
         <translation>自动显示盒最小边长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="801" />
+        <location filename="../ui/messages.py" line="805" />
         <source>Flexible conformer pool</source>
         <translation>柔性构象池</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="802" />
+        <location filename="../ui/messages.py" line="806" />
         <source>Flexible torsions per conformer</source>
         <translation>每个柔性构象的扭转键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="803" />
+        <location filename="../ui/messages.py" line="807" />
         <source>Flexible conformer noise</source>
         <translation>柔性构象噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="804" />
+        <location filename="../ui/messages.py" line="808" />
         <source>Flexible torsion range</source>
         <translation>柔性扭转范围</translation>
     </message>
@@ -10977,23 +10986,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="841" />
-        <location filename="../ui/messages.py" line="881" />
+        <location filename="../ui/messages.py" line="845" />
+        <location filename="../ui/messages.py" line="885" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="851" />
+        <location filename="../ui/messages.py" line="855" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="861" />
+        <location filename="../ui/messages.py" line="865" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="871" />
+        <location filename="../ui/messages.py" line="875" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -14456,64 +14465,177 @@ All child items will also be deleted.</source>
 <context>
     <name>ShearMatrixCard</name>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="38" />
         <source>Make Shear Matrix Strain</source>
-        <translation>生成剪切矩阵应变</translation>
+        <translation type="vanished">生成剪切矩阵应变</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="50" />
         <source>Optional</source>
-        <translation>可选</translation>
+        <translation type="vanished">可选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="51" />
         <source>Identify organic</source>
-        <translation>识别有机分子</translation>
+        <translation type="vanished">识别有机分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="53" />
         <source>Symmetric shear</source>
-        <translation>对称剪切</translation>
+        <translation type="vanished">对称剪切</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="55" />
         <source>Apply shear symmetrically</source>
-        <translation>对称施加剪切</translation>
+        <translation type="vanished">对称施加剪切</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="57" />
         <source>Treat organic molecules as rigid units</source>
-        <translation>将有机分子作为刚体处理</translation>
+        <translation type="vanished">将有机分子作为刚体处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="62" />
         <source>XY:</source>
-        <translation>XY：</translation>
+        <translation type="vanished">XY：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="67" />
         <source>XY shear strain range</source>
-        <translation>XY 剪切应变范围</translation>
+        <translation type="vanished">XY 剪切应变范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="70" />
         <source>YZ:</source>
-        <translation>YZ：</translation>
+        <translation type="vanished">YZ：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="75" />
         <source>YZ shear strain range</source>
-        <translation>YZ 剪切应变范围</translation>
+        <translation type="vanished">YZ 剪切应变范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="78" />
         <source>XZ:</source>
-        <translation>XZ：</translation>
+        <translation type="vanished">XZ：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="83" />
         <source>XZ shear strain range</source>
-        <translation>XZ 剪切应变范围</translation>
+        <translation type="vanished">XZ 剪切应变范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="30" />
+        <source>Shear Matrix Strain</source>
+        <translation>剪切矩阵应变</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="40" />
+        <source>Symmetric strain tensor εij</source>
+        <translation>对称应变张量 εij</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="42" />
+        <source>Simple shear γij</source>
+        <translation>简单剪切 γij</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="44" />
+        <source>Deformation mode</source>
+        <translation>形变模式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="47" />
+        <source>Cartesian matrix definition</source>
+        <translation>笛卡尔矩阵定义</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="49" />
+        <source>The matrix acts in fixed Cartesian x/y/z coordinates: C′ = CS.</source>
+        <translation>矩阵作用于固定的笛卡尔 x/y/z 坐标：C′ = CS。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="61" />
+        <source>Component ranges</source>
+        <translation>分量范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="72" />
+        <source>Keep detected molecules rigid</source>
+        <translation>保持识别出的分子刚性</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="76" />
+        <source>Molecular handling</source>
+        <translation>分子处理</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="79" />
+        <source>After affine cell deformation, restore the internal geometry of detected molecular clusters.</source>
+        <translation>晶胞仿射形变后，恢复识别出的分子团内部几何。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="116" />
+        <source>εxy tensor component</source>
+        <translation>εxy 张量分量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="117" />
+        <source>εyz tensor component</source>
+        <translation>εyz 张量分量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="118" />
+        <source>εxz tensor component</source>
+        <translation>εxz 张量分量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="121" />
+        <source>Values are εij in percent; engineering shear is γij = 2εij.</source>
+        <translation>数值为百分数形式的 εij；工程剪切量 γij = 2εij。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="125" />
+        <source>γxy · y ← y + γxy x</source>
+        <translation>γxy · y ← y + γxy x</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="126" />
+        <source>γyz · z ← z + γyz y</source>
+        <translation>γyz · z ← z + γyz y</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="127" />
+        <source>γxz · z ← z + γxz x</source>
+        <translation>γxz · z ← z + γxz x</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="129" />
+        <source>Values are engineering simple shear γij in percent.</source>
+        <translation>数值为百分数形式的工程简单剪切量 γij。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="145" />
+        <source>Complete the three component ranges</source>
+        <translation>请完整填写三个分量范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="147" />
+        <source>symmetric ε components</source>
+        <translation>对称 ε 分量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="149" />
+        <source>simple shear γ components</source>
+        <translation>简单剪切 γ 分量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="151" />
+        <source>{mode} · {count}/input</source>
+        <translation>{mode} · 每个输入 {count} 个</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="162" />
+        <source>{xy} × {yz} × {xz} = {count} combinations/input.</source>
+        <translation>{xy} × {yz} × {xz} = {count} 种组合/输入。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="175" />
+        <source> {inputs} inputs → {total} outputs.</source>
+        <translation> {inputs} 个输入 → {total} 个输出。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="179" />
+        <source>Fractional coordinates follow the cell; Cartesian spin and ASE initial magnetic moments remain in the input global frame.</source>
+        <translation>分数坐标随晶胞变化；笛卡尔 spin 与 ASE 初始磁矩保留在输入全局坐标系中。</translation>
     </message>
 </context>
 <context>

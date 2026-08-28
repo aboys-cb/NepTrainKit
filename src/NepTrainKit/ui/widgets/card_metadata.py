@@ -264,7 +264,10 @@ def _localized_catalog(_language_marker: str):
         ),
         "ShearMatrixCard": (
             QCoreApplication.translate("CardCatalog", "Shear Matrix Strain"),
-            QCoreApplication.translate("CardCatalog", "Apply shear matrices along the principal lattice planes."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Scan simple shear or symmetric strain components in fixed Cartesian coordinates.",
+            ),
         ),
         "SmallAngleSpinTiltCard": (
             QCoreApplication.translate("CardCatalog", "Canting Scan"),

@@ -466,19 +466,37 @@ class ShearMatrixParams:
 class ShearMatrixOperation(StructureOperation):
     """Apply shear matrices from explicit parameters."""
 
+    @staticmethod
+    def sampling_summary(params: ShearMatrixParams) -> dict[str, object]:
+        xy_values = _scan_values(params.xy_range, label="xy_range")
+        yz_values = _scan_values(params.yz_range, label="yz_range")
+        xz_values = _scan_values(params.xz_range, label="xz_range")
+        return {
+            "xy_values": xy_values,
+            "yz_values": yz_values,
+            "xz_values": xz_values,
+            "xy_points": len(xy_values),
+            "yz_points": len(yz_values),
+            "xz_points": len(xz_values),
+            "outputs_per_input": len(xy_values) * len(yz_values) * len(xz_values),
+        }
+
     def run_structure(self, structure, params: ShearMatrixParams) -> list:
-        structure_list = []
+        summary = self.sampling_summary(params)
+        cell = np.asarray(structure.get_cell(), dtype=float)
+        if (
+            cell.shape != (3, 3)
+            or np.any(~np.isfinite(cell))
+            or float(np.linalg.det(cell)) <= 1e-12
+        ):
+            raise ValueError("ShearMatrix requires a finite, right-handed 3x3 cell.")
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
 
-        xy_range = _scan_values(params.xy_range, label="xy_range")
-        yz_range = _scan_values(params.yz_range, label="yz_range")
-        xz_range = _scan_values(params.xz_range, label="xz_range")
-        cell = structure.get_cell()
-
-        for sxy in xy_range:
-            for syz in yz_range:
-                for sxz in xz_range:
+        structure_list = []
+        for sxy in summary["xy_values"]:
+            for syz in summary["yz_values"]:
+                for sxz in summary["xz_values"]:
                     new_structure = structure.copy()
                     shear_matrix = np.eye(3)
                     shear_matrix[0, 1] += sxy / 100
@@ -489,19 +507,33 @@ class ShearMatrixOperation(StructureOperation):
                         shear_matrix[2, 1] += syz / 100
                         shear_matrix[2, 0] += sxz / 100
 
-                    new_structure.set_cell(np.matmul(cell, shear_matrix), scale_atoms=True)
-                    if params.identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)
+                    new_cell = cell @ shear_matrix
+                    if (
+                        np.any(~np.isfinite(new_cell))
+                        or float(np.linalg.det(shear_matrix)) <= 1e-12
+                        or float(np.linalg.det(new_cell)) <= 1e-12
+                    ):
+                        raise CardOperationError(
+                            "shear_matrix.invalid_cell",
+                            "Cartesian shear produced an invalid or singular cell. Reduce the shear components.",
+                        )
 
-                    info_list = []
-                    if abs(sxy) > 1e-8:
-                        info_list.append(f"xy={sxy:g}%")
-                    if abs(syz) > 1e-8:
-                        info_list.append(f"yz={syz:g}%")
-                    if abs(sxz) > 1e-8:
-                        info_list.append(f"xz={sxz:g}%")
-                    info_str = ",".join(info_list)
-                    append_config_tag(new_structure, f"Shr({info_str},sym={int(bool(params.symmetric))})")
+                    unchanged = bool(sxy == 0.0 and syz == 0.0 and sxz == 0.0)
+                    if not unchanged:
+                        new_structure.set_cell(new_cell, scale_atoms=True)
+                        if params.identify_organic:
+                            process_organic_clusters(
+                                structure,
+                                new_structure,
+                                clusters,
+                                is_organic_list,
+                            )
+
+                    mode = "symmetric" if params.symmetric else "simple"
+                    append_config_tag(
+                        new_structure,
+                        f"Shr(xy={float(sxy):g}%,yz={float(syz):g}%,xz={float(sxz):g}%,mode={mode})",
+                    )
                     structure_list.append(new_structure)
         return structure_list
 

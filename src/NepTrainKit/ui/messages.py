@@ -768,6 +768,10 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "Angle strain produced an invalid or singular cell. Reduce the angle increments.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian shear produced an invalid or singular cell. Reduce the shear components.",
+    )
 
 
 def _card_operation_field_catalog() -> None:

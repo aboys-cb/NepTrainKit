@@ -24,6 +24,7 @@ from NepTrainKit.ui.views._card.card_group import CardGroup
 from NepTrainKit.ui.views._card.cell_strain_card import CellStrainCard
 from NepTrainKit.ui.views._card.interstitial_adsorbate_card import InsertDefectCard
 from NepTrainKit.ui.views._card.perturb_card import PerturbCard
+from NepTrainKit.ui.views._card.random_slab_card import RandomSlabCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
 from NepTrainKit.ui.widgets import MakeDataCard, MakeWorkflowArea
 
@@ -129,6 +130,29 @@ def test_compact_workflow_nodes_edit_the_selected_card_in_the_inspector():
     assert area.guidance_panel.current_context_label.text() == first.get_summary_text()
     area.guidance_panel.copy_card_button.click()
     assert QApplication.clipboard().text() == first.to_json_text()
+    _dispose(area)
+
+
+def test_inspector_context_refreshes_when_preview_dataset_changes():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = RandomSlabCard()
+    area.add_card(card)
+    area.resize(1024, 640)
+    area.show()
+    area.select_card(card)
+    app.processEvents()
+    assert "exact scan" in area.guidance_panel.current_context_label.text()
+
+    structure = Atoms("Si", positions=[[0.0, 0.0, 0.0]], cell=[4.0, 4.0, 4.0], pbc=True)
+    card.set_preview_input_count(2)
+    card.set_dataset([structure])
+    app.processEvents()
+
+    assert area.guidance_panel.current_context_label.text() == card.get_summary_text()
+    assert "12/input" in area.guidance_panel.current_context_label.text()
+    assert area.guidance_panel.recommend_label.text() == card.get_guidance_text()
+    assert "Inputs 2 × 12" in area.guidance_panel.recommend_label.text()
     _dispose(area)
 
 

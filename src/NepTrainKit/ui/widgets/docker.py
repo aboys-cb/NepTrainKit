@@ -373,6 +373,10 @@ class WorkflowGuidancePanel(QFrame):
 
     def _connect_context_signals(self, editor: QWidget) -> None:
         self._disconnect_context_signals()
+        presentation_signal = getattr(self._card, "presentationChanged", None)
+        if presentation_signal is not None and hasattr(presentation_signal, "connect"):
+            presentation_signal.connect(self._schedule_context_refresh)
+            self._context_signal_connections.append((presentation_signal, self._schedule_context_refresh))
         signal_names = ("valueChanged", "currentIndexChanged", "textChanged", "toggled", "stateChanged")
         for widget in [editor, *editor.findChildren(QWidget)]:
             for name in signal_names:

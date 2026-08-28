@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass, field
-from math import comb
+from math import comb, gcd
 from typing import Any, Sequence
 
 import numpy as np
@@ -12,7 +12,6 @@ from ase import Atom
 from ase.build import surface
 from ase.data import atomic_numbers
 from ase.geometry import geometry
-from loguru import logger
 from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
@@ -1018,52 +1017,271 @@ class StrictGSFEPathOperation(StructureOperation):
 
 @dataclass(frozen=True)
 class RandomSlabParams:
-    """Parameters for surface-slab enumeration."""
+    """Parameters for a deterministic surface-slab scan."""
 
-    h_range: Sequence[int] = (0, 1, 1)
-    k_range: Sequence[int] = (0, 1, 1)
-    l_range: Sequence[int] = (1, 3, 1)
+    hkl_list: Sequence[Sequence[int]] = ((1, 0, 0), (1, 1, 0), (1, 1, 1))
     layer_range: Sequence[int] = (3, 6, 1)
     vacuum_range: Sequence[float] = (10.0, 10.0, 1.0)
+    normal_pbc: bool = True
+    max_outputs: int = 200
+    max_generated_atoms: int = 200_000
+
+
+@dataclass(frozen=True)
+class RandomSlabPlan:
+    """Validated exact output sizes for one bulk input."""
+
+    hkl_list: tuple[tuple[int, int, int], ...]
+    repeats: tuple[int, ...]
+    vacuums: tuple[float, ...]
+    outputs: int
+    min_atoms_per_output: int
+    max_atoms_per_output: int
+    generated_atoms: int
+    max_outputs: int
+    max_generated_atoms: int
 
 
 class RandomSlabOperation(StructureOperation):
-    """Construct slabs across Miller-index, layer, and vacuum ranges."""
+    """Construct slabs across explicit Miller planes and geometry ranges."""
 
     def run_structure(self, structure, params: RandomSlabParams) -> list:
-        structure_list = []
-        h_range = _range_values(params.h_range, include_step=True)
-        k_range = _range_values(params.k_range, include_step=True)
-        l_range = _range_values(params.l_range, include_step=True)
-        layer_range = _range_values(params.layer_range, include_step=True)
-        vac_range = _range_values(params.vacuum_range, include_step=True)
+        plan = self.plan(structure, params)
+        outputs = []
+        for hkl in plan.hkl_list:
+            for repeats in plan.repeats:
+                for vacuum_per_side in plan.vacuums:
+                    vacuum = None if vacuum_per_side == 0.0 else vacuum_per_side
+                    try:
+                        slab = surface(
+                            structure,
+                            hkl,
+                            repeats,
+                            vacuum=vacuum,
+                            periodic=bool(params.normal_pbc),
+                        )
+                    except Exception as exc:
+                        raise CardOperationError(
+                            "surface-slab-build-failed",
+                            "Could not build surface plane {hkl} with {repeats} normal repeats "
+                            "and {vacuum} Å vacuum per side: {reason}",
+                            hkl=hkl,
+                            repeats=repeats,
+                            vacuum=vacuum_per_side,
+                            reason=str(exc),
+                        ) from exc
+                    slab.set_positions(wrapped_positions(slab, slab.positions))
+                    slab.info["Config_type"] = structure.info.get("Config_type", "")
+                    append_config_tag(
+                        slab,
+                        "Slab("
+                        f"hkl=({hkl[0]},{hkl[1]},{hkl[2]}),"
+                        f"R={repeats},vac={vacuum_per_side:.6g},"
+                        f"pz={int(bool(params.normal_pbc))})",
+                    )
+                    outputs.append(slab)
+        return outputs
 
-        for h in h_range:
-            for k in k_range:
-                for l in l_range:
-                    if h == 0 and k == 0 and l == 0:
-                        continue
-                    for layers in layer_range:
-                        for vac in vac_range:
-                            try:
-                                vacuum = None if vac == 0 else vac
-                                slab = surface(
-                                    structure,
-                                    (int(h), int(k), int(l)),
-                                    int(layers),
-                                    vacuum=vacuum,
-                                    periodic=True,
-                                )
-                                slab.set_positions(wrapped_positions(slab, slab.positions))
-                                slab.info["Config_type"] = structure.info.get("Config_type", "")
-                                append_config_tag(
-                                    slab,
-                                    f"Slab(hkl={int(h)}{int(k)}{int(l)},L={int(layers)},vac={vacuum})",
-                                )
-                                structure_list.append(slab)
-                            except Exception as exc:
-                                logger.error(f"Failed to build slab {(h, k, l)}: {exc}")
-        return structure_list
+    def plan(self, structure, params: RandomSlabParams) -> RandomSlabPlan:
+        """Validate one bulk input and return an allocation-free exact plan."""
+        if len(structure) == 0:
+            raise CardOperationError(
+                "surface-slab-empty-input",
+                "Surface Slab Scan requires a non-empty bulk structure.",
+            )
+        cell = np.asarray(structure.cell.array, dtype=float)
+        positions = np.asarray(structure.positions, dtype=float)
+        if (
+            cell.shape != (3, 3)
+            or not np.all(np.isfinite(cell))
+            or abs(float(np.linalg.det(cell))) <= 1e-12
+            or not np.all(np.isfinite(positions))
+        ):
+            raise CardOperationError(
+                "surface-slab-invalid-geometry",
+                "Surface Slab Scan requires finite positions and a finite, non-singular 3D cell.",
+            )
+        if not bool(np.all(np.asarray(structure.pbc, dtype=bool))):
+            raise CardOperationError(
+                "surface-slab-input-pbc",
+                "Surface Slab Scan requires a bulk input periodic along all three cell directions.",
+            )
+
+        hkl_list = self.canonical_hkl_list(params.hkl_list)
+        repeats = self._inclusive_integer_range(
+            params.layer_range,
+            code="surface-slab-repeat-range",
+            label="Normal equivalent repeats",
+            minimum=1,
+        )
+        vacuums = self._inclusive_float_range(
+            params.vacuum_range,
+            code="surface-slab-vacuum-range",
+            label="Vacuum per side",
+            minimum=0.0,
+        )
+        if not bool(params.normal_pbc) and any(value == 0.0 for value in vacuums):
+            raise CardOperationError(
+                "surface-slab-nonperiodic-zero-vacuum",
+                "A non-periodic surface normal requires positive vacuum per side.",
+            )
+
+        max_outputs = self._positive_integer(
+            params.max_outputs,
+            code="surface-slab-output-limit",
+            template="Maximum outputs per input must be a positive integer.",
+        )
+        max_generated_atoms = self._positive_integer(
+            params.max_generated_atoms,
+            code="surface-slab-atom-budget",
+            template="Generated atom budget per input must be a positive integer.",
+        )
+        outputs = len(hkl_list) * len(repeats) * len(vacuums)
+        if outputs > max_outputs:
+            raise CardOperationError(
+                "surface-slab-output-limit-exceeded",
+                "Surface Slab Scan requests {requested} outputs per input, above the limit of {limit}. "
+                "Reduce planes or scan points, or raise the limit deliberately.",
+                requested=outputs,
+                limit=max_outputs,
+            )
+        generated_atoms = len(structure) * len(hkl_list) * len(vacuums) * sum(repeats)
+        if generated_atoms > max_generated_atoms:
+            raise CardOperationError(
+                "surface-slab-atom-budget-exceeded",
+                "Surface Slab Scan requests {requested} generated atoms per input, above the budget of {budget}. "
+                "Reduce planes or normal repeats, or raise the budget deliberately.",
+                requested=generated_atoms,
+                budget=max_generated_atoms,
+            )
+        return RandomSlabPlan(
+            hkl_list=hkl_list,
+            repeats=repeats,
+            vacuums=vacuums,
+            outputs=outputs,
+            min_atoms_per_output=len(structure) * min(repeats),
+            max_atoms_per_output=len(structure) * max(repeats),
+            generated_atoms=generated_atoms,
+            max_outputs=max_outputs,
+            max_generated_atoms=max_generated_atoms,
+        )
+
+    @classmethod
+    def canonical_hkl_list(
+        cls, values: Sequence[Sequence[int]]
+    ) -> tuple[tuple[int, int, int], ...]:
+        """Reduce proportional indices and remove exact duplicates in input order."""
+        if isinstance(values, (str, bytes)) or not values:
+            raise CardOperationError(
+                "surface-slab-empty-planes",
+                "Add at least one Miller plane.",
+            )
+        canonical = []
+        seen = set()
+        for row in values:
+            if isinstance(row, (str, bytes)) or len(row) != 3:
+                raise CardOperationError(
+                    "surface-slab-invalid-plane",
+                    "Each Miller plane must contain exactly three integer indices h, k, and l.",
+                )
+            hkl = tuple(
+                cls._strict_integer(
+                    value,
+                    code="surface-slab-invalid-plane",
+                    template="Each Miller index must be an integer.",
+                )
+                for value in row
+            )
+            if hkl == (0, 0, 0):
+                raise CardOperationError(
+                    "surface-slab-zero-plane",
+                    "Miller plane (0, 0, 0) is not defined.",
+                )
+            divisor = gcd(gcd(abs(hkl[0]), abs(hkl[1])), abs(hkl[2]))
+            reduced = tuple(value // divisor for value in hkl)
+            if reduced not in seen:
+                seen.add(reduced)
+                canonical.append(reduced)
+        return tuple(canonical)
+
+    @classmethod
+    def _inclusive_integer_range(
+        cls,
+        values: Sequence[int],
+        *,
+        code: str,
+        label: str,
+        minimum: int,
+    ) -> tuple[int, ...]:
+        if isinstance(values, (str, bytes)) or len(values) != 3:
+            raise CardOperationError(
+                code,
+                "{label} must contain start, stop, and step.",
+                label=label,
+            )
+        start, stop, step = (
+            cls._strict_integer(value, code=code, template="{label} values must be integers.", label=label)
+            for value in values
+        )
+        if start < minimum or stop < minimum or step <= 0 or start > stop:
+            raise CardOperationError(
+                code,
+                "{label} requires start and stop >= {minimum}, start <= stop, and a positive step.",
+                label=label,
+                minimum=minimum,
+            )
+        return tuple(range(start, stop + 1, step))
+
+    @staticmethod
+    def _inclusive_float_range(
+        values: Sequence[float],
+        *,
+        code: str,
+        label: str,
+        minimum: float,
+    ) -> tuple[float, ...]:
+        if isinstance(values, (str, bytes)) or len(values) != 3:
+            raise CardOperationError(
+                code,
+                "{label} must contain start, stop, and step.",
+                label=label,
+            )
+        try:
+            start, stop, step = (float(value) for value in values)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(code, "{label} values must be finite numbers.", label=label) from exc
+        if (
+            not np.all(np.isfinite([start, stop, step]))
+            or start < minimum
+            or stop < minimum
+            or step <= 0.0
+            or start > stop
+        ):
+            raise CardOperationError(
+                code,
+                "{label} requires finite start and stop >= {minimum}, start <= stop, and a positive step.",
+                label=label,
+                minimum=minimum,
+            )
+        count = int(np.floor((stop - start) / step + 1e-12)) + 1
+        return tuple(float(start + index * step) for index in range(count))
+
+    @staticmethod
+    def _strict_integer(value, *, code: str, template: str, **values: Any) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            numeric = np.nan
+        if not np.isfinite(numeric) or not numeric.is_integer():
+            raise CardOperationError(code, template, **values)
+        return int(numeric)
+
+    @classmethod
+    def _positive_integer(cls, value, *, code: str, template: str) -> int:
+        result = cls._strict_integer(value, code=code, template=template)
+        if result < 1:
+            raise CardOperationError(code, template)
+        return result
 
 
 @dataclass(frozen=True)

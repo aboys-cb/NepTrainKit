@@ -377,6 +377,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
     viewOutputSignal = Signal(object)
     dragStartedSignal = Signal(object)
     dragFinishedSignal = Signal(object, bool)
+    presentationChanged = Signal()
 
     def __init__(self, parent=None):
         """Configure collapse controls and state tracking.
@@ -842,6 +843,7 @@ class MakeDataCard(MakeDataCardWidget):
     def refresh_compact_presentation(self) -> None:
         """Refresh the canvas summary after parameters or inspector state change."""
         self._refresh_collapsed_summary()
+        self.presentationChanged.emit()
 
     @staticmethod
     def _safe_count(value) -> int:

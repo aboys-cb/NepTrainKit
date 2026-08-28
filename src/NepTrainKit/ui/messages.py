@@ -304,6 +304,46 @@ def _card_operation_error_catalog() -> None:
     """Literal catalog for structured card errors discovered by lupdate."""
     QCoreApplication.translate(
         "CardOperationError",
+        "Could not build surface plane {hkl} with {repeats} normal repeats and {vacuum} Å vacuum per side: {reason}",
+    )
+    QCoreApplication.translate("CardOperationError", "Surface Slab Scan requires a non-empty bulk structure.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Surface Slab Scan requires finite positions and a finite, non-singular 3D cell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Surface Slab Scan requires a bulk input periodic along all three cell directions."
+    )
+    QCoreApplication.translate("CardOperationError", "A non-periodic surface normal requires positive vacuum per side.")
+    QCoreApplication.translate("CardOperationError", "Maximum outputs per input must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Generated atom budget per input must be a positive integer.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Surface Slab Scan requests {requested} outputs per input, above the limit of {limit}. Reduce planes or scan points, or raise the limit deliberately.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Surface Slab Scan requests {requested} generated atoms per input, above the budget of {budget}. Reduce planes or normal repeats, or raise the budget deliberately.",
+    )
+    QCoreApplication.translate("CardOperationError", "Add at least one Miller plane.")
+    QCoreApplication.translate(
+        "CardOperationError", "Each Miller plane must contain exactly three integer indices h, k, and l."
+    )
+    QCoreApplication.translate("CardOperationError", "Each Miller index must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Miller plane (0, 0, 0) is not defined.")
+    QCoreApplication.translate("CardOperationError", "{label} must contain start, stop, and step.")
+    QCoreApplication.translate("CardOperationError", "{label} values must be integers.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "{label} requires start and stop >= {minimum}, start <= stop, and a positive step.",
+    )
+    QCoreApplication.translate("CardOperationError", "{label} values must be finite numbers.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "{label} requires finite start and stop >= {minimum}, start <= stop, and a positive step.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
         "Maximum output {budget} is smaller than the {groups} element sets. "
         "Increase the output limit or remove unneeded systems.",
     )

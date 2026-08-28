@@ -247,8 +247,11 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "RandomSlabCard": (
-            QCoreApplication.translate("CardCatalog", "Random Slab"),
-            QCoreApplication.translate("CardCatalog", "Construct surface slabs across multiple Miller indices and thicknesses."),
+            QCoreApplication.translate("CardCatalog", "Surface Slab Scan"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Cut deterministic surface slabs from a three-periodic bulk structure using an explicit Miller-plane list.",
+            ),
         ),
         "RandomVacancyCard": (
             QCoreApplication.translate("CardCatalog", "Targeted Vacancy"),

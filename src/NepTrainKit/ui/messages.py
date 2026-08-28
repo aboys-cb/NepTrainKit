@@ -897,6 +897,60 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "The Cartesian position filter matches no {element} atoms.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer spacing must use Surface gap or Copy translation.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Total layers must be an integer of at least {minimum}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Warp selection must be All atoms, Selected elements, or Cartesian z range.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Atom budget per output must be an integer of at least {minimum}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer spacing must be a finite non-negative distance.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Additional top vacuum must be a finite non-negative distance.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian z range must contain two finite distances.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Copy translation must be positive when total layers is greater than 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Stack would create {actual} atoms per output, above the {limit}-atom "
+        "budget. Reduce the layer count or increase the budget.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Copy translation {translation} Å is smaller than the warped slab thickness "
+        "{thickness} Å, giving a negative surface gap {gap} Å.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Stack needs a finite, non-singular 3D cell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Extending the cell requires lattice vector c to have a positive Cartesian z component.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Stack would create a singular or inverted final cell.",
+    )
 
 
 def _card_operation_field_catalog() -> None:

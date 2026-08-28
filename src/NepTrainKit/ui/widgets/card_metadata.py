@@ -173,7 +173,9 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Layer Stack"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Build one multilayer structure by translating the complete input slab along Cartesian z; an optional dz=f(x,y,z) expression can warp selected atoms before every full-slab copy.",
+                "Build one multilayer structure from a z-oriented slab using a true "
+                "surface gap; optionally apply the same Cartesian-z warp before every "
+                "complete copy.",
             ),
         ),
         "LocalSolvationCard": (

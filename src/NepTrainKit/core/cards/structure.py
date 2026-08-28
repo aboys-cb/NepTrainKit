@@ -183,8 +183,10 @@ class LayerCopyParams:
     wrap: bool = False
     extend_cell_z: bool = True
     extra_vacuum: float = 0.0
-    layers: int = 3
-    distance: float = 3.0
+    layers: int = 2
+    distance_mode: str = "surface_gap"
+    distance: float = 3.35
+    max_output_atoms: int = 100_000
 
 
 class LayerCopyOperation(StructureOperation):
@@ -192,29 +194,59 @@ class LayerCopyOperation(StructureOperation):
 
     @staticmethod
     def _integer(value: object, name: str, *, minimum: int) -> int:
+        templates = {
+            "layers": (
+                "layer_copy.invalid_layers",
+                "Total layers must be an integer of at least {minimum}.",
+            ),
+            "apply_mode": (
+                "layer_copy.invalid_apply_mode",
+                "Warp selection must be All atoms, Selected elements, or Cartesian z range.",
+            ),
+            "max_output_atoms": (
+                "layer_copy.invalid_atom_budget",
+                "Atom budget per output must be an integer of at least {minimum}.",
+            ),
+        }
+        code, template = templates[name]
         if isinstance(value, bool):
-            raise ValueError(f"LayerCopy: {name} must be an integer.")
+            raise CardOperationError(code, template, minimum=minimum)
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"LayerCopy: {name} must be an integer.") from exc
+            raise CardOperationError(code, template, minimum=minimum) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"LayerCopy: {name} must be an integer.")
+            raise CardOperationError(code, template, minimum=minimum)
         result = int(numeric)
         if result < minimum:
-            raise ValueError(f"LayerCopy: {name} must be >= {minimum}.")
+            raise CardOperationError(code, template, minimum=minimum)
         return result
 
     @staticmethod
     def _finite(value: object, name: str, *, minimum: float | None = None) -> float:
+        templates = {
+            "layer spacing": (
+                "layer_copy.invalid_spacing",
+                "Layer spacing must be a finite non-negative distance.",
+            ),
+            "extra vacuum": (
+                "layer_copy.invalid_vacuum",
+                "Additional top vacuum must be a finite non-negative distance.",
+            ),
+            "z_range": (
+                "layer_copy.invalid_z_range",
+                "Cartesian z range must contain two finite distances.",
+            ),
+        }
+        code, template = templates[name]
         try:
             result = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"LayerCopy: {name} must be a finite number.") from exc
+            raise CardOperationError(code, template) from exc
         if not np.isfinite(result):
-            raise ValueError(f"LayerCopy: {name} must be a finite number.")
+            raise CardOperationError(code, template)
         if minimum is not None and result < minimum:
-            raise ValueError(f"LayerCopy: {name} must be >= {minimum:g}.")
+            raise CardOperationError(code, template)
         return result
 
     @classmethod
@@ -229,10 +261,31 @@ class LayerCopyOperation(StructureOperation):
         if not expr:
             raise ValueError("LayerCopy: dz expression is empty.")
         layers = cls._integer(params.layers, "layers", minimum=1)
-        distance = cls._finite(params.distance, "layer translation")
-        if layers > 1 and distance <= 0.0:
-            raise ValueError(
-                "LayerCopy: layer translation must be positive when layers > 1."
+        distance_mode = str(params.distance_mode or "").strip()
+        if distance_mode not in {"surface_gap", "translation"}:
+            raise CardOperationError(
+                "layer_copy.invalid_distance_mode",
+                "Layer spacing must use Surface gap or Copy translation.",
+            )
+        distance = cls._finite(params.distance, "layer spacing", minimum=0.0)
+        if layers > 1 and distance_mode == "translation" and distance <= 0.0:
+            raise CardOperationError(
+                "layer_copy.nonpositive_translation",
+                "Copy translation must be positive when total layers is greater than 1.",
+            )
+        max_output_atoms = cls._integer(
+            params.max_output_atoms,
+            "max_output_atoms",
+            minimum=1,
+        )
+        output_atoms = len(structure) * layers
+        if output_atoms > max_output_atoms:
+            raise CardOperationError(
+                "layer_copy.atom_budget",
+                "Layer Stack would create {actual} atoms per output, above the {limit}-atom budget. "
+                "Reduce the layer count or increase the budget.",
+                actual=output_atoms,
+                limit=max_output_atoms,
             )
         extra_vacuum = cls._finite(
             params.extra_vacuum,
@@ -242,23 +295,20 @@ class LayerCopyOperation(StructureOperation):
 
         mode = cls._integer(params.apply_mode, "apply_mode", minimum=0)
         if mode not in {0, 1, 2}:
-            raise ValueError(f"LayerCopy: unsupported apply_mode {mode}.")
+            raise CardOperationError(
+                "layer_copy.invalid_apply_mode",
+                "Warp selection must be All atoms, Selected elements, or Cartesian z range.",
+            )
         z_range = tuple(params.z_range)
         if len(z_range) != 2:
-            raise ValueError("LayerCopy: z_range must contain two values.")
+            raise CardOperationError(
+                "layer_copy.invalid_z_range",
+                "Cartesian z range must contain two finite distances.",
+            )
         z_min = cls._finite(z_range[0], "z_range")
         z_max = cls._finite(z_range[1], "z_range")
         if z_min > z_max:
             z_min, z_max = z_max, z_min
-
-        cell = np.asarray(structure.cell.array, dtype=float)
-        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)):
-            raise ValueError("LayerCopy requires a finite 3x3 cell.")
-        final_cell = cell.copy()
-        if params.extend_cell_z:
-            final_cell[2, 2] += distance * (layers - 1) + extra_vacuum
-        if params.wrap and abs(float(np.linalg.det(final_cell))) <= 1e-12:
-            raise ValueError("LayerCopy: wrapping requires a nonsingular cell.")
 
         normalized_params = LayerCopyParams(
             preset_index=int(params.preset_index),
@@ -271,7 +321,9 @@ class LayerCopyOperation(StructureOperation):
             extend_cell_z=bool(params.extend_cell_z),
             extra_vacuum=extra_vacuum,
             layers=layers,
+            distance_mode=distance_mode,
             distance=distance,
+            max_output_atoms=max_output_atoms,
         )
         mask = cls.apply_mask(structure, normalized_params)
         if not np.any(mask):
@@ -284,6 +336,54 @@ class LayerCopyOperation(StructureOperation):
             z=positions[mask, 2],
             params=expr_params,
         )
+        warped_z = positions[:, 2].copy()
+        warped_z[mask] += dz
+        slab_thickness = float(np.ptp(warped_z))
+        if distance_mode == "surface_gap":
+            surface_gap = distance
+            translation = slab_thickness + surface_gap
+        else:
+            translation = distance
+            surface_gap = translation - slab_thickness
+            if layers > 1 and surface_gap < -1.0e-10:
+                raise CardOperationError(
+                    "layer_copy.overlap",
+                    "Copy translation {translation} Å is smaller than the warped slab thickness "
+                    "{thickness} Å, giving a negative surface gap {gap} Å.",
+                    translation=f"{translation:.6g}",
+                    thickness=f"{slab_thickness:.6g}",
+                    gap=f"{surface_gap:.6g}",
+                )
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        input_det = float(np.linalg.det(cell)) if cell.shape == (3, 3) else 0.0
+        if (
+            cell.shape != (3, 3)
+            or not np.all(np.isfinite(cell))
+            or abs(input_det) <= 1.0e-12
+        ):
+            raise CardOperationError(
+                "layer_copy.invalid_cell",
+                "Layer Stack needs a finite, non-singular 3D cell.",
+            )
+        final_cell = cell.copy()
+        if params.extend_cell_z:
+            if float(cell[2, 2]) <= 0.0:
+                raise CardOperationError(
+                    "layer_copy.cell_direction",
+                    "Extending the cell requires lattice vector c to have a positive Cartesian z component.",
+                )
+            final_cell[2, 2] += translation * (layers - 1) + extra_vacuum
+        final_det = float(np.linalg.det(final_cell))
+        if (
+            not np.all(np.isfinite(final_cell))
+            or abs(final_det) <= 1.0e-12
+            or np.sign(final_det) != np.sign(input_det)
+        ):
+            raise CardOperationError(
+                "layer_copy.invalid_final_cell",
+                "Layer Stack would create a singular or inverted final cell.",
+            )
         return {
             "positions": positions,
             "mask": mask,
@@ -291,6 +391,10 @@ class LayerCopyOperation(StructureOperation):
             "params": normalized_params,
             "cell": cell,
             "final_cell": final_cell,
+            "slab_thickness": slab_thickness,
+            "surface_gap": surface_gap,
+            "translation": translation,
+            "output_atoms": output_atoms,
         }
 
     @classmethod
@@ -304,8 +408,12 @@ class LayerCopyOperation(StructureOperation):
             "input_atoms": len(structure),
             "selected_atoms": int(np.count_nonzero(settings["mask"])),
             "layers": normalized.layers,
-            "translation": normalized.distance,
-            "output_atoms": len(structure) * normalized.layers,
+            "translation": settings["translation"],
+            "surface_gap": settings["surface_gap"],
+            "slab_thickness": settings["slab_thickness"],
+            "distance_mode": normalized.distance_mode,
+            "output_atoms": settings["output_atoms"],
+            "max_output_atoms": normalized.max_output_atoms,
             "dz_min": float(np.min(settings["dz"])),
             "dz_max": float(np.max(settings["dz"])),
             "cell_c_before": c_length,
@@ -328,7 +436,7 @@ class LayerCopyOperation(StructureOperation):
         layer_positions = build_layers(
             warped_positions,
             num_layers=normalized.layers,
-            layer_distance=normalized.distance,
+            layer_distance=settings["translation"],
         )
         combined = base.copy()
         combined.set_positions(layer_positions[0])
@@ -339,7 +447,7 @@ class LayerCopyOperation(StructureOperation):
 
         if normalized.extend_cell_z:
             dz_total = (
-                normalized.distance * (normalized.layers - 1)
+                settings["translation"] * (normalized.layers - 1)
                 + normalized.extra_vacuum
             )
             if dz_total > 0.0:
@@ -352,7 +460,10 @@ class LayerCopyOperation(StructureOperation):
 
         append_config_tag(
             combined,
-            f"LayerStack(L={normalized.layers},step={normalized.distance:g})",
+            (
+                f"LayerStack(L={normalized.layers},gap={settings['surface_gap']:g},"
+                f"step={settings['translation']:g})"
+            ),
         )
         return [combined]
 

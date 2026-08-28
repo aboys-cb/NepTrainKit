@@ -45,6 +45,7 @@ class GroupLabelCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._input_structure = None
+        self._preview_input_count = None
         self.setTitle(self.tr("Layer Groups"))
         self.init_ui()
 
@@ -151,6 +152,7 @@ class GroupLabelCard(MakeDataCard):
         self.group_b_edit.editingFinished.connect(self._refresh_preview)
         self.overwrite_checkbox.stateChanged.connect(self._refresh_preview)
         self._update_tab_order()
+        self._refresh_preview()
 
     @staticmethod
     def _first_structure(dataset):
@@ -168,6 +170,14 @@ class GroupLabelCard(MakeDataCard):
         self._input_structure = self._first_structure(dataset)
         self._refresh_preview()
 
+    def set_preview_structure(self, structure) -> None:
+        self._input_structure = structure
+        self._refresh_preview()
+
+    def set_preview_input_count(self, count: int | None) -> None:
+        self._preview_input_count = None if count is None else max(0, int(count))
+        self.refresh_compact_presentation()
+
     @staticmethod
     def _format_counts(values) -> str:
         counts = Counter(str(value) for value in values)
@@ -176,9 +186,15 @@ class GroupLabelCard(MakeDataCard):
             for label, count in sorted(counts.items())
         )
 
+    def _format_layer_count(self, count: int) -> str:
+        if count == 1:
+            return self.tr("1 layer")
+        return self.tr("{layers} layers").format(layers=count)
+
     def _refresh_preview(self) -> None:
         if not hasattr(self, "preview_label"):
             return
+        self.refresh_compact_presentation()
         if self._input_structure is None:
             self.preview_label.setText(
                 self.tr("Load an upstream structure to preview group counts.")
@@ -227,9 +243,9 @@ class GroupLabelCard(MakeDataCard):
         if layer_count > 8:
             sequence_text += " → …"
         message = self.tr(
-            "First input: {layers} layers · Layer sequence (atoms): {sequence} · {a}={a_count} · {b}={b_count}"
+            "First input: {layers} · Layer sequence (atoms): {sequence} · {a}={a_count} · {b}={b_count}"
         ).format(
-            layers=layer_count,
+            layers=self._format_layer_count(layer_count),
             sequence=sequence_text,
             a=a_label,
             a_count=counts.get(a_label, 0),
@@ -296,17 +312,81 @@ class GroupLabelCard(MakeDataCard):
 
     def get_summary_text(self) -> str:
         params = self.get_params()
+        try:
+            self.create_operation()._validated_labels(params.group_a, params.group_b)
+        except ValueError:
+            return self.tr("Complete the two group labels")
+        if self._input_structure is not None:
+            if "group" in self._input_structure.arrays and not params.overwrite:
+                return self.tr("Keep existing groups · 1 output/input")
+            try:
+                layer_ids = self.create_operation().layer_ids(
+                    self._input_structure,
+                    params.miller_index,
+                    params.layer_tolerance,
+                )
+            except ValueError:
+                pass
+            else:
+                layer_count = int(layer_ids.max()) + 1 if layer_ids.size else 0
+                return self.tr("({hkl}) · {layers} · {a}/{b} · 1/input").format(
+                    hkl=params.miller_index,
+                    layers=self._format_layer_count(layer_count),
+                    a=params.group_a.strip(),
+                    b=params.group_b.strip(),
+                )
         return self.tr("({hkl}) · {tolerance} Å · {a}/{b}").format(
             hkl=params.miller_index,
             tolerance=f"{params.layer_tolerance:.4g}",
-            a=params.group_a.strip() or "A",
-            b=params.group_b.strip() or "B",
+            a=params.group_a.strip(),
+            b=params.group_b.strip(),
         )
 
     def get_guidance_text(self) -> str:
-        return self.tr(
-            "Check the detected layer sequence. Periodic A/B magnetic order needs an even number of layers."
-        )
+        input_count = self._preview_input_count
+        if input_count is None or input_count <= 0:
+            output_text = self.tr("Outputs/input: 1.")
+        else:
+            output_text = self.tr(
+                "Inputs {inputs} × 1 output/input = outputs {total}."
+            ).format(inputs=input_count, total=input_count)
+
+        params = self.get_params()
+        try:
+            operation = self.create_operation()
+            operation._validated_labels(params.group_a, params.group_b)
+            if self._input_structure is None:
+                return output_text + " " + self.tr(
+                    "Load an upstream structure to check the detected layers."
+                )
+            if "group" in self._input_structure.arrays and not params.overwrite:
+                return output_text + " " + self.tr(
+                    "Existing group labels are preserved because overwrite is off."
+                )
+            layer_ids = operation.layer_ids(
+                self._input_structure,
+                params.miller_index,
+                params.layer_tolerance,
+            )
+        except ValueError as exc:
+            return output_text + " " + translate_runtime_message(exc)
+
+        layer_count = int(layer_ids.max()) + 1 if layer_ids.size else 0
+        if layer_count < 2:
+            return output_text + " " + self.tr(
+                "Only {layers} layer is detected; expand the cell, choose another plane, or reduce the tolerance."
+            ).format(layers=layer_count)
+        guidance = output_text + " " + self.tr(
+            "The first input has {layers} detected layers; verify the layer sequence below."
+        ).format(layers=layer_count)
+        if layer_count % 2 and operation.has_periodic_layer_axis(
+            self._input_structure,
+            params.miller_index,
+        ):
+            guidance += " " + self.tr(
+                "Periodic A/B magnetic order does not close with an odd layer count."
+            )
+        return guidance
 
     def process_structure(self, structure):
         return self.create_operation().run_structure(structure, self.get_params())

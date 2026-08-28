@@ -1349,22 +1349,35 @@ H 2.6700 0.5000 -0.8660
             pbc=True,
         )
         card = GroupLabelCard()
-        card.set_dataset([fcc])
-        self.assertIn("1 layers", card.preview_label.text())
+        card.set_preview_structure(fcc)
+        card.set_preview_input_count(2)
+        self.assertIn("1 layer", card.preview_label.text())
         self.assertIn("A(4)", card.preview_label.text())
         self.assertIn("A=4", card.preview_label.text())
         self.assertIn("B=0", card.preview_label.text())
         self.assertIn("At least two layers", card.preview_label.text())
+        self.assertIn("1 layer", card.get_summary_text())
+        self.assertIn("outputs 2", card.get_guidance_text())
+        self.assertIn("Only 1 layer", card.get_guidance_text())
+
+        card.group_a_edit.clear()
+        card._refresh_preview()
+        self.assertEqual(card.get_summary_text(), "Complete the two group labels")
+        self.assertIn("non-empty", card.get_guidance_text())
+        card.group_a_edit.setText("A")
+        card._refresh_preview()
 
         existing = fcc.copy()
         existing.new_array(
             "group",
             np.asarray(["surface", "surface", "bulk", "bulk"], dtype=object),
         )
-        card.set_dataset([existing])
+        card.set_preview_structure(existing)
         self.assertIn("output will be unchanged", card.preview_label.text())
         self.assertIn("bulk=2", card.preview_label.text())
         self.assertIn("surface=2", card.preview_label.text())
+        self.assertIn("Keep existing groups", card.get_summary_text())
+        self.assertIn("preserved", card.get_guidance_text())
 
         card.overwrite_checkbox.setChecked(True)
         self.assertIn("will be overwritten", card.preview_label.text())

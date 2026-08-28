@@ -152,11 +152,11 @@
 | 我正在处理什么 | 进入这里 |
 | --- | --- |
 | 晶格、晶胞、应变或相变路径 | [晶格](categories/structure-cell.md) |
-| 随机原子坐标或层状结构 | [结构](categories/structure.md) |
+| 随机原子坐标、层状结构或逐原子分组 | [结构](categories/structure.md) |
 | 生成自由表面 | [表面](categories/surface.md) |
 | 空位、插隙、吸附或层错 | [缺陷](categories/defect-surface.md) |
 | 原子坐标或振动模态扰动 | [扰动](categories/deformation-perturbation.md) |
-| 合金原型、配比、占位、分组或替换 | [合金与组分](categories/composition-alloy.md) |
+| 合金原型、配比、占位或替换 | [合金与组分](categories/composition-alloy.md) |
 | 共线、非共线和空间相关磁构型 | [磁性](categories/magnetism.md) |
 | 有机构象、局部溶剂壳和周期溶剂盒 | [分子与溶剂](categories/molecule-solvation.md) |
 | 几何清洗或代表性采样 | [筛选](categories/filter-sampling.md) |

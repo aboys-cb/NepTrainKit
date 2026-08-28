@@ -960,15 +960,18 @@ class CardLibraryPopup(FlyoutViewBase):
         root.addLayout(footer)
         self._update_result_count()
 
-    @staticmethod
-    def _column_count_for_width(width: int) -> int:
-        """Choose columns wide enough for complete English card names."""
-        if width >= 940:
-            return 4
-        if width >= 680:
-            return 3
-        if width >= 440:
-            return 2
+    def _column_count_for_width(self, width: int) -> int:
+        """Choose columns from the actual translated label width."""
+        widest_button = max(
+            (button.sizeHint().width() for button in self._buttons_by_class.values()),
+            default=220,
+        )
+        usable_width = max(0, int(width) - 40)
+        spacing = self._columns_layout.spacing() if hasattr(self, "_columns_layout") else 8
+        for count in range(self._MAX_COLUMN_COUNT, 1, -1):
+            column_width = (usable_width - spacing * (count - 1)) / count
+            if column_width >= widest_button:
+                return count
         return 1
 
     def _reflow_sections(self, column_count: int | None = None) -> None:

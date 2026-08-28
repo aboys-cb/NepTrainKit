@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QDateTime, QLocale, QRect, QSize, Qt, Signal
+from PySide6.QtCore import QCoreApplication, QDateTime, QLocale, QRect, QSize, Qt, Signal
 from PySide6.QtGui import QAction, QColor, QFont, QKeySequence, QPainter, QPalette
 from PySide6.QtWidgets import (
     QFrame,
@@ -33,6 +33,96 @@ _ENTRY_ROLE = int(Qt.ItemDataRole.UserRole)
 _NAME_ROLE = _ENTRY_ROLE + 1
 _META_ROLE = _ENTRY_ROLE + 2
 _CURRENT_ROLE = _ENTRY_ROLE + 3
+
+
+def localized_workflow_entry_name(entry: WorkflowEntry) -> str:
+    """Return a translated display name for a stable built-in template ID."""
+    if entry.origin != "builtin":
+        return entry.name
+    names = {
+        "builtin-crystal-strain": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates", "Crystal strain"
+        ),
+        "builtin-supercell-perturb": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates", "Atom perturbation"
+        ),
+        "builtin-alloy-occupancy": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates", "Alloy occupancy"
+        ),
+        "builtin-vacancy-candidates": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates", "Vacancy sampling"
+        ),
+        "builtin-spin-perturb": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates", "Spin perturbation"
+        ),
+    }
+    return names.get(entry.workflow_id, entry.name)
+
+
+def localized_workflow_entry_description(entry: WorkflowEntry) -> str:
+    """Return translated built-in guidance while preserving user text verbatim."""
+    if entry.origin != "builtin":
+        return entry.description
+    descriptions = {
+        "builtin-crystal-strain": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Build an elemental crystal prototype and sample independent uniaxial lattice strains.",
+        ),
+        "builtin-supercell-perturb": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Expand each input structure and generate randomly displaced atomic configurations.",
+        ),
+        "builtin-alloy-occupancy": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Expand a parent cell, plan target alloy compositions, and realize each target by random site occupancy.",
+        ),
+        "builtin-vacancy-candidates": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Expand each input structure and generate one single-vacancy candidate from every expanded cell.",
+        ),
+        "builtin-spin-perturb": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Normalize existing scalar or vector initial moments, then sample nearby spin directions and magnitudes.",
+        ),
+    }
+    return descriptions.get(entry.workflow_id, entry.description)
+
+
+def localized_workflow_input_requirement(entry: WorkflowEntry) -> str:
+    """Return the localized pre-run requirement for a built-in template."""
+    if entry.origin != "builtin":
+        return entry.input_requirement
+    requirements = {
+        "builtin-crystal-strain": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "No input structure is required. Set the lattice, element, lattice "
+            "constant, strain range, and output limit before running.",
+        ),
+        "builtin-supercell-perturb": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Load one or more periodic structures. Review the replication factors, "
+            "atom limit, displacement amplitude, and outputs per input before running.",
+        ),
+        "builtin-alloy-occupancy": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Load a periodic parent structure. Replace the example Co, Cr, and Ni "
+            "element set and check that the supercell has enough sites for the "
+            "requested exact ratios.",
+        ),
+        "builtin-vacancy-candidates": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Load one or more periodic structures. Check the supercell size and "
+            "switch the vacancy count or concentration mode when one vacancy per "
+            "cell is not appropriate.",
+        ),
+        "builtin-spin-perturb": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates",
+            "Load structures containing spin or ASE initial magnetic moments. The "
+            "template does not invent missing moment magnitudes; verify the scalar "
+            "lift axis and perturbation range.",
+        ),
+    }
+    return requirements.get(entry.workflow_id, entry.input_requirement)
 
 
 class WorkflowItemDelegate(ListItemDelegate):
@@ -150,7 +240,7 @@ class WorkflowLibraryPanel(QFrame):
         self.current_card = QFrame(self)
         self.current_card.setObjectName("currentWorkflowCard")
         self.current_caption = CaptionLabel(
-            self.tr("CURRENT WORKFLOW"), self.current_card
+            self.tr("CURRENT"), self.current_card
         )
         self.current_caption.setStyleSheet("color: #087f81; font-weight: 600;")
         self.copy_button = TransparentToolButton(FluentIcon.COPY, self.current_card)
@@ -184,24 +274,31 @@ class WorkflowLibraryPanel(QFrame):
         current_layout.addWidget(self.dirty_label)
 
         self.search_edit = SearchLineEdit(self)
-        self.search_edit.setPlaceholderText(self.tr("Search workflows"))
+        self.search_edit.setPlaceholderText(self.tr("Search"))
         self.search_edit.setClearButtonEnabled(True)
         self.search_edit.textChanged.connect(self._filter_lists)
 
         self.pivot = Pivot(self)
         self.stack = QStackedWidget(self)
         self.workflow_list = self._create_list()
+        self.builtin_template_list = self._create_list()
         self.template_list = self._create_list()
         self.stack.addWidget(self.workflow_list)
+        self.stack.addWidget(self.builtin_template_list)
         self.stack.addWidget(self.template_list)
         self.pivot.addItem(
             "workflows",
-            self.tr("My workflows"),
+            self.tr("Saved"),
             lambda: self.stack.setCurrentWidget(self.workflow_list),
         )
         self.pivot.addItem(
+            "builtins",
+            self.tr("Built-in"),
+            lambda: self.stack.setCurrentWidget(self.builtin_template_list),
+        )
+        self.pivot.addItem(
             "templates",
-            self.tr("Templates"),
+            self.tr("User"),
             lambda: self.stack.setCurrentWidget(self.template_list),
         )
         for item in self.pivot.items.values():
@@ -261,11 +358,14 @@ class WorkflowLibraryPanel(QFrame):
         if not data:
             return
         menu = RoundMenu(parent=self)
-        actions = (
-            (FluentIcon.FOLDER, self.tr("Open"), self.openRequested),
-            (FluentIcon.EDIT, self.tr("Rename"), self.renameRequested),
-            (FluentIcon.COPY, self.tr("Duplicate"), self.duplicateRequested),
-            (FluentIcon.SAVE, self.tr("Export"), self.exportRequested),
+        actions = [(FluentIcon.FOLDER, self.tr("Open"), self.openRequested)]
+        if data.get("origin") != "builtin":
+            actions.append((FluentIcon.EDIT, self.tr("Rename"), self.renameRequested))
+        actions.extend(
+            (
+                (FluentIcon.COPY, self.tr("Duplicate"), self.duplicateRequested),
+                (FluentIcon.SAVE, self.tr("Export"), self.exportRequested),
+            )
         )
         for icon, text, signal in actions:
             action = Action(icon, text, self)
@@ -275,12 +375,13 @@ class WorkflowLibraryPanel(QFrame):
                 )
             )
             menu.addAction(action)
-        menu.addSeparator()
-        delete_action = Action(FluentIcon.DELETE, self.tr("Delete"), self)
-        delete_action.triggered.connect(
-            lambda: self.deleteRequested.emit(data["id"], data["kind"])
-        )
-        menu.addAction(delete_action)
+        if data.get("origin") != "builtin":
+            menu.addSeparator()
+            delete_action = Action(FluentIcon.DELETE, self.tr("Delete"), self)
+            delete_action.triggered.connect(
+                lambda: self.deleteRequested.emit(data["id"], data["kind"])
+            )
+            menu.addAction(delete_action)
         menu.exec(widget.mapToGlobal(point))
 
     def _show_more_menu(self) -> None:
@@ -323,23 +424,42 @@ class WorkflowLibraryPanel(QFrame):
     def _populate(self, widget: ListWidget, entries: list[WorkflowEntry]) -> None:
         widget.clear()
         for entry in entries:
-            detail = self.tr("{count} cards · {updated}").format(
-                count=entry.card_count,
-                updated=self._format_updated(entry.updated_at),
-            )
+            name = localized_workflow_entry_name(entry)
+            description = localized_workflow_entry_description(entry)
+            input_requirement = localized_workflow_input_requirement(entry)
+            if entry.origin == "builtin":
+                category = QCoreApplication.translate("CardCatalog", entry.category)
+                detail = self.tr("{category} · {count} cards").format(
+                    category=category,
+                    count=entry.card_count,
+                )
+            else:
+                detail = self.tr("{count} cards · {updated}").format(
+                    count=entry.card_count,
+                    updated=self._format_updated(entry.updated_at),
+                )
             item = QListWidgetItem()
             item.setData(
                 _ENTRY_ROLE,
-                {"id": entry.workflow_id, "kind": entry.kind, "name": entry.name},
+                {
+                    "id": entry.workflow_id,
+                    "kind": entry.kind,
+                    "name": name,
+                    "origin": entry.origin,
+                    "search_text": " ".join((name, description, input_requirement)),
+                },
             )
-            item.setData(_NAME_ROLE, entry.name)
+            item.setData(_NAME_ROLE, name)
             item.setData(_META_ROLE, detail)
             item.setData(_CURRENT_ROLE, entry.workflow_id == self._current_id)
-            item.setToolTip(
-                self.tr("Double-click to open; right-click to manage {name}.").format(
-                    name=entry.name
+            if entry.origin == "builtin":
+                item.setToolTip("\n".join(part for part in (description, input_requirement) if part))
+            else:
+                item.setToolTip(
+                    self.tr("Double-click to open; right-click to manage {name}.").format(
+                        name=name
+                    )
                 )
-            )
             widget.addItem(item)
 
     def set_entries(
@@ -348,7 +468,14 @@ class WorkflowLibraryPanel(QFrame):
         templates: list[WorkflowEntry],
     ) -> None:
         self._populate(self.workflow_list, workflows)
-        self._populate(self.template_list, templates)
+        self._populate(
+            self.builtin_template_list,
+            [entry for entry in templates if entry.origin == "builtin"],
+        )
+        self._populate(
+            self.template_list,
+            [entry for entry in templates if entry.origin == "user"],
+        )
         self._filter_lists(self.search_edit.text())
 
     def set_current(
@@ -358,33 +485,70 @@ class WorkflowLibraryPanel(QFrame):
         dirty: bool = False,
         workflow_id: str | None = None,
         has_cards: bool = False,
+        template_preview: bool = False,
     ) -> None:
         self._current_id = workflow_id
-        self.current_label.setText(name or self.tr("Unsaved workflow"))
-        self.dirty_label.setText(
-            self.tr("Unsaved changes") if dirty else self.tr("All changes saved")
+        self.current_caption.setText(
+            self.tr("PREVIEW") if template_preview else self.tr("CURRENT")
         )
+        self.current_label.setText(name or self.tr("Unsaved workflow"))
+        if template_preview:
+            status_text = self.tr("Not modified")
+        else:
+            status_text = (
+                self.tr("Unsaved changes") if dirty else self.tr("All changes saved")
+            )
+        self.dirty_label.setText(status_text)
         self.dirty_label.setStyleSheet(
             "color: #b36b00;" if dirty else "color: #718087;"
         )
+        self.save_button.setText(
+            self.tr("Save workflow")
+            if workflow_id is not None
+            else self.tr("Save as workflow")
+        )
+        self.save_button.setIcon(
+            FluentIcon.SAVE if workflow_id is not None else None
+        )
+        save_action_name = (
+            self.tr("Save workflow")
+            if workflow_id is not None
+            else self.tr("Save as workflow")
+        )
+        self.save_button.setToolTip(save_action_name)
+        self.save_button.setAccessibleName(save_action_name)
         self.copy_button.setEnabled(has_cards)
         self._can_start_new = bool(has_cards or workflow_id or dirty)
         self.new_shortcut_action.setEnabled(self._can_start_new)
-        for widget in (self.workflow_list, self.template_list):
+        for widget in (
+            self.workflow_list,
+            self.builtin_template_list,
+            self.template_list,
+        ):
             for index in range(widget.count()):
                 item = widget.item(index)
                 data = self._item_data(item) or {}
                 item.setData(_CURRENT_ROLE, data.get("id") == workflow_id)
         self.workflow_list.viewport().update()
+        self.builtin_template_list.viewport().update()
         self.template_list.viewport().update()
 
     def _filter_lists(self, text: str) -> None:
         query = text.strip().casefold()
-        for widget in (self.workflow_list, self.template_list):
+        for widget in (
+            self.workflow_list,
+            self.builtin_template_list,
+            self.template_list,
+        ):
             for index in range(widget.count()):
                 item = widget.item(index)
                 data = self._item_data(item) or {}
-                item.setHidden(query not in str(data.get("name", "")).casefold())
+                item.setHidden(query not in str(data.get("search_text", "")).casefold())
 
 
-__all__ = ["WorkflowLibraryPanel"]
+__all__ = [
+    "WorkflowLibraryPanel",
+    "localized_workflow_entry_description",
+    "localized_workflow_entry_name",
+    "localized_workflow_input_requirement",
+]

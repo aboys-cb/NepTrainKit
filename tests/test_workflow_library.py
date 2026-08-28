@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtTest import QSignalSpy
 from PySide6.QtWidgets import QApplication, QStyleOptionViewItem, QWidget
@@ -48,7 +49,9 @@ def test_library_crud_and_runtime_data_exclusion(tmp_path):
         target_kind="template",
     )
     assert duplicate.kind == "template"
-    assert [entry.name for entry in library.list("template")] == [
+    assert [
+        entry.name for entry in library.list("template") if entry.origin == "user"
+    ] == [
         "Reusable perturbation"
     ]
 
@@ -71,7 +74,46 @@ def test_library_import_and_export_keep_portable_workflow_record(tmp_path):
     assert "dataset" not in record["workflow"]["cards"][0]
 
 
-def test_make_data_workbench_opens_saved_workflow_and_template_as_copy(tmp_path):
+def test_builtin_templates_are_packaged_read_only_recipes(tmp_path):
+    library = WorkflowLibrary(tmp_path / "library")
+    builtins = [
+        entry for entry in library.list("template") if entry.origin == "builtin"
+    ]
+
+    assert [entry.workflow_id for entry in builtins] == [
+        "builtin-crystal-strain",
+        "builtin-supercell-perturb",
+        "builtin-alloy-occupancy",
+        "builtin-vacancy-candidates",
+        "builtin-spin-perturb",
+    ]
+    assert all(entry.read_only for entry in builtins)
+    assert all(entry.description and entry.input_requirement for entry in builtins)
+    assert all(entry.card_count >= 2 for entry in builtins)
+
+    selected = builtins[0]
+    assert library.get(selected.workflow_id, "template") == selected
+    with pytest.raises(ValueError, match="cannot be renamed"):
+        library.rename(selected.workflow_id, "template", "Changed")
+    with pytest.raises(ValueError, match="cannot be deleted"):
+        library.delete(selected.workflow_id, "template")
+
+    duplicate = library.duplicate(
+        selected.workflow_id,
+        "template",
+        name="My crystal recipe",
+    )
+    assert duplicate.origin == "user"
+    assert duplicate.workflow_id != selected.workflow_id
+
+    destination = tmp_path / "builtin.json"
+    library.export_file(selected.workflow_id, "template", destination)
+    exported = json.loads(destination.read_text(encoding="utf-8"))
+    assert exported["id"] == selected.workflow_id
+    assert exported["workflow"] == selected.workflow
+
+
+def test_make_data_workbench_opens_template_as_pristine_preview(tmp_path):
     app = QApplication.instance() or QApplication([])
     library = WorkflowLibrary(tmp_path)
     widget = MakeDataWidget(workflow_library=library)
@@ -89,6 +131,7 @@ def test_make_data_workbench_opens_saved_workflow_and_template_as_copy(tmp_path)
     widget._refresh_workflow_library()
 
     assert widget.workspace_card_widget.library_panel.workflow_list.count() == 1
+    assert widget.workspace_card_widget.library_panel.builtin_template_list.count() == 5
     assert widget.workspace_card_widget.library_panel.template_list.count() == 1
 
     widget._load_library_entry(saved)
@@ -103,8 +146,61 @@ def test_make_data_workbench_opens_saved_workflow_and_template_as_copy(tmp_path)
 
     widget._load_library_entry(template)
     assert widget._active_workflow_id is None
+    assert widget._workflow_dirty is False
+    assert widget._active_workflow_name == "Perturbation template"
+    panel = widget.workspace_card_widget.library_panel
+    assert panel.current_caption.text() == "PREVIEW"
+    assert panel.dirty_label.text() == "Not modified"
+    assert panel.save_button.text() == "Save as workflow"
+    assert panel.save_button.toolTip() == "Save as workflow"
+    assert widget._confirm_discard_workflow_changes() is True
+
+    preview_card = widget.workspace_card_widget.cards[0]
+    preview_card.scaling_condition_frame.set_input_value([0.5])
     assert widget._workflow_dirty is True
-    assert widget._active_workflow_name == "New from Perturbation template"
+    assert widget._active_workflow_name == "Based on Perturbation template"
+    assert panel.current_caption.text() == "CURRENT"
+    assert panel.dirty_label.text() == "Unsaved changes"
+
+    builtin = next(
+        entry
+        for entry in library.list("template")
+        if entry.workflow_id == "builtin-crystal-strain"
+    )
+    widget._load_library_entry(builtin)
+    assert widget._active_workflow_id is None
+    assert widget._workflow_dirty is False
+    assert widget._active_workflow_name == "Crystal strain"
+    assert [card.__class__.__name__ for card in widget.workspace_card_widget.cards] == [
+        "CrystalPrototypeBuilderCard",
+        "CellStrainCard",
+    ]
+
+    widget.close()
+    widget.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    app.processEvents()
+
+
+def test_all_builtin_templates_deserialise_into_registered_cards(tmp_path):
+    app = QApplication.instance() or QApplication([])
+    library = WorkflowLibrary(tmp_path)
+    widget = MakeDataWidget(workflow_library=library)
+
+    builtins = [
+        entry for entry in library.list("template") if entry.origin == "builtin"
+    ]
+    for entry in builtins:
+        widget._load_library_entry(entry)
+        assert len(widget.workspace_card_widget.cards) == entry.card_count
+        assert [
+            card.__class__.__name__ for card in widget.workspace_card_widget.cards
+        ] == [card["class"] for card in entry.workflow["cards"]]
+        assert widget._active_workflow_id is None
+        assert widget._workflow_dirty is False
+        assert widget.workspace_card_widget.library_panel.current_caption.text() == (
+            "PREVIEW"
+        )
 
     widget.close()
     widget.deleteLater()
@@ -156,6 +252,7 @@ def test_workflow_actions_live_in_current_workflow_panel():
     assert new_spy.count() == 1
     assert panel.copy_button.toolTip() == "Copy workflow JSON"
     assert panel.paste_button.toolTip() == "Add cards from clipboard"
+    assert panel.save_button.text() == "Save as workflow"
     panel.deleteLater()
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     app.processEvents()

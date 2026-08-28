@@ -33,6 +33,7 @@ from NepTrainKit.core.workflow_library import WorkflowEntry, WorkflowLibrary
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.config import Config
 from NepTrainKit.ui.widgets import MakeWorkflowArea
+from NepTrainKit.ui.widgets.workflow_library import localized_workflow_entry_name
 
 from NepTrainKit.ui.views import ConsoleWidget
 
@@ -90,6 +91,7 @@ class MakeDataWidget(QWidget):
         self.workflow_library = workflow_library or WorkflowLibrary()
         self._active_workflow_id: str | None = None
         self._active_workflow_name: str | None = None
+        self._source_template_name: str | None = None
         self._workflow_dirty = False
         self.init_action()
         self.init_ui()
@@ -348,6 +350,9 @@ class MakeDataWidget(QWidget):
             dirty=self._workflow_dirty,
             workflow_id=self._active_workflow_id,
             has_cards=bool(self.workspace_card_widget.cards),
+            template_preview=bool(
+                self._source_template_name and not self._workflow_dirty
+            ),
         )
 
     def _set_active_workflow(
@@ -356,6 +361,7 @@ class MakeDataWidget(QWidget):
         *,
         dirty: bool,
         display_name: str | None = None,
+        source_template_name: str | None = None,
     ) -> None:
         self._active_workflow_id = (
             entry.workflow_id if entry is not None and entry.kind == "workflow" else None
@@ -363,6 +369,7 @@ class MakeDataWidget(QWidget):
         self._active_workflow_name = display_name or (
             entry.name if entry is not None and entry.kind == "workflow" else None
         )
+        self._source_template_name = source_template_name
         self._workflow_dirty = dirty
         self._refresh_workflow_library()
 
@@ -373,14 +380,20 @@ class MakeDataWidget(QWidget):
                 dirty=True,
                 workflow_id=self._active_workflow_id,
                 has_cards=bool(self.workspace_card_widget.cards),
+                template_preview=False,
             )
             return
+        if self._source_template_name:
+            self._active_workflow_name = self.tr("Based on {name}").format(
+                name=self._source_template_name
+            )
         self._workflow_dirty = True
         self.workspace_card_widget.library_panel.set_current(
             self._active_workflow_name,
             dirty=True,
             workflow_id=self._active_workflow_id,
             has_cards=bool(self.workspace_card_widget.cards),
+            template_preview=False,
         )
 
     def _track_card_parameter_changes(self, card) -> None:
@@ -489,10 +502,12 @@ class MakeDataWidget(QWidget):
         self.workspace_card_widget.clear_cards()
         self._add_card_configs(cards, notify=False)
         if entry.kind == "template":
+            template_name = localized_workflow_entry_name(entry)
             self._set_active_workflow(
                 None,
-                dirty=True,
-                display_name=self.tr("New from {name}").format(name=entry.name),
+                dirty=False,
+                display_name=template_name,
+                source_template_name=template_name,
             )
         else:
             self._set_active_workflow(entry, dirty=False)

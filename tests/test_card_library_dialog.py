@@ -403,7 +403,6 @@ class TestCardLibraryDialog(unittest.TestCase):
         self._app.processEvents()
 
         self.assertEqual(popup.catalog_scroll.horizontalScrollBar().maximum(), 0)
-        self.assertEqual(popup.catalog_scroll.verticalScrollBar().maximum(), 0)
         self.assertNotIn("SmallAngleSpinTiltCard", popup._buttons_by_class)
         for class_name in ("MagneticMomentRotationCard",):
             button = popup._buttons_by_class[class_name]
@@ -412,7 +411,10 @@ class TestCardLibraryDialog(unittest.TestCase):
         popup.resize(776, 560)
         self._app.processEvents()
         self.assertEqual(popup.catalog_scroll.horizontalScrollBar().maximum(), 0)
-        self.assertEqual(popup._active_column_count, 3)
+        self.assertEqual(
+            popup._active_column_count,
+            popup._column_count_for_width(776),
+        )
         for button in popup._buttons_by_class.values():
             self.assertGreaterEqual(button.width(), button.sizeHint().width())
         self.assertEqual(

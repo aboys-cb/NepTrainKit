@@ -86,10 +86,14 @@ jobs:
           }
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination "$dist/Config" -Force
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/translations -Destination "$dist/translations" -Force
+          Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/workflow_templates -Destination "$dist/workflow_templates" -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe "$dist/update.exe"
 
           if (-not (Test-Path "$dist/translations/neptrainkit_zh_CN.qm")) {
             throw "Chinese translation catalog is missing from the standalone package."
+          }
+          if (-not (Test-Path "$dist/workflow_templates/01_crystal_strain.json")) {
+            throw "Built-in workflow templates are missing from the standalone package."
           }
           New-Item -ItemType Directory -Force "$dist/Log"
           New-Item -ItemType File -Path "$dist/Log/.placeholder" -Force

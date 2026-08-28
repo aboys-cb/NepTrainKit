@@ -33,10 +33,9 @@ class AdaptiveCompactSpinBox(CompactSpinBox):
         if button is None:
             return
         text_width = self.fontMetrics().horizontalAdvance(self.text())
-        button_width = max(button.sizeHint().width(), button.width())
         show_symbol = (
             not self.isReadOnly()
-            and self.width() >= text_width + button_width + self._TEXT_PADDING
+            and self.width() >= text_width + self._step_button_width() + self._TEXT_PADDING
         )
         if button.isHidden() == show_symbol:
             self.setSymbolVisible(show_symbol)
@@ -50,13 +49,18 @@ class AdaptiveCompactSpinBox(CompactSpinBox):
 
     def readable_width_hint(self) -> int:
         """Return the width needed to show the value and step control."""
-        button = getattr(self, "compactSpinButton", None)
-        button_width = button.sizeHint().width() if button is not None else 0
         return (
             self.fontMetrics().horizontalAdvance(self.text())
-            + button_width
+            + self._step_button_width()
             + self._TEXT_PADDING
         )
+
+    def _step_button_width(self) -> int:
+        """Return one stable reserve shared by layout hints and visibility."""
+        button = getattr(self, "compactSpinButton", None)
+        if button is None:
+            return 0
+        return max(30, button.sizeHint().width(), button.minimumSizeHint().width())
 
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
         super().resizeEvent(event)
@@ -119,10 +123,9 @@ class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
             self._shared_text_width,
             self.fontMetrics().horizontalAdvance(self.text()),
         )
-        button_width = max(button.sizeHint().width(), button.width())
         show_symbol = (
             not self.isReadOnly()
-            and self.width() >= text_width + button_width + self._TEXT_PADDING
+            and self.width() >= text_width + self._step_button_width() + self._TEXT_PADDING
         )
         if button.isHidden() == show_symbol:
             self.setSymbolVisible(show_symbol)
@@ -140,9 +143,14 @@ class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
             self._shared_text_width,
             self.fontMetrics().horizontalAdvance(self.text()),
         )
+        return text_width + self._step_button_width() + self._TEXT_PADDING
+
+    def _step_button_width(self) -> int:
+        """Return one stable reserve shared by layout hints and visibility."""
         button = getattr(self, "compactSpinButton", None)
-        button_width = button.sizeHint().width() if button is not None else 0
-        return text_width + button_width + self._TEXT_PADDING
+        if button is None:
+            return 0
+        return max(30, button.sizeHint().width(), button.minimumSizeHint().width())
 
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
         super().resizeEvent(event)

@@ -355,7 +355,7 @@ def build_cases() -> list[BenchCase]:
         BenchCase(
             "structure",
             "GroupLabel",
-            run_structure(GroupLabelOperation(), si, GroupLabelParams(mode="k-vector layers (recommended)", kvec="111")),
+            run_structure(GroupLabelOperation(), si, GroupLabelParams(miller_index="111")),
             lambda outputs: require_outputs(outputs, min_count=1, tag="Grp(") or (
                 "group" in outputs[0].arrays or (_ for _ in ()).throw(AssertionError("GroupLabel did not write group array"))
             ),

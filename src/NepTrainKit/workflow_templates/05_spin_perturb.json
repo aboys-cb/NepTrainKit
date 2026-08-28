@@ -1,0 +1,28 @@
+{
+  "library_schema": 1,
+  "id": "builtin-spin-perturb",
+  "name": "Spin perturbation",
+  "kind": "template",
+  "template_version": 1,
+  "category": "Magnetism",
+  "description": "Normalize existing scalar or vector initial moments, then sample nearby spin directions and magnitudes.",
+  "input_requirement": "Load structures containing spin or ASE initial magnetic moments. The template does not invent missing moment magnitudes; verify the scalar lift axis and perturbation range.",
+  "created_at": "2026-08-28T00:00:00+00:00",
+  "updated_at": "2026-08-28T00:00:00+00:00",
+  "workflow": {
+    "software_version": "",
+    "workflow_schema": 2,
+    "cards": [
+      {
+        "class": "SetMagneticMomentsCard",
+        "check_state": true,
+        "params": {"source": "Existing initial magmoms", "format": "Non-collinear (vector)", "axis": [0.0, 0.0, 1.0], "magmom_map": "", "use_element_dirs": false, "default_moment": 0.0, "constant_moment": 2.0, "lift_scalar": true, "apply_elements": ""}
+      },
+      {
+        "class": "MagneticMomentRotationCard",
+        "check_state": true,
+        "params": {"elements": "", "max_angle": 10.0, "num_structures": 5, "lift_scalar": true, "axis": [0.0, 0.0, 1.0], "disturb_magnitude": true, "magnitude_factor": [0.95, 1.05], "use_seed": false, "seed": 0}
+      }
+    ]
+  }
+}

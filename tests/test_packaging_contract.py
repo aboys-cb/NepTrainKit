@@ -85,6 +85,18 @@ def test_nuitka_build_copies_and_verifies_chinese_translation_catalog():
     assert "Chinese translation catalog is missing" in workflow
 
 
+def test_built_in_workflow_templates_are_packaged_for_wheels_and_nuitka():
+    workflow = (
+        ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
+    ).read_text(encoding="utf-8")
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    package_data = data["tool"]["setuptools"]["package-data"]
+
+    assert package_data["NepTrainKit.workflow_templates"] == ["*.json"]
+    assert "src/NepTrainKit/workflow_templates" in workflow
+    assert "Built-in workflow templates are missing" in workflow
+
+
 def test_nuitka_build_validates_flat_standalone_layout():
     workflow = (
         ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"

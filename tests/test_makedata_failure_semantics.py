@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 import pytest
 from ase import Atoms
-from PySide6.QtCore import QEventLoop, QTimer
+from PySide6.QtCore import QCoreApplication, QEvent, QEventLoop, QTimer
+from PySide6.QtTest import QSignalSpy
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.core.cards.operation import DatasetOperation, StructureOperation
@@ -110,6 +111,7 @@ def test_failed_card_discards_partial_output_and_stops_page_chain():
     page.dataset = [Atoms("H"), Atoms("He")]
     following.result_dataset = [Atoms("Li")]
     following.set_output_available(True)
+    completion = QSignalSpy(failing.runFinishedSignal)
 
     with patch(
         "NepTrainKit.ui.widgets.card_widget.MessageManager.send_error_message"
@@ -117,7 +119,8 @@ def test_failed_card_discards_partial_output_and_stops_page_chain():
         "NepTrainKit.ui.pages.makedata.MessageManager.send_success_message"
     ) as success_message:
         page.run_card()
-        assert _wait_until(lambda: failing.run_outcome == "failed")
+        assert completion.count() or completion.wait(10000)
+        assert failing.run_outcome == "failed"
 
     assert failing.result_dataset == []
     assert not failing.view_output_button.isEnabled()
@@ -128,6 +131,10 @@ def test_failed_card_discards_partial_output_and_stops_page_chain():
     assert page._last_completed_card_index is None
     error_message.assert_called_once()
     success_message.assert_not_called()
+    page.close()
+    page.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    QApplication.processEvents()
 
 
 def test_card_group_propagates_child_failure_without_running_later_children():

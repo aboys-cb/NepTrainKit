@@ -82,6 +82,7 @@ include = ["NepTrainKit", "NepTrainKit.*" ]
 "NepTrainKit" = ["translations/*.qm", "translations/*.ts"]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json","nep.json","nep89.txt" ]
 "NepTrainKit.core.dataset" = ["catalogs/*.json"]
+"NepTrainKit.workflow_templates" = ["*.json"]
 
 [tool.setuptools_scm]
 

@@ -1,0 +1,28 @@
+{
+  "library_schema": 1,
+  "id": "builtin-vacancy-candidates",
+  "name": "Vacancy sampling",
+  "kind": "template",
+  "template_version": 1,
+  "category": "Defect",
+  "description": "Expand each input structure and generate one single-vacancy candidate from every expanded cell.",
+  "input_requirement": "Load one or more periodic structures. Check the supercell size and switch the vacancy count or concentration mode when one vacancy per cell is not appropriate.",
+  "created_at": "2026-08-28T00:00:00+00:00",
+  "updated_at": "2026-08-28T00:00:00+00:00",
+  "workflow": {
+    "software_version": "",
+    "workflow_schema": 2,
+    "cards": [
+      {
+        "class": "SuperCellCard",
+        "check_state": true,
+        "params": {"mode": "scale", "output_mode": "single", "target_policy": "at_least", "super_scale": [3, 3, 3], "target_cell": [20.0, 20.0, 20.0], "max_atoms": 100, "fixed_axis_flags": [false, false, false], "fixed_axis_scale": [1, 1, 1]}
+      },
+      {
+        "class": "VacancyDefectCard",
+        "check_state": true,
+        "params": {"engine_type": 1, "num_condition": 1, "use_num": true, "concentration_condition": 0.01, "count_mode": "fixed", "max_structures": 1, "use_seed": false, "seed": 0}
+      }
+    ]
+  }
+}

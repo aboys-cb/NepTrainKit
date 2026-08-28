@@ -272,24 +272,41 @@ msgstr ""
 "See [Clean candidate structures before DFT](../workflows/clean-candidate-"
 "structures.md) for the complete workflow."
 
-#: ../../source/module/make-dataset.md:94 d3d147b490544b10a150bb17a2d1cfc5
-msgid "保存和恢复工作区"
-msgstr "Save and restore a workspace"
+#: ../../source/module/make-dataset.md:80
+msgid "使用工作流库和模板"
+msgstr "Use the workflow library and templates"
 
-#: ../../source/module/make-dataset.md:96 410b7a1109534a558f3c9c3ec6d115f9
-msgid ""
-"顶部 `Save` / `Load` 会把当前工作区的卡片顺序、参数和启停状态保存成 JSON。 "
-"这适合保存一条可复用的生成方案，例如“某个合金体系的缺陷候选池生成流程”。"
-msgstr ""
-"`Save` and `Load` in the top toolbar store the card order, parameters, "
-"and enabled state as JSON. Use this to preserve a reusable generation "
-"recipe, such as a defect-candidate workflow for a particular alloy."
+#: ../../source/module/make-dataset.md:82
+msgid "左侧工作流库分为三类："
+msgstr "The workflow library on the left has three sections:"
 
-#: ../../source/module/make-dataset.md:99 6b6c9fd8fb084d8d8627b9fd7836dcf1
-msgid "保存工作区不等于保存生成结构。结构结果仍需要从卡片导出。"
-msgstr ""
-"Saving the workspace does not save generated structures. Export structure"
-" results from their card separately."
+#: ../../source/module/make-dataset.md:84
+msgid "`My workflows`：已经命名并保存的工作流。"
+msgstr "`My workflows`: named workflows that you have saved."
+
+#: ../../source/module/make-dataset.md:85
+msgid "`Built-in`：随软件提供的起始配方，只读。"
+msgstr "`Built-in`: read-only starter recipes shipped with the application."
+
+#: ../../source/module/make-dataset.md:86
+msgid "`My templates`：你保存或导入的模板。"
+msgstr "`My templates`: templates that you saved or imported."
+
+#: ../../source/module/make-dataset.md:88
+msgid "双击模板只会打开**未修改的预览**，不会立刻算作新建工作流，也不会触发离开前的未保存提示。首次修改参数、卡片或顺序后，状态才变为“基于该模板”的未保存工作流；需要保留时，点击 `Save as workflow` 另存自己的副本。模板始终不会被改写。"
+msgstr "Double-clicking a template opens an **unmodified preview**. It is not treated as a new workflow and leaving it does not trigger an unsaved-changes prompt. The first change to a parameter, card, or card order turns it into an unsaved workflow based on that template. Click `Save as workflow` to keep your own copy; the template itself is never overwritten."
+
+#: ../../source/module/make-dataset.md:90
+msgid "第一批内置模板包括晶体应变、超胞原子扰动、合金成分与占位、超胞空位候选和已有磁矩扰动。鼠标停在模板上会显示输入要求。例如，“已有磁矩扰动”只读取结构中已有的 `spin` 或 ASE 初始磁矩，不会为缺失磁矩的元素猜测数值。"
+msgstr "The first built-in set covers crystal strain, supercell atomic perturbation, alloy composition and occupancy, supercell vacancy candidates, and existing-spin perturbation. Hover over a template to read its input requirement. For example, Existing-spin perturbation reads existing `spin` data or ASE initial magnetic moments; it does not guess missing moment magnitudes."
+
+#: ../../source/module/make-dataset.md:92
+msgid "工作流和用户模板以独立 JSON 文件保存在用户配置目录的 `workflows/saved` 和 `workflows/templates` 下；它们不存入 `config.sqlite`。内置模板则打包在软件中，不写入用户目录。两类 JSON 都只保存卡片顺序、参数和启停状态，不保存输入结构、运行结果或运行状态。"
+msgstr "Workflows and user templates are stored as separate JSON files under `workflows/saved` and `workflows/templates` in the user configuration directory; they are not stored in `config.sqlite`. Built-in templates are packaged with the application and are not written to the user directory. Both JSON forms contain only card order, parameters, and enabled state, never input structures, run results, or run state."
+
+#: ../../source/module/make-dataset.md:94
+msgid "保存工作流不等于保存生成结构。结构结果仍需从卡片导出。"
+msgstr "Saving a workflow does not save generated structures. Export structure results from their cards."
 
 #: ../../source/module/make-dataset.md:101 515c9820dc4745a5939d0b672a971b52
 msgid "文档入口"

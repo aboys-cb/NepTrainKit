@@ -872,7 +872,7 @@ def test_close_removes_nested_branch_card_immediately():
 def test_cards_expose_drag_handle_and_canvas_tracks_insertion_slot():
     app = _app()
     area = MakeWorkflowArea()
-    area.resize(1280, 700)
+    area.resize(1600, 700)
     first = PerturbCard()
     second = CellStrainCard()
     area.add_card(first)

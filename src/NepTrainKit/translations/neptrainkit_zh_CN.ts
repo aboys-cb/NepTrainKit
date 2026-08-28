@@ -841,6 +841,69 @@
     </message>
 </context>
 <context>
+    <name>BuiltinWorkflowTemplates</name>
+    <message>
+        <source>Crystal strain</source>
+        <translation>晶体应变采样</translation>
+    </message>
+    <message>
+        <source>Atom perturbation</source>
+        <translation>超胞原子扰动</translation>
+    </message>
+    <message>
+        <source>Alloy occupancy</source>
+        <translation>合金成分与占位</translation>
+    </message>
+    <message>
+        <source>Vacancy sampling</source>
+        <translation>超胞空位候选</translation>
+    </message>
+    <message>
+        <source>Spin perturbation</source>
+        <translation>已有磁矩扰动</translation>
+    </message>
+    <message>
+        <source>Build an elemental crystal prototype and sample independent uniaxial lattice strains.</source>
+        <translation>构建单质晶体原型，并分别采样各晶格方向的单轴应变。</translation>
+    </message>
+    <message>
+        <source>Expand each input structure and generate randomly displaced atomic configurations.</source>
+        <translation>扩展每个输入结构，并生成原子随机位移构型。</translation>
+    </message>
+    <message>
+        <source>Expand a parent cell, plan target alloy compositions, and realize each target by random site occupancy.</source>
+        <translation>扩展母晶胞、规划目标合金成分，并通过随机占位实现各目标成分。</translation>
+    </message>
+    <message>
+        <source>Expand each input structure and generate one single-vacancy candidate from every expanded cell.</source>
+        <translation>扩展每个输入结构，并从每个扩展晶胞生成一个单空位候选结构。</translation>
+    </message>
+    <message>
+        <source>Normalize existing scalar or vector initial moments, then sample nearby spin directions and magnitudes.</source>
+        <translation>统一已有标量或矢量初始磁矩的表示，再采样其附近的磁矩方向和大小。</translation>
+    </message>
+    <message>
+        <source>No input structure is required. Set the lattice, element, lattice constant, strain range, and output limit before running.</source>
+        <translation>无需输入结构。运行前请设置晶格、元素、晶格常数、应变范围和输出上限。</translation>
+    </message>
+    <message>
+        <source>Load one or more periodic structures. Review the replication factors, atom limit, displacement amplitude, and outputs per input before running.</source>
+        <translation>请载入一个或多个周期结构。运行前检查扩胞倍数、原子数上限、位移幅度和每个输入的输出数。</translation>
+    </message>
+    <message>
+        <source>Load a periodic parent structure. Replace the example Co, Cr, and Ni element set and check that the supercell has enough sites for the requested exact ratios.</source>
+        <translation>请载入周期母结构。将示例 Co、Cr、Ni 替换为目标元素，并确认超胞位点数足以实现要求的精确比例。</translation>
+    </message>
+    <message>
+        <source>Load one or more periodic structures. Check the supercell size and switch the vacancy count or concentration mode when one vacancy per cell is not appropriate.</source>
+        <translation>请载入一个或多个周期结构。检查超胞尺寸；若每个晶胞一个空位不合适，请切换空位数或浓度模式。</translation>
+    </message>
+    <message>
+        <source>Load structures containing spin or ASE initial magnetic moments. The template does not invent missing moment magnitudes; verify the scalar lift axis and perturbation range.</source>
+        <translation>请载入含 spin 或 ASE 初始磁矩的结构。模板不会补造缺失的磁矩大小；请检查标量磁矩的提升方向和扰动范围。</translation>
+    </message>
+</context>
+<context>
     <name>CanvasBase</name>
     <message>
         <location filename="../ui/canvas/base/canvas.py" line="230" />
@@ -12426,9 +12489,9 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>工作流模板已保存。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="495" />
-        <source>New from {name}</source>
-        <translation>基于 {name} 新建</translation>
+        <location filename="../ui/pages/makedata.py" line="384" />
+        <source>Based on {name}</source>
+        <translation>基于 {name}</translation>
     </message>
     <message>
         <location filename="../ui/pages/makedata.py" line="516" />
@@ -24602,8 +24665,13 @@ Magnetic: {magnetic}</source>
     </message>
     <message>
         <location filename="../ui/widgets/workflow_library.py" line="153" />
-        <source>CURRENT WORKFLOW</source>
-        <translation>当前工作流</translation>
+        <source>CURRENT</source>
+        <translation>当前</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/workflow_library.py" line="494" />
+        <source>PREVIEW</source>
+        <translation>模板预览</translation>
     </message>
     <message>
         <location filename="../ui/widgets/workflow_library.py" line="174" />
@@ -24617,18 +24685,22 @@ Magnetic: {magnetic}</source>
     </message>
     <message>
         <location filename="../ui/widgets/workflow_library.py" line="187" />
-        <source>Search workflows</source>
-        <translation>搜索工作流</translation>
+        <source>Search</source>
+        <translation>搜索</translation>
     </message>
     <message>
         <location filename="../ui/widgets/workflow_library.py" line="199" />
-        <source>My workflows</source>
-        <translation>我的工作流</translation>
+        <source>Saved</source>
+        <translation>已保存</translation>
     </message>
     <message>
         <location filename="../ui/widgets/workflow_library.py" line="204" />
-        <source>Templates</source>
-        <translation>模板</translation>
+        <source>User</source>
+        <translation>我的模板</translation>
+    </message>
+    <message>
+        <source>Built-in</source>
+        <translation>内置</translation>
     </message>
     <message>
         <source>Save</source>
@@ -24719,6 +24791,11 @@ Magnetic: {magnetic}</source>
         <translation>所有改动均已保存</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/workflow_library.py" line="500" />
+        <source>Not modified</source>
+        <translation>尚未修改</translation>
+    </message>
+    <message>
         <source>Saved workflow</source>
         <translation type="vanished">已保存工作流</translation>
     </message>
@@ -24738,6 +24815,10 @@ Magnetic: {magnetic}</source>
         <location filename="../ui/widgets/workflow_library.py" line="326" />
         <source>{count} cards · {updated}</source>
         <translation>{count} 张卡片 · {updated}</translation>
+    </message>
+    <message>
+        <source>{category} · {count} cards</source>
+        <translation>{category} · {count} 张卡片</translation>
     </message>
 </context>
 <context>

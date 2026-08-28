@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 import pytest
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.core.magnetic_response import (
@@ -43,6 +44,16 @@ def test_direction_presets_normalize_custom_vectors_and_mapping_table_keeps_cont
     table = KeyValueTableInput("Element", "Ratio")
     table.setText("Fe:2,O:1")
     assert table.text() == "Fe:2,O:1"
+    table.resize(320, 205)
+    table.show()
+    QApplication.processEvents()
+    assert (
+        table.table.horizontalScrollBarPolicy()
+        == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+    )
+    assert table.table.horizontalScrollBar().maximum() == 0
+    assert table.add_button.width() >= table.add_button.sizeHint().width()
+    assert table.remove_button.width() >= table.remove_button.sizeHint().width()
 
 
 def test_magnetoelastic_ui_exposes_percent_range_but_keeps_fraction_params():

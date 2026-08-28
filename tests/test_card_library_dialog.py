@@ -144,7 +144,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             self.assertEqual(dialog.detail_title_label.text(), "条件替换")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "按笛卡尔坐标筛选指定元素，并将所有命中位点按给定混合比例替换。",
+                "在固定笛卡尔区域内，将所有命中的目标原子替换为一种或多种指定元素。",
             )
 
             finite_cell_item = next(

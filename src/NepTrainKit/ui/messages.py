@@ -824,6 +824,79 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "The Grid settings require about {count} simplex points before budgeting. Increase the step or use Sobol; the safe limit is {maximum}.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Invalid Cartesian position filter syntax: {reason}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter contains unsupported syntax.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter may use only x, y, and z; unknown name(s): {names}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter may use only finite numeric constants.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter must be a comparison or a boolean expression.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter divides by zero for at least one atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter produces non-finite arithmetic for at least one atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Enter one valid target element symbol, such as O, Si, or Fe.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown target element symbol: {element}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Replacement ratios must be finite and non-negative.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Add at least one replacement element with a positive relative ratio.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Replacement element {element} appears more than once."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown replacement element symbol(s): {elements}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Replacement elements must not include the target element "
+        "{element}; use Random Doping for partial replacement.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Element allocation must be Independent random assignment or Match overall ratio.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Conditional Replace seed must be a non-negative integer.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Conditional Replace requires finite Cartesian atom positions.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The input structure contains no {element} atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The Cartesian position filter matches no {element} atoms.",
+    )
 
 
 def _card_operation_field_catalog() -> None:

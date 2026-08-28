@@ -909,9 +909,8 @@
         <translation type="vanished">按空间条件和比例替换当前结构中的原子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="103" />
         <source>Select a target element by Cartesian coordinates, then replace every matching site using the specified replacement mixture.</source>
-        <translation>按笛卡尔坐标筛选指定元素，并将所有命中位点按给定混合比例替换。</translation>
+        <translation type="vanished">按笛卡尔坐标筛选指定元素，并将所有命中位点按给定混合比例替换。</translation>
     </message>
     <message>
         <source>Correlated Random Spin</source>
@@ -1247,6 +1246,11 @@
         <location filename="../ui/widgets/card_metadata.py" line="96" />
         <source>Plan unique binary-to-quinary target compositions. This card writes Comp(...) tags only; add Random Occupancy to change atoms.</source>
         <translation>规划不重复的二元至五元目标成分；本卡只写入 Comp(...) 标签，需连接“随机占位”改变原子种类。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="103" />
+        <source>Replace every matching target atom inside a fixed Cartesian region with one or more specified elements.</source>
+        <translation>在固定笛卡尔区域内，将所有命中的目标原子替换为一种或多种指定元素。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="130" />
@@ -3947,6 +3951,101 @@
         <translation>当前网格设置在应用预算前约需生成 {count} 个单纯形点。请增大步长或改用 Sobol；安全上限为 {maximum}。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="827" />
+        <source>Invalid Cartesian position filter syntax: {reason}.</source>
+        <translation>笛卡尔位置筛选语法无效：{reason}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="831" />
+        <source>Cartesian position filter contains unsupported syntax.</source>
+        <translation>笛卡尔位置筛选包含不支持的语法。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="835" />
+        <source>Cartesian position filter may use only x, y, and z; unknown name(s): {names}.</source>
+        <translation>笛卡尔位置筛选只能使用 x、y 和 z；未知名称：{names}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="839" />
+        <source>Cartesian position filter may use only finite numeric constants.</source>
+        <translation>笛卡尔位置筛选只能使用有限数值常量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="843" />
+        <source>Cartesian position filter must be a comparison or a boolean expression.</source>
+        <translation>笛卡尔位置筛选必须是比较表达式或布尔表达式。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="847" />
+        <source>Cartesian position filter divides by zero for at least one atom.</source>
+        <translation>笛卡尔位置筛选在至少一个原子处发生除零。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="851" />
+        <source>Cartesian position filter produces non-finite arithmetic for at least one atom.</source>
+        <translation>笛卡尔位置筛选在至少一个原子处产生了非有限数值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="855" />
+        <source>Enter one valid target element symbol, such as O, Si, or Fe.</source>
+        <translation>请输入一个有效的目标元素符号，例如 O、Si 或 Fe。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="859" />
+        <source>Unknown target element symbol: {element}.</source>
+        <translation>未知目标元素符号：{element}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="862" />
+        <source>Replacement ratios must be finite and non-negative.</source>
+        <translation>替换比例必须是有限的非负数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="866" />
+        <source>Add at least one replacement element with a positive relative ratio.</source>
+        <translation>请添加至少一种相对比例为正的替换元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="870" />
+        <source>Replacement element {element} appears more than once.</source>
+        <translation>替换元素 {element} 重复出现。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="873" />
+        <source>Unknown replacement element symbol(s): {elements}.</source>
+        <translation>未知替换元素符号：{elements}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="876" />
+        <source>Replacement elements must not include the target element {element}; use Random Doping for partial replacement.</source>
+        <translation>替换元素不能包含目标元素 {element}；如需部分替换，请使用“随机掺杂”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="880" />
+        <source>Element allocation must be Independent random assignment or Match overall ratio.</source>
+        <translation>元素分配必须选择“独立随机分配”或“匹配整体比例”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="884" />
+        <source>Conditional Replace seed must be a non-negative integer.</source>
+        <translation>条件替换的随机种子必须是非负整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="888" />
+        <source>Conditional Replace requires finite Cartesian atom positions.</source>
+        <translation>条件替换要求原子的笛卡尔坐标均为有限值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="892" />
+        <source>The input structure contains no {element} atoms.</source>
+        <translation>输入结构中没有 {element} 原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="895" />
+        <source>The Cartesian position filter matches no {element} atoms.</source>
+        <translation>笛卡尔位置筛选没有命中任何 {element} 原子。</translation>
+    </message>
+    <message>
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
@@ -4096,152 +4195,152 @@
 <context>
     <name>CardOperationField</name>
     <message>
-        <location filename="../ui/messages.py" line="831" />
+        <location filename="../ui/messages.py" line="903" />
         <source>Maximum outputs per input</source>
         <translation>每个输入的最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="832" />
+        <location filename="../ui/messages.py" line="904" />
         <source>Bonds rotated per output</source>
         <translation>每个输出旋转的键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="833" />
+        <location filename="../ui/messages.py" line="905" />
         <source>Large-molecule threshold</source>
         <translation>大分子阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="834" />
+        <location filename="../ui/messages.py" line="906" />
         <source>Local subtree cap</source>
         <translation>局部子树上限</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="835" />
+        <location filename="../ui/messages.py" line="907" />
         <source>Retries per output</source>
         <translation>每个输出的重试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="836" />
+        <location filename="../ui/messages.py" line="908" />
         <source>Coordinate noise</source>
         <translation>坐标噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="837" />
+        <location filename="../ui/messages.py" line="909" />
         <source>Torsion increment range</source>
         <translation>扭转增量范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="838" />
+        <location filename="../ui/messages.py" line="910" />
         <source>Bond detection radius</source>
         <translation>成键检测半径</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="839" />
+        <location filename="../ui/messages.py" line="911" />
         <source>Minimum bond length</source>
         <translation>最小键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="840" />
+        <location filename="../ui/messages.py" line="912" />
         <source>Maximum bond length</source>
         <translation>最大键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="841" />
+        <location filename="../ui/messages.py" line="913" />
         <source>Minimum nonbonded distance</source>
         <translation>最小非键距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="842" />
+        <location filename="../ui/messages.py" line="914" />
         <source>Short-bond rotation cutoff</source>
         <translation>短键旋转截止系数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="843" />
+        <location filename="../ui/messages.py" line="915" />
         <source>Nonperiodic display box</source>
         <translation>非周期显示盒</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="844" />
+        <location filename="../ui/messages.py" line="916" />
         <source>Pauling decay length</source>
         <translation>Pauling 衰减长度</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="845" />
+        <location filename="../ui/messages.py" line="917" />
         <source>Bond-order threshold</source>
         <translation>键级阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="846" />
+        <location filename="../ui/messages.py" line="918" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="847" />
+        <location filename="../ui/messages.py" line="919" />
         <source>Independent outputs per input</source>
         <translation>每个输入的独立输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="848" />
+        <location filename="../ui/messages.py" line="920" />
         <source>Total solvent molecules per output</source>
         <translation>每个输出的溶剂分子总数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="849" />
+        <location filename="../ui/messages.py" line="921" />
         <source>Placement attempts per output</source>
         <translation>每个输出的放置尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="850" />
+        <location filename="../ui/messages.py" line="922" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="851" />
+        <location filename="../ui/messages.py" line="923" />
         <source>Fallback center-to-COM shell</source>
         <translation>备用中心-质心壳层</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="852" />
+        <location filename="../ui/messages.py" line="924" />
         <source>Uniform minimum distance</source>
         <translation>统一最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="853" />
+        <location filename="../ui/messages.py" line="925" />
         <source>Element-radius collision scale</source>
         <translation>元素半径碰撞缩放</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="854" />
+        <location filename="../ui/messages.py" line="926" />
         <source>Fixed box size</source>
         <translation>固定盒尺寸</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="855" />
+        <location filename="../ui/messages.py" line="927" />
         <source>Auto-box padding</source>
         <translation>自动显示盒留白</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="856" />
+        <location filename="../ui/messages.py" line="928" />
         <source>Minimum auto-box edge</source>
         <translation>自动显示盒最小边长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="857" />
+        <location filename="../ui/messages.py" line="929" />
         <source>Flexible conformer pool</source>
         <translation>柔性构象池</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="858" />
+        <location filename="../ui/messages.py" line="930" />
         <source>Flexible torsions per conformer</source>
         <translation>每个柔性构象的扭转键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="859" />
+        <location filename="../ui/messages.py" line="931" />
         <source>Flexible conformer noise</source>
         <translation>柔性构象噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="860" />
+        <location filename="../ui/messages.py" line="932" />
         <source>Flexible torsion range</source>
         <translation>柔性扭转范围</translation>
     </message>
@@ -4973,27 +5072,27 @@
 <context>
     <name>CompositionPathTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="310" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="318" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="310" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="318" />
         <source>Start fraction</source>
         <translation>起始比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="310" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="318" />
         <source>End fraction</source>
         <translation>终止比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="323" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="331" />
         <source>Add row</source>
         <translation>添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="324" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="332" />
         <source>Remove row</source>
         <translation>删除行</translation>
     </message>
@@ -5256,99 +5355,210 @@
         <translation type="vanished">条件原子替换</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="34" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="41" />
         <source>Conditional Replace</source>
         <translation>条件替换</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="38" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="50" />
+        <source>For example: O</source>
+        <translation>例如：O</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="52" />
         <source>Target element</source>
         <translation>目标元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="40" />
         <source>e.g., O</source>
-        <translation>例如 O</translation>
+        <translation type="vanished">例如 O</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="42" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="60" />
         <source>Replacement mixture</source>
         <translation>替换元素及相对比例</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="44" />
         <source>Replacement element</source>
-        <translation>替换元素</translation>
+        <translation type="vanished">替换元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="44" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="56" />
         <source>Relative ratio</source>
         <translation>相对比例</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="48" />
         <source>Every matching site is replaced. Ratios only distribute the replacement elements; a bare element means ratio 1.0.</source>
-        <translation>所有命中位点都会被替换；比例只用于分配替换元素，省略比例时按 1.0 处理。</translation>
+        <translation type="vanished">所有命中位点都会被替换；比例只用于分配替换元素，省略比例时按 1.0 处理。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="54" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="82" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="102" />
         <source>Element allocation</source>
         <translation>元素分配方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="56" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="78" />
         <source>Independent random assignment</source>
         <translation>逐位随机分配</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="57" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="56" />
+        <source>Element</source>
+        <translation>元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="64" />
+        <source>All matched sites are replaced. Ratios distribute replacement elements; they are not a replacement fraction.</source>
+        <translation>所有命中位点都会被替换。比例只分配替换元素，不表示替换率。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="69" />
+        <source>Replacement rule</source>
+        <translation>替换规则</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="71" />
+        <source>Choose one existing element and the elements that will replace it.</source>
+        <translation>选择一种已有元素，以及用来替换它的元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="80" />
         <source>Match overall ratio</source>
         <translation>尽量匹配整体比例</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="60" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="86" />
+        <source>Use fixed random seed</source>
+        <translation>使用固定随机种子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="93" />
+        <source>Random seed</source>
+        <translation>随机种子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="105" />
+        <source>Random assignment allows count fluctuations; ratio matching fixes the nearest feasible integer counts.</source>
+        <translation>随机分配允许计数涨落；比例匹配会固定为最接近目标的可实现整数计数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="117" />
+        <source>One Cartesian boundary</source>
+        <translation>单个笛卡尔边界</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="123" />
+        <source>Position selection</source>
+        <translation>位置选择</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="154" />
+        <source>For example: z&gt;=8 and z&lt;=10</source>
+        <translation>例如：z&gt;=8 and z&lt;=10</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="157" />
+        <source>Cartesian expression</source>
+        <translation>笛卡尔表达式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="160" />
+        <source>Use x, y, z, comparisons, and/or; equality tolerance is 0.0001 Å.</source>
+        <translation>可使用 x、y、z、比较以及 and/or；相等判断容差为 0.0001 Å。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="164" />
+        <source>Cartesian region</source>
+        <translation>笛卡尔区域</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="167" />
+        <source>Coordinates use the current fixed global x/y/z axes and origin in Å; no periodic wrapping or lattice-axis conversion is applied.</source>
+        <translation>坐标使用当前固定的全局 x/y/z 轴和原点，单位 Å；不做周期回绕或晶格轴转换。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="323" />
+        <source>Complete the replacement rule</source>
+        <translation>请完善替换规则</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="327" />
+        <source>{target} → {replacements} · {matched} matched · 1/input</source>
+        <translation>{target} → {replacements} · 命中 {matched} 个 · 每个输入 1 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="333" />
+        <source>{target} → {replacements} · 1 output/input</source>
+        <translation>{target} → {replacements} · 每个输入 1 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="352" />
+        <source>Outputs/input: 1.</source>
+        <translation>每个输入输出 1 个结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="355" />
+        <source>Inputs {inputs} × 1 output/input = outputs {total}.</source>
+        <translation>输入 {inputs} × 每个输入 1 个输出 = 共输出 {total} 个结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="362" />
+        <source>First input: {targets} target sites → {matched} Cartesian matches → all replaced.</source>
+        <translation>首个输入：{targets} 个目标位点 → 笛卡尔条件命中 {matched} 个 → 全部替换。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="373" />
+        <source>Matched integer allocation: {counts}.</source>
+        <translation>命中位点的整数分配：{counts}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="383" />
+        <source>Existing spin and initial magnetic moments stay on their sites; check or reset them after changing elements.</source>
+        <translation>现有 spin 和初始磁矩会保留在原位点；改变元素后请检查或重新设置磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="389" />
+        <source>Every matched target site is replaced; ratios do not keep part of the target element.</source>
+        <translation>每个命中的目标位点都会被替换；比例不会保留一部分目标元素。</translation>
+    </message>
+    <message>
         <source>Independent: draw a replacement for each matching site. Match overall ratio: allocate integer counts as closely as possible.</source>
-        <translation>逐位随机：每个命中位点独立抽取替换元素。匹配整体比例：尽量按比例分配整数数量。</translation>
+        <translation type="vanished">逐位随机：每个命中位点独立抽取替换元素。匹配整体比例：尽量按比例分配整数数量。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="66" />
         <source>Position filter (Cartesian, Å)</source>
-        <translation>位置筛选（笛卡尔坐标，Å）</translation>
+        <translation type="vanished">位置筛选（笛卡尔坐标，Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="70" />
         <source>all, z&gt;=8, or z&gt;=8 and z&lt;=10</source>
-        <translation>all、z&gt;=8，或 z&gt;=8 and z&lt;=10</translation>
+        <translation type="vanished">all、z&gt;=8，或 z&gt;=8 and z&lt;=10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="73" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="114" />
         <source>All target atoms</source>
         <translation>所有目标原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="74" />
         <source>One coordinate boundary</source>
-        <translation>单个坐标边界</translation>
+        <translation type="vanished">单个坐标边界</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="75" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="120" />
         <source>Advanced expression</source>
         <translation>高级表达式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="89" />
         <source>Use Cartesian x, y, and z coordinates in angstrom. Enter "all" to select every atom of the target element.</source>
-        <translation>使用单位为 Å 的笛卡尔 x、y、z 坐标；输入“all”可选中全部目标元素。</translation>
+        <translation type="vanished">使用单位为 Å 的笛卡尔 x、y、z 坐标；输入“all”可选中全部目标元素。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="95" />
         <source>Use fixed seed</source>
-        <translation>使用固定种子</translation>
+        <translation type="vanished">使用固定种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="97" />
         <source>Enable reproducible replacement allocation</source>
-        <translation>让替换元素的位点分配可以复现</translation>
+        <translation type="vanished">让替换元素的位点分配可以复现</translation>
     </message>
     <message>
         <source>Replacements</source>
@@ -8827,12 +9037,12 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>KeyValueTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="224" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="230" />
         <source>Add row</source>
         <translation>添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="225" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="231" />
         <source>Remove selected</source>
         <translation>删除选中项</translation>
     </message>
@@ -11294,23 +11504,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="897" />
-        <location filename="../ui/messages.py" line="937" />
+        <location filename="../ui/messages.py" line="969" />
+        <location filename="../ui/messages.py" line="1009" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="907" />
+        <location filename="../ui/messages.py" line="979" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="917" />
+        <location filename="../ui/messages.py" line="989" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="927" />
+        <location filename="../ui/messages.py" line="999" />
         <source>Error</source>
         <translation>错误</translation>
     </message>

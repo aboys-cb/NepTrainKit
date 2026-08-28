@@ -2200,25 +2200,175 @@ def _eval_condition_node(node: ast.AST, env: dict[str, float], tol: float) -> fl
     raise ValueError("Unsupported expression")
 
 
-def evaluate_condition(expr: str, coords: np.ndarray) -> bool | np.ndarray:
-    """Safely evaluate a coordinate condition against one or more positions."""
+def _eval_condition_array(
+    node: ast.AST,
+    env: dict[str, np.ndarray],
+    tol: float,
+):
+    """Evaluate a validated condition tree against coordinate arrays."""
+    if isinstance(node, ast.Expression):
+        return _eval_condition_array(node.body, env, tol)
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.Name):
+        return env[node.id]
+    if isinstance(node, ast.UnaryOp):
+        value = _eval_condition_array(node.operand, env, tol)
+        if isinstance(node.op, ast.UAdd):
+            return +value
+        if isinstance(node.op, ast.USub):
+            return -value
+        if isinstance(node.op, ast.Not):
+            return np.logical_not(value)
+    if isinstance(node, ast.BinOp):
+        left = _eval_condition_array(node.left, env, tol)
+        right = _eval_condition_array(node.right, env, tol)
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if isinstance(node.op, ast.Div):
+            return left / right
+        if isinstance(node.op, ast.Pow):
+            return left**right
+    if isinstance(node, ast.Compare):
+        left = _eval_condition_array(node.left, env, tol)
+        result = True
+        for operator, comparator in zip(node.ops, node.comparators):
+            right = _eval_condition_array(comparator, env, tol)
+            if isinstance(operator, ast.Eq):
+                current = np.isclose(left, right, rtol=0.0, atol=tol)
+            elif isinstance(operator, ast.NotEq):
+                current = np.logical_not(
+                    np.isclose(left, right, rtol=0.0, atol=tol)
+                )
+            elif isinstance(operator, ast.Lt):
+                current = left < right
+            elif isinstance(operator, ast.LtE):
+                current = np.logical_or(
+                    left <= right,
+                    np.isclose(left, right, rtol=0.0, atol=tol),
+                )
+            elif isinstance(operator, ast.Gt):
+                current = left > right
+            elif isinstance(operator, ast.GtE):
+                current = np.logical_or(
+                    left >= right,
+                    np.isclose(left, right, rtol=0.0, atol=tol),
+                )
+            result = np.logical_and(result, current)
+            left = right
+        return result
+    if isinstance(node, ast.BoolOp):
+        values = [_eval_condition_array(value, env, tol) for value in node.values]
+        result = values[0]
+        for value in values[1:]:
+            if isinstance(node.op, ast.And):
+                result = np.logical_and(result, value)
+            elif isinstance(node.op, ast.Or):
+                result = np.logical_or(result, value)
+        return result
+    raise ValueError("Unsupported expression")
+
+
+def _parse_condition_tree(expr: str) -> ast.Expression:
+    """Parse and validate a Cartesian selection expression without evaluating it."""
     expr_py = normalize_condition_expr(expr)
     try:
         tree = ast.parse(expr_py, mode="eval")
     except SyntaxError as exc:
-        raise ValueError(f"Invalid condition expression {expr!r}: {exc.msg}.") from exc
+        raise CardOperationError(
+            "conditional_replace.condition_syntax",
+            "Invalid Cartesian position filter syntax: {reason}.",
+            reason=exc.msg,
+        ) from exc
     if not _is_allowed_condition_node(tree):
-        raise ValueError("Condition expression contains unsupported syntax.")
+        raise CardOperationError(
+            "conditional_replace.condition_unsupported",
+            "Cartesian position filter contains unsupported syntax.",
+        )
+    unknown_names = sorted(
+        {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
+        - {"x", "y", "z"}
+    )
+    if unknown_names:
+        raise CardOperationError(
+            "conditional_replace.condition_names",
+            "Cartesian position filter may use only x, y, and z; unknown name(s): {names}.",
+            names=", ".join(unknown_names),
+        )
+    invalid_constant = any(
+        isinstance(node, ast.Constant)
+        and not isinstance(node.value, bool)
+        and (
+            not isinstance(node.value, (int, float))
+            or not np.isfinite(float(node.value))
+        )
+        for node in ast.walk(tree)
+    )
+    if invalid_constant:
+        raise CardOperationError(
+            "conditional_replace.condition_constants",
+            "Cartesian position filter may use only finite numeric constants.",
+        )
+    if not isinstance(tree.body, (ast.BoolOp, ast.Compare)) and not (
+        isinstance(tree.body, ast.UnaryOp) and isinstance(tree.body.op, ast.Not)
+    ) and not (
+        isinstance(tree.body, ast.Constant) and isinstance(tree.body.value, bool)
+    ):
+        raise CardOperationError(
+            "conditional_replace.condition_boolean",
+            "Cartesian position filter must be a comparison or a boolean expression.",
+        )
+    return tree
+
+
+def evaluate_condition(expr: str, coords: np.ndarray) -> bool | np.ndarray:
+    """Safely evaluate a coordinate condition against one or more positions."""
+    tree = _parse_condition_tree(expr)
     coords_arr = np.asarray(coords, dtype=float)
 
     def eval_single(pos) -> bool:
         x, y, z = map(float, pos[:3])
-        return bool(_eval_condition_node(tree, {"x": x, "y": y, "z": z}, tol=1e-4))
+        try:
+            return bool(
+                _eval_condition_node(tree, {"x": x, "y": y, "z": z}, tol=1e-4)
+            )
+        except ZeroDivisionError as exc:
+            raise CardOperationError(
+                "conditional_replace.condition_division",
+                "Cartesian position filter divides by zero for at least one atom.",
+            ) from exc
 
     if coords_arr.ndim == 1:
         return eval_single(coords_arr)
     if coords_arr.ndim == 2:
-        return np.array([eval_single(position) for position in coords_arr], dtype=bool)
+        if coords_arr.shape[1] < 3:
+            raise ValueError(f"Unsupported coordinate shape: {coords_arr.shape}")
+        try:
+            with np.errstate(divide="raise", invalid="raise", over="raise"):
+                result = _eval_condition_array(
+                    tree,
+                    {
+                        "x": coords_arr[:, 0],
+                        "y": coords_arr[:, 1],
+                        "z": coords_arr[:, 2],
+                    },
+                    tol=1.0e-4,
+                )
+        except FloatingPointError as exc:
+            raise CardOperationError(
+                "conditional_replace.condition_nonfinite",
+                "Cartesian position filter produces non-finite arithmetic for at least one atom.",
+            ) from exc
+        result_array = np.asarray(result, dtype=bool)
+        if result_array.ndim == 0:
+            return np.full(len(coords_arr), bool(result_array), dtype=bool)
+        if result_array.shape != (len(coords_arr),):
+            raise ValueError("Cartesian position filter returned an invalid shape.")
+        return result_array
     raise ValueError(f"Unsupported coordinate shape: {coords_arr.shape}")
 
 
@@ -2240,9 +2390,14 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
         for key, value in data.items():
             name = str(key).strip()
             ratio = float(value)
-            if name and ratio >= 0:
-                names.append(name)
-                ratios.append(ratio)
+            if not name:
+                raise ValueError("Replacement element names must not be empty.")
+            if not np.isfinite(ratio) or ratio < 0.0:
+                raise ValueError(
+                    "Replacement ratios must be finite and non-negative."
+                )
+            names.append(name)
+            ratios.append(ratio)
         return names, ratios
 
     for token in (item for item in text.split(",") if item.strip()):
@@ -2253,9 +2408,12 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
         else:
             name = token.strip()
             ratio = 1.0
-        if name and ratio >= 0:
-            names.append(name)
-            ratios.append(ratio)
+        if not name:
+            raise ValueError("Replacement element names must not be empty.")
+        if not np.isfinite(ratio) or ratio < 0.0:
+            raise ValueError("Replacement ratios must be finite and non-negative.")
+        names.append(name)
+        ratios.append(ratio)
     return names, ratios
 
 
@@ -2273,17 +2431,175 @@ class ConditionalReplaceParams:
 class ConditionalReplaceOperation(StructureOperation):
     """Replace atoms that match target species and coordinate condition."""
 
+    def selection_summary(
+        self,
+        params: ConditionalReplaceParams,
+        structure=None,
+    ) -> dict[str, object]:
+        """Validate the request and optionally count matching Cartesian sites."""
+        try:
+            targets = parse_element_list(str(params.target or ""))
+        except ValueError as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_target",
+                "Enter one valid target element symbol, such as O, Si, or Fe.",
+            ) from exc
+        if len(targets) != 1:
+            raise CardOperationError(
+                "conditional_replace.invalid_target",
+                "Enter one valid target element symbol, such as O, Si, or Fe.",
+            )
+        target = targets[0]
+        if target not in atomic_numbers:
+            raise CardOperationError(
+                "conditional_replace.unknown_target",
+                "Unknown target element symbol: {element}.",
+                element=target,
+            )
+
+        try:
+            raw_names, raw_ratios = parse_replacements(params.replacements)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_ratios",
+                "Replacement ratios must be finite and non-negative.",
+            ) from exc
+        if not raw_names:
+            raise CardOperationError(
+                "conditional_replace.no_replacements",
+                "Add at least one replacement element with a positive relative ratio.",
+            )
+
+        names: list[str] = []
+        ratios: list[float] = []
+        invalid_names: list[str] = []
+        for raw_name, raw_ratio in zip(raw_names, raw_ratios):
+            try:
+                parsed = parse_element_list(str(raw_name))
+            except ValueError:
+                parsed = []
+            if len(parsed) != 1 or parsed[0] not in atomic_numbers:
+                invalid_names.append(str(raw_name))
+                continue
+            name = parsed[0]
+            if name in names:
+                raise CardOperationError(
+                    "conditional_replace.duplicate_replacement",
+                    "Replacement element {element} appears more than once.",
+                    element=name,
+                )
+            names.append(name)
+            ratios.append(float(raw_ratio))
+        if invalid_names:
+            raise CardOperationError(
+                "conditional_replace.unknown_replacements",
+                "Unknown replacement element symbol(s): {elements}.",
+                elements=", ".join(invalid_names),
+            )
+        if target in names:
+            raise CardOperationError(
+                "conditional_replace.self_replacement",
+                "Replacement elements must not include the target element "
+                "{element}; use Random Doping for partial replacement.",
+                element=target,
+            )
+
+        positive = [
+            (name, ratio) for name, ratio in zip(names, ratios) if ratio > 0.0
+        ]
+        if not positive:
+            raise CardOperationError(
+                "conditional_replace.zero_ratios",
+                "Add at least one replacement element with a positive relative ratio.",
+            )
+        names = [name for name, _ratio in positive]
+        ratios_arr = np.asarray([ratio for _name, ratio in positive], dtype=float)
+        ratios_arr /= ratios_arr.sum()
+
+        try:
+            mode = int(params.mode)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_mode",
+                "Element allocation must be Independent random assignment or Match overall ratio.",
+            ) from exc
+        if mode not in (0, 1):
+            raise CardOperationError(
+                "conditional_replace.invalid_mode",
+                "Element allocation must be Independent random assignment or Match overall ratio.",
+            )
+        try:
+            seed = int(params.seed)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_seed",
+                "Conditional Replace seed must be a non-negative integer.",
+            ) from exc
+        if seed < 0:
+            raise CardOperationError(
+                "conditional_replace.invalid_seed",
+                "Conditional Replace seed must be a non-negative integer.",
+            )
+
+        condition = str(params.condition or "").strip() or "all"
+        _parse_condition_tree(condition)
+        summary: dict[str, object] = {
+            "target": target,
+            "replacement_elements": tuple(names),
+            "normalized_ratios": tuple(float(value) for value in ratios_arr),
+            "condition": condition,
+            "mode": mode,
+            "seed": seed,
+            "outputs_per_input": 1,
+        }
+        if structure is None:
+            return summary
+
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
+        positions = np.asarray(structure.get_positions(), dtype=float)
+        if positions.shape != (len(symbols), 3) or np.any(~np.isfinite(positions)):
+            raise CardOperationError(
+                "conditional_replace.invalid_positions",
+                "Conditional Replace requires finite Cartesian atom positions.",
+            )
+        target_mask = symbols == target
+        target_count = int(np.count_nonzero(target_mask))
+        if target_count == 0:
+            raise CardOperationError(
+                "conditional_replace.no_target_atoms",
+                "The input structure contains no {element} atoms.",
+                element=target,
+            )
+        condition_result = evaluate_condition(condition, positions)
+        condition_mask = (
+            np.asarray(condition_result, dtype=bool)
+            if isinstance(condition_result, np.ndarray)
+            else np.full(len(symbols), bool(condition_result), dtype=bool)
+        )
+        matched = int(np.count_nonzero(target_mask & condition_mask))
+        if matched == 0:
+            raise CardOperationError(
+                "conditional_replace.no_matches",
+                "The Cartesian position filter matches no {element} atoms.",
+                element=target,
+            )
+        summary["target_sites"] = target_count
+        summary["matched_sites"] = matched
+        if mode == 1:
+            counts = fractions_to_counts_exact(ratios_arr, matched)
+            summary["replacement_counts"] = tuple(
+                (name, int(count)) for name, count in zip(names, counts)
+            )
+        return summary
+
     def run_structure(self, structure, params: ConditionalReplaceParams) -> list:
-        target = params.target.strip()
-        if not target:
-            return [structure.copy()]
-
-        new_atoms, ratios = parse_replacements(params.replacements)
-        if not new_atoms or len(ratios) != len(new_atoms):
-            raise ValueError("Replacements must be provided as elem:ratio entries.")
-
-        seed = int(params.seed) if int(params.seed) != 0 else None
-        exact = int(params.mode) == 1
+        summary = self.selection_summary(params, structure)
+        target = str(summary["target"])
+        new_atoms = list(summary["replacement_elements"])
+        ratios = list(summary["normalized_ratios"])
+        seed_value = int(summary["seed"])
+        seed = seed_value if seed_value != 0 else None
+        exact = int(summary["mode"]) == 1
         new_structure, replaced = replace_atoms_with_conditions(
             structure,
             atom_to_replace=target,
@@ -2293,8 +2609,9 @@ class ConditionalReplaceOperation(StructureOperation):
             seed=seed,
             exact=exact,
         )
-        if replaced:
-            append_config_tag(new_structure, f"Repl({target}->{','.join(new_atoms)})")
+        if replaced != int(summary["matched_sites"]):
+            raise RuntimeError("Conditional Replace matched-site count changed during execution.")
+        append_config_tag(new_structure, f"Repl({target}->{','.join(new_atoms)})")
         return [new_structure]
 
 
@@ -2318,7 +2635,7 @@ def replace_atoms_with_conditions(
         condition_mask = np.full(len(symbols), bool(condition_result), dtype=bool)
     target_indices = np.nonzero(target_mask & condition_mask)[0]
     if len(target_indices) == 0:
-        return structure, 0
+        return structure.copy(), 0
 
     probs = np.asarray(probabilities, dtype=float)
     if probs.size != len(new_atoms) or probs.size == 0:

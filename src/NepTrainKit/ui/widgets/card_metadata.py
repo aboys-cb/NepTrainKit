@@ -102,7 +102,8 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Conditional Replace"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Select a target element by Cartesian coordinates, then replace every matching site using the specified replacement mixture.",
+                "Replace every matching target atom inside a fixed Cartesian "
+                "region with one or more specified elements.",
             ),
         ),
         "CorrelatedRandomSpinCard": (

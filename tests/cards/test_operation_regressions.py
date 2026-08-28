@@ -38,9 +38,13 @@ class TestOperationRegressionEdges(BaseCardTest):
                 RandomVacancyParams(rules=[]),
             )
 
+        with self.assertRaisesRegex(ValueError, "valid target element"):
+            ConditionalReplaceOperation().run_structure(
+                structure, ConditionalReplaceParams(target="")
+            )
+
         cases = [
             RandomDopingOperation().run_structure(structure, RandomDopingParams(rules=[]))[0],
-            ConditionalReplaceOperation().run_structure(structure, ConditionalReplaceParams(target=""))[0],
             GroupLabelOperation().run_structure(structure, GroupLabelParams(overwrite=False))[0],
         ]
 

@@ -215,7 +215,13 @@ class KeyValueTableInput(QWidget):
         layout.setSpacing(5)
         self.table = QTableWidget(0, 2, self)
         self.table.setHorizontalHeaderLabels([key_title, value_title])
-        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
+        self.table.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.table.setMinimumWidth(0)
         self.table.verticalHeader().setVisible(False)
         self.table.setMinimumHeight(96)
         self.table.setMaximumHeight(150)
@@ -223,6 +229,8 @@ class KeyValueTableInput(QWidget):
         buttons.setContentsMargins(0, 0, 0, 0)
         self.add_button = PushButton(self.tr("Add row"), self)
         self.remove_button = PushButton(self.tr("Remove selected"), self)
+        self.add_button.setMinimumWidth(self.add_button.sizeHint().width())
+        self.remove_button.setMinimumWidth(self.remove_button.sizeHint().width())
         self.add_button.clicked.connect(self.add_row)
         self.remove_button.clicked.connect(self.remove_selected)
         self.table.itemChanged.connect(lambda _item: self.editingFinished.emit())

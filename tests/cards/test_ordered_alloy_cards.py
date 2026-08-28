@@ -892,7 +892,14 @@ class TestOrderedAlloyCards(BaseCardTest):
             with self.subTest(expression=expression):
                 self.assertTrue(evaluate_condition(expression, point))
         self.assertFalse(evaluate_condition("x!=0", point))
-        with self.assertRaisesRegex(ValueError, "Invalid condition expression"):
+        points = np.array([[0.0, 1.0, 2.0], [3.0, 4.0, 5.0]])
+        np.testing.assert_array_equal(
+            evaluate_condition("z>=2 and z<=4", points), [True, False]
+        )
+        np.testing.assert_array_equal(
+            evaluate_condition("x>2 or y<2", points), [True, True]
+        )
+        with self.assertRaisesRegex(ValueError, "position filter syntax"):
             evaluate_condition("x===0", point)
 
     def test_sobol_min_fraction_returns_target_valid_count_or_clear_failure(self):

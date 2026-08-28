@@ -21,13 +21,17 @@ except NameError:
 
 from NepTrainKit.runtime_package import (
     HEALTH_CHECK_FLAG,
+    NATIVE_HEALTH_CHECK_FLAG,
     MANAGED_RUNTIME_SPEC,
     activate_runtime_package,
     default_runtime_root,
 )
 
 managed_runtime_root = default_runtime_root(compiled=is_nuitka_compiled)
-_is_runtime_health_check = HEALTH_CHECK_FLAG in sys.argv[1:]
+_is_runtime_health_check = any(
+    flag in sys.argv[1:]
+    for flag in (HEALTH_CHECK_FLAG, NATIVE_HEALTH_CHECK_FLAG)
+)
 try:
     managed_runtime_activation = (
         None

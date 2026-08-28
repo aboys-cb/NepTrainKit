@@ -22,6 +22,7 @@ from ase.data import atomic_masses, atomic_numbers
 from NepTrainKit.core.alloy import (
     assign_random_occupancy,
     fractions_to_counts_exact,
+    normalize_composition,
     parse_composition,
     parse_element_list,
     simplex_grid_points,
@@ -32,6 +33,38 @@ from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 from .errors import CardOperationError
 from .geometry import scaled_positions
 from .operation import GeneratorOperation, StructureOperation
+
+
+def _invalidate_species_change_labels(
+    atoms,
+    *,
+    clear_species_initialization: bool = False,
+) -> None:
+    """Drop reference data that no longer describes changed chemical species."""
+    atoms.calc = None
+    for key in (
+        "energy",
+        "free_energy",
+        "virial",
+        "stress",
+        "dipole",
+        "magmom",
+    ):
+        atoms.info.pop(key, None)
+    array_keys = [
+        "forces",
+        "force",
+        "energies",
+        "atomic_energy",
+        "magmoms",
+        "charges",
+        "bec",
+        "born_effective_charges",
+    ]
+    if clear_species_initialization:
+        array_keys.extend(("spin", "initial_magmoms", "initial_charges"))
+    for key in array_keys:
+        atoms.arrays.pop(key, None)
 
 
 def _as_list(value: Any) -> list:
@@ -2024,30 +2057,102 @@ class RandomOccupancyParams:
 class RandomOccupancyOperation(StructureOperation):
     """Assign elements to sites from a target composition."""
 
-    def run_structure(self, structure, params: RandomOccupancyParams) -> list:
-        comp = self._read_composition(structure, params)
-        if not comp:
-            raise ValueError(
-                "RandomOccupancy requires a Comp(...) tag or a non-empty manual composition."
+    def sampling_summary(self, structure, params: RandomOccupancyParams) -> dict[str, object]:
+        """Validate one input and describe the exact occupancy sampling contract."""
+        source = str(params.source).strip()
+        if source not in {"Auto (Comp tag)", "Manual"}:
+            raise CardOperationError(
+                "random_occupancy.invalid_source",
+                "RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.",
             )
-        invalid_elements = [element for element in comp if element not in atomic_numbers]
-        if invalid_elements:
-            raise ValueError(
-                "RandomOccupancy has unknown element symbol(s): "
-                + ", ".join(invalid_elements)
-                + "."
-            )
-
-        indices = self._eligible_indices(structure, params.group_filter)
         mode = str(params.mode).strip()
         if mode not in {"Exact", "Random"}:
-            raise ValueError("RandomOccupancy: mode must be Exact or Random.")
-        samples = int(params.samples)
+            raise CardOperationError(
+                "random_occupancy.invalid_mode",
+                "RandomOccupancy: mode must be Exact or Random.",
+            )
+        try:
+            samples = int(params.samples)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_occupancy.invalid_samples",
+                "RandomOccupancy: samples must be an integer >= 1.",
+            ) from exc
         if samples <= 0:
-            raise ValueError("RandomOccupancy: samples must be >= 1.")
-        seed = int(params.seed)
-        if params.use_seed and seed < 0:
-            raise ValueError("RandomOccupancy: seed must be >= 0.")
+            raise CardOperationError(
+                "random_occupancy.invalid_samples",
+                "RandomOccupancy: samples must be >= 1.",
+            )
+        try:
+            seed = int(params.seed)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_occupancy.invalid_seed",
+                "RandomOccupancy: seed must be a non-negative integer.",
+            ) from exc
+        if seed < 0:
+            raise CardOperationError(
+                "random_occupancy.invalid_seed",
+                "RandomOccupancy: seed must be >= 0.",
+            )
+        if len(structure) <= 0:
+            raise CardOperationError(
+                "random_occupancy.empty_structure",
+                "RandomOccupancy: input structure has no sites.",
+            )
+
+        comp = self._read_composition(structure, params, source=source)
+        invalid_elements = [element for element in comp if element not in atomic_numbers]
+        if invalid_elements:
+            raise CardOperationError(
+                "random_occupancy.unknown_elements",
+                "RandomOccupancy has unknown element symbol(s): {elements}.",
+                elements=", ".join(invalid_elements),
+            )
+        target = normalize_composition(comp)
+        if not target:
+            raise CardOperationError(
+                "random_occupancy.zero_target",
+                "RandomOccupancy: target composition must contain at least one positive weight.",
+            )
+
+        indices, groups = self._selection(structure, params.group_filter)
+        fixed_counts = None
+        fixed_fractions = None
+        if mode == "Exact":
+            counts = fractions_to_counts_exact(
+                np.asarray(list(target.values()), dtype=float),
+                len(indices),
+            )
+            fixed_counts = {
+                element: int(count)
+                for element, count in zip(target, counts)
+            }
+            fixed_fractions = {
+                element: int(count) / len(indices)
+                for element, count in zip(target, counts)
+            }
+        return {
+            "source": source,
+            "mode": mode,
+            "target": dict(target),
+            "eligible_indices": tuple(int(index) for index in indices),
+            "eligible_count": int(len(indices)),
+            "groups": groups,
+            "fixed_counts": fixed_counts,
+            "fixed_fractions": fixed_fractions,
+            "outputs_per_input": samples,
+            "use_seed": bool(params.use_seed),
+            "seed": seed,
+        }
+
+    def run_structure(self, structure, params: RandomOccupancyParams) -> list:
+        summary = self.sampling_summary(structure, params)
+        target = summary["target"]
+        indices = np.asarray(summary["eligible_indices"], dtype=int)
+        mode = str(summary["mode"])
+        samples = int(summary["outputs_per_input"])
+        seed = int(summary["seed"])
         base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
 
@@ -2055,27 +2160,96 @@ class RandomOccupancyOperation(StructureOperation):
         for sample_idx in range(samples):
             if base_seed is None:
                 rng = np.random.default_rng()
+                derived_seed = None
                 seed_note = ""
             else:
                 derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
                 rng = np.random.default_rng(derived_seed)
                 seed_note = f",s={derived_seed}"
 
-            new_atoms = assign_random_occupancy(structure, comp, indices=indices, mode=mode, rng=rng)
+            new_atoms = assign_random_occupancy(
+                structure,
+                target,
+                indices=indices,
+                mode=mode,
+                rng=rng,
+            )
+            actual_symbols = np.asarray(new_atoms.get_chemical_symbols(), dtype=object)[indices]
+            original_symbols = np.asarray(
+                structure.get_chemical_symbols(),
+                dtype=object,
+            )[indices]
+            if not np.array_equal(actual_symbols, original_symbols):
+                _invalidate_species_change_labels(
+                    new_atoms,
+                    clear_species_initialization=True,
+                )
+            actual_counts = {
+                element: int(np.count_nonzero(actual_symbols == element))
+                for element in target
+            }
+            actual_fractions = {
+                element: count / len(indices)
+                for element, count in actual_counts.items()
+            }
+            metadata = {
+                "target": target,
+                "actual_counts": actual_counts,
+                "actual_fractions": actual_fractions,
+                "eligible_sites": int(len(indices)),
+                "groups": list(summary["groups"]),
+                "mode": mode,
+                "sample_index": int(sample_idx),
+                "seed": derived_seed,
+            }
+            new_atoms.info["random_occupancy"] = json.dumps(
+                metadata,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
             mode_tag = "E" if mode == "Exact" else "R"
             append_config_tag(new_atoms, f"Occ({mode_tag}{seed_note})")
             out.append(new_atoms)
         return out
 
-    def _read_composition(self, structure, params: RandomOccupancyParams) -> dict[str, float]:
-        if params.source.lower().startswith("auto"):
-            comp = self._read_comp_from_config_type(structure)
+    def _read_composition(
+        self,
+        structure,
+        params: RandomOccupancyParams,
+        *,
+        source: str | None = None,
+    ) -> dict[str, float]:
+        source = str(params.source).strip() if source is None else source
+        if source == "Auto (Comp tag)":
+            try:
+                comp = self._read_comp_from_config_type(structure)
+            except (TypeError, ValueError, json.JSONDecodeError) as exc:
+                raise CardOperationError(
+                    "random_occupancy.invalid_composition",
+                    "RandomOccupancy could not parse the Comp(...) target: {error}",
+                    error=str(exc),
+                ) from exc
             if comp:
                 return comp
-        manual = params.manual.strip()
+            raise CardOperationError(
+                "random_occupancy.missing_comp_tag",
+                "RandomOccupancy Auto (Comp tag) requires a Comp(...) tag in Config_type.",
+            )
+        manual = str(params.manual or "").strip()
         if not manual:
-            return {}
-        return parse_composition(manual)
+            raise CardOperationError(
+                "random_occupancy.empty_manual",
+                "RandomOccupancy requires a Comp(...) tag in Auto mode or a non-empty "
+                "manual composition in Manual mode; Manual input is empty.",
+            )
+        try:
+            return parse_composition(manual)
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise CardOperationError(
+                "random_occupancy.invalid_composition",
+                "RandomOccupancy could not parse the manual composition: {error}",
+                error=str(exc),
+            ) from exc
 
     @staticmethod
     def _read_comp_from_config_type(structure) -> dict[str, float]:
@@ -2091,16 +2265,25 @@ class RandomOccupancyOperation(StructureOperation):
         return {}
 
     @staticmethod
-    def _eligible_indices(structure, groups_text: str) -> np.ndarray | None:
-        groups_text = groups_text.strip()
+    def _eligible_indices(structure, groups_text: str) -> np.ndarray:
+        indices, _groups = RandomOccupancyOperation._selection(structure, groups_text)
+        return indices
+
+    @staticmethod
+    def _selection(structure, groups_text: str) -> tuple[np.ndarray, tuple[str, ...]]:
+        groups_text = str(groups_text or "").strip()
         if not groups_text:
-            return None
+            return np.arange(len(structure), dtype=int), ()
         allowed = {group.strip() for group in groups_text.split(",") if group.strip()}
         if not allowed:
-            return None
+            raise CardOperationError(
+                "random_occupancy.empty_group_filter",
+                "RandomOccupancy: group_filter must contain at least one non-empty group label.",
+            )
         if "group" not in structure.arrays:
-            raise ValueError(
-                "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure."
+            raise CardOperationError(
+                "random_occupancy.missing_group_array",
+                "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.",
             )
         groups = structure.arrays["group"]
         indices = np.array(
@@ -2108,12 +2291,12 @@ class RandomOccupancyOperation(StructureOperation):
             dtype=int,
         )
         if len(indices) == 0:
-            raise ValueError(
-                "RandomOccupancy group_filter matched no atoms: "
-                + ",".join(sorted(allowed))
-                + "."
+            raise CardOperationError(
+                "random_occupancy.no_matching_groups",
+                "RandomOccupancy group_filter matched no atoms: {groups}.",
+                groups=",".join(sorted(allowed)),
             )
-        return indices
+        return indices, tuple(sorted(allowed))
 
 
 def normalize_condition_expr(expr: str) -> str:
@@ -2753,7 +2936,7 @@ class InterfaceLayerMixOperation(StructureOperation):
             c_effective = 2.0 * pair_count / resolved["n_total"]
             changed = self._swap_atoms(atoms, resolved, pair_count, rng)
             if changed:
-                self._invalidate_reference_labels(atoms)
+                _invalidate_species_change_labels(atoms)
             target_tag = (
                 ""
                 if math.isclose(c_effective, c, rel_tol=0.0, abs_tol=CONC_TOLERANCE)
@@ -3238,28 +3421,3 @@ class InterfaceLayerMixOperation(StructureOperation):
             np.asarray(left_pairs, dtype=int)[order],
             np.asarray(right_pairs, dtype=int)[order],
         )
-
-    @staticmethod
-    def _invalidate_reference_labels(atoms) -> None:
-        """Drop labels invalidated by changing chemical species at fixed sites."""
-        atoms.calc = None
-        for key in (
-            "energy",
-            "free_energy",
-            "virial",
-            "stress",
-            "dipole",
-            "magmom",
-        ):
-            atoms.info.pop(key, None)
-        for key in (
-            "forces",
-            "force",
-            "energies",
-            "atomic_energy",
-            "magmoms",
-            "charges",
-            "bec",
-            "born_effective_charges",
-        ):
-            atoms.arrays.pop(key, None)

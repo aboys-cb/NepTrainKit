@@ -317,6 +317,28 @@ def test_local_solvation_structured_errors_are_fully_chinese():
     assert translate_runtime_message(mode_error) == "受支持的离子水合模式要求溶剂分子为水。"
 
 
+def test_random_occupancy_structured_errors_are_fully_chinese():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    source_error = CardOperationError(
+        "random_occupancy.invalid_source",
+        "RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.",
+    )
+    parse_error = CardOperationError(
+        "random_occupancy.invalid_composition",
+        "RandomOccupancy could not parse the manual composition: {error}",
+        error="Composition ratio for Fe must be non-negative.",
+    )
+
+    assert translate_runtime_message(source_error) == (
+        "随机占位：组成来源必须是“自动（Comp 标签）”或“手动”。"
+    )
+    assert translate_runtime_message(parse_error) == (
+        "随机占位无法解析手动组成：Composition ratio for Fe 必须为非负数。"
+    )
+
+
 def test_translation_path_uses_runtime_resource_root(monkeypatch, tmp_path):
     monkeypatch.setattr(i18n, "module_path", tmp_path)
 

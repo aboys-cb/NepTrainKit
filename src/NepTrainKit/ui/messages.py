@@ -270,6 +270,17 @@ def translate_runtime_message(message) -> str:
             values["field"] = QCoreApplication.translate(
                 "CardOperationField", values["field"]
             )
+        for key in ("error", "reason"):
+            if isinstance(values.get(key), str):
+                raw_value = values[key]
+                translated_value = translate_runtime_message(raw_value)
+                if (
+                    translated_value != raw_value
+                    and _zh_runtime_messages_enabled()
+                    and translated_value.endswith(".")
+                ):
+                    translated_value = translated_value[:-1] + "。"
+                values[key] = translated_value
         return template.format(**values)
     text = str(message)
     translated = QCoreApplication.translate("RuntimeMessage", text)
@@ -1098,6 +1109,64 @@ def _card_operation_error_catalog() -> None:
     QCoreApplication.translate(
         "CardOperationError",
         "Layer Stack would create a singular or inverted final cell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: mode must be Exact or Random."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: samples must be an integer >= 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: samples must be >= 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: seed must be a non-negative integer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: seed must be >= 0."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: input structure has no sites."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy has unknown element symbol(s): {elements}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy: target composition must contain at least one positive weight.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy could not parse the Comp(...) target: {error}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy Auto (Comp tag) requires a Comp(...) tag in Config_type.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy requires a Comp(...) tag in Auto mode or a non-empty manual composition in Manual mode; Manual input is empty.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy could not parse the manual composition: {error}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy: group_filter must contain at least one non-empty group label.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy group_filter matched no atoms: {groups}.",
     )
 
 

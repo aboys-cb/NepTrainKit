@@ -4511,6 +4511,70 @@
         <translation>分层堆叠会生成奇异或手性反转的最终晶胞。</translation>
     </message>
     <message>
+        <source>RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.</source>
+        <translation>随机占位：组成来源必须是“自动（Comp 标签）”或“手动”。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: mode must be Exact or Random.</source>
+        <translation>随机占位：计数方式必须是固定计数或随机计数。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: samples must be an integer &gt;= 1.</source>
+        <translation>随机占位：每个输入的输出数必须是不小于 1 的整数。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: samples must be &gt;= 1.</source>
+        <translation>随机占位：每个输入的输出数必须不小于 1。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: seed must be a non-negative integer.</source>
+        <translation>随机占位：随机种子必须是非负整数。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: seed must be &gt;= 0.</source>
+        <translation>随机占位：随机种子必须不小于 0。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: input structure has no sites.</source>
+        <translation>随机占位：输入结构中没有位点。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy has unknown element symbol(s): {elements}.</source>
+        <translation>随机占位包含未知元素符号：{elements}。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: target composition must contain at least one positive weight.</source>
+        <translation>随机占位：目标组成至少需要一个正权重。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy could not parse the Comp(...) target: {error}</source>
+        <translation>随机占位无法解析 Comp(...) 目标：{error}</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy Auto (Comp tag) requires a Comp(...) tag in Config_type.</source>
+        <translation>随机占位的自动模式要求 Config_type 中存在 Comp(...) 标签。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy requires a Comp(...) tag in Auto mode or a non-empty manual composition in Manual mode; Manual input is empty.</source>
+        <translation>随机占位在自动模式下需要 Comp(...) 标签，在手动模式下需要非空组成；当前手动输入为空。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy could not parse the manual composition: {error}</source>
+        <translation>随机占位无法解析手动组成：{error}</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy: group_filter must contain at least one non-empty group label.</source>
+        <translation>随机占位：占位分组至少需要一个非空 group 标签。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.</source>
+        <translation>随机占位的分组限制要求输入结构包含 atoms.arrays['group']。</translation>
+    </message>
+    <message>
+        <source>RandomOccupancy group_filter matched no atoms: {groups}.</source>
+        <translation>随机占位的分组限制未命中任何原子：{groups}。</translation>
+    </message>
+    <message>
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
@@ -14314,83 +14378,156 @@ All child items will also be deleted.</source>
 <context>
     <name>RandomOccupancyCard</name>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="27" />
-        <source>Random Occupancy Assignment</source>
-        <translation>随机占位分配</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="33" />
         <source>Composition</source>
         <translation>组成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="36" />
-        <source>Auto reads Comp(...) from Config_type</source>
-        <translation>自动从 Config_type 读取 Comp(...)</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="39" />
-        <source>Manual comp</source>
-        <translation>手动成分</translation>
-    </message>
-    <message>
-        <source>Co:0.33,Cr:0.33,Ni:0.34</source>
-        <translation type="vanished">Co:0.33,Cr:0.33,Ni:0.34</translation>
-    </message>
-    <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="41" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="41" />
         <source>Target fraction</source>
         <translation>目标比例</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="43" />
-        <source>Element fractions. Used when 'Manual' is selected or Config_type lacks Comp(...).</source>
-        <translation>元素占比。选择 'Manual' 或 Config_type 缺少 Comp(...) 时使用。</translation>
+        <source>Manual composition</source>
+        <translation>手动组成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="46" />
-        <source>Mode</source>
-        <translation>模式</translation>
+        <source>Enter element weights; they are normalized before occupancy assignment.</source>
+        <translation>输入元素权重；占位分配前会自动归一化。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="49" />
-        <source>Exact: integer counts match fractions; Random: multinomial sampling</source>
-        <translation>Exact: integer counts match 比例s; 随机: multinomial 采样</translation>
+        <source>Target composition</source>
+        <translation>目标组成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="52" />
-        <source>Structures/input</source>
-        <translation>每个输入的结构数</translation>
+        <source>Auto reads the last Comp(...) tag from each input. Manual uses the table below.</source>
+        <translation>自动模式读取每个输入的最后一个 Comp(...) 标签；手动模式使用下表。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="57" />
-        <source>Number of occupancy samples generated from each input structure</source>
-        <translation>每个输入结构生成的占位采样数量</translation>
+        <source>Fixed counts</source>
+        <translation>固定计数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="60" />
-        <source>Group filter</source>
-        <translation>分组筛选</translation>
+        <source>Sampled counts</source>
+        <translation>随机计数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="62" />
-        <source>Optional: a,b,c</source>
-        <translation>可选: a,b,c</translation>
+        <source>Count behavior</source>
+        <translation>计数方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="63" />
-        <source>If the structure has arrays['group'], restrict assignment to these groups</source>
-        <translation>如果结构包含 arrays['group']，则只在这些分组内分配</translation>
+        <source>Outputs per input</source>
+        <translation>每个输入的输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="66" />
-        <source>Use seed</source>
-        <translation>使用随机种子</translation>
+        <source>Optional: A,B</source>
+        <translation>可选：A,B</translation>
+    </message>
+    <message>
+        <source>Occupancy groups</source>
+        <translation>占位分组</translation>
+    </message>
+    <message>
+        <source>Comma-separated input group labels. Only matched sites are reassigned; all other atoms keep their elements.</source>
+        <translation>用逗号分隔输入结构的 group 标签。仅重新分配命中位点，其他原子保持原元素。</translation>
+    </message>
+    <message>
+        <source>Occupancy generation</source>
+        <translation>占位生成</translation>
+    </message>
+    <message>
+        <source>Both modes randomize element positions. Fixed counts keep one integer composition; sampled counts redraw it for each output.</source>
+        <translation>两种模式都会随机排列元素位置。固定计数保持同一组整数组成；随机计数为每个输出重新抽样。</translation>
+    </message>
+    <message>
+        <source>Use fixed random seed</source>
+        <translation>使用固定随机种子</translation>
+    </message>
+    <message>
+        <source>Random seed</source>
+        <translation>随机种子</translation>
+    </message>
+    <message>
+        <source>Randomness</source>
+        <translation>随机性</translation>
+    </message>
+    <message>
+        <source>Load an upstream structure to preview target composition and eligible sites.</source>
+        <translation>请加载上游结构，以预览目标组成和可占位位点。</translation>
+    </message>
+    <message>
+        <source>Eligible sites {eligible}/{total}</source>
+        <translation>可占位位点 {eligible}/{total}</translation>
+    </message>
+    <message>
+        <source>target {composition}</source>
+        <translation>目标 {composition}</translation>
+    </message>
+    <message>
+        <source>fixed counts {counts}</source>
+        <translation>固定计数 {counts}</translation>
+    </message>
+    <message>
+        <source>{outputs} output(s)/input</source>
+        <translation>每个输入 {outputs} 个输出</translation>
+    </message>
+    <message>
+        <source>fixed counts</source>
+        <translation>固定计数</translation>
+    </message>
+    <message>
+        <source>sampled counts</source>
+        <translation>随机计数</translation>
+    </message>
+    <message>
+        <source>groups {groups}</source>
+        <translation>分组 {groups}</translation>
+    </message>
+    <message>
+        <source>all sites</source>
+        <translation>全部位点</translation>
+    </message>
+    <message>
+        <source>Parameters need attention: {error}</source>
+        <translation>请检查参数：{error}</translation>
+    </message>
+    <message>
+        <source>{mode} · {eligible}/{total} sites · {outputs}/input</source>
+        <translation>{mode} · {eligible}/{total} 个位点 · 每个输入 {outputs} 个</translation>
+    </message>
+    <message>
+        <source>{mode} · {scope} · {outputs}/input</source>
+        <translation>{mode} · {scope} · 每个输入 {outputs} 个</translation>
+    </message>
+    <message>
+        <source>Inputs {inputs} × {per_input}/input = outputs {outputs}</source>
+        <translation>{inputs} 个输入 × 每个 {per_input} 个 = {outputs} 个输出</translation>
+    </message>
+    <message>
+        <source>Outputs per input: {outputs}</source>
+        <translation>每个输入的输出数：{outputs}</translation>
+    </message>
+    <message>
+        <source>Auto requires a Comp(...) tag on each input.</source>
+        <translation>自动模式要求每个输入都带有 Comp(...) 标签。</translation>
+    </message>
+    <message>
+        <source>Complete the manual element table.</source>
+        <translation>请完善手动元素表。</translation>
+    </message>
+    <message>
+        <source>Realized fixed counts: {counts}.</source>
+        <translation>实际固定计数：{counts}。</translation>
+    </message>
+    <message>
+        <source>Element counts are sampled independently for each output.</source>
+        <translation>每个输出都会独立抽样元素计数。</translation>
+    </message>
+    <message>
+        <source>Target {composition}. Eligible sites {eligible}/{total}. {counts} {outputs}</source>
+        <translation>目标 {composition}。可占位位点 {eligible}/{total}。{counts} {outputs}</translation>
     </message>
 </context>
 <context>

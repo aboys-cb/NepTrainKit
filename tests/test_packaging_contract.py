@@ -67,6 +67,9 @@ def test_nuitka_build_compiles_and_verifies_native_helpers():
     ).read_text(encoding="utf-8")
 
     assert "python setup.py build_ext --inplace" in workflow
+    assert "setuptools-scm pybind11 -U" in workflow
+    assert "PYTHONPATH: ${{ github.workspace }}/src" in workflow
+    assert "Building NepTrainKit native helpers failed" in workflow
     for module in ("_io", "_audit", "_phase", "_magnetism"):
         assert f"NepTrainKit._native.{module}" in workflow
     assert "--neptrainkit-native-health-check" in workflow

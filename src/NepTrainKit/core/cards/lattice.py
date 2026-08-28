@@ -163,71 +163,141 @@ class BainPathOperation(StructureOperation):
 class CellStrainOperation(StructureOperation):
     """Generate strained lattices from explicit parameters."""
 
-    def run_structure(self, structure, params: CellStrainParams) -> list:
-        structure_list = []
+    @staticmethod
+    def _unique_vectors(vectors) -> np.ndarray:
+        unique = {}
+        for values in vectors:
+            key = tuple(0.0 if abs(float(value)) <= 1e-12 else float(value) for value in values)
+            unique.setdefault(key, key)
+        return np.asarray(list(unique.values()), dtype=float)
+
+    @classmethod
+    def sampling_summary(cls, params: CellStrainParams) -> dict[str, object]:
+        """Return a validated exact count without expanding the full grid."""
         axes = str(params.axes).strip()
         named_modes = {"isotropic", "uniaxial", "biaxial", "triaxial"}
         if axes not in named_modes:
             custom_axes = axes.upper()
-            if not custom_axes or any(axis not in "XYZ" for axis in custom_axes):
-                raise ValueError(
-                    "CellStrain axes must be isotropic, uniaxial, biaxial, "
-                    "triaxial, or a nonempty combination of X/Y/Z."
+            if (
+                not custom_axes
+                or any(axis not in "XYZ" for axis in custom_axes)
+                or len(set(custom_axes)) != len(custom_axes)
+            ):
+                raise CardOperationError(
+                    "cell_strain.invalid_axes",
+                    "Select one or more unique lattice axes: a, b, or c.",
                 )
             axes = custom_axes
-        identify_organic = params.identify_organic
 
-        if identify_organic:
-            clusters, is_organic_list = get_clusters(structure)
-
-        strain_range = [
-            _scan_values(params.x_range, label="x_range"),
-            _scan_values(params.y_range, label="y_range"),
-            _scan_values(params.z_range, label="z_range"),
-        ]
-        cell = structure.get_cell()
+        raw_ranges = [params.x_range, params.y_range, params.z_range]
+        if axes == "isotropic":
+            used_axes = {0}
+        elif axes in named_modes:
+            used_axes = {0, 1, 2}
+        else:
+            used_axes = {"XYZ".index(axis) for axis in axes}
+        strain_range = [None, None, None]
+        for index in used_axes:
+            strain_range[index] = _scan_values(
+                raw_ranges[index], label=f"{'xyz'[index]}_range"
+            )
+        if any(
+            np.any(strain_range[index] <= -100.0)
+            for index in used_axes
+        ):
+            raise CardOperationError(
+                "cell_strain.invalid_compression",
+                "Lattice strain values must be greater than -100%.",
+            )
         all_axes = [0, 1, 2]
 
         if axes == "isotropic":
-            for strain in strain_range[0]:
-                new_structure = structure.copy()
-                new_cell = cell.copy() * (1 + strain / 100)
-                new_structure.set_cell(new_cell, scale_atoms=True)
-                if identify_organic:
-                    process_organic_clusters(structure, new_structure, clusters, is_organic_list)
-
-                strain_info = [f"all={strain:g}%"]
-                append_config_tag(new_structure, f"Str({','.join(strain_info)})")
-                structure_list.append(new_structure)
-            return structure_list
-
-        if axes == "uniaxial":
-            axes_combinations = [[i] for i in all_axes]
+            axes_combinations = [[0, 1, 2]]
+            output_count = len(strain_range[0])
         elif axes == "biaxial":
             axes_combinations = list(combinations(all_axes, 2))
+            na, nb, nc = (len(strain_range[index]) for index in all_axes)
+            has_zero = [
+                bool(np.any(np.isclose(strain_range[index], 0.0)))
+                for index in all_axes
+            ]
+            output_count = na * nb + na * nc + nb * nc
+            if has_zero[1] and has_zero[2]:
+                output_count -= na
+            if has_zero[0] and has_zero[2]:
+                output_count -= nb
+            if has_zero[0] and has_zero[1]:
+                output_count -= nc
+            if all(has_zero):
+                output_count += 1
         elif axes == "triaxial":
             axes_combinations = [all_axes]
+            output_count = int(np.prod([len(strain_range[index]) for index in all_axes]))
+        elif axes == "uniaxial":
+            axes_combinations = [[i] for i in all_axes]
+            counts = [len(strain_range[index]) for index in all_axes]
+            zero_paths = sum(
+                bool(np.any(np.isclose(strain_range[index], 0.0)))
+                for index in all_axes
+            )
+            output_count = sum(counts) - max(0, zero_paths - 1)
         else:
-            axes_combinations = [["XYZ".index(i.upper()) for i in axes if i.upper() in "XYZ"]]
+            axes_combinations = [["XYZ".index(axis) for axis in axes]]
+            output_count = int(
+                np.prod([len(strain_range[index]) for index in axes_combinations[0]])
+            )
+        return {
+            "mode": axes,
+            "ranges": strain_range,
+            "axes_combinations": axes_combinations,
+            "outputs_per_input": output_count,
+        }
 
-        for ax_comb in axes_combinations:
-            if len(ax_comb) == 0:
-                continue
-            strain_combinations = np.array(
-                np.meshgrid(*[strain_range[index] for index in ax_comb])
+    @classmethod
+    def _strain_vectors(cls, summary: dict[str, object]) -> np.ndarray:
+        ranges = summary["ranges"]
+        if summary["mode"] == "isotropic":
+            vectors = ((strain, strain, strain) for strain in ranges[0])
+            return cls._unique_vectors(vectors)
+
+        expanded = []
+        for ax_comb in summary["axes_combinations"]:
+            combinations_array = np.array(
+                np.meshgrid(*[ranges[index] for index in ax_comb])
             ).T.reshape(-1, len(ax_comb))
-            for strain_vals in strain_combinations:
-                new_structure = structure.copy()
-                new_cell = cell.copy()
-                for ax_idx, strain in zip(ax_comb, strain_vals):
-                    new_cell[ax_idx] *= 1 + strain / 100
-                new_structure.set_cell(new_cell, scale_atoms=True)
-                if identify_organic:
-                    process_organic_clusters(structure, new_structure, clusters, is_organic_list)
+            for strain_values in combinations_array:
+                vector = np.zeros(3, dtype=float)
+                vector[list(ax_comb)] = strain_values
+                expanded.append(vector)
+        return cls._unique_vectors(expanded)
 
-                strain_info = [f"{'XYZ'[ax]}={float(s):g}%" for ax, s in zip(ax_comb, strain_vals)]
-                append_config_tag(new_structure, f"Str({','.join(strain_info)})")
-                structure_list.append(new_structure)
+    def run_structure(self, structure, params: CellStrainParams) -> list:
+        summary = self.sampling_summary(params)
+        cell = np.asarray(structure.get_cell(), dtype=float)
+        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
+            raise ValueError("CellStrain requires a nonsingular 3x3 cell.")
+        identify_organic = params.identify_organic
+        if identify_organic:
+            clusters, is_organic_list = get_clusters(structure)
+
+        structure_list = []
+        strain_vectors = self._strain_vectors(summary)
+        if len(strain_vectors) != int(summary["outputs_per_input"]):
+            raise RuntimeError("CellStrain output-count preview disagrees with generation.")
+        for strain_vector in strain_vectors:
+            new_structure = structure.copy()
+            new_cell = cell * (1.0 + np.asarray(strain_vector)[:, None] / 100.0)
+            new_structure.set_cell(new_cell, scale_atoms=True)
+            if identify_organic:
+                process_organic_clusters(
+                    structure, new_structure, clusters, is_organic_list
+                )
+            strain_info = [
+                f"{axis}={float(value):g}%"
+                for axis, value in zip("abc", strain_vector)
+            ]
+            append_config_tag(new_structure, f"Str({','.join(strain_info)})")
+            structure_list.append(new_structure)
 
         return structure_list
 

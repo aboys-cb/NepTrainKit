@@ -342,6 +342,12 @@ def _card_operation_error_catalog() -> None:
         "Lattice perturbation produced an invalid or singular cell. Reduce the maximum relative change.",
     )
     QCoreApplication.translate(
+        "CardOperationError", "Lattice strain values must be greater than -100%."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Select one or more unique lattice axes: a, b, or c."
+    )
+    QCoreApplication.translate(
         "CardOperationError", "The lattice-constant step must be positive."
     )
     QCoreApplication.translate(

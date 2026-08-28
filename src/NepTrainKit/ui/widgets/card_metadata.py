@@ -79,7 +79,10 @@ def _localized_catalog(_language_marker: str):
         ),
         "CellStrainCard": (
             QCoreApplication.translate("CardCatalog", "Lattice Strain"),
-            QCoreApplication.translate("CardCatalog", "Produce strained lattice variants along user-selected axes and ranges."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Scan unique normal-strain paths and grids along lattice a, b, and c.",
+            ),
         ),
         "CompositionGradientCard": (
             QCoreApplication.translate("CardCatalog", "Composition Gradient"),

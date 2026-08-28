@@ -278,16 +278,19 @@
         <translation>位点数未知</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="211" />
         <source>Fixed fraction</source>
-        <translation type="vanished">固定比例</translation>
+        <translation>固定比例</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="212" />
         <source>Fraction range</source>
-        <translation type="vanished">比例范围</translation>
+        <translation>比例范围</translation>
     </message>
     <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="213" />
         <source>Count range</source>
-        <translation type="vanished">个数范围</translation>
+        <translation>数量范围</translation>
     </message>
     <message>
         <location filename="../ui/widgets/alloy_site_rules.py" line="208" />
@@ -334,6 +337,26 @@
         <location filename="../ui/widgets/alloy_site_rules.py" line="367" />
         <source>Target fraction</source>
         <translation>目标比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="371" />
+        <source>Min fraction</source>
+        <translation>最小比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="371" />
+        <source>Max fraction</source>
+        <translation>最大比例</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="374" />
+        <source>Min count</source>
+        <translation>最小数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="374" />
+        <source>Max count</source>
+        <translation>最大数量</translation>
     </message>
     <message>
         <location filename="../ui/widgets/alloy_site_rules.py" line="369" />
@@ -431,6 +454,11 @@
         <location filename="../ui/widgets/alloy_site_rules.py" line="499" />
         <source>Minimum count exceeds maximum for {element}.</source>
         <translation>{element} 的最小个数大于最大个数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/alloy_site_rules.py" line="625" />
+        <source>Use upstream sublattice labels; choose Entire structure when the input has no sublattice array.</source>
+        <translation>“按子晶格”使用上游结构的 sublattice 标签；输入没有该数组时请选择“全部位点”。</translation>
     </message>
 </context>
 <context>
@@ -8007,6 +8035,41 @@ Output upper-bound estimate: {theoretical} · Max outputs per input: {maximum} �
         <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="452" />
         <source>Within the output limit.</source>
         <translation>未超过输出上限。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="477" />
+        <source>Fixed realization: {details}</source>
+        <translation>固定比例的实际占位：{details}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="502" />
+        <source>{element} {count}/{sites} ({percent}%)</source>
+        <translation>{element} {count}/{sites}（{percent}%）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="512" />
+        <source>exact</source>
+        <translation>精确</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="514" />
+        <source>nearest integer</source>
+        <translation>最近整数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="517" />
+        <source>{label}: {occupants} [{status}]</source>
+        <translation>{label}：{occupants}（{status}）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="537" />
+        <source>Site sets {site_sets} · feasible compositions {compositions} · up to {outputs}/input</source>
+        <translation>{site_sets} 个位点集合 · {compositions} 种可行组成 · 每个输入最多 {outputs} 个输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="547" />
+        <source>The preview uses the first input structure. Keep the same site partition across inputs; the actual output can be lower when unique arrangements are exhausted.</source>
+        <translation>预览以首个输入结构为准。请保持各输入的位点划分一致；当某组成的不重复排布已耗尽时，实际输出可能更少。</translation>
     </message>
     <message>
         <source>Fix the highlighted site-rule errors before running.</source>

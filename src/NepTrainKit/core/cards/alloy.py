@@ -1261,6 +1261,9 @@ class FiniteCellAlloyEstimate:
     estimated_total_outputs: int
     max_outputs: int
     site_counts: tuple[tuple[str, int], ...]
+    fixed_realizations: tuple[
+        tuple[str, tuple[tuple[str, int], ...], int, str], ...
+    ]
 
 
 @dataclass(frozen=True)
@@ -1347,9 +1350,27 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             estimated_total_outputs=int(min(composition_count * per_composition, max_outputs)),
             max_outputs=max_outputs,
             site_counts=tuple((label, len(indices)) for label, indices in site_indices.items()),
+            fixed_realizations=tuple(
+                (
+                    space.label,
+                    tuple(
+                        (element, int(count))
+                        for element, count in zip(space.elements, space.lower)
+                    ),
+                    space.n_sites,
+                    space.realization,
+                )
+                for space in spaces
+                if space.realization in {"exact", "nearest_integer"}
+            ),
         )
 
     def run_structure(self, structure, params: FiniteCellAlloyOccupancyParams) -> list:
+        base_seed = int(params.seed) if params.use_seed else None
+        if base_seed is not None and base_seed < 0:
+            raise ValueError(
+                "Finite-Cell Alloy Occupancy: seed must be >= 0 when use_seed is enabled."
+            )
         site_indices = self._site_indices(structure)
         spaces = self._build_spaces(
             site_indices,
@@ -1358,7 +1379,6 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
         )
         estimate = self.estimate(structure, params)
         plan_count = estimate.composition_count
-        base_seed = int(params.seed) if params.use_seed else None
         cfg_id = int(stable_config_id(structure))
         selection_seed = None if base_seed is None else int(base_seed + cfg_id * 1_000_003)
         plan_indices = self._plan_indices(

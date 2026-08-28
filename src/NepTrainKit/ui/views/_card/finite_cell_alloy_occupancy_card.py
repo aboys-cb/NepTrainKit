@@ -49,6 +49,8 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self._rules_are_auto_managed = True
         self._applying_auto_rules = False
         self._allow_legacy_fraction_weights = False
+        self._last_estimate = None
+        self._last_preview_error = ""
         self.setTitle(self.tr("Finite-Cell Alloy Occupancy"))
         self.init_ui()
 
@@ -301,6 +303,16 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self._auto_match_rules_to_input()
         self.rules_editor.set_input_counts(self._input_counts)
         self._refresh_validation_and_estimate()
+        self.refresh_compact_presentation()
+
+    def set_preview_structure(self, structure) -> None:
+        """Preview the first upstream structure without changing runtime input."""
+        self._input_structure = structure
+        self._input_counts = self._site_counts(structure)
+        self._auto_match_rules_to_input()
+        self.rules_editor.set_input_counts(self._input_counts)
+        self._refresh_validation_and_estimate()
+        self.refresh_compact_presentation()
 
     @staticmethod
     def _rules_from_structure(structure) -> dict[str, dict[str, object]]:
@@ -395,6 +407,8 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             return
         self._refreshing = True
         try:
+            self._last_estimate = None
+            self._last_preview_error = ""
             self.rules_editor.set_input_counts(self._input_counts)
             errors = self.rules_editor.validation_errors(self._input_counts)
             if self._input_structure is None:
@@ -405,23 +419,32 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
                 )
                 return
             if errors:
+                self._last_preview_error = self.tr(
+                    "Fix the highlighted site-rule errors to calculate a feasible output estimate."
+                )
                 self.estimate_label.setText(
-                    self.tr("Fix the highlighted site-rule errors to calculate a feasible output estimate.")
+                    self._last_preview_error
                 )
                 return
 
             try:
-                estimate = self.create_operation().estimate(
+                operation = self.create_operation()
+                params = self._params_from_controls()
+                estimate = operation.estimate(
                     self._input_structure,
-                    self._params_from_controls(),
+                    params,
                 )
             except ValueError as exc:
                 message = str(exc)
                 friendly = self._show_operation_error_near_site(message)
-                self.estimate_label.setText(
-                    self.tr("No feasible integer composition: {error}").format(error=friendly)
-                )
+                self._last_preview_error = self.tr(
+                    "No feasible integer composition: {error}"
+                ).format(error=friendly)
+                self.estimate_label.setText(self._last_preview_error)
                 return
+
+            self._last_estimate = estimate
+            fixed_realization = self._fixed_realization_preview(estimate)
 
             count_map = dict(estimate.site_counts)
             ordered_labels = [
@@ -432,29 +455,86 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             counts = ", ".join(f"{label}={count_map[label]}" for label in ordered_labels)
             theoretical = estimate.composition_count * estimate.arrangements_per_composition
             truncated = theoretical > estimate.max_outputs
-            self.estimate_label.setText(
-                self.tr(
-                    "First input sites: {counts} · {compositions} feasible integer compositions · "
-                    "{arrangements} arrangements requested per composition\n"
-                    "Output upper-bound estimate: {theoretical} · Max outputs per input: {maximum} · "
-                    "{truncation}"
-                ).format(
-                    counts=counts,
-                    compositions=estimate.composition_count,
-                    arrangements=estimate.arrangements_per_composition,
-                    theoretical=theoretical,
-                    maximum=estimate.max_outputs,
-                    truncation=(
-                        self.tr(
-                            "Will truncate; different compositions are covered before extra arrangements."
-                        )
-                        if truncated
-                        else self.tr("Within the output limit.")
-                    ),
-                )
+            estimate_text = self.tr(
+                "First input sites: {counts} · {compositions} feasible integer compositions · "
+                "{arrangements} arrangements requested per composition\n"
+                "Output upper-bound estimate: {theoretical} · Max outputs per input: {maximum} · "
+                "{truncation}"
+            ).format(
+                counts=counts,
+                compositions=estimate.composition_count,
+                arrangements=estimate.arrangements_per_composition,
+                theoretical=theoretical,
+                maximum=estimate.max_outputs,
+                truncation=(
+                    self.tr(
+                        "Will truncate; different compositions are covered before extra arrangements."
+                    )
+                    if truncated
+                    else self.tr("Within the output limit.")
+                ),
             )
+            if fixed_realization:
+                estimate_text += "\n" + self.tr(
+                    "Fixed realization: {details}"
+                ).format(details="; ".join(fixed_realization))
+            self.estimate_label.setText(estimate_text)
         finally:
             self._refreshing = False
+
+    def _fixed_realization_preview(self, estimate) -> list[str]:
+        """Describe exact finite-cell counts for fixed-fraction site rules."""
+        details: list[str] = []
+        for label, counts, n_sites, realization in estimate.fixed_realizations:
+            occupants = []
+            for element, count in counts:
+                percent = 100.0 * int(count) / max(1, n_sites)
+                percent_text = f"{percent:.1f}".rstrip("0").rstrip(".")
+                occupants.append(
+                    self.tr("{element} {count}/{sites} ({percent}%)").format(
+                        element=element,
+                        count=int(count),
+                        sites=n_sites,
+                        percent=percent_text,
+                    )
+                )
+            status = (
+                self.tr("exact")
+                if realization == "exact"
+                else self.tr("nearest integer")
+            )
+            details.append(
+                self.tr("{label}: {occupants} [{status}]").format(
+                    label=label,
+                    occupants=", ".join(occupants),
+                    status=status,
+                )
+            )
+        return details
+
+    def get_summary_text(self) -> str:
+        if self._input_structure is None:
+            return self.tr(
+                "Load an upstream structure to estimate outputs from its first structure."
+            )
+        if self._last_preview_error:
+            return self._last_preview_error
+        estimate = self._last_estimate
+        if estimate is None:
+            return ""
+        return self.tr(
+            "Site sets {site_sets} · feasible compositions {compositions} · up to {outputs}/input"
+        ).format(
+            site_sets=len(estimate.site_counts),
+            compositions=estimate.composition_count,
+            outputs=estimate.estimated_total_outputs,
+        )
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "The preview uses the first input structure. Keep the same site partition across inputs; "
+            "the actual output can be lower when unique arrangements are exhausted."
+        )
 
     def _show_operation_error_near_site(self, message: str) -> str:
         match = re.search(r"site set ['\"]([^'\"]+)['\"]", message)

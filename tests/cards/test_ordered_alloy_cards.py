@@ -261,6 +261,131 @@ class TestOrderedAlloyCards(BaseCardTest):
         self.assertNotEqual(first[0].get_chemical_symbols(), different[0].get_chemical_symbols())
         self.assertEqual(self._metadata(first[0])["counts"], self._metadata(different[0])["counts"])
 
+    def test_seed_validation_and_unseeded_metadata(self):
+        atoms = self._prototype("A1/fcc")
+        rules = json.dumps(
+            {
+                "A": {
+                    "elements": ["Fe", "Co"],
+                    "mode": "fixed_fraction",
+                    "composition": {"Fe": 0.5, "Co": 0.5},
+                }
+            }
+        )
+        operation = FiniteCellAlloyOccupancyOperation()
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"Finite-Cell Alloy Occupancy: seed must be >= 0",
+        ):
+            operation.run_structure(
+                atoms,
+                FiniteCellAlloyOccupancyParams(
+                    site_rules=rules,
+                    use_seed=True,
+                    seed=-1,
+                    max_outputs=1,
+                ),
+            )
+
+        output = operation.run_structure(
+            atoms,
+            FiniteCellAlloyOccupancyParams(
+                site_rules=rules,
+                use_seed=False,
+                seed=-1,
+                max_outputs=1,
+            ),
+        )[0]
+        self.assertIsNone(self._metadata(output)["seed"])
+
+    def test_truncated_composition_selection_is_seeded_without_locking_sequence(self):
+        atoms = self._prototype("A1/fcc", rep=(2, 2, 2))
+        rules = json.dumps(
+            {
+                "A": {
+                    "elements": ["Fe", "Co"],
+                    "mode": "count_range",
+                    "counts": {"Fe": [0, 32], "Co": [0, 32]},
+                }
+            }
+        )
+        operation = FiniteCellAlloyOccupancyOperation()
+
+        def selected_counts(seed):
+            outputs = operation.run_structure(
+                atoms,
+                FiniteCellAlloyOccupancyParams(
+                    site_rules=rules,
+                    arrangements_per_composition=1,
+                    use_seed=True,
+                    seed=seed,
+                    max_outputs=4,
+                ),
+            )
+            return frozenset(
+                tuple(sorted(self._metadata(output)["counts"]["A"].items()))
+                for output in outputs
+            )
+
+        baseline = selected_counts(0)
+        self.assertEqual(selected_counts(0), baseline)
+        self.assertTrue(
+            any(selected_counts(seed) != baseline for seed in range(1, 16)),
+            "At least one alternate seed should select a different truncated composition subset.",
+        )
+
+    def test_occupancy_preserves_input_and_non_target_structure_data(self):
+        atoms = self._prototype("B2/AB", rep=(2, 1, 1))
+        atoms.pbc = (True, False, True)
+        atoms.new_array("marker", np.arange(len(atoms), dtype=np.int64))
+        atoms.info["source_note"] = "keep-me"
+        input_symbols = atoms.get_chemical_symbols()
+        input_positions = atoms.positions.copy()
+        input_cell = atoms.cell.array.copy()
+        input_pbc = atoms.pbc.copy()
+        input_sublattice = atoms.arrays["sublattice"].copy()
+        input_marker = atoms.arrays["marker"].copy()
+        rules = json.dumps(
+            {
+                "A": {
+                    "elements": ["Fe"],
+                    "mode": "fixed_fraction",
+                    "composition": {"Fe": 1.0},
+                },
+                "B": {
+                    "elements": ["Al"],
+                    "mode": "fixed_fraction",
+                    "composition": {"Al": 1.0},
+                },
+            }
+        )
+
+        output = FiniteCellAlloyOccupancyOperation().run_structure(
+            atoms,
+            FiniteCellAlloyOccupancyParams(
+                site_rules=rules,
+                use_seed=True,
+                seed=4,
+                max_outputs=1,
+            ),
+        )[0]
+
+        self.assertEqual(atoms.get_chemical_symbols(), input_symbols)
+        self.assertNotIn("finite_cell_alloy", atoms.info)
+        np.testing.assert_array_equal(atoms.positions, input_positions)
+        np.testing.assert_array_equal(atoms.cell.array, input_cell)
+        np.testing.assert_array_equal(atoms.pbc, input_pbc)
+        np.testing.assert_array_equal(atoms.arrays["sublattice"], input_sublattice)
+        np.testing.assert_array_equal(atoms.arrays["marker"], input_marker)
+
+        np.testing.assert_array_equal(output.positions, input_positions)
+        np.testing.assert_array_equal(output.cell.array, input_cell)
+        np.testing.assert_array_equal(output.pbc, input_pbc)
+        np.testing.assert_array_equal(output.arrays["sublattice"], input_sublattice)
+        np.testing.assert_array_equal(output.arrays["marker"], input_marker)
+        self.assertEqual(output.info["source_note"], "keep-me")
+
     def test_theoretical_arrangement_limit_and_max_outputs_are_strict(self):
         atoms = self._prototype("A2/bcc")
         rules = json.dumps(
@@ -503,6 +628,109 @@ class TestOrderedAlloyCards(BaseCardTest):
                 self.assertEqual(not row.fixed_fraction_spin.isHidden(), mode == "fixed_fraction")
                 self.assertEqual(not row.fraction_min_spin.isHidden(), mode == "fraction_range")
                 self.assertEqual(not row.count_min_spin.isHidden(), mode == "count_range")
+
+    def test_site_rule_modes_expose_real_userdata_and_matching_column_headers(self):
+        card = FiniteCellAlloyOccupancyCard()
+        editor = card.rules_editor.site_editors[0]
+        expected = {
+            "fixed_fraction": ("Target fraction", "", False),
+            "fraction_range": ("Min fraction", "Max fraction", True),
+            "count_range": ("Min count", "Max count", True),
+        }
+
+        self.assertEqual(
+            {editor.mode_combo.itemData(index) for index in range(editor.mode_combo.count())},
+            set(expected),
+        )
+        for mode, (first_header, second_header, second_visible) in expected.items():
+            with self.subTest(mode=mode):
+                editor.mode_combo.setCurrentIndex(editor.mode_combo.findData(mode))
+                self._app.processEvents()
+                self.assertEqual(editor.mode(), mode)
+                self.assertEqual(editor.value_1_header.text(), first_header)
+                self.assertEqual(editor.value_2_header.text(), second_header)
+                self.assertEqual(not editor.value_2_header.isHidden(), second_visible)
+
+    def test_switching_fraction_modes_to_count_uses_feasible_fixed_counts(self):
+        cases = [
+            {
+                "all": {
+                    "elements": ["Fe", "Co"],
+                    "mode": "fixed_fraction",
+                    "composition": {"Fe": 0.5, "Co": 0.5},
+                }
+            },
+            {
+                "all": {
+                    "elements": ["Fe", "Co"],
+                    "mode": "fraction_range",
+                    "fractions": {"Fe": [0.2, 0.6], "Co": [0.4, 0.8]},
+                }
+            },
+        ]
+        for rules in cases:
+            with self.subTest(previous_mode=rules["all"]["mode"]):
+                card = FiniteCellAlloyOccupancyCard()
+                self.assertTrue(card.apply_rule_json(json.dumps(rules)))
+                card.rules_editor.set_input_counts({"all": 3})
+                editor = card.rules_editor.site_editors[0]
+                editor.mode_combo.setCurrentIndex(editor.mode_combo.findData("count_range"))
+                self._app.processEvents()
+
+                minima = [row.count_min_spin.value() for row in editor.element_rows]
+                maxima = [row.count_max_spin.value() for row in editor.element_rows]
+                self.assertEqual(minima, maxima)
+                self.assertEqual(sum(minima), 3)
+
+    def test_hidden_template_controls_do_not_replace_partition_switching(self):
+        card = FiniteCellAlloyOccupancyCard()
+        editor = card.rules_editor
+        editor.set_replacement_confirmation(lambda: True)
+        self.assertTrue(editor.template_label.isHidden())
+        self.assertTrue(editor.single_template_button.isHidden())
+        self.assertTrue(editor.ab_template_button.isHidden())
+
+        editor.partition_mode_combo.setCurrentIndex(
+            editor.partition_mode_combo.findData("all")
+        )
+        self.assertEqual(editor.partition_mode(), "all")
+        self.assertEqual(set(editor.to_rules()), {"all"})
+
+        editor.partition_mode_combo.setCurrentIndex(
+            editor.partition_mode_combo.findData("sublattices")
+        )
+        self.assertEqual(editor.partition_mode(), "sublattices")
+        self.assertEqual(set(editor.to_rules()), {"A", "B"})
+
+    def test_preview_summary_and_guidance_report_nearest_integer_realization(self):
+        atoms = Atoms(
+            "Cu3",
+            scaled_positions=((0, 0, 0), (0.5, 0.5, 0), (0.5, 0, 0.5)),
+            cell=np.eye(3) * 3.6,
+            pbc=True,
+        )
+        rules = {
+            "all": {
+                "elements": ["Fe", "Co"],
+                "mode": "fixed_fraction",
+                "composition": {"Fe": 0.5, "Co": 0.5},
+            }
+        }
+        card = FiniteCellAlloyOccupancyCard()
+        self.assertTrue(card.apply_rule_json(json.dumps(rules)))
+        card.set_preview_structure(atoms)
+
+        summary = card.get_summary_text()
+        guidance = card.get_guidance_text()
+        realization = card.estimate_label.text()
+        self.assertIn("feasible compositions 1", summary)
+        self.assertIn("up to 1/input", summary)
+        self.assertIn("first input structure", guidance)
+        self.assertIn("same site partition", guidance)
+        self.assertIn("Fixed realization", realization)
+        self.assertIn("Fe 2/3", realization)
+        self.assertIn("Co 1/3", realization)
+        self.assertIn("nearest integer", realization)
 
     def test_visual_rule_editor_adds_and_removes_site_sets_and_elements(self):
         card = FiniteCellAlloyOccupancyCard()

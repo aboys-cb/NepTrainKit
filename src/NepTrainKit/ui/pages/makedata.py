@@ -663,21 +663,24 @@ class MakeDataWidget(QWidget):
         )
 
     def _refresh_input_count_previews(self) -> None:
-        """Expose the imported count only where the first enabled card receives it exactly."""
+        """Preview imported input metadata on the first enabled input card."""
         exact_target_found = False
         selected = getattr(self.workspace_card_widget.guidance_panel, "_card", None)
         for card in self.workspace_card_widget.cards:
-            setter = getattr(card, "set_preview_input_count", None)
-            if not callable(setter):
-                if card.check_state:
-                    exact_target_found = True
-                continue
-            exact_count = None
-            if not exact_target_found and card.check_state:
-                if bool(getattr(card, "requires_input_dataset", True)):
-                    exact_count = len(self.dataset or [])
+            is_target = not exact_target_found and card.check_state
+            needs_input = bool(getattr(card, "requires_input_dataset", True))
+            count_setter = getattr(card, "set_preview_input_count", None)
+            if callable(count_setter):
+                exact_count = len(self.dataset or []) if is_target and needs_input else None
+                count_setter(exact_count)
+            structure_setter = getattr(card, "set_preview_structure", None)
+            if callable(structure_setter):
+                preview = None
+                if is_target and needs_input and self.dataset:
+                    preview = self.dataset[0]
+                structure_setter(preview)
+            if is_target:
                 exact_target_found = True
-            setter(exact_count)
         if selected is not None:
             self.workspace_card_widget.guidance_panel._refresh_context()
 

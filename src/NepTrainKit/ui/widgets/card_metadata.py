@@ -88,7 +88,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Composition Gradient"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Build a one-dimensional composition transition along lattice a, b, or c without moving atoms.",
+                "Assign a composition transition across equal-count site groups ordered along lattice a, b, or c.",
             ),
         ),
         "CompositionSweepCard": (

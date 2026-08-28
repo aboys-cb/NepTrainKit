@@ -5,8 +5,16 @@ from __future__ import annotations
 import math
 import json
 
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (
+    QHeaderView,
+    QHBoxLayout,
+    QSizePolicy,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
 from qfluentwidgets import CheckBox, ComboBox, LineEdit, PushButton
 
 from .input import RangeTripletInputFrame, SpinBoxUnitInputFrame
@@ -301,13 +309,19 @@ class CompositionPathTableInput(QWidget):
         self.table.setHorizontalHeaderLabels(
             [self.tr("Element"), self.tr("Start fraction"), self.tr("End fraction")]
         )
-        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
+        self.table.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.table.setMinimumWidth(0)
         self.table.verticalHeader().setVisible(False)
         self.table.setMinimumHeight(105)
         self.table.setMaximumHeight(165)
         buttons = QHBoxLayout()
-        self.add_button = PushButton(self.tr("Add element"), self)
-        self.remove_button = PushButton(self.tr("Remove selected"), self)
+        self.add_button = PushButton(self.tr("Add row"), self)
+        self.remove_button = PushButton(self.tr("Remove row"), self)
         self.add_button.clicked.connect(lambda: self.add_row())
         self.remove_button.clicked.connect(self.remove_selected)
         buttons.addWidget(self.add_button)

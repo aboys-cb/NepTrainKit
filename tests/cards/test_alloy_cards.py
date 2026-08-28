@@ -891,6 +891,7 @@ class TestAlloyCards(BaseCardTest):
         card.samples_frame.set_input_value([2])
         card.seed_checkbox.setChecked(True)
         card.seed_frame.set_input_value([3])
+        self.assertFalse(card.seed_field.isHidden())
         restored = CompositionGradientCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
@@ -962,6 +963,7 @@ class TestAlloyCards(BaseCardTest):
                 end_composition="Ni:0,Co:1",
                 axis="c",
                 bins=2,
+                target_mode="listed",
                 target_elements="Ni",
                 samples=1,
                 use_seed=True,
@@ -972,6 +974,87 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(result.get_chemical_symbols(), ["Ni", "O", "Co", "O"])
         np.testing.assert_allclose(result.positions, structure.positions)
         np.testing.assert_allclose(result.cell.array, structure.cell.array)
+
+    def test_composition_gradient_requires_two_groups_and_reports_effective_groups(self):
+        structure = Atoms(
+            "Ni8",
+            scaled_positions=[[index / 8.0, 0.0, 0.0] for index in range(8)],
+            cell=np.diag([8.0, 2.0, 2.0]),
+            pbc=True,
+        )
+        operation = CompositionGradientOperation()
+
+        with self.assertRaisesRegex(ValueError, "at least two equal-count groups"):
+            operation.run_structure(
+                structure,
+                CompositionGradientParams(bins=1),
+            )
+
+        summary = operation.sampling_summary(
+            CompositionGradientParams(bins=20, samples=3), structure
+        )
+        self.assertEqual(summary["candidate_sites"], 8)
+        self.assertEqual(summary["requested_groups"], 20)
+        self.assertEqual(summary["effective_groups"], 8)
+        self.assertEqual(summary["min_group_size"], 1)
+        self.assertEqual(summary["max_group_size"], 1)
+        self.assertEqual(summary["outputs_per_input"], 3)
+
+    def test_composition_gradient_explicit_scope_and_magnetic_array_contract(self):
+        structure = Atoms(
+            "NiONiO",
+            scaled_positions=[
+                [0.1, 0.1, 0.2],
+                [0.2, 0.2, 0.3],
+                [0.8, 0.8, 0.7],
+                [0.9, 0.9, 0.8],
+            ],
+            cell=np.diag([4.0, 4.0, 4.0]),
+            pbc=True,
+        )
+        spin = np.arange(12, dtype=float).reshape(4, 3)
+        initial_magmoms = np.flip(spin, axis=1).copy()
+        structure.new_array("spin", spin)
+        structure.set_initial_magnetic_moments(initial_magmoms)
+
+        result = CompositionGradientOperation().run_structure(
+            structure,
+            CompositionGradientParams(
+                bins=2,
+                target_mode="listed",
+                target_elements="Ni",
+                use_seed=True,
+                seed=5,
+            ),
+        )[0]
+        self.assertEqual(result.get_chemical_symbols(), ["Ni", "O", "Co", "O"])
+        np.testing.assert_array_equal(result.arrays["spin"], spin)
+        np.testing.assert_array_equal(
+            result.arrays["initial_magmoms"], initial_magmoms
+        )
+
+        card = CompositionGradientCard()
+        card.set_dataset([structure, structure.copy()])
+        card.set_params(
+            CompositionGradientParams(
+                bins=8,
+                target_mode="listed",
+                target_elements="Ni",
+                samples=3,
+            )
+        )
+        self.assertEqual(card.get_params().target_mode, "listed")
+        self.assertFalse(card.target_field.isHidden())
+        self.assertIn("Inputs 2", card.get_guidance_text())
+        self.assertIn("outputs 6", card.get_guidance_text())
+        self.assertIn("Eligible sites 2", card.get_guidance_text())
+        self.assertIn("second jump", card.get_guidance_text())
+        self.assertIn("magnetic moments", card.get_guidance_text())
+        self.assertIn("may repeat", card.get_guidance_text())
+
+        restored = CompositionGradientCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), card.get_params())
 
     def test_composition_sweep_quaternary_quinary(self):
         base = self.structure.copy()

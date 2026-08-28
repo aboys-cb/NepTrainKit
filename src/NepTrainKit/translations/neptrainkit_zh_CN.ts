@@ -879,9 +879,8 @@
         <translation type="vanished">沿晶格方向构造一维成分过渡，不移动原子。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="89" />
         <source>Build a one-dimensional composition transition along lattice a, b, or c without moving atoms.</source>
-        <translation>沿晶格 a、b 或 c 方向构造一维成分过渡，不移动原子。</translation>
+        <translation type="vanished">沿晶格 a、b 或 c 方向构造一维成分过渡，不移动原子。</translation>
     </message>
     <message>
         <source>Composition Sweep</source>
@@ -1239,6 +1238,11 @@
         <location filename="../ui/widgets/card_metadata.py" line="82" />
         <source>Scan unique normal-strain paths and grids along lattice a, b, and c.</source>
         <translation>沿晶格 a、b、c 扫描去重后的法向应变路径和网格。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="89" />
+        <source>Assign a composition transition across equal-count site groups ordered along lattice a, b, or c.</source>
+        <translation>沿晶格 a、b 或 c 排序位点，并在等原子数组间分配成分过渡。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="130" />
@@ -3874,6 +3878,26 @@
         <translation>笛卡尔剪切产生了无效或奇异晶胞，请减小剪切分量。</translation>
     </message>
     <message>
+        <location filename="../ui/messages.py" line="775" />
+        <source>Composition Gradient requires at least two equal-count groups.</source>
+        <translation>成分梯度至少需要两个等原子数组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="779" />
+        <source>Composition Gradient requires at least one random sample.</source>
+        <translation>成分梯度至少需要一个随机样本。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="783" />
+        <source>Composition Gradient requires at least two eligible sites.</source>
+        <translation>成分梯度至少需要两个符合条件的位点。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="787" />
+        <source>List one or more existing elements for the selected site scope.</source>
+        <translation>请为当前位点范围填写至少一种已有元素。</translation>
+    </message>
+    <message>
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
@@ -4023,152 +4047,152 @@
 <context>
     <name>CardOperationField</name>
     <message>
-        <location filename="../ui/messages.py" line="779" />
+        <location filename="../ui/messages.py" line="795" />
         <source>Maximum outputs per input</source>
         <translation>每个输入的最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="780" />
+        <location filename="../ui/messages.py" line="796" />
         <source>Bonds rotated per output</source>
         <translation>每个输出旋转的键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="781" />
+        <location filename="../ui/messages.py" line="797" />
         <source>Large-molecule threshold</source>
         <translation>大分子阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="782" />
+        <location filename="../ui/messages.py" line="798" />
         <source>Local subtree cap</source>
         <translation>局部子树上限</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="783" />
+        <location filename="../ui/messages.py" line="799" />
         <source>Retries per output</source>
         <translation>每个输出的重试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="784" />
+        <location filename="../ui/messages.py" line="800" />
         <source>Coordinate noise</source>
         <translation>坐标噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="785" />
+        <location filename="../ui/messages.py" line="801" />
         <source>Torsion increment range</source>
         <translation>扭转增量范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="786" />
+        <location filename="../ui/messages.py" line="802" />
         <source>Bond detection radius</source>
         <translation>成键检测半径</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="787" />
+        <location filename="../ui/messages.py" line="803" />
         <source>Minimum bond length</source>
         <translation>最小键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="788" />
+        <location filename="../ui/messages.py" line="804" />
         <source>Maximum bond length</source>
         <translation>最大键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="789" />
+        <location filename="../ui/messages.py" line="805" />
         <source>Minimum nonbonded distance</source>
         <translation>最小非键距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="790" />
+        <location filename="../ui/messages.py" line="806" />
         <source>Short-bond rotation cutoff</source>
         <translation>短键旋转截止系数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="791" />
+        <location filename="../ui/messages.py" line="807" />
         <source>Nonperiodic display box</source>
         <translation>非周期显示盒</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="792" />
+        <location filename="../ui/messages.py" line="808" />
         <source>Pauling decay length</source>
         <translation>Pauling 衰减长度</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="793" />
+        <location filename="../ui/messages.py" line="809" />
         <source>Bond-order threshold</source>
         <translation>键级阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="794" />
+        <location filename="../ui/messages.py" line="810" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="795" />
+        <location filename="../ui/messages.py" line="811" />
         <source>Independent outputs per input</source>
         <translation>每个输入的独立输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="796" />
+        <location filename="../ui/messages.py" line="812" />
         <source>Total solvent molecules per output</source>
         <translation>每个输出的溶剂分子总数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="797" />
+        <location filename="../ui/messages.py" line="813" />
         <source>Placement attempts per output</source>
         <translation>每个输出的放置尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="798" />
+        <location filename="../ui/messages.py" line="814" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="799" />
+        <location filename="../ui/messages.py" line="815" />
         <source>Fallback center-to-COM shell</source>
         <translation>备用中心-质心壳层</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="800" />
+        <location filename="../ui/messages.py" line="816" />
         <source>Uniform minimum distance</source>
         <translation>统一最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="801" />
+        <location filename="../ui/messages.py" line="817" />
         <source>Element-radius collision scale</source>
         <translation>元素半径碰撞缩放</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="802" />
+        <location filename="../ui/messages.py" line="818" />
         <source>Fixed box size</source>
         <translation>固定盒尺寸</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="803" />
+        <location filename="../ui/messages.py" line="819" />
         <source>Auto-box padding</source>
         <translation>自动显示盒留白</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="804" />
+        <location filename="../ui/messages.py" line="820" />
         <source>Minimum auto-box edge</source>
         <translation>自动显示盒最小边长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="805" />
+        <location filename="../ui/messages.py" line="821" />
         <source>Flexible conformer pool</source>
         <translation>柔性构象池</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="806" />
+        <location filename="../ui/messages.py" line="822" />
         <source>Flexible torsions per conformer</source>
         <translation>每个柔性构象的扭转键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="807" />
+        <location filename="../ui/messages.py" line="823" />
         <source>Flexible conformer noise</source>
         <translation>柔性构象噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="808" />
+        <location filename="../ui/messages.py" line="824" />
         <source>Flexible torsion range</source>
         <translation>柔性扭转范围</translation>
     </message>
@@ -4652,85 +4676,214 @@
 <context>
     <name>CompositionGradientCard</name>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="29" />
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="45" />
         <source>Composition Gradient</source>
         <translation>成分梯度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="69" />
+        <source>Gradient composition</source>
+        <translation>梯度配比</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="71" />
+        <source>Each row gives one output element and its low/high-end ratio.</source>
+        <translation>每行填写一种输出元素及其低坐标端和高坐标端比例。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="88" />
+        <source>Requested equal-count groups</source>
+        <translation>请求等原子数组</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="95" />
+        <source>Gradient definition</source>
+        <translation>梯度定义</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="105" />
+        <source>All atoms</source>
+        <translation>所有原子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="107" />
+        <source>Listed existing elements</source>
+        <translation>仅列出的已有元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="110" />
+        <source>Eligible sites</source>
+        <translation>作用位点</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="113" />
+        <source>For example: Ni,Co</source>
+        <translation>例如：Ni,Co</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="115" />
+        <source>Existing elements to replace</source>
+        <translation>要替换的已有元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="118" />
+        <source>Elements not listed here remain unchanged.</source>
+        <translation>未在此列出的元素保持不变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="122" />
+        <source>Site scope</source>
+        <translation>位点范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="125" />
+        <source>The selected sites are sorted by lattice fractional coordinate; atoms are not moved.</source>
+        <translation>所选位点按晶格分数坐标排序；原子位置不会移动。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="133" />
+        <source>Random samples per input</source>
+        <translation>每个输入的随机样本</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="143" />
+        <source>Random seed</source>
+        <translation>随机种子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="151" />
+        <source>Sampling</source>
+        <translation>采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="154" />
+        <source>Samples keep the same integer composition in each group and randomize site assignments.</source>
+        <translation>各样本保持每组整数配比不变，仅随机改变元素所在位点。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="206" />
+        <source>Sorts eligible sites by fractional {direction}, then splits them into groups with nearly equal atom counts. A periodic {direction} direction joins the ends and creates a second composition jump.</source>
+        <translation>按分数坐标 {direction} 排序符合条件的位点，再分为原子数近似相等的组。{direction} 方向为周期时，两端相接并形成第二个成分突变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="265" />
+        <source>Complete the gradient definition</source>
+        <translation>请完整填写梯度定义</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="268" />
+        <source>lattice {axis} · {requested} requested → {effective} effective · {count}/input</source>
+        <translation>晶格 {axis} · 请求 {requested} → 实际 {effective} · {count}/输入</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="275" />
+        <source>lattice {axis} · {groups} groups · {count}/input</source>
+        <translation>晶格 {axis} · {groups} 组 · {count}/输入</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="298" />
+        <source>Inputs {inputs} × samples/input {samples} = outputs {total}.</source>
+        <translation>输入 {inputs} × 每输入样本 {samples} = 输出 {total}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="307" />
+        <source>Outputs/input: {samples}.</source>
+        <translation>每个输入输出：{samples}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="318" />
+        <source>Eligible sites {sites} → effective groups {groups} → sites/group {size}.</source>
+        <translation>作用位点 {sites} → 实际组数 {groups} → 每组位点 {size}。</translation>
+    </message>
+    <message>
+        <source>{inputs} inputs × {samples} samples = {total} outputs.</source>
+        <translation type="vanished">{inputs} 个输入 × {samples} 个样本 = {total} 个输出。</translation>
+    </message>
+    <message>
+        <source>{samples} outputs per input.</source>
+        <translation type="vanished">每个输入生成 {samples} 个输出。</translation>
+    </message>
+    <message>
+        <source>{sites} eligible sites → {groups} effective groups → {size} sites/group.</source>
+        <translation type="vanished">{sites} 个作用位点 → {groups} 个实际组 → 每组 {size} 个位点。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="330" />
+        <source>The periodic {axis} boundary joins the two compositions and creates a second jump.</source>
+        <translation>周期 {axis} 边界连接两端配比，并形成第二个成分突变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="337" />
+        <source>Existing spin and initial magnetic moments are copied unchanged; reset them after changing species if needed.</source>
+        <translation>现有 spin 和初始磁矩会原样复制；更换元素后请按需要重新设置。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="342" />
+        <source>Random samples may repeat when groups contain few sites.</source>
+        <translation>每组位点较少时，随机样本可能重复。</translation>
     </message>
     <message>
         <source>Reassigns elements from the start composition to the end composition along one lattice direction. Atomic positions and the cell stay unchanged.</source>
         <translation type="vanished">沿一个晶格方向把元素从起始成分逐层过渡到结束成分；原子位置和晶胞保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="35" />
         <source>Elements</source>
-        <translation>元素</translation>
+        <translation type="vanished">元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="36" />
         <source>Elements participating in the gradient</source>
-        <translation>参与梯度变化的元素</translation>
+        <translation type="vanished">参与梯度变化的元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="41" />
         <source>Start composition</source>
-        <translation>起始成分</translation>
+        <translation type="vanished">起始成分</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="42" />
         <source>Composition at the low-coordinate end, e.g. Ni:1,Co:0</source>
-        <translation>低坐标端的成分，例如 Ni:1,Co:0</translation>
+        <translation type="vanished">低坐标端的成分，例如 Ni:1,Co:0</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="47" />
         <source>End composition</source>
-        <translation>结束成分</translation>
+        <translation type="vanished">结束成分</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="48" />
         <source>Composition at the high-coordinate end, e.g. Ni:0,Co:1</source>
-        <translation>高坐标端的成分，例如 Ni:0,Co:1</translation>
+        <translation type="vanished">高坐标端的成分，例如 Ni:0,Co:1</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="67" />
         <source>Lattice-coordinate direction used to order and layer atoms</source>
-        <translation>用于排列原子和划分成分层的晶格坐标方向</translation>
+        <translation type="vanished">用于排列原子和划分成分层的晶格坐标方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="80" />
         <source>Composition layers</source>
-        <translation>成分层数</translation>
+        <translation type="vanished">成分层数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="82" />
         <source>Number of equal-atom groups used to approximate the gradient</source>
-        <translation>用原子数尽量相同的分组近似成分梯度</translation>
+        <translation type="vanished">用原子数尽量相同的分组近似成分梯度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="90" />
         <source>Replace existing elements</source>
-        <translation>允许替换的现有元素</translation>
+        <translation type="vanished">允许替换的现有元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="97" />
         <source>Leave empty to replace every atom. List existing elements such as Ni,Co to preserve all other sublattices.</source>
-        <translation>留空会替换所有原子。填写 Ni,Co 等现有元素，可保留其他子晶格。</translation>
+        <translation type="vanished">留空会替换所有原子。填写 Ni,Co 等现有元素，可保留其他子晶格。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="105" />
         <source>Random arrangements</source>
-        <translation>随机排布数</translation>
+        <translation type="vanished">随机排布数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="149" />
         <source>Start applies to the low fractional coordinate along lattice {direction}; end applies to the high side. Periodic boundaries join the two ends.</source>
-        <translation>起始成分对应晶格 {direction} 方向的低分数坐标端，结束成分对应高坐标端；周期边界会把两端相接。</translation>
+        <translation type="vanished">起始成分对应晶格 {direction} 方向的低分数坐标端，结束成分对应高坐标端；周期边界会把两端相接。</translation>
     </message>
     <message>
         <source>Axis</source>
         <translation type="vanished">轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="66" />
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="83" />
         <source>Gradient direction</source>
         <translation>梯度方向</translation>
     </message>
@@ -4747,26 +4900,23 @@
         <translation type="vanished">目标元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="91" />
         <source>Optional existing elements eligible for replacement; empty means all atoms</source>
-        <translation>可选：允许被替换的现有元素；留空表示所有原子</translation>
+        <translation type="vanished">可选：允许被替换的现有元素；留空表示所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="94" />
         <source>Ni,Co</source>
-        <translation>Ni,Co</translation>
+        <translation type="vanished">Ni,Co</translation>
     </message>
     <message>
         <source>Samples</source>
         <translation type="vanished">样本数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="106" />
         <source>Number of random assignments emitted for the same layer compositions</source>
-        <translation>同一层成分下生成的随机分配数量</translation>
+        <translation type="vanished">同一层成分下生成的随机分配数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_gradient_card.py" line="113" />
+        <location filename="../ui/views/_card/composition_gradient_card.py" line="139" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
@@ -4774,29 +4924,37 @@
 <context>
     <name>CompositionPathTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="302" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="310" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="302" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="310" />
         <source>Start fraction</source>
         <translation>起始比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="302" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="310" />
         <source>End fraction</source>
         <translation>终止比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="309" />
-        <source>Add element</source>
-        <translation>添加元素</translation>
+        <location filename="../ui/widgets/parameter_inputs.py" line="323" />
+        <source>Add row</source>
+        <translation>添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="310" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="324" />
+        <source>Remove row</source>
+        <translation>删除行</translation>
+    </message>
+    <message>
+        <source>Add element</source>
+        <translation type="vanished">添加元素</translation>
+    </message>
+    <message>
         <source>Remove selected</source>
-        <translation>删除选中项</translation>
+        <translation type="vanished">删除选中项</translation>
     </message>
 </context>
 <context>
@@ -5913,7 +6071,7 @@
 <context>
     <name>DirectionInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="146" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="154" />
         <source>Custom Cartesian vector</source>
         <translation>自定义笛卡尔向量</translation>
     </message>
@@ -8519,12 +8677,12 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>KeyValueTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="216" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="224" />
         <source>Add row</source>
         <translation>添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="217" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="225" />
         <source>Remove selected</source>
         <translation>删除选中项</translation>
     </message>
@@ -10828,72 +10986,72 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="694" />
+        <location filename="../ui/pages/makedata.py" line="697" />
         <source>Please choose the structure files</source>
         <translation>请选择结构文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="697" />
+        <location filename="../ui/pages/makedata.py" line="700" />
         <source>Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)</source>
         <translation>结构文件 (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="798" />
+        <location filename="../ui/pages/makedata.py" line="801" />
         <source>No enabled cards to export.</source>
         <translation>没有可导出的已启用卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="801" />
+        <location filename="../ui/pages/makedata.py" line="804" />
         <source>No enabled card has output. Run the workflow first.</source>
         <translation>已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="805" />
+        <location filename="../ui/pages/makedata.py" line="808" />
         <source>The final enabled card has no output. Run the workflow first.</source>
         <translation>最后一张已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="812" />
+        <location filename="../ui/pages/makedata.py" line="815" />
         <source>The workflow has multiple independent branch outputs. Export each branch separately or insert an explicit Merge.</source>
         <translation>工作流包含多个独立分支输出。请分别导出各分支，或插入显式合并。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="818" />
+        <location filename="../ui/pages/makedata.py" line="821" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="826" />
+        <location filename="../ui/pages/makedata.py" line="829" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="840" />
+        <location filename="../ui/pages/makedata.py" line="843" />
         <source>Cards are still running. Please wait for the current run to finish.</source>
         <translation>卡片仍在运行，请等待当前任务完成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="859" />
+        <location filename="../ui/pages/makedata.py" line="862" />
         <source>A permanent fork without Merge must be the final workflow node. Insert an explicit Merge before adding a shared downstream card.</source>
         <translation>未合并的永久分叉必须是工作流终点。添加共同下游卡片前，请先插入显式合并。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="868" />
+        <location filename="../ui/pages/makedata.py" line="871" />
         <source>Please import the structure file first. You can drag it in directly or import it from the upper left corner!</source>
         <translation>请先导入结构文件。你可以直接拖入，或从左上角导入。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="877" />
+        <location filename="../ui/pages/makedata.py" line="880" />
         <source>No card selected. Please select a card in the workspace.</source>
         <translation>尚未选择卡片，请先在工作区选择一个卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="963" />
+        <location filename="../ui/pages/makedata.py" line="966" />
         <source>Training structures generated.</source>
         <translation>训练结构已生成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="967" />
+        <location filename="../ui/pages/makedata.py" line="970" />
         <source>Workflow completed with 0 output structures.</source>
         <translation>工作流已完成，输出 0 个结构。</translation>
     </message>
@@ -10902,58 +11060,58 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">扰动训练集已创建。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="976" />
+        <location filename="../ui/pages/makedata.py" line="979" />
         <source>No checked card has output. Run the workflow first.</source>
         <translation>已勾选的卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="979" />
+        <location filename="../ui/pages/makedata.py" line="982" />
         <source>No checked cards to view.</source>
         <translation>没有可查看的已勾选卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1024" />
+        <location filename="../ui/pages/makedata.py" line="1027" />
         <source>Run this card to create an output first.</source>
         <translation>请先运行此卡片生成输出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1063" />
+        <location filename="../ui/pages/makedata.py" line="1066" />
         <source>no card</source>
         <translation>没有卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1082" />
-        <location filename="../ui/pages/makedata.py" line="1106" />
+        <location filename="../ui/pages/makedata.py" line="1085" />
+        <location filename="../ui/pages/makedata.py" line="1109" />
         <source>No cards in workspace.</source>
         <translation>工作区中没有卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1091" />
+        <location filename="../ui/pages/makedata.py" line="1094" />
         <source>Card configuration exported successfully.</source>
         <translation>卡片配置已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1110" />
+        <location filename="../ui/pages/makedata.py" line="1113" />
         <source>Card configuration JSON copied to clipboard.</source>
         <translation>卡片配置 JSON 已复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1141" />
+        <location filename="../ui/pages/makedata.py" line="1144" />
         <source>Clipboard does not contain card JSON.</source>
         <translation>剪贴板中没有卡片 JSON。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1171" />
+        <location filename="../ui/pages/makedata.py" line="1174" />
         <source>Invalid card configuration file: {error}</source>
         <translation>卡片配置文件无效：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1218" />
+        <location filename="../ui/pages/makedata.py" line="1221" />
         <source>Failed to load {name}: {error}</source>
         <translation>加载 {name} 失败：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1226" />
+        <location filename="../ui/pages/makedata.py" line="1229" />
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>
@@ -10986,23 +11144,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="845" />
-        <location filename="../ui/messages.py" line="885" />
+        <location filename="../ui/messages.py" line="861" />
+        <location filename="../ui/messages.py" line="901" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="855" />
+        <location filename="../ui/messages.py" line="871" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="865" />
+        <location filename="../ui/messages.py" line="881" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="875" />
+        <location filename="../ui/messages.py" line="891" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -11623,42 +11781,42 @@ All child items will also be deleted.</source>
 <context>
     <name>NumericScanInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="46" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="54" />
         <source>Use custom coordinate list</source>
         <translation>使用自定义坐标列表</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="48" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="56" />
         <source>Comma-separated values</source>
         <translation>用逗号分隔数值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="83" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="91" />
         <source>Custom coordinate list cannot be empty.</source>
         <translation>自定义坐标列表不能为空。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="87" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="95" />
         <source>Custom coordinate list must contain only numbers.</source>
         <translation>自定义坐标列表只能包含数字。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="89" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="97" />
         <source>Custom coordinate list must contain only finite numbers.</source>
         <translation>自定义坐标列表只能包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="94" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="102" />
         <source>Scan step must be positive.</source>
         <translation>扫描步长必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="96" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="104" />
         <source>Scan maximum must be greater than or equal to the minimum.</source>
         <translation>扫描最大值必须大于或等于最小值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="99" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="107" />
         <source>Coordinate scan contains more than 10000 points.</source>
         <translation>坐标扫描超过 10000 个点。</translation>
     </message>

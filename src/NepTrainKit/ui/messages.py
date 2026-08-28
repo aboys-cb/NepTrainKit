@@ -772,6 +772,22 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "Cartesian shear produced an invalid or singular cell. Reduce the shear components.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient requires at least two equal-count groups.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient requires at least one random sample.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient requires at least two eligible sites.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "List one or more existing elements for the selected site scope.",
+    )
 
 
 def _card_operation_field_catalog() -> None:

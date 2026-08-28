@@ -1586,6 +1586,7 @@ class CompositionGradientParams:
     end_composition: str = "Ni:0,Co:1"
     axis: str = "a"
     bins: int = 8
+    target_mode: str = "all"
     target_elements: str = ""
     samples: int = 1
     use_seed: bool = False
@@ -1597,24 +1598,80 @@ class CompositionGradientOperation(StructureOperation):
 
     AXIS_INDEX = {"a": 0, "b": 1, "c": 2, "x": 0, "y": 1, "z": 2}
 
-    def run_structure(self, structure, params: CompositionGradientParams) -> list:
+    @classmethod
+    def sampling_summary(
+        cls,
+        params: CompositionGradientParams,
+        structure=None,
+    ) -> dict[str, object]:
         elements = parse_element_list(params.elements)
         if len(elements) < 2:
             raise ValueError("Composition Gradient requires at least two elements.")
-        start_comp = self._normalized_composition(params.start_composition, elements)
-        end_comp = self._normalized_composition(params.end_composition, elements)
+        start_comp = cls._normalized_composition(params.start_composition, elements)
+        end_comp = cls._normalized_composition(params.end_composition, elements)
         if not start_comp or not end_comp:
-            raise ValueError("Composition Gradient requires valid start and end compositions.")
+            raise ValueError(
+                "Composition Gradient requires valid start and end compositions."
+            )
 
-        candidate_indices = self._candidate_indices(structure, params.target_elements)
-        if candidate_indices.size == 0:
-            raise ValueError("Composition Gradient found no atoms matching target_elements.")
-
-        bins = max(1, int(params.bins))
         axis_key = str(params.axis).strip().lower()
-        if axis_key not in self.AXIS_INDEX:
+        if axis_key not in cls.AXIS_INDEX:
             raise ValueError("Composition Gradient axis must be one of a, b, or c.")
-        axis_idx = self.AXIS_INDEX[axis_key]
+        bins = int(params.bins)
+        if bins < 2:
+            raise CardOperationError(
+                "composition_gradient.too_few_groups",
+                "Composition Gradient requires at least two equal-count groups.",
+            )
+        samples = int(params.samples)
+        if samples < 1:
+            raise CardOperationError(
+                "composition_gradient.too_few_samples",
+                "Composition Gradient requires at least one random sample.",
+            )
+
+        summary: dict[str, object] = {
+            "elements": elements,
+            "start_composition": start_comp,
+            "end_composition": end_comp,
+            "axis": cls._axis_name(cls.AXIS_INDEX[axis_key]),
+            "requested_groups": bins,
+            "samples": samples,
+            "outputs_per_input": samples,
+        }
+        if structure is not None:
+            candidate_indices = cls._candidate_indices(
+                structure,
+                params.target_elements,
+                params.target_mode,
+            )
+            candidate_count = int(candidate_indices.size)
+            if candidate_count < 2:
+                raise CardOperationError(
+                    "composition_gradient.too_few_candidates",
+                    "Composition Gradient requires at least two eligible sites.",
+                )
+            effective_groups = min(bins, candidate_count)
+            quotient, remainder = divmod(candidate_count, effective_groups)
+            summary.update(
+                {
+                    "candidate_indices": candidate_indices,
+                    "candidate_sites": candidate_count,
+                    "effective_groups": effective_groups,
+                    "min_group_size": quotient,
+                    "max_group_size": quotient + (1 if remainder else 0),
+                }
+            )
+        return summary
+
+    def run_structure(self, structure, params: CompositionGradientParams) -> list:
+        summary = self.sampling_summary(params, structure)
+        elements = summary["elements"]
+        start_comp = summary["start_composition"]
+        end_comp = summary["end_composition"]
+        candidate_indices = summary["candidate_indices"]
+        bins = int(summary["effective_groups"])
+        axis_idx = self.AXIS_INDEX[str(summary["axis"])]
         coord = self._axis_coordinate(structure, axis_idx)
         order = candidate_indices[np.argsort(coord[candidate_indices], kind="mergesort")]
         groups = [group for group in np.array_split(order, bins) if len(group) > 0]
@@ -1624,7 +1681,7 @@ class CompositionGradientOperation(StructureOperation):
         base_seed = int(params.seed) if params.use_seed else None
         cfg_id = stable_config_id(structure)
         outputs = []
-        for sample_idx in range(max(int(params.samples), 1)):
+        for sample_idx in range(int(summary["samples"])):
             if base_seed is None:
                 rng = np.random.default_rng()
                 seed_tag = ""
@@ -1657,10 +1714,24 @@ class CompositionGradientOperation(StructureOperation):
         return {element: float(value) for element, value in zip(elements, values)}
 
     @staticmethod
-    def _candidate_indices(structure, target_elements: str) -> np.ndarray:
+    def _candidate_indices(
+        structure,
+        target_elements: str,
+        target_mode: str = "all",
+    ) -> np.ndarray:
+        mode = str(target_mode or "all").strip().lower()
+        if mode not in {"all", "listed"}:
+            raise ValueError("Composition Gradient target mode must be all or listed.")
         targets = set(parse_element_list(target_elements))
-        if not targets:
+        # A nonempty legacy target list implied listed-site mode before the UI
+        # gained an explicit scope selector.
+        if mode == "all" and not targets:
             return np.arange(len(structure), dtype=int)
+        if not targets:
+            raise CardOperationError(
+                "composition_gradient.missing_targets",
+                "List one or more existing elements for the selected site scope.",
+            )
         return np.asarray(
             [idx for idx, symbol in enumerate(structure.get_chemical_symbols()) if symbol in targets],
             dtype=int,

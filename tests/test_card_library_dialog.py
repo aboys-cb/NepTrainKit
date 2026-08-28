@@ -110,7 +110,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             self.assertEqual(dialog.detail_title_label.text(), "成分梯度")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "沿晶格 a、b 或 c 方向构造一维成分过渡，不移动原子。",
+                "沿晶格 a、b 或 c 排序位点，并在等原子数组间分配成分过渡。",
             )
             self.assertIn("作者", dialog.detail_contributors_label.text())
 

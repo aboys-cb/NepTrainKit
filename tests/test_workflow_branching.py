@@ -263,6 +263,32 @@ def test_first_perturb_card_previews_exact_imported_output_count():
     app.processEvents()
 
 
+def test_first_composition_gradient_previews_imported_structure_details():
+    app = _app()
+    widget = MakeDataWidget()
+    structure = Atoms(
+        "Ni8",
+        scaled_positions=[[index / 8.0, 0.0, 0.0] for index in range(8)],
+        cell=[8.0, 2.0, 2.0],
+        pbc=True,
+    )
+    widget.dataset = [structure, structure.copy()]
+    card = widget.add_card("CompositionGradientCard")
+    card.bins_frame.set_input_value([20])
+    card.samples_frame.set_input_value([3])
+    widget._refresh_input_count_previews()
+    app.processEvents()
+
+    assert card.dataset is None
+    assert "20 requested → 8 effective" in card.get_summary_text()
+    assert "Inputs 2 × samples/input 3 = outputs 6" in card.get_guidance_text()
+    assert "Eligible sites 8 → effective groups 8 → sites/group 1" in card.get_guidance_text()
+    assert "second jump" in card.get_guidance_text()
+    widget.close()
+    widget.deleteLater()
+    app.processEvents()
+
+
 def test_fork_keeps_extra_width_needed_for_parallel_lanes():
     app = _app()
     area = MakeWorkflowArea()

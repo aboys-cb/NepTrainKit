@@ -174,6 +174,104 @@ class RandomDopingParams:
 class RandomDopingOperation(StructureOperation):
     """Perform random atomic substitutions according to explicit rules."""
 
+    def sampling_summary(
+        self,
+        structure,
+        params: RandomDopingParams,
+    ) -> dict[str, object]:
+        """Validate one input and describe the exact output and rule bounds."""
+        if not isinstance(params.rules, list) or not params.rules:
+            raise CardOperationError(
+                "random_doping.empty_rules",
+                "Random Doping requires at least one replacement rule.",
+            )
+        if len(structure) <= 0:
+            raise CardOperationError(
+                "random_doping.empty_structure",
+                "Random Doping requires at least one atom in the input structure.",
+            )
+
+        allocation = str(params.doping_type).strip()
+        if allocation not in {"Random", "Exact"}:
+            raise CardOperationError(
+                "random_doping.invalid_allocation",
+                "Random Doping allocation must be Random or Exact.",
+            )
+        try:
+            outputs_per_input = int(params.max_structures)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_doping.invalid_outputs",
+                "Random Doping outputs per input must be an integer of at least 1.",
+            ) from exc
+        if outputs_per_input < 1:
+            raise CardOperationError(
+                "random_doping.invalid_outputs",
+                "Random Doping outputs per input must be at least 1.",
+            )
+        try:
+            seed = int(params.seed)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_doping.invalid_seed",
+                "Random Doping seed must be a non-negative integer.",
+            ) from exc
+        if seed < 0:
+            raise CardOperationError(
+                "random_doping.invalid_seed",
+                "Random Doping seed must be non-negative.",
+            )
+
+        validated_rules = self._validated_rules(params.rules)
+        prepared_rules = self._prepared_rules(structure, validated_rules)
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
+        group_values = np.asarray(
+            structure.arrays.get("group", np.empty(0, dtype=object)),
+            dtype=object,
+        )
+        rule_summaries: list[dict[str, object]] = []
+        for rule_index, (_label, rule, target, dopants, groups) in enumerate(
+            prepared_rules,
+            start=1,
+        ):
+            candidate_mask = symbols == target
+            if groups:
+                candidate_mask &= np.isin(group_values, groups)
+            candidate_indices = np.nonzero(candidate_mask)[0]
+            minimum, maximum = self._doping_count_bounds(
+                structure,
+                candidate_indices,
+                target,
+                dopants,
+                rule,
+            )
+            rule_summaries.append(
+                {
+                    "rule_index": rule_index,
+                    "target": target,
+                    "dopants": dict(dopants),
+                    "ratio_type": str(rule.get("ratio_type", "atom")),
+                    "amount_mode": str(rule.get("use", "atomic_percent")),
+                    "groups": tuple(groups),
+                    "eligible_sites": int(len(candidate_indices)),
+                    "replacement_min": int(minimum),
+                    "replacement_max": int(maximum),
+                }
+            )
+        if not any(int(item["replacement_max"]) > 0 for item in rule_summaries):
+            raise CardOperationError(
+                "random_doping.no_effect",
+                "Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.",
+            )
+        return {
+            "allocation": allocation,
+            "outputs_per_input": outputs_per_input,
+            "use_seed": bool(params.use_seed),
+            "seed": seed,
+            "rules": tuple(rule_summaries),
+            "prepared_rules": prepared_rules,
+        }
+
     @staticmethod
     def _validated_rules(
         rules: list[dict[str, Any]],
@@ -182,20 +280,37 @@ class RandomDopingOperation(StructureOperation):
         for rule_index, rule in enumerate(rules, start=1):
             label = f"RandomDoping rule {rule_index}"
             if not isinstance(rule, dict):
-                raise ValueError(f"{label} must be a mapping.")
+                raise CardOperationError(
+                    "random_doping.rule_not_mapping",
+                    "Random Doping rule {index} must be a mapping.",
+                    index=rule_index,
+                )
             target = str(rule.get("target", "") or "").strip()
             dopants = rule.get("dopants", {})
             if not target:
-                raise ValueError(f"{label} requires a target element.")
+                raise CardOperationError(
+                    "random_doping.missing_target",
+                    "Random Doping rule {index} requires an element to replace.",
+                    index=rule_index,
+                )
             if not isinstance(dopants, dict):
-                raise ValueError(
-                    f"{label} dopants must be an element->ratio mapping."
+                raise CardOperationError(
+                    "random_doping.invalid_dopants",
+                    "Random Doping rule {index} replacement elements must be an element-to-weight mapping.",
+                    index=rule_index,
                 )
             if not dopants:
-                raise ValueError(f"{label} requires at least one dopant element.")
+                raise CardOperationError(
+                    "random_doping.missing_dopants",
+                    "Random Doping rule {index} requires at least one replacement element.",
+                    index=rule_index,
+                )
             if target not in atomic_numbers:
-                raise ValueError(
-                    f"{label} has an unknown target element '{target}'."
+                raise CardOperationError(
+                    "random_doping.unknown_target",
+                    "Random Doping rule {index} has unknown target element {element}.",
+                    index=rule_index,
+                    element=target,
                 )
             invalid_dopants = [
                 str(element)
@@ -203,14 +318,18 @@ class RandomDopingOperation(StructureOperation):
                 if str(element) not in atomic_numbers
             ]
             if invalid_dopants:
-                raise ValueError(
-                    f"{label} has unknown dopant element(s): "
-                    + ", ".join(invalid_dopants)
-                    + "."
+                raise CardOperationError(
+                    "random_doping.unknown_dopants",
+                    "Random Doping rule {index} has unknown replacement element(s): {elements}.",
+                    index=rule_index,
+                    elements=", ".join(invalid_dopants),
                 )
             if target in dopants:
-                raise ValueError(
-                    f"{label} includes target element '{target}' as its own dopant."
+                raise CardOperationError(
+                    "random_doping.target_is_dopant",
+                    "Random Doping rule {index} cannot replace {element} with itself.",
+                    index=rule_index,
+                    element=target,
                 )
             ratio_type = str(rule.get("ratio_type", "atom"))
             try:
@@ -220,7 +339,12 @@ class RandomDopingOperation(StructureOperation):
                     ratio_type,
                 )
             except (TypeError, ValueError) as exc:
-                raise ValueError(f"{label}: {exc}") from exc
+                raise CardOperationError(
+                    "random_doping.invalid_dopant_weights",
+                    "Random Doping rule {index} has invalid replacement weights: {reason}",
+                    index=rule_index,
+                    reason=str(exc),
+                ) from exc
             validated.append((label, rule, target, dopants))
         return validated
 
@@ -328,19 +452,28 @@ class RandomDopingOperation(StructureOperation):
             candidate_mask = symbols == target
             if requested_groups:
                 if "group" not in structure.arrays:
-                    raise ValueError(
-                        f"{label} requests group labels, but the input structure "
-                        "has no group array."
+                    raise CardOperationError(
+                        "random_doping.missing_group_array",
+                        "Random Doping rule {index} uses group labels, but the input has no group array.",
+                        index=len(prepared) + 1,
                     )
                 candidate_mask &= np.isin(group_values, requested_groups)
             candidate_indices = np.nonzero(candidate_mask)[0]
             if len(candidate_indices) == 0:
-                scope = (
-                    f" in group {','.join(requested_groups)}"
-                    if requested_groups
-                    else ""
+                if requested_groups:
+                    raise CardOperationError(
+                        "random_doping.no_candidates",
+                        "Random Doping rule {index} matched no {element} atoms in groups {groups}.",
+                        index=len(prepared) + 1,
+                        element=target,
+                        groups=",".join(requested_groups),
+                    )
+                raise CardOperationError(
+                    "random_doping.no_candidates",
+                    "Random Doping rule {index} matched no {element} atoms in the input.",
+                    index=len(prepared) + 1,
+                    element=target,
                 )
-                raise ValueError(f"{label} matched no '{target}' atoms{scope}.")
 
             initial_max = self._doping_count(
                 structure,
@@ -383,30 +516,36 @@ class RandomDopingOperation(StructureOperation):
         return prepared
 
     def run_structure(self, structure, params: RandomDopingParams) -> list:
-        if not isinstance(params.rules, list) or not params.rules:
-            return [structure.copy()]
-
+        summary = self.sampling_summary(structure, params)
         structure_list = []
-        doping_type = str(params.doping_type).strip()
-        if doping_type not in {"Random", "Exact"}:
-            raise ValueError("RandomDoping: doping_type must be Random or Exact.")
-        exact = doping_type == "Exact"
-        max_structures = int(params.max_structures)
-        if max_structures <= 0:
-            raise ValueError("RandomDoping: max_structures must be >= 1.")
-        seed = int(params.seed)
-        if params.use_seed and seed < 0:
-            raise ValueError("RandomDoping: seed must be >= 0.")
+        allocation = str(summary["allocation"])
+        exact = allocation == "Exact"
+        outputs_per_input = int(summary["outputs_per_input"])
+        seed = int(summary["seed"])
         base_seed = seed if params.use_seed else None
-        validated_rules = self._validated_rules(params.rules)
-        prepared_rules = self._prepared_rules(structure, validated_rules)
-        rng: np.random.Generator | None = None
+        prepared_rules = summary["prepared_rules"]
+        config_id = stable_config_id(structure)
 
-        for _ in range(max_structures):
+        for sample_index in range(outputs_per_input):
+            if base_seed is None:
+                derived_seed = None
+                rng = np.random.default_rng()
+            else:
+                derived_seed = int(
+                    base_seed + config_id * 1000003 + sample_index
+                )
+                rng = np.random.default_rng(derived_seed)
             new_structure = structure.copy()
             symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
             total_doping = 0
-            for label, rule, target, dopants, requested_groups in prepared_rules:
+            rule_metadata: list[dict[str, object]] = []
+            for rule_index, (
+                label,
+                rule,
+                target,
+                dopants,
+                requested_groups,
+            ) in enumerate(prepared_rules, start=1):
                 if requested_groups:
                     group_values = np.asarray(new_structure.arrays["group"], dtype=object)
                     candidate_indices = np.nonzero(
@@ -429,8 +568,6 @@ class RandomDopingOperation(StructureOperation):
                         f"{label} can request up to {max_doping_num} replacements, "
                         f"but only {len(candidate_indices)} eligible atoms are available."
                     )
-                if rng is None:
-                    rng = np.random.default_rng(base_seed)
                 doping_num = self._doping_count(
                     new_structure,
                     candidate_indices,
@@ -442,6 +579,16 @@ class RandomDopingOperation(StructureOperation):
                 if doping_num < 0:
                     raise ValueError(f"{label} replacement count must be >= 0.")
                 if doping_num == 0:
+                    rule_metadata.append(
+                        {
+                            "rule_index": rule_index,
+                            "target": target,
+                            "groups": list(requested_groups),
+                            "eligible_sites": int(len(candidate_indices)),
+                            "replacement_count": 0,
+                            "actual_dopant_counts": {},
+                        }
+                    )
                     continue
                 idxs = rng.choice(candidate_indices, doping_num, replace=False)
 
@@ -458,10 +605,39 @@ class RandomDopingOperation(StructureOperation):
 
                 symbols[np.asarray(idxs, dtype=int)] = np.asarray(sample, dtype=object)
                 total_doping += doping_num
+                actual_dopant_counts = {
+                    element: int(count)
+                    for element, count in Counter(sample).items()
+                }
+                rule_metadata.append(
+                    {
+                        "rule_index": rule_index,
+                        "target": target,
+                        "groups": list(requested_groups),
+                        "eligible_sites": int(len(candidate_indices)),
+                        "replacement_count": int(doping_num),
+                        "actual_dopant_counts": actual_dopant_counts,
+                    }
+                )
 
             if total_doping:
                 new_structure.set_chemical_symbols(symbols.tolist())
-                append_config_tag(new_structure, f"Dop(n={total_doping})")
+                _invalidate_species_change_labels(
+                    new_structure,
+                    clear_species_initialization=True,
+                )
+            new_structure.info["random_doping"] = json.dumps(
+                {
+                    "allocation": allocation,
+                    "sample_index": int(sample_index),
+                    "seed": derived_seed,
+                    "total_replacements": int(total_doping),
+                    "rules": rule_metadata,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            append_config_tag(new_structure, f"Dop(n={total_doping})")
             structure_list.append(new_structure)
 
         return structure_list
@@ -475,6 +651,13 @@ class RandomDopingOperation(StructureOperation):
         rule,
         rng: np.random.Generator | None,
     ) -> int:
+        minimum, maximum = self._doping_count_bounds(
+            structure,
+            candidate_indices,
+            target,
+            dopants,
+            rule,
+        )
         use_mode = rule.get("use", "atomic_percent")
 
         if use_mode == "atomic_percent":
@@ -482,8 +665,6 @@ class RandomDopingOperation(StructureOperation):
                 rule.get("percent", [0.0, 100.0]),
                 label="percent",
             )
-            if percent_min < 0.0 or percent_max > 100.0:
-                raise ValueError("percent must be within [0, 100].")
             value = (
                 float(percent_max)
                 if rng is None
@@ -496,8 +677,6 @@ class RandomDopingOperation(StructureOperation):
                 rule.get("percent", [0.0, 100.0]),
                 label="percent",
             )
-            if percent_min < 0.0 or percent_max > 100.0:
-                raise ValueError("percent must be within [0, 100].")
             target_mass_percent = (
                 float(percent_max)
                 if rng is None
@@ -512,26 +691,68 @@ class RandomDopingOperation(StructureOperation):
                 str(rule.get("ratio_type", "atom")),
             )
             dopant_masses = np.array(
-                [
-                    atomic_masses[atomic_numbers[element]]
-                    for element in dopant_elements
-                ],
+                [atomic_masses[atomic_numbers[element]] for element in dopant_elements],
                 dtype=float,
             )
-            avg_dopant_mass = float(np.dot(atom_ratios, dopant_masses))
+            average_dopant_mass = float(np.dot(atom_ratios, dopant_masses))
+            return int(total_target_mass * target_mass_percent / average_dopant_mass)
 
-            doped_mass = total_target_mass * target_mass_percent
-            return int(doped_mass / avg_dopant_mass)
+        if use_mode == "count":
+            count_mode = str(rule.get("count_mode", "")).lower()
+            if count_mode == "fixed" or (not count_mode and minimum == maximum):
+                return minimum
+            if rng is None:
+                return maximum
+            return int(rng.integers(minimum, maximum + 1))
 
+        raise ValueError(
+            "RandomDoping rule use must be atomic_percent, mass_percent, or count."
+        )
+
+    def _doping_count_bounds(
+        self,
+        structure,
+        candidate_indices,
+        target,
+        dopants,
+        rule,
+    ) -> tuple[int, int]:
+        """Return deterministic lower and upper replacement counts for one rule."""
+        use_mode = str(rule.get("use", "atomic_percent"))
+        if use_mode in {"atomic_percent", "mass_percent"}:
+            percent_min, percent_max = _range_pair(
+                rule.get("percent", [0.0, 100.0]),
+                label="percent",
+            )
+            if percent_min < 0.0 or percent_max > 100.0:
+                raise ValueError("percent must be within [0, 100].")
+            if use_mode == "atomic_percent":
+                return (
+                    int(len(candidate_indices) * percent_min / 100.0),
+                    int(len(candidate_indices) * percent_max / 100.0),
+                )
+            target_mass = atomic_masses[atomic_numbers[target]]
+            total_target_mass = len(candidate_indices) * target_mass
+            dopant_elements, atom_ratios = _normalized_dopant_atom_ratios(
+                dopants.keys(),
+                dopants.values(),
+                str(rule.get("ratio_type", "atom")),
+            )
+            dopant_masses = np.array(
+                [atomic_masses[atomic_numbers[element]] for element in dopant_elements],
+                dtype=float,
+            )
+            average_dopant_mass = float(np.dot(atom_ratios, dopant_masses))
+            return (
+                int(total_target_mass * percent_min / 100.0 / average_dopant_mass),
+                int(total_target_mass * percent_max / 100.0 / average_dopant_mass),
+            )
         if use_mode == "count":
             count_min_f, count_max_f = _range_pair(
                 rule.get("count", [1, 1]),
                 label="count",
             )
-            if (
-                not float(count_min_f).is_integer()
-                or not float(count_max_f).is_integer()
-            ):
+            if not float(count_min_f).is_integer() or not float(count_max_f).is_integer():
                 raise ValueError("count values must be integers.")
             count_min = int(count_min_f)
             count_max = int(count_max_f)
@@ -540,14 +761,13 @@ class RandomDopingOperation(StructureOperation):
             count_mode = str(rule.get("count_mode", "")).lower()
             if count_mode and count_mode not in {"fixed", "random"}:
                 raise ValueError("count_mode must be fixed or random.")
-            if count_mode == "fixed" or (not count_mode and count_min == count_max):
+            if count_mode == "fixed":
                 if count_min != count_max:
-                    raise ValueError("fixed count must use the same minimum and maximum.")
-                return count_min
-            if rng is None:
-                return count_max
-            return int(rng.integers(count_min, count_max + 1))
-
+                    raise ValueError(
+                        "fixed count must use the same minimum and maximum."
+                    )
+                return count_min, count_min
+            return count_min, count_max
         raise ValueError(
             "RandomDoping rule use must be atomic_percent, mass_percent, or count."
         )

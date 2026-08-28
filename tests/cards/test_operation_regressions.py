@@ -43,8 +43,13 @@ class TestOperationRegressionEdges(BaseCardTest):
                 structure, ConditionalReplaceParams(target="")
             )
 
+        with self.assertRaisesRegex(ValueError, "at least one replacement rule"):
+            RandomDopingOperation().run_structure(
+                structure,
+                RandomDopingParams(rules=[]),
+            )
+
         cases = [
-            RandomDopingOperation().run_structure(structure, RandomDopingParams(rules=[]))[0],
             GroupLabelOperation().run_structure(structure, GroupLabelParams(overwrite=False))[0],
         ]
 

@@ -75,11 +75,46 @@ class TestAlloyCards(BaseCardTest):
             normalized_occupancy_params,
         )
 
+    def test_random_doping_legacy_json_restores_existing_values(self):
+        legacy_rule = {
+            "target": "Si",
+            "dopants": {"Ge": 0.6, "C": 0.4},
+            "ratio_type": "mass",
+            "use": "count",
+            "count": [2, 4],
+            "count_mode": "random",
+            "group": ["surface"],
+        }
+        card = RandomDopingCard()
+        card.from_dict(
+            {
+                "class": "RandomDopingCard",
+                "check_state": True,
+                "rules": json.dumps([legacy_rule]),
+                "doping_type": "Exact",
+                "max_atoms_condition": [3],
+                "use_seed": True,
+                "seed": [23],
+            }
+        )
+
+        params = card.get_params()
+        self.assertEqual(params.doping_type, "Exact")
+        self.assertEqual(params.max_structures, 3)
+        self.assertTrue(params.use_seed)
+        self.assertEqual(params.seed, 23)
+        self.assertEqual(len(params.rules), 1)
+        restored_rule = params.rules[0]
+        for key, value in legacy_rule.items():
+            self.assertEqual(restored_rule[key], value)
+
     def test_random_doping_dopants_accept_bare_element(self):
         item = DopingRuleItem()
         item.target_edit.setText("Si")
         item.dopants_edit.setText("Ge")
-        item.count_botton.setChecked(True)
+        item.amount_mode_control.setCurrentIndex(
+            item.amount_mode_control.findData("count")
+        )
         item._on_mode_changed()
         item.fixed_count_frame.set_input_value([1])
 
@@ -100,24 +135,25 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(item.dopants_edit.text(), "Ge:0.7,C:0.3")
         self.assertEqual(item.to_rule()["dopants"], {"Ge": 0.7, "C": 0.3})
 
-    def test_random_doping_ratio_button_label_matches_serialized_semantics(self):
+    def test_random_doping_ratio_control_matches_serialized_semantics(self):
         item = DopingRuleItem()
+        item.target_edit.setText("Si")
+        item.dopants_edit.setText("Ge")
 
-        self.assertTrue(item.ratio_type_button.isChecked())
-        self.assertEqual(item.ratio_type_button.text(), "Atom ratio")
+        self.assertEqual(item.ratio_type_control.currentData(), "atom")
         self.assertEqual(item.to_rule()["ratio_type"], "atom")
 
-        item.ratio_type_button.click()
-        self.assertFalse(item.ratio_type_button.isChecked())
-        self.assertEqual(item.ratio_type_button.text(), "Mass ratio")
+        item.ratio_type_control.setCurrentIndex(
+            item.ratio_type_control.findData("mass")
+        )
         self.assertEqual(item.to_rule()["ratio_type"], "mass")
 
         item.from_rule({"target": "Si", "dopants": {"Ge": 1.0}, "ratio_type": "atom"})
-        self.assertEqual(item.ratio_type_button.text(), "Atom ratio")
+        self.assertEqual(item.ratio_type_control.currentData(), "atom")
         self.assertEqual(item.to_rule()["ratio_type"], "atom")
 
         item.from_rule({"target": "Si", "dopants": {"Ge": 1.0}, "ratio_type": "mass"})
-        self.assertEqual(item.ratio_type_button.text(), "Mass ratio")
+        self.assertEqual(item.ratio_type_control.currentData(), "mass")
         self.assertEqual(item.to_rule()["ratio_type"], "mass")
 
     def test_random_doping_count_mode_distinguishes_fixed_and_range(self):
@@ -182,11 +218,12 @@ class TestAlloyCards(BaseCardTest):
         }
         operation = RandomDopingOperation()
 
-        with self.assertRaisesRegex(ValueError, "has no group array"):
+        with self.assertRaises(CardOperationError) as raised:
             operation.run_structure(
                 structure,
                 RandomDopingParams(rules=[rule], use_seed=True, seed=1),
             )
+        self.assertEqual(raised.exception.code, "random_doping.missing_group_array")
 
         structure.new_array("group", np.array(["A", "A", "B", "B"], dtype=object))
         result = operation.run_structure(
@@ -199,13 +236,14 @@ class TestAlloyCards(BaseCardTest):
 
         no_match = structure.copy()
         no_match.arrays["group"][:] = "B"
-        with self.assertRaisesRegex(ValueError, "matched no 'Si' atoms in group A"):
+        with self.assertRaises(CardOperationError) as raised:
             operation.run_structure(
                 no_match,
                 RandomDopingParams(rules=[rule], use_seed=True, seed=1),
             )
+        self.assertEqual(raised.exception.code, "random_doping.no_candidates")
 
-    def test_random_doping_does_not_clamp_zero_percent_or_oversized_count(self):
+    def test_random_doping_rejects_deterministic_no_effect_and_oversized_count(self):
         structure = Atoms(
             "Si4",
             positions=np.arange(12, dtype=float).reshape(4, 3),
@@ -213,23 +251,23 @@ class TestAlloyCards(BaseCardTest):
             pbc=True,
         )
         operation = RandomDopingOperation()
-        zero = operation.run_structure(
-            structure,
-            RandomDopingParams(
-                rules=[
-                    {
-                        "target": "Si",
-                        "dopants": {"Ge": 1.0},
-                        "use": "atomic_percent",
-                        "percent": [0.0, 0.0],
-                    }
-                ],
-                use_seed=True,
-                seed=1,
-            ),
-        )[0]
-        self.assertEqual(zero.get_chemical_symbols(), structure.get_chemical_symbols())
-        self.assertNotIn("Dop(", zero.info.get("Config_type", ""))
+        with self.assertRaises(CardOperationError) as raised:
+            operation.run_structure(
+                structure,
+                RandomDopingParams(
+                    rules=[
+                        {
+                            "target": "Si",
+                            "dopants": {"Ge": 1.0},
+                            "use": "atomic_percent",
+                            "percent": [0.0, 0.0],
+                        }
+                    ],
+                    use_seed=True,
+                    seed=1,
+                ),
+            )
+        self.assertEqual(raised.exception.code, "random_doping.no_effect")
 
         with self.assertRaisesRegex(
             ValueError,
@@ -247,8 +285,148 @@ class TestAlloyCards(BaseCardTest):
                             "count_mode": "fixed",
                         }
                     ],
-                ),
+                    ),
+                )
+
+    def test_random_doping_summary_and_output_count_are_strict(self):
+        structure = Atoms(
+            "Si10",
+            positions=np.arange(30, dtype=float).reshape(10, 3),
+            cell=[40, 40, 40],
+            pbc=[True, False, True],
+        )
+        operation = RandomDopingOperation()
+        with self.assertRaises(CardOperationError) as raised:
+            operation.run_structure(
+                structure,
+                RandomDopingParams(rules=[], max_structures=4),
             )
+        self.assertEqual(raised.exception.code, "random_doping.empty_rules")
+
+        params = RandomDopingParams(
+            rules=[
+                {
+                    "target": "Si",
+                    "dopants": {"Ge": 1.0},
+                    "use": "atomic_percent",
+                    "percent": [20.0, 40.0],
+                }
+            ],
+            max_structures=4,
+            use_seed=True,
+            seed=9,
+        )
+        summary = operation.sampling_summary(structure, params)
+        outputs = operation.run_structure(structure, params)
+
+        self.assertEqual(summary["outputs_per_input"], 4)
+        self.assertEqual(len(outputs), 4)
+        self.assertEqual(summary["rules"][0]["eligible_sites"], 10)
+        self.assertEqual(summary["rules"][0]["replacement_min"], 2)
+        self.assertEqual(summary["rules"][0]["replacement_max"], 4)
+        for output in outputs:
+            np.testing.assert_allclose(output.cell.array, structure.cell.array)
+            np.testing.assert_array_equal(output.pbc, structure.pbc)
+
+    def test_random_doping_records_actual_output_and_clears_stale_labels(self):
+        structure = Atoms(
+            "Si4",
+            positions=np.arange(12, dtype=float).reshape(4, 3),
+            cell=[[8.0, 0.0, 0.0], [1.0, 9.0, 0.0], [0.5, 1.0, 10.0]],
+            pbc=[True, False, True],
+        )
+        structure.info.update(
+            {
+                "Config_type": "base",
+                "energy": -2.0,
+                "free_energy": -2.1,
+                "stress": np.ones(6),
+                "marker": "keep",
+            }
+        )
+        structure.new_array("forces", np.ones((4, 3)))
+        structure.new_array("spin", np.ones((4, 3)))
+        structure.new_array("group", np.array(["A", "A", "B", "B"], dtype=object))
+        structure.calc = SinglePointCalculator(
+            structure,
+            energy=-2.0,
+            forces=np.ones((4, 3)),
+        )
+
+        output = RandomDopingOperation().run_structure(
+            structure,
+            RandomDopingParams(
+                rules=[
+                    {
+                        "target": "Si",
+                        "dopants": {"Ge": 1.0},
+                        "use": "count",
+                        "count": [1, 1],
+                        "count_mode": "fixed",
+                        "group": ["A"],
+                    }
+                ],
+                doping_type="Exact",
+                max_structures=1,
+                use_seed=True,
+                seed=5,
+            ),
+        )[0]
+
+        metadata = json.loads(output.info["random_doping"])
+        self.assertEqual(metadata["total_replacements"], 1)
+        self.assertEqual(metadata["rules"][0]["actual_dopant_counts"], {"Ge": 1})
+        self.assertEqual(metadata["rules"][0]["eligible_sites"], 2)
+        self.assertIn("Dop(n=1)", output.info["Config_type"])
+        self.assertEqual(output.info["marker"], "keep")
+        self.assertIsNone(output.calc)
+        for key in ("energy", "free_energy", "stress"):
+            self.assertNotIn(key, output.info)
+        for key in ("forces", "spin"):
+            self.assertNotIn(key, output.arrays)
+        np.testing.assert_array_equal(output.arrays["group"], structure.arrays["group"])
+        np.testing.assert_allclose(output.positions, structure.positions)
+        np.testing.assert_allclose(output.cell.array, structure.cell.array)
+        np.testing.assert_array_equal(output.pbc, structure.pbc)
+
+    def test_random_doping_seed_is_derived_per_input_and_sample(self):
+        base = Atoms(
+            "Si6",
+            positions=np.arange(18, dtype=float).reshape(6, 3),
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        first = base.copy()
+        second = base.copy()
+        first.info["Config_type"] = "input-A"
+        second.info["Config_type"] = "input-B"
+        params = RandomDopingParams(
+            rules=[
+                {
+                    "target": "Si",
+                    "dopants": {"Ge": 1.0},
+                    "use": "count",
+                    "count": [2, 2],
+                    "count_mode": "fixed",
+                }
+            ],
+            max_structures=2,
+            use_seed=True,
+            seed=17,
+        )
+        operation = RandomDopingOperation()
+        first_run = operation.run_structure(first, params)
+        repeated = operation.run_structure(first, params)
+        second_run = operation.run_structure(second, params)
+
+        self.assertEqual(
+            [atoms.get_chemical_symbols() for atoms in first_run],
+            [atoms.get_chemical_symbols() for atoms in repeated],
+        )
+        first_seeds = [json.loads(atoms.info["random_doping"])["seed"] for atoms in first_run]
+        second_seeds = [json.loads(atoms.info["random_doping"])["seed"] for atoms in second_run]
+        self.assertEqual(first_seeds[1], first_seeds[0] + 1)
+        self.assertNotEqual(first_seeds[0], second_seeds[0])
 
     def test_random_doping_random_count_capacity_is_seed_independent(self):
         structure = Atoms(

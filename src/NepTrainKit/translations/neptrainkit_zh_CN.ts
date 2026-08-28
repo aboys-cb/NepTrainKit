@@ -4575,6 +4575,82 @@
         <translation>随机占位的分组限制未命中任何原子：{groups}。</translation>
     </message>
     <message>
+        <source>Random Doping requires at least one replacement rule.</source>
+        <translation>随机掺杂至少需要一条替换规则。</translation>
+    </message>
+    <message>
+        <source>Random Doping requires at least one atom in the input structure.</source>
+        <translation>随机掺杂要求输入结构至少包含一个原子。</translation>
+    </message>
+    <message>
+        <source>Random Doping allocation must be Random or Exact.</source>
+        <translation>随机掺杂的元素分配必须是随机配比或固定配比。</translation>
+    </message>
+    <message>
+        <source>Random Doping outputs per input must be an integer of at least 1.</source>
+        <translation>随机掺杂的每个输入输出数必须是不小于 1 的整数。</translation>
+    </message>
+    <message>
+        <source>Random Doping outputs per input must be at least 1.</source>
+        <translation>随机掺杂的每个输入输出数必须不小于 1。</translation>
+    </message>
+    <message>
+        <source>Random Doping seed must be a non-negative integer.</source>
+        <translation>随机掺杂的随机种子必须是非负整数。</translation>
+    </message>
+    <message>
+        <source>Random Doping seed must be non-negative.</source>
+        <translation>随机掺杂的随机种子必须是非负数。</translation>
+    </message>
+    <message>
+        <source>Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.</source>
+        <translation>当前规则和输入无法替换任何原子。请提高替换用量或使用更大的结构。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} must be a mapping.</source>
+        <translation>随机掺杂的规则 {index} 必须是字段映射。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} requires an element to replace.</source>
+        <translation>随机掺杂的规则 {index} 需要填写被替换元素。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} replacement elements must be an element-to-weight mapping.</source>
+        <translation>随机掺杂的规则 {index} 必须使用“元素到权重”的替换元素映射。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} requires at least one replacement element.</source>
+        <translation>随机掺杂的规则 {index} 至少需要一种替换元素。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} has unknown target element {element}.</source>
+        <translation>随机掺杂的规则 {index} 包含未知的被替换元素 {element}。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} has unknown replacement element(s): {elements}.</source>
+        <translation>随机掺杂的规则 {index} 包含未知替换元素：{elements}。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} cannot replace {element} with itself.</source>
+        <translation>随机掺杂的规则 {index} 不能用 {element} 替换其自身。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} has invalid replacement weights: {reason}</source>
+        <translation>随机掺杂的规则 {index} 的替换权重无效：{reason}</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} uses group labels, but the input has no group array.</source>
+        <translation>随机掺杂的规则 {index} 使用了分组标签，但输入结构没有 group 数组。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} matched no {element} atoms in groups {groups}.</source>
+        <translation>随机掺杂的规则 {index} 在分组 {groups} 中没有匹配到 {element} 原子。</translation>
+    </message>
+    <message>
+        <source>Random Doping rule {index} matched no {element} atoms in the input.</source>
+        <translation>随机掺杂的规则 {index} 在输入结构中没有匹配到 {element} 原子。</translation>
+    </message>
+    <message>
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Group Label upstream.</source>
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
@@ -7345,6 +7421,66 @@
         <source>Mass ratio</source>
         <translation>质量比例</translation>
     </message>
+    <message>
+        <source>Replacement rule</source>
+        <translation>替换规则</translation>
+    </message>
+    <message>
+        <source>Optional: A,B</source>
+        <translation>可选：A,B</translation>
+    </message>
+    <message>
+        <source>Replace element</source>
+        <translation>被替换元素</translation>
+    </message>
+    <message>
+        <source>Only in groups</source>
+        <translation>仅限分组</translation>
+    </message>
+    <message>
+        <source>Replace with</source>
+        <translation>替换为</translation>
+    </message>
+    <message>
+        <source>Enter one element or comma-separated relative weights.</source>
+        <translation>输入一种元素，或用逗号分隔多种元素的相对权重。</translation>
+    </message>
+    <message>
+        <source>Dopant weight basis</source>
+        <translation>掺杂权重基准</translation>
+    </message>
+    <message>
+        <source>Mass budget %</source>
+        <translation>质量预算 %</translation>
+    </message>
+    <message>
+        <source>Replacement amount</source>
+        <translation>替换用量</translation>
+    </message>
+    <message>
+        <source>Percentage range</source>
+        <translation>百分比范围</translation>
+    </message>
+    <message>
+        <source>A fixed percentage uses the same minimum and maximum.</source>
+        <translation>固定百分比时将最小值和最大值设为相同。</translation>
+    </message>
+    <message>
+        <source>Fixed</source>
+        <translation>固定</translation>
+    </message>
+    <message>
+        <source>Count behavior</source>
+        <translation>数量方式</translation>
+    </message>
+    <message>
+        <source>Atoms replaced</source>
+        <translation>替换原子数</translation>
+    </message>
+    <message>
+        <source>Atom-count range</source>
+        <translation>原子数范围</translation>
+    </message>
 </context>
 <context>
     <name>DopingRulesWidget</name>
@@ -7352,6 +7488,14 @@
         <location filename="../ui/widgets/doping_rule.py" line="289" />
         <source>Add rule</source>
         <translation>添加规则</translation>
+    </message>
+    <message>
+        <source>Add replacement rule</source>
+        <translation>添加替换规则</translation>
+    </message>
+    <message>
+        <source>Rule {index}</source>
+        <translation>规则 {index}</translation>
     </message>
 </context>
 <context>
@@ -14373,6 +14517,98 @@ All child items will also be deleted.</source>
         <location filename="../ui/views/_card/random_doping_card.py" line="69" />
         <source>Enable reproducible random sampling</source>
         <translation>启用可复现的随机采样</translation>
+    </message>
+    <message>
+        <source>Replacement rules</source>
+        <translation>替换规则</translation>
+    </message>
+    <message>
+        <source>Each rule chooses an element, an optional group scope, replacement elements, and an amount. Rules run from top to bottom.</source>
+        <translation>每条规则指定被替换元素、可选分组范围、替换元素和用量。规则从上到下执行。</translation>
+    </message>
+    <message>
+        <source>Sampled proportions</source>
+        <translation>随机配比</translation>
+    </message>
+    <message>
+        <source>Fixed proportions</source>
+        <translation>固定配比</translation>
+    </message>
+    <message>
+        <source>Dopant allocation</source>
+        <translation>掺杂元素分配</translation>
+    </message>
+    <message>
+        <source>This controls how multiple dopants share the selected replacement sites; it does not change how many sites are replaced.</source>
+        <translation>它只控制多种掺杂元素如何分享已选替换位点，不改变替换位点总数。</translation>
+    </message>
+    <message>
+        <source>Outputs per input</source>
+        <translation>每个输入的输出数</translation>
+    </message>
+    <message>
+        <source>Output generation</source>
+        <translation>输出生成</translation>
+    </message>
+    <message>
+        <source>Use fixed random seed</source>
+        <translation>使用固定随机种子</translation>
+    </message>
+    <message>
+        <source>Random seed</source>
+        <translation>随机种子</translation>
+    </message>
+    <message>
+        <source>Randomness</source>
+        <translation>随机性</translation>
+    </message>
+    <message>
+        <source>Load an upstream structure to preview eligible sites and integer replacement bounds.</source>
+        <translation>请加载上游结构，以预览候选位点和整数替换范围。</translation>
+    </message>
+    <message>
+        <source>{minimum}–{maximum}</source>
+        <translation>{minimum}–{maximum}</translation>
+    </message>
+    <message>
+        <source>Rule {index}: {target}, {eligible} eligible, replace {amount}</source>
+        <translation>规则 {index}：{target}，{eligible} 个候选位点，替换 {amount} 个</translation>
+    </message>
+    <message>
+        <source>fixed dopant proportions</source>
+        <translation>固定掺杂配比</translation>
+    </message>
+    <message>
+        <source>sampled dopant proportions</source>
+        <translation>随机掺杂配比</translation>
+    </message>
+    <message>
+        <source>Parameters need attention: {error}</source>
+        <translation>请检查参数：{error}</translation>
+    </message>
+    <message>
+        <source>{rules} rule(s) · {allocation} · {outputs}/input</source>
+        <translation>{rules} 条规则 · {allocation} · 每个输入 {outputs} 个</translation>
+    </message>
+    <message>
+        <source>Add at least one complete replacement rule.</source>
+        <translation>请至少添加一条完整的替换规则。</translation>
+    </message>
+    <message>
+        <source>Outputs per input: {outputs}</source>
+        <translation>每个输入的输出数：{outputs}</translation>
+    </message>
+    <message>
+        <source>Inputs {inputs} × {per_input}/input = outputs {outputs}</source>
+        <translation>{inputs} 个输入 × 每个 {per_input} 个 = {outputs} 个输出</translation>
+    </message>
+    <message>
+        <source>Load an upstream structure to validate targets, groups, and replacement bounds. {outputs}</source>
+        <translation>请加载上游结构，以校验目标元素、分组和替换范围。{outputs}</translation>
+    </message>
+    <message>
+        <source>Preview uses the first input and exact integer bounds. {outputs}</source>
+        <translation>预览使用第一个输入，并显示精确整数范围。{outputs}</translation>
     </message>
 </context>
 <context>

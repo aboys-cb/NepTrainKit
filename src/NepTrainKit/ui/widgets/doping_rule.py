@@ -4,174 +4,196 @@ import traceback
 from typing import Any
 
 from loguru import logger
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QFrame,
-    QGridLayout,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QLineEdit,
-    QButtonGroup,
+    QSizePolicy,
 )
 from qfluentwidgets import (
-    BodyLabel,
     TransparentToolButton,
     FluentIcon,
     LineEdit,
-    RadioButton,
-    ComboBox,
-    ToolTipFilter,
-    ToolTipPosition,
     PushButton,
+    StrongBodyLabel,
 )
 from NepTrainKit.core.alloy import format_composition, parse_composition
 
 from .input import SpinBoxUnitInputFrame
+from .compact_form import CompactField, ResponsiveFormGrid, SegmentedControl
 
 
 class DopingRuleItem(QFrame):
     """Single doping rule widget."""
 
+    ruleChanged = Signal()
+    deleteRequested = Signal(object)
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.__layout = QGridLayout(self)
-        self.__layout.setContentsMargins(6, 6, 6, 6)
-        self.__layout.setSpacing(6)
-        self.__layout.setVerticalSpacing(6)
-        self.setStyleSheet("background-color: rgb(239, 249, 254);")
+        self.setObjectName("dopingRuleItem")
+        self.setStyleSheet(
+            "QFrame#dopingRuleItem {"
+            "background: rgba(100, 120, 128, 10);"
+            "border: 1px solid rgba(100, 120, 128, 32);"
+            "border-radius: 7px; }"
+        )
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        root = QVBoxLayout(self)
+        root.setContentsMargins(7, 5, 7, 6)
+        root.setSpacing(5)
 
-        self.setFixedSize(500, 190)
+        header = QHBoxLayout()
+        header.setContentsMargins(0, 0, 0, 0)
+        self.title_label = StrongBodyLabel(self.tr("Replacement rule"), self)
+        header.addWidget(self.title_label, 1)
+        self.delete_button = TransparentToolButton(
+            QIcon(":/images/src/images/delete.svg"), self
+        )
+        self.delete_button.setFixedSize(28, 28)
+        self.delete_button.setToolTip(self.tr("Delete rule"))
+        self.delete_button.clicked.connect(self._delete_self)
+        header.addWidget(self.delete_button)
+        root.addLayout(header)
 
-        self.target_edit = QLineEdit(self)
+        self.target_edit = LineEdit(self)
         self.target_edit.setPlaceholderText(self.tr("Cs"))
-        self.target_edit.setFixedWidth(90)
-        self.dopants_edit = QLineEdit(self)
+        self.target_edit.setMinimumWidth(0)
+        self.group_edit = LineEdit(self)
+        self.group_edit.setPlaceholderText(self.tr("Optional: A,B"))
+        self.group_edit.setMinimumWidth(0)
+        self.indices_edit = self.group_edit
+        identity_grid = ResponsiveFormGrid(self, two_column_threshold=260)
+        self.target_field = CompactField(
+            self.tr("Replace element"), self.target_edit, self
+        )
+        self.group_field = CompactField(
+            self.tr("Only in groups"), self.group_edit, self
+        )
+        identity_grid.add_field(self.target_field)
+        identity_grid.add_field(self.group_field)
+        root.addWidget(identity_grid)
+
+        self.dopants_edit = LineEdit(self)
         self.dopants_edit.setPlaceholderText(self.tr("Ge or Ge:0.7,C:0.3"))
-        self.dopants_edit.setFixedWidth(160)
+        self.dopants_edit.setMinimumWidth(0)
+        self.dopants_field = CompactField(
+            self.tr("Replace with"),
+            self.dopants_edit,
+            self,
+            self.tr("Enter one element or comma-separated relative weights."),
+        )
+        root.addWidget(self.dopants_field)
+
+        self.ratio_type_control = SegmentedControl(parent=self)
+        self.ratio_type_control.addItem(self.tr("Atom ratio"), userData="atom")
+        self.ratio_type_control.addItem(self.tr("Mass ratio"), userData="mass")
+        self.ratio_type_button = self.ratio_type_control
+        self.ratio_type_field = CompactField(
+            self.tr("Dopant weight basis"), self.ratio_type_control, self
+        )
+
+        self.amount_mode_control = SegmentedControl(parent=self)
+        self.amount_mode_control.addItem(self.tr("Atomic %"), userData="atomic_percent")
+        self.amount_mode_control.addItem(
+            self.tr("Mass budget %"), userData="mass_percent"
+        )
+        self.amount_mode_control.addItem(self.tr("Count"), userData="count")
+        self.atomic_percent_radio = self.amount_mode_control
+        self.mass_percent_radio = self.amount_mode_control
+        self.count_botton = self.amount_mode_control
+        self.amount_mode_field = CompactField(
+            self.tr("Replacement amount"), self.amount_mode_control, self
+        )
+        mode_grid = ResponsiveFormGrid(self, two_column_threshold=360)
+        mode_grid.add_field(self.ratio_type_field, span=2)
+        mode_grid.add_field(self.amount_mode_field, span=2)
+        root.addWidget(mode_grid)
 
         self.percent_frame = SpinBoxUnitInputFrame(self)
         self.percent_frame.set_input(["~", ""], 2, "float")
-        self.percent_frame.setDecimals(6)
+        self.percent_frame.setDecimals(3)
         self.percent_frame.setRange(0, 100)
         self.percent_frame.set_input_value([0.0, 100.0])
-        self.percent_frame.setFixedWidth(180)
-
-        self.atomic_percent_radio = RadioButton(self.tr("Atomic %"), self)
-        self.atomic_percent_radio.setChecked(True)
-        self.mass_percent_radio = RadioButton(self.tr("Mass %"), self)
-        self.count_botton = RadioButton(self.tr("Count"), self)
-        self.mode_group = QButtonGroup(self)
-        self.mode_group.addButton(self.atomic_percent_radio)
-        self.mode_group.addButton(self.mass_percent_radio)
-        self.mode_group.addButton(self.count_botton)
-        self.mode_group.buttonClicked.connect(self._on_mode_changed)
-
-        self.count_mode_combo = ComboBox(self)
-        self.count_mode_combo.addItem(self.tr("Fixed count"), userData="fixed")
-        self.count_mode_combo.addItem(self.tr("Random range"), userData="random")
-        self.count_mode_combo.setCurrentIndex(0)
-        self.count_mode_combo.setFixedWidth(180)
-        self.count_mode_combo.setToolTip(
-            self.tr("Fixed count replaces exactly the first value. Random range samples between the two values.")
+        self.percent_field = CompactField(
+            self.tr("Percentage range"),
+            self.percent_frame,
+            self,
+            self.tr("A fixed percentage uses the same minimum and maximum."),
         )
-        self.count_mode_combo.installEventFilter(ToolTipFilter(self.count_mode_combo, 300, ToolTipPosition.TOP))
-        self.count_mode_combo.currentTextChanged.connect(self._on_count_mode_changed)
+
+        self.count_mode_combo = SegmentedControl(parent=self)
+        self.count_mode_combo.addItem(self.tr("Fixed"), userData="fixed")
+        self.count_mode_combo.addItem(self.tr("Random range"), userData="random")
+        self.count_mode_field = CompactField(
+            self.tr("Count behavior"), self.count_mode_combo, self
+        )
 
         self.fixed_count_frame = SpinBoxUnitInputFrame(self)
         self.fixed_count_frame.set_input("", 1, "int")
         self.fixed_count_frame.setRange(0, 999999)
         self.fixed_count_frame.set_input_value([10])
-        self.fixed_count_frame.setFixedWidth(90)
+        self.fixed_count_field = CompactField(
+            self.tr("Atoms replaced"),
+            self.fixed_count_frame,
+            self,
+            inline=True,
+            input_max_width=150,
+        )
 
         self.count_range_frame = SpinBoxUnitInputFrame(self)
         self.count_range_frame.set_input(["-", ""], 2, "int")
         self.count_range_frame.setRange(0, 999999)
         self.count_range_frame.set_input_value([1, 10])
-        self.count_range_frame.setFixedWidth(180)
         self.count_frame = self.count_range_frame
+        self.count_range_field = CompactField(
+            self.tr("Atom-count range"), self.count_range_frame, self
+        )
+        root.addWidget(self.percent_field)
+        root.addWidget(self.count_mode_field)
+        root.addWidget(self.fixed_count_field)
+        root.addWidget(self.count_range_field)
 
-        self.ratio_type_button = PushButton(self.tr("Atom ratio"), self)
-        self.ratio_type_button.setCheckable(True)
-        self.ratio_type_button.setChecked(True)
-        self.ratio_type_button.setFixedWidth(100)
-        self.ratio_type_button.setToolTip(self.tr("Toggle between atom ratio and mass ratio for dopants"))
-        self.ratio_type_button.installEventFilter(ToolTipFilter(self.ratio_type_button, 300, ToolTipPosition.TOP))
-        self.ratio_type_button.clicked.connect(self._toggle_ratio_type)
-
-        self.indices_edit = QLineEdit(self)
-        self.indices_edit.setFixedWidth(60)
-        self.delete_button = TransparentToolButton(QIcon(":/images/src/images/delete.svg"), self)
-        self.delete_button.setFixedSize(32, 32)
-        self.delete_button.clicked.connect(self._delete_self)
-
-        self.target_label = BodyLabel(self.tr("Target"), self)
-        self.target_label.setToolTip(self.tr("Element to replace, e.g. Cs"))
-        self.target_label.installEventFilter(ToolTipFilter(self.target_label, 300, ToolTipPosition.TOP))
-        self.__layout.addWidget(self.target_label, 0, 0)
-        self.__layout.addWidget(self.target_edit, 0, 1)
-
-        self.group_label = BodyLabel(self.tr("Group"), self)
-        self.group_label.setToolTip(self.tr("Optional group name"))
-        self.group_label.installEventFilter(ToolTipFilter(self.group_label, 300, ToolTipPosition.TOP))
-        self.__layout.addWidget(self.group_label, 0, 2)
-        self.__layout.addWidget(self.indices_edit, 0, 3)
-
-        self.dopants_label = BodyLabel(self.tr("Dopants"), self)
-        self.dopants_label.setToolTip(self.tr("Dopant elements and ratio, e.g. Cs:0.6,Na:0.4. A bare element means ratio 1.0."))
-        self.dopants_label.installEventFilter(ToolTipFilter(self.dopants_label, 300, ToolTipPosition.TOP))
-        self.__layout.addWidget(self.dopants_label, 1, 0)
-        self.__layout.addWidget(self.dopants_edit, 1, 1, 1, 2)
-        self.__layout.addWidget(self.ratio_type_button, 1, 3)
-
-        self.mode_label = BodyLabel(self.tr("Mode"), self)
-        self.mode_label.setToolTip(self.tr("Select replacement mode: Atomic %, Mass %, or Count"))
-        self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
-        self.__layout.addWidget(self.mode_label, 2, 0)
-
-        self.__layout.addWidget(self.atomic_percent_radio, 2, 1)
-        self.__layout.addWidget(self.mass_percent_radio, 2, 2)
-        self.__layout.addWidget(self.count_botton, 2, 3)
-
-        self.value_label = BodyLabel(self.tr("Value"), self)
-        self.value_label.setToolTip(self.tr("Set value range for replacement"))
-        self.value_label.installEventFilter(ToolTipFilter(self.value_label, 300, ToolTipPosition.TOP))
-        self.__layout.addWidget(self.value_label, 3, 0)
-        self.__layout.addWidget(self.percent_frame, 3, 1, 1, 2)
-        self.count_mode_combo.setVisible(False)
-        self.__layout.addWidget(self.count_mode_combo, 3, 1, 1, 2)
-        self.fixed_count_frame.setVisible(False)
-        self.count_range_frame.setVisible(False)
-        self.__layout.addWidget(self.fixed_count_frame, 4, 1, 1, 2)
-        self.__layout.addWidget(self.count_range_frame, 4, 1, 1, 2)
-
-        self.delete_button.setToolTip(self.tr("Delete rule"))
-        self.delete_button.installEventFilter(ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP))
-        self.__layout.addWidget(self.delete_button, 0, 4, 4, 1)
+        self.amount_mode_control.currentIndexChanged.connect(self._on_mode_changed)
+        self.count_mode_combo.currentIndexChanged.connect(self._on_count_mode_changed)
+        self.target_edit.textChanged.connect(self.ruleChanged)
+        self.group_edit.textChanged.connect(self.ruleChanged)
+        self.dopants_edit.textChanged.connect(self.ruleChanged)
+        self.ratio_type_control.currentIndexChanged.connect(self.ruleChanged)
+        self.amount_mode_control.currentIndexChanged.connect(self.ruleChanged)
+        self.count_mode_combo.currentIndexChanged.connect(self.ruleChanged)
+        for frame in (
+            self.percent_frame,
+            self.fixed_count_frame,
+            self.count_range_frame,
+        ):
+            for control in frame.object_list:
+                control.valueChanged.connect(self.ruleChanged)
+        self._on_mode_changed()
 
     def _delete_self(self) -> None:
-        """Detach the widget from the layout and schedule deletion."""
-        self.setParent(None)
-        self.deleteLater()
+        """Ask the owning rule list to remove this rule."""
+        self.deleteRequested.emit(self)
 
     def _toggle_ratio_type(self) -> None:
-        if self.ratio_type_button.isChecked():
-            self.ratio_type_button.setText(self.tr("Atom ratio"))
-        else:
-            self.ratio_type_button.setText(self.tr("Mass ratio"))
+        """Compatibility hook retained for older callers."""
+        self.ruleChanged.emit()
 
     def _on_mode_changed(self) -> None:
-        is_count = self.count_botton.isChecked()
-        self.percent_frame.setVisible(not is_count)
-        self.count_mode_combo.setVisible(is_count)
+        is_count = self.amount_mode_control.currentData() == "count"
+        self.percent_field.setVisible(not is_count)
+        self.count_mode_field.setVisible(is_count)
         self._on_count_mode_changed()
 
     def _on_count_mode_changed(self) -> None:
-        is_count = self.count_botton.isChecked()
+        is_count = self.amount_mode_control.currentData() == "count"
         fixed = self.count_mode_combo.currentData() == "fixed"
-        self.fixed_count_frame.setVisible(is_count and fixed)
-        self.count_range_frame.setVisible(is_count and not fixed)
+        self.fixed_count_field.setVisible(is_count and fixed)
+        self.count_range_field.setVisible(is_count and not fixed)
 
     def to_rule(self) -> dict[str, Any]:
         """Serialize the current editor state into a rule mapping.
@@ -192,6 +214,8 @@ class DopingRuleItem(QFrame):
                 rule["dopants"] = dopants
         except Exception:
             logger.error(traceback.format_exc())
+        if not target and not dopant_text:
+            return {}
 
         rule["percent"] = [float(v) for v in self.percent_frame.get_input_value()]
         if self.count_mode_combo.currentData() == "fixed":
@@ -203,14 +227,9 @@ class DopingRuleItem(QFrame):
             rule["count_mode"] = "random"
         rule["count"] = count_values
 
-        if self.count_botton.isChecked():
-            rule["use"] = "count"
-        elif self.mass_percent_radio.isChecked():
-            rule["use"] = "mass_percent"
-        else:
-            rule["use"] = "atomic_percent"
+        rule["use"] = str(self.amount_mode_control.currentData())
 
-        rule["ratio_type"] = "atom" if self.ratio_type_button.isChecked() else "mass"
+        rule["ratio_type"] = str(self.ratio_type_control.currentData())
 
         indices_text = self.indices_edit.text().strip()
         if indices_text:
@@ -250,15 +269,18 @@ class DopingRuleItem(QFrame):
                 else:
                     self.count_range_frame.set_input_value([int(count_values[0]), int(count_values[-1])])
         if "group" in rule:
-            self.indices_edit.setText(",".join(str(i) for i in rule["group"]))
+            groups = rule["group"]
+            self.indices_edit.setText(
+                str(groups)
+                if isinstance(groups, str)
+                else ",".join(str(i) for i in groups)
+            )
         if "use" in rule:
-            use_mode = rule["use"]
-            if use_mode == "count":
-                self.count_botton.setChecked(True)
-            elif use_mode == "mass_percent":
-                self.mass_percent_radio.setChecked(True)
-            else:
-                self.atomic_percent_radio.setChecked(True)
+            use_mode = str(rule["use"])
+            index = self.amount_mode_control.findData(use_mode)
+            self.amount_mode_control.setCurrentIndex(
+                index if index >= 0 else self.amount_mode_control.findData("atomic_percent")
+            )
             self._on_mode_changed()
         count_values = list(rule.get("count", [1, 1]))
         count_mode = str(rule.get("count_mode", "")).lower()
@@ -268,12 +290,16 @@ class DopingRuleItem(QFrame):
             self.count_mode_combo.setCurrentIndex(1)
         self._on_count_mode_changed()
         if "ratio_type" in rule:
-            self.ratio_type_button.setChecked(rule["ratio_type"] == "atom")
-            self._toggle_ratio_type()
+            ratio_index = self.ratio_type_control.findData(str(rule["ratio_type"]))
+            self.ratio_type_control.setCurrentIndex(
+                ratio_index if ratio_index >= 0 else self.ratio_type_control.findData("atom")
+            )
 
 
 class DopingRulesWidget(QWidget):
     """Container widget for multiple doping rules."""
+
+    rulesChanged = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         """Create the layout that hosts rule items and the add button."""
@@ -284,10 +310,8 @@ class DopingRulesWidget(QWidget):
 
         btn_layout = QHBoxLayout()
         btn_layout.setContentsMargins(0, 0, 0, 0)
-        self.add_button = TransparentToolButton(FluentIcon.ADD, self)
+        self.add_button = PushButton(FluentIcon.ADD, self.tr("Add replacement rule"), self)
         self.add_button.clicked.connect(self.add_rule)
-        self.add_button.setToolTip(self.tr("Add rule"))
-        self.add_button.installEventFilter(ToolTipFilter(self.add_button, 300, ToolTipPosition.TOP))
         btn_layout.addWidget(self.add_button, 0, Qt.AlignmentFlag.AlignLeft)
         btn_layout.addStretch(1)
         self.__layout.addLayout(btn_layout)
@@ -313,9 +337,26 @@ class DopingRulesWidget(QWidget):
         """
         item = DopingRuleItem(self.rule_container)
         self.rule_layout.addWidget(item)
+        item.ruleChanged.connect(self.rulesChanged)
+        item.deleteRequested.connect(self._remove_rule)
         if rule:
             item.from_rule(rule)
+        self._refresh_rule_titles()
+        self.rulesChanged.emit()
         return item
+
+    def _remove_rule(self, item: DopingRuleItem) -> None:
+        self.rule_layout.removeWidget(item)
+        item.setParent(None)
+        item.deleteLater()
+        self._refresh_rule_titles()
+        self.rulesChanged.emit()
+
+    def _refresh_rule_titles(self) -> None:
+        for index in range(self.rule_layout.count()):
+            item = self.rule_layout.itemAt(index).widget()
+            if isinstance(item, DopingRuleItem):
+                item.title_label.setText(self.tr("Rule {index}").format(index=index + 1))
 
     def to_rules(self) -> list[dict[str, Any]]:
         """Serialize all rule widgets to a list of dictionaries."""
@@ -339,6 +380,10 @@ class DopingRulesWidget(QWidget):
         while self.rule_layout.count():
             item = self.rule_layout.takeAt(0).widget()
             if item is not None:
+                item.hide()
+                item.setParent(None)
                 item.deleteLater()
-        for rule in rules or []:
+        for rule in rules or [None]:
             self.add_rule(rule)
+        self._refresh_rule_titles()
+        self.rulesChanged.emit()

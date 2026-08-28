@@ -1168,6 +1168,81 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "RandomOccupancy group_filter matched no atoms: {groups}.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping requires at least one replacement rule.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping requires at least one atom in the input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping allocation must be Random or Exact.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping outputs per input must be an integer of at least 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping outputs per input must be at least 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping seed must be a non-negative integer.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping seed must be non-negative.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random Doping rule {index} must be a mapping."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} requires an element to replace.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} replacement elements must be an element-to-weight mapping.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} requires at least one replacement element.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} has unknown target element {element}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} has unknown replacement element(s): {elements}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} cannot replace {element} with itself.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} has invalid replacement weights: {reason}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} uses group labels, but the input has no group array.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} matched no {element} atoms in groups {groups}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} matched no {element} atoms in the input.",
+    )
 
 
 def _card_operation_field_catalog() -> None:

@@ -25,6 +25,7 @@ from NepTrainKit.ui.views._card.cell_strain_card import CellStrainCard
 from NepTrainKit.ui.views._card.interstitial_adsorbate_card import InsertDefectCard
 from NepTrainKit.ui.views._card.interface_layer_mix_card import InterfaceLayerMixCard
 from NepTrainKit.ui.views._card.perturb_card import PerturbCard
+from NepTrainKit.ui.views._card.random_doping_card import RandomDopingCard
 from NepTrainKit.ui.views._card.random_slab_card import RandomSlabCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
 from NepTrainKit.ui.widgets import MakeDataCard, MakeWorkflowArea
@@ -269,6 +270,40 @@ def test_parameter_inspector_scroll_handle_is_discoverable_without_hover():
         == ScrollBarHandleDisplayMode.ALWAYS
     )
     assert scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
+def test_random_doping_rule_editor_reflows_without_clipping_controls():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = RandomDopingCard()
+    card.rules_widget.from_rules(
+        [
+            {
+                "target": "Si",
+                "dopants": {"Ge": 0.7, "C": 0.3},
+                "use": "atomic_percent",
+                "percent": [3.0, 8.0],
+                "ratio_type": "atom",
+                "group": ["surface"],
+            }
+        ]
+    )
+    area.add_card(card)
+    area.resize(1600, 760)
+    area.show()
+    area.select_card(card)
+    app.processEvents()
+    area.resize(1024, 640)
+    app.processEvents()
+
+    scroll = area.guidance_panel.parameter_scroll
+    rule = card.rules_widget.rule_layout.itemAt(0).widget()
+    assert scroll.horizontalScrollBar().maximum() == 0
+    assert rule.width() <= scroll.viewport().width()
+    assert rule.group_edit.isVisibleTo(area)
+    assert rule.delete_button.isVisibleTo(area)
+    assert rule.amount_mode_control.isVisibleTo(area)
     _dispose(area)
 
 

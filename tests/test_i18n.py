@@ -339,6 +339,25 @@ def test_random_occupancy_structured_errors_are_fully_chinese():
     )
 
 
+def test_random_doping_structured_errors_are_fully_chinese():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    empty_rules = CardOperationError(
+        "random_doping.empty_rules",
+        "Random Doping requires at least one replacement rule.",
+    )
+    no_effect = CardOperationError(
+        "random_doping.no_effect",
+        "Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.",
+    )
+
+    assert translate_runtime_message(empty_rules) == "随机掺杂至少需要一条替换规则。"
+    assert translate_runtime_message(no_effect) == (
+        "当前规则和输入无法替换任何原子。请提高替换用量或使用更大的结构。"
+    )
+
+
 def test_translation_path_uses_runtime_resource_root(monkeypatch, tmp_path):
     monkeypatch.setattr(i18n, "module_path", tmp_path)
 

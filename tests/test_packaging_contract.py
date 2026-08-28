@@ -104,7 +104,7 @@ def test_windows_standalone_name_matches_verified_x86_64_architecture():
     assert "NepTrainKit.win32.zip" not in workflow
 
 
-def test_release_workflows_target_tagged_x86_64_windows_runtime():
+def test_release_workflows_target_x86_64_windows_runtime():
     publish_workflow = (
         ROOT / ".github" / "workflows" / "python-publish.yml"
     ).read_text(encoding="utf-8")
@@ -114,8 +114,23 @@ def test_release_workflows_target_tagged_x86_64_windows_runtime():
 
     assert "- [windows-2022, win_amd64" in publish_workflow
     assert "win32" not in publish_workflow
-    assert "ref: ${{ inputs.tag_name }}" in nuitka_workflow
+    assert "ref: ${{ inputs.ref_name }}" in nuitka_workflow
     assert '--constraint ">=1.0.1"' in nuitka_workflow
+
+
+def test_nuitka_branch_build_always_uploads_archive_and_release_is_optional():
+    workflow = (
+        ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "Branch, tag, or commit to build" in workflow
+    assert "type: boolean" in workflow
+    assert "default: false" in workflow
+    assert "name: Upload packaged archive" in workflow
+    assert "path: ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip" in workflow
+    assert "if: ${{ inputs.publish_release }}" in workflow
+    assert 'SOURCE_REF: ${{ inputs.ref_name }}' in workflow
+    assert 'refs/tags/$env:SOURCE_REF' in workflow
 
 
 def test_nuitka_runtime_resources_are_resolved_from_binary_directory():
@@ -160,7 +175,8 @@ def test_release_assets_are_uploaded_without_updating_release_metadata():
     assert 'gh release upload "$RELEASE_TAG" dist/*' in publish_workflow
     assert '--repo "$GITHUB_REPOSITORY" --clobber' in publish_workflow
     assert "softprops/action-gh-release" not in nuitka_workflow
-    assert 'gh release upload "${{ inputs.tag_name }}"' in nuitka_workflow
+    assert 'RELEASE_TAG: ${{ inputs.ref_name }}' in nuitka_workflow
+    assert 'gh release upload "$env:RELEASE_TAG"' in nuitka_workflow
     assert '--repo "$env:GITHUB_REPOSITORY" --clobber' in nuitka_workflow
 
 

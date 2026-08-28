@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from dataclasses import dataclass
 from typing import Iterable, Mapping
@@ -268,15 +269,9 @@ def simplex_sobol_points(
         )
 
     engine = Sobol(d=order - 1, scramble=True, seed=seed)
-    if min_fraction <= 0.0:
-        power = int(np.ceil(np.log2(n_points)))
-        u = engine.random_base2(power)[:n_points]
-        max_draws = n_points
-    else:
-        requested_budget = max(4096, int(n_points) * 1024)
-        power = int(np.ceil(np.log2(requested_budget)))
-        u = engine.random_base2(power)
-        max_draws = len(u)
+    power = int(np.ceil(np.log2(n_points)))
+    u = engine.random_base2(power)[:n_points]
+    free_fraction = 1.0 - float(order) * min_fraction
     out: list[tuple[float, ...]] = []
     for row in u:
         cuts = sorted(float(x) for x in row.tolist())
@@ -286,21 +281,15 @@ def simplex_sobol_points(
             parts.append(c - prev)
             prev = c
         parts.append(1.0 - prev)
-        fracs = tuple(float(x) for x in parts)
-        if any(f + 1e-12 < min_fraction for f in fracs):
-            continue
+        fracs = tuple(
+            min_fraction + free_fraction * float(value) for value in parts
+        )
         s = float(sum(fracs))
         if s <= 0:
             continue
         out.append(tuple(f / s for f in fracs))
         if len(out) >= n_points:
             return out
-    if len(out) < n_points:
-        raise ValueError(
-            f"Sobol simplex sampling accepted {len(out)}/{n_points} valid points after "
-            f"{max_draws} draws with min_fraction={min_fraction:g}; relax min_fraction "
-            "or request fewer points."
-        )
     return out
 
 
@@ -394,18 +383,33 @@ def best_supercell_factors_max_atoms(atoms: Atoms, max_atoms: int) -> SupercellF
     a_len, b_len, c_len = atoms.cell.lengths()
     base_lengths = np.array([a_len, b_len, c_len], dtype=float)
 
+    def positive_divisors(value: int) -> list[int]:
+        small = []
+        large = []
+        root = int(math.isqrt(value))
+        for divisor in range(1, root + 1):
+            if value % divisor != 0:
+                continue
+            small.append(divisor)
+            paired = value // divisor
+            if paired != divisor:
+                large.append(paired)
+        return small + large[::-1]
+
+    # ``(max_n, 1, 1)`` is always feasible, so the primary atom-count
+    # objective is exactly ``base_n * max_n``.  Only factor triples whose
+    # product is ``max_n`` can win; enumerate those divisors instead of the
+    # former O(max_n^3) cube while preserving the same score and tie-break.
     best: tuple[int, float, tuple[int, int, int]] | None = None
-    for na in range(1, max_n + 1):
-        for nb in range(1, max_n + 1):
-            for nc in range(1, max_n + 1):
-                total = base_n * na * nb * nc
-                if total > max_atoms:
-                    continue
-                lengths = base_lengths * np.array([na, nb, nc], dtype=float)
-                aspect = float(lengths.max() / max(lengths.min(), 1e-12))
-                score = (int(total), -aspect, (na, nb, nc))
-                if best is None or score > best:
-                    best = score
+    for na in positive_divisors(max_n):
+        remaining = max_n // na
+        for nb in positive_divisors(remaining):
+            nc = remaining // nb
+            lengths = base_lengths * np.array([na, nb, nc], dtype=float)
+            aspect = float(lengths.max() / max(lengths.min(), 1e-12))
+            score = (int(base_n * max_n), -aspect, (na, nb, nc))
+            if best is None or score > best:
+                best = score
     if best is None:
         return SupercellFactors(1, 1, 1)
     _, _, (na, nb, nc) = best

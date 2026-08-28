@@ -13,16 +13,27 @@ from PySide6.QtCore import (
     QTimer,
 )
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
+from qfluentwidgets import ScrollBarHandleDisplayMode
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import StructureOperation
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
+from NepTrainKit.ui.views._card.bain_path_card import BainPathCard
 from NepTrainKit.ui.views._card.card_group import CardGroup
 from NepTrainKit.ui.views._card.cell_strain_card import CellStrainCard
+from NepTrainKit.ui.views._card.interstitial_adsorbate_card import InsertDefectCard
+from NepTrainKit.ui.views._card.interface_layer_mix_card import InterfaceLayerMixCard
 from NepTrainKit.ui.views._card.perturb_card import PerturbCard
+from NepTrainKit.ui.views._card.random_doping_card import RandomDopingCard
+from NepTrainKit.ui.views._card.random_slab_card import RandomSlabCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
-from NepTrainKit.ui.widgets import MakeDataCard, MakeWorkflowArea
+from NepTrainKit.ui.widgets import (
+    AdaptiveCompactDoubleSpinBox,
+    AdaptiveCompactSpinBox,
+    MakeDataCard,
+    MakeWorkflowArea,
+)
 
 
 def _app():
@@ -129,6 +140,81 @@ def test_compact_workflow_nodes_edit_the_selected_card_in_the_inspector():
     _dispose(area)
 
 
+def test_inspector_context_refreshes_when_preview_dataset_changes():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = RandomSlabCard()
+    area.add_card(card)
+    area.resize(1024, 640)
+    area.show()
+    area.select_card(card)
+    app.processEvents()
+    assert "exact scan" in area.guidance_panel.current_context_label.text()
+
+    structure = Atoms("Si", positions=[[0.0, 0.0, 0.0]], cell=[4.0, 4.0, 4.0], pbc=True)
+    card.set_preview_input_count(2)
+    card.set_dataset([structure])
+    app.processEvents()
+
+    assert area.guidance_panel.current_context_label.text() == card.get_summary_text()
+    assert "12/input" in area.guidance_panel.current_context_label.text()
+    assert area.guidance_panel.recommend_label.text() == card.get_guidance_text()
+    assert "Inputs 2 × 12" in area.guidance_panel.recommend_label.text()
+    _dispose(area)
+
+
+def test_insert_defect_adsorption_fields_remain_visible_in_real_inspector():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = InsertDefectCard()
+    area.add_card(card)
+    area.resize(1024, 640)
+    area.show()
+    area.select_card(card)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert card.axis_field.isHidden()
+    assert card.offset_field.isHidden()
+
+    card.mode_combo.setCurrentIndex(card.mode_combo.findData(1))
+    for _ in range(3):
+        app.processEvents()
+
+    assert card.axis_field.isVisibleTo(area)
+    assert card.offset_field.isVisibleTo(area)
+    assert card.axis_combo.isVisibleTo(area)
+    assert card.offset_frame.isVisibleTo(area)
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
+def test_bain_volume_scan_only_appears_for_the_shape_volume_grid():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = BainPathCard()
+    area.add_card(card)
+    area.resize(1024, 640)
+    area.show()
+    area.select_card(card)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert card.volume_field.isHidden()
+    assert "3 path points = 3 outputs/input" in card.preview_label.text()
+
+    card.mode_combo.setCurrentIndex(card.mode_combo.findData("scale_volume"))
+    for _ in range(3):
+        app.processEvents()
+
+    assert card.volume_field.isVisibleTo(area)
+    assert card.volume_frame.isVisibleTo(area)
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
 def test_workflow_cards_use_a_centered_readable_width_on_wide_windows():
     app = _app()
     area = MakeWorkflowArea()
@@ -146,7 +232,7 @@ def test_workflow_cards_use_a_centered_readable_width_on_wide_windows():
 def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal_scroll():
     app = _app()
     area = MakeWorkflowArea()
-    area.resize(1280, 900)
+    area.resize(1024, 900)
     area.show()
     app.processEvents()
 
@@ -160,13 +246,193 @@ def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal
             continue
         area.add_card(card)
         area.select_card(card)
-        app.processEvents()
+        for _ in range(3):
+            app.processEvents()
         assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0, class_name
+        title_width = card.headerLabel.fontMetrics().horizontalAdvance(
+            card.headerLabel.text()
+        )
+        assert card.headerLabel.width() >= title_width, class_name
+        for widget in card.setting_widget.findChildren(QWidget):
+            if not isinstance(
+                widget,
+                (AdaptiveCompactSpinBox, AdaptiveCompactDoubleSpinBox),
+            ):
+                continue
+            if widget.isVisibleTo(area):
+                assert not widget.compactSpinButton.isHidden(), class_name
         checked.append(class_name)
         area.remove_card(card)
         app.processEvents()
 
     assert len(checked) >= 35
+    _dispose(area)
+
+
+def test_parameter_inspector_scroll_handle_is_discoverable_without_hover():
+    app = _app()
+    area = MakeWorkflowArea()
+    area.resize(1024, 640)
+    area.show()
+    card = PerturbCard()
+    area.add_card(card)
+    area.select_card(card)
+    card.element_scaling_checkbox.setChecked(True)
+    card._add_element_row("H", 0.1)
+    app.processEvents()
+
+    scroll = area.guidance_panel.parameter_scroll
+    assert scroll.verticalScrollBar().maximum() > 0
+    assert (
+        scroll.scrollDelagate.vScrollBar.handleDisplayMode
+        == ScrollBarHandleDisplayMode.ALWAYS
+    )
+    assert scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
+def test_random_doping_rule_editor_reflows_without_clipping_controls():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = RandomDopingCard()
+    card.rules_widget.from_rules(
+        [
+            {
+                "target": "Si",
+                "dopants": {"Ge": 0.7, "C": 0.3},
+                "use": "atomic_percent",
+                "percent": [3.0, 8.0],
+                "ratio_type": "atom",
+                "group": ["surface"],
+            }
+        ]
+    )
+    area.add_card(card)
+    area.resize(1600, 760)
+    area.show()
+    area.select_card(card)
+    app.processEvents()
+    area.resize(1024, 640)
+    app.processEvents()
+
+    scroll = area.guidance_panel.parameter_scroll
+    rule = card.rules_widget.rule_layout.itemAt(0).widget()
+    assert scroll.horizontalScrollBar().maximum() == 0
+    assert rule.width() <= scroll.viewport().width()
+    assert rule.group_edit.isVisibleTo(area)
+    assert rule.delete_button.isVisibleTo(area)
+    assert rule.amount_mode_control.isVisibleTo(area)
+    _dispose(area)
+
+
+def test_first_perturb_card_previews_exact_imported_output_count():
+    app = _app()
+    widget = MakeDataWidget()
+    widget.dataset = [Atoms("H"), Atoms("He")]
+    card = widget.add_card("PerturbCard")
+    card.num_condition_frame.set_input_value([3])
+    widget._refresh_input_count_previews()
+    app.processEvents()
+
+    assert "2 × 3 = 6 outputs" in card.get_guidance_text()
+    assert "2 × 3 = 6 outputs" in widget.workspace_card_widget.guidance_panel.recommend_label.text()
+    widget.close()
+    widget.deleteLater()
+    app.processEvents()
+
+
+def test_first_composition_gradient_previews_imported_structure_details():
+    app = _app()
+    widget = MakeDataWidget()
+    structure = Atoms(
+        "Ni8",
+        scaled_positions=[[index / 8.0, 0.0, 0.0] for index in range(8)],
+        cell=[8.0, 2.0, 2.0],
+        pbc=True,
+    )
+    widget.dataset = [structure, structure.copy()]
+    card = widget.add_card("CompositionGradientCard")
+    card.bins_frame.set_input_value([20])
+    card.samples_frame.set_input_value([3])
+    widget._refresh_input_count_previews()
+    app.processEvents()
+
+    assert card.dataset is None
+    assert "20 requested → 8 effective" in card.get_summary_text()
+    assert "Inputs 2 × samples/input 3 = outputs 6" in card.get_guidance_text()
+    assert "Eligible sites 8 → effective groups 8 → sites/group 1" in card.get_guidance_text()
+    assert "second jump" in card.get_guidance_text()
+    widget.close()
+    widget.deleteLater()
+    app.processEvents()
+
+
+def test_first_interface_layer_mix_previews_imported_structure_and_output_count():
+    app = _app()
+    widget = MakeDataWidget()
+    positions = []
+    symbols = []
+    for z, element in [
+        (0.1, "Al"),
+        (0.2, "Al"),
+        (0.3, "Al"),
+        (0.7, "Ni"),
+        (0.8, "Ni"),
+        (0.9, "Ni"),
+    ]:
+        for x in (0.0, 0.5):
+            for y in (0.0, 0.5):
+                positions.append([x, y, z])
+                symbols.append(element)
+    structure = Atoms(
+        symbols,
+        scaled_positions=positions,
+        cell=[8.0, 8.0, 8.0],
+        pbc=True,
+    )
+    widget.dataset = [structure, structure.copy()]
+    card = widget.add_card("InterfaceLayerMixCard")
+    card.num_structures_frame.set_input_value([3])
+    widget._refresh_input_count_previews()
+    app.processEvents()
+
+    assert card.dataset is None
+    assert "fractional c @ 0.500" in card.get_summary_text()
+    assert "Inputs 2 × 3/input = 6 outputs" in card.get_guidance_text()
+    assert "second interface" in card.get_guidance_text()
+    _dispose(widget)
+
+
+def test_interface_layer_mix_fields_fit_real_inspector_after_resize_roundtrip():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = InterfaceLayerMixCard()
+    area.add_card(card)
+    area.resize(1600, 760)
+    area.show()
+    area.select_card(card)
+    for _ in range(3):
+        app.processEvents()
+
+    area.resize(1024, 640)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel._editor_widget is card.setting_widget
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
+    assert card.concentration_field.isVisibleTo(area)
+    card.mode_combo.setCurrentIndex(card.mode_combo.findData("gradient"))
+    card.position_mode_combo.setCurrentIndex(
+        card.position_mode_combo.findData("manual")
+    )
+    card.seed_checkbox.setChecked(True)
+    for _ in range(3):
+        app.processEvents()
+    assert card.gradient_start_field.isVisibleTo(area)
+    assert card.gradient_end_field.isVisibleTo(area)
+    assert card.interface_position_field.isVisibleTo(area)
+    assert card.seed_field.isVisibleTo(area)
+    assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
     _dispose(area)
 
 
@@ -316,6 +582,27 @@ def test_empty_fork_lane_selection_controls_where_the_next_card_is_added():
     assert target.cards == [inserted]
     assert target.property("workflowBranchSelected") is False
     assert area.guidance_panel._editor_widget is inserted.setting_widget
+    _dispose(area)
+
+
+def test_clicking_empty_fork_lane_selects_it_for_the_next_card():
+    app = _app()
+    area = MakeWorkflowArea()
+    fork = WorkflowFork()
+    area.add_card(fork)
+    area.resize(1200, 700)
+    area.show()
+    app.processEvents()
+
+    target = fork.branches[1]
+    QTest.mouseClick(target.empty_label, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    inserted = PerturbCard()
+    area.add_card(inserted)
+    app.processEvents()
+
+    assert fork.branches[0].cards == []
+    assert target.cards == [inserted]
     _dispose(area)
 
 
@@ -585,6 +872,7 @@ def test_close_removes_nested_branch_card_immediately():
 def test_cards_expose_drag_handle_and_canvas_tracks_insertion_slot():
     app = _app()
     area = MakeWorkflowArea()
+    area.resize(1280, 700)
     first = PerturbCard()
     second = CellStrainCard()
     area.add_card(first)
@@ -900,8 +1188,10 @@ def test_fork_stacks_branches_on_narrow_canvas_and_limits_branch_count():
     app.processEvents()
     assert fork.connector.isVisible()
 
-    fork.add_branch()
+    fork.add_branch_button.click()
     assert len(fork.branches) == 3
+    assert fork.branches[2].spec.branch_id == "C"
+    assert fork.branches[2].spec.name == "Branch C"
     assert not fork.add_branch_button.isEnabled()
 
     area.resize(1280, 900)
@@ -910,6 +1200,12 @@ def test_fork_stacks_branches_on_narrow_canvas_and_limits_branch_count():
     assert fork.width() < fork._STACK_BRANCHES_BREAKPOINT
     assert not fork.connector.isVisible()
     assert fork.branches[1].geometry().top() >= fork.branches[0].geometry().bottom()
+
+    area.resize(1024, 640)
+    for _ in range(3):
+        app.processEvents()
+    assert fork._two_row_header
+    assert fork.headerLabel.width() >= fork.headerLabel.sizeHint().width()
     _dispose(area)
 
 
@@ -970,6 +1266,8 @@ def test_explicit_merge_concatenates_in_stable_branch_order():
 
     assert [item.info["history"] for item in fork.result_dataset] == [["A"], ["B"]]
     assert fork.available_output_cards() == [fork]
+    assert fork.status_badge.state() == "succeeded"
+    assert fork.output_terminal_detail.text() == "A 1 + B 1 → 2 merged"
     _dispose(fork)
 
 
@@ -988,7 +1286,33 @@ def test_unmerged_fork_preserves_successful_branch_when_another_fails():
     assert fork.branch_results["A"] == []
     assert fork.branch_results["B"][0].info["history"] == ["B"]
     assert fork.available_output_cards() == [fork.branches[1].cards[-1]]
+    assert fork.status_badge.state() == "partial"
+    assert fork.status_badge.label.text() == "Partial"
+    assert "1/2 branches completed" in fork.output_terminal_detail.text()
     _dispose(fork)
+
+
+def test_fork_rejects_enabled_empty_branches_before_running_other_branches():
+    fork = WorkflowFork()
+    card = _OperationCard(_HistoryOperation("A"))
+    fork.add_card(card, fork.branches[0])
+    fork.set_dataset([Atoms("H")])
+    completions = []
+    fork.runFinishedSignal.connect(completions.append)
+
+    with patch.object(card, "run") as card_run, patch(
+        "NepTrainKit.ui.views._card.workflow_fork.MessageManager.send_error_message"
+    ) as error_message:
+        fork.run()
+
+    assert fork.run_outcome == "failed"
+    assert fork.status_badge.state() == "failed"
+    assert fork.branches[1].output_label.text() == "Failed"
+    assert completions == [fork.index]
+    card_run.assert_not_called()
+    error_message.assert_called_once_with(
+        "Add at least one enabled card to: Branch B."
+    )
 
 
 def test_fork_json_round_trip_preserves_branches_cards_and_merge():
@@ -1010,6 +1334,18 @@ def test_fork_json_round_trip_preserves_branches_cards_and_merge():
     assert [card.__class__.__name__ for card in restored.branches[1].cards] == ["CellStrainCard"]
     _dispose(fork)
     _dispose(restored)
+
+
+def test_fork_branch_name_editor_updates_saved_display_name():
+    fork = WorkflowFork()
+    branch = fork.branches[0]
+
+    branch.name_edit.setText("Surface path")
+    branch.name_edit.editingFinished.emit()
+
+    assert branch.spec.name == "Surface path"
+    assert fork.to_dict()["branches"][0]["name"] == "Surface path"
+    _dispose(fork)
 
 
 def test_page_rejects_shared_downstream_after_unmerged_fork():

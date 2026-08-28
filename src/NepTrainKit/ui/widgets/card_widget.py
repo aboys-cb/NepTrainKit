@@ -260,7 +260,36 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
     def set_category_tag(self, text: str) -> None:
         """Update the small category pill shown next to the card title."""
         self.category_tag.setText(text)
-        self.category_tag.setVisible(bool(text) and not self._nested_header)
+        self._update_category_tag_visibility()
+
+    def _update_category_tag_visibility(self) -> None:
+        """Yield secondary category text before the primary title clips."""
+        if getattr(self, "_group_tile_enabled", False):
+            self.category_tag.setVisible(bool(self.category_tag.text().strip()))
+            return
+        if self._nested_header:
+            self.category_tag.setVisible(False)
+            return
+        tag_text = self.category_tag.text().strip()
+        if not tag_text:
+            self.category_tag.hide()
+            return
+
+        margins = self.headerLayout.contentsMargins()
+        required = margins.left() + margins.right()
+        visible_widgets = []
+        for index in range(self.headerLayout.count()):
+            widget = self.headerLayout.itemAt(index).widget()
+            if widget is None or widget is self.headerLabel:
+                continue
+            if widget is self.category_tag or not widget.isHidden():
+                visible_widgets.append(widget)
+                required += widget.sizeHint().width()
+        required += self.headerLabel.fontMetrics().horizontalAdvance(
+            self.headerLabel.text()
+        )
+        required += self.headerLayout.spacing() * len(visible_widgets)
+        self.category_tag.setVisible(self.headerTopView.width() >= required)
 
     def set_compact_header(self, compact: bool) -> None:
         """Switch between a full top-level header and a narrow nested header."""
@@ -268,7 +297,7 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         set_two_row = getattr(self, "set_two_row_header", None)
         if callable(set_two_row):
             set_two_row(not compact and hasattr(self, "setting_widget"))
-        self.category_tag.setVisible(not compact)
+        self._update_category_tag_visibility()
         # Card JSON is available from the right inspector; keeping the legacy
         # button hidden preserves the API without duplicating the action here.
         self.copy_json_button.setVisible(False)
@@ -278,6 +307,10 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         update_close = getattr(self, "_update_close_affordance", None)
         if callable(update_close):
             update_close()
+
+    def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
+        super().resizeEvent(event)
+        self._update_category_tag_visibility()
 
     def _refresh_result_action_group(self) -> None:
         """Show available result actions as one connected visual unit."""
@@ -377,6 +410,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
     viewOutputSignal = Signal(object)
     dragStartedSignal = Signal(object)
     dragFinishedSignal = Signal(object, bool)
+    presentationChanged = Signal()
 
     def __init__(self, parent=None):
         """Configure collapse controls and state tracking.
@@ -842,6 +876,7 @@ class MakeDataCard(MakeDataCardWidget):
     def refresh_compact_presentation(self) -> None:
         """Refresh the canvas summary after parameters or inspector state change."""
         self._refresh_collapsed_summary()
+        self.presentationChanged.emit()
 
     @staticmethod
     def _safe_count(value) -> int:

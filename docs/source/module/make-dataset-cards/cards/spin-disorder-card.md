@@ -1,180 +1,149 @@
-<!-- card-schema: {"card_name": "Spin Disorder", "source_file": "src/NepTrainKit/ui/views/_card/spin_disorder_card.py", "serialized_keys": ["params"]} -->
+<!-- card-schema: {"card_name": "Moment Disorder", "source_file": "src/NepTrainKit/ui/views/_card/spin_disorder_card.py", "serialized_keys": ["params"]} -->
 
-# 自旋无序（Spin Disorder）
+# 磁矩无序采样（Moment Disorder）
 
 **分类：** 磁性
 
 ## 功能说明
 
-`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆盖 FM/AFM 到 PM 之间的离散翻转、随机方向和 cone disorder，不把这些离散无序混进 `Magmom Rotation` 的连续小角扰动语义里。
+输入结构已有磁矩，希望随机改变其中一部分磁矩的方向时使用。每个输出都是一张新的磁矩构型，例如从 FM/AFM 参考态生成 10%、30%、50%、70% 的逐级无序样本。
+
+例如结构中有 10 个非零磁矩，改变比例为 `0.3`：
+
+```text
+10 个可选磁矩 × 0.3 → 随机选择 3 个磁矩 → 按所选方式改变方向
+```
+
+三种模式的区别：
+
+| 模式 | 选中磁矩如何变化 | 典型用途 |
+| --- | --- | --- |
+| 翻转选中的磁矩 | $\mathbf m_i'=-\mathbf m_i$ | 共线磁态的逐级翻转 |
+| 给选中磁矩随机方向 | 在完整球面随机取新方向 | 强方向无序 |
+| 在圆锥内偏转选中磁矩 | 在原磁矩方向周围的圆锥内取新方向 | 有序态附近的非共线扰动 |
+
+三种模式都保持每个磁矩的模长不变。
 
 ## 原理与公式
 
-设符合元素筛选且磁矩非零的原子数为 $N_m$，无序比例为 $f$。每个样本实际改动
+先从非零磁矩中找出符合“目标元素”的原子。设可选原子数为 $N_m$，当前改变比例为 $f$，则随机选择
 
 $$
-N_{\mathrm{change}}=\min\!\left(N_m,\max\left[1,
+N_{\mathrm{change}}=\min\!\left(N_m,\max\!\left[1,
 \operatorname{round}(fN_m)\right]\right)
 $$
 
-个不重复原子。`翻转一定比例`使用
-$\mathbf m_i'=-\mathbf m_i$；`圆锥无序`在原方向周围半角
-$\theta_{\max}$ 的球冠上均匀抽样，其中
-$\cos\theta\sim U(\cos\theta_{\max},1)$；`随机化一定比例`在整个单位球面上抽取新方向。
-三种模式都保留被改动磁矩的模长，只改变方向。固定随机种子后，结构编号、比例和样本编号
-共同派生每个输出的随机路径。
+个不重复原子。因为原子数是整数，实际比例可能与输入值略有差异；只要 $f>0$，至少改变 1 个可选磁矩。
+
+锥形无序不是在固定的全局轴附近采样，而是分别以每个被选中磁矩的当前方向为锥轴。若最大锥角为 $\theta_{\max}$，程序均匀采样
+
+$$
+\cos\theta\sim U(\cos\theta_{\max},1),\qquad
+\phi\sim U(0,2\pi).
+$$
+
+每个输入结构请求的输出数为
+
+$$
+N_{\mathrm{request}}=N_f\times N_s,
+$$
+
+其中 $N_f$ 是比例个数，$N_s$ 是“每个比例的样本数”。实际输出不超过“每个输入的最大输出数”，并按比例顺序截断。
 
 ## 操作示例
 
-### 场景：模型只见过 FM/AFM 和完全随机 PM
+已有一张带 Fe/Co 磁矩的结构，希望生成 10% 到 70% 的共线翻转样本：
 
-FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻转的中间无序态。模型在有限温度磁态上能量排序不稳定。
+- 选中的磁矩如何变化：`翻转选中的磁矩`
+- 改变磁矩的比例：最小值 `0.1`、最大值 `0.7`、步长 `0.2`
+- 每个比例的样本数：`3`
+- 使用随机种子：开启
 
-**输入：** 已经通过 `Magnetic Order` 或 `Set Magnetic Moments` 写入磁矩的结构。
-**目标：** 生成 `0.1,0.3,0.5,0.7` 四档局部翻转，让训练集覆盖有序到无序的连续路径。
-**参数设置：** `无序方式`选择“翻转一定比例”，`无序比例`填
-`0.1,0.3,0.5,0.7`，`每个比例的样本数`填 `3`，并开启`使用随机种子`。
-**输出：** 每个输入结构生成 12 个自旋无序结构。
-**怎么验证训练集质量改善：** 重训后，中间翻转比例测试集的能量/磁力误差应不再显著高于 FM/AFM 端点。
+比例为 `0.1, 0.3, 0.5, 0.7`，所以每个输入请求 $4\times3=12$ 张结构。不同样本会随机选择不同原子。
 
 ## 参数说明
 
-### 无序模型
+### 无序采样
 
-#### 模式（mode）
+#### 选中的磁矩如何变化（mode）
 
-`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 FM/AFM 到 PM 的离散无序梯度；`Randomize fraction` 把选中自旋方向在完整球面上随机化；`Cone disorder` 保持围绕参考方向的有限温非共线扰动。这三个值与下拉框和序列化参数完全一致。
+`Flip fraction` 翻转方向，`Randomize fraction` 在完整球面取新方向，`Cone disorder` 在各磁矩原方向周围的圆锥内取新方向。
 
-#### 比例（fractions）
+#### 改变磁矩的比例（fractions）
 
-`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，必须是逗号分隔且位于 `(0, 1]` 的有限数值；非法文本和超范围值会明确报错，不会被忽略或截断。0.1/0.3/0.5/0.7 可覆盖 FM/AFM 到 PM 之间的无序梯度。
+每个值必须在 $(0,1]$。可用最小值、最大值和步长，也可切换为自定义列表。
 
-#### 每个无序比例的样本数（samples_per_fraction）
+#### 每个比例的样本数（samples_per_fraction）
 
-`int`，默认 `1`。同一无序度下不同随机选择会给不同局域环境。1 个用于路径扫描，3-10 个用于统计训练。
+同一比例下独立随机选择的次数；增加它可以覆盖更多不同的局部组合。
 
-#### 锥角（cone_angle）
+#### 最大锥角（cone_angle）
 
-`float`，默认 `30.0`。Cone disorder 中限制随机方向偏离参考轴的最大角。10-30° 表示有序态附近有限温扰动；接近 90° 时已接近强无序。
+仅用于 `Cone disorder`，范围为 $0^\circ$ 到 $180^\circ$；角度越大，方向无序越强。
 
-生效条件：`模式`（`mode`）或方向模型选择 cone/noncollinear 随机化时。
+### 磁矩来源与目标
 
-### 磁矩幅值
+默认读取输入结构已有的 `spin:R:3` 或 ASE `initial_magmoms`。只有需要由元素表重新构造磁矩，或只处理指定元素时，才展开“磁矩来源和目标筛选”。
 
-#### 磁矩大小来源（magnitude_source）
+#### 磁矩来源（magnitude_source）
 
-`str`，默认 `'Existing initial magmoms'`。输入有 `spin:R:3` 时优先复用；没有 `spin` 时兼容旧 `initial_magmoms`。两者都没有时用 `元素磁矩表`（`magmom_map`）/`默认磁矩`（`default_moment`）构造幅值。不要用默认幅值替代已知元素磁矩。
+选择读取现有 `spin:R:3`/`initial_magmoms`，或按元素磁矩表和默认值构造。
 
 #### 元素磁矩表（magmom_map）
 
-`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。
+按 `元素:模长` 填写，例如 `Fe:2.2,Ni:0.6`。
 
-#### 默认磁矩（default_moment）
+#### 默认磁矩大小（default_moment）
 
-`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
+只用于元素表中没有列出的元素，默认 `0`。
 
-#### 标量磁矩转为矢量（lift_scalar）
+#### 将标量磁矩提升为矢量（lift_scalar）
 
-`bool`，默认 `True`。输入是标量磁矩但下游需要非共线向量时打开；如果原始数据已有方向信息，不要重新提升覆盖它。
+读取现有标量磁矩时，将它们沿参考方向转成三维矢量。
 
-#### 轴（axis）
+#### 标量提升方向（axis）
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。这是方向参考，不是普通数值——改它会改变分层、表面法向或磁矩方向。使用前先确认 cell 取向和目标物理方向。
+只用于标量磁矩或元素表构造，不会覆盖已有矢量磁矩的方向。
 
-生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
+#### 目标元素（apply_elements）
 
-#### 应用元素（apply_elements）
+用逗号分隔，如 `Fe,Co`；留空表示所有非零磁矩。
 
-`str`，默认 `''`。只对列出的磁性元素翻转或随机化。合金/界面里应显式列出磁性元素，避免给非磁原子写入无意义磁矩。留空则全部参与。
-
-### 随机性和预算
+### 随机性与输出
 
 #### 使用随机种子（use_seed）
 
-`bool`，默认 `False`。勾选后固定种子可复现。对比实验时开，最终大规模随机探索可以关——但关后结果不能逐帧复现。
+开启后使用指定 seed，同一输入和参数可复现同一批选择与方向。
 
 #### 随机种子（seed）
 
-`int`，默认 `0`。同一输入、同一参数和同一 seed 应生成同一批候选。
+非负整数；只有开启“使用随机种子”时才生效。
 
-生效条件：`use_seed=True`。
+#### 每个输入的最大输出数（max_outputs）
 
-#### 最大输出数（max_outputs）
+限制单个输入结构生成的结果数，默认 `100`；多个输入分别应用此上限。
 
-`int`，默认 `100`。总输出约等于 fractions 数量乘以 samples_per_fraction。链式输入多时必须设上限，避免磁无序样本淹没结构样本。
+## 输出与检查
 
-## 推荐预设
+输出结构写入三列矢量磁矩 `spin:R:3`，标签格式为：
 
-### 共线翻转梯度
-
-```json
-{
-  "class": "SpinDisorderCard",
-  "params": {
-    "mode": "Flip fraction",
-    "fractions": "0.1,0.3,0.5,0.7",
-    "samples_per_fraction": 3,
-    "cone_angle": 30.0,
-    "magnitude_source": "Existing initial magmoms",
-    "magmom_map": "",
-    "default_moment": 0.0,
-    "lift_scalar": true,
-    "axis": [0.0, 0.0, 1.0],
-    "apply_elements": "",
-    "use_seed": true,
-    "seed": 42,
-    "max_outputs": 100
-  }
-}
+```text
+SpinDis(f=比例,n=实际改变数,mode=flip|rand|cone,...)
 ```
 
-用于从 FM/AFM 参考态生成局部翻转比例扫描。
+建议先检查三件事：
 
-### 非共线 cone disorder
-
-```json
-{
-  "class": "SpinDisorderCard",
-  "params": {
-    "mode": "Cone disorder",
-    "fractions": "0.25,0.5,0.75",
-    "samples_per_fraction": 2,
-    "cone_angle": 20.0,
-    "magnitude_source": "Existing initial magmoms",
-    "magmom_map": "",
-    "default_moment": 0.0,
-    "lift_scalar": true,
-    "axis": [0.0, 0.0, 1.0],
-    "apply_elements": "Fe,Co",
-    "use_seed": true,
-    "seed": 7,
-    "max_outputs": 50
-  }
-}
-```
-
-用于有限温度附近的非共线方向扰动。
-
-## 推荐组合
-
-- `Magnetic Order → Spin Disorder`：先建立 FM/AFM 参考态，再生成中间无序比例。
-- `Set Magnetic Moments → Spin Disorder → Small-Angle Spin Tilt`：先统一磁矩模长，再做无序化和小角偏转。
-- `Spin Disorder → Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何清洗。
+1. `n` 是否符合 $\operatorname{round}(fN_m)$；
+2. 未选中的磁矩是否保持不变；
+3. 所有磁矩的模长是否保持不变。
 
 ## 常见问题
 
-**运行报错：找不到 eligible magnetic moments。** 输入没有可用磁矩，或 `应用元素`（`apply_elements`）没有匹配任何非零磁矩。先用 `Set Magnetic Moments` 或 `Magnetic Order` 初始化。
+**提示找不到可用磁矩。** 输入没有非零磁矩，或目标元素没有匹配到非零磁矩。先用“设置磁矩”或“磁序”初始化。
 
-**翻转数量不是精确小数比例。** 原子数是离散的，程序按 fraction 转成整数个原子，至少选 1 个且不超过 eligible atom 数。
+**锥形无序看起来不像完全 PM。** 它只在每个原方向附近采样。需要完整球面方向时选择“随机化一定比例”。
 
-**`Cone disorder` 看起来和 PM 不一样。** cone disorder 只在参考方向附近随机，不是全空间 PM。全空间随机用 `Randomize fraction`。
+## 推荐组合
 
-## 输出标签
-
-`SpinDis(f={fraction},n={count},mode={flip|rand|cone},s={seed},a={cone_angle})`。`s` 只在 `use_seed=True` 时出现，`a` 只在 cone disorder 输出中出现。
-
-所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。
-
-## 可复现性
-
-开启 `使用随机种子`（`use_seed`）后，随机原子选择和方向采样由 `随机种子`（`seed`）、输入结构标识、fraction 序号和 sample 序号共同决定。
+- `磁序 → 磁矩无序采样`：先建立 FM/AFM 参考态，再生成中间无序比例。
+- `设置磁矩 → 磁矩无序采样`：先统一磁矩格式和模长，再生成无序样本。

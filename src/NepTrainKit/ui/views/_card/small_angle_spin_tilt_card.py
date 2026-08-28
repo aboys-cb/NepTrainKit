@@ -1,22 +1,23 @@
-"""Card for generating single-spin small-angle tilt configurations."""
+"""Card for generating controlled spin-canting scans."""
 
 from __future__ import annotations
 
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
-from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import SmallAngleSpinTiltOperation, SmallAngleSpinTiltParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
 class SmallAngleSpinTiltCard(MakeDataCard):
-    """Generate deterministic single-spin small-angle tilt configurations."""
+    """Generate deterministic controlled spin-canting configurations."""
 
     group = "Magnetism"
-    card_name = "Small-Angle Spin Tilt"
+    card_name = "Canting Scan"
+    discoverable = False
     menu_icon = r":/images/src/images/perturb.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -24,8 +25,17 @@ class SmallAngleSpinTiltCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Small-Angle Spin Tilt"))
+        self.setTitle(self.tr("Legacy Canting Scan"))
         self.init_ui()
+
+    def get_summary_text(self) -> str:
+        return self.tr("Compatibility card loaded from an existing workflow.")
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Migrate single-spin, atom-pair, and group-pair scans to Local Magnetic Response; "
+            "migrate global tilt to SOC / Texture Response. Use Spin Perturb for random sampling."
+        )
 
     def init_ui(self):
         self.setObjectName("small_angle_spin_tilt_card_widget")
@@ -167,6 +177,11 @@ class SmallAngleSpinTiltCard(MakeDataCard):
             ToolTipFilter(self.include_reference_checkbox, 300, ToolTipPosition.TOP)
         )
 
+        self.advanced_checkbox = CheckBox(
+            self.tr("Show magnetic-moment setup, axes, and output limit"), self.setting_widget
+        )
+        self.advanced_checkbox.setChecked(False)
+
         self.source_label = BodyLabel(self.tr("Magnitude source"), self.setting_widget)
         self.source_label.setToolTip(self.tr("Use existing initial magmoms or build a ferromagnetic reference from map/default"))
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
@@ -177,8 +192,9 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
         self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
-        self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Ni:0.6"))
+        self.map_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+        )
 
         self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
         self.default_label.setToolTip(self.tr("Magnitude used for elements not listed in the magmom map"))
@@ -265,26 +281,28 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.settingLayout.addWidget(self.sign_label, 16, 0, 1, 1)
         self.settingLayout.addWidget(self.sign_combo, 16, 1, 1, 2)
         self.settingLayout.addWidget(self.include_reference_checkbox, 17, 0, 1, 3)
-        self.settingLayout.addWidget(self.source_label, 18, 0, 1, 1)
-        self.settingLayout.addWidget(self.source_combo, 18, 1, 1, 2)
-        self.settingLayout.addWidget(self.map_label, 19, 0, 1, 1)
-        self.settingLayout.addWidget(self.map_edit, 19, 1, 1, 2)
-        self.settingLayout.addWidget(self.default_label, 20, 0, 1, 1)
-        self.settingLayout.addWidget(self.default_frame, 20, 1, 1, 2)
-        self.settingLayout.addWidget(self.lift_scalar_checkbox, 21, 0, 1, 3)
-        self.settingLayout.addWidget(self.axis_label, 22, 0, 1, 1)
-        self.settingLayout.addWidget(self.axis_frame, 22, 1, 1, 2)
-        self.settingLayout.addWidget(self.reference_label, 23, 0, 1, 1)
-        self.settingLayout.addWidget(self.reference_frame, 23, 1, 1, 2)
-        self.settingLayout.addWidget(self.apply_label, 24, 0, 1, 1)
-        self.settingLayout.addWidget(self.apply_edit, 24, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_output_label, 25, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_output_frame, 25, 1, 1, 2)
+        self.settingLayout.addWidget(self.advanced_checkbox, 18, 0, 1, 3)
+        self.settingLayout.addWidget(self.source_label, 19, 0, 1, 1)
+        self.settingLayout.addWidget(self.source_combo, 19, 1, 1, 2)
+        self.settingLayout.addWidget(self.map_label, 20, 0, 1, 1)
+        self.settingLayout.addWidget(self.map_edit, 20, 1, 1, 2)
+        self.settingLayout.addWidget(self.default_label, 21, 0, 1, 1)
+        self.settingLayout.addWidget(self.default_frame, 21, 1, 1, 2)
+        self.settingLayout.addWidget(self.lift_scalar_checkbox, 22, 0, 1, 3)
+        self.settingLayout.addWidget(self.axis_label, 23, 0, 1, 1)
+        self.settingLayout.addWidget(self.axis_frame, 23, 1, 1, 2)
+        self.settingLayout.addWidget(self.reference_label, 24, 0, 1, 1)
+        self.settingLayout.addWidget(self.reference_frame, 24, 1, 1, 2)
+        self.settingLayout.addWidget(self.apply_label, 25, 0, 1, 1)
+        self.settingLayout.addWidget(self.apply_edit, 25, 1, 1, 2)
+        self.settingLayout.addWidget(self.max_output_label, 26, 0, 1, 1)
+        self.settingLayout.addWidget(self.max_output_frame, 26, 1, 1, 2)
 
         self.canting_mode_combo.currentTextChanged.connect(self._update_canting_mode_widgets)
         self.pair_source_combo.currentTextChanged.connect(self._update_canting_mode_widgets)
         self.target_mode_combo.currentTextChanged.connect(self._update_target_widgets)
         self.source_combo.currentTextChanged.connect(self._update_magnitude_source_widgets)
+        self.advanced_checkbox.toggled.connect(self._update_magnitude_source_widgets)
         self.bond_mode_combo.currentTextChanged.connect(self._update_canting_mode_widgets)
         self._update_canting_mode_widgets()
         self._update_target_widgets()
@@ -352,7 +370,23 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.target_indices_edit.setVisible(explicit)
 
     def _update_magnitude_source_widgets(self):
-        use_map = combo_value(self.source_combo) == "Map/default magnitude"
+        show_advanced = self.advanced_checkbox.isChecked()
+        for widget in (
+            self.source_label,
+            self.source_combo,
+            self.lift_scalar_checkbox,
+            self.axis_label,
+            self.axis_frame,
+            self.reference_label,
+            self.reference_frame,
+            self.apply_label,
+            self.apply_edit,
+            self.max_output_label,
+            self.max_output_frame,
+        ):
+            widget.setVisible(show_advanced)
+            widget.setEnabled(show_advanced)
+        use_map = show_advanced and combo_value(self.source_combo) == "Map/default magnitude"
         self.map_label.setEnabled(use_map)
         self.map_edit.setEnabled(use_map)
         self.map_label.setVisible(use_map)
@@ -363,11 +397,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.default_frame.setVisible(use_map)
 
     def process_structure(self, structure):
-        try:
-            return self.create_operation().run_structure(structure, self.get_params())
-        except Exception as exc:  # noqa: BLE001
-            MessageManager.send_warning_message(f"SmallAngleSpinTilt: invalid magmom map: {exc}")
-            return [structure.copy()]
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def create_operation(self):
         return SmallAngleSpinTiltOperation()
@@ -429,6 +459,16 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.reference_frame.set_input_value([float(v) for v in params.reference_direction])
         self.apply_edit.setText(params.apply_elements)
         self.max_output_frame.set_input_value([int(params.max_outputs)])
+        self.advanced_checkbox.setChecked(
+            params.magnitude_source != "Existing initial magmoms"
+            or bool(params.magmom_map.strip())
+            or float(params.default_moment) != 0.0
+            or not bool(params.lift_scalar)
+            or tuple(float(v) for v in params.axis) != (0.0, 0.0, 1.0)
+            or tuple(float(v) for v in params.reference_direction) != (1.0, 0.0, 0.0)
+            or bool(params.apply_elements.strip())
+            or int(params.max_outputs) != 100
+        )
         self._update_canting_mode_widgets()
         self._update_target_widgets()
         self._update_magnitude_source_widgets()

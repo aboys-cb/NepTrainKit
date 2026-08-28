@@ -1,242 +1,131 @@
+:orphan:
+
 <!-- card-schema: {"card_name": "Spin Spiral", "source_file": "src/NepTrainKit/ui/views/_card/spin_spiral_card.py", "serialized_keys": ["params"]} -->
 
-# 自旋螺旋（Spin Spiral）
+# 旧版自旋螺旋（Spin Spiral）
 
 **分类：** 磁性
 
+> [!WARNING]
+> 这是一张仅用于加载旧工作流的兼容卡片，已从“新建卡片”目录隐藏。新建有限 q、Bloch、cycloidal 或一般螺旋路径请使用 [SOC / 纹理响应](soc-texture-response-card.md)。
+
 ## 功能说明
 
-对输入结构按一维相位场写入非共线 `initial_magmoms`，生成一批不同周期、相位、手性和轴向分量的 spin spiral / helix / conical spiral 初始构型。支持两种等价的主控方式：直接扫周期 L_D 或扫每 Angstrom 转角梯度。
+旧版卡片按原子在传播轴上的投影坐标写入螺旋磁矩，并枚举周期、相位、手性和锥分量。它保留每个原子的磁矩模长，只改变方向。
+
+该能力与 `SOC / Texture Response` 的有限 q 路径重复；新版卡片还提供完整路径、共格失败和响应元数据合同，因此不再为旧版卡片新增功能。
 
 ## 原理与公式
 
-$$\mathbf{m}(u)=\sqrt{1-m_z^2}\left[\cos\phi(u)\,\mathbf{e}_1+\sin\phi(u)\,\mathbf{e}_2\right] + m_z\,\hat{\mathbf{n}}$$
+对第 $i$ 个原子，旧版卡片生成
 
-$$\phi(u)=s\cdot \frac{2\pi u}{L_D}+\phi_0,\qquad s\in\{-1,+1\}$$
+$$
+\mathbf m_i=M_i\left\{\sqrt{1-m_\parallel^2}
+[\cos\phi_i\,\mathbf e_1+\sin\phi_i\,\mathbf e_2]
++m_\parallel\hat{\mathbf n}\right\},
+$$
 
-其中 $m_z=m_\parallel/|\mathbf m|$ 是无量纲轴向分量。$m_z=0$ 为平面 helix，
-$0<|m_z|<1$ 为 conical spiral，$|m_z|=1$ 是完全沿轴的共线极限。
+$$
+\phi_i=s\frac{2\pi u_i}{L}+\phi_0,
+$$
 
-**关键限制：** 这张卡只写入初始磁矩纹理，不改变晶体结构。如果当前晶格与目标周期不相容，需要先扩胞。
+其中 $M_i$ 是输入磁矩模长，$u_i$ 是原子坐标在笛卡尔传播轴 $\hat{\mathbf n}$ 上的投影，$s=\pm1$ 表示两种手性。$m_\parallel=0$ 为平面螺旋，$0<|m_\parallel|<1$ 为锥形螺旋。
+
+勾选公度筛选后，周期必须让所有周期晶格矢量上的相位增量都是 $360°$ 的整数倍；找不到相容周期时会明确失败，不再把原结构当作生成结果。
 
 ## 操作示例
 
-### 场景：模型在螺旋磁结构上能量曲线完全不对
+旧工作流若保存了 $L=20$ Å、双手性和 $m_\parallel=0$，仍可加载并复现两份平面螺旋结构。若要新建同类路径，在 `SOC / Texture Response` 中选择 `General spiral`，把传播方向设为原 `axis`，并使用
 
-你训练了一个 NEP 模型，训练集里有 FM 和 AFM 构型。模型在共线磁序上表现尚可，但一跑到具有螺旋磁序的构型（如 CrNb3S6 或 MnSi 中的 chiral helimagnet），能量曲线形状完全错误——周期依赖的能量极小值位置偏离 DFT 结果超过 30%。
+$$|\mathbf q|=2\pi/L$$
 
-**诊断思路：** 模型从未见过磁矩在空间中连续旋转的构型。FM/AFM 训练集隐式告诉了模型"磁矩方向在空间中是分段常数"的假设。需要在训练集里加入不同周期的螺旋磁纹理，让模型学习 q 空间不同波矢下的能量响应。
+换算基准波矢。运行前应先确认 q 与晶胞共格。
 
-**输入：** 一个已知磁矩幅值的磁性结构（如 MnSi 单胞，Mn 磁矩约 2.0 μB，螺旋沿 [111] 方向）
+## 迁移到 SOC / 纹理响应
 
-**目标：** 沿 [111] 方向扫描 3 个周期（20/30/40 Angstrom），3 个全局相位（0/30/60 度），纯 helix（mz=0），正反手性成对。共 3x3x2 = 18 个螺旋构型
+| 旧版设置 | 新版对应设置 |
+| --- | --- |
+| `axis` | `Propagation direction q (Cartesian)` |
+| `period_range` | 将每个 $L$ 换算为 $|q|=2\pi/L$；需要多段时拆成明确路径 |
+| `angle_gradient_range` | 先用 $L=360/g$ 换算周期，再换算 q |
+| `phase_range` | `Phase Deg`；多个相位使用多张明确配置 |
+| `mz` | `Cone Component` |
+| `chirality` | 使用正负 q 扫描 |
+| `only_commensurate_periods` | `Require Commensurate`，新卡默认开启 |
+| `max_outputs` | `Max Outputs`；新卡只接受完整路径 |
 
-**参数设置：**
-- `Propagation Axis` = `[1, 1, 1]`
-- `Spiral Parameter` = `Period (L_D)`
-- `Period Range` = `[20, 40, 10]`
-- `Phase Range` = `[0, 60, 30]`
-- `m_parallel Range` = `[0, 0, 0.1]`
-- `手性`（`chirality`） = `Both`
-
-**输出：** 18 个结构，磁矩沿 [111] 方向逐层旋转，带 `Helix(L=...,ph=...,mz=0,chi=...,ax=...)` 标签。
-
-**怎么验证训练集质量改善：**
-- 重训后用 DFT 计算几个螺旋构型的能量作为参考，对比模型预测的 E(q) 曲线
-- 如果极小值位置仍偏离，加密 `周期范围`（`period_range`）扫描（例如 `[10, 40, 5]`）
-- 如果发现 conical spiral（mz != 0）的能量比纯 helix 更低，加入 `mz = [0, 0.5, 0.1]` 覆盖锥面螺旋
-- 如果需要晶格相容的周期，勾选 `Period Filter` 开启整周期约束
-
-### 什么时候加这张卡、什么时候不加
-
-**加：**
-- 研究体系存在螺旋/非共线磁基态（如 chiral magnet、skyrmion 宿主材料）
-- 模型在非共线磁序上泛化失败
-- 需要系统覆盖 q 空间的磁激发
-
-**不加：**
-- 体系只有共线磁序 → `Magnetic Order` 够用
-- 需要局部小角度偏转而非长程螺旋 → 用 `Small-Angle Spin Tilt`
-- 晶体结构本身需要扩胞才能容纳目标周期 → 先扩胞再回来
+`Layer-locked` 没有直接迁移项；如果确实需要离散分层且折返的纹理，使用“折返螺旋磁序”。
 
 ## 参数说明
 
-### 螺旋轴和周期
+以下参数仅用于理解和复现旧 JSON。
 
-#### 轴（axis）
+### 传播轴（axis）
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。螺旋相位沿此方向传播，原子坐标在该方向的投影用于计算相位，格式 `[x, y, z]`。
+笛卡尔三维向量，默认 `(0,0,1)`。原子坐标在该方向上的投影决定螺旋相位。
 
-生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
+### 螺旋参数方式（spiral_parameter_mode）
 
-#### 螺旋参数方式（spiral_parameter_mode）
+默认 `Period (L_D)`。也可通过 `Angle gradient (deg/A)` 按每 Å 转角定义周期。
 
-`str`，默认 `'Period (L_D)'`。`Period (L_D)` 适合已知螺旋周期或要扫 E(q) 曲线；`Angle gradient (deg/A)` 适合直接控制每埃旋转角。
+### 周期范围（period_range）
 
-#### 周期范围（period_range）
+默认 `(20,40,10)` Å，格式为 `[最小值, 最大值, 步长]`。
 
-`list[float] | tuple[float, float, float]`，默认 `(20.0, 40.0, 10.0)`。`[min, max, step]` 格式，单位 Å。
-- 保守：`[20, 20, 5]`（单周期）
-- 平衡：`[10, 40, 10]`（4 个周期）
-- 探索：`[4, 80, 4]`（宽范围）
+### 角度梯度范围（angle_gradient_range）
 
-#### 角度梯度范围（angle_gradient_range）
+默认 `(18,18,1)` 度/Å，格式为 `[最小值, 最大值, 步长]`，与周期满足 $g=360/L$。
 
-`list[float] | tuple[float, float, float]`，默认 `(18.0, 18.0, 1.0)`。`[min, max, step]` 格式，单位 deg/A。值越大旋转越快——360/L_D = 梯度。
+### 相位范围（phase_range）
 
-#### 层容差（layer_tolerance）
+默认 `(0,0,15)` 度。每个相位偏移都会增加一组输出。
 
-`float`，默认 `0.05`。投影差小于此阈值的原子归为同一层。仅在 `Layer-locked` 模式下生效。
+### 轴向分量范围（mz）
 
-#### 仅生成公度周期（only_commensurate_periods）
+默认 `(0,0,0.1)`，表示归一化轴向分量 $m_\parallel$，范围 `[-1,1]`。
 
-`bool`，默认 `False`。勾选后只保留与当前晶格周期边界相容的周期，程序在指定区间内自动搜索相容周期。如果没有相容周期，卡片会给出建议的超胞倍数。
+### 手性（chirality）
 
-### 相位和形状
+默认 `Both`。`Clockwise` 和 `Counterclockwise` 分别生成一个旋向；`Both` 生成一对。
 
-#### 相位范围（phase_range）
+### 相位模式（phase_mode）
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 15.0)`。`[min, max, step]`，全局相位偏移，单位度。
-- 保守：`[0, 0, 15]`（单个相位）
-- 平衡：`[0, 90, 30]`（4 个相位）
-- 探索：`[-180, 180, 30]`（全相位空间）
+默认 `Continuous by position`。`Layer-locked` 会把投影距离足够接近的原子设为相同相位。
 
-#### z 方向磁矩分量（mz）
+### 层容差（layer_tolerance）
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 0.1)`。沿传播轴的单位化分量，范围 [-1, 1]。0 = 纯 helix，非零 = conical spiral。
-- 保守：`[0, 0, 0.1]`（纯 helix）
-- 平衡：`[0, 0.5, 0.1]`（弱 conical）
-- 探索：`[-0.9, 0.9, 0.1]`（全 conical 空间）
+默认 0.05 Å，仅在 `Layer-locked` 模式下用于合并相邻投影层。
 
-#### 手性（chirality）
+### 仅保留公度周期（only_commensurate_periods）
 
-`str`，默认 `'Both'`。`Clockwise` / `Counterclockwise` / `Both`。选 `Both` 会对同一组参数生成一对手性相反的构型。
+默认关闭。开启后只生成与当前晶胞和 PBC 相容的周期；找不到时明确报错并尽可能给出超胞倍数建议。
 
-#### 相位模式（phase_mode）
+### 磁矩来源（magnitude_source）
 
-`str`，默认 `'Continuous by position'`。`Continuous by position`：每个原子按自身投影坐标独立计算相位，适合标准连续螺旋。`Layer-locked`：先按投影坐标分层，同层原子共享相位，适合层状体系。
+默认 `Existing initial magmoms`，要求输入已有至少一个非零磁矩。`Map/default magnitude` 才会读取元素表和默认幅值。
 
-### 磁矩幅值
+### 元素磁矩表（magmom_map）
 
-#### 磁矩大小来源（magnitude_source）
+元素表模式下使用，格式如 `Fe:2.2,Ni:0.6`。
 
-`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` 复用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。
+### 默认磁矩（default_moment）
 
-**`元素磁矩表`（`magmom_map`）** / **`默认磁矩`（`default_moment`）**：仅在 `Map/default magnitude` 模式下生效。
+默认 0.0。元素表未列出的元素使用该模长。
 
-#### 元素磁矩表（magmom_map）
+### 应用元素（apply_elements）
 
-`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。
+旧实现仅在元素表模式下用它筛选元素；已有磁矩模式不会据此筛选。迁移时应在上游建立明确的参考磁矩。
 
-#### 默认磁矩（default_moment）
+### 最大输出数（max_outputs）
 
-`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
-
-#### 应用元素（apply_elements）
-
-`str`，默认 `''`。限制哪些元素施加螺旋纹理，留空则全部参与。
-
-### 输出预算
-
-#### 最大输出数（max_outputs）
-
-`int`，默认 `100`。周期、相位、手性和锥角组合会迅速相乘放大输出数量。E(q) 曲线先保留几十个点，全参数探索时再放大上限。
-
-## 推荐预设
-
-### 单周期纯 helix 验证（2 个输出，先确认方向正确）
-```json
-{
-  "class": "SpinSpiralCard",
-  "check_state": true,
-  "axis": [0.0, 0.0, 1.0],
-  "spiral_parameter_mode": "Period (L_D)",
-  "period_range": [20.0, 20.0, 10.0],
-  "angle_gradient_range": [18.0, 18.0, 1.0],
-  "phase_range": [0.0, 0.0, 15.0],
-  "mz": [0.0, 0.0, 0.1],
-  "chirality": "Both",
-  "phase_mode": "Continuous by position",
-  "layer_tolerance": [0.05],
-  "only_commensurate_periods": false,
-  "magnitude_source": "Existing initial magmoms",
-  "magmom_map": "",
-  "default_moment": [0.0],
-  "apply_elements": "",
-  "max_outputs": [16]
-}
-```
-
-### 多周期多相位螺旋（~30 个输出，常规 E(q) 曲线拟合）
-```json
-{
-  "class": "SpinSpiralCard",
-  "check_state": true,
-  "axis": [0.0, 0.0, 1.0],
-  "spiral_parameter_mode": "Period (L_D)",
-  "period_range": [10.0, 40.0, 10.0],
-  "angle_gradient_range": [18.0, 18.0, 1.0],
-  "phase_range": [0.0, 90.0, 30.0],
-  "mz": [0.0, 0.3, 0.1],
-  "chirality": "Both",
-  "phase_mode": "Layer-locked",
-  "layer_tolerance": [0.05],
-  "only_commensurate_periods": false,
-  "magnitude_source": "Existing initial magmoms",
-  "magmom_map": "",
-  "default_moment": [0.0],
-  "apply_elements": "",
-  "max_outputs": [100]
-}
-```
-
-### 全参数空间扫描（~500 个输出，研究级，含 conical + 整周期约束）
-```json
-{
-  "class": "SpinSpiralCard",
-  "check_state": true,
-  "axis": [0.0, 0.0, 1.0],
-  "spiral_parameter_mode": "Angle gradient (deg/A)",
-  "period_range": [20.0, 40.0, 10.0],
-  "angle_gradient_range": [4.5, 90.0, 4.5],
-  "phase_range": [-180.0, 180.0, 30.0],
-  "mz": [0.0, 0.8, 0.2],
-  "chirality": "Both",
-  "phase_mode": "Layer-locked",
-  "layer_tolerance": [0.08],
-  "only_commensurate_periods": true,
-  "magnitude_source": "Map/default magnitude",
-  "magmom_map": "Fe:2.2",
-  "default_moment": [0.0],
-  "apply_elements": "",
-  "max_outputs": [500]
-}
-```
-
-## 推荐组合
-
-- `Magnetic Order` → `Spin Spiral`：先确定局域磁矩模长，再扫螺旋周期和 mz
-- `Set Magnetic Moments` → `Spin Spiral`：先统一写入磁矩幅值，再做螺旋
-- `Super Cell` → `Spin Spiral`：扩胞后容纳更长周期，再用整周期约束锁相
+默认 100。旧版按周期 × 相位 × 轴向分量 × 手性依次生成，并在达到此数量时截断；新版响应卡只接受完整路径。
 
 ## 常见问题
 
-**输出为空 / 只有原始输入。** 磁矩幅值全为 0（检查 `磁矩大小来源`（`magnitude_source`）和 `magmom_map`）。`Period Filter` 开启且区间内没有相容周期——卡片会打印建议超胞倍数。
+**为什么旧工作流现在会报“没有非零磁矩”？** 旧实现曾原样返回输入并显示成功，这并不是螺旋输出。请在上游写入磁矩，或在旧卡中明确选择元素表来源。
 
-**相邻层相位递进不对。** 检查 `Propagation Axis` 是否指向预期的传播方向。`Phase Mode = Layer-locked` 时调整 `层容差`（`layer_tolerance`）。
+**为什么公度筛选会失败？** 请求区间内没有与当前周期晶胞相容的周期。按错误中的建议扩胞，或迁移到 `SOC / Texture Response` 后重新设置 q。
 
-**输出比预期的多很多。** `周期范围`（`period_range`）步长太小，或 `z 方向磁矩分量`（`mz`）范围太宽。设 `最大输出数`（`max_outputs`）上限，先小步长试跑再扩大。
+## 输出
 
-**conical spiral 的 mz 值看不懂。** mz 是无量纲比值 m_parallel / |m|，不是以 mu_B 计的绝对磁矩。物理上它只能取 [-1, 1]。
-
-## 输出标签
-
-- `Helix(L=...,ph=...,mz=0,chi=...,ax=...)`：纯平面 helix
-- `Spiral(L=...,ph=...,mz=...,chi=...,ax=...)`：conical spiral
-- 附加 `pm=layer,ltol=...`：仅 layer-locked 模式
-
-所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别名。
-
-## 可复现性
-
-无随机性。相同输入结构与相同参数 → 严格一致输出。相位原点固定为传播轴最小投影位置。
+成功输出写入 `spin:R:3` 并同步 ASE 初始磁矩；`Config_type` 使用 `Helix(...)` 或 `Spiral(...)`。该操作没有随机性，相同输入与参数产生相同结果。

@@ -35,8 +35,8 @@ class TestUINumericPrecision(BaseCardTest):
 
     def test_fractional_controls_keep_fine_fraction_inputs(self):
         scaling = CellScalingCard()
-        assert _double_spin(scaling.scaling_condition_frame).decimals() >= 6
-        scaling.scaling_condition_frame.set_input_value([0.012345])
+        assert _double_spin(scaling.scaling_condition_frame).decimals() >= 4
+        scaling.scaling_condition_frame.set_input_value([1.2345])
         self.assertAlmostEqual(scaling.get_params().max_scaling, 0.012345)
 
         vacancy = VacancyDefectCard()

@@ -8,7 +8,6 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QFrame,
-    QGridLayout,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
@@ -24,6 +23,7 @@ from qfluentwidgets import (
     TransparentToolButton,
 )
 
+from .compact_form import CompactField, ResponsiveFormGrid
 from .input import SpinBoxUnitInputFrame
 
 
@@ -36,10 +36,9 @@ class VacancyRuleItem(QFrame):
     def __init__(self, parent: QWidget | None = None) -> None:
         """Build the rule editor with default inputs and labels."""
         super().__init__(parent)
-        self.__layout = QGridLayout(self)
-        self.__layout.setContentsMargins(8, 6, 8, 6)
-        self.__layout.setHorizontalSpacing(6)
-        self.__layout.setVerticalSpacing(4)
+        self.__layout = QVBoxLayout(self)
+        self.__layout.setContentsMargins(7, 5, 7, 5)
+        self.__layout.setSpacing(4)
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setObjectName("vacancyRuleItem")
 
@@ -47,7 +46,7 @@ class VacancyRuleItem(QFrame):
         self.element_edit.setPlaceholderText(self.tr("O"))
         self.element_edit.setAccessibleName(self.tr("Element to remove"))
         self.group_edit = LineEdit(self)
-        self.group_edit.setPlaceholderText(self.tr("Optional, for example surface"))
+        self.group_edit.setPlaceholderText(self.tr("Optional: surface,bulk"))
         self.group_edit.setAccessibleName(self.tr("Existing group labels"))
 
         self.count_mode_combo = ComboBox(self)
@@ -63,7 +62,7 @@ class VacancyRuleItem(QFrame):
 
         self.fixed_count_frame = SpinBoxUnitInputFrame(self)
         self.fixed_count_frame.set_input("", 1, "int")
-        self.fixed_count_frame.setRange(0, 10000)
+        self.fixed_count_frame.setRange(1, 10000)
         self.fixed_count_frame.set_input_value([1])
         self.fixed_count_frame.setAccessibleName(self.tr("Vacancy count"))
 
@@ -83,38 +82,58 @@ class VacancyRuleItem(QFrame):
         )
         self.delete_button.clicked.connect(self._delete_self)
 
-        self.element_label = BodyLabel(self.tr("Element"), self)
-        self.element_label.setToolTip(self.tr("Element to remove"))
-        self.element_label.installEventFilter(ToolTipFilter(self.element_label, 300, ToolTipPosition.TOP))
-        self.group_label = BodyLabel(self.tr("Existing group (optional)"), self)
-        self.group_label.setToolTip(
-            self.tr("Only match labels already stored in the input structure's group array")
-        )
-        self.group_label.installEventFilter(ToolTipFilter(self.group_label, 300, ToolTipPosition.TOP))
-        self.count_label = BodyLabel(self.tr("Count mode"), self)
-        self.count_label.setToolTip(self.tr("Choose exact vacancy count or a random count range"))
-        self.count_label.installEventFilter(ToolTipFilter(self.count_label, 300, ToolTipPosition.TOP))
-        self.count_value_label = BodyLabel(self.tr("Count"), self)
-        self.count_value_label.setToolTip(self.tr("Vacancies removed per generated structure"))
-        self.count_value_label.installEventFilter(ToolTipFilter(self.count_value_label, 300, ToolTipPosition.TOP))
+        header = QWidget(self)
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(6)
+        self.rule_title = BodyLabel(self.tr("Vacancy rule"), header)
+        header_layout.addWidget(self.rule_title)
+        header_layout.addStretch(1)
+        header_layout.addWidget(self.delete_button)
 
-        self.__layout.addWidget(self.element_label, 0, 0)
-        self.__layout.addWidget(self.element_edit, 0, 1)
-        self.__layout.addWidget(self.group_label, 0, 2)
-        self.__layout.addWidget(self.group_edit, 0, 3)
-        self.__layout.addWidget(self.count_label, 1, 0)
-        self.__layout.addWidget(self.count_mode_combo, 1, 1)
-        self.__layout.addWidget(self.count_value_label, 2, 0)
-        self.__layout.addWidget(self.fixed_count_frame, 2, 1)
-        self.__layout.addWidget(self.count_range_frame, 2, 1)
-        self.__layout.addWidget(self.delete_button, 0, 4, 3, 1)
+        self.element_field = CompactField(
+            self.tr("Element"),
+            self.element_edit,
+            self,
+        )
+        self.group_field = CompactField(
+            self.tr("Existing groups (optional)"),
+            self.group_edit,
+            self,
+        )
+        self.count_mode_field = CompactField(
+            self.tr("Vacancy amount"),
+            self.count_mode_combo,
+            self,
+        )
+        self.fixed_count_field = CompactField(
+            self.tr("Vacancies to remove"),
+            self.fixed_count_frame,
+            self,
+        )
+        self.count_range_field = CompactField(
+            self.tr("Vacancy range"),
+            self.count_range_frame,
+            self,
+        )
+
+        self.form_grid = ResponsiveFormGrid(self, two_column_threshold=300)
+        self.form_grid.add_field(self.element_field)
+        self.form_grid.add_field(self.group_field)
+        self.form_grid.add_field(self.count_mode_field)
+        self.form_grid.add_field(self.fixed_count_field)
+        self.form_grid.add_field(self.count_range_field)
+        self.__layout.addWidget(header)
+        self.__layout.addWidget(self.form_grid)
 
         self.element_edit.textChanged.connect(self.changed)
         self.group_edit.textChanged.connect(self.changed)
+        self.group_edit.textChanged.connect(self.group_edit.setToolTip)
         self.count_mode_combo.currentIndexChanged.connect(self.changed)
         for frame in (self.fixed_count_frame, self.count_range_frame):
             for spin_box in frame.object_list:
                 spin_box.valueChanged.connect(self.changed)
+        self._on_count_mode_changed()
 
     def _delete_self(self) -> None:
         """Ask the owning rule container to remove this row."""
@@ -122,8 +141,11 @@ class VacancyRuleItem(QFrame):
 
     def _on_count_mode_changed(self) -> None:
         fixed = self.count_mode_combo.currentData() == "fixed"
+        # Showing the wrapper does not clear a child's explicit hidden state.
         self.fixed_count_frame.setVisible(fixed)
         self.count_range_frame.setVisible(not fixed)
+        self.fixed_count_field.setVisible(fixed)
+        self.count_range_field.setVisible(not fixed)
 
     def to_rule(self) -> dict[str, Any]:
         """Serialize the current editor state into a rule dictionary.

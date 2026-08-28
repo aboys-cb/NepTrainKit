@@ -29,7 +29,7 @@ class StackingFaultCard(MakeDataCard):
         self.setObjectName("stacking_fault_card_widget")
         self.warning_label = CaptionLabel(
             self.tr(
-                "Compatibility card for existing workflows. It shifts one side of a projected cut along an automatically chosen Cartesian direction; use Stacking Fault / GSFE Path to specify the physical slip direction."
+                "Compatibility card for existing workflows. It shifts one side of a projected cut along an automatically chosen Cartesian direction; use GSFE Path to specify the physical slip direction."
             ),
             self.setting_widget,
         )

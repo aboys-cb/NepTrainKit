@@ -33,7 +33,7 @@ $$
 
 ### 场景：多张磁性卡各自配 magmom_map，配错了一处
 
-你的训练流水线里有 `Magnetic Order` → `Small-Angle Spin Tilt` → `Spin Spiral` 三张磁性卡。每张卡都有一个 `元素磁矩表`（`magmom_map`）输入框，你填了三遍 `Fe:2.2,Co:1.7`。两周后改 Co 的磁矩为 1.5，只改了两张卡，第三张忘了——生成的数据里 Co 的磁矩默默用了旧值。训练出来的模型在含 Co 的构型上能量系统性偏高。
+你的训练流水线里有 `Magnetic Order` → `Local Magnetic Response` → `SOC / Texture Response` 三张磁性卡。如果在多张卡里重复填写元素磁矩，两周后调整 Co 的磁矩时很容易漏改其中一处，导致同一批数据使用不一致的幅值。
 
 **诊断思路：** 磁性流水线里，磁矩幅值的定义应该只在一处。用本卡在最前面做一次统一初始化，后续磁性卡全部选 "Existing initial magmoms" 模式，不再各自定义 magmom_map。
 
@@ -81,7 +81,7 @@ $$
 
 #### 元素磁矩表（magmom_map）
 
-`str`，默认 `''`。元素到磁矩的映射，格式如 `Fe:2.2,Ni:0.6`，也可用 JSON 向量如 `{"Cr":[0,0,1.0]}`。
+`str`，默认 `''`。界面使用“元素 / 磁矩或向量”表格；标量可填 `2.2`，向量可填 `[0,0,1.0]`。序列化仍兼容 `Fe:2.2,Ni:0.6` 和 `{"Cr":[0,0,1.0]}`。
 
 #### 使用元素方向（use_element_dirs）
 
@@ -173,8 +173,8 @@ $$
 ## 推荐组合
 
 - `Set Magnetic Moments` → `Magnetic Order`：先统一磁矩格式，再生成 FM/AFM/PM 磁序
-- `Set Magnetic Moments` → `Small-Angle Spin Tilt`：先生成统一 FM 向量磁矩，再做 canting
-- `Set Magnetic Moments` → `Spin Spiral`：先写入稳定模长，再生成螺旋初态
+- `Set Magnetic Moments` → `Local Magnetic Response`：先生成统一 FM 向量磁矩，再做局域响应扫描
+- `Set Magnetic Moments` → `SOC / Texture Response`：先写入稳定模长，再生成有限 q 磁纹理
 
 ## 常见问题
 

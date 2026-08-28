@@ -38,9 +38,18 @@ class TestOperationRegressionEdges(BaseCardTest):
                 RandomVacancyParams(rules=[]),
             )
 
+        with self.assertRaisesRegex(ValueError, "valid target element"):
+            ConditionalReplaceOperation().run_structure(
+                structure, ConditionalReplaceParams(target="")
+            )
+
+        with self.assertRaisesRegex(ValueError, "at least one replacement rule"):
+            RandomDopingOperation().run_structure(
+                structure,
+                RandomDopingParams(rules=[]),
+            )
+
         cases = [
-            RandomDopingOperation().run_structure(structure, RandomDopingParams(rules=[]))[0],
-            ConditionalReplaceOperation().run_structure(structure, ConditionalReplaceParams(target=""))[0],
             GroupLabelOperation().run_structure(structure, GroupLabelParams(overwrite=False))[0],
         ]
 
@@ -106,7 +115,7 @@ class TestOperationRegressionEdges(BaseCardTest):
         self.assertEqual(len(result), 0)
 
     def test_unsupported_lattice_modes_fail_instead_of_silently_falling_back(self):
-        with self.assertRaisesRegex(ValueError, "CellStrain axes"):
+        with self.assertRaisesRegex(ValueError, "unique lattice axes"):
             CellStrainOperation().run_structure(
                 self.structure,
                 CellStrainParams(axes="typo"),
@@ -121,10 +130,10 @@ class TestOperationRegressionEdges(BaseCardTest):
                 self.structure,
                 PerturbParams(engine_type=7, max_num=1),
             )
-        with self.assertRaisesRegex(ValueError, "behavior_type"):
+        with self.assertRaisesRegex(ValueError, "output_mode"):
             SuperCellOperation().run_structure(
                 self.structure,
-                SuperCellParams(behavior_type=7),
+                SuperCellParams(output_mode="typo"),  # type: ignore[arg-type]
             )
         with self.assertRaisesRegex(ValueError, "mode must be"):
             SuperCellOperation().run_structure(
@@ -143,7 +152,7 @@ class TestOperationRegressionEdges(BaseCardTest):
                 vibration,
                 VibrationModePerturbParams(distribution=7, max_num=1),
             )
-        with self.assertRaisesRegex(ValueError, "max_num must be >= 1"):
+        with self.assertRaisesRegex(ValueError, "Structures per input must be at least 1"):
             VibrationModePerturbOperation().run_structure(
                 vibration,
                 VibrationModePerturbParams(max_num=0),

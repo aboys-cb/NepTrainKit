@@ -280,6 +280,7 @@ class MakeDataWidget(QWidget):
         self.workspace_card_widget = MakeWorkflowArea(self)
         self._connect_workflow_library()
         self.workspace_card_widget.workflowChanged.connect(self._mark_workflow_dirty)
+        self.workspace_card_widget.workflowChanged.connect(self._refresh_input_count_previews)
         self.setting_group=ConsoleWidget(self)
         self.setting_group.runSignal.connect(self.run_card)
         self.setting_group.stopSignal.connect(self.stop_run_card)
@@ -653,12 +654,35 @@ class MakeDataWidget(QWidget):
         if len(structures_list)==0:
             return
         self.dataset=structures_list
+        self._refresh_input_count_previews()
         MessageManager.send_success_message(
             self.tr("success load {count} structures.").format(count=len(structures_list))
         )
         self.dataset_info_label.setText(
             self.tr("Success load {count} structures.").format(count=len(structures_list))
         )
+
+    def _refresh_input_count_previews(self) -> None:
+        """Preview imported input metadata on the first enabled input card."""
+        exact_target_found = False
+        selected = getattr(self.workspace_card_widget.guidance_panel, "_card", None)
+        for card in self.workspace_card_widget.cards:
+            is_target = not exact_target_found and card.check_state
+            needs_input = bool(getattr(card, "requires_input_dataset", True))
+            count_setter = getattr(card, "set_preview_input_count", None)
+            if callable(count_setter):
+                exact_count = len(self.dataset or []) if is_target and needs_input else None
+                count_setter(exact_count)
+            structure_setter = getattr(card, "set_preview_structure", None)
+            if callable(structure_setter):
+                preview = None
+                if is_target and needs_input and self.dataset:
+                    preview = self.dataset[0]
+                structure_setter(preview)
+            if is_target:
+                exact_target_found = True
+        if selected is not None:
+            self.workspace_card_widget.guidance_panel._refresh_context()
 
     def open_file(self):
         """Open a file dialog and load selected structures.
@@ -937,9 +961,14 @@ class MakeDataWidget(QWidget):
             self.setting_group.set_output_available(
                 bool(self._cards_for_export(include_all=True))
             )
-            MessageManager.send_success_message(
-                self.tr("Training structures generated.")
-            )
+            if current_card.result_dataset:
+                MessageManager.send_success_message(
+                    self.tr("Training structures generated.")
+                )
+            else:
+                MessageManager.send_info_message(
+                    self.tr("Workflow completed with 0 output structures.")
+                )
 
     def request_selected_outputs(self) -> None:
         """Send all checked card outputs to the main-window handoff."""

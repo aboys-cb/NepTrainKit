@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass, field
-from math import comb
+from math import comb, gcd
 from typing import Any, Sequence
 
 import numpy as np
@@ -12,11 +12,11 @@ from ase import Atom
 from ase.build import surface
 from ase.data import atomic_numbers
 from ase.geometry import geometry
-from loguru import logger
 from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
 
+from .errors import CardOperationError
 from .geometry import wrapped_positions
 from .operation import StructureOperation
 from .sampling import derived_structure_seed
@@ -121,37 +121,80 @@ class RandomVacancyOperation(StructureOperation):
     @classmethod
     def _validated_rules(cls, structure, rules: Any) -> list[dict[str, Any]]:
         if not isinstance(rules, list) or not rules:
-            raise ValueError("RandomVacancy requires at least one vacancy rule.")
+            raise CardOperationError(
+                "targeted_vacancy_missing_rules",
+                "Targeted Vacancy requires at least one vacancy rule.",
+            )
         if len(structure) <= 1:
-            raise ValueError("RandomVacancy requires at least two atoms.")
+            raise CardOperationError(
+                "targeted_vacancy_too_few_atoms",
+                "Targeted Vacancy requires at least two atoms.",
+            )
 
         symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
         normalized: list[dict[str, Any]] = []
         for rule_index, rule in enumerate(rules, start=1):
-            label = f"RandomVacancy rule {rule_index}"
             if not isinstance(rule, dict):
-                raise ValueError(f"{label} must be a mapping.")
+                raise CardOperationError(
+                    "targeted_vacancy_invalid_rule",
+                    "Vacancy rule {rule} is invalid.",
+                    rule=rule_index,
+                )
 
             element = str(rule.get("element", "") or "").strip()
             if not element:
-                raise ValueError(f"{label} requires an element.")
+                raise CardOperationError(
+                    "targeted_vacancy_missing_element",
+                    "Vacancy rule {rule} requires an element.",
+                    rule=rule_index,
+                )
 
-            count_min, count_max = _count_range(rule.get("count", []), label=f"{label} count")
+            try:
+                count_min, count_max = _count_range(
+                    rule.get("count", []),
+                    label=f"Vacancy rule {rule_index} count",
+                )
+            except (TypeError, ValueError) as exc:
+                raise CardOperationError(
+                    "targeted_vacancy_invalid_count_range",
+                    "Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.",
+                    rule=rule_index,
+                ) from exc
             if count_min < 0:
-                raise ValueError(f"{label} count must be >= 0.")
+                raise CardOperationError(
+                    "targeted_vacancy_negative_count",
+                    "Vacancy rule {rule} count must be at least 0.",
+                    rule=rule_index,
+                )
 
             count_mode = str(rule.get("count_mode", "") or "").strip().lower()
             if not count_mode:
                 count_mode = "fixed" if count_min == count_max else "random"
             if count_mode not in {"fixed", "random"}:
-                raise ValueError(f"{label} count_mode must be fixed or random.")
+                raise CardOperationError(
+                    "targeted_vacancy_invalid_count_mode",
+                    "Vacancy rule {rule} count mode must be Fixed count or Random range.",
+                    rule=rule_index,
+                )
             if count_mode == "fixed":
                 if count_min != count_max:
-                    raise ValueError(f"{label} fixed count must use the same minimum and maximum.")
+                    raise CardOperationError(
+                        "targeted_vacancy_fixed_count_mismatch",
+                        "Vacancy rule {rule} fixed count must use the same minimum and maximum.",
+                        rule=rule_index,
+                    )
                 if count_min == 0:
-                    raise ValueError(f"{label} fixed count must be >= 1.")
+                    raise CardOperationError(
+                        "targeted_vacancy_zero_fixed_count",
+                        "Vacancy rule {rule} fixed count must be at least 1.",
+                        rule=rule_index,
+                    )
             elif count_max == 0:
-                raise ValueError(f"{label} random range must allow at least one vacancy.")
+                raise CardOperationError(
+                    "targeted_vacancy_empty_random_range",
+                    "Vacancy rule {rule} random range must allow at least one vacancy.",
+                    rule=rule_index,
+                )
 
             raw_groups = rule.get("group")
             groups = [str(value).strip() for value in _as_list(raw_groups) if str(value).strip()]
@@ -163,10 +206,16 @@ class RandomVacancyOperation(StructureOperation):
                 group_constraint_requested = False
             if group_constraint_requested:
                 if not groups:
-                    raise ValueError(f"{label} group must contain at least one non-empty label.")
+                    raise CardOperationError(
+                        "targeted_vacancy_empty_group",
+                        "Vacancy rule {rule} group must contain at least one non-empty label.",
+                        rule=rule_index,
+                    )
                 if "group" not in structure.arrays:
-                    raise ValueError(
-                        f"{label} requests group labels, but the input structure has no group array."
+                    raise CardOperationError(
+                        "targeted_vacancy_missing_group_array",
+                        "Vacancy rule {rule} requests group labels, but the input structure has no group array.",
+                        rule=rule_index,
                     )
                 group_values = np.asarray(structure.arrays["group"], dtype=object)
                 candidate_mask &= np.isin(group_values, groups)
@@ -174,11 +223,20 @@ class RandomVacancyOperation(StructureOperation):
             candidate_count = int(np.count_nonzero(candidate_mask))
             target = element if not groups else f"{element} in group {','.join(groups)}"
             if candidate_count == 0:
-                raise ValueError(f"{label} matched no atoms ({target}).")
+                raise CardOperationError(
+                    "targeted_vacancy_no_matches",
+                    "Vacancy rule {rule} matched no atoms ({target}).",
+                    rule=rule_index,
+                    target=target,
+                )
             if count_max > candidate_count:
-                raise ValueError(
-                    f"{label} requests up to {count_max} vacancies, but only "
-                    f"{candidate_count} atoms match ({target})."
+                raise CardOperationError(
+                    "targeted_vacancy_count_exceeds_matches",
+                    "Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).",
+                    rule=rule_index,
+                    requested=count_max,
+                    available=candidate_count,
+                    target=target,
                 )
 
             normalized.append(
@@ -229,16 +287,57 @@ class RandomVacancyOperation(StructureOperation):
         """Return a safe upper bound for distinct deletion patterns."""
         requested = int(requested)
         if requested <= 0:
-            raise ValueError("RandomVacancy: max_structures must be >= 1.")
+            raise CardOperationError(
+                "targeted_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be at least 1.",
+            )
         return cls._output_upper_bound(cls._validated_rules(structure, rules), requested)
+
+    @classmethod
+    def preview_summary(cls, structure, rules: Any, requested: int) -> dict[str, Any]:
+        """Return rule counts, an output upper bound, and candidate-pool overlap."""
+        requested = int(requested)
+        if requested <= 0:
+            raise CardOperationError(
+                "targeted_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be at least 1.",
+            )
+        normalized = cls._validated_rules(structure, rules)
+        overlap = any(
+            bool(np.any(left["candidate_mask"] & right["candidate_mask"]))
+            for index, left in enumerate(normalized)
+            for right in normalized[index + 1 :]
+        )
+        rule_summaries = [
+            {
+                "element": rule["element"],
+                "groups": list(rule["groups"]),
+                "count_mode": rule["count_mode"],
+                "count_min": rule["count_min"],
+                "count_max": rule["count_max"],
+                "candidate_count": rule["candidate_count"],
+            }
+            for rule in normalized
+        ]
+        return {
+            "rules": rule_summaries,
+            "maximum_outputs": cls._output_upper_bound(normalized, requested),
+            "overlapping_candidates": overlap,
+        }
 
     def run_structure(self, structure, params: RandomVacancyParams) -> list:
         max_structures = int(params.max_structures)
         if max_structures <= 0:
-            raise ValueError("RandomVacancy: max_structures must be >= 1.")
+            raise CardOperationError(
+                "targeted_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be at least 1.",
+            )
         seed = int(params.seed)
         if params.use_seed and seed < 0:
-            raise ValueError("RandomVacancy: seed must be >= 0.")
+            raise CardOperationError(
+                "targeted_vacancy_invalid_seed",
+                "Random seed must be at least 0.",
+            )
 
         rules = self._validated_rules(structure, params.rules)
         if params.use_seed:
@@ -252,13 +351,12 @@ class RandomVacancyOperation(StructureOperation):
         seen_deletions: set[tuple[int, ...]] = set()
         target_outputs = self._output_upper_bound(rules, max_structures)
         max_attempts = max(100, target_outputs * self._MAX_ATTEMPTS_PER_OUTPUT)
-        last_invalid_reason: str | None = None
         for _ in range(max_attempts):
             new_structure = structure.copy()
             keep_mask = np.ones(len(new_structure), dtype=bool)
             total_remove = 0
             attempt_is_valid = True
-            for rule_index, rule in enumerate(rules, start=1):
+            for rule in rules:
                 if rule["count_mode"] == "fixed":
                     remove_num = rule["count_min"]
                 else:
@@ -268,10 +366,6 @@ class RandomVacancyOperation(StructureOperation):
 
                 candidate_indices = np.nonzero(keep_mask & rule["candidate_mask"])[0]
                 if remove_num > len(candidate_indices):
-                    last_invalid_reason = (
-                        f"RandomVacancy rule {rule_index} sampled {remove_num} vacancies, "
-                        f"but only {len(candidate_indices)} eligible atoms remain after earlier rules."
-                    )
                     attempt_is_valid = False
                     break
 
@@ -282,9 +376,6 @@ class RandomVacancyOperation(StructureOperation):
             if not attempt_is_valid:
                 continue
             if total_remove >= len(structure):
-                last_invalid_reason = (
-                    "RandomVacancy sampled a combination that would remove every atom from the structure."
-                )
                 continue
 
             deletion_key = tuple(int(index) for index in np.nonzero(~keep_mask)[0])
@@ -299,10 +390,10 @@ class RandomVacancyOperation(StructureOperation):
             if len(structure_list) >= target_outputs:
                 break
         if not structure_list:
-            detail = last_invalid_reason or "no distinct deletion pattern could be sampled."
-            raise ValueError(
-                "RandomVacancy could not generate a valid non-empty structure from the rules: "
-                f"{detail}"
+            raise CardOperationError(
+                "targeted_vacancy_no_valid_output",
+                "Targeted Vacancy could not generate a valid non-empty structure. "
+                "Reduce overlapping rule counts, broaden the groups, or expand the structure.",
             )
         return structure_list
 
@@ -332,77 +423,116 @@ class VacancyDefectOperation(StructureOperation):
     def _validated_settings(cls, structure, params: VacancyDefectParams) -> dict[str, Any]:
         n_atoms = len(structure)
         if n_atoms <= 1:
-            raise ValueError("VacancyDefect requires at least two atoms.")
+            raise CardOperationError(
+                "global_vacancy_too_few_atoms",
+                "Global Vacancy requires at least two atoms.",
+            )
 
         try:
             engine_type = int(params.engine_type)
         except (TypeError, ValueError) as exc:
-            raise ValueError("VacancyDefect: engine_type must be 0 (Sobol) or 1 (Uniform).") from exc
+            raise CardOperationError(
+                "global_vacancy_invalid_engine",
+                "Site sampling must be Uniform or Sobol.",
+            ) from exc
         if engine_type not in {0, 1}:
-            raise ValueError("VacancyDefect: engine_type must be 0 (Sobol) or 1 (Uniform).")
+            raise CardOperationError(
+                "global_vacancy_invalid_engine",
+                "Site sampling must be Uniform or Sobol.",
+            )
 
         count_mode = str(params.count_mode).strip().lower()
         if count_mode not in {"fixed", "random"}:
-            raise ValueError("VacancyDefect: count_mode must be fixed or random.")
+            raise CardOperationError(
+                "global_vacancy_invalid_count_mode",
+                "Vacancies per output must be Fixed or Variable.",
+            )
 
         try:
             max_structures_value = float(params.max_structures)
         except (TypeError, ValueError) as exc:
-            raise ValueError(
-                "VacancyDefect: max_structures must be an integer."
+            raise CardOperationError(
+                "global_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be a positive integer.",
             ) from exc
         if not np.isfinite(max_structures_value) or not max_structures_value.is_integer():
-            raise ValueError("VacancyDefect: max_structures must be an integer.")
+            raise CardOperationError(
+                "global_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be a positive integer.",
+            )
         max_structures = int(max_structures_value)
         if max_structures <= 0:
-            raise ValueError("VacancyDefect: max_structures must be >= 1.")
+            raise CardOperationError(
+                "global_vacancy_invalid_output_limit",
+                "Maximum outputs per input must be a positive integer.",
+            )
 
         if params.use_num:
             try:
                 count_value = float(params.num_condition)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    "VacancyDefect: vacancy count must be an integer."
+                raise CardOperationError(
+                    "global_vacancy_noninteger_count",
+                    "Vacancies must be an integer.",
                 ) from exc
             if not np.isfinite(count_value) or not count_value.is_integer():
-                raise ValueError("VacancyDefect: vacancy count must be an integer.")
+                raise CardOperationError(
+                    "global_vacancy_noninteger_count",
+                    "Vacancies must be an integer.",
+                )
             max_defects = int(count_value)
             if max_defects <= 0:
-                raise ValueError("VacancyDefect: vacancy count must be >= 1.")
+                raise CardOperationError(
+                    "global_vacancy_invalid_count",
+                    "Vacancies must be at least 1.",
+                )
             if max_defects >= n_atoms:
-                raise ValueError(
-                    f"VacancyDefect: vacancy count must be <= {n_atoms - 1} "
-                    "so at least one atom remains."
+                raise CardOperationError(
+                    "global_vacancy_count_exceeds_atoms",
+                    "Vacancies must be at most {maximum} for this input so at least one atom remains.",
+                    maximum=n_atoms - 1,
                 )
         else:
             try:
                 fraction = float(params.concentration_condition)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    "VacancyDefect: vacancy fraction must be greater than 0 and less than 1."
+                raise CardOperationError(
+                    "global_vacancy_invalid_fraction",
+                    "Vacancy fraction must be greater than 0 and less than 1.",
                 ) from exc
             if not np.isfinite(fraction) or not 0.0 < fraction < 1.0:
-                raise ValueError("VacancyDefect: vacancy fraction must be greater than 0 and less than 1.")
+                raise CardOperationError(
+                    "global_vacancy_invalid_fraction",
+                    "Vacancy fraction must be greater than 0 and less than 1.",
+                )
             max_defects = int(fraction * n_atoms)
             if max_defects <= 0:
                 minimum = 1.0 / n_atoms
-                raise ValueError(
-                    "VacancyDefect: vacancy fraction is too small for this structure; "
-                    f"use at least {minimum:.6g} to remove one atom."
+                raise CardOperationError(
+                    "global_vacancy_fraction_too_small",
+                    "Vacancy fraction is too small for this input; use at least {minimum} to remove one atom.",
+                    minimum=f"{minimum:.6g}",
                 )
 
         if engine_type == 0 and n_atoms > cls._MAX_SOBOL_ATOMS:
-            raise ValueError(
-                f"VacancyDefect: Sobol sampling supports at most {cls._MAX_SOBOL_ATOMS} atoms; "
-                "use Uniform sampling for larger structures."
+            raise CardOperationError(
+                "global_vacancy_sobol_too_large",
+                "Sobol sampling supports at most {maximum} atoms; use Uniform for larger inputs.",
+                maximum=cls._MAX_SOBOL_ATOMS,
             )
 
         try:
             seed = int(params.seed)
         except (TypeError, ValueError) as exc:
-            raise ValueError("VacancyDefect: seed must be an integer.") from exc
+            raise CardOperationError(
+                "global_vacancy_invalid_seed",
+                "Random seed must be an integer.",
+            ) from exc
         if params.use_seed and seed < 0:
-            raise ValueError("VacancyDefect: seed must be >= 0.")
+            raise CardOperationError(
+                "global_vacancy_negative_seed",
+                "Random seed must be at least 0.",
+            )
         derived_seed = None
         if params.use_seed:
             derived_seed = derived_structure_seed(seed, structure)
@@ -628,6 +758,7 @@ class StrictGSFEPathOperation(StructureOperation):
             "slip_length": settings["slip_norm"],
             "output_count": len(settings["values"]),
             "cut_position": settings["cut_position"],
+            "values": tuple(float(value) for value in settings["values"]),
         }
 
     @classmethod
@@ -637,32 +768,48 @@ class StrictGSFEPathOperation(StructureOperation):
         params: StrictGSFEPathParams,
     ) -> dict[str, Any]:
         if len(structure) == 0:
-            raise ValueError("StrictGSFEPath requires at least one atom.")
+            raise CardOperationError(
+                "gsfe_empty_input",
+                "GSFE Path requires at least one atom.",
+            )
         cell = np.asarray(structure.cell.array, dtype=float)
         if (
             cell.shape != (3, 3)
             or not np.all(np.isfinite(cell))
             or abs(float(np.linalg.det(cell))) <= 1e-12
         ):
-            raise ValueError("StrictGSFEPath requires a finite, nonsingular 3x3 cell.")
+            raise CardOperationError(
+                "gsfe_invalid_cell",
+                "GSFE Path requires a finite, nonsingular 3×3 cell.",
+            )
 
-        hkl = cls._int_triplet(params.plane_hkl, "plane_hkl")
-        uvw = cls._int_triplet(params.slip_uvw, "slip_uvw")
+        hkl = cls._int_triplet(params.plane_hkl, "Fault-plane indices")
+        uvw = cls._int_triplet(params.slip_uvw, "Shift-direction indices")
         if not np.any(hkl):
-            raise ValueError("StrictGSFEPath plane_hkl must not be (0,0,0).")
+            raise CardOperationError(
+                "gsfe_zero_plane",
+                "The fault-plane indices must not all be zero.",
+            )
         if not np.any(uvw):
-            raise ValueError("StrictGSFEPath slip_uvw must not be (0,0,0).")
+            raise CardOperationError(
+                "gsfe_zero_direction",
+                "The in-plane direction must not be zero.",
+            )
 
         normal = cls.plane_normal(cell, hkl)
         cls._validate_slab_oriented(cell, normal)
         slip = np.asarray(uvw, dtype=float) @ cell
         slip_norm = float(np.linalg.norm(slip))
         if slip_norm <= 1e-12:
-            raise ValueError("StrictGSFEPath slip_uvw produced a zero vector.")
+            raise CardOperationError(
+                "gsfe_zero_slip_vector",
+                "The in-plane indices produce a zero shift vector.",
+            )
         normal_component = float(np.dot(slip, normal))
         if abs(normal_component) > 1e-8 * slip_norm:
-            raise ValueError(
-                "StrictGSFEPath slip_uvw must lie in the fault plane."
+            raise CardOperationError(
+                "gsfe_direction_out_of_plane",
+                "The shift direction must lie in the fault plane.",
             )
 
         unit = str(params.displacement_unit)
@@ -671,14 +818,26 @@ class StrictGSFEPathOperation(StructureOperation):
         elif unit == "angstrom":
             displacement_vector = slip / slip_norm
         else:
-            raise ValueError("StrictGSFEPath displacement_unit must be fraction_of_vector or angstrom.")
+            raise CardOperationError(
+                "gsfe_invalid_unit",
+                "Displacement unit must be Vector fraction or Å distance.",
+            )
 
         positions = np.asarray(structure.get_positions(), dtype=float)
         if positions.shape != (len(structure), 3) or not np.all(np.isfinite(positions)):
-            raise ValueError("StrictGSFEPath requires finite Cartesian atom positions.")
+            raise CardOperationError(
+                "gsfe_invalid_positions",
+                "GSFE Path requires finite Cartesian atom positions.",
+            )
         coord = positions @ normal
         mask, cut_position, layer_count = cls._resolved_cut(coord, params)
-        values = _range_values(params.displacement_range)
+        try:
+            values = _range_values(params.displacement_range)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "gsfe_invalid_displacement_path",
+                "Displacement path needs a start, end, and positive step.",
+            ) from exc
         return {
             "cell": cell,
             "hkl": hkl,
@@ -719,18 +878,26 @@ class StrictGSFEPathOperation(StructureOperation):
     @staticmethod
     def _int_triplet(values: Sequence[int], label: str) -> tuple[int, int, int]:
         if len(values) != 3:
-            raise ValueError(f"StrictGSFEPath {label} must contain exactly three integers.")
+            raise CardOperationError(
+                "gsfe_invalid_index_triplet",
+                "{label} must contain exactly three integers.",
+                label=label,
+            )
         resolved = []
         for value in values:
             try:
                 numeric = float(value)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    f"StrictGSFEPath {label} must contain exactly three integers."
+                raise CardOperationError(
+                    "gsfe_invalid_index_triplet",
+                    "{label} must contain exactly three integers.",
+                    label=label,
                 ) from exc
             if not np.isfinite(numeric) or not numeric.is_integer():
-                raise ValueError(
-                    f"StrictGSFEPath {label} must contain exactly three integers."
+                raise CardOperationError(
+                    "gsfe_invalid_index_triplet",
+                    "{label} must contain exactly three integers.",
+                    label=label,
                 )
             resolved.append(int(numeric))
         return tuple(resolved)  # pyright: ignore[reportReturnType]
@@ -745,7 +912,10 @@ class StrictGSFEPathOperation(StructureOperation):
         normal = np.asarray(hkl, dtype=float) @ recip
         norm = float(np.linalg.norm(normal))
         if norm <= 1e-12:
-            raise ValueError("StrictGSFEPath plane_hkl produced a zero normal.")
+            raise CardOperationError(
+                "gsfe_zero_plane_normal",
+                "The fault-plane indices produce a zero normal.",
+            )
         return normal / norm
 
     @staticmethod
@@ -753,11 +923,15 @@ class StrictGSFEPathOperation(StructureOperation):
         c_axis = np.asarray(cell, dtype=float)[2]
         c_norm = float(np.linalg.norm(c_axis))
         if c_norm <= 1e-12:
-            raise ValueError("StrictGSFEPath requires a nonzero third cell vector.")
+            raise CardOperationError(
+                "gsfe_zero_third_vector",
+                "GSFE Path requires a nonzero third cell vector.",
+            )
         parallel_error = float(np.linalg.norm(np.cross(c_axis / c_norm, normal)))
         if parallel_error > 1e-6:
-            raise ValueError(
-                "StrictGSFEPath requires a slab-oriented cell: the third cell vector must be normal to plane_hkl."
+            raise CardOperationError(
+                "gsfe_cell_not_oriented",
+                "The third cell vector must be normal to the current ab fault plane.",
             )
 
     @staticmethod
@@ -767,12 +941,16 @@ class StrictGSFEPathOperation(StructureOperation):
     ) -> tuple[np.ndarray, float, int]:
         coord = np.asarray(coord, dtype=float)
         if coord.ndim != 1 or len(coord) == 0 or not np.all(np.isfinite(coord)):
-            raise ValueError("StrictGSFEPath requires finite projected atom coordinates.")
+            raise CardOperationError(
+                "gsfe_invalid_projected_coordinates",
+                "GSFE Path requires finite projected atom coordinates.",
+            )
         layers = np.unique(np.round(coord, 8))
         layers.sort()
         if len(layers) < 2:
-            raise ValueError(
-                "StrictGSFEPath requires atoms on at least two distinct planes."
+            raise CardOperationError(
+                "gsfe_too_few_layers",
+                "GSFE Path requires atoms on at least two distinct layers.",
             )
 
         mode = str(params.cut_mode).strip().lower()
@@ -782,23 +960,33 @@ class StrictGSFEPathOperation(StructureOperation):
         elif mode == "fractional":
             fraction = float(params.cut_fraction)
             if not np.isfinite(fraction) or fraction < 0.0 or fraction > 1.0:
-                raise ValueError("StrictGSFEPath cut_fraction must be between 0 and 1.")
+                raise CardOperationError(
+                    "gsfe_invalid_cut_fraction",
+                    "Thickness fraction must be between 0 and 1.",
+                )
             cut = float(coord.min() + fraction * (coord.max() - coord.min()))
         elif mode == "layer_index":
             index = StrictGSFEPathOperation._strict_integer(
                 params.layer_index,
-                "layer_index",
+                "Lower layer index",
             )
             if index < 0 or index >= len(layers) - 1:
-                raise ValueError("StrictGSFEPath layer_index must select a layer below the top layer.")
+                raise CardOperationError(
+                    "gsfe_invalid_layer_index",
+                    "Lower layer index must select a layer below the top layer.",
+                )
             cut = float(0.5 * (layers[index] + layers[index + 1]))
         else:
-            raise ValueError("StrictGSFEPath cut_mode must be middle, fractional, or layer_index.")
+            raise CardOperationError(
+                "gsfe_invalid_cut_mode",
+                "Cut position must be Middle, Thickness, or Layer index.",
+            )
         mask = coord > cut + 1e-10
         moved = int(np.count_nonzero(mask))
         if moved == 0 or moved == len(coord):
-            raise ValueError(
-                "StrictGSFEPath cut must leave atoms on both sides; adjust the cut position."
+            raise CardOperationError(
+                "gsfe_empty_cut_side",
+                "The cut must leave atoms on both sides; adjust its position.",
             )
         return mask, cut, len(layers)
 
@@ -807,9 +995,17 @@ class StrictGSFEPathOperation(StructureOperation):
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"StrictGSFEPath {label} must be an integer.") from exc
+            raise CardOperationError(
+                "gsfe_noninteger_value",
+                "{label} must be an integer.",
+                label=label,
+            ) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"StrictGSFEPath {label} must be an integer.")
+            raise CardOperationError(
+                "gsfe_noninteger_value",
+                "{label} must be an integer.",
+                label=label,
+            )
         return int(numeric)
 
     @classmethod
@@ -821,52 +1017,271 @@ class StrictGSFEPathOperation(StructureOperation):
 
 @dataclass(frozen=True)
 class RandomSlabParams:
-    """Parameters for surface-slab enumeration."""
+    """Parameters for a deterministic surface-slab scan."""
 
-    h_range: Sequence[int] = (0, 1, 1)
-    k_range: Sequence[int] = (0, 1, 1)
-    l_range: Sequence[int] = (1, 3, 1)
+    hkl_list: Sequence[Sequence[int]] = ((1, 0, 0), (1, 1, 0), (1, 1, 1))
     layer_range: Sequence[int] = (3, 6, 1)
     vacuum_range: Sequence[float] = (10.0, 10.0, 1.0)
+    normal_pbc: bool = True
+    max_outputs: int = 200
+    max_generated_atoms: int = 200_000
+
+
+@dataclass(frozen=True)
+class RandomSlabPlan:
+    """Validated exact output sizes for one bulk input."""
+
+    hkl_list: tuple[tuple[int, int, int], ...]
+    repeats: tuple[int, ...]
+    vacuums: tuple[float, ...]
+    outputs: int
+    min_atoms_per_output: int
+    max_atoms_per_output: int
+    generated_atoms: int
+    max_outputs: int
+    max_generated_atoms: int
 
 
 class RandomSlabOperation(StructureOperation):
-    """Construct slabs across Miller-index, layer, and vacuum ranges."""
+    """Construct slabs across explicit Miller planes and geometry ranges."""
 
     def run_structure(self, structure, params: RandomSlabParams) -> list:
-        structure_list = []
-        h_range = _range_values(params.h_range, include_step=True)
-        k_range = _range_values(params.k_range, include_step=True)
-        l_range = _range_values(params.l_range, include_step=True)
-        layer_range = _range_values(params.layer_range, include_step=True)
-        vac_range = _range_values(params.vacuum_range, include_step=True)
+        plan = self.plan(structure, params)
+        outputs = []
+        for hkl in plan.hkl_list:
+            for repeats in plan.repeats:
+                for vacuum_per_side in plan.vacuums:
+                    vacuum = None if vacuum_per_side == 0.0 else vacuum_per_side
+                    try:
+                        slab = surface(
+                            structure,
+                            hkl,
+                            repeats,
+                            vacuum=vacuum,
+                            periodic=bool(params.normal_pbc),
+                        )
+                    except Exception as exc:
+                        raise CardOperationError(
+                            "surface-slab-build-failed",
+                            "Could not build surface plane {hkl} with {repeats} normal repeats "
+                            "and {vacuum} Å vacuum per side: {reason}",
+                            hkl=hkl,
+                            repeats=repeats,
+                            vacuum=vacuum_per_side,
+                            reason=str(exc),
+                        ) from exc
+                    slab.set_positions(wrapped_positions(slab, slab.positions))
+                    slab.info["Config_type"] = structure.info.get("Config_type", "")
+                    append_config_tag(
+                        slab,
+                        "Slab("
+                        f"hkl=({hkl[0]},{hkl[1]},{hkl[2]}),"
+                        f"R={repeats},vac={vacuum_per_side:.6g},"
+                        f"pz={int(bool(params.normal_pbc))})",
+                    )
+                    outputs.append(slab)
+        return outputs
 
-        for h in h_range:
-            for k in k_range:
-                for l in l_range:
-                    if h == 0 and k == 0 and l == 0:
-                        continue
-                    for layers in layer_range:
-                        for vac in vac_range:
-                            try:
-                                vacuum = None if vac == 0 else vac
-                                slab = surface(
-                                    structure,
-                                    (int(h), int(k), int(l)),
-                                    int(layers),
-                                    vacuum=vacuum,
-                                    periodic=True,
-                                )
-                                slab.set_positions(wrapped_positions(slab, slab.positions))
-                                slab.info["Config_type"] = structure.info.get("Config_type", "")
-                                append_config_tag(
-                                    slab,
-                                    f"Slab(hkl={int(h)}{int(k)}{int(l)},L={int(layers)},vac={vacuum})",
-                                )
-                                structure_list.append(slab)
-                            except Exception as exc:
-                                logger.error(f"Failed to build slab {(h, k, l)}: {exc}")
-        return structure_list
+    def plan(self, structure, params: RandomSlabParams) -> RandomSlabPlan:
+        """Validate one bulk input and return an allocation-free exact plan."""
+        if len(structure) == 0:
+            raise CardOperationError(
+                "surface-slab-empty-input",
+                "Surface Slab Scan requires a non-empty bulk structure.",
+            )
+        cell = np.asarray(structure.cell.array, dtype=float)
+        positions = np.asarray(structure.positions, dtype=float)
+        if (
+            cell.shape != (3, 3)
+            or not np.all(np.isfinite(cell))
+            or abs(float(np.linalg.det(cell))) <= 1e-12
+            or not np.all(np.isfinite(positions))
+        ):
+            raise CardOperationError(
+                "surface-slab-invalid-geometry",
+                "Surface Slab Scan requires finite positions and a finite, non-singular 3D cell.",
+            )
+        if not bool(np.all(np.asarray(structure.pbc, dtype=bool))):
+            raise CardOperationError(
+                "surface-slab-input-pbc",
+                "Surface Slab Scan requires a bulk input periodic along all three cell directions.",
+            )
+
+        hkl_list = self.canonical_hkl_list(params.hkl_list)
+        repeats = self._inclusive_integer_range(
+            params.layer_range,
+            code="surface-slab-repeat-range",
+            label="Normal equivalent repeats",
+            minimum=1,
+        )
+        vacuums = self._inclusive_float_range(
+            params.vacuum_range,
+            code="surface-slab-vacuum-range",
+            label="Vacuum per side",
+            minimum=0.0,
+        )
+        if not bool(params.normal_pbc) and any(value == 0.0 for value in vacuums):
+            raise CardOperationError(
+                "surface-slab-nonperiodic-zero-vacuum",
+                "A non-periodic surface normal requires positive vacuum per side.",
+            )
+
+        max_outputs = self._positive_integer(
+            params.max_outputs,
+            code="surface-slab-output-limit",
+            template="Maximum outputs per input must be a positive integer.",
+        )
+        max_generated_atoms = self._positive_integer(
+            params.max_generated_atoms,
+            code="surface-slab-atom-budget",
+            template="Generated atom budget per input must be a positive integer.",
+        )
+        outputs = len(hkl_list) * len(repeats) * len(vacuums)
+        if outputs > max_outputs:
+            raise CardOperationError(
+                "surface-slab-output-limit-exceeded",
+                "Surface Slab Scan requests {requested} outputs per input, above the limit of {limit}. "
+                "Reduce planes or scan points, or raise the limit deliberately.",
+                requested=outputs,
+                limit=max_outputs,
+            )
+        generated_atoms = len(structure) * len(hkl_list) * len(vacuums) * sum(repeats)
+        if generated_atoms > max_generated_atoms:
+            raise CardOperationError(
+                "surface-slab-atom-budget-exceeded",
+                "Surface Slab Scan requests {requested} generated atoms per input, above the budget of {budget}. "
+                "Reduce planes or normal repeats, or raise the budget deliberately.",
+                requested=generated_atoms,
+                budget=max_generated_atoms,
+            )
+        return RandomSlabPlan(
+            hkl_list=hkl_list,
+            repeats=repeats,
+            vacuums=vacuums,
+            outputs=outputs,
+            min_atoms_per_output=len(structure) * min(repeats),
+            max_atoms_per_output=len(structure) * max(repeats),
+            generated_atoms=generated_atoms,
+            max_outputs=max_outputs,
+            max_generated_atoms=max_generated_atoms,
+        )
+
+    @classmethod
+    def canonical_hkl_list(
+        cls, values: Sequence[Sequence[int]]
+    ) -> tuple[tuple[int, int, int], ...]:
+        """Reduce proportional indices and remove exact duplicates in input order."""
+        if isinstance(values, (str, bytes)) or not values:
+            raise CardOperationError(
+                "surface-slab-empty-planes",
+                "Add at least one Miller plane.",
+            )
+        canonical = []
+        seen = set()
+        for row in values:
+            if isinstance(row, (str, bytes)) or len(row) != 3:
+                raise CardOperationError(
+                    "surface-slab-invalid-plane",
+                    "Each Miller plane must contain exactly three integer indices h, k, and l.",
+                )
+            hkl = tuple(
+                cls._strict_integer(
+                    value,
+                    code="surface-slab-invalid-plane",
+                    template="Each Miller index must be an integer.",
+                )
+                for value in row
+            )
+            if hkl == (0, 0, 0):
+                raise CardOperationError(
+                    "surface-slab-zero-plane",
+                    "Miller plane (0, 0, 0) is not defined.",
+                )
+            divisor = gcd(gcd(abs(hkl[0]), abs(hkl[1])), abs(hkl[2]))
+            reduced = tuple(value // divisor for value in hkl)
+            if reduced not in seen:
+                seen.add(reduced)
+                canonical.append(reduced)
+        return tuple(canonical)
+
+    @classmethod
+    def _inclusive_integer_range(
+        cls,
+        values: Sequence[int],
+        *,
+        code: str,
+        label: str,
+        minimum: int,
+    ) -> tuple[int, ...]:
+        if isinstance(values, (str, bytes)) or len(values) != 3:
+            raise CardOperationError(
+                code,
+                "{label} must contain start, stop, and step.",
+                label=label,
+            )
+        start, stop, step = (
+            cls._strict_integer(value, code=code, template="{label} values must be integers.", label=label)
+            for value in values
+        )
+        if start < minimum or stop < minimum or step <= 0 or start > stop:
+            raise CardOperationError(
+                code,
+                "{label} requires start and stop >= {minimum}, start <= stop, and a positive step.",
+                label=label,
+                minimum=minimum,
+            )
+        return tuple(range(start, stop + 1, step))
+
+    @staticmethod
+    def _inclusive_float_range(
+        values: Sequence[float],
+        *,
+        code: str,
+        label: str,
+        minimum: float,
+    ) -> tuple[float, ...]:
+        if isinstance(values, (str, bytes)) or len(values) != 3:
+            raise CardOperationError(
+                code,
+                "{label} must contain start, stop, and step.",
+                label=label,
+            )
+        try:
+            start, stop, step = (float(value) for value in values)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(code, "{label} values must be finite numbers.", label=label) from exc
+        if (
+            not np.all(np.isfinite([start, stop, step]))
+            or start < minimum
+            or stop < minimum
+            or step <= 0.0
+            or start > stop
+        ):
+            raise CardOperationError(
+                code,
+                "{label} requires finite start and stop >= {minimum}, start <= stop, and a positive step.",
+                label=label,
+                minimum=minimum,
+            )
+        count = int(np.floor((stop - start) / step + 1e-12)) + 1
+        return tuple(float(start + index * step) for index in range(count))
+
+    @staticmethod
+    def _strict_integer(value, *, code: str, template: str, **values: Any) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            numeric = np.nan
+        if not np.isfinite(numeric) or not numeric.is_integer():
+            raise CardOperationError(code, template, **values)
+        return int(numeric)
+
+    @classmethod
+    def _positive_integer(cls, value, *, code: str, template: str) -> int:
+        result = cls._strict_integer(value, code=code, template=template)
+        if result < 1:
+            raise CardOperationError(code, template)
+        return result
 
 
 @dataclass(frozen=True)

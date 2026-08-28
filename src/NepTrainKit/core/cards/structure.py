@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import math
 import re
 from dataclasses import dataclass
@@ -10,14 +11,14 @@ from typing import Any
 
 import numpy as np
 from ase import Atoms
-from ase.build import bulk, fcc111, make_supercell
+from ase.build import bulk, fcc111
+from ase.data import atomic_numbers
 from ase.geometry import get_distances
 from loguru import logger
 
-from NepTrainKit.core.alloy import best_supercell_factors_max_atoms
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.config_type import stable_config_id
-from NepTrainKit.core.magnetism import kvec_signs, parse_kvec
+from NepTrainKit.core.magnetism import parse_kvec
 from NepTrainKit.core.structure import get_vibration_modes
 from NepTrainKit.core.torsion_guard_pbc import (
     TorsionGuardParams,
@@ -28,7 +29,9 @@ from NepTrainKit.core.torsion_guard_pbc import (
 )
 
 from .geometry import scaled_positions, wrapped_positions as fast_wrapped_positions
+from .errors import CardOperationError
 from .operation import GeneratorOperation, StructureOperation
+from .sampling import derived_structure_seed
 
 
 _NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -180,8 +183,10 @@ class LayerCopyParams:
     wrap: bool = False
     extend_cell_z: bool = True
     extra_vacuum: float = 0.0
-    layers: int = 3
-    distance: float = 3.0
+    layers: int = 2
+    distance_mode: str = "surface_gap"
+    distance: float = 3.35
+    max_output_atoms: int = 100_000
 
 
 class LayerCopyOperation(StructureOperation):
@@ -189,29 +194,59 @@ class LayerCopyOperation(StructureOperation):
 
     @staticmethod
     def _integer(value: object, name: str, *, minimum: int) -> int:
+        templates = {
+            "layers": (
+                "layer_copy.invalid_layers",
+                "Total layers must be an integer of at least {minimum}.",
+            ),
+            "apply_mode": (
+                "layer_copy.invalid_apply_mode",
+                "Warp selection must be All atoms, Selected elements, or Cartesian z range.",
+            ),
+            "max_output_atoms": (
+                "layer_copy.invalid_atom_budget",
+                "Atom budget per output must be an integer of at least {minimum}.",
+            ),
+        }
+        code, template = templates[name]
         if isinstance(value, bool):
-            raise ValueError(f"LayerCopy: {name} must be an integer.")
+            raise CardOperationError(code, template, minimum=minimum)
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"LayerCopy: {name} must be an integer.") from exc
+            raise CardOperationError(code, template, minimum=minimum) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"LayerCopy: {name} must be an integer.")
+            raise CardOperationError(code, template, minimum=minimum)
         result = int(numeric)
         if result < minimum:
-            raise ValueError(f"LayerCopy: {name} must be >= {minimum}.")
+            raise CardOperationError(code, template, minimum=minimum)
         return result
 
     @staticmethod
     def _finite(value: object, name: str, *, minimum: float | None = None) -> float:
+        templates = {
+            "layer spacing": (
+                "layer_copy.invalid_spacing",
+                "Layer spacing must be a finite non-negative distance.",
+            ),
+            "extra vacuum": (
+                "layer_copy.invalid_vacuum",
+                "Additional top vacuum must be a finite non-negative distance.",
+            ),
+            "z_range": (
+                "layer_copy.invalid_z_range",
+                "Cartesian z range must contain two finite distances.",
+            ),
+        }
+        code, template = templates[name]
         try:
             result = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"LayerCopy: {name} must be a finite number.") from exc
+            raise CardOperationError(code, template) from exc
         if not np.isfinite(result):
-            raise ValueError(f"LayerCopy: {name} must be a finite number.")
+            raise CardOperationError(code, template)
         if minimum is not None and result < minimum:
-            raise ValueError(f"LayerCopy: {name} must be >= {minimum:g}.")
+            raise CardOperationError(code, template)
         return result
 
     @classmethod
@@ -226,10 +261,31 @@ class LayerCopyOperation(StructureOperation):
         if not expr:
             raise ValueError("LayerCopy: dz expression is empty.")
         layers = cls._integer(params.layers, "layers", minimum=1)
-        distance = cls._finite(params.distance, "layer translation")
-        if layers > 1 and distance <= 0.0:
-            raise ValueError(
-                "LayerCopy: layer translation must be positive when layers > 1."
+        distance_mode = str(params.distance_mode or "").strip()
+        if distance_mode not in {"surface_gap", "translation"}:
+            raise CardOperationError(
+                "layer_copy.invalid_distance_mode",
+                "Layer spacing must use Surface gap or Copy translation.",
+            )
+        distance = cls._finite(params.distance, "layer spacing", minimum=0.0)
+        if layers > 1 and distance_mode == "translation" and distance <= 0.0:
+            raise CardOperationError(
+                "layer_copy.nonpositive_translation",
+                "Copy translation must be positive when total layers is greater than 1.",
+            )
+        max_output_atoms = cls._integer(
+            params.max_output_atoms,
+            "max_output_atoms",
+            minimum=1,
+        )
+        output_atoms = len(structure) * layers
+        if output_atoms > max_output_atoms:
+            raise CardOperationError(
+                "layer_copy.atom_budget",
+                "Layer Stack would create {actual} atoms per output, above the {limit}-atom budget. "
+                "Reduce the layer count or increase the budget.",
+                actual=output_atoms,
+                limit=max_output_atoms,
             )
         extra_vacuum = cls._finite(
             params.extra_vacuum,
@@ -239,23 +295,20 @@ class LayerCopyOperation(StructureOperation):
 
         mode = cls._integer(params.apply_mode, "apply_mode", minimum=0)
         if mode not in {0, 1, 2}:
-            raise ValueError(f"LayerCopy: unsupported apply_mode {mode}.")
+            raise CardOperationError(
+                "layer_copy.invalid_apply_mode",
+                "Warp selection must be All atoms, Selected elements, or Cartesian z range.",
+            )
         z_range = tuple(params.z_range)
         if len(z_range) != 2:
-            raise ValueError("LayerCopy: z_range must contain two values.")
+            raise CardOperationError(
+                "layer_copy.invalid_z_range",
+                "Cartesian z range must contain two finite distances.",
+            )
         z_min = cls._finite(z_range[0], "z_range")
         z_max = cls._finite(z_range[1], "z_range")
         if z_min > z_max:
             z_min, z_max = z_max, z_min
-
-        cell = np.asarray(structure.cell.array, dtype=float)
-        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)):
-            raise ValueError("LayerCopy requires a finite 3x3 cell.")
-        final_cell = cell.copy()
-        if params.extend_cell_z:
-            final_cell[2, 2] += distance * (layers - 1) + extra_vacuum
-        if params.wrap and abs(float(np.linalg.det(final_cell))) <= 1e-12:
-            raise ValueError("LayerCopy: wrapping requires a nonsingular cell.")
 
         normalized_params = LayerCopyParams(
             preset_index=int(params.preset_index),
@@ -268,7 +321,9 @@ class LayerCopyOperation(StructureOperation):
             extend_cell_z=bool(params.extend_cell_z),
             extra_vacuum=extra_vacuum,
             layers=layers,
+            distance_mode=distance_mode,
             distance=distance,
+            max_output_atoms=max_output_atoms,
         )
         mask = cls.apply_mask(structure, normalized_params)
         if not np.any(mask):
@@ -281,6 +336,54 @@ class LayerCopyOperation(StructureOperation):
             z=positions[mask, 2],
             params=expr_params,
         )
+        warped_z = positions[:, 2].copy()
+        warped_z[mask] += dz
+        slab_thickness = float(np.ptp(warped_z))
+        if distance_mode == "surface_gap":
+            surface_gap = distance
+            translation = slab_thickness + surface_gap
+        else:
+            translation = distance
+            surface_gap = translation - slab_thickness
+            if layers > 1 and surface_gap < -1.0e-10:
+                raise CardOperationError(
+                    "layer_copy.overlap",
+                    "Copy translation {translation} Å is smaller than the warped slab thickness "
+                    "{thickness} Å, giving a negative surface gap {gap} Å.",
+                    translation=f"{translation:.6g}",
+                    thickness=f"{slab_thickness:.6g}",
+                    gap=f"{surface_gap:.6g}",
+                )
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        input_det = float(np.linalg.det(cell)) if cell.shape == (3, 3) else 0.0
+        if (
+            cell.shape != (3, 3)
+            or not np.all(np.isfinite(cell))
+            or abs(input_det) <= 1.0e-12
+        ):
+            raise CardOperationError(
+                "layer_copy.invalid_cell",
+                "Layer Stack needs a finite, non-singular 3D cell.",
+            )
+        final_cell = cell.copy()
+        if params.extend_cell_z:
+            if float(cell[2, 2]) <= 0.0:
+                raise CardOperationError(
+                    "layer_copy.cell_direction",
+                    "Extending the cell requires lattice vector c to have a positive Cartesian z component.",
+                )
+            final_cell[2, 2] += translation * (layers - 1) + extra_vacuum
+        final_det = float(np.linalg.det(final_cell))
+        if (
+            not np.all(np.isfinite(final_cell))
+            or abs(final_det) <= 1.0e-12
+            or np.sign(final_det) != np.sign(input_det)
+        ):
+            raise CardOperationError(
+                "layer_copy.invalid_final_cell",
+                "Layer Stack would create a singular or inverted final cell.",
+            )
         return {
             "positions": positions,
             "mask": mask,
@@ -288,6 +391,10 @@ class LayerCopyOperation(StructureOperation):
             "params": normalized_params,
             "cell": cell,
             "final_cell": final_cell,
+            "slab_thickness": slab_thickness,
+            "surface_gap": surface_gap,
+            "translation": translation,
+            "output_atoms": output_atoms,
         }
 
     @classmethod
@@ -301,8 +408,12 @@ class LayerCopyOperation(StructureOperation):
             "input_atoms": len(structure),
             "selected_atoms": int(np.count_nonzero(settings["mask"])),
             "layers": normalized.layers,
-            "translation": normalized.distance,
-            "output_atoms": len(structure) * normalized.layers,
+            "translation": settings["translation"],
+            "surface_gap": settings["surface_gap"],
+            "slab_thickness": settings["slab_thickness"],
+            "distance_mode": normalized.distance_mode,
+            "output_atoms": settings["output_atoms"],
+            "max_output_atoms": normalized.max_output_atoms,
             "dz_min": float(np.min(settings["dz"])),
             "dz_max": float(np.max(settings["dz"])),
             "cell_c_before": c_length,
@@ -325,7 +436,7 @@ class LayerCopyOperation(StructureOperation):
         layer_positions = build_layers(
             warped_positions,
             num_layers=normalized.layers,
-            layer_distance=normalized.distance,
+            layer_distance=settings["translation"],
         )
         combined = base.copy()
         combined.set_positions(layer_positions[0])
@@ -336,7 +447,7 @@ class LayerCopyOperation(StructureOperation):
 
         if normalized.extend_cell_z:
             dz_total = (
-                normalized.distance * (normalized.layers - 1)
+                settings["translation"] * (normalized.layers - 1)
                 + normalized.extra_vacuum
             )
             if dz_total > 0.0:
@@ -349,7 +460,10 @@ class LayerCopyOperation(StructureOperation):
 
         append_config_tag(
             combined,
-            f"LayerStack(L={normalized.layers},step={normalized.distance:g})",
+            (
+                f"LayerStack(L={normalized.layers},gap={settings['surface_gap']:g},"
+                f"step={settings['translation']:g})"
+            ),
         )
         return [combined]
 
@@ -398,40 +512,82 @@ class VibrationModePerturbOperation(StructureOperation):
 
     def run_structure(self, structure, params: VibrationModePerturbParams) -> list:
         amplitude = float(params.amplitude)
-        if amplitude <= 0.0:
-            raise ValueError("VibrationModePerturb: amplitude must be positive.")
+        if not np.isfinite(amplitude) or amplitude <= 0.0:
+            raise CardOperationError(
+                "vibration-mode-perturb-amplitude",
+                "The mode coefficient scale must be a positive finite number.",
+            )
 
         modes_per_sample = int(params.modes_per_sample)
         if modes_per_sample <= 0:
-            raise ValueError("VibrationModePerturb: modes_per_sample must be >= 1.")
+            raise CardOperationError(
+                "vibration-mode-perturb-mode-count",
+                "Modes combined per sample must be at least 1.",
+            )
         max_num_value = float(params.max_num)
         if not np.isfinite(max_num_value) or not max_num_value.is_integer():
-            raise ValueError("VibrationModePerturb: max_num must be an integer.")
+            raise CardOperationError(
+                "vibration-mode-perturb-output-integer",
+                "Structures per input must be an integer.",
+            )
         max_num = int(max_num_value)
         if max_num <= 0:
-            raise ValueError("VibrationModePerturb: max_num must be >= 1.")
+            raise CardOperationError(
+                "vibration-mode-perturb-output-count",
+                "Structures per input must be at least 1.",
+            )
         distribution = int(params.distribution)
         if distribution not in {0, 1}:
-            raise ValueError(
-                "VibrationModePerturb: distribution must be 0 (Normal) or 1 (Uniform)."
+            raise CardOperationError(
+                "vibration-mode-perturb-distribution",
+                "Coefficient distribution must be Normal or Uniform.",
             )
 
         min_frequency = float(params.min_frequency) if params.exclude_near_zero else 0.0
+        if not np.isfinite(min_frequency) or min_frequency < 0.0:
+            raise CardOperationError(
+                "vibration-mode-perturb-frequency-cutoff",
+                "The absolute frequency cutoff must be a finite non-negative number.",
+            )
         frequencies, modes = get_vibration_modes(structure, min_frequency=min_frequency)
         if modes.size == 0:
-            logger.warning("VibrationModePerturbOperation: no vibrational modes found on structure.")
-            return []
+            raise CardOperationError(
+                "vibration-mode-perturb-no-modes",
+                "Vibrational perturbation needs at least one usable mode on every input structure.",
+            )
 
-        base_seed = int(params.seed) if params.use_seed else None
+        needs_frequencies = bool(params.scale_by_frequency or params.exclude_near_zero)
+        if needs_frequencies and not np.all(np.isfinite(frequencies)):
+            raise CardOperationError(
+                "vibration-mode-perturb-missing-frequencies",
+                "Finite frequencies are required when frequency filtering or scaling is enabled.",
+            )
+        if params.scale_by_frequency and np.any(np.abs(frequencies) <= 0.0):
+            raise CardOperationError(
+                "vibration-mode-perturb-zero-frequency",
+                "Frequency weighting requires non-zero frequencies for every usable mode.",
+            )
+        if modes_per_sample > modes.shape[0]:
+            raise CardOperationError(
+                "vibration-mode-perturb-too-many-modes",
+                "Modes per sample is {requested}, but only {available} usable modes are available.",
+                requested=modes_per_sample,
+                available=modes.shape[0],
+            )
+
+        base_seed = (
+            derived_structure_seed(int(params.seed), structure)
+            if params.use_seed
+            else None
+        )
         rng = np.random.default_rng(base_seed)
         freq_for_scaling = np.abs(frequencies)
         freq_for_scaling[~np.isfinite(freq_for_scaling)] = 0.0
-        replace = modes_per_sample > modes.shape[0]
         orig_positions = structure.get_positions()
 
         generated = []
-        for _ in range(max_num):
-            indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=replace)
+        for sample_index in range(max_num):
+            indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=False)
             if distribution == 0:
                 coeffs = rng.normal(loc=0.0, scale=1.0, size=modes_per_sample)
             else:
@@ -447,85 +603,169 @@ class VibrationModePerturbOperation(StructureOperation):
             new_positions = orig_positions + amplitude * displacement
             new_structure.set_positions(self.wrapped_positions(structure, new_positions))
             append_config_tag(new_structure, f"Vib(a={amplitude:.3f},m={modes_per_sample})")
+            new_structure.info["vibration_mode_perturb"] = json.dumps(
+                {
+                    "distribution": "normal" if distribution == 0 else "uniform",
+                    "amplitude": amplitude,
+                    "modes_per_sample": modes_per_sample,
+                    "min_frequency": min_frequency,
+                    "scale_by_frequency": bool(params.scale_by_frequency),
+                    "exclude_near_zero": bool(params.exclude_near_zero),
+                    "seed": int(params.seed) if params.use_seed else None,
+                    "derived_seed": base_seed,
+                    "sample_index": sample_index,
+                    "candidate_mode_count": int(modes.shape[0]),
+                    "selected_mode_indices": [int(index) for index in indices],
+                    "selected_frequencies": [
+                        float(frequencies[index]) if np.isfinite(frequencies[index]) else None
+                        for index in indices
+                    ],
+                },
+                separators=(",", ":"),
+            )
             generated.append(new_structure)
         return generated
 
 
 @dataclass(frozen=True)
 class GroupLabelParams:
-    """Parameters for assigning atoms.arrays['group'] labels."""
+    """Parameters for assigning alternating atomic-layer group labels."""
 
-    mode: str = "k_vector"
-    kvec: str = "111"
+    miller_index: str = "111"
+    layer_tolerance: float = 0.05
     group_a: str = "A"
     group_b: str = "B"
     overwrite: bool = False
 
 
 class GroupLabelOperation(StructureOperation):
-    """Attach group labels using lattice-coordinate rules."""
-
-    _MODE_ALIASES = {
-        "k_vector": "k_vector",
-        "k-vector": "k_vector",
-        "k-vector layers": "k_vector",
-        "k-vector layers (recommended)": "k_vector",
-        "fractional_parity": "fractional_parity",
-        "fractional parity": "fractional_parity",
-        "fractional parity (2x rounding)": "fractional_parity",
-    }
+    """Detect atomic planes normal to ``(hkl)`` and label them A/B in order."""
 
     def run_structure(self, structure, params: GroupLabelParams) -> list:
-        mode = self.normalize_mode(params.mode)
         a_label, b_label = self._validated_labels(params.group_a, params.group_b)
         if (not params.overwrite) and "group" in structure.arrays:
             return [structure.copy()]
-        if structure.cell is None or np.linalg.det(structure.cell.array) == 0:
-            raise ValueError("GroupLabel: structure has no valid cell.")
 
         atoms = structure.copy()
-        if mode == "fractional_parity":
-            flags = self._label_by_parity(atoms)
-            tag = "par"
-        else:
-            flags = self._label_by_kvec(atoms, params.kvec)
-            tag = f"k{params.kvec}"
-
-        atoms.arrays["group"] = np.where(flags == 0, a_label, b_label).astype(object)
-        append_config_tag(atoms, f"Grp({tag},{a_label}/{b_label})")
-        return [atoms]
-
-    @classmethod
-    def normalize_mode(cls, mode: str) -> str:
-        value = str(mode or "").strip()
-        normalized = cls._MODE_ALIASES.get(value)
-        if normalized is None:
-            raise ValueError(
-                f"GroupLabel: unsupported mode {value!r}; "
-                "use k_vector or fractional_parity."
+        layer_ids = self.layer_ids(
+            atoms,
+            params.miller_index,
+            params.layer_tolerance,
+        )
+        layer_count = int(layer_ids.max()) + 1 if layer_ids.size else 0
+        if layer_count < 2:
+            raise CardOperationError(
+                "group_label_too_few_layers",
+                "Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. "
+                "Expand the cell, choose another plane, or reduce the layer tolerance.",
+                actual=layer_count,
             )
-        return normalized
+
+        atoms.arrays["group"] = np.where((layer_ids % 2) == 0, a_label, b_label).astype(object)
+        append_config_tag(
+            atoms,
+            f"Grp(hkl{params.miller_index},tol={float(params.layer_tolerance):.4g},{a_label}/{b_label})",
+        )
+        return [atoms]
 
     @staticmethod
     def _validated_labels(group_a: str, group_b: str) -> tuple[str, str]:
         a_label = str(group_a or "").strip()
         b_label = str(group_b or "").strip()
         if not a_label or not b_label:
-            raise ValueError("GroupLabel: group labels must be non-empty.")
+            raise CardOperationError(
+                "group_label_empty_labels",
+                "Layer group labels must be non-empty.",
+            )
         if a_label == b_label:
-            raise ValueError("GroupLabel: group A and group B labels must be different.")
+            raise CardOperationError(
+                "group_label_duplicate_labels",
+                "Layer group A and B labels must be different.",
+            )
         return a_label, b_label
 
     @staticmethod
-    def _label_by_kvec(atoms, kvec: str) -> np.ndarray:
-        signs = kvec_signs(atoms, parse_kvec(kvec))
-        return np.where(signs > 0.0, 0, 1).astype(int)
+    def layer_ids(atoms, miller_index: str, tolerance: float) -> np.ndarray:
+        """Return ordered atomic-plane indices along the reciprocal ``(hkl)`` normal."""
+        cell = np.asarray(atoms.cell.array, dtype=float)
+        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)) or abs(np.linalg.det(cell)) <= 1e-12:
+            raise CardOperationError(
+                "group_label_invalid_cell",
+                "Layer Groups needs a finite, non-singular 3D cell.",
+            )
+        tolerance = float(tolerance)
+        if not np.isfinite(tolerance) or tolerance <= 0.0:
+            raise CardOperationError(
+                "group_label_invalid_tolerance",
+                "Layer tolerance must be a positive finite distance.",
+            )
+        try:
+            hkl = np.asarray(parse_kvec(miller_index), dtype=float)
+        except ValueError as exc:
+            raise CardOperationError(
+                "group_label_invalid_miller_index",
+                "Plane index must be 100, 010, 001, 110, or 111.",
+            ) from exc
+
+        reciprocal_normal = np.linalg.solve(cell, hkl)
+        reciprocal_norm = float(np.linalg.norm(reciprocal_normal))
+        if not np.isfinite(reciprocal_norm) or reciprocal_norm <= 1e-12:
+            raise CardOperationError(
+                "group_label_invalid_miller_index",
+                "Plane index must be 100, 010, 001, 110, or 111.",
+            )
+
+        scaled = scaled_positions(atoms, wrap=True)
+        periodic_axes = np.asarray(atoms.pbc, dtype=bool)
+        scaled[:, periodic_axes] = np.where(
+            np.isclose(scaled[:, periodic_axes], 1.0, atol=1e-10, rtol=0.0),
+            0.0,
+            scaled[:, periodic_axes],
+        )
+        phase = scaled @ hkl
+        periodic_phase = bool(np.any(periodic_axes & (hkl != 0.0)))
+        if periodic_phase:
+            phase %= 1.0
+            phase = np.where(
+                np.isclose(phase, 1.0, atol=1e-10, rtol=0.0),
+                0.0,
+                phase,
+            )
+        projections = phase / reciprocal_norm
+        if projections.size == 0:
+            return np.zeros(0, dtype=int)
+
+        order = np.argsort(projections, kind="stable")
+        sorted_projections = projections[order]
+        layer_ids = np.zeros(len(projections), dtype=int)
+        current_layer = 0
+        start = 0
+        bounds: list[tuple[int, int]] = []
+        while start < len(order):
+            upper = float(sorted_projections[start]) + tolerance
+            stop = int(np.searchsorted(sorted_projections, upper, side="right"))
+            layer_ids[order[start:stop]] = current_layer
+            bounds.append((start, stop))
+            current_layer += 1
+            start = stop
+
+        if periodic_phase and len(bounds) > 1:
+            first_start, first_stop = bounds[0]
+            last_start, last_stop = bounds[-1]
+            period = 1.0 / reciprocal_norm
+            boundary_span = (
+                float(sorted_projections[first_stop - 1])
+                + period
+                - float(sorted_projections[last_start])
+            )
+            if boundary_span <= tolerance:
+                layer_ids[order[last_start:last_stop]] = 0
+        return layer_ids
 
     @staticmethod
-    def _label_by_parity(atoms) -> np.ndarray:
-        scaled = scaled_positions(atoms, wrap=True)
-        ints = np.floor(2.0 * scaled + 0.5 + 1e-12).astype(int)
-        return (ints.sum(axis=1) % 2).astype(int)
+    def has_periodic_layer_axis(atoms, miller_index: str) -> bool:
+        hkl = np.asarray(parse_kvec(miller_index), dtype=int)
+        return bool(np.any(np.asarray(atoms.pbc, dtype=bool) & (hkl != 0)))
 
 
 @dataclass(frozen=True)
@@ -572,24 +812,36 @@ class OrganicMolConfigPBCOperation(StructureOperation):
     """Generate torsion-driven molecular conformers using TorsionGuard PBC."""
 
     @staticmethod
-    def _integer(value: Any, label: str, *, minimum: int) -> int:
+    def _integer(value: Any, key: str, field: str, *, minimum: int) -> int:
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"OrganicMolConfig: {label} must be an integer.") from exc
+            raise CardOperationError(
+                f"organic-{key}-integer",
+                "{field} must be an integer.",
+                field=field,
+            ) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"OrganicMolConfig: {label} must be an integer.")
+            raise CardOperationError(
+                f"organic-{key}-integer",
+                "{field} must be an integer.",
+                field=field,
+            )
         integer = int(numeric)
         if integer < minimum:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be >= {minimum}."
+            raise CardOperationError(
+                f"organic-{key}-minimum",
+                "{field} must be at least {minimum}.",
+                field=field,
+                minimum=minimum,
             )
         return integer
 
     @staticmethod
     def _finite_float(
         value: Any,
-        label: str,
+        key: str,
+        field: str,
         *,
         minimum: float | None = None,
         strictly_positive: bool = False,
@@ -597,20 +849,29 @@ class OrganicMolConfigPBCOperation(StructureOperation):
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be a finite number."
+            raise CardOperationError(
+                f"organic-{key}-finite",
+                "{field} must be a finite number.",
+                field=field,
             ) from exc
         if not np.isfinite(numeric):
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be a finite number."
+            raise CardOperationError(
+                f"organic-{key}-finite",
+                "{field} must be a finite number.",
+                field=field,
             )
         if strictly_positive and numeric <= 0.0:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be positive."
+            raise CardOperationError(
+                f"organic-{key}-positive",
+                "{field} must be positive.",
+                field=field,
             )
         if minimum is not None and numeric < minimum:
-            raise ValueError(
-                f"OrganicMolConfig: {label} must be >= {minimum:g}."
+            raise CardOperationError(
+                f"organic-{key}-minimum",
+                "{field} must be at least {minimum}.",
+                field=field,
+                minimum=f"{minimum:g}",
             )
         return numeric
 
@@ -622,19 +883,28 @@ class OrganicMolConfigPBCOperation(StructureOperation):
     ) -> dict[str, Any]:
         symbols = structure.get_chemical_symbols()
         if not symbols:
-            raise ValueError("OrganicMolConfig requires at least one atom.")
+            raise CardOperationError(
+                "organic-empty-input",
+                "Molecular Conformers requires at least one atom.",
+            )
         coords = np.asarray(structure.get_positions(), dtype=float)
         if coords.shape != (len(symbols), 3) or not np.all(np.isfinite(coords)):
-            raise ValueError("OrganicMolConfig requires finite Cartesian atom positions.")
+            raise CardOperationError(
+                "organic-invalid-positions",
+                "Molecular Conformers requires finite Cartesian atom positions.",
+            )
 
         pbc_mode = str(params.pbc_mode).strip().lower()
         if pbc_mode not in {"auto", "yes", "no"}:
-            raise ValueError("OrganicMolConfig: pbc_mode must be auto, yes, or no.")
+            raise CardOperationError(
+                "organic-invalid-boundary",
+                "Output boundary must be Follow input, 3D periodic, or Nonperiodic.",
+            )
         pbc_flags = np.asarray(structure.pbc, dtype=bool)
         if pbc_mode == "auto" and np.any(pbc_flags) and not np.all(pbc_flags):
-            raise ValueError(
-                "OrganicMolConfig: mixed periodic boundaries are not supported; "
-                "use pbc_mode=no or provide a fully periodic molecular cell."
+            raise CardOperationError(
+                "organic-mixed-pbc",
+                "Follow input does not support mixed periodic boundaries; choose Nonperiodic or provide full 3D PBC.",
             )
         pbc_active = pbc_mode == "yes" or (
             pbc_mode == "auto" and bool(np.all(pbc_flags))
@@ -647,105 +917,126 @@ class OrganicMolConfigPBCOperation(StructureOperation):
                 or not np.all(np.isfinite(cell_mat))
                 or abs(float(np.linalg.det(cell_mat))) <= 1e-12
             ):
-                raise ValueError(
-                    "OrganicMolConfig: periodic mode requires a finite, "
-                    "nonsingular 3x3 cell."
+                raise CardOperationError(
+                    "organic-invalid-periodic-cell",
+                    "3D periodic mode requires a finite, nonsingular 3×3 cell.",
                 )
 
         perturb_per_frame = cls._integer(
             params.perturb_per_frame,
-            "perturb_per_frame",
+            "outputs",
+            "Maximum outputs per input",
             minimum=1,
         )
         max_torsions = cls._integer(
             params.max_torsions_per_conf,
-            "max_torsions_per_conf",
+            "torsions-per-output",
+            "Bonds rotated per output",
             minimum=0,
         )
         local_cutoff = cls._integer(
             params.local_cutoff,
-            "local_cutoff",
+            "large-molecule-threshold",
+            "Large-molecule threshold",
             minimum=0,
         )
         local_subtree = cls._integer(
             params.local_subtree,
-            "local_subtree",
+            "local-subtree-cap",
+            "Local subtree cap",
             minimum=1,
         )
         max_retries = cls._integer(
             params.max_retries,
-            "max_retries",
+            "retries",
+            "Retries per output",
             minimum=0,
         )
         gaussian_sigma = cls._finite_float(
             params.gaussian_sigma,
-            "gaussian_sigma",
+            "coordinate-noise",
+            "Coordinate noise",
             minimum=0.0,
         )
         if len(params.torsion_range_deg) != 2:
-            raise ValueError(
-                "OrganicMolConfig: torsion_range_deg must contain two values."
+            raise CardOperationError(
+                "organic-torsion-range-size",
+                "Torsion increment range must contain a minimum and maximum.",
             )
         torsion_range = tuple(
-            cls._finite_float(value, "torsion_range_deg")
+            cls._finite_float(
+                value,
+                "torsion-range",
+                "Torsion increment range",
+            )
             for value in params.torsion_range_deg
         )
         if torsion_range[0] > torsion_range[1]:
-            raise ValueError(
-                "OrganicMolConfig: torsion_range_deg minimum must not exceed maximum."
+            raise CardOperationError(
+                "organic-torsion-range-order",
+                "Torsion increment minimum must not exceed its maximum.",
             )
         bond_detect = cls._finite_float(
             params.bond_detect_factor,
-            "bond_detect_factor",
+            "bond-detection-radius",
+            "Bond detection radius",
             strictly_positive=True,
         )
         bond_min = cls._finite_float(
             params.bond_keep_min_factor,
-            "bond_keep_min_factor",
+            "minimum-bond-length",
+            "Minimum bond length",
             minimum=0.0,
         )
         bond_max = None
         if params.bond_keep_max_enable:
             bond_max = cls._finite_float(
                 params.bond_keep_max_factor,
-                "bond_keep_max_factor",
+                "maximum-bond-length",
+                "Maximum bond length",
                 strictly_positive=True,
             )
             if bond_max < bond_min:
-                raise ValueError(
-                    "OrganicMolConfig: bond_keep_max_factor must be >= "
-                    "bond_keep_min_factor."
+                raise CardOperationError(
+                    "organic-bond-length-order",
+                    "Maximum bond length must not be smaller than minimum bond length.",
                 )
         nonbond_min = cls._finite_float(
             params.nonbond_min_factor,
-            "nonbond_min_factor",
+            "minimum-nonbonded-distance",
+            "Minimum nonbonded distance",
             minimum=0.0,
         )
         mult_bond = cls._finite_float(
             params.mult_bond_factor,
-            "mult_bond_factor",
+            "short-bond-cutoff",
+            "Short-bond rotation cutoff",
             minimum=0.0,
         )
         box_size = cls._finite_float(
             params.nonpbc_box_size,
-            "nonpbc_box_size",
+            "nonperiodic-box",
+            "Nonperiodic display box",
             strictly_positive=True,
         )
         bo_c = cls._finite_float(
             params.bo_c_const,
-            "bo_c_const",
+            "pauling-decay-length",
+            "Pauling decay length",
             strictly_positive=True,
         )
         bo_threshold = cls._finite_float(
             params.bo_threshold,
-            "bo_threshold",
+            "bond-order-threshold",
+            "Bond-order threshold",
             minimum=0.0,
         )
         if bo_threshold > 1.0:
-            raise ValueError(
-                "OrganicMolConfig: bo_threshold must be between 0 and 1."
+            raise CardOperationError(
+                "organic-bond-order-range",
+                "Bond-order threshold must be between 0 and 1.",
             )
-        seed = cls._integer(params.seed, "seed", minimum=0)
+        seed = cls._integer(params.seed, "seed", "Random seed", minimum=0)
 
         if pbc_active:
             assert cell_mat is not None
@@ -779,9 +1070,9 @@ class OrganicMolConfigPBCOperation(StructureOperation):
             and (torsion_range[0] != 0.0 or torsion_range[1] != 0.0)
         )
         if not torsion_active and gaussian_sigma == 0.0:
-            raise ValueError(
-                "OrganicMolConfig: the current settings cannot change any coordinates; "
-                "enable Gaussian noise or provide an active rotatable bond."
+            raise CardOperationError(
+                "organic-no-coordinate-change",
+                "The current settings cannot change coordinates; add coordinate noise or provide an active rotatable bond.",
             )
 
         components = 0
@@ -879,8 +1170,9 @@ class OrganicMolConfigPBCOperation(StructureOperation):
             tg_params,
         )
         if not result_list:
-            raise ValueError(
-                "OrganicMolConfig: all requested conformers failed the geometry guards."
+            raise CardOperationError(
+                "organic-all-guards-failed",
+                "All requested conformers failed the geometry guards; narrow the torsion range, reduce coordinate noise, or inspect the distance limits.",
             )
 
         structures_out = []
@@ -913,36 +1205,38 @@ class RandomPackingParams:
 
     structures: int = 1
     composition: str = ""
+    composition_mode: str = "input"
     min_distance: float = 1.5
     pair_min_distances: str = ""
     max_attempts_per_atom: int = 500
     strict_mode: bool = True
     use_seed: bool = False
     seed: int = 0
+    max_generated_atoms: int = 10_000
+
+
+@dataclass(frozen=True)
+class RandomPackingPlan:
+    """Validated, exact size plan for one input structure."""
+
+    symbols: tuple[str, ...]
+    structures: int
+    atoms_per_output: int
+    requested_generated_atoms: int
+    max_generated_atoms: int
 
 
 class RandomPackingOperation(StructureOperation):
     """Randomly repack atoms in the input cell under explicit distance constraints."""
 
     def run_structure(self, structure, params: RandomPackingParams) -> list:
-        n_structures = int(params.structures)
-        if n_structures <= 0:
-            raise ValueError("Random Packing: structures must be >= 1.")
-
+        plan = self.plan(structure, params)
+        n_structures = plan.structures
         min_distance = float(params.min_distance)
-        if min_distance <= 0.0:
-            raise ValueError("Random Packing: min_distance must be positive.")
-
         max_attempts = int(params.max_attempts_per_atom)
-        if max_attempts <= 0:
-            raise ValueError("Random Packing: max_attempts_per_atom must be >= 1.")
-
         cell = np.asarray(structure.cell.array, dtype=float)
-        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
-            raise ValueError("Random Packing requires a non-singular input cell.")
-
         pbc = np.asarray(structure.pbc, dtype=bool)
-        symbols = self.symbols_from_params(structure, params.composition)
+        symbols = list(plan.symbols)
         pair_rules = self.parse_pair_min_distances(params.pair_min_distances)
         order = self.placement_order(symbols, min_distance, pair_rules)
         ortho_lengths = self.orthorhombic_lengths(cell, pbc)
@@ -970,25 +1264,150 @@ class RandomPackingOperation(StructureOperation):
                 failures += 1
                 if params.strict_mode:
                     raise
-                logger.warning("RandomPackingOperation: skipped failed sample {} for {}", sample_idx + 1, structure.info.get("Config_type", "structure"))
+                logger.warning(
+                    "RandomPackingOperation: skipped failed sample {} for {}",
+                    sample_idx + 1,
+                    structure.info.get("Config_type", "structure"),
+                )
                 continue
             seed_tag = f",s={int(base_seed + cfg_id * 1000003 + sample_idx)}" if base_seed is not None else ""
             append_config_tag(atoms, f"RandPack(n={len(symbols)},d={min_distance:.6g}{seed_tag})")
             outputs.append(atoms)
 
         if not outputs:
-            raise ValueError(f"Random Packing failed to generate any structures ({failures} failures).")
+            raise CardOperationError(
+                "random-packing-no-output",
+                "Random Packing could not generate any output after {failures} failed attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+                failures=failures,
+            )
         return outputs
 
+    def plan(self, structure, params: RandomPackingParams) -> RandomPackingPlan:
+        """Validate one input and return exact requested output sizes before RNG."""
+        n_structures = self._positive_integer(
+            params.structures,
+            code="random-packing-structures",
+            template="Structures per input must be a positive integer.",
+        )
+        self._positive_integer(
+            params.max_attempts_per_atom,
+            code="random-packing-attempts",
+            template="Maximum attempts per atom must be a positive integer.",
+        )
+        max_generated_atoms = self._positive_integer(
+            params.max_generated_atoms,
+            code="random-packing-budget",
+            template="Generated atom budget per input must be a positive integer.",
+        )
+        if params.use_seed:
+            self._nonnegative_integer(
+                params.seed,
+                code="random-packing-seed",
+                template="Random seed must be a non-negative integer.",
+            )
+
+        min_distance = float(params.min_distance)
+        if not math.isfinite(min_distance) or min_distance <= 0.0:
+            raise CardOperationError(
+                "random-packing-distance",
+                "Global minimum distance must be a positive finite number.",
+            )
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)) or abs(float(np.linalg.det(cell))) <= 1e-12:
+            raise CardOperationError(
+                "random-packing-cell",
+                "Random Packing requires a finite, non-singular input cell.",
+            )
+
+        composition_mode = str(params.composition_mode).strip().lower()
+        if composition_mode not in {"input", "manual"}:
+            raise CardOperationError(
+                "random-packing-composition-mode",
+                "Composition mode must be Use input composition or Manual atom counts.",
+            )
+        # Preserve direct callers and old serialized Params that supplied a
+        # composition before the explicit mode field existed.
+        if composition_mode == "input" and str(params.composition).strip():
+            composition_mode = "manual"
+        symbols = tuple(
+            self.symbols_from_params(
+                structure,
+                params.composition,
+                mode=composition_mode,
+            )
+        )
+        if not symbols:
+            raise CardOperationError(
+                "random-packing-empty-composition",
+                "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+            )
+        self.parse_pair_min_distances(params.pair_min_distances)
+        requested_generated_atoms = len(symbols) * n_structures
+        if requested_generated_atoms > max_generated_atoms:
+            raise CardOperationError(
+                "random-packing-budget-exceeded",
+                "Requested outputs contain {requested} generated atoms per input, exceeding the budget of {budget}. Reduce structures or atom counts, or raise the budget deliberately.",
+                requested=requested_generated_atoms,
+                budget=max_generated_atoms,
+            )
+        return RandomPackingPlan(
+            symbols=symbols,
+            structures=n_structures,
+            atoms_per_output=len(symbols),
+            requested_generated_atoms=requested_generated_atoms,
+            max_generated_atoms=max_generated_atoms,
+        )
+
     @staticmethod
-    def symbols_from_params(structure, composition: str) -> list[str]:
+    def _positive_integer(value, *, code: str, template: str) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            numeric = math.nan
+        if not math.isfinite(numeric) or numeric < 1 or not numeric.is_integer():
+            raise CardOperationError(
+                code,
+                template,
+            )
+        return int(numeric)
+
+    @staticmethod
+    def _nonnegative_integer(value, *, code: str, template: str) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            numeric = math.nan
+        if not math.isfinite(numeric) or numeric < 0 or not numeric.is_integer():
+            raise CardOperationError(
+                code,
+                template,
+            )
+        return int(numeric)
+
+    @staticmethod
+    def symbols_from_params(
+        structure,
+        composition: str,
+        *,
+        mode: str | None = None,
+    ) -> list[str]:
         text = (composition or "").strip()
-        if not text:
+        effective_mode = mode or ("manual" if text else "input")
+        if effective_mode == "input":
             return list(structure.get_chemical_symbols())
+        if effective_mode != "manual":
+            raise CardOperationError(
+                "random-packing-composition-mode",
+                "Composition mode must be Use input composition or Manual atom counts.",
+            )
 
         chunks = [chunk.strip() for chunk in re.split(r"[,;\n]+", text) if chunk.strip()]
         if not chunks:
-            raise ValueError("Random Packing: composition is empty.")
+            raise CardOperationError(
+                "random-packing-empty-composition",
+                "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+            )
 
         symbols: list[str] = []
         for chunk in chunks:
@@ -997,19 +1416,46 @@ class RandomPackingOperation(StructureOperation):
             elif "=" in chunk:
                 raw_symbol, raw_count = chunk.split("=", 1)
             else:
-                raise ValueError(f"Random Packing: invalid composition item '{chunk}', expected Element:count.")
+                raise CardOperationError(
+                    "random-packing-composition-format",
+                    "Invalid composition item {item}; use Element:count, for example Fe:32.",
+                    item=chunk,
+                )
             symbol = raw_symbol.strip()
             if not symbol:
-                raise ValueError(f"Random Packing: invalid composition item '{chunk}'.")
+                raise CardOperationError(
+                    "random-packing-composition-format",
+                    "Invalid composition item {item}; use Element:count, for example Fe:32.",
+                    item=chunk,
+                )
             symbol = symbol[0].upper() + symbol[1:].lower()
-            count_value = float(raw_count)
-            count = int(round(count_value))
+            if symbol not in atomic_numbers:
+                raise CardOperationError(
+                    "random-packing-element",
+                    "Unknown chemical element {element} in the composition.",
+                    element=symbol,
+                )
+            try:
+                count_value = float(raw_count)
+            except (TypeError, ValueError):
+                count_value = math.nan
+            if not math.isfinite(count_value):
+                count = 0
+            else:
+                count = int(round(count_value))
             if count <= 0 or abs(count_value - count) > 1e-9:
-                raise ValueError(f"Random Packing: composition count for {symbol} must be a positive integer.")
+                raise CardOperationError(
+                    "random-packing-composition-count",
+                    "Atom count for {element} must be a positive integer.",
+                    element=symbol,
+                )
             symbols.extend([symbol] * count)
 
         if not symbols:
-            raise ValueError("Random Packing: composition produced no atoms.")
+            raise CardOperationError(
+                "random-packing-empty-composition",
+                "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+            )
         return symbols
 
     @staticmethod
@@ -1020,18 +1466,45 @@ class RandomPackingOperation(StructureOperation):
             if not item:
                 continue
             if ":" not in item:
-                raise ValueError(f"Random Packing: invalid pair distance '{item}', expected A-B:value.")
+                raise CardOperationError(
+                    "random-packing-pair-format",
+                    "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8.",
+                    item=item,
+                )
             pair_text, value_text = item.split(":", 1)
             if "-" not in pair_text:
-                raise ValueError(f"Random Packing: invalid pair '{pair_text}', expected A-B.")
+                raise CardOperationError(
+                    "random-packing-pair-format",
+                    "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8.",
+                    item=item,
+                )
             left, right = [part.strip() for part in pair_text.split("-", 1)]
             if not left or not right:
-                raise ValueError(f"Random Packing: invalid pair '{pair_text}'.")
+                raise CardOperationError(
+                    "random-packing-pair-format",
+                    "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8.",
+                    item=item,
+                )
             left = left[0].upper() + left[1:].lower()
             right = right[0].upper() + right[1:].lower()
-            value = float(value_text)
-            if value <= 0.0:
-                raise ValueError(f"Random Packing: pair distance for {left}-{right} must be positive.")
+            for symbol in (left, right):
+                if symbol not in atomic_numbers:
+                    raise CardOperationError(
+                        "random-packing-pair-element",
+                        "Unknown chemical element {element} in a pair-distance rule.",
+                        element=symbol,
+                    )
+            try:
+                value = float(value_text)
+            except (TypeError, ValueError):
+                value = math.nan
+            if not math.isfinite(value) or value <= 0.0:
+                raise CardOperationError(
+                    "random-packing-pair-distance",
+                    "Minimum distance for {left}-{right} must be a positive finite number.",
+                    left=left,
+                    right=right,
+                )
             rules[tuple(sorted((left, right)))] = value
         return rules
 
@@ -1040,12 +1513,16 @@ class RandomPackingOperation(StructureOperation):
         return float(pair_rules.get(tuple(sorted((left, right))), default))
 
     @classmethod
-    def placement_order(cls, symbols: list[str], min_distance: float, pair_rules: dict[tuple[str, str], float]) -> np.ndarray:
+    def placement_order(
+        cls, symbols: list[str], min_distance: float, pair_rules: dict[tuple[str, str], float]
+    ) -> np.ndarray:
         per_symbol = {
             symbol: max(cls.min_distance_for_pair(symbol, other, min_distance, pair_rules) for other in set(symbols))
             for symbol in set(symbols)
         }
-        return np.asarray(sorted(range(len(symbols)), key=lambda idx: (-per_symbol[symbols[idx]], symbols[idx], idx)), dtype=int)
+        return np.asarray(
+            sorted(range(len(symbols)), key=lambda idx: (-per_symbol[symbols[idx]], symbols[idx], idx)), dtype=int
+        )
 
     @classmethod
     def pack_one(
@@ -1089,9 +1566,11 @@ class RandomPackingOperation(StructureOperation):
                     placed = True
                     break
             if not placed:
-                raise ValueError(
-                    "Random Packing could not place "
-                    f"{symbol} after {int(max_attempts)} attempts. Reduce min distances, enlarge the cell, or lower atom count."
+                raise CardOperationError(
+                    "random-packing-placement",
+                    "Random Packing could not place {element} after {attempts} attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+                    element=symbol,
+                    attempts=int(max_attempts),
                 )
 
         atoms = Atoms(symbols=symbols, positions=positions_by_original, cell=cell, pbc=pbc)
@@ -1140,7 +1619,14 @@ class RandomPackingOperation(StructureOperation):
         return lengths
 
     @staticmethod
-    def candidate_distances(candidate: np.ndarray, positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray, ortho_lengths: np.ndarray | None = None) -> np.ndarray:
+    def candidate_distances(
+        candidate: np.ndarray,
+        positions: np.ndarray,
+        *,
+        cell: np.ndarray,
+        pbc: np.ndarray,
+        ortho_lengths: np.ndarray | None = None,
+    ) -> np.ndarray:
         cell_arr = np.asarray(cell, dtype=float)
         pbc_arr = np.asarray(pbc, dtype=bool)
         positions_arr = np.asarray(positions, dtype=float)
@@ -1169,45 +1655,78 @@ class CrystalPrototypeBuilderParams:
     element: str = "Cu"
     a_range: tuple[float, float, float] = (3.6, 3.6, 0.1)
     covera: float = 1.633
-    auto_supercell: bool = True
-    max_atoms: int = 512
-    rep: tuple[int, int, int] = (4, 4, 4)
     max_outputs: int = 200
+
+
+@dataclass(frozen=True)
+class CrystalPrototypePlan:
+    """Exact output plan for a crystal-prototype request."""
+
+    a_values: tuple[float, ...]
+    atoms_per_output: int
+    cell_lengths: tuple[float, float, float]
+    truncated: bool
 
 
 class CrystalPrototypeBuilderOperation(GeneratorOperation):
     """Generate fcc/bcc/hcp prototype structures without input data."""
 
     def generate(self, params: CrystalPrototypeBuilderParams) -> list:
+        plan = self.plan(params)
         element = self._canonical_element(params.element)
         lattice = params.lattice.strip().lower()
         out = []
-        supercell_factors = None
-        for a in self._a_values(params.a_range):
-            base = self._build_base(element, lattice, float(a), float(params.covera))
-            base.pbc = True
-            base.set_positions(fast_wrapped_positions(base, base.positions))
-
-            if params.auto_supercell:
-                if supercell_factors is None:
-                    supercell_factors = best_supercell_factors_max_atoms(base, int(params.max_atoms))
-                na, nb, nc = supercell_factors.na, supercell_factors.nb, supercell_factors.nc
-            else:
-                na, nb, nc = [int(value) for value in params.rep]
-
-            matrix = np.diag([max(na, 1), max(nb, 1), max(nc, 1)])
-            atoms = make_supercell(base, matrix)
+        for a in plan.a_values[: int(params.max_outputs)]:
+            atoms = self._build_base(element, lattice, float(a), float(params.covera))
+            atoms.pbc = True
             atoms.set_positions(fast_wrapped_positions(atoms, atoms.positions))
-            append_config_tag(atoms, f"Proto({lattice},a={float(a):.6g},rep={int(na)}x{int(nb)}x{int(nc)})")
+            append_config_tag(atoms, f"Proto({lattice},a={float(a):.6g})")
             out.append(atoms)
             if len(out) >= int(params.max_outputs):
                 break
         return out
 
+    def plan(self, params: CrystalPrototypeBuilderParams) -> CrystalPrototypePlan:
+        """Validate parameters and return the exact base-cell/count preview."""
+        element = self._canonical_element(params.element)
+        lattice = params.lattice.strip().lower()
+        if lattice not in {"fcc", "bcc", "hcp", "fcc111"}:
+            raise CardOperationError(
+                "crystal-prototype-lattice",
+                "Unsupported crystal prototype: {lattice}.",
+                lattice=params.lattice,
+            )
+        a_values = tuple(self._a_values(params.a_range))
+        max_outputs = int(params.max_outputs)
+        if max_outputs < 1:
+            raise CardOperationError(
+                "crystal-prototype-output-limit",
+                "Maximum outputs must be at least 1.",
+            )
+        if lattice == "hcp" and (not math.isfinite(float(params.covera)) or float(params.covera) <= 0):
+            raise CardOperationError(
+                "crystal-prototype-covera",
+                "The hcp c/a ratio must be a positive finite number.",
+            )
+
+        base = self._build_base(element, lattice, a_values[0], float(params.covera))
+        return CrystalPrototypePlan(
+            a_values=a_values,
+            atoms_per_output=len(base),
+            cell_lengths=tuple(float(value) for value in base.cell.lengths()),
+            truncated=len(a_values) > max_outputs,
+        )
+
     @staticmethod
     def _canonical_element(element: str) -> str:
-        element = element.strip() or "Cu"
-        return element[0].upper() + element[1:].lower()
+        raw = element.strip()
+        canonical = raw[0].upper() + raw[1:].lower() if raw else ""
+        if not canonical or atomic_numbers.get(canonical, 0) <= 0:
+            raise CardOperationError(
+                "crystal-prototype-element",
+                "Enter one valid chemical element symbol, for example Cu, Fe, or Mg.",
+            )
+        return canonical
 
     @staticmethod
     def _build_base(element: str, lattice: str, a: float, covera: float):
@@ -1220,8 +1739,21 @@ class CrystalPrototypeBuilderOperation(GeneratorOperation):
     @staticmethod
     def _a_values(values: tuple[float, float, float]) -> list[float]:
         a_min, a_max, a_step = [float(value) for value in values]
+        if not all(math.isfinite(value) for value in (a_min, a_max, a_step)):
+            raise CardOperationError(
+                "crystal-prototype-a-finite",
+                "The lattice-constant range must contain finite numbers.",
+            )
+        if a_min <= 0 or a_max <= 0:
+            raise CardOperationError(
+                "crystal-prototype-a-positive",
+                "Lattice constants must be positive.",
+            )
         if a_step <= 0:
-            return [a_min]
+            raise CardOperationError(
+                "crystal-prototype-a-step",
+                "The lattice-constant step must be positive.",
+            )
         if a_max < a_min:
             a_min, a_max = a_max, a_min
         if abs(a_max - a_min) <= 1e-12:

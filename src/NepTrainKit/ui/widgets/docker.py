@@ -192,7 +192,7 @@ class WorkflowGuidancePanel(QFrame):
         parameter_page_layout.setContentsMargins(0, 4, 0, 0)
         self.parameter_scroll = ScrollArea(self.parameter_page)
         self.parameter_scroll.scrollDelagate.vScrollBar.setHandleDisplayMode(
-            ScrollBarHandleDisplayMode.ON_HOVER
+            ScrollBarHandleDisplayMode.ALWAYS
         )
         self.parameter_scroll.setWidgetResizable(True)
         self.parameter_scroll.setFrameShape(QFrame.Shape.NoFrame)
@@ -373,6 +373,10 @@ class WorkflowGuidancePanel(QFrame):
 
     def _connect_context_signals(self, editor: QWidget) -> None:
         self._disconnect_context_signals()
+        presentation_signal = getattr(self._card, "presentationChanged", None)
+        if presentation_signal is not None and hasattr(presentation_signal, "connect"):
+            presentation_signal.connect(self._schedule_context_refresh)
+            self._context_signal_connections.append((presentation_signal, self._schedule_context_refresh))
         signal_names = ("valueChanged", "currentIndexChanged", "textChanged", "toggled", "stateChanged")
         for widget in [editor, *editor.findChildren(QWidget)]:
             for name in signal_names:

@@ -13,6 +13,7 @@ from qfluentwidgets import (
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.lattice import PerturbOperation, PerturbParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
     CompactField,
     InspectorSection,
@@ -34,6 +35,8 @@ class ElementScalingRow(QFrame):
 
         self.element_input = QLineEdit(self)
         self.element_input.setPlaceholderText(self.tr("Fe"))
+        self.element_input.setToolTip(self.tr("Element symbol, for example H, Si, or Fe"))
+        self.element_input.setAccessibleName(self.tr("Element"))
 
         self.distance_frame = SpinBoxUnitInputFrame(self)
         self.distance_frame.set_input("Å", 1, "float")
@@ -41,6 +44,7 @@ class ElementScalingRow(QFrame):
         self.distance_frame.setSingleStep(0.01)
         self.distance_frame.setRange(0, 1)
         self.distance_frame.set_input_value([default_distance])
+        self.distance_frame.setToolTip(self.tr("Maximum displacement for this element"))
 
         self.delete_button = TransparentToolButton(FluentIcon.DELETE, self)
         self.delete_button.setToolTip(self.tr("Remove this element scaling"))
@@ -105,7 +109,7 @@ class PerturbCard(MakeDataCard):
         """
         self.setObjectName("perturb_card_widget")
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
-        self.settingLayout.setVerticalSpacing(12)
+        self.settingLayout.setVerticalSpacing(4)
 
         self.engine_type_combo = SegmentedControl(
             [self.tr("Sobol"), self.tr("Uniform")], self.setting_widget
@@ -119,11 +123,16 @@ class PerturbCard(MakeDataCard):
         )
         engine_field.installEventFilter(ToolTipFilter(engine_field, 300, ToolTipPosition.TOP))
 
-        self.organic_checkbox = CheckBox(self.tr("Identify organic"), self.setting_widget)
+        self.organic_checkbox = CheckBox(
+            self.tr("Move detected organic molecules rigidly"), self.setting_widget
+        )
         self.organic_checkbox.setChecked(False)
-        optional_field = CompactField(self.tr("Optional"), self.organic_checkbox, self.setting_widget)
-        optional_field.setToolTip(self.tr("Treat organic molecules as rigid units"))
-        optional_field.installEventFilter(ToolTipFilter(optional_field, 300, ToolTipPosition.TOP))
+        self.organic_checkbox.setToolTip(
+            self.tr("Automatically detected organic connected clusters share one translation")
+        )
+        self.organic_checkbox.installEventFilter(
+            ToolTipFilter(self.organic_checkbox, 300, ToolTipPosition.TOP)
+        )
 
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
         self.scaling_condition_frame.set_input("Å", 1, "float")
@@ -131,19 +140,29 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.setSingleStep(0.01)
         self.scaling_condition_frame.setRange(0, 1)
         self.scaling_condition_frame.set_input_value([0.3])
-        distance_field = CompactField(self.tr("Max distance"), self.scaling_condition_frame, self.setting_widget)
-        distance_field.setToolTip(self.tr("Maximum displacement distance"))
+        distance_field = CompactField(
+            self.tr("Displacement limit"),
+            self.scaling_condition_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
+        )
+        self.scaling_condition_frame.setFixedWidth(132)
+        distance_field.setToolTip(self.tr("Maximum Cartesian displacement-vector length for each atom"))
         distance_field.installEventFilter(ToolTipFilter(distance_field, 300, ToolTipPosition.TOP))
 
-        self.element_scaling_label = BodyLabel(self.tr("Element Scaling:"), self.setting_widget)
-        self.element_scaling_label.setToolTip(
-            self.tr("Set maximum displacement per element; unlisted elements use Max distance")
+        self.element_scaling_label = BodyLabel(
+            self.tr(
+                "Each row sets Element → maximum displacement (Å). "
+                "Unlisted elements use the global limit."
+            ),
+            self.setting_widget,
         )
-        self.element_scaling_label.installEventFilter(ToolTipFilter(self.element_scaling_label, 300, ToolTipPosition.TOP))
-        self.element_scaling_checkbox = CheckBox(self.tr("Enable Scaling"), self.setting_widget)
+        self.element_scaling_label.setWordWrap(True)
+        self.element_scaling_checkbox = CheckBox(self.tr("Use per-element limits"), self.setting_widget)
         self.element_scaling_checkbox.setChecked(False)
         self.element_scaling_checkbox.setToolTip(
-            self.tr("Enable element-specific maximum displacement")
+            self.tr("Override the displacement limit for selected elements")
         )
         self.element_scaling_checkbox.installEventFilter(
             ToolTipFilter(self.element_scaling_checkbox, 300, ToolTipPosition.TOP)
@@ -160,22 +179,31 @@ class PerturbCard(MakeDataCard):
         element_toggle_layout.addWidget(self.element_scaling_checkbox)
         element_toggle_layout.addWidget(self.add_element_button)
         element_toggle_layout.addStretch(1)
-        element_field = CompactField(self.tr("Element scaling"), element_toggle_row, self.setting_widget)
-
         self.element_rows_frame = QFrame(self.setting_widget)
         self.element_rows_layout = QVBoxLayout(self.element_rows_frame)
         self.element_rows_layout.setContentsMargins(0, 0, 0, 0)
         self.element_rows_layout.setSpacing(4)
+        self.element_validation_label = BodyLabel("", self.setting_widget)
+        self.element_validation_label.setWordWrap(True)
+        self.element_validation_label.setStyleSheet("color: #c64545;")
+        self.element_validation_label.hide()
         self.element_scaling_label.setVisible(False)
         self.element_rows_frame.setVisible(False)
         self.add_element_button.setEnabled(False)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
-        self.num_condition_frame.set_input("unit", 1, "int")
+        self.num_condition_frame.set_input("", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([50])
-        num_field = CompactField(self.tr("Structures"), self.num_condition_frame, self.setting_widget)
-        num_field.setToolTip(self.tr("Number of perturbed structures to generate"))
+        num_field = CompactField(
+            self.tr("Structures per input"),
+            self.num_condition_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
+        )
+        self.num_condition_frame.setFixedWidth(132)
+        num_field.setToolTip(self.tr("Number of perturbed outputs generated from each input structure"))
         num_field.installEventFilter(ToolTipFilter(num_field, 300, ToolTipPosition.TOP))
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
@@ -193,25 +221,36 @@ class PerturbCard(MakeDataCard):
         seed_row_layout.setContentsMargins(0, 0, 0, 0)
         seed_row_layout.setSpacing(6)
         seed_row_layout.addWidget(self.seed_checkbox)
-        seed_row_layout.addWidget(self.seed_frame, 1)
-        seed_field = CompactField(self.tr("Reproducibility"), seed_row, self.setting_widget)
+        self.seed_frame.setFixedWidth(132)
+        seed_row_layout.addWidget(self.seed_frame)
+        seed_row_layout.addStretch(1)
 
         basics_section = InspectorSection(self.tr("Perturbation"), self.setting_widget)
         basics_grid = ResponsiveFormGrid(basics_section)
         basics_grid.add_field(engine_field, span=2)
         basics_grid.add_field(distance_field)
-        basics_grid.add_field(optional_field)
+        basics_grid.add_field(self.organic_checkbox, span=2)
         basics_section.addWidget(basics_grid)
+        self.displacement_explainer = BodyLabel(
+            self.tr(
+                "Each displacement is sampled inside a 3D ball of this radius. "
+                "Only Cartesian coordinates change; the cell and PBC stay unchanged."
+            ),
+            basics_section,
+        )
+        self.displacement_explainer.setWordWrap(True)
+        basics_section.addWidget(self.displacement_explainer)
 
-        element_section = InspectorSection(self.tr("Element limits"), self.setting_widget)
-        element_section.addWidget(element_field)
+        element_section = InspectorSection(self.tr("Per-element displacement limits"), self.setting_widget)
+        element_section.addWidget(element_toggle_row)
         element_section.addWidget(self.element_scaling_label)
         element_section.addWidget(self.element_rows_frame)
+        element_section.addWidget(self.element_validation_label)
 
         output_section = InspectorSection(self.tr("Generation"), self.setting_widget)
         output_grid = ResponsiveFormGrid(output_section)
-        output_grid.add_field(num_field)
-        output_grid.add_field(seed_field, span=2)
+        output_grid.add_field(num_field, span=2)
+        output_grid.add_field(seed_row, span=2)
         output_section.addWidget(output_grid)
 
         self.settingLayout.addWidget(basics_section, 0, 0, 1, 3)
@@ -226,6 +265,7 @@ class PerturbCard(MakeDataCard):
         self.element_scaling_label.setVisible(checked)
         self.element_rows_frame.setVisible(checked)
         self.add_element_button.setEnabled(checked)
+        self._refresh_element_validation()
 
     def _add_element_row(self, element: str | None = None, distance: float | None = None) -> ElementScalingRow:
         """Append an element scaling row."""
@@ -235,9 +275,14 @@ class PerturbCard(MakeDataCard):
         if distance is not None:
             row.set_value(element or "", distance)
         row.delete_button.clicked.connect(lambda: self._remove_element_row(row))
+        row.element_input.textChanged.connect(lambda _text: self._refresh_element_validation())
+        row.element_input.editingFinished.connect(
+            lambda selected=row: self._normalize_element_row(selected)
+        )
         self.element_rows_layout.addWidget(row)
         self.element_rows.append(row)
         self.element_rows_frame.setVisible(self.element_scaling_checkbox.isChecked())
+        self._refresh_element_validation()
         return row
 
     def _remove_element_row(self, row: ElementScalingRow) -> None:
@@ -246,16 +291,48 @@ class PerturbCard(MakeDataCard):
             self.element_rows.remove(row)
         row.setParent(None)
         row.deleteLater()
+        self._refresh_element_validation()
 
-    def _collect_element_scalings(self) -> dict[str, float]:
-        """Gather valid element scaling values."""
-        scalings: dict[str, float] = {}
+    def _element_entries(self) -> list[tuple[str, float]]:
+        entries = []
         for row in self.element_rows:
             value = row.get_value()
             if value:
-                element, distance = value
-                scalings[element] = distance
-        return scalings
+                entries.append(value)
+        return entries
+
+    def _normalize_element_row(self, row: ElementScalingRow) -> None:
+        token = row.element_input.text().strip()
+        if token:
+            row.element_input.setText(token[:1].upper() + token[1:].lower())
+        self._refresh_element_validation()
+
+    def _refresh_element_validation(self) -> None:
+        if not self.element_scaling_checkbox.isChecked():
+            self.element_validation_label.clear()
+            self.element_validation_label.hide()
+            return
+        try:
+            PerturbOperation.normalize_element_limits(self._element_entries())
+        except ValueError as exc:
+            self.element_validation_label.setText(translate_runtime_message(exc))
+            self.element_validation_label.show()
+        else:
+            self.element_validation_label.clear()
+            self.element_validation_label.hide()
+
+    def _collect_element_scalings(self) -> dict[str, float]:
+        """Gather valid element scaling values."""
+        entries = self._element_entries()
+        try:
+            return PerturbOperation.normalize_element_limits(entries)
+        except ValueError as exc:
+            self.element_validation_label.setText(translate_runtime_message(exc))
+            self.element_validation_label.show()
+            if getattr(exc, "code", "") == "perturb.duplicate_element_limit":
+                element = str(getattr(exc, "values", {}).get("element", "?"))
+                return {f"__duplicate__:{element}": 0.0}
+            return {element: distance for element, distance in entries}
 
     def _load_element_scalings(self, scalings: dict[str, float]) -> None:
         """Rebuild element rows from persisted data."""
@@ -268,29 +345,69 @@ class PerturbCard(MakeDataCard):
             self._add_element_row(element, distance)
         if self.element_rows:
             self.element_rows_frame.setVisible(self.element_scaling_checkbox.isChecked())
+        self._refresh_element_validation()
 
 
     def get_summary_text(self) -> str:
         """Return a one-line description shown while the card is collapsed."""
         params = self.get_params()
         parts = [self.tr("max {distance} Å").format(distance=params.max_distance)]
+        if params.engine_type == 0:
+            parts.append(self.tr("Sobol"))
+        if params.identify_organic:
+            parts.append(self.tr("rigid organic molecules"))
         if params.use_element_scaling and params.element_scalings:
             parts.append(
                 self.tr("{count} element overrides").format(count=len(params.element_scalings))
             )
-        parts.append(self.tr("{count} structures").format(count=params.max_num))
+        parts.append(self.tr("{count} per input").format(count=params.max_num))
         if params.use_seed:
             parts.append(self.tr("seed {seed}").format(seed=params.seed))
         return " · ".join(parts)
+
+    def set_preview_input_count(self, count: int | None) -> None:
+        """Store an exact upstream input count when the workbench knows it."""
+        self._preview_input_count = None if count is None else max(0, int(count))
+        self.refresh_compact_presentation()
 
     def get_guidance_text(self) -> str:
         """Return bounded guidance without inventing a chemistry-independent optimum."""
         params = self.get_params()
         engine = self.tr("Sobol") if params.engine_type == 0 else self.tr("Uniform")
-        return self.tr(
-            "{engine} engine · {distance} Å is a hard displacement ceiling. "
-            "Inspect shortest distances in a small output sample before scaling up."
-        ).format(engine=engine, distance=f"{params.max_distance:.4g}")
+        notes = [
+            self.tr(
+                "{engine} engine · {distance} Å is a hard displacement-vector ceiling."
+            ).format(engine=engine, distance=f"{params.max_distance:.4g}"),
+            self.tr(
+                "No collision check is performed; inspect shortest distances in a small output sample."
+            ),
+        ]
+        input_count = getattr(self, "_preview_input_count", None)
+        if input_count is None:
+            attached_dataset = getattr(self, "dataset", []) or []
+            input_count = len(attached_dataset) if attached_dataset else None
+        if input_count:
+            notes.insert(
+                0,
+                self.tr("{inputs} × {count} = {total} outputs").format(
+                    inputs=input_count,
+                    count=params.max_num,
+                    total=input_count * params.max_num,
+                ),
+            )
+        if params.max_distance >= 0.3:
+            notes.append(
+                self.tr(
+                    "For near-equilibrium sampling, 0.05–0.15 Å is a common starting range."
+                )
+            )
+        if params.engine_type == 0 and params.max_num & (params.max_num - 1):
+            notes.append(
+                self.tr(
+                    "Sobol coverage is best with 4, 8, 16, … outputs; the requested count is still preserved."
+                )
+            )
+        return " ".join(notes)
 
     def create_operation(self):
         """Return the UI-independent atomic perturbation operation."""

@@ -15,6 +15,12 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional, Sequence, Tuple
 import numpy as np
 from collections import deque, defaultdict
+
+from .cards.geometry import (
+    MinimumImageContext,
+    minimum_image_context,
+    minimum_image_delta,
+)
 COVALENT_RADII = {
     'H': 0.31, 'He': 0.28, 'Li': 1.28, 'Be': 0.96, 'B': 0.84, 'C': 0.76, 'N': 0.71, 'O': 0.66, 'F': 0.57, 'Ne': 0.58,
     'Na': 1.66, 'Mg': 1.41, 'Al': 1.21, 'Si': 1.11, 'P': 1.07, 'S': 1.05, 'Cl': 1.02, 'Ar': 1.06,
@@ -49,6 +55,10 @@ class TorsionGuardParams:
     bo_threshold: float = 0.2
     seed: Optional[int] = None
 # ---------- Geometry and PBC helpers ----------
+def _context_for_cell(cell: np.ndarray) -> MinimumImageContext:
+    return minimum_image_context(cell, True)
+
+
 def rotate_coords(coords: np.ndarray, atom_indices: Iterable[int], axis_point1: np.ndarray,
                   axis_point2: np.ndarray, angle_deg: float) -> np.ndarray:
     axis = np.array(axis_point2) - np.array(axis_point1)
@@ -75,14 +85,20 @@ def center_in_box(coords: np.ndarray, box_size: float) -> np.ndarray:
     box_center = np.array([box_size / 2.0] * 3)
     shift = box_center - center
     return coords + shift
-def wrap_to_cell(coords: np.ndarray, cell: np.ndarray, inv_cell_T: np.ndarray) -> np.ndarray:
-    frac = coords @ inv_cell_T
+def wrap_to_cell(coords: np.ndarray, cell: np.ndarray, inv_cell: np.ndarray) -> np.ndarray:
+    # ASE stores lattice vectors as rows: cartesian = fractional @ cell.
+    frac = coords @ inv_cell
     frac = frac - np.floor(frac)
     return frac @ cell
-def mic_delta(delta: np.ndarray, cell: np.ndarray, inv_cell_T: np.ndarray) -> np.ndarray:
-    dfrac = delta @ inv_cell_T
-    dfrac -= np.round(dfrac)
-    return dfrac @ cell
+def mic_delta(
+    delta: np.ndarray,
+    cell: np.ndarray,
+    inv_cell: np.ndarray,
+    context: MinimumImageContext | None = None,
+) -> np.ndarray:
+    """Return exact 3D minimum images using ASE's row-vector convention."""
+    context = context or _context_for_cell(cell)
+    return minimum_image_delta(delta, context)
 # ---------- Grid utils (non-PBC only) ----------
 def _grid_key(p: np.ndarray, inv_h: float, origin: np.ndarray) -> Tuple[int, int, int]:
     return tuple(((p - origin) * inv_h).astype(np.int64))  # type: ignore[return-value]
@@ -143,7 +159,8 @@ def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.nda
     radii = np.array([COVALENT_RADII.get(s, 0.77) for s in symbols], dtype=float)
     if N == 0:
         return [], {}, radii, {}
-    inv_cell_T = np.linalg.inv(cell).T
+    mic_context = _context_for_cell(cell)
+    inv_cell = mic_context.inv_cell
     adj: List[set[int]] = [set() for _ in range(N)]
     edge_len: dict[Tuple[int, int], float] = {}
     edge_order: dict[Tuple[int, int], int] = {}
@@ -152,7 +169,7 @@ def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.nda
         for j in range(i + 1, N):
             rj = radii[j]
             dvec = coords[j] - coords[i]
-            dvec = mic_delta(dvec, cell, inv_cell_T)
+            dvec = mic_delta(dvec, cell, inv_cell, mic_context)
             d2 = float(np.dot(dvec, dvec))
             rx = math.sqrt(d2)
             r0 = (ri + rj)
@@ -261,7 +278,8 @@ def unwrap_by_adjacency(
     coords: np.ndarray,
     adj: Sequence[set[int]],
     cell: np.ndarray,
-    inv_cell_T: np.ndarray,
+    inv_cell: np.ndarray,
+    mic_context: MinimumImageContext,
 ) -> np.ndarray:
     """Unwrap each bonded component before rotating a PBC-spanning subtree."""
     unwrapped = np.asarray(coords, dtype=float).copy()
@@ -279,7 +297,8 @@ def unwrap_by_adjacency(
                 delta = mic_delta(
                     coords[neighbor] - coords[atom],
                     cell,
-                    inv_cell_T,
+                    inv_cell,
+                    mic_context,
                 )
                 unwrapped[neighbor] = unwrapped[atom] + delta
                 visited.add(neighbor)
@@ -300,11 +319,12 @@ def bonds_within_range_nonpbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int
     return True
 def bonds_within_range_pbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int, int]], radii: np.ndarray,
                            min_factor: float, max_factor: Optional[float], detect_factor: float,
-                           cell: np.ndarray, inv_cell_T: np.ndarray) -> bool:
+                           cell: np.ndarray, inv_cell: np.ndarray,
+                           mic_context: MinimumImageContext) -> bool:
     maxf = None if max_factor is None else float(max_factor)
     minf = float(min_factor) if (min_factor is not None) else 0.0
     for (i, j) in bond_pairs:
-        dvec = mic_delta(coords[j] - coords[i], cell, inv_cell_T)
+        dvec = mic_delta(coords[j] - coords[i], cell, inv_cell, mic_context)
         d = float(np.linalg.norm(dvec))
         ref = radii[i] + radii[j]
         if maxf is not None and d > maxf * ref:
@@ -349,7 +369,8 @@ def nonbond_clash_free_fast_nonpbc(coords: np.ndarray, radii: np.ndarray, bonded
                     return False
     return True
 def nonbond_clash_free_fast_pbc(coords: np.ndarray, radii: np.ndarray, bonded_set: set[Tuple[int, int]],
-                                min_factor: float, cell: np.ndarray, inv_cell_T: np.ndarray) -> bool:
+                                min_factor: float, cell: np.ndarray, inv_cell: np.ndarray,
+                                mic_context: MinimumImageContext) -> bool:
     N = coords.shape[0]
     if N == 0 or min_factor <= 0.0:
         return True
@@ -359,7 +380,12 @@ def nonbond_clash_free_fast_pbc(coords: np.ndarray, radii: np.ndarray, bonded_se
             if (i, j) in bonded_set:
                 continue
             rj = radii[j]
-            dvec = mic_delta(coords[j] - coords[i], cell, inv_cell_T)
+            dvec = mic_delta(
+                coords[j] - coords[i],
+                cell,
+                inv_cell,
+                mic_context,
+            )
             d2 = float(np.dot(dvec, dvec))
             cutoff = min_factor * (ri + rj)
             if d2 < cutoff * cutoff:
@@ -369,7 +395,8 @@ def nonbond_clash_free_fast_pbc(coords: np.ndarray, radii: np.ndarray, bonded_se
 def perturb_coords_fast(coords: np.ndarray, adj: Sequence[set[int]], torsions: Sequence[Tuple[int, int, int, int]],
                         degrees_range: Tuple[float, float], num_torsions: int,
                         sigma: float, local_mode: bool, max_subtree_atoms: Optional[int],
-                        pbc_active: bool, cell: Optional[np.ndarray], inv_cell_T: Optional[np.ndarray],
+                        pbc_active: bool, cell: Optional[np.ndarray], inv_cell: Optional[np.ndarray],
+                        mic_context: MinimumImageContext | None,
                         rng: np.random.Generator) -> np.ndarray:
     if torsions:
         torsion_list = list(torsions)
@@ -386,8 +413,13 @@ def perturb_coords_fast(coords: np.ndarray, adj: Sequence[set[int]], torsions: S
                 subtree_atoms = get_local_subtree_adj(adj, b, a, None)
             angle = float(rng.uniform(float(degrees_range[0]), float(degrees_range[1])))
             if subtree_atoms:
-                if pbc_active and cell is not None and inv_cell_T is not None:
-                    dvec = mic_delta(coords[b] - coords[a], cell, inv_cell_T)
+                if pbc_active and cell is not None and inv_cell is not None:
+                    dvec = mic_delta(
+                        coords[b] - coords[a],
+                        cell,
+                        inv_cell,
+                        mic_context,
+                    )
                     axis_p1 = coords[a]
                     axis_p2 = coords[a] + dvec
                 else:
@@ -424,7 +456,12 @@ def process_single(symbols: Sequence[str],
         pbc_active = False
     else:  # "auto"
         pbc_active = bool(has_cell)
-    inv_cell_T = np.linalg.inv(cell).T if (pbc_active and has_cell and cell is not None) else None
+    mic_context = (
+        _context_for_cell(cell)
+        if pbc_active and has_cell and cell is not None
+        else None
+    )
+    inv_cell = mic_context.inv_cell if mic_context is not None else None
     # Build topology once (fixed for this frame). Multiple disconnected molecules are allowed.
     if pbc_active:
         assert cell is not None
@@ -445,12 +482,13 @@ def process_single(symbols: Sequence[str],
     torsions = get_rotatable_torsions_fast(adj, edge_len, radii, symbols, params.mult_bond_factor, edge_order=edge_order)
     local_mode_flag = len(symbols) > params.local_mode_cutoff_atoms
     base_coords = coords.copy()
-    if pbc_active and cell is not None and inv_cell_T is not None:
+    if pbc_active and cell is not None and inv_cell is not None:
         base_coords = unwrap_by_adjacency(
             base_coords,
             adj,
             cell,
-            inv_cell_T,
+            inv_cell,
+            mic_context,
         )
     results: list[tuple] = []
     for _ in range(int(params.perturb_per_frame)):
@@ -465,20 +503,21 @@ def process_single(symbols: Sequence[str],
                 new_coords, adj, torsions,
                 angle_range, int(params.max_torsions_per_conf),
                 sigma_scaled, local_mode_flag, int(params.local_torsion_max_subtree),
-                pbc_active, cell if cell is not None else None, inv_cell_T,
+                pbc_active, cell if cell is not None else None, inv_cell,
+                mic_context,
                 rng=rng,
             )
             # Guards: only original bonded pairs are enforced; non-bonded pairs kept apart
-            if pbc_active and cell is not None and inv_cell_T is not None:
+            if pbc_active and cell is not None and inv_cell is not None:
                 if not bonds_within_range_pbc(
                     new_coords, bond_pairs, radii,
                     float(params.bond_keep_min_factor), params.bond_keep_max_factor, float(params.bond_detect_factor),
-                    cell, inv_cell_T
+                    cell, inv_cell, mic_context
                 ):
                     continue
                 if not nonbond_clash_free_fast_pbc(
                     new_coords, radii, bonded_set, float(params.nonbond_min_factor),
-                    cell, inv_cell_T
+                    cell, inv_cell, mic_context
                 ):
                     continue
             else:
@@ -495,8 +534,8 @@ def process_single(symbols: Sequence[str],
             break
         if not success:
             continue
-        if pbc_active and cell is not None and inv_cell_T is not None:
-            new_coords = wrap_to_cell(new_coords, cell, inv_cell_T)
+        if pbc_active and cell is not None and inv_cell is not None:
+            new_coords = wrap_to_cell(new_coords, cell, inv_cell)
         else:
             new_coords = center_in_box(new_coords, float(params.nonpbc_box_size))
         results.append((list(symbols), new_coords, cell, pbc_active))

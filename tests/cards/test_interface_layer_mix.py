@@ -1,7 +1,9 @@
-"""Tests for the Interface Layer Mixing card (界面随机互混)."""
+"""Tests for the Interface Layer Mixing card (界面层互混)."""
 
 from __future__ import annotations
 
+from collections import Counter
+from dataclasses import replace
 from unittest import mock
 
 import numpy as np
@@ -35,6 +37,15 @@ def _bilayer(n_xy: int = 2, cell=None, symbols=("Al", "Ni"), pbc=True):
                 positions.append([x, y, z])
                 symbol_list.append(sym)
     return Atoms(symbol_list, scaled_positions=positions, cell=cell, pbc=pbc)
+
+
+def _mixed_bilayer():
+    symbols = ["Al", "Al", "Al", "Ni", "Al", "Ni", "Ni", "Ni"]
+    scaled = [
+        *[[x, 0.0, 0.25] for x in (0.0, 0.25, 0.5, 0.75)],
+        *[[x, 0.0, 0.75] for x in (0.0, 0.25, 0.5, 0.75)],
+    ]
+    return Atoms(symbols, scaled_positions=scaled, cell=np.eye(3) * 8.0, pbc=True)
 
 
 class TestInterfaceLayerMixOperation(BaseCardTest):
@@ -190,6 +201,128 @@ class TestInterfaceLayerMixOperation(BaseCardTest):
                 8,
             )
 
+    def test_mixed_interface_swaps_only_unlike_pairs_for_20_seeds(self):
+        op = InterfaceLayerMixOperation()
+        atoms = _mixed_bilayer()
+        baseline = np.asarray(atoms.get_chemical_symbols())
+        params = InterfaceLayerMixParams(
+            axis="c",
+            auto_position=False,
+            interface_position=0.5,
+            left_layers=1,
+            right_layers=1,
+            concentration=0.5,
+            use_seed=True,
+        )
+
+        for seed in range(20):
+            out = op.run_structure(atoms, replace(params, seed=seed))[0]
+            changed = np.flatnonzero(
+                np.asarray(out.get_chemical_symbols()) != baseline
+            )
+            self.assertEqual(len(changed), 4)
+            self.assertEqual(int(np.sum(changed < 4)), 2)
+            self.assertEqual(int(np.sum(changed >= 4)), 2)
+            self.assertEqual(
+                Counter(out.get_chemical_symbols()),
+                Counter(atoms.get_chemical_symbols()),
+            )
+
+    def test_capacity_counts_only_unlike_pairs_and_validates_before_rng(self):
+        atoms = Atoms(
+            ["Al", "Al", "Al", "Ni"] * 2,
+            scaled_positions=[
+                *[[x, 0.0, 0.25] for x in (0.0, 0.25, 0.5, 0.75)],
+                *[[x, 0.0, 0.75] for x in (0.0, 0.25, 0.5, 0.75)],
+            ],
+            cell=np.eye(3) * 8.0,
+            pbc=True,
+        )
+        params = InterfaceLayerMixParams(
+            axis="c",
+            auto_position=False,
+            interface_position=0.5,
+            left_layers=1,
+            right_layers=1,
+            concentration=0.75,
+        )
+        op = InterfaceLayerMixOperation()
+        summary = op.interface_summary(atoms, replace(params, concentration=0.5))
+        self.assertEqual(summary["pair_capacity"], 2)
+        self.assertAlmostEqual(summary["c_max"], 0.5)
+
+        with mock.patch(
+            "NepTrainKit.core.cards.alloy.np.random.default_rng",
+            side_effect=AssertionError("RNG reached"),
+        ):
+            with self.assertRaises(CardOperationError) as caught:
+                op.run_structure(atoms, params)
+        self.assertEqual(caught.exception.code, "interface.concentration_exceeds_max")
+
+    def test_effective_concentration_is_previewed_and_tagged(self):
+        atoms = _bilayer()
+        params = InterfaceLayerMixParams(
+            concentration=1.0 / 6.0,
+            use_seed=True,
+            seed=3,
+        )
+        op = InterfaceLayerMixOperation()
+        summary = op.interface_summary(atoms, params)
+        out = op.run_structure(atoms, params)[0]
+        baseline = np.asarray(atoms.get_chemical_symbols())
+        changed = int(
+            np.sum(np.asarray(out.get_chemical_symbols()) != baseline)
+        )
+
+        self.assertEqual(changed, 2)
+        self.assertAlmostEqual(summary["requested_concentrations"][0], 1.0 / 6.0)
+        self.assertAlmostEqual(summary["effective_concentrations"][0], 0.125)
+        self.assertIn("c=0.125", out.info["Config_type"])
+        self.assertIn("target=0.167", out.info["Config_type"])
+
+    def test_changed_output_drops_stale_labels_and_moves_species_arrays(self):
+        atoms = _bilayer(n_xy=1)
+        symbols = np.asarray(atoms.get_chemical_symbols())
+        spin = np.where(symbols == "Al", 1.0, 2.0)
+        initial = np.where(symbols == "Al", 10.0, 20.0)
+        groups = np.arange(len(atoms), dtype=int)
+        atoms.new_array("spin", spin.copy())
+        atoms.set_initial_magnetic_moments(initial.copy())
+        atoms.new_array("group", groups.copy())
+        atoms.new_array("forces", np.ones((len(atoms), 3)))
+        atoms.new_array("energies", np.arange(len(atoms), dtype=float))
+        atoms.new_array("magmoms", initial.copy())
+        atoms.info.update(
+            energy=-5.0,
+            free_energy=-5.1,
+            stress=np.arange(6.0),
+            virial=np.arange(9.0),
+        )
+
+        out = InterfaceLayerMixOperation().run_structure(
+            atoms,
+            InterfaceLayerMixParams(
+                concentration=0.5, use_seed=True, seed=2
+            ),
+        )[0]
+
+        self.assertIsNone(out.calc)
+        for key in ("energy", "free_energy", "stress", "virial"):
+            self.assertNotIn(key, out.info)
+        for key in ("forces", "energies", "magmoms"):
+            self.assertNotIn(key, out.arrays)
+        out_symbols = np.asarray(out.get_chemical_symbols())
+        np.testing.assert_array_equal(
+            out.arrays["spin"], np.where(out_symbols == "Al", 1.0, 2.0)
+        )
+        np.testing.assert_array_equal(
+            out.arrays["initial_magmoms"],
+            np.where(out_symbols == "Al", 10.0, 20.0),
+        )
+        np.testing.assert_array_equal(out.arrays["group"], groups)
+        self.assertIn("energy", atoms.info)
+        self.assertIn("forces", atoms.arrays)
+
     def test_non_orthogonal_cell_and_mixed_pbc(self):
         slab_cell = np.array(
             [[3.0, 0.5, 0.0], [0.0, 3.2, 0.0], [0.0, 0.0, 4.0]],
@@ -209,6 +342,40 @@ class TestInterfaceLayerMixOperation(BaseCardTest):
             InterfaceLayerMixParams(mode="fixed", concentration=0.5, use_seed=True, seed=5),
         )
         self.assertEqual(len(outputs), 1)
+
+    def test_layer_tolerance_uses_angstroms_in_different_cell_lengths(self):
+        op = InterfaceLayerMixOperation()
+        for height, rumple_fraction in ((10.0, 0.005), (100.0, 0.0005)):
+            atoms = Atoms(
+                ["Al", "Al", "Al", "Ni", "Ni", "Ni"],
+                scaled_positions=[
+                    [0.0, 0.0, 0.1],
+                    [0.5, 0.0, 0.1 + rumple_fraction],
+                    [0.0, 0.0, 0.3],
+                    [0.0, 0.0, 0.7],
+                    [0.5, 0.0, 0.7 + rumple_fraction],
+                    [0.0, 0.0, 0.9],
+                ],
+                cell=np.diag([5.0, 5.0, height]),
+                pbc=True,
+            )
+            params = InterfaceLayerMixParams(
+                axis="c",
+                auto_position=False,
+                interface_position=0.5,
+                left_layers=1,
+                right_layers=1,
+                layer_tolerance=0.1,
+            )
+            summary = op.interface_summary(atoms, params)
+            self.assertEqual(summary["left_layers_available"], 2)
+            self.assertEqual(summary["right_layers_available"], 2)
+
+            split = op.interface_summary(
+                atoms, replace(params, layer_tolerance=0.01)
+            )
+            self.assertEqual(split["left_layers_available"], 3)
+            self.assertEqual(split["right_layers_available"], 3)
 
     def test_degenerate_inputs_fail_cleanly(self):
         op = InterfaceLayerMixOperation()
@@ -273,7 +440,7 @@ class TestInterfaceLayerMixOperation(BaseCardTest):
 
         with self.assertRaisesRegex(CardOperationError, "Interface axis"):
             op.run_structure(_bilayer(), InterfaceLayerMixParams(axis="q"))
-        with self.assertRaisesRegex(CardOperationError, "must be in \\[0, 1\\]"):
+        with self.assertRaisesRegex(CardOperationError, "strictly between 0 and 1"):
             op.run_structure(
                 _bilayer(),
                 InterfaceLayerMixParams(
@@ -286,6 +453,20 @@ class TestInterfaceLayerMixOperation(BaseCardTest):
             op.run_structure(_bilayer(), InterfaceLayerMixParams(mode="typo"))
         with self.assertRaisesRegex(CardOperationError, "Number of structures"):
             op.run_structure(_bilayer(), InterfaceLayerMixParams(num_structures=0))
+        for tolerance in (0.0, -0.1, np.nan, np.inf):
+            with self.subTest(tolerance=tolerance):
+                with self.assertRaises(CardOperationError) as caught:
+                    op.run_structure(
+                        _bilayer(),
+                        InterfaceLayerMixParams(layer_tolerance=tolerance),
+                    )
+                self.assertEqual(caught.exception.code, "interface.layer_tolerance")
+        with self.assertRaises(CardOperationError) as caught:
+            op.run_structure(
+                _bilayer(),
+                InterfaceLayerMixParams(use_seed=True, seed=-1),
+            )
+        self.assertEqual(caught.exception.code, "interface.seed")
 
     def test_atom_positions_and_lattice_are_unchanged_by_swap(self):
         atoms = _bilayer()
@@ -324,6 +505,9 @@ class TestInterfaceLayerMixCard(BaseCardTest):
 
         params = InterfaceLayerMixParams(
             axis="a",
+            auto_position=False,
+            interface_position=0.25,
+            layer_tolerance=0.15,
             left_layers=3,
             right_layers=1,
             mode="gradient",
@@ -363,22 +547,17 @@ class TestInterfaceLayerMixCard(BaseCardTest):
 
     def test_ui_live_summary_shows_hint_then_exact_readout(self):
         card = InterfaceLayerMixCard()
-        self.assertEqual(
-            card.summary_label.text(),
-            "Preview appears after attaching an input dataset.",
-        )
+        self.assertIn("output(s)/input", card.get_summary_text())
 
-        card.set_dataset([_bilayer()])
-        text = card.summary_label.text()
-        self.assertIn("c-axis interface @ 0.500", text)
-        self.assertIn("L=2 (Al)", text)
-        self.assertIn("R=2 (Ni)", text)
-        self.assertIn("c_max=1", text)
-        self.assertIn("outputs: 1", text)
+        card.set_preview_structure(_bilayer())
+        text = card.get_summary_text()
+        self.assertIn("fractional c @ 0.500", text)
+        self.assertIn("L 8/8 R sites", text)
+        self.assertIn("realized 50%", text)
 
     def test_ui_live_summary_tracks_param_changes_and_mode_combo(self):
         card = InterfaceLayerMixCard()
-        card.set_dataset([_bilayer()])
+        card.set_preview_structure(_bilayer())
         card.set_params(
             InterfaceLayerMixParams(
                 mode="gradient",
@@ -389,9 +568,11 @@ class TestInterfaceLayerMixCard(BaseCardTest):
                 seed=1,
             )
         )
-        self.assertIn("outputs: 4", card.summary_label.text())
-        self.assertTrue(card.concentration_frame.isHidden())
-        self.assertFalse(card.gradient_container.isHidden())
+        card.set_preview_input_count(2)
+        self.assertIn("2 × 4/input = 8 outputs", card.get_guidance_text())
+        self.assertTrue(card.concentration_field.isHidden())
+        self.assertFalse(card.gradient_start_field.isHidden())
+        self.assertFalse(card.gradient_end_field.isHidden())
 
         # switch straight through the combo, read it back, and run the branch
         set_combo_value(card.mode_combo, "fixed")
@@ -405,7 +586,7 @@ class TestInterfaceLayerMixCard(BaseCardTest):
 
     def test_ui_live_summary_corresponds_to_operation_run(self):
         card = InterfaceLayerMixCard()
-        card.set_dataset([_bilayer()])
+        card.set_preview_structure(_bilayer())
         params = InterfaceLayerMixParams(
             left_layers=2,
             right_layers=2,
@@ -417,8 +598,8 @@ class TestInterfaceLayerMixCard(BaseCardTest):
         )
         card.set_params(params)
         # the preview is exact: same capacity and output budget the run consumes
-        self.assertIn("c_max=1", card.summary_label.text())
-        self.assertIn("outputs: 3", card.summary_label.text())
+        self.assertIn("realized 50%", card.get_summary_text())
+        self.assertIn("Outputs/input: 3", card.get_guidance_text())
 
         outputs = card.create_operation().run_structure(_bilayer(), card.get_params())
         self.assertEqual(len(outputs), 3)
@@ -430,20 +611,46 @@ class TestInterfaceLayerMixCard(BaseCardTest):
 
     def test_ui_live_summary_reports_resolution_error(self):
         card = InterfaceLayerMixCard()
-        card.set_dataset(
-            [
-                Atoms(
-                    "Al4",
-                    scaled_positions=[[0.0, 0.0, 0.1], [0.5, 0.5, 0.1], [0.0, 0.0, 0.7], [0.5, 0.5, 0.7]],
-                    cell=np.diag([5.0, 5.0, 5.0]),
-                    pbc=True,
-                )
-            ]
-        )
+        card.set_preview_structure(Atoms(
+            "Al4",
+            scaled_positions=[[0.0, 0.0, 0.1], [0.5, 0.5, 0.1], [0.0, 0.0, 0.7], [0.5, 0.5, 0.7]],
+            cell=np.diag([5.0, 5.0, 5.0]),
+            pbc=True,
+        ))
         self.assertTrue(
-            card.summary_label.text().startswith("Preview unavailable:"),
-            card.summary_label.text(),
+            card.get_summary_text().startswith("Preview unavailable:"),
+            card.get_summary_text(),
         )
+
+    def test_manual_position_and_conditional_fields_restore_from_old_json(self):
+        card = InterfaceLayerMixCard()
+        card.from_dict({
+            "check_state": True,
+            "params": {
+                "axis": "c",
+                "auto_position": False,
+                "interface_position": 0.25,
+                "left_layers": 1,
+                "right_layers": 3,
+                "mode": "fixed",
+                "concentration": 0.4,
+                "gradient_start": 0.0,
+                "gradient_end": 1.0,
+                "num_structures": 2,
+                "use_seed": True,
+                "seed": 7,
+            }
+        })
+        params = card.get_params()
+        self.assertFalse(params.auto_position)
+        self.assertAlmostEqual(params.interface_position, 0.25)
+        self.assertAlmostEqual(params.layer_tolerance, 0.25)
+        self.assertFalse(card.interface_position_field.isHidden())
+        self.assertFalse(card.seed_field.isHidden())
+
+        restored = InterfaceLayerMixCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), params)
 
     def test_interface_layer_mix_translations_have_no_unfinished_entries(self):
         import xml.etree.ElementTree as ET

@@ -370,6 +370,7 @@ class TestCardContracts(BaseCardTest):
                 extend_cell_z=False,
                 extra_vacuum=1.0,
                 layers=2,
+                distance_mode="translation",
                 distance=4.0,
             ),
         )

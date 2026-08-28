@@ -1,26 +1,34 @@
-"""Card for generating crystal prototype structures (fcc/bcc/hcp)."""
+"""Card for generating single-element crystal prototype structures."""
 
 from __future__ import annotations
 
-from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition, RadioButton
+from qfluentwidgets import CaptionLabel, ComboBox, LineEdit
 
-from NepTrainKit.core import CardManager
+from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.core.cards.structure import CrystalPrototypeBuilderOperation, CrystalPrototypeBuilderParams
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.core.cards.structure import (
+    CrystalPrototypeBuilderOperation,
+    CrystalPrototypeBuilderParams,
+)
+from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
 class CrystalPrototypeBuilderCard(MakeDataCard):
-    """Generate simple bulk crystal prototypes without requiring input structures."""
+    """Generate a single-element crystal prototype without an input dataset."""
 
     group = "Lattice"
     card_name = "Crystal Prototype Builder"
     menu_icon = r":/images/src/images/supercell.svg"
-    contributors = [
-        {"name": "NepTrainKit", "role": "author"},
-    ]
+    contributors = [{"name": "NepTrainKit", "role": "author"}]
 
     requires_input_dataset = False
 
@@ -30,91 +38,196 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         self.init_ui()
 
     def init_ui(self):
+        """Build a compact form with only active parameters visible."""
         self.setObjectName("crystal_prototype_builder_card_widget")
 
-        self.structure_label = BodyLabel(self.tr("Lattice"), self.setting_widget)
         self.structure_combo = ComboBox(self.setting_widget)
-        add_translated_items(self, self.structure_combo, ["fcc", "bcc", "hcp", "fcc111"])
-        self.structure_label.setToolTip(self.tr("Crystal structure prototype"))
-        self.structure_label.installEventFilter(ToolTipFilter(self.structure_label, 300, ToolTipPosition.TOP))
+        add_translated_items(
+            self,
+            self.structure_combo,
+            [
+                ("fcc", "FCC conventional cell"),
+                ("bcc", "BCC conventional cell"),
+                ("hcp", "HCP primitive cell"),
+                ("fcc111", "FCC (111)-oriented periodic cell"),
+            ],
+        )
+        self.structure_field = CompactField(
+            self.tr("Crystal prototype"),
+            self.structure_combo,
+            self.setting_widget,
+            self.tr("Choose one single-element ideal prototype; generated coordinates are not relaxed."),
+        )
 
-        self.element_label = BodyLabel(self.tr("Base element"), self.setting_widget)
         self.element_edit = LineEdit(self.setting_widget)
-        self.element_edit.setPlaceholderText(self.tr("Cu"))
+        self.element_edit.setPlaceholderText(self.tr("e.g. Cu"))
         self.element_edit.setText("Cu")
-        self.element_label.setToolTip(self.tr("Temporary element used to build the lattice sites"))
-        self.element_label.installEventFilter(ToolTipFilter(self.element_label, 300, ToolTipPosition.TOP))
+        self.element_field = CompactField(
+            self.tr("Element symbol"),
+            self.element_edit,
+            self.setting_widget,
+            self.tr("Enter exactly one real chemical element symbol, such as Cu, Fe, or Mg."),
+            inline=True,
+            input_max_width=132,
+        )
+        self.element_edit.setFixedWidth(132)
 
-        self.a_label = BodyLabel(self.tr("a (Å)"), self.setting_widget)
         self.a_frame = SpinBoxUnitInputFrame(self)
-        self.a_frame.set_input(["-", "step", "Å"], 3, "float")
-        self.a_frame.setDecimals(6)
+        self.a_frame.set_input(["–", self.tr("step"), "Å"], 3, "float")
+        self.a_frame.setDecimals(4)
         self.a_frame.setRange(0.1, 100.0)
         self.a_frame.set_input_value([3.6, 3.6, 0.1])
-        self.a_label.setToolTip(self.tr("Lattice parameter a range [min, max, step]"))
-        self.a_label.installEventFilter(ToolTipFilter(self.a_label, 300, ToolTipPosition.TOP))
+        self.a_field = CompactField(
+            self.tr("Lattice constant a (min, max, step)"),
+            self.a_frame,
+            self.setting_widget,
+            self.tr("Endpoints are included when reached by the positive step; reversed endpoints are normalized."),
+        )
 
-        self.covera_label = BodyLabel(self.tr("c/a"), self.setting_widget)
         self.covera_frame = SpinBoxUnitInputFrame(self)
         self.covera_frame.set_input("", 1, "float")
-        self.covera_frame.setDecimals(6)
-        self.covera_frame.setRange(1.0, 5.0)
+        self.covera_frame.setDecimals(4)
+        self.covera_frame.setRange(0.1, 5.0)
         self.covera_frame.set_input_value([1.633])
-        self.covera_label.setToolTip(self.tr("hcp only: c/a ratio (ideal ~1.633)"))
-        self.covera_label.installEventFilter(ToolTipFilter(self.covera_label, 300, ToolTipPosition.TOP))
+        self.covera_field = CompactField(
+            self.tr("HCP c/a ratio"),
+            self.covera_frame,
+            self.setting_widget,
+            self.tr("Only HCP uses this ratio; c = a × (c/a)."),
+            inline=True,
+            input_max_width=132,
+        )
+        self.covera_frame.setFixedWidth(132)
 
-        self.auto_supercell_button = RadioButton(self.tr("Auto supercell (max atoms)"), self.setting_widget)
-        self.auto_supercell_button.setChecked(True)
-        self.manual_supercell_button = RadioButton(self.tr("Manual supercell"), self.setting_widget)
+        prototype_section = InspectorSection(
+            self.tr("Prototype"),
+            self.setting_widget,
+            self.tr("This generator creates a fully periodic, single-element starting structure."),
+        )
+        prototype_grid = ResponsiveFormGrid(prototype_section, two_column_threshold=520)
+        prototype_grid.add_field(self.structure_field, span=2)
+        prototype_grid.add_field(self.element_field)
+        prototype_grid.add_field(self.a_field)
+        prototype_grid.add_field(self.covera_field)
+        prototype_section.addWidget(prototype_grid)
 
-        self.max_atoms_label = BodyLabel(self.tr("Max atoms"), self.setting_widget)
-        self.max_atoms_frame = SpinBoxUnitInputFrame(self)
-        self.max_atoms_frame.set_input("unit", 1, "int")
-        self.max_atoms_frame.setRange(1, 500000)
-        self.max_atoms_frame.set_input_value([512])
-
-        self.rep_label = BodyLabel(self.tr("Rep (na,nb,nc)"), self.setting_widget)
-        self.rep_frame = SpinBoxUnitInputFrame(self)
-        self.rep_frame.set_input("", 3, "int")
-        self.rep_frame.setRange(1, 999)
-        self.rep_frame.set_input_value([4, 4, 4])
-
-        self.max_output_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)
         self.max_output_frame = SpinBoxUnitInputFrame(self)
-        self.max_output_frame.set_input("unit", 1, "int")
+        self.max_output_frame.set_input(self.tr("structures"), 1, "int")
         self.max_output_frame.setRange(1, 999999)
         self.max_output_frame.set_input_value([200])
+        self.max_output_field = CompactField(
+            self.tr("Maximum outputs"),
+            self.max_output_frame,
+            self.setting_widget,
+            self.tr("If the a scan has more points, only the first values in ascending scan order are kept."),
+            inline=True,
+            input_max_width=176,
+        )
+        self.max_output_frame.setFixedWidth(176)
 
-        self.settingLayout.addWidget(self.structure_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.structure_combo, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.element_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.element_edit, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.a_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.a_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.covera_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.covera_frame, 3, 1, 1, 2)
+        self.output_preview = CaptionLabel("", self.setting_widget)
+        self.output_preview.setWordWrap(True)
+        output_section = InspectorSection(self.tr("Output preview"), self.setting_widget)
+        output_section.addWidget(self.max_output_field)
+        output_section.addWidget(self.output_preview)
 
-        self.settingLayout.addWidget(self.auto_supercell_button, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_label, 4, 1, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_frame, 4, 2, 1, 1)
-        self.settingLayout.addWidget(self.manual_supercell_button, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.rep_label, 5, 1, 1, 1)
-        self.settingLayout.addWidget(self.rep_frame, 5, 2, 1, 1)
-        self.settingLayout.addWidget(self.max_output_label, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_output_frame, 6, 1, 1, 2)
+        self.expansion_tip = CaptionLabel(
+            self.tr(
+                "Need a larger cell? Add a Super Cell card after this card to choose repeats, target lengths, or an atom budget."
+            ),
+            self.setting_widget,
+        )
+        self.expansion_tip.setWordWrap(True)
+        self.expansion_tip.setStyleSheet("color:#4078a8; font-weight:600;")
+        self.legacy_expansion_notice = CaptionLabel("", self.setting_widget)
+        self.legacy_expansion_notice.setWordWrap(True)
+        self.legacy_expansion_notice.setStyleSheet("color:#c56a00; font-weight:600;")
+        self.legacy_expansion_notice.hide()
+        next_step_section = InspectorSection(self.tr("Next step"), self.setting_widget)
+        next_step_section.addWidget(self.expansion_tip)
+        next_step_section.addWidget(self.legacy_expansion_notice)
+
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setVerticalSpacing(4)
+        self.settingLayout.addWidget(prototype_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(output_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(next_step_section, 2, 0, 1, 3)
+
+        self.structure_combo.currentIndexChanged.connect(self._update_widgets)
+        self.element_edit.textChanged.connect(self._update_output_preview)
+        for frame in (
+            self.a_frame,
+            self.covera_frame,
+            self.max_output_frame,
+        ):
+            for control in frame.object_list:
+                control.valueChanged.connect(self._update_output_preview)
+        self._update_widgets()
+
+    def _update_widgets(self, *_args) -> None:
+        lattice = combo_value(self.structure_combo, "fcc")
+        self.covera_field.setVisible(lattice == "hcp")
+        self.structure_field.set_helper_text(
+            self.tr("Fully periodic (PBC x/y/z), with no vacuum; the third cell vector is normal to FCC (111).")
+            if lattice == "fcc111"
+            else self.tr("Choose one single-element ideal prototype; generated coordinates are not relaxed.")
+        )
+        self._update_output_preview()
+
+    def _update_output_preview(self, *_args) -> None:
+        params = self.get_params()
+        try:
+            plan = self.create_operation().plan(params)
+            shown = min(len(plan.a_values), params.max_outputs)
+            la, lb, lc = plan.cell_lengths
+            text = self.tr(
+                "{shown} base-cell output(s); {atoms} atoms each; "
+                "first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å."
+            ).format(
+                shown=shown,
+                atoms=plan.atoms_per_output,
+                la=la,
+                lb=lb,
+                lc=lc,
+            )
+            if plan.truncated:
+                text += " " + self.tr("The scan has {total} points; later a values are truncated.").format(
+                    total=len(plan.a_values)
+                )
+            self.output_preview.setText(text)
+        except ValueError as exc:
+            self.output_preview.setText(translate_runtime_message(exc))
+        self.refresh_compact_presentation()
 
     def create_operation(self):
         return CrystalPrototypeBuilderOperation()
 
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        try:
+            count = min(len(self.create_operation().plan(params).a_values), params.max_outputs)
+            return self.tr("{element} · {lattice} · {count} base-cell output(s)").format(
+                element=params.element.strip() or self.tr("invalid element"),
+                lattice=self.structure_combo.currentText(),
+                count=count,
+            )
+        except ValueError:
+            return self.tr("{lattice} · parameters need attention").format(
+                lattice=self.structure_combo.currentText()
+            )
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "Use prototype-specific lattice constants. In particular, HCP a is not the FCC conventional-cell a. "
+            "Add Super Cell next when downstream operations need a larger structure."
+        )
+
     def get_params(self) -> CrystalPrototypeBuilderParams:
         return CrystalPrototypeBuilderParams(
-            lattice=combo_value(self.structure_combo),
+            lattice=combo_value(self.structure_combo, "fcc"),
             element=self.element_edit.text(),
             a_range=tuple(float(value) for value in self.a_frame.get_input_value()),
             covera=float(self.covera_frame.get_input_value()[0]),
-            auto_supercell=self.auto_supercell_button.isChecked(),
-            max_atoms=int(self.max_atoms_frame.get_input_value()[0]),
-            rep=tuple(int(value) for value in self.rep_frame.get_input_value()),
             max_outputs=int(self.max_output_frame.get_input_value()[0]),
         )
 
@@ -123,11 +236,8 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         self.element_edit.setText(params.element)
         self.a_frame.set_input_value([float(value) for value in params.a_range])
         self.covera_frame.set_input_value([float(params.covera)])
-        self.auto_supercell_button.setChecked(bool(params.auto_supercell))
-        self.manual_supercell_button.setChecked(not bool(params.auto_supercell))
-        self.max_atoms_frame.set_input_value([int(params.max_atoms)])
-        self.rep_frame.set_input_value([int(value) for value in params.rep])
         self.max_output_frame.set_input_value([int(params.max_outputs)])
+        self._update_widgets()
 
     def to_dict(self):
         data = super().to_dict()
@@ -138,18 +248,31 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         super().from_dict(data_dict)
         raw_params = data_dict.get("params")
         if raw_params:
+            raw_params = dict(raw_params)
+            legacy_expansion = any(
+                key in raw_params for key in ("auto_supercell", "max_atoms", "rep")
+            )
+            for key in ("auto_supercell", "max_atoms", "rep"):
+                raw_params.pop(key, None)
             raw_params["a_range"] = tuple(raw_params.get("a_range", [3.6, 3.6, 0.1]))
-            raw_params["rep"] = tuple(raw_params.get("rep", [4, 4, 4]))
             params = CrystalPrototypeBuilderParams(**raw_params)
         else:
+            legacy_expansion = any(
+                key in data_dict for key in ("auto_supercell", "max_atoms", "rep")
+            )
             params = CrystalPrototypeBuilderParams(
                 lattice=data_dict.get("lattice", "fcc"),
                 element=data_dict.get("element", "Cu"),
                 a_range=tuple(data_dict.get("a_range", [3.6, 3.6, 0.1])),
                 covera=data_dict.get("covera", [1.633])[0],
-                auto_supercell=data_dict.get("auto_supercell", True),
-                max_atoms=data_dict.get("max_atoms", [512])[0],
-                rep=tuple(data_dict.get("rep", [4, 4, 4])),
                 max_outputs=data_dict.get("max_outputs", [200])[0],
             )
         self.set_params(params)
+        if legacy_expansion:
+            migration_message = self.tr(
+                "This saved Crystal Prototype Builder used the removed expansion settings. "
+                "They were ignored; add a Super Cell card after it to restore the intended cell size."
+            )
+            self.legacy_expansion_notice.setText("⚠ " + migration_message)
+            self.legacy_expansion_notice.show()
+            MessageManager.send_warning_message(migration_message)

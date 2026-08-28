@@ -20,10 +20,9 @@ from qfluentwidgets import (
 
 
 class AdaptiveCompactSpinBox(CompactSpinBox):
-    """Keep integer text readable before reserving space for step controls."""
+    """Keep integer text and its step control visible at the normal hint."""
 
     _TEXT_PADDING = 18
-    _TEXT_FIELD_CHROME = 20
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -50,10 +49,13 @@ class AdaptiveCompactSpinBox(CompactSpinBox):
             )
 
     def readable_width_hint(self) -> int:
-        """Return the width needed to show the current value without controls."""
+        """Return the width needed to show the value and step control."""
+        button = getattr(self, "compactSpinButton", None)
+        button_width = button.sizeHint().width() if button is not None else 0
         return (
             self.fontMetrics().horizontalAdvance(self.text())
-            + self._TEXT_FIELD_CHROME
+            + button_width
+            + self._TEXT_PADDING
         )
 
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
@@ -96,10 +98,9 @@ class AdaptiveInlineDoubleSpinBox(DoubleSpinBox):
 
 
 class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
-    """Keep the numeric text readable before reserving space for step controls."""
+    """Keep numeric text and its step control visible at the normal hint."""
 
     _TEXT_PADDING = 18
-    _TEXT_FIELD_CHROME = 20
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -134,12 +135,14 @@ class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
             )
 
     def readable_width_hint(self) -> int:
-        """Return the width needed to show the widest synchronized value."""
+        """Return the width needed for the widest value and step control."""
         text_width = max(
             self._shared_text_width,
             self.fontMetrics().horizontalAdvance(self.text()),
         )
-        return text_width + self._TEXT_FIELD_CHROME
+        button = getattr(self, "compactSpinButton", None)
+        button_width = button.sizeHint().width() if button is not None else 0
+        return text_width + button_width + self._TEXT_PADDING
 
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
         super().resizeEvent(event)

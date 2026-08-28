@@ -1,6 +1,8 @@
 import warnings
+from unittest.mock import patch
 
 from ase.geometry import geometry
+from NepTrainKit.core.cards.errors import CardOperationError
 
 from .card_test_base import *
 
@@ -28,11 +30,9 @@ class TestDefectSurfaceCards(BaseCardTest):
     def test_random_slab_card(self):
         card = RandomSlabCard()
         structure = self.structure.copy()
-        card.h_frame.set_input_value([1, 1, 1])
-        card.k_frame.set_input_value([0, 0, 1])
-        card.l_frame.set_input_value([0, 0, 1])
+        card.plane_table.set_planes([(1, 0, 0)])
         card.layer_frame.set_input_value([1, 1, 1])
-        card.vacuum_frame.set_input_value([0, 0, 1])
+        card.vacuum_frame.set_input_value([10, 10, 1])
 
         results = card.process_structure(structure)
         self.assertGreater(len(results), 0)
@@ -42,9 +42,7 @@ class TestDefectSurfaceCards(BaseCardTest):
         structure = self.structure.copy()
         structure.info["Config_type"] = "bulk"
         params = RandomSlabParams(
-            h_range=(1, 1, 1),
-            k_range=(0, 0, 1),
-            l_range=(0, 0, 1),
+            hkl_list=((1, 0, 0),),
             layer_range=(1, 2, 1),
             vacuum_range=(0.0, 2.0, 2.0),
         )
@@ -53,11 +51,11 @@ class TestDefectSurfaceCards(BaseCardTest):
 
         self.assertEqual(len(results), 4)
         tags = [atoms.info.get("Config_type", "") for atoms in results]
-        self.assertTrue(all("Slab(hkl=100" in tag for tag in tags))
-        self.assertEqual(sum("L=1" in tag for tag in tags), 2)
-        self.assertEqual(sum("L=2" in tag for tag in tags), 2)
-        self.assertEqual(sum("vac=None" in tag for tag in tags), 2)
-        self.assertEqual(sum("vac=2.0" in tag for tag in tags), 2)
+        self.assertTrue(all("Slab(hkl=(1,0,0)" in tag for tag in tags))
+        self.assertEqual(sum("R=1" in tag for tag in tags), 2)
+        self.assertEqual(sum("R=2" in tag for tag in tags), 2)
+        self.assertEqual(sum("vac=0" in tag for tag in tags), 2)
+        self.assertEqual(sum("vac=2," in tag for tag in tags), 2)
         self.assertTrue(all(np.asarray(atoms.pbc, dtype=bool).all() for atoms in results))
 
         card = RandomSlabCard()
@@ -65,6 +63,145 @@ class TestDefectSurfaceCards(BaseCardTest):
         restored = RandomSlabCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), params)
+
+    def test_surface_slab_default_plan_is_exact_and_allocation_free(self):
+        structure = Atoms(
+            "Si8",
+            positions=np.arange(24, dtype=float).reshape(8, 3) * 0.1,
+            cell=np.asarray([[5.4, 0.0, 0.0], [0.7, 5.2, 0.0], [0.3, 0.4, 5.8]]),
+            pbc=True,
+        )
+        operation = RandomSlabOperation()
+        with patch("NepTrainKit.core.cards.defect.surface") as build_surface:
+            plan = operation.plan(structure, RandomSlabParams())
+
+        build_surface.assert_not_called()
+        self.assertEqual(plan.hkl_list, ((1, 0, 0), (1, 1, 0), (1, 1, 1)))
+        self.assertEqual(plan.repeats, (3, 4, 5, 6))
+        self.assertEqual(plan.vacuums, (10.0,))
+        self.assertEqual(plan.outputs, 12)
+        self.assertEqual((plan.min_atoms_per_output, plan.max_atoms_per_output), (24, 48))
+        self.assertEqual(plan.generated_atoms, 432)
+
+    def test_surface_slab_reduces_and_deduplicates_hkl_without_merging_opposite_planes(self):
+        canonical = RandomSlabOperation.canonical_hkl_list(
+            ((0, 0, 1), (0, 0, 2), (0, 0, -1), (2, 2, 0), (1, 1, 0))
+        )
+        self.assertEqual(canonical, ((0, 0, 1), (0, 0, -1), (1, 1, 0)))
+
+    def test_surface_slab_ranges_do_not_overshoot_stop(self):
+        operation = RandomSlabOperation()
+        self.assertEqual(
+            operation._inclusive_integer_range(
+                (1, 2, 3), code="test", label="repeat", minimum=1
+            ),
+            (1,),
+        )
+        self.assertEqual(
+            operation._inclusive_float_range(
+                (10.0, 11.0, 2.0), code="test", label="vacuum", minimum=0.0
+            ),
+            (10.0,),
+        )
+
+    def test_surface_slab_vacuum_is_per_side_and_normal_pbc_is_explicit(self):
+        structure = Atoms("Si", positions=[[0.0, 0.0, 0.0]], cell=[4.0, 4.0, 4.0], pbc=True)
+        params = RandomSlabParams(
+            hkl_list=((0, 0, 1),),
+            layer_range=(2, 2, 1),
+            vacuum_range=(7.5, 7.5, 1.0),
+            normal_pbc=False,
+        )
+        slab = RandomSlabOperation().run_structure(structure, params)[0]
+        z_span = float(np.ptp(slab.positions[:, 2]))
+
+        self.assertTrue(np.array_equal(np.asarray(slab.pbc, dtype=bool), [True, True, False]))
+        self.assertAlmostEqual(float(slab.cell.lengths()[2]) - z_span, 15.0, places=10)
+        self.assertIn("pz=0", slab.info["Config_type"])
+
+    def test_surface_slab_repeats_site_arrays_and_preserves_structure_info(self):
+        structure = Atoms("Fe2", positions=[[0, 0, 0], [1, 1, 1]], cell=[3, 3, 3], pbc=True)
+        structure.arrays["spin"] = np.asarray([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+        structure.arrays["group"] = np.asarray([3, 4])
+        structure.info.update({"Config_type": "bulk", "source": "fixture"})
+        params = RandomSlabParams(
+            hkl_list=((0, 0, 1),),
+            layer_range=(2, 2, 1),
+            vacuum_range=(5.0, 5.0, 1.0),
+        )
+
+        slab = RandomSlabOperation().run_structure(structure, params)[0]
+
+        np.testing.assert_allclose(slab.arrays["spin"], np.tile(structure.arrays["spin"], (2, 1)))
+        np.testing.assert_array_equal(slab.arrays["group"], np.tile(structure.arrays["group"], 2))
+        self.assertEqual(slab.info["source"], "fixture")
+        self.assertTrue(slab.info["Config_type"].startswith("bulk|Slab("))
+
+    def test_surface_slab_rejects_invalid_input_and_budgets_before_building(self):
+        structure = self.structure.copy()
+        operation = RandomSlabOperation()
+        cases = (
+            (structure.copy(), RandomSlabParams(hkl_list=((0, 0, 0),))),
+            (structure.copy(), RandomSlabParams(normal_pbc=False, vacuum_range=(0.0, 0.0, 1.0))),
+            (structure.copy(), RandomSlabParams(max_outputs=1)),
+            (structure.copy(), RandomSlabParams(max_generated_atoms=1)),
+        )
+        cases[0][0].pbc = (True, True, False)
+        with patch("NepTrainKit.core.cards.defect.surface") as build_surface:
+            for candidate, params in cases:
+                with self.subTest(params=params), self.assertRaises(CardOperationError):
+                    operation.run_structure(candidate, params)
+        build_surface.assert_not_called()
+
+    def test_surface_slab_build_failure_is_visible_not_partial(self):
+        structure = self.structure.copy()
+        params = RandomSlabParams(
+            hkl_list=((1, 0, 0), (1, 1, 0)),
+            layer_range=(1, 1, 1),
+            vacuum_range=(10.0, 10.0, 1.0),
+        )
+        with patch("NepTrainKit.core.cards.defect.surface", side_effect=RuntimeError("boom")):
+            with self.assertRaisesRegex(CardOperationError, "boom"):
+                RandomSlabOperation().run_structure(structure, params)
+
+    def test_surface_slab_table_and_legacy_range_migration_are_user_visible(self):
+        card = RandomSlabCard()
+        card.plane_table.set_planes(((0, 0, 1), (0, 0, 2), (1, 1, 0)))
+        card.plane_table._normalize_after_edit()
+        self.assertEqual(card.plane_table.planes(), ((0, 0, 1), (1, 1, 0)))
+
+        restored = RandomSlabCard()
+        with patch("NepTrainKit.ui.views._card.random_slab_card.MessageManager.send_warning_message"):
+            restored.from_dict(
+                {
+                    "class": "RandomSlabCard",
+                    "check_state": True,
+                    "params": {
+                        "h_range": [0, 1, 2],
+                        "k_range": [0, 0, 1],
+                        "l_range": [1, 2, 1],
+                        "layer_range": [2, 2, 1],
+                        "vacuum_range": [10, 11, 2],
+                    },
+                }
+            )
+        self.assertEqual(restored.get_params().hkl_list, ((0, 0, 1),))
+        self.assertEqual(restored.get_params().vacuum_range, (10.0, 11.0, 2.0))
+        self.assertTrue(restored.legacy_notice.isVisibleTo(restored.legacy_notice.parentWidget()))
+        self.assertIn("converted", restored.legacy_notice.text())
+
+    def test_surface_slab_table_removes_focused_row_without_teardown_error(self):
+        card = RandomSlabCard()
+        card.plane_table.set_planes(((1, 1, 1),))
+        card.plane_table._add_clicked()
+        QApplication.processEvents()
+
+        with patch("sys.excepthook") as excepthook:
+            card.plane_table._remove_selected()
+            QApplication.processEvents()
+
+        excepthook.assert_not_called()
+        self.assertEqual(card.plane_table.planes(), ((1, 1, 1),))
 
     def test_random_vacancy_card(self):
         card = RandomVacancyCard()
@@ -136,6 +273,12 @@ class TestDefectSurfaceCards(BaseCardTest):
 
     def test_vacancy_rule_count_mode_distinguishes_fixed_and_range(self):
         item = VacancyRuleItem()
+        item.show()
+        QApplication.processEvents()
+        self.assertEqual(item.fixed_count_frame.object_list[0].minimum(), 1)
+        self.assertEqual(item.count_range_frame.object_list[0].minimum(), 0)
+        self.assertTrue(item.fixed_count_frame.isVisible())
+        self.assertFalse(item.count_range_frame.isVisible())
         item.element_edit.setText("Si")
         item.fixed_count_frame.set_input_value([2])
         fixed = item.to_rule()
@@ -143,6 +286,10 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertEqual(fixed["count_mode"], "fixed")
 
         item.count_mode_combo.setCurrentText("Random range")
+        QApplication.processEvents()
+        self.assertFalse(item.fixed_count_frame.isVisible())
+        self.assertTrue(item.count_range_frame.isVisible())
+        self.assertTrue(all(spin.isVisible() for spin in item.count_range_frame.object_list))
         item.count_range_frame.set_input_value([1, 3])
         ranged = item.to_rule()
         self.assertEqual(ranged["count"], [1, 3])
@@ -231,36 +378,66 @@ class TestDefectSurfaceCards(BaseCardTest):
         )
         operation = RandomVacancyOperation()
 
-        with self.assertRaisesRegex(ValueError, "at least one vacancy rule"):
+        with self.assertRaises(CardOperationError) as missing_rules:
             operation.run_structure(structure, RandomVacancyParams(rules=[]))
-        with self.assertRaisesRegex(ValueError, "count_mode must be fixed or random"):
+        self.assertEqual(missing_rules.exception.code, "targeted_vacancy_missing_rules")
+        with self.assertRaises(CardOperationError) as invalid_mode:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [1, 2], "count_mode": "typo"}]
                 ),
             )
-        with self.assertRaisesRegex(ValueError, "count must be >= 0"):
+        self.assertEqual(invalid_mode.exception.code, "targeted_vacancy_invalid_count_mode")
+        with self.assertRaises(CardOperationError) as negative_count:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [-1, 2], "count_mode": "random"}]
                 ),
             )
-        with self.assertRaisesRegex(ValueError, "only 4 atoms match"):
+        self.assertEqual(negative_count.exception.code, "targeted_vacancy_negative_count")
+        with self.assertRaises(CardOperationError) as excessive_count:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [5, 5], "count_mode": "fixed"}]
                 ),
             )
-        with self.assertRaisesRegex(ValueError, "remove every atom"):
+        self.assertEqual(
+            excessive_count.exception.code,
+            "targeted_vacancy_count_exceeds_matches",
+        )
+        with self.assertRaises(CardOperationError) as destructive_count:
             operation.run_structure(
                 structure,
                 RandomVacancyParams(
                     rules=[{"element": "O", "count": [4, 4], "count_mode": "fixed"}]
                 ),
             )
+        self.assertEqual(
+            destructive_count.exception.code,
+            "targeted_vacancy_no_valid_output",
+        )
+
+    def test_random_vacancy_preview_marks_overlapping_rule_upper_bound(self):
+        structure = Atoms(
+            "O3",
+            positions=np.arange(9, dtype=float).reshape(3, 3),
+            cell=[10, 10, 10],
+            pbc=True,
+        )
+        card = RandomVacancyCard()
+        card.rules_widget.from_rules(
+            [
+                {"element": "O", "count": [1, 1], "count_mode": "fixed"},
+                {"element": "O", "count": [1, 1], "count_mode": "fixed"},
+            ]
+        )
+        card.max_atoms_condition_frame.set_input_value([20])
+        card.set_dataset([structure])
+        self.assertIn("up to 9 unique outputs", card.preview_label.text())
+        self.assertIn("combinatorial upper bound", card.preview_label.text())
 
     def test_random_vacancy_operation_deduplicates_limited_site_combinations(self):
         structure = Atoms(
@@ -378,11 +555,13 @@ class TestDefectSurfaceCards(BaseCardTest):
         card.engine_type_combo.setCurrentIndex(
             card.engine_type_combo.findData(1)
         )
-        card.concentration_radio_button.setChecked(True)
+        card.amount_mode_control.setCurrentIndex(
+            card.amount_mode_control.findData("fraction")
+        )
         card.concentration_condition_frame.set_input_value([0.6])
         card.num_condition_frame.set_input_value([1])
-        card.count_mode_combo.setCurrentIndex(
-            card.count_mode_combo.findData("random")
+        card.count_mode_control.setCurrentIndex(
+            card.count_mode_control.findData("random")
         )
         card.max_atoms_condition_frame.set_input_value([2])
 
@@ -393,9 +572,9 @@ class TestDefectSurfaceCards(BaseCardTest):
     def test_vacancy_defect_card_defaults_and_previews_first_input(self):
         card = VacancyDefectCard()
 
-        self.assertEqual(card.getTitle(), "Global Random Vacancy")
-        self.assertTrue(card.num_condition_frame.isEnabled())
-        self.assertFalse(card.concentration_condition_frame.isEnabled())
+        self.assertEqual(card.getTitle(), "Global Vacancy")
+        self.assertFalse(card.num_condition_field.isHidden())
+        self.assertTrue(card.concentration_condition_field.isHidden())
         self.assertEqual(card.get_params(), VacancyDefectParams())
         self.assertIn("Load an upstream structure", card.preview_label.text())
 
@@ -411,11 +590,55 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertIn("remove 1 atoms", card.preview_label.text())
         self.assertIn("all elements eligible", card.preview_label.text())
 
-        card.concentration_radio_button.setChecked(True)
+        card.amount_mode_control.setCurrentIndex(
+            card.amount_mode_control.findData("fraction")
+        )
         card.concentration_condition_frame.set_input_value([0.4])
-        self.assertFalse(card.num_condition_frame.isEnabled())
-        self.assertTrue(card.concentration_condition_frame.isEnabled())
+        self.assertTrue(card.num_condition_field.isHidden())
+        self.assertFalse(card.concentration_condition_field.isHidden())
+        self.assertFalse(card.get_params().use_num)
         self.assertIn("remove 2 atoms", card.preview_label.text())
+
+    def test_vacancy_defect_amount_and_generation_modes_are_unambiguous(self):
+        card = VacancyDefectCard()
+        card.show()
+        QApplication.processEvents()
+
+        card.amount_mode_control.setCurrentIndex(
+            card.amount_mode_control.findData("fraction")
+        )
+        card.count_mode_control.setCurrentIndex(
+            card.count_mode_control.findData("random")
+        )
+        QApplication.processEvents()
+
+        self.assertFalse(card.get_params().use_num)
+        self.assertTrue(card.num_condition_field.isHidden())
+        self.assertTrue(card.concentration_condition_frame.isVisible())
+        self.assertEqual(
+            card.concentration_condition_field.caption.text(),
+            "Maximum vacancy fraction",
+        )
+        self.assertEqual(card.get_params().count_mode, "random")
+
+        card.count_mode_control.setCurrentIndex(
+            card.count_mode_control.findData("fixed")
+        )
+        self.assertEqual(
+            card.concentration_condition_field.caption.text(),
+            "Vacancy fraction",
+        )
+
+    def test_vacancy_defect_seed_value_is_progressively_disclosed(self):
+        card = VacancyDefectCard()
+        card.show()
+        QApplication.processEvents()
+        self.assertFalse(card.seed_frame.isVisible())
+
+        card.seed_checkbox.setChecked(True)
+        QApplication.processEvents()
+        self.assertTrue(card.seed_frame.isVisible())
+        self.assertTrue(card.seed_frame.isEnabled())
 
     def test_vacancy_defect_card_roundtrip_and_legacy_restore(self):
         card = VacancyDefectCard()
@@ -544,44 +767,45 @@ class TestDefectSurfaceCards(BaseCardTest):
         cases = [
             (
                 VacancyDefectParams(engine_type=99),
-                "engine_type",
+                "global_vacancy_invalid_engine",
             ),
             (
                 VacancyDefectParams(count_mode="typo"),
-                "count_mode",
+                "global_vacancy_invalid_count_mode",
             ),
             (
                 VacancyDefectParams(max_structures=0),
-                "max_structures",
+                "global_vacancy_invalid_output_limit",
             ),
             (
                 VacancyDefectParams(num_condition=5),
-                "at least one atom remains",
+                "global_vacancy_count_exceeds_atoms",
             ),
             (
                 VacancyDefectParams(
                     use_num=False,
                     concentration_condition=0.19,
                 ),
-                "too small",
+                "global_vacancy_fraction_too_small",
             ),
             (
                 VacancyDefectParams(
                     use_num=False,
                     concentration_condition=1.0,
                 ),
-                "less than 1",
+                "global_vacancy_invalid_fraction",
             ),
             (
                 VacancyDefectParams(use_seed=True, seed=-1),
-                "seed must be >= 0",
+                "global_vacancy_negative_seed",
             ),
         ]
 
-        for params, message in cases:
+        for params, code in cases:
             with self.subTest(params=params):
-                with self.assertRaisesRegex(ValueError, message):
+                with self.assertRaises(CardOperationError) as caught:
                     VacancyDefectOperation().run_structure(structure, params)
+                self.assertEqual(caught.exception.code, code)
 
     def test_vacancy_defect_deduplicates_when_request_exceeds_combinations(self):
         structure = Atoms(
@@ -806,11 +1030,9 @@ class TestDefectSurfaceCards(BaseCardTest):
         slab_results = RandomSlabOperation().run_structure(
             structure,
             RandomSlabParams(
-                h_range=(1, 1, 1),
-                k_range=(0, 0, 1),
-                l_range=(0, 0, 1),
+                hkl_list=((1, 0, 0),),
                 layer_range=(1, 1, 1),
-                vacuum_range=(0, 0, 1),
+                vacuum_range=(10, 10, 1),
             ),
         )
         self.assertEqual(len(slab_results), 1)
@@ -1148,10 +1370,12 @@ class TestDefectSurfaceCards(BaseCardTest):
         card = InsertDefectCard()
         self.assertEqual(
             card.getTitle(),
-            "Interstitial and Surface Adsorption",
+            "Interstitial & Adsorbate",
         )
         self.assertEqual(card.get_params(), InsertDefectParams())
         self.assertTrue(card.axis_label.isHidden())
+        self.assertTrue(card.max_attempts_field.isHidden())
+        self.assertFalse(card.seed_frame.isVisible())
         self.assertIn(
             "Enter at least one inserted species",
             card.preview_label.text(),
@@ -1168,11 +1392,18 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertIn("First input: 4 atoms", card.preview_label.text())
         self.assertIn("Li 70% / Na 30%", card.preview_label.text())
         self.assertIn("random positions inside the cell", card.preview_label.text())
+        self.assertIn("1 inputs × 10 = 10 outputs", card.preview_label.text())
+        self.assertIn("1 inputs × 10 outputs/input = 10 outputs", card.get_guidance_text())
+        self.assertIn("Bulk interstitial", card.get_summary_text())
 
         card.mode_combo.setCurrentIndex(card.mode_combo.findData(1))
         self.assertFalse(card.axis_label.isHidden())
         self.assertIn("upper surface along lattice c", card.preview_label.text())
         self.assertIn("height 1.5 Å", card.preview_label.text())
+        self.assertIn("Choose the slab vacuum direction", card.get_guidance_text())
+
+        card.advanced_checkbox.setChecked(True)
+        self.assertFalse(card.max_attempts_field.isHidden())
 
     def test_insert_defect_card_roundtrip(self):
         card = InsertDefectCard()
@@ -1226,9 +1457,10 @@ class TestDefectSurfaceCards(BaseCardTest):
 
     def test_strict_gsfe_path_card_roundtrip(self):
         card = StrictGSFEPathCard()
-        self.assertTrue(card.cut_fraction_frame.isHidden())
-        self.assertTrue(card.layer_frame.isHidden())
-        self.assertIn("Load an upstream", card.preview_label.text())
+        self.assertTrue(card.cut_fraction_field.isHidden())
+        self.assertTrue(card.layer_field.isHidden())
+        self.assertGreater(card.disp_frame.object_list[2].minimum(), 0.0)
+        self.assertIn("Load an oriented structure", card.preview_label.text())
 
         card.set_dataset(
             Atoms(
@@ -1238,17 +1470,17 @@ class TestDefectSurfaceCards(BaseCardTest):
                 pbc=True,
             )
         )
-        self.assertIn("4 atoms / 4 projected layers", card.preview_label.text())
+        self.assertIn("4 layers", card.preview_label.text())
         self.assertIn("move 2, keep 2", card.preview_label.text())
+        self.assertIn("0→1 × vector = 0→8 Å", card.preview_label.text())
         self.assertIn("3 outputs", card.preview_label.text())
 
-        card.hkl_frame.set_input_value([1, 1, 0])
-        card.uvw_frame.set_input_value([1, -1, 0])
+        card.slip_uv_frame.set_input_value([1, -1])
         card.disp_frame.set_input_value([0.0, 0.5, 0.25])
-        card.unit_combo.setCurrentIndex(card.unit_combo.findData("angstrom"))
-        card.cut_combo.setCurrentIndex(card.cut_combo.findData("layer_index"))
-        self.assertTrue(card.cut_fraction_frame.isHidden())
-        self.assertFalse(card.layer_frame.isHidden())
+        card.unit_control.setCurrentIndex(card.unit_control.findData("angstrom"))
+        card.cut_control.setCurrentIndex(card.cut_control.findData("layer_index"))
+        self.assertTrue(card.cut_fraction_field.isHidden())
+        self.assertFalse(card.layer_field.isHidden())
         card.cut_fraction_frame.set_input_value([0.25])
         card.layer_frame.set_input_value([2])
         card.wrap_checkbox.setChecked(False)
@@ -1257,6 +1489,46 @@ class TestDefectSurfaceCards(BaseCardTest):
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_strict_gsfe_cut_mode_fields_are_visible_and_operable(self):
+        card = StrictGSFEPathCard()
+        card.show()
+        QApplication.processEvents()
+
+        card.cut_control.setCurrentIndex(card.cut_control.findData("fractional"))
+        QApplication.processEvents()
+        self.assertTrue(card.cut_fraction_frame.isVisible())
+        self.assertFalse(card.layer_field.isVisible())
+        card.cut_fraction_frame.set_input_value([0.25])
+        self.assertEqual(card.get_params().cut_fraction, 0.25)
+
+        card.cut_control.setCurrentIndex(card.cut_control.findData("layer_index"))
+        QApplication.processEvents()
+        self.assertFalse(card.cut_fraction_field.isVisible())
+        self.assertTrue(card.layer_frame.isVisible())
+        card.layer_frame.set_input_value([2])
+        self.assertEqual(card.get_params().layer_index, 2)
+
+        card.cut_control.setCurrentIndex(card.cut_control.findData("middle"))
+        QApplication.processEvents()
+        self.assertFalse(card.cut_fraction_field.isVisible())
+        self.assertFalse(card.layer_field.isVisible())
+
+    def test_strict_gsfe_preserves_legacy_geometry_until_direction_edit(self):
+        card = StrictGSFEPathCard()
+        legacy = StrictGSFEPathParams(
+            plane_hkl=(1, 1, 0),
+            slip_uvw=(1, -1, 2),
+        )
+        card.set_params(legacy)
+
+        self.assertEqual(card.get_params(), legacy)
+        self.assertFalse(card.legacy_geometry_label.isHidden())
+
+        card.slip_uv_frame.object_list[0].setValue(2)
+        self.assertEqual(card.get_params().plane_hkl, (0, 0, 1))
+        self.assertEqual(card.get_params().slip_uvw, (2, -1, 0))
+        self.assertTrue(card.legacy_geometry_label.isHidden())
 
     def test_layer_copy_operation_is_ui_independent(self):
         structure = self.structure.copy()
@@ -1273,7 +1545,7 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertEqual(len(results), 1)
         self.assertEqual(len(results[0]), len(structure) * 2)
         self.assertIn(
-            "LayerStack(L=2,step=3)",
+            "LayerStack(L=2,gap=3,step=",
             results[0].info.get("Config_type", ""),
         )
 
@@ -1303,20 +1575,26 @@ class TestDefectSurfaceCards(BaseCardTest):
             cell=[8, 8, 15],
             pbc=True,
         )
-        card.set_dataset([slab])
+        card.set_preview_structure(slab)
+        card.set_preview_input_count(2)
 
         self.assertEqual(card.get_params().dz_expr, "0")
         self.assertFalse(card.show_warp_checkbox.isChecked())
-        self.assertTrue(card.preset_combo.isHidden())
-        self.assertIn("3 atoms", card.preview_label.text())
-        self.assertIn("2 total layers", card.preview_label.text())
-        self.assertIn("output 6 atoms", card.preview_label.text())
+        self.assertTrue(card.preset_field.isHidden())
+        self.assertIn("3 input atoms", card.preview_label.text())
+        self.assertIn("thickness 3 Å", card.preview_label.text())
+        self.assertIn("gap 3.35 Å", card.preview_label.text())
+        self.assertIn("copy translation 6.35 Å", card.preview_label.text())
+        self.assertIn("6 atoms/output", card.preview_label.text())
+        self.assertIn("6 atoms/out", card.get_summary_text())
+        self.assertIn("outputs 2", card.get_guidance_text())
+        self.assertIn("3 × 2", card.get_guidance_text())
 
         card.show_warp_checkbox.setChecked(True)
         card.apply_combo.setCurrentIndex(1)
-        self.assertFalse(card.preset_combo.isHidden())
-        self.assertFalse(card.elements_edit.isHidden())
-        self.assertTrue(card.zrange_frame.isHidden())
+        self.assertFalse(card.preset_field.isHidden())
+        self.assertFalse(card.elements_field.isHidden())
+        self.assertTrue(card.zrange_field.isHidden())
 
     def test_layer_copy_selection_only_limits_warp_not_copy(self):
         structure = Atoms(
@@ -1339,7 +1617,7 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertEqual(result.get_chemical_symbols(), ["C", "Si", "C", "Si"])
         np.testing.assert_allclose(
             result.positions,
-            [[0, 0, 1], [1, 0, 0], [0, 0, 5], [1, 0, 4]],
+            [[0, 0, 1], [1, 0, 0], [0, 0, 6], [1, 0, 5]],
         )
 
     def test_layer_copy_extends_cell_for_one_layer_vacuum(self):
@@ -1371,17 +1649,22 @@ class TestDefectSurfaceCards(BaseCardTest):
         )
         operation = LayerCopyOperation()
 
-        with self.assertRaisesRegex(ValueError, "layers must be an integer"):
+        with self.assertRaisesRegex(ValueError, "Total layers must be an integer"):
             operation.run_structure(
                 structure,
                 LayerCopyParams(dz_expr="0", layers=1.5),
             )
-        with self.assertRaisesRegex(ValueError, "translation must be positive"):
+        with self.assertRaisesRegex(ValueError, "Copy translation must be positive"):
             operation.run_structure(
                 structure,
-                LayerCopyParams(dz_expr="0", layers=2, distance=0),
+                LayerCopyParams(
+                    dz_expr="0",
+                    layers=2,
+                    distance_mode="translation",
+                    distance=0,
+                ),
             )
-        with self.assertRaisesRegex(ValueError, "finite number"):
+        with self.assertRaisesRegex(ValueError, "vacuum must be a finite"):
             operation.run_structure(
                 structure,
                 LayerCopyParams(dz_expr="0", layers=1, extra_vacuum=float("nan")),
@@ -1396,3 +1679,71 @@ class TestDefectSurfaceCards(BaseCardTest):
                     layers=1,
                 ),
             )
+
+    def test_layer_copy_surface_gap_legacy_translation_and_safety_limits(self):
+        slab = Atoms(
+            "MoS2",
+            positions=[[0, 0, 0], [0, 0, 1.5], [0, 0, -1.5]],
+            cell=[8, 8, 15],
+            pbc=[True, True, False],
+        )
+        spin = np.arange(9.0).reshape(3, 3)
+        magmoms = np.array([1.0, -1.0, 0.5])
+        slab.new_array("spin", spin)
+        slab.set_initial_magnetic_moments(magmoms)
+        slab.new_array("group", np.asarray(["A", "B", "A"], dtype=object))
+        slab.info["Config_type"] = "seed"
+        operation = LayerCopyOperation()
+
+        summary = operation.geometry_summary(slab, LayerCopyParams())
+        self.assertEqual(summary["slab_thickness"], 3.0)
+        self.assertEqual(summary["surface_gap"], 3.35)
+        self.assertEqual(summary["translation"], 6.35)
+        self.assertEqual(summary["output_atoms"], 6)
+
+        output = operation.run_structure(slab, LayerCopyParams())[0]
+        np.testing.assert_array_equal(output.arrays["spin"], np.tile(spin, (2, 1)))
+        np.testing.assert_array_equal(
+            output.arrays["initial_magmoms"], np.tile(magmoms, 2)
+        )
+        np.testing.assert_array_equal(
+            output.arrays["group"], np.tile(slab.arrays["group"], 2)
+        )
+        np.testing.assert_array_equal(output.pbc, slab.pbc)
+        self.assertIn("seed|LayerStack(L=2,gap=3.35,step=6.35)", output.info["Config_type"])
+
+        with self.assertRaisesRegex(ValueError, "negative surface gap"):
+            operation.run_structure(
+                slab,
+                LayerCopyParams(
+                    distance_mode="translation",
+                    distance=2.5,
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "atom budget"):
+            operation.run_structure(
+                slab,
+                LayerCopyParams(layers=4, max_output_atoms=11),
+            )
+
+        negative_c = slab.copy()
+        negative_c.set_cell([[8, 0, 0], [0, -8, 0], [0, 0, -15]])
+        with self.assertRaisesRegex(ValueError, "positive Cartesian z component"):
+            operation.run_structure(negative_c, LayerCopyParams())
+
+        legacy = LayerCopyCard()
+        with patch(
+            "NepTrainKit.ui.views._card.layer_copy_card.MessageManager.send_warning_message"
+        ) as warning:
+            legacy.from_dict(
+                {
+                    "class": "LayerCopyCard",
+                    "check_state": True,
+                    "layers": [2],
+                    "distance": [4.0],
+                }
+            )
+        warning.assert_called_once()
+        self.assertEqual(legacy.get_params().distance_mode, "translation")
+        self.assertEqual(legacy.get_params().distance, 4.0)
+        self.assertFalse(legacy.legacy_notice.isHidden())

@@ -26,6 +26,9 @@ from .spin_disorder_card import SpinDisorderCard
 from .correlated_random_spin_card import CorrelatedRandomSpinCard
 from .spin_spiral_card import SpinSpiralCard
 from .folded_helix_card import FoldedHelixCard
+from .local_magnetic_response_card import LocalMagneticResponseCard
+from .soc_texture_response_card import SOCTextureResponseCard
+from .magnetoelastic_response_card import MagnetoelasticResponseCard
 from .group_label_card import GroupLabelCard
 from .random_vacancy_card import RandomVacancyCard
 from .vacancy_defect_card import VacancyDefectCard
@@ -71,6 +74,9 @@ __all__ = [
     "CorrelatedRandomSpinCard",
     "SpinSpiralCard",
     "FoldedHelixCard",
+    "LocalMagneticResponseCard",
+    "SOCTextureResponseCard",
+    "MagnetoelasticResponseCard",
     "GroupLabelCard",
 
     "RandomVacancyCard",

@@ -10,10 +10,10 @@
 
 这张卡生成的是用于 DFT/NEP 数据准备的**初始自旋端点**，不是磁基态判断器，也不能证明某个输出是真正的热力学 FM、AFM 或 PM 相。后续仍需通过电子结构计算、能量比较和收敛后磁矩验证。
 
-`Magnetic Order` 与 `Spin Disorder` 的职责不同：
+`Magnetic Order` 与 `Moment Disorder` 的职责不同：
 
 - `Magnetic Order`：建立 FM、AFM 或完全随机 PM 端点。
-- `Spin Disorder`：从已有磁态出发，扫描局部翻转比例、随机化比例或锥角无序等中间状态。
+- `Moment Disorder`：从已有磁态出发，按比例翻转或重新定向一部分磁矩，生成不同无序程度的中间状态。
 
 ## 原理与公式
 
@@ -80,7 +80,7 @@ $\mathbf m_i=m_i s_i\hat{\mathbf a}$。三类磁序的符号/方向规则为：
 
 #### 元素磁矩（magmom_map）
 
-`str`，默认空。用于指定逐元素磁矩，单位为 $\mu_\mathrm{B}$：
+`str`，默认空。界面使用“元素 / 磁矩模长”表格，单位为 $\mu_\mathrm{B}$；序列化仍使用逐元素映射：
 
 ```text
 Fe:2.2,Co:1.7,Ni:0.6
@@ -300,10 +300,10 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 ## 推荐组合
 
-- `Group Label` → `Magnetic Order`：已有 coordinate-based group 时，用 `group_ab` 生成对应 AFM 正负号。
-- `Magnetic Order` → `Spin Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。
-- `Magnetic Order` → `Small-Angle Spin Tilt`：在端点附近补充确定性小角偏转。
-- `Magnetic Order` → `Spin Spiral`：复用元素磁矩幅值，生成位置连续的螺旋磁序。
+- `Layer Groups` → `Magnetic Order`：先生成逐层交替的 A/B 标签，再用 `group_ab` 赋予 AFM 正负号。
+- `Magnetic Order` → `Moment Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。
+- `Magnetic Order` → `Local Magnetic Response`：在端点附近补充确定性小角响应。
+- `Magnetic Order` → `SOC / Texture Response`：先建立参考磁态，再生成位置连续的有限 q 磁纹理。
 
 ## 常见问题
 
@@ -315,7 +315,7 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 **配对后的 PM 净磁矩仍不完全为零。** 某种磁矩模长对应奇数个原子时会留下一个未配对方向；不同模长之间不会通过改变模长强行抵消。
 
-**PM 和 Spin Disorder 是否重复。** PM 分支把全部磁性原子直接放到一个随机端点；`Spin Disorder` 能按比例只扰动部分已有自旋并扫描中间无序度。
+**PM 和 Moment Disorder 是否重复。** PM 分支把全部磁性原子直接放到一个随机端点；`Moment Disorder` 能按比例只改变部分已有磁矩并扫描中间无序度。
 
 ## 输出标签
 

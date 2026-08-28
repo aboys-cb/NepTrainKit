@@ -12,12 +12,15 @@ from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
     CardWidget,
+    ComboBox,
     FluentIcon,
     LineEdit,
     PushButton,
     StrongBodyLabel,
     TransparentToolButton,
 )
+
+from NepTrainKit.core.alloy import fractions_to_counts_exact
 
 from .compact_form import SegmentedControl
 from .input import AdaptiveCompactSpinBox, AdaptiveInlineDoubleSpinBox
@@ -204,10 +207,10 @@ class AlloySiteSetRuleEditor(CardWidget):
         self.label_edit.setFixedHeight(COMPACT_CONTROL_HEIGHT)
         self.site_count_label = CaptionLabel(self.tr("Site count unknown"), self)
 
-        self.mode_combo = SegmentedControl(parent=self)
-        self.mode_combo.addItem(self.tr("Fixed"), userData="fixed_fraction")
-        self.mode_combo.addItem(self.tr("Fraction"), userData="fraction_range")
-        self.mode_combo.addItem(self.tr("Count"), userData="count_range")
+        self.mode_combo = ComboBox(self)
+        self.mode_combo.addItem(self.tr("Fixed fraction"), userData="fixed_fraction")
+        self.mode_combo.addItem(self.tr("Fraction range"), userData="fraction_range")
+        self.mode_combo.addItem(self.tr("Count range"), userData="count_range")
         self.mode_combo.setMinimumWidth(0)
         self.mode_combo.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
@@ -265,8 +268,6 @@ class AlloySiteSetRuleEditor(CardWidget):
         column_layout.addWidget(self.value_2_header, 0, 2)
         column_layout.addWidget(self.action_header, 0, 3)
         column_layout.setColumnStretch(0, 1)
-        self.column_header.hide()
-
         self.rows_widget = QWidget(self.body_widget)
         self.rows_widget.setMinimumWidth(0)
         self.rows_widget.setSizePolicy(
@@ -276,6 +277,7 @@ class AlloySiteSetRuleEditor(CardWidget):
         self.rows_layout = QVBoxLayout(self.rows_widget)
         self.rows_layout.setContentsMargins(0, 0, 0, 0)
         self.rows_layout.setSpacing(2)
+        body.addWidget(self.column_header)
         body.addWidget(self.rows_widget)
 
         self.add_element_button = PushButton(FluentIcon.ADD, self.tr("Add element"), self.body_widget)
@@ -363,15 +365,53 @@ class AlloySiteSetRuleEditor(CardWidget):
 
     def _on_mode_changed(self) -> None:
         mode = self.mode()
+        previous_mode = (
+            self.element_rows[0]._mode
+            if self.element_rows
+            else mode
+        )
         if mode == "fixed_fraction":
             headers = (self.tr("Target fraction"), "")
+            tooltips = (self.tr("Target fraction"), "")
         elif mode == "fraction_range":
-            headers = (self.tr("Minimum fraction"), self.tr("Maximum fraction"))
+            headers = (self.tr("Min fraction"), self.tr("Max fraction"))
+            tooltips = (self.tr("Minimum fraction"), self.tr("Maximum fraction"))
         else:
-            headers = (self.tr("Minimum count"), self.tr("Maximum count"))
+            headers = (self.tr("Min count"), self.tr("Max count"))
+            tooltips = (self.tr("Minimum count"), self.tr("Maximum count"))
         self.value_1_header.setText(headers[0])
         self.value_2_header.setText(headers[1])
+        self.value_1_header.setToolTip(tooltips[0])
+        self.value_2_header.setToolTip(tooltips[1])
         self.value_2_header.setVisible(bool(headers[1]))
+        if (
+            mode == "count_range"
+            and previous_mode != "count_range"
+            and self._site_count is not None
+            and self.element_rows
+        ):
+            if previous_mode == "fixed_fraction":
+                weights = [
+                    float(row.fixed_fraction_spin.value())
+                    for row in self.element_rows
+                ]
+            else:
+                weights = [
+                    0.5
+                    * (
+                        float(row.fraction_min_spin.value())
+                        + float(row.fraction_max_spin.value())
+                    )
+                    for row in self.element_rows
+                ]
+            if sum(weights) <= 0.0:
+                weights = [1.0] * len(self.element_rows)
+            counts = fractions_to_counts_exact(weights, self._site_count)
+            for row, count in zip(self.element_rows, counts):
+                for spin in (row.count_min_spin, row.count_max_spin):
+                    spin.blockSignals(True)
+                    spin.setValue(int(count))
+                    spin.blockSignals(False)
         for row in self.element_rows:
             row.set_mode(mode)
         self.changed.emit()
@@ -572,24 +612,32 @@ class AlloySiteRulesEditor(QWidget):
             button.setMinimumWidth(0)
         for button in (self.single_template_button, self.ab_template_button):
             button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+            button.setMinimumWidth(
+                button.fontMetrics().horizontalAdvance(button.text()) + 24
+            )
 
         partition_row.addWidget(self.partition_label)
         partition_row.addWidget(self.partition_mode_combo)
         root.addLayout(partition_row)
 
-        template_row = QHBoxLayout()
-        template_row.setContentsMargins(0, 0, 0, 0)
-        template_row.setSpacing(4)
+        self.partition_hint = CaptionLabel(
+            self.tr(
+                "Use upstream sublattice labels; choose Entire structure when the input has no sublattice array."
+            ),
+            self,
+        )
+        self.partition_hint.setWordWrap(True)
+        root.addWidget(self.partition_hint)
+
         self.template_label = CaptionLabel(self.tr("Rule templates"), self)
-        template_row.addWidget(self.single_template_button, 1)
-        template_row.addWidget(self.ab_template_button, 1)
+        self.template_label.hide()
+        self.single_template_button.hide()
+        self.ab_template_button.hide()
         action_row = QHBoxLayout()
         action_row.setContentsMargins(0, 0, 0, 0)
-        action_row.addWidget(self.template_label)
         action_row.addStretch(1)
         action_row.addWidget(self.add_site_button)
         root.addLayout(action_row)
-        root.addLayout(template_row)
 
         self.status_label = CaptionLabel("", self)
         self.status_label.setWordWrap(True)

@@ -110,7 +110,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             self.assertEqual(dialog.detail_title_label.text(), "成分梯度")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "沿晶格 a、b 或 c 方向构造一维成分过渡，不移动原子。",
+                "沿晶格 a、b 或 c 排序位点，并在等原子数组间分配成分过渡。",
             )
             self.assertIn("作者", dialog.detail_contributors_label.text())
 
@@ -131,7 +131,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             )
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "在二至五元成分空间中采样目标配比；仅写入 Comp(...) 标签，需连接“随机占位”生成真实合金结构。",
+                "规划不重复的二元至五元目标成分；本卡只写入 Comp(...) 标签，需连接“随机占位”改变原子种类。",
             )
 
             replace_item = next(
@@ -144,7 +144,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             self.assertEqual(dialog.detail_title_label.text(), "条件替换")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "按笛卡尔坐标筛选指定元素，并将所有命中位点按给定混合比例替换。",
+                "在固定笛卡尔区域内，将所有命中的目标原子替换为一种或多种指定元素。",
             )
 
             finite_cell_item = next(
@@ -167,24 +167,17 @@ class TestCardLibraryDialog(unittest.TestCase):
                 == "GroupLabelCard"
             )
             dialog.card_list.setCurrentItem(group_item)
-            self.assertEqual(dialog.detail_title_label.text(), "分组标记")
+            self.assertEqual(dialog.detail_title_label.text(), "原子层分组")
+            self.assertEqual(dialog.detail_group_label.text(), "结构")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "按坐标规则将原子分成两组，供磁序、掺杂或空位操作使用；不改变坐标和元素。",
+                "沿所选 (hkl) 法向识别原子层并交替标记，供磁序、掺杂或空位操作使用。",
             )
 
             group_card = GroupLabelCard()
             self.assertEqual(
-                group_card.mode_combo.itemText(0),
-                "分数坐标交替分层",
-            )
-            self.assertEqual(
-                group_card.mode_combo.itemText(1),
-                "当前晶胞半网格奇偶",
-            )
-            self.assertEqual(
-                group_card.kvec_combo.itemText(4),
-                "111（沿晶格 a+b+c）",
+                group_card.plane_combo.itemText(4),
+                "(111) 晶面",
             )
 
             magnetic_item = next(
@@ -221,10 +214,10 @@ class TestCardLibraryDialog(unittest.TestCase):
                 == "RandomVacancyCard"
             )
             dialog.card_list.setCurrentItem(vacancy_item)
-            self.assertEqual(dialog.detail_title_label.text(), "随机空位")
+            self.assertEqual(dialog.detail_title_label.text(), "定向空位")
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "按元素、已有分组标签和数量规则随机删除位点；其余原子坐标保持不变。",
+                "按元素、可选的已有分组和数量规则随机删除位点。",
             )
 
             global_vacancy_item = next(
@@ -236,11 +229,11 @@ class TestCardLibraryDialog(unittest.TestCase):
             dialog.card_list.setCurrentItem(global_vacancy_item)
             self.assertEqual(
                 dialog.detail_title_label.text(),
-                "全局随机空位",
+                "全局空位",
             )
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "不区分元素，按整体数量或比例随机删除位点；其余原子坐标保持不变。",
+                "从所有元素中按整体数量或比例随机删除位点。",
             )
 
             insert_item = next(
@@ -252,11 +245,11 @@ class TestCardLibraryDialog(unittest.TestCase):
             dialog.card_list.setCurrentItem(insert_item)
             self.assertEqual(
                 dialog.detail_title_label.text(),
-                "插隙与表面吸附",
+                "插隙与吸附",
             )
             self.assertEqual(
                 dialog.detail_description_label.text(),
-                "在晶胞内随机生成插隙候选，或在指定上表面生成随机吸附候选；仅保证最小原子间距，不识别晶体学位点。",
+                "在整个晶胞内随机生成插隙，或在指定上表面生成吸附候选，并检查最小原子间距。",
             )
         finally:
             self._app.removeTranslator(translator)
@@ -280,15 +273,15 @@ class TestCardLibraryDialog(unittest.TestCase):
             )
             self.assertEqual(
                 popup._buttons_by_class["VacancyDefectCard"].text(),
-                "全局随机空位",
+                "全局空位",
             )
             self.assertEqual(
                 popup._buttons_by_class["InsertDefectCard"].text(),
-                "插隙与表面吸附",
+                "插隙与吸附",
             )
             self.assertEqual(
                 popup._buttons_by_class["StrictGSFEPathCard"].text(),
-                "层错 / GSFE 路径",
+                "层错路径",
             )
             self.assertNotIn("StackingFaultCard", popup._buttons_by_class)
             self.assertIn("合金与组分", popup._section_frames)
@@ -401,6 +394,30 @@ class TestCardLibraryDialog(unittest.TestCase):
         popup.search_edit.setText("CrystalPrototypeBuilderCard")
         self.assertEqual(
             popup._visible_class_names(), ["CrystalPrototypeBuilderCard"]
+        )
+
+    def test_popup_catalog_fits_without_hidden_horizontal_overflow(self):
+        popup = CardLibraryPopup()
+        popup.resize(980, 575)
+        popup.show()
+        self._app.processEvents()
+
+        self.assertEqual(popup.catalog_scroll.horizontalScrollBar().maximum(), 0)
+        self.assertEqual(popup.catalog_scroll.verticalScrollBar().maximum(), 0)
+        self.assertNotIn("SmallAngleSpinTiltCard", popup._buttons_by_class)
+        for class_name in ("MagneticMomentRotationCard",):
+            button = popup._buttons_by_class[class_name]
+            self.assertGreaterEqual(button.width(), button.sizeHint().width())
+
+        popup.resize(776, 560)
+        self._app.processEvents()
+        self.assertEqual(popup.catalog_scroll.horizontalScrollBar().maximum(), 0)
+        self.assertEqual(popup._active_column_count, 3)
+        for button in popup._buttons_by_class.values():
+            self.assertGreaterEqual(button.width(), button.sizeHint().width())
+        self.assertEqual(
+            popup._buttons_by_class["InsertDefectCard"].text(),
+            "Interstitial & Adsorbate",
         )
 
     def test_popup_emits_clicked_card_and_updates_keyboard_preview(self):

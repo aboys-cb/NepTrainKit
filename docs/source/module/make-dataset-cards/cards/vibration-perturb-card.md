@@ -6,142 +6,172 @@
 
 ## 功能说明
 
-沿声子振动模态方向施加位移扰动，比纯随机扰动更贴近动力学自由度。每个输出结构随机选取若干振动模态，按幅值叠加位移。可选按频率缩放（高频模态贡献更小）和排除近零频模态（避免平移/旋转伪模）。
+沿输入结构已有的振动模式生成协同原子位移。它适合已有可信模态、希望在这些模态张成的子空间内补样的场景；没有模态数据时应使用“原子扰动”。
+
+每个输入结构都必须带有可识别的模态数组。开启频率筛选或频率加权时，还必须为所有模态提供有限频率值；参与频率加权的频率不能为零。
+
+## 输入数据
+
+推荐把每个模式保存为一个三列向量属性：
+
+```text
+vibration_mode_0       # shape: (原子数, 3)
+vibration_frequency_0  # shape: (原子数,)
+vibration_mode_1       # shape: (原子数, 3)
+vibration_frequency_1  # shape: (原子数,)
+...
+```
+
+在 EXTXYZ 的 `Properties` 中，一个模式对应 `vibration_mode_0:R:3`，后面的 `3` 表示每个原子直接保存 x、y、z 三个分量。频率对应 `vibration_frequency_0:R:1`；频率属于整个模式，但需要按原子重复同一个值。
+
+程序仍兼容拆分的 `vibration_mode_0_x/y/z`、`normal_mode_*`、`mode_*`，以及聚合模态数组 `vibration_modes`、`normal_modes`、`modes`。聚合频率数组可命名为 `vibration_frequencies`、`normal_mode_frequencies`、`frequencies` 或 `freqs`。
+
+频率没有内置固定单位。频率截止值与输入频率使用同一数值单位；同一批数据必须保持一致，不能混用 `cm⁻¹` 与 THz。
+
+### 一个完整的两原子示例
+
+下面的 Si₂ 结构带有两个模式。每个模式都为每个原子保存一个三维矢量；这里假设频率统一使用 `cm⁻¹`：
+
+| 原子 | 坐标（Å） | 模式 0 矢量 | 频率 0 | 模式 1 矢量 | 频率 1 |
+|---|---|---|---:|---|---:|
+| Si 0 | `(0.0, 0.0, 0.0)` | `(+0.10, 0.00, 0.00)` | 100 | `(0.00, +0.20, 0.00)` | 250 |
+| Si 1 | `(2.3, 0.0, 0.0)` | `(-0.10, 0.00, 0.00)` | 100 | `(0.00, -0.20, 0.00)` | 250 |
+
+对应的 ASE 结构可以这样构造：
+
+```python
+import numpy as np
+from ase import Atoms
+
+atoms = Atoms(
+    "Si2",
+    positions=[[0.0, 0.0, 0.0], [2.3, 0.0, 0.0]],
+    cell=[10.0, 10.0, 10.0],
+    pbc=True,
+)
+
+# 模式 0：两个原子沿 x 方向相向运动
+atoms.new_array(
+    "vibration_mode_0",
+    np.array([[+0.10, 0.00, 0.00], [-0.10, 0.00, 0.00]]),
+)
+atoms.new_array("vibration_frequency_0", np.array([100.0, 100.0]))
+
+# 模式 1：两个原子沿 y 方向反向运动
+atoms.new_array(
+    "vibration_mode_1",
+    np.array([[0.00, +0.20, 0.00], [0.00, -0.20, 0.00]]),
+)
+atoms.new_array("vibration_frequency_1", np.array([250.0, 250.0]))
+```
+
+以 `vibration_mode_0` 为例，第一行 `[0.10, 0.00, 0.00]` 属于 Si 0，第二行 `[-0.10, 0.00, 0.00]` 属于 Si 1。每行已经是该原子完整的三维模态矢量。
 
 ## 原理与公式
 
-$$\mathbf{r}'=\mathbf{r}+A\sum_{k\in\mathcal{K}} c_k\mathbf{u}_k,\quad c_k\sim\mathcal{N}(0,1)\ \text{or}\ \mathcal{U}(-1,1)$$
+设筛选后共有 $M$ 个模式，第 $j$ 个模式为 $\mathbf e_j$，频率为 $\nu_j$。每个输出先无放回抽取 $K$ 个模式，再采样系数 $z_j$：
 
-$\mathbf u_k$ 是第 $k$ 个输入振动模态，$\mathcal K$ 是本样本抽中的模态集合，
-$A$ 是总幅值尺度。开启频率缩放时，高频模态系数会按频率降低；最小频率门槛用于排除
-近零平移/转动伪模。该卡不会自行计算本征模，公式完全依赖输入模态的归一化约定。
+$$
+z_j\sim\mathcal N(0,1)
+\quad\text{或}\quad
+z_j\sim U(-1,1).
+$$
 
-**关键前置条件：** 输入结构必须携带振动模态数据。如果来自 EXTXYZ 文件，需要包含 `mode_N_x/y/z` 和 `frequency_N` 列，或者整块数组 `modes` / `vibration_modes` 和 `frequencies` / `vibration_frequencies`。没有模态数据时，卡片返回空结果。
+开启频率加权时：
+
+$$
+c_j=\frac{z_j}{\sqrt{|\nu_j|}};
+$$
+
+关闭时 $c_j=z_j$。最终坐标为：
+
+$$
+\mathbf R'=\mathbf R+a\sum_{j\in S}c_j\mathbf e_j,
+$$
+
+其中 $a$ 是“模态系数尺度”，$S$ 是本次选中的模式集合。周期方向上的新坐标会回到原晶胞内。
+
+`a` 不是原子最大位移。实际位移还取决于模态矢量的归一化、抽到的随机系数、组合模式数和频率加权。正态分布无界，因此也不存在由 `a` 给出的硬位移上限。
 
 ## 操作示例
 
-### 场景：加了 Atomic Perturb 后力 MAE 改善有限，低频声子支的预测仍然很差
+### 用已有模态生成近平衡样本
 
-你在 Si 上训练了一个 NEP 模型。加了 `Atomic Perturb`（0.2 Å 随机位移）后，力的 MAE 从 150 meV/A 降到了 80 meV/A，但计算出的声子色散在低频声学支上误差仍然很大。诊断发现：纯随机扰动在所有方向上均匀采样，但低频声子对应的是长波长的协同原子运动——纯随机扰动几乎不可能恰好对齐这些方向。
-
-**诊断思路：** 声子频率对位移的灵敏度在各个模态方向上差异巨大。低频声学模涉及大范围原子协同位移，但在局部键长上变化很小——纯随机扰动倾向于产生"局域键长变化大"的构型，这恰好是高频光学模的特征，不是低频模的特征。需要沿准确的振动模本征方向施加位移，让模型在模态坐标上也有训练点。
-
-**输入：** 一个 Si 超胞，EXTXYZ 文件已包含 phonopy 计算出的振动模态数据（`mode_1_x/y/z` 到 `mode_N_x/y/z` 和 `frequency_1` 到 `frequency_N`）
-
-**目标：** 生成 32 个扰动结构，每次随机选 3 个模态叠加，幅值 0.05，只使用频率 > 10 THz 的模态（或 < 10 的具体看体系）
-
-**参数设置：**
-- `振动幅度`（`amplitude`） = `0.05`
-- `每个样本的模式数`（`modes_per_sample`） = `3`
-- `最大输出数量`（`max_num`） = `32`
-- `最小频率`（`min_frequency`） = `0.0` （或设一个合理的过滤值）
-- `分布`（`distribution`） = `0` （高斯分布）
-- `按频率缩放`（`scale_by_frequency`） = `true` （高频模自动衰减）
-
-**输出：** 32 个结构，每个沿 3 个随机选取的振动模态方向偏移，位移幅值按频率缩放
-
-**怎么验证训练集质量改善：**
-- 重训后重新计算声子色散，低频声学支应更接近 DFT 结果
-- 检查输出中哪些模态被选中——如果低频模态总是被 `最小频率`（`min_frequency`）排除，降低此阈值
-- 如果模型对高频光学支仍然不准，增大 `每个样本的模式数`（`modes_per_sample`）到 4~5，或增大 `最大输出数量`（`max_num`）
-- 如果 `按频率缩放`（`scale_by_frequency`）导致高频模位移太小（几乎看不到变化），关闭此开关试一批
-
-### 什么时候加这张卡、什么时候不加
-
-**加：**
-- 已有可信的振动模态数据，需要沿模态方向补充训练样本
-- 纯随机扰动改进有限，声子或振动相关性质仍有偏差
-- 需要模型学到模态方向上的势能面曲率
-
-**不加：**
-- 输入结构没有模态数据——卡片直接返回空，先跑 phonopy/DFPT 生成模态
-- 模态是从低精度方法（如经验势）算出来的——沿错误模态方向扰动只会引入噪声
-- 只需要覆盖高频局域环境——用 `Atomic Perturb` 更简单直接
-
-### 输入格式：振动模态数据
-
-输入结构需要以下数组之一（EXTXYZ 格式优先）：
-
-**方式一：按模态拆列（推荐，手写最友好）**
-```
-2
-Properties=species:S:1:pos:R:3:mode_1_x:R:1:mode_1_y:R:1:mode_1_z:R:1:frequency_1:R:1 pbc="F F F"
-H 0.000 0.000 0.000 0.10 0.00 0.00 1500.0
-H 0.740 0.000 0.000 -0.10 0.00 0.00 1500.0
-```
-`mode_N_x/y/z`：第 N 个模态在每个原子上的位移分量。`frequency_N`：第 N 个模态的频率，每个原子行重复同一值。
-
-**方式二：整块数组（适合多模态）**
-```
-2
-Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
-```
-`modes:R:3N` 表示 N 个模态的位移分量，按 mode1_xyz + mode2_xyz + ... 顺序。`frequencies:R:N` 表示 N 个频率值，每行重复同一组。
-
-代码接受的键名：`vibration_modes` / `normal_modes` / `modes`，以及 `vibration_frequencies` / `normal_mode_frequencies` / `frequencies` / `freqs`。列名或形状不对时，卡片将该结构视为"没有可用模态"并跳过。
+导入频率单位统一的模态结构，将系数尺度设为 `0.02`、每个样本组合 2 个模式、每个输入生成 8 个结构，并启用 seed。先检查这 8 个结构的最大位移和最短原子间距；尺度合适后再增加输出数。
 
 ## 参数说明
 
-### 分布（distribution）
+### 系数分布（distribution）
 
-`int`，默认 0。模态系数的采样分布。`0` = 高斯（均值 0，大幅位移概率更低，更接近热振动统计）；`1` = 均匀。通常高斯更物理——你不希望模型被极端大位移的训练点带偏。
+`int`，默认 `0`。`0` 为标准正态分布，系数无界；`1` 为 $[-1,1]$ 均匀分布。
 
-### 振动幅度（amplitude）
+### 模态系数尺度（amplitude）
 
-`float`，默认 `0.05`。模态叠加的总幅值系数，实际位移 = `amplitude * sum(coefficient * mode_vector)`。注意这个幅值是乘在归一化后的模态矢量上的——如果上游的模态归一化方式不同（mass-weighted vs. 不归一化），同样的 amplitude 产生的实际原子位移也不一样。0.01~0.03 适合微扰验证；0.05~0.08 常规补充；设到 0.1 以上建议后筛检查最近邻距离。
+`float`，默认 `0.05`。对应公式中的 $a$，直接乘在组合模态上，不代表最大原子位移。
 
-### 每个样本的模式数（modes_per_sample）
+### 每个样本组合模式数（modes_per_sample）
 
-`int`，默认 2。每个输出结构随机选几个模态来叠加。1~2 个适合单模态方向验证，能清楚看到每个模态的贡献；3~4 个做多模态混合覆盖；5 个以上单个模态的贡献会被稀释，而且组合数指数增长——通常 2~4 就够了。
+`int`，默认 `2`，至少为 1。每个输出无放回选择这么多个模式，不能超过筛选后的可用模式数。
 
-### 最小频率（min_frequency）
+### 绝对频率截止值（min_frequency）
 
-`float`，默认 `10.0`。频率低于这个值的模态不参与采样。仅在 `exclude_near_zero=true` 时生效。设 0 则不过滤。典型值：排除平移/旋转伪模设 0.1~1.0 THz；排除软模设 1~10 THz，具体看你的体系。
+`float`，默认 `10.0`。对应 $\nu_\min$，单位跟随输入频率；关闭频率截止后不生效。
 
-### 最大输出数量（max_num）
+### 每个输入生成（max_num）
 
-`int`，默认 32。每个输入结构生成多少个扰动样本。20~40 常规覆盖，50~100 高密度覆盖。建议后面接一张 `FPS Filter` 去重。
+`int`，默认 `32`，至少为 1。表示每个输入结构各自生成的输出数。
 
-### 按频率缩放（scale_by_frequency）
+### 频率加权（scale_by_frequency）
 
-`bool`，默认 `true`。打开后每个模态系数除以 sqrt(frequency)，高频模态的贡献自动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被过度采样，建议同时降低 `振动幅度`（`amplitude`）。
+`bool`，默认 `true`。开启后将系数除以 $\sqrt{|\nu|}$，相对增强低频模式。
 
-### 排除近零频率（exclude_near_zero）
+### 频率截止（exclude_near_zero）
 
-`bool`，默认 `true`。打开后用 `最小频率`（`min_frequency`）做阈值过滤，排除近零频模态。一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些"模态"做位移会产生异常大的整体漂移。
+`bool`，默认 `true`。开启后仅保留 $|\nu|\ge\nu_\min$ 的模式。
 
 ### 使用随机种子（use_seed）
 
-`bool`，默认 `false`。打开后每次同一输入 + 同一参数 + 同一 seed 得到完全相同的扰动结果。对比实验或需要复现时打开，纯探索阶段可以关着。
+`bool`，默认 `false`。开启后，相同结构与参数可重复得到相同结果。
 
 ### 随机种子（seed）
 
-`int`，默认 0。随机种子值。仅在 `使用随机种子`（`use_seed`）打开时生效。
+`int`，默认 `0`。它与结构内容共同派生该结构的随机流。
 
-生效条件：`use_seed=True`。
+总输出数为：
 
-## 推荐预设
+$$
+N_\mathrm{out}=N_\mathrm{input}\times\texttt{max\_num}.
+$$
 
-### 微扰验证（幅值 0.02，2 模态，20 样本，高斯）
-```json
-{
-  "class": "VibrationModePerturbCard",
-  "check_state": true,
-  "params": {
-    "distribution": 0,
-    "amplitude": 0.02,
-    "modes_per_sample": 2,
-    "min_frequency": 0.1,
-    "max_num": 20,
-    "scale_by_frequency": true,
-    "exclude_near_zero": true,
-    "use_seed": true,
-    "seed": 42
-  }
-}
-```
+## 使用步骤
 
-### 常规声子覆盖（幅值 0.05，3 模态，32 样本，高斯）
+1. 导入带振动模式的结构；
+2. 确认频率单位一致，并据此设置频率截止值；
+3. 先用较小的模态系数尺度和少量输出试算；
+4. 检查位移幅度、最短原子间距和所覆盖的模式，再扩大样本量。
+
+如果筛选后没有模式、频率相关选项缺少有限频率，或组合模式数超过可用数，卡片会停止并说明原因，不会返回成功的空结果。
+
+## 常见问题
+
+**为什么尺度是 0.05，最大位移却不是 0.05 Å？** 尺度乘在模态矢量及随机系数的组合上；位移还取决于模态归一化、组合模式数和频率加权。
+
+**截止值 10 的单位是什么？** 与输入保存的频率单位相同。程序不自动判断或换算 `cm⁻¹` 与 THz。
+
+**为什么提示可用模式不足？** 频率筛选后的模式数小于“每个样本组合模式数”。降低组合数或调整截止值。
+
+## 输出与复现
+
+- 每个输入严格生成 `max_num` 个结构；
+- `Config_type` 追加 `Vib(a=<尺度>,m=<模式数>)`；
+- `vibration_mode_perturb` metadata 记录参数、候选模式数、所选模式位置、对应频率、seed 和样本序号；
+- 相同结构、参数和 seed 得到相同结果；不同结构从同一基准 seed 派生不同随机流。
+
+metadata 中的模式位置是“筛选后候选模式列表”的零基序号。
+
+<details>
+<summary>示例配置</summary>
+
 ```json
 {
   "class": "VibrationModePerturbCard",
@@ -149,8 +179,8 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
   "params": {
     "distribution": 0,
     "amplitude": 0.05,
-    "modes_per_sample": 3,
-    "min_frequency": 0.1,
+    "modes_per_sample": 2,
+    "min_frequency": 10.0,
     "max_num": 32,
     "scale_by_frequency": true,
     "exclude_near_zero": true,
@@ -160,45 +190,4 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 }
 ```
 
-### 大位移非谐探索（幅值 0.1，5 模态，50 样本，不缩放）
-```json
-{
-  "class": "VibrationModePerturbCard",
-  "check_state": true,
-  "params": {
-    "distribution": 1,
-    "amplitude": 0.1,
-    "modes_per_sample": 5,
-    "min_frequency": 0.0,
-    "max_num": 50,
-    "scale_by_frequency": false,
-    "exclude_near_zero": false,
-    "use_seed": true,
-    "seed": 42
-  }
-}
-```
-
-## 推荐组合
-
-- `Vib Mode Perturb` → `Atomic Perturb`：先沿模态方向扰动，再补充纯随机方向
-- `phonopy/DFPT` 生成模态 → `Vib Mode Perturb`：计算完模态后直接喂入生成训练数据
-- `Vib Mode Perturb` → `FPS Filter`：大批量生成后去重
-
-## 常见问题
-
-**输出为空（无结构生成）。** 输入结构没有可识别的模态数据。检查：列名是否正确（`mode_1_x` 不是 `mode1_x`），频率列是否存在且命名正确，数组形状是否和原子数一致。可以用 ASE 读取 EXTXYZ 文件后查看 `arrays` 确认键名。
-
-**部分模态始终没被选中。** 这是随机采样的正常现象。`每个样本的模式数`（`modes_per_sample`）较小时（1~2），样本数不够覆盖所有模态。增大 `最大输出数量`（`max_num`）或 `每个样本的模式数`（`modes_per_sample`）提高覆盖率。
-
-**关闭 `按频率缩放`（`scale_by_frequency`）后高频模位移过大。** 这是预期行为——`1/sqrt(frequency)` 的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `振动幅度`（`amplitude`）补偿。
-
-**`最小频率`（`min_frequency`）过滤后模态太少。** 如果体系存在大量软模（近零频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然后适当降低 `最小频率`（`min_frequency`）或关闭 `排除近零频率`（`exclude_near_zero`）。
-
-## 输出标签
-
-`Vib(a={amplitude},m={modes_per_sample})`
-
-## 可复现性
-
-勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复现。模态选择、系数采样均受 seed 控制。
+</details>

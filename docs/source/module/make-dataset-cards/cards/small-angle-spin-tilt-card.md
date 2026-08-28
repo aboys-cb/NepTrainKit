@@ -1,12 +1,17 @@
-<!-- card-schema: {"card_name": "Small-Angle Spin Tilt", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params"]} -->
+:orphan:
 
-# 小角度自旋倾斜（Small-Angle Spin Tilt）
+<!-- card-schema: {"card_name": "Canting Scan", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params"]} -->
+
+# 倾斜扫描（Canting Scan）
 
 **分类：** 磁性
 
+> [!WARNING]
+> 这是一张仅用于加载旧工作流的兼容卡片，已从“新建卡片”目录隐藏。单自旋、原子对和分组对扫描请迁移到“局域磁响应”；全局倾斜请迁移到“SOC / 纹理响应”；随机方向采样请使用“磁矩扰动”。
+
 ## 功能说明
 
-对选定目标原子、全局磁序或原子对做确定性小角度磁矩偏转（canting）。支持四种模式：单自旋偏转、Global tilt、显式原子对 canting、两组原子的 group-pair canting。pair 模式显式构造 S_i x S_j 的正/负手性对，直接服务于 DMI 训练集；Global tilt 用于外场下的集体偏转角扫描。
+对选定目标原子、全局磁序或原子对做确定性小角度磁矩偏转（canting）。支持四种模式：单自旋偏转、Global tilt、显式原子对 canting、两组原子的 group-pair canting。pair 模式显式构造 S_i x S_j 的正/负手性对，可用于研究或验证手性响应；是否学到 DMI 类响应仍需独立验证。Global tilt 用于集体偏转角扫描。
 
 ## 原理与公式
 
@@ -18,7 +23,7 @@ $\hat{\mathbf t}$ 是与参考磁矩 $\hat{\mathbf m}_0$ 正交的单位倾斜�
 把总夹角 $\theta$ 平分到左右自旋，使两者相对角度可控；正负手性通过翻转
 $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 
-**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Magmom Rotation`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。
+**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Spin Perturb`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。
 
 ## 操作示例
 
@@ -57,10 +62,10 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 - 分子动力学显示特定原子对的磁矩夹角出现非物理振荡
 
 **不加：**
-- 只需要随机方向扰动覆盖 → 用 `Magmom Rotation`
-- 需要离散比例翻转或从有序到无序的梯度 → 用 `Spin Disorder`
+- 只需要随机方向扰动覆盖 → 用 `Spin Perturb`
+- 需要按比例翻转磁矩或生成从有序到无序的梯度 → 用 `Moment Disorder`
 - 需要整体磁序翻转（不是局部 canting）→ 用 `Magnetic Order` 的 AFM 分支
-- 需要连续螺旋调制 → 用 `Spin Spiral`
+- 需要连续有限 q 螺旋调制 → 用 `SOC / Texture Response`
 
 ## 参数说明
 
@@ -315,11 +320,11 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 }
 ```
 
-## 推荐组合
+## 旧工作流迁移
 
-- `Set Magnetic Moments` → `Small-Angle Spin Tilt`：先统一向量磁矩，再批量生成成对 canting
-- `Magnetic Order` → `Small-Angle Spin Tilt`：先生成稳定参考磁态，再做局部 canting
-- `Group Label` → `Magnetic Order` → `Small-Angle Spin Tilt`：先分组再切到 `Group pair canting`
+- 单自旋、原子对和分组对扫描：迁移到 `Local Magnetic Response`。
+- 全局倾斜：迁移到 `SOC / Texture Response`。
+- 随机方向采样：迁移到 `Spin Perturb`。
 
 ## 常见问题
 
@@ -327,7 +332,7 @@ $\hat{\mathbf t}$ 或角度符号构造。磁矩模长保持不变。
 
 **提示没有有效 pair。** 手动模式检查左右索引数量和磁矩是否非零；自动模式调整 `近邻壳层容差`（`pair_shell_tolerance`）——太大把不同壳层并到一起，太小把同一壳层拆开。再检查 `原子对元素筛选`（`pair_element_filter`）、`原子对分组筛选`（`pair_group_filter`）和键方向筛选是否过紧。
 
-**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `A 组`（`group_a`）和 `B 组`（`group_b`）中都要有至少一个非零磁矩原子。可以用 `Group Label` 先生成坐标分组，但它不会自动识别化学子晶格。
+**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `A 组`（`group_a`）和 `B 组`（`group_b`）中都要有至少一个非零磁矩原子。可以用 `Layer Groups` 先生成逐层交替分组。
 
 **输出数量多于预期。** `Target Mode = All eligible atoms` + `Both (+/- pair)` 会快速膨胀。设 `最大输出数`（`max_outputs`）上限或改用 `First eligible atom`。
 

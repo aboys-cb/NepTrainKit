@@ -259,7 +259,7 @@ def build_cases() -> list[BenchCase]:
             "CrystalPrototypeBuilder",
             run_generator(
                 CrystalPrototypeBuilderOperation(),
-                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.55, 3.65, 0.05), max_atoms=256, max_outputs=3),
+                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.55, 3.65, 0.05), max_outputs=3),
             ),
             require_count_and_tag(3, "Proto("),
         ),
@@ -293,7 +293,7 @@ def build_cases() -> list[BenchCase]:
         BenchCase(
             "lattice",
             "SuperCell:max_atoms",
-            run_structure(SuperCellOperation(), si, SuperCellParams(behavior_type=1, mode="max_atoms", max_atoms=512)),
+            run_structure(SuperCellOperation(), si, SuperCellParams(mode="max_atoms", max_atoms=512)),
             require_count_and_tag(1, "SC("),
         ),
         BenchCase(
@@ -469,7 +469,7 @@ def build_cases() -> list[BenchCase]:
         BenchCase(
             "defect",
             "RandomSlab:small_grid",
-            run_structure(RandomSlabOperation(), si_bulk((1, 1, 1)), RandomSlabParams(h_range=(0, 1, 1), k_range=(0, 1, 1), l_range=(1, 1, 1), layer_range=(2, 3, 1), vacuum_range=(0, 4, 4))),
+            run_structure(RandomSlabOperation(), si_bulk((1, 1, 1)), RandomSlabParams(hkl_list=((0, 0, 1), (0, 1, 1)), layer_range=(2, 3, 1), vacuum_range=(0, 4, 4))),
             require_count_and_tag(8, "Slab("),
         ),
         BenchCase(
@@ -492,9 +492,9 @@ def build_cases() -> list[BenchCase]:
         ),
         BenchCase(
             "magnetism",
-            "MagmomRotation:16",
+            "RandomSpinPerturbation:16",
             run_structure(MagneticMomentRotationOperation(), spin, MagneticMomentRotationParams(num_structures=16, use_seed=True, seed=15)),
-            require_count_and_tag(16, "MMR("),
+            require_count_and_tag(16, "SpinPert("),
         ),
         BenchCase(
             "magnetism",
@@ -569,7 +569,7 @@ def build_count50_cases() -> list[BenchCase]:
             "CrystalPrototypeBuilder:50",
             run_generator(
                 CrystalPrototypeBuilderOperation(),
-                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.50, 3.99, 0.01), max_atoms=256, max_outputs=50),
+                CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.50, 3.99, 0.01), max_outputs=50),
             ),
             require_count_and_tag(50, "Proto("),
         ),
@@ -753,7 +753,7 @@ def build_count50_cases() -> list[BenchCase]:
         BenchCase(
             "defect",
             "RandomSlab:grid50",
-            run_structure(RandomSlabOperation(), si_bulk((1, 1, 1)), RandomSlabParams(h_range=(0, 4, 1), k_range=(0, 0, 1), l_range=(1, 2, 1), layer_range=(2, 6, 1), vacuum_range=(4, 4, 1))),
+            run_structure(RandomSlabOperation(), si_bulk((1, 1, 1)), RandomSlabParams(hkl_list=tuple((h, 1, l) for h in range(5) for l in (1, 2)), layer_range=(2, 6, 1), vacuum_range=(4, 4, 1))),
             require_count_and_tag(50, "Slab("),
         ),
         BenchCase(
@@ -770,9 +770,9 @@ def build_count50_cases() -> list[BenchCase]:
         ),
         BenchCase(
             "magnetism",
-            "MagmomRotation:50",
+            "RandomSpinPerturbation:50",
             run_structure(MagneticMomentRotationOperation(), spin, MagneticMomentRotationParams(num_structures=50, use_seed=True, seed=15)),
-            require_count_and_tag(50, "MMR("),
+            require_count_and_tag(50, "SpinPert("),
         ),
         BenchCase(
             "magnetism",

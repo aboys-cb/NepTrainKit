@@ -54,20 +54,23 @@ def _localized_catalog(_language_marker: str):
     names_and_descriptions = {
         "BainPathCard": (
             QCoreApplication.translate("CardCatalog", "Bain Path"),
-            QCoreApplication.translate("CardCatalog", "Generate fixed-structure Bain/tetragonal distortion paths."),
-        ),
-        "CardGroup": (
-            QCoreApplication.translate("CardCatalog", "Branch Merge Group"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Run several independent child branches one at a time from the same input, merge their outputs, and optionally apply one post-filter; child cards do not feed one another.",
+                "Generate constant-volume, shape-volume-grid, or free-axis tetragonal paths along a selected lattice vector.",
+            ),
+        ),
+        "CardGroup": (
+            QCoreApplication.translate("CardCatalog", "Branch Merge"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Run independent cards from one shared input, merge their outputs, then optionally apply one filter.",
             ),
         ),
         "WorkflowFork": (
-            QCoreApplication.translate("CardCatalog", "Permanent Fork"),
+            QCoreApplication.translate("CardCatalog", "Branch Fork"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Split one input into independent linear branch pipelines; outputs remain separate until an explicit Merge is enabled.",
+                "Build independent multi-card branches from one input; keep their outputs separate or merge them explicitly.",
             ),
         ),
         "CellScalingCard": (
@@ -76,36 +79,46 @@ def _localized_catalog(_language_marker: str):
         ),
         "CellStrainCard": (
             QCoreApplication.translate("CardCatalog", "Lattice Strain"),
-            QCoreApplication.translate("CardCatalog", "Produce strained lattice variants along user-selected axes and ranges."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Scan unique normal-strain paths and grids along lattice a, b, and c.",
+            ),
         ),
         "CompositionGradientCard": (
             QCoreApplication.translate("CardCatalog", "Composition Gradient"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Build a one-dimensional composition transition along lattice a, b, or c without moving atoms.",
+                "Assign a composition transition across equal-count site groups ordered along lattice a, b, or c.",
             ),
         ),
         "CompositionSweepCard": (
             QCoreApplication.translate("CardCatalog", "Composition Space Sampling"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Sample target ratios in binary-to-quinary composition spaces. This card only writes Comp(...) tags; add Random Occupancy to change atoms.",
+                "Plan unique binary-to-quinary target compositions. This card writes Comp(...) tags only; add Random Occupancy to change atoms.",
             ),
         ),
         "ConditionalReplaceCard": (
             QCoreApplication.translate("CardCatalog", "Conditional Replace"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Select a target element by Cartesian coordinates, then replace every matching site using the specified replacement mixture.",
+                "Replace every matching target atom inside a fixed Cartesian "
+                "region with one or more specified elements.",
             ),
         ),
         "CorrelatedRandomSpinCard": (
-            QCoreApplication.translate("CardCatalog", "Correlated Random Spin"),
-            QCoreApplication.translate("CardCatalog", "Generate non-collinear random spins with an explicit spatial correlation length."),
+            QCoreApplication.translate("CardCatalog", "Correlated Spins"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Change every eligible moment using a distance-correlated direction field.",
+            ),
         ),
         "CrystalPrototypeBuilderCard": (
             QCoreApplication.translate("CardCatalog", "Crystal Prototype Builder"),
-            QCoreApplication.translate("CardCatalog", "Generate simple bulk crystal prototypes without requiring input structures."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Generate fully periodic single-element FCC, BCC, HCP, or FCC (111)-oriented base cells; add Super Cell afterward when expansion is needed.",
+            ),
         ),
         "FiniteCellAlloyOccupancyCard": (
             QCoreApplication.translate("CardCatalog", "Finite-Cell Alloy Occupancy"),
@@ -115,10 +128,10 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "FPSFilterDataCard": (
-            QCoreApplication.translate("CardCatalog", "Representative Sampling (FPS)"),
+            QCoreApplication.translate("CardCatalog", "FPS Sampling"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Keep a descriptor-space representative subset using a chosen NEP model, with either one global budget or guaranteed quotas for every element set; an existing training set can seed coverage.",
+                "Select a representative NEP-descriptor subset with global or element-set-balanced budgets and optional existing coverage.",
             ),
         ),
         "FoldedHelixCard": (
@@ -133,46 +146,58 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "GroupLabelCard": (
-            QCoreApplication.translate("CardCatalog", "Group Label"),
+            QCoreApplication.translate("CardCatalog", "Layer Groups"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Divide atoms into two coordinate-based groups for downstream magnetic, doping, or vacancy operations; coordinates and elements are unchanged.",
+                "Detect atomic planes along a selected (hkl) normal and label adjacent layers alternately for downstream magnetic, doping, or vacancy operations.",
             ),
         ),
         "InterfaceLayerMixCard": (
             QCoreApplication.translate("CardCatalog", "Interface Layer Mixing"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Detect a bilayer interface, pick near-interface layers on both sides, and swap their atom species at a target or gradient concentration.",
+                "Select one interface and exchange unlike species between nearby layers while preserving the total composition.",
             ),
         ),
         "InsertDefectCard": (
             QCoreApplication.translate(
                 "CardCatalog",
-                "Interstitial and Surface Adsorption",
+                "Interstitial & Adsorbate",
             ),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Sample random interstitial candidates inside a cell or random adsorbates above a selected upper surface; only a minimum-distance constraint is enforced.",
+                "Sample random interstitials in the full cell or adsorbates above a selected upper surface with a minimum-distance rule.",
             ),
         ),
         "LayerCopyCard": (
             QCoreApplication.translate("CardCatalog", "Layer Stack"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Build one multilayer structure by translating the complete input slab along Cartesian z; an optional dz=f(x,y,z) expression can warp selected atoms before every full-slab copy.",
+                "Build one multilayer structure from a z-oriented slab using a true "
+                "surface gap; optionally apply the same Cartesian-z warp before every "
+                "complete copy.",
             ),
         ),
         "LocalSolvationCard": (
-            QCoreApplication.translate("CardCatalog", "Local Solvation"),
+            QCoreApplication.translate("CardCatalog", "Solvent Shell"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Insert solvent molecules around selected host atoms using a fallback COM shell or ion-specific first-shell distances, with collision checks and optional flexible-solvent sampling.",
+                "Place a shared total of solvent molecules around selected host atoms using local shells and collision checks.",
+            ),
+        ),
+        "LocalMagneticResponseCard": (
+            QCoreApplication.translate("CardCatalog", "Local Magnetic Response"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Build complete local spin-rotation or moment-scale response groups with stable lineage.",
             ),
         ),
         "MagneticMomentRotationCard": (
-            QCoreApplication.translate("CardCatalog", "Magmom Rotation"),
-            QCoreApplication.translate("CardCatalog", "Rotate and optionally rescale atomic magnetic moments for selected species."),
+            QCoreApplication.translate("CardCatalog", "Spin Perturb"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Sample selected non-zero moments inside local angular caps and optionally perturb their magnitudes.",
+            ),
         ),
         "MagneticOrderCard": (
             QCoreApplication.translate("CardCatalog", "Magnetic Order"),
@@ -181,18 +206,25 @@ def _localized_catalog(_language_marker: str):
                 "Generate FM, AFM, and random PM initial spin states from element moments without changing coordinates or elements.",
             ),
         ),
-        "OrganicMolConfigPBCCard": (
-            QCoreApplication.translate("CardCatalog", "Organic Mol Config"),
+        "MagnetoelasticResponseCard": (
+            QCoreApplication.translate("CardCatalog", "Magnetoelastic Grid"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Detect molecular bonds, rotate eligible single-bond subtrees, add optional Gaussian noise, and skip conformers that fail bond-length or clash guards.",
+                "Combine a lattice-deformation path with the same selected-spin rotation scan at every lattice point.",
+            ),
+        ),
+        "OrganicMolConfigPBCCard": (
+            QCoreApplication.translate("CardCatalog", "Molecular Conformers"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Detect rotatable molecular bonds and generate guarded torsion-driven conformers with optional coordinate noise.",
             ),
         ),
         "OrderedAlloyPrototypeCard": (
             QCoreApplication.translate("CardCatalog", "Ordered Alloy Prototype"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Generate periodic A1, A2, A3, L12, B2, and L10 prototypes with sublattice labels.",
+                "Generate unexpanded A1, A2, A3, L12, B2, and L10 base cells with explicit A/B sublattice labels.",
             ),
         ),
         "PerturbCard": (
@@ -209,17 +241,23 @@ def _localized_catalog(_language_marker: str):
         ),
         "RandomPackingCard": (
             QCoreApplication.translate("CardCatalog", "Random Packing"),
-            QCoreApplication.translate("CardCatalog", "Generate random atomic coordinates while preserving cell constraints."),
-        ),
-        "RandomSlabCard": (
-            QCoreApplication.translate("CardCatalog", "Random Slab"),
-            QCoreApplication.translate("CardCatalog", "Construct surface slabs across multiple Miller indices and thicknesses."),
-        ),
-        "RandomVacancyCard": (
-            QCoreApplication.translate("CardCatalog", "Random Vacancy"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Remove randomly selected sites using element, existing group, and count rules; other atomic coordinates stay unchanged.",
+                "Rebuild all atoms in each input cell using integer composition and minimum-distance constraints.",
+            ),
+        ),
+        "RandomSlabCard": (
+            QCoreApplication.translate("CardCatalog", "Surface Slab Scan"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Cut deterministic surface slabs from a three-periodic bulk structure using an explicit Miller-plane list.",
+            ),
+        ),
+        "RandomVacancyCard": (
+            QCoreApplication.translate("CardCatalog", "Targeted Vacancy"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Remove randomly selected sites using element, optional existing-group, and count rules.",
             ),
         ),
         "SetMagneticMomentsCard": (
@@ -228,15 +266,24 @@ def _localized_catalog(_language_marker: str):
         ),
         "ShearAngleCard": (
             QCoreApplication.translate("CardCatalog", "Shear Angle Strain"),
-            QCoreApplication.translate("CardCatalog", "Perturb lattice angles while preserving cell lengths."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Scan alpha, beta, and gamma angle increments while preserving lattice-vector lengths.",
+            ),
         ),
         "ShearMatrixCard": (
             QCoreApplication.translate("CardCatalog", "Shear Matrix Strain"),
-            QCoreApplication.translate("CardCatalog", "Apply shear matrices along the principal lattice planes."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Scan simple shear or symmetric strain components in fixed Cartesian coordinates.",
+            ),
         ),
         "SmallAngleSpinTiltCard": (
-            QCoreApplication.translate("CardCatalog", "Small-Angle Spin Tilt"),
-            QCoreApplication.translate("CardCatalog", "Generate deterministic single-spin small-angle tilt configurations."),
+            QCoreApplication.translate("CardCatalog", "Canting Scan"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Generate deterministic angle scans for selected spins, atom pairs, or magnetic groups.",
+            ),
         ),
         "SolventBoxFillCard": (
             QCoreApplication.translate("CardCatalog", "Solvent Box Fill"),
@@ -246,12 +293,22 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "SpinDisorderCard": (
-            QCoreApplication.translate("CardCatalog", "Spin Disorder"),
-            QCoreApplication.translate("CardCatalog", "Generate spin states with explicit disorder fractions."),
+            QCoreApplication.translate("CardCatalog", "Moment Disorder"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "For each requested fraction, randomly choose that share of existing non-zero moments and flip or redirect them while preserving their magnitudes.",
+            ),
         ),
         "SpinSpiralCard": (
             QCoreApplication.translate("CardCatalog", "Spin Spiral"),
             QCoreApplication.translate("CardCatalog", "Assign non-collinear spiral magnetic moments using a 1D phase field."),
+        ),
+        "SOCTextureResponseCard": (
+            QCoreApplication.translate("CardCatalog", "SOC / Texture Response"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Rigidly rotate an input spin texture or regenerate a cell-compatible signed-q texture path.",
+            ),
         ),
         "StackingFaultCard": (
             QCoreApplication.translate("CardCatalog", "Legacy Stacking Fault"),
@@ -261,26 +318,33 @@ def _localized_catalog(_language_marker: str):
             ),
         ),
         "StrictGSFEPathCard": (
-            QCoreApplication.translate("CardCatalog", "Stacking Fault / GSFE Path"),
+            QCoreApplication.translate("CardCatalog", "GSFE Path"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Shift atoms above an interlayer cut along an explicit in-plane direction to generate stacking-fault structures or an unrelaxed GSFE path; the input cell must already be oriented to the fault plane.",
+                "Shift atoms above an interlayer cut along a direction in the current ab plane to generate an unrelaxed GSFE path.",
             ),
         ),
         "SuperCellCard": (
             QCoreApplication.translate("CardCatalog", "Super Cell"),
-            QCoreApplication.translate("CardCatalog", "Create supercells from fixed scale factors, target lattice lengths, or atom limits."),
-        ),
-        "VacancyDefectCard": (
-            QCoreApplication.translate("CardCatalog", "Global Random Vacancy"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Delete sites globally by an overall count or fraction without distinguishing elements; remaining coordinates are unchanged.",
+                "Repeat complete input cells along lattice vectors using explicit factors, "
+                "target lengths, or a strict atom budget.",
+            ),
+        ),
+        "VacancyDefectCard": (
+            QCoreApplication.translate("CardCatalog", "Global Vacancy"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Delete randomly sampled sites from all elements using an overall count or fraction.",
             ),
         ),
         "VibrationModePerturbCard": (
             QCoreApplication.translate("CardCatalog", "Vib Mode Perturb"),
-            QCoreApplication.translate("CardCatalog", "Generate perturbations along precomputed vibrational modes."),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Sample correlated atomic displacements from vibrational modes already stored on each input structure.",
+            ),
         ),
     }
     groups = {
@@ -714,10 +778,17 @@ class _CardCatalogButton(TransparentPushButton):
 
     def __init__(self, class_name: str, text: str, parent=None):
         TransparentPushButton.__init__(self, parent)
-        self.setText(text)
+        # QPushButton treats a single ampersand as a mnemonic marker.  Card
+        # names are data, so escape it to keep names such as
+        # "Interstitial & Adsorbate" visible verbatim.
+        self._catalog_text = text
+        self.setText(text.replace("&", "&&"))
+        self.setAccessibleName(text)
         self.class_name = class_name
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.setFixedHeight(27)
         self._hover_shadow = QGraphicsDropShadowEffect(self)
         self._hover_shadow.setBlurRadius(14)
@@ -726,6 +797,10 @@ class _CardCatalogButton(TransparentPushButton):
         self._hover_shadow.setEnabled(False)
         self.setGraphicsEffect(self._hover_shadow)
         self._set_raised(False)
+
+    def text(self) -> str:
+        """Return the semantic name without Qt's mnemonic escaping."""
+        return self._catalog_text
 
     def _set_raised(self, raised: bool) -> None:
         accent = themeColor()
@@ -774,7 +849,7 @@ class CardLibraryPopup(FlyoutViewBase):
     """Screen-safe categorized card picker anchored to the Add Card button."""
 
     cardRequested = Signal(str)
-    _COLUMN_COUNT = 4
+    _MAX_COLUMN_COUNT = 4
     _GROUP_ICONS = {
         "Alloy": FluentIcon.PIE_SINGLE,
         "Container": FluentIcon.SHARE,
@@ -806,6 +881,8 @@ class CardLibraryPopup(FlyoutViewBase):
         self._buttons_by_class: dict[str, _CardCatalogButton] = {}
         self._section_frames: dict[str, SimpleCardWidget] = {}
         self._section_classes: dict[str, list[str]] = {}
+        self._section_order: list[tuple[str, SimpleCardWidget, int]] = []
+        self._active_column_count = 0
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -826,23 +903,25 @@ class CardLibraryPopup(FlyoutViewBase):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setStyleSheet("QScrollArea { background: transparent; border: 0; }")
+        self.catalog_scroll = scroll
         self.catalog_widget = QWidget(scroll)
         self.catalog_widget.setStyleSheet("background: transparent;")
         columns_layout = QHBoxLayout(self.catalog_widget)
         columns_layout.setContentsMargins(0, 0, 0, 0)
         columns_layout.setSpacing(8)
-        column_layouts: list[QVBoxLayout] = []
-        column_loads = [0] * self._COLUMN_COUNT
-        column_heights = [0] * self._COLUMN_COUNT
-        for _index in range(self._COLUMN_COUNT):
+        self._columns_layout = columns_layout
+        self._column_widgets: list[QWidget] = []
+        self._column_layouts: list[QVBoxLayout] = []
+        for _index in range(self._MAX_COLUMN_COUNT):
             column = QWidget(self.catalog_widget)
             column.setMinimumWidth(0)
             layout = QVBoxLayout(column)
             layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(8)
+            layout.setSpacing(7)
             layout.addStretch(1)
             columns_layout.addWidget(column, 1)
-            column_layouts.append(layout)
+            self._column_widgets.append(column)
+            self._column_layouts.append(layout)
 
         grouped: dict[str, list[tuple[str, CardMetadata]]] = {}
         for class_name, metadata in self._metadata_by_class.items():
@@ -851,23 +930,15 @@ class CardLibraryPopup(FlyoutViewBase):
 
         for group, entries in sorted(grouped.items()):
             entries.sort(key=lambda item: localized_card_name(item[1]))
-            column_index = min(
-                range(self._COLUMN_COUNT), key=column_loads.__getitem__
-            )
             section = self._create_section(
                 group,
                 entries,
                 entries[0][1].group or "",
             )
-            column_layouts[column_index].insertWidget(
-                column_layouts[column_index].count() - 1, section
-            )
-            column_loads[column_index] += len(entries) + 2
-            if column_heights[column_index]:
-                column_heights[column_index] += columns_layout.spacing()
-            column_heights[column_index] += section.sizeHint().height()
+            self._section_order.append((group, section, len(entries)))
 
-        self._catalog_content_height = max(column_heights, default=0)
+        self._catalog_content_height = 0
+        self._reflow_sections(self._column_count_for_width(980))
 
         scroll.setWidget(self.catalog_widget)
         root.addWidget(scroll, 1)
@@ -888,6 +959,51 @@ class CardLibraryPopup(FlyoutViewBase):
         )
         root.addLayout(footer)
         self._update_result_count()
+
+    @staticmethod
+    def _column_count_for_width(width: int) -> int:
+        """Choose columns wide enough for complete English card names."""
+        if width >= 940:
+            return 4
+        if width >= 680:
+            return 3
+        if width >= 440:
+            return 2
+        return 1
+
+    def _reflow_sections(self, column_count: int | None = None) -> None:
+        """Redistribute category sections without clipping their item labels."""
+        if not self._column_layouts:
+            return
+        count = max(
+            1,
+            min(
+                self._MAX_COLUMN_COUNT,
+                int(column_count or self._column_count_for_width(self.width())),
+            ),
+        )
+        if count == self._active_column_count:
+            return
+
+        for _group, section, _entry_count in self._section_order:
+            for layout in self._column_layouts:
+                layout.removeWidget(section)
+
+        loads = [0] * count
+        heights = [0] * count
+        for _group, section, entry_count in self._section_order:
+            column_index = min(range(count), key=loads.__getitem__)
+            layout = self._column_layouts[column_index]
+            layout.insertWidget(layout.count() - 1, section)
+            loads[column_index] += entry_count + 2
+            if heights[column_index]:
+                heights[column_index] += self._columns_layout.spacing()
+            heights[column_index] += section.sizeHint().height()
+
+        for index, column in enumerate(self._column_widgets):
+            column.setVisible(index < count)
+        self._active_column_count = count
+        self._catalog_content_height = max(heights, default=0)
 
     def _create_section(
         self,
@@ -963,6 +1079,10 @@ class CardLibraryPopup(FlyoutViewBase):
             )
         self._update_result_count()
 
+    def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
+        super().resizeEvent(event)
+        self._reflow_sections(self._column_count_for_width(event.size().width()))
+
     def _visible_class_names(self) -> list[str]:
         return [
             class_name
@@ -1004,11 +1124,12 @@ class CardLibraryPopup(FlyoutViewBase):
         if screen is None:
             return
         available = screen.availableGeometry()
-        popup_width = max(320, min(860, available.width() - 24))
-        ideal_height = self._catalog_content_height + 78
+        popup_width = max(320, min(980, available.width() - 24))
+        self._reflow_sections(self._column_count_for_width(popup_width))
+        ideal_height = self._catalog_content_height + 110
         popup_height = max(
             400,
-            min(560, ideal_height, available.height() - 24),
+            min(620, ideal_height, available.height() - 24),
         )
         top_left = anchor.mapToGlobal(QPoint(0, anchor.height() + 6))
         x = min(

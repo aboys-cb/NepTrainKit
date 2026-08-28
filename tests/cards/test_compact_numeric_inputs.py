@@ -2,21 +2,21 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QApplication
 
+from NepTrainKit.ui.views._card.spin_spiral_card import SpinSpiralCard
 from NepTrainKit.ui.widgets import (
     AdaptiveCompactDoubleSpinBox,
     AdaptiveCompactSpinBox,
+    ResponsiveFormGrid,
     SpinBoxUnitInputFrame,
     adapt_legacy_inspector_form,
 )
-from NepTrainKit.ui.views._card.spin_spiral_card import SpinSpiralCard
-from NepTrainKit.ui.widgets.compact_form import ResponsiveFormGrid
 
 
 def _app() -> QApplication:
     return QApplication.instance() or QApplication([])
 
 
-def test_adaptive_float_input_prioritizes_text_when_narrow():
+def test_adaptive_float_input_hint_keeps_step_control_visible():
     app = _app()
     spin = AdaptiveCompactDoubleSpinBox()
     spin.setDecimals(6)
@@ -25,17 +25,11 @@ def test_adaptive_float_input_prioritizes_text_when_narrow():
     spin.show()
     app.processEvents()
 
-    text_width = spin.fontMetrics().horizontalAdvance(spin.text())
-    assert spin.compactSpinButton.isHidden()
-    assert spin.lineEdit().width() >= text_width + 4
-
-    spin.resize(180, 30)
-    app.processEvents()
     assert not spin.compactSpinButton.isHidden()
     spin.close()
 
 
-def test_adaptive_integer_input_prioritizes_text_when_narrow():
+def test_adaptive_integer_input_hint_keeps_step_control_visible():
     app = _app()
     spin = AdaptiveCompactSpinBox()
     spin.setRange(1, 500000)
@@ -44,17 +38,11 @@ def test_adaptive_integer_input_prioritizes_text_when_narrow():
     spin.show()
     app.processEvents()
 
-    text_width = spin.fontMetrics().horizontalAdvance(spin.text())
-    assert spin.compactSpinButton.isHidden()
-    assert spin.lineEdit().width() >= text_width + 4
-
-    spin.resize(120, 30)
-    app.processEvents()
     assert not spin.compactSpinButton.isHidden()
     spin.close()
 
 
-def test_multi_integer_frame_keeps_each_value_readable_in_narrow_row():
+def test_multi_integer_frame_reflows_to_keep_step_controls_visible():
     app = _app()
     frame = SpinBoxUnitInputFrame()
     frame.set_input("", 3, "int")
@@ -67,9 +55,7 @@ def test_multi_integer_frame_keeps_each_value_readable_in_narrow_row():
 
     assert frame._column_count < 3
     for spin in frame.object_list:
-        text_width = spin.fontMetrics().horizontalAdvance(spin.text())
-        assert spin.compactSpinButton.isHidden()
-        assert spin.lineEdit().width() >= text_width + 4
+        assert not spin.compactSpinButton.isHidden()
     frame.close()
 
 
@@ -129,6 +115,7 @@ def test_legacy_inspector_reflows_when_conditional_fields_change():
     phase_index = card.phase_mode_combo.findData("Layer-locked")
     source_index = card.source_combo.findData("Map/default magnitude")
     assert min(mode_index, phase_index, source_index) >= 0
+    card.advanced_checkbox.setChecked(True)
     card.parameter_mode_combo.setCurrentIndex(mode_index)
     card.phase_mode_combo.setCurrentIndex(phase_index)
     card.source_combo.setCurrentIndex(source_index)

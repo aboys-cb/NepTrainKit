@@ -133,7 +133,7 @@ class CardGroup(MakeDataCardWidget):
 
     separator=True
     group = "Container"
-    card_name= "Fan-out Merge"
+    card_name= "Branch Merge"
     menu_icon=r":/images/src/images/group.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -145,7 +145,7 @@ class CardGroup(MakeDataCardWidget):
         """Initialise layouts, drag-and-drop targets, and default execution state.
         """
         super().__init__(parent)
-        self.setTitle(self.tr("Fan-out Merge"))
+        self.setTitle(self.tr("Branch Merge"))
         self.setAcceptDrops(True)
         self.index=0
         self._cards: list[MakeDataCardWidget] = []
@@ -178,7 +178,9 @@ class CardGroup(MakeDataCardWidget):
         self.group_layout.setHorizontalSpacing(12)
         self.group_layout.setVerticalSpacing(10)
         self.group_empty_label = CaptionLabel(
-            self.tr("Drop cards here. Each card receives the common input."),
+            self.tr(
+                "Select this group, then add or drop cards here. Each card receives the common input."
+            ),
             self.group_widget,
         )
         self.group_empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -211,11 +213,16 @@ class CardGroup(MakeDataCardWidget):
         self.windowStateChangedSignal.connect(self.show_card_setting)
         self.filter_widget = QWidget(self)
         self.filter_hint = CaptionLabel(
-            self.tr("Optional post-merge filter"),
+            self.tr("Post-merge filter · Drop one filter card here (optional)."),
             self,
         )
         self.filter_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.filter_hint.setStyleSheet("color: #718087; padding-top: 5px;")
+        self.filter_hint.setWordWrap(True)
+        self.filter_hint.setMinimumHeight(40)
+        self.filter_hint.setStyleSheet(
+            "padding: 6px 10px; border: 1px dashed rgba(110,130,138,85);"
+            "border-radius: 8px; background: rgba(248,250,251,160); color: #5f7077;"
+        )
         self.vBoxLayout.addWidget(self.filter_hint)
         self.filter_layout = QVBoxLayout(self.filter_widget)
         self.filter_layout.setContentsMargins(8, 4, 8, 8)
@@ -227,6 +234,8 @@ class CardGroup(MakeDataCardWidget):
         self.filter_card=None
         self.dataset:Any=None
         self.result_dataset=[]
+        self._merged_count: int | None = None
+        self._post_filter_applied = False
         self.run_outcome = "idle"
         self.cards_to_run = []
         self.current_index = 0
@@ -317,8 +326,11 @@ class CardGroup(MakeDataCardWidget):
         """
         self.dataset =dataset
         self.result_dataset=[]
+        self._merged_count = None
+        self._post_filter_applied = False
         self.run_outcome = "idle"
         self.set_output_available(False)
+        self._set_run_status("idle")
         for card in self.card_list:
             card.set_dataset(dataset)
         if self.filter_card and isValid(self.filter_card):
@@ -448,6 +460,9 @@ class CardGroup(MakeDataCardWidget):
             for column in range(self._grid_columns):
                 self.group_layout.setColumnStretch(column, 1)
         self.group_widget.update()
+        self.group_widget.updateGeometry()
+        self.branch_widget.updateGeometry()
+        self.updateGeometry()
 
     def _responsive_column_count(self, width: int) -> int:
         count = len(self._cards)
@@ -473,15 +488,41 @@ class CardGroup(MakeDataCardWidget):
                 )
             except TypeError:
                 input_text = self.tr("input loaded")
+        input_count = None
+        if self.dataset is not None:
+            try:
+                input_count = len(self.dataset)
+            except TypeError:
+                pass
+        has_filter = self.filter_card is not None and isValid(self.filter_card)
+        filter_enabled = has_filter and bool(self.filter_card.check_state)
+        filter_name = self.filter_card.getTitle() if has_filter else ""
         filter_text = (
-            self.tr("post-filter: {name}").format(
-                name=self.filter_card.getTitle()
-            )
-            if self.filter_card is not None and isValid(self.filter_card)
+            self.tr("post-filter: {name}").format(name=filter_name)
+            if has_filter
             else self.tr("no post-filter")
         )
-        self.summary_label.setText(
-            self.tr(
+        if self.run_outcome == "succeeded":
+            merged_count = self._merged_count
+            if self._post_filter_applied and merged_count is not None:
+                summary = self.tr(
+                    "{input_count} input → {merged_count} merged → {result_count} kept"
+                ).format(
+                    input_count=input_count if input_count is not None else "—",
+                    merged_count=merged_count,
+                    result_count=len(self.result_dataset),
+                )
+            else:
+                summary = self.tr("{input_count} input → {result_count} merged").format(
+                    input_count=input_count if input_count is not None else "—",
+                    result_count=len(self.result_dataset),
+                )
+        elif self.run_outcome == "failed":
+            summary = self.tr("Run failed · no output")
+        elif self.run_outcome == "canceled":
+            summary = self.tr("Run canceled · no output")
+        else:
+            summary = self.tr(
                 "{input} · {enabled}/{total} branch cards enabled · merged output · {filter}"
             ).format(
                 input=input_text,
@@ -489,30 +530,68 @@ class CardGroup(MakeDataCardWidget):
                 total=len(cards),
                 filter=filter_text,
             )
-        )
+        self.summary_label.setText(summary)
         self.summary_label.setVisible(self.window_state != "expand")
-        input_count = None
-        if self.dataset is not None:
-            try:
-                input_count = len(self.dataset)
-            except TypeError:
-                pass
         self.branch_hint.setText(
             self.tr("Common input · {count} structures").format(count=input_count)
             if input_count is not None
             else self.tr("Common input · not loaded")
         )
-        if self.run_outcome == "succeeded":
+        if self.run_outcome == "succeeded" and self._post_filter_applied:
+            self.merge_count_label.setText(
+                self.tr("{merged} merged → {kept} kept").format(
+                    merged=self._merged_count or 0,
+                    kept=len(self.result_dataset),
+                )
+            )
+        elif self.run_outcome == "succeeded":
             self.merge_count_label.setText(
                 self.tr("{count} merged structures").format(
                     count=len(self.result_dataset)
                 )
             )
+        elif self.run_outcome == "running" and self._filter_signal_connected:
+            self.merge_count_label.setText(self.tr("Applying post-merge filter"))
+        elif self.run_outcome == "running":
+            self.merge_count_label.setText(
+                self.tr("Running branch {current}/{total}").format(
+                    current=min(self.current_index + 1, len(self.cards_to_run)),
+                    total=len(self.cards_to_run),
+                )
+            )
+        elif self.run_outcome == "failed":
+            self.merge_count_label.setText(self.tr("Run failed · no output"))
+        elif self.run_outcome == "canceled":
+            self.merge_count_label.setText(self.tr("Run canceled · no output"))
         else:
             self.merge_count_label.setText(
                 self.tr("{enabled} enabled branches").format(enabled=enabled)
             )
+        if has_filter:
+            filter_state = self.tr("enabled") if filter_enabled else self.tr("disabled")
+            self.filter_hint.setText(
+                self.tr("Post-merge filter · {name} · {state}").format(
+                    name=filter_name,
+                    state=filter_state,
+                )
+            )
+        else:
+            self.filter_hint.setText(
+                self.tr("Post-merge filter · Drop one filter card here (optional).")
+            )
         self.structureChanged.emit()
+
+    def _set_run_status(self, state: str, detail: str = "") -> None:
+        """Keep the header dot and badge aligned with the container outcome."""
+        self.status_dot.set_state(state)
+        self.status_badge.set_state(state, detail)
+
+    @staticmethod
+    def _safe_count(value) -> int:
+        try:
+            return len(value)
+        except TypeError:
+            return 0
 
     def get_summary_text(self) -> str:
         enabled = sum(bool(card.check_state) for card in self.card_list)
@@ -528,7 +607,7 @@ class CardGroup(MakeDataCardWidget):
     def get_guidance_text(self) -> str:
         return self.tr(
             "Every enabled child receives the same group input. Child outputs are "
-            "concatenated immediately; use Permanent Fork when each path must continue independently."
+            "concatenated immediately; use Branch Fork when each path must continue independently."
         )
 
     def get_inspector_overview_text(self) -> str:
@@ -699,6 +778,10 @@ class CardGroup(MakeDataCardWidget):
             self.result_dataset = []
             self.run_outcome = getattr(card, "run_outcome", "failed")
             self.set_output_available(False)
+            self._set_run_status(
+                "canceled" if self.run_outcome == "canceled" else "failed"
+            )
+            self._refresh_summary()
             self.runFinishedSignal.emit(self.index)
             return
         self.result_dataset.extend(card.result_dataset)
@@ -708,15 +791,26 @@ class CardGroup(MakeDataCardWidget):
         if self.current_index < len(self.cards_to_run):
             self.start_next_card()
         else:
-            if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
-                self.filter_card.set_dataset(self.result_dataset)
-                self.filter_card.runFinishedSignal.connect(self.on_filter_finished)
-                self._filter_signal_connected = True
-                self.filter_card.run()
-            else:
-                self.run_outcome = "succeeded"
-                self.set_output_available(bool(self.result_dataset))
-                self.runFinishedSignal.emit(self.index)
+            self._finish_branches()
+
+    def _finish_branches(self):
+        """Record the merged size, then run the optional post-merge filter."""
+        self._merged_count = len(self.result_dataset)
+        if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
+            self.filter_card.set_dataset(self.result_dataset)
+            self.filter_card.runFinishedSignal.connect(self.on_filter_finished)
+            self._filter_signal_connected = True
+            self._refresh_summary()
+            self.filter_card.run()
+            return
+        self.run_outcome = "succeeded"
+        self.set_output_available(bool(self.result_dataset))
+        self._set_run_status(
+            "succeeded",
+            f"{self._safe_count(self.dataset)}→{len(self.result_dataset)}",
+        )
+        self._refresh_summary()
+        self.runFinishedSignal.emit(self.index)
 
     def on_filter_finished(self, _index):
         """Finish the group only after its optional post-filter has completed."""
@@ -729,11 +823,22 @@ class CardGroup(MakeDataCardWidget):
             self.run_outcome = getattr(self.filter_card, "run_outcome", "succeeded")
             if self.run_outcome == "succeeded":
                 self.result_dataset = list(self.filter_card.result_dataset)
+                self._post_filter_applied = True
             else:
                 self.result_dataset = []
         self.set_output_available(
             self.run_outcome == "succeeded" and bool(self.result_dataset)
         )
+        if self.run_outcome == "succeeded":
+            self._set_run_status(
+                "succeeded",
+                f"{self._safe_count(self.dataset)}→{len(self.result_dataset)}",
+            )
+        else:
+            self._set_run_status(
+                "canceled" if self.run_outcome == "canceled" else "failed"
+            )
+        self._refresh_summary()
         self.runFinishedSignal.emit(self.index)
 
     def stop(self):
@@ -751,12 +856,15 @@ class CardGroup(MakeDataCardWidget):
                 self._filter_signal_connected = False
             self.filter_card.stop()
         self.result_dataset = []
+        self._merged_count = None
+        self._post_filter_applied = False
         self.run_outcome = "canceled"
         self.set_output_available(False)
+        self._set_run_status("canceled")
+        self._refresh_summary()
 
     def run(self):
         """Run independent child branches sequentially from the same input."""
-        self._refresh_summary()
         for card in self.card_list:
             card.set_dataset(self.dataset)
         if self.filter_card and isValid(self.filter_card):
@@ -765,15 +873,32 @@ class CardGroup(MakeDataCardWidget):
         self.run_card_num = len(self.cards_to_run)
         self.current_index = 0
         self.run_outcome = "running"
+        self.result_dataset = []
+        self._merged_count = None
+        self._post_filter_applied = False
+        self.set_output_available(False)
+        self._set_run_status("running")
+        self._refresh_summary()
 
-        if self.check_state and self.run_card_num > 0:
-            self.result_dataset = []
-            self.set_output_available(False)
-            self.start_next_card()
-        else:
+        if not self.check_state:
             self.result_dataset = self.dataset
+            self._merged_count = (
+                len(self.result_dataset) if self.result_dataset is not None else 0
+            )
             self.run_outcome = "succeeded"
             self.set_output_available(bool(self.result_dataset))
+            self._set_run_status("disabled")
+            self._refresh_summary()
+            self.runFinishedSignal.emit(self.index)
+        elif self.run_card_num > 0:
+            self.start_next_card()
+        else:
+            self.run_outcome = "failed"
+            self._set_run_status("failed")
+            MessageManager.send_error_message(
+                self.tr("Branch Merge needs at least one enabled branch.")
+            )
+            self._refresh_summary()
             self.runFinishedSignal.emit(self.index)
 
     def start_next_card(self):
@@ -783,17 +908,10 @@ class CardGroup(MakeDataCardWidget):
             card.index = self.current_index
             card.runFinishedSignal.connect(self.on_card_finished)
             self._active_card = card
+            self._refresh_summary()
             card.run()
         else:
-            if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
-                self.filter_card.set_dataset(self.result_dataset)
-                self.filter_card.runFinishedSignal.connect(self.on_filter_finished)
-                self._filter_signal_connected = True
-                self.filter_card.run()
-            else:
-                self.run_outcome = "succeeded"
-                self.set_output_available(bool(self.result_dataset))
-                self.runFinishedSignal.emit(self.index)
+            self._finish_branches()
 
     def write_result_dataset(self, file,**kwargs):
         if self.filter_card and isValid(self.filter_card) and  self.filter_card.check_state:

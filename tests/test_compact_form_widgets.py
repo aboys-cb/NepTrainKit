@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import unittest
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QLineEdit, QVBoxLayout, QWidget
 
 from NepTrainKit.ui.widgets.compact_form import (
     CategoryTag,
     CompactField,
+    ResponsiveFormGrid,
     SegmentedControl,
     StatusBadge,
     StatusDot,
@@ -44,6 +45,10 @@ class CompactFormWidgetsTest(unittest.TestCase):
         badge.set_state("succeeded", "12→48")
         self.assertEqual(badge.label.text(), "Done · 12→48")
 
+        badge.set_state("partial")
+        self.assertEqual(badge.state(), "partial")
+        self.assertEqual(badge.label.text(), "Partial")
+
     def test_category_tag_hides_when_empty_and_shows_when_set(self):
         tag = CategoryTag("")
         self.assertTrue(tag.isHidden())
@@ -66,6 +71,23 @@ class CompactFormWidgetsTest(unittest.TestCase):
 
         field.set_label("Dopants")
         self.assertEqual(field.caption.text(), "Dopants")
+
+    def test_compact_field_can_opt_into_a_bounded_inline_control(self):
+        line_edit = QLineEdit()
+        field = CompactField(
+            "Short scalar",
+            line_edit,
+            inline=True,
+            input_max_width=132,
+        )
+
+        self.assertFalse(field.caption.wordWrap())
+        self.assertEqual(line_edit.maximumWidth(), 132)
+        self.assertIs(field.input_widget, line_edit)
+        inline_layout = field.layout().itemAt(0).widget().layout()
+        self.assertIs(inline_layout.itemAt(0).widget(), field.caption)
+        self.assertIs(inline_layout.itemAt(1).widget(), line_edit)
+        self.assertIsNotNone(inline_layout.itemAt(2).spacerItem())
 
     def test_segmented_control_selection(self):
         control = SegmentedControl(["Atomic %", "Mass %", "Count"])
@@ -94,6 +116,28 @@ class CompactFormWidgetsTest(unittest.TestCase):
         self.assertEqual(control.currentIndex(), 0)
         self.assertEqual(control.currentText(), "X")
         self.assertEqual(len(control._buttons), 3)
+
+    def test_responsive_grid_clears_stale_second_column_after_narrowing(self):
+        host = QWidget()
+        layout = QVBoxLayout(host)
+        grid = ResponsiveFormGrid(host, two_column_threshold=320)
+        first = CompactField("First", QLineEdit(), grid)
+        second = CompactField("Second", QLineEdit(), grid)
+        grid.add_field(first)
+        grid.add_field(second)
+        layout.addWidget(grid)
+
+        host.resize(420, 180)
+        host.show()
+        self._app.processEvents()
+        self.assertEqual(grid.column_count(), 2)
+
+        host.resize(280, 180)
+        self._app.processEvents()
+        self.assertEqual(grid.column_count(), 1)
+        self.assertEqual(grid._layout.columnStretch(1), 0)
+        self.assertGreater(first.width(), grid.width() * 0.8)
+        host.close()
 
 
 if __name__ == "__main__":

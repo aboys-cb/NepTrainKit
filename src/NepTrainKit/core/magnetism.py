@@ -379,9 +379,14 @@ def prepare_magnetic_extxyz_export(atoms: Atoms) -> Atoms:
         legacy = existing_moments(atoms)
         if legacy is not None and legacy.ndim == 2:
             spin = legacy
-    if spin is None:
-        return atoms
     exported = atoms.copy()
+    exported.info.pop("_response_manifest_record", None)
+    # Tangents are derived from grouped spin(coordinate) curves.  Keeping a
+    # stale per-frame tangent would turn a preprocessing quantity into an
+    # apparent DFT label, so production exports always remove it.
+    exported.arrays.pop("spin_tangent", None)
+    if spin is None:
+        return exported
     exported.arrays.pop("initial_magmoms", None)
     exported.arrays.pop("spin", None)
     exported.set_array("spin", np.asarray(spin, dtype=float))

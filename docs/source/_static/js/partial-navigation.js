@@ -5,6 +5,45 @@
   const menuSelector = ".wy-menu-vertical";
   const sideScrollSelector = ".wy-side-scroll";
 
+  function injectCurrentPageToc() {
+    const menu = document.querySelector(menuSelector);
+    if (!menu) {
+      return;
+    }
+    menu.querySelectorAll(".page-local-toc").forEach((node) => node.remove());
+
+    const active = menu.querySelector("a.current") || menu.querySelector("li.current > a[href]");
+    const activeItem = active ? active.closest("li") : null;
+    const headings = Array.from(document.querySelectorAll(".rst-content section[id] > h2"));
+    if (!activeItem || headings.length === 0) {
+      return;
+    }
+
+    const activeLevel = Array.from(activeItem.classList)
+      .map((name) => /^toctree-l(\d+)$/.exec(name))
+      .find(Boolean);
+    const childLevel = activeLevel ? Math.min(Number(activeLevel[1]) + 1, 6) : 2;
+    const list = document.createElement("ul");
+    list.className = "current page-local-toc";
+    headings.forEach((heading) => {
+      const item = document.createElement("li");
+      item.className = `toctree-l${childLevel}`;
+      const link = document.createElement("a");
+      link.className = "reference internal";
+      link.href = `#${heading.parentElement.id}`;
+      link.textContent = heading.textContent.replace("", "").trim();
+      item.appendChild(link);
+      list.appendChild(item);
+    });
+    activeItem.appendChild(list);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectCurrentPageToc, { once: true });
+  } else {
+    injectCurrentPageToc();
+  }
+
   if (!window.fetch || !window.DOMParser || window.location.protocol === "file:") {
     return;
   }
@@ -167,6 +206,7 @@
       currentContent.replaceChildren(...Array.from(nextContent.childNodes));
       document.title = nextDocument.title;
       updateMenu(nextDocument, url.href);
+      injectCurrentPageToc();
       if (pushState) {
         window.history.pushState({ partialNavigation: true }, "", url.href);
       }

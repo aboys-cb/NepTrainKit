@@ -1,20 +1,24 @@
-# 结构来源与晶胞
+# 晶格
 
-这组卡片决定“从什么结构开始”和“晶胞怎样承载后续操作”。通常先完成这里的操作，
-再进入应变、缺陷、表面、合金或磁性卡片。
+与卡片 UI 的“晶格”分组一致。这些卡片负责生成晶体原型、扩胞，或者系统改变晶胞的
+长度、角度与形状。它们与只移动原子坐标的“扰动”卡片分开。
 
 | 目标 | 使用卡片 |
 | --- | --- |
 | 从标准晶体原型开始 | `Crystal Prototype Builder` |
-| 在给定周期晶胞中生成随机坐标初态 | `Random Packing` |
 | 扩大已有晶胞 | `Super Cell` |
-| 沿层方向复制并施加几何位移 | `Layer Copy` |
+| 扫描轴向应变或随机晶格变化 | `Lattice Strain` / `Lattice Perturb` |
+| 扫描 Bain 四方畸变 | `Bain Path` |
+| 施加矩阵或角度剪切 | `Shear Matrix Strain` / `Shear Angle Strain` |
 
 ```{toctree}
 :maxdepth: 1
 
 ../cards/crystal-prototype-builder-card
-../cards/random-packing-card
 ../cards/super-cell-card
-../cards/layer-copy-card
+../cards/cell-strain-card
+../cards/cell-scaling-card
+../cards/bain-path-card
+../cards/shear-matrix-card
+../cards/shear-angle-card
 ```

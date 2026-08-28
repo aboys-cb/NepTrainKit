@@ -5,6 +5,8 @@ from .card_test_base import *
 from unittest.mock import patch
 
 from NepTrainKit.core.audit.neighbor_scan import find_short_distance_structure_rows
+from NepTrainKit.core.cards.errors import CardOperationError
+from NepTrainKit.core.cards.filter import FPSGroupReport
 from NepTrainKit.ui.views._card.fps_filter_card import FPSFilterDataCard
 from NepTrainKit.ui.widgets.card_widget import FilterDataCard
 
@@ -91,8 +93,10 @@ class TestFilterCards(BaseCardTest):
         self.assertEqual(sum(item.selected_count for item in operation.last_group_report.values()), 5)
 
     def test_element_set_fps_rejects_budget_smaller_than_group_count(self):
-        with self.assertRaisesRegex(ValueError, "smaller than"):
+        with self.assertRaises(CardOperationError) as caught:
             FPSFilterOperation.allocate_sqrt_quotas({("H",): 4, ("He",): 2}, 1)
+        self.assertEqual(caught.exception.code, "fps_budget_smaller_than_groups")
+        self.assertEqual(caught.exception.values, {"budget": 1, "groups": 2})
 
     def test_element_set_fps_center_start_and_warm_start(self):
         points = np.asarray([[0.0], [4.0], [5.0], [6.0], [10.0]])
@@ -141,6 +145,35 @@ class TestFilterCards(BaseCardTest):
         report = operation.last_group_report[("H",)]
         self.assertEqual(report.existing_count, 1)
         self.assertEqual(report.selected_count, 1)
+
+    def test_element_set_warm_start_and_cutoff_can_leave_a_planned_group_empty(self):
+        dataset = [
+            Atoms("H", positions=[[0.0, 0.0, 0.0]]),
+            Atoms("He", positions=[[0.0, 0.0, 0.0]]),
+        ]
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=2,
+            min_distance=1.0,
+            strategy="element_set",
+            existing_dataset_path="/tmp/train.xyz",
+        )
+        operation = FPSFilterOperation()
+
+        with (
+            patch("NepTrainKit.core.cards.filter.import_structures", return_value=[dataset[0]]),
+            patch("NepTrainKit.core.cards.filter.Path.exists", return_value=True),
+            patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class,
+        ):
+            calculator_class.return_value.descriptors.side_effect = [
+                np.asarray([[0.0], [10.0]]),
+                np.asarray([[0.0]]),
+            ]
+            selected = operation.run_dataset(dataset, params)
+
+        self.assertEqual(selected, [dataset[1]])
+        self.assertEqual(operation.last_group_report[("H",)].selected_count, 0)
+        self.assertEqual(operation.last_group_report[("He",)].selected_count, 1)
 
     def test_global_fps_can_use_existing_training_set_as_warm_start(self):
         dataset = [
@@ -201,18 +234,43 @@ class TestFilterCards(BaseCardTest):
             Atoms("He", positions=[[0, 0, 0]]),
         ]
         card.set_dataset(dataset)
+        self.assertFalse(card.min_distance_condition_frame.isHidden())
+        self.assertTrue(card.advanced_frame.isHidden())
         self.assertIn("keep at most 3", card.preview_label.text())
         self.assertIn("one global FPS budget", card.preview_label.text())
+        self.assertIn("no existing set", card.preview_label.text())
+        self.assertEqual(card.get_summary_text(), "keep at most 100 · global budget")
 
         card.strategy_combo.setCurrentIndex(
             card.strategy_combo.findData("element_set")
         )
         self.assertIn("H:2", card.preview_label.text())
         self.assertIn("He:1", card.preview_label.text())
+        self.assertEqual(card.strategy_combo.currentText(), "Balance by element set")
+        self.assertNotIn("element_set", card.get_summary_text())
 
         card.strategy_combo.setCurrentIndex(card.strategy_combo.findData("global"))
         card.advanced_button.setChecked(True)
         self.assertFalse(card.existing_dataset_widget.isHidden())
+        card.existing_dataset_lineedit.setText("/missing/train.xyz")
+        self.assertIn("existing set path is missing", card.preview_label.text())
+
+    def test_fps_filter_preview_reports_existing_path_and_output_group_coverage(self):
+        card = FPSFilterDataCard()
+        existing_path = str(self.test_dir / "data" / "nep" / "train.xyz")
+        card.existing_dataset_lineedit.setText(existing_path)
+        card.set_dataset([Atoms("H"), Atoms("He")])
+
+        self.assertIn("supplementing train.xyz", card.preview_label.text())
+        self.assertIn("new selections only", card.preview_label.text())
+
+        card._last_group_report = {
+            ("H",): FPSGroupReport(1, 1, 0),
+            ("He",): FPSGroupReport(1, 0, 1),
+        }
+        with patch.object(FilterDataCard, "_format_dataset_info", return_value="base"):
+            text = card._format_dataset_info()
+        self.assertEqual(text, "base | Output element-set coverage: 1/2")
 
     def test_geometry_filter_operation_and_card_roundtrip(self):
         good = Atoms(
@@ -300,6 +358,35 @@ class TestFilterCards(BaseCardTest):
         self.assertEqual(
             [any(structure is item for item in actual) for structure in structures],
             [any(structure is item for item in expected) for structure in structures],
+        )
+
+    def test_geometry_filter_pair_only_matches_single_check_for_singular_periodic_cells(self):
+        structures = [
+            Atoms(
+                "HH",
+                positions=[[0.0, 0.0, 0.0], [distance, 0.0, 0.0]],
+                cell=np.zeros((3, 3)),
+                pbc=pbc,
+            )
+            for distance, pbc in (
+                (0.0, True),
+                (0.5, True),
+                (1.0, True),
+                (0.5, [True, False, False]),
+            )
+        ]
+        params = GeometryFilterParams(min_pair_distance=1.0)
+
+        expected = [
+            GeometryFilterOperation.keep_structure(structure, params)
+            for structure in structures
+        ]
+        kept = GeometryFilterOperation().run_dataset(structures, params)
+
+        self.assertEqual(expected, [False, False, True, False])
+        self.assertEqual(
+            [any(structure is item for item in kept) for structure in structures],
+            expected,
         )
 
     def test_geometry_filter_batch_scan_runs_once_and_keeps_exact_cutoff(self):
@@ -400,8 +487,8 @@ class TestFilterCards(BaseCardTest):
         self.assertEqual(summary["input_count"], 4)
         self.assertEqual(summary["kept_count"], len(kept))
         self.assertEqual(summary["rejected_count"], 3)
-        self.assertEqual(summary["reasons"]["volume_per_atom"], 1)
-        self.assertEqual(summary["reasons"]["density"], 1)
+        self.assertEqual(summary["reasons"]["volume_too_large"], 1)
+        self.assertEqual(summary["reasons"]["density_too_high"], 1)
         self.assertEqual(summary["reasons"]["invalid_cell"], 1)
 
         density_only = GeometryFilterParams(
@@ -412,7 +499,8 @@ class TestFilterCards(BaseCardTest):
             [low_density, accepted, high_density],
             density_only,
         )
-        self.assertEqual(density_summary["reasons"]["density"], 2)
+        self.assertEqual(density_summary["reasons"]["density_too_low"], 1)
+        self.assertEqual(density_summary["reasons"]["density_too_high"], 1)
         self.assertEqual(density_summary["kept_count"], 1)
 
     def test_geometry_filter_preview_and_progressive_bulk_controls(self):
@@ -427,15 +515,21 @@ class TestFilterCards(BaseCardTest):
         card = GeometryFilterCard()
         card.set_dataset([good, overlap])
 
-        self.assertTrue(card.min_vpa_frame.isHidden())
+        self.assertTrue(card.bulk_section.isHidden())
+        self.assertIn("0 active", card.bulk_checkbox.text())
         self.assertTrue(_wait_until(lambda: "keep 2" in card.preview_label.text()))
         self.assertIn("keep 2", card.preview_label.text())
         card.min_pair_frame.set_input_value([1.0])
         self.assertTrue(_wait_until(lambda: "keep 1" in card.preview_label.text()))
         self.assertIn("keep 1", card.preview_label.text())
         self.assertIn("short pairs 1", card.preview_label.text())
+        self.assertIn("Current settings", card.preview_label.text())
         card.bulk_checkbox.setChecked(True)
-        self.assertFalse(card.min_vpa_frame.isHidden())
+        self.assertFalse(card.bulk_section.isHidden())
+        card.min_vpa_frame.set_input_value([5.0])
+        self.assertIn("1 active", card.bulk_checkbox.text())
+        self.assertIn("pair distance", card.get_summary_text())
+        self.assertIn("complete input", card.get_guidance_text())
         card.close()
         QApplication.processEvents()
 
@@ -468,8 +562,10 @@ class TestFilterCards(BaseCardTest):
                     "nonfinite_positions": 0,
                     "invalid_cell": 0,
                     "pair_distance": rejected,
-                    "volume_per_atom": 0,
-                    "density": 0,
+                    "volume_too_small": 0,
+                    "volume_too_large": 0,
+                    "density_too_low": 0,
+                    "density_too_high": 0,
                 },
             }
 

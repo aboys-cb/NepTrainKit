@@ -12970,12 +12970,12 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">选择步骤以编辑参数；拖动可调整顺序，也可拖放到卡片组中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="718" />
+        <location filename="../ui/widgets/docker.py" line="723" />
         <source>Add a card to start building the workflow.</source>
         <translation>添加卡片以开始构建工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="993" />
+        <location filename="../ui/widgets/docker.py" line="998" />
         <source>Move card here</source>
         <translation>将卡片移动到此处</translation>
     </message>
@@ -24318,9 +24318,8 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">振幅分布：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="32" />
         <source>Vibrational Mode Perturbation</source>
-        <translation>振动模式扰动</translation>
+        <translation type="vanished">振动模式扰动</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/vibration_perturb_card.py" line="43" />
@@ -24339,6 +24338,11 @@ Magnetic: {magnetic}</source>
     <message>
         <source>This card samples correlated motion inside the supplied mode subspace. Use Atomic Perturb when no mode data is available.</source>
         <translation type="vanished">本卡在已有模式张成的子空间内采样协同运动。没有模式数据时请使用“原子扰动”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="32" />
+        <source>Vibration Mode Perturb</source>
+        <translation>振动模式扰动</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/vibration_perturb_card.py" line="52" />
@@ -24833,7 +24837,7 @@ Magnetic: {magnetic}</source>
     </message>
     <message>
         <location filename="../ui/widgets/docker.py" line="184" />
-        <location filename="../ui/widgets/docker.py" line="308" />
+        <location filename="../ui/widgets/docker.py" line="311" />
         <source>Select a card</source>
         <translation>选择一张卡片</translation>
     </message>
@@ -24851,8 +24855,8 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">选择工作流卡片以编辑参数并查看使用建议。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="275" />
-        <location filename="../ui/widgets/docker.py" line="319" />
+        <location filename="../ui/widgets/docker.py" line="278" />
+        <location filename="../ui/widgets/docker.py" line="322" />
         <source>Select a parameter card to edit it here.</source>
         <translation>选择参数卡片后可在此编辑。</translation>
     </message>
@@ -24893,49 +24897,49 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">关于此卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="349" />
+        <location filename="../ui/widgets/docker.py" line="352" />
         <source>Card information</source>
         <translation>卡片信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="350" />
+        <location filename="../ui/widgets/docker.py" line="353" />
         <source>No additional card information.</source>
         <translation>暂无其他卡片信息。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="375" />
+        <location filename="../ui/widgets/docker.py" line="378" />
         <source>Parameter issue</source>
         <translation>参数需要检查</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="541" />
-        <location filename="../ui/widgets/docker.py" line="542" />
-        <location filename="../ui/widgets/docker.py" line="547" />
+        <location filename="../ui/widgets/docker.py" line="544" />
+        <location filename="../ui/widgets/docker.py" line="545" />
+        <location filename="../ui/widgets/docker.py" line="550" />
         <source>Not specified</source>
         <translation>未注明</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="554" />
+        <location filename="../ui/widgets/docker.py" line="557" />
         <source>Type: {type}</source>
         <translation>类型：{type}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="555" />
+        <location filename="../ui/widgets/docker.py" line="558" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="560" />
+        <location filename="../ui/widgets/docker.py" line="563" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="562" />
+        <location filename="../ui/widgets/docker.py" line="565" />
         <source>License: {license}</source>
         <translation>许可证：{license}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="347" />
+        <location filename="../ui/widgets/docker.py" line="350" />
         <source>Citation: {citation}</source>
         <translation>引用：{citation}</translation>
     </message>
@@ -24946,18 +24950,18 @@ Magnetic: {magnetic}</source>
         <translation>卡片信息与贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="247" />
+        <location filename="../ui/widgets/docker.py" line="250" />
         <source>Current configuration</source>
         <translation>当前配置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="260" />
-        <location filename="../ui/widgets/docker.py" line="385" />
+        <location filename="../ui/widgets/docker.py" line="263" />
+        <location filename="../ui/widgets/docker.py" line="388" />
         <source>Recommended checks</source>
         <translation>建议检查项</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="286" />
+        <location filename="../ui/widgets/docker.py" line="289" />
         <source>Parameters</source>
         <translation>参数</translation>
     </message>
@@ -24982,7 +24986,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">请参考卡片文档，并先验证小批量输出。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="401" />
+        <location filename="../ui/widgets/docker.py" line="404" />
         <source>This workflow container is edited directly on the canvas.</source>
         <translation>此工作流容器直接在画布中编辑。</translation>
     </message>

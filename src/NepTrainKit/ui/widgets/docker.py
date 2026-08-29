@@ -234,7 +234,10 @@ class WorkflowGuidancePanel(QFrame):
             "QWidget#workflowParameterHost { background: transparent; }"
         )
         self.parameter_layout = QVBoxLayout(self.parameter_host)
-        self.parameter_layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
+        # Child size hints must not widen the inspector host on platforms whose
+        # default fonts are slightly wider. Height still follows the layout's
+        # size hint, while width is fitted explicitly to the scroll viewport.
+        self.parameter_layout.setSizeConstraint(QLayout.SizeConstraint.SetDefaultConstraint)
         self.parameter_layout.setContentsMargins(4, 4, 4, 4)
         self.parameter_layout.setSpacing(8)
 
@@ -601,12 +604,14 @@ class WorkflowGuidancePanel(QFrame):
         editor = self._editor_widget
         if editor is None or not isValid(editor):
             return
+        viewport_width = max(0, self.parameter_scroll.viewport().width())
+        self.parameter_host.setMaximumWidth(viewport_width or 16777215)
+        if viewport_width:
+            self.parameter_host.resize(viewport_width, self.parameter_host.height())
         margins = self.parameter_layout.contentsMargins()
         available = max(
             0,
-            self.parameter_scroll.viewport().width()
-            - margins.left()
-            - margins.right(),
+            viewport_width - margins.left() - margins.right(),
         )
         editor.setMaximumWidth(available or 16777215)
         if available:

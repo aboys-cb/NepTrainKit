@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -264,6 +265,10 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertTrue(canvas.axes_list[0].text.visible)
         self.assertFalse(canvas.axes_list[2].text.visible)
 
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "pyqtgraph/Qt offscreen initialization can access-violate on Windows runners",
+    )
     def test_pyqtgraph_thumbnail_hides_minor_tick_labels(self):
         canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
 

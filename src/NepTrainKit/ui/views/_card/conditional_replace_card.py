@@ -39,7 +39,7 @@ class ConditionalReplaceCard(MakeDataCard):
         super().__init__(parent)
         self._input_structure = None
         self._preview_input_count: int | None = None
-        self.setTitle(self.tr("Conditional Replace"))
+        self.setTitle(self.tr("Conditional Swap"))
         self._build_ui()
 
     def _build_ui(self) -> None:

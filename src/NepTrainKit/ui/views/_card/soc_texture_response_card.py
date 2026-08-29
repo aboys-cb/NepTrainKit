@@ -32,7 +32,7 @@ class SOCTextureResponseCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("SOC / Texture Response"))
+        self.setTitle(self.tr("SOC / Texture"))
         self.init_ui()
 
     def init_ui(self):

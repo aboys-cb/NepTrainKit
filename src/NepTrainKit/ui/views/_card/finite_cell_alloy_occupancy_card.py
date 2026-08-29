@@ -51,7 +51,7 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self._allow_legacy_fraction_weights = False
         self._last_estimate = None
         self._last_preview_error = ""
-        self.setTitle(self.tr("Finite-Cell Alloy Occupancy"))
+        self.setTitle(self.tr("Finite Alloy"))
         self.init_ui()
 
     def init_ui(self):

@@ -37,7 +37,7 @@ class RandomOccupancyCard(MakeDataCard):
         self._preview_input_count: int | None = None
         self._preview: dict[str, object] | None = None
         self._preview_error = ""
-        self.setTitle(QCoreApplication.translate("CardCatalog", "Random Occupancy"))
+        self.setTitle(self.tr("Occupancy Mix"))
         self.init_ui()
 
     def init_ui(self):

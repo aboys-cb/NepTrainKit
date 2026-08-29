@@ -33,7 +33,7 @@ class SetMagneticMomentsCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Set Magnetic Moments"))
+        self.setTitle(self.tr("Set Moments"))
         self.init_ui()
 
     def init_ui(self):

@@ -1384,7 +1384,7 @@ class TestDefectSurfaceCards(BaseCardTest):
         card = InsertDefectCard()
         self.assertEqual(
             card.getTitle(),
-            "Interstitial & Adsorbate",
+            "Insert / Adsorb",
         )
         self.assertEqual(card.get_params(), InsertDefectParams())
         self.assertTrue(card.axis_label.isHidden())

@@ -159,7 +159,7 @@ class RandomSlabCard(MakeDataCard):
         self._input_structure = None
         self._preview_input_count = None
         self._updating_planes = False
-        self.setTitle(self.tr("Surface Slab Scan"))
+        self.setTitle(self.tr("Slab Scan"))
         self.init_ui()
 
     def init_ui(self):

@@ -67,7 +67,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self._preview_timer.setSingleShot(True)
         self._preview_timer.setInterval(self._PREVIEW_DEBOUNCE_MS)
         self._preview_timer.timeout.connect(self._start_preview)
-        self.setTitle(self.tr("Molecular Conformers"))
+        self.setTitle(self.tr("Conformers"))
         self._init_ui()
 
     # ---------- UI ----------

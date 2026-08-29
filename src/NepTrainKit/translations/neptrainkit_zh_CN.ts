@@ -1170,7 +1170,6 @@
         <translation>按用户设定的掺杂规则随机替换原子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_occupancy_card.py" line="40" />
         <location filename="../ui/widgets/card_metadata.py" line="239" />
         <source>Random Occupancy</source>
         <translation>随机占位</translation>
@@ -5285,13 +5284,13 @@
     </message>
     <message>
         <location filename="../ui/views/_card/cell_scaling_card.py" line="39" />
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="175" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="179" />
         <source>Sobol</source>
         <translation>Sobol</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/cell_scaling_card.py" line="40" />
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="175" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="179" />
         <source>Uniform</source>
         <translation>均匀随机</translation>
     </message>
@@ -5311,82 +5310,82 @@
         <translation>最大相对变化</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="68" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="71" />
         <source>Also vary cell angles</source>
         <translation>同时扰动晶格角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="72" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="75" />
         <source>Keep detected molecules rigid</source>
         <translation>保持识别出的分子刚性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="82" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="85" />
         <source>Outputs per input</source>
         <translation>每个输入的输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="107" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="111" />
         <source>Lattice sampling</source>
         <translation>晶格采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="110" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="114" />
         <source>Each lattice length is multiplied independently within the selected ± range.</source>
         <translation>每条晶格长度分别在所选 ± 范围内乘以独立因子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="120" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="124" />
         <source>Molecular handling</source>
         <translation>分子处理</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="123" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="127" />
         <source>After the cell changes, restore the internal geometry of detected molecular clusters.</source>
         <translation>晶胞变化后，恢复已识别分子团簇的内部几何。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="128" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="132" />
         <source>Generation</source>
         <translation>生成设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="177" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="181" />
         <source>lengths + angles</source>
         <translation>长度 + 角度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="179" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="183" />
         <source>lengths</source>
         <translation>长度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="181" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="185" />
         <source>{engine} · {target} · ±{percent:g}% · {count}/input</source>
         <translation>{engine} · {target} · ±{percent:g}% · 每个输入 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="194" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="198" />
         <source>Each input produces exactly {count} structures.</source>
         <translation>每个输入精确生成 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="198" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="202" />
         <source>{inputs} × {count} = {total} outputs.</source>
         <translation>{inputs} × {count} = {total} 个输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="204" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="208" />
         <source>Cell angles use the same relative ± range.</source>
         <translation>晶格角使用相同的相对 ± 范围。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="206" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="210" />
         <source>Cell angles stay unchanged.</source>
         <translation>晶格角保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="211" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="215" />
         <source>Sobol balance is best with 4, 8, 16, 32, 64, … outputs.</source>
         <translation>输出数为 4、8、16、32、64 等 2 的幂时，Sobol 的平衡性最好。</translation>
     </message>
@@ -5435,7 +5434,7 @@
         <translation type="vanished">要生成的缩放结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/cell_scaling_card.py" line="89" />
+        <location filename="../ui/views/_card/cell_scaling_card.py" line="93" />
         <source>Use seed</source>
         <translation>使用随机种子</translation>
     </message>
@@ -5995,22 +5994,22 @@
 <context>
     <name>CompositionPathTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="626" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="636" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="626" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="636" />
         <source>Start fraction</source>
         <translation>起始比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="626" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="636" />
         <source>End fraction</source>
         <translation>终止比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="673" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="683" />
         <source>Double-click to choose another element</source>
         <translation>双击可重新选择元素</translation>
     </message>
@@ -6019,12 +6018,12 @@
         <translation type="vanished">添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="639" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="649" />
         <source>Remove row</source>
         <translation>删除行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="638" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="648" />
         <source>Add element</source>
         <translation>添加元素</translation>
     </message>
@@ -6040,9 +6039,13 @@
         <translation type="vanished">成分扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/composition_sweep_card.py" line="40" />
         <source>Composition Space Sampling</source>
-        <translation>成分空间采样</translation>
+        <translation type="vanished">成分空间采样</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/composition_sweep_card.py" line="40" />
+        <source>Composition Map</source>
+        <translation>成分空间</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/composition_sweep_card.py" line="49" />
@@ -6283,9 +6286,8 @@
         <translation type="vanished">条件原子替换</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="42" />
         <source>Conditional Replace</source>
-        <translation>条件替换</translation>
+        <translation type="vanished">条件替换</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/conditional_replace_card.py" line="51" />
@@ -6329,6 +6331,11 @@
         <location filename="../ui/views/_card/conditional_replace_card.py" line="80" />
         <source>Independent random assignment</source>
         <translation>逐位随机分配</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="42" />
+        <source>Conditional Swap</source>
+        <translation>条件替换</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/conditional_replace_card.py" line="57" />
@@ -7010,9 +7017,13 @@
 <context>
     <name>CrystalPrototypeBuilderCard</name>
     <message>
-        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="38" />
         <source>Crystal Prototype Builder</source>
-        <translation>晶体原型构建器</translation>
+        <translation type="vanished">晶体原型构建器</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="38" />
+        <source>Crystal Builder</source>
+        <translation>晶体原型</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/crystal_prototype_builder_card.py" line="57" />
@@ -7359,7 +7370,7 @@
 <context>
     <name>DirectionInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="313" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="323" />
         <source>Custom Cartesian vector</source>
         <translation>自定义笛卡尔向量</translation>
     </message>
@@ -7848,7 +7859,7 @@
 <context>
     <name>ElementLineEdit</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="69" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="79" />
         <source>Choose from periodic table</source>
         <translation>从元素周期表选择</translation>
     </message>
@@ -7856,7 +7867,7 @@
 <context>
     <name>ElementPairLineEdit</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="160" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="170" />
         <source>Choose an element pair</source>
         <translation>选择元素对</translation>
     </message>
@@ -7864,17 +7875,17 @@
 <context>
     <name>ElementPairPicker</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="117" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="127" />
         <source>Select an element, then choose the other element in the pair.</source>
         <translation>选择一个元素后，再选择元素对中的另一个元素。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="136" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="146" />
         <source>Choose the first element</source>
         <translation>选择第一个元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="143" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="153" />
         <source>Choose the second element</source>
         <translation>选择第二个元素</translation>
     </message>
@@ -7948,7 +7959,7 @@
 <context>
     <name>ExportFormatMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="134" />
+        <location filename="../ui/widgets/dialog.py" line="139" />
         <source>Choose export format</source>
         <translation>选择导出格式</translation>
     </message>
@@ -8437,12 +8448,12 @@
 <context>
     <name>FilterDataCard</name>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1205" />
+        <location filename="../ui/widgets/card_widget.py" line="1199" />
         <source>Filter data</source>
         <translation>筛选数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1217" />
+        <location filename="../ui/widgets/card_widget.py" line="1211" />
         <source>Processing {progress}%</source>
         <translation>处理中 {progress}%</translation>
     </message>
@@ -8454,9 +8465,8 @@
 <context>
     <name>FiniteCellAlloyOccupancyCard</name>
     <message>
-        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="54" />
         <source>Finite-Cell Alloy Occupancy</source>
-        <translation>有限晶胞合金占位</translation>
+        <translation type="vanished">有限晶胞合金占位</translation>
     </message>
     <message>
         <source>Site rules (JSON)</source>
@@ -8487,6 +8497,11 @@
     <message>
         <source>Max outputs</source>
         <translation type="vanished">最大输出数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="54" />
+        <source>Finite Alloy</source>
+        <translation>有限晶胞合金</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/finite_cell_alloy_occupancy_card.py" line="84" />
@@ -9841,9 +9856,8 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">选择 slab 真空所在的晶格方向；吸附使用该方向的上表面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="36" />
         <source>Interstitial &amp; Adsorbate</source>
-        <translation>插隙与吸附</translation>
+        <translation type="vanished">插隙与吸附</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="69" />
@@ -9914,6 +9928,11 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     <message>
         <source>Placement search</source>
         <translation type="vanished">放置搜索</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="36" />
+        <source>Insert / Adsorb</source>
+        <translation>插入 / 吸附</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/interstitial_adsorbate_card.py" line="179" />
@@ -10049,9 +10068,13 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>InterfaceLayerMixCard</name>
     <message>
-        <location filename="../ui/views/_card/interface_layer_mix_card.py" line="42" />
         <source>Interface Layer Mixing</source>
-        <translation>界面层互混</translation>
+        <translation type="vanished">界面层互混</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/interface_layer_mix_card.py" line="42" />
+        <source>Interface Mix</source>
+        <translation>界面混层</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/interface_layer_mix_card.py" line="57" />
@@ -10311,32 +10334,32 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>KeyValueTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="411" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="421" />
         <source>Add element</source>
         <translation>添加元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="413" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="423" />
         <source>Add element pair</source>
         <translation>添加元素对</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="415" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="425" />
         <source>Add row</source>
         <translation>添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="418" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="428" />
         <source>Remove selected</source>
         <translation>删除选中项</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="439" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="449" />
         <source>Double-click to choose another element pair</source>
         <translation>双击选择其他元素对</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="441" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="451" />
         <source>Double-click to choose another element</source>
         <translation>双击可重新选择元素</translation>
     </message>
@@ -10809,9 +10832,8 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>LocalMagneticResponseCard</name>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="33" />
         <source>Local Magnetic Response</source>
-        <translation>局域磁响应</translation>
+        <translation type="vanished">局域磁响应</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/local_magnetic_response_card.py" line="54" />
@@ -10895,6 +10917,11 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     <message>
         <source>One independent complete response group is generated for every selected pair.</source>
         <translation type="vanished">每个选中的原子对都会生成一个独立且完整的响应组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="33" />
+        <source>Local Response</source>
+        <translation>局域磁响应</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/local_magnetic_response_card.py" line="119" />
@@ -12368,9 +12395,8 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">方向与上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="55" />
         <source>Magnetoelastic Grid</source>
-        <translation>磁弹响应网格</translation>
+        <translation type="vanished">磁弹响应网格</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="84" />
@@ -12418,6 +12444,11 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     <message>
         <source>Tetragonal lattice axis</source>
         <translation type="vanished">四方晶格轴</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="55" />
+        <source>Magnetoelastic</source>
+        <translation>磁弹性</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/magnetoelastic_response_card.py" line="123" />
@@ -12607,32 +12638,32 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MakeDataCard</name>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="954" />
+        <location filename="../ui/widgets/card_widget.py" line="948" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="961" />
+        <location filename="../ui/widgets/card_widget.py" line="955" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1020" />
+        <location filename="../ui/widgets/card_widget.py" line="1014" />
         <source>Stopping…</source>
         <translation>正在停止…</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1059" />
+        <location filename="../ui/widgets/card_widget.py" line="1053" />
         <source>Processing 0%</source>
         <translation>处理中 0%</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1108" />
+        <location filename="../ui/widgets/card_widget.py" line="1102" />
         <source>Processing {progress}%</source>
         <translation>处理中 {progress}%</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1152" />
+        <location filename="../ui/widgets/card_widget.py" line="1146" />
         <source>Failed: {error}</source>
         <translation>失败：{error}</translation>
     </message>
@@ -12641,27 +12672,27 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">失败</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1160" />
+        <location filename="../ui/widgets/card_widget.py" line="1154" />
         <source>Error occurred: {error}</source>
         <translation>发生错误：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1169" />
+        <location filename="../ui/widgets/card_widget.py" line="1163" />
         <source>Stopped | Partial output: {output_count}</source>
         <translation>已停止 | 不完整输出：{output_count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1175" />
+        <location filename="../ui/widgets/card_widget.py" line="1169" />
         <source>{count} partial</source>
         <translation>{count} 个不完整输出</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1187" />
+        <location filename="../ui/widgets/card_widget.py" line="1181" />
         <source>Input: {input_count} -&gt; Output: {output_count}</source>
         <translation>输入：{input_count} -&gt; 输出：{output_count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="1192" />
+        <location filename="../ui/widgets/card_widget.py" line="1186" />
         <source>{summary} | Time: {seconds:.2f} s</source>
         <translation>{summary} | 用时：{seconds:.2f} s</translation>
     </message>
@@ -12669,20 +12700,20 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MakeDataCardWidget</name>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="440" />
-        <location filename="../ui/widgets/card_widget.py" line="441" />
+        <location filename="../ui/widgets/card_widget.py" line="434" />
+        <location filename="../ui/widgets/card_widget.py" line="435" />
         <source>View this card output</source>
         <translation>查看此卡片输出</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="465" />
-        <location filename="../ui/widgets/card_widget.py" line="466" />
+        <location filename="../ui/widgets/card_widget.py" line="459" />
+        <location filename="../ui/widgets/card_widget.py" line="460" />
         <source>Collapse or expand card</source>
         <translation>折叠或展开卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="474" />
-        <location filename="../ui/widgets/card_widget.py" line="475" />
+        <location filename="../ui/widgets/card_widget.py" line="468" />
+        <location filename="../ui/widgets/card_widget.py" line="469" />
         <source>Drag to reorder card</source>
         <translation>拖拽以调整卡片顺序</translation>
     </message>
@@ -12970,12 +13001,12 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">选择步骤以编辑参数；拖动可调整顺序，也可拖放到卡片组中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="723" />
+        <location filename="../ui/widgets/docker.py" line="735" />
         <source>Add a card to start building the workflow.</source>
         <translation>添加卡片以开始构建工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="998" />
+        <location filename="../ui/widgets/docker.py" line="1014" />
         <source>Move card here</source>
         <translation>将卡片移动到此处</translation>
     </message>
@@ -13662,42 +13693,42 @@ All child items will also be deleted.</source>
 <context>
     <name>NumericScanInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="213" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="223" />
         <source>Use custom coordinate list</source>
         <translation>使用自定义坐标列表</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="215" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="225" />
         <source>Comma-separated values</source>
         <translation>用逗号分隔数值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="250" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="260" />
         <source>Custom coordinate list cannot be empty.</source>
         <translation>自定义坐标列表不能为空。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="254" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="264" />
         <source>Custom coordinate list must contain only numbers.</source>
         <translation>自定义坐标列表只能包含数字。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="256" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="266" />
         <source>Custom coordinate list must contain only finite numbers.</source>
         <translation>自定义坐标列表只能包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="261" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="271" />
         <source>Scan step must be positive.</source>
         <translation>扫描步长必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="263" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="273" />
         <source>Scan maximum must be greater than or equal to the minimum.</source>
         <translation>扫描最大值必须大于或等于最小值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="266" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="276" />
         <source>Coordinate scan contains more than 10000 points.</source>
         <translation>坐标扫描超过 10000 个点。</translation>
     </message>
@@ -13705,9 +13736,13 @@ All child items will also be deleted.</source>
 <context>
     <name>OrderedAlloyPrototypeCard</name>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="45" />
         <source>Ordered Alloy Prototype</source>
-        <translation>有序合金原型</translation>
+        <translation type="vanished">有序合金原型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="45" />
+        <source>Ordered Alloy</source>
+        <translation>有序合金</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="66" />
@@ -14228,8 +14263,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">显示拓扑和几何保护设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="70" />
         <source>Molecular Conformers</source>
+        <translation type="vanished">分子构象</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/organic_mol_config_pbc_card.py" line="70" />
+        <source>Conformers</source>
         <translation>分子构象</translation>
     </message>
     <message>
@@ -14600,9 +14639,8 @@ All child items will also be deleted.</source>
 <context>
     <name>PerturbCard</name>
     <message>
-        <location filename="../ui/views/_card/perturb_card.py" line="101" />
         <source>Make Atomic Perturb</source>
-        <translation>生成原子扰动</translation>
+        <translation type="vanished">生成原子扰动</translation>
     </message>
     <message>
         <source>Random engine:</source>
@@ -14783,6 +14821,11 @@ All child items will also be deleted.</source>
         <location filename="../ui/views/_card/perturb_card.py" line="364" />
         <source>{count} per input</source>
         <translation>每个输入 {count} 个</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/perturb_card.py" line="101" />
+        <source>Atomic Perturb</source>
+        <translation>原子扰动</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/perturb_card.py" line="380" />
@@ -15096,6 +15139,11 @@ All child items will also be deleted.</source>
 </context>
 <context>
     <name>RandomOccupancyCard</name>
+    <message>
+        <location filename="../ui/views/_card/random_occupancy_card.py" line="40" />
+        <source>Occupancy Mix</source>
+        <translation>随机占位</translation>
+    </message>
     <message>
         <location filename="../ui/views/_card/random_occupancy_card.py" line="51" />
         <source>Composition</source>
@@ -15638,8 +15686,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">真空层厚度范围（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="162" />
         <source>Surface Slab Scan</source>
+        <translation type="vanished">表面薄层扫描</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_slab_card.py" line="162" />
+        <source>Slab Scan</source>
         <translation>表面薄层扫描</translation>
     </message>
     <message>
@@ -15868,9 +15920,13 @@ All child items will also be deleted.</source>
         <translation type="vanished">启用可复现的随机采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_vacancy_card.py" line="40" />
         <source>Targeted Vacancy</source>
-        <translation>定向空位</translation>
+        <translation type="vanished">定向空位</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/random_vacancy_card.py" line="40" />
+        <source>Site Vacancy</source>
+        <translation>指定位置空位</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/random_vacancy_card.py" line="65" />
@@ -15979,32 +16035,32 @@ All child items will also be deleted.</source>
 <context>
     <name>RangeTripletInputFrame</name>
     <message>
-        <location filename="../ui/widgets/input.py" line="385" />
+        <location filename="../ui/widgets/input.py" line="384" />
         <source>Min (%)</source>
         <translation>最小值（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="385" />
+        <location filename="../ui/widgets/input.py" line="384" />
         <source>Minimum</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="386" />
+        <location filename="../ui/widgets/input.py" line="385" />
         <source>Max (%)</source>
         <translation>最大值（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="386" />
+        <location filename="../ui/widgets/input.py" line="385" />
         <source>Maximum</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="387" />
+        <location filename="../ui/widgets/input.py" line="386" />
         <source>Step (%)</source>
         <translation>步长（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="387" />
+        <location filename="../ui/widgets/input.py" line="386" />
         <source>Step</source>
         <translation>步长</translation>
     </message>
@@ -16067,9 +16123,8 @@ All child items will also be deleted.</source>
 <context>
     <name>SOCTextureResponseCard</name>
     <message>
-        <location filename="../ui/views/_card/soc_texture_response_card.py" line="35" />
         <source>SOC / Texture Response</source>
-        <translation>SOC / 纹理响应</translation>
+        <translation type="vanished">SOC / 纹理响应</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/soc_texture_response_card.py" line="53" />
@@ -16150,6 +16205,11 @@ All child items will also be deleted.</source>
     <message>
         <source>Require the spiral to close in the current periodic cell</source>
         <translation type="vanished">要求螺旋纹理在当前周期晶胞中闭合</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/soc_texture_response_card.py" line="35" />
+        <source>SOC / Texture</source>
+        <translation>SOC / 磁织构</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/soc_texture_response_card.py" line="83" />
@@ -16405,9 +16465,8 @@ All child items will also be deleted.</source>
 <context>
     <name>SetMagneticMomentsCard</name>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="36" />
         <source>Set Magnetic Moments</source>
-        <translation>设置磁矩</translation>
+        <translation type="vanished">设置磁矩</translation>
     </message>
     <message>
         <source>Source</source>
@@ -16444,6 +16503,11 @@ All child items will also be deleted.</source>
     <message>
         <source>Fe:2.2,Co:1.7</source>
         <translation type="vanished">Fe:2.2,Co:1.7</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="36" />
+        <source>Set Moments</source>
+        <translation>设置磁矩</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="50" />
@@ -16692,6 +16756,11 @@ All child items will also be deleted.</source>
         <translation>在控制台菜单中按 group 字段分组卡片</translation>
     </message>
     <message>
+        <location filename="../ui/pages/settings.py" line="184" />
+        <source>Cache output files</source>
+        <translation>缓存输出文件</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/settings.py" line="175" />
         <source>Keep DeepMD subfolders</source>
         <translation>保留 DeepMD 子目录</translation>
@@ -16700,11 +16769,6 @@ All child items will also be deleted.</source>
         <location filename="../ui/pages/settings.py" line="176" />
         <source>Preserve imported folder hierarchy when exporting deepmd/npy</source>
         <translation>导出 deepmd/npy 时保留导入目录层级</translation>
-    </message>
-    <message>
-        <location filename="../ui/pages/settings.py" line="184" />
-        <source>Cache output files</source>
-        <translation>缓存输出文件</translation>
     </message>
     <message>
         <location filename="../ui/pages/settings.py" line="185" />
@@ -17109,7 +17173,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">卡片信息与贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="390" />
+        <location filename="../ui/widgets/card_widget.py" line="384" />
         <source>Card JSON copied to clipboard.</source>
         <translation>卡片 JSON 已复制到剪贴板。</translation>
     </message>
@@ -17157,8 +17221,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">Gamma 角调整范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_angle_card.py" line="29" />
         <source>Shear Angle Strain</source>
+        <translation type="vanished">剪切角应变</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_angle_card.py" line="29" />
+        <source>Angle Shear</source>
         <translation>剪切角应变</translation>
     </message>
     <message>
@@ -17278,8 +17346,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">XZ 剪切应变范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/shear_matrix_card.py" line="30" />
         <source>Shear Matrix Strain</source>
+        <translation type="vanished">剪切矩阵应变</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/shear_matrix_card.py" line="30" />
+        <source>Matrix Shear</source>
         <translation>剪切矩阵应变</translation>
     </message>
     <message>
@@ -17789,13 +17861,13 @@ Do you want to continue?</source>
         <translation type="vanished">可控自旋倾斜</translation>
     </message>
     <message>
-        <source>Canting Scan</source>
-        <translation type="vanished">倾斜扫描</translation>
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="35" />
+        <source>Legacy Canting</source>
+        <translation>旧版磁矩倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="35" />
         <source>Legacy Canting Scan</source>
-        <translation>旧版倾斜扫描</translation>
+        <translation type="vanished">旧版倾斜扫描</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="39" />
@@ -18222,9 +18294,8 @@ Do you want to continue?</source>
         <translation type="vanished">柔性溶剂</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="30" />
         <source>Periodic Solvent Box</source>
-        <translation>周期溶剂盒</translation>
+        <translation type="vanished">周期溶剂盒</translation>
     </message>
     <message>
         <source>Edit solvent XYZ (default: water)</source>
@@ -18266,6 +18337,11 @@ Do you want to continue?</source>
     <message>
         <source>Total molecules added to each output box.</source>
         <translation type="vanished">添加到每个输出盒中的溶剂分子总数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="30" />
+        <source>Solvent Box</source>
+        <translation>周期溶剂盒</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/solvent_box_fill_card.py" line="78" />
@@ -19077,8 +19153,12 @@ Do you want to continue?</source>
         <translation type="vanished">自旋螺旋生成器</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/spin_spiral_card.py" line="35" />
         <source>Legacy Spin Spiral</source>
+        <translation type="vanished">旧版自旋螺旋</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/spin_spiral_card.py" line="35" />
+        <source>Legacy Spiral</source>
         <translation>旧版自旋螺旋</translation>
     </message>
     <message>
@@ -19295,13 +19375,17 @@ Do you want to continue?</source>
         <translation type="vanished">旧版兼容方法：滑移方向由全局笛卡尔轴决定，“层序号”只是投影坐标阈值。物理滑移系请使用“显式 GSFE 路径”。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/stacking_fault_card.py" line="25" />
         <source>Legacy Stacking Fault</source>
-        <translation>旧版层错位移</translation>
+        <translation type="vanished">旧版层错位移</translation>
     </message>
     <message>
         <source>Compatibility card for existing workflows. It shifts one side of a projected cut along an automatically chosen Cartesian direction; use Stacking Fault / GSFE Path to specify the physical slip direction.</source>
         <translation type="vanished">用于现有工作流的兼容卡片。它沿自动选择的笛卡尔方向移动投影切面一侧的原子；新任务请用“层错 / GSFE 路径”明确指定物理滑移方向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/stacking_fault_card.py" line="25" />
+        <source>Legacy GSFE</source>
+        <translation>旧版层错</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/stacking_fault_card.py" line="32" />
@@ -24340,8 +24424,12 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">本卡在已有模式张成的子空间内采样协同运动。没有模式数据时请使用“原子扰动”。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/vibration_perturb_card.py" line="32" />
         <source>Vibration Mode Perturb</source>
+        <translation type="vanished">振动模式扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/vibration_perturb_card.py" line="32" />
+        <source>Mode Perturb</source>
         <translation>振动模式扰动</translation>
     </message>
     <message>
@@ -24912,29 +25000,29 @@ Magnetic: {magnetic}</source>
         <translation>参数需要检查</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="544" />
-        <location filename="../ui/widgets/docker.py" line="545" />
-        <location filename="../ui/widgets/docker.py" line="550" />
+        <location filename="../ui/widgets/docker.py" line="556" />
+        <location filename="../ui/widgets/docker.py" line="557" />
+        <location filename="../ui/widgets/docker.py" line="562" />
         <source>Not specified</source>
         <translation>未注明</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="557" />
+        <location filename="../ui/widgets/docker.py" line="569" />
         <source>Type: {type}</source>
         <translation>类型：{type}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="558" />
+        <location filename="../ui/widgets/docker.py" line="570" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="563" />
+        <location filename="../ui/widgets/docker.py" line="575" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="565" />
+        <location filename="../ui/widgets/docker.py" line="577" />
         <source>License: {license}</source>
         <translation>许可证：{license}</translation>
     </message>

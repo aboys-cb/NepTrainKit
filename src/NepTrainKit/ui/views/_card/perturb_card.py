@@ -98,7 +98,7 @@ class PerturbCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle(self.tr("Make Atomic Perturb"))
+        self.setTitle(self.tr("Atomic Perturb"))
         self.element_rows = []
         self.init_ui()
 

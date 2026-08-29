@@ -27,7 +27,7 @@ class SolventBoxFillCard(MakeDataCard):
         super().__init__(parent)
         self._input_structure = None
         self._input_count = 0
-        self.setTitle(self.tr("Periodic Solvent Box"))
+        self.setTitle(self.tr("Solvent Box"))
         self._init_ui()
 
     def _spin_field(self, label, units, count, kinds, values, minimum, maximum, helper="", *, decimals=None, inline=False):

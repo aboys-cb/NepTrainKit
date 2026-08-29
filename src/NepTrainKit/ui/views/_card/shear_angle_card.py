@@ -26,7 +26,7 @@ class ShearAngleCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Shear Angle Strain"))
+        self.setTitle(self.tr("Angle Shear"))
         self.init_ui()
 
     def init_ui(self):

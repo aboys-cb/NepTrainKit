@@ -35,7 +35,7 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Crystal Prototype Builder"))
+        self.setTitle(self.tr("Crystal Builder"))
         self.init_ui()
 
     def init_ui(self):

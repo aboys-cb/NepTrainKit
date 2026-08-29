@@ -37,7 +37,7 @@ class CompositionSweepCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Composition Space Sampling"))
+        self.setTitle(self.tr("Composition Map"))
         self.init_ui()
 
     def init_ui(self):

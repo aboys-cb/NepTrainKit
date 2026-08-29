@@ -42,7 +42,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         self._loading = False
         self._current_prototype = ""
         self._covera_cache = {"A3/hcp": 1.633, "L10/AB": 1.0}
-        self.setTitle(self.tr("Ordered Alloy Prototype"))
+        self.setTitle(self.tr("Ordered Alloy"))
         self.init_ui()
 
     def init_ui(self):

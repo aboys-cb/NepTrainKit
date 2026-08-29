@@ -33,7 +33,7 @@ class InsertDefectCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._input_structure = None
-        self.setTitle(self.tr("Interstitial & Adsorbate"))
+        self.setTitle(self.tr("Insert / Adsorb"))
         self._init_ui()
 
     def _init_ui(self):

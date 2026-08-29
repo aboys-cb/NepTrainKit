@@ -39,7 +39,7 @@ class InterfaceLayerMixCard(MakeDataCard):
         super().__init__(parent)
         self._input_structure = None
         self._preview_input_count: int | None = None
-        self.setTitle(self.tr("Interface Layer Mixing"))
+        self.setTitle(self.tr("Interface Mix"))
         self.init_ui()
 
     def init_ui(self):

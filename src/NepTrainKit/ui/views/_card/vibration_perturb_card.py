@@ -29,7 +29,7 @@ class VibrationModePerturbCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Vibration Mode Perturb"))
+        self.setTitle(self.tr("Mode Perturb"))
         self._preview_input_count: int | None = None
         self.init_ui()
 

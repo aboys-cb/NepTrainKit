@@ -32,7 +32,7 @@ class SpinSpiralCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Legacy Spin Spiral"))
+        self.setTitle(self.tr("Legacy Spiral"))
         self.init_ui()
 
     def get_summary_text(self) -> str:

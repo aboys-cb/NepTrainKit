@@ -27,7 +27,7 @@ class ShearMatrixCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Shear Matrix Strain"))
+        self.setTitle(self.tr("Matrix Shear"))
         self.init_ui()
 
     def init_ui(self):

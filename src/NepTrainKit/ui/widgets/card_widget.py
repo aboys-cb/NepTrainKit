@@ -289,7 +289,14 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
             self.headerLabel.text()
         )
         required += self.headerLayout.spacing() * len(visible_widgets)
-        self.category_tag.setVisible(self.headerTopView.width() >= required)
+        # During a Windows resize event the child layout may still expose its
+        # previous width. The header fills the card, so the card's current
+        # contents width is the reliable upper-level measurement here.
+        available_width = max(
+            self.headerTopView.width(),
+            self.contentsRect().width(),
+        )
+        self.category_tag.setVisible(available_width >= required)
 
     def set_compact_header(self, compact: bool) -> None:
         """Switch between a full top-level header and a narrow nested header."""

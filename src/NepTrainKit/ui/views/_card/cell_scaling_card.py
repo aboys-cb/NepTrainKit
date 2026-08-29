@@ -55,13 +55,13 @@ class CellScalingCard(MakeDataCard):
         self.scaling_condition_frame.setSingleStep(0.5)
         self.scaling_condition_frame.setRange(0, 20)
         self.scaling_condition_frame.set_input_value([4.0])
-        self.scaling_condition_frame.setFixedWidth(116)
+        self.scaling_condition_frame.setFixedWidth(132)
         scaling_field = CompactField(
             self.tr("Maximum relative change"),
             self.scaling_condition_frame,
             self.setting_widget,
             inline=True,
-            input_max_width=116,
+            input_max_width=132,
         )
 
         self.perturb_angle_checkbox = CheckBox(
@@ -77,13 +77,13 @@ class CellScalingCard(MakeDataCard):
         self.num_condition_frame.set_input("", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([50])
-        self.num_condition_frame.setFixedWidth(116)
+        self.num_condition_frame.setFixedWidth(132)
         num_field = CompactField(
             self.tr("Outputs per input"),
             self.num_condition_frame,
             self.setting_widget,
             inline=True,
-            input_max_width=116,
+            input_max_width=132,
         )
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)

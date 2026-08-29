@@ -467,6 +467,19 @@ class WorkflowGuidancePanel(QFrame):
                 animation.valueChanged.connect(self._set_animated_editor_height)
                 animation.finished.connect(self._finish_editor_height_animation)
                 self._editor_height_animation = animation
+                # Headless Windows runners occasionally stop advancing a Qt
+                # variant animation without emitting ``finished``. Keep the
+                # real 120 ms transition, but guarantee that its final layout
+                # state is committed even when the platform animation driver
+                # stalls.
+                watchdog = QTimer(animation)
+                watchdog.setSingleShot(True)
+                watchdog.timeout.connect(
+                    lambda current=animation: self._complete_editor_height_animation(
+                        current
+                    )
+                )
+                watchdog.start(animation.duration() + 80)
             else:
                 editor.resize(editor.width(), target_height)
                 self._editor_reflow_target_height = None
@@ -480,6 +493,14 @@ class WorkflowGuidancePanel(QFrame):
         editor = self._editor_widget
         if editor is not None and isValid(editor):
             editor.setFixedHeight(int(round(float(value))))
+
+    def _complete_editor_height_animation(self, animation: QVariantAnimation) -> None:
+        """Commit a stalled platform animation without affecting newer reflows."""
+        if self._editor_height_animation is not animation:
+            return
+        animation.setCurrentTime(animation.duration())
+        if self._editor_height_animation is animation:
+            self._finish_editor_height_animation()
 
     def _finish_editor_height_animation(self) -> None:
         editor = self._editor_widget

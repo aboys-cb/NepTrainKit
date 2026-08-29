@@ -31,11 +31,10 @@ class AdaptiveCompactSpinBox(CompactSpinBox):
         button = getattr(self, "compactSpinButton", None)
         if button is None:
             return
-        text_width = self.fontMetrics().horizontalAdvance(self.text())
-        show_symbol = (
-            not self.isReadOnly()
-            and self.width() >= text_width + self._step_button_width() + self._TEXT_PADDING
-        )
+        # Integer controls are used for short counts and indices. Keep their
+        # primary step affordance available at every editable width; the line
+        # edit can scroll a long value without hiding the button.
+        show_symbol = not self.isReadOnly()
         if button.isHidden() == show_symbol:
             self.setSymbolVisible(show_symbol)
         if not show_symbol:

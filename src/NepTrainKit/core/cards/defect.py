@@ -681,7 +681,10 @@ class StackingFaultOperation(StructureOperation):
 
     def run_structure(self, structure, params: StackingFaultParams) -> list:
         if len(params.hkl) != 3:
-            raise ValueError("StackingFault hkl must contain exactly three integers.")
+            raise CardOperationError(
+                "stacking_fault.invalid_hkl_length",
+                "Stacking Fault hkl must contain exactly three integers.",
+            )
         if len(params.step) != 3:
             raise ValueError("StackingFault step must contain exactly three values: start, stop, step.")
         h, k, l = [int(value) for value in params.hkl]
@@ -1558,8 +1561,9 @@ class InsertDefectOperation(StructureOperation):
         surface_normal = inverse_cell[:, axis]
         normal_length = np.linalg.norm(surface_normal)
         if normal_length <= 1e-12:
-            raise ValueError(
-                "InsertDefect could not determine the adsorption surface normal."
+            raise CardOperationError(
+                "insert_defect.missing_surface_normal",
+                "Insert Defect could not determine the adsorption surface normal.",
             )
         return float(top_frac), surface_normal / normal_length
 

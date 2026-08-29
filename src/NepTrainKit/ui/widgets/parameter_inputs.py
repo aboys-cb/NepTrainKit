@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import math
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -98,6 +98,90 @@ class ElementLineEdit(LineEdit):
             if symbol not in existing:
                 self.setText(",".join([*tokens, symbol]))
         self.elementPicked.emit(symbol)
+
+
+def _pair_key(pair: str) -> tuple[str, str] | None:
+    parts = [part.strip() for part in str(pair).split("-", 1)]
+    if len(parts) != 2 or not all(parts):
+        return None
+    return tuple(sorted(parts, key=str.casefold))
+
+
+def _choose_element(parent: QWidget, *, heading: str, initial: str = "") -> str | None:
+    from .periodic_table import PeriodicTableDialog
+
+    selected: list[str] = []
+    dialog = PeriodicTableDialog(parent.window())
+    dialog.set_prompt(
+        heading,
+        QCoreApplication.translate(
+            "ElementPairPicker",
+            "Select an element, then choose the other element in the pair.",
+        ),
+    )
+    dialog.set_selected_element(initial)
+    dialog.elementSelected.connect(selected.append)
+    dialog.exec()
+    dialog.deleteLater()
+    return selected[0] if selected else None
+
+
+def choose_element_pair(parent: QWidget, initial_pair: str = "") -> str | None:
+    """Choose two elements in sequence and return a validated ``A-B`` pair."""
+    initial_parts = [part.strip() for part in str(initial_pair).split("-", 1)]
+    if len(initial_parts) != 2:
+        initial_parts = ["", ""]
+    left = _choose_element(
+        parent,
+        heading=QCoreApplication.translate("ElementPairPicker", "Choose the first element"),
+        initial=initial_parts[0],
+    )
+    if left is None:
+        return None
+    right = _choose_element(
+        parent,
+        heading=QCoreApplication.translate("ElementPairPicker", "Choose the second element"),
+        initial=initial_parts[1],
+    )
+    return f"{left}-{right}" if right is not None else None
+
+
+class ElementPairLineEdit(LineEdit):
+    """Editable pair expression with a two-step periodic-table picker."""
+
+    pairPicked = Signal(str)
+
+    def __init__(self, parent=None, *, multiple: bool = True):
+        """Create a manually editable single- or multi-pair input."""
+        super().__init__(parent)
+        self.multiple = bool(multiple)
+        self.picker_action = QAction(FluentIcon.TILES.icon(), "", self)
+        self.addAction(self.picker_action, QLineEdit.ActionPosition.TrailingPosition)
+        self.picker_action.setToolTip(self.tr("Choose an element pair"))
+        self.picker_action.triggered.connect(self.open_pair_picker)
+
+    def open_pair_picker(self, _checked: bool = False) -> None:
+        initial = self.text().strip() if not self.multiple else ""
+        pair = choose_element_pair(self, initial)
+        if pair is not None:
+            self._apply_pair(pair)
+
+    def _apply_pair(self, pair: str) -> None:
+        pair = str(pair).strip()
+        key = _pair_key(pair)
+        if key is None:
+            return
+        if not self.multiple:
+            self.setText(pair)
+        else:
+            tokens = [
+                token.strip()
+                for token in self.text().replace(";", ",").split(",")
+                if token.strip()
+            ]
+            if key not in {_pair_key(token) for token in tokens}:
+                self.setText(",".join([*tokens, pair]))
+        self.pairPicked.emit(pair)
 
 
 class NumericScanInput(QWidget):
@@ -289,11 +373,15 @@ class KeyValueTableInput(QWidget):
         parent=None,
         *,
         element_picker: bool = False,
+        element_pair_picker: bool = False,
         new_element_value: str = "1",
     ):
         """Create a key/value editor, optionally backed by an element picker."""
         super().__init__(parent)
         self._element_picker_enabled = bool(element_picker)
+        self._element_pair_picker_enabled = bool(element_pair_picker)
+        if self._element_picker_enabled and self._element_pair_picker_enabled:
+            raise ValueError("Only one key picker can be enabled.")
         self._new_element_value = str(new_element_value)
         self._editing_element_row: int | None = None
         self._element_dialog = None
@@ -320,7 +408,11 @@ class KeyValueTableInput(QWidget):
         buttons = QHBoxLayout()
         buttons.setContentsMargins(0, 0, 0, 0)
         self.add_button = PushButton(
-            self.tr("Add element") if self._element_picker_enabled else self.tr("Add row"),
+            self.tr("Add element")
+            if self._element_picker_enabled
+            else self.tr("Add element pair")
+            if self._element_pair_picker_enabled
+            else self.tr("Add row"),
             self,
         )
         self.remove_button = PushButton(self.tr("Remove selected"), self)
@@ -329,8 +421,8 @@ class KeyValueTableInput(QWidget):
         self.add_button.clicked.connect(self._handle_add_button)
         self.remove_button.clicked.connect(self.remove_selected)
         self.table.itemChanged.connect(lambda _item: self.editingFinished.emit())
-        if self._element_picker_enabled:
-            self.table.cellDoubleClicked.connect(self._edit_element)
+        if self._element_picker_enabled or self._element_pair_picker_enabled:
+            self.table.cellDoubleClicked.connect(self._edit_key)
         buttons.addWidget(self.add_button)
         buttons.addWidget(self.remove_button)
         layout.addWidget(self.table)
@@ -341,9 +433,13 @@ class KeyValueTableInput(QWidget):
         row = self.table.rowCount()
         self.table.insertRow(row)
         key_item = QTableWidgetItem(str(key))
-        if self._element_picker_enabled:
+        if self._element_picker_enabled or self._element_pair_picker_enabled:
             key_item.setFlags(key_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            key_item.setToolTip(self.tr("Double-click to choose another element"))
+            key_item.setToolTip(
+                self.tr("Double-click to choose another element pair")
+                if self._element_pair_picker_enabled
+                else self.tr("Double-click to choose another element")
+            )
         self.table.setItem(row, 0, key_item)
         self.table.setItem(row, 1, QTableWidgetItem(str(value)))
         self._sync_table_height()
@@ -358,12 +454,51 @@ class KeyValueTableInput(QWidget):
     def _handle_add_button(self, _checked: bool = False) -> None:
         if self._element_picker_enabled:
             self.open_element_picker()
+        elif self._element_pair_picker_enabled:
+            self.open_element_pair_picker()
         else:
             self.add_row()
 
-    def _edit_element(self, row: int, column: int) -> None:
+    def _edit_key(self, row: int, column: int) -> None:
         if column == 0:
-            self.open_element_picker(row)
+            if self._element_pair_picker_enabled:
+                self.open_element_pair_picker(row)
+            else:
+                self.open_element_picker(row)
+
+    def open_element_pair_picker(self, row: int | None = None) -> None:
+        """Choose a validated element pair for a new or existing row."""
+        if not self._element_pair_picker_enabled:
+            return
+        initial = ""
+        if row is not None and 0 <= row < self.table.rowCount():
+            item = self.table.item(row, 0)
+            initial = item.text().strip() if item is not None else ""
+        pair = choose_element_pair(self, initial)
+        if pair is not None:
+            self._editing_element_row = row
+            self._apply_element_pair_selection(pair)
+            self._editing_element_row = None
+
+    def _apply_element_pair_selection(self, pair: str) -> None:
+        pair = str(pair).strip()
+        key = _pair_key(pair)
+        if key is None:
+            return
+        target_row = self._editing_element_row
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, 0)
+            if item is not None and _pair_key(item.text()) == key and row != target_row:
+                self.table.setCurrentCell(row, 1)
+                return
+        if target_row is None or not (0 <= target_row < self.table.rowCount()):
+            self.add_row(pair, self._new_element_value)
+            target_row = self.table.rowCount() - 1
+        else:
+            self.table.item(target_row, 0).setText(pair)
+        self.table.setCurrentCell(target_row, 1)
+        self.table.editItem(self.table.item(target_row, 1))
+        self.editingFinished.emit()
 
     def open_element_picker(self, row: int | None = None) -> None:
         """Choose a validated element for a new or existing table row."""

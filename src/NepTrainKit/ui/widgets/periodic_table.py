@@ -330,6 +330,12 @@ class PeriodicTableDialog(FramelessDialog):
         """Preselect an element without committing or closing the dialog."""
         self._select_element(str(symbol).strip())
 
+    def set_prompt(self, heading: str, help_text: str = "") -> None:
+        """Adapt the picker guidance for a specific element-input workflow."""
+        self.heading_label.setText(str(heading))
+        self.help_label.setText(str(help_text))
+        self.help_label.setVisible(bool(str(help_text).strip()))
+
     def _commit_element(self, symbol: str) -> None:
         self._select_element(symbol)
         self._commit_selection()

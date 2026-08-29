@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import sys
 import xml.etree.ElementTree as ET
@@ -248,6 +249,70 @@ def test_legacy_runtime_translation_table_is_frozen():
         )
     )
     assert replacement_count <= 258
+
+
+def test_card_core_has_no_mixed_language_constant_runtime_errors():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    cards_root = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "core" / "cards"
+    english_markers = (
+        " requires ",
+        " must ",
+        " at least ",
+        " cannot ",
+        " could not ",
+        " invalid ",
+        " unsupported ",
+        " failed ",
+        " needs ",
+        " is empty",
+    )
+    failures = []
+    for path in sorted(cards_root.glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Raise) or not isinstance(node.exc, ast.Call):
+                continue
+            call = node.exc
+            if not isinstance(call.func, ast.Name) or call.func.id not in {
+                "ValueError",
+                "RuntimeError",
+            }:
+                continue
+            if not call.args or not isinstance(call.args[0], ast.Constant):
+                continue
+            source = call.args[0].value
+            if not isinstance(source, str):
+                continue
+            translated = translate_runtime_message(source)
+            if translated == source or any(
+                marker in translated.lower() for marker in english_markers
+            ):
+                failures.append((path.name, node.lineno, source, translated))
+    assert failures == []
+
+
+def test_composition_gradient_and_internal_invariants_translate_fully():
+    from NepTrainKit.core.cards.alloy import (
+        CompositionGradientOperation,
+        CompositionGradientParams,
+    )
+
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    with pytest.raises(CardOperationError) as raised:
+        CompositionGradientOperation.sampling_summary(
+            CompositionGradientParams(elements="")
+        )
+
+    assert translate_runtime_message(raised.value) == "成分梯度至少需要两种元素。"
+    assert translate_runtime_message(
+        "Conditional Replace matched-site count changed during execution."
+    ) == "条件替换执行期间，匹配位点数量发生了变化。"
+    assert translate_runtime_message(
+        "CellStrain output-count preview disagrees with generation."
+    ) == "晶格应变的输出数量预览与实际生成结果不一致。"
 
 
 def test_structured_card_error_formats_in_english():

@@ -19,6 +19,7 @@ from NepTrainKit.ui.widgets import (
     CompositionPathTableInput,
     DirectionInput,
     ElementLineEdit,
+    ElementPairLineEdit,
     KeyValueTableInput,
     NumericScanInput,
 )
@@ -82,6 +83,26 @@ def test_element_line_edit_replaces_or_appends_without_duplicate_symbols():
     multiple._apply_element("Ni")
     multiple._apply_element("Fe")
     assert multiple.text() == "Fe:0.7,Co,Ni"
+
+
+def test_element_pair_edit_appends_pairs_and_deduplicates_reversed_order():
+    editor = ElementPairLineEdit()
+    editor.setText("Fe-Fe")
+    editor._apply_pair("Fe-Co")
+    editor._apply_pair("Co-Fe")
+    assert editor.text() == "Fe-Fe,Fe-Co"
+
+
+def test_key_value_pair_picker_adds_and_updates_validated_pair_keys():
+    table = KeyValueTableInput(
+        "Element pair", "Distance", element_pair_picker=True, new_element_value="1.5"
+    )
+    table._apply_element_pair_selection("Fe-Co")
+    table._apply_element_pair_selection("Co-Fe")
+    assert table.text() == "Fe-Co:1.5"
+    table._editing_element_row = 0
+    table._apply_element_pair_selection("Fe-Ni")
+    assert table.text() == "Fe-Ni:1.5"
 
 
 def test_short_parameter_tables_grow_and_shrink_to_show_every_row():

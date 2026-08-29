@@ -95,17 +95,26 @@ def validate_dz_expr(expr: str, allowed_names: set[str]) -> ast.Expression:
         if isinstance(node, ast.BoolOp) and not isinstance(node.op, allowed_boolops):
             raise ValueError(f"Unsupported boolean operator: {type(node.op).__name__}")
         if isinstance(node, ast.Compare) and not all(isinstance(op, allowed_cmpops) for op in node.ops):
-            raise ValueError("Unsupported comparison operator")
+            raise CardOperationError(
+                "layer_copy.unsupported_comparison",
+                "Unsupported comparison operator.",
+            )
         if isinstance(node, ast.Call):
             if not isinstance(node.func, ast.Name):
-                raise ValueError("Only direct function calls are allowed (e.g. sin(x))")
+                raise CardOperationError(
+                    "layer_copy.indirect_function_call",
+                    "Only direct function calls are allowed (for example, sin(x)).",
+                )
             func_name = node.func.id
             if func_name not in _ALLOWED_FUNCS:
                 raise ValueError(f"Function '{func_name}' is not allowed")
         if isinstance(node, ast.Name) and node.id not in allowed_names:
             raise ValueError(f"Unknown name '{node.id}'")
         if isinstance(node, ast.Constant) and isinstance(node.value, str):
-            raise ValueError("String constants are not allowed")
+            raise CardOperationError(
+                "layer_copy.string_constant_not_allowed",
+                "String constants are not allowed.",
+            )
     return tree  # pyright: ignore[reportReturnType]
 
 
@@ -155,7 +164,10 @@ def evaluate_dz_expression(expr: str, x: np.ndarray, y: np.ndarray, z: np.ndarra
     if out_arr.shape != x.shape:
         raise ValueError(f"dz expression returned shape {out_arr.shape}, expected {x.shape}")
     if not np.all(np.isfinite(out_arr)):
-        raise ValueError("dz expression produced NaN/Inf values")
+        raise CardOperationError(
+            "layer_copy.nonfinite_expression_result",
+            "The dz expression produced NaN/Inf values.",
+        )
     return out_arr
 
 

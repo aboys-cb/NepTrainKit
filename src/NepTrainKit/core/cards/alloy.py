@@ -103,9 +103,12 @@ def _normalized_dopant_atom_ratios(
     dopant_list = [str(element) for element in dopant_list]
     ratios = np.array(list(ratios), dtype=float)
     if not dopant_list:
-        raise ValueError("At least one dopant is required.")
+        raise CardOperationError("alloy.dopant_required", "At least one dopant is required.")
     if ratios.size != len(dopant_list) or ratios.size == 0:
-        raise ValueError("Dopant ratios must match dopant elements.")
+        raise CardOperationError(
+            "alloy.dopant_ratio_count_mismatch",
+            "Dopant ratios must match dopant elements.",
+        )
     if np.any(~np.isfinite(ratios)) or np.any(ratios < 0.0):
         raise ValueError("Dopant ratios must be finite and non-negative.")
     invalid_elements = [
@@ -763,8 +766,9 @@ class RandomDopingOperation(StructureOperation):
                 raise ValueError("count_mode must be fixed or random.")
             if count_mode == "fixed":
                 if count_min != count_max:
-                    raise ValueError(
-                        "fixed count must use the same minimum and maximum."
+                    raise CardOperationError(
+                        "random_doping.fixed_count_mismatch",
+                        "Fixed count must use the same minimum and maximum."
                     )
                 return count_min, count_min
             return count_min, count_max
@@ -1057,8 +1061,9 @@ class CompositionSweepOperation(StructureOperation):
             if value not in orders:
                 orders.append(value)
         if not orders:
-            raise ValueError(
-                "Composition Space Sampling component counts must select 2, 3, 4, or 5."
+            raise CardOperationError(
+                "composition_sweep.invalid_component_counts",
+                "Composition Space Sampling component counts must select 2, 3, 4, or 5.",
             )
         return orders
 
@@ -1374,7 +1379,10 @@ def _parse_sublattice_elements(text: str, labels: tuple[str, ...]) -> dict[str, 
             if not token.strip():
                 continue
             if ":" not in token:
-                raise ValueError("Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.")
+                raise CardOperationError(
+                    "ordered_alloy.invalid_sublattice_entries",
+                    "Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.",
+                )
             label, value = token.split(":", 1)
             raw[label.strip()] = value.strip()
 
@@ -1388,7 +1396,10 @@ def _parse_sublattice_elements(text: str, labels: tuple[str, ...]) -> dict[str, 
 
 def _scan_lattice_values(values: tuple[float, float, float]) -> list[float]:
     if len(values) != 3:
-        raise ValueError("Ordered Alloy Prototype: a_range must contain start, stop, and step.")
+        raise CardOperationError(
+            "ordered_alloy.invalid_lattice_scan_length",
+            "Ordered Alloy Prototype: a_range must contain start, stop, and step.",
+        )
     start, stop, step = (float(value) for value in values)
     if not np.all(np.isfinite([start, stop, step])) or start <= 0.0 or stop <= 0.0 or step <= 0.0:
         raise ValueError("Ordered Alloy Prototype: a_range values must be finite and positive.")
@@ -1752,7 +1763,10 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
     @staticmethod
     def _site_indices(structure) -> dict[str, np.ndarray]:
         if len(structure) <= 0:
-            raise ValueError("Finite-Cell Alloy Occupancy: input structure has no sites.")
+            raise CardOperationError(
+                "finite_cell.empty_structure",
+                "Finite-Cell Alloy Occupancy: input structure has no sites.",
+            )
         if "sublattice" not in structure.arrays:
             return {"all": np.arange(len(structure), dtype=int)}
         raw = np.asarray(structure.arrays["sublattice"], dtype=str)
@@ -2099,7 +2113,10 @@ class CompositionGradientOperation(StructureOperation):
     ) -> dict[str, object]:
         elements = parse_element_list(params.elements)
         if len(elements) < 2:
-            raise ValueError("Composition Gradient requires at least two elements.")
+            raise CardOperationError(
+                "composition_gradient.too_few_elements",
+                "Composition Gradient requires at least two elements.",
+            )
         start_comp = cls._normalized_composition(params.start_composition, elements)
         end_comp = cls._normalized_composition(params.end_composition, elements)
         if not start_comp or not end_comp:
@@ -2169,7 +2186,10 @@ class CompositionGradientOperation(StructureOperation):
         order = candidate_indices[np.argsort(coord[candidate_indices], kind="mergesort")]
         groups = [group for group in np.array_split(order, bins) if len(group) > 0]
         if not groups:
-            raise ValueError("Composition Gradient could not build nonempty coordinate bins.")
+            raise CardOperationError(
+                "composition_gradient.empty_coordinate_bins",
+                "Composition Gradient could not build nonempty coordinate bins.",
+            )
 
         base_seed = int(params.seed) if params.use_seed else None
         cfg_id = stable_config_id(structure)
@@ -2620,7 +2640,10 @@ def _eval_condition_node(node: ast.AST, env: dict[str, float], tol: float) -> fl
             return all(bool(value) for value in vals)
         if isinstance(node.op, ast.Or):
             return any(bool(value) for value in vals)
-    raise ValueError("Unsupported expression")
+    raise CardOperationError(
+        "conditional_replace.unsupported_expression",
+        "Unsupported expression.",
+    )
 
 
 def _eval_condition_array(
@@ -2693,7 +2716,10 @@ def _eval_condition_array(
             elif isinstance(node.op, ast.Or):
                 result = np.logical_or(result, value)
         return result
-    raise ValueError("Unsupported expression")
+    raise CardOperationError(
+        "conditional_replace.unsupported_expression",
+        "Unsupported expression.",
+    )
 
 
 def _parse_condition_tree(expr: str) -> ast.Expression:
@@ -2814,7 +2840,10 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
             name = str(key).strip()
             ratio = float(value)
             if not name:
-                raise ValueError("Replacement element names must not be empty.")
+                raise CardOperationError(
+                    "conditional_replace.empty_replacement_element",
+                    "Replacement element names must not be empty.",
+                )
             if not np.isfinite(ratio) or ratio < 0.0:
                 raise ValueError(
                     "Replacement ratios must be finite and non-negative."
@@ -2832,7 +2861,10 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
             name = token.strip()
             ratio = 1.0
         if not name:
-            raise ValueError("Replacement element names must not be empty.")
+            raise CardOperationError(
+                "conditional_replace.empty_replacement_element",
+                "Replacement element names must not be empty.",
+            )
         if not np.isfinite(ratio) or ratio < 0.0:
             raise ValueError("Replacement ratios must be finite and non-negative.")
         names.append(name)
@@ -3062,7 +3094,10 @@ def replace_atoms_with_conditions(
 
     probs = np.asarray(probabilities, dtype=float)
     if probs.size != len(new_atoms) or probs.size == 0:
-        raise ValueError("Replacement probabilities must match replacement atoms.")
+        raise CardOperationError(
+            "conditional_replace.probability_count_mismatch",
+            "Replacement probabilities must match replacement atoms.",
+        )
     if np.any(~np.isfinite(probs)) or np.any(probs < 0.0):
         raise ValueError("Replacement probabilities must be finite and non-negative.")
     if np.all(probs <= 0):

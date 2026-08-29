@@ -7,7 +7,14 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import SmallAngleSpinTiltOperation, SmallAngleSpinTiltParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import ElementLineEdit, KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import (
+    ElementLineEdit,
+    ElementPairLineEdit,
+    KeyValueTableInput,
+    MakeDataCard,
+    SpinBoxUnitInputFrame,
+)
+
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
@@ -109,7 +116,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.pair_element_label = BodyLabel(self.tr("Pair elements"), self.setting_widget)
         self.pair_element_label.setToolTip(self.tr("Optional pair filter such as Fe-Fe,Fe-Co; empty means any element pair"))
         self.pair_element_label.installEventFilter(ToolTipFilter(self.pair_element_label, 300, ToolTipPosition.TOP))
-        self.pair_element_edit = LineEdit(self.setting_widget)
+        self.pair_element_edit = ElementPairLineEdit(self.setting_widget)
         self.pair_element_edit.setPlaceholderText(self.tr("Fe-Fe,Fe-Co"))
 
         self.pair_group_label = BodyLabel(self.tr("Pair groups"), self.setting_widget)

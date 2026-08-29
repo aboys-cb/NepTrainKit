@@ -839,8 +839,9 @@ class SolventBoxFillOperation(StructureOperation):
             prefix="Solvent Box Fill",
         )
         if len(params.flex_torsion_range) != 2:
-            raise ValueError(
-                "Solvent Box Fill: flex_torsion_range must contain two values."
+            raise CardOperationError(
+                "solvent_box_fill.invalid_flex_torsion_range_length",
+                "Solvent Box Fill: flex_torsion_range must contain two values.",
             )
         flex_torsion_range = tuple(
             LocalSolvationOperation._finite(
@@ -851,8 +852,9 @@ class SolventBoxFillOperation(StructureOperation):
             for value in params.flex_torsion_range
         )
         if flex_torsion_range[0] > flex_torsion_range[1]:
-            raise ValueError(
-                "Solvent Box Fill: flex_torsion_range minimum must not exceed maximum."
+            raise CardOperationError(
+                "solvent_box_fill.invalid_flex_torsion_range_order",
+                "Solvent Box Fill: flex_torsion_range minimum must not exceed maximum.",
             )
 
         return {
@@ -1042,7 +1044,10 @@ def parse_solvent_xyz(text: str) -> Atoms:
     except Exception as exc:
         raise ValueError(f"Solvation: cannot parse solvent_xyz: {exc}") from exc
     if len(atoms) == 0:
-        raise ValueError("Solvation: solvent molecule contains no atoms.")
+        raise CardOperationError(
+            "solvation.empty_solvent_molecule",
+            "Solvation: solvent molecule contains no atoms.",
+        )
     return center_solvent(atoms)
 
 

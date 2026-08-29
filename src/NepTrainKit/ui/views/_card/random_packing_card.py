@@ -72,7 +72,8 @@ class RandomPackingCard(MakeDataCard):
         self.advanced_checkbox = CheckBox(self.tr("Advanced packing controls"), self.setting_widget)
         self.advanced_checkbox.setChecked(False)
         self.pair_distance_edit = KeyValueTableInput(
-            self.tr("Element pair"), self.tr("Minimum distance (Å)"), self.setting_widget
+            self.tr("Element pair"), self.tr("Minimum distance (Å)"), self.setting_widget,
+            element_pair_picker=True, new_element_value="1.5",
         )
         self.attempts_frame = self._integer_frame(1, 1_000_000, 500)
 

@@ -3423,132 +3423,132 @@
 <context>
     <name>CardOperationError</name>
     <message>
-        <location filename="../ui/messages.py" line="356" />
+        <location filename="../ui/messages.py" line="364" />
         <source>Maximum output {budget} is smaller than the {groups} element sets. Increase the output limit or remove unneeded systems.</source>
         <translation>最大输出 {budget} 小于元素集合数量 {groups}。请提高输出上限或移除本轮不需要的体系。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="361" />
+        <location filename="../ui/messages.py" line="369" />
         <source>Perturb: Sobol sampling supports at most {max_atoms} atoms; use Uniform sampling for larger structures.</source>
         <translation>原子扰动：Sobol 采样最多支持 {max_atoms} 个原子；更大的结构请使用 Uniform 采样。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="366" />
+        <location filename="../ui/messages.py" line="374" />
         <source>Perturb: {element} is not a valid element symbol for a displacement limit.</source>
         <translation>原子扰动：{element} 不是可用于位移上限的有效元素符号。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="370" />
+        <location filename="../ui/messages.py" line="378" />
         <source>Perturb: element {element} has more than one displacement limit; keep only one row.</source>
         <translation>原子扰动：元素 {element} 设置了多个位移上限；请只保留一行。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="374" />
+        <location filename="../ui/messages.py" line="382" />
         <source>Perturb: the displacement limit for {element} must be finite and non-negative.</source>
         <translation>原子扰动：元素 {element} 的位移上限必须是有限的非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="378" />
+        <location filename="../ui/messages.py" line="386" />
         <source>Unsupported crystal prototype: {lattice}.</source>
         <translation>不支持的晶体原型：{lattice}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="379" />
+        <location filename="../ui/messages.py" line="387" />
         <source>Maximum outputs must be at least 1.</source>
         <translation>最大输出数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="380" />
+        <location filename="../ui/messages.py" line="388" />
         <source>The hcp c/a ratio must be a positive finite number.</source>
         <translation>HCP c/a 轴比必须是有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="391" />
+        <location filename="../ui/messages.py" line="399" />
         <source>Lattice perturbation produced an invalid or singular cell. Reduce the maximum relative change.</source>
         <translation>晶格扰动产生了无效或奇异晶胞，请减小最大相对变化。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="395" />
+        <location filename="../ui/messages.py" line="403" />
         <source>Lattice strain values must be greater than -100%.</source>
         <translation>晶格应变必须大于 -100%。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="398" />
+        <location filename="../ui/messages.py" line="406" />
         <source>Select one or more unique lattice axes: a, b, or c.</source>
         <translation>请选择一条或多条不重复的晶格轴：a、b 或 c。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="404" />
+        <location filename="../ui/messages.py" line="412" />
         <source>Enter one element symbol or the X placeholder for every visible sublattice.</source>
         <translation>请为每个可见子晶格输入一个元素符号或 X 占位符。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="408" />
+        <location filename="../ui/messages.py" line="416" />
         <source>Invalid element or placeholder {element}; use a chemical element symbol or X.</source>
         <translation>无效的元素或占位符 {element}；请使用化学元素符号或 X。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="412" />
+        <location filename="../ui/messages.py" line="420" />
         <source>The mode coefficient scale must be a positive finite number.</source>
         <translation>模态系数尺度必须是有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="415" />
+        <location filename="../ui/messages.py" line="423" />
         <source>Modes combined per sample must be at least 1.</source>
         <translation>每个样本至少需要组合 1 个模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="418" />
+        <location filename="../ui/messages.py" line="426" />
         <source>Structures per input must be an integer.</source>
         <translation>每个输入生成的结构数必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="419" />
+        <location filename="../ui/messages.py" line="427" />
         <source>Structures per input must be at least 1.</source>
         <translation>每个输入至少需要生成 1 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="420" />
+        <location filename="../ui/messages.py" line="428" />
         <source>Coefficient distribution must be Normal or Uniform.</source>
         <translation>系数分布必须是正态分布或均匀分布。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="423" />
+        <location filename="../ui/messages.py" line="431" />
         <source>The absolute frequency cutoff must be a finite non-negative number.</source>
         <translation>绝对频率截止值必须是有限非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="426" />
+        <location filename="../ui/messages.py" line="434" />
         <source>Vibrational perturbation needs at least one usable mode on every input structure.</source>
         <translation>每个输入结构至少需要包含一个可用的振动模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="430" />
+        <location filename="../ui/messages.py" line="438" />
         <source>Finite frequencies are required when frequency filtering or scaling is enabled.</source>
         <translation>启用频率筛选或加权时，所有模式都必须包含有限频率值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="434" />
+        <location filename="../ui/messages.py" line="442" />
         <source>Frequency weighting requires non-zero frequencies for every usable mode.</source>
         <translation>频率加权要求每个可用模式的频率都不为零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="438" />
+        <location filename="../ui/messages.py" line="446" />
         <source>Modes per sample is {requested}, but only {available} usable modes are available.</source>
         <translation>每个样本请求组合 {requested} 个模式，但筛选后只有 {available} 个可用模式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="442" />
+        <location filename="../ui/messages.py" line="450" />
         <source>Maximum perturbation angle must be between 0 and 180 degrees.</source>
         <translation>最大扰动角必须在 0 到 180 度之间。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="445" />
+        <location filename="../ui/messages.py" line="453" />
         <source>Spin Perturb requires spin or initial magnetic moments on every input structure.</source>
         <translation>磁矩扰动要求每个输入结构都包含 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="460" />
+        <location filename="../ui/messages.py" line="468" />
         <source>Spin Perturb could not convert the input magnetic moments to vectors.</source>
         <translation>磁矩扰动无法将输入磁矩转换为矢量。</translation>
     </message>
@@ -3561,1205 +3561,1410 @@
         <translation type="vanished">{label} 必须为非负整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="464" />
+        <location filename="../ui/messages.py" line="472" />
         <source>Structures per input must be a positive integer.</source>
         <translation>每个输入的输出数必须为正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="465" />
+        <location filename="../ui/messages.py" line="473" />
         <source>Maximum attempts per atom must be a positive integer.</source>
         <translation>每个原子的最大尝试次数必须为正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="330" />
-        <location filename="../ui/messages.py" line="466" />
+        <location filename="../ui/messages.py" line="338" />
+        <location filename="../ui/messages.py" line="474" />
         <source>Generated atom budget per input must be a positive integer.</source>
         <translation>每个输入的生成原子预算必须为正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="316" />
+        <location filename="../ui/messages.py" line="324" />
         <source>Could not build surface plane {hkl} with {repeats} normal repeats and {vacuum} Å vacuum per side: {reason}</source>
         <translation>无法构造晶面 {hkl}：法向重复 {repeats} 次、单侧真空 {vacuum} Å。原因：{reason}</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="320" />
+        <location filename="../ui/messages.py" line="328" />
         <source>Surface Slab Scan requires a non-empty bulk structure.</source>
         <translation>表面薄层扫描需要非空的体相结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="321" />
+        <location filename="../ui/messages.py" line="329" />
         <source>Surface Slab Scan requires finite positions and a finite, non-singular 3D cell.</source>
         <translation>表面薄层扫描需要有限的原子坐标，以及有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="325" />
+        <location filename="../ui/messages.py" line="333" />
         <source>Surface Slab Scan requires a bulk input periodic along all three cell directions.</source>
         <translation>表面薄层扫描要求体相输入沿三个晶格方向均为周期边界。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="328" />
+        <location filename="../ui/messages.py" line="336" />
         <source>A non-periodic surface normal requires positive vacuum per side.</source>
         <translation>表面法向为非周期边界时，单侧真空必须大于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="331" />
+        <location filename="../ui/messages.py" line="339" />
         <source>Surface Slab Scan requests {requested} outputs per input, above the limit of {limit}. Reduce planes or scan points, or raise the limit deliberately.</source>
         <translation>表面薄层扫描每个输入请求 {requested} 个输出，超过上限 {limit}。请减少晶面或扫描点，或在确认后主动提高上限。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="335" />
+        <location filename="../ui/messages.py" line="343" />
         <source>Surface Slab Scan requests {requested} generated atoms per input, above the budget of {budget}. Reduce planes or normal repeats, or raise the budget deliberately.</source>
         <translation>表面薄层扫描每个输入请求生成 {requested} 个原子，超过预算 {budget}。请减少晶面或法向重复数，或在确认后主动提高预算。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="339" />
+        <location filename="../ui/messages.py" line="347" />
         <source>Add at least one Miller plane.</source>
         <translation>请至少添加一个 Miller 晶面。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="340" />
+        <location filename="../ui/messages.py" line="348" />
         <source>Each Miller plane must contain exactly three integer indices h, k, and l.</source>
         <translation>每个 Miller 晶面必须恰好包含 h、k、l 三个整数指数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="343" />
+        <location filename="../ui/messages.py" line="351" />
         <source>Each Miller index must be an integer.</source>
         <translation>每个 Miller 指数必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="344" />
+        <location filename="../ui/messages.py" line="352" />
         <source>Miller plane (0, 0, 0) is not defined.</source>
         <translation>Miller 晶面 (0, 0, 0) 没有定义。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="345" />
+        <location filename="../ui/messages.py" line="353" />
         <source>{label} must contain start, stop, and step.</source>
         <translation>{label} 必须包含起点、终点和步长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="346" />
+        <location filename="../ui/messages.py" line="354" />
         <source>{label} values must be integers.</source>
         <translation>{label} 的取值必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="347" />
+        <location filename="../ui/messages.py" line="355" />
         <source>{label} requires start and stop &gt;= {minimum}, start &lt;= stop, and a positive step.</source>
         <translation>{label} 要求起点和终点均不小于 {minimum}、起点不大于终点，且步长为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="351" />
+        <location filename="../ui/messages.py" line="359" />
         <source>{label} values must be finite numbers.</source>
         <translation>{label} 的取值必须是有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="352" />
+        <location filename="../ui/messages.py" line="360" />
         <source>{label} requires finite start and stop &gt;= {minimum}, start &lt;= stop, and a positive step.</source>
         <translation>{label} 要求有限的起点和终点且均不小于 {minimum}、起点不大于终点，且步长为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="467" />
+        <location filename="../ui/messages.py" line="475" />
         <source>Random seed must be a non-negative integer.</source>
         <translation>随机种子必须为非负整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="468" />
+        <location filename="../ui/messages.py" line="476" />
         <source>Global minimum distance must be a positive finite number.</source>
         <translation>全局最小距离必须为有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="471" />
+        <location filename="../ui/messages.py" line="479" />
         <source>Random Packing requires a finite, non-singular input cell.</source>
         <translation>随机原子堆积需要有限且非奇异的输入晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="474" />
+        <location filename="../ui/messages.py" line="482" />
         <source>Composition mode must be Use input composition or Manual atom counts.</source>
         <translation>组成模式必须为“沿用输入组成”或“手动原子数”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="478" />
+        <location filename="../ui/messages.py" line="486" />
         <source>Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.</source>
         <translation>随机原子堆积至少需要一个原子。请加载非空输入或填写手动组成。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="482" />
+        <location filename="../ui/messages.py" line="490" />
         <source>Requested outputs contain {requested} generated atoms per input, exceeding the budget of {budget}. Reduce structures or atom counts, or raise the budget deliberately.</source>
         <translation>每个输入请求生成 {requested} 个原子，超过预算 {budget}。请减少输出结构数或原子数，或主动提高预算。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="486" />
+        <location filename="../ui/messages.py" line="494" />
         <source>Unknown chemical element {element} in the composition.</source>
         <translation>组成中包含未知化学元素 {element}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="489" />
+        <location filename="../ui/messages.py" line="497" />
         <source>Invalid composition item {item}; use Element:count, for example Fe:32.</source>
         <translation>组成项 {item} 无效；请使用“元素:数量”，例如 Fe:32。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="492" />
+        <location filename="../ui/messages.py" line="500" />
         <source>Atom count for {element} must be a positive integer.</source>
         <translation>{element} 的原子数必须为正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="495" />
+        <location filename="../ui/messages.py" line="503" />
         <source>Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8.</source>
         <translation>元素对距离规则 {item} 无效；请使用 A-B:数值，例如 Fe-O:1.8。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="498" />
+        <location filename="../ui/messages.py" line="506" />
         <source>Unknown chemical element {element} in a pair-distance rule.</source>
         <translation>元素对距离规则中包含未知化学元素 {element}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="501" />
+        <location filename="../ui/messages.py" line="509" />
         <source>Minimum distance for {left}-{right} must be a positive finite number.</source>
         <translation>{left}-{right} 的最小距离必须为有限正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="504" />
+        <location filename="../ui/messages.py" line="512" />
         <source>Random Packing could not place {element} after {attempts} attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.</source>
         <translation>随机原子堆积在尝试 {attempts} 次后仍无法放置 {element}。请减小最小距离、扩大晶胞或减少原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="508" />
+        <location filename="../ui/messages.py" line="516" />
         <source>Random Packing could not generate any output after {failures} failed attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.</source>
         <translation>随机原子堆积在 {failures} 次失败后未生成任何输出。请减小最小距离、扩大晶胞或减少原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="518" />
+        <location filename="../ui/messages.py" line="526" />
         <source>Increase the perturbation angle or enable a magnitude scale range that changes the moments.</source>
         <translation>请增大扰动角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="522" />
+        <location filename="../ui/messages.py" line="530" />
         <source>Exact correlated sampling supports at most {maximum} eligible non-zero moments; the current selection has {actual}. Reduce the target elements or use a smaller structure.</source>
         <translation>精确关联采样最多支持 {maximum} 个符合条件的非零磁矩；当前选择了 {actual} 个。请减少目标元素或使用更小的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="527" />
+        <location filename="../ui/messages.py" line="535" />
         <source>Spin Spiral maximum outputs must be at least 1.</source>
         <translation>旧版自旋螺旋的最大输出数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="530" />
+        <location filename="../ui/messages.py" line="538" />
         <source>No lattice-compatible spin-spiral period exists in the requested range. For a period of {period} Å, try a {multipliers} supercell.</source>
         <translation>请求范围内没有与晶格相容的自旋螺旋周期。对于 {period} Å 周期，可尝试 {multipliers} 超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="535" />
+        <location filename="../ui/messages.py" line="543" />
         <source>No lattice-compatible spin-spiral period exists in the requested range. Change the period range or expand the cell along the propagation axis.</source>
         <translation>请求范围内没有与晶格相容的自旋螺旋周期。请修改周期范围，或沿传播轴扩胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="540" />
+        <location filename="../ui/messages.py" line="548" />
         <source>Spin Spiral requires at least one non-zero magnetic moment. Add moments upstream or select the element-map source and enter a non-zero magnitude.</source>
         <translation>旧版自旋螺旋要求输入至少包含一个非零磁矩。请在上游添加磁矩，或选择元素表来源并填写非零模长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="545" />
+        <location filename="../ui/messages.py" line="553" />
         <source>Maximum outputs must be at least {minimum} for the selected folded-helix sequence mode.</source>
         <translation>当前折返方向模式要求最大输出数至少为 {minimum}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="549" />
+        <location filename="../ui/messages.py" line="557" />
         <source>Folded Helix requires at least one non-zero magnetic moment. Add moments upstream or select the element-map source and enter a non-zero magnitude.</source>
         <translation>折返螺旋要求输入至少包含一个非零磁矩。请在上游添加磁矩，或选择元素表来源并填写非零模长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="554" />
+        <location filename="../ui/messages.py" line="562" />
         <source>Folded Helix needs at least 3 detected layers along the layer axis; the current settings detect {actual}. Check the layer axis and tolerance.</source>
         <translation>折返螺旋沿分层方向至少需要识别出 3 层；当前设置识别出 {actual} 层。请检查层方向和分层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="559" />
+        <location filename="../ui/messages.py" line="567" />
         <source>Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. Expand the cell, choose another plane, or reduce the layer tolerance.</source>
         <translation>原子层分组至少需要检测到两层；当前设置检测到 {actual} 层。请扩胞、更换晶面或减小层容差。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="564" />
+        <location filename="../ui/messages.py" line="572" />
         <source>Layer Groups needs a finite, non-singular 3D cell.</source>
         <translation>原子层分组需要有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="567" />
+        <location filename="../ui/messages.py" line="575" />
         <source>Layer tolerance must be a positive finite distance.</source>
         <translation>层容差必须是正的有限距离。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="570" />
+        <location filename="../ui/messages.py" line="578" />
         <source>Plane index must be 100, 010, 001, 110, or 111.</source>
         <translation>晶面指数必须是 100、010、001、110 或 111。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="573" />
+        <location filename="../ui/messages.py" line="581" />
         <source>Layer group labels must be non-empty.</source>
         <translation>原子层分组标签不能为空。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="576" />
+        <location filename="../ui/messages.py" line="584" />
         <source>Layer group A and B labels must be different.</source>
         <translation>原子层分组的 A、B 标签不能相同。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="579" />
+        <location filename="../ui/messages.py" line="587" />
         <source>Interface Layer Mixing requires a non-singular 3D cell.</source>
         <translation>界面层互混需要非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="582" />
+        <location filename="../ui/messages.py" line="590" />
         <source>Interface Layer Mixing requires at least two atoms.</source>
         <translation>界面层互混至少需要两个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="585" />
+        <location filename="../ui/messages.py" line="593" />
         <source>Interface Layer Mixing requires finite cell vectors and atom positions.</source>
         <translation>界面层互混要求晶胞矢量和原子坐标均为有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="588" />
+        <location filename="../ui/messages.py" line="596" />
         <source>Interface Layer Mixing found only one element ({element}); swapping would not change the structure.</source>
         <translation>界面层互混只检测到一种元素（{element}），交换不会改变结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="591" />
+        <location filename="../ui/messages.py" line="599" />
         <source>L-side layer count must be &gt;= 1 (got {value}).</source>
         <translation>L 侧层数必须大于等于 1（当前为 {value}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="594" />
+        <location filename="../ui/messages.py" line="602" />
         <source>R-side layer count must be &gt;= 1 (got {value}).</source>
         <translation>R 侧层数必须大于等于 1（当前为 {value}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="597" />
+        <location filename="../ui/messages.py" line="605" />
         <source>Number of structures must be &gt;= 1 (got {value}).</source>
         <translation>结构数必须大于等于 1（当前为 {value}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="600" />
+        <location filename="../ui/messages.py" line="608" />
         <source>Layer tolerance must be a finite distance greater than 0 Å (got {value}).</source>
         <translation>层容差必须是大于 0 Å 的有限距离（当前为 {value}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="603" />
+        <location filename="../ui/messages.py" line="611" />
         <source>Interface axis must be auto, a, b, or c (got {axis}).</source>
         <translation>界面方向必须是 auto、a、b 或 c（当前为 {axis}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="606" />
+        <location filename="../ui/messages.py" line="614" />
         <source>Auto-detection found no interface with distinct compositions (max contrast {contrast}). Check that the structure is a bilayer or pick the interface normal axis manually.</source>
         <translation>自动检测未找到两侧组分明显不同的界面（最大差异 {contrast}）。请检查输入是否为双层结构，或手动选择分层方向。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="609" />
+        <location filename="../ui/messages.py" line="617" />
         <source>Lattice axis {axis} shows no distinct-composition split (contrast {contrast}). Try another axis, or disable auto-locate and type the interface position.</source>
         <translation>晶格方向 {axis} 未显示明显的组分切分（差异 {contrast}）。请尝试其他方向，或关闭自动定位并输入界面位置。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="612" />
+        <location filename="../ui/messages.py" line="620" />
         <source>Interface fractional position must be strictly between 0 and 1 (got {pos}).</source>
         <translation>界面分数坐标位置必须严格位于 0 和 1 之间（当前为 {pos}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="615" />
+        <location filename="../ui/messages.py" line="623" />
         <source>Not enough atomic layers below the interface: need {need}, only {have} available. Reduce the L-side layer count.</source>
         <translation>界面低坐标侧的原子层不足：需要 {need} 层，仅有 {have} 层。请减小 L 侧层数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="618" />
+        <location filename="../ui/messages.py" line="626" />
         <source>Not enough atomic layers above the interface: need {need}, only {have} available. Reduce the R-side layer count.</source>
         <translation>界面高坐标侧的原子层不足：需要 {need} 层，仅有 {have} 层。请减小 R 侧层数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="621" />
+        <location filename="../ui/messages.py" line="629" />
         <source>Both selected regions are the same single element {element}; swapping would not change the structure.</source>
         <translation>两侧选区都是同一种元素 {element}，交换不会改变结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="624" />
+        <location filename="../ui/messages.py" line="632" />
         <source>Target concentration {c} exceeds this interface's swap capacity {c_max}. Lower the concentration or add more layers.</source>
         <translation>目标比例 {c} 超过该界面的交换容量 {c_max}。请降低比例或增加选中层数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="627" />
+        <location filename="../ui/messages.py" line="635" />
         <source>Gradient concentration bound {top} exceeds this interface's swap capacity {c_max}. Lower the concentration or add more layers.</source>
         <translation>梯度比例上限 {top} 超过该界面的交换容量 {c_max}。请降低比例或增加选中层数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="630" />
+        <location filename="../ui/messages.py" line="638" />
         <source>Concentration mode must be fixed or gradient (got {mode}).</source>
         <translation>互混模式必须是 fixed 或 gradient（当前为 {mode}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="633" />
+        <location filename="../ui/messages.py" line="641" />
         <source>{label} must be an integer (got {value}).</source>
         <translation>{label} 必须是整数（当前为 {value}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="636" />
+        <location filename="../ui/messages.py" line="644" />
         <source>Random seed must be between 0 and {maximum} (got {value}).</source>
         <translation>随机种子必须位于 0 到 {maximum} 之间（当前为 {value}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="639" />
+        <location filename="../ui/messages.py" line="647" />
         <source>Targeted Vacancy requires at least one vacancy rule.</source>
         <translation>定向空位至少需要一条空位规则。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="642" />
+        <location filename="../ui/messages.py" line="650" />
         <source>Targeted Vacancy requires at least two atoms.</source>
         <translation>定向空位的输入结构至少需要两个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="645" />
+        <location filename="../ui/messages.py" line="653" />
         <source>Vacancy rule {rule} is invalid.</source>
         <translation>空位规则 {rule} 无效。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="648" />
+        <location filename="../ui/messages.py" line="656" />
         <source>Vacancy rule {rule} requires an element.</source>
         <translation>空位规则 {rule} 必须填写元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="651" />
+        <location filename="../ui/messages.py" line="659" />
         <source>Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.</source>
         <translation>空位规则 {rule} 需要一个整数数量，或按从小到大填写最小值和最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="655" />
+        <location filename="../ui/messages.py" line="663" />
         <source>Vacancy rule {rule} count must be at least 0.</source>
         <translation>空位规则 {rule} 的数量不能小于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="658" />
+        <location filename="../ui/messages.py" line="666" />
         <source>Vacancy rule {rule} count mode must be Fixed count or Random range.</source>
         <translation>空位规则 {rule} 的数量模式必须是“固定数量”或“随机范围”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="662" />
+        <location filename="../ui/messages.py" line="670" />
         <source>Vacancy rule {rule} fixed count must use the same minimum and maximum.</source>
         <translation>空位规则 {rule} 使用固定数量时，最小值和最大值必须相同。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="666" />
+        <location filename="../ui/messages.py" line="674" />
         <source>Vacancy rule {rule} fixed count must be at least 1.</source>
         <translation>空位规则 {rule} 的固定数量至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="669" />
+        <location filename="../ui/messages.py" line="677" />
         <source>Vacancy rule {rule} random range must allow at least one vacancy.</source>
         <translation>空位规则 {rule} 的随机范围必须允许至少删除一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="673" />
+        <location filename="../ui/messages.py" line="681" />
         <source>Vacancy rule {rule} group must contain at least one non-empty label.</source>
         <translation>空位规则 {rule} 的分组条件至少需要一个非空标签。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="677" />
+        <location filename="../ui/messages.py" line="685" />
         <source>Vacancy rule {rule} requests group labels, but the input structure has no group array.</source>
         <translation>空位规则 {rule} 使用了分组条件，但输入结构没有 group 数组。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="681" />
+        <location filename="../ui/messages.py" line="689" />
         <source>Vacancy rule {rule} matched no atoms ({target}).</source>
         <translation>空位规则 {rule} 没有匹配到原子（{target}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="684" />
+        <location filename="../ui/messages.py" line="692" />
         <source>Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).</source>
         <translation>空位规则 {rule} 最多要求删除 {requested} 个原子，但只有 {available} 个原子匹配（{target}）。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="688" />
+        <location filename="../ui/messages.py" line="696" />
         <source>Maximum outputs per input must be at least 1.</source>
         <translation>每个输入的最大输出数至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="691" />
-        <location filename="../ui/messages.py" line="796" />
+        <location filename="../ui/messages.py" line="699" />
+        <location filename="../ui/messages.py" line="804" />
         <source>Random seed must be at least 0.</source>
         <translation>随机种子不能小于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="694" />
+        <location filename="../ui/messages.py" line="702" />
         <source>{field} must be an integer.</source>
         <translation>{field}必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="697" />
+        <location filename="../ui/messages.py" line="705" />
         <source>{field} must be at least {minimum}.</source>
         <translation>{field}必须至少为 {minimum}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="700" />
+        <location filename="../ui/messages.py" line="708" />
         <source>{field} must be a finite number.</source>
         <translation>{field}必须是有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="703" />
+        <location filename="../ui/messages.py" line="711" />
         <source>{field} must be positive.</source>
         <translation>{field}必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="706" />
+        <location filename="../ui/messages.py" line="714" />
         <source>Molecular Conformers requires at least one atom.</source>
         <translation>分子构象要求输入结构至少包含一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="709" />
+        <location filename="../ui/messages.py" line="717" />
         <source>Molecular Conformers requires finite Cartesian atom positions.</source>
         <translation>分子构象要求原子的笛卡尔坐标均为有限值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="712" />
+        <location filename="../ui/messages.py" line="720" />
         <source>Output boundary must be Follow input, 3D periodic, or Nonperiodic.</source>
         <translation>输出边界必须是“跟随输入”“全三维周期”或“非周期”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="715" />
+        <location filename="../ui/messages.py" line="723" />
         <source>Follow input does not support mixed periodic boundaries; choose Nonperiodic or provide full 3D PBC.</source>
         <translation>“跟随输入”不支持混合周期边界；请选择“非周期”或提供全三维 PBC。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="718" />
+        <location filename="../ui/messages.py" line="726" />
         <source>3D periodic mode requires a finite, nonsingular 3×3 cell.</source>
         <translation>全三维周期模式要求有限且非奇异的 3×3 晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="721" />
+        <location filename="../ui/messages.py" line="729" />
         <source>Torsion increment range must contain a minimum and maximum.</source>
         <translation>扭转增量范围必须包含最小值和最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="724" />
+        <location filename="../ui/messages.py" line="732" />
         <source>Torsion increment minimum must not exceed its maximum.</source>
         <translation>扭转增量的最小值不能大于最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="727" />
+        <location filename="../ui/messages.py" line="735" />
         <source>Maximum bond length must not be smaller than minimum bond length.</source>
         <translation>最大键长不能小于最小键长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="730" />
+        <location filename="../ui/messages.py" line="738" />
         <source>Bond-order threshold must be between 0 and 1.</source>
         <translation>键级阈值必须位于 0 与 1 之间。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="733" />
+        <location filename="../ui/messages.py" line="741" />
         <source>The current settings cannot change coordinates; add coordinate noise or provide an active rotatable bond.</source>
         <translation>当前设置无法改变坐标；请增加坐标噪声，或提供至少一条生效的可旋转键。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="736" />
+        <location filename="../ui/messages.py" line="744" />
         <source>All requested conformers failed the geometry guards; narrow the torsion range, reduce coordinate noise, or inspect the distance limits.</source>
         <translation>所有请求构象都未通过几何保护；请收窄扭转范围、减小坐标噪声，或检查距离限制。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="739" />
+        <location filename="../ui/messages.py" line="747" />
         <source>Solvent Shell requires at least one host atom.</source>
         <translation>局部溶剂壳要求输入至少包含一个宿主原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="740" />
+        <location filename="../ui/messages.py" line="748" />
         <source>Solvent Shell requires finite Cartesian atom positions.</source>
         <translation>局部溶剂壳要求宿主原子的笛卡尔坐标均为有限值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="741" />
+        <location filename="../ui/messages.py" line="749" />
         <source>Periodic input requires a finite, nonsingular 3×3 cell.</source>
         <translation>周期输入要求具有有限且非奇异的 3×3 晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="742" />
+        <location filename="../ui/messages.py" line="750" />
         <source>Solvent XYZ must describe one valid non-empty molecule.</source>
         <translation>溶剂 XYZ 必须描述一个有效的非空分子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="743" />
+        <location filename="../ui/messages.py" line="751" />
         <source>Cartesian z range must contain a minimum and maximum.</source>
         <translation>笛卡尔 z 范围必须包含最小值和最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="744" />
+        <location filename="../ui/messages.py" line="752" />
         <source>The center selection does not match any host atoms.</source>
         <translation>中心选择没有匹配到任何宿主原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="745" />
+        <location filename="../ui/messages.py" line="753" />
         <source>Fallback center-to-COM shell must contain an inner and outer radius.</source>
         <translation>备用中心到质心壳层必须包含内半径和外半径。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="746" />
+        <location filename="../ui/messages.py" line="754" />
         <source>Fallback shell outer radius must be larger than its inner radius.</source>
         <translation>备用壳层的外半径必须大于内半径。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="747" />
+        <location filename="../ui/messages.py" line="755" />
         <source>Fixed box size must be positive.</source>
         <translation>固定显示盒尺寸必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="748" />
+        <location filename="../ui/messages.py" line="756" />
         <source>Flexible torsion range must contain a minimum and maximum.</source>
         <translation>柔性扭转范围必须包含最小值和最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="749" />
+        <location filename="../ui/messages.py" line="757" />
         <source>Flexible torsion minimum must not exceed its maximum.</source>
         <translation>柔性扭转最小值不能大于最大值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="750" />
+        <location filename="../ui/messages.py" line="758" />
         <source>No solvent molecule could be placed; adjust the centers, shell, collision rule, or free volume.</source>
         <translation>无法放入任何溶剂分子；请调整中心、壳层、碰撞规则或可用空间。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="751" />
+        <location filename="../ui/messages.py" line="759" />
         <source>No solvent molecule could be placed; adjust the centers, shell, collision rule, or free volume. The periodic structure appears to have no solvent-accessible void; use a structure with free volume or a larger periodic cell.</source>
         <translation>无法放入任何溶剂分子；请调整中心、壳层、碰撞规则或可用空间。该周期结构似乎没有溶剂可进入的空隙；请使用含自由空间的结构或更大的周期晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="752" />
+        <location filename="../ui/messages.py" line="760" />
         <source>Only {placed} of {requested} solvent molecules could be placed.</source>
         <translation>请求的 {requested} 个溶剂分子中仅成功放入 {placed} 个。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="753" />
+        <location filename="../ui/messages.py" line="761" />
         <source>Unsupported placement method: {mode}.</source>
         <translation>不支持的放置方式：{mode}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="754" />
+        <location filename="../ui/messages.py" line="762" />
         <source>Supported ion hydration requires a water solvent molecule.</source>
         <translation>受支持的离子水合模式要求溶剂分子为水。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="755" />
+        <location filename="../ui/messages.py" line="763" />
         <source>Supported ion hydration requires every selected center to be Li, Na, K, Mg, Ca, Sr, Ba, or Zn.</source>
         <translation>受支持的离子水合要求所有选中中心均为 Li、Na、K、Mg、Ca、Sr、Ba 或 Zn。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="756" />
+        <location filename="../ui/messages.py" line="764" />
         <source>Enter at least one center element.</source>
         <translation>请至少输入一种中心元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="757" />
+        <location filename="../ui/messages.py" line="765" />
         <source>Unsupported center selection: {mode}.</source>
         <translation>不支持的中心选择方式：{mode}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="758" />
+        <location filename="../ui/messages.py" line="766" />
         <source>Enter at least one 1-based center index.</source>
         <translation>请至少输入一个从 1 开始的中心索引。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="759" />
+        <location filename="../ui/messages.py" line="767" />
         <source>Center index {index} is outside the valid range 1–{natoms}.</source>
         <translation>中心索引 {index} 超出有效范围 1–{natoms}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="760" />
+        <location filename="../ui/messages.py" line="768" />
         <source>Center indices must use 1-based integers and ranges such as 1,3,5-8.</source>
         <translation>中心索引必须使用从 1 开始的整数和范围，例如 1,3,5-8。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="761" />
+        <location filename="../ui/messages.py" line="769" />
         <source>Targeted Vacancy could not generate a valid non-empty structure. Reduce overlapping rule counts, broaden the groups, or expand the structure.</source>
         <translation>定向空位无法生成有效的非空结构。请减少重叠规则的删除数量、扩大分组范围或扩展结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="766" />
+        <location filename="../ui/messages.py" line="774" />
         <source>Global Vacancy requires at least two atoms.</source>
         <translation>全局空位的输入结构至少需要两个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="769" />
+        <location filename="../ui/messages.py" line="777" />
         <source>Site sampling must be Uniform or Sobol.</source>
         <translation>位点采样方式必须是“均匀随机”或“Sobol”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="772" />
+        <location filename="../ui/messages.py" line="780" />
         <source>Vacancies per output must be Fixed or Variable.</source>
         <translation>每个输出的空位数必须选择“固定”或“变化”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="329" />
-        <location filename="../ui/messages.py" line="775" />
+        <location filename="../ui/messages.py" line="1254" />
+        <source>At least one dopant is required.</source>
+        <translation>至少需要一种掺杂元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1255" />
+        <source>Dopant ratios must match dopant elements.</source>
+        <translation>掺杂比例数量必须与掺杂元素数量一致。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1256" />
+        <source>Fixed count must use the same minimum and maximum.</source>
+        <translation>固定数量模式的最小值和最大值必须相同。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1257" />
+        <source>Composition Space Sampling component counts must select 2, 3, 4, or 5.</source>
+        <translation>成分空间采样的组元数必须选择 2、3、4 或 5。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1261" />
+        <source>Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.</source>
+        <translation>有序合金原型：请使用“标签:元素”格式，例如 A:Cu,B:Au。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1265" />
+        <source>Ordered Alloy Prototype: a_range must contain start, stop, and step.</source>
+        <translation>有序合金原型：晶格常数范围必须包含起点、终点和步长。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1269" />
+        <source>Finite-Cell Alloy Occupancy: input structure has no sites.</source>
+        <translation>有限晶胞合金占位：输入结构不包含任何位点。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1273" />
+        <source>Composition Gradient requires at least two elements.</source>
+        <translation>成分梯度至少需要两种元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1274" />
+        <source>Composition Gradient could not build nonempty coordinate bins.</source>
+        <translation>成分梯度无法构建非空坐标分组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1278" />
+        <source>Unsupported expression.</source>
+        <translation>不支持该表达式。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1279" />
+        <source>Replacement element names must not be empty.</source>
+        <translation>替换元素名称不能为空。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1280" />
+        <source>Replacement probabilities must match replacement atoms.</source>
+        <translation>替换概率数量必须与替换元素数量一致。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1281" />
+        <source>Stacking Fault hkl must contain exactly three integers.</source>
+        <translation>堆垛层错的 hkl 必须包含三个整数。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1282" />
+        <source>Insert Defect could not determine the adsorption surface normal.</source>
+        <translation>插隙与表面吸附无法确定吸附表面法向。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1286" />
+        <source>Geometry Filter: minimum volume/atom must not exceed maximum volume/atom.</source>
+        <translation>几何健全性过滤：最小单原子体积不能大于最大单原子体积。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1290" />
+        <source>Geometry Filter: minimum density must not exceed maximum density.</source>
+        <translation>几何健全性过滤：最小密度不能大于最大密度。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1294" />
+        <source>Perturb: samples must have shape (n_structures, n_atoms, 3).</source>
+        <translation>原子扰动：采样数组形状必须为 (结构数, 原子数, 3)。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1298" />
+        <source>Perturb: radii must contain one value per atom.</source>
+        <translation>原子扰动：每个原子必须对应一个半径值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1299" />
+        <source>Supercell: fixed_axis_flags must contain three values.</source>
+        <translation>扩胞：固定轴标志必须包含三个值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1300" />
+        <source>Magnetic Order: select at least one of FM, AFM, or PM.</source>
+        <translation>磁有序构型：请至少选择 FM、AFM 或 PM 中的一种。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1301" />
+        <source>Magnetic Order: PM structures must be at least 1.</source>
+        <translation>磁有序构型：PM 结构数量至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1302" />
+        <source>Magnetic Order: maximum outputs must be at least 1.</source>
+        <translation>磁有序构型：最大输出数至少为 1。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1303" />
+        <source>Magnetic Order: AFM positive and negative group labels must differ.</source>
+        <translation>磁有序构型：AFM 正、负磁矩组的标签不能相同。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1307" />
+        <source>Magnetic Order: AFM group mode needs at least one magnetic atom in both the positive and negative groups.</source>
+        <translation>磁有序构型：AFM 分组模式要求正、负磁矩组中都至少有一个磁性原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1311" />
+        <source>Magnetic Order: sign array length does not match atoms.</source>
+        <translation>磁有序构型：符号数组长度与原子数不一致。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1312" />
+        <source>Small-angle Spin Tilt found no nonzero magnetic moments to tilt.</source>
+        <translation>磁矩小角度倾斜未找到可倾斜的非零磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1316" />
+        <source>Small-angle Spin Tilt global mode found no eligible magnetic atoms; check apply_elements and magnetic moments.</source>
+        <translation>磁矩小角度倾斜的全局模式未找到可用磁性原子；请检查目标元素和磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1320" />
+        <source>Small-angle Spin Tilt single-spin mode matched no target atoms; check target_mode, target_indices, apply_elements, and magnetic moments.</source>
+        <translation>磁矩小角度倾斜的单磁矩模式未匹配到目标原子；请检查目标模式、原子索引、目标元素和磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1324" />
+        <source>Small-angle Spin Tilt atom-pair mode matched no valid pairs; check pair source, indices, shell, element/group filters, and magnetic moments.</source>
+        <translation>磁矩小角度倾斜的原子对模式未匹配到有效原子对；请检查原子对来源、索引、近邻壳层、元素或分组筛选及磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1328" />
+        <source>Small-angle Spin Tilt produced no tilted structures from the selected targets.</source>
+        <translation>磁矩小角度倾斜未能从所选目标生成任何结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1332" />
+        <source>Spin Disorder found no eligible nonzero magnetic moments.</source>
+        <translation>磁矩无序未找到可用的非零磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1333" />
+        <source>Spin Disorder requires at least one fraction within (0, 1].</source>
+        <translation>磁矩无序至少需要一个位于 (0, 1] 范围内的比例。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1337" />
+        <source>Correlated Random Spin found no eligible nonzero magnetic moments.</source>
+        <translation>关联随机磁矩未找到可用的非零磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1341" />
+        <source>Correlated Random Spin covariance is not positive definite for this structure/kernel.</source>
+        <translation>当前结构与核函数得到的关联随机磁矩协方差矩阵不是正定矩阵。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1345" />
+        <source>Solvent Box Fill: flex_torsion_range must contain two values.</source>
+        <translation>周期溶剂盒：柔性扭转范围必须包含两个值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1349" />
+        <source>Solvent Box Fill: flex_torsion_range minimum must not exceed maximum.</source>
+        <translation>周期溶剂盒：柔性扭转范围的最小值不能大于最大值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1353" />
+        <source>Solvation: solvent molecule contains no atoms.</source>
+        <translation>溶剂化：溶剂分子不包含任何原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1354" />
+        <source>Unsupported comparison operator.</source>
+        <translation>不支持该比较运算符。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1355" />
+        <source>Only direct function calls are allowed (for example, sin(x)).</source>
+        <translation>只允许直接调用函数，例如 sin(x)。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1359" />
+        <source>String constants are not allowed.</source>
+        <translation>表达式中不允许使用字符串常量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="1360" />
+        <source>The dz expression produced NaN/Inf values.</source>
+        <translation>dz 表达式生成了 NaN/Inf 值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="337" />
+        <location filename="../ui/messages.py" line="783" />
         <source>Maximum outputs per input must be a positive integer.</source>
         <translation>每个输入的最大输出数必须是正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="778" />
+        <location filename="../ui/messages.py" line="786" />
         <source>Vacancies must be an integer.</source>
         <translation>空位数量必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="779" />
+        <location filename="../ui/messages.py" line="787" />
         <source>Vacancies must be at least 1.</source>
         <translation>空位数量至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="780" />
+        <location filename="../ui/messages.py" line="788" />
         <source>Vacancies must be at most {maximum} for this input so at least one atom remains.</source>
         <translation>当前输入的空位数量最多为 {maximum}，以确保至少保留一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="784" />
+        <location filename="../ui/messages.py" line="792" />
         <source>Vacancy fraction must be greater than 0 and less than 1.</source>
         <translation>空位比例必须大于 0 且小于 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="787" />
+        <location filename="../ui/messages.py" line="795" />
         <source>Vacancy fraction is too small for this input; use at least {minimum} to remove one atom.</source>
         <translation>空位比例对当前输入过小；至少使用 {minimum} 才能删除一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="791" />
+        <location filename="../ui/messages.py" line="799" />
         <source>Sobol sampling supports at most {maximum} atoms; use Uniform for larger inputs.</source>
         <translation>Sobol 采样最多支持 {maximum} 个原子；更大的输入请使用均匀随机采样。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="795" />
+        <location filename="../ui/messages.py" line="803" />
         <source>Random seed must be an integer.</source>
         <translation>随机种子必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="797" />
+        <location filename="../ui/messages.py" line="805" />
         <source>GSFE Path requires at least one atom.</source>
         <translation>层错路径要求输入结构至少包含一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="800" />
+        <location filename="../ui/messages.py" line="808" />
         <source>GSFE Path requires a finite, nonsingular 3×3 cell.</source>
         <translation>层错路径要求输入结构具有有限且非奇异的 3×3 晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="803" />
+        <location filename="../ui/messages.py" line="811" />
         <source>The fault-plane indices must not all be zero.</source>
         <translation>层错面指数不能全为零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="806" />
+        <location filename="../ui/messages.py" line="814" />
         <source>The in-plane direction must not be zero.</source>
         <translation>面内方向不能为零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="809" />
+        <location filename="../ui/messages.py" line="817" />
         <source>The in-plane indices produce a zero shift vector.</source>
         <translation>输入的面内指数对应零位移矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="812" />
+        <location filename="../ui/messages.py" line="820" />
         <source>The shift direction must lie in the fault plane.</source>
         <translation>位移方向必须位于层错面内。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="815" />
+        <location filename="../ui/messages.py" line="823" />
         <source>Displacement unit must be Vector fraction or Å distance.</source>
         <translation>位移单位必须是“矢量分数”或“Å 距离”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="818" />
+        <location filename="../ui/messages.py" line="826" />
         <source>GSFE Path requires finite Cartesian atom positions.</source>
         <translation>层错路径要求原子的笛卡尔坐标均为有限值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="821" />
+        <location filename="../ui/messages.py" line="829" />
         <source>Displacement path needs a start, end, and positive step.</source>
         <translation>位移路径需要起点、终点和正步长。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="824" />
+        <location filename="../ui/messages.py" line="832" />
         <source>{label} must contain exactly three integers.</source>
         <translation>{label} 必须恰好包含三个整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="827" />
+        <location filename="../ui/messages.py" line="835" />
         <source>The fault-plane indices produce a zero normal.</source>
         <translation>输入的层错面指数对应零法向量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="830" />
+        <location filename="../ui/messages.py" line="838" />
         <source>GSFE Path requires a nonzero third cell vector.</source>
         <translation>层错路径要求第三晶胞矢量非零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="833" />
+        <location filename="../ui/messages.py" line="841" />
         <source>The third cell vector must be normal to the current ab fault plane.</source>
         <translation>第三晶胞矢量必须垂直于当前 ab 层错面。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="836" />
+        <location filename="../ui/messages.py" line="844" />
         <source>GSFE Path requires finite projected atom coordinates.</source>
         <translation>层错路径要求原子的投影坐标均为有限值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="839" />
+        <location filename="../ui/messages.py" line="847" />
         <source>GSFE Path requires atoms on at least two distinct layers.</source>
         <translation>层错路径要求原子至少分布在两个不同的原子层上。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="842" />
+        <location filename="../ui/messages.py" line="850" />
         <source>Thickness fraction must be between 0 and 1.</source>
         <translation>厚度分数必须位于 0 与 1 之间。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="845" />
+        <location filename="../ui/messages.py" line="853" />
         <source>Lower layer index must select a layer below the top layer.</source>
         <translation>下方原子层索引必须选中最高层以下的原子层。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="848" />
+        <location filename="../ui/messages.py" line="856" />
         <source>Cut position must be Middle, Thickness, or Layer index.</source>
         <translation>切面位置必须是“中间”“厚度”或“层索引”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="851" />
+        <location filename="../ui/messages.py" line="859" />
         <source>The cut must leave atoms on both sides; adjust its position.</source>
         <translation>切面两侧都必须保留原子；请调整切面位置。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="854" />
+        <location filename="../ui/messages.py" line="862" />
         <source>{label} must be an integer.</source>
         <translation>{label} 必须是整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="863" />
+        <location filename="../ui/messages.py" line="871" />
         <source>Magnetic response needs vector spin or initial magnetic moments on the input structure.</source>
         <translation>磁响应要求输入结构带有矢量 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="867" />
+        <location filename="../ui/messages.py" line="875" />
         <source>Magnetic response needs finite magnetic moments with at least one non-zero vector.</source>
         <translation>磁响应要求磁矩数值有限，并且至少包含一个非零矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="871" />
+        <location filename="../ui/messages.py" line="879" />
         <source>Maximum structures is smaller than the coordinate count of one complete response group.</source>
         <translation>最大结构数小于一个完整响应组所需的坐标数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="875" />
+        <location filename="../ui/messages.py" line="883" />
         <source>No non-zero magnetic moments match the selected atoms and elements.</source>
         <translation>所选原子和元素中没有匹配的非零磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="879" />
+        <location filename="../ui/messages.py" line="887" />
         <source>The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. Check the group labels or add Layer Groups upstream.</source>
         <translation>输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“原子层分组”卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="926" />
+        <location filename="../ui/messages.py" line="934" />
         <source>Angle strain produced an invalid or singular cell. Reduce the angle increments.</source>
         <translation>角度应变产生了无效或奇异晶胞，请减小角度增量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="930" />
+        <location filename="../ui/messages.py" line="938" />
         <source>Cartesian shear produced an invalid or singular cell. Reduce the shear components.</source>
         <translation>笛卡尔剪切产生了无效或奇异晶胞，请减小剪切分量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="934" />
+        <location filename="../ui/messages.py" line="942" />
         <source>Composition Gradient requires at least two equal-count groups.</source>
         <translation>成分梯度至少需要两个等原子数组。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="938" />
+        <location filename="../ui/messages.py" line="946" />
         <source>Composition Gradient requires at least one random sample.</source>
         <translation>成分梯度至少需要一个随机样本。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="942" />
+        <location filename="../ui/messages.py" line="950" />
         <source>Composition Gradient requires at least two eligible sites.</source>
         <translation>成分梯度至少需要两个符合条件的位点。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="946" />
+        <location filename="../ui/messages.py" line="954" />
         <source>List one or more existing elements for the selected site scope.</source>
         <translation>请为当前位点范围填写至少一种已有元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="950" />
+        <location filename="../ui/messages.py" line="958" />
         <source>Composition Space Sampling requires at least two valid elements.</source>
         <translation>成分空间采样至少需要两个有效元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="954" />
+        <location filename="../ui/messages.py" line="962" />
         <source>Composition Space Sampling has unknown element symbol(s): {elements}.</source>
         <translation>成分空间采样中包含未知元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="958" />
+        <location filename="../ui/messages.py" line="966" />
         <source>None of the selected component counts is feasible for {count} elements.</source>
         <translation>当前只有 {count} 个候选元素，所选组元数均不可行。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="962" />
+        <location filename="../ui/messages.py" line="970" />
         <source>Maximum target compositions per input must be at least 1.</source>
         <translation>每个输入的最大目标成分数必须至少为 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="966" />
+        <location filename="../ui/messages.py" line="974" />
         <source>Grid sampling for four or five components requires a step of 1/n, such as 0.1 or 0.05.</source>
         <translation>四元或五元网格采样要求步长为 1/n，例如 0.1 或 0.05。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="970" />
+        <location filename="../ui/messages.py" line="978" />
         <source>The current composition constraints produce no target compositions.</source>
         <translation>当前成分约束无法生成任何目标成分。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="974" />
+        <location filename="../ui/messages.py" line="982" />
         <source>The current settings produce no unique target compositions.</source>
         <translation>当前设置无法生成任何唯一目标成分。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="978" />
+        <location filename="../ui/messages.py" line="986" />
         <source>Maximum target compositions per input cannot exceed {maximum}.</source>
         <translation>每个输入的最大目标成分数不能超过 {maximum}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="982" />
+        <location filename="../ui/messages.py" line="990" />
         <source>The Grid settings require about {count} simplex points before budgeting. Increase the step or use Sobol; the safe limit is {maximum}.</source>
         <translation>当前网格设置在应用预算前约需生成 {count} 个单纯形点。请增大步长或改用 Sobol；安全上限为 {maximum}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="986" />
+        <location filename="../ui/messages.py" line="994" />
         <source>Invalid Cartesian position filter syntax: {reason}.</source>
         <translation>笛卡尔位置筛选语法无效：{reason}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="990" />
+        <location filename="../ui/messages.py" line="998" />
         <source>Cartesian position filter contains unsupported syntax.</source>
         <translation>笛卡尔位置筛选包含不支持的语法。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="994" />
+        <location filename="../ui/messages.py" line="1002" />
         <source>Cartesian position filter may use only x, y, and z; unknown name(s): {names}.</source>
         <translation>笛卡尔位置筛选只能使用 x、y 和 z；未知名称：{names}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="998" />
+        <location filename="../ui/messages.py" line="1006" />
         <source>Cartesian position filter may use only finite numeric constants.</source>
         <translation>笛卡尔位置筛选只能使用有限数值常量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1002" />
+        <location filename="../ui/messages.py" line="1010" />
         <source>Cartesian position filter must be a comparison or a boolean expression.</source>
         <translation>笛卡尔位置筛选必须是比较表达式或布尔表达式。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1006" />
+        <location filename="../ui/messages.py" line="1014" />
         <source>Cartesian position filter divides by zero for at least one atom.</source>
         <translation>笛卡尔位置筛选在至少一个原子处发生除零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1010" />
+        <location filename="../ui/messages.py" line="1018" />
         <source>Cartesian position filter produces non-finite arithmetic for at least one atom.</source>
         <translation>笛卡尔位置筛选在至少一个原子处产生了非有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1014" />
+        <location filename="../ui/messages.py" line="1022" />
         <source>Enter one valid target element symbol, such as O, Si, or Fe.</source>
         <translation>请输入一个有效的目标元素符号，例如 O、Si 或 Fe。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1018" />
+        <location filename="../ui/messages.py" line="1026" />
         <source>Unknown target element symbol: {element}.</source>
         <translation>未知目标元素符号：{element}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1021" />
+        <location filename="../ui/messages.py" line="1029" />
         <source>Replacement ratios must be finite and non-negative.</source>
         <translation>替换比例必须是有限的非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1025" />
+        <location filename="../ui/messages.py" line="1033" />
         <source>Add at least one replacement element with a positive relative ratio.</source>
         <translation>请添加至少一种相对比例为正的替换元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1029" />
+        <location filename="../ui/messages.py" line="1037" />
         <source>Replacement element {element} appears more than once.</source>
         <translation>替换元素 {element} 重复出现。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1032" />
+        <location filename="../ui/messages.py" line="1040" />
         <source>Unknown replacement element symbol(s): {elements}.</source>
         <translation>未知替换元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1035" />
+        <location filename="../ui/messages.py" line="1043" />
         <source>Replacement elements must not include the target element {element}; use Random Doping for partial replacement.</source>
         <translation>替换元素不能包含目标元素 {element}；如需部分替换，请使用“随机掺杂”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1040" />
+        <location filename="../ui/messages.py" line="1048" />
         <source>Element allocation must be Independent random assignment or Match overall ratio.</source>
         <translation>元素分配必须选择“独立随机分配”或“匹配整体比例”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1044" />
+        <location filename="../ui/messages.py" line="1052" />
         <source>Conditional Replace seed must be a non-negative integer.</source>
         <translation>条件替换的随机种子必须是非负整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1048" />
+        <location filename="../ui/messages.py" line="1056" />
         <source>Conditional Replace requires finite Cartesian atom positions.</source>
         <translation>条件替换要求原子的笛卡尔坐标均为有限值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1052" />
+        <location filename="../ui/messages.py" line="1060" />
         <source>The input structure contains no {element} atoms.</source>
         <translation>输入结构中没有 {element} 原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1055" />
+        <location filename="../ui/messages.py" line="1063" />
         <source>The Cartesian position filter matches no {element} atoms.</source>
         <translation>笛卡尔位置筛选没有命中任何 {element} 原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1059" />
+        <location filename="../ui/messages.py" line="1067" />
         <source>Layer spacing must use Surface gap or Copy translation.</source>
         <translation>层间距定义必须选择“表面间隙”或“副本平移量”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1063" />
+        <location filename="../ui/messages.py" line="1071" />
         <source>Total layers must be an integer of at least {minimum}.</source>
         <translation>总层数必须是至少为 {minimum} 的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1067" />
+        <location filename="../ui/messages.py" line="1075" />
         <source>Warp selection must be All atoms, Selected elements, or Cartesian z range.</source>
         <translation>形变选择必须是全部原子、指定元素或笛卡尔 z 范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1071" />
+        <location filename="../ui/messages.py" line="1079" />
         <source>Atom budget per output must be an integer of at least {minimum}.</source>
         <translation>每个输出的原子预算必须是至少为 {minimum} 的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1075" />
+        <location filename="../ui/messages.py" line="1083" />
         <source>Layer spacing must be a finite non-negative distance.</source>
         <translation>层间距必须是有限的非负距离。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1079" />
+        <location filename="../ui/messages.py" line="1087" />
         <source>Additional top vacuum must be a finite non-negative distance.</source>
         <translation>额外顶部真空必须是有限的非负距离。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1083" />
+        <location filename="../ui/messages.py" line="1091" />
         <source>Cartesian z range must contain two finite distances.</source>
         <translation>笛卡尔 z 范围必须包含两个有限距离。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1087" />
+        <location filename="../ui/messages.py" line="1095" />
         <source>Copy translation must be positive when total layers is greater than 1.</source>
         <translation>总层数大于 1 时，副本平移量必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1091" />
+        <location filename="../ui/messages.py" line="1099" />
         <source>Layer Stack would create {actual} atoms per output, above the {limit}-atom budget. Reduce the layer count or increase the budget.</source>
         <translation>分层堆叠的每个输出将包含 {actual} 个原子，超过 {limit} 个原子的预算。请减少层数或提高预算。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1096" />
+        <location filename="../ui/messages.py" line="1104" />
         <source>Copy translation {translation} Å is smaller than the warped slab thickness {thickness} Å, giving a negative surface gap {gap} Å.</source>
         <translation>副本平移量 {translation} Å 小于形变后 slab 厚度 {thickness} Å，得到负的表面间隙 {gap} Å。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1101" />
+        <location filename="../ui/messages.py" line="1109" />
         <source>Layer Stack needs a finite, non-singular 3D cell.</source>
         <translation>分层堆叠需要有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1105" />
+        <location filename="../ui/messages.py" line="1113" />
         <source>Extending the cell requires lattice vector c to have a positive Cartesian z component.</source>
         <translation>扩展晶胞要求晶格矢量 c 具有正的笛卡尔 z 分量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1109" />
+        <location filename="../ui/messages.py" line="1117" />
         <source>Layer Stack would create a singular or inverted final cell.</source>
         <translation>分层堆叠会生成奇异或手性反转的最终晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1113" />
+        <location filename="../ui/messages.py" line="1121" />
         <source>RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.</source>
         <translation>随机占位：组成来源必须是“自动（Comp 标签）”或“手动”。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1117" />
+        <location filename="../ui/messages.py" line="1125" />
         <source>RandomOccupancy: mode must be Exact or Random.</source>
         <translation>随机占位：计数方式必须是固定计数或随机计数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1120" />
+        <location filename="../ui/messages.py" line="1128" />
         <source>RandomOccupancy: samples must be an integer &gt;= 1.</source>
         <translation>随机占位：每个输入的输出数必须是不小于 1 的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1123" />
+        <location filename="../ui/messages.py" line="1131" />
         <source>RandomOccupancy: samples must be &gt;= 1.</source>
         <translation>随机占位：每个输入的输出数必须不小于 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1126" />
+        <location filename="../ui/messages.py" line="1134" />
         <source>RandomOccupancy: seed must be a non-negative integer.</source>
         <translation>随机占位：随机种子必须是非负整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1129" />
+        <location filename="../ui/messages.py" line="1137" />
         <source>RandomOccupancy: seed must be &gt;= 0.</source>
         <translation>随机占位：随机种子必须不小于 0。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1132" />
+        <location filename="../ui/messages.py" line="1140" />
         <source>RandomOccupancy: input structure has no sites.</source>
         <translation>随机占位：输入结构中没有位点。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1135" />
+        <location filename="../ui/messages.py" line="1143" />
         <source>RandomOccupancy has unknown element symbol(s): {elements}.</source>
         <translation>随机占位包含未知元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1139" />
+        <location filename="../ui/messages.py" line="1147" />
         <source>RandomOccupancy: target composition must contain at least one positive weight.</source>
         <translation>随机占位：目标组成至少需要一个正权重。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1143" />
+        <location filename="../ui/messages.py" line="1151" />
         <source>RandomOccupancy could not parse the Comp(...) target: {error}</source>
         <translation>随机占位无法解析 Comp(...) 目标：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1147" />
+        <location filename="../ui/messages.py" line="1155" />
         <source>RandomOccupancy Auto (Comp tag) requires a Comp(...) tag in Config_type.</source>
         <translation>随机占位的自动模式要求 Config_type 中存在 Comp(...) 标签。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1151" />
+        <location filename="../ui/messages.py" line="1159" />
         <source>RandomOccupancy requires a Comp(...) tag in Auto mode or a non-empty manual composition in Manual mode; Manual input is empty.</source>
         <translation>随机占位在自动模式下需要 Comp(...) 标签，在手动模式下需要非空组成；当前手动输入为空。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1155" />
+        <location filename="../ui/messages.py" line="1163" />
         <source>RandomOccupancy could not parse the manual composition: {error}</source>
         <translation>随机占位无法解析手动组成：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1159" />
+        <location filename="../ui/messages.py" line="1167" />
         <source>RandomOccupancy: group_filter must contain at least one non-empty group label.</source>
         <translation>随机占位：占位分组至少需要一个非空 group 标签。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1163" />
+        <location filename="../ui/messages.py" line="1171" />
         <source>RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.</source>
         <translation>随机占位的分组限制要求输入结构包含 atoms.arrays['group']。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1167" />
+        <location filename="../ui/messages.py" line="1175" />
         <source>RandomOccupancy group_filter matched no atoms: {groups}.</source>
         <translation>随机占位的分组限制未命中任何原子：{groups}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1171" />
+        <location filename="../ui/messages.py" line="1179" />
         <source>Random Doping requires at least one replacement rule.</source>
         <translation>随机掺杂至少需要一条替换规则。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1175" />
+        <location filename="../ui/messages.py" line="1183" />
         <source>Random Doping requires at least one atom in the input structure.</source>
         <translation>随机掺杂要求输入结构至少包含一个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1179" />
+        <location filename="../ui/messages.py" line="1187" />
         <source>Random Doping allocation must be Random or Exact.</source>
         <translation>随机掺杂的元素分配必须是随机配比或固定配比。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1183" />
+        <location filename="../ui/messages.py" line="1191" />
         <source>Random Doping outputs per input must be an integer of at least 1.</source>
         <translation>随机掺杂的每个输入输出数必须是不小于 1 的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1187" />
+        <location filename="../ui/messages.py" line="1195" />
         <source>Random Doping outputs per input must be at least 1.</source>
         <translation>随机掺杂的每个输入输出数必须不小于 1。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1191" />
+        <location filename="../ui/messages.py" line="1199" />
         <source>Random Doping seed must be a non-negative integer.</source>
         <translation>随机掺杂的随机种子必须是非负整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1195" />
+        <location filename="../ui/messages.py" line="1203" />
         <source>Random Doping seed must be non-negative.</source>
         <translation>随机掺杂的随机种子必须是非负数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1199" />
+        <location filename="../ui/messages.py" line="1207" />
         <source>Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.</source>
         <translation>当前规则和输入无法替换任何原子。请提高替换用量或使用更大的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1203" />
+        <location filename="../ui/messages.py" line="1211" />
         <source>Random Doping rule {index} must be a mapping.</source>
         <translation>随机掺杂的规则 {index} 必须是字段映射。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1206" />
+        <location filename="../ui/messages.py" line="1214" />
         <source>Random Doping rule {index} requires an element to replace.</source>
         <translation>随机掺杂的规则 {index} 需要填写被替换元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1210" />
+        <location filename="../ui/messages.py" line="1218" />
         <source>Random Doping rule {index} replacement elements must be an element-to-weight mapping.</source>
         <translation>随机掺杂的规则 {index} 必须使用“元素到权重”的替换元素映射。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1214" />
+        <location filename="../ui/messages.py" line="1222" />
         <source>Random Doping rule {index} requires at least one replacement element.</source>
         <translation>随机掺杂的规则 {index} 至少需要一种替换元素。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1218" />
+        <location filename="../ui/messages.py" line="1226" />
         <source>Random Doping rule {index} has unknown target element {element}.</source>
         <translation>随机掺杂的规则 {index} 包含未知的被替换元素 {element}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1222" />
+        <location filename="../ui/messages.py" line="1230" />
         <source>Random Doping rule {index} has unknown replacement element(s): {elements}.</source>
         <translation>随机掺杂的规则 {index} 包含未知替换元素：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1226" />
+        <location filename="../ui/messages.py" line="1234" />
         <source>Random Doping rule {index} cannot replace {element} with itself.</source>
         <translation>随机掺杂的规则 {index} 不能用 {element} 替换其自身。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1230" />
+        <location filename="../ui/messages.py" line="1238" />
         <source>Random Doping rule {index} has invalid replacement weights: {reason}</source>
         <translation>随机掺杂的规则 {index} 的替换权重无效：{reason}</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1234" />
+        <location filename="../ui/messages.py" line="1242" />
         <source>Random Doping rule {index} uses group labels, but the input has no group array.</source>
         <translation>随机掺杂的规则 {index} 使用了分组标签，但输入结构没有 group 数组。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1238" />
+        <location filename="../ui/messages.py" line="1246" />
         <source>Random Doping rule {index} matched no {element} atoms in groups {groups}.</source>
         <translation>随机掺杂的规则 {index} 在分组 {groups} 中没有匹配到 {element} 原子。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1242" />
+        <location filename="../ui/messages.py" line="1250" />
         <source>Random Doping rule {index} matched no {element} atoms in the input.</source>
         <translation>随机掺杂的规则 {index} 在输入结构中没有匹配到 {element} 原子。</translation>
     </message>
@@ -4768,57 +4973,57 @@
         <translation type="vanished">输入中的分组“{group_a}”和“{group_b}”都必须含有非零磁矩。请检查分组标签，或在上游添加“分组标签”卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="884" />
+        <location filename="../ui/messages.py" line="892" />
         <source>No atom pairs match the selected neighbor shell and automatic-pair filters.</source>
         <translation>没有原子对同时满足所选近邻壳层和自动配对筛选条件。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="888" />
+        <location filename="../ui/messages.py" line="896" />
         <source>No valid magnetic atom pairs match the left and right indices.</source>
         <translation>左右索引没有匹配到有效的磁性原子对。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="892" />
+        <location filename="../ui/messages.py" line="900" />
         <source>Maximum structures must be at least {required} for the selected texture response path.</source>
         <translation>所选纹理响应路径至少需要 {required} 个结构，请提高最大结构数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="896" />
+        <location filename="../ui/messages.py" line="904" />
         <source>Cell-reciprocal q needs a finite, non-singular 3D cell.</source>
         <translation>晶胞倒空间 q 要求输入具有数值有限且非奇异的三维晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="899" />
+        <location filename="../ui/messages.py" line="907" />
         <source>The reciprocal-cell index must contain three finite integers.</source>
         <translation>晶胞倒空间索引必须包含三个数值有限的整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="902" />
+        <location filename="../ui/messages.py" line="910" />
         <source>The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.</source>
         <translation>螺旋响应的晶胞倒空间索引不能为 (0, 0, 0)。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="906" />
+        <location filename="../ui/messages.py" line="914" />
         <source>q definition must be Cell reciprocal vector or Cartesian vector.</source>
         <translation>q 定义方式必须是晶胞倒空间矢量或笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="910" />
+        <location filename="../ui/messages.py" line="918" />
         <source>The Cartesian base q vector must be non-zero for a spiral response.</source>
         <translation>螺旋响应的笛卡尔基准 q 矢量必须非零。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="914" />
+        <location filename="../ui/messages.py" line="922" />
         <source>q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, or change q and the supercell together.</source>
         <translation>q 沿第 {index} 根周期晶格矢量不能闭合。请使用晶胞倒空间 q，或同时调整 q 和超胞。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="919" />
+        <location filename="../ui/messages.py" line="927" />
         <source>The two symmetric-shear directions must be perpendicular Cartesian vectors.</source>
         <translation>对称剪切的两个方向必须是互相垂直的笛卡尔矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="923" />
+        <location filename="../ui/messages.py" line="931" />
         <source>The Bain lattice axis must be a, b, or c.</source>
         <translation>Bain 晶格轴必须为 a、b 或 c。</translation>
     </message>
@@ -4839,17 +5044,17 @@
         <translation type="vanished">磁矩旋转要求每个输入结构都包含 spin 或初始磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="449" />
+        <location filename="../ui/messages.py" line="457" />
         <source>Scalar magnetic moments must be lifted to vectors before they can be rotated.</source>
         <translation>标量磁矩必须先转为矢量才能旋转。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="453" />
+        <location filename="../ui/messages.py" line="461" />
         <source>The scalar lift direction must contain three finite Cartesian components.</source>
         <translation>标量抬升方向必须包含三个有限的笛卡尔分量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="457" />
+        <location filename="../ui/messages.py" line="465" />
         <source>The scalar lift direction must be non-zero.</source>
         <translation>标量抬升方向不能为零向量。</translation>
     </message>
@@ -4858,12 +5063,12 @@
         <translation type="vanished">磁矩旋转无法将输入磁矩转换为矢量。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="512" />
+        <location filename="../ui/messages.py" line="520" />
         <source>Magnitude scale bounds must be finite and non-negative.</source>
         <translation>模长缩放范围必须有限且非负。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="515" />
+        <location filename="../ui/messages.py" line="523" />
         <source>Magnitude scale minimum must not exceed the maximum.</source>
         <translation>模长缩放下限不能大于上限。</translation>
     </message>
@@ -4872,12 +5077,12 @@
         <translation type="vanished">请增大旋转角，或启用能够改变磁矩的模长缩放范围。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="857" />
+        <location filename="../ui/messages.py" line="865" />
         <source>Invalid element symbols in the target list: {elements}.</source>
         <translation>目标元素中包含无效元素符号：{elements}。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="860" />
+        <location filename="../ui/messages.py" line="868" />
         <source>No non-zero magnetic moments match the selected elements.</source>
         <translation>所选元素没有匹配到非零磁矩。</translation>
     </message>
@@ -4890,22 +5095,22 @@
         <translation type="vanished">手动重复倍率必须包含三个正整数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="383" />
+        <location filename="../ui/messages.py" line="391" />
         <source>Enter one valid chemical element symbol, for example Cu, Fe, or Mg.</source>
         <translation>请输入一个有效的元素符号，例如 Cu、Fe 或 Mg。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="387" />
+        <location filename="../ui/messages.py" line="395" />
         <source>The lattice-constant range must contain finite numbers.</source>
         <translation>晶格常数范围必须包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="390" />
+        <location filename="../ui/messages.py" line="398" />
         <source>Lattice constants must be positive.</source>
         <translation>晶格常数必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="401" />
+        <location filename="../ui/messages.py" line="409" />
         <source>The lattice-constant step must be positive.</source>
         <translation>晶格常数步长必须为正数。</translation>
     </message>
@@ -4913,152 +5118,152 @@
 <context>
     <name>CardOperationField</name>
     <message>
-        <location filename="../ui/messages.py" line="1250" />
+        <location filename="../ui/messages.py" line="1365" />
         <source>Maximum outputs per input</source>
         <translation>每个输入的最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1251" />
+        <location filename="../ui/messages.py" line="1366" />
         <source>Bonds rotated per output</source>
         <translation>每个输出旋转的键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1252" />
+        <location filename="../ui/messages.py" line="1367" />
         <source>Large-molecule threshold</source>
         <translation>大分子阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1253" />
+        <location filename="../ui/messages.py" line="1368" />
         <source>Local subtree cap</source>
         <translation>局部子树上限</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1254" />
+        <location filename="../ui/messages.py" line="1369" />
         <source>Retries per output</source>
         <translation>每个输出的重试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1255" />
+        <location filename="../ui/messages.py" line="1370" />
         <source>Coordinate noise</source>
         <translation>坐标噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1256" />
+        <location filename="../ui/messages.py" line="1371" />
         <source>Torsion increment range</source>
         <translation>扭转增量范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1257" />
+        <location filename="../ui/messages.py" line="1372" />
         <source>Bond detection radius</source>
         <translation>成键检测半径</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1258" />
+        <location filename="../ui/messages.py" line="1373" />
         <source>Minimum bond length</source>
         <translation>最小键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1259" />
+        <location filename="../ui/messages.py" line="1374" />
         <source>Maximum bond length</source>
         <translation>最大键长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1260" />
+        <location filename="../ui/messages.py" line="1375" />
         <source>Minimum nonbonded distance</source>
         <translation>最小非键距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1261" />
+        <location filename="../ui/messages.py" line="1376" />
         <source>Short-bond rotation cutoff</source>
         <translation>短键旋转截止系数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1262" />
+        <location filename="../ui/messages.py" line="1377" />
         <source>Nonperiodic display box</source>
         <translation>非周期显示盒</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1263" />
+        <location filename="../ui/messages.py" line="1378" />
         <source>Pauling decay length</source>
         <translation>Pauling 衰减长度</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1264" />
+        <location filename="../ui/messages.py" line="1379" />
         <source>Bond-order threshold</source>
         <translation>键级阈值</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1265" />
+        <location filename="../ui/messages.py" line="1380" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1266" />
+        <location filename="../ui/messages.py" line="1381" />
         <source>Independent outputs per input</source>
         <translation>每个输入的独立输出数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1267" />
+        <location filename="../ui/messages.py" line="1382" />
         <source>Total solvent molecules per output</source>
         <translation>每个输出的溶剂分子总数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1268" />
+        <location filename="../ui/messages.py" line="1383" />
         <source>Placement attempts per output</source>
         <translation>每个输出的放置尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1269" />
+        <location filename="../ui/messages.py" line="1384" />
         <source>Cartesian z range</source>
         <translation>笛卡尔 z 范围</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1270" />
+        <location filename="../ui/messages.py" line="1385" />
         <source>Fallback center-to-COM shell</source>
         <translation>备用中心-质心壳层</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1271" />
+        <location filename="../ui/messages.py" line="1386" />
         <source>Uniform minimum distance</source>
         <translation>统一最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1272" />
+        <location filename="../ui/messages.py" line="1387" />
         <source>Element-radius collision scale</source>
         <translation>元素半径碰撞缩放</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1273" />
+        <location filename="../ui/messages.py" line="1388" />
         <source>Fixed box size</source>
         <translation>固定盒尺寸</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1274" />
+        <location filename="../ui/messages.py" line="1389" />
         <source>Auto-box padding</source>
         <translation>自动显示盒留白</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1275" />
+        <location filename="../ui/messages.py" line="1390" />
         <source>Minimum auto-box edge</source>
         <translation>自动显示盒最小边长</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1276" />
+        <location filename="../ui/messages.py" line="1391" />
         <source>Flexible conformer pool</source>
         <translation>柔性构象池</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1277" />
+        <location filename="../ui/messages.py" line="1392" />
         <source>Flexible torsions per conformer</source>
         <translation>每个柔性构象的扭转键数</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1278" />
+        <location filename="../ui/messages.py" line="1393" />
         <source>Flexible conformer noise</source>
         <translation>柔性构象噪声</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1279" />
+        <location filename="../ui/messages.py" line="1394" />
         <source>Flexible torsion range</source>
         <translation>柔性扭转范围</translation>
     </message>
@@ -5790,22 +5995,22 @@
 <context>
     <name>CompositionPathTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="464" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="625" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="464" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="625" />
         <source>Start fraction</source>
         <translation>起始比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="464" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="625" />
         <source>End fraction</source>
         <translation>终止比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="504" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="672" />
         <source>Double-click to choose another element</source>
         <translation>双击可重新选择元素</translation>
     </message>
@@ -5814,12 +6019,12 @@
         <translation type="vanished">添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="477" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="638" />
         <source>Remove row</source>
         <translation>删除行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="476" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="637" />
         <source>Add element</source>
         <translation>添加元素</translation>
     </message>
@@ -7154,7 +7359,7 @@
 <context>
     <name>DirectionInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="211" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="312" />
         <source>Custom Cartesian vector</source>
         <translation>自定义笛卡尔向量</translation>
     </message>
@@ -7643,9 +7848,35 @@
 <context>
     <name>ElementLineEdit</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="51" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="69" />
         <source>Choose from periodic table</source>
         <translation>从元素周期表选择</translation>
+    </message>
+</context>
+<context>
+    <name>ElementPairLineEdit</name>
+    <message>
+        <location filename="../ui/widgets/parameter_inputs.py" line="159" />
+        <source>Choose an element pair</source>
+        <translation>选择元素对</translation>
+    </message>
+</context>
+<context>
+    <name>ElementPairPicker</name>
+    <message>
+        <location filename="../ui/widgets/parameter_inputs.py" line="117" />
+        <source>Select an element, then choose the other element in the pair.</source>
+        <translation>选择一个元素后，再选择元素对中的另一个元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/parameter_inputs.py" line="136" />
+        <source>Choose the first element</source>
+        <translation>选择第一个元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/parameter_inputs.py" line="143" />
+        <source>Choose the second element</source>
+        <translation>选择第二个元素</translation>
     </message>
 </context>
 <context>
@@ -10080,22 +10311,32 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>KeyValueTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="303" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="410" />
         <source>Add element</source>
         <translation>添加元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="303" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="412" />
+        <source>Add element pair</source>
+        <translation>添加元素对</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/parameter_inputs.py" line="414" />
         <source>Add row</source>
         <translation>添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="306" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="417" />
         <source>Remove selected</source>
         <translation>删除选中项</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="326" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="438" />
+        <source>Double-click to choose another element pair</source>
+        <translation>双击选择其他元素对</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/parameter_inputs.py" line="440" />
         <source>Double-click to choose another element</source>
         <translation>双击可重新选择元素</translation>
     </message>
@@ -10568,33 +10809,33 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>LocalMagneticResponseCard</name>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="32" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="33" />
         <source>Local Magnetic Response</source>
         <translation>局域磁响应</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="53" />
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="286" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="54" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="287" />
         <source>Rotation-angle scan (degrees)</source>
         <translation>旋转角扫描（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="56" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="57" />
         <source>Production default is a symmetric five-point path: -2°, -1°, 0°, +1°, +2°.</source>
         <translation>生产默认采用五点对称路径：-2°、-1°、0°、+1°、+2°。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="60" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="61" />
         <source>Response path</source>
         <translation>响应路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="62" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="63" />
         <source>Choose the physical probe first; only parameters used by that probe are shown.</source>
         <translation>先选择物理探针；界面只显示该探针实际使用的参数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="64" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="65" />
         <source>Probe</source>
         <translation>探针</translation>
     </message>
@@ -10607,47 +10848,47 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">目标原子（从 1 开始）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="68" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="69" />
         <source>For example: 1 or 1,3-5</source>
         <translation>例如：1 或 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="77" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="78" />
         <source>Target selection</source>
         <translation>目标选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="80" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="81" />
         <source>Atom indices (1-based)</source>
         <translation>原子索引（从 1 开始）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="83" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="84" />
         <source>Ranges are allowed, for example 1,3-5.</source>
         <translation>支持范围写法，例如 1,3-5。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="87" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="88" />
         <source>For example: Fe,Co; empty includes every element</source>
         <translation>例如 Fe,Co；留空包含全部元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="89" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="90" />
         <source>Eligible elements</source>
         <translation>合格元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="92" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="93" />
         <source>Only atoms with non-zero moments and one of these elements can be selected.</source>
         <translation>只有属于这些元素且磁矩非零的原子可以被选中。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="103" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="104" />
         <source>Left atom(s), 1-based</source>
         <translation>左侧原子（从 1 开始）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="104" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="105" />
         <source>Right atom(s), 1-based</source>
         <translation>右侧原子（从 1 开始）</translation>
     </message>
@@ -10656,167 +10897,167 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">每个选中的原子对都会生成一个独立且完整的响应组。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="118" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="119" />
         <source>Filter automatic pairs</source>
         <translation>筛选自动原子对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="121" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="122" />
         <source>Å</source>
         <translation>Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="126" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="127" />
         <source>Shell tolerance</source>
         <translation>壳层容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="129" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="130" />
         <source>Distances within this tolerance are treated as the same neighbor shell.</source>
         <translation>距离差不超过此容差的原子对归入同一近邻壳层。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="134" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="135" />
         <source>For example: Fe-Co or Fe-Fe,Fe-Co</source>
         <translation>例如 Fe-Co 或 Fe-Fe,Fe-Co</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="136" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="137" />
         <source>Element pairs</source>
         <translation>元素对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="139" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="140" />
         <source>Leave empty to accept every element pair.</source>
         <translation>留空接受全部元素对。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="142" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="143" />
         <source>For example: A-B</source>
         <translation>例如 A-B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="144" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="145" />
         <source>Label pairs</source>
         <translation>标签对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="147" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="148" />
         <source>Uses atoms.arrays['group']; leave empty to ignore group labels.</source>
         <translation>读取 atoms.arrays['group']；留空忽略分组标签。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="161" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="162" />
         <source>Bond direction</source>
         <translation>键方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="167" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="168" />
         <source>Reference axis / plane normal (Cartesian)</source>
         <translation>参考轴 / 平面法向（笛卡尔）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="172" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="173" />
         <source>°</source>
         <translation>°</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="177" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="178" />
         <source>Angular tolerance</source>
         <translation>角度容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="184" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="185" />
         <source>Automatic pair filters</source>
         <translation>自动原子对筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="186" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="187" />
         <source>Optional filters are applied after the neighbor shell is selected.</source>
         <translation>先选择近邻壳层，再应用以下可选筛选条件。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="201" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="202" />
         <source>Left group name</source>
         <translation>左侧分组名称</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="202" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="203" />
         <source>Right group name</source>
         <translation>右侧分组名称</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="204" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="205" />
         <source>Targets</source>
         <translation>目标选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="222" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="223" />
         <source>Show rotation axis and output limit</source>
         <translation>显示旋转轴和输出上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="232" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="233" />
         <source>Maximum structures</source>
         <translation>最大结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="235" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="236" />
         <source>Complete groups are kept together when the limit is reached.</source>
         <translation>达到上限时只在完整响应组之间截断。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="239" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="240" />
         <source>Axis and limit</source>
         <translation>旋转轴与上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="248" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="249" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="286" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="287" />
         <source>Moment scale scan</source>
         <translation>磁矩尺度扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="289" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="290" />
         <source>Scale 1.0 preserves the original moment magnitude; direction is fixed.</source>
         <translation>尺度 1.0 保持原始磁矩模长，方向始终固定。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="291" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="292" />
         <source>Angles are displayed in degrees and stored as radians in the response metadata.</source>
         <translation>界面以度显示角度，响应元数据中以弧度保存。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="322" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="323" />
         <source>{count} structures per complete group, including one reference; the current limit can keep at most {groups} groups.</source>
         <translation>每个完整组生成 {count} 个结构，其中包含一个参考帧；当前上限最多保留 {groups} 个完整组。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="330" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="331" />
         <source>{probe} · {count} per group</source>
         <translation>{probe} · 每组 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="338" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="339" />
         <source>Scale 1.0 is the reference. Check that the selected magnitudes vary while their directions stay fixed.</source>
         <translation>比例 1.0 是参考帧。请检查所选磁矩的模长发生变化，而方向保持不变。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="342" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="343" />
         <source>Use a symmetric scan: the left atom rotates by +θ/2 and the right atom by −θ/2.</source>
         <translation>使用对称扫描：左原子旋转 +θ/2，右原子旋转 −θ/2。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="346" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="347" />
         <source>The two group labels must exist on the input; group A rotates by +θ/2 and group B by −θ/2.</source>
         <translation>输入中必须存在两个分组标签；A 组旋转 +θ/2，B 组旋转 −θ/2。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="349" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="350" />
         <source>Use a symmetric scan and verify that only the selected moment rotates around the Cartesian axis.</source>
         <translation>使用对称扫描，并确认只有所选磁矩绕指定笛卡尔轴旋转。</translation>
     </message>
@@ -10853,7 +11094,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">从 1 开始的索引，例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="98" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="99" />
         <source>Pair selection</source>
         <translation>原子对选择</translation>
     </message>
@@ -10866,7 +11107,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">右侧原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="110" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="111" />
         <source>Neighbor shell</source>
         <translation>近邻壳层</translation>
     </message>
@@ -10879,7 +11120,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">右侧分组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="225" />
+        <location filename="../ui/views/_card/local_magnetic_response_card.py" line="226" />
         <source>Rotation axis (Cartesian)</source>
         <translation>旋转轴（笛卡尔）</translation>
     </message>
@@ -12729,12 +12970,12 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">选择步骤以编辑参数；拖动可调整顺序，也可拖放到卡片组中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="568" />
+        <location filename="../ui/widgets/docker.py" line="701" />
         <source>Add a card to start building the workflow.</source>
         <translation>添加卡片以开始构建工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="836" />
+        <location filename="../ui/widgets/docker.py" line="970" />
         <source>Move card here</source>
         <translation>将卡片移动到此处</translation>
     </message>
@@ -12746,23 +12987,23 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="1316" />
-        <location filename="../ui/messages.py" line="1356" />
+        <location filename="../ui/messages.py" line="1431" />
+        <location filename="../ui/messages.py" line="1471" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1326" />
+        <location filename="../ui/messages.py" line="1441" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1336" />
+        <location filename="../ui/messages.py" line="1451" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="1346" />
+        <location filename="../ui/messages.py" line="1461" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -12770,37 +13011,37 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MillerIndexTableInput</name>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="41" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="43" />
         <source>h</source>
         <translation>h</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="41" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="43" />
         <source>k</source>
         <translation>k</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="41" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="43" />
         <source>l</source>
         <translation>l</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="48" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="50" />
         <source>Miller plane list</source>
         <translation>Miller 晶面列表</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="55" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="57" />
         <source>Add plane</source>
         <translation>添加晶面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="56" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="58" />
         <source>Remove selected</source>
         <translation>删除选中项</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="95" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="104" />
         <source>Miller index {axis}, row {row}</source>
         <translation>第 {row} 行 Miller 指数 {axis}</translation>
     </message>
@@ -13421,42 +13662,42 @@ All child items will also be deleted.</source>
 <context>
     <name>NumericScanInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="111" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="212" />
         <source>Use custom coordinate list</source>
         <translation>使用自定义坐标列表</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="113" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="214" />
         <source>Comma-separated values</source>
         <translation>用逗号分隔数值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="148" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="249" />
         <source>Custom coordinate list cannot be empty.</source>
         <translation>自定义坐标列表不能为空。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="152" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="253" />
         <source>Custom coordinate list must contain only numbers.</source>
         <translation>自定义坐标列表只能包含数字。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="154" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="255" />
         <source>Custom coordinate list must contain only finite numbers.</source>
         <translation>自定义坐标列表只能包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="159" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="260" />
         <source>Scan step must be positive.</source>
         <translation>扫描步长必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="161" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="262" />
         <source>Scan maximum must be greater than or equal to the minimum.</source>
         <translation>扫描最大值必须大于或等于最小值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="164" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="265" />
         <source>Coordinate scan contains more than 10000 points.</source>
         <translation>坐标扫描超过 10000 个点。</translation>
     </message>
@@ -15082,7 +15323,7 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/_card/random_packing_card.py" line="72" />
-        <location filename="../ui/views/_card/random_packing_card.py" line="140" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="141" />
         <source>Advanced packing controls</source>
         <translation>高级装填控制</translation>
     </message>
@@ -15097,152 +15338,152 @@ All child items will also be deleted.</source>
         <translation>最小距离（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="79" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="80" />
         <source>Use fixed seed</source>
         <translation>使用固定种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="87" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="88" />
         <source>Outputs and composition</source>
         <translation>输出与组成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="89" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="90" />
         <source>Each input supplies the cell and boundary conditions; all atom positions are rebuilt.</source>
         <translation>每个输入提供晶胞和边界条件；全部原子位置会重新生成。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="93" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="94" />
         <source>Outputs per input</source>
         <translation>每个输入的输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="96" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="97" />
         <source>Exact when all outputs are required; otherwise this is the maximum.</source>
         <translation>要求全部输出时为精确数量，否则为最大数量。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="101" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="102" />
         <source>Atom composition</source>
         <translation>原子组成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="104" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="105" />
         <source>Manual integer counts</source>
         <translation>手动整数计数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="107" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="108" />
         <source>For example Fe:32 and O:64. The input atom list is not retained.</source>
         <translation>例如 Fe:32 和 O:64。不会保留输入原子列表。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="115" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="116" />
         <source>Packing constraints</source>
         <translation>装填约束</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="117" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="118" />
         <source>Every accepted pair must satisfy its minimum-image distance threshold.</source>
         <translation>每个接受的原子对都必须满足最小镜像距离阈值。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="121" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="122" />
         <source>Global minimum distance</source>
         <translation>全局最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="124" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="125" />
         <source>A starting constraint, not a chemistry-specific bond-length guarantee.</source>
         <translation>这是起始约束，不代表特定化学体系的键长保证。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="128" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="129" />
         <source>Generated atom budget/input</source>
         <translation>生成原子预算/输入</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="131" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="132" />
         <source>Outputs per input × atoms per output must not exceed this safety limit.</source>
         <translation>每个输入的输出数 × 每个输出的原子数不得超过此安全上限。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="143" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="144" />
         <source>Pair-specific minimum distances</source>
         <translation>分元素对最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="146" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="147" />
         <source>Rules such as Fe-O:1.8 override the global threshold for that pair.</source>
         <translation>Fe-O:1.8 等规则会覆盖该元素对的全局阈值。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="149" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="150" />
         <source>Maximum attempts per atom</source>
         <translation>每个原子最大尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="152" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="153" />
         <source>Raise this only when a feasible dense packing needs more random trials.</source>
         <translation>仅当可行的致密装填需要更多随机尝试时提高此值。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="160" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="161" />
         <source>Randomness</source>
         <translation>随机性</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="163" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="164" />
         <source>Seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="166" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="167" />
         <source>Exact size preview</source>
         <translation>精确规模预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="254" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="255" />
         <source>Load an upstream structure to validate its cell and preview exact atom counts.</source>
         <translation>请加载上游结构，以校验晶胞并预览精确原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="261" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="262" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="264" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="265" />
         <source>exact</source>
         <translation>精确</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="264" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="265" />
         <source>at most</source>
         <translation>最多</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="267" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="268" />
         <source>First input: {atoms} atoms/output × {outputs} = {total} generated atoms ({contract}) · budget {budget}</source>
         <translation>首个输入：{atoms} 原子/输出 × {outputs} = 生成 {total} 个原子（{contract}）· 预算 {budget}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="337" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="338" />
         <source>Check packing parameters</source>
         <translation>请检查装填参数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="338" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="339" />
         <source>{outputs}/input · {atoms} atoms/output</source>
         <translation>{outputs}/输入 · {atoms} 原子/输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="344" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="345" />
         <source>{outputs}/input · {composition}</source>
         <translation>{outputs}/输入 · {composition}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="375" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="376" />
         <source>First input requests {total} generated atoms; site arrays such as spin and group are not carried to outputs.</source>
         <translation>首个输入请求生成 {total} 个原子；spin、group 等逐原子数组不会保留到输出。</translation>
     </message>
@@ -15251,12 +15492,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">{outputs} 输出/输入 · {atoms} 原子/输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="342" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="343" />
         <source>input composition</source>
         <translation>沿用输入组成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="342" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="343" />
         <source>manual composition</source>
         <translation>手动组成</translation>
     </message>
@@ -15265,27 +15506,27 @@ All child items will also be deleted.</source>
         <translation type="vanished">{outputs} 输出/输入 · {composition}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="353" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="354" />
         <source>Outputs/input: {count}.</source>
         <translation>每个输入输出 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="355" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="356" />
         <source>Outputs/input: at most {count}.</source>
         <translation>每个输入最多输出 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="358" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="359" />
         <source>Inputs {inputs} × {per_input} outputs/input = outputs {total}.</source>
         <translation>输入 {inputs} × 每个输入 {per_input} 个输出 = 共 {total} 个输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="363" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="364" />
         <source>Inputs {inputs} × at most {per_input} outputs/input = at most {total} outputs.</source>
         <translation>输入 {inputs} × 每个输入最多 {per_input} 个输出 = 最多 {total} 个输出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_packing_card.py" line="366" />
+        <location filename="../ui/views/_card/random_packing_card.py" line="367" />
         <source>Load an upstream structure for exact atom counts.</source>
         <translation>请加载上游结构以获得精确原子数。</translation>
     </message>
@@ -15393,132 +15634,132 @@ All child items will also be deleted.</source>
         <translation type="vanished">真空层厚度范围（Å）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="153" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="162" />
         <source>Surface Slab Scan</source>
         <translation>表面薄层扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="163" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="172" />
         <source>Common low-index planes (100, 110, 111)</source>
         <translation>常用低指数面（100、110、111）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="164" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="173" />
         <source>Single plane (111)</source>
         <translation>单个晶面（111）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="165" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="174" />
         <source>Custom plane list</source>
         <translation>自定义晶面列表</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="170" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="179" />
         <source>Surface planes</source>
         <translation>表面晶面</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="173" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="182" />
         <source>Miller indices refer to the reciprocal basis of the input cell. Use a conventional cell when you need conventional crystallographic labels.</source>
         <translation>Miller 指数相对于输入晶胞的倒易基矢。需要常规晶体学标记时，请使用常规晶胞。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="177" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="186" />
         <source>Preset</source>
         <translation>预设</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="181" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="190" />
         <source>One row is one plane. Proportional rows are reduced and exact duplicates are removed automatically.</source>
         <translation>每行表示一个晶面；比例相同的指数会自动约简并去重。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="196" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="205" />
         <source>Keep periodicity along surface normal</source>
         <translation>保留表面法向周期边界</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="200" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="209" />
         <source>Slab geometry</source>
         <translation>薄层几何</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="202" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="211" />
         <source>Each selected plane is scanned over the two inclusive ranges below.</source>
         <translation>每个选定晶面都会扫描下面两个闭区间范围。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="206" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="215" />
         <source>Normal repeats</source>
         <translation>法向重复数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="209" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="218" />
         <source>ASE surface repeats of the oriented bulk unit; not a guaranteed count of atomic planes.</source>
         <translation>定向后体相单元的 ASE surface 重复次数，不保证等于原子平面数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="212" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="221" />
         <source>Vacuum per side</source>
         <translation>单侧真空</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="215" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="224" />
         <source>The cell receives this much vacuum above and below, for twice this value in total.</source>
         <translation>slab 上下两侧各加入该厚度的真空，总量为此值的两倍。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="222" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="231" />
         <source>Show safety limits</source>
         <translation>显示安全上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="225" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="234" />
         <source>Safety limits</source>
         <translation>安全上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="229" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="238" />
         <source>Maximum outputs/input</source>
         <translation>每输入最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="239" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="248" />
         <source>Generated atom budget/input</source>
         <translation>生成原子预算/输入</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="252" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="261" />
         <source>Exact size preview</source>
         <translation>精确规模预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="272" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="281" />
         <source>to</source>
         <translation>范围终点</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="272" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="281" />
         <source>step</source>
         <translation>步长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="357" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="366" />
         <source>Selected planes: {planes}. Load an upstream bulk structure for exact output and atom counts.</source>
         <translation>已选晶面：{planes}。加载上游体相结构后可精确预览输出数和原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="375" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="384" />
         <source>First input: planes {planes} × repeat values {repeats} × vacuum values {vacuums} = {outputs} outputs; {atoms} atoms/output, {total} generated atoms.</source>
         <translation>第一个输入：晶面 {planes} × 重复数取值 {repeats} × 真空取值 {vacuums} = {outputs} 个输出；每个输出 {atoms} 个原子，共生成 {total} 个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="423" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="432" />
         <source>Planes {planes} · {outputs}/input · {atoms} generated atoms</source>
         <translation>晶面 {planes} · 每输入 {outputs} 个输出 · 共生成 {atoms} 个原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="426" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="435" />
         <source>Planes {planes} · exact scan</source>
         <translation>晶面 {planes} · 精确扫描</translation>
     </message>
@@ -15527,7 +15768,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">已选择 {planes} 个晶面。加载上游体相结构后可精确预览输出数和原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="365" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="374" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
@@ -15544,27 +15785,27 @@ All child items will also be deleted.</source>
         <translation type="vanished">{planes} 个晶面 · 精确扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="428" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="437" />
         <source>Check slab parameters</source>
         <translation>请检查薄层参数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="434" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="443" />
         <source>Load a three-periodic bulk structure. Miller indices are interpreted in its reciprocal basis.</source>
         <translation>请加载三维周期体相结构；Miller 指数按其倒易基矢解释。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="441" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="450" />
         <source>Exact outputs/input: {outputs}; first input generates {atoms} atoms.</source>
         <translation>每个输入精确生成 {outputs} 个输出；第一个输入共生成 {atoms} 个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="445" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="454" />
         <source>Inputs {inputs} × {per_input} outputs/input = {total} outputs; first input generates {atoms} atoms.</source>
         <translation>{inputs} 个输入 × 每输入 {per_input} 个输出 = 共 {total} 个输出；第一个输入生成 {atoms} 个原子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/random_slab_card.py" line="492" />
+        <location filename="../ui/views/_card/random_slab_card.py" line="501" />
         <source>This saved card used h/k/l ranges. They were converted to the visible plane list, reduced, and deduplicated; review the list before running.</source>
         <translation>此旧配置使用 h/k/l 范围，现已转换为可见的晶面列表并完成约简去重；运行前请核对列表。</translation>
     </message>
@@ -15734,32 +15975,32 @@ All child items will also be deleted.</source>
 <context>
     <name>RangeTripletInputFrame</name>
     <message>
-        <location filename="../ui/widgets/input.py" line="397" />
+        <location filename="../ui/widgets/input.py" line="385" />
         <source>Min (%)</source>
         <translation>最小值（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="397" />
+        <location filename="../ui/widgets/input.py" line="385" />
         <source>Minimum</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="398" />
+        <location filename="../ui/widgets/input.py" line="386" />
         <source>Max (%)</source>
         <translation>最大值（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="398" />
+        <location filename="../ui/widgets/input.py" line="386" />
         <source>Maximum</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="399" />
+        <location filename="../ui/widgets/input.py" line="387" />
         <source>Step (%)</source>
         <translation>步长（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="399" />
+        <location filename="../ui/widgets/input.py" line="387" />
         <source>Step</source>
         <translation>步长</translation>
     </message>
@@ -15807,6 +16048,16 @@ All child items will also be deleted.</source>
         <location filename="../ui/messages.py" line="305" />
         <source>__language_probe__</source>
         <translation>zh_CN</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="312" />
+        <source>Conditional Replace matched-site count changed during execution.</source>
+        <translation>条件替换执行期间，匹配位点数量发生了变化。</translation>
+    </message>
+    <message>
+        <location filename="../ui/messages.py" line="316" />
+        <source>CellStrain output-count preview disagrees with generation.</source>
+        <translation>晶格应变的输出数量预览与实际生成结果不一致。</translation>
     </message>
 </context>
 <context>
@@ -16211,97 +16462,97 @@ All child items will also be deleted.</source>
         <translation>为每个原子写入一个标量或一个笛卡尔三分量向量。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="75" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="73" />
         <source>Reference axis (x, y, z)</source>
         <translation>参考轴（x、y、z）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="78" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="76" />
         <source>Enter an integer Cartesian direction; it is normalized before use.</source>
         <translation>输入整数笛卡尔方向；使用前会进行归一化。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="83" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="81" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="84" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="82" />
         <source>Moment or vector</source>
         <translation>磁矩或向量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="90" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="88" />
         <source>Element moments (μB)</source>
         <translation>元素磁矩（μB）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="93" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="91" />
         <source>For example Fe:2.2, Co:1.7, or Cr:[0,0,1].</source>
         <translation>例如 Fe:2.2、Co:1.7 或 Cr:[0,0,1]。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="97" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="95" />
         <source>Use element vector directions</source>
         <translation>使用元素矢量方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="101" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="99" />
         <source>If the map provides vectors, preserve their directions in vector output</source>
         <translation>如果映射提供矢量，则在矢量输出中保留方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="111" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="109" />
         <source>Unlisted element |m| (μB)</source>
         <translation>未列元素 |m|（μB）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="125" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="123" />
         <source>Constant |m| (μB)</source>
         <translation>统一 |m|（μB）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="144" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="142" />
         <source>Apply only to elements</source>
         <translation>仅作用于元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="147" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="145" />
         <source>Leave empty to apply to every atom.</source>
         <translation>留空表示应用于所有原子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="152" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="150" />
         <source>Source and representation</source>
         <translation>来源与表示</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="163" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="161" />
         <source>Moment values</source>
         <translation>磁矩数值</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="175" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="173" />
         <source>Scope</source>
         <translation>数据范围</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="225" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="223" />
         <source>all elements</source>
         <translation>全部元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="232" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="230" />
         <source>The input must contain initial magnetic moments. Check the reference axis when scalar moments are lifted to vectors.</source>
         <translation>输入必须包含初始磁矩。将标量磁矩转换为向量时，请检查参考轴方向。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="237" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="235" />
         <source>List the elements that need explicit moments; the default magnitude is used for every unlisted selected element.</source>
         <translation>请列出需要明确指定磁矩的元素；其余被选中的元素使用默认磁矩大小。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="241" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="239" />
         <source>The constant magnitude is assigned to every selected element along the reference axis.</source>
         <translation>程序会沿参考轴为所有选中元素赋予统一的磁矩大小。</translation>
     </message>
@@ -16322,12 +16573,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">Uniform magnitude 用于 Source = Constant magnitude</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="133" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="131" />
         <source>Lift scalar magmoms to vectors</source>
         <translation>将标量 magmoms 提升为矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="137" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="135" />
         <source>When Source = Existing initial magmoms, lift scalar input onto Axis for vector output</source>
         <translation>当来源为“现有 initial magmoms”时，将标量输入沿“轴”方向提升为矢量输出</translation>
     </message>
@@ -16340,7 +16591,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">可选 逗号分隔的 element list; 留空表示所有原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="142" />
+        <location filename="../ui/views/_card/set_magnetic_moments_card.py" line="140" />
         <source>Fe,Co,Ni</source>
         <translation>Fe,Co,Ni</translation>
     </message>
@@ -17538,262 +17789,262 @@ Do you want to continue?</source>
         <translation type="vanished">倾斜扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="28" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="34" />
         <source>Legacy Canting Scan</source>
         <translation>旧版倾斜扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="32" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="38" />
         <source>Compatibility card loaded from an existing workflow.</source>
         <translation>从现有工作流加载的兼容卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="36" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="42" />
         <source>Migrate single-spin, atom-pair, and group-pair scans to Local Magnetic Response; migrate global tilt to SOC / Texture Response. Use Spin Perturb for random sampling.</source>
         <translation>单自旋、原子对和分组对扫描请迁移到“局域磁响应”；全局倾斜请迁移到“SOC / 纹理响应”。随机采样请使用“磁矩扰动”。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="43" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="49" />
         <source>Canting mode</source>
         <translation>倾斜模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="44" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="50" />
         <source>Choose global tilt, single-spin tilt, atom-pair canting, or group-pair canting</source>
         <translation>选择全局倾斜、单自旋倾斜、原子对 canting 或分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="54" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="60" />
         <source>Target atoms</source>
         <translation>目标原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="55" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="61" />
         <source>Choose which atoms receive the single-spin tilt</source>
         <translation>选择哪些原子接受单自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="65" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="71" />
         <source>Atom indices</source>
         <translation>原子索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="66" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="72" />
         <source>Used when Target atoms = Explicit indices (1-based), for example 1,3-5</source>
         <translation>目标原子为 Explicit indices 时使用（1-based），例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="71" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="77" />
         <source>1,3-5</source>
         <translation>1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="73" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="79" />
         <source>Pair left indices</source>
         <translation>左侧原子对索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="74" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="80" />
         <source>1-based indices for the left side of each atom pair, for example 1,3-5</source>
         <translation>每个原子对左侧的 1-based 索引，例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="77" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="83" />
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="79" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="85" />
         <source>Pair right indices</source>
         <translation>右侧原子对索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="80" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="86" />
         <source>1-based indices for the right side of each atom pair, paired in order with left indices</source>
         <translation>每个原子对右侧的 1-based 索引，按顺序与左侧索引配对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="83" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="89" />
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="85" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="91" />
         <source>Pair source</source>
         <translation>原子对来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="86" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="92" />
         <source>Use explicit atom indices or auto-select unique neighbor-shell pairs</source>
         <translation>使用显式原子索引，或自动选择唯一近邻壳原子对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="92" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="98" />
         <source>Neighbor shell</source>
         <translation>近邻壳层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="93" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="99" />
         <source>1 = first-neighbor shell, 2 = second-neighbor shell, etc.</source>
         <translation>1 = 第一近邻壳，2 = 第二近邻壳，依此类推。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="100" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="106" />
         <source>Shell tolerance</source>
         <translation>壳层容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="101" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="107" />
         <source>Distances within this tolerance belong to the same neighbor shell</source>
         <translation>距离差在该容差内的原子属于同一邻近壳层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="109" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="115" />
         <source>Pair elements</source>
         <translation>原子对元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="110" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="116" />
         <source>Optional pair filter such as Fe-Fe,Fe-Co; empty means any element pair</source>
         <translation>可选原子对筛选，例如 Fe-Fe、Fe-Co；留空表示任意元素对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="113" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="119" />
         <source>Fe-Fe,Fe-Co</source>
         <translation>Fe-Fe,Fe-Co</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="115" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="121" />
         <source>Pair groups</source>
         <translation>原子对分组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="116" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="122" />
         <source>Optional group-pair filter such as A-B,A-A; requires arrays['group']</source>
         <translation>可选分组对筛选，例如 A-B、A-A；需要 arrays['group']</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="119" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="125" />
         <source>A-B</source>
         <translation>A-B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="121" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="127" />
         <source>Bond filter</source>
         <translation>键方向筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="122" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="128" />
         <source>Optional bond-direction filter for auto pairs</source>
         <translation>auto 配对的可选键方向筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="128" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="134" />
         <source>Bond reference</source>
         <translation>键方向参考</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="129" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="135" />
         <source>Reference axis or plane normal used by the bond-direction filter</source>
         <translation>键方向筛选使用的参考轴或平面法向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="138" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="144" />
         <source>Bond angle tol</source>
         <translation>键角容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="139" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="145" />
         <source>Angular tolerance in degrees for the bond-direction filter</source>
         <translation>键方向筛选的角度容差（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="147" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="153" />
         <source>Group A</source>
         <translation>A 组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="148" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="154" />
         <source>Atoms with arrays['group']==Group A rotate by +theta/2 in group-pair mode</source>
         <translation>group-pair 模式下，arrays['group'] == Group A 的原子旋转 +theta/2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="153" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="159" />
         <source>Group B</source>
         <translation>B 组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="154" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="160" />
         <source>Atoms with arrays['group']==Group B rotate by -theta/2 in group-pair mode</source>
         <translation>group-pair 模式下，arrays['group'] == Group B 的原子旋转 -theta/2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="159" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="165" />
         <source>Tilt angles</source>
         <translation>倾斜角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="160" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="166" />
         <source>Comma-separated tilt angles in degrees, for example 1,2,5,10</source>
         <translation>逗号分隔的倾斜角，单位为度，例如 1,2,5,10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="163" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="169" />
         <source>1,2,5,10</source>
         <translation>1,2,5,10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="166" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="172" />
         <source>Tilt signs</source>
         <translation>倾斜符号</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="167" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="173" />
         <source>Choose whether to emit +theta only, -theta only, or paired +/-theta variants</source>
         <translation>选择仅生成 +theta、仅生成 -theta，或成对生成 +/-theta 变体</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="173" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="179" />
         <source>Include reference state</source>
         <translation>包含参考态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="175" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="181" />
         <source>Emit the un-tilted reference magnetic state before tilted variants</source>
         <translation>在倾斜变体之前输出未倾斜的参考磁态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="181" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="187" />
         <source>Show magnetic-moment setup, axes, and output limit</source>
         <translation>显示磁矩设置、方向和输出上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="185" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="191" />
         <source>Magnitude source</source>
         <translation>磁矩大小来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="186" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="192" />
         <source>Use existing initial magmoms or build a ferromagnetic reference from map/default</source>
         <translation>使用现有初始 magmoms，或从映射/默认值构造铁磁参考态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="192" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="198" />
         <source>Magmom map</source>
         <translation>元素磁矩表</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="193" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="199" />
         <source>Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"</source>
         <translation>当来源为映射/默认磁矩大小时使用，例如 "Fe:2.2,Ni:0.6"</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="196" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="202" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="196" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="202" />
         <source>Moment magnitude</source>
         <translation>磁矩模长</translation>
     </message>
@@ -17802,67 +18053,67 @@ Do you want to continue?</source>
         <translation type="vanished">Fe:2.2,Ni:0.6</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="200" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="206" />
         <source>Default |m|</source>
         <translation>默认 |m|</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="201" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="207" />
         <source>Magnitude used for elements not listed in the magmom map</source>
         <translation>未在 magmom 映射中列出的元素使用该磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="209" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="215" />
         <source>Lift scalar magmoms to vectors</source>
         <translation>将标量 magmoms 提升为矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="211" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="217" />
         <source>If input magmoms are scalars, place them along Base axis before tilting</source>
         <translation>如果输入 magmoms 是标量，倾斜前先放在 Base 轴方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="216" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="222" />
         <source>Base axis</source>
         <translation>基准轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="217" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="223" />
         <source>Reference axis for lifted scalar magmoms and map/default ferromagnetic states</source>
         <translation>标量 magmoms 提升和映射/默认铁磁态使用的参考轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="226" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="232" />
         <source>Tilt reference</source>
         <translation>倾斜参考</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="227" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="233" />
         <source>Preferred direction that defines the tilt plane; it is orthogonalised automatically</source>
         <translation>用于定义倾斜平面的优选方向；会自动正交化</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="236" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="242" />
         <source>Apply elements</source>
         <translation>应用元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="237" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="243" />
         <source>Optional comma-separated element list; empty means all atoms are eligible targets</source>
         <translation>可选元素列表，用逗号分隔；留空表示所有原子都可作为目标</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="240" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="246" />
         <source>Fe,Co,Ni</source>
         <translation>Fe,Co,Ni</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="242" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="248" />
         <source>Max outputs</source>
         <translation>最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="243" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="249" />
         <source>Stop after this many generated structures</source>
         <translation>生成到此数量后停止</translation>
     </message>
@@ -24577,8 +24828,8 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">卡片辅助</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="161" />
-        <location filename="../ui/widgets/docker.py" line="284" />
+        <location filename="../ui/widgets/docker.py" line="183" />
+        <location filename="../ui/widgets/docker.py" line="307" />
         <source>Select a card</source>
         <translation>选择一张卡片</translation>
     </message>
@@ -24587,7 +24838,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">选择工作流卡片以查看用途和当前数据摘要。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="159" />
+        <location filename="../ui/widgets/docker.py" line="181" />
         <source>Card inspector</source>
         <translation>卡片检查器</translation>
     </message>
@@ -24596,8 +24847,8 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">选择工作流卡片以编辑参数并查看使用建议。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="251" />
-        <location filename="../ui/widgets/docker.py" line="295" />
+        <location filename="../ui/widgets/docker.py" line="274" />
+        <location filename="../ui/widgets/docker.py" line="318" />
         <source>Select a parameter card to edit it here.</source>
         <translation>选择参数卡片后可在此编辑。</translation>
     </message>
@@ -24622,14 +24873,14 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">暂无此卡片的专属建议。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="172" />
-        <location filename="../ui/widgets/docker.py" line="173" />
+        <location filename="../ui/widgets/docker.py" line="194" />
+        <location filename="../ui/widgets/docker.py" line="195" />
         <source>Open full documentation</source>
         <translation>打开完整文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="165" />
-        <location filename="../ui/widgets/docker.py" line="166" />
+        <location filename="../ui/widgets/docker.py" line="187" />
+        <location filename="../ui/widgets/docker.py" line="188" />
         <source>Copy card JSON</source>
         <translation>复制卡片 JSON</translation>
     </message>
@@ -24638,65 +24889,65 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">关于此卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="325" />
+        <location filename="../ui/widgets/docker.py" line="348" />
         <source>Card information</source>
         <translation>卡片信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="326" />
+        <location filename="../ui/widgets/docker.py" line="349" />
         <source>No additional card information.</source>
         <translation>暂无其他卡片信息。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="409" />
-        <location filename="../ui/widgets/docker.py" line="410" />
-        <location filename="../ui/widgets/docker.py" line="415" />
+        <location filename="../ui/widgets/docker.py" line="524" />
+        <location filename="../ui/widgets/docker.py" line="525" />
+        <location filename="../ui/widgets/docker.py" line="530" />
         <source>Not specified</source>
         <translation>未注明</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="422" />
+        <location filename="../ui/widgets/docker.py" line="537" />
         <source>Type: {type}</source>
         <translation>类型：{type}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="423" />
+        <location filename="../ui/widgets/docker.py" line="538" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="428" />
+        <location filename="../ui/widgets/docker.py" line="543" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="430" />
+        <location filename="../ui/widgets/docker.py" line="545" />
         <source>License: {license}</source>
         <translation>许可证：{license}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="323" />
+        <location filename="../ui/widgets/docker.py" line="346" />
         <source>Citation: {citation}</source>
         <translation>引用：{citation}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="179" />
-        <location filename="../ui/widgets/docker.py" line="180" />
+        <location filename="../ui/widgets/docker.py" line="201" />
+        <location filename="../ui/widgets/docker.py" line="202" />
         <source>Card information and contributors</source>
         <translation>卡片信息与贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="223" />
+        <location filename="../ui/widgets/docker.py" line="246" />
         <source>Current configuration</source>
         <translation>当前配置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="236" />
+        <location filename="../ui/widgets/docker.py" line="259" />
         <source>Recommended checks</source>
         <translation>建议检查项</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="262" />
+        <location filename="../ui/widgets/docker.py" line="285" />
         <source>Parameters</source>
         <translation>参数</translation>
     </message>
@@ -24721,7 +24972,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">请参考卡片文档，并先验证小批量输出。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="361" />
+        <location filename="../ui/widgets/docker.py" line="384" />
         <source>This workflow container is edited directly on the canvas.</source>
         <translation>此工作流容器直接在画布中编辑。</translation>
     </message>
@@ -25170,6 +25421,21 @@ Magnetic: {magnetic}</source>
         <location filename="../ui/widgets/structure_filter_bar.py" line="604" />
         <source>Cancel</source>
         <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>parent</name>
+    <message>
+        <source>Select an element, then choose the other element in the pair.</source>
+        <translation type="vanished">选择一个元素后，再选择元素对中的另一个元素。</translation>
+    </message>
+    <message>
+        <source>Choose the first element</source>
+        <translation type="vanished">选择第一个元素</translation>
+    </message>
+    <message>
+        <source>Choose the second element</source>
+        <translation type="vanished">选择第二个元素</translation>
     </message>
 </context>
 <context>

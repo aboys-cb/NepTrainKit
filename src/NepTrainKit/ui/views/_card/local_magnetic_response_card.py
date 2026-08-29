@@ -10,6 +10,7 @@ from NepTrainKit.ui.widgets import (
     CompactField,
     DirectionInput,
     ElementLineEdit,
+    ElementPairLineEdit,
     InspectorSection,
     MakeDataCard,
     NumericScanInput,
@@ -130,7 +131,7 @@ class LocalMagneticResponseCard(MakeDataCard):
             inline=True,
             input_max_width=150,
         )
-        self.pair_element_edit = LineEdit(self.setting_widget)
+        self.pair_element_edit = ElementPairLineEdit(self.setting_widget)
         self.pair_element_edit.setPlaceholderText(self.tr("For example: Fe-Co or Fe-Fe,Fe-Co"))
         self.pair_element_field = CompactField(
             self.tr("Element pairs"),

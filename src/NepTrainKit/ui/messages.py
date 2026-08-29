@@ -309,6 +309,14 @@ def _runtime_message_catalog() -> None:
         *_RUNTIME_EXCEPTION_REPLACEMENTS,
     ):
         QCoreApplication.translate("RuntimeMessage", text)
+    QCoreApplication.translate(
+        "RuntimeMessage",
+        "Conditional Replace matched-site count changed during execution.",
+    )
+    QCoreApplication.translate(
+        "RuntimeMessage",
+        "CellStrain output-count preview disagrees with generation.",
+    )
 
 
 def _card_operation_error_catalog() -> None:
@@ -1243,6 +1251,113 @@ def _card_operation_error_catalog() -> None:
         "CardOperationError",
         "Random Doping rule {index} matched no {element} atoms in the input.",
     )
+    QCoreApplication.translate("CardOperationError", "At least one dopant is required.")
+    QCoreApplication.translate("CardOperationError", "Dopant ratios must match dopant elements.")
+    QCoreApplication.translate("CardOperationError", "Fixed count must use the same minimum and maximum.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Space Sampling component counts must select 2, 3, 4, or 5.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Ordered Alloy Prototype: a_range must contain start, stop, and step.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Finite-Cell Alloy Occupancy: input structure has no sites.",
+    )
+    QCoreApplication.translate("CardOperationError", "Composition Gradient requires at least two elements.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient could not build nonempty coordinate bins.",
+    )
+    QCoreApplication.translate("CardOperationError", "Unsupported expression.")
+    QCoreApplication.translate("CardOperationError", "Replacement element names must not be empty.")
+    QCoreApplication.translate("CardOperationError", "Replacement probabilities must match replacement atoms.")
+    QCoreApplication.translate("CardOperationError", "Stacking Fault hkl must contain exactly three integers.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Insert Defect could not determine the adsorption surface normal.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Geometry Filter: minimum volume/atom must not exceed maximum volume/atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Geometry Filter: minimum density must not exceed maximum density.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: samples must have shape (n_structures, n_atoms, 3).",
+    )
+    QCoreApplication.translate("CardOperationError", "Perturb: radii must contain one value per atom.")
+    QCoreApplication.translate("CardOperationError", "Supercell: fixed_axis_flags must contain three values.")
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: select at least one of FM, AFM, or PM.")
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: PM structures must be at least 1.")
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: maximum outputs must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic Order: AFM positive and negative group labels must differ.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic Order: AFM group mode needs at least one magnetic atom in both the positive and negative groups.",
+    )
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: sign array length does not match atoms.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt found no nonzero magnetic moments to tilt.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt global mode found no eligible magnetic atoms; check apply_elements and magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt single-spin mode matched no target atoms; check target_mode, target_indices, apply_elements, and magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt atom-pair mode matched no valid pairs; check pair source, indices, shell, element/group filters, and magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt produced no tilted structures from the selected targets.",
+    )
+    QCoreApplication.translate("CardOperationError", "Spin Disorder found no eligible nonzero magnetic moments.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Disorder requires at least one fraction within (0, 1].",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Correlated Random Spin found no eligible nonzero magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Correlated Random Spin covariance is not positive definite for this structure/kernel.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Solvent Box Fill: flex_torsion_range must contain two values.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Solvent Box Fill: flex_torsion_range minimum must not exceed maximum.",
+    )
+    QCoreApplication.translate("CardOperationError", "Solvation: solvent molecule contains no atoms.")
+    QCoreApplication.translate("CardOperationError", "Unsupported comparison operator.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Only direct function calls are allowed (for example, sin(x)).",
+    )
+    QCoreApplication.translate("CardOperationError", "String constants are not allowed.")
+    QCoreApplication.translate("CardOperationError", "The dz expression produced NaN/Inf values.")
 
 
 def _card_operation_field_catalog() -> None:

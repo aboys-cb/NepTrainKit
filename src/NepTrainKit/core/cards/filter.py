@@ -400,16 +400,18 @@ class GeometryFilterOperation(DatasetOperation):
             and normalized.max_volume_per_atom > 0.0
             and normalized.min_volume_per_atom > normalized.max_volume_per_atom
         ):
-            raise ValueError(
-                "Geometry Filter: minimum volume/atom must not exceed maximum volume/atom."
+            raise CardOperationError(
+                "geometry_filter.invalid_volume_range",
+                "Geometry Filter: minimum volume/atom must not exceed maximum volume/atom.",
             )
         if (
             normalized.min_density > 0.0
             and normalized.max_density > 0.0
             and normalized.min_density > normalized.max_density
         ):
-            raise ValueError(
-                "Geometry Filter: minimum density must not exceed maximum density."
+            raise CardOperationError(
+                "geometry_filter.invalid_density_range",
+                "Geometry Filter: minimum density must not exceed maximum density.",
             )
         return normalized
 

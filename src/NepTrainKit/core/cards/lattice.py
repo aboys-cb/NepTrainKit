@@ -669,10 +669,16 @@ class PerturbOperation(StructureOperation):
         """Map [0, 1]^3 samples to displacement vectors inside per-atom balls."""
         raw = np.asarray(samples, dtype=float)
         if raw.ndim != 3 or raw.shape[2] != 3:
-            raise ValueError("Perturb: samples must have shape (n_structures, n_atoms, 3).")
+            raise CardOperationError(
+                "perturb.invalid_sample_shape",
+                "Perturb: samples must have shape (n_structures, n_atoms, 3).",
+            )
         limits = np.asarray(radii, dtype=float)
         if limits.ndim != 1 or limits.shape[0] != raw.shape[1]:
-            raise ValueError("Perturb: radii must contain one value per atom.")
+            raise CardOperationError(
+                "perturb.invalid_radii_length",
+                "Perturb: radii must contain one value per atom.",
+            )
         if not np.all(np.isfinite(limits)) or np.any(limits < 0.0):
             raise ValueError("Perturb: max_distance values must be finite and non-negative.")
 
@@ -878,7 +884,10 @@ class SuperCellOperation(StructureOperation):
         if any(int(value) < 1 for value in params.fixed_axis_scale):
             raise ValueError("SuperCell: fixed_axis_scale values must be positive integers.")
         if len(params.fixed_axis_flags) != 3:
-            raise ValueError("SuperCell: fixed_axis_flags must contain three values.")
+            raise CardOperationError(
+                "supercell.invalid_fixed_axis_flags",
+                "Supercell: fixed_axis_flags must contain three values.",
+            )
         cell_lengths = np.asarray(structure.cell.lengths(), dtype=float)
         if not np.all(np.isfinite(cell_lengths)) or np.any(cell_lengths <= 0.0):
             raise CardOperationError(

@@ -666,7 +666,10 @@ class MagneticOrderOperation(StructureOperation):
     def _prepare(self, structure, params: MagneticOrderParams) -> _MagneticOrderState:
         spin_model = self.normalize_format(params.format)
         if not (params.gen_fm or params.gen_afm or params.gen_pm):
-            raise ValueError("MagneticOrder: select at least one of FM, AFM, or PM.")
+            raise CardOperationError(
+                "magnetic_order.no_order_selected",
+                "Magnetic Order: select at least one of FM, AFM, or PM.",
+            )
 
         axis = np.asarray(params.axis, dtype=float)
         if (
@@ -696,7 +699,10 @@ class MagneticOrderOperation(StructureOperation):
                     )
             pm_count = int(params.pm_count)
             if pm_count < 1:
-                raise ValueError("MagneticOrder: PM structures must be at least 1.")
+                raise CardOperationError(
+                    "magnetic_order.invalid_pm_count",
+                    "Magnetic Order: PM structures must be at least 1.",
+                )
             if (
                 spin_model == "noncollinear"
                 and pm_direction == "cone"
@@ -713,7 +719,10 @@ class MagneticOrderOperation(StructureOperation):
         if params.gen_pm:
             max_outputs = int(params.max_outputs)
             if max_outputs < 1:
-                raise ValueError("MagneticOrder: max outputs must be at least 1.")
+                raise CardOperationError(
+                    "magnetic_order.invalid_max_outputs",
+                    "Magnetic Order: maximum outputs must be at least 1.",
+                )
             if output_count > max_outputs:
                 raise ValueError(
                     f"MagneticOrder: requested {output_count} outputs per input, "
@@ -774,15 +783,19 @@ class MagneticOrderOperation(StructureOperation):
         if not group_a or not group_b:
             raise ValueError("MagneticOrder: AFM group labels must be non-empty.")
         if group_a == group_b:
-            raise ValueError("MagneticOrder: AFM positive and negative group labels must differ.")
+            raise CardOperationError(
+                "magnetic_order.same_afm_groups",
+                "Magnetic Order: AFM positive and negative group labels must differ.",
+            )
 
         groups = np.asarray(structure.arrays["group"], dtype=str)
         mask_a = (groups == group_a) & magnetic_mask
         mask_b = (groups == group_b) & magnetic_mask
         if not np.any(mask_a) or not np.any(mask_b):
-            raise ValueError(
-                "MagneticOrder: AFM group mode needs at least one magnetic atom "
-                "in both the positive and negative groups."
+            raise CardOperationError(
+                "magnetic_order.empty_afm_group",
+                "Magnetic Order: AFM group mode needs at least one magnetic atom "
+                "in both the positive and negative groups.",
             )
 
         signs = np.zeros(len(structure), dtype=float)
@@ -799,7 +812,10 @@ class MagneticOrderOperation(StructureOperation):
     ) -> np.ndarray:
         values = np.asarray(signs, dtype=float).reshape(-1)
         if values.shape != state.magnitudes.shape:
-            raise ValueError("MagneticOrder: sign array length does not match atoms.")
+            raise CardOperationError(
+                "magnetic_order.sign_count_mismatch",
+                "Magnetic Order: sign array length does not match atoms.",
+            )
         if state.spin_model == "noncollinear":
             return (
                 values[:, None]
@@ -1213,8 +1229,9 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 "provide initial_magmoms or select Map/default magnitude."
             )
         if not np.any(np.linalg.norm(base_moments, axis=1) > 1e-10):
-            raise ValueError(
-                "SmallAngleSpinTilt found no nonzero magnetic moments to tilt."
+            raise CardOperationError(
+                "small_angle_spin_tilt.no_nonzero_moments",
+                "Small-angle Spin Tilt found no nonzero magnetic moments to tilt.",
             )
 
         angles = parse_angle_list(params.angle_list) or [1.0, 2.0, 5.0, 10.0]
@@ -1230,9 +1247,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         if params.canting_mode == "Global tilt":
             target_indices = self.all_eligible_indices(structure, base_moments, params)
             if not target_indices:
-                raise ValueError(
-                    "SmallAngleSpinTilt global mode found no eligible magnetic atoms; "
-                    "check apply_elements and magnetic moments."
+                raise CardOperationError(
+                    "small_angle_spin_tilt.no_global_targets",
+                    "Small-angle Spin Tilt global mode found no eligible magnetic atoms; "
+                    "check apply_elements and magnetic moments.",
                 )
             for angle_deg in angles:
                 for sign_tag, sign_value in self.signs(params):
@@ -1251,9 +1269,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         elif params.canting_mode == "Single-spin tilt":
             target_indices = self.candidate_indices(structure, base_moments, params)
             if not target_indices:
-                raise ValueError(
-                    "SmallAngleSpinTilt single-spin mode matched no target atoms; "
-                    "check target_mode, target_indices, apply_elements, and magnetic moments."
+                raise CardOperationError(
+                    "small_angle_spin_tilt.no_single_targets",
+                    "Small-angle Spin Tilt single-spin mode matched no target atoms; "
+                    "check target_mode, target_indices, apply_elements, and magnetic moments.",
                 )
             for atom_index in target_indices:
                 for angle_deg in angles:
@@ -1281,9 +1300,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 )
             pairs = self.pair_targets(structure, base_moments, params)
             if not pairs:
-                raise ValueError(
-                    "SmallAngleSpinTilt atom-pair mode matched no valid pairs; "
-                    "check pair source, indices, shell, element/group filters, and magnetic moments."
+                raise CardOperationError(
+                    "small_angle_spin_tilt.no_valid_pairs",
+                    "Small-angle Spin Tilt atom-pair mode matched no valid pairs; "
+                    "check pair source, indices, shell, element/group filters, and magnetic moments.",
                 )
             for left_idx, right_idx in pairs:
                 for angle_deg in angles:
@@ -1329,8 +1349,9 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                     break
 
         if not outputs:
-            raise ValueError(
-                "SmallAngleSpinTilt produced no tilted structures from the selected targets."
+            raise CardOperationError(
+                "small_angle_spin_tilt.no_outputs",
+                "Small-angle Spin Tilt produced no tilted structures from the selected targets.",
             )
         return outputs
 
@@ -1622,7 +1643,10 @@ class SpinDisorderOperation(StructureOperation):
 
         eligible = self.eligible_indices(structure, base_moments, params)
         if eligible.size == 0:
-            raise ValueError("Spin Disorder found no eligible nonzero magnetic moments.")
+            raise CardOperationError(
+                "spin_disorder.no_eligible_moments",
+                "Spin Disorder found no eligible nonzero magnetic moments.",
+            )
 
         base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
@@ -1690,8 +1714,9 @@ class SpinDisorderOperation(StructureOperation):
             seen.add(rounded)
             values.append(rounded)
         if not values:
-            raise ValueError(
-                "Spin Disorder requires at least one fraction within (0, 1]."
+            raise CardOperationError(
+                "spin_disorder.no_valid_fraction",
+                "Spin Disorder requires at least one fraction within (0, 1].",
             )
         return values
 
@@ -1819,7 +1844,10 @@ class CorrelatedRandomSpinOperation(StructureOperation):
 
         selected = self.eligible_indices(structure, base_moments, params)
         if selected.size == 0:
-            raise ValueError("Correlated Random Spin found no eligible nonzero magnetic moments.")
+            raise CardOperationError(
+                "correlated_random_spin.no_eligible_moments",
+                "Correlated Random Spin found no eligible nonzero magnetic moments.",
+            )
         if selected.size > max_atoms:
             raise CardOperationError(
                 "correlated_spin_too_many_eligible",
@@ -1839,7 +1867,10 @@ class CorrelatedRandomSpinOperation(StructureOperation):
         try:
             chol = np.linalg.cholesky(covariance)
         except np.linalg.LinAlgError as exc:
-            raise ValueError("Correlated Random Spin covariance is not positive definite for this structure/kernel.") from exc
+            raise CardOperationError(
+                "correlated_random_spin.invalid_covariance",
+                "Correlated Random Spin covariance is not positive definite for this structure/kernel.",
+            ) from exc
 
         base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)

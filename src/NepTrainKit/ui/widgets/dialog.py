@@ -127,27 +127,77 @@ class GetFloatMessageBox(MessageBoxBase):
 
 
 class ExportFormatMessageBox(MessageBoxBase):
-    """Message box that lets the user pick an export format (XYZ vs DeepMD/NPY)."""
+    """Choose an export layout and format-specific DeepMD options."""
 
-    def __init__(self, parent=None, default_format: str = "xyz"):
+    def __init__(
+        self,
+        parent=None,
+        default_format: str = "xyz",
+        group_by_config_type: bool = True,
+        mixed_atom_numb_pad: int = 0,
+    ):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(self.tr("Choose export format"), self)
         self.titleLabel.setWordWrap(True)
 
         self.formatCombo = ComboBox(self)
-        self.formatCombo.addItem("XYZ (.xyz / extxyz)", userData="xyz")
-        self.formatCombo.addItem("DeepMD/NPY (deepmd/npy)", userData="deepmd/npy")
+        self.formatCombo.addItem(self.tr("XYZ (.xyz / extxyz)"), userData="xyz")
+        self.formatCombo.addItem(self.tr("DeepMD NPY"), userData="deepmd/npy")
+        self.formatCombo.addItem(
+            self.tr("DeepMD NPY (Mixed)"), userData="deepmd/npy/mixed"
+        )
+
+        self.standardGroupingWidget = QWidget(self)
+        grouping_layout = QHBoxLayout(self.standardGroupingWidget)
+        grouping_layout.setContentsMargins(0, 0, 0, 0)
+        grouping_layout.addWidget(CaptionLabel(self.tr("Subfolder grouping"), self))
+        self.standardGroupingCombo = ComboBox(self.standardGroupingWidget)
+        self.standardGroupingCombo.addItem(
+            self.tr("By Config_type"), userData="config_type"
+        )
+        self.standardGroupingCombo.addItem(
+            self.tr("By chemical formula"), userData="formula"
+        )
+        self.standardGroupingCombo.setCurrentIndex(0 if group_by_config_type else 1)
+        grouping_layout.addWidget(self.standardGroupingCombo, 1)
+
+        self.mixedPaddingWidget = QWidget(self)
+        padding_layout = QGridLayout(self.mixedPaddingWidget)
+        padding_layout.setContentsMargins(0, 0, 0, 0)
+        padding_layout.addWidget(CaptionLabel(self.tr("Virtual atom padding"), self), 0, 0)
+        self.mixedPaddingSpinBox = SpinBox(self.mixedPaddingWidget)
+        self.mixedPaddingSpinBox.setRange(0, 1000000)
+        self.mixedPaddingSpinBox.setValue(max(0, int(mixed_atom_numb_pad)))
+        padding_layout.addWidget(self.mixedPaddingSpinBox, 0, 1)
+        padding_hint = CaptionLabel(
+            self.tr("0 groups exact atom counts; 8 rounds them up to multiples of 8."),
+            self.mixedPaddingWidget,
+        )
+        padding_hint.setWordWrap(True)
+        padding_layout.addWidget(padding_hint, 1, 0, 1, 2)
 
         default = (default_format or "xyz").strip().lower()
-        if default in {"deepmd", "deepmd/npy", "npy", "dp"}:
+        if default in {"deepmd/npy/mixed", "npy/mixed", "mixed"}:
+            self.formatCombo.setCurrentIndex(2)
+        elif default in {"deepmd", "deepmd/npy", "npy", "dp"}:
             self.formatCombo.setCurrentIndex(1)
         else:
             self.formatCombo.setCurrentIndex(0)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.formatCombo)
+        self.viewLayout.addWidget(self.standardGroupingWidget)
+        self.viewLayout.addWidget(self.mixedPaddingWidget)
+        self.formatCombo.currentIndexChanged.connect(self._update_option_visibility)
+        self._update_option_visibility()
 
-        self.widget.setMinimumWidth(320)
+        self.widget.setMinimumWidth(380)
+
+    def _update_option_visibility(self, *_args) -> None:
+        """Show only the options belonging to the selected DeepMD layout."""
+        selected = self.formatCombo.currentData()
+        self.standardGroupingWidget.setVisible(selected == "deepmd/npy")
+        self.mixedPaddingWidget.setVisible(selected == "deepmd/npy/mixed")
 
     def selected_format(self) -> str:
         """Return the selected export format identifier."""
@@ -155,7 +205,18 @@ class ExportFormatMessageBox(MessageBoxBase):
         if isinstance(data, str) and data:
             return data
         text = self.formatCombo.currentText().lower()
+        if "mixed" in text:
+            return "deepmd/npy/mixed"
         return "deepmd/npy" if "deepmd" in text or "npy" in text else "xyz"
+
+    def group_by_config_type(self) -> bool:
+        """Return standard NPY grouping; ignored for XYZ and mixed output."""
+        return self.standardGroupingCombo.currentData() == "config_type"
+
+    def mixed_atom_numb_pad(self) -> int | None:
+        """Return dpdata-compatible Mixed padding, or None when disabled."""
+        value = int(self.mixedPaddingSpinBox.value())
+        return value if value > 0 else None
 
 
 class GetStrMessageBox(MessageBoxBase):

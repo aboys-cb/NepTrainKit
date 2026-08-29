@@ -11,6 +11,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import dpdata
 
 os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdata")
 
@@ -537,6 +538,196 @@ H 0 0 0
 
         self.assertAlmostEqual(restored.energy, -1.25)
         self.assertNotIn("energy", restored.atomic_properties)
+
+    def test_standard_deepmd_grouping_handles_mixed_formula_config_type_explicitly(self):
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+        ]
+
+        def frame(species):
+            return Structure(
+                np.eye(3),
+                {"species": species, "pos": np.zeros((len(species), 3))},
+                properties,
+                {"Config_type": "shared", "pbc": "T T T"},
+            )
+
+        structures = [frame(["H", "H", "O"]), frame(["H", "O", "O"])]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            by_config = Path(tmp_dir) / "by_config"
+            with self.assertRaisesRegex(ValueError, "must share atom types"):
+                save_npy_structure(
+                    by_config,
+                    structures,
+                    type_map=["H", "O"],
+                    group_by_config_type=True,
+                )
+            self.assertFalse(by_config.exists())
+
+            by_formula = Path(tmp_dir) / "by_formula"
+            save_npy_structure(
+                by_formula,
+                structures,
+                type_map=["H", "O"],
+                group_by_config_type=False,
+            )
+            self.assertTrue((by_formula / "H2O" / "type.raw").is_file())
+            self.assertTrue((by_formula / "HO2" / "type.raw").is_file())
+            self.assertEqual(len(load_npy_structure(by_formula)), 2)
+
+    def test_mixed_deepmd_roundtrip_is_readable_by_dpdata(self):
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+            {"name": "forces", "type": "R", "count": 3},
+        ]
+
+        def frame(species, offset):
+            natoms = len(species)
+            positions = np.arange(natoms * 3, dtype=float).reshape(natoms, 3) + offset
+            forces = positions + 100.0
+            return Structure(
+                np.eye(3) * 5,
+                {"species": species, "pos": positions, "forces": forces},
+                properties,
+                {
+                    "Config_type": "shared",
+                    "pbc": "T T T",
+                    "energy": -float(offset + 1),
+                    "virial": np.arange(6, dtype=float) + offset,
+                },
+            )
+
+        structures = [
+            frame(["O", "H", "H"], 0.0),
+            frame(["H", "O", "O"], 20.0),
+        ]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir) / "mixed"
+            save_npy_structure(
+                root,
+                structures,
+                type_map=["H", "O"],
+                format="mixed",
+                group_by_config_type=True,
+            )
+
+            system_dir = root / "3"
+            np.testing.assert_array_equal(
+                np.loadtxt(system_dir / "type.raw", dtype=int, ndmin=1),
+                np.zeros(3, dtype=int),
+            )
+            np.testing.assert_array_equal(
+                np.load(system_dir / "set.000" / "real_atom_types.npy"),
+                [[1, 0, 0], [0, 1, 1]],
+            )
+            self.assertTrue((system_dir / "set.000" / "force.npy").is_file())
+            self.assertEqual(
+                np.load(system_dir / "set.000" / "virial.npy").shape,
+                (2, 9),
+            )
+            self.assertFalse((system_dir / "set.000" / "forces.npy").exists())
+
+            restored = load_npy_structure(root)
+            self.assertEqual([item.elements.tolist() for item in restored], [
+                ["O", "H", "H"],
+                ["H", "O", "O"],
+            ])
+            for expected, actual in zip(structures, restored):
+                np.testing.assert_allclose(actual.positions, expected.positions)
+                np.testing.assert_allclose(
+                    actual.atomic_properties["force"], expected.forces
+                )
+
+            oracle = dpdata.MultiSystems().load_systems_from_file(
+                str(root), fmt="deepmd/npy/mixed"
+            )
+            self.assertEqual(len(oracle), 2)
+            self.assertEqual(
+                sorted(system.formula for system in oracle),
+                ["H1O2", "H2O1"],
+            )
+
+    def test_mixed_deepmd_splits_systems_by_atom_count(self):
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+        ]
+        structures = [
+            Structure(
+                np.eye(3),
+                {"species": ["H", "O"], "pos": np.zeros((2, 3))},
+                properties,
+                {"Config_type": "same", "pbc": "T T T"},
+            ),
+            Structure(
+                np.eye(3),
+                {"species": ["H", "H", "O"], "pos": np.zeros((3, 3))},
+                properties,
+                {"Config_type": "same", "pbc": "T T T"},
+            ),
+        ]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir) / "mixed"
+            save_npy_structure(root, structures, format="mixed")
+            self.assertEqual(
+                sorted(path.parent.name for path in root.glob("*/type.raw")),
+                ["2", "3"],
+            )
+
+    def test_mixed_deepmd_padding_merges_atom_counts_and_roundtrips_virtual_atoms(self):
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+            {"name": "forces", "type": "R", "count": 3},
+        ]
+        structures = []
+        for species in (["H", "O"], ["H", "H", "O"]):
+            natoms = len(species)
+            structures.append(
+                Structure(
+                    np.eye(3),
+                    {
+                        "species": species,
+                        "pos": np.arange(natoms * 3, dtype=float).reshape(natoms, 3),
+                        "forces": -np.arange(natoms * 3, dtype=float).reshape(natoms, 3),
+                    },
+                    properties,
+                    {"Config_type": "same", "pbc": "T T T"},
+                )
+            )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir) / "mixed"
+            save_npy_structure(
+                root,
+                structures,
+                format="mixed",
+                mixed_atom_numb_pad=4,
+            )
+
+            self.assertEqual(
+                [path.parent.name for path in root.glob("*/type.raw")],
+                ["4"],
+            )
+            real_types = np.load(root / "4" / "set.000" / "real_atom_types.npy")
+            self.assertEqual(real_types.tolist(), [[0, 1, -1, -1], [0, 0, 1, -1]])
+
+            loaded = load_npy_structure(root)
+            self.assertEqual([len(item) for item in loaded], [2, 3])
+            for actual, expected in zip(loaded, structures):
+                np.testing.assert_allclose(actual.atomic_properties["pos"], expected.positions)
+                np.testing.assert_allclose(
+                    actual.atomic_properties["force"],
+                    expected.atomic_properties["forces"],
+                )
+
+            oracle = dpdata.MultiSystems().load_systems_from_file(
+                str(root), fmt="deepmd/npy/mixed", labeled=False
+            )
+            self.assertEqual(sorted(system.get_nframes() for system in oracle), [1, 1])
+            self.assertEqual(sorted(sum(system["atom_numbs"]) for system in oracle), [2, 3])
 
     def test_deepmd_import_fails_closed_for_missing_species_or_required_arrays(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

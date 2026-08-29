@@ -268,10 +268,12 @@
 
 - 第一步：选格式
   - `XYZ (.xyz / extxyz)`
-  - `DeepMD/NPY (deepmd/npy)`
+  - `DeepMD NPY`
+  - `DeepMD NPY (Mixed)`
+- 选择 `DeepMD NPY` 时，再选择子目录按 `Config_type` 还是按化学式分组。选择 Mixed 时显示“虚拟原子填充”：`0` 按精确原子数分组，正整数按 dpdata 的 `atom_numb_pad` 规则向上补齐，使不同原子数可进入同一目录。XYZ 不显示这两个选项。
 - 第二步：选路径
   - `xyz`：文件保存路径（默认 `structure_{index}.xyz`）
-  - `deepmd/npy`：目录保存路径
+  - 两种 DeepMD NPY：目录保存路径
 
 ![Export Format Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)
 

@@ -169,15 +169,6 @@ class SettingsWidget(ScrollArea):
             parent=self.personal_group
         )
         self.use_group_menu_card.setValue(use_group_menu_config)
-        preserve_deepmd = Config.getboolean("widget", "deepmd_preserve_subfolders", True)
-        self.deepmd_preserve_card = SwitchSettingCard(
-            FluentIcon.FOLDER,
-            self.tr('Keep DeepMD subfolders'),
-            self.tr('Preserve imported folder hierarchy when exporting deepmd/npy'),
-            parent=self.personal_group
-        )
-        self.deepmd_preserve_card.setValue(preserve_deepmd)
-
         cache_outputs = Config.getboolean("io", "cache_outputs", True)
         self.cache_outputs_card = SwitchSettingCard(
             FluentIcon.SAVE,
@@ -470,7 +461,6 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.radius_coefficient_Card)
         self.personal_group.addSettingCard(self.sort_atoms_card)
         self.personal_group.addSettingCard(self.use_group_menu_card)
-        self.personal_group.addSettingCard(self.deepmd_preserve_card)
         self.personal_group.addSettingCard(self.cache_outputs_card)
         self.personal_group.addSettingCard(self.auto_structure_evidence_card)
         self.personal_group.addSettingCard(self.export_digits_card)
@@ -535,7 +525,6 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
-        self.deepmd_preserve_card.checkedChanged.connect(lambda state: Config.set("widget", "deepmd_preserve_subfolders", state))
         self.cache_outputs_card.checkedChanged.connect(lambda state: Config.set("io", "cache_outputs", state))
         self.auto_structure_evidence_card.checkedChanged.connect(
             lambda state: Config.set(

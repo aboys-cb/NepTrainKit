@@ -140,13 +140,17 @@ $$
 `NEP Dataset Display` 可以把当前数据导出为两类结果：
 
 - `xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 生成数据集 流程。
-- `deepmd/npy`：适合接入 DeepMD 风格数据管理；是否保留导入时的子目录层级由 `Settings → Keep DeepMD subfolders` 控制。
+- `DeepMD NPY`：标准 `deepmd/npy`。在导出弹窗中选择按 `Config_type` 或按化学式建立子目录。
+- `DeepMD NPY (Mixed)`：把化学式可以不同的帧写入逐帧 `real_atom_types.npy`。弹窗中的“虚拟原子填充”与 dpdata 的 `atom_numb_pad` 一致：`0` 按精确原子数分目录；正整数会把原子数向上补到该数的倍数，使不同原子数的体系能够合并。补位类型为 `-1`，重新读取时会自动移除。
 
-导出 `deepmd/npy` 时，NepTrainKit 会保留全周期或全非周期 PBC；全非周期目录写入
-`nopbc`。同一 `Config_type` 下的结构必须具有一致的元素/原子数、PBC、逐原子字段和
-能量/virial 覆盖。DeepMD 标准目录不能无歧义表示部分周期边界或同一目录中的混合契约，
-遇到这些输入时导出会在写文件前失败。逐原子整数、逻辑和字符串字段会按原类型往返，
-原子顺序则按 `type_map` 规范化。
+标准 NPY 选择按 `Config_type` 分组时，同一 `Config_type` 下的结构必须具有一致的元素与
+原子数、PBC、逐原子字段和能量/virial 覆盖；一个 `Config_type` 包含多种化学式时应改选
+按化学式分组，或改用 Mixed。Mixed 按填充后的原子数聚合，同一目录内仍必须具有一致的 PBC、
+逐原子字段和标签覆盖。
+
+两种 NPY 都保留全周期或全非周期 PBC；全非周期目录写入 `nopbc`。部分周期边界无法表示，
+导出会在写文件前失败。填充值越大，能够合并的原子数越多，但坐标和逐原子数组也会更大；例如最大原子数为 64 时，填充值 64 可合为一个目录。标准 NPY 会按 `type_map` 重排原子及其逐原子字段；Mixed 保持每帧
+原子顺序，并用 `real_atom_types.npy` 保存对应元素类型。
 
 ## 大数据和导入说明
 

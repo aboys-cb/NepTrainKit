@@ -54,6 +54,7 @@ test = [
     "pytest-qt>=4.2.0",
     "pytest-cov>=4.0.0",
     "codecov>=2.0.0",
+    "dpdata>=1.1.0",
     "ruff>=0.12.0",
     "scikit-learn>=1.5.0",
     "tomli>=2.0; python_version < '3.11'"

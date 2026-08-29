@@ -356,19 +356,44 @@ class ShowNepWidget(QWidget):
             pass
         return "xyz"
 
-    def _choose_export_format(self) -> str | None:
-        """Ask the user to pick an export format; return None if cancelled."""
+    def _choose_export_format(self) -> tuple[str, bool, int | None] | None:
+        """Return the chosen format and its DeepMD-specific options."""
         remembered = Config.get("widget", "export_format", None)
         default_format = remembered or self._default_export_format()
-        box = ExportFormatMessageBox(self, default_format=str(default_format))
+        group_by_config_type = Config.getboolean(
+            "widget", "deepmd_preserve_subfolders", True
+        )
+        mixed_atom_numb_pad = Config.getint(
+            "widget", "deepmd_mixed_atom_numb_pad", 0
+        )
+        box = ExportFormatMessageBox(
+            self,
+            default_format=str(default_format),
+            group_by_config_type=group_by_config_type,
+            mixed_atom_numb_pad=int(mixed_atom_numb_pad or 0),
+        )
         if not box.exec():
             return None
         fmt = box.selected_format()
+        group_by_config_type = box.group_by_config_type()
+        mixed_atom_numb_pad = box.mixed_atom_numb_pad()
         try:
             Config.set("widget", "export_format", fmt)
+            if fmt == "deepmd/npy":
+                Config.set(
+                    "widget",
+                    "deepmd_preserve_subfolders",
+                    group_by_config_type,
+                )
+            elif fmt == "deepmd/npy/mixed":
+                Config.set(
+                    "widget",
+                    "deepmd_mixed_atom_numb_pad",
+                    mixed_atom_numb_pad or 0,
+                )
         except Exception:
             pass
-        return fmt
+        return fmt, group_by_config_type, mixed_atom_numb_pad
 
     def _refresh_export_actions(self) -> None:
         """Refresh export action labels and enable states."""
@@ -1052,15 +1077,22 @@ class ShowNepWidget(QWidget):
         if not self._dataset_ready():
             MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
-        fmt = self._choose_export_format()
-        if fmt is None:
+        choice = self._choose_export_format()
+        if choice is None:
             return
+        fmt, group_by_config_type, mixed_atom_numb_pad = choice
         path = call_path_dialog(self, "Choose a folder save location", "directory")
         if not path:
             return
         thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-        if fmt == "deepmd/npy":
-            thread.start_work(self.nep_result_data.export_model_npy, path)
+        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
+            thread.start_work(
+                self.nep_result_data.export_model_npy,
+                path,
+                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
+                group_by_config_type=group_by_config_type,
+                mixed_atom_numb_pad=mixed_atom_numb_pad,
+            )
         else:
             thread.start_work(self.nep_result_data.export_model_extxyz, path)
 
@@ -1076,15 +1108,22 @@ class ShowNepWidget(QWidget):
         if active == 0:
             MessageManager.send_info_message(self.tr("No active structures to export."))
             return
-        fmt = self._choose_export_format()
-        if fmt is None:
+        choice = self._choose_export_format()
+        if choice is None:
             return
+        fmt, group_by_config_type, mixed_atom_numb_pad = choice
         thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-        if fmt == "deepmd/npy":
+        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
                 return
-            thread.start_work(self.nep_result_data.export_active_npy, path)
+            thread.start_work(
+                self.nep_result_data.export_active_npy,
+                path,
+                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
+                group_by_config_type=group_by_config_type,
+                mixed_atom_numb_pad=mixed_atom_numb_pad,
+            )
             return
 
         path = call_path_dialog(
@@ -1112,15 +1151,22 @@ class ShowNepWidget(QWidget):
         if len(self.nep_result_data.select_index) == 0:
             MessageManager.send_info_message(self.tr("Please select some structures first!"))
             return
-        fmt = self._choose_export_format()
-        if fmt is None:
+        choice = self._choose_export_format()
+        if choice is None:
             return
-        if fmt == "deepmd/npy":
+        fmt, group_by_config_type, mixed_atom_numb_pad = choice
+        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(self.nep_result_data.export_selected_npy, path)
+            thread.start_work(
+                self.nep_result_data.export_selected_npy,
+                path,
+                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
+                group_by_config_type=group_by_config_type,
+                mixed_atom_numb_pad=mixed_atom_numb_pad,
+            )
         else:
             path = call_path_dialog(
                 self,
@@ -1143,15 +1189,22 @@ class ShowNepWidget(QWidget):
         if removed == 0:
             MessageManager.send_info_message(self.tr("No removed structures to export."))
             return
-        fmt = self._choose_export_format()
-        if fmt is None:
+        choice = self._choose_export_format()
+        if choice is None:
             return
-        if fmt == "deepmd/npy":
+        fmt, group_by_config_type, mixed_atom_numb_pad = choice
+        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(self.nep_result_data.export_removed_npy, path)
+            thread.start_work(
+                self.nep_result_data.export_removed_npy,
+                path,
+                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
+                group_by_config_type=group_by_config_type,
+                mixed_atom_numb_pad=mixed_atom_numb_pad,
+            )
         else:
             path = call_path_dialog(
                 self,
@@ -1671,15 +1724,23 @@ class ShowNepWidget(QWidget):
             MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
         index = int(self.struct_index_spinbox.value())
-        fmt = self._choose_export_format()
-        if fmt is None:
+        choice = self._choose_export_format()
+        if choice is None:
             return
-        if fmt == "deepmd/npy":
+        fmt, group_by_config_type, mixed_atom_numb_pad = choice
+        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(self.nep_result_data.export_current_npy, path, index)
+            thread.start_work(
+                self.nep_result_data.export_current_npy,
+                path,
+                index,
+                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
+                group_by_config_type=group_by_config_type,
+                mixed_atom_numb_pad=mixed_atom_numb_pad,
+            )
             return
 
         path = call_path_dialog(

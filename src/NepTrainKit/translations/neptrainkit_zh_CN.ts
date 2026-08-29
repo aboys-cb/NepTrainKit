@@ -3,147 +3,147 @@
 <context>
     <name>AdvancedModelSearchDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1374" />
+        <location filename="../ui/widgets/dialog.py" line="1435" />
         <source>Advanced search - models</source>
         <translation>高级搜索 - 模型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1391" />
+        <location filename="../ui/widgets/dialog.py" line="1452" />
         <source>Advanced model search</source>
         <translation>高级模型搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1405" />
+        <location filename="../ui/widgets/dialog.py" line="1466" />
         <source>e.g. 1 or 1,3,5</source>
         <translation>例如 1 或 1,3,5</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1406" />
+        <location filename="../ui/widgets/dialog.py" line="1467" />
         <source>Include sub-projects</source>
         <translation>包含子项目</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1411" />
+        <location filename="../ui/widgets/dialog.py" line="1472" />
         <source>None or integer</source>
         <translation>留空或填写整数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1415" />
+        <location filename="../ui/widgets/dialog.py" line="1476" />
         <source>contains in name</source>
         <translation>名称包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1417" />
+        <location filename="../ui/widgets/dialog.py" line="1478" />
         <source>contains in notes</source>
         <translation>备注包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1420" />
+        <location filename="../ui/widgets/dialog.py" line="1481" />
         <source>&lt;Any&gt;</source>
         <translation>&lt;任意&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1423" />
+        <location filename="../ui/widgets/dialog.py" line="1484" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1426" />
+        <location filename="../ui/widgets/dialog.py" line="1487" />
         <source>tag1, tag2 (AND)</source>
         <translation>tag1, tag2（AND）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1428" />
+        <location filename="../ui/widgets/dialog.py" line="1489" />
         <source>tag1, tag2 (OR)</source>
         <translation>tag1, tag2（OR）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1430" />
+        <location filename="../ui/widgets/dialog.py" line="1491" />
         <source>tag1, tag2 (NOT)</source>
         <translation>tag1, tag2（NOT）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1432" />
+        <location filename="../ui/widgets/dialog.py" line="1493" />
         <source>Order by created_at ascending</source>
         <translation>按 created_at 升序排列</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1435" />
+        <location filename="../ui/widgets/dialog.py" line="1496" />
         <source>e.g. 100</source>
         <translation>例如 100</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1438" />
+        <location filename="../ui/widgets/dialog.py" line="1499" />
         <source>e.g. 0</source>
         <translation>例如 0</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1441" />
+        <location filename="../ui/widgets/dialog.py" line="1502" />
         <source>Project ID(s):</source>
         <translation>项目 ID：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1443" />
+        <location filename="../ui/widgets/dialog.py" line="1504" />
         <source>Parent ID:</source>
         <translation>父级 ID：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1444" />
+        <location filename="../ui/widgets/dialog.py" line="1505" />
         <source>Model type:</source>
         <translation>模型类型：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1445" />
+        <location filename="../ui/widgets/dialog.py" line="1506" />
         <source>Name contains:</source>
         <translation>名称包含：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1446" />
+        <location filename="../ui/widgets/dialog.py" line="1507" />
         <source>Notes contains:</source>
         <translation>备注包含：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1447" />
+        <location filename="../ui/widgets/dialog.py" line="1508" />
         <source>Tags (ALL):</source>
         <translation>标签（全部匹配）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1448" />
+        <location filename="../ui/widgets/dialog.py" line="1509" />
         <source>Tags (ANY):</source>
         <translation>标签（任一匹配）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1449" />
+        <location filename="../ui/widgets/dialog.py" line="1510" />
         <source>Tags (NOT):</source>
         <translation>标签（排除）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1450" />
+        <location filename="../ui/widgets/dialog.py" line="1511" />
         <source>Order:</source>
         <translation>排序：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1451" />
+        <location filename="../ui/widgets/dialog.py" line="1512" />
         <source>Limit:</source>
         <translation>数量限制：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1452" />
+        <location filename="../ui/widgets/dialog.py" line="1513" />
         <source>Offset:</source>
         <translation>偏移量：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1460" />
+        <location filename="../ui/widgets/dialog.py" line="1521" />
         <source>Search</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1461" />
+        <location filename="../ui/widgets/dialog.py" line="1522" />
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1462" />
+        <location filename="../ui/widgets/dialog.py" line="1523" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -462,37 +462,37 @@
 <context>
     <name>ArrowMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="502" />
+        <location filename="../ui/widgets/dialog.py" line="563" />
         <source>Vector property</source>
         <translation>向量属性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="522" />
+        <location filename="../ui/widgets/dialog.py" line="583" />
         <source>Show arrows</source>
         <translation>显示箭头</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="525" />
+        <location filename="../ui/widgets/dialog.py" line="586" />
         <source>Property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="527" />
+        <location filename="../ui/widgets/dialog.py" line="588" />
         <source>Scale</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="529" />
+        <location filename="../ui/widgets/dialog.py" line="590" />
         <source>Colormap</source>
         <translation>颜色映射</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="536" />
+        <location filename="../ui/widgets/dialog.py" line="597" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="537" />
+        <location filename="../ui/widgets/dialog.py" line="598" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -7284,42 +7284,42 @@
 <context>
     <name>DFTD3MessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="987" />
+        <location filename="../ui/widgets/dialog.py" line="1048" />
         <source>DFT D3 functional</source>
         <translation>DFT D3 泛函</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1058" />
+        <location filename="../ui/widgets/dialog.py" line="1119" />
         <source>Add DFT-D3</source>
         <translation>加上 DFT-D3</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1059" />
+        <location filename="../ui/widgets/dialog.py" line="1120" />
         <source>Subtract DFT-D3</source>
         <translation>减去 DFT-D3</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1062" />
+        <location filename="../ui/widgets/dialog.py" line="1123" />
         <source>D3 cutoff</source>
         <translation>D3 截断半径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1064" />
+        <location filename="../ui/widgets/dialog.py" line="1125" />
         <source>D3 cutoff _cn</source>
         <translation>D3 配位数截断半径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1067" />
+        <location filename="../ui/widgets/dialog.py" line="1128" />
         <source>Alignment mode</source>
         <translation>对齐模式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1074" />
+        <location filename="../ui/widgets/dialog.py" line="1135" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1075" />
+        <location filename="../ui/widgets/dialog.py" line="1136" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -7836,22 +7836,22 @@
 <context>
     <name>EditInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="584" />
+        <location filename="../ui/widgets/dialog.py" line="645" />
         <source>Edit info</source>
         <translation>编辑信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="586" />
+        <location filename="../ui/widgets/dialog.py" line="647" />
         <source>Add new tag</source>
         <translation>添加新标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="595" />
+        <location filename="../ui/widgets/dialog.py" line="656" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="596" />
+        <location filename="../ui/widgets/dialog.py" line="657" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -7959,9 +7959,49 @@
 <context>
     <name>ExportFormatMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="139" />
+        <location filename="../ui/widgets/dialog.py" line="140" />
         <source>Choose export format</source>
         <translation>选择导出格式</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="144" />
+        <source>XYZ (.xyz / extxyz)</source>
+        <translation>XYZ（.xyz / extxyz）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="145" />
+        <source>DeepMD NPY</source>
+        <translation>DeepMD NPY</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="147" />
+        <source>DeepMD NPY (Mixed)</source>
+        <translation>DeepMD NPY（Mixed）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="153" />
+        <source>Subfolder grouping</source>
+        <translation>子目录分组方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="156" />
+        <source>By Config_type</source>
+        <translation>按 Config_type</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="159" />
+        <source>By chemical formula</source>
+        <translation>按化学式</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="167" />
+        <source>Virtual atom padding</source>
+        <translation>虚拟原子填充</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="173" />
+        <source>0 groups exact atom counts; 8 rounds them up to multiples of 8.</source>
+        <translation>0 按精确原子数分组；8 会向上补齐到 8 的倍数。</translation>
     </message>
 </context>
 <context>
@@ -9624,17 +9664,17 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>IndexSelectMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="352" />
+        <location filename="../ui/widgets/dialog.py" line="413" />
         <source>Use original indices</source>
         <translation>使用原始索引</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="359" />
+        <location filename="../ui/widgets/dialog.py" line="420" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="360" />
+        <location filename="../ui/widgets/dialog.py" line="421" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -9642,37 +9682,37 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>InputInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="544" />
+        <location filename="../ui/widgets/dialog.py" line="605" />
         <source>New structure info</source>
         <translation>新增结构信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="554" />
+        <location filename="../ui/widgets/dialog.py" line="615" />
         <source>Key</source>
         <translation>键</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="556" />
+        <location filename="../ui/widgets/dialog.py" line="617" />
         <source>Value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="561" />
+        <location filename="../ui/widgets/dialog.py" line="622" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="562" />
+        <location filename="../ui/widgets/dialog.py" line="623" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="570" />
+        <location filename="../ui/widgets/dialog.py" line="631" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="571" />
+        <location filename="../ui/widgets/dialog.py" line="632" />
         <source>A valid value must be entered</source>
         <translation>请输入有效值</translation>
     </message>
@@ -10367,72 +10407,72 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>LatticeRangeSelectMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="458" />
+        <location filename="../ui/widgets/dialog.py" line="519" />
         <source>a min</source>
         <translation>a 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="460" />
+        <location filename="../ui/widgets/dialog.py" line="521" />
         <source>a max</source>
         <translation>a 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="463" />
+        <location filename="../ui/widgets/dialog.py" line="524" />
         <source>b min</source>
         <translation>b 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="465" />
+        <location filename="../ui/widgets/dialog.py" line="526" />
         <source>b max</source>
         <translation>b 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="468" />
+        <location filename="../ui/widgets/dialog.py" line="529" />
         <source>c min</source>
         <translation>c 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="470" />
+        <location filename="../ui/widgets/dialog.py" line="531" />
         <source>c max</source>
         <translation>c 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="474" />
+        <location filename="../ui/widgets/dialog.py" line="535" />
         <source>α min</source>
         <translation>α 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="476" />
+        <location filename="../ui/widgets/dialog.py" line="537" />
         <source>α max</source>
         <translation>α 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="479" />
+        <location filename="../ui/widgets/dialog.py" line="540" />
         <source>β min</source>
         <translation>β 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="481" />
+        <location filename="../ui/widgets/dialog.py" line="542" />
         <source>β max</source>
         <translation>β 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="484" />
+        <location filename="../ui/widgets/dialog.py" line="545" />
         <source>γ min</source>
         <translation>γ 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="486" />
+        <location filename="../ui/widgets/dialog.py" line="547" />
         <source>γ max</source>
         <translation>γ 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="492" />
+        <location filename="../ui/widgets/dialog.py" line="553" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="493" />
+        <location filename="../ui/widgets/dialog.py" line="554" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -13080,120 +13120,120 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>ModelInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1133" />
+        <location filename="../ui/widgets/dialog.py" line="1194" />
         <source>Create / edit model</source>
         <translation>创建 / 编辑模型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1149" />
+        <location filename="../ui/widgets/dialog.py" line="1210" />
         <source>Model name</source>
         <translation>模型名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1151" />
+        <location filename="../ui/widgets/dialog.py" line="1212" />
         <source>Parent</source>
         <translation>父级</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1152" />
+        <location filename="../ui/widgets/dialog.py" line="1213" />
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1153" />
+        <location filename="../ui/widgets/dialog.py" line="1214" />
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1161" />
+        <location filename="../ui/widgets/dialog.py" line="1222" />
         <source>RMSE (energy / force / virial)</source>
         <translation>RMSE（energy / force / virial）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1181" />
-        <location filename="../ui/widgets/dialog.py" line="1295" />
+        <location filename="../ui/widgets/dialog.py" line="1242" />
+        <location filename="../ui/widgets/dialog.py" line="1356" />
         <source>energy</source>
         <translation>能量</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1185" />
-        <location filename="../ui/widgets/dialog.py" line="1302" />
+        <location filename="../ui/widgets/dialog.py" line="1246" />
+        <location filename="../ui/widgets/dialog.py" line="1363" />
         <source>force</source>
         <translation>力</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1189" />
-        <location filename="../ui/widgets/dialog.py" line="1309" />
+        <location filename="../ui/widgets/dialog.py" line="1250" />
+        <location filename="../ui/widgets/dialog.py" line="1370" />
         <source>virial</source>
         <translation>维里</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1213" />
+        <location filename="../ui/widgets/dialog.py" line="1274" />
         <source>Model training path</source>
         <translation>模型训练路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1221" />
+        <location filename="../ui/widgets/dialog.py" line="1282" />
         <source>Path</source>
         <translation>路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1232" />
+        <location filename="../ui/widgets/dialog.py" line="1293" />
         <source>Enter the tag and press Enter</source>
         <translation>输入标签后按 Enter</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1236" />
+        <location filename="../ui/widgets/dialog.py" line="1297" />
         <source>Tags</source>
         <translation>标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1247" />
+        <location filename="../ui/widgets/dialog.py" line="1308" />
         <source>Model notes</source>
         <translation>模型备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1251" />
+        <location filename="../ui/widgets/dialog.py" line="1312" />
         <source>Notes</source>
         <translation>备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1257" />
+        <location filename="../ui/widgets/dialog.py" line="1318" />
         <source>Select the model folder path</source>
         <translation>选择模型文件夹路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1265" />
+        <location filename="../ui/widgets/dialog.py" line="1326" />
         <source>{tag} already exists!</source>
         <translation>{tag} 已存在！</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1274" />
+        <location filename="../ui/widgets/dialog.py" line="1335" />
         <source>{path} does not exist!</source>
         <translation>{path} 不存在！</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1280" />
+        <location filename="../ui/widgets/dialog.py" line="1341" />
         <source>No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.</source>
         <translation>指定路径中未找到 'nep.txt'。它不是强制要求，但请确认当前操作符合预期。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1286" />
+        <location filename="../ui/widgets/dialog.py" line="1347" />
         <source>No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing.</source>
         <translation>指定路径中未找到 'train.xyz' 训练数据文件。计算训练误差指标需要此文件，请确认当前操作符合预期。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1321" />
+        <location filename="../ui/widgets/dialog.py" line="1382" />
         <source>expected at least {count} columns</source>
         <translation>至少需要 {count} 列</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1327" />
+        <location filename="../ui/widgets/dialog.py" line="1388" />
         <source>result is not finite</source>
         <translation>结果不是有限数值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1331" />
+        <location filename="../ui/widgets/dialog.py" line="1392" />
         <source>Cannot calculate {metric} RMSE from {file}: {error}. The current manual value is kept.</source>
         <translation>无法从 {file} 计算{metric} RMSE：{error}。已保留当前手动输入值。</translation>
     </message>
@@ -14888,19 +14928,19 @@ All child items will also be deleted.</source>
 <context>
     <name>ProjectInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1096" />
-        <location filename="../ui/widgets/dialog.py" line="1105" />
+        <location filename="../ui/widgets/dialog.py" line="1157" />
+        <location filename="../ui/widgets/dialog.py" line="1166" />
         <source>Project name</source>
         <translation>项目名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1100" />
-        <location filename="../ui/widgets/dialog.py" line="1107" />
+        <location filename="../ui/widgets/dialog.py" line="1161" />
+        <location filename="../ui/widgets/dialog.py" line="1168" />
         <source>Project notes</source>
         <translation>项目备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1101" />
+        <location filename="../ui/widgets/dialog.py" line="1162" />
         <source>Parent</source>
         <translation>父级</translation>
     </message>
@@ -15997,37 +16037,37 @@ All child items will also be deleted.</source>
 <context>
     <name>RangeSelectMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="393" />
+        <location filename="../ui/widgets/dialog.py" line="454" />
         <source>X min</source>
         <translation>X 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="395" />
+        <location filename="../ui/widgets/dialog.py" line="456" />
         <source>X max</source>
         <translation>X 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="397" />
+        <location filename="../ui/widgets/dialog.py" line="458" />
         <source>Y min</source>
         <translation>Y 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="399" />
+        <location filename="../ui/widgets/dialog.py" line="460" />
         <source>Y max</source>
         <translation>Y 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="401" />
+        <location filename="../ui/widgets/dialog.py" line="462" />
         <source>Logic</source>
         <translation>逻辑</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="407" />
+        <location filename="../ui/widgets/dialog.py" line="468" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="408" />
+        <location filename="../ui/widgets/dialog.py" line="469" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -16068,27 +16108,27 @@ All child items will also be deleted.</source>
 <context>
     <name>RenameTagMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="747" />
+        <location filename="../ui/widgets/dialog.py" line="808" />
         <source>Rename tag: {name}</source>
         <translation>重命名标签：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="753" />
+        <location filename="../ui/widgets/dialog.py" line="814" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="754" />
+        <location filename="../ui/widgets/dialog.py" line="815" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="762" />
+        <location filename="../ui/widgets/dialog.py" line="823" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="763" />
+        <location filename="../ui/widgets/dialog.py" line="824" />
         <source>A valid value must be entered</source>
         <translation>请输入有效值</translation>
     </message>
@@ -16096,7 +16136,7 @@ All child items will also be deleted.</source>
 <context>
     <name>ResultData</name>
     <message>
-        <location filename="../core/io/base.py" line="2770" />
+        <location filename="../core/io/base.py" line="2862" />
         <source>Generating NEP descriptors: {done}/{total} structures</source>
         <translation>正在生成 NEP 描述符：{done}/{total} 个结构</translation>
     </message>
@@ -16756,77 +16796,67 @@ All child items will also be deleted.</source>
         <translation>在控制台菜单中按 group 字段分组卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="184" />
+        <location filename="../ui/pages/settings.py" line="175" />
         <source>Cache output files</source>
         <translation>缓存输出文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="175" />
-        <source>Keep DeepMD subfolders</source>
-        <translation>保留 DeepMD 子目录</translation>
-    </message>
-    <message>
         <location filename="../ui/pages/settings.py" line="176" />
-        <source>Preserve imported folder hierarchy when exporting deepmd/npy</source>
-        <translation>导出 deepmd/npy 时保留导入目录层级</translation>
-    </message>
-    <message>
-        <location filename="../ui/pages/settings.py" line="185" />
         <source>Cache *.out and descriptor.out for faster reload (NEP &amp; DeepMD)</source>
         <translation>缓存 *.out 和 descriptor.out，加快 NEP 与 DeepMD 重新加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="195" />
+        <location filename="../ui/pages/settings.py" line="186" />
         <source>Automatically analyze structure evidence</source>
         <translation>自动分析结构证据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="197" />
+        <location filename="../ui/pages/settings.py" line="188" />
         <source>After the basic dataset audit appears, analyze phases and magnetic order in the background</source>
         <translation>基础诊断显示后，在后台分析相结构与磁序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="206" />
+        <location filename="../ui/pages/settings.py" line="197" />
         <source>Export significant digits</source>
         <translation>导出有效数字</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="207" />
+        <location filename="../ui/pages/settings.py" line="198" />
         <source>Significant digits for per-atom XYZ/extxyz values</source>
         <translation>XYZ/extxyz 逐原子数值的有效数字</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="218" />
+        <location filename="../ui/pages/settings.py" line="209" />
         <source>Default Config_type</source>
         <translation>默认 Config_type</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="219" />
+        <location filename="../ui/pages/settings.py" line="210" />
         <source>Tag assigned when source has no Config_type</source>
         <translation>源数据缺少 Config_type 时使用的标签</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="228" />
+        <location filename="../ui/pages/settings.py" line="219" />
         <source>Covalent radius coefficient</source>
         <translation>共价半径系数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="229" />
+        <location filename="../ui/pages/settings.py" line="220" />
         <source>Coefficient used to detect bond length</source>
         <translation>用于判断键长的系数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="242" />
+        <location filename="../ui/pages/settings.py" line="233" />
         <source>NEP Backend</source>
         <translation>NEP 后端</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="636" />
+        <location filename="../ui/pages/settings.py" line="625" />
         <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0 and refresh.</source>
         <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0 后刷新。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="659" />
+        <location filename="../ui/pages/settings.py" line="648" />
         <source>{package} v{version} is ready; restart NepTrainKit to activate it</source>
         <translation>{package} v{version} 已就绪；重启 NepTrainKit 后生效</translation>
     </message>
@@ -16835,12 +16865,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">选择 CPU、GPU 或自动检测</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="259" />
+        <location filename="../ui/pages/settings.py" line="250" />
         <source>Data Precision</source>
         <translation>数据精度</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="260" />
+        <location filename="../ui/pages/settings.py" line="251" />
         <source>Choose storage precision for imported DFT/structure data</source>
         <translation>选择导入 DFT/结构数据的存储精度</translation>
     </message>
@@ -16853,27 +16883,27 @@ All child items will also be deleted.</source>
         <translation type="vanished">GPU 每次处理的结构帧数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="243" />
+        <location filename="../ui/pages/settings.py" line="234" />
         <source>Select CPU/CUDA or let Auto use CUDA when available</source>
         <translation>选择 CPU/CUDA，或让自动模式在可用时使用 CUDA</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="269" />
+        <location filename="../ui/pages/settings.py" line="260" />
         <source>NEP Chunk Max Atoms</source>
         <translation>NEP 分块最大原子数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="270" />
+        <location filename="../ui/pages/settings.py" line="261" />
         <source>Maximum total atoms per prediction chunk on CPU or CUDA</source>
         <translation>CPU 或 CUDA 单个预测分块允许的最大总原子数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="277" />
+        <location filename="../ui/pages/settings.py" line="268" />
         <source>Refresh</source>
         <translation>刷新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="279" />
+        <location filename="../ui/pages/settings.py" line="270" />
         <source>Runtime health</source>
         <translation>运行环境状态</translation>
     </message>
@@ -16886,225 +16916,225 @@ All child items will also be deleted.</source>
         <translation type="vanished">从 PyPI 检查兼容的 nep-adapters wheel，更新通过验证后才会激活</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="314" />
+        <location filename="../ui/pages/settings.py" line="305" />
         <source>Scatter edge color</source>
         <translation>散点边缘颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="315" />
+        <location filename="../ui/pages/settings.py" line="306" />
         <source>Default edge color for points</source>
         <translation>点的默认边缘颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="322" />
+        <location filename="../ui/pages/settings.py" line="313" />
         <source>Scatter face color</source>
         <translation>散点填充颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="323" />
+        <location filename="../ui/pages/settings.py" line="314" />
         <source>Default fill color for points</source>
         <translation>点的默认填充颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="330" />
+        <location filename="../ui/pages/settings.py" line="321" />
         <source>Face alpha (0-255)</source>
         <translation>填充透明度 (0-255)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="331" />
+        <location filename="../ui/pages/settings.py" line="322" />
         <source>Alpha channel for fill color</source>
         <translation>填充颜色的 Alpha 通道</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="339" />
+        <location filename="../ui/pages/settings.py" line="330" />
         <source>PyQtGraph scatter size</source>
         <translation>PyQtGraph 散点大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="340" />
+        <location filename="../ui/pages/settings.py" line="331" />
         <source>Marker size for PyQtGraph canvas</source>
         <translation>PyQtGraph 画布上的标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="348" />
+        <location filename="../ui/pages/settings.py" line="339" />
         <source>VisPy scatter size</source>
         <translation>VisPy 散点大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="349" />
+        <location filename="../ui/pages/settings.py" line="340" />
         <source>Marker size for VisPy canvas</source>
         <translation>VisPy 画布上的标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="357" />
+        <location filename="../ui/pages/settings.py" line="348" />
         <source>VisPy antialias</source>
         <translation>VisPy 抗锯齿</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="358" />
+        <location filename="../ui/pages/settings.py" line="349" />
         <source>Marker antialias value for VisPy (0-2)</source>
         <translation>VisPy 标记抗锯齿值 (0-2)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="366" />
+        <location filename="../ui/pages/settings.py" line="357" />
         <source>Structure background</source>
         <translation>结构背景</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="367" />
+        <location filename="../ui/pages/settings.py" line="358" />
         <source>Background color for lattice/structure viewer</source>
         <translation>晶格/结构查看器的背景颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="374" />
+        <location filename="../ui/pages/settings.py" line="365" />
         <source>Lattice line color</source>
         <translation>晶格线颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="375" />
+        <location filename="../ui/pages/settings.py" line="366" />
         <source>Line color for lattice edges in structure viewer</source>
         <translation>结构查看器中晶格边线的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="382" />
+        <location filename="../ui/pages/settings.py" line="373" />
         <source>Selected color</source>
         <translation>选中颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="383" />
+        <location filename="../ui/pages/settings.py" line="374" />
         <source>Color for selected points</source>
         <translation>选中点的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="390" />
+        <location filename="../ui/pages/settings.py" line="381" />
         <source>Show color</source>
         <translation>显示颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="391" />
+        <location filename="../ui/pages/settings.py" line="382" />
         <source>Color for highlighted "show" points</source>
         <translation>高亮“show”点的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="398" />
+        <location filename="../ui/pages/settings.py" line="389" />
         <source>Current marker color</source>
         <translation>当前标记颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="399" />
+        <location filename="../ui/pages/settings.py" line="390" />
         <source>Color for current star marker</source>
         <translation>当前星形标记的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="406" />
+        <location filename="../ui/pages/settings.py" line="397" />
         <source>Current marker size</source>
         <translation>当前标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="407" />
+        <location filename="../ui/pages/settings.py" line="398" />
         <source>Size of current star marker</source>
         <translation>当前星形标记的大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="414" />
-        <location filename="../ui/pages/settings.py" line="434" />
+        <location filename="../ui/pages/settings.py" line="405" />
+        <location filename="../ui/pages/settings.py" line="425" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="417" />
+        <location filename="../ui/pages/settings.py" line="408" />
         <source>Open Help Page</source>
         <translation>打开帮助页面</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="419" />
+        <location filename="../ui/pages/settings.py" line="410" />
         <source>Help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="420" />
+        <location filename="../ui/pages/settings.py" line="411" />
         <source>Discover new features and learn useful tips about NepTrainKit.</source>
         <translation>了解 NepTrainKit 的新功能与实用技巧。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="424" />
-        <location filename="../ui/pages/settings.py" line="426" />
+        <location filename="../ui/pages/settings.py" line="415" />
+        <location filename="../ui/pages/settings.py" line="417" />
         <source>Submit Feedback</source>
         <translation>提交反馈</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="428" />
+        <location filename="../ui/pages/settings.py" line="419" />
         <source>Help us improve NepTrainKit by providing feedback.</source>
         <translation>帮助我们改进 NepTrainKit，欢迎提交反馈。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="284" />
-        <location filename="../ui/pages/settings.py" line="432" />
+        <location filename="../ui/pages/settings.py" line="275" />
+        <location filename="../ui/pages/settings.py" line="423" />
         <source>Check for Updates</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="286" />
+        <location filename="../ui/pages/settings.py" line="277" />
         <source>{package} runtime updates</source>
         <translation>{package} 运行时更新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="290" />
+        <location filename="../ui/pages/settings.py" line="281" />
         <source>Check PyPI for a compatible {package} wheel; updates are verified before activation</source>
         <translation>从 PyPI 检查兼容的 {package} wheel；激活前会先进行验证</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="439" />
+        <location filename="../ui/pages/settings.py" line="430" />
         <source>Check and update</source>
         <translation>检查并更新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="441" />
+        <location filename="../ui/pages/settings.py" line="432" />
         <source>About NEP89</source>
         <translation>关于 NEP89</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="442" />
+        <location filename="../ui/pages/settings.py" line="433" />
         <source>NEP official NEP89 large model</source>
         <translation>NEP 官方 NEP89 大模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="582" />
+        <location filename="../ui/pages/settings.py" line="571" />
         <source>Language saved. Restart NepTrainKit to apply it.</source>
         <translation>语言设置已保存，重启 NepTrainKit 后生效。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="583" />
+        <location filename="../ui/pages/settings.py" line="572" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="594" />
+        <location filename="../ui/pages/settings.py" line="583" />
         <source>Available</source>
         <translation>可用</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="595" />
+        <location filename="../ui/pages/settings.py" line="584" />
         <source>Unavailable</source>
         <translation>不可用</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="598" />
+        <location filename="../ui/pages/settings.py" line="587" />
         <source>not installed</source>
         <translation>未安装</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="600" />
+        <location filename="../ui/pages/settings.py" line="589" />
         <source>Native helpers: {available}/{total} · nep-adapters: {version} · CPU: {cpu} · CUDA: {cuda}</source>
         <translation>原生模块：{available}/{total} · nep-adapters：{version} · CPU：{cpu} · CUDA：{cuda}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="628" />
+        <location filename="../ui/pages/settings.py" line="617" />
         <source>Native helpers are incomplete ({missing}). Reinstall the NepTrainKit wheel for this Python version.</source>
         <translation>原生模块不完整（{missing}）。请重新安装适配当前 Python 版本的 NepTrainKit wheel。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="642" />
+        <location filename="../ui/pages/settings.py" line="631" />
         <source>Runtime check completed.</source>
         <translation>运行环境检查完成。</translation>
     </message>
@@ -17113,12 +17143,12 @@ All child items will also be deleted.</source>
         <translation type="vanished">nep-adapters v{version} 已就绪；重启 NepTrainKit 后激活</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="690" />
+        <location filename="../ui/pages/settings.py" line="679" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="697" />
+        <location filename="../ui/pages/settings.py" line="686" />
         <source>New version available: v</source>
         <translation>发现新版本：v</translation>
     </message>
@@ -17478,67 +17508,67 @@ All child items will also be deleted.</source>
 <context>
     <name>ShiftEnergyMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="803" />
+        <location filename="../ui/widgets/dialog.py" line="864" />
         <source>Delete selected preset</source>
         <translation>删除选中的预设</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="812" />
+        <location filename="../ui/widgets/dialog.py" line="873" />
         <source>Save baseline as preset</source>
         <translation>将基线保存为预设</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="814" />
+        <location filename="../ui/widgets/dialog.py" line="875" />
         <source>Preset name</source>
         <translation>预设名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="831" />
+        <location filename="../ui/widgets/dialog.py" line="892" />
         <source>Reference group</source>
         <translation>参考分组</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="832" />
+        <location filename="../ui/widgets/dialog.py" line="893" />
         <source>Zero baseline</source>
         <translation>零基线</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="833" />
+        <location filename="../ui/widgets/dialog.py" line="894" />
         <source>DFT to NEP</source>
         <translation>DFT 到 NEP</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="836" />
+        <location filename="../ui/widgets/dialog.py" line="897" />
         <source>Max generations</source>
         <translation>最大代数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="838" />
+        <location filename="../ui/widgets/dialog.py" line="899" />
         <source>Population size</source>
         <translation>种群大小</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="840" />
+        <location filename="../ui/widgets/dialog.py" line="901" />
         <source>Convergence tolerance</source>
         <translation>收敛容差</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="847" />
+        <location filename="../ui/widgets/dialog.py" line="908" />
         <source>Alignment mode</source>
         <translation>对齐模式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="856" />
+        <location filename="../ui/widgets/dialog.py" line="917" />
         <source>Use existing preset (optional)</source>
         <translation>使用已有预设（可选）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="867" />
+        <location filename="../ui/widgets/dialog.py" line="928" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="868" />
+        <location filename="../ui/widgets/dialog.py" line="929" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -17562,19 +17592,19 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="314" />
-        <location filename="../ui/pages/show_nep.py" line="397" />
+        <location filename="../ui/pages/show_nep.py" line="422" />
         <source>Export Selected ({selected})…</source>
         <translation>导出已选择结构（{selected}）…</translation>
     </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="320" />
-        <location filename="../ui/pages/show_nep.py" line="400" />
+        <location filename="../ui/pages/show_nep.py" line="425" />
         <source>Export Removed ({removed})…</source>
         <translation>导出已移除结构（{removed}）…</translation>
     </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="326" />
-        <location filename="../ui/pages/show_nep.py" line="403" />
+        <location filename="../ui/pages/show_nep.py" line="428" />
         <source>Export Active ({active})…</source>
         <translation>导出当前保留结构（{active}）…</translation>
     </message>
@@ -17583,68 +17613,68 @@ All child items will also be deleted.</source>
         <translation type="vanished">评估当前数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="617" />
+        <location filename="../ui/pages/show_nep.py" line="642" />
         <source>Switching NEP model</source>
         <translation>正在切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="617" />
+        <location filename="../ui/pages/show_nep.py" line="642" />
         <source>Please wait...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="687" />
+        <location filename="../ui/pages/show_nep.py" line="712" />
         <source>Failed to switch NEP model</source>
         <translation>切换 NEP 模型失败</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="764" />
+        <location filename="../ui/pages/show_nep.py" line="789" />
         <source>Original index</source>
         <translation>原始索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="769" />
+        <location filename="../ui/pages/show_nep.py" line="794" />
         <source>Original structure index</source>
         <translation>结构的原始文件索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="777" />
+        <location filename="../ui/pages/show_nep.py" line="802" />
         <source>/ 0 frames</source>
         <translation>/ 0 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="779" />
-        <location filename="../ui/pages/show_nep.py" line="780" />
+        <location filename="../ui/pages/show_nep.py" line="804" />
+        <location filename="../ui/pages/show_nep.py" line="805" />
         <source>Previous structure</source>
         <translation>上一个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="783" />
-        <location filename="../ui/pages/show_nep.py" line="784" />
+        <location filename="../ui/pages/show_nep.py" line="808" />
+        <location filename="../ui/pages/show_nep.py" line="809" />
         <source>Next structure</source>
         <translation>下一个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="790" />
-        <location filename="../ui/pages/show_nep.py" line="791" />
-        <location filename="../ui/pages/show_nep.py" line="1636" />
-        <location filename="../ui/pages/show_nep.py" line="1637" />
+        <location filename="../ui/pages/show_nep.py" line="815" />
+        <location filename="../ui/pages/show_nep.py" line="816" />
+        <location filename="../ui/pages/show_nep.py" line="1689" />
+        <location filename="../ui/pages/show_nep.py" line="1690" />
         <source>Play structures</source>
         <translation>连续播放结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1031" />
+        <location filename="../ui/pages/show_nep.py" line="1056" />
         <source>Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;Advanced / experimental structure files (*.out *.log *.data *.cfg input.data);;All files (*)</source>
         <translation>支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;高级 / 实验性结构文件 (*.out *.log *.data *.cfg input.data);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1231" />
+        <location filename="../ui/pages/show_nep.py" line="1284" />
         <source>/ {count:,} frames</source>
         <translation>/ {count:,} 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1631" />
-        <location filename="../ui/pages/show_nep.py" line="1632" />
+        <location filename="../ui/pages/show_nep.py" line="1684" />
+        <location filename="../ui/pages/show_nep.py" line="1685" />
         <source>Pause structures</source>
         <translation>暂停播放结构</translation>
     </message>
@@ -17669,34 +17699,34 @@ All child items will also be deleted.</source>
         <translation type="vanished">切换搜索模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="850" />
+        <location filename="../ui/pages/show_nep.py" line="875" />
         <source>Switch NEP model</source>
         <translation>切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="892" />
+        <location filename="../ui/pages/show_nep.py" line="917" />
         <source>Arrow overlay is available only for vispy structure canvas.</source>
         <translation>箭头叠加只在 vispy 结构画布中可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="906" />
+        <location filename="../ui/pages/show_nep.py" line="931" />
         <source>Searching…</source>
         <translation>正在搜索…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="910" />
+        <location filename="../ui/pages/show_nep.py" line="935" />
         <source>Indexing…</source>
         <translation>正在建立索引…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1016" />
-        <location filename="../ui/pages/show_nep.py" line="1182" />
-        <location filename="../ui/pages/show_nep.py" line="1372" />
+        <location filename="../ui/pages/show_nep.py" line="1041" />
+        <location filename="../ui/pages/show_nep.py" line="1235" />
+        <location filename="../ui/pages/show_nep.py" line="1425" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1028" />
+        <location filename="../ui/pages/show_nep.py" line="1053" />
         <source>Please choose the data file</source>
         <translation>请选择数据文件</translation>
     </message>
@@ -17705,113 +17735,113 @@ All child items will also be deleted.</source>
         <translation type="vanished">支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1053" />
-        <location filename="../ui/pages/show_nep.py" line="1070" />
-        <location filename="../ui/pages/show_nep.py" line="1110" />
-        <location filename="../ui/pages/show_nep.py" line="1140" />
-        <location filename="../ui/pages/show_nep.py" line="1671" />
-        <location filename="../ui/pages/show_nep.py" line="2091" />
+        <location filename="../ui/pages/show_nep.py" line="1078" />
+        <location filename="../ui/pages/show_nep.py" line="1102" />
+        <location filename="../ui/pages/show_nep.py" line="1149" />
+        <location filename="../ui/pages/show_nep.py" line="1186" />
+        <location filename="../ui/pages/show_nep.py" line="1724" />
+        <location filename="../ui/pages/show_nep.py" line="2152" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1077" />
+        <location filename="../ui/pages/show_nep.py" line="1109" />
         <source>No active structures to export.</source>
         <translation>没有可导出的保留结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1113" />
+        <location filename="../ui/pages/show_nep.py" line="1152" />
         <source>Please select some structures first!</source>
         <translation>请先选择一些结构！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1144" />
+        <location filename="../ui/pages/show_nep.py" line="1190" />
         <source>No removed structures to export.</source>
         <translation>没有可导出的已移除结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1194" />
-        <location filename="../ui/pages/show_nep.py" line="2101" />
+        <location filename="../ui/pages/show_nep.py" line="1247" />
+        <location filename="../ui/pages/show_nep.py" line="2162" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1195" />
+        <location filename="../ui/pages/show_nep.py" line="1248" />
         <source>A working directory already exists. Loading a new directory will erase the previous results.
 Do you want to load the new working path?</source>
         <translation>已有工作目录。加载新目录会清除之前的结果。
 仍要加载新的工作路径吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1379" />
+        <location filename="../ui/pages/show_nep.py" line="1432" />
         <source>Current dataset: {name}</source>
         <translation>当前数据集：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1384" />
+        <location filename="../ui/pages/show_nep.py" line="1437" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1422" />
+        <location filename="../ui/pages/show_nep.py" line="1475" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1422" />
+        <location filename="../ui/pages/show_nep.py" line="1475" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1525" />
+        <location filename="../ui/pages/show_nep.py" line="1578" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1564" />
-        <location filename="../ui/pages/show_nep.py" line="2293" />
+        <location filename="../ui/pages/show_nep.py" line="1617" />
+        <location filename="../ui/pages/show_nep.py" line="2354" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1665" />
+        <location filename="../ui/pages/show_nep.py" line="1718" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1843" />
+        <location filename="../ui/pages/show_nep.py" line="1904" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1854" />
+        <location filename="../ui/pages/show_nep.py" line="1915" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2096" />
+        <location filename="../ui/pages/show_nep.py" line="2157" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2102" />
+        <location filename="../ui/pages/show_nep.py" line="2163" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2113" />
+        <location filename="../ui/pages/show_nep.py" line="2174" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2195" />
+        <location filename="../ui/pages/show_nep.py" line="2256" />
         <source>Filter failed: {message}</source>
         <translation>筛选失败：{message}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2210" />
+        <location filename="../ui/pages/show_nep.py" line="2271" />
         <source>The filter result has expired. Preview it again before applying.</source>
         <translation>筛选结果已过期，请重新预览后再应用。</translation>
     </message>
@@ -17820,8 +17850,8 @@ Do you want to continue?</source>
         <translation type="vanished">原子间距过小，结构可能不合理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2319" />
-        <location filename="../ui/pages/show_nep.py" line="2407" />
+        <location filename="../ui/pages/show_nep.py" line="2380" />
+        <location filename="../ui/pages/show_nep.py" line="2468" />
         <source>Please enter a search query.</source>
         <translation>请输入搜索内容。</translation>
     </message>
@@ -17838,14 +17868,14 @@ Do you want to continue?</source>
         <translation type="vanished">检查当前数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2331" />
-        <location filename="../ui/pages/show_nep.py" line="2345" />
+        <location filename="../ui/pages/show_nep.py" line="2392" />
+        <location filename="../ui/pages/show_nep.py" line="2406" />
         <source>Please load a dataset before running Training Set Audit.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2338" />
-        <location filename="../ui/pages/show_nep.py" line="2355" />
+        <location filename="../ui/pages/show_nep.py" line="2399" />
+        <location filename="../ui/pages/show_nep.py" line="2416" />
         <source>Training Set Audit page is not available.</source>
         <translation>训练集评估页面不可用。</translation>
     </message>
@@ -18678,128 +18708,128 @@ Do you want to continue?</source>
 <context>
     <name>SparseMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="197" />
+        <location filename="../ui/widgets/dialog.py" line="258" />
         <source>Global FPS (compatible)</source>
         <translation>全局 FPS（兼容模式）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="199" />
+        <location filename="../ui/widgets/dialog.py" line="260" />
         <source>Element-set balanced FPS</source>
         <translation>元素集合平衡 FPS</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="204" />
+        <location filename="../ui/widgets/dialog.py" line="265" />
         <source>Selection strategy</source>
         <translation>选择策略</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="332" />
+        <location filename="../ui/widgets/dialog.py" line="393" />
         <source>Groups by element set, assigns sqrt-size quotas, and uses raw descriptors.</source>
         <translation>按元素集合分组，以组大小平方根分配名额，并使用原始描述符。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="337" />
+        <location filename="../ui/widgets/dialog.py" line="398" />
         <source>Uses the existing global FPS behavior and descriptor options.</source>
         <translation>使用原有全局 FPS 行为和描述符选项。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="209" />
+        <location filename="../ui/widgets/dialog.py" line="270" />
         <source>Fixed count (FPS)</source>
         <translation>固定数量（FPS）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="210" />
+        <location filename="../ui/widgets/dialog.py" line="271" />
         <source>R^2 stop (FPS)</source>
         <translation>R^2 停止（FPS）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="211" />
+        <location filename="../ui/widgets/dialog.py" line="272" />
         <source>Sampling mode</source>
         <translation>采样模式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="215" />
+        <location filename="../ui/widgets/dialog.py" line="276" />
         <source>Sample limit</source>
         <translation>样本上限</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="218" />
+        <location filename="../ui/widgets/dialog.py" line="279" />
         <source>Min distance</source>
         <translation>最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="222" />
+        <location filename="../ui/widgets/dialog.py" line="283" />
         <source>R^2 threshold</source>
         <translation>R^2 阈值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="231" />
+        <location filename="../ui/widgets/dialog.py" line="292" />
         <source>Reduced (PCA)</source>
         <translation>降维后（PCA）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="232" />
+        <location filename="../ui/widgets/dialog.py" line="293" />
         <source>Raw descriptor</source>
         <translation>原始描述符</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="233" />
+        <location filename="../ui/widgets/dialog.py" line="294" />
         <source>Descriptor source</source>
         <translation>描述符来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="244" />
+        <location filename="../ui/widgets/dialog.py" line="305" />
         <source>Optional training dataset path (.xyz or folder)</source>
         <translation>可选训练数据集路径（.xyz 或文件夹）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="254" />
-        <location filename="../ui/widgets/dialog.py" line="256" />
+        <location filename="../ui/widgets/dialog.py" line="315" />
+        <location filename="../ui/widgets/dialog.py" line="317" />
         <source>Browse for an existing training dataset</source>
         <translation>浏览已有训练数据集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="259" />
+        <location filename="../ui/widgets/dialog.py" line="320" />
         <source>Training dataset</source>
         <translation>训练数据集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="263" />
+        <location filename="../ui/widgets/dialog.py" line="324" />
         <source>Use current selection as region</source>
         <translation>将当前选择作为区域</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="265" />
+        <location filename="../ui/widgets/dialog.py" line="326" />
         <source>When FPS sampling is performed in the selected region, the program will automatically deselect it so you can delete it directly.</source>
         <translation>在选中区域执行 FPS 采样后，程序会自动取消选中该区域，便于直接删除。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="270" />
+        <location filename="../ui/widgets/dialog.py" line="331" />
         <source>Show training overlay</source>
         <translation>显示训练集叠加图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="272" />
+        <location filename="../ui/widgets/dialog.py" line="333" />
         <source>Display a scatter plot showing training data, loaded data, and selected structures in PCA space after sampling.</source>
         <translation>采样后显示散点图，在 PCA 空间中对比训练数据、已加载数据和选中结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="282" />
+        <location filename="../ui/widgets/dialog.py" line="343" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="283" />
+        <location filename="../ui/widgets/dialog.py" line="344" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="296" />
+        <location filename="../ui/widgets/dialog.py" line="357" />
         <source>Select training dataset</source>
         <translation>选择训练数据集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="301" />
+        <location filename="../ui/widgets/dialog.py" line="362" />
         <source>Select training dataset folder</source>
         <translation>选择训练数据集文件夹</translation>
     </message>
@@ -20740,27 +20770,27 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TagEditDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1565" />
+        <location filename="../ui/widgets/dialog.py" line="1626" />
         <source>Edit tag</source>
         <translation>编辑标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1587" />
+        <location filename="../ui/widgets/dialog.py" line="1648" />
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1588" />
+        <location filename="../ui/widgets/dialog.py" line="1649" />
         <source>Color</source>
         <translation>颜色</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1589" />
+        <location filename="../ui/widgets/dialog.py" line="1650" />
         <source>Notes</source>
         <translation>备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1595" />
+        <location filename="../ui/widgets/dialog.py" line="1656" />
         <source>Edit tag color</source>
         <translation>编辑标签颜色</translation>
     </message>
@@ -20852,12 +20882,12 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TagManageDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1614" />
+        <location filename="../ui/widgets/dialog.py" line="1675" />
         <source>Manage tags</source>
         <translation>管理标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1622" />
+        <location filename="../ui/widgets/dialog.py" line="1683" />
         <source>Enter the tag and press Enter</source>
         <translation>输入标签后按 Enter</translation>
     </message>
@@ -20865,57 +20895,57 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TrainingOverlayDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1700" />
+        <location filename="../ui/widgets/dialog.py" line="1761" />
         <source>Training overlay</source>
         <translation>训练集叠加图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1881" />
+        <location filename="../ui/widgets/dialog.py" line="1942" />
         <source>Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph.</source>
         <translation>当前画布后端为 vispy，但 vispy 画布初始化失败，已回退到 pyqtgraph。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1892" />
+        <location filename="../ui/widgets/dialog.py" line="1953" />
         <source>Training</source>
         <translation>训练集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1893" />
+        <location filename="../ui/widgets/dialog.py" line="1954" />
         <source>Loaded</source>
         <translation>已加载</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1894" />
+        <location filename="../ui/widgets/dialog.py" line="1955" />
         <source>Selected</source>
         <translation>当前选中数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1923" />
+        <location filename="../ui/widgets/dialog.py" line="1984" />
         <source>Reset view</source>
         <translation>重置视图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1927" />
+        <location filename="../ui/widgets/dialog.py" line="1988" />
         <source>Export image</source>
         <translation>导出图片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1931" />
+        <location filename="../ui/widgets/dialog.py" line="1992" />
         <source>Export data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1964" />
+        <location filename="../ui/widgets/dialog.py" line="2025" />
         <source>Training: {count}</source>
         <translation>训练集：{count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1965" />
+        <location filename="../ui/widgets/dialog.py" line="2026" />
         <source>Loaded: {count}</source>
         <translation>已加载：{count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1966" />
+        <location filename="../ui/widgets/dialog.py" line="2027" />
         <source>Selected: {count}</source>
         <translation>已选择：{count}</translation>
     </message>

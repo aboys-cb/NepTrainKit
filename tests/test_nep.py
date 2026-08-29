@@ -18,6 +18,7 @@ os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdat
 
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
 from NepTrainKit.core.io.base import DPPlotData, NepPlotData
+from NepTrainKit.core import MessageManager
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset
 from NepTrainKit.core.precision import get_storage_float_dtype
 from numpy.testing import assert_allclose
@@ -103,6 +104,23 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertEqual(result.stress.num, 25)
         self.assertEqual(result.virial.num, 25)
 
+    def test_export_model_npy_skips_empty_removed_dataset_and_clears_stale_output(self):
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
+        result.load()
+
+        stale_removed = Path(tmp_dir) / "export_remove_model"
+        stale_removed.mkdir()
+        (stale_removed / "stale.txt").write_text("old", encoding="utf8")
+
+        with patch.object(MessageManager, "send_info_message") as send_info:
+            result.export_model_npy(tmp_dir, group_by_config_type=False)
+
+        self.assertTrue((Path(tmp_dir) / "export_good_model").is_dir())
+        self.assertFalse(stale_removed.exists())
+        send_info.assert_called_once_with(f"File exported to: {tmp_dir}")
+
     def _make_nep_workdir(self) -> str:
         tmp_path = Path(tempfile.mkdtemp(prefix=f"nep_test_{uuid.uuid4().hex}_"))
         tmp_dir = str(tmp_path)
@@ -129,6 +147,31 @@ class TestNepTrainResultData( unittest.TestCase):
         result.export_active_xyz(export_path)
         exported = Structure.read_multiple(export_path)
         self.assertEqual(len(exported), int(result.structure.now_data.shape[0]))
+
+    def test_mixed_export_dialog_choice_reaches_active_npy_writer(self):
+        export_method = MagicMock()
+        widget = SimpleNamespace(
+            _dataset_ready=lambda: True,
+            _choose_export_format=lambda: ("deepmd/npy/mixed", True, 16),
+            nep_result_data=SimpleNamespace(
+                structure=SimpleNamespace(now_data=np.empty(1, dtype=object)),
+                export_active_npy=export_method,
+            ),
+        )
+        worker = MagicMock()
+        with (
+            patch.object(show_nep_module, "BackgroundTask", return_value=worker),
+            patch.object(show_nep_module, "call_path_dialog", return_value="/tmp/export"),
+        ):
+            show_nep_module.ShowNepWidget.export_active_structures(widget)
+
+        worker.start_work.assert_called_once_with(
+            export_method,
+            "/tmp/export",
+            npy_format="mixed",
+            group_by_config_type=True,
+            mixed_atom_numb_pad=16,
+        )
 
     def test_sync_structures_updates_all_fields(self):
         tmp_dir = self._make_nep_workdir()

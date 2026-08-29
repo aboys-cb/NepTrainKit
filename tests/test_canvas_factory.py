@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -50,13 +49,21 @@ class _InverseSelectionData:
 class TestCanvasFactory(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._app = QApplication.instance() or QApplication([])
+        cls._app = QApplication.instance()
+        cls._owns_app = cls._app is None
+        if cls._owns_app:
+            cls._app = QApplication([])
 
     @classmethod
     def tearDownClass(cls):
-        if cls._app is not None:
+        # pytest-qt owns the process-wide QApplication in the full suite.  Do
+        # not quit it here: doing so leaves later Qt/pyqtgraph tests with a
+        # shut-down event dispatcher and can make the Windows runner return
+        # exit code 1 after an otherwise green test summary.
+        if cls._owns_app and cls._app is not None:
             cls._app.quit()
-            cls._app = None
+        cls._app = None
+        cls._owns_app = False
 
     def test_create_result_canvas_pyqtgraph_default(self):
         canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)
@@ -265,10 +272,6 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertTrue(canvas.axes_list[0].text.visible)
         self.assertFalse(canvas.axes_list[2].text.visible)
 
-    @unittest.skipIf(
-        sys.platform == "win32",
-        "pyqtgraph/Qt offscreen initialization can access-violate on Windows runners",
-    )
     def test_pyqtgraph_thumbnail_hides_minor_tick_labels(self):
         canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
 

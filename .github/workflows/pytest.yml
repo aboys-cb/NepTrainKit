@@ -27,7 +27,11 @@ jobs:
           - os: windows-latest
             python: "3.10"
     env:
-      QT_QPA_PLATFORM: offscreen
+      # Qt's Windows offscreen plugin can terminate the interpreter with a
+      # native access violation while pyqtgraph is being torn down.  The
+      # hosted runner has a desktop session, so use the native Windows
+      # platform there and keep offscreen for Linux/macOS headless jobs.
+      QT_QPA_PLATFORM: ${{ runner.os == 'Windows' && 'windows' || 'offscreen' }}
       NEPKIT_OPENMP: "0"
 
     steps:

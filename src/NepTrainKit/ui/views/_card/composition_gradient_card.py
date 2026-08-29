@@ -43,7 +43,7 @@ class CompositionGradientCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Composition Gradient"))
+        self.setTitle(self.tr("Composition Path"))
         self._input_structure = None
         self.init_ui()
 

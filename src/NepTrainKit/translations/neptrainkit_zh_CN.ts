@@ -5748,7 +5748,7 @@
     <name>CompositionGradientCard</name>
     <message>
         <location filename="../ui/views/_card/composition_gradient_card.py" line="46" />
-        <source>Composition Gradient</source>
+        <source>Composition Path</source>
         <translation>成分梯度</translation>
     </message>
     <message>

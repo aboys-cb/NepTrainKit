@@ -448,11 +448,14 @@ class WorkflowGuidancePanel(QFrame):
             editor.setMinimumHeight(self._editor_minimum_height or 0)
             editor.setMaximumHeight(self._editor_maximum_height or 16777215)
             editor.adjustSize()
-            target_height = (
-                start_height + self._editor_reflow_height_delta
-                if self._editor_reflow_height_delta
-                else editor.sizeHint().height()
-            )
+            hinted_height = editor.sizeHint().height()
+            height_delta = self._editor_reflow_height_delta
+            if height_delta < 0:
+                target_height = start_height + height_delta
+            elif height_delta > 0:
+                target_height = max(hinted_height, start_height + height_delta)
+            else:
+                target_height = hinted_height
             self._editor_reflow_height_delta = 0
             self._editor_reflow_target_height = target_height
             self._fit_editor_width()
@@ -474,8 +477,9 @@ class WorkflowGuidancePanel(QFrame):
                 editor.resize(editor.width(), target_height)
                 self._editor_reflow_target_height = None
         finally:
-            viewport.setUpdatesEnabled(True)
-            viewport.update()
+            if self._editor_height_animation is None:
+                viewport.setUpdatesEnabled(True)
+                viewport.update()
         if self._editor_height_animation is not None:
             self._editor_height_animation.start()
 
@@ -500,6 +504,9 @@ class WorkflowGuidancePanel(QFrame):
             self._fit_editor_width()
         if animation is not None:
             animation.deleteLater()
+        viewport = self.parameter_scroll.viewport()
+        viewport.setUpdatesEnabled(True)
+        viewport.update()
 
     def _connect_context_signals(self, editor: QWidget) -> None:
         self._disconnect_context_signals()

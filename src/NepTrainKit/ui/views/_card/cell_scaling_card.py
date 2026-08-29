@@ -63,6 +63,9 @@ class CellScalingCard(MakeDataCard):
             inline=True,
             input_max_width=132,
         )
+        # CompactField deliberately clears an input's minimum width. Restore
+        # this single-value field's readable width after it has been wrapped.
+        self.scaling_condition_frame.setMinimumWidth(132)
 
         self.perturb_angle_checkbox = CheckBox(
             self.tr("Also vary cell angles"), self.setting_widget
@@ -85,6 +88,7 @@ class CellScalingCard(MakeDataCard):
             inline=True,
             input_max_width=132,
         )
+        self.num_condition_frame.setMinimumWidth(132)
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)

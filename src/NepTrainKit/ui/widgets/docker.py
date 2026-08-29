@@ -889,6 +889,12 @@ class MakeWorkflowArea(QWidget):
         self.select_card(card, expand=True, ensure_visible=False)
         self.workflowChanged.emit()
 
+    def add_root_card(self, card: MakeDataCardWidget) -> None:
+        """Append a card at workflow root, ignoring interactive selection context."""
+        self._insert_card(len(self._cards), card)
+        self.select_card(card, expand=True, ensure_visible=False)
+        self.workflowChanged.emit()
+
     def _selected_branch_context(self):
         explicit = self._explicit_branch_context
         if explicit is not None:

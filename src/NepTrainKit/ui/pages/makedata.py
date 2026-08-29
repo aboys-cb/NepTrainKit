@@ -1063,7 +1063,7 @@ class MakeDataWidget(QWidget):
                 pass
             card.stop()
 
-    def add_card(self,card_name):
+    def add_card(self, card_name, *, at_workflow_root=False):
         """Instantiate and add a card widget by name.
 
         Parameters
@@ -1082,7 +1082,10 @@ class MakeDataWidget(QWidget):
             return None
         card=CardManager.card_info_dict[card_name](self)
         self._connect_card_output_actions(card)
-        self.workspace_card_widget.add_card(card)
+        if at_workflow_root:
+            self.workspace_card_widget.add_root_card(card)
+        else:
+            self.workspace_card_widget.add_card(card)
         self._track_card_parameter_changes(card)
         self._mark_workflow_dirty()
         return card
@@ -1226,7 +1229,7 @@ class MakeDataWidget(QWidget):
         added_count = 0
         for card in cards:
             name=card.get("class")
-            card_widget=self.add_card(name)
+            card_widget = self.add_card(name, at_workflow_root=True)
             if card_widget is not None:
                 try:
                     card_widget.from_dict(card)

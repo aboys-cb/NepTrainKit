@@ -843,79 +843,79 @@
 <context>
     <name>BuiltinWorkflowTemplates</name>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="43" />
         <source>Crystal strain</source>
-        <translation>晶体应变采样</translation>
+        <translation type="vanished">晶体应变采样</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="46" />
         <source>Atom perturbation</source>
-        <translation>超胞原子扰动</translation>
+        <translation type="vanished">超胞原子扰动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="49" />
         <source>Alloy occupancy</source>
-        <translation>合金成分与占位</translation>
+        <translation type="vanished">合金成分与占位</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="52" />
         <source>Vacancy sampling</source>
-        <translation>超胞空位候选</translation>
+        <translation type="vanished">超胞空位候选</translation>
+    </message>
+    <message>
+        <source>Spin perturbation</source>
+        <translation type="vanished">已有磁矩扰动</translation>
+    </message>
+    <message>
+        <source>Build an elemental crystal prototype and sample independent uniaxial lattice strains.</source>
+        <translation type="vanished">构建单质晶体原型，并分别采样各晶格方向的单轴应变。</translation>
+    </message>
+    <message>
+        <source>Expand each input structure and generate randomly displaced atomic configurations.</source>
+        <translation type="vanished">扩展每个输入结构，并生成原子随机位移构型。</translation>
+    </message>
+    <message>
+        <source>Expand a parent cell, plan target alloy compositions, and realize each target by random site occupancy.</source>
+        <translation type="vanished">扩展母晶胞、规划目标合金成分，并通过随机占位实现各目标成分。</translation>
+    </message>
+    <message>
+        <source>Expand each input structure and generate one single-vacancy candidate from every expanded cell.</source>
+        <translation type="vanished">扩展每个输入结构，并从每个扩展晶胞生成一个单空位候选结构。</translation>
+    </message>
+    <message>
+        <source>Normalize existing scalar or vector initial moments, then sample nearby spin directions and magnitudes.</source>
+        <translation type="vanished">统一已有标量或矢量初始磁矩的表示，再采样其附近的磁矩方向和大小。</translation>
+    </message>
+    <message>
+        <source>No input structure is required. Set the lattice, element, lattice constant, strain range, and output limit before running.</source>
+        <translation type="vanished">无需输入结构。运行前请设置晶格、元素、晶格常数、应变范围和输出上限。</translation>
+    </message>
+    <message>
+        <source>Load one or more periodic structures. Review the replication factors, atom limit, displacement amplitude, and outputs per input before running.</source>
+        <translation type="vanished">请载入一个或多个周期结构。运行前检查扩胞倍数、原子数上限、位移幅度和每个输入的输出数。</translation>
+    </message>
+    <message>
+        <source>Load a periodic parent structure. Replace the example Co, Cr, and Ni element set and check that the supercell has enough sites for the requested exact ratios.</source>
+        <translation type="vanished">请载入周期母结构。将示例 Co、Cr、Ni 替换为目标元素，并确认超胞位点数足以实现要求的精确比例。</translation>
+    </message>
+    <message>
+        <source>Load one or more periodic structures. Check the supercell size and switch the vacancy count or concentration mode when one vacancy per cell is not appropriate.</source>
+        <translation type="vanished">请载入一个或多个周期结构。检查超胞尺寸；若每个晶胞一个空位不合适，请切换空位数或浓度模式。</translation>
+    </message>
+    <message>
+        <source>Load structures containing spin or ASE initial magnetic moments. The template does not invent missing moment magnitudes; verify the scalar lift axis and perturbation range.</source>
+        <translation type="vanished">请载入含 spin 或 ASE 初始磁矩的结构。模板不会补造缺失的磁矩大小；请检查标量磁矩的提升方向和扰动范围。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/workflow_library.py" line="43" />
+        <source>Structure perturbation</source>
+        <translation>结构与原子扰动</translation>
     </message>
     <message>
         <location filename="../ui/widgets/workflow_library.py" line="55" />
-        <source>Spin perturbation</source>
-        <translation>已有磁矩扰动</translation>
+        <source>Expand each input structure, branch into lattice strain and lattice perturbation, then apply atomic perturbations.</source>
+        <translation>先扩展输入结构，再并行生成晶格应变和晶格扰动，最后施加原子扰动。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="67" />
-        <source>Build an elemental crystal prototype and sample independent uniaxial lattice strains.</source>
-        <translation>构建单质晶体原型，并分别采样各晶格方向的单轴应变。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="71" />
-        <source>Expand each input structure and generate randomly displaced atomic configurations.</source>
-        <translation>扩展每个输入结构，并生成原子随机位移构型。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="75" />
-        <source>Expand a parent cell, plan target alloy compositions, and realize each target by random site occupancy.</source>
-        <translation>扩展母晶胞、规划目标合金成分，并通过随机占位实现各目标成分。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="79" />
-        <source>Expand each input structure and generate one single-vacancy candidate from every expanded cell.</source>
-        <translation>扩展每个输入结构，并从每个扩展晶胞生成一个单空位候选结构。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="83" />
-        <source>Normalize existing scalar or vector initial moments, then sample nearby spin directions and magnitudes.</source>
-        <translation>统一已有标量或矢量初始磁矩的表示，再采样其附近的磁矩方向和大小。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="96" />
-        <source>No input structure is required. Set the lattice, element, lattice constant, strain range, and output limit before running.</source>
-        <translation>无需输入结构。运行前请设置晶格、元素、晶格常数、应变范围和输出上限。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="101" />
-        <source>Load one or more periodic structures. Review the replication factors, atom limit, displacement amplitude, and outputs per input before running.</source>
-        <translation>请载入一个或多个周期结构。运行前检查扩胞倍数、原子数上限、位移幅度和每个输入的输出数。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="106" />
-        <source>Load a periodic parent structure. Replace the example Co, Cr, and Ni element set and check that the supercell has enough sites for the requested exact ratios.</source>
-        <translation>请载入周期母结构。将示例 Co、Cr、Ni 替换为目标元素，并确认超胞位点数足以实现要求的精确比例。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="112" />
-        <source>Load one or more periodic structures. Check the supercell size and switch the vacancy count or concentration mode when one vacancy per cell is not appropriate.</source>
-        <translation>请载入一个或多个周期结构。检查超胞尺寸；若每个晶胞一个空位不合适，请切换空位数或浓度模式。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/workflow_library.py" line="118" />
-        <source>Load structures containing spin or ASE initial magnetic moments. The template does not invent missing moment magnitudes; verify the scalar lift axis and perturbation range.</source>
-        <translation>请载入含 spin 或 ASE 初始磁矩的结构。模板不会补造缺失的磁矩大小；请检查标量磁矩的提升方向和扰动范围。</translation>
+        <location filename="../ui/widgets/workflow_library.py" line="68" />
+        <source>Load one or more periodic structures. Review the supercell limit, lattice perturbation ranges, and atomic displacement settings before running.</source>
+        <translation>请载入一个或多个周期结构。运行前检查扩胞上限、晶格扰动范围和原子位移设置。</translation>
     </message>
 </context>
 <context>
@@ -12923,38 +12923,38 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>没有卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1100" />
-        <location filename="../ui/pages/makedata.py" line="1124" />
+        <location filename="../ui/pages/makedata.py" line="1103" />
+        <location filename="../ui/pages/makedata.py" line="1127" />
         <source>No cards in workspace.</source>
         <translation>工作区中没有卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1109" />
+        <location filename="../ui/pages/makedata.py" line="1112" />
         <source>Card configuration exported successfully.</source>
         <translation>卡片配置已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1128" />
+        <location filename="../ui/pages/makedata.py" line="1131" />
         <source>Card configuration JSON copied to clipboard.</source>
         <translation>卡片配置 JSON 已复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1159" />
+        <location filename="../ui/pages/makedata.py" line="1162" />
         <source>Clipboard does not contain card JSON.</source>
         <translation>剪贴板中没有卡片 JSON。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1189" />
+        <location filename="../ui/pages/makedata.py" line="1192" />
         <source>Invalid card configuration file: {error}</source>
         <translation>卡片配置文件无效：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1236" />
+        <location filename="../ui/pages/makedata.py" line="1239" />
         <source>Failed to load {name}: {error}</source>
         <translation>加载 {name} 失败：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="1244" />
+        <location filename="../ui/pages/makedata.py" line="1247" />
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>
@@ -12975,7 +12975,7 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>添加卡片以开始构建工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="987" />
+        <location filename="../ui/widgets/docker.py" line="993" />
         <source>Move card here</source>
         <translation>将卡片移动到此处</translation>
     </message>
@@ -18129,7 +18129,7 @@ Do you want to continue?</source>
         <translation type="vanished">溶剂盒填充</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="149" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="150" />
         <source>Solvent XYZ</source>
         <translation>溶剂 XYZ</translation>
     </message>
@@ -18249,17 +18249,17 @@ Do you want to continue?</source>
         <translation type="vanished">每个溶剂盒使用独立的随机放置。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="67" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="68" />
         <source>Target amount</source>
         <translation>目标用量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="68" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="69" />
         <source>Density mode uses the complete cell volume without subtracting the host.</source>
         <translation>密度模式使用完整 cell 体积，不扣除宿主占据。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="72" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="73" />
         <source>Target solvent molecules</source>
         <translation>目标溶剂分子数</translation>
     </message>
@@ -18268,234 +18268,234 @@ Do you want to continue?</source>
         <translation type="vanished">添加到每个输出盒中的溶剂分子总数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="77" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="78" />
         <source>Nominal pure-solvent density</source>
         <translation>名义纯溶剂密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="82" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="83" />
         <source>Full-cell count factor</source>
         <translation>完整 cell 计数系数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="83" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="84" />
         <source>Multiply the full-cell density estimate by a value in (0, 1].</source>
         <translation>将完整 cell 的密度估算数量乘以 (0, 1] 范围内的系数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="86" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="87" />
         <source>Require the full requested count</source>
         <translation>必须放满请求数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="88" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="89" />
         <source>Fail instead of returning a partially filled box.</source>
         <translation>未插满时失败，而不是返回部分填充的溶剂盒。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="89" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="90" />
         <source>Use reproducible seed</source>
         <translation>使用可复现种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="91" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="92" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="93" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="94" />
         <source>Output and amount</source>
         <translation>输出与数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="110" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="111" />
         <source>Placement clearance</source>
         <translation>放置间距</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="111" />
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="274" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="112" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="275" />
         <source>Sets the default element-radius pair cutoff.</source>
         <translation>设置默认的元素半径原子对截断距离。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="115" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="116" />
         <source>Placement</source>
         <translation>放置方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="116" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="117" />
         <source>Molecule centers and orientations are sampled randomly throughout the cell.</source>
         <translation>在整个 cell 内随机采样分子中心和整体取向。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="122" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="123" />
         <source>Show manual collision and solvent details</source>
         <translation>显示手动碰撞与溶剂细节</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="124" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="125" />
         <source>Uniform minimum distance</source>
         <translation>统一最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="125" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="126" />
         <source>0 uses element radii; a positive value overrides every pair cutoff.</source>
         <translation>0 使用元素半径；正数会覆盖所有原子对的碰撞距离。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="129" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="130" />
         <source>Manual element-radius scale</source>
         <translation>手动元素半径倍率</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="130" />
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="275" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="131" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="276" />
         <source>0 uses the selected placement clearance.</source>
         <translation>0 使用所选放置间距。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="134" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="135" />
         <source>Attempts per requested molecule</source>
         <translation>每个目标分子的尝试次数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="135" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="136" />
         <source>The total attempt budget is this value times the target count.</source>
         <translation>总尝试预算为该值乘以目标分子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="138" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="139" />
         <source>Collision checks</source>
         <translation>碰撞检查</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="144" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="145" />
         <source>Edit solvent molecule (default: water)</source>
         <translation>编辑溶剂分子（默认：水）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="150" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="151" />
         <source>One molecule in XYZ or extxyz text.</source>
         <translation>输入一个分子的 XYZ 或 extxyz 文本。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="155" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="156" />
         <source>Flexible conformer pool</source>
         <translation>柔性构象池</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="158" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="159" />
         <source>Torsion increment minimum</source>
         <translation>扭转增量下限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="161" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="162" />
         <source>Torsion increment maximum</source>
         <translation>扭转增量上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="164" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="165" />
         <source>Maximum torsions per conformer</source>
         <translation>每个构象的最大扭转键数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="167" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="168" />
         <source>Coordinate noise sigma</source>
         <translation>坐标噪声 σ</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="169" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="170" />
         <source>Solvent template</source>
         <translation>溶剂模板</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="182" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="183" />
         <source>Output preview</source>
         <translation>输出预览</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="267" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="268" />
         <source>Ignored while a uniform minimum distance is active.</source>
         <translation>启用统一最小距离时，此参数不生效。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="271" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="272" />
         <source>Ignored while a manual element-radius scale is active.</source>
         <translation>启用手动元素半径倍率时忽略此项。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="272" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="273" />
         <source>This value overrides the selected placement clearance.</source>
         <translation>该值会覆盖所选放置间距。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="311" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="312" />
         <source>target {count} molecule(s)</source>
         <translation>目标 {count} 个分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="313" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="314" />
         <source>target count resolves after a cell is loaded</source>
         <translation>加载晶胞后解析目标数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="314" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="315" />
         <source>No input loaded · {outputs} box(es) per input · {target}</source>
         <translation>未加载输入 · 每个输入 {outputs} 个溶剂盒 · {target}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="323" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="324" />
         <source>uniform minimum {distance} Å</source>
         <translation>统一最小距离 {distance} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="327" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="328" />
         <source>First input: {host} host atoms · cell {volume} Å³ / PBC {axes}</source>
         <translation>首个输入：{host} 个宿主原子 · cell {volume} Å³ / PBC {axes}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="330" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="331" />
         <source>Target {count} {formula} molecule(s) (+{added} atoms) per box · up to {outputs} dataset output(s)</source>
         <translation>每盒目标 {count} 个 {formula} 分子（新增 {added} 个原子）· 当前数据集最多 {outputs} 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="334" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="335" />
         <source>Full-cell density estimate: {density} g/cm³ × {factor}; host occupancy is not subtracted.</source>
         <translation>完整 cell 密度估算：{density} g/cm³ × {factor}；不扣除宿主占据。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="338" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="339" />
         <source>The fixed target corresponds to {density} g/cm³ if the full cell contained only this solvent.</source>
         <translation>若完整 cell 仅含该溶剂，当前固定数量对应 {density} g/cm³。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="342" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="343" />
         <source>Generation fails unless every requested molecule fits.</source>
         <translation>只有全部目标分子都能放入时才会生成成功。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="344" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="345" />
         <source>A non-empty partial box may be returned if placement is exhausted.</source>
         <translation>尝试耗尽时可以返回非空的部分填充盒。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="425" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="426" />
         <source>{count} molecule(s)</source>
         <translation>{count} 个分子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="427" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="428" />
         <source>density {density} g/cm³</source>
         <translation>密度 {density} g/cm³</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="429" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="430" />
         <source>{outputs} box(es) · {amount} · {clearance}</source>
         <translation>{outputs} 个溶剂盒 · {amount} · {clearance}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="434" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="435" />
         <source>Check the resolved count, full-cell density assumption, collision rule, and strict-count behavior before generating.</source>
         <translation>生成前检查解析后的数量、完整 cell 密度假设、碰撞规则和严格数量行为。</translation>
     </message>
@@ -18536,7 +18536,7 @@ Do you want to continue?</source>
         <translation type="vanished">设为 0 时使用碰撞配置；统一最小距离为正值时忽略此项</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="153" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="154" />
         <source>Pre-sample flexible solvent conformers</source>
         <translation>预先采样柔性溶剂构象</translation>
     </message>
@@ -18577,7 +18577,7 @@ Do you want to continue?</source>
         <translation type="vanished">载入上游周期晶胞后，可预览实际采用的溶剂分子数和新增原子数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="319" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="320" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
@@ -18586,7 +18586,7 @@ Do you want to continue?</source>
         <translation type="vanished">统一最小距离 {distance} Å</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="325" />
+        <location filename="../ui/views/_card/solvent_box_fill_card.py" line="326" />
         <source>element-radius scale {scale}</source>
         <translation>元素半径缩放 {scale}</translation>
     </message>
@@ -24990,42 +24990,42 @@ Magnetic: {magnetic}</source>
 <context>
     <name>WorkflowLibraryPanel</name>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="226" />
+        <location filename="../ui/widgets/workflow_library.py" line="175" />
         <source>Workflow library</source>
         <translation>工作流库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="231" />
-        <location filename="../ui/widgets/workflow_library.py" line="390" />
+        <location filename="../ui/widgets/workflow_library.py" line="180" />
+        <location filename="../ui/widgets/workflow_library.py" line="339" />
         <source>New blank workflow</source>
         <translation>新建空白工作流</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="248" />
-        <location filename="../ui/widgets/workflow_library.py" line="249" />
+        <location filename="../ui/widgets/workflow_library.py" line="197" />
+        <location filename="../ui/widgets/workflow_library.py" line="198" />
         <source>Copy workflow JSON</source>
         <translation>复制工作流 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="254" />
-        <location filename="../ui/widgets/workflow_library.py" line="255" />
+        <location filename="../ui/widgets/workflow_library.py" line="203" />
+        <location filename="../ui/widgets/workflow_library.py" line="204" />
         <source>Add cards from clipboard</source>
         <translation>从剪贴板添加卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="243" />
-        <location filename="../ui/widgets/workflow_library.py" line="492" />
+        <location filename="../ui/widgets/workflow_library.py" line="192" />
+        <location filename="../ui/widgets/workflow_library.py" line="441" />
         <source>CURRENT</source>
         <translation>当前</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="492" />
+        <location filename="../ui/widgets/workflow_library.py" line="441" />
         <source>PREVIEW</source>
         <translation>模板预览</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="264" />
-        <location filename="../ui/widgets/workflow_library.py" line="494" />
+        <location filename="../ui/widgets/workflow_library.py" line="213" />
+        <location filename="../ui/widgets/workflow_library.py" line="443" />
         <source>Unsaved workflow</source>
         <translation>未保存的工作流</translation>
     </message>
@@ -25034,22 +25034,22 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">新建</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="277" />
+        <location filename="../ui/widgets/workflow_library.py" line="226" />
         <source>Search</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="291" />
+        <location filename="../ui/widgets/workflow_library.py" line="240" />
         <source>Saved</source>
         <translation>已保存</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="301" />
+        <location filename="../ui/widgets/workflow_library.py" line="250" />
         <source>User</source>
         <translation>我的模板</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="296" />
+        <location filename="../ui/widgets/workflow_library.py" line="245" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
@@ -25066,87 +25066,87 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">导入</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="311" />
-        <location filename="../ui/widgets/workflow_library.py" line="506" />
-        <location filename="../ui/widgets/workflow_library.py" line="514" />
+        <location filename="../ui/widgets/workflow_library.py" line="260" />
+        <location filename="../ui/widgets/workflow_library.py" line="455" />
+        <location filename="../ui/widgets/workflow_library.py" line="463" />
         <source>Save workflow</source>
         <translation>保存工作流</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="316" />
-        <location filename="../ui/widgets/workflow_library.py" line="317" />
+        <location filename="../ui/widgets/workflow_library.py" line="265" />
+        <location filename="../ui/widgets/workflow_library.py" line="266" />
         <source>More workflow actions</source>
         <translation>更多工作流操作</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="343" />
+        <location filename="../ui/widgets/workflow_library.py" line="292" />
         <source>Double-click to open; right-click to manage.</source>
         <translation>双击打开，右键管理。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="361" />
+        <location filename="../ui/widgets/workflow_library.py" line="310" />
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="363" />
+        <location filename="../ui/widgets/workflow_library.py" line="312" />
         <source>Rename</source>
         <translation>重命名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="366" />
+        <location filename="../ui/widgets/workflow_library.py" line="315" />
         <source>Duplicate</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="367" />
+        <location filename="../ui/widgets/workflow_library.py" line="316" />
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="380" />
+        <location filename="../ui/widgets/workflow_library.py" line="329" />
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="396" />
-        <location filename="../ui/widgets/workflow_library.py" line="508" />
-        <location filename="../ui/widgets/workflow_library.py" line="516" />
+        <location filename="../ui/widgets/workflow_library.py" line="345" />
+        <location filename="../ui/widgets/workflow_library.py" line="457" />
+        <location filename="../ui/widgets/workflow_library.py" line="465" />
         <source>Save as workflow</source>
         <translation>另存为工作流</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="399" />
+        <location filename="../ui/widgets/workflow_library.py" line="348" />
         <source>Save as template</source>
         <translation>另存为模板</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="404" />
+        <location filename="../ui/widgets/workflow_library.py" line="353" />
         <source>Import workflow</source>
         <translation>导入工作流</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="409" />
+        <location filename="../ui/widgets/workflow_library.py" line="358" />
         <source>Import template</source>
         <translation>导入模板</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="459" />
+        <location filename="../ui/widgets/workflow_library.py" line="408" />
         <source>Double-click to open; right-click to manage {name}.</source>
         <translation>双击打开，右键管理 {name}。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="499" />
+        <location filename="../ui/widgets/workflow_library.py" line="448" />
         <source>Unsaved changes</source>
         <translation>有未保存的改动</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="499" />
+        <location filename="../ui/widgets/workflow_library.py" line="448" />
         <source>All changes saved</source>
         <translation>所有改动均已保存</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="496" />
+        <location filename="../ui/widgets/workflow_library.py" line="445" />
         <source>Not modified</source>
         <translation>尚未修改</translation>
     </message>
@@ -25167,12 +25167,12 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">导入为模板</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="437" />
+        <location filename="../ui/widgets/workflow_library.py" line="386" />
         <source>{count} cards · {updated}</source>
         <translation>{count} 张卡片 · {updated}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/workflow_library.py" line="432" />
+        <location filename="../ui/widgets/workflow_library.py" line="381" />
         <source>{category} · {count} cards</source>
         <translation>{category} · {count} 张卡片</translation>
     </message>

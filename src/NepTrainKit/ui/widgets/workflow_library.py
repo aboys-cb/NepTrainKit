@@ -40,20 +40,8 @@ def localized_workflow_entry_name(entry: WorkflowEntry) -> str:
     if entry.origin != "builtin":
         return entry.name
     names = {
-        "builtin-crystal-strain": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates", "Crystal strain"
-        ),
-        "builtin-supercell-perturb": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates", "Atom perturbation"
-        ),
-        "builtin-alloy-occupancy": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates", "Alloy occupancy"
-        ),
-        "builtin-vacancy-candidates": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates", "Vacancy sampling"
-        ),
-        "builtin-spin-perturb": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates", "Spin perturbation"
+        "builtin-structure-perturbation": QCoreApplication.translate(
+            "BuiltinWorkflowTemplates", "Structure perturbation"
         ),
     }
     return names.get(entry.workflow_id, entry.name)
@@ -64,25 +52,9 @@ def localized_workflow_entry_description(entry: WorkflowEntry) -> str:
     if entry.origin != "builtin":
         return entry.description
     descriptions = {
-        "builtin-crystal-strain": QCoreApplication.translate(
+        "builtin-structure-perturbation": QCoreApplication.translate(
             "BuiltinWorkflowTemplates",
-            "Build an elemental crystal prototype and sample independent uniaxial lattice strains.",
-        ),
-        "builtin-supercell-perturb": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Expand each input structure and generate randomly displaced atomic configurations.",
-        ),
-        "builtin-alloy-occupancy": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Expand a parent cell, plan target alloy compositions, and realize each target by random site occupancy.",
-        ),
-        "builtin-vacancy-candidates": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Expand each input structure and generate one single-vacancy candidate from every expanded cell.",
-        ),
-        "builtin-spin-perturb": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Normalize existing scalar or vector initial moments, then sample nearby spin directions and magnitudes.",
+            "Expand each input structure, branch into lattice strain and lattice perturbation, then apply atomic perturbations.",
         ),
     }
     return descriptions.get(entry.workflow_id, entry.description)
@@ -93,33 +65,10 @@ def localized_workflow_input_requirement(entry: WorkflowEntry) -> str:
     if entry.origin != "builtin":
         return entry.input_requirement
     requirements = {
-        "builtin-crystal-strain": QCoreApplication.translate(
+        "builtin-structure-perturbation": QCoreApplication.translate(
             "BuiltinWorkflowTemplates",
-            "No input structure is required. Set the lattice, element, lattice "
-            "constant, strain range, and output limit before running.",
-        ),
-        "builtin-supercell-perturb": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Load one or more periodic structures. Review the replication factors, "
-            "atom limit, displacement amplitude, and outputs per input before running.",
-        ),
-        "builtin-alloy-occupancy": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Load a periodic parent structure. Replace the example Co, Cr, and Ni "
-            "element set and check that the supercell has enough sites for the "
-            "requested exact ratios.",
-        ),
-        "builtin-vacancy-candidates": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Load one or more periodic structures. Check the supercell size and "
-            "switch the vacancy count or concentration mode when one vacancy per "
-            "cell is not appropriate.",
-        ),
-        "builtin-spin-perturb": QCoreApplication.translate(
-            "BuiltinWorkflowTemplates",
-            "Load structures containing spin or ASE initial magnetic moments. The "
-            "template does not invent missing moment magnitudes; verify the scalar "
-            "lift axis and perturbation range.",
+            "Load one or more periodic structures. Review the supercell limit, "
+            "lattice perturbation ranges, and atomic displacement settings before running.",
         ),
     }
     return requirements.get(entry.workflow_id, entry.input_requirement)

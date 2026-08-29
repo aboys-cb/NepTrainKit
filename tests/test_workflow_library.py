@@ -81,17 +81,24 @@ def test_builtin_templates_are_packaged_read_only_recipes(tmp_path):
     ]
 
     assert [entry.workflow_id for entry in builtins] == [
-        "builtin-crystal-strain",
-        "builtin-supercell-perturb",
-        "builtin-alloy-occupancy",
-        "builtin-vacancy-candidates",
-        "builtin-spin-perturb",
+        "builtin-structure-perturbation",
     ]
     assert all(entry.read_only for entry in builtins)
     assert all(entry.description and entry.input_requirement for entry in builtins)
     assert all(entry.card_count >= 2 for entry in builtins)
 
     selected = builtins[0]
+    assert selected.workflow["software_version"] == "3.0.1.dev29"
+    assert [card["class"] for card in selected.workflow["cards"]] == [
+        "SuperCellCard",
+        "CardGroup",
+        "PerturbCard",
+    ]
+    assert [
+        card["class"] for card in selected.workflow["cards"][1]["card_list"]
+    ] == ["CellStrainCard", "CellScalingCard"]
+    assert selected.workflow["cards"][0]["params"]["max_atoms"] == 64
+    assert selected.workflow["cards"][2]["params"]["max_distance"] == 0.3
     assert library.get(selected.workflow_id, "template") == selected
     with pytest.raises(ValueError, match="cannot be renamed"):
         library.rename(selected.workflow_id, "template", "Changed")
@@ -131,7 +138,7 @@ def test_make_data_workbench_opens_template_as_pristine_preview(tmp_path):
     widget._refresh_workflow_library()
 
     assert widget.workspace_card_widget.library_panel.workflow_list.count() == 1
-    assert widget.workspace_card_widget.library_panel.builtin_template_list.count() == 5
+    assert widget.workspace_card_widget.library_panel.builtin_template_list.count() == 1
     assert widget.workspace_card_widget.library_panel.template_list.count() == 1
 
     widget._load_library_entry(saved)
@@ -165,15 +172,21 @@ def test_make_data_workbench_opens_template_as_pristine_preview(tmp_path):
     builtin = next(
         entry
         for entry in library.list("template")
-        if entry.workflow_id == "builtin-crystal-strain"
+        if entry.workflow_id == "builtin-structure-perturbation"
     )
     widget._load_library_entry(builtin)
     assert widget._active_workflow_id is None
     assert widget._workflow_dirty is False
-    assert widget._active_workflow_name == "Crystal strain"
+    assert widget._active_workflow_name == "Structure perturbation"
     assert [card.__class__.__name__ for card in widget.workspace_card_widget.cards] == [
-        "CrystalPrototypeBuilderCard",
+        "SuperCellCard",
+        "CardGroup",
+        "PerturbCard",
+    ]
+    loaded_group = widget.workspace_card_widget.cards[1]
+    assert [card.__class__.__name__ for card in loaded_group.card_list] == [
         "CellStrainCard",
+        "CellScalingCard",
     ]
 
     widget.close()

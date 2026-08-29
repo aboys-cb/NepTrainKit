@@ -943,6 +943,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self.data_xyz_path=Path(data_xyz_path)
         self.nep_txt_path=Path(nep_txt_path)
         self._cache_outputs_override: bool | None = None
+        self._force_recalculate_outputs = False
         self.select_index=set()
         self._selection_history: list[set[int]] = []
         # Mark structures as "bad/reject" without interfering with selection.
@@ -2804,7 +2805,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
     def _load_descriptors(self):
         """Load cached descriptors or generate them with the calculator."""
         desc_array = np.array([])
-        if self.descriptor_path.exists():
+        if self.descriptor_path.exists() and self._cached_descriptors_are_usable():
             try:
                 desc_array = read_nep_out_file(self.descriptor_path, dtype=np.float32, ndmin=2)
             except Exception:
@@ -2852,6 +2853,111 @@ class ResultData(DistributionAnalysisMixin, QObject):
             parity_mode=False,
             show_rmse=False,
         )
+
+    def _cached_descriptors_are_usable(self) -> bool:
+        """Return whether an existing descriptor file belongs to this dataset."""
+        return True
+
+    def _result_plot_data_class(self):
+        """Return the adapter that defines DFT/ML column semantics."""
+        return NepPlotData
+
+    @staticmethod
+    def _reference_columns_match(
+        actual: npt.NDArray[Any],
+        expected: npt.NDArray[Any],
+    ) -> bool:
+        """Compare cached DFT values while allowing normal text precision loss."""
+        actual_values = np.asarray(actual, dtype=np.float64).reshape(-1)
+        expected_values = np.asarray(expected, dtype=np.float64).reshape(-1)
+        finite = np.isfinite(expected_values)
+        if not np.any(finite):
+            return True
+        return bool(
+            np.allclose(
+                actual_values[finite],
+                expected_values[finite],
+                rtol=2.0e-7,
+                atol=5.0e-7,
+                equal_nan=False,
+            )
+        )
+
+    def _cached_single_output_alignment_error(self, output_array, expected, output_path):
+        """Validate a paired output whose DFT values are exposed through ``x``."""
+        values = np.asarray(output_array)
+        expected_values = np.asarray(expected)
+        if values.ndim != 2 or values.shape[0] != len(self.atoms_num_list):
+            return f"{output_path.name} has shape {values.shape}, expected one row per structure"
+        try:
+            dft_values = self._result_plot_data_class()(values, title="cached").x
+        except Exception as error:
+            return f"{output_path.name} has invalid paired columns: {error}"
+        if np.asarray(dft_values).size != expected_values.size:
+            return (
+                f"{output_path.name} DFT x columns have size "
+                f"{np.asarray(dft_values).size}, expected {expected_values.size}"
+            )
+        if not self._reference_columns_match(dft_values, expected_values):
+            return f"the DFT x columns in {output_path.name} do not match parsed structures"
+        return None
+
+    def _cached_output_alignment_error(
+        self,
+        energy_array: npt.NDArray[Any],
+        force_array: npt.NDArray[Any],
+    ) -> str | None:
+        """Validate cached DFT columns against the loaded structure order."""
+        structures = self.structure.now_data.tolist()
+        structure_count = len(structures)
+        atom_count = int(np.sum(self.atoms_num_list))
+        if energy_array.shape != (structure_count, 2):
+            return (
+                f"{self.energy_out_path.name} has shape {energy_array.shape}, "
+                f"expected ({structure_count}, 2)"
+            )
+        if force_array.shape != (atom_count, 6):
+            return (
+                f"{self.force_out_path.name} has shape {force_array.shape}, "
+                f"expected ({atom_count}, 6)"
+            )
+
+        plot_data_class = self._result_plot_data_class()
+        energy_data = plot_data_class(energy_array, title="energy")
+        force_data = plot_data_class(
+            force_array,
+            group_list=self.atoms_num_list,
+            title="force",
+        )
+        expected_energy = np.asarray(
+            [
+                structure.per_atom_energy
+                if getattr(structure, "has_energy", False)
+                else np.nan
+                for structure in structures
+            ],
+            dtype=np.float64,
+        )
+        if not self._reference_columns_match(energy_data.x, expected_energy):
+            return (
+                f"the DFT x columns in {self.energy_out_path.name} do not match "
+                "the parsed per-atom structure energies"
+            )
+
+        expected_forces = np.vstack(
+            [
+                np.asarray(structure.forces, dtype=np.float64)
+                if getattr(structure, "has_forces", False)
+                else np.full((len(structure), 3), np.nan, dtype=np.float64)
+                for structure in structures
+            ]
+        )
+        if not self._reference_columns_match(force_data.x, expected_forces):
+            return (
+                f"the DFT x columns in {self.force_out_path.name} do not match "
+                "the parsed per-atom structure forces"
+            )
+        return None
 
     def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:
         """Generate descriptors when no usable descriptor cache exists."""

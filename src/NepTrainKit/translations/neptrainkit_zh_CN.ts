@@ -7368,6 +7368,14 @@
     </message>
 </context>
 <context>
+    <name>DeepmdResultData</name>
+    <message>
+        <location filename="../core/io/deepmd.py" line="251" />
+        <source>Existing DeepMD outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.</source>
+        <translation>已有 DeepMD 输出与当前结构顺序不匹配（{reason}）。NepTrainKit 将重新计算。</translation>
+    </message>
+</context>
+<context>
     <name>DirectionInput</name>
     <message>
         <location filename="../ui/widgets/parameter_inputs.py" line="323" />
@@ -13364,6 +13372,14 @@ All child items will also be deleted.</source>
     </message>
 </context>
 <context>
+    <name>NepDipoleResultData</name>
+    <message>
+        <location filename="../core/io/nep.py" line="1182" />
+        <source>Existing dipole outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.</source>
+        <translation>已有偶极矩输出与当前结构顺序不匹配（{reason}）。NepTrainKit 将重新计算。</translation>
+    </message>
+</context>
+<context>
     <name>NepDisplayGraphicsToolBar</name>
     <message>
         <location filename="../ui/views/toolbar.py" line="92" />
@@ -13466,6 +13482,14 @@ All child items will also be deleted.</source>
     <message>
         <source>Explore distributions</source>
         <translation type="vanished">查看数据分布</translation>
+    </message>
+</context>
+<context>
+    <name>NepPolarizabilityResultData</name>
+    <message>
+        <location filename="../core/io/nep.py" line="1010" />
+        <source>Existing polarizability outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.</source>
+        <translation>已有极化率输出与当前结构顺序不匹配（{reason}）。NepTrainKit 将重新计算。</translation>
     </message>
 </context>
 <context>
@@ -13715,17 +13739,22 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainResultData</name>
     <message>
-        <location filename="../core/io/nep.py" line="679" />
+        <location filename="../core/io/nep.py" line="418" />
+        <source>Existing NEP outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.</source>
+        <translation>已有 NEP 输出与当前结构顺序不匹配（{reason}）。NepTrainKit 将重新计算。</translation>
+    </message>
+    <message>
+        <location filename="../core/io/nep.py" line="782" />
         <source>Running NEP prediction: {done}/{total} structures</source>
         <translation>正在运行 NEP 预测：{done}/{total} 个结构</translation>
     </message>
     <message>
-        <location filename="../core/io/nep.py" line="724" />
+        <location filename="../core/io/nep.py" line="828" />
         <source>Generating NEP descriptors and predictions together to avoid duplicate work.</source>
         <translation>正在合并生成 NEP 描述符和预测结果，以避免重复计算。</translation>
     </message>
     <message>
-        <location filename="../core/io/nep.py" line="731" />
+        <location filename="../core/io/nep.py" line="835" />
         <source>Running combined NEP calculation: {done}/{total} structures</source>
         <translation>正在运行合并的 NEP 计算：{done}/{total} 个结构</translation>
     </message>
@@ -16075,32 +16104,32 @@ All child items will also be deleted.</source>
 <context>
     <name>RangeTripletInputFrame</name>
     <message>
-        <location filename="../ui/widgets/input.py" line="384" />
+        <location filename="../ui/widgets/input.py" line="380" />
         <source>Min (%)</source>
         <translation>最小值（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="384" />
+        <location filename="../ui/widgets/input.py" line="380" />
         <source>Minimum</source>
         <translation>最小</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="385" />
+        <location filename="../ui/widgets/input.py" line="381" />
         <source>Max (%)</source>
         <translation>最大值（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="385" />
+        <location filename="../ui/widgets/input.py" line="381" />
         <source>Maximum</source>
         <translation>最大</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="386" />
+        <location filename="../ui/widgets/input.py" line="382" />
         <source>Step (%)</source>
         <translation>步长（%）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/input.py" line="386" />
+        <location filename="../ui/widgets/input.py" line="382" />
         <source>Step</source>
         <translation>步长</translation>
     </message>
@@ -16136,7 +16165,7 @@ All child items will also be deleted.</source>
 <context>
     <name>ResultData</name>
     <message>
-        <location filename="../core/io/base.py" line="2862" />
+        <location filename="../core/io/base.py" line="2962" />
         <source>Generating NEP descriptors: {done}/{total} structures</source>
         <translation>正在生成 NEP 描述符：{done}/{total} 个结构</translation>
     </message>

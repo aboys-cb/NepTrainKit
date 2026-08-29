@@ -60,7 +60,7 @@ def test_complete_official_spin_outputs_load_without_supported_model(
         encoding="utf-8",
     )
     for name, text in {
-        "energy_train.out": "1.0 10.0\n",
+        "energy_train.out": "1.0 0.0\n",
         "force_train.out": "1 2 3 10 20 30\n",
         "virial_train.out": "1 2 3 4 5 6 10 20 30 40 50 60\n",
         "stress_train.out": "1 2 3 4 5 6 10 20 30 40 50 60\n",
@@ -99,7 +99,7 @@ def test_complete_official_spin_outputs_load_without_supported_model(
     assert result.nep_calc is None
     assert result.is_spin_model is True
     assert result.descriptor.num == 0
-    np.testing.assert_allclose(result.energy.all_data, [[1.0, 10.0]])
+    np.testing.assert_allclose(result.energy.all_data, [[1.0, 0.0]])
     np.testing.assert_allclose(result.spin_force.all_data, [[4, 5, 6, 40, 50, 60]])
     assert len(warnings) == 1
     assert "official NEP .out files" in warnings[0]

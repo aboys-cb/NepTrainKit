@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
+from NepTrainKit.core import MessageManager
 from NepTrainKit.core.io import StructureData
 from NepTrainKit.core.io.deepmd import DeepmdResultData
 from NepTrainKit.core.structure import Structure
@@ -66,6 +67,14 @@ def _structure(natoms: int, force_mag: np.ndarray | None = None) -> Structure:
     )
 
 
+def _labeled_structure(energy: float, forces: list[list[float]]) -> Structure:
+    structure = _structure(len(forces))
+    structure.energy = energy
+    structure.atomic_properties["forces"] = np.asarray(forces, dtype=np.float32)
+    structure.properties.append({"name": "forces", "type": "R", "count": 3})
+    return structure
+
+
 def test_deepmd_fm_output_falls_back_to_atom_grouping_without_force_mag(tmp_path: Path):
     for name, text in {
         "test_result.e_peratom.out": "0 0\n",
@@ -122,7 +131,7 @@ def test_deepmd_cached_outputs_can_generate_missing_descriptor(tmp_path: Path):
 
 def test_deepmd_cached_outputs_read_predictions_while_generating_descriptor(tmp_path: Path):
     for name, text in {
-        "test_result.e_peratom.out": "2.0 20.0\n",
+        "test_result.e_peratom.out": "0.0 20.0\n",
         "test_result.fr.out": "1 2 3 10 20 30\n",
         "test_result.v_peratom.out": "1 2 3 4 5 6 10 20 30 40 50 60\n",
     }.items():
@@ -153,6 +162,73 @@ def test_deepmd_cached_outputs_read_predictions_while_generating_descriptor(tmp_
     result._load_dataset()
 
     np.testing.assert_allclose(result.descriptor.all_data, [[7.0, 8.0]])
-    np.testing.assert_allclose(result.energy.all_data, [[2.0, 20.0]])
+    np.testing.assert_allclose(result.energy.all_data, [[0.0, 20.0]])
     np.testing.assert_allclose(result.force.all_data, [[1, 2, 3, 10, 20, 30]])
     np.testing.assert_allclose(result.virial.all_data, [[1, 2, 3, 4, 5, 6, 10, 20, 30, 40, 50, 60]])
+
+
+def test_deepmd_alignment_uses_dp_x_columns_for_dft_values(tmp_path: Path):
+    structures = [
+        _labeled_structure(1.0, [[1.0, 2.0, 3.0]]),
+        _labeled_structure(2.0, [[4.0, 5.0, 6.0]]),
+    ]
+    result = DeepmdResultData(
+        tmp_path / "nep.txt",
+        tmp_path,
+        tmp_path / "test_result.e_peratom.out",
+        tmp_path / "test_result.fr.out",
+        tmp_path / "test_result.v_peratom.out",
+        tmp_path / "descriptor.out",
+        cached_outputs_only=True,
+    )
+    result.set_structures(structures)
+    result.load_structures()
+
+    matching_energy = np.array([[1.0, 101.0], [2.0, 202.0]])
+    matching_force = np.array(
+        [
+            [1.0, 2.0, 3.0, 101.0, 102.0, 103.0],
+            [4.0, 5.0, 6.0, 104.0, 105.0, 106.0],
+        ]
+    )
+    reordered_energy = matching_energy[::-1]
+    reordered_force = matching_force[::-1]
+
+    assert result._cached_output_alignment_error(matching_energy, matching_force) is None
+    assert "e_peratom" in result._cached_output_alignment_error(
+        reordered_energy, matching_force
+    )
+    assert "force" in result._cached_output_alignment_error(
+        matching_energy, reordered_force
+    )
+
+
+def test_deepmd_alignment_mismatch_forces_recalculation(tmp_path: Path, monkeypatch):
+    structures = [
+        _labeled_structure(1.0, [[1.0, 2.0, 3.0]]),
+        _labeled_structure(2.0, [[4.0, 5.0, 6.0]]),
+    ]
+    result = DeepmdResultData(
+        tmp_path / "nep.txt",
+        tmp_path,
+        tmp_path / "test_result.e_peratom.out",
+        tmp_path / "test_result.fr.out",
+        tmp_path / "test_result.v_peratom.out",
+        tmp_path / "descriptor.out",
+        cached_outputs_only=True,
+    )
+    result.set_structures(structures)
+    result.load_structures()
+    result.energy_out_path.write_text("2 0\n1 0\n", encoding="utf-8")
+    result.force_out_path.write_text(
+        "1 2 3 0 0 0\n4 5 6 0 0 0\n", encoding="utf-8"
+    )
+    warnings: list[str] = []
+    monkeypatch.setattr(MessageManager, "send_warning_message", warnings.append)
+
+    result._prepare_cached_output_alignment()
+
+    assert result._force_recalculate_outputs is True
+    assert result._should_recalculate() is True
+    assert result._cached_descriptors_are_usable() is False
+    assert warnings and "will recalculate" in warnings[0]

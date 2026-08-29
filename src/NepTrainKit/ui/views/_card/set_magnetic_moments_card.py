@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from qfluentwidgets import CheckBox, ComboBox, LineEdit
+from qfluentwidgets import CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.magnetism import SetMagneticMomentsOperation, SetMagneticMomentsParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     KeyValueTableInput,
     MakeDataCard,
@@ -65,21 +66,23 @@ class SetMagneticMomentsCard(MakeDataCard):
         self.format_label = self.format_field.caption
 
         self.axis_frame = SpinBoxUnitInputFrame(self)
-        self.axis_frame.set_input("", 3, "float")
-        self.axis_frame.setRange(-1.0, 1.0)
-        for obj in self.axis_frame.object_list:
-            obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
-        self.axis_frame.set_input_value([0.0, 0.0, 1.0])
+        self.axis_frame.set_input("", 3, "int")
+        self.axis_frame.setRange(-99, 99)
+        self.axis_frame.set_input_value([0, 0, 1])
         self.axis_field = CompactField(
-            self.tr("Reference axis (Cartesian x, y, z)"),
+            self.tr("Reference axis (x, y, z)"),
             self.axis_frame,
             self.setting_widget,
-            self.tr("Used to lift scalar moments into vectors; the direction is normalized."),
+            self.tr("Enter an integer Cartesian direction; it is normalized before use."),
         )
         self.axis_label = self.axis_field.caption
 
         self.map_edit = KeyValueTableInput(
-            self.tr("Element"), self.tr("Moment or vector"), self.setting_widget
+            self.tr("Element"),
+            self.tr("Moment or vector"),
+            self.setting_widget,
+            element_picker=True,
+            new_element_value="1.0",
         )
         self.map_field = CompactField(
             self.tr("Element moments (μB)"),
@@ -133,7 +136,7 @@ class SetMagneticMomentsCard(MakeDataCard):
             )
         )
 
-        self.apply_edit = LineEdit(self.setting_widget)
+        self.apply_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.apply_edit.setPlaceholderText(self.tr("Fe,Co,Ni"))
         self.apply_field = CompactField(
             self.tr("Apply only to elements"),
@@ -255,7 +258,7 @@ class SetMagneticMomentsCard(MakeDataCard):
     def set_params(self, params: SetMagneticMomentsParams) -> None:
         set_combo_value(self.source_combo, params.source)
         set_combo_value(self.format_combo, params.format)
-        self.axis_frame.set_input_value([float(v) for v in params.axis])
+        self.axis_frame.set_input_value([int(round(float(v))) for v in params.axis])
         self.map_edit.setText(params.magmom_map)
         self.use_element_dir_checkbox.setChecked(bool(params.use_element_dirs))
         self.default_frame.set_input_value([float(params.default_moment)])

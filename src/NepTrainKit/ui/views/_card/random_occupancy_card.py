@@ -57,7 +57,8 @@ class RandomOccupancyCard(MakeDataCard):
         self.source_label = self.source_field.caption
 
         self.manual_edit = KeyValueTableInput(
-            self.tr("Element"), self.tr("Target fraction"), self.setting_widget
+            self.tr("Element"), self.tr("Target fraction"), self.setting_widget,
+            element_picker=True, new_element_value="1.0",
         )
         self.manual_field = CompactField(
             self.tr("Manual composition"),

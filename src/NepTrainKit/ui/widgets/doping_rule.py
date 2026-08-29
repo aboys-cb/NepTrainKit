@@ -24,6 +24,7 @@ from NepTrainKit.core.alloy import format_composition, parse_composition
 
 from .input import SpinBoxUnitInputFrame
 from .compact_form import CompactField, ResponsiveFormGrid, SegmentedControl
+from .parameter_inputs import ElementLineEdit
 
 
 class DopingRuleItem(QFrame):
@@ -60,7 +61,7 @@ class DopingRuleItem(QFrame):
         header.addWidget(self.delete_button)
         root.addLayout(header)
 
-        self.target_edit = LineEdit(self)
+        self.target_edit = ElementLineEdit(self)
         self.target_edit.setPlaceholderText(self.tr("Cs"))
         self.target_edit.setMinimumWidth(0)
         self.group_edit = LineEdit(self)
@@ -78,7 +79,7 @@ class DopingRuleItem(QFrame):
         identity_grid.add_field(self.group_field)
         root.addWidget(identity_grid)
 
-        self.dopants_edit = LineEdit(self)
+        self.dopants_edit = ElementLineEdit(self, multiple=True)
         self.dopants_edit.setPlaceholderText(self.tr("Ge or Ge:0.7,C:0.3"))
         self.dopants_edit.setMinimumWidth(0)
         self.dopants_field = CompactField(

@@ -2,6 +2,7 @@ import warnings
 from unittest.mock import patch
 
 from ase.geometry import geometry
+from PySide6.QtCore import Qt
 from NepTrainKit.core.cards.errors import CardOperationError
 
 from .card_test_base import *
@@ -37,6 +38,19 @@ class TestDefectSurfaceCards(BaseCardTest):
         results = card.process_structure(structure)
         self.assertGreater(len(results), 0)
         self.assertTrue(all(len(atoms) >= len(structure) for atoms in results))
+
+    def test_random_slab_plane_table_shows_all_short_rows_without_inner_scroll(self):
+        card = RandomSlabCard()
+        card.plane_table.set_planes([(1, 0, 0), (1, 1, 0), (1, 1, 1), (2, 1, 0)])
+
+        table = card.plane_table.table
+        expected_minimum = table.horizontalHeader().height() + 4 * 30
+        self.assertGreaterEqual(table.height(), expected_minimum)
+        self.assertEqual([table.rowHeight(row) for row in range(4)], [30, 30, 30, 30])
+        self.assertEqual(
+            table.verticalScrollBarPolicy(),
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff,
+        )
 
     def test_random_slab_operation_enumerates_layer_vacuum_product_and_roundtrips(self):
         structure = self.structure.copy()

@@ -2,20 +2,21 @@
 
 from __future__ import annotations
 
-import math
 import json
+import math
 
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
-    QHeaderView,
     QHBoxLayout,
+    QHeaderView,
+    QLineEdit,
     QSizePolicy,
-    QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
-from qfluentwidgets import CheckBox, ComboBox, LineEdit, PushButton
+from qfluentwidgets import CheckBox, ComboBox, FluentIcon, LineEdit, PushButton, TableWidget
 
 from .input import RangeTripletInputFrame, SpinBoxUnitInputFrame
 
@@ -23,6 +24,80 @@ from .input import RangeTripletInputFrame, SpinBoxUnitInputFrame
 def _format_number(value: float) -> str:
     value = 0.0 if abs(float(value)) < 1.0e-12 else float(value)
     return f"{value:.12g}"
+
+
+def _refresh_layout_chain(widget: QWidget) -> None:
+    while widget is not None:
+        layout = widget.layout()
+        if layout is not None:
+            layout.invalidate()
+        widget.updateGeometry()
+        widget = widget.parentWidget()
+
+
+def fit_table_to_rows(table: TableWidget) -> None:
+    """Show every short parameter row and leave scrolling to the inspector."""
+    compact_row_height = 30
+    row_count = max(table.rowCount(), 1)
+    header = table.horizontalHeader()
+    header.setFixedHeight(compact_row_height)
+    table.verticalHeader().setDefaultSectionSize(compact_row_height)
+    for row in range(table.rowCount()):
+        table.setRowHeight(row, compact_row_height)
+    table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    content_height = header.height() + row_count * compact_row_height
+    table.setFixedHeight(content_height + 2 * table.frameWidth() + 4)
+    container = table.parentWidget()
+    if container is not None and container.layout() is not None:
+        container.layout().invalidate()
+        container.setFixedHeight(container.layout().sizeHint().height())
+    _refresh_layout_chain(table)
+
+
+class ElementLineEdit(LineEdit):
+    """Line edit with a periodic-table action for one or several elements."""
+
+    elementPicked = Signal(str)
+
+    def __init__(self, parent=None, *, multiple: bool = False):
+        """Create an element editor while preserving manual text compatibility."""
+        super().__init__(parent)
+        self.multiple = bool(multiple)
+        self._element_dialog = None
+        self.picker_action = QAction(FluentIcon.TILES.icon(), "", self)
+        self.addAction(self.picker_action, QLineEdit.ActionPosition.TrailingPosition)
+        self.picker_action.setToolTip(self.tr("Choose from periodic table"))
+        self.picker_action.triggered.connect(self.open_element_picker)
+
+    def open_element_picker(self, _checked: bool = False) -> None:
+        """Open the shared validated element picker."""
+        from .periodic_table import PeriodicTableDialog
+
+        dialog = PeriodicTableDialog(self.window())
+        self._element_dialog = dialog
+        if not self.multiple:
+            dialog.set_selected_element(self.text().strip())
+        dialog.elementSelected.connect(self._apply_element)
+        dialog.exec()
+        dialog.deleteLater()
+        self._element_dialog = None
+
+    def _apply_element(self, symbol: str) -> None:
+        symbol = str(symbol).strip()
+        if not symbol:
+            return
+        if not self.multiple:
+            self.setText(symbol)
+        else:
+            raw = self.text().strip()
+            tokens = [token.strip() for token in raw.replace(";", ",").split(",") if token.strip()]
+            existing = {
+                token.split(":", 1)[0].split("=", 1)[0].strip()
+                for token in tokens
+            }
+            if symbol not in existing:
+                self.setText(",".join([*tokens, symbol]))
+        self.elementPicked.emit(symbol)
 
 
 class NumericScanInput(QWidget):
@@ -205,15 +280,33 @@ class KeyValueTableInput(QWidget):
     """Small editable table that serializes to the existing ``key:value`` form."""
 
     editingFinished = Signal()
+    rowCountChanged = Signal(int)
 
-    def __init__(self, key_title: str, value_title: str, parent=None):
+    def __init__(
+        self,
+        key_title: str,
+        value_title: str,
+        parent=None,
+        *,
+        element_picker: bool = False,
+        new_element_value: str = "1",
+    ):
+        """Create a key/value editor, optionally backed by an element picker."""
         super().__init__(parent)
+        self._element_picker_enabled = bool(element_picker)
+        self._new_element_value = str(new_element_value)
+        self._editing_element_row: int | None = None
+        self._element_dialog = None
+        self._last_row_count = -1
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-        self.setMaximumHeight(205)
+        self.setMaximumHeight(16_777_215)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(5)
-        self.table = QTableWidget(0, 2, self)
+        self.table = TableWidget(self)
+        self.table.setColumnCount(2)
+        self.table.setBorderVisible(True)
+        self.table.setBorderRadius(6)
         self.table.setHorizontalHeaderLabels([key_title, value_title])
         self.table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
@@ -223,27 +316,97 @@ class KeyValueTableInput(QWidget):
         )
         self.table.setMinimumWidth(0)
         self.table.verticalHeader().setVisible(False)
-        self.table.setMinimumHeight(96)
-        self.table.setMaximumHeight(150)
+        self.table.setMinimumHeight(72)
         buttons = QHBoxLayout()
         buttons.setContentsMargins(0, 0, 0, 0)
-        self.add_button = PushButton(self.tr("Add row"), self)
+        self.add_button = PushButton(
+            self.tr("Add element") if self._element_picker_enabled else self.tr("Add row"),
+            self,
+        )
         self.remove_button = PushButton(self.tr("Remove selected"), self)
         self.add_button.setMinimumWidth(self.add_button.sizeHint().width())
         self.remove_button.setMinimumWidth(self.remove_button.sizeHint().width())
-        self.add_button.clicked.connect(self.add_row)
+        self.add_button.clicked.connect(self._handle_add_button)
         self.remove_button.clicked.connect(self.remove_selected)
         self.table.itemChanged.connect(lambda _item: self.editingFinished.emit())
+        if self._element_picker_enabled:
+            self.table.cellDoubleClicked.connect(self._edit_element)
         buttons.addWidget(self.add_button)
         buttons.addWidget(self.remove_button)
         layout.addWidget(self.table)
         layout.addLayout(buttons)
+        self._sync_table_height()
 
     def add_row(self, key: str = "", value: str = "") -> None:
         row = self.table.rowCount()
         self.table.insertRow(row)
-        self.table.setItem(row, 0, QTableWidgetItem(str(key)))
+        key_item = QTableWidgetItem(str(key))
+        if self._element_picker_enabled:
+            key_item.setFlags(key_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            key_item.setToolTip(self.tr("Double-click to choose another element"))
+        self.table.setItem(row, 0, key_item)
         self.table.setItem(row, 1, QTableWidgetItem(str(value)))
+        self._sync_table_height()
+
+    def _sync_table_height(self) -> None:
+        row_count = self.table.rowCount()
+        if row_count != self._last_row_count:
+            self._last_row_count = row_count
+            self.rowCountChanged.emit(row_count)
+        fit_table_to_rows(self.table)
+
+    def _handle_add_button(self, _checked: bool = False) -> None:
+        if self._element_picker_enabled:
+            self.open_element_picker()
+        else:
+            self.add_row()
+
+    def _edit_element(self, row: int, column: int) -> None:
+        if column == 0:
+            self.open_element_picker(row)
+
+    def open_element_picker(self, row: int | None = None) -> None:
+        """Choose a validated element for a new or existing table row."""
+        if not self._element_picker_enabled:
+            return
+        from .periodic_table import PeriodicTableDialog
+
+        self._editing_element_row = row
+        dialog = PeriodicTableDialog(self.window())
+        self._element_dialog = dialog
+        if row is not None and 0 <= row < self.table.rowCount():
+            item = self.table.item(row, 0)
+            if item is not None:
+                dialog.set_selected_element(item.text().strip())
+        dialog.elementSelected.connect(self._apply_element_selection)
+        dialog.exec()
+        dialog.deleteLater()
+        self._element_dialog = None
+        self._editing_element_row = None
+
+    def _apply_element_selection(self, symbol: str) -> None:
+        symbol = str(symbol).strip()
+        if not symbol:
+            return
+        target_row = self._editing_element_row
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, 0)
+            if item is not None and item.text().strip() == symbol and row != target_row:
+                self.table.setCurrentCell(row, 1)
+                return
+        if target_row is None or not (0 <= target_row < self.table.rowCount()):
+            self.add_row(symbol, self._new_element_value)
+            target_row = self.table.rowCount() - 1
+        else:
+            item = self.table.item(target_row, 0)
+            if item is None:
+                item = QTableWidgetItem()
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(target_row, 0, item)
+            item.setText(symbol)
+        self.table.setCurrentCell(target_row, 1)
+        self.table.editItem(self.table.item(target_row, 1))
+        self.editingFinished.emit()
 
     def remove_selected(self) -> None:
         rows = sorted({index.row() for index in self.table.selectedIndexes()}, reverse=True)
@@ -251,9 +414,11 @@ class KeyValueTableInput(QWidget):
             rows = [self.table.rowCount() - 1]
         for row in rows:
             self.table.removeRow(row)
+        self._sync_table_height()
 
     def clear(self) -> None:
         self.table.setRowCount(0)
+        self._sync_table_height()
 
     def set_text(self, text: str, *, default_value: str = "1") -> None:
         self.clear()
@@ -306,14 +471,22 @@ class KeyValueTableInput(QWidget):
 class CompositionPathTableInput(QWidget):
     """Element/start/end table for a one-dimensional composition path."""
 
+    rowCountChanged = Signal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._editing_element_row: int | None = None
+        self._element_dialog = None
+        self._last_row_count = -1
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-        self.setMaximumHeight(220)
+        self.setMaximumHeight(16_777_215)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(5)
-        self.table = QTableWidget(0, 3, self)
+        self.table = TableWidget(self)
+        self.table.setColumnCount(3)
+        self.table.setBorderVisible(True)
+        self.table.setBorderRadius(6)
         self.table.setHorizontalHeaderLabels(
             [self.tr("Element"), self.tr("Start fraction"), self.tr("End fraction")]
         )
@@ -325,17 +498,25 @@ class CompositionPathTableInput(QWidget):
         )
         self.table.setMinimumWidth(0)
         self.table.verticalHeader().setVisible(False)
-        self.table.setMinimumHeight(105)
-        self.table.setMaximumHeight(165)
+        self.table.setMinimumHeight(72)
         buttons = QHBoxLayout()
-        self.add_button = PushButton(self.tr("Add row"), self)
+        self.add_button = PushButton(self.tr("Add element"), self)
         self.remove_button = PushButton(self.tr("Remove row"), self)
-        self.add_button.clicked.connect(lambda: self.add_row())
+        self.add_button.clicked.connect(self.open_element_picker)
         self.remove_button.clicked.connect(self.remove_selected)
+        self.table.cellDoubleClicked.connect(self._edit_element)
         buttons.addWidget(self.add_button)
         buttons.addWidget(self.remove_button)
         layout.addWidget(self.table)
         layout.addLayout(buttons)
+        self._sync_table_height()
+
+    def _sync_table_height(self) -> None:
+        row_count = self.table.rowCount()
+        if row_count != self._last_row_count:
+            self._last_row_count = row_count
+            self.rowCountChanged.emit(row_count)
+        fit_table_to_rows(self.table)
 
     @staticmethod
     def _mapping(text: str) -> dict[str, str]:
@@ -351,7 +532,50 @@ class CompositionPathTableInput(QWidget):
         row = self.table.rowCount()
         self.table.insertRow(row)
         for column, value in enumerate((element, start, end)):
-            self.table.setItem(row, column, QTableWidgetItem(str(value)))
+            item = QTableWidgetItem(str(value))
+            if column == 0:
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                item.setToolTip(self.tr("Double-click to choose another element"))
+            self.table.setItem(row, column, item)
+        self._sync_table_height()
+
+    def _edit_element(self, row: int, column: int) -> None:
+        if column == 0:
+            self.open_element_picker(row=row)
+
+    def open_element_picker(self, _checked: bool = False, *, row: int | None = None) -> None:
+        from .periodic_table import PeriodicTableDialog
+
+        self._editing_element_row = row
+        dialog = PeriodicTableDialog(self.window())
+        self._element_dialog = dialog
+        if row is not None and 0 <= row < self.table.rowCount():
+            item = self.table.item(row, 0)
+            if item is not None:
+                dialog.set_selected_element(item.text().strip())
+        dialog.elementSelected.connect(self._apply_element_selection)
+        dialog.exec()
+        dialog.deleteLater()
+        self._element_dialog = None
+        self._editing_element_row = None
+
+    def _apply_element_selection(self, symbol: str) -> None:
+        symbol = str(symbol).strip()
+        if not symbol:
+            return
+        target_row = self._editing_element_row
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, 0)
+            if item is not None and item.text().strip() == symbol and row != target_row:
+                self.table.setCurrentCell(row, 1)
+                return
+        if target_row is None or not (0 <= target_row < self.table.rowCount()):
+            self.add_row(symbol, "0", "0")
+            target_row = self.table.rowCount() - 1
+        else:
+            self.table.item(target_row, 0).setText(symbol)
+        self.table.setCurrentCell(target_row, 1)
+        self.table.editItem(self.table.item(target_row, 1))
 
     def remove_selected(self) -> None:
         rows = sorted({index.row() for index in self.table.selectedIndexes()}, reverse=True)
@@ -359,6 +583,7 @@ class CompositionPathTableInput(QWidget):
             rows = [self.table.rowCount() - 1]
         for row in rows:
             self.table.removeRow(row)
+        self._sync_table_height()
 
     def set_values(self, elements: str, start: str, end: str) -> None:
         self.table.setRowCount(0)
@@ -367,6 +592,7 @@ class CompositionPathTableInput(QWidget):
         names = [item.strip() for item in str(elements or "").split(",") if item.strip()]
         for name in names:
             self.add_row(name, start_map.get(name, "0"), end_map.get(name, "0"))
+        self._sync_table_height()
 
     def values(self) -> tuple[str, str, str]:
         names: list[str] = []

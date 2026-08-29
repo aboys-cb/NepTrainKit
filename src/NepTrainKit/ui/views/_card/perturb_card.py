@@ -1,6 +1,6 @@
 """Card for applying random atomic perturbations."""
 
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget, QLineEdit
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     ToolTipFilter,
@@ -16,6 +16,7 @@ from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     ResponsiveFormGrid,
     SegmentedControl,
@@ -33,7 +34,7 @@ class ElementScalingRow(QFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(4)
 
-        self.element_input = QLineEdit(self)
+        self.element_input = ElementLineEdit(self)
         self.element_input.setPlaceholderText(self.tr("Fe"))
         self.element_input.setToolTip(self.tr("Element symbol, for example H, Si, or Fe"))
         self.element_input.setAccessibleName(self.tr("Element"))

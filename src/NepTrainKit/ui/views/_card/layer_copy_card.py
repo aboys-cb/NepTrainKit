@@ -18,6 +18,7 @@ from NepTrainKit.ui.views._card.i18n_utils import (
 )
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     MakeDataCard,
     ResponsiveFormGrid,
@@ -184,7 +185,7 @@ class LayerCopyCard(MakeDataCard):
                 ("2", "Cartesian z range"),
             ],
         )
-        self.elements_edit = LineEdit(self.setting_widget)
+        self.elements_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.elements_edit.setPlaceholderText(self.tr("For example: C, Si, O"))
         self.zrange_frame = SpinBoxUnitInputFrame(self.setting_widget)
         self.zrange_frame.set_input(["Å", "Å"], 2, input_type="float")

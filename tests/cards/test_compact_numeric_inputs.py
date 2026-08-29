@@ -42,42 +42,42 @@ def test_adaptive_integer_input_hint_keeps_step_control_visible():
     spin.close()
 
 
-def test_multi_integer_frame_reflows_to_keep_step_controls_visible():
+def test_multi_integer_frame_keeps_one_equal_width_row_when_narrow():
     app = _app()
     frame = SpinBoxUnitInputFrame()
     frame.set_input("", 3, "int")
     frame.setRange(1, 999)
     frame.set_input_value([4, 4, 4])
-    frame.resize(110, 160)
+    frame.resize(180, 30)
     frame.show()
     for _ in range(3):
         app.processEvents()
 
-    assert frame._column_count < 3
-    for spin in frame.object_list:
-        assert not spin.compactSpinButton.isHidden()
+    assert frame._column_count == 3
+    widths = [control.width() for control in frame.object_list]
+    assert max(widths) - min(widths) <= 1
     frame.close()
 
 
-def test_multi_float_frame_reflows_before_values_become_unreadable():
-    _app()
+def test_multi_float_frame_tracks_parent_width_without_wrapping():
+    app = _app()
     frame = SpinBoxUnitInputFrame()
-    frame.set_input(["-", "step", "deg"], 3, "float")
+    frame.set_input("", 3, "float")
     frame.setDecimals(6)
     frame.set_input_value([15.0, 45.0, 15.0])
+    frame.resize(240, 30)
+    frame.show()
+    app.processEvents()
+    narrow_widths = [control.width() for control in frame.object_list]
 
-    readable_widths = [
-        spin.readable_width_hint() + label.sizeHint().width() + 4
-        for spin, label in zip(frame.object_list, frame._unit_labels)
-    ]
-    spacing = frame._layout.horizontalSpacing()
-    three_column_width = sum(readable_widths) + spacing * 2
+    frame.resize(420, 30)
+    app.processEvents()
+    wide_widths = [control.width() for control in frame.object_list]
 
-    frame._reflow_inputs(three_column_width - 1)
-    assert frame._column_count < 3
-
-    frame._reflow_inputs(three_column_width)
     assert frame._column_count == 3
+    assert max(narrow_widths) - min(narrow_widths) <= 1
+    assert max(wide_widths) - min(wide_widths) <= 1
+    assert all(wide > narrow for wide, narrow in zip(wide_widths, narrow_widths))
     frame.close()
 
 

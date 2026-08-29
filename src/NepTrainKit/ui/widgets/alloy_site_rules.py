@@ -24,6 +24,7 @@ from NepTrainKit.core.alloy import fractions_to_counts_exact
 
 from .compact_form import SegmentedControl
 from .input import AdaptiveCompactSpinBox, AdaptiveInlineDoubleSpinBox
+from .parameter_inputs import ElementLineEdit
 
 
 RULE_MODES = ("fixed_fraction", "fraction_range", "count_range")
@@ -52,7 +53,7 @@ class AlloyElementRuleRow(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setHorizontalSpacing(6)
 
-        self.element_edit = LineEdit(self)
+        self.element_edit = ElementLineEdit(self)
         self.element_edit.setText(element)
         self.element_edit.setPlaceholderText(self.tr("Element"))
         self.element_edit.setMinimumWidth(0)

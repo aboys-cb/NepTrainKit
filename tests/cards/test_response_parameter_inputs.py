@@ -15,7 +15,13 @@ from NepTrainKit.ui.views._card.i18n_utils import combo_value, set_combo_value
 from NepTrainKit.ui.views._card.local_magnetic_response_card import LocalMagneticResponseCard
 from NepTrainKit.ui.views._card.magnetoelastic_response_card import MagnetoelasticResponseCard
 from NepTrainKit.ui.views._card.soc_texture_response_card import SOCTextureResponseCard
-from NepTrainKit.ui.widgets import DirectionInput, KeyValueTableInput, NumericScanInput
+from NepTrainKit.ui.widgets import (
+    CompositionPathTableInput,
+    DirectionInput,
+    ElementLineEdit,
+    KeyValueTableInput,
+    NumericScanInput,
+)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -54,6 +60,51 @@ def test_direction_presets_normalize_custom_vectors_and_mapping_table_keeps_cont
     assert table.table.horizontalScrollBar().maximum() == 0
     assert table.add_button.width() >= table.add_button.sizeHint().width()
     assert table.remove_button.width() >= table.remove_button.sizeHint().width()
+
+
+def test_key_value_table_add_button_creates_an_empty_row():
+    table = KeyValueTableInput("Element", "Ratio")
+
+    table.add_button.click()
+
+    assert table.table.item(0, 0).text() == ""
+    assert table.table.item(0, 1).text() == ""
+
+
+def test_element_line_edit_replaces_or_appends_without_duplicate_symbols():
+    single = ElementLineEdit()
+    single.setText("Fe")
+    single._apply_element("Ni")
+    assert single.text() == "Ni"
+
+    multiple = ElementLineEdit(multiple=True)
+    multiple.setText("Fe:0.7,Co")
+    multiple._apply_element("Ni")
+    multiple._apply_element("Fe")
+    assert multiple.text() == "Fe:0.7,Co,Ni"
+
+
+def test_short_parameter_tables_grow_and_shrink_to_show_every_row():
+    table = KeyValueTableInput("Element", "Ratio")
+    empty_height = table.table.height()
+    for symbol in ("Fe", "Co", "Ni", "Cr"):
+        table.add_row(symbol, "1")
+    table.show()
+    QApplication.processEvents()
+    four_row_height = table.table.height()
+    assert four_row_height > empty_height
+    assert [table.table.rowHeight(row) for row in range(4)] == [30, 30, 30, 30]
+    assert table.table.viewport().height() >= 4 * 30
+    assert table.table.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+
+    table.table.selectRow(3)
+    table.remove_selected()
+    assert table.table.height() < four_row_height
+
+    path = CompositionPathTableInput()
+    path.set_values("Fe,Co,Ni", "Fe:1,Co:0,Ni:0", "Fe:0,Co:0.5,Ni:0.5")
+    assert path.table.height() > empty_height
+    assert path.table.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
 
 
 def test_magnetoelastic_ui_exposes_percent_range_but_keeps_fraction_params():

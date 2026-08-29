@@ -18,7 +18,7 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import MagneticOrderOperation, MagneticOrderParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import ElementLineEdit, KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
@@ -79,7 +79,8 @@ class MagneticOrderCard(MakeDataCard):
         )
         self._install_tooltip(self.map_label)
         self.map_edit = KeyValueTableInput(
-            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget,
+            element_picker=True, new_element_value="1.0",
         )
         self.map_edit.setAccessibleName(self.tr("Element moments (μB)"))
         self._size_control(self.map_edit)
@@ -113,7 +114,7 @@ class MagneticOrderCard(MakeDataCard):
             self.tr("Optional comma-separated element list; leave empty to consider all elements")
         )
         self._install_tooltip(self.apply_label)
-        self.apply_edit = LineEdit(self.setting_widget)
+        self.apply_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.apply_edit.setPlaceholderText(self.tr("Fe, Co, Ni"))
         self.apply_edit.setAccessibleName(self.tr("Apply only to elements"))
         self._size_control(self.apply_edit)

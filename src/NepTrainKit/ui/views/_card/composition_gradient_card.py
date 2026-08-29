@@ -20,6 +20,7 @@ from NepTrainKit.ui.views._card.i18n_utils import (
 from NepTrainKit.ui.widgets import (
     CompactField,
     CompositionPathTableInput,
+    ElementLineEdit,
     InspectorSection,
     MakeDataCard,
     ResponsiveFormGrid,
@@ -109,7 +110,7 @@ class CompositionGradientCard(MakeDataCard):
         self.scope_field = CompactField(
             self.tr("Eligible sites"), self.scope_combo, self.setting_widget
         )
-        self.target_edit = LineEdit(self.setting_widget)
+        self.target_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.target_edit.setPlaceholderText(self.tr("For example: Ni,Co"))
         self.target_field = CompactField(
             self.tr("Existing elements to replace"),

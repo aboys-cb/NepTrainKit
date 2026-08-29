@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QHBoxLayout, QWidget
-from qfluentwidgets import BodyLabel, CheckBox, LineEdit
+from qfluentwidgets import BodyLabel, CheckBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import (
@@ -13,6 +13,7 @@ from NepTrainKit.core.cards.magnetism import (
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     MakeDataCard,
     ResponsiveFormGrid,
@@ -48,7 +49,7 @@ class MagneticMomentRotationCard(MakeDataCard):
                 "Selected non-zero moments are sampled independently around their current directions."
             ),
         )
-        self.elements_input = LineEdit(self.setting_widget)
+        self.elements_input = ElementLineEdit(self.setting_widget, multiple=True)
         self.elements_input.setPlaceholderText(self.tr("All elements"))
         elements_field = CompactField(
             self.tr("Target elements"),

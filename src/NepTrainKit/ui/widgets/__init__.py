@@ -25,7 +25,6 @@ from .dialog import (
     EditInfoMessageBox,
     ShiftEnergyMessageBox,
     ProgressDialog,
-    PeriodicTableDialog,
     DFTD3MessageBox,
     ProjectInfoMessageBox,
     TagManageDialog,
@@ -33,6 +32,7 @@ from .dialog import (
     AdvancedModelSearchDialog,
     TrainingOverlayDialog,
 )
+from .periodic_table import PeriodicTableDialog
 from .input import (
     AdaptiveCompactDoubleSpinBox,
     AdaptiveCompactSpinBox,
@@ -43,8 +43,10 @@ from .input import (
 from .parameter_inputs import (
     CompositionPathTableInput,
     DirectionInput,
+    ElementLineEdit,
     KeyValueTableInput,
     NumericScanInput,
+    fit_table_to_rows,
 )
 from .compact_form import (
     StatusDot,
@@ -98,9 +100,11 @@ __all__ = [
     "SpinBoxUnitInputFrame",
     "RangeTripletInputFrame",
     "DirectionInput",
+    "ElementLineEdit",
     "KeyValueTableInput",
     "CompositionPathTableInput",
     "NumericScanInput",
+    "fit_table_to_rows",
     "AdaptiveCompactDoubleSpinBox",
     "AdaptiveCompactSpinBox",
     "AdaptiveInlineDoubleSpinBox",

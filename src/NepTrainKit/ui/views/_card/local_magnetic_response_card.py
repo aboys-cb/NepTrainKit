@@ -9,6 +9,7 @@ from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_va
 from NepTrainKit.ui.widgets import (
     CompactField,
     DirectionInput,
+    ElementLineEdit,
     InspectorSection,
     MakeDataCard,
     NumericScanInput,
@@ -82,7 +83,7 @@ class LocalMagneticResponseCard(MakeDataCard):
             self.tr("Ranges are allowed, for example 1,3-5."),
         )
 
-        self.apply_edit = LineEdit(self.setting_widget)
+        self.apply_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.apply_edit.setPlaceholderText(self.tr("For example: Fe,Co; empty includes every element"))
         self.apply_field = CompactField(
             self.tr("Eligible elements"),

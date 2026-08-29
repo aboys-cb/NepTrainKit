@@ -5,8 +5,8 @@ from __future__ import annotations
 import itertools
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QAbstractItemView, QHBoxLayout, QHeaderView, QTableWidget, QVBoxLayout, QWidget
-from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, PushButton, SpinBox
+from PySide6.QtWidgets import QAbstractItemView, QHBoxLayout, QHeaderView, QVBoxLayout, QWidget
+from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, PushButton, SpinBox, TableWidget
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.defect import RandomSlabOperation, RandomSlabParams
@@ -19,6 +19,7 @@ from NepTrainKit.ui.widgets import (
     MakeDataCard,
     ResponsiveFormGrid,
     SpinBoxUnitInputFrame,
+    fit_table_to_rows,
 )
 
 
@@ -26,22 +27,26 @@ class MillerIndexTableInput(QWidget):
     """Editable three-column h/k/l list with one Miller plane per row."""
 
     planesChanged = Signal()
+    rowCountChanged = Signal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._mutating_rows = False
+        self._last_row_count = -1
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(4)
-        self.table = QTableWidget(0, 3, self)
+        self.table = TableWidget(self)
+        self.table.setColumnCount(3)
+        self.table.setBorderVisible(True)
+        self.table.setBorderRadius(6)
         self.table.setHorizontalHeaderLabels((self.tr("h"), self.tr("k"), self.tr("l")))
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.verticalHeader().hide()
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.table.setMinimumHeight(112)
-        self.table.setMaximumHeight(136)
+        self.table.setMinimumHeight(72)
         self.table.setAccessibleName(self.tr("Miller plane list"))
         root.addWidget(self.table)
 
@@ -61,6 +66,14 @@ class MillerIndexTableInput(QWidget):
         self.table.itemSelectionChanged.connect(
             lambda: self.remove_button.setEnabled(bool(self.table.selectionModel().selectedRows()))
         )
+        self._sync_table_height()
+
+    def _sync_table_height(self) -> None:
+        row_count = self.table.rowCount()
+        if row_count != self._last_row_count:
+            self._last_row_count = row_count
+            self.rowCountChanged.emit(row_count)
+        fit_table_to_rows(self.table)
 
     def planes(self) -> tuple[tuple[int, int, int], ...]:
         return tuple(
@@ -76,6 +89,7 @@ class MillerIndexTableInput(QWidget):
                 self._append_plane(tuple(int(value) for value in plane), emit=False)
         finally:
             self._mutating_rows = False
+        self._sync_table_height()
         self.planesChanged.emit()
 
     def _append_plane(self, plane: tuple[int, int, int], *, emit: bool = True) -> None:
@@ -92,6 +106,7 @@ class MillerIndexTableInput(QWidget):
             editor.valueChanged.connect(lambda _value: self.planesChanged.emit())
             editor.editingFinished.connect(self._normalize_after_edit)
             self.table.setCellWidget(row, column, editor)
+        self._sync_table_height()
         if emit:
             self.planesChanged.emit()
 
@@ -109,6 +124,7 @@ class MillerIndexTableInput(QWidget):
                 self.table.removeRow(row)
         finally:
             self._mutating_rows = False
+        self._sync_table_height()
         if rows:
             self.planesChanged.emit()
 

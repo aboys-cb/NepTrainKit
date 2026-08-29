@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from qfluentwidgets import CaptionLabel, ComboBox, LineEdit
+from qfluentwidgets import CaptionLabel, ComboBox
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -13,6 +13,7 @@ from NepTrainKit.core.cards.structure import (
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     MakeDataCard,
     ResponsiveFormGrid,
@@ -59,7 +60,7 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
             self.tr("Choose one single-element ideal prototype; generated coordinates are not relaxed."),
         )
 
-        self.element_edit = LineEdit(self.setting_widget)
+        self.element_edit = ElementLineEdit(self.setting_widget)
         self.element_edit.setPlaceholderText(self.tr("e.g. Cu"))
         self.element_edit.setText("Cu")
         self.element_field = CompactField(

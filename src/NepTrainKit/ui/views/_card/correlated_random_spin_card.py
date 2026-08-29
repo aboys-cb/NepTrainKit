@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QHBoxLayout, QWidget
-from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
+from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import CorrelatedRandomSpinOperation, CorrelatedRandomSpinParams
@@ -11,6 +11,7 @@ from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     KeyValueTableInput,
     MakeDataCard,
@@ -186,7 +187,8 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.source_field = CompactField(self.tr("Moment source"), self.source_combo, self.setting_widget)
 
         self.map_edit = KeyValueTableInput(
-            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget,
+            element_picker=True, new_element_value="1.0",
         )
         self.map_field = CompactField(self.tr("Element moments"), self.map_edit, self.setting_widget)
 
@@ -223,7 +225,7 @@ class CorrelatedRandomSpinCard(MakeDataCard):
             self.tr("Initializes scalar or map-based moments for cone perturbation; existing vector directions are preserved."),
         )
 
-        self.apply_edit = LineEdit(self.setting_widget)
+        self.apply_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.apply_edit.setPlaceholderText(self.tr("All non-zero moments"))
         self.apply_field = CompactField(
             self.tr("Target elements"),

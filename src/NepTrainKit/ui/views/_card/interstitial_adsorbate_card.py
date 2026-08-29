@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout, QWidget
-from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
+from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.defect import InsertDefectOperation, InsertDefectParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     MakeDataCard,
     ResponsiveFormGrid,
@@ -57,7 +58,7 @@ class InsertDefectCard(MakeDataCard):
             self.setting_widget,
         )
 
-        self.species_edit = LineEdit(self.setting_widget)
+        self.species_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.species_edit.setPlaceholderText(self.tr("e.g. Li or Li:7, Na:3"))
         self.species_edit.setClearButtonEnabled(True)
         self.species_edit.setAccessibleName(self.tr("Inserted species and weights"))

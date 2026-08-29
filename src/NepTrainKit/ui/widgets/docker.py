@@ -2,7 +2,18 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import QEvent, QPoint, QPointF, QSize, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import (
+    QEasingCurve,
+    QEvent,
+    QPoint,
+    QPointF,
+    QSize,
+    Qt,
+    QTimer,
+    QUrl,
+    QVariantAnimation,
+    Signal,
+)
 from PySide6.QtGui import (
     QColor,
     QDesktopServices,
@@ -16,6 +27,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QFrame,
     QHBoxLayout,
+    QLayout,
     QSizePolicy,
     QSplitter,
     QTabWidget,
@@ -143,7 +155,17 @@ class WorkflowGuidancePanel(QFrame):
         self._editor_widget: QWidget | None = None
         self._editor_size_policy: QSizePolicy | None = None
         self._editor_maximum_width: int | None = None
+        self._editor_minimum_height: int | None = None
+        self._editor_maximum_height: int | None = None
+        self._editor_height_animation: QVariantAnimation | None = None
+        self._editor_reflow_start_height: int | None = None
+        self._editor_reflow_target_height: int | None = None
+        self._editor_reflow_height_delta = 0
+        self._adaptive_table_row_counts: dict[QWidget, int] = {}
         self._context_signal_connections: list[tuple[object, object]] = []
+        self._editor_reflow_timer = QTimer(self)
+        self._editor_reflow_timer.setSingleShot(True)
+        self._editor_reflow_timer.timeout.connect(self._reflow_editor_height)
         self.setObjectName("workflowGuidancePanel")
         # The workbench assigns this pane a stable width while it is visible.
         # A hard minimum here prevents the main window from ever reaching the
@@ -211,6 +233,7 @@ class WorkflowGuidancePanel(QFrame):
             "QWidget#workflowParameterHost { background: transparent; }"
         )
         self.parameter_layout = QVBoxLayout(self.parameter_host)
+        self.parameter_layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.parameter_layout.setContentsMargins(4, 4, 4, 4)
         self.parameter_layout.setSpacing(8)
 
@@ -371,6 +394,88 @@ class WorkflowGuidancePanel(QFrame):
     def _schedule_context_refresh(self, *_args) -> None:
         QTimer.singleShot(0, self._refresh_context)
 
+    def _schedule_editor_reflow(self, row_count: int | None = None) -> None:
+        viewport = self.parameter_scroll.viewport()
+        if viewport.updatesEnabled():
+            viewport.setUpdatesEnabled(False)
+        if self._editor_reflow_start_height is None and self._editor_widget is not None:
+            self._editor_reflow_start_height = self._editor_widget.height()
+        sender = self.sender()
+        if isinstance(sender, QWidget) and isinstance(row_count, int):
+            previous_count = self._adaptive_table_row_counts.get(sender, row_count)
+            table = getattr(sender, "table", None)
+            row_height = (
+                table.verticalHeader().defaultSectionSize()
+                if table is not None
+                else 30
+            )
+            self._editor_reflow_height_delta += (row_count - previous_count) * row_height
+            self._adaptive_table_row_counts[sender] = row_count
+        self._editor_reflow_timer.start(0)
+
+    def _reflow_editor_height(self) -> None:
+        viewport = self.parameter_scroll.viewport()
+        editor = self._editor_widget
+        try:
+            if editor is None or not isValid(editor):
+                return
+            if self._editor_height_animation is not None:
+                self._editor_height_animation.stop()
+                self._editor_height_animation.deleteLater()
+                self._editor_height_animation = None
+            start_height = self._editor_reflow_start_height or editor.height()
+            self._editor_reflow_start_height = None
+            editor.setMinimumHeight(self._editor_minimum_height or 0)
+            editor.setMaximumHeight(self._editor_maximum_height or 16777215)
+            editor.adjustSize()
+            target_height = (
+                start_height + self._editor_reflow_height_delta
+                if self._editor_reflow_height_delta
+                else editor.sizeHint().height()
+            )
+            self._editor_reflow_height_delta = 0
+            self._editor_reflow_target_height = target_height
+            self._fit_editor_width()
+            self.parameter_host.updateGeometry()
+            if start_height != target_height:
+                editor.setFixedHeight(start_height)
+                animation = QVariantAnimation(self)
+                animation.setStartValue(start_height)
+                animation.setEndValue(target_height)
+                animation.setDuration(120)
+                animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+                animation.valueChanged.connect(self._set_animated_editor_height)
+                animation.finished.connect(self._finish_editor_height_animation)
+                self._editor_height_animation = animation
+            else:
+                editor.resize(editor.width(), target_height)
+                self._editor_reflow_target_height = None
+        finally:
+            viewport.setUpdatesEnabled(True)
+            viewport.update()
+        if self._editor_height_animation is not None:
+            self._editor_height_animation.start()
+
+    def _set_animated_editor_height(self, value) -> None:
+        editor = self._editor_widget
+        if editor is not None and isValid(editor):
+            editor.setFixedHeight(int(round(float(value))))
+
+    def _finish_editor_height_animation(self) -> None:
+        editor = self._editor_widget
+        animation = self._editor_height_animation
+        target_height = self._editor_reflow_target_height
+        self._editor_height_animation = None
+        self._editor_reflow_target_height = None
+        if editor is not None and isValid(editor):
+            editor.setMinimumHeight(self._editor_minimum_height or 0)
+            editor.setMaximumHeight(self._editor_maximum_height or 16777215)
+            if target_height is not None:
+                editor.resize(editor.width(), target_height)
+            self._fit_editor_width()
+        if animation is not None:
+            animation.deleteLater()
+
     def _connect_context_signals(self, editor: QWidget) -> None:
         self._disconnect_context_signals()
         presentation_signal = getattr(self._card, "presentationChanged", None)
@@ -379,6 +484,15 @@ class WorkflowGuidancePanel(QFrame):
             self._context_signal_connections.append((presentation_signal, self._schedule_context_refresh))
         signal_names = ("valueChanged", "currentIndexChanged", "textChanged", "toggled", "stateChanged")
         for widget in [editor, *editor.findChildren(QWidget)]:
+            row_count_signal = getattr(widget, "rowCountChanged", None)
+            if row_count_signal is not None and hasattr(row_count_signal, "connect"):
+                table = getattr(widget, "table", None)
+                if table is not None:
+                    self._adaptive_table_row_counts[widget] = table.rowCount()
+                row_count_signal.connect(self._schedule_editor_reflow)
+                self._context_signal_connections.append(
+                    (row_count_signal, self._schedule_editor_reflow)
+                )
             for name in signal_names:
                 signal = getattr(widget, name, None)
                 if signal is None or not hasattr(signal, "connect"):
@@ -397,6 +511,7 @@ class WorkflowGuidancePanel(QFrame):
             except (RuntimeError, TypeError):
                 pass
         self._context_signal_connections.clear()
+        self._adaptive_table_row_counts.clear()
 
     def _copy_card_json(self) -> None:
         """Copy the selected card without duplicating actions in its header."""
@@ -443,6 +558,8 @@ class WorkflowGuidancePanel(QFrame):
         editor.setParent(self.parameter_host)
         self._editor_size_policy = QSizePolicy(editor.sizePolicy())
         self._editor_maximum_width = editor.maximumWidth()
+        self._editor_minimum_height = editor.minimumHeight()
+        self._editor_maximum_height = editor.maximumHeight()
         editor.setMinimumWidth(0)
         editor.setMaximumWidth(16777215)
         editor.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
@@ -484,6 +601,16 @@ class WorkflowGuidancePanel(QFrame):
         QTimer.singleShot(0, self._fit_editor_width)
 
     def _release_editor(self) -> None:
+        if self._editor_reflow_timer.isActive():
+            self._editor_reflow_timer.stop()
+            self.parameter_scroll.viewport().setUpdatesEnabled(True)
+        self._editor_reflow_start_height = None
+        self._editor_reflow_target_height = None
+        self._editor_reflow_height_delta = 0
+        if self._editor_height_animation is not None:
+            self._editor_height_animation.stop()
+            self._editor_height_animation.deleteLater()
+            self._editor_height_animation = None
         editor = self._editor_widget
         card = self._card
         self._editor_widget = None
@@ -498,6 +625,12 @@ class WorkflowGuidancePanel(QFrame):
         if self._editor_maximum_width is not None:
             editor.setMaximumWidth(self._editor_maximum_width)
         self._editor_maximum_width = None
+        if self._editor_minimum_height is not None:
+            editor.setMinimumHeight(self._editor_minimum_height)
+        self._editor_minimum_height = None
+        if self._editor_maximum_height is not None:
+            editor.setMaximumHeight(self._editor_maximum_height)
+        self._editor_maximum_height = None
         if card is not None and isValid(card):
             editor.setParent(card.view)
             card.viewLayout.insertWidget(0, editor)
@@ -606,15 +739,16 @@ class MakeWorkflowArea(QWidget):
         self._status_bar: QWidget | None = None
         self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
         self.splitter.setChildrenCollapsible(False)
-        self.splitter.setHandleWidth(1)
+        self.splitter.setHandleWidth(3)
         self.splitter.addWidget(self.library_panel)
         self.splitter.addWidget(self.canvas_column)
         self.splitter.addWidget(self.guidance_panel)
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
         self.splitter.setStretchFactor(2, 0)
-        for handle_index in (1, 2):
-            self.splitter.handle(handle_index).setEnabled(False)
+        self.splitter.handle(1).setEnabled(False)
+        self.splitter.handle(2).setEnabled(True)
+        self.splitter.handle(2).setCursor(Qt.CursorShape.SplitHCursor)
         self.splitter.setSizes([220, 800, 330])
 
         self.main_layout = QVBoxLayout(self)

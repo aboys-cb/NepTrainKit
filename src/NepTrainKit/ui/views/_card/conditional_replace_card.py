@@ -14,6 +14,7 @@ from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     KeyValueTableInput,
     MakeDataCard,
@@ -46,14 +47,15 @@ class ConditionalReplaceCard(MakeDataCard):
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
         self.settingLayout.setVerticalSpacing(4)
 
-        self.target_edit = LineEdit(self.setting_widget)
+        self.target_edit = ElementLineEdit(self.setting_widget)
         self.target_edit.setPlaceholderText(self.tr("For example: O"))
         target_field = CompactField(
             self.tr("Target element"), self.target_edit, self.setting_widget
         )
 
         self.replacements_edit = KeyValueTableInput(
-            self.tr("Element"), self.tr("Relative ratio"), self.setting_widget
+            self.tr("Element"), self.tr("Relative ratio"), self.setting_widget,
+            element_picker=True, new_element_value="1.0",
         )
         self.replacements_edit.add_row("F", "1.0")
         replacements_field = CompactField(

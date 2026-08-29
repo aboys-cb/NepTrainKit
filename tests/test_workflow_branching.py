@@ -12,7 +12,7 @@ from PySide6.QtCore import (
     Qt,
     QTimer,
 )
-from PySide6.QtTest import QTest
+from PySide6.QtTest import QSignalSpy, QTest
 from PySide6.QtWidgets import QApplication, QWidget
 from qfluentwidgets import ScrollBarHandleDisplayMode
 
@@ -27,12 +27,14 @@ from NepTrainKit.ui.views._card.interface_layer_mix_card import InterfaceLayerMi
 from NepTrainKit.ui.views._card.perturb_card import PerturbCard
 from NepTrainKit.ui.views._card.random_doping_card import RandomDopingCard
 from NepTrainKit.ui.views._card.random_slab_card import RandomSlabCard
+from NepTrainKit.ui.views._card.set_magnetic_moments_card import SetMagneticMomentsCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
 from NepTrainKit.ui.widgets import (
     AdaptiveCompactDoubleSpinBox,
     AdaptiveCompactSpinBox,
     MakeDataCard,
     MakeWorkflowArea,
+    SpinBoxUnitInputFrame,
 )
 
 
@@ -253,13 +255,23 @@ def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal
             card.headerLabel.text()
         )
         assert card.headerLabel.width() >= title_width, class_name
+        for frame in card.setting_widget.findChildren(SpinBoxUnitInputFrame):
+            if not frame.isVisibleTo(area) or len(frame.object_list) < 2:
+                continue
+            assert frame._column_count == len(frame.object_list), class_name
+            widths = [control.width() for control in frame.object_list]
+            assert max(widths) - min(widths) <= 1, class_name
         for widget in card.setting_widget.findChildren(QWidget):
             if not isinstance(
                 widget,
                 (AdaptiveCompactSpinBox, AdaptiveCompactDoubleSpinBox),
             ):
                 continue
-            if widget.isVisibleTo(area):
+            frame = widget.parentWidget()
+            if widget.isVisibleTo(area) and not (
+                isinstance(frame, SpinBoxUnitInputFrame)
+                and len(frame.object_list) > 1
+            ):
                 assert not widget.compactSpinButton.isHidden(), class_name
         checked.append(class_name)
         area.remove_card(card)
@@ -288,6 +300,60 @@ def test_parameter_inspector_scroll_handle_is_discoverable_without_hover():
         == ScrollBarHandleDisplayMode.ALWAYS
     )
     assert scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
+def test_parameter_inspector_reflows_after_element_table_rows_are_added():
+    app = _app()
+    area = MakeWorkflowArea()
+    area.resize(1024, 720)
+    area.show()
+    card = SetMagneticMomentsCard()
+    area.add_card(card)
+    area.select_card(card)
+    app.processEvents()
+
+    row_count_changes = QSignalSpy(card.map_edit.rowCountChanged)
+    initial_editor_height = card.setting_widget.height()
+    card.map_edit._apply_element_selection("Lu")
+    assert _wait_until(
+        lambda: area.guidance_panel.parameter_scroll.viewport().updatesEnabled()
+    )
+    card.map_edit._apply_element_selection("H")
+    viewport = area.guidance_panel.parameter_scroll.viewport()
+    assert not viewport.updatesEnabled()
+    assert _wait_until(
+        lambda: area.guidance_panel._editor_height_animation is None
+        and card.setting_widget.height() > initial_editor_height
+    )
+
+    assert row_count_changes.count() == 2
+    assert row_count_changes.at(0)[0] == 1
+    assert row_count_changes.at(1)[0] == 2
+    assert viewport.updatesEnabled()
+    assert card.map_edit.height() >= card.map_edit.sizeHint().height()
+    assert card.map_field.height() >= card.map_field.sizeHint().height()
+    # Qt can round the hosted widget's final animated height one pixel below
+    # its freshly recomputed size hint on the offscreen platform.
+    assert card.setting_widget.height() + 1 >= card.setting_widget.sizeHint().height()
+    assert card.map_edit.table.geometry().bottom() < card.map_edit.add_button.geometry().top()
+    assert area.guidance_panel.parameter_scroll.verticalScrollBar().maximum() > 0
+
+    expanded_height = card.setting_widget.height()
+    card.map_edit.table.selectRow(1)
+    QTest.mouseClick(card.map_edit.remove_button, Qt.MouseButton.LeftButton)
+    assert not viewport.updatesEnabled()
+    assert _wait_until(lambda: area.guidance_panel._editor_height_animation is not None)
+    animation = area.guidance_panel._editor_height_animation
+    animation_values = QSignalSpy(animation.valueChanged)
+    assert _wait_until(lambda: area.guidance_panel._editor_height_animation is None)
+
+    assert row_count_changes.count() == 3
+    assert row_count_changes.at(2)[0] == 1
+    assert viewport.updatesEnabled()
+    assert animation_values.count() >= 2
+    assert card.setting_widget.height() < expanded_height
+    assert card.map_edit.table.geometry().bottom() < card.map_edit.add_button.geometry().top()
     _dispose(area)
 
 
@@ -1163,6 +1229,31 @@ def test_guidance_panel_stays_visible_while_narrow_window_compresses_canvas():
     assert area.guidance_panel._editor_widget is card.setting_widget
     assert card.setting_widget.parent() is area.guidance_panel.parameter_host
     assert area.guidance_panel.parameter_scroll.horizontalScrollBar().maximum() == 0
+    _dispose(area)
+
+
+def test_guidance_panel_width_can_be_adjusted_with_right_splitter_handle():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = SetMagneticMomentsCard()
+    area.add_card(card)
+    area.select_card(card)
+    area.resize(1200, 700)
+    area.show()
+    app.processEvents()
+
+    handle = area.splitter.handle(2)
+    initial_width = area.guidance_panel.width()
+    initial_axis_width = card.axis_frame.width()
+    assert handle.isEnabled()
+    area.splitter.moveSplitter(handle.x() - 100, 2)
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel.width() > initial_width
+    assert card.axis_frame.width() > initial_axis_width
+    axis_widths = [control.width() for control in card.axis_frame.object_list]
+    assert max(axis_widths) - min(axis_widths) <= 1
     _dispose(area)
 
 

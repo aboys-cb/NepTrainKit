@@ -54,7 +54,10 @@ class RandomPackingCard(MakeDataCard):
         set_combo_value(self.composition_mode_combo, "input")
         self.composition_mode_combo.setMinimumWidth(0)
         self.composition_mode_combo.setFixedHeight(28)
-        self.composition_edit = KeyValueTableInput(self.tr("Element"), self.tr("Atom count"), self.setting_widget)
+        self.composition_edit = KeyValueTableInput(
+            self.tr("Element"), self.tr("Atom count"), self.setting_widget,
+            element_picker=True, new_element_value="1",
+        )
 
         self.min_distance_frame = SpinBoxUnitInputFrame(self.setting_widget)
         self.min_distance_frame.set_input("Å", 1, "float")

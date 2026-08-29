@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from qfluentwidgets import CaptionLabel, ComboBox, LineEdit
+from qfluentwidgets import CaptionLabel, ComboBox
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.alloy import (
@@ -19,6 +19,7 @@ from NepTrainKit.ui.views._card.i18n_utils import (
 )
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementLineEdit,
     InspectorSection,
     MakeDataCard,
     ResponsiveFormGrid,
@@ -117,7 +118,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         prototype_section.addWidget(self.sublattice_hint_label)
         prototype_section.addWidget(self.single_sublattice_tip)
 
-        self.element_a_edit = LineEdit(self.setting_widget)
+        self.element_a_edit = ElementLineEdit(self.setting_widget)
         self.element_a_edit.setText("X")
         self.element_a_edit.setPlaceholderText(self.tr("Element or X"))
         self.element_a_field = CompactField(
@@ -130,7 +131,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         )
         self.element_a_edit.setFixedWidth(132)
 
-        self.element_b_edit = LineEdit(self.setting_widget)
+        self.element_b_edit = ElementLineEdit(self.setting_widget)
         self.element_b_edit.setText("X")
         self.element_b_edit.setPlaceholderText(self.tr("Element or X"))
         self.element_b_field = CompactField(

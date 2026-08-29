@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QFrame,
     QGridLayout,
-    QHBoxLayout,
     QSizePolicy,
     QSpinBox,
-    QWidget,
 )
 from qfluentwidgets import (
     CaptionLabel,
@@ -104,7 +103,7 @@ class AdaptiveInlineDoubleSpinBox(DoubleSpinBox):
 class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
     """Keep numeric text and its step control visible at the normal hint."""
 
-    _TEXT_PADDING = 18
+    _TEXT_PADDING = 8
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -189,7 +188,6 @@ class SpinBoxUnitInputFrame(QFrame):
         self._layout.setHorizontalSpacing(4)
         self._layout.setVerticalSpacing(4)
         self.object_list: list[QSpinBox | QDoubleSpinBox] = []
-        self._input_hosts: list[QWidget] = []
         self._unit_labels: list[CaptionLabel] = []
         self._column_count = 1
         self.setMinimumWidth(0)
@@ -244,19 +242,12 @@ class SpinBoxUnitInputFrame(QFrame):
             )
             unit_label = CaptionLabel(unit_str[i % len(unit_str)], self)
             unit_label.setStyleSheet("color:#8a95a0;")
-            host = QWidget(self)
-            host_layout = QHBoxLayout(host)
-            host_layout.setContentsMargins(0, 0, 0, 0)
-            host_layout.setSpacing(4)
-            host_layout.addWidget(input_object, 1)
-            host_layout.addWidget(unit_label)
-            host.setMinimumWidth(0)
-            host.setSizePolicy(
-                QSizePolicy.Policy.Expanding,
+            unit_label.setSizePolicy(
+                QSizePolicy.Policy.Fixed,
                 QSizePolicy.Policy.Fixed,
             )
+            unit_label.setVisible(bool(unit_label.text()))
             self.object_list.append(input_object)
-            self._input_hosts.append(host)
             self._unit_labels.append(unit_label)
         for input_object in self.object_list:
             input_object.lineEdit().textChanged.connect(
@@ -280,48 +271,25 @@ class SpinBoxUnitInputFrame(QFrame):
         self._reflow_inputs(self.width())
 
     def _reflow_inputs(self, width: int) -> None:
-        count = len(self._input_hosts)
+        """Keep every value on one row and divide the available width evenly."""
+        count = len(self.object_list)
         if not count:
             return
-        readable_widths = []
-        for input_object, unit_label in zip(self.object_list, self._unit_labels):
-            readable_widths.append(
-                input_object.readable_width_hint()
-                + unit_label.sizeHint().width()
-                + 4
-            )
-        spacing = self._layout.horizontalSpacing()
-        if width >= sum(readable_widths) + spacing * (count - 1):
-            columns = count
-        elif count > 2 and width >= max(readable_widths) * 2 + spacing:
-            columns = 2
-        else:
-            columns = 1
-        if columns == self._column_count and self._layout.count() == count:
-            column_widths = [0] * columns
-            for index, readable_width in enumerate(readable_widths):
-                column_widths[index % columns] = max(
-                    column_widths[index % columns], readable_width
-                )
-            for column, minimum in enumerate(column_widths):
-                self._layout.setColumnMinimumWidth(column, minimum)
+        if self._column_count == count and self._layout.count() == count * 2:
             return
         while self._layout.count():
             self._layout.takeAt(0)
-        for column in range(count):
+        for column in range(count * 2):
             self._layout.setColumnStretch(column, 0)
             self._layout.setColumnMinimumWidth(column, 0)
-        for index, host in enumerate(self._input_hosts):
-            self._layout.addWidget(host, index // columns, index % columns)
-        column_widths = [0] * columns
-        for index, readable_width in enumerate(readable_widths):
-            column_widths[index % columns] = max(
-                column_widths[index % columns], readable_width
-            )
-        for column in range(columns):
-            self._layout.setColumnStretch(column, 1)
-            self._layout.setColumnMinimumWidth(column, column_widths[column])
-        self._column_count = columns
+        for index, (input_object, unit_label) in enumerate(
+            zip(self.object_list, self._unit_labels)
+        ):
+            input_column = index * 2
+            self._layout.addWidget(input_object, 0, input_column)
+            self._layout.addWidget(unit_label, 0, input_column + 1)
+            self._layout.setColumnStretch(input_column, 1)
+        self._column_count = count
         self.updateGeometry()
 
     def resizeEvent(self, event) -> None:  # noqa: N802 - Qt override
@@ -340,6 +308,26 @@ class SpinBoxUnitInputFrame(QFrame):
         """
         for input_object in self.object_list:
             input_object.setRange(min_value, max_value)
+
+    def sizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        """Prefer enough width for each value while still allowing compression."""
+        if not self.object_list:
+            return super().sizeHint()
+        widths = [control.readable_width_hint() for control in self.object_list]
+        widths.extend(
+            label.sizeHint().width() for label in self._unit_labels if label.text()
+        )
+        visible_items = len(self.object_list) + sum(
+            bool(label.text()) for label in self._unit_labels
+        )
+        spacing = self._layout.horizontalSpacing() * max(0, visible_items - 1)
+        return QSize(sum(widths) + spacing, 30)
+
+    def minimumSizeHint(self) -> QSize:  # noqa: N802 - Qt override
+        """Let narrow inspectors compress the equal-width row without overflow."""
+        if len(self.object_list) == 1:
+            return QSize(self.sizeHint().width(), 30)
+        return QSize(0, 30)
 
     def setDecimals(self, decimals: int):
         """Set the number of decimals for every double spin box.

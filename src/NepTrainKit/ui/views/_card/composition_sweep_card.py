@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from qfluentwidgets import CheckBox, ComboBox, LineEdit
+from qfluentwidgets import CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import CompositionSweepOperation, CompositionSweepParams
@@ -13,7 +13,13 @@ from NepTrainKit.ui.views._card.i18n_utils import (
     combo_value,
     set_combo_value,
 )
-from NepTrainKit.ui.widgets import CompactField, InspectorSection, MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    ElementLineEdit,
+    InspectorSection,
+    MakeDataCard,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
@@ -39,7 +45,7 @@ class CompositionSweepCard(MakeDataCard):
         self.settingLayout.setContentsMargins(3, 0, 3, 0)
         self.settingLayout.setVerticalSpacing(4)
 
-        self.elements_edit = LineEdit(self.setting_widget)
+        self.elements_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.elements_edit.setPlaceholderText(self.tr("For example: Co,Cr,Ni,Al"))
         self.elements_edit.setText("Co,Cr,Ni")
         elements_field = CompactField(

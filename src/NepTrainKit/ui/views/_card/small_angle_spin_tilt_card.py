@@ -7,7 +7,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import SmallAngleSpinTiltOperation, SmallAngleSpinTiltParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import ElementLineEdit, KeyValueTableInput, MakeDataCard, SpinBoxUnitInputFrame
 from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
@@ -193,7 +193,8 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
         self.map_edit = KeyValueTableInput(
-            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget
+            self.tr("Element"), self.tr("Moment magnitude"), self.setting_widget,
+            element_picker=True, new_element_value="1.0",
         )
 
         self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
@@ -235,7 +236,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.apply_label = BodyLabel(self.tr("Apply elements"), self.setting_widget)
         self.apply_label.setToolTip(self.tr("Optional comma-separated element list; empty means all atoms are eligible targets"))
         self.apply_label.installEventFilter(ToolTipFilter(self.apply_label, 300, ToolTipPosition.TOP))
-        self.apply_edit = LineEdit(self.setting_widget)
+        self.apply_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.apply_edit.setPlaceholderText(self.tr("Fe,Co,Ni"))
 
         self.max_output_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)

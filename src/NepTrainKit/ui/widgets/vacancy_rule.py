@@ -25,6 +25,7 @@ from qfluentwidgets import (
 
 from .compact_form import CompactField, ResponsiveFormGrid
 from .input import SpinBoxUnitInputFrame
+from .parameter_inputs import ElementLineEdit
 
 
 class VacancyRuleItem(QFrame):
@@ -42,7 +43,7 @@ class VacancyRuleItem(QFrame):
         self.setFrameShape(QFrame.Shape.StyledPanel)
         self.setObjectName("vacancyRuleItem")
 
-        self.element_edit = LineEdit(self)
+        self.element_edit = ElementLineEdit(self)
         self.element_edit.setPlaceholderText(self.tr("O"))
         self.element_edit.setAccessibleName(self.tr("Element to remove"))
         self.group_edit = LineEdit(self)

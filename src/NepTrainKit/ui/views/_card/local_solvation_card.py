@@ -11,7 +11,14 @@ from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.solvation import DEFAULT_WATER_XYZ, LocalSolvationOperation, LocalSolvationParams, has_valid_cell
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import CompactField, InspectorSection, MakeDataCard, ResponsiveFormGrid, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    ElementLineEdit,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
@@ -95,7 +102,7 @@ class LocalSolvationCard(MakeDataCard):
         self.center_mode_field = CompactField(self.tr("Solvation centers"), self.center_mode_combo, self.setting_widget)
         self.center_mode_label = self.center_mode_field.caption
 
-        self.elements_edit = LineEdit(self.setting_widget)
+        self.elements_edit = ElementLineEdit(self.setting_widget, multiple=True)
         self.elements_edit.setPlaceholderText(self.tr("Ca, Na, O"))
         self.elements_field = CompactField(self.tr("Center elements"), self.elements_edit, self.setting_widget, self.tr("Comma-separated element symbols."))
         self.elements_label = self.elements_field.caption

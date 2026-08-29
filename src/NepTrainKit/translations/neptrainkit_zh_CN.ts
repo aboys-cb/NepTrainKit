@@ -3229,7 +3229,7 @@
     </message>
     <message>
         <location filename="../ui/widgets/card_metadata.py" line="1331" />
-        <location filename="../ui/widgets/card_metadata.py" line="1491" />
+        <location filename="../ui/widgets/card_metadata.py" line="1494" />
         <source>Technical details</source>
         <translation>技术信息</translation>
     </message>
@@ -3254,27 +3254,27 @@
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1434" />
+        <location filename="../ui/widgets/card_metadata.py" line="1437" />
         <source>No description provided.</source>
         <translation>暂无说明。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1449" />
+        <location filename="../ui/widgets/card_metadata.py" line="1452" />
         <source>Open documentation</source>
         <translation>打开文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1461" />
+        <location filename="../ui/widgets/card_metadata.py" line="1464" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1489" />
+        <location filename="../ui/widgets/card_metadata.py" line="1492" />
         <source>Hide technical details</source>
         <translation>收起技术信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="1525" />
+        <location filename="../ui/widgets/card_metadata.py" line="1528" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -5995,22 +5995,22 @@
 <context>
     <name>CompositionPathTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="625" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="626" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="625" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="626" />
         <source>Start fraction</source>
         <translation>起始比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="625" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="626" />
         <source>End fraction</source>
         <translation>终止比例</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="672" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="673" />
         <source>Double-click to choose another element</source>
         <translation>双击可重新选择元素</translation>
     </message>
@@ -6019,12 +6019,12 @@
         <translation type="vanished">添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="638" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="639" />
         <source>Remove row</source>
         <translation>删除行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="637" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="638" />
         <source>Add element</source>
         <translation>添加元素</translation>
     </message>
@@ -7359,7 +7359,7 @@
 <context>
     <name>DirectionInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="312" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="313" />
         <source>Custom Cartesian vector</source>
         <translation>自定义笛卡尔向量</translation>
     </message>
@@ -7856,7 +7856,7 @@
 <context>
     <name>ElementPairLineEdit</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="159" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="160" />
         <source>Choose an element pair</source>
         <translation>选择元素对</translation>
     </message>
@@ -10311,32 +10311,32 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>KeyValueTableInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="410" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="411" />
         <source>Add element</source>
         <translation>添加元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="412" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="413" />
         <source>Add element pair</source>
         <translation>添加元素对</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="414" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="415" />
         <source>Add row</source>
         <translation>添加一行</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="417" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="418" />
         <source>Remove selected</source>
         <translation>删除选中项</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="438" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="439" />
         <source>Double-click to choose another element pair</source>
         <translation>双击选择其他元素对</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="440" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="441" />
         <source>Double-click to choose another element</source>
         <translation>双击可重新选择元素</translation>
     </message>
@@ -12021,195 +12021,195 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation>磁矩模长</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="89" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="88" />
         <source>Use directions from vector-valued element entries</source>
         <translation>使用元素矢量条目中的方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="94" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="93" />
         <source>Non-collinear FM/AFM will use each vector entry as its element reference direction</source>
         <translation>非共线 FM/AFM 会把每个矢量条目作为对应元素的参考方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="99" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="98" />
         <source>Unlisted element |m| (μB)</source>
         <translation>未列元素 |m|（μB）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="103" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="102" />
         <source>Moment magnitude for selected elements not present in the element map</source>
         <translation>作用范围内、但未出现在元素映射中的元素使用该磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="112" />
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="119" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="111" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="118" />
         <source>Apply only to elements</source>
         <translation>仅作用于元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="114" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="113" />
         <source>Optional comma-separated element list; leave empty to consider all elements</source>
         <translation>可选的逗号分隔元素列表；留空表示考虑全部元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="118" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="117" />
         <source>Fe, Co, Ni</source>
         <translation>Fe, Co, Ni</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="122" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="121" />
         <source>Generate FM</source>
         <translation>生成 FM</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="124" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="123" />
         <source>Generate AFM</source>
         <translation>生成 AFM</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="126" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="125" />
         <source>Generate random PM</source>
         <translation>生成随机 PM</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="129" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="128" />
         <source>AFM assignment</source>
         <translation>AFM 分配方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="131" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="130" />
         <source>Assign opposite signs by fractional-coordinate layers or existing group labels</source>
         <translation>按分数坐标层或已有分组标签分配相反符号</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="145" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="144" />
         <source>AFM layer vector</source>
         <translation>AFM 层向量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="147" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="146" />
         <source>Fractional-coordinate phase direction; inspect the preview to confirm both signs occur</source>
         <translation>分数坐标相位方向；请查看预览，确认正负符号都存在</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="165" />
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="168" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="164" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="167" />
         <source>Positive group label</source>
         <translation>正号分组标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="171" />
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="174" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="170" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="173" />
         <source>Negative group label</source>
         <translation>负号分组标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="178" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="177" />
         <source>Set other groups to zero moment</source>
         <translation>其他分组磁矩置零</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="183" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="182" />
         <source>PM structures per input</source>
         <translation>每个输入的 PM 结构数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="189" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="188" />
         <source>PM direction distribution</source>
         <translation>PM 方向分布</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="191" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="190" />
         <source>Used only by non-collinear PM; collinear PM always samples +/- along the reference axis</source>
         <translation>仅用于非共线 PM；共线 PM 始终沿参考轴随机取正负方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="207" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="206" />
         <source>PM cone half-angle</source>
         <translation>PM 锥半角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="209" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="208" />
         <source>When opposite pairing is on, cone directions are paired around both +/- reference axes</source>
         <translation>开启反向配对后，锥面方向会围绕正负参考轴成对生成</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="219" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="218" />
         <source>Pair opposite PM directions by magnitude</source>
         <translation>按模长配对反向 PM</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="224" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="223" />
         <source>Complete equal-magnitude pairs cancel exactly; odd groups may leave one residual moment</source>
         <translation>完整的等模长方向对会精确抵消；奇数分组可能留下一个残余磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="228" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="227" />
         <source>Use random seed</source>
         <translation>使用随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="235" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="234" />
         <source>Maximum outputs per input</source>
         <translation>每个输入最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="237" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="236" />
         <source>Reject the run when FM + AFM + PM outputs exceed this budget</source>
         <translation>FM、AFM 和 PM 的输出总数超过该预算时拒绝运行</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="408" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="407" />
         <source>Load an upstream structure to preview magnetic atoms and output count.</source>
         <translation>载入上游结构后可预览磁性原子和输出数量。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="419" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="418" />
         <source>Preview unavailable: {error}</source>
         <translation>无法预览：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="426" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="425" />
         <source>First input preview: magnetic atoms {magnetic}/{atoms} · outputs/input {outputs} · total {total}</source>
         <translation>首个输入预览：磁性原子 {magnetic}/{atoms} · 每输入输出 {outputs} · 总计 {total}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="434" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="433" />
         <source>AFM signs: +{positive} / -{negative} / 0={zero}</source>
         <translation>AFM 符号：+{positive} / -{negative} / 0={zero}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="485" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="484" />
         <source>no outputs</source>
         <translation>无输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="491" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="490" />
         <source>{orders} · {model} · n={count}</source>
         <translation>{orders} · {model} · n={count}</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="502" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="501" />
         <source>Select at least one magnetic order to generate output.</source>
         <translation>请至少选择一种要生成的磁序。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="506" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="505" />
         <source>AFM uses existing group labels; confirm that both configured labels occur in the input.</source>
         <translation>AFM 将使用输入中已有的分组标签；请确认所填的两个标签都实际存在。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="509" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="508" />
         <source>Inspect the AFM sign preview to confirm that the selected lattice-layer vector produces both signs.</source>
         <translation>请查看 AFM 正负号预览，确认所选晶格分层向量确实生成了正、负两组磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="513" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="512" />
         <source>Random PM creates the configured number of structures for each input. Use a seed when the same directions must be reproduced.</source>
         <translation>随机 PM 会为每个输入生成指定数量的结构；需要复现相同方向时请启用随机种子。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/magnetic_order_card.py" line="516" />
+        <location filename="../ui/views/_card/magnetic_order_card.py" line="515" />
         <source>FM creates one aligned magnetic structure for each input.</source>
         <translation>FM 为每个输入生成一个磁矩同向排列的结构。</translation>
     </message>
@@ -12970,12 +12970,12 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">选择步骤以编辑参数；拖动可调整顺序，也可拖放到卡片组中。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="701" />
+        <location filename="../ui/widgets/docker.py" line="718" />
         <source>Add a card to start building the workflow.</source>
         <translation>添加卡片以开始构建工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="970" />
+        <location filename="../ui/widgets/docker.py" line="987" />
         <source>Move card here</source>
         <translation>将卡片移动到此处</translation>
     </message>
@@ -13662,42 +13662,42 @@ All child items will also be deleted.</source>
 <context>
     <name>NumericScanInput</name>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="212" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="213" />
         <source>Use custom coordinate list</source>
         <translation>使用自定义坐标列表</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="214" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="215" />
         <source>Comma-separated values</source>
         <translation>用逗号分隔数值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="249" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="250" />
         <source>Custom coordinate list cannot be empty.</source>
         <translation>自定义坐标列表不能为空。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="253" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="254" />
         <source>Custom coordinate list must contain only numbers.</source>
         <translation>自定义坐标列表只能包含数字。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="255" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="256" />
         <source>Custom coordinate list must contain only finite numbers.</source>
         <translation>自定义坐标列表只能包含有限数值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="260" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="261" />
         <source>Scan step must be positive.</source>
         <translation>扫描步长必须为正数。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="262" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="263" />
         <source>Scan maximum must be greater than or equal to the minimum.</source>
         <translation>扫描最大值必须大于或等于最小值。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/parameter_inputs.py" line="265" />
+        <location filename="../ui/widgets/parameter_inputs.py" line="266" />
         <source>Coordinate scan contains more than 10000 points.</source>
         <translation>坐标扫描超过 10000 个点。</translation>
     </message>
@@ -17789,262 +17789,262 @@ Do you want to continue?</source>
         <translation type="vanished">倾斜扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="34" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="35" />
         <source>Legacy Canting Scan</source>
         <translation>旧版倾斜扫描</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="38" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="39" />
         <source>Compatibility card loaded from an existing workflow.</source>
         <translation>从现有工作流加载的兼容卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="42" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="43" />
         <source>Migrate single-spin, atom-pair, and group-pair scans to Local Magnetic Response; migrate global tilt to SOC / Texture Response. Use Spin Perturb for random sampling.</source>
         <translation>单自旋、原子对和分组对扫描请迁移到“局域磁响应”；全局倾斜请迁移到“SOC / 纹理响应”。随机采样请使用“磁矩扰动”。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="49" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="50" />
         <source>Canting mode</source>
         <translation>倾斜模式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="50" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="51" />
         <source>Choose global tilt, single-spin tilt, atom-pair canting, or group-pair canting</source>
         <translation>选择全局倾斜、单自旋倾斜、原子对 canting 或分组对 canting</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="60" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="61" />
         <source>Target atoms</source>
         <translation>目标原子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="61" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="62" />
         <source>Choose which atoms receive the single-spin tilt</source>
         <translation>选择哪些原子接受单自旋倾斜</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="71" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="72" />
         <source>Atom indices</source>
         <translation>原子索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="72" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="73" />
         <source>Used when Target atoms = Explicit indices (1-based), for example 1,3-5</source>
         <translation>目标原子为 Explicit indices 时使用（1-based），例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="77" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="78" />
         <source>1,3-5</source>
         <translation>1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="79" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="80" />
         <source>Pair left indices</source>
         <translation>左侧原子对索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="80" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="81" />
         <source>1-based indices for the left side of each atom pair, for example 1,3-5</source>
         <translation>每个原子对左侧的 1-based 索引，例如 1,3-5</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="83" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="84" />
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="85" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="86" />
         <source>Pair right indices</source>
         <translation>右侧原子对索引</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="86" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="87" />
         <source>1-based indices for the right side of each atom pair, paired in order with left indices</source>
         <translation>每个原子对右侧的 1-based 索引，按顺序与左侧索引配对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="89" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="90" />
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="91" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="92" />
         <source>Pair source</source>
         <translation>原子对来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="92" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="93" />
         <source>Use explicit atom indices or auto-select unique neighbor-shell pairs</source>
         <translation>使用显式原子索引，或自动选择唯一近邻壳原子对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="98" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="99" />
         <source>Neighbor shell</source>
         <translation>近邻壳层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="99" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="100" />
         <source>1 = first-neighbor shell, 2 = second-neighbor shell, etc.</source>
         <translation>1 = 第一近邻壳，2 = 第二近邻壳，依此类推。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="106" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="107" />
         <source>Shell tolerance</source>
         <translation>壳层容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="107" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="108" />
         <source>Distances within this tolerance belong to the same neighbor shell</source>
         <translation>距离差在该容差内的原子属于同一邻近壳层</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="115" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="116" />
         <source>Pair elements</source>
         <translation>原子对元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="116" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="117" />
         <source>Optional pair filter such as Fe-Fe,Fe-Co; empty means any element pair</source>
         <translation>可选原子对筛选，例如 Fe-Fe、Fe-Co；留空表示任意元素对</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="119" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="120" />
         <source>Fe-Fe,Fe-Co</source>
         <translation>Fe-Fe,Fe-Co</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="121" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="122" />
         <source>Pair groups</source>
         <translation>原子对分组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="122" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="123" />
         <source>Optional group-pair filter such as A-B,A-A; requires arrays['group']</source>
         <translation>可选分组对筛选，例如 A-B、A-A；需要 arrays['group']</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="125" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="126" />
         <source>A-B</source>
         <translation>A-B</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="127" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="128" />
         <source>Bond filter</source>
         <translation>键方向筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="128" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="129" />
         <source>Optional bond-direction filter for auto pairs</source>
         <translation>auto 配对的可选键方向筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="134" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="135" />
         <source>Bond reference</source>
         <translation>键方向参考</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="135" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="136" />
         <source>Reference axis or plane normal used by the bond-direction filter</source>
         <translation>键方向筛选使用的参考轴或平面法向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="144" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="145" />
         <source>Bond angle tol</source>
         <translation>键角容差</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="145" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="146" />
         <source>Angular tolerance in degrees for the bond-direction filter</source>
         <translation>键方向筛选的角度容差（度）</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="153" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="154" />
         <source>Group A</source>
         <translation>A 组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="154" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="155" />
         <source>Atoms with arrays['group']==Group A rotate by +theta/2 in group-pair mode</source>
         <translation>group-pair 模式下，arrays['group'] == Group A 的原子旋转 +theta/2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="159" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="160" />
         <source>Group B</source>
         <translation>B 组</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="160" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="161" />
         <source>Atoms with arrays['group']==Group B rotate by -theta/2 in group-pair mode</source>
         <translation>group-pair 模式下，arrays['group'] == Group B 的原子旋转 -theta/2</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="165" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="166" />
         <source>Tilt angles</source>
         <translation>倾斜角</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="166" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="167" />
         <source>Comma-separated tilt angles in degrees, for example 1,2,5,10</source>
         <translation>逗号分隔的倾斜角，单位为度，例如 1,2,5,10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="169" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="170" />
         <source>1,2,5,10</source>
         <translation>1,2,5,10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="172" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="173" />
         <source>Tilt signs</source>
         <translation>倾斜符号</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="173" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="174" />
         <source>Choose whether to emit +theta only, -theta only, or paired +/-theta variants</source>
         <translation>选择仅生成 +theta、仅生成 -theta，或成对生成 +/-theta 变体</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="179" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="180" />
         <source>Include reference state</source>
         <translation>包含参考态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="181" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="182" />
         <source>Emit the un-tilted reference magnetic state before tilted variants</source>
         <translation>在倾斜变体之前输出未倾斜的参考磁态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="187" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="188" />
         <source>Show magnetic-moment setup, axes, and output limit</source>
         <translation>显示磁矩设置、方向和输出上限</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="191" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="192" />
         <source>Magnitude source</source>
         <translation>磁矩大小来源</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="192" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="193" />
         <source>Use existing initial magmoms or build a ferromagnetic reference from map/default</source>
         <translation>使用现有初始 magmoms，或从映射/默认值构造铁磁参考态</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="198" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="199" />
         <source>Magmom map</source>
         <translation>元素磁矩表</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="199" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="200" />
         <source>Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"</source>
         <translation>当来源为映射/默认磁矩大小时使用，例如 "Fe:2.2,Ni:0.6"</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="202" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="203" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="202" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="203" />
         <source>Moment magnitude</source>
         <translation>磁矩模长</translation>
     </message>
@@ -18053,67 +18053,67 @@ Do you want to continue?</source>
         <translation type="vanished">Fe:2.2,Ni:0.6</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="206" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="207" />
         <source>Default |m|</source>
         <translation>默认 |m|</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="207" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="208" />
         <source>Magnitude used for elements not listed in the magmom map</source>
         <translation>未在 magmom 映射中列出的元素使用该磁矩大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="215" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="216" />
         <source>Lift scalar magmoms to vectors</source>
         <translation>将标量 magmoms 提升为矢量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="217" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="218" />
         <source>If input magmoms are scalars, place them along Base axis before tilting</source>
         <translation>如果输入 magmoms 是标量，倾斜前先放在 Base 轴方向</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="222" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="223" />
         <source>Base axis</source>
         <translation>基准轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="223" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="224" />
         <source>Reference axis for lifted scalar magmoms and map/default ferromagnetic states</source>
         <translation>标量 magmoms 提升和映射/默认铁磁态使用的参考轴</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="232" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="233" />
         <source>Tilt reference</source>
         <translation>倾斜参考</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="233" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="234" />
         <source>Preferred direction that defines the tilt plane; it is orthogonalised automatically</source>
         <translation>用于定义倾斜平面的优选方向；会自动正交化</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="242" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="243" />
         <source>Apply elements</source>
         <translation>应用元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="243" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="244" />
         <source>Optional comma-separated element list; empty means all atoms are eligible targets</source>
         <translation>可选元素列表，用逗号分隔；留空表示所有原子都可作为目标</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="246" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="247" />
         <source>Fe,Co,Ni</source>
         <translation>Fe,Co,Ni</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="248" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="249" />
         <source>Max outputs</source>
         <translation>最大输出数</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="249" />
+        <location filename="../ui/views/_card/small_angle_spin_tilt_card.py" line="250" />
         <source>Stop after this many generated structures</source>
         <translation>生成到此数量后停止</translation>
     </message>
@@ -24828,8 +24828,8 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">卡片辅助</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="183" />
-        <location filename="../ui/widgets/docker.py" line="307" />
+        <location filename="../ui/widgets/docker.py" line="184" />
+        <location filename="../ui/widgets/docker.py" line="308" />
         <source>Select a card</source>
         <translation>选择一张卡片</translation>
     </message>
@@ -24838,7 +24838,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">选择工作流卡片以查看用途和当前数据摘要。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="181" />
+        <location filename="../ui/widgets/docker.py" line="182" />
         <source>Card inspector</source>
         <translation>卡片检查器</translation>
     </message>
@@ -24847,8 +24847,8 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">选择工作流卡片以编辑参数并查看使用建议。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="274" />
-        <location filename="../ui/widgets/docker.py" line="318" />
+        <location filename="../ui/widgets/docker.py" line="275" />
+        <location filename="../ui/widgets/docker.py" line="319" />
         <source>Select a parameter card to edit it here.</source>
         <translation>选择参数卡片后可在此编辑。</translation>
     </message>
@@ -24873,14 +24873,14 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">暂无此卡片的专属建议。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="194" />
         <location filename="../ui/widgets/docker.py" line="195" />
+        <location filename="../ui/widgets/docker.py" line="196" />
         <source>Open full documentation</source>
         <translation>打开完整文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="187" />
         <location filename="../ui/widgets/docker.py" line="188" />
+        <location filename="../ui/widgets/docker.py" line="189" />
         <source>Copy card JSON</source>
         <translation>复制卡片 JSON</translation>
     </message>
@@ -24889,65 +24889,71 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">关于此卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="348" />
+        <location filename="../ui/widgets/docker.py" line="349" />
         <source>Card information</source>
         <translation>卡片信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="349" />
+        <location filename="../ui/widgets/docker.py" line="350" />
         <source>No additional card information.</source>
         <translation>暂无其他卡片信息。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="524" />
-        <location filename="../ui/widgets/docker.py" line="525" />
-        <location filename="../ui/widgets/docker.py" line="530" />
+        <location filename="../ui/widgets/docker.py" line="375" />
+        <source>Parameter issue</source>
+        <translation>参数需要检查</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/docker.py" line="541" />
+        <location filename="../ui/widgets/docker.py" line="542" />
+        <location filename="../ui/widgets/docker.py" line="547" />
         <source>Not specified</source>
         <translation>未注明</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="537" />
+        <location filename="../ui/widgets/docker.py" line="554" />
         <source>Type: {type}</source>
         <translation>类型：{type}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="538" />
+        <location filename="../ui/widgets/docker.py" line="555" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="543" />
+        <location filename="../ui/widgets/docker.py" line="560" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="545" />
+        <location filename="../ui/widgets/docker.py" line="562" />
         <source>License: {license}</source>
         <translation>许可证：{license}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="346" />
+        <location filename="../ui/widgets/docker.py" line="347" />
         <source>Citation: {citation}</source>
         <translation>引用：{citation}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="201" />
         <location filename="../ui/widgets/docker.py" line="202" />
+        <location filename="../ui/widgets/docker.py" line="203" />
         <source>Card information and contributors</source>
         <translation>卡片信息与贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="246" />
+        <location filename="../ui/widgets/docker.py" line="247" />
         <source>Current configuration</source>
         <translation>当前配置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="259" />
+        <location filename="../ui/widgets/docker.py" line="260" />
+        <location filename="../ui/widgets/docker.py" line="385" />
         <source>Recommended checks</source>
         <translation>建议检查项</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="285" />
+        <location filename="../ui/widgets/docker.py" line="286" />
         <source>Parameters</source>
         <translation>参数</translation>
     </message>
@@ -24972,7 +24978,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">请参考卡片文档，并先验证小批量输出。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/docker.py" line="384" />
+        <location filename="../ui/widgets/docker.py" line="401" />
         <source>This workflow container is edited directly on the canvas.</source>
         <translation>此工作流容器直接在画布中编辑。</translation>
     </message>

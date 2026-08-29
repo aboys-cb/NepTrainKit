@@ -28,10 +28,12 @@ from NepTrainKit.ui.views._card.perturb_card import PerturbCard
 from NepTrainKit.ui.views._card.random_doping_card import RandomDopingCard
 from NepTrainKit.ui.views._card.random_slab_card import RandomSlabCard
 from NepTrainKit.ui.views._card.set_magnetic_moments_card import SetMagneticMomentsCard
+from NepTrainKit.ui.views._card.soc_texture_response_card import SOCTextureResponseCard
 from NepTrainKit.ui.views._card.workflow_fork import WorkflowFork
 from NepTrainKit.ui.widgets import (
     AdaptiveCompactDoubleSpinBox,
     AdaptiveCompactSpinBox,
+    KeyValueTableInput,
     MakeDataCard,
     MakeWorkflowArea,
     SpinBoxUnitInputFrame,
@@ -165,6 +167,36 @@ def test_inspector_context_refreshes_when_preview_dataset_changes():
     _dispose(area)
 
 
+def test_inspector_shows_transient_parameter_errors_instead_of_logging_tracebacks():
+    app = _app()
+    area = MakeWorkflowArea()
+    card = SOCTextureResponseCard()
+    area.add_card(card)
+    area.resize(1024, 640)
+    area.show()
+    area.select_card(card)
+    app.processEvents()
+
+    card.scan_input.range_frame.set_input_value([2.0, -2.0, 1.0])
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel.current_context_label.isHidden()
+    assert area.guidance_panel.recommend_caption.text() == "Parameter issue"
+    assert (
+        area.guidance_panel.recommend_label.text()
+        == "Scan maximum must be greater than or equal to the minimum."
+    )
+
+    card.scan_input.range_frame.set_input_value([-2.0, 2.0, 1.0])
+    for _ in range(3):
+        app.processEvents()
+
+    assert area.guidance_panel.current_context_label.isVisibleTo(area)
+    assert area.guidance_panel.recommend_caption.text() == "Recommended checks"
+    _dispose(area)
+
+
 def test_insert_defect_adsorption_fields_remain_visible_in_real_inspector():
     app = _app()
     area = MakeWorkflowArea()
@@ -261,6 +293,14 @@ def test_all_builtin_parameter_cards_fit_the_narrow_inspector_without_horizontal
             assert frame._column_count == len(frame.object_list), class_name
             widths = [control.width() for control in frame.object_list]
             assert max(widths) - min(widths) <= 1, class_name
+        for table_editor in card.setting_widget.findChildren(KeyValueTableInput):
+            if not table_editor.isVisibleTo(area):
+                continue
+            assert table_editor.height() + 1 >= table_editor.sizeHint().height(), class_name
+            assert (
+                table_editor.table.geometry().bottom()
+                < table_editor.add_button.geometry().top()
+            ), class_name
         for widget in card.setting_widget.findChildren(QWidget):
             if not isinstance(
                 widget,

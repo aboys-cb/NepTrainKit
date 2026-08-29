@@ -1042,7 +1042,7 @@ class CardLibraryPopup(FlyoutViewBase):
                 section,
             )
             button.setObjectName("cardCatalogItem")
-            button.setToolTip(card_tooltip(metadata))
+            button.setAccessibleDescription(card_tooltip(metadata))
             button.previewRequested.connect(self._preview_card)
             button.clicked.connect(
                 lambda _checked=False, selected=class_name: self._choose_card(selected)
@@ -1400,7 +1400,10 @@ class CardLibraryDialog(QDialog):
             prefix = f"[{group}]  " if group else ""
             item = QListWidgetItem(f"{prefix}{localized_card_name(metadata)}")
             item.setData(Qt.ItemDataRole.UserRole, class_name)
-            item.setToolTip(card_tooltip(metadata))
+            item.setData(
+                Qt.ItemDataRole.AccessibleDescriptionRole,
+                card_tooltip(metadata),
+            )
             self.card_list.addItem(item)
 
         self.card_list.currentItemChanged.connect(self._show_item)

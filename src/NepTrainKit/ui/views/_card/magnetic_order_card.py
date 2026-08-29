@@ -83,7 +83,6 @@ class MagneticOrderCard(MakeDataCard):
             element_picker=True, new_element_value="1.0",
         )
         self.map_edit.setAccessibleName(self.tr("Element moments (μB)"))
-        self._size_control(self.map_edit)
 
         self.use_element_dir_checkbox = CheckBox(
             self.tr("Use directions from vector-valued element entries"),

@@ -48,6 +48,7 @@ from qfluentwidgets import (
 from shiboken6 import isValid
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.ui.messages import translate_runtime_message
 
 from .card_metadata import (
     contributors_text,
@@ -359,13 +360,29 @@ class WorkflowGuidancePanel(QFrame):
         if card is None or not isValid(card):
             return
         summary_getter = getattr(card, "get_summary_text", None)
-        summary = str(summary_getter() or "").strip() if callable(summary_getter) else ""
+        guidance_getter = getattr(card, "get_guidance_text", None)
+        try:
+            summary = str(summary_getter() or "").strip() if callable(summary_getter) else ""
+            guidance = (
+                str(guidance_getter() or "").strip()
+                if callable(guidance_getter)
+                else ""
+            )
+        except ValueError as exc:
+            self.current_context_label.clear()
+            self.current_context_caption.setVisible(False)
+            self.current_context_label.setVisible(False)
+            self.recommend_caption.setText(self.tr("Parameter issue"))
+            self.recommend_label.setText(translate_runtime_message(exc))
+            self.recommend_caption.show()
+            self.recommend_label.show()
+            return
+
         self.current_context_label.setText(summary)
         self.current_context_caption.setVisible(bool(summary))
         self.current_context_label.setVisible(bool(summary))
 
-        guidance_getter = getattr(card, "get_guidance_text", None)
-        guidance = str(guidance_getter() or "").strip() if callable(guidance_getter) else ""
+        self.recommend_caption.setText(self.tr("Recommended checks"))
         self.recommend_label.setText(guidance)
         self.recommend_caption.setVisible(bool(guidance))
         self.recommend_label.setVisible(bool(guidance))

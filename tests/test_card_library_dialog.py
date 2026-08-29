@@ -396,6 +396,24 @@ class TestCardLibraryDialog(unittest.TestCase):
             popup._visible_class_names(), ["CrystalPrototypeBuilderCard"]
         )
 
+    def test_catalog_uses_inline_details_without_overlapping_tooltips(self):
+        popup = CardLibraryPopup()
+        class_name = "CompositionGradientCard"
+        button = popup._buttons_by_class[class_name]
+        self.assertEqual(button.toolTip(), "")
+        self.assertTrue(button.accessibleDescription())
+
+        dialog = CardLibraryDialog()
+        item = next(
+            dialog.card_list.item(row)
+            for row in range(dialog.card_list.count())
+            if dialog.card_list.item(row).data(Qt.ItemDataRole.UserRole) == class_name
+        )
+        self.assertEqual(item.toolTip(), "")
+        self.assertTrue(
+            item.data(Qt.ItemDataRole.AccessibleDescriptionRole)
+        )
+
     def test_popup_catalog_fits_without_hidden_horizontal_overflow(self):
         popup = CardLibraryPopup()
         popup.resize(980, 575)

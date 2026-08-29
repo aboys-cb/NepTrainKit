@@ -782,7 +782,7 @@ class CompositionSweepParams:
     """Parameters for composition-space sweeps."""
 
     elements: str = "Co,Cr,Ni"
-    order: str = "2,3,4,5"
+    order: str = "2,3"
     method: str = "Grid"
     step: float = 0.1
     n_points: int = 50
@@ -1251,9 +1251,9 @@ class OrderedAlloyPrototypeParams:
     """Parameters for ordered-alloy prototype generation."""
 
     prototype: str = "L12/A3B"
-    a_range: tuple[float, float, float] = (3.6, 3.6, 0.1)
+    a_range: tuple[float, float, float] = (3.75, 3.75, 0.1)
     covera: float = 1.0
-    sublattice_elements: str = "A:X,B:X"
+    sublattice_elements: str = "A:Cu,B:Au"
     max_outputs: int = 200
 
 

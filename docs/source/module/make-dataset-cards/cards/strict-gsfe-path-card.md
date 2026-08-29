@@ -77,7 +77,7 @@ $$
 
 ### 位移路径（displacement_range）
 
-`Sequence[float]`，默认 `(0.0,1.0,0.5)`，格式为 `[start,end,step]`。起点和终点包含在输出中；step 必须大于 0。
+`Sequence[float]`，默认 `(0.0,1.0,0.1)`，格式为 `[start,end,step]`，因此默认生成 11 个路径点。起点和终点包含在输出中；step 必须大于 0。
 
 ### 位移单位（displacement_unit）
 

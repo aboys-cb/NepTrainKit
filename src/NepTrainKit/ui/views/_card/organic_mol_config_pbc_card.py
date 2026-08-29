@@ -80,7 +80,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.perturb_frame = SpinBoxUnitInputFrame(self)
         self.perturb_frame.set_input("", 1, "int")
         self.perturb_frame.setRange(1, 100000)
-        self.perturb_frame.set_input_value([100])
+        self.perturb_frame.set_input_value([20])
         self.perturb_frame.setAccessibleName(self.tr("Maximum outputs per input"))
         self.perturb_field = CompactField(
             self.tr("Maximum outputs per input"),
@@ -96,7 +96,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.torsion_frame.setDecimals(3)
         self.torsion_frame.setSingleStep(1.0)
         self.torsion_frame.setRange(-360, 360)
-        self.torsion_frame.set_input_value([-180.0, 180.0])
+        self.torsion_frame.set_input_value([-60.0, 60.0])
         self.torsion_frame.setAccessibleName(self.tr("Torsion increment range"))
         self.torsion_field = CompactField(
             self.tr("Torsion increment range"),
@@ -108,7 +108,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.max_torsions_frame = SpinBoxUnitInputFrame(self)
         self.max_torsions_frame.set_input("", 1, "int")
         self.max_torsions_frame.setRange(0, 10000)
-        self.max_torsions_frame.set_input_value([5])
+        self.max_torsions_frame.set_input_value([1])
         self.max_torsions_frame.setAccessibleName(self.tr("Bonds rotated per output"))
         self.max_torsions_field = CompactField(
             self.tr("Bonds rotated per output"),
@@ -124,7 +124,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.sigma_frame.setDecimals(4)
         self.sigma_frame.setSingleStep(0.005)
         self.sigma_frame.setRange(0, 5)
-        self.sigma_frame.set_input_value([0.03])
+        self.sigma_frame.set_input_value([0.01])
         self.sigma_frame.setAccessibleName(self.tr("Coordinate noise σ"))
         self.sigma_field = CompactField(
             self.tr("Coordinate noise σ"),
@@ -818,14 +818,14 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         raw_params = data_dict.get("params")
         if raw_params:
             raw_params = dict(raw_params)
-            raw_params["torsion_range_deg"] = tuple(raw_params.get("torsion_range_deg", [-180.0, 180.0]))
+            raw_params["torsion_range_deg"] = tuple(raw_params.get("torsion_range_deg", [-60.0, 60.0]))
             params = OrganicMolConfigPBCParams(**raw_params)
         else:
             params = OrganicMolConfigPBCParams(
-                perturb_per_frame=data_dict.get("perturb_per_frame", [100])[0],
-                torsion_range_deg=tuple(data_dict.get("torsion_range_deg", [-180.0, 180.0])),
-                max_torsions_per_conf=data_dict.get("max_torsions_per_conf", [50])[0],
-                gaussian_sigma=data_dict.get("gaussian_sigma", [0.03])[0],
+                perturb_per_frame=data_dict.get("perturb_per_frame", [20])[0],
+                torsion_range_deg=tuple(data_dict.get("torsion_range_deg", [-60.0, 60.0])),
+                max_torsions_per_conf=data_dict.get("max_torsions_per_conf", [1])[0],
+                gaussian_sigma=data_dict.get("gaussian_sigma", [0.01])[0],
                 pbc_mode=data_dict.get("pbc_mode", "auto"),
                 local_cutoff=data_dict.get("local_cutoff", [200])[0],
                 local_subtree=data_dict.get("local_subtree", [100])[0],

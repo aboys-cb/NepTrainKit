@@ -154,7 +154,7 @@ class SolventBoxFillParams:
 
     solvent_xyz: str = DEFAULT_WATER_XYZ
     structures: int = 1
-    count_mode: str = "fixed"
+    count_mode: str = "density"
     solvent_count: int = 100
     density: float = 1.0
     sampling_mode: str = "general"

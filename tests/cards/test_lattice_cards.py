@@ -323,6 +323,7 @@ class TestLatticeCards(BaseCardTest):
     def test_perturb_element_scaling_labels_and_disclosure(self):
         card = PerturbCard()
 
+        self.assertEqual(card.get_params().max_distance, 0.25)
         self.assertEqual(card.element_scaling_checkbox.text(), "Use per-element limits")
         self.assertIn("maximum displacement", card.element_scaling_label.text())
         self.assertTrue(card.element_scaling_label.isHidden())
@@ -932,14 +933,14 @@ class TestLatticeCards(BaseCardTest):
     def test_shear_matrix_summary_reports_cartesian_product(self):
         summary = ShearMatrixOperation.sampling_summary(ShearMatrixParams())
 
-        self.assertEqual(summary["xy_points"], 11)
-        self.assertEqual(summary["yz_points"], 11)
-        self.assertEqual(summary["xz_points"], 11)
-        self.assertEqual(summary["outputs_per_input"], 1331)
+        self.assertEqual(summary["xy_points"], 3)
+        self.assertEqual(summary["yz_points"], 3)
+        self.assertEqual(summary["xz_points"], 3)
+        self.assertEqual(summary["outputs_per_input"], 27)
 
         card = ShearMatrixCard()
         card.set_preview_input_count(2)
-        self.assertIn("2662", card.get_guidance_text())
+        self.assertIn("54", card.get_guidance_text())
 
     def test_shear_matrix_symmetric_branch_sets_both_tensor_halves(self):
         structure = self.structure.copy()
@@ -1080,14 +1081,14 @@ class TestLatticeCards(BaseCardTest):
     def test_shear_angle_summary_reports_cartesian_product(self):
         summary = ShearAngleOperation.sampling_summary(ShearAngleParams())
 
-        self.assertEqual(summary["alpha_points"], 5)
-        self.assertEqual(summary["beta_points"], 5)
-        self.assertEqual(summary["gamma_points"], 5)
-        self.assertEqual(summary["outputs_per_input"], 125)
+        self.assertEqual(summary["alpha_points"], 3)
+        self.assertEqual(summary["beta_points"], 3)
+        self.assertEqual(summary["gamma_points"], 3)
+        self.assertEqual(summary["outputs_per_input"], 27)
 
         card = ShearAngleCard()
         card.set_preview_input_count(2)
-        self.assertIn("250", card.get_guidance_text())
+        self.assertIn("54", card.get_guidance_text())
 
     def test_scaling_and_shear_cards_roundtrip_nondefault_params(self):
         cases = [

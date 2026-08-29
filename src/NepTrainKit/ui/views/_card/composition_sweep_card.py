@@ -68,7 +68,7 @@ class CompositionSweepCard(MakeDataCard):
                 ("5,4,3,2", "All feasible, high-order first (5-2)"),
             ],
         )
-        set_combo_value(self.order_combo, "2,3,4,5")
+        set_combo_value(self.order_combo, "2,3")
         order_field = CompactField(
             self.tr("Component counts"), self.order_combo, self.setting_widget
         )
@@ -324,7 +324,7 @@ class CompositionSweepCard(MakeDataCard):
     def get_params(self) -> CompositionSweepParams:
         return CompositionSweepParams(
             elements=self.elements_edit.text(),
-            order=combo_value(self.order_combo, "2,3,4,5"),
+            order=combo_value(self.order_combo, "2,3"),
             method=combo_value(self.method_combo, "Grid"),
             step=float(self.step_frame.get_input_value()[0]),
             n_points=int(self.n_points_frame.get_input_value()[0]),
@@ -368,7 +368,7 @@ class CompositionSweepCard(MakeDataCard):
         if raw_params:
             params = CompositionSweepParams(
                 elements=raw_params.get("elements", "Co,Cr,Ni"),
-                order=raw_params.get("order", "2,3,4,5"),
+                order=raw_params.get("order", "2,3"),
                 method=raw_params.get("method", "Grid"),
                 step=raw_params.get("step", 0.1),
                 n_points=raw_params.get("n_points", 50),
@@ -382,7 +382,7 @@ class CompositionSweepCard(MakeDataCard):
         else:
             params = CompositionSweepParams(
                 elements=data_dict.get("elements", "Co,Cr,Ni"),
-                order=data_dict.get("order", "2,3,4,5"),
+                order=data_dict.get("order", "2,3"),
                 method=data_dict.get("method", "Grid"),
                 step=data_dict.get("step", [0.1])[0],
                 n_points=data_dict.get("n_points", [50])[0],

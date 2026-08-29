@@ -63,11 +63,11 @@ $$
 
 #### 目标用量（count_mode）
 
-`str`，默认 `fixed`。可选 `fixed`、`按密度`（`density`）。`fixed` 直接使用目标分子数；`按密度`（`density`）根据**完整 cell 体积**、溶剂分子质量、目标密度和数量乘数估算一个名义分子数。
+`str`，默认 `density`。可选 `fixed`、`按密度`（`density`）。`fixed` 直接使用目标分子数；`按密度`（`density`）根据**完整 cell 体积**、溶剂分子质量、目标密度和数量乘数估算一个名义分子数。
 
 #### 目标溶剂分子数（solvent_count）
 
-`int`，默认 100。`count_mode="fixed"` 时生效。
+`int`，默认 100，仅在主动切换到 `count_mode="fixed"` 后生效。
 
 #### 按密度（density）
 

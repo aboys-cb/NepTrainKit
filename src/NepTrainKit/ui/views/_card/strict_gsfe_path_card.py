@@ -79,7 +79,7 @@ class StrictGSFEPathCard(MakeDataCard):
         self.disp_frame.setSingleStep(0.1)
         self.disp_frame.setRange(-100.0, 100.0)
         self.disp_frame.object_list[2].setMinimum(0.0001)
-        self.disp_frame.set_input_value([0.0, 1.0, 0.5])
+        self.disp_frame.set_input_value([0.0, 1.0, 0.1])
         self.disp_frame.setAccessibleName(self.tr("Displacement path"))
         displacement_field = CompactField(
             self.tr("Path (start, end, step)"),

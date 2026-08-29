@@ -1471,6 +1471,7 @@ class TestDefectSurfaceCards(BaseCardTest):
 
     def test_strict_gsfe_path_card_roundtrip(self):
         card = StrictGSFEPathCard()
+        self.assertEqual(card.get_params(), StrictGSFEPathParams())
         self.assertTrue(card.cut_fraction_field.isHidden())
         self.assertTrue(card.layer_field.isHidden())
         self.assertGreater(card.disp_frame.object_list[2].minimum(), 0.0)
@@ -1487,7 +1488,7 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertIn("4 layers", card.preview_label.text())
         self.assertIn("move 2, keep 2", card.preview_label.text())
         self.assertIn("0→1 × vector = 0→8 Å", card.preview_label.text())
-        self.assertIn("3 outputs", card.preview_label.text())
+        self.assertIn("11 outputs", card.preview_label.text())
 
         card.slip_uv_frame.set_input_value([1, -1])
         card.disp_frame.set_input_value([0.0, 0.5, 0.25])

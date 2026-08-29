@@ -190,12 +190,12 @@ def coerce_scan_triplet(values, *, default_step: float) -> list[float]:
 @dataclass(frozen=True)
 class MagneticMomentRotationParams:
     elements: str = ""
-    max_angle: float = 10.0
+    max_angle: float = 30.0
     num_structures: int = 5
     lift_scalar: bool = True
     axis: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
     disturb_magnitude: bool = True
-    magnitude_factor: list[float] | tuple[float, float] = (0.95, 1.05)
+    magnitude_factor: list[float] | tuple[float, float] = (0.8, 1.2)
     use_seed: bool = False
     seed: int = 0
 

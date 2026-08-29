@@ -97,7 +97,7 @@ class ShearMatrixCard(MakeDataCard):
         frame.object_list[0].setRange(-100.0, 100.0)
         frame.object_list[1].setRange(-100.0, 100.0)
         frame.object_list[2].setRange(0.001, 200.0)
-        frame.set_input_value([-5.0, 5.0, 1.0])
+        frame.set_input_value([-2.0, 2.0, 2.0])
         return frame
 
     @staticmethod
@@ -209,17 +209,17 @@ class ShearMatrixCard(MakeDataCard):
         raw_params = data_dict.get("params")
         if raw_params:
             params = ShearMatrixParams(
-                xy_range=tuple(raw_params.get("xy_range", [-5.0, 5.0, 1.0])),
-                yz_range=tuple(raw_params.get("yz_range", [-5.0, 5.0, 1.0])),
-                xz_range=tuple(raw_params.get("xz_range", [-5.0, 5.0, 1.0])),
+                xy_range=tuple(raw_params.get("xy_range", [-2.0, 2.0, 2.0])),
+                yz_range=tuple(raw_params.get("yz_range", [-2.0, 2.0, 2.0])),
+                xz_range=tuple(raw_params.get("xz_range", [-2.0, 2.0, 2.0])),
                 symmetric=raw_params.get("symmetric", True),
                 identify_organic=raw_params.get("identify_organic", False),
             )
         else:
             params = ShearMatrixParams(
-                xy_range=tuple(data_dict.get("xy_range", [-5, 5, 1])),
-                yz_range=tuple(data_dict.get("yz_range", [-5, 5, 1])),
-                xz_range=tuple(data_dict.get("xz_range", [-5, 5, 1])),
+                xy_range=tuple(data_dict.get("xy_range", [-2, 2, 2])),
+                yz_range=tuple(data_dict.get("yz_range", [-2, 2, 2])),
+                xz_range=tuple(data_dict.get("xz_range", [-2, 2, 2])),
                 symmetric=data_dict.get("symmetric", True),
                 identify_organic=data_dict.get("organic", False),
             )

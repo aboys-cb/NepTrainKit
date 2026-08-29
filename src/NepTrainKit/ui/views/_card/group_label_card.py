@@ -68,7 +68,7 @@ class GroupLabelCard(MakeDataCard):
                 ("111", "(111) planes"),
             ],
         )
-        set_combo_value(self.plane_combo, "111")
+        set_combo_value(self.plane_combo, "001")
         self.plane_combo.setMinimumWidth(0)
         self.plane_combo.setFixedHeight(28)
 
@@ -411,7 +411,7 @@ class GroupLabelCard(MakeDataCard):
             params = GroupLabelParams(
                 miller_index=raw_params.get(
                     "miller_index",
-                    raw_params.get("kvec", "111"),
+                    raw_params.get("kvec", "001"),
                 ),
                 layer_tolerance=raw_params.get("layer_tolerance", 0.05),
                 group_a=raw_params.get("group_a", "A"),
@@ -420,7 +420,7 @@ class GroupLabelCard(MakeDataCard):
             )
         else:
             params = GroupLabelParams(
-                miller_index=data_dict.get("kvec", "111"),
+                miller_index=data_dict.get("kvec", "001"),
                 group_a=data_dict.get("group_a", "A"),
                 group_b=data_dict.get("group_b", "B"),
                 overwrite=data_dict.get("overwrite", True),

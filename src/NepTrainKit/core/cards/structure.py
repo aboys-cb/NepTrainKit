@@ -643,7 +643,7 @@ class VibrationModePerturbOperation(StructureOperation):
 class GroupLabelParams:
     """Parameters for assigning alternating atomic-layer group labels."""
 
-    miller_index: str = "111"
+    miller_index: str = "001"
     layer_tolerance: float = 0.05
     group_a: str = "A"
     group_b: str = "B"
@@ -784,10 +784,10 @@ class GroupLabelOperation(StructureOperation):
 class OrganicMolConfigPBCParams:
     """Parameters for torsion-guard organic conformer generation."""
 
-    perturb_per_frame: int = 100
-    torsion_range_deg: tuple[float, float] = (-180.0, 180.0)
-    max_torsions_per_conf: int = 5
-    gaussian_sigma: float = 0.03
+    perturb_per_frame: int = 20
+    torsion_range_deg: tuple[float, float] = (-60.0, 60.0)
+    max_torsions_per_conf: int = 1
+    gaussian_sigma: float = 0.01
     pbc_mode: str = "auto"
     local_cutoff: int = 150
     local_subtree: int = 40

@@ -56,7 +56,7 @@ class GeometryFilterCard(FilterDataCard):
         self.min_pair_frame.set_input("Å", 1, "float")
         self.min_pair_frame.setRange(0.0, 20.0)
         self.min_pair_frame.object_list[0].setDecimals(4)  # pyright: ignore[reportAttributeAccessIssue]
-        self.min_pair_frame.set_input_value([0.0])
+        self.min_pair_frame.set_input_value([0.5])
         self.min_pair_frame.setFixedWidth(150)
         self.min_pair_frame.setAccessibleName(self.tr("Minimum pair distance"))
         self.min_pair_field = CompactField(

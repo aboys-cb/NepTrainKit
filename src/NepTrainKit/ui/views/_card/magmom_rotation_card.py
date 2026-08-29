@@ -64,7 +64,7 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.angle_frame.setRange(0.0, 180.0)
         self.angle_frame.setDecimals(2)
         self.angle_frame.setSingleStep(1.0)
-        self.angle_frame.set_input_value([10.0])
+        self.angle_frame.set_input_value([30.0])
         angle_field = CompactField(
             self.tr("Maximum perturbation angle"),
             self.angle_frame,
@@ -107,7 +107,7 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.magnitude_factor_frame.setRange(0.0, 10.0)
         self.magnitude_factor_frame.setDecimals(3)
         self.magnitude_factor_frame.setSingleStep(0.01)
-        self.magnitude_factor_frame.set_input_value([0.95, 1.05])
+        self.magnitude_factor_frame.set_input_value([0.8, 1.2])
         self.magnitude_factor_field = CompactField(
             self.tr("Magnitude scale range"),
             self.magnitude_factor_frame,

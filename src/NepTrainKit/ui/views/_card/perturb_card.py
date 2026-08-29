@@ -28,7 +28,7 @@ from NepTrainKit.ui.widgets import MakeDataCard
 class ElementScalingRow(QFrame):
     """UI row for a single element-specific perturbation limit."""
 
-    def __init__(self, parent=None, default_distance: float = 0.3):
+    def __init__(self, parent=None, default_distance: float = 0.25):
         super().__init__(parent)
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -140,7 +140,7 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.setDecimals(4)
         self.scaling_condition_frame.setSingleStep(0.01)
         self.scaling_condition_frame.setRange(0, 1)
-        self.scaling_condition_frame.set_input_value([0.3])
+        self.scaling_condition_frame.set_input_value([0.25])
         distance_field = CompactField(
             self.tr("Displacement limit"),
             self.scaling_condition_frame,
@@ -462,7 +462,7 @@ class PerturbCard(MakeDataCard):
         if raw_params:
             params = PerturbParams(
                 engine_type=raw_params.get("engine_type", 1),
-                max_distance=raw_params.get("max_distance", 0.3),
+                max_distance=raw_params.get("max_distance", 0.25),
                 max_num=raw_params.get("max_num", 50),
                 identify_organic=raw_params.get("identify_organic", False),
                 use_element_scaling=raw_params.get("use_element_scaling", False),
@@ -473,7 +473,7 @@ class PerturbCard(MakeDataCard):
         else:
             params = PerturbParams(
                 engine_type=data_dict.get("engine_type", 1),
-                max_distance=data_dict.get("scaling_condition", [0.3])[0],
+                max_distance=data_dict.get("scaling_condition", [0.25])[0],
                 max_num=data_dict.get("num_condition", [50])[0],
                 identify_organic=data_dict.get("organic", False),
                 use_element_scaling=data_dict.get("use_element_scaling", False),

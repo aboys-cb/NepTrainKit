@@ -63,6 +63,7 @@ class SolventBoxFillCard(MakeDataCard):
             ("fixed", "Fixed molecule count"),
             ("density", "Nominal density from full cell"),
         ])
+        set_combo_value(self.count_mode_combo, "density")
         self.count_mode_field = CompactField(
             self.tr("Target amount"), self.count_mode_combo, self.setting_widget,
             self.tr("Density mode uses the complete cell volume without subtracting the host."),

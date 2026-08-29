@@ -6302,7 +6302,7 @@
         <translation type="vanished">例如 O</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="62" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="61" />
         <source>Replacement mixture</source>
         <translation>替换元素及相对比例</translation>
     </message>
@@ -6320,13 +6320,13 @@
         <translation type="vanished">所有命中位点都会被替换；比例只用于分配替换元素，省略比例时按 1.0 处理。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="85" />
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="105" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="84" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="104" />
         <source>Element allocation</source>
         <translation>元素分配方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="81" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="80" />
         <source>Independent random assignment</source>
         <translation>逐位随机分配</translation>
     </message>
@@ -6336,117 +6336,117 @@
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="66" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="65" />
         <source>All matched sites are replaced. Ratios distribute replacement elements; they are not a replacement fraction.</source>
         <translation>所有命中位点都会被替换。比例只分配替换元素，不表示替换率。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="72" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="71" />
         <source>Replacement rule</source>
         <translation>替换规则</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="74" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="73" />
         <source>Choose one existing element and the elements that will replace it.</source>
         <translation>选择一种已有元素，以及用来替换它的元素。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="83" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="82" />
         <source>Match overall ratio</source>
         <translation>尽量匹配整体比例</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="89" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="88" />
         <source>Use fixed random seed</source>
         <translation>使用固定随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="96" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="95" />
         <source>Random seed</source>
         <translation>随机种子</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="108" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="107" />
         <source>Random assignment allows count fluctuations; ratio matching fixes the nearest feasible integer counts.</source>
         <translation>随机分配允许计数涨落；比例匹配会固定为最接近目标的可实现整数计数。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="120" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="119" />
         <source>One Cartesian boundary</source>
         <translation>单个笛卡尔边界</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="126" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="125" />
         <source>Position selection</source>
         <translation>位置选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="157" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="156" />
         <source>For example: z&gt;=8 and z&lt;=10</source>
         <translation>例如：z&gt;=8 and z&lt;=10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="160" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="159" />
         <source>Cartesian expression</source>
         <translation>笛卡尔表达式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="163" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="162" />
         <source>Use x, y, z, comparisons, and/or; equality tolerance is 0.0001 Å.</source>
         <translation>可使用 x、y、z、比较以及 and/or；相等判断容差为 0.0001 Å。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="167" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="166" />
         <source>Cartesian region</source>
         <translation>笛卡尔区域</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="170" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="169" />
         <source>Coordinates use the current fixed global x/y/z axes and origin in Å; no periodic wrapping or lattice-axis conversion is applied.</source>
         <translation>坐标使用当前固定的全局 x/y/z 轴和原点，单位 Å；不做周期回绕或晶格轴转换。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="327" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="326" />
         <source>Complete the replacement rule</source>
         <translation>请完善替换规则</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="331" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="330" />
         <source>{target} → {replacements} · {matched} matched · 1/input</source>
         <translation>{target} → {replacements} · 命中 {matched} 个 · 每个输入 1 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="337" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="336" />
         <source>{target} → {replacements} · 1 output/input</source>
         <translation>{target} → {replacements} · 每个输入 1 个输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="356" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="355" />
         <source>Outputs/input: 1.</source>
         <translation>每个输入输出 1 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="359" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="358" />
         <source>Inputs {inputs} × 1 output/input = outputs {total}.</source>
         <translation>输入 {inputs} × 每个输入 1 个输出 = 共输出 {total} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="366" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="365" />
         <source>First input: {targets} target sites → {matched} Cartesian matches → all replaced.</source>
         <translation>首个输入：{targets} 个目标位点 → 笛卡尔条件命中 {matched} 个 → 全部替换。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="377" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="376" />
         <source>Matched integer allocation: {counts}.</source>
         <translation>命中位点的整数分配：{counts}。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="387" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="386" />
         <source>Existing spin and initial magnetic moments stay on their sites; check or reset them after changing elements.</source>
         <translation>现有 spin 和初始磁矩会保留在原位点；改变元素后请检查或重新设置磁矩。</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="394" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="393" />
         <source>Every matched target site is replaced; ratios do not keep part of the target element.</source>
         <translation>每个命中的目标位点都会被替换；比例不会保留一部分目标元素。</translation>
     </message>
@@ -6463,7 +6463,7 @@
         <translation type="vanished">all、z&gt;=8，或 z&gt;=8 and z&lt;=10</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="117" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="116" />
         <source>All target atoms</source>
         <translation>所有目标原子</translation>
     </message>
@@ -6472,7 +6472,7 @@
         <translation type="vanished">单个坐标边界</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/conditional_replace_card.py" line="123" />
+        <location filename="../ui/views/_card/conditional_replace_card.py" line="122" />
         <source>Advanced expression</source>
         <translation>高级表达式</translation>
     </message>
@@ -13821,6 +13821,11 @@ All child items will also be deleted.</source>
         <translation>基础晶胞位点：{ratio}。sublattice 数组保存这些子晶格身份。</translation>
     </message>
     <message>
+        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="331" />
+        <source>This card defines crystallographic A/B site identities. It does not expand the cell; use Super Cell afterward when a larger cell is needed. Replace any X placeholder before training.</source>
+        <translation>本卡定义晶体学 A/B 位点身份。需要更大晶胞时请后接扩胞；训练前须将所有 X 占位符替换为真实元素。</translation>
+    </message>
+    <message>
         <source>Base-cell sites: {ratio}. The sublattice array stores these A/B identities.</source>
         <translation type="vanished">基础晶胞位点：{ratio}。sublattice 数组保存这些 A/B 身份。</translation>
     </message>
@@ -13865,9 +13870,8 @@ All child items will also be deleted.</source>
         <translation>{prototype} · 参数需要检查</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="331" />
         <source>This card defines crystallographic A/B site identities. It does not expand the cell; use Super Cell afterward, and replace every X before training.</source>
-        <translation>本卡定义晶体学 A/B 位点身份，不负责扩胞；请后接“扩胞”卡，并在训练前替换所有 X。</translation>
+        <translation type="vanished">本卡定义晶体学 A/B 位点身份，不负责扩胞；请后接“扩胞”卡，并在训练前替换所有 X。</translation>
     </message>
     <message>
         <location filename="../ui/views/_card/ordered_alloy_prototype_card.py" line="382" />

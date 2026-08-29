@@ -513,12 +513,14 @@ class TestFilterCards(BaseCardTest):
         overlap = good.copy()
         overlap.positions[1] = overlap.positions[0]
         card = GeometryFilterCard()
+        self.assertEqual(card.get_params(), GeometryFilterParams())
         card.set_dataset([good, overlap])
 
         self.assertTrue(card.bulk_section.isHidden())
         self.assertIn("0 active", card.bulk_checkbox.text())
-        self.assertTrue(_wait_until(lambda: "keep 2" in card.preview_label.text()))
-        self.assertIn("keep 2", card.preview_label.text())
+        self.assertTrue(_wait_until(lambda: "keep 1" in card.preview_label.text()))
+        self.assertIn("keep 1", card.preview_label.text())
+        self.assertIn("short pairs 1", card.preview_label.text())
         card.min_pair_frame.set_input_value([1.0])
         self.assertTrue(_wait_until(lambda: "keep 1" in card.preview_label.text()))
         self.assertIn("keep 1", card.preview_label.text())

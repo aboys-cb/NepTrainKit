@@ -456,9 +456,9 @@ class CellScalingOperation(StructureOperation):
 class ShearMatrixParams:
     """Parameters for shear-matrix strain generation."""
 
-    xy_range: tuple[float, float, float] = (-5.0, 5.0, 1.0)
-    yz_range: tuple[float, float, float] = (-5.0, 5.0, 1.0)
-    xz_range: tuple[float, float, float] = (-5.0, 5.0, 1.0)
+    xy_range: tuple[float, float, float] = (-2.0, 2.0, 2.0)
+    yz_range: tuple[float, float, float] = (-2.0, 2.0, 2.0)
+    xz_range: tuple[float, float, float] = (-2.0, 2.0, 2.0)
     symmetric: bool = True
     identify_organic: bool = False
 
@@ -542,9 +542,9 @@ class ShearMatrixOperation(StructureOperation):
 class ShearAngleParams:
     """Parameters for lattice angle perturbations."""
 
-    alpha_range: tuple[float, float, float] = (-2.0, 2.0, 1.0)
-    beta_range: tuple[float, float, float] = (-2.0, 2.0, 1.0)
-    gamma_range: tuple[float, float, float] = (-2.0, 2.0, 1.0)
+    alpha_range: tuple[float, float, float] = (-2.0, 2.0, 2.0)
+    beta_range: tuple[float, float, float] = (-2.0, 2.0, 2.0)
+    gamma_range: tuple[float, float, float] = (-2.0, 2.0, 2.0)
     identify_organic: bool = False
 
 
@@ -613,7 +613,7 @@ class PerturbParams:
     """Parameters for random atomic perturbations."""
 
     engine_type: int = 1
-    max_distance: float = 0.3
+    max_distance: float = 0.25
     max_num: int = 50
     identify_organic: bool = False
     use_element_scaling: bool = False

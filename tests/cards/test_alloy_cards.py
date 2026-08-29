@@ -798,6 +798,8 @@ class TestAlloyCards(BaseCardTest):
     def test_conditional_replace_card_roundtrip(self):
         card = ConditionalReplaceCard()
         self.assertEqual(card.condition_edit.text(), "all")
+        self.assertEqual(card.target_edit.text(), "")
+        self.assertEqual(card.replacements_edit.text(), "")
         self.assertFalse(card.seed_checkbox.isChecked())
         self.assertEqual(card.get_params().seed, 0)
         card.target_edit.setText("Si")
@@ -1078,7 +1080,7 @@ class TestAlloyCards(BaseCardTest):
         summary = operation.sampling_summary(CompositionSweepParams())
 
         self.assertEqual(summary["active_orders"], (2, 3))
-        self.assertEqual(summary["skipped_orders"], (4, 5))
+        self.assertEqual(summary["skipped_orders"], ())
         self.assertEqual(summary["outputs_per_input"], 66)
         keys = [composition for _order, composition in summary["targets"]]
         self.assertEqual(len(keys), len(set(keys)))

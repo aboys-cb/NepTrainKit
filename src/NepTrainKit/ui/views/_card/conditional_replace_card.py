@@ -57,7 +57,6 @@ class ConditionalReplaceCard(MakeDataCard):
             self.tr("Element"), self.tr("Relative ratio"), self.setting_widget,
             element_picker=True, new_element_value="1.0",
         )
-        self.replacements_edit.add_row("F", "1.0")
         replacements_field = CompactField(
             self.tr("Replacement mixture"),
             self.replacements_edit,

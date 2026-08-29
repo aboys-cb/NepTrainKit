@@ -734,7 +734,7 @@ class StrictGSFEPathParams:
 
     plane_hkl: Sequence[int] = (0, 0, 1)
     slip_uvw: Sequence[int] = (1, 0, 0)
-    displacement_range: Sequence[float] = (0.0, 1.0, 0.5)
+    displacement_range: Sequence[float] = (0.0, 1.0, 0.1)
     displacement_unit: str = "fraction_of_vector"
     cut_mode: str = "middle"
     cut_fraction: float = 0.5

@@ -92,7 +92,7 @@ class ShearAngleCard(MakeDataCard):
         frame.object_list[0].setRange(-30.0, 30.0)
         frame.object_list[1].setRange(-30.0, 30.0)
         frame.object_list[2].setRange(0.001, 60.0)
-        frame.set_input_value([-2.0, 2.0, 1.0])
+        frame.set_input_value([-2.0, 2.0, 2.0])
         return frame
 
     @staticmethod
@@ -174,16 +174,16 @@ class ShearAngleCard(MakeDataCard):
         raw_params = data_dict.get("params")
         if raw_params:
             params = ShearAngleParams(
-                alpha_range=tuple(raw_params.get("alpha_range", [-2.0, 2.0, 1.0])),
-                beta_range=tuple(raw_params.get("beta_range", [-2.0, 2.0, 1.0])),
-                gamma_range=tuple(raw_params.get("gamma_range", [-2.0, 2.0, 1.0])),
+                alpha_range=tuple(raw_params.get("alpha_range", [-2.0, 2.0, 2.0])),
+                beta_range=tuple(raw_params.get("beta_range", [-2.0, 2.0, 2.0])),
+                gamma_range=tuple(raw_params.get("gamma_range", [-2.0, 2.0, 2.0])),
                 identify_organic=raw_params.get("identify_organic", False),
             )
         else:
             params = ShearAngleParams(
-                alpha_range=tuple(data_dict.get("alpha_range", [-2, 2, 1])),
-                beta_range=tuple(data_dict.get("beta_range", [-2, 2, 1])),
-                gamma_range=tuple(data_dict.get("gamma_range", [-2, 2, 1])),
+                alpha_range=tuple(data_dict.get("alpha_range", [-2, 2, 2])),
+                beta_range=tuple(data_dict.get("beta_range", [-2, 2, 2])),
+                gamma_range=tuple(data_dict.get("gamma_range", [-2, 2, 2])),
                 identify_organic=data_dict.get("organic", False),
             )
         self.set_params(params)

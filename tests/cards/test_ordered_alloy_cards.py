@@ -36,6 +36,16 @@ class TestOrderedAlloyCards(BaseCardTest):
     def _metadata(atoms):
         return json.loads(atoms.info["finite_cell_alloy"])
 
+    def test_ordered_prototype_default_is_real_cu3au_l12(self):
+        params = OrderedAlloyPrototypeParams()
+        output = OrderedAlloyPrototypeOperation().generate(params)[0]
+
+        self.assertEqual(params.a_range, (3.75, 3.75, 0.1))
+        self.assertEqual(params.sublattice_elements, "A:Cu,B:Au")
+        self.assertEqual(output.get_chemical_symbols().count("Cu"), 3)
+        self.assertEqual(output.get_chemical_symbols().count("Au"), 1)
+        self.assertNotIn("X", output.get_chemical_symbols())
+
     def test_ordered_prototype_sublattice_stoichiometries(self):
         expected = {
             "A1/fcc": {"A": 4},
@@ -543,17 +553,17 @@ class TestOrderedAlloyCards(BaseCardTest):
         self._app.processEvents()
 
         self.assertIn("4 sites", card.output_preview.text())
-        self.assertIn("A=3 (X)", card.output_preview.text())
-        self.assertIn("B=1 (X)", card.output_preview.text())
-        self.assertIn("not ready for training", card.next_step_tip.text())
+        self.assertIn("A=3 (Cu)", card.output_preview.text())
+        self.assertIn("B=1 (Au)", card.output_preview.text())
+        self.assertIn("fixed-stoichiometry", card.next_step_tip.text())
         self.assertFalse(hasattr(card, "max_atoms_frame"))
         self.assertFalse(hasattr(card, "rep_frame"))
 
-        card.element_a_edit.setText("Cu")
-        card.element_b_edit.setText("Au")
+        card.element_a_edit.setText("X")
+        card.element_b_edit.setText("X")
         self._app.processEvents()
-        self.assertIn("fixed-stoichiometry", card.next_step_tip.text())
-        self.assertIn("Cu/Au", card.get_summary_text())
+        self.assertIn("not ready for training", card.next_step_tip.text())
+        self.assertIn("X/X", card.get_summary_text())
 
         card.element_a_edit.clear()
         self._app.processEvents()
@@ -986,12 +996,12 @@ class TestOrderedAlloyCards(BaseCardTest):
         card.show()
         self._app.processEvents()
         for prototype, uses_covera, expected_elements in [
-            ("A1/fcc", False, "A:X"),
-            ("A2/bcc", False, "A:X"),
-            ("A3/hcp", True, "A:X"),
-            ("L12/A3B", False, "A:X,B:X"),
-            ("B2/AB", False, "A:X,B:X"),
-            ("L10/AB", True, "A:X,B:X"),
+            ("A1/fcc", False, "A:Cu"),
+            ("A2/bcc", False, "A:Cu"),
+            ("A3/hcp", True, "A:Cu"),
+            ("L12/A3B", False, "A:Cu,B:Au"),
+            ("B2/AB", False, "A:Cu,B:Au"),
+            ("L10/AB", True, "A:Cu,B:Au"),
         ]:
             with self.subTest(prototype=prototype):
                 card.prototype_combo.setCurrentIndex(card.prototype_combo.findData(prototype))

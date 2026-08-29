@@ -343,7 +343,7 @@ class FPSFilterOperation(DatasetOperation):
 class GeometryFilterParams:
     """Parameters for explicit geometry-quality filtering."""
 
-    min_pair_distance: float = 0.0
+    min_pair_distance: float = 0.5
     min_volume_per_atom: float = 0.0
     max_volume_per_atom: float = 0.0
     min_density: float = 0.0

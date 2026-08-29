@@ -413,6 +413,7 @@ H 0.6 -0.6 -0.6
             result = SolventBoxFillOperation().run_structure(
                 structure,
                 SolventBoxFillParams(
+                    count_mode="fixed",
                     solvent_count=1,
                     min_distance=0.1,
                     use_seed=True,
@@ -484,13 +485,15 @@ H 0.6 -0.6 -0.6
 
         card = SolventBoxFillCard()
         self.assertTrue(card.solvent_edit.isHidden())
-        self.assertTrue(card.density_frame.isHidden())
+        self.assertTrue(card.count_frame.isHidden())
+        self.assertFalse(card.density_frame.isHidden())
+        self.assertEqual(card.get_params(), SolventBoxFillParams())
         self.assertTrue(card.min_distance_frame.isHidden())
         self.assertIn("No input loaded", card.preview_label.text())
 
         card.set_dataset([structure])
         self.assertIn("cell 1000 Å³", card.preview_label.text())
-        self.assertIn("Target 100", card.preview_label.text())
+        self.assertIn("Target 33", card.preview_label.text())
 
         card.count_mode_combo.setCurrentIndex(
             card.count_mode_combo.findData("density")
@@ -525,6 +528,7 @@ H 0.6 -0.6 -0.6
         output = operation.run_structure(
             empty,
             SolventBoxFillParams(
+                count_mode="fixed",
                 solvent_count=1,
                 min_distance=0.8,
                 use_seed=True,
@@ -582,6 +586,7 @@ H 0.6 -0.6 -0.6
             SolventBoxFillOperation().run_structure(
                 structure,
                 SolventBoxFillParams(
+                    count_mode="fixed",
                     solvent_count=10,
                     min_distance=1.0,
                     max_attempts_per_solvent=1000,
@@ -603,6 +608,7 @@ H 0.6 -0.6 -0.6
                 structure,
                 SolventBoxFillParams(
                     sampling_mode="ion-water",
+                    count_mode="fixed",
                     solvent_count=1,
                     use_seed=True,
                     seed=2,
@@ -786,6 +792,7 @@ H 0.6 -0.6 -0.6
         result = SolventBoxFillOperation().run_structure(
             structure,
             SolventBoxFillParams(
+                count_mode="fixed",
                 solvent_count=8,
                 min_distance=min_distance,
                 max_attempts_per_solvent=1000,
@@ -826,6 +833,7 @@ H 0.6 -0.6 -0.6
             SolventBoxFillOperation().run_structure(
                 structure,
                 SolventBoxFillParams(
+                    count_mode="fixed",
                     solvent_count=10,
                     min_distance=1.0,
                     max_attempts_per_solvent=1000,
@@ -863,6 +871,7 @@ H 2.6700 0.5000 -0.8660
             structure,
             SolventBoxFillParams(
                 solvent_xyz=butane,
+                count_mode="fixed",
                 solvent_count=1,
                 sampling_mode="general",
                 min_distance=0.8,
@@ -1292,6 +1301,22 @@ H 2.6700 0.5000 -0.8660
         m = np.array(afm.get_initial_magnetic_moments(), dtype=float)
         self.assertTrue(np.any(m > 0) and np.any(m < 0))
 
+    def test_group_label_default_handles_a_common_fcc_conventional_cell(self):
+        structure = CrystalPrototypeBuilderOperation().generate(
+            CrystalPrototypeBuilderParams()
+        )[0]
+        card = GroupLabelCard()
+
+        self.assertEqual(card.get_params().miller_index, "001")
+        labeled = card.create_operation().run_structure(
+            structure, card.get_params()
+        )[0]
+
+        self.assertEqual(
+            set(str(value) for value in labeled.arrays["group"]),
+            {"A", "B"},
+        )
+
     def test_group_label_operation_is_ui_independent(self):
         base = CrystalPrototypeBuilderOperation().generate(
             CrystalPrototypeBuilderParams(
@@ -1470,6 +1495,13 @@ H 2.6700 0.5000 -0.8660
         card = GroupLabelCard()
         card.set_preview_structure(fcc)
         card.set_preview_input_count(2)
+        self.assertIn("2 layers", card.preview_label.text())
+        self.assertIn("A(2)", card.preview_label.text())
+        self.assertIn("B(2)", card.preview_label.text())
+        self.assertIn("outputs 2", card.get_guidance_text())
+
+        set_combo_value(card.plane_combo, "111")
+        card._refresh_preview()
         self.assertIn("1 layer", card.preview_label.text())
         self.assertIn("A(4)", card.preview_label.text())
         self.assertIn("A=4", card.preview_label.text())
@@ -1541,8 +1573,9 @@ H 2.6700 0.5000 -0.8660
             self.assertIn("3 detected bonds / 1 rotatable", card.preview_label.text())
             self.assertIn("1 component", card.preview_label.text())
             self.assertIn("nonperiodic", card.preview_label.text())
-            self.assertIn("up to 100 outputs", card.preview_label.text())
-            self.assertIn("dataset maximum 100", card.preview_label.text())
+            self.assertEqual(card.get_params(), OrganicMolConfigPBCParams())
+            self.assertIn("up to 20 outputs", card.preview_label.text())
+            self.assertIn("dataset maximum 20", card.preview_label.text())
 
             card.pbc_combo.setCurrentIndex(card.pbc_combo.findData("yes"))
             self.assertTrue(card.box_field.isHidden())

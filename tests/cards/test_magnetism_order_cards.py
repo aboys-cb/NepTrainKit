@@ -697,6 +697,16 @@ class TestMagnetismOrderCards(MagnetismCardTest):
             self.assertTrue(np.all(norms <= 2.2 + 1e-12))
             self.assertIn("SpinPert(", a.info.get("Config_type", ""))
 
+    def test_magmom_rotation_defaults_cover_broad_training_perturbations(self):
+        params = MagneticMomentRotationParams()
+        self.assertEqual(params.max_angle, 30.0)
+        self.assertEqual(tuple(params.magnitude_factor), (0.8, 1.2))
+
+        card = MagneticMomentRotationCard()
+        card_params = card.get_params()
+        self.assertEqual(card_params.max_angle, params.max_angle)
+        self.assertEqual(tuple(card_params.magnitude_factor), tuple(params.magnitude_factor))
+
     def test_random_spin_perturbation_samples_uniform_spherical_cap(self):
         vectors = np.tile(np.array([[0.0, 0.0, 2.0]]), (20000, 1))
         sampled, angles = MagneticMomentRotationOperation.sample_spherical_cap(

@@ -82,7 +82,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         self.a_frame.set_input(["–", self.tr("step"), "Å"], 3, "float")
         self.a_frame.setDecimals(4)
         self.a_frame.setRange(0.1, 100.0)
-        self.a_frame.set_input_value([3.6, 3.6, 0.1])
+        self.a_frame.set_input_value([3.75, 3.75, 0.1])
         self.a_field = CompactField(
             self.tr("Lattice constant a (min, max, step)"),
             self.a_frame,
@@ -119,7 +119,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         prototype_section.addWidget(self.single_sublattice_tip)
 
         self.element_a_edit = ElementLineEdit(self.setting_widget)
-        self.element_a_edit.setText("X")
+        self.element_a_edit.setText("Cu")
         self.element_a_edit.setPlaceholderText(self.tr("Element or X"))
         self.element_a_field = CompactField(
             self.tr("Sublattice A element"),
@@ -132,7 +132,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         self.element_a_edit.setFixedWidth(132)
 
         self.element_b_edit = ElementLineEdit(self.setting_widget)
-        self.element_b_edit.setText("X")
+        self.element_b_edit.setText("Au")
         self.element_b_edit.setPlaceholderText(self.tr("Element or X"))
         self.element_b_field = CompactField(
             self.tr("Sublattice B element"),
@@ -329,7 +329,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
     def get_guidance_text(self) -> str:
         return self.tr(
             "This card defines crystallographic A/B site identities. It does not expand the cell; "
-            "use Super Cell afterward, and replace every X before training."
+            "use Super Cell afterward when a larger cell is needed. Replace any X placeholder before training."
         )
 
     def get_params(self) -> OrderedAlloyPrototypeParams:
@@ -372,7 +372,7 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
         for key in ("auto_supercell", "max_atoms", "rep"):
             raw.pop(key, None)
         if raw:
-            raw["a_range"] = tuple(raw.get("a_range", [3.6, 3.6, 0.1]))
+            raw["a_range"] = tuple(raw.get("a_range", [3.75, 3.75, 0.1]))
             params = OrderedAlloyPrototypeParams(**raw)
         else:
             params = OrderedAlloyPrototypeParams()

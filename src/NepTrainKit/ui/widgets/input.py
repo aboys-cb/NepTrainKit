@@ -117,13 +117,10 @@ class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
         button = getattr(self, "compactSpinButton", None)
         if button is None:
             return
-        show_symbol = (
-            not self.isReadOnly()
-            # Keep the primary step affordance available for ordinary compact
-            # fields. Long values may scroll inside the line edit; hiding the
-            # button based on platform font hints is more disruptive.
-            and self.width() >= 72
-        )
+        # Match the integer control: editable compact fields keep their
+        # primary step affordance on every platform. Long values can scroll
+        # inside the line edit without making the control undiscoverable.
+        show_symbol = not self.isReadOnly()
         if button.isHidden() == show_symbol:
             self.setSymbolVisible(show_symbol)
         if not show_symbol:

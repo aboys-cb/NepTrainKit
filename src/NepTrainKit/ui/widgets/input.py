@@ -118,13 +118,12 @@ class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
         button = getattr(self, "compactSpinButton", None)
         if button is None:
             return
-        text_width = max(
-            self._shared_text_width,
-            self.fontMetrics().horizontalAdvance(self.text()),
-        )
         show_symbol = (
             not self.isReadOnly()
-            and self.width() >= text_width + self._step_button_width() + self._TEXT_PADDING
+            # Keep the primary step affordance available for ordinary compact
+            # fields. Long values may scroll inside the line edit; hiding the
+            # button based on platform font hints is more disruptive.
+            and self.width() >= 72
         )
         if button.isHidden() == show_symbol:
             self.setSymbolVisible(show_symbol)

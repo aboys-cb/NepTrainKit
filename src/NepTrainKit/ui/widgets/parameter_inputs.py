@@ -51,6 +51,16 @@ def fit_table_to_rows(table: TableWidget) -> None:
     if container is not None and container.layout() is not None:
         container.layout().invalidate()
         container.setFixedHeight(container.layout().sizeHint().height())
+        field = container.parentWidget()
+        if field is not None and field.layout() is not None:
+            # The Windows offscreen plugin does not propagate the table's new
+            # size hint through its CompactField parent. Recompute that direct
+            # wrapper explicitly so added rows cannot be clipped; resetting
+            # the minimum first also lets deletion shrink it again.
+            field.setMinimumHeight(0)
+            field.layout().invalidate()
+            field.layout().activate()
+            field.setMinimumHeight(field.layout().sizeHint().height())
     _refresh_layout_chain(table)
 
 

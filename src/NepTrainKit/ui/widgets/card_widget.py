@@ -275,28 +275,15 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
             self.category_tag.hide()
             return
 
-        margins = self.headerLayout.contentsMargins()
-        required = margins.left() + margins.right()
-        visible_widgets = []
-        for index in range(self.headerLayout.count()):
-            widget = self.headerLayout.itemAt(index).widget()
-            if widget is None or widget is self.headerLabel:
-                continue
-            if widget is self.category_tag or not widget.isHidden():
-                visible_widgets.append(widget)
-                required += widget.sizeHint().width()
-        required += self.headerLabel.fontMetrics().horizontalAdvance(
-            self.headerLabel.text()
-        )
-        required += self.headerLayout.spacing() * len(visible_widgets)
-        # During a Windows resize event the child layout may still expose its
-        # previous width. The header fills the card, so the card's current
-        # contents width is the reliable upper-level measurement here.
+        # Font and child-layout hints are not stable during the first
+        # offscreen Windows layout pass. Use a deterministic card breakpoint:
+        # normal root cards keep their category; genuinely narrow cards yield
+        # it to the title. Nested cards are handled above.
         available_width = max(
             self.headerTopView.width(),
             self.contentsRect().width(),
         )
-        self.category_tag.setVisible(available_width >= required)
+        self.category_tag.setVisible(available_width >= 360)
 
     def set_compact_header(self, compact: bool) -> None:
         """Switch between a full top-level header and a narrow nested header."""

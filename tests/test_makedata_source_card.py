@@ -23,12 +23,6 @@ class TestMakeDataSourceCard(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     def test_run_source_card_without_input_dataset(self):
         widget = MakeDataWidget()
         widget.add_card("CrystalPrototypeBuilderCard")

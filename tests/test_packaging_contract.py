@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 try:
@@ -94,7 +95,16 @@ def test_built_in_workflow_templates_are_packaged_for_wheels_and_nuitka():
 
     assert package_data["NepTrainKit.workflow_templates"] == ["*.json"]
     assert "src/NepTrainKit/workflow_templates" in workflow
-    assert "Built-in workflow templates are missing" in workflow
+    assert 'Get-ChildItem -LiteralPath $templateSource -Filter "*.json" -File' in workflow
+    assert 'Get-ChildItem -LiteralPath $templateDestination -Filter "*.json" -File' in workflow
+    assert "Compare-Object" in workflow
+    assert "-ReferenceObject $sourceTemplates" in workflow
+    assert "-DifferenceObject $packagedTemplates" in workflow
+    assert "Built-in workflow templates differ" in workflow
+    assert not re.findall(
+        r"workflow_templates[/\\][^\"'\s]+\.json",
+        workflow,
+    )
 
 
 def test_nuitka_build_validates_flat_standalone_layout():

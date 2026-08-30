@@ -12,12 +12,6 @@ class TestShiftEnergyMessageBox(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     def setUp(self):
         self.parent = QWidget()
         self.parent.resize(640, 480)

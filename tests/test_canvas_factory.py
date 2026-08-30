@@ -49,21 +49,7 @@ class _InverseSelectionData:
 class TestCanvasFactory(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._app = QApplication.instance()
-        cls._owns_app = cls._app is None
-        if cls._owns_app:
-            cls._app = QApplication([])
-
-    @classmethod
-    def tearDownClass(cls):
-        # pytest-qt owns the process-wide QApplication in the full suite.  Do
-        # not quit it here: doing so leaves later Qt/pyqtgraph tests with a
-        # shut-down event dispatcher and can make the Windows runner return
-        # exit code 1 after an otherwise green test summary.
-        if cls._owns_app and cls._app is not None:
-            cls._app.quit()
-        cls._app = None
-        cls._owns_app = False
+        cls._app = QApplication.instance() or QApplication([])
 
     def test_create_result_canvas_pyqtgraph_default(self):
         canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)

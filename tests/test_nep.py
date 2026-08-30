@@ -365,12 +365,6 @@ class TestNepResultPlotWidgetShiftEnergyBaseline(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     @staticmethod
     def _make_widget(data):
         widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
@@ -771,12 +765,6 @@ class TestTrainingOverlayDialog(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
-
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
 
     def test_dialog_uses_result_canvas_and_single_axis(self):
         from PySide6.QtWidgets import QWidget

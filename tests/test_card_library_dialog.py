@@ -25,12 +25,6 @@ class TestCardLibraryDialog(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     def test_library_search_filters_card_metadata(self):
         dialog = CardLibraryDialog()
         self.assertGreater(dialog.card_list.count(), 1)

@@ -925,6 +925,8 @@ class NepPolarizabilityResultData(ResultData):
         bool
             ``True`` if NEP polarizability predictions must be regenerated.
         """
+        if self._force_recalculate_outputs:
+            return True
         output_files_exist = all([
             self.polarizability_out_path.exists(),
         ])
@@ -1100,6 +1102,8 @@ class NepDipoleResultData(ResultData):
         bool
             ``True`` if NEP dipole predictions must be regenerated.
         """
+        if self._force_recalculate_outputs:
+            return True
         output_files_exist = all([
             self.dipole_out_path.exists(),
         ])

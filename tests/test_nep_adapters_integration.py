@@ -8,7 +8,11 @@ from ase.io import read as ase_read
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.calculator import NepCalculator
 from NepTrainKit.core.io.importers import ase_atoms_to_structure
-from NepTrainKit.core.io.nep import NepTrainResultData
+from NepTrainKit.core.io.nep import (
+    NepDipoleResultData,
+    NepPolarizabilityResultData,
+    NepTrainResultData,
+)
 from NepTrainKit.core.structure import Structure
 
 
@@ -46,6 +50,42 @@ def _alignment_result(tmp_path: Path, structures: list[Structure]) -> NepTrainRe
     result.load_structures()
     result.nep_calc = None
     return result
+
+
+def _response_structures() -> list[Structure]:
+    structures = []
+    for dipole, diagonal in (
+        ((1.0, 2.0, 3.0), (1.0, 2.0, 3.0)),
+        ((4.0, 5.0, 6.0), (4.0, 5.0, 6.0)),
+    ):
+        structures.append(
+            Structure(
+                lattice=np.eye(3),
+                atomic_properties={
+                    "species": ["Fe"],
+                    "pos": np.zeros((1, 3)),
+                },
+                properties=[
+                    {"name": "species", "type": "S", "count": 1},
+                    {"name": "pos", "type": "R", "count": 3},
+                ],
+                additional_fields={
+                    "dipole": " ".join(map(str, dipole)),
+                    "pol": " ".join(
+                        map(
+                            str,
+                            (
+                                diagonal[0], 0.0, 0.0,
+                                0.0, diagonal[1], 0.0,
+                                0.0, 0.0, diagonal[2],
+                            ),
+                        )
+                    ),
+                    "pbc": "T T T",
+                },
+            )
+        )
+    return structures
 
 
 def test_cached_output_reference_check_allows_normal_text_precision_loss(tmp_path: Path):
@@ -109,6 +149,50 @@ def test_cached_output_mismatch_activates_recalculation(tmp_path: Path, monkeypa
     assert result.nep_calc is fake_calculator
     assert result._cached_descriptors_are_usable() is False
     assert warnings and "will recalculate" in warnings[0]
+
+
+def test_polarizability_mismatch_activates_recalculation(tmp_path: Path, monkeypatch):
+    structures = _response_structures()
+    output_path = tmp_path / "polarizability_train.out"
+    result = NepPolarizabilityResultData(
+        tmp_path / "nep.txt",
+        tmp_path / "train.xyz",
+        output_path,
+        tmp_path / "descriptor.out",
+    )
+    result.set_structures(structures)
+    result.load_structures()
+    references = np.vstack([structure.nep_polarizability for structure in structures])
+    np.savetxt(output_path, np.column_stack([np.zeros_like(references), references[::-1]]))
+    monkeypatch.setattr(MessageManager, "send_warning_message", lambda _message: None)
+
+    result._prepare_polarizability_alignment()
+
+    assert result._force_recalculate_outputs is True
+    assert result._should_recalculate() is True
+    assert result._cached_descriptors_are_usable() is False
+
+
+def test_dipole_mismatch_activates_recalculation(tmp_path: Path, monkeypatch):
+    structures = _response_structures()
+    output_path = tmp_path / "dipole_train.out"
+    result = NepDipoleResultData(
+        tmp_path / "nep.txt",
+        tmp_path / "train.xyz",
+        output_path,
+        tmp_path / "descriptor.out",
+    )
+    result.set_structures(structures)
+    result.load_structures()
+    references = np.vstack([structure.nep_dipole for structure in structures])
+    np.savetxt(output_path, np.column_stack([np.zeros_like(references), references[::-1]]))
+    monkeypatch.setattr(MessageManager, "send_warning_message", lambda _message: None)
+
+    result._prepare_dipole_alignment()
+
+    assert result._force_recalculate_outputs is True
+    assert result._should_recalculate() is True
+    assert result._cached_descriptors_are_usable() is False
 
 
 def test_prediction_manifest_detects_same_dataset_with_different_model(tmp_path: Path):

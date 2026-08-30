@@ -58,12 +58,6 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     def test_show_nep_select_structure_indices_replaces_selection(self):
         widget = ShowNepWidget.__new__(ShowNepWidget)
         widget.nep_result_data = SimpleNamespace(select_index={4, 5})

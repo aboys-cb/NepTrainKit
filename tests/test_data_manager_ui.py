@@ -59,12 +59,6 @@ class TestDataManagerUi(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     def test_project_and_model_actions_are_visible_without_context_menu(self):
         with patch.object(project_view_module.QTimer, "singleShot"):
             project_widget = ProjectWidget()

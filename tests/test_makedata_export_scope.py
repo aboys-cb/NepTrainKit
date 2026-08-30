@@ -32,12 +32,6 @@ class TestMakeDataExportScope(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     def test_default_export_selects_only_final_enabled_output(self):
         first = _card("first")
         disabled = _card("disabled", enabled=False)

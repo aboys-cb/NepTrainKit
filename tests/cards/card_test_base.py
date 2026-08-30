@@ -194,12 +194,6 @@ class BaseCardTest(unittest.TestCase):
         cls.base_structure = read(cls.test_dir / "data" / "Si2.vasp")
         cls.base_structure.info.setdefault("Config_type", "Si2")
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     def setUp(self):
         np.random.seed(0)
         random.seed(0)

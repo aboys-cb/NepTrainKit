@@ -45,12 +45,6 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
     def setUpClass(cls):
         cls._app = QApplication.instance() or QApplication([])
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls._app is not None:
-            cls._app.quit()
-            cls._app = None
-
     @staticmethod
     def _histogram(plot_id, title):
         return {

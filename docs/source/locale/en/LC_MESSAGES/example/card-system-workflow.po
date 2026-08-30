@@ -8,476 +8,360 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-30 17:12+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:1
-#: b99c0b67ff204860b2ef34e4734440dc
+#: ../../source/example/card-system-workflow.md:1 86c1f79fc290477390d1fb6d30e8b8d3
 msgid "用一条流程学会 生成数据集卡片系统"
 msgstr "Learn the Make Dataset card system through one workflow"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:3
-#: e11946978e9f4cc3a369799d28b96cb4
+#: ../../source/example/card-system-workflow.md:3 6e9ae79192b142ad99a4ac2bf8e993f8
 msgid ""
-"这不是四张卡片的功能介绍，而是一个完整的工作流示例。目标是从 2 原子的 Si 晶胞"
-"出发，同时生成掺杂和空位两类候选，再做小幅扰动和几何筛选。走完一次后，你应该"
-"能看懂卡片顺序、`Card Group` 分支、启停状态、输入输出数量以及流程复用方式。"
+"这不是四张卡片的功能介绍，而是一个完整的工作流示例。目标是从 2 原子的 Si "
+"晶胞出发，同时生成掺杂和空位两类候选，再做小幅扰动和几何筛选。走完一次后，你应该能看懂卡片顺序、`Branch Merge` "
+"分支、启停状态、输入输出数量以及流程复用方式。"
 msgstr ""
-"This is not a feature tour of four separate cards. It is one complete "
-"workflow: start from a two-atom Si cell, generate doped and vacancy "
-"candidates in parallel, then apply a small perturbation and a geometry "
-"filter. After completing it once, you should understand card order, `Card "
-"Group` branches, enabled/disabled states, input/output counts, and workflow reuse."
+"This is not a feature tour of four separate cards. It is one complete workflow: start"
+" from a two-atom Si cell, generate doped and vacancy candidates in parallel, then "
+"apply a small perturbation and geometry filtering. After completing it once, you "
+"should understand card order, `Branch Merge` branches, enabled and disabled states, "
+"input and output counts, and workflow reuse."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:5
-#: ee62c303e6e4478883e849394e6a62d8
-msgid "先认清每张卡片上的按钮"
-msgstr "First, Understand the Buttons on Every Card"
+#: ../../source/example/card-system-workflow.md:5 4e3bedec165747b2a5d44701cd170134
+msgid "先认清卡片和右侧检查器"
+msgstr "Understand the Cards and the Inspector"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:7
-#: df34009b8c544b5d82e13fbb813f60ef
-msgid "所有卡片共用同一组标题栏按钮："
-msgstr "Every card uses the same title-bar controls:"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: cb163a39baf84b5f82a5c51ceceda8c8
-msgid "生成数据集卡片标题栏通用按钮"
-msgstr "Common title-bar buttons for Make Dataset cards"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: cb163a39baf84b5f82a5c51ceceda8c8
-msgid ""
-".. image:: ../_static/image/generated/tutorials/card_system_controls.png"
+#: ../../source/example/card-system-workflow.md:7 9609dfce4e94401fa4f428557a7b4112
+msgid "卡片在中间画布中显示顺序、摘要和运行状态；选中卡片后，参数及文档入口出现在右侧检查器："
 msgstr ""
-".. image:: ../_static/image/generated/tutorials/card_system_controls.png"
+"Cards on the center canvas show their order, summary, and run status. Select a card "
+"to edit its parameters or open its documentation in the inspector on the right:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: cb661f1c33a74b309803007f389617c6
+#: ../../source/example/card-system-workflow.md:9 a81783fd1d944e5a8983f0b0f88b3db8
+msgid "生成数据集卡片与右侧检查器中的通用操作"
+msgstr "Common Make Dataset card and inspector controls"
+
+#: ../../source/example/card-system-workflow.md:9 a81783fd1d944e5a8983f0b0f88b3db8
+msgid ".. image:: ../_static/image/generated/tutorials/card_system_controls.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/card_system_controls.png"
+
+#: ../../source/example/card-system-workflow.md:9 692d2329c8b7427a8b7c0afc47c93ecf
 msgid "编号"
 msgstr "No."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 3262851b993b490f92d4ea77f92cfcd5
+#: ../../source/example/card-system-workflow.md:9 d7b6925f859e445d80fd638cbec388a8
 msgid "功能"
 msgstr "Function"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: e5332fff3638453a959dc42d867b7fe0
+#: ../../source/example/card-system-workflow.md:9 d1477cfae7a24ad8b2d4d2e3eef8f709
 msgid "什么时候用"
 msgstr "When to use it"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: f4450701ea1a4d7487f12acacf97e88d
+#: ../../source/example/card-system-workflow.md:9 2a59e107efc14851a2b16edcf755f910
 msgid "1"
 msgstr "1"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: f377c035666842a78431808fd2bcefdd
+#: ../../source/example/card-system-workflow.md:9 c81662ebbf0241a6bce07f4002fee25d
 msgid "启用或跳过卡片"
 msgstr "Enable or skip the card"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 987353c6094045ec9060d495841b212f
+#: ../../source/example/card-system-workflow.md:9 c53831772511452d9afbc213cba9679a
 msgid "取消勾选后，运行流程时会跳过这张卡；下游接收上一张已启用卡片的输出"
 msgstr ""
-"Clear the checkbox to skip this card when the workflow runs. The next card "
-"receives the output of the previous enabled card."
+"Clear the checkbox to skip this card when the workflow runs. The next card receives "
+"the output of the previous enabled card."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: aa9b597bf15f47aab434590bac852c0a
+#: ../../source/example/card-system-workflow.md:9 ef8559dfe5f7418fb6d8f3987f087838
 msgid "2"
 msgstr "2"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 3d7f2d8b0b0e4d669276fa45a05fed5f
-msgid "折叠或展开"
-msgstr "Collapse or expand"
+#: ../../source/example/card-system-workflow.md:9 3b8100d1438c46ed8aecb43a9da8956a
+msgid "展开或收起卡片结构"
+msgstr "Expand or collapse the card structure"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 9481d97d994a4bbab908a6c4a3da5bde
-msgid "参数设置完成后折叠，便于查看整条流程和拖动排序"
+#: ../../source/example/card-system-workflow.md:9 66c3328ecb1046128928a146b6ef926b
+msgid "查看分组、分叉或紧凑摘要时使用；普通参数在右侧编辑"
 msgstr ""
-"Collapse a configured card to see the whole workflow and reorder cards more "
-"easily."
+"Use this to inspect groups, forks, or a compact summary. Edit ordinary parameters in "
+"the inspector on the right."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: edd1aef46eaf42ecbf6a39f33ebabf97
+#: ../../source/example/card-system-workflow.md:9 200c3a34459e4e2498510c42d55d4ad9
 msgid "3"
 msgstr "3"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 910a60875c804a49956240add4f5a0d7
+#: ../../source/example/card-system-workflow.md:9 b2f64912d79a482f874650e697c4c288
 msgid "在线手册"
 msgstr "Online manual"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 96446e0d49814cde993efcf1df43dac6
-msgid "查看这张卡片的完整参数、限制和适用场景"
+#: ../../source/example/card-system-workflow.md:9 16df59141ea74228a33c2f4cfbb9d542
+msgid "打开与软件语言一致的完整参数、限制和示例页"
 msgstr ""
-"Read the full parameter reference, limitations, and intended use cases for "
-"this card."
+"Open the full parameter, limitation, and example page in the language used by the "
+"application."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 45604e5644974deca3f837e65ba343c1
+#: ../../source/example/card-system-workflow.md:9 d1a680162b05400d9f5011eeaa2c28f9
 msgid "4"
 msgstr "4"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: d7f088a034a9423bae1b14c022dadbcf
+#: ../../source/example/card-system-workflow.md:9 8f799ec6d62d4d4fba16dcb88e469870
 msgid "卡片信息"
 msgstr "Card information"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 863ac737b26c411bb81da689ca2ac4bc
-msgid "查看版本、维护者和来源信息"
-msgstr "View version, maintainer, and provenance information."
+#: ../../source/example/card-system-workflow.md:9 973a828c6e8549d2ac7df08ab24a3c66
+msgid "查看版本、贡献者和来源信息"
+msgstr "View version, contributor, and provenance information."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: c7c46a837cab4564a6696611cc4826e4
+#: ../../source/example/card-system-workflow.md:9 ca0d059ca75549068648345dfba25e80
 msgid "5"
 msgstr "5"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: f51ff071d19c4436b09a534afb564c8b
+#: ../../source/example/card-system-workflow.md:9 6d31f1d6a41f4b8999bf076e27114775
 msgid "复制单张卡片 JSON"
 msgstr "Copy this card as JSON"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 1b2eecc4d78f439d9affb800b98bc17a
-msgid "复制当前参数，之后用顶部 `Paste JSON` 追加一张相同卡片"
+#: ../../source/example/card-system-workflow.md:9 ade17d386e3944d0a2a17d55189e5eba
+msgid "复制当前卡片和参数，之后可从左侧当前工作流区域粘贴"
 msgstr ""
-"Copy the current parameters, then use `Paste JSON` at the top to append an "
-"identical card."
+"Copy the current card and its parameters. You can paste it later from the current-"
+"workflow area on the left."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 4e95690c7e6044edb0964f1410fa1323
+#: ../../source/example/card-system-workflow.md:9 43fda028b4634f688ab51e52ea469963
 msgid "6"
 msgstr "6"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 5bbb9336f71f4572ab0db92ab178cd9c
-msgid "查看本卡输出"
-msgstr "View this card's output"
+#: ../../source/example/card-system-workflow.md:9 bcf52a613fd64210944a220cfbca1978
+msgid "移除卡片"
+msgstr "Remove the card"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: c1db7bbcac6944db9dc517ea0c0e8a2e
-msgid "运行成功后才可用，只把这张卡片的结果送到 `NEP Dataset Display`"
-msgstr ""
-"Available after a successful run. It sends only this card's results to `NEP "
-"Dataset Display`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: b35d4848771d45a4973abe462b27f376
-msgid "7"
-msgstr "7"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: bd6b96c7e39d4e92ae51772772e8ac94
-msgid "导出本卡输出"
-msgstr "Export this card's output"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 4982cb6fd4984ebab81e561fd354dfad
-msgid "保存这一步的中间结构，不等于保存整条流程"
-msgstr ""
-"Save the intermediate structures from this step; this does not save the "
-"workflow itself."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 8caccb69eca04679b0f42dedd7843d18
-msgid "8"
-msgstr "8"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: 05592e9c9b6b4374a0a152bad85d7b39
-msgid "关闭卡片"
-msgstr "Close the card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:9
-#: a997bfc82bac43879dd72da3b4f5d019
+#: ../../source/example/card-system-workflow.md:9 a18b64355a18401caa16a299287675a6
 msgid "从工作区移除；不会删除已经导出的文件"
-msgstr ""
-"Remove it from the workspace. Previously exported files are not deleted."
+msgstr "Remove it from the workspace. Previously exported files are not deleted."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:25
-#: 95d8d4f44fc040c5b355f8148d909f6f
-msgid ""
-"拖动卡片标题栏可以调整顺序。改完顺序必须重新运行，因为顶层卡片的输出会依次传"
-"给下一张已启用卡片。"
+#: ../../source/example/card-system-workflow.md:23 39897be7377a4488a0acf85a1a15ba9a
+msgid "运行成功后，卡片上才会出现“查看本卡输出”和“导出本卡输出”。拖动卡片标题栏可以调整顺序。改完顺序必须重新运行，因为顶层卡片的输出会依次传给下一张已启用卡片。"
 msgstr ""
-"Drag a card by its title bar to change the order. Run the workflow again "
-"after reordering because each top-level card passes its output to the next "
-"enabled card."
+"The `View this card's output` and `Export this card's output` actions appear only "
+"after the card runs successfully. Drag a card by its title bar to change the order. "
+"Run the workflow again after reordering because each top-level card passes its output"
+" to the next enabled card."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:27
-#: b93b4f432513463ab3a72e30972b5e88
+#: ../../source/example/card-system-workflow.md:25 1963c894ae574ead80990b926937ce4c
 msgid "组装这个例子"
 msgstr "Build the Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:29
-#: a9bfd7706e3b4052a03607d51dc82bf2
+#: ../../source/example/card-system-workflow.md:27 972a0ba63b144083a9f5d8416f49a420
 msgid "用左上角 `Load` 导入 `Si2.vasp`。"
 msgstr "Use `Load` in the upper-left corner to import `Si2.vasp`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:30
-#: 66db5592cad742f6afa1bc2049dd2331
+#: ../../source/example/card-system-workflow.md:28 fcaa2b37b2f5493aa465c669e0b946ce
 msgid ""
-"用 `Add new card` 或 `Find card` 依次添加 `Super Cell`、`Card Group`、"
-"`Random Doping`、`Vacancy Defect`、`Atomic Perturb` 和 `Geometry Filter`。新"
-"卡片先出现在顶层。"
+"用 `Add new card` 打开卡片选择器，依次添加 `Super Cell`、`Branch Merge`、`Random Doping`、`Vacancy "
+"Defect`、`Atomic Perturb` 和 `Geometry Filter`。没有选中容器时，新卡片进入顶层。"
 msgstr ""
-"Use `Add new card` or `Find card` to add `Super Cell`, `Card Group`, `Random "
-"Doping`, `Vacancy Defect`, `Atomic Perturb`, and `Geometry Filter` in that "
-"order. New cards first appear at the top level."
+"Use `Add new card` to open the card picker, then add `Super Cell`, `Branch Merge`, "
+"`Random Doping`, `Vacancy Defect`, `Atomic Perturb`, and `Geometry Filter` in that "
+"order. When no container is selected, a new card is added at the top level."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:31
-#: a1fa292345044a16afb709baab75803e
+#: ../../source/example/card-system-workflow.md:29 5f054d3dde794ed5a215824e8a4e4403
 msgid ""
-"按住 `Random Doping` 的标题栏，把它拖进 `Card Group` 的空白区域；再用同样方法"
-"拖入 `Vacancy Defect`。拖错时，把子卡片拖回工作区空白处即可回到顶层。"
+"按住 `Random Doping` 的标题栏，把它拖进 `Branch Merge` 的空白区域；再用同样方法拖入 `Vacancy "
+"Defect`。拖错时，把子卡片拖回工作区空白处即可回到顶层。"
 msgstr ""
-"Drag `Random Doping` by its title bar into the empty area of `Card Group`, "
-"then do the same with `Vacancy Defect`. If a card is grouped by mistake, "
-"drag it back to an empty area of the workspace to return it to the top level."
+"Drag `Random Doping` by its title bar into the empty area of `Branch Merge`, then do "
+"the same with `Vacancy Defect`. If a card is grouped by mistake, drag it back to an "
+"empty area of the workspace to return it to the top level."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:32
-#: 94b28dadadba4ce3b8db805d145c90ba
+#: ../../source/example/card-system-workflow.md:30 b22fcff548b946baa85fe8d423d32ffc
 msgid "拖动标题栏，把剩余顶层卡片排成下面的顺序，再填写参数。"
 msgstr ""
-"Drag the title bars to arrange the remaining top-level cards as shown below, "
-"then enter the parameters."
+"Drag the title bars to arrange the remaining top-level cards as shown below, then "
+"enter the parameters."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:34
-#: 938bf5f3d8f44d09a5cf2f84854b1a9c
+#: ../../source/example/card-system-workflow.md:32 f283bce5df854b0cbb2d26583efd2edc
 msgid ""
 "Super Cell\n"
-"→ Card Group [Random Doping | Vacancy Defect]\n"
+"→ Branch Merge [Random Doping | Vacancy Defect]\n"
 "→ Atomic Perturb\n"
 "→ Geometry Filter\n"
 msgstr ""
 "Super Cell\n"
-"→ Card Group [Random Doping | Vacancy Defect]\n"
+"→ Branch Merge [Random Doping | Vacancy Defect]\n"
 "→ Atomic Perturb\n"
 "→ Geometry Filter\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 0830c1f5e4994905abe0d0323ad409ea
+#: ../../source/example/card-system-workflow.md:39 62a45a181e5e46aa94e735e17dffd22e
 msgid "包含线性步骤和并行分支的完整卡片流程"
 msgstr "A complete card workflow with sequential steps and parallel branches"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 0830c1f5e4994905abe0d0323ad409ea
-msgid ""
-".. image:: ../_static/image/generated/tutorials/card_system_workflow.png"
-msgstr ""
-".. image:: ../_static/image/generated/tutorials/card_system_workflow.png"
+#: ../../source/example/card-system-workflow.md:39 62a45a181e5e46aa94e735e17dffd22e
+msgid ".. image:: ../_static/image/generated/tutorials/card_system_workflow.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/card_system_workflow.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:46
-#: 773c5256f4764ba7a16f9385a37d4c3e
+#: ../../source/example/card-system-workflow.md:44 621f11deba034db08fdbc1ba598f804e
 msgid ""
-"顶部按钮控制整条流程：`Copy JSON` 复制当前全部卡片，`Paste JSON` 把剪贴板中的"
-"配置追加到现有流程，`Run` 运行所有已启用卡片，`Stop` 中止正在运行的卡片。标题"
-"栏里的 `Copy JSON` 只复制单张卡片，两者不要混用。"
+"中间工具栏的 `Run` 运行所有已启用卡片，`Stop` "
+"中止正在运行的卡片。复制或粘贴整条工作流从左侧“当前工作流”区域操作；右侧检查器的复制按钮只复制当前卡片，两者不要混用。"
 msgstr ""
-"The top controls operate on the whole workflow: `Copy JSON` copies all "
-"current cards, `Paste JSON` appends clipboard configuration to the existing "
-"workflow, `Run` executes all enabled cards, and `Stop` aborts the running "
-"cards. `Copy JSON` in a card title bar copies only that card, so do not "
-"confuse the two."
+"`Run` in the center toolbar runs every enabled card, while `Stop` interrupts cards "
+"that are still running. Copy or paste an entire workflow from the current-workflow "
+"area on the left. The copy button in the inspector copies only the selected card; do "
+"not confuse the two operations."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:48
-#: 2ec547ab944e4999bf230cc0ed63324e
+#: ../../source/example/card-system-workflow.md:46 4d4b2429acc74d9eb9746b0cdd5907f4
 msgid "本例使用的参数只用于把数据流讲清楚："
 msgstr "These parameters are chosen only to make the data flow easy to follow:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 2ac5f871f9bc47f994067f7af1e510bd
+#: ../../source/example/card-system-workflow.md:39 0b6c0b8a184f4460845a42191943fa13
 msgid "步骤"
 msgstr "Step"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: e3f021cd21d8448697a93cb3c9a421ff
+#: ../../source/example/card-system-workflow.md:39 1cf10182459f4de19c1bd7c03b6fa25a
 msgid "关键输入"
 msgstr "Key settings"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: a07518c8ad5745359f7e5f173f6e9732
+#: ../../source/example/card-system-workflow.md:39 769bca415ac54807bcf961438e496062
 msgid "预期输出"
 msgstr "Expected output"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 680f8dd9d2ee47d2b35a078b75d096e2
+#: ../../source/example/card-system-workflow.md:39 26267bde6c9648939d2e0e22b6a9a7a3
 msgid "`Super Cell`"
 msgstr "`Super Cell`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: b0d641d05d664bd8ac1efe395365b12e
+#: ../../source/example/card-system-workflow.md:39 792b30bb94d34fbba132c6bc84a55ce3
 msgid "`2 × 2 × 2`"
 msgstr "`2 × 2 × 2`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 1ee8a2a475534686b7439de590f2cc34
+#: ../../source/example/card-system-workflow.md:39 57843c0021f843bca0229b5d38cd6f43
 msgid "1 个 16 原子 Si 超胞"
 msgstr "One 16-atom Si supercell"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 73a50a49420046949acd7b3567c724a7
+#: ../../source/example/card-system-workflow.md:39 9c26e5bb021e466b8dd48ac18f7a974c
 msgid "`Random Doping`"
 msgstr "`Random Doping`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 4aca5d4f8798483d8647781899a84e45
+#: ../../source/example/card-system-workflow.md:39 0968cdde5f1c4c32bea6dad3c19360eb
 msgid "目标 `Si`；掺杂元素直接填 `Ge`；固定替换 1 个；生成 2 个；seed `42`"
 msgstr ""
-"Target `Si`; enter `Ge` directly as the dopant; replace exactly 1 atom; "
-"generate 2 structures; seed `42`"
+"Target `Si`; enter `Ge` directly as the dopant; replace exactly 1 atom; generate 2 "
+"structures; seed `42`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 21cfdadc817948a999c7e1b38dbf4726
+#: ../../source/example/card-system-workflow.md:39 0ed4fbcbd87b4e2b99c830317c4c1cee
 msgid "2 个 `Si15Ge`"
 msgstr "Two `Si15Ge` structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: fe4190f18b1d4777bd2059933429c9e1
+#: ../../source/example/card-system-workflow.md:39 c2345dd5a8094f77a9ce4bb92293393d
 msgid "`Vacancy Defect`"
 msgstr "`Vacancy Defect`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 7acfbcdf897d4ebfbba6dd688f072a8f
+#: ../../source/example/card-system-workflow.md:39 d51aee1bed3444efaee2de61f3cd0aa7
 msgid "固定移除 1 个原子；生成 2 个；seed `42`"
 msgstr "Remove exactly 1 atom; generate 2 structures; seed `42`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: d5595c56cd9647c3bf817bd55d07d883
+#: ../../source/example/card-system-workflow.md:39 a3fecccae25a446a8360274bc84fe6fd
 msgid "2 个 15 原子 Si 空位结构"
 msgstr "Two 15-atom Si vacancy structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 68514037f49b4a6f86e39184119ded2f
+#: ../../source/example/card-system-workflow.md:39 a5e245a18a614f40a038ad1c96654e7c
 msgid "`Atomic Perturb`"
 msgstr "`Atomic Perturb`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 13da3f741a1e47daa4883a3180c915d9
+#: ../../source/example/card-system-workflow.md:39 f9d24aa1845a464e889c8b8ed1ec3ff1
 msgid "最大位移 `0.05 Å`；每个输入生成 2 个；seed `42`"
-msgstr ""
-"Maximum displacement `0.05 Å`; generate 2 structures per input; seed `42`"
+msgstr "Maximum displacement `0.05 Å`; generate 2 structures per input; seed `42`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 9ae88a20c7684be198de0e27e8e125bc
+#: ../../source/example/card-system-workflow.md:39 891e1595ec5b4529afed275d35741179
 msgid "$4\\times2=8$ 个扰动结构"
 msgstr "$4\\times2=8$ perturbed structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: 1d9ccbaf57404ee2a7bb2ec708e7f469
+#: ../../source/example/card-system-workflow.md:39 f72a4cd7676f450a93d99d66e85c55f3
 msgid "`Geometry Filter`"
 msgstr "`Geometry Filter`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: f9bd7a8f6ef34c009beb0d483d3ed105
+#: ../../source/example/card-system-workflow.md:39 3f1682c9c8f94c2198b4ef6934dd3752
 msgid "最短距离 `1.5 Å`；要求有限晶胞"
 msgstr "Minimum distance `1.5 Å`; require a finite cell"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:41
-#: d3b5010ab18e4f359aa8c04b4f8c0e2f
+#: ../../source/example/card-system-workflow.md:39 273dca8ab3df49b3aadba07e16e0d9c9
 msgid "筛掉明显碰撞或无效晶胞"
 msgstr "Remove obvious collisions and invalid cells"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:58
-#: bc8dc4eb91a74e7a8e1c06452da0e8b2
-msgid ""
-"掺杂元素输入框不是 JSON。单一元素直接写 `Ge`；多元素比例写 `Ge:0.7,C:0.3`。界"
-"面恢复已保存参数时也会保持这种写法，便于直接照着修改。"
+#: ../../source/example/card-system-workflow.md:56 90f5c21669eb49c592f2644aa5a7e175
+msgid "掺杂元素输入框不是 JSON。单一元素直接写 `Ge`；多元素比例写 `Ge:0.7,C:0.3`。界面恢复已保存参数时也会保持这种写法，便于直接照着修改。"
 msgstr ""
-"The dopant field does not use JSON. Enter `Ge` for one element or "
-"`Ge:0.7,C:0.3` for a multi-element ratio. Restored settings keep this "
-"editable notation so you can copy and adjust it directly."
+"The dopant field does not use JSON. Enter `Ge` for one element or `Ge:0.7,C:0.3` for "
+"a multi-element ratio. Restored settings keep this editable notation so you can copy "
+"and adjust it directly."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:60
-#: e42cfdeb557e4786a9efb64b77391dca
-msgid "线性链和 Card Group 不要混淆"
-msgstr "Do Not Confuse a Sequential Chain with Card Group"
+#: ../../source/example/card-system-workflow.md:58 5b6f45c203b74059ad408c99e2ab5ac2
+msgid "线性链和 Branch Merge 不要混淆"
+msgstr "Do Not Confuse a Sequential Chain with Branch Merge"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:62
-#: 54a8356864034a6e9bf85125989a42c0
+#: ../../source/example/card-system-workflow.md:60 1875e35099754970a9430e63d4c287b1
 msgid ""
-"顶层卡片是**串行**的：`Super Cell` 的输出进入 `Card Group`，分支汇总结果再进"
-"入 `Atomic Perturb`，最后交给 `Geometry Filter`。所以扩胞应放在缺陷生成前，筛"
-"选应放在随机生成后。"
+"顶层卡片是**串行**的：`Super Cell` 的输出进入 `Branch Merge`，分支汇总结果再进入 `Atomic Perturb`，最后交给 "
+"`Geometry Filter`。所以扩胞应放在缺陷生成前，筛选应放在随机生成后。"
 msgstr ""
-"Top-level cards run **sequentially**: the `Super Cell` output enters `Card "
-"Group`, the merged branch results enter `Atomic Perturb`, and the result "
-"finally goes to `Geometry Filter`. This is why supercell generation belongs "
-"before defect generation and filtering belongs after random generation."
+"Top-level cards run **sequentially**: the output of `Super Cell` enters `Branch "
+"Merge`, the merged branch result enters `Atomic Perturb`, and the result finally goes"
+" to `Geometry Filter`. This is why supercell expansion belongs before defect "
+"generation and filtering belongs after random generation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:64
-#: fa18df25f1f648eba05908518367d331
-msgid ""
-"`Card Group` 内部是**并行分支**。本例的掺杂卡和空位卡都收到同一个 16 原子 Si "
-"超胞，它们不会前后相接："
+#: ../../source/example/card-system-workflow.md:62 fe56931e687b40e2ad2028fc9fd4c1d1
+msgid "`Branch Merge` 内部是**独立分支**。本例的掺杂卡和空位卡都收到同一个 16 原子 Si 超胞，它们不会前后相接："
 msgstr ""
-"Cards inside `Card Group` are **parallel branches**. In this example, both "
-"Random Doping and Vacancy Defect receive the same 16-atom Si supercell; one "
-"does not feed into the other:"
+"Cards inside `Branch Merge` are **independent branches**. In this example, both the "
+"doping card and the vacancy card receive the same 16-atom Si supercell; one does not "
+"feed into the other:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:66
-#: dc2712d6aeae4f7f932a4127457f16da
+#: ../../source/example/card-system-workflow.md:64 0d792b48247e4bc492734dc4c8fe0e73
 msgid ""
 "                 ┌→ Random Doping ─┐\n"
-"Si16 → Card Group│                  ├→ 汇总为 4 个结构\n"
+"Si16 → Branch Merge│                ├→ 汇总为 4 个结构\n"
 "                 └→ Vacancy Defect ┘\n"
 msgstr ""
 "                 ┌→ Random Doping ─┐\n"
-"Si16 → Card Group│                  ├→ merge into 4 structures\n"
+"Si16 → Branch Merge│                ├→ merge into 4 structures\n"
 "                 └→ Vacancy Defect ┘\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:72
-#: a57eba7681274b189411ce396576c94a
+#: ../../source/example/card-system-workflow.md:70 f4d8920cd36b429d8103539a6b87b3c4
 msgid ""
-"只有“同一个输入要走几条不同路线”时才使用 `Card Group`。如果你想先掺杂、再从掺"
-"杂结构中造空位，就应把两张卡放在顶层，按 `Random Doping → Vacancy Defect` 排"
-"列，而不是放进同一个组。"
+"只有“同一个输入要走几条不同路线”时才使用 `Branch Merge`。如果你想先掺杂、再从掺杂结构中造空位，就应把两张卡放在顶层，按 `Random Doping →"
+" Vacancy Defect` 排列，而不是放进同一个组。"
 msgstr ""
-"Use `Card Group` only when the same input should follow several independent "
-"routes. If you want to dope first and then create vacancies in the doped "
-"structures, place both cards at the top level in the order `Random Doping → "
-"Vacancy Defect` instead of putting them in one group."
+"Use `Branch Merge` only when the same input should follow several independent routes."
+" If you want to dope first and then create vacancies in the doped structures, place "
+"both cards at the top level in the order `Random Doping → Vacancy Defect` instead of "
+"putting them in the same group."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:74
-#: 1ed7f9484638419f9c21502e41871af9
+#: ../../source/example/card-system-workflow.md:72 a2a060e5b0124d0da67dfe8c1b1715c1
 msgid "运行后沿着数量检查"
 msgstr "Check the Counts after Running"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:76
-#: fa805a01681b445699b0171f67a7fd65
+#: ../../source/example/card-system-workflow.md:74 cb1ad9484b524155a331d296882de502
 msgid "勾选需要参与流程的卡片，点击顶部 `Run`："
 msgstr "Select the cards that should participate, then click `Run` at the top:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:78
-#: c83d0611d47b4425a2bdb38f848d9ecb
+#: ../../source/example/card-system-workflow.md:76 4a7dd3cd867840cca9db1f9d5900718f
 msgid "卡片流程各步骤的真实输入输出数量"
 msgstr "Verified input and output counts for every workflow step"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:78
-#: c83d0611d47b4425a2bdb38f848d9ecb
+#: ../../source/example/card-system-workflow.md:76 4a7dd3cd867840cca9db1f9d5900718f
 msgid ".. image:: ../_static/image/generated/tutorials/card_system_result.png"
 msgstr ".. image:: ../_static/image/generated/tutorials/card_system_result.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:83
-#: 5ae5eca9cb8849b291c607f5b88fa79c
+#: ../../source/example/card-system-workflow.md:81 c473790963f34a399471c4886e2c8179
 msgid "本例真实运行结果为："
 msgstr "The verified result of this example is:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:85
-#: 41d998d595054f7e9aec6f90e813615f
+#: ../../source/example/card-system-workflow.md:83 f01e101c8bea4be09c81172c93c1af29
 msgid ""
 "1 个 Si2\n"
 "→ 1 个 Si16\n"
@@ -491,101 +375,78 @@ msgstr ""
 "→ 8 perturbed structures\n"
 "→ 8 structures retained by the geometry filter\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:93
-#: ef19468b64cc4827938af009a3868d78
+#: ../../source/example/card-system-workflow.md:91 5b95a8cb52fc4ff28ced2790e3cb57e3
 msgid ""
-"每张卡底部都显示 `Input → Output / Time`。数量从哪一步开始不符合预期，就先检"
-"查那一步，不要只看最终文件。如果某张卡输出为空，流程会停在这里，下游卡片不会"
-"继续运行。"
+"每张卡底部都显示 `Input → Output / "
+"Time`。数量从哪一步开始不符合预期，就先检查那一步，不要只看最终文件。如果某张卡输出为空，流程会停在这里，下游卡片不会继续运行。"
 msgstr ""
-"Each card shows `Input → Output / Time` at the bottom. If a count first "
-"becomes unexpected at a particular step, inspect that step instead of "
-"checking only the final file. If a card produces no output, the workflow "
-"stops there and downstream cards do not run."
+"Each card shows `Input → Output / Time` at the bottom. If a count first becomes "
+"unexpected at a particular step, inspect that step instead of checking only the final"
+" file. If a card produces no output, the workflow stops there and downstream cards do"
+" not run."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:95
-#: 06ee4f13323741a293c5a6db7e4fb5f7
+#: ../../source/example/card-system-workflow.md:93 e4d58967703a4dbfa0f6f2b0c6aea287
 msgid "运行完成后有三种查看或导出范围："
 msgstr "After the run, there are three viewing or export scopes:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:97
-#: d9cc0998b25d47f3b731f4499b552d82
-msgid "卡片标题栏的查看、导出按钮：只处理这一张卡片的输出。"
-msgstr ""
-"The view and export buttons in a card title bar operate only on that card's "
-"output."
+#: ../../source/example/card-system-workflow.md:95 31a23a88900a4f20a6eec84dbeeefbbf
+msgid "卡片上的查看、导出按钮：只处理这一张卡片的输出。"
+msgstr "The view and export actions on a card operate only on that card's output."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:98
-#: 489ac90d4844477c96024ca2754c7a6e
+#: ../../source/example/card-system-workflow.md:96 756391d3f57d4dc98e0f4254755cb344
+msgid "中间工具栏的 `View output`：合并查看所有已勾选且已经产生结果的卡片，包含中间步骤。"
+msgstr ""
+"`View output` in the center toolbar combines the outputs of all checked cards that "
+"already have results, including intermediate steps."
+
+#: ../../source/example/card-system-workflow.md:97 6636a467578c4537a27a9fb48a003b03
 msgid ""
-"顶部 `View selected outputs`：合并查看所有已勾选且已经产生结果的卡片，包含中"
-"间步骤。"
+"页面级导出动作中的 `Export final workflow output`：只保存最后完成的已启用卡片输出；`Export all available card "
+"outputs` 用于保留全部中间结果。"
 msgstr ""
-"`View selected outputs` at the top merges the outputs of all checked cards "
-"that have results, including intermediate steps."
+"The page-level `Export final workflow output` action saves only the output of the "
+"last completed enabled card. Use `Export all available card outputs` to retain every "
+"available intermediate result."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:99
-#: e09e08962191420eb94b3b722d0eb5cc
-msgid ""
-"顶部 `Save` 菜单中的 `Export final workflow output`：只保存最后完成的已启用卡"
-"片输出；`Export all available card outputs` 用于保留全部中间结果。"
-msgstr ""
-"`Export final workflow output` in the top `Save` menu saves only the output "
-"of the last completed enabled card. Use `Export all available card outputs` "
-"to keep all intermediate results."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:101
-#: 57ea13f701374058a78b04039fdcd23c
+#: ../../source/example/card-system-workflow.md:99 4652ed62dd1d41ec9bd2d4138f36f244
 msgid "保存的是结构，还是流程"
 msgstr "Are You Saving Structures or the Workflow?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:103
-#: 85d1e11c97dc412e9b7d734a883bf84c
+#: ../../source/example/card-system-workflow.md:101 16866574cea943f1a9567e7b7f1d1f75
 msgid "这两个概念必须分开："
 msgstr "Keep these two concepts separate:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:105
-#: 14e9321f22ac4574a00e37ec96ae19d4
-msgid ""
-"`Copy JSON` 或 `Save → Export Card Config` 保存卡片顺序、参数和启停状态，**不"
-"包含生成结构**。"
+#: ../../source/example/card-system-workflow.md:103 5601a762b90a4dc2841b8c3075e6aaa0
+msgid "左侧 `Save as workflow` 保存卡片顺序、参数和启停状态，**不包含生成结构**。"
 msgstr ""
-"`Copy JSON` or `Save → Export Card Config` saves card order, parameters, and "
-"enabled/disabled states. It **does not contain generated structures**."
+"`Save as workflow` on the left saves card order, parameters, and enabled or disabled "
+"states. It **does not include generated structures**."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:106
-#: 31502e2af27e49bcb5d6eaa04fd2f588
-msgid ""
-"`Paste JSON` 会把剪贴板中的单张卡片、卡片列表或完整流程追加到当前工作区，不会"
-"自动清空原卡片。"
+#: ../../source/example/card-system-workflow.md:104 80892b729de243a68396f39cd6df3f8c
+msgid "当前工作流区域的粘贴动作会把剪贴板中的单张卡片、卡片列表或完整流程追加到当前工作区，不会自动清空原卡片。"
 msgstr ""
-"`Paste JSON` appends a single card, a card list, or a complete workflow from "
-"the clipboard to the current workspace. It does not clear existing cards."
+"The paste action in the current-workflow area appends a single card, a card list, or "
+"a complete workflow from the clipboard to the current workspace. It does not clear "
+"the existing cards."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:107
-#: 67f14e6ced6c4c75be34a76c5766c598
-msgid "`Load → Import Card Config` 用于从 JSON 文件恢复流程。"
-msgstr ""
-"Use `Load → Import Card Config` to restore a workflow from a JSON file."
+#: ../../source/example/card-system-workflow.md:105 9287af809b9f4fcfbc25fc0a8e927dd5
+msgid "更多菜单中的导入、导出动作可用于交换工作流 JSON 文件。"
+msgstr "Use the import and export actions in the More menu to exchange workflow JSON files."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:108
-#: a8dbbfa54c6741deabff83214913da5b
+#: ../../source/example/card-system-workflow.md:106 2e192dc75a524cafa4c5bc81fc622f7c
 msgid "导出卡片输出或最终流程输出，保存的才是结构数据。"
-msgstr ""
-"Exporting a card output or the final workflow output is what saves structure "
-"data."
+msgstr "Exporting a card output or the final workflow output is what saves structure data."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/card-system-workflow.md:110
-#: 7e07c24eb3b94210bc69578f0cd41099
+#: ../../source/example/card-system-workflow.md:108 2aead3356fe840e4acdb3520c7f35071
 msgid ""
-"第一次把流程调通后，建议保存一份流程 JSON。更换输入结构时先检查元素、原子数和"
-"晶胞是否仍满足这些参数，再运行；不要把同一份流程配置当作所有材料都适用的物理"
-"方案。"
+"第一次把流程调通后，建议在工作流库中保存并命名。需要在其他机器使用时再导出 "
+"JSON。更换输入结构时先检查元素、原子数和晶胞是否仍满足这些参数，再运行；不要把同一份流程配置当作所有材料都适用的物理方案。"
 msgstr ""
-"After the workflow works as intended, save a copy of its JSON. When changing "
-"the input structures, check that their elements, atom counts, and cells "
-"still fit these parameters before running. A reusable workflow configuration "
-"is not a physically valid recipe for every material."
+"After the workflow works as intended, save it in the workflow library and give it a "
+"descriptive name. Export JSON only when you need to use it on another machine. Before"
+" running with different input structures, check that their elements, atom counts, and"
+" cells still satisfy the configured parameters. Do not treat one workflow "
+"configuration as a physically valid recipe for every material."
 
 #~ msgid "用一条流程学会 Make Dataset 卡片系统"
 #~ msgstr "Learn the Make Dataset Card System with One Workflow"
@@ -595,3 +456,73 @@ msgstr ""
 
 #~ msgid "导入 `Si2.vasp` 后，按下面的顺序添加卡片："
 #~ msgstr "After importing `Si2.vasp`, add cards in this order:"
+
+#~ msgid "先认清每张卡片上的按钮"
+#~ msgstr "First, Understand the Buttons on Every Card"
+
+#~ msgid "所有卡片共用同一组标题栏按钮："
+#~ msgstr "Every card uses the same title-bar controls:"
+
+#~ msgid "生成数据集卡片标题栏通用按钮"
+#~ msgstr "Common title-bar buttons for Make Dataset cards"
+
+#~ msgid "折叠或展开"
+#~ msgstr "Collapse or expand"
+
+#~ msgid "参数设置完成后折叠，便于查看整条流程和拖动排序"
+#~ msgstr "Collapse a configured card to see the whole workflow and reorder cards more easily."
+
+#~ msgid "查看这张卡片的完整参数、限制和适用场景"
+#~ msgstr ""
+#~ "Read the full parameter reference, limitations, "
+#~ "and intended use cases for this card."
+
+#~ msgid "复制当前参数，之后用顶部 `Paste JSON` 追加一张相同卡片"
+#~ msgstr ""
+#~ "Copy the current parameters, then use `Paste"
+#~ " JSON` at the top to append an "
+#~ "identical card."
+
+#~ msgid "查看本卡输出"
+#~ msgstr "View this card's output"
+
+#~ msgid "运行成功后才可用，只把这张卡片的结果送到 `NEP Dataset Display`"
+#~ msgstr ""
+#~ "Available after a successful run. It sends "
+#~ "only this card's results to `NEP Dataset "
+#~ "Display`."
+
+#~ msgid "7"
+#~ msgstr "7"
+
+#~ msgid "导出本卡输出"
+#~ msgstr "Export this card's output"
+
+#~ msgid "保存这一步的中间结构，不等于保存整条流程"
+#~ msgstr ""
+#~ "Save the intermediate structures from this "
+#~ "step; this does not save the workflow "
+#~ "itself."
+
+#~ msgid "8"
+#~ msgstr "8"
+
+#~ msgid "关闭卡片"
+#~ msgstr "Close the card"
+
+#~ msgid ""
+#~ "顶部按钮控制整条流程：`Copy JSON` 复制当前全部卡片，`Paste JSON` "
+#~ "把剪贴板中的配置追加到现有流程，`Run` 运行所有已启用卡片，`Stop` 中止正在运行的卡片。标题栏里的 `Copy "
+#~ "JSON` 只复制单张卡片，两者不要混用。"
+#~ msgstr ""
+#~ "The top controls operate on the whole "
+#~ "workflow: `Copy JSON` copies all current "
+#~ "cards, `Paste JSON` appends clipboard configuration"
+#~ " to the existing workflow, `Run` executes "
+#~ "all enabled cards, and `Stop` aborts the "
+#~ "running cards. `Copy JSON` in a card "
+#~ "title bar copies only that card, so do"
+#~ " not confuse the two."
+
+#~ msgid "`Load → Import Card Config` 用于从 JSON 文件恢复流程。"
+#~ msgstr "Use `Load → Import Card Config` to restore a workflow from a JSON file."

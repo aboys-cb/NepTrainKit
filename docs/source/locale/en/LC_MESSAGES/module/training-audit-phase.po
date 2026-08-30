@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"POT-Creation-Date: 2026-08-30 19:36+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -46,14 +46,18 @@ msgid ""
 "Analysis，a-CNA）。算法使用周期性近邻搜索，最多取得 24 个近邻，并根据第一、第二近邻壳之间的距离间隔为每个原子单独确定 "
 "cutoff。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"The page first applies Adaptive Common Neighbor Analysis (a-CNA) to each "
+"atom. The algorithm uses a periodic neighbor search with up to 24 "
+"neighbors and determines an atom-specific cutoff from the distance gap "
+"between the first and second neighbor shells."
 
 #: ../../source/module/training-set-assessment-content.md:3904
 #: 4078ea137fe94b37bbe5d04343341108
 #, python-brace-format
 msgid "对于 FCC 和 HCP，设排好序的近邻距离为 $d_1 \\le \\cdots \\le d_{13}$。只有在"
-msgstr "For FCC and HCP, sort neighbor distances as $d_1 \\le \\cdots \\le d_{13}$; use the cutoff only when the shell gap is sufficient."
+msgstr ""
+"For FCC and HCP, sort neighbor distances as $d_1 \\le \\cdots \\le "
+"d_{13}$; use the cutoff only when the shell gap is sufficient."
 
 #: ../../source/module/training-set-assessment-content.md:3906
 #: ce000a0796d346ccb8b38f66ad457441
@@ -81,7 +85,11 @@ msgstr ""
 #: ../../source/module/training-set-assessment-content.md:3916
 #: 85bd1fb5d91b426895344ecd4b7cb1d4
 msgid "分隔 12 配位的第一近邻壳。随后统计每条中心—近邻键的 3 个 CNA 数：公共近邻数、公共近邻之间的键数、最长键链长度。理想拓扑对应："
-msgstr "Details for this option"
+msgstr ""
+"to separate the 12-fold-coordinated first-neighbor shell. It then records"
+" three CNA indices for every center-neighbor bond: the number of common "
+"neighbors, bonds among those common neighbors, and the longest bond-chain"
+" length. The ideal topologies are:"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 7586d099ed214dccb939aa4aa7f6e326
@@ -101,7 +109,7 @@ msgstr "FCC"
 #: ../../source/module/training-audit-phase.md:8
 #: 095c800892b34d94a7937bbb0301c5d6
 msgid "12 条 `(4, 2, 1)`"
-msgstr "Details for this option"
+msgstr "12 × `(4, 2, 1)`"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 32feddac61b548be85cdf1004a6659d4
@@ -111,7 +119,7 @@ msgstr "HCP"
 #: ../../source/module/training-audit-phase.md:8
 #: e1180c4e16f14649aa348b15e9baf7cf
 msgid "6 条 `(4, 2, 1)` + 6 条 `(4, 2, 2)`"
-msgstr "Details for this option"
+msgstr "6 × `(4, 2, 1)` + 6 × `(4, 2, 2)`"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 1f8a7503ee2d4434abfa267db25a63c3
@@ -121,7 +129,7 @@ msgstr "BCC"
 #: ../../source/module/training-audit-phase.md:8
 #: 9fd41c89c29f4099b5fd2df34048ba1b
 msgid "6 条 `(4, 4, 3)` + 8 条 `(6, 6, 5)`"
-msgstr "Details for this option"
+msgstr "6 × `(4, 4, 3)` + 8 × `(6, 6, 5)`"
 
 #: ../../source/module/training-set-assessment-content.md:3924
 #: 252e850bbd9a4f79adaabd9713c56b96
@@ -130,9 +138,9 @@ msgid ""
 "BCC 使用前 14 个近邻，并要求 $d_{15}/d_{14} \\ge "
 "1.08$。不满足壳层间隔或拓扑组合的原子记为「未解析」，不会强行分到最接近的晶相。"
 msgstr ""
-"BCC uses the first 14 neighbors and requires $d_{15}/d_{14} \\ge 1.08$. Atoms that do not "
-"meet the shell-gap or topology criteria are marked unresolved rather than forced into the "
-"nearest structural phase."
+"BCC uses the first 14 neighbors and requires $d_{15}/d_{14} \\ge 1.08$. "
+"Atoms that do not meet the shell-gap or topology criteria are marked "
+"unresolved rather than forced into the nearest structural phase."
 
 #: ../../source/module/training-set-assessment-content.md:3926
 #: f2a306a28d78498f966070c9b65c3b71
@@ -155,8 +163,11 @@ msgid ""
 "若没有更具体的有序相通过确认，$p_\\alpha \\ge 0.80$ 时结构记为强证据；$0.50 \\le p_\\alpha < "
 "0.80$ 时记为混合证据；低于 `0.50` 时记为未解析。这些比例描述当前快照中的局域拓扑，不等同于热力学相分数。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"If no more specific ordered phase is confirmed, $p_\\alpha \\ge 0.80$ is "
+"reported as strong evidence, $0.50 \\le p_\\alpha < 0.80$ as mixed "
+"evidence, and values below `0.50` as unresolved. These fractions describe"
+" local topology in the current snapshot; they are not thermodynamic phase"
+" fractions."
 
 #: ../../source/module/training-set-assessment-content.md:3934
 #: 72685a7e6313479b9a2008cb38e2b871
@@ -169,8 +180,12 @@ msgid ""
 "有序合金和化合物不能只靠 FCC/HCP/BCC "
 "局域几何区分。页面会对三维周期结构做保守的原型确认，并同时检查组成、局域形状和物种占位。当前确认目录如下；这是一组经过反例测试的常见原型，不是完整晶体学数据库。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"Ordered alloys and compounds cannot be distinguished from FCC/HCP/BCC "
+"local geometry alone. For three-dimensionally periodic structures, the "
+"page performs conservative prototype confirmation that jointly checks "
+"composition, local shape, and species occupancy. The current confirmation"
+" catalog is listed below. It is a counterexample-tested set of common "
+"prototypes, not a complete crystallographic database."
 
 #: ../../source/module/training-audit-phase.md:8
 #: c7c044a0d2ec4b299f123263e4aea77e
@@ -185,7 +200,7 @@ msgstr "Common name"
 #: ../../source/module/training-audit-phase.md:8
 #: e4268be73c36406ca4e21ce191b9d9f0
 msgid "Pearson / 空间群"
-msgstr "Details for this option"
+msgstr "Pearson / space group"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 89ab32112b96423d887e33b74904c933
@@ -200,7 +215,7 @@ msgstr "A4"
 #: ../../source/module/training-audit-phase.md:8
 #: aeec62541f6c41efb635990834282149
 msgid "金刚石"
-msgstr "Details for this option"
+msgstr "Diamond"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 2c9d3985972f4e7dbabb9abef21ac089
@@ -210,7 +225,7 @@ msgstr "`cF8` / $Fd\\bar 3m$ (227)"
 #: ../../source/module/training-audit-phase.md:8
 #: fa483d95fc0447ff8b20495d66a435cf
 msgid "单元素四面体网络"
-msgstr "Details for this option"
+msgstr "Single-element tetrahedral network"
 
 #: ../../source/module/training-audit-phase.md:8
 #: a2fd5c538d4f4c0fb849d0f7109a22ea
@@ -220,7 +235,7 @@ msgstr "L1₀"
 #: ../../source/module/training-audit-phase.md:8
 #: ddb94a8e4bad4118a45243792b4e7d70
 msgid "CuAu 型"
-msgstr "Details for this option"
+msgstr "CuAu type"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 3a788fadc9c444548dacbfcbc36920dd
@@ -230,7 +245,7 @@ msgstr "`tP2` / $P4/mmm$ (123)"
 #: ../../source/module/training-audit-phase.md:8
 #: 582f3bf6fa5f4a9ba7ade2f3fc0db63c
 msgid "FCC 衍生的 `1:1` 有序结构"
-msgstr "Details for this option"
+msgstr "FCC-derived `1:1` ordered structure"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 52835c4c07bd4526a6b96102a43598b9
@@ -240,7 +255,7 @@ msgstr "L1₂"
 #: ../../source/module/training-audit-phase.md:8
 #: 1bfe1acbf35d40638e9e60b11ac74479
 msgid "Cu₃Au 型"
-msgstr "Details for this option"
+msgstr "Cu₃Au type"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 488dc03867f24c018415c17ddf33ccf5
@@ -250,7 +265,7 @@ msgstr "`cP4` / $Pm\\bar 3m$ (221)"
 #: ../../source/module/training-audit-phase.md:8
 #: 459e4ffe54c8414ea2eb4ffd9b431569
 msgid "FCC 衍生的 `3:1` 有序结构"
-msgstr "Details for this option"
+msgstr "FCC-derived `3:1` ordered structure"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 8934452dfcb7457d9a9faaf512b0302f
@@ -260,7 +275,7 @@ msgstr "B1"
 #: ../../source/module/training-audit-phase.md:8
 #: f6c2c71a698d469ba9490a2271ea05a7
 msgid "岩盐"
-msgstr "Details for this option"
+msgstr "Rocksalt"
 
 #: ../../source/module/training-audit-phase.md:8
 #: b02fb652f40940a9a8871497ae9c75dd
@@ -270,7 +285,7 @@ msgstr "`cF8` / $Fm\\bar 3m$ (225)"
 #: ../../source/module/training-audit-phase.md:8
 #: 879b91296e43427997f178d3d1788b36
 msgid "`1:1` 八面体配位"
-msgstr "See the parameter description for details."
+msgstr "`1:1` octahedral coordination"
 
 #: ../../source/module/training-audit-phase.md:8
 #: d4b647fa50d64e23af44aa00f41aa264
@@ -290,7 +305,7 @@ msgstr "`cP2` / $Pm\\bar 3m$ (221)"
 #: ../../source/module/training-audit-phase.md:8
 #: 743c6b756a2e4af4a135336c76736b1a
 msgid "BCC 衍生的 `1:1` 有序结构"
-msgstr "Details for this option"
+msgstr "BCC-derived `1:1` ordered structure"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 201b700174e34c1ca499f57561768c66
@@ -300,17 +315,17 @@ msgstr "B3 / B4"
 #: ../../source/module/training-audit-phase.md:8
 #: fe61f491594d493d83c9e241e657cfbb
 msgid "闪锌矿 / 纤锌矿"
-msgstr "Details for this option"
+msgstr "Zincblende / wurtzite"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 66081343dcf949acbb0c31d5fa197518
 msgid "`cF8` / $F\\bar 43m$ (216)；`hP4` / $P6_3mc$ (186)"
-msgstr "`cF8` / $F\\bar 43m$ (216)；`hP4` / $P6_3mc$ (186)"
+msgstr "`cF8` / $F\\bar 43m$ (216); `hP4` / $P6_3mc$ (186)"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 13fbc04531cf4a7b995d07555aa844b7
 msgid "立方／六方四面体化合物"
-msgstr "Details for this option"
+msgstr "Cubic/hexagonal tetrahedral compounds"
 
 #: ../../source/module/training-audit-phase.md:8
 #: d3603aef569c4c6da67aabfd42d115cb
@@ -320,7 +335,7 @@ msgstr "C1"
 #: ../../source/module/training-audit-phase.md:8
 #: 4ee2c30ce65b4cabb9cff82394f397de
 msgid "萤石"
-msgstr "Details for this option"
+msgstr "Fluorite"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 42c54840f8784aba9f2a57068eb12f53
@@ -330,7 +345,7 @@ msgstr "`cF12` / $Fm\\bar 3m$ (225)"
 #: ../../source/module/training-audit-phase.md:8
 #: b50fb51602d648ddadec898c4aa45af9
 msgid "`1:2` 化合物"
-msgstr "See the parameter description for details."
+msgstr "`1:2` compound"
 
 #: ../../source/module/training-audit-phase.md:8
 #: f2d98d88a47345f7a93af81079feeb6a
@@ -350,7 +365,7 @@ msgstr "`hP4` / $P6_3/mmc$ (194)"
 #: ../../source/module/training-audit-phase.md:8
 #: 8a5edd75e2e043198536121856fd6091
 msgid "六方 `1:1` 化合物"
-msgstr "Details for this option"
+msgstr "Hexagonal `1:1` compound"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 6290a0688918432a9a61d99ab5a99bc8
@@ -360,7 +375,7 @@ msgstr "D0₃"
 #: ../../source/module/training-audit-phase.md:8
 #: 7b5850acc98846d2910ed2332e4eb20a
 msgid "Fe₃Al 型"
-msgstr "Details for this option"
+msgstr "Fe₃Al type"
 
 #: ../../source/module/training-audit-phase.md:8
 #: c3062e0979f747ee95dac847619207ee
@@ -370,7 +385,7 @@ msgstr "`cF16` / $Fm\\bar 3m$ (225)"
 #: ../../source/module/training-audit-phase.md:8
 #: b0da7ae9df734a9cabe064427f214683
 msgid "BCC 衍生的 `3:1` 有序结构"
-msgstr "Details for this option"
+msgstr "BCC-derived `3:1` ordered structure"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 48f1e595ff134a72ba4f40f403053e8d
@@ -380,17 +395,17 @@ msgstr "L2₁ / C1ᵦ"
 #: ../../source/module/training-audit-phase.md:8
 #: a78bf1ba4cb04d2689f71ca40f780285
 msgid "全赫斯勒 / 半赫斯勒"
-msgstr "Details for this option"
+msgstr "Full-Heusler / half-Heusler"
 
 #: ../../source/module/training-audit-phase.md:8
 #: d1dc4aca6840484590373bf2c32221d7
 msgid "`cF16` / $Fm\\bar 3m$ (225)；`cF12` / $F\\bar 43m$ (216)"
-msgstr "`cF16` / $Fm\\bar 3m$ (225)；`cF12` / $F\\bar 43m$ (216)"
+msgstr "`cF16` / $Fm\\bar 3m$ (225); `cF12` / $F\\bar 43m$ (216)"
 
 #: ../../source/module/training-audit-phase.md:8
 #: b2158b47cf9d406eaf20bcc3f838936c
 msgid "三元 `2:1:1`／`1:1:1` 结构"
-msgstr "Details for this option"
+msgstr "Ternary `2:1:1` / `1:1:1` structures"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 7aaf126426ba4809b9c326cf0ed1e74f
@@ -400,7 +415,7 @@ msgstr "D0₁₉"
 #: ../../source/module/training-audit-phase.md:8
 #: 12ec6dab238e497fbb36a4f4ca11399a
 msgid "Ni₃Sn 型"
-msgstr "Details for this option"
+msgstr "Ni₃Sn type"
 
 #: ../../source/module/training-audit-phase.md:8
 #: f8b39cdc3d57495085a73f37b9cd6ed9
@@ -410,7 +425,7 @@ msgstr "`hP8` / $P6_3/mmc$ (194)"
 #: ../../source/module/training-audit-phase.md:8
 #: b0766af6f40b41deaf46687e099153e2
 msgid "HCP 衍生的 `3:1` 有序结构"
-msgstr "Details for this option"
+msgstr "HCP-derived `3:1` ordered structure"
 
 #: ../../source/module/training-audit-phase.md:8
 #: c38e7066ee394274a6de22d4d84e9e86
@@ -425,17 +440,20 @@ msgstr "Laves"
 #: ../../source/module/training-audit-phase.md:8
 #: 5d554db9b07f49148598fb0864e690a7
 msgid "`hP12` / $P6_3/mmc$ (194)；`cF24` / $Fd\\bar 3m$ (227)"
-msgstr "`hP12` / $P6_3/mmc$ (194)；`cF24` / $Fd\\bar 3m$ (227)"
+msgstr "`hP12` / $P6_3/mmc$ (194); `cF24` / $Fd\\bar 3m$ (227)"
 
 #: ../../source/module/training-audit-phase.md:8
 #: 0349577839c94b2f99a42f0bd0ee41f2
 msgid "`1:2` Frank–Kasper 结构"
-msgstr "See the parameter description for details."
+msgstr "`1:2` Frank–Kasper structure"
 
 #: ../../source/module/training-set-assessment-content.md:3953
 #: 1eaaee8e0bce4e24a2cb91c869500fa5
 msgid "局域形状首先消除整体尺度。对选定的 $K$ 个近邻，以平均近邻距离 $\\bar r$ 归一化，构造"
-msgstr "Details for this option"
+msgstr ""
+"The local-shape comparison first removes the overall scale. For the "
+"selected $K$ neighbors, normalize by the mean neighbor distance $\\bar r$"
+" and construct"
 
 #: ../../source/module/training-set-assessment-content.md:3955
 #: 4a5a84441b6c4a919fbef2c6035fd2c8
@@ -459,8 +477,14 @@ msgid ""
 "这里 $\\oplus$ "
 "表示把两组数连接起来。程序计算该描述向量与内置参考晶体模板之间的最小均方根距离。物种检查使用同一组完整近邻壳，比较每一壳中的元素角色数。这样可以容忍整体平移、旋转、缩放、原子重排、元素编号变化和适度畸变，但不会仅凭化学计量、晶格常数或“看起来像立方”认相。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"Here $\\oplus$ concatenates the two sets of numbers. The program computes"
+" the minimum root-mean-square distance between this descriptor and the "
+"built-in reference-crystal templates. The species check uses the same "
+"complete neighbor shells and compares the number of elemental roles in "
+"each shell. This makes the comparison tolerant to global translation, "
+"rotation, scaling, atom reordering, changes in element numbering, and "
+"moderate distortion, while preventing phase assignment from "
+"stoichiometry, lattice constants, or a merely cubic appearance."
 
 #: ../../source/module/training-set-assessment-content.md:3963
 #: 633de20b4a4e4cdebb170e40d736c9e2
@@ -470,8 +494,14 @@ msgid ""
 " floor(0.08 K))` "
 "个近邻的排序交换。若两个已通过候选的局域形状距离和联合支持度都不足以明确拉开差距，结果直接返回「未解析」，不会按最接近模板猜一个标签。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"The general prototype thresholds are: composition ratios within `3.5%` of"
+" the ideal values, at least `0.82` of atoms matching geometrically, at "
+"least `0.80` matching chemically, and at least `0.80` matching both. Each"
+" local environment uses no fewer than 14 neighbors without truncating a "
+"complete shell; near a shell boundary, ordering swaps are allowed for at "
+"most `max(1, floor(0.08 K))` neighbors. If two passing candidates are not"
+" clearly separated by either local-shape distance or joint support, the "
+"result is `Unresolved`; the nearest template is not guessed."
 
 #: ../../source/module/training-set-assessment-content.md:3965
 #: e96d9f6267fe455d96bdfe4ba3f43927
@@ -480,8 +510,13 @@ msgid ""
 " 个近邻全为 A；B 位点的前 12 个近邻中有 4 个 A、第二壳没有 A。几何匹配比例至少为 `0.80`，化学匹配比例至少为 "
 "`0.85`，几何与化学同时匹配的比例至少为 `0.80`。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"**L1₂:** Automatically identify binary compositions near `A:B = 1:3`. In "
+"addition to the FCC shape, an A site must have no A atoms among its first"
+" 12 neighbors and all six second-shell neighbors must be A; a B site must"
+" have four A atoms among its first 12 neighbors and none in the second "
+"shell. The geometric-match fraction must be at least `0.80`, the "
+"chemical-match fraction at least `0.85`, and the fraction matching both "
+"at least `0.80`."
 
 #: ../../source/module/training-set-assessment-content.md:3966
 #: ad8be6ff35474bcc8c97e24c5a705d86
@@ -490,8 +525,12 @@ msgid ""
 "4 个 A 近邻，B 位点应有 6 个 A 近邻。几何匹配和联合匹配比例都至少为 `0.85`。通过后再用 B 子晶格的中心对称参数区分 C14 "
 "与 C15。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"**Laves:** Automatically identify binary compositions near `A:B = 1:2`. A"
+" sites are checked against a Z16 template and B sites against a Z12 "
+"template; an A site should have four A neighbors, and a B site six A "
+"neighbors. Both the geometric-match and joint-match fractions must be at "
+"least `0.85`. After passing, the centrosymmetry parameter of the B "
+"sublattice distinguishes C14 from C15."
 
 #: ../../source/module/training-set-assessment-content.md:3968
 #: 50b04b55cfc644e091da519473960281
@@ -502,8 +541,14 @@ msgid ""
 "未解析」。参见 [AFLOW C15 原型](https://www.aflow.org/prototype-"
 "encyclopedia/A2B_cF24_227_d_a)。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"C15 has Pearson symbol `cF24` and space group $Fd\\bar 3m$. Here `F` "
+"denotes a face-centered-cubic Bravais lattice; it does not mean an "
+"A1-type FCC solid solution or that every atom has an FCC neighbor "
+"topology under a-CNA. The two C15 site types use the Z12/Z16 Frank–Kasper"
+" environments of a Laves phase. The interface can therefore show both "
+"`C15 Laves confirmed` and `a-CNA (FCC/HCP/BCC only): Other / Unresolved`."
+" See the [AFLOW C15 prototype](https://www.aflow.org/prototype-"
+"encyclopedia/A2B_cF24_227_d_a)."
 
 #: ../../source/module/training-set-assessment-content.md:3970
 #: 04c90e6874e24070b5d9c6bd1350dcf9
@@ -511,46 +556,63 @@ msgid ""
 "自动推断 A/B 角色时，实际组成与理想少数元素比例的偏差必须不超过 `3.5%`。C36 局域堆垛与 C14/C15 "
 "混合在当前局域证据下可能不可区分，因此只显示为未确认线索，不会作为已确认 C36 输出。这里的「未确认」表示证据不足，不表示该相一定不存在。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"When A/B roles are inferred automatically, the actual minority-element "
+"fraction must be within `3.5%` of the ideal value. With the current local"
+" evidence, C36 stacking may be indistinguishable from mixtures of C14 and"
+" C15. It is therefore shown only as an unconfirmed clue, never as "
+"confirmed C36. `Unconfirmed` means insufficient evidence, not that the "
+"phase is necessarily absent."
 
 #: ../../source/module/training-set-assessment-content.md:3972
 #: 006070bd51f14451b35449104fc63446
 msgid "为什么会同时显示“B1 已确认”和“局域未解析”"
-msgstr "Details for this option"
+msgstr "Why `B1 confirmed` and `local environment unresolved` can appear together"
 
 #: ../../source/module/training-set-assessment-content.md:3974
 #: 424ef1dbf0d74b92b074c6f3a3a72d21
 msgid "这两行回答的是不同问题。以轻微应变和原子扰动后的 `U₄N₄` 为例，物种分辨的完整近邻壳仍与 B1 岩盐模板一致，因此结构级标签可以显示："
-msgstr "Details for this option"
+msgstr ""
+"The two lines answer different questions. For example, after slight "
+"strain and atomic perturbation of `U₄N₄`, the species-resolved complete "
+"neighbor shells can still match the B1 rocksalt template, so the "
+"structure-level label may read:"
 
 #: ../../source/module/training-set-assessment-content.md:3976
 #: 302528bcd55e42fb8670252e11792bb5
-msgid ""
-"B1（岩盐）· 已确认原型\n"
-"参考晶体学（理想原型）：cF8 · Fm-3m (No. 225) · 面心立方布拉菲格子\n"
-msgstr "Details for this option\n"
+msgid "**B1（岩盐）· 已确认原型**<br> 参考晶体学（理想原型）：cF8 · Fm-3m (No. 225) · 面心立方布拉菲格子"
+msgstr ""
+"**B1 (rocksalt) · Confirmed prototype**<br> Reference crystallography "
+"(ideal prototype): cF8 · Fm-3m (No. 225) · face-centered-cubic Bravais "
+"lattice"
 
-#: ../../source/module/training-set-assessment-content.md:3981
+#: ../../source/module/training-set-assessment-content.md:3979
 #: 362fba4ac0b44f28bd64860e02d1b556
 msgid ""
 "但 a-CNA 只识别每个原子的 A1-FCC、A2-BCC 或 A3-HCP 局域拓扑。B1 中每个原子的第一近邻是 6 配位八面体环境，不是 "
 "12 配位的 A1-FCC 环境，所以同一张卡片可以同时显示："
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"However, a-CNA recognizes only the per-atom local topologies A1-FCC, "
+"A2-BCC, or A3-HCP. In B1, each atom's first neighbors form a six-"
+"coordinate octahedral environment, not the 12-coordinate A1-FCC "
+"environment. The same card may therefore also show:"
+
+#: ../../source/module/training-set-assessment-content.md:3981
+#: 1941e01a01514b889f0370939f8e48b6
+msgid "**a-CNA 局域环境（仅 FCC/HCP/BCC）：** 其他 / 未解析 100.0%"
+msgstr "**a-CNA local environment (FCC/HCP/BCC only):** Other / Unresolved 100.0%"
 
 #: ../../source/module/training-set-assessment-content.md:3983
-#: 1941e01a01514b889f0370939f8e48b6
-msgid "a-CNA 局域环境（仅 FCC/HCP/BCC）：其他 / 未解析 100.0%\n"
-msgstr "Details for this option\n"
-
-#: ../../source/module/training-set-assessment-content.md:3987
 #: 95059710c64345a98c0c07b3356f6876
 msgid ""
 "这不是相互矛盾，也不是把 B1 误判成 "
 "FCC：前者是**化合物原型确认**，后者是**单原子局域金属骨架统计**。软件会并列保留两层证据。A15、钙钛矿、L1₁、C36 "
 "等尚未进入确认目录的具体原型不会被猜成某个已支持原型；如果它们仍具有明显的 FCC/BCC/HCP 局域骨架，页面最多只报告该局域骨架。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"These results do not conflict, and B1 has not been mistaken for FCC. The "
+"first is **compound-prototype confirmation**; the second is **per-atom "
+"local metallic-framework statistics**. The application retains both "
+"evidence layers side by side. Specific prototypes not yet in the "
+"confirmation catalog, such as A15, perovskite, L1₁, and C36, are not "
+"guessed to be a supported prototype. If they still have a clear "
+"FCC/BCC/HCP local framework, the page reports at most that local "
+"framework."

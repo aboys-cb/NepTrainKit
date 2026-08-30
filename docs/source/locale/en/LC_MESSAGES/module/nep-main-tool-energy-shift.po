@@ -22,7 +22,7 @@ msgstr ""
 #: ../../source/module/nep-main-tool-energy-shift.md:1
 #: ecf1afc9871c42aba4ab9f26f673383d
 msgid "能量基线平移（Energy Baseline Shift）"
-msgstr "Details for this option"
+msgstr "Energy Baseline Shift"
 
 #: ../../source/module/nep-main-tool-energy-shift.md:3
 #: e7705df816ea45ddb4bc87960efc6d23
@@ -34,19 +34,26 @@ msgstr "Purpose and use cases"
 msgid ""
 "按元素计数拟合原子参考能，并从结构总能量中减去对应基线。适合统一不同 `Config_type` "
 "或不同组成数据的能量零点，便于比较形成能附近的变化。"
-msgstr "Details for this option"
+msgstr ""
+"Fit atomic reference energies from element counts and subtract the resulting "
+"baseline from each structure's total energy. This is useful for placing data "
+"with different `Config_type` values or compositions on a consistent energy "
+"zero, so variations near the formation energy can be compared."
 
 #: ../../source/module/nep-main-tool-energy-shift.md:8
 #: 23a476b907104c44b376a7511a2feba0
 msgid ""
 "这个操作会修改当前结构的 energy。第一次平移前的数值会写入 `energy_original`； "
 "同一结构再次平移时不会覆盖已经保存的原始能量。"
-msgstr "Details for this option"
+msgstr ""
+"This operation modifies the current structures' energy values. Before the "
+"first shift, the original value is saved to `energy_original`; applying "
+"another shift to the same structure does not overwrite the saved original."
 
 #: ../../source/module/nep-main-tool-energy-shift.md:11
 #: ce4986b87b6a4f77a28ce420708e05e2
 msgid "拟合与平移原理"
-msgstr "Details for this option"
+msgstr "Fitting and shift method"
 
 #: ../../source/module/nep-main-tool-energy-shift.md:13
 #: edf9d0640dce40eb90151308aff1af65
@@ -54,8 +61,10 @@ msgid ""
 "设结构 $i$ 的元素计数向量为 $\\mathbf n_i$，待拟合的逐元素基线为 $\\mathbf\\varepsilon_g$，其中 "
 "$g$ 是由 `分组规则`匹配到的 `Config_type` 组。 程序用自然进化策略（NES）最小化"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"For structure $i$, let $\\mathbf n_i$ be its element-count vector and "
+"$\\mathbf\\varepsilon_g$ the per-element baseline to fit, where $g$ is the "
+"`Config_type` group selected by `Grouping rule`. The program uses a natural "
+"evolution strategy (NES) to minimize"
 
 #: ../../source/module/nep-main-tool-energy-shift.md:17
 #: 9bd5d2e19e4a4103bf05dc8baf73a431
@@ -75,7 +84,7 @@ msgstr ""
 #: ../../source/module/nep-main-tool-energy-shift.md:24
 #: aae29c1ad85c44888e1f6c6b359bac91
 msgid "然后写回"
-msgstr "Details for this option"
+msgstr "The shifted energy is then written as"
 
 #: ../../source/module/nep-main-tool-energy-shift.md:26
 #: 1a46ca6790314b62a000a62337319221
@@ -95,43 +104,45 @@ msgid ""
 "这里 $\\varepsilon_{g,e}$ 的单位是 eV/atom，$\\mathbf n_i^\\mathsf "
 "T\\mathbf\\varepsilon_g$ 是结构总能量基线，单位 eV。三种`对齐方式`只改变目标 $T_i$："
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"Here $\\varepsilon_{g,e}$ is measured in eV/atom, while $\\mathbf "
+"n_i^\\mathsf T\\mathbf\\varepsilon_g$ is the structure's total-energy "
+"baseline in eV. The three `Alignment mode` choices change only the target "
+"$T_i$:"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 6c78ad42996146f4beee7567dbbae9fb
 msgid "对齐方式"
-msgstr "Details for this option"
+msgstr "Alignment mode"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 39547c9fff1a4ab1a27873182f47c517
 msgid "目标 $T_i$"
-msgstr "Details for this option"
+msgstr "Target $T_i$"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: e9db7807bcd94ff6b2fc7a9ad06bc7b2
 msgid "适合用途"
-msgstr "Details for this option"
+msgstr "Use case"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 0d26e0921512402da25aa7cdb2124fb7
 msgid "`参考组`"
-msgstr "See the parameter description for details."
+msgstr "`Reference group`"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: e51a87393afe4d9bb67fe346a3b3cd0d
 msgid "当前选中参考结构的平均总能量"
-msgstr "Details for this option"
+msgstr "Mean total energy of the selected reference structures"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 0f89dfe8d2014a349b76d78dbe052627
 msgid "把不同组对齐到用户指定参考零点"
-msgstr "Details for this option"
+msgstr "Align different groups to a user-selected reference zero"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: a0043e446a5c43b2bcc2ce4cb3feac30
 msgid "`零基线`"
-msgstr "See the parameter description for details."
+msgstr "`Zero baseline`"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 16e0547ecd6941f295715eb48fd84373
@@ -141,12 +152,12 @@ msgstr "$0$"
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 743921e93a24414ebccd2d3b73535d79
 msgid "去掉逐元素线性基线，观察剩余相对能量"
-msgstr "Details for this option"
+msgstr "Remove the linear per-element baseline and inspect the residual relative energies"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: e2980bd04b8f4701b2a8f2ddbf1baff5
 msgid "`DFT 对齐 NEP`"
-msgstr "See the parameter description for details."
+msgstr "`Align DFT to NEP`"
 
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 1d3c42e083144f50a07cab55c005de8e
@@ -156,7 +167,7 @@ msgstr "$E_i^{\\mathrm{NEP}}$"
 #: ../../source/module/nep-main-tool-energy-shift.md
 #: 55044151862b465da13a622861adcdef
 msgid "让平移后的 DFT 总能量尽量贴合 NEP 总能量"
-msgstr "Details for this option"
+msgstr "Make the shifted DFT total energies follow the NEP total energies as closely as possible"
 
 #: ../../source/module/nep-main-tool-energy-shift.md:40
 #: badd23ce766440ebab42fab108a293f9
@@ -164,8 +175,10 @@ msgid ""
 "`DFT 对齐 NEP`会把界面中的 NEP 每原子能量乘以原子数后再作为总能量目标。 `最大迭代代数`、`种群大小`和`收敛容差`控制 NES "
 "搜索，不改变上述目标函数。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"`Align DFT to NEP` multiplies the NEP energy per atom shown in the interface "
+"by the atom count before using it as the total-energy target. `Maximum "
+"generations`, `Population size`, and `Convergence tolerance` control the NES "
+"search without changing the objective above."
 
 #: ../../source/module/nep-main-tool-energy-shift.md:43
 #: 4fe05e3bcb5a4354bd4f8c55b2dd248a
@@ -175,32 +188,32 @@ msgstr "Parameters and execution result"
 #: ../../source/module/nep-dataset-display-content.md:8104
 #: 2893cbb6fb364f17b75ac3e8083bc874
 msgid "预设区：`基线预设`，以及导入、导出和删除按钮。"
-msgstr "Details for this option"
+msgstr "Preset area: `Baseline preset`, plus the import, export, and delete buttons."
 
 #: ../../source/module/nep-dataset-display-content.md:8105
 #: b817bf9478684229b3bee763937ef18b
 msgid "参数区：`分组规则`、`对齐方式`、`最大迭代代数`、`种群大小`、`收敛容差`。"
-msgstr "Details for this option"
+msgstr "Parameter area: `Grouping rule`, `Alignment mode`, `Maximum generations`, `Population size`, and `Convergence tolerance`."
 
 #: ../../source/module/nep-dataset-display-content.md:8106
 #: 2db4b93e69304608985f0df3393bc66f
 msgid "保存区：`保存为基线预设`和`预设名称`。"
-msgstr "Details for this option"
+msgstr "Save area: `Save as baseline preset` and `Preset name`."
 
 #: ../../source/module/nep-dataset-display-content.md:8107
 #: d0ef6a2b15cd4faa848985aaac021fad
 msgid "执行结果：后台拟合/应用基线平移并重绘。"
-msgstr "Details for this option"
+msgstr "Result: fit and apply the baseline shift in the background, then redraw the plot."
 
 #: ../../source/module/nep-dataset-display-content.md:8109
 #: 3670f99a1136462eb269c7c224a90497
 msgid "![能量基线平移对话框](../_static/image/generated/show_nep_reference/g_shift_dialog.png)"
-msgstr "See the figure for the corresponding control and result."
+msgstr "![Energy Baseline Shift dialog](../_static/image/generated/show_nep_reference/g_shift_dialog.png)"
 
 #: ../../source/module/nep-dataset-display-content.md:8109
 #: e2edf75379444432a3726dd76975db56
 msgid "能量基线平移对话框"
-msgstr "Details for this option"
+msgstr "Energy Baseline Shift dialog"
 
 #: ../../source/module/nep-dataset-display-content.md:8109
 #: e2edf75379444432a3726dd76975db56
@@ -222,5 +235,9 @@ msgid ""
 "完成后检查实际平移结构数、未匹配的 `Config_type` 和重绘后的能量分布。导出 `extxyz` 后， 抽查 `energy` 与 "
 "`energy_original`，确认新旧能量都可追溯。预设来自其他数据集时尤其要检查分组是否匹配。"
 msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+"After completion, check the number of structures actually shifted, any "
+"unmatched `Config_type` values, and the redrawn energy distribution. After "
+"exporting `extxyz`, inspect a few `energy` and `energy_original` values to "
+"confirm that both the shifted and original energies remain traceable. If the "
+"preset came from another dataset, pay particular attention to whether its "
+"grouping rules match."

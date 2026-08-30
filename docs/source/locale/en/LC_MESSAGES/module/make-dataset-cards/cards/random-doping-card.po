@@ -8,452 +8,350 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:3
-#: 257774c22b65411894f9c6e1c9d7218c
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:3
+#: 6bc60218ba9c4407ae4b5f0e3ff32f7b
 msgid "随机掺杂（Random Doping）"
 msgstr "Random Doping"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:5
-#: e6b9d141d9db45a2af4b8591b291a81d
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:5
+#: c313e5f8b6e747e297b18f2803ceed27
 msgid "**分类：** 合金与组分"
 msgstr "**Category:** Alloys and composition"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:7
-#: b201ce4f9cf54d609b6efe2c637dda36
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:7
+#: 9d46afb7042547d6bb8f809f9dff2976
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:9
-#: 606e357ede6042c58915af1f8ae8eeb9
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:9
+#: 074f1f33b64c42fd9ae81d8c2f9290b7
 msgid ""
-"按规则表对指定元素位点做替位掺杂。可以精确控制\"替换谁、换成什么、换多少\"，"
-"支持按原子百分比、质量百分比或固定数量采样。规则填写了 group 时，输入必须真的"
-"带有对应标签；卡片不会把缺失的 group 当成“全部位点”。"
-msgstr "Perform substitutional doping on selected element sites according to a rule table. Control exactly \"which elements to replace, what to replace them with, and how many\", using atomic percentages, mass percentages, or fixed counts. When a rule specifies a group, the input must actually carry that label; the card does not treat a missing group as \"all sites\"."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:11
-#: d099827b4cef42a79460adbdbdf5a6d0
-msgid "**和 `Random Occupancy` / `Composition Space Sampling` 的区别：**"
-msgstr "**Difference from `Random Occupancy` / `Composition Space Sampling`:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:12
-#: 2bea7697c13a4eaa81a0c02a83893a0a
-msgid "`Composition Space Sampling`：定义\"目标配比空间\"，不改原子占位"
-msgstr "`Composition Space Sampling`: defines a \"target composition space\" without changing site occupancy"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:13
-#: 0e0067cbe4794a52b7615e8a8d20a438
-msgid ""
-"`Random Occupancy`：把目标配比落到离散占位上，需要输入有 `Comp(...)` 标签"
+"按一条或多条规则，把指定元素的部分位点替换为掺杂元素。每条规则回答四个问题：替换哪种元素、是否只处理特定 "
+"`group`、替换成什么元素、替换多少个。它适合构造低浓度或局部分组掺杂；若要按一个整体目标组成重新分配全部位点，应使用 `Random Occupancy`。"
 msgstr ""
-"`Random Occupancy` realizes target fractions as discrete occupations, "
-"usually from a `Comp(...)` label."
+"Use one or more rules to replace some sites of a specified element with dopants. Each"
+" rule answers four questions: which element to replace, whether to restrict the "
+"operation to particular `group` labels, which dopant elements to use, and how many "
+"sites to replace. It is suited to low-concentration or locally grouped doping. Use "
+"`Random Occupancy` to redistribute all sites according to one overall target "
+"composition."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:14
-#: d3cb3987b2304596a4ed63cb9d717bf0
-msgid ""
-"`Random Doping`：直接给定规则（target + dopants + 比例），做一次随机替换。更"
-"直接、更手工，但不扫配比空间"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:11
+#: 1e6096ff218a4044bed5f282b3c6d779
+msgid "规则从上到下作用于同一份当前结构。前一条规则改变的元素可能成为后一条规则的候选，因此具有依赖关系的规则必须按预期顺序排列。"
 msgstr ""
-"`Random Doping` directly applies target, dopant, and amount rules. It is "
-"explicit and local, not a composition-space scan."
+"Rules act from top to bottom on the same evolving structure. An element produced by "
+"an earlier rule may become a candidate for a later rule, so dependent rules must be "
+"ordered intentionally."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:16
-#: 8ba02d181ba64a578c479db802cfd007
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:13
+#: 6d5a6459b4504e658e01d6cb63446f4d
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:18
-#: 0ad4a4791b564eeab63eadea961bd678
-msgid ""
-"每条规则先按目标元素和可选 group 得到 $N_{\\mathrm{eligible}}$ 个候选位点。`"
-"原子百分比` 模式使用"
-msgstr "Each rule first selects $N_{\\mathrm{eligible}}$ eligible sites by target element and optional group. `Atomic percentage` mode uses"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:15
+#: a75c93dfdbf9420a9649e57bed180048
+msgid "设某条规则当前有 $N$ 个候选位点。"
+msgstr "Suppose a rule currently has $N$ candidate sites."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:21
-#: f3b2d24169fb44b29a314d0ea54b1cb0
-msgid ""
-"\n"
-"N_{\\mathrm{dope}}=\\left\\lfloor\n"
-"N_{\\mathrm{eligible}}\\,p_{\\mathrm{atom}}\\right\\rfloor.\n"
-msgstr ""
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:17
+#: 15acad5aaad94ab58bfef3f53ac7b284
+msgid "使用原子百分比 $p$ 时，替换数为"
+msgstr "With atomic percentage $p$, the replacement count is"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:26
-#: 9cc861d3a6e7489bab94b383c2ff113d
-msgid "若输入的是掺杂元素质量权重 $w_e$，程序先换算成原子抽样权重"
-msgstr "If mass weights $w_e$ are supplied for dopants, the program first converts them to atomic sampling weights"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:28
-#: 671d845600d047f69aab0e5c64abb86c
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:19
+#: 5495f95f69ed4105a2a608bd94edffa4
 msgid ""
 "\n"
-"p_e=\\frac{w_e/M_e}{\\sum_j w_j/M_j},\n"
+"n=\\lfloor Np/100\\rfloor.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:32
-#: 94fd21f057de4b16b75c314a53ec2a05
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:23
+#: f5b84df472974d098aa93487027c13a4
 msgid ""
-"其中 $M_e$ 是元素原子质量。`固定数量`直接使用指定整数；`随机数量`在给定上下限"
-"内抽取。 确定总数后，`精确`替换按最大余数法分配各掺杂元素计数，`随机`替换按类"
-"别概率逐位点抽样。 质量百分比模式按当前实现用目标原子的总质量和掺杂物平均原子"
-"质量估算个数，因此输出后仍应 重新统计实际最终质量分数。"
-msgstr "Here $M_e$ is the atomic mass of element $e$. `Fixed count` uses the specified integer; `Random count` samples within the given bounds. After determining the total, `Exact` replacement allocates dopant counts by the largest-remainder method, while `Random` replacement samples each site by category probability. In mass-percentage mode, the current implementation estimates the count from the total target-atom mass and average dopant mass, so recompute the actual final mass fraction after generation."
+"百分比填写为区间时，每个输出先在区间内均匀抽取一个百分比，再向下取整。小结构上的低百分比可能始终得到 $n=0$；如果整套规则的最大可能替换数仍为 "
+"0，卡片会在运行前报错并建议提高用量或扩大结构。"
+msgstr ""
+"When a percentage range is entered, every output first samples a percentage uniformly"
+" within that range, then rounds down. A low percentage in a small structure may "
+"always give $n=0$. If the maximum possible replacement count across the entire rule "
+"set is still zero, the card reports an error before running and suggests increasing "
+"the amount or enlarging the structure."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:37
-#: dff89e878e8c47cba92dcacfa3651f62
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:25
+#: 9a02783142a44b6a875794af5858b374
+msgid "“质量预算 %”沿用已有 `mass_percent` 数据语义：先把百分比乘以候选目标原子的原始总质量，再除以掺杂元素的平均原子质量："
+msgstr ""
+"`Mass budget %` retains the existing `mass_percent` data semantics: multiply the "
+"percentage by the original total mass of candidate target atoms, then divide by the "
+"mean atomic mass of the dopants:"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:27
+#: bed1cddb4a4f43c7ab3cffac3184a5fb
+msgid ""
+"\n"
+"n=\\left\\lfloor\n"
+"\\frac{(p/100)N M_\\mathrm{target}}{\\bar M_\\mathrm{dopant}}\n"
+"\\right\\rfloor.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:33
+#: 0c693a03f4dd4a028f85c357deb39809
+msgid "它表示相对于原目标原子质量的替换预算，不是输出结构的最终质量分数。实际结果应从输出元素和 metadata 重新统计。"
+msgstr ""
+"This is a replacement budget relative to the original mass of the target atoms, not "
+"the final mass fraction of the output structure. Recalculate the realized result from"
+" output species and metadata."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:35
+#: b2ffc7cb5dc842c1ba53c78bb61e1bb6
+msgid "替换总数确定后，“掺杂元素分配”只决定多种掺杂元素如何分享这 $n$ 个位点："
+msgstr ""
+"After the total replacement count is determined, `Dopant allocation` decides only how"
+" multiple dopant elements share these $n$ sites:"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:37
+#: 59888804400e4036850b337696dabc45
+msgid "`Random`：每个位点按权重独立抽样，实际元素计数允许波动；"
+msgstr ""
+"`Random`: independently sample the element at each site according to its weight, "
+"allowing realized element counts to fluctuate;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:38
+#: fa140f71e5d14c239424122ca981e6bf
+msgid "`Exact`：使用最大余数法得到最近可行的整数计数，再随机打乱落点。"
+msgstr ""
+"`Exact`: use the largest-remainder method to obtain the nearest feasible integer "
+"counts, then randomly shuffle their placement."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:40
+#: bfc2a0cdd97a43a59264d1d426a9741c
+msgid "若掺杂权重采用质量比 $w_e$，程序先换算为原子抽样概率"
+msgstr ""
+"If dopant weights are mass ratios $w_e$, the program first converts them to atomic "
+"sampling probabilities:"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:42
+#: e4fa894687f740888a5a40b39f5735d8
+#, python-brace-format
+msgid ""
+"\n"
+"q_e=\\frac{w_e/M_e}{\\sum_j w_j/M_j}.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:46
+#: 7676a90e6b5b48cebda9729f2d0c02ba
+msgid "因此顶层 `Random / Exact` 不改变替换位点总数，只改变 Ge/C 等多种掺杂元素之间的分配。"
+msgstr ""
+"Thus, the top-level `Random / Exact` choice does not change the total number of "
+"replaced sites. It changes only how those sites are allocated among multiple dopants "
+"such as Ge and C."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:48
+#: 89a62ced0fc140768d7662a5f0cbc70c
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:39
-#: e8b49189d208400ea3e3ad312535d4bc
-msgid "场景：纯元素模型在掺杂体系上完全失效"
-msgstr "Scenario: A pure-element model fails on a doped system"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:50
+#: c8e19290cddf4af0a250551d5123bc21
+msgid "补充 Si–Ge 局域环境"
+msgstr "Add Si–Ge Local Environments"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:41
-#: ce723c713a914dcaa33728ef7e48505a
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:52
+#: bd0e59016e9b4072a2af0315921ea366
+msgid "若模型只在纯 Si 结构上训练，Si 位点被 Ge 替换后的局域化学环境没有覆盖。可输入含 64 个 Si 位点的超胞，添加规则："
+msgstr ""
+"If a model was trained only on pure Si structures, it has not covered the local "
+"chemical environments created when Ge replaces Si sites. Provide a supercell "
+"containing 64 Si sites and add this rule:"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:54
+#: bd6cc9646efa49cbbe5afb2bb2b1c89b
+msgid "替换元素：`Si`"
+msgstr "Target element: `Si`"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:55
+#: ee8895e5a1734801b1c200ded1c79abb
+msgid "替换为：`Ge`"
+msgstr "Replace with: `Ge`"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:56
+#: b02b60c2c4e648f1bc7bb7ff63467c6e
+msgid "替换用量：原子百分比 `3–8%`"
+msgstr "Replacement amount: atomic percentage `3–8%`"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:57
+#: 4ff8a779842c402a82121fc45e73499c
+msgid "每个输入的输出数：`20`"
+msgstr "Outputs per input: `20`"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:59
+#: 6e3ddeb968004d6dbf391fba908588f4
 msgid ""
-"你在纯 Si 上训练了一个 NEP 模型，能量和力都收敛得很好。然后尝试跑 Si:Ge 合金"
-"——模型直接崩溃：碰到 Ge 原子的局域环境完全没见过，力预测误差跳了一个数量级。"
+"界面预览会显示该输入有 64 个候选位点，整数替换范围为 1–5。运行后检查 `random_doping` metadata "
+"中的实际替换数和元素计数，再用独立的掺杂结构验证集比较加入这些样本前后的能量、力误差。卡片只改变元素，原子坐标、晶胞和 PBC 保持不变。"
 msgstr ""
-"A pure-Si NEP has converged energy and force errors, but force error "
-"increases by an order of magnitude on Si:Ge because Ge-centered local "
-"environments are absent from training."
+"The preview shows 64 candidate sites and an integer replacement range of 1–5 for this"
+" input. After running, inspect the realized replacement and element counts in "
+"`random_doping` metadata, then compare energy and force errors before and after "
+"adding these samples on an independent doped-structure validation set. The card "
+"changes only elements; atomic coordinates, the cell, and PBC remain unchanged."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:43
-#: e63862fc74a74e74bc858edae81316e0
-msgid ""
-"**诊断思路：** 训练集里只有 Si-Si 键环境，模型不知道 Ge 原子的存在，更不知道 "
-"Si-Ge 键和 Ge-Ge 键应该长什么样。需要往训练集中加入真实的 Si 位点被 Ge 替换的"
-"结构，让模型学习掺杂原子周围的局域化学环境。"
-msgstr ""
-"**Diagnosis:** A set containing only Si-Si environments cannot represent Si-"
-"Ge or Ge-Ge chemistry. Generate actual Ge substitutions on Si sites, then "
-"relax and label them so the model learns dopant-centered environments."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:45
-#: 51b69e929c314478943574988f65515c
-msgid "**输入：** 一个纯 Si 超胞结构，已经弛豫"
-msgstr "**Input:** A relaxed pure-Si supercell."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:47
-#: 324a21ba31024fe5acb3b2ad8c3a13d2
-msgid ""
-"**目标：** 每帧替换 3~8% 的 Si 为 Ge，每帧生成 20 个版本，覆盖不同掺杂落点"
-msgstr ""
-"**Objective:** Replace 3-8% of Si with Ge and generate 20 site arrangements "
-"per input."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:49
-#: 999dcc66d4fd4e648d27d97dd1c7c2bf
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:50
-#: 10105340b7e84cadbfe6d8eb74c31cb6
-msgid ""
-"`规则`（`rules`）：target=`Si`, dopants=`Ge`, use=`atomic_percent`, "
-"percent=`[3, 8]`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:51
-#: acdf7b1371ee4bcb8d99ad718c06aabd
-msgid "`掺杂方式`（`doping_type`）：`Exact` （对比实验需要稳定的掺杂数量）"
-msgstr "See the parameter description for details."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:52
-#: 70b294504e9f48fe891062f895ac5c7f
-msgid "`Structures`：`[20]`"
-msgstr "`Structures`: `[20]`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:54
-#: ab21f5b771e64039a53035d6d6e585d0
-msgid ""
-"**输出：** 20 个掺杂结构，每帧中 3~8% 的 Si 变成 Ge，带 `Dop(n=...)` 标签"
-msgstr ""
-"**Output:** Twenty doped structures with 3-8% of Si sites changed to Ge and "
-"label `Dop(n=...)`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:56
-#: 70b74b198db7443586de6a708b9cb4a9
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:57
-#: 826afbde46a1485fb59821818d079f67
-msgid "重训后跑 Si:Ge 测试集，力的 MAE 应该回到和纯 Si 训练集接近的水平"
-msgstr ""
-"After DFT labeling and retraining, force MAE on a Si:Ge test set should "
-"approach the in-domain Si error."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:58
-#: e9d9a3584d1f4bdfab14fe6b454a048a
-msgid ""
-"抽查几个掺杂输出，Ge 原子的最近邻距离是否合理（Si-Ge 键长应略大于 Si-Si）"
-msgstr ""
-"Inspect dopant-centered nearest-neighbor distances and confirm they are "
-"chemically plausible."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:59
-#: 0b96b2df533c4af3a3a6b663181cd37a
-msgid "如果模型对高浓度掺杂仍然不准，扩大 `percent` 上限到 15~20%"
-msgstr ""
-"If high-concentration tests remain out of domain, extend the training range "
-"deliberately, for example toward 15-20%."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:60
-#: badaa6b6062f4a088eb682a9f8a8b56b
-msgid "如果只掺一种元素，dopants 可以直接写 `Ge`，等价于 `Ge:1.0`"
-msgstr "For one dopant, `Ge` is equivalent to `Ge:1.0`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:61
-#: 12b398defe9d466d8b888f9f29439606
-msgid "如果需要多元素掺杂（如同时掺 Ge 和 C），在 dopants 里写 `Ge:0.7,C:0.3`"
-msgstr "For mixed dopants, use weights such as `Ge:0.7,C:0.3`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:63
-#: d90c8e825b304178a0ed8d8213f59216
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:65
-#: 937bc9a622fd4a2c9001aa644ea3f88a
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:66
-#: 7ce3a81be1ea40b694a46aa24dd26b6c
-msgid "模型在掺杂/合金体系上预测质量明显差于纯元素体系"
-msgstr ""
-"Predictions on doped or alloy structures are much worse than on the pure "
-"system"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:67
-#: 925a7ad896704b749b20af3e92131d0b
-msgid "需要覆盖特定掺杂元素周围的局域化学环境"
-msgstr "Local chemistry around a specific dopant is missing"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:68
-#: 69a6d07e44bf48409ce67e8a1471280f
-msgid "有明确的掺杂规则（target + dopants + 比例），但不需系统扫描完整配比空间"
-msgstr ""
-"An explicit target, dopant, and amount rule is known without a full "
-"composition scan"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:70
-#: 2f07e0b4caa04e12a63a7526cdddf456
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:71
-#: 51326ba3a95b46b7831618ca7ba76ac4
-msgid ""
-"需要系统扫配比空间 → 先用 `Composition Space Sampling`，再接 `Random "
-"Occupancy`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:72
-#: 87f49853cec3487db7e8f96f43e3b841
-msgid "只需要全局随机占位 → 用 `Random Occupancy`"
-msgstr "Only global occupation diversity is needed; use `Random Occupancy`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:74
-#: 0d8e39d347f1483f97756d473fbf6687
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:61
+#: 5b79bd0c7f034003b3ca37d357a14e35
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:76
-#: b831537e897840a98f82d138e80d2dff
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:63
+#: 050ad163f4934ae1a576d7a4d6dcc0db
 msgid "规则（rules）"
 msgstr "rules"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:78
-#: d8126b6363e046369fa920f053e044d9
-msgid ""
-"`list[dict[str, Any]]`，默认空列表。每条 rule 定义目标元素、替换元素、比例/计"
-"数和可选 group。复杂掺杂优先拆成多条明确 rule，不要把不同物理缺陷混成一个概率"
-"池。"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:65
+#: cf17968504b44b3e8adbbf1ada438bd9
+msgid "`list[dict[str, Any]]`，默认空列表，但运行至少需要一条完整规则。每条规则包含："
 msgstr ""
-"`list[dict[str, Any]]`, empty by default. Each rule defines a target "
-"element, dopants, an amount, and an optional group. Keep distinct physical "
-"defects in separate explicit rules rather than one ambiguous probability "
-"pool."
+"`list[dict[str, Any]]`, an empty list by default, but at least one complete rule is "
+"required to run. Each rule contains:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:80
-#: 57f7eee98d4743308da80848d23f05b7
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:67
+#: 5963ee135af74fb783444d37c5961aa2
+msgid "`target`：被替换的元素；"
+msgstr "`target`: the element to replace;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:68
+#: 4e66b0b4f1c2457f9a9f6ac4eead2218
+msgid "`dopants`：掺杂元素及相对权重，例如 `Ge:0.7,C:0.3`；"
+msgstr "`dopants`: dopant elements and relative weights, for example `Ge:0.7,C:0.3`;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:69
+#: f0011c01074a4a7fa4b67f1bd60b9e5f
+msgid "`ratio_type`：`atom` 或 `mass`，表示 `dopants` 权重的基准；"
+msgstr "`ratio_type`: `atom` or `mass`, defining the basis of the `dopants` weights;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:70
+#: 7cecad7fa5ca42548415609cddd148c9
+msgid "`use`：`atomic_percent`、`mass_percent` 或 `count`；"
+msgstr "`use`: `atomic_percent`, `mass_percent`, or `count`;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:71
+#: 670a5c7e4e5c467890f84f024a623abe
+msgid "`percent`：百分比的最小值和最大值；"
+msgstr "`percent`: minimum and maximum percentage;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:72
+#: 2fe27ca305a249f88e63d4ddcf84b234
+msgid "`count`：原子数的最小值和最大值；"
+msgstr "`count`: minimum and maximum atom count;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:73
+#: ca864e24f6e748a7a6ad07d7a489f7c5
+msgid "`count_mode`：`fixed` 或 `random`；"
+msgstr "`count_mode`: `fixed` or `random`;"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:74
+#: 66a4eafbe3804b65be4cc90b6e25d8af
+msgid "`group`：可选的 group 标签列表。"
+msgstr "`group`: optional list of group labels."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:76
+#: d046afa26a0a4b329bb432fc0e6cac38
 msgid ""
-"rule 内的典型字段：`target`（被替换元素）、`dopants`（替换元素及权重 dict）、"
-"`ratio_type`（dopants 权重采用 `atom` 原子比或 `mass` 质量比）、`use`"
-"（`atomic_percent` / `mass_percent` / `count`）、`percent`（百分比范围 "
-"`[min, max]` 或 `[fixed]`）、`count`（固定替换个数或随机范围）、`count_mode`"
-"（`fixed` / `random`）、`group`（可选，限制只在此 group 内操作）。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:82
-#: 1c3779d329fe4aa5ac5b9392effef689
-msgid ""
-"`percent` 必须落在 0~100；百分比换算成离散原子数时向下取整，因此小超胞的低百"
-"分比可能得到 0 个替换。明确设置 0% 会保留原结构，不会被强制改成 1 个掺杂原"
-"子。固定数量、随机数量或质量百分比范围会先按上界计算最大请求数；只要上界可能"
-"超过当前候选位点数，整条规则就会确定性报错，不会因 seed 不同而时而成功、时而"
-"失败，也不会静默截断。多种 dopant 的质量百分比换算会按 `ratio_type` 对应的原"
-"子分数计算平均质量；切换规则里的“原子比/质量比”会改变换算和元素分配。填写 "
-"group 后，如果输入没有 `atoms.arrays[\"group\"]`、标签未命中或目标元素未命"
-"中，也会明确报错。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:84
-#: c804bcaf8b474f08afc99d70a58db8c5
-msgid "掺杂方式（doping_type）"
-msgstr "doping_type"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:86
-#: ed932bc03e7c43cab936d9de455c1721
-msgid ""
-"`str`，默认 `Random`。这个选项控制多个 dopant 如何分配到已经选定的替换位点，"
-"不改变 `percent` 或 `count` 推导出的替换总数。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: 5707087fedd549c59eded78875705ab8
-msgid "选项"
-msgstr "Options"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: 66de2ef38a914dc5a738b527f2a3ca99
-msgid "含义"
-msgstr "Meaning"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: 3a7f348c8d6c4ff6b8d37b5f2914a88a
-msgid "什么时候选"
-msgstr "When to choose it"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: 99aee9569a0b49029ac7e7df888e1ec0
-msgid "`Random`"
-msgstr "`Random`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: 85b895b9c3ee4e049e5fec91302e25f2
-msgid "每个替换位点按 dopant 权重独立抽样"
-msgstr "Sample each replacement site independently from dopant weights"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: da8acdb9481143c49c078631cc3f1900
-msgid "需要统计涨落和更多随机组成时"
-msgstr "When statistical fluctuations and more random compositions are needed"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: cb77bc18356a4e2dbf3ee058382c75e2
-msgid "`Exact`"
-msgstr "`Exact`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: 302eb3b4546243249571ae468e0b27ed
-msgid "用最大余数法把权重换成整数计数，再随机打乱落点"
-msgstr "Convert weights to integer counts with the largest-remainder method, then randomize their sites"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:0
-#: 53c12dbb08b3424e8e0d1e85cd11978d
-msgid "对比实验需要每帧 dopant 计数尽量贴近目标比例时"
-msgstr "When comparative experiments require dopant counts in each frame to stay close to the target ratio"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:93
-#: e1c6e83e206b4b75a04d08f996f329fd
-msgid "最大结构数（max_structures）"
-msgstr "max_structures"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:95
-#: 611487f2b48f4ee0ae920f5d432d98c5
-msgid ""
-"`int`，默认 1。每个输入结构最多输出的掺杂构型数。低浓度精确掺杂可用 10-50，高"
-"维随机合金应后接 FPS 控制预算。"
+"固定数量要求 `count` 的两端相同；随机数量在闭区间内抽取整数。填写 group 后，输入必须包含 `atoms.arrays[\"group\"]` "
+"且至少有一个对应目标元素命中。范围上界超过可用位点、规则重叠可能耗尽后续候选时，会在随机采样前确定性报错。"
 msgstr ""
-"`int`, default `1`. Maximum doped variants per input. Low-concentration site "
-"sampling may use 10-50; high-dimensional alloy exploration should be "
-"followed by FPS and an explicit budget."
+"A fixed count requires identical endpoints in `count`; a random count draws an "
+"integer from the closed interval. When a group is supplied, the input must contain "
+"`atoms.arrays[\"group\"]` and at least one target element must match. If a range "
+"upper bound exceeds the available sites, or overlapping rules can exhaust candidates "
+"needed later, a deterministic error is reported before random sampling."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:97
-#: e744e317d5bf4255bdef8b6469411811
-msgid "使用随机种子（use_seed）"
-msgstr "use_seed"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:78
+#: 7992701676af49e580bb30544123d4a7
+msgid "掺杂元素分配（doping_type）"
+msgstr "Dopant Allocation (doping_type)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:99
-#: 7cec344e421244e1b496e2f2d794a3a6
-msgid ""
-"`bool`，默认 false。打开后固定种子可复现。对比实验时开，探索阶段可以关着。"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:80
+#: 62939932b59a412ebe1036e8ea275c30
+msgid "`str`，默认 `Random`。`Random` 独立抽样各掺杂元素；`Exact` 用最大余数法固定每种掺杂元素的整数计数。二者都随机选择具体被替换位点。"
 msgstr ""
-"`bool`, default `false`. Enable for reproducibility in controlled "
-"comparisons."
+"`str`, default `Random`. `Random` samples each dopant independently; `Exact` fixes "
+"integer counts for every dopant using the largest-remainder method. Both choose the "
+"concrete replacement sites randomly."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:101
-#: 01bf95c98dfe411da5681677bd301267
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:82
+#: def99d728fe84f4ea1ea8543ee3fb93e
+msgid "每个输入的输出数（max_structures）"
+msgstr "Outputs per Input (max_structures)"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:84
+#: 4cfbd8094b57437f9ca7b8baea8f597c
+msgid "`int`，默认 1。参数名为兼容已有工作流保留，实际合同是严格数量：每个合法输入生成恰好该数量的输出，不是“最多”。总输出数为"
+msgstr ""
+"`int`, default 1. The parameter name is retained for workflow compatibility, but its "
+"actual contract is an exact count: every valid input produces precisely this many "
+"outputs, not `at most` this many. The total output count is"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:86
+#: bed1cddb4a4f43c7ab3cffac3184a5fb
+#, python-brace-format
+msgid ""
+"\n"
+"N_\\mathrm{out}=N_\\mathrm{input}\\times\\mathrm{max\\_structures}.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:90
+#: 968b811427f14401a7290d840d343507
+msgid "各输出独立抽样，允许得到相同替换数或相同落点，不做去重。"
+msgstr ""
+"Outputs are sampled independently and may have the same replacement count or sites; "
+"no deduplication is performed."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:92
+#: ca081d1f3e4447cf809096b218609116
+msgid "使用固定随机种子（use_seed）"
+msgstr "Use Fixed Random Seed (use_seed)"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:94
+#: dbe4f06f41854261ab8530995b6bb049
+msgid "`bool`，默认 false。开启后使用可复现的样本级派生种子。"
+msgstr "`bool`, default false. When enabled, a reproducible sample-level derived seed is used."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:96
+#: 3b461a21c924490dab68190f729c9064
 msgid "随机种子（seed）"
-msgstr "seed"
+msgstr "Random Seed (seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:103
-#: 6bf358e1608b4c388cd20ceff584b27c
-msgid "`int`，默认 0。不同取值产生不同的替换分布。"
-msgstr ""
-"`int`, default `0`. Different values generate different substitution "
-"assignments."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:105
-#: f9d1891f2e6247bfa52f3ee4fa3b77f1
-msgid "生效条件：`use_seed=True`。"
-msgstr "Active only when `use_seed=True`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:107
-#: b96559c05e9c4b9ebcad5ae01f19a668
-msgid "推荐预设"
-msgstr "Recommended presets"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:109
-#: 89bd1a4f827e455ca0337a397646cde8
-msgid "低浓度单元素掺杂（Si:Ge, 1~2%）"
-msgstr "Low-concentration single dopant (Si:Ge, 1-2%)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:110
-#: 257677b7894840799e97633f401b05cf
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:98
+#: 0f2e96dfb6c84d329bb1f367b23ed093
 msgid ""
-"{\n"
-"  \"class\": \"RandomDopingCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"rules\": [\n"
-"      {\n"
-"        \"target\": \"Si\",\n"
-"        \"dopants\": {\"Ge\": 1.0},\n"
-"        \"use\": \"atomic_percent\",\n"
-"        \"percent\": [1, 2]\n"
-"      }\n"
-"    ],\n"
-"    \"doping_type\": \"Exact\",\n"
-"    \"max_structures\": 20,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 101\n"
-"  }\n"
-"}\n"
+"`int`，默认 0，无单位，仅在 `use_seed=true` 时生效。派生种子结合基础 seed、输入 `Config_type` 的稳定 ID "
+"和样本序号；相同输入、参数和 seed 可复现。不同输入若 `Config_type` 也完全相同，仍可能复用相同随机路径。"
 msgstr ""
+"`int`, default 0, dimensionless and used only when `use_seed=true`. The derived seed "
+"combines the base seed, a stable ID of the input `Config_type`, and the sample index."
+" Identical inputs, parameters, and seeds are reproducible. Different inputs whose "
+"`Config_type` values are also identical may still reuse the same random path."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:131
-#: 2eca0547bc894d0e81ca077e3d2e2832
-msgid "中浓度双元素掺杂（Si:Ge/C, 3~8%）"
-msgstr "Moderate mixed doping (Si:Ge/C, 3-8%)"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:100
+#: 336a88e9761b432198671f7773632968
+msgid "推荐配置"
+msgstr "Recommended Configuration"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:132
-#: 41927ae9f05f43aea27cd8c6491e1a74
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:102
+#: 3cfcf08068a0452e99e42684354ee5de
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"RandomDopingCard\",\n"
@@ -463,8 +361,12 @@ msgid ""
 "      {\n"
 "        \"target\": \"Si\",\n"
 "        \"dopants\": {\"Ge\": 0.7, \"C\": 0.3},\n"
+"        \"ratio_type\": \"atom\",\n"
 "        \"use\": \"atomic_percent\",\n"
-"        \"percent\": [3, 8]\n"
+"        \"percent\": [3, 8],\n"
+"        \"count\": [1, 1],\n"
+"        \"count_mode\": \"fixed\",\n"
+"        \"group\": []\n"
 "      }\n"
 "    ],\n"
 "    \"doping_type\": \"Exact\",\n"
@@ -475,203 +377,530 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:153
-#: 03e2808ebd6e400e8c6eb1f4ebb581ac
-msgid "高浓度多元素探索（Si:Ge/C/Sn, 8~20%）"
-msgstr "High-concentration multielement exploration (Si:Ge/C/Sn, 8-20%)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:154
-#: 749de8c9105b48698b5593da9991811a
-msgid ""
-"{\n"
-"  \"class\": \"RandomDopingCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"rules\": [\n"
-"      {\n"
-"        \"target\": \"Si\",\n"
-"        \"dopants\": {\"Ge\": 0.5, \"C\": 0.3, \"Sn\": 0.2},\n"
-"        \"use\": \"atomic_percent\",\n"
-"        \"percent\": [8, 20]\n"
-"      }\n"
-"    ],\n"
-"    \"doping_type\": \"Random\",\n"
-"    \"max_structures\": 20,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 101\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:175
-#: fc76137706e2449dbe2fa136b286a4ed
-msgid "推荐组合"
-msgstr "Recommended combinations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:177
-#: 6d20a933a79a4be2b1181155bab8ae64
-msgid "`Group Label` → `Random Doping`：只掺杂特定子晶格/层，不污染其他区域"
-msgstr ""
-"`Group Label` -> `Random Doping`: restrict doping to a sublattice or layer"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:178
-#: bb38311e45e2456fba6780c067a6b92b
-msgid ""
-"`Composition Space Sampling` → `Random Occupancy` → `Random Doping`：先扫配"
-"比 → 落位 → 再补局部随机替换"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:179
-#: bd65f638d0624616aabae0c0f06c09f4
-msgid "`Random Doping` → `Atomic Perturb`：掺杂后加坐标噪声，松驰局部应力"
-msgstr ""
-"`Random Doping` -> `Atomic Perturb`: add local coordinate diversity after "
-"substitution; physical labels still require relaxation"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:181
-#: fd20cf4076df4be0b5c1045de6c22a32
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:127
+#: f463e5a9d9374d8b8ffca5da9be93f82
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:183
-#: b00412ca913741fbaed9bf3fefedd887
-msgid ""
-"**输出和输入一样，没有替换。** 空 rules 会保留输入；显式 0% 或小超胞中百分比"
-"向下取整为 0 时，也会得到未替换端点。target 不存在、group 缺失或标签未命中则"
-"会直接报错，不再生成假成功输出。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:185
-#: aa2668912f4842639f60e75595df3795
-msgid ""
-"**掺杂比例偏离预期。** 如果用 `Random` 模式，小样本下统计浮动大。换成 "
-"`Exact` 可以减少波动。如果用的是 `mass_percent`，确认目标元素和掺杂元素的质量"
-"差异是否导致了原子比例偏移。"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:129
+#: 6459a98de060475098835c9dd2731a88
+msgid "**为什么提示无法替换任何原子？** 候选位点数乘以百分比后会向下取整。检查界面预览的整数范围；若最大值仍为 0，请提高用量或先扩大结构。"
 msgstr ""
-"**Dopant fraction differs from expectation.** Small Random samples "
-"fluctuate; use Exact for stable counts. With `mass_percent`, atomic "
-"fractions also reflect target-dopant mass differences."
+"**Why does the card report that no atoms can be replaced?** Candidate-site count "
+"multiplied by the percentage is rounded down. Inspect the integer range in the "
+"preview; if its maximum is still zero, increase the amount or enlarge the structure "
+"first."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:187
-#: 235aaa33a6634171912224c0332da7c6
-msgid ""
-"**掺杂后键长异常。** 这是纯化学替换，不做结构弛豫。替换后键长取决于新元素的原"
-"子半径和原晶格参数的匹配度。如果键长明显不合理，建议后接弛豫计算。"
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:131
+#: 00773d6ed4c84443999f135e2466bc40
+msgid "**为什么选择固定配比后，替换总数仍会变化？** 固定配比只固定多种掺杂元素之间的整数分配。替换总数仍由每条规则的百分比或随机数量范围决定。"
 msgstr ""
-"**Bond lengths are abnormal.** Substitution does not relax geometry. Relax "
-"before using such structures as physical training labels."
+"**Why does the total replacement count still vary after selecting an exact ratio?** "
+"Exact allocation fixes only the integer distribution among multiple dopant elements. "
+"The total replacement count is still determined by each rule's percentage or random "
+"count range."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:189
-#: 43016df2aaa644cc8f829bfa04d783e6
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:133
+#: daef95dbbc544d14b5e28f4492fbe2f7
+msgid "**为什么 group 规则没有运行？** 输入必须包含 `atoms.arrays[\"group\"]`，标签拼写必须匹配，而且对应分组中必须存在被替换元素。"
+msgstr ""
+"**Why did the group rule not run?** The input must contain `atoms.arrays[\"group\"]`,"
+" label spelling must match, and the target element must exist in the corresponding "
+"group."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:135
+#: bb69dfd55c534a0994495d5d917a5ce0
+msgid "输出与迁移说明"
+msgstr "Output and Migration Notes"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:137
+#: 7543acc3cc244dd0a2779736ee6f1740
 msgid ""
-"**提示请求数量超过候选位点。** 卡片不会替你把 10 个改成“最多能换的 4 个”。范"
-"围参数按上界校验；请降低 `count` 或 `percent` 上限、扩大超胞，或检查前一条规"
-"则是否已经消耗了相同 target/group 的候选位点。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"`Config_type` 追加 `Dop(n=...)`。`atoms.info[\"random_doping\"]` 是 JSON "
+"字符串，记录分配模式、样本序号、实际派生 seed、总替换数，以及每条规则的候选位点数、实际替换数和实际掺杂元素计数。"
+msgstr ""
+"`Dop(n=...)` is appended to `Config_type`. `atoms.info[\"random_doping\"]` is a JSON "
+"string recording the allocation mode, sample index, actual derived seed, total "
+"replacement count, and for each rule its candidate-site count, realized replacement "
+"count, and realized dopant-element counts."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:191
-#: f587db574acf4f3da4b8e7a0bd346eae
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:139
+#: 393a51a05a9e41ac8f73ef98c086fd1e
 msgid ""
-"**多条规则之间的交互。** 规则按顺序执行。如果多条规则操作重叠的 target/group "
-"候选池，卡片会按各范围上界联合预检；只要前面的规则存在耗尽后续容量的可能，就"
-"会在随机采样前统一报错，而不是让同一工作流随 seed 时成时败。需要保留多条规则"
-"时，应改用互不重叠的 group；同一候选池上的多种 dopant 通常应合并到一条规则的 "
-"`dopants` 中。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"只要元素实际改变，原有 calculator、能量、力、应力、virial、磁矩、spin、charges 等物种相关参考标签会被清除；坐标、晶胞、PBC、group "
+"和普通来源信息保留。"
+msgstr ""
+"Whenever elements actually change, species-dependent reference data such as the "
+"calculator, energy, forces, stress, virial, magnetic moments, spin, and charges are "
+"cleared. Coordinates, the cell, PBC, group, and ordinary provenance information are "
+"retained."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:193
-#: 53b4edc90c78426f896be40247ee372f
-msgid "输出标签"
-msgstr "Output labels"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:195
-#: 65455b021bbc41c58e30fc66e13091d6
-msgid "`Dop(n={替换原子数})`"
-msgstr "`Dop(n={number of substituted atoms})`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:197
-#: f1a6fbd0aa4c4892b3af3065a38e5567
-msgid "可复现性"
-msgstr "Reproducibility"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-doping-card.md:199
-#: a02faaf627ea4496884aabf47249ba20
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:141
+#: 85e03c48a94e41f9852b80b0bfd5d083
 msgid ""
-"勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`）可复现。同一候选"
-"位点顺序会复用同一随机路径，因此批量结构若原子排序完全一致，掺杂落点编号也可"
-"能一致；需要结构间更丰富的落点时，应使用不同 seed 或在上游生成不同占位顺序。"
-"建议把 seed 与 pipeline 配置一起版本化。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"本次调整保留旧 JSON 字段和值，但有三项有意变化：空规则和确定无替换效果的规则不再返回未改变结构；固定 seed "
+"的旧随机序列会因样本级派生方式而改变；随机范围合法抽到 0 时仍会显式写入 `Dop(n=0)` 和 metadata，便于识别该端点。"
+msgstr ""
+"This revision preserves legacy JSON fields and values but intentionally changes three"
+" behaviors: empty rules and rules guaranteed to make no replacements no longer return"
+" an unchanged structure; legacy fixed-seed random sequences change because of sample-"
+"level derivation; and a valid random range that draws zero still writes `Dop(n=0)` "
+"and metadata explicitly so that endpoint can be identified."
 
-#~ msgid ""
-#~ "按规则表对指定元素位点做替位掺杂。可以精确控制\"替换谁、换成什么、换多少"
-#~ "\"，支持按原子百分比、质量百分比或固定数量采样。"
+#~ msgid "按规则表对指定元素位点做替位掺杂。可以精确控制\"替换谁、换成什么、换多少\"，支持按原子百分比、质量百分比或固定数量采样。"
 #~ msgstr ""
-#~ "Apply substitutional doping to specified element sites using an explicit "
-#~ "rule table. Each rule controls which species is replaced, the dopant "
-#~ "distribution, and the amount by atomic percentage, mass percentage, or "
-#~ "fixed count."
+#~ "Apply substitutional doping to specified element "
+#~ "sites using an explicit rule table. Each "
+#~ "rule controls which species is replaced, the"
+#~ " dopant distribution, and the amount by "
+#~ "atomic percentage, mass percentage, or fixed "
+#~ "count."
 
 #~ msgid "**和 `Random Occupancy` / `Composition Sweep` 的区别：**"
 #~ msgstr "**How it differs from `Random Occupancy` and `Composition Sweep`:**"
 
 #~ msgid "`Composition Sweep`：定义\"目标配比空间\"，不改原子占位"
 #~ msgstr ""
-#~ "`Composition Sweep` defines a target-composition space without changing "
-#~ "occupations."
+#~ "`Composition Sweep` defines a target-composition "
+#~ "space without changing occupations."
 
 #~ msgid "`Doping Type`：`Exact` （对比实验需要稳定的掺杂数量）"
 #~ msgstr "`Doping Type`: `Exact` for a stable dopant count in comparisons."
 
-#~ msgid ""
-#~ "需要系统扫配比空间 → 先用 `Composition Sweep`，再接 `Random Occupancy`"
+#~ msgid "需要系统扫配比空间 → 先用 `Composition Sweep`，再接 `Random Occupancy`"
 #~ msgstr ""
-#~ "A composition domain must be scanned; use `Composition Sweep` followed by "
-#~ "`Random Occupancy`"
+#~ "A composition domain must be scanned; use "
+#~ "`Composition Sweep` followed by `Random Occupancy`"
 
 #~ msgid ""
 #~ "rule 内的典型字段：`target`（被替换元素）、`dopants`（替换元素及权重 "
-#~ "dict）、`use`（`atomic_percent` / `mass_percent` / `count`）、`percent`"
-#~ "（百分比范围 `[min, max]` 或 `[fixed]`）、`count`（固定替换个数）、`group`"
-#~ "（可选，限制只在此 group 内操作）。"
+#~ "dict）、`use`（`atomic_percent` / `mass_percent` / "
+#~ "`count`）、`percent`（百分比范围 `[min, max]` 或 "
+#~ "`[fixed]`）、`count`（固定替换个数）、`group`（可选，限制只在此 group 内操作）。"
 #~ msgstr ""
-#~ "Typical rule fields are `target`, weighted `dopants`, `use` "
-#~ "(`atomic_percent`, `mass_percent`, or `count`), `percent` (`[min,max]` or "
-#~ "`[fixed]`), fixed `count`, and optional `group` restriction."
+#~ "Typical rule fields are `target`, weighted "
+#~ "`dopants`, `use` (`atomic_percent`, `mass_percent`, or "
+#~ "`count`), `percent` (`[min,max]` or `[fixed]`), "
+#~ "fixed `count`, and optional `group` restriction."
+
+#~ msgid "`str`，默认 `Random`。`Random` 按权重概率随机采样，每帧替换数量有浮动。`Exact` 尽量匹配精确计数，替换数量更稳定，适合对比实验。"
+#~ msgstr ""
+#~ "`str`, default `Random`. `Random` samples weighted"
+#~ " probabilities and permits count fluctuations. "
+#~ "`Exact` matches integer counts as closely as"
+#~ " possible and is better for controlled "
+#~ "comparisons."
+
+#~ msgid "`Composition Sweep` → `Random Occupancy` → `Random Doping`：先扫配比 → 落位 → 再补局部随机替换"
+#~ msgstr ""
+#~ "`Composition Sweep` -> `Random Occupancy` -> "
+#~ "`Random Doping`: scan composition, realize "
+#~ "occupations, then add targeted substitutions"
+
+#~ msgid "**输出和输入一样，没有替换。** 检查 rules 是否为空、target 元素是否真的存在于输入结构中、group 过滤是否把候选位点全滤掉了。"
+#~ msgstr ""
+#~ "**Output is unchanged.** Check for nonempty "
+#~ "rules, a target present in the input, "
+#~ "and a group filter that leaves eligible "
+#~ "sites."
+
+#~ msgid "**多条规则之间的交互。** 规则按顺序执行。如果两条规则操作同一个 target 元素，第二条会在第一条的结果上继续替换。注意不要设计互相冲突的规则。"
+#~ msgstr ""
+#~ "**Rule interactions.** Rules execute in order. "
+#~ "A later rule targeting the same species "
+#~ "operates on the result of earlier rules, "
+#~ "so avoid conflicts."
+
+#~ msgid "勾选 `use_seed` + 固定 `seed` 可复现。注意输入结构顺序变化也会影响结果——建议把 seed 与 pipeline 配置一起版本化。"
+#~ msgstr ""
+#~ "Enable `use_seed` and fix `seed` for "
+#~ "reproducibility. Input order also affects derived"
+#~ " samples, so version the seed with the "
+#~ "pipeline configuration."
 
 #~ msgid ""
-#~ "`str`，默认 `Random`。`Random` 按权重概率随机采样，每帧替换数量有浮动。"
-#~ "`Exact` 尽量匹配精确计数，替换数量更稳定，适合对比实验。"
+#~ "按规则表对指定元素位点做替位掺杂。可以精确控制\"替换谁、换成什么、换多少\"，支持按原子百分比、质量百分比或固定数量采样。规则填写了 group"
+#~ " 时，输入必须真的带有对应标签；卡片不会把缺失的 group 当成“全部位点”。"
 #~ msgstr ""
-#~ "`str`, default `Random`. `Random` samples weighted probabilities and "
-#~ "permits count fluctuations. `Exact` matches integer counts as closely as "
-#~ "possible and is better for controlled comparisons."
+#~ "Perform substitutional doping on selected element"
+#~ " sites according to a rule table. Control"
+#~ " exactly \"which elements to replace, what "
+#~ "to replace them with, and how many\", "
+#~ "using atomic percentages, mass percentages, or "
+#~ "fixed counts. When a rule specifies a "
+#~ "group, the input must actually carry that "
+#~ "label; the card does not treat a missing"
+#~ " group as \"all sites\"."
+
+#~ msgid "**和 `Random Occupancy` / `Composition Space Sampling` 的区别：**"
+#~ msgstr "**Difference from `Random Occupancy` / `Composition Space Sampling`:**"
+
+#~ msgid "`Composition Space Sampling`：定义\"目标配比空间\"，不改原子占位"
+#~ msgstr ""
+#~ "`Composition Space Sampling`: defines a \"target "
+#~ "composition space\" without changing site occupancy"
+
+#~ msgid "`Random Occupancy`：把目标配比落到离散占位上，需要输入有 `Comp(...)` 标签"
+#~ msgstr ""
+#~ "`Random Occupancy` realizes target fractions as "
+#~ "discrete occupations, usually from a `Comp(...)` "
+#~ "label."
+
+#~ msgid "`Random Doping`：直接给定规则（target + dopants + 比例），做一次随机替换。更直接、更手工，但不扫配比空间"
+#~ msgstr ""
+#~ "`Random Doping` directly applies target, dopant, "
+#~ "and amount rules. It is explicit and "
+#~ "local, not a composition-space scan."
+
+#~ msgid "每条规则先按目标元素和可选 group 得到 $N_{\\mathrm{eligible}}$ 个候选位点。`原子百分比` 模式使用"
+#~ msgstr ""
+#~ "Each rule first selects $N_{\\mathrm{eligible}}$ "
+#~ "eligible sites by target element and optional"
+#~ " group. `Atomic percentage` mode uses"
 
 #~ msgid ""
-#~ "`Composition Sweep` → `Random Occupancy` → `Random Doping`：先扫配比 → 落"
-#~ "位 → 再补局部随机替换"
+#~ "\n"
+#~ "N_{\\mathrm{dope}}=\\left\\lfloor\n"
+#~ "N_{\\mathrm{eligible}}\\,p_{\\mathrm{atom}}\\right\\rfloor.\n"
 #~ msgstr ""
-#~ "`Composition Sweep` -> `Random Occupancy` -> `Random Doping`: scan "
-#~ "composition, realize occupations, then add targeted substitutions"
 
 #~ msgid ""
-#~ "**输出和输入一样，没有替换。** 检查 rules 是否为空、target 元素是否真的存"
-#~ "在于输入结构中、group 过滤是否把候选位点全滤掉了。"
+#~ "\n"
+#~ "p_e=\\frac{w_e/M_e}{\\sum_j w_j/M_j},\n"
 #~ msgstr ""
-#~ "**Output is unchanged.** Check for nonempty rules, a target present in "
-#~ "the input, and a group filter that leaves eligible sites."
 
 #~ msgid ""
-#~ "**多条规则之间的交互。** 规则按顺序执行。如果两条规则操作同一个 target 元"
-#~ "素，第二条会在第一条的结果上继续替换。注意不要设计互相冲突的规则。"
+#~ "其中 $M_e$ 是元素原子质量。`固定数量`直接使用指定整数；`随机数量`在给定上下限内抽取。 "
+#~ "确定总数后，`精确`替换按最大余数法分配各掺杂元素计数，`随机`替换按类别概率逐位点抽样。 "
+#~ "质量百分比模式按当前实现用目标原子的总质量和掺杂物平均原子质量估算个数，因此输出后仍应 重新统计实际最终质量分数。"
 #~ msgstr ""
-#~ "**Rule interactions.** Rules execute in order. A later rule targeting the "
-#~ "same species operates on the result of earlier rules, so avoid conflicts."
+#~ "Here $M_e$ is the atomic mass of element"
+#~ " $e$. `Fixed count` uses the specified "
+#~ "integer; `Random count` samples within the "
+#~ "given bounds. After determining the total, "
+#~ "`Exact` replacement allocates dopant counts by "
+#~ "the largest-remainder method, while `Random` "
+#~ "replacement samples each site by category "
+#~ "probability. In mass-percentage mode, the "
+#~ "current implementation estimates the count from "
+#~ "the total target-atom mass and average "
+#~ "dopant mass, so recompute the actual final "
+#~ "mass fraction after generation."
+
+#~ msgid "场景：纯元素模型在掺杂体系上完全失效"
+#~ msgstr "Scenario: A pure-element model fails on a doped system"
 
 #~ msgid ""
-#~ "勾选 `use_seed` + 固定 `seed` 可复现。注意输入结构顺序变化也会影响结果——建"
-#~ "议把 seed 与 pipeline 配置一起版本化。"
+#~ "你在纯 Si 上训练了一个 NEP 模型，能量和力都收敛得很好。然后尝试跑 Si:Ge "
+#~ "合金——模型直接崩溃：碰到 Ge 原子的局域环境完全没见过，力预测误差跳了一个数量级。"
 #~ msgstr ""
-#~ "Enable `use_seed` and fix `seed` for reproducibility. Input order also "
-#~ "affects derived samples, so version the seed with the pipeline "
-#~ "configuration."
+#~ "A pure-Si NEP has converged energy and"
+#~ " force errors, but force error increases by"
+#~ " an order of magnitude on Si:Ge because "
+#~ "Ge-centered local environments are absent from"
+#~ " training."
+
+#~ msgid ""
+#~ "**诊断思路：** 训练集里只有 Si-Si 键环境，模型不知道 Ge 原子的存在，更不知道"
+#~ " Si-Ge 键和 Ge-Ge 键应该长什么样。需要往训练集中加入真实的 Si "
+#~ "位点被 Ge 替换的结构，让模型学习掺杂原子周围的局域化学环境。"
+#~ msgstr ""
+#~ "**Diagnosis:** A set containing only Si-Si "
+#~ "environments cannot represent Si-Ge or Ge-"
+#~ "Ge chemistry. Generate actual Ge substitutions "
+#~ "on Si sites, then relax and label them"
+#~ " so the model learns dopant-centered "
+#~ "environments."
+
+#~ msgid "**输入：** 一个纯 Si 超胞结构，已经弛豫"
+#~ msgstr "**Input:** A relaxed pure-Si supercell."
+
+#~ msgid "**目标：** 每帧替换 3~8% 的 Si 为 Ge，每帧生成 20 个版本，覆盖不同掺杂落点"
+#~ msgstr ""
+#~ "**Objective:** Replace 3-8% of Si with Ge "
+#~ "and generate 20 site arrangements per input."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid "`规则`（`rules`）：target=`Si`, dopants=`Ge`, use=`atomic_percent`, percent=`[3, 8]`"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`掺杂方式`（`doping_type`）：`Exact` （对比实验需要稳定的掺杂数量）"
+#~ msgstr "See the parameter description for details."
+
+#~ msgid "`Structures`：`[20]`"
+#~ msgstr "`Structures`: `[20]`"
+
+#~ msgid "**输出：** 20 个掺杂结构，每帧中 3~8% 的 Si 变成 Ge，带 `Dop(n=...)` 标签"
+#~ msgstr ""
+#~ "**Output:** Twenty doped structures with 3-8% "
+#~ "of Si sites changed to Ge and label "
+#~ "`Dop(n=...)`."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后跑 Si:Ge 测试集，力的 MAE 应该回到和纯 Si 训练集接近的水平"
+#~ msgstr ""
+#~ "After DFT labeling and retraining, force MAE"
+#~ " on a Si:Ge test set should approach "
+#~ "the in-domain Si error."
+
+#~ msgid "抽查几个掺杂输出，Ge 原子的最近邻距离是否合理（Si-Ge 键长应略大于 Si-Si）"
+#~ msgstr ""
+#~ "Inspect dopant-centered nearest-neighbor distances"
+#~ " and confirm they are chemically plausible."
+
+#~ msgid "如果模型对高浓度掺杂仍然不准，扩大 `percent` 上限到 15~20%"
+#~ msgstr ""
+#~ "If high-concentration tests remain out of "
+#~ "domain, extend the training range deliberately, "
+#~ "for example toward 15-20%."
+
+#~ msgid "如果只掺一种元素，dopants 可以直接写 `Ge`，等价于 `Ge:1.0`"
+#~ msgstr "For one dopant, `Ge` is equivalent to `Ge:1.0`."
+
+#~ msgid "如果需要多元素掺杂（如同时掺 Ge 和 C），在 dopants 里写 `Ge:0.7,C:0.3`"
+#~ msgstr "For mixed dopants, use weights such as `Ge:0.7,C:0.3`."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "模型在掺杂/合金体系上预测质量明显差于纯元素体系"
+#~ msgstr "Predictions on doped or alloy structures are much worse than on the pure system"
+
+#~ msgid "需要覆盖特定掺杂元素周围的局域化学环境"
+#~ msgstr "Local chemistry around a specific dopant is missing"
+
+#~ msgid "有明确的掺杂规则（target + dopants + 比例），但不需系统扫描完整配比空间"
+#~ msgstr ""
+#~ "An explicit target, dopant, and amount rule"
+#~ " is known without a full composition scan"
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "需要系统扫配比空间 → 先用 `Composition Space Sampling`，再接 `Random Occupancy`"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "只需要全局随机占位 → 用 `Random Occupancy`"
+#~ msgstr "Only global occupation diversity is needed; use `Random Occupancy`"
+
+#~ msgid ""
+#~ "`list[dict[str, Any]]`，默认空列表。每条 rule 定义目标元素、替换元素、比例/计数和可选 "
+#~ "group。复杂掺杂优先拆成多条明确 rule，不要把不同物理缺陷混成一个概率池。"
+#~ msgstr ""
+#~ "`list[dict[str, Any]]`, empty by default. Each "
+#~ "rule defines a target element, dopants, an "
+#~ "amount, and an optional group. Keep distinct"
+#~ " physical defects in separate explicit rules "
+#~ "rather than one ambiguous probability pool."
+
+#~ msgid ""
+#~ "rule 内的典型字段：`target`（被替换元素）、`dopants`（替换元素及权重 "
+#~ "dict）、`ratio_type`（dopants 权重采用 `atom` 原子比或 `mass` "
+#~ "质量比）、`use`（`atomic_percent` / `mass_percent` / "
+#~ "`count`）、`percent`（百分比范围 `[min, max]` 或 "
+#~ "`[fixed]`）、`count`（固定替换个数或随机范围）、`count_mode`（`fixed` / "
+#~ "`random`）、`group`（可选，限制只在此 group 内操作）。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "`percent` 必须落在 0~100；百分比换算成离散原子数时向下取整，因此小超胞的低百分比可能得到 0 "
+#~ "个替换。明确设置 0% 会保留原结构，不会被强制改成 1 "
+#~ "个掺杂原子。固定数量、随机数量或质量百分比范围会先按上界计算最大请求数；只要上界可能超过当前候选位点数，整条规则就会确定性报错，不会因 seed "
+#~ "不同而时而成功、时而失败，也不会静默截断。多种 dopant 的质量百分比换算会按 `ratio_type` "
+#~ "对应的原子分数计算平均质量；切换规则里的“原子比/质量比”会改变换算和元素分配。填写 group 后，如果输入没有 "
+#~ "`atoms.arrays[\"group\"]`、标签未命中或目标元素未命中，也会明确报错。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`str`，默认 `Random`。这个选项控制多个 dopant 如何分配到已经选定的替换位点，不改变 `percent` 或 `count` 推导出的替换总数。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "选项"
+#~ msgstr "Options"
+
+#~ msgid "含义"
+#~ msgstr "Meaning"
+
+#~ msgid "什么时候选"
+#~ msgstr "When to choose it"
+
+#~ msgid "`Random`"
+#~ msgstr "`Random`"
+
+#~ msgid "每个替换位点按 dopant 权重独立抽样"
+#~ msgstr "Sample each replacement site independently from dopant weights"
+
+#~ msgid "需要统计涨落和更多随机组成时"
+#~ msgstr "When statistical fluctuations and more random compositions are needed"
+
+#~ msgid "`Exact`"
+#~ msgstr "`Exact`"
+
+#~ msgid "对比实验需要每帧 dopant 计数尽量贴近目标比例时"
+#~ msgstr ""
+#~ "When comparative experiments require dopant counts"
+#~ " in each frame to stay close to the"
+#~ " target ratio"
+
+#~ msgid "`int`，默认 1。每个输入结构最多输出的掺杂构型数。低浓度精确掺杂可用 10-50，高维随机合金应后接 FPS 控制预算。"
+#~ msgstr ""
+#~ "`int`, default `1`. Maximum doped variants per"
+#~ " input. Low-concentration site sampling may "
+#~ "use 10-50; high-dimensional alloy exploration "
+#~ "should be followed by FPS and an "
+#~ "explicit budget."
+
+#~ msgid "`bool`，默认 false。打开后固定种子可复现。对比实验时开，探索阶段可以关着。"
+#~ msgstr "`bool`, default `false`. Enable for reproducibility in controlled comparisons."
+
+#~ msgid "`int`，默认 0。不同取值产生不同的替换分布。"
+#~ msgstr "`int`, default `0`. Different values generate different substitution assignments."
+
+#~ msgid "生效条件：`use_seed=True`。"
+#~ msgstr "Active only when `use_seed=True`."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "低浓度单元素掺杂（Si:Ge, 1~2%）"
+#~ msgstr "Low-concentration single dopant (Si:Ge, 1-2%)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"RandomDopingCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"rules\": [\n"
+#~ "      {\n"
+#~ "        \"target\": \"Si\",\n"
+#~ "        \"dopants\": {\"Ge\": 1.0},\n"
+#~ "        \"use\": \"atomic_percent\",\n"
+#~ "        \"percent\": [1, 2]\n"
+#~ "      }\n"
+#~ "    ],\n"
+#~ "    \"doping_type\": \"Exact\",\n"
+#~ "    \"max_structures\": 20,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 101\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "中浓度双元素掺杂（Si:Ge/C, 3~8%）"
+#~ msgstr "Moderate mixed doping (Si:Ge/C, 3-8%)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"RandomDopingCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"rules\": [\n"
+#~ "      {\n"
+#~ "        \"target\": \"Si\",\n"
+#~ "        \"dopants\": {\"Ge\": 0.7, \"C\": 0.3},\n"
+#~ "        \"use\": \"atomic_percent\",\n"
+#~ "        \"percent\": [3, 8]\n"
+#~ "      }\n"
+#~ "    ],\n"
+#~ "    \"doping_type\": \"Exact\",\n"
+#~ "    \"max_structures\": 20,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 101\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "高浓度多元素探索（Si:Ge/C/Sn, 8~20%）"
+#~ msgstr "High-concentration multielement exploration (Si:Ge/C/Sn, 8-20%)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"RandomDopingCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"rules\": [\n"
+#~ "      {\n"
+#~ "        \"target\": \"Si\",\n"
+#~ "        \"dopants\": {\"Ge\": 0.5, \"C\": 0.3, \"Sn\": 0.2},\n"
+#~ "        \"use\": \"atomic_percent\",\n"
+#~ "        \"percent\": [8, 20]\n"
+#~ "      }\n"
+#~ "    ],\n"
+#~ "    \"doping_type\": \"Random\",\n"
+#~ "    \"max_structures\": 20,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 101\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "推荐组合"
+#~ msgstr "Recommended combinations"
+
+#~ msgid "`Group Label` → `Random Doping`：只掺杂特定子晶格/层，不污染其他区域"
+#~ msgstr "`Group Label` -> `Random Doping`: restrict doping to a sublattice or layer"
+
+#~ msgid ""
+#~ "`Composition Space Sampling` → `Random Occupancy`"
+#~ " → `Random Doping`：先扫配比 → 落位 → 再补局部随机替换"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`Random Doping` → `Atomic Perturb`：掺杂后加坐标噪声，松驰局部应力"
+#~ msgstr ""
+#~ "`Random Doping` -> `Atomic Perturb`: add local"
+#~ " coordinate diversity after substitution; physical "
+#~ "labels still require relaxation"
+
+#~ msgid ""
+#~ "**输出和输入一样，没有替换。** 空 rules 会保留输入；显式 0% 或小超胞中百分比向下取整为"
+#~ " 0 时，也会得到未替换端点。target 不存在、group 缺失或标签未命中则会直接报错，不再生成假成功输出。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**掺杂比例偏离预期。** 如果用 `Random` 模式，小样本下统计浮动大。换成 `Exact` "
+#~ "可以减少波动。如果用的是 `mass_percent`，确认目标元素和掺杂元素的质量差异是否导致了原子比例偏移。"
+#~ msgstr ""
+#~ "**Dopant fraction differs from expectation.** Small"
+#~ " Random samples fluctuate; use Exact for "
+#~ "stable counts. With `mass_percent`, atomic fractions"
+#~ " also reflect target-dopant mass differences."
+
+#~ msgid "**掺杂后键长异常。** 这是纯化学替换，不做结构弛豫。替换后键长取决于新元素的原子半径和原晶格参数的匹配度。如果键长明显不合理，建议后接弛豫计算。"
+#~ msgstr ""
+#~ "**Bond lengths are abnormal.** Substitution does "
+#~ "not relax geometry. Relax before using such"
+#~ " structures as physical training labels."
+
+#~ msgid ""
+#~ "**提示请求数量超过候选位点。** 卡片不会替你把 10 个改成“最多能换的 4 "
+#~ "个”。范围参数按上界校验；请降低 `count` 或 `percent` "
+#~ "上限、扩大超胞，或检查前一条规则是否已经消耗了相同 target/group 的候选位点。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**多条规则之间的交互。** 规则按顺序执行。如果多条规则操作重叠的 target/group "
+#~ "候选池，卡片会按各范围上界联合预检；只要前面的规则存在耗尽后续容量的可能，就会在随机采样前统一报错，而不是让同一工作流随 seed "
+#~ "时成时败。需要保留多条规则时，应改用互不重叠的 group；同一候选池上的多种 dopant 通常应合并到一条规则的 "
+#~ "`dopants` 中。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "输出标签"
+#~ msgstr "Output labels"
+
+#~ msgid "`Dop(n={替换原子数})`"
+#~ msgstr "`Dop(n={number of substituted atoms})`"
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid ""
+#~ "勾选 `使用随机种子`（`use_seed`） + 固定 "
+#~ "`随机种子`（`seed`）可复现。同一候选位点顺序会复用同一随机路径，因此批量结构若原子排序完全一致，掺杂落点编号也可能一致；需要结构间更丰富的落点时，应使用不同"
+#~ " seed 或在上游生成不同占位顺序。建议把 seed 与 pipeline 配置一起版本化。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."

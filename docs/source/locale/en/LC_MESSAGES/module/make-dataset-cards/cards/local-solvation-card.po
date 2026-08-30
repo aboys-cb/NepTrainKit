@@ -8,760 +8,995 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:3
-#: 4e50ddc024ac44daa5aaf237d8a3e128
-msgid "局部溶剂壳（Local Solvation）"
-msgstr "Local Solvation"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:3
+#: 94e1009e2b984d378773ec0a9a67343b
+msgid "局部溶剂壳（Solvent Shell）"
+msgstr "Local Solvent Shell"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:5
-#: eadaa8bb22ec4ea89bc7549af375d98d
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:5
+#: 66400c3573844234b485d6e13e14376f
 msgid "**分类：** 分子与溶剂"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "**Category:** Molecules and Solvation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:7
-#: fbe8bbbee37c4a0eb4248b0c2c151f15
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:7
+#: 5600e4f9374448e8937b290a9275d40a
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:9
-#: 9c920dbc394f414ba122082f602f12b4
-msgid ""
-"`Local Solvation` 在选中原子周围插入一批溶剂分子，用来补充离子水合壳、局部极"
-"性环境、溶质附近初始溶剂排布等候选构型。它只生成几何初态，不做力场或 DFT 优"
-"化，也不保证得到平衡溶剂化数或平衡取向。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:9
+#: 9b549096a57e4615a5ead14bd3d4c3ff
+msgid "在选定宿主原子附近放入一批溶剂分子，生成局部溶剂环境的几何初态。它适合补充离子第一水合壳、溶质附近极性环境或表面局部含水构型；若目标是在整个周期晶胞中填充溶剂，应使用“周期溶剂盒”。"
+msgstr ""
+"Place solvent molecules near selected host atoms to create starting geometries for a "
+"local solvent environment. Use it to add an ion's first hydration shell, a polar "
+"environment around a solute, or local water configurations on a surface. To fill an "
+"entire periodic cell with solvent, use `Periodic Solvent Box` instead."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:11
-#: 5a24f860d30d4500926881361cc632f0
-msgid ""
-"这张卡保留输入结构，并追加溶剂原子；碰撞检查只负责排除明显短接触。`Auto` 会根"
-"据溶剂是否为一水分子以及中心元素是否包含内置离子来解析实际放置模式。卡片首帧"
-"预览会显示中心数、溶剂分子式、解析后的模式和真正采用的碰撞规则。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:11
+#: 1bdfbf5b0b00442b9ba2afa3ba672972
+msgid "`每个输出的溶剂分子总数`是在所有选中中心之间共享的总数。例如选择 3 个中心并填写 6，只会总计放入 6 个分子，不是每个中心各放 6 个。"
+msgstr ""
+"`Total solvent molecules per output` is shared among all selected centers. For "
+"example, selecting three centers and entering 6 places six molecules in total, not "
+"six around each center."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:13
-#: 74f13d87ebee4a2eb6bd548c59c4a004
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:13
+#: 5fdd2587b8db4ea1a2bb90297c6e4d24
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:15
-#: 78dd9b9bfeaf41d8b0e9c883c2dafe08
-msgid ""
-"程序先按中心选择规则得到中心原子集合 $\\mathcal C$，再在球壳 $r_{\\min}\\le "
-"r\\le r_{\\max}$ 中抽样溶剂质心。若按体积均匀采样，半径可写为"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:15
+#: c811948867fa4cf399968bf50cfeaf03
+#, python-brace-format
+msgid "普通放置先在中心到溶剂质心（COM）的球壳 $[r_{\\min},r_{\\max}]$ 中均匀抽样体积："
+msgstr ""
+"For ordinary placement, the solvent center of mass (COM) is sampled uniformly by "
+"volume within the shell $[r_{\\min},r_{\\max}]$ around a center:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:18
-#: 61c8c95f6b5d4dc581fb962d7dbfc940
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:17
+#: de70ee9125fc42f8b273d4dd18a9cf3d
+#, python-brace-format
 msgid ""
 "\n"
 "r=\\left[r_{\\min}^3+u\\left(r_{\\max}^3-r_{\\min}^3\\right)\\right]^{1/3},\n"
 "\\qquad u\\sim U(0,1).\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:23
-#: 05101e2255974f3d8d5a6aaf883b1dd1
-msgid ""
-"每个候选分子还会随机取向，并对宿主、已放置溶剂及周期镜像执行碰撞检查。`自动/"
-"水/疏松/ 致密`模式选择不同的预设碰撞尺度和采样策略；用户显式填写碰撞尺度时覆"
-"盖预设。柔性构象 选项会先生成有限构象池再参与放置，不是在放置过程中做分子动力"
-"学。达到尝试上限仍无合法 位置时会失败，不会把重叠结构当作成功结果。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:22
+#: 065177bf9d17466980363fb1e52f7f9d
+msgid "若没有填写统一最小距离，任意新旧原子对必须满足"
+msgstr ""
+"When no global minimum distance is specified, every pair containing at least one "
+"newly placed atom must satisfy"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:28
-#: bca18099452b414f943fa7ad04acaa3f
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:24
+#: 8023d3db99d94621a5369bc80012f6cf
+#, python-brace-format
+msgid ""
+"\n"
+"d_{ij}\\ge s\\left(R_i+R_j\\right),\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:28
+#: 729e5cc390c241418058a75653d84877
+#, python-brace-format
+msgid ""
+"其中 $R_i$、$R_j$ 是内置元素碰撞半径，$s$ 是解析后的碰撞缩放。填写统一最小距离 $d_0>0$ 后，判据改为 $d_{ij}\\ge "
+"d_0$，碰撞缩放不再生效。周期输入使用完整晶胞和 PBC 的精确最小镜像距离，包括一般非正交晶胞。"
+msgstr ""
+"Here, $R_i$ and $R_j$ are built-in element collision radii and $s$ is the resolved "
+"collision scale. When a global minimum distance $d_0>0$ is specified, the criterion "
+"becomes $d_{ij}\\ge d_0$ and the collision scale no longer applies. Periodic inputs "
+"use exact minimum-image distances for the full cell and PBC, including general non-"
+"orthogonal cells."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:30
+#: 0e6f23ab1df148c6b2d21a42438f563b
+msgid "放置方式"
+msgstr "Placement Method"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 7b636b60c5e044cbb7ba258ae96fe4db
+msgid "方式"
+msgstr "Mode"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: f44463a8466e4ef08c050cb14a4362dd
+msgid "位置与取向"
+msgstr "Position and orientation"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: eca842a2e5d5425dbcb128ac042a32de
+msgid "碰撞默认值"
+msgstr "Default collision scale"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 7693b95423cd4bfd90232b9b96b5d48e
+msgid "自动"
+msgstr "Automatic"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 44f6ff1c49ab4d1198ccd54b3a8ce4a8
+msgid "水 + 全部中心均属于支持离子表时使用离子水合；其他水使用水偶极取向；非水使用随机取向"
+msgstr ""
+"For water, use ion hydration when every center has a supported ion profile; otherwise"
+" use water-dipole orientation. Use random orientation for non-water solvents."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: fe07f3433c384f80878a5ef4dceee50a
+msgid "随解析结果"
+msgstr "Depends on the resolved mode"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 7444219a79ee424682fcb553fbdacddd
+msgid "随机分子取向"
+msgstr "Random molecular orientation"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: ee3d4162ae2d46baa7bbaeadd0e4243a
+msgid "在备用质心壳层内随机放置和取向"
+msgstr "Randomly place and orient molecules within the fallback COM shell"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 00383766427b4097886057b10165e8a7 e5a0505fcae54fbca59e648038af0b9f
+msgid "0.70"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 233f602e324c4270b5bd1d799bd577ab
+msgid "水偶极取向"
+msgstr "Water-dipole orientation"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: a867555395ae4c11a41250342d20402a
+msgid "在备用质心壳层内放水，使 H 侧大致背离中心"
+msgstr ""
+"Place water within the fallback COM shell with its H side pointing approximately away"
+" from the center"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 77b237a78c5349e19135546e4e261996
+msgid "受支持的离子水合"
+msgstr "Supported ion hydration"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: ca16f3b3fd2940c19068de8340b4733f
+msgid "按离子–O 距离构造第一水合壳，填满后才使用备用质心壳层"
+msgstr ""
+"Construct the first hydration shell using ion–O distances; use the fallback COM shell"
+" only after the first shell is full"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: b2fb1c2f5a834a0982930dfca9be3a22
+msgid "0.72"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 666a822c9a5a4bf28f78ada91a751b81
+msgid "疏松随机放置"
+msgstr "Loose random placement"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: b90be20f0c744c6aa5d60b342a9bbd9d
+msgid "随机取向，使用较宽松碰撞判据"
+msgstr "Use random orientation and a more permissive collision criterion"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: bdaa761c2c8447989d119fbd7cce2c81
+msgid "0.62"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: e5735f00c3ef432d9f72c1c2c797e534
+msgid "致密水分子放置"
+msgstr "Dense water placement"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: 20e68c8d3698409b8c775fea334ff055
+msgid "水偶极取向，使用较严格碰撞判据"
+msgstr "Use water-dipole orientation and a stricter collision criterion"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md
+#: defe46d9956a413990b959607deaaf60
+msgid "0.78"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:41
+#: a53110eb67344d36bc5bfb32ef07c46e
+msgid ""
+"离子水合仅支持水分子，以及 Li、Na、K、Mg、Ca、Sr、Ba、Zn "
+"中的中心。其他元素在“自动”模式下使用普通水取向；显式选择离子水合则报错，避免把通用经验值伪装成元素专属第一水合壳。"
+msgstr ""
+"Ion hydration supports only water and centers of Li, Na, K, Mg, Ca, Sr, Ba, or Zn. "
+"Other elements use ordinary water orientation in `Automatic` mode. Explicitly "
+"selecting ion hydration reports an error, so generic empirical values are not "
+"presented as an element-specific first hydration shell."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:43
+#: 34b33a8a06a0429da475da81ed6d6c31
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:30
-#: 6bfeee5a9a9f4b26a54df7b835b98ae7
-msgid "场景：模型没有见过离子第一水合壳"
-msgstr "Scenario: The first hydration shell of an ion is missing"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:45
+#: e58543c01d934947924ea908ee901567
+msgid "训练集缺少 Ca 周围的水合环境时："
+msgstr "When the training set lacks hydration environments around Ca:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:32
-#: dfee9fb61abe409c8d51652620ea1f38
-msgid ""
-"你训练了含 Ca 的体系，但训练集里 Ca 周围几乎都是干结构。模型在含水环境里预测 "
-"Ca-O 局部相互作用时异常。先用 `Local Solvation` 选中 Ca 原子，插入 4-8 个水分"
-"子，生成候选水合壳，再经过几何检查和 DFT 松弛。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:47
+#: 097ef8418e034f94b0c840cb30a95b6f
+msgid "将中心选择设为“按元素”，输入 `Ca`。"
+msgstr "Set center selection to `By element` and enter `Ca`."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:48
+#: df57815f9ccb4716b1b4d863d91cb3c3
+msgid "保持“自动选择放置方式”，每个输出总计放入 6 个水分子。"
 msgstr ""
-"A Ca-containing training set is almost entirely dry and gives abnormal Ca-O "
-"interactions in water. Select Ca centers and insert 4-8 water molecules to "
-"propose hydration shells, then apply geometry checks and DFT relaxation "
-"before using them as labels."
+"Keep `Choose placement automatically` and place a total of six water molecules in "
+"each output."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:34
-#: b60a3eb0b2794ee6b48592c7d5613488
-msgid ""
-"参数设置：中心选择“按元素”并填 `Ca`，放置模式选“自动识别溶剂 / 离子”，每个输"
-"出放 6 个水分子，统一最小距离可先设为 `0.8 Å`，打开固定种子。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:49
+#: c970cfe0e12f413bae1034b72a0df0ef
+msgid "打开固定种子，先生成少量输出。"
+msgstr "Enable a fixed seed and generate a small number of outputs first."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:36
-#: 36f2c930d6d64b658d71e5374f8064b6
-msgid ""
-"在 `ion-water` 模式下，Ca 第一配位壳的 O 原子距离来自内置 `2.30–2.60 Å` 区"
-"间；界面上的“备用质心壳层”只在该离子的内置配位数填满之后使用。不要把备用壳层"
-"误认为第一壳 Ca–O 距离。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:38
-#: d0d1bf480df44d5c9ac76d2abbd26165
-msgid ""
-"检查输出时重点看 Ca-O 距离、短 H-H/O-H 非键接触、以及 DFT 松弛后是否仍保持合"
-"理水合结构。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:50
+#: c68a1470cd2b45c3abb690e7c72c5fc3
+msgid "在预览中确认解析为“受支持的离子水合”，Ca–O 第一壳范围为 2.30–2.60 Å、总容量为 6。"
 msgstr ""
-"Inspect Ca-O distances, short nonbonded H-H/O-H contacts, and whether the "
-"shell remains physically meaningful after DFT relaxation."
+"Confirm in the preview that the resolved mode is `Supported ion hydration`, with a "
+"Ca–O first-shell range of 2.30–2.60 Å and a total capacity of six."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:40
-#: 99d2a661ca534346bad3fdce7de16d2a
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:51
+#: ccd9daba2bf34108bb69e76e0ae372d2
+msgid "检查输出中的 Ca–O 距离和跨周期边界的短接触，再进行 DFT/力场预松弛。"
+msgstr ""
+"Inspect Ca–O distances and short contacts across periodic boundaries, then pre-relax "
+"the structures with DFT or a force field."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:53
+#: cb51d16f70c243aa9a3907734daf3620
+msgid "若溶剂总数超过所有选中离子第一壳容量，超出的分子才会使用备用中心到质心壳层。"
+msgstr ""
+"Only molecules beyond the combined first-shell capacity of all selected ions use the "
+"fallback center-to-COM shell."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:55
+#: fdf828c0477041f1b8e19462316dee66
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:42
-#: 33f8040e59484d2b99710ddc24f400bd
-msgid "溶剂输入"
-msgstr "Solvent input"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:57
+#: 910825c5745545fe8bb216b7325e39a9
+msgid "输出"
+msgstr "Output"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:44
-#: f30c8aa482c04c18acfca355d733837b
-msgid "溶剂 XYZ（solvent_xyz）"
-msgstr "solvent_xyz"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:46
-#: 05d925c9ebb4408bb93b260813db1616
-msgid ""
-"`str`，默认是一个三原子水分子 XYZ。这里保存的是溶剂分子文本，而不是文件路径，"
-"因此 card JSON 可以脱离原始文件复现。"
-msgstr ""
-"`str`, default a three-atom water XYZ block. The parameter stores molecule "
-"text rather than a path, allowing card JSON to reproduce the input without "
-"the original file."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:48
-#: 09049ffe37484f8092df17e67254d888
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:59
+#: d1aa2099e6e4451db231264a7af3ab4f
 msgid "每个输入的独立输出数（structures）"
 msgstr "structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:50
-#: b4799e803bf440b4b6c7b4513c914008
-msgid "`int`，默认 1。每个输入结构生成多少个独立溶剂化版本。"
-msgstr "`int`, default `1`. Independent solvated variants per input."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:61
+#: 2b93367a6dfb4e3d8aeb5d63c72a7358
+msgid "`int`，默认 1。每个输入结构尝试生成多少个独立溶剂化版本。"
+msgstr ""
+"`int`, default 1. Number of independent solvated variants attempted for each input "
+"structure."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:52
-#: 81ff8c1ff7124978b570b9c08ad5398f
-msgid "每个输出的溶剂分子数（solvent_count）"
-msgstr "solvent_count"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:63
+#: 5b9a5bcff3a946c980f0103510f9d7a3
+msgid "每个输出的溶剂分子总数（solvent_count）"
+msgstr "Total Solvent Molecules per Output (solvent_count)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:54
-#: 376ce6f3888d4597afb77ee8ba7ed277
-msgid ""
-"`int`，默认 6。每个输出结构插入多少个溶剂分子。离子第一壳通常从 4–8 开始；大"
-"分子局部溶剂环境再按中心原子数量扩大。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:65
+#: 007cc426e6f84173973d0f25e2372af0
+msgid "`int`，默认 6。所有选中中心共享的总数。"
+msgstr "`int`, default 6. Total count shared among all selected centers."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:56
-#: 78da31a35cf3496ba287a3c805854cd2
-msgid "放置配置（sampling_mode）"
-msgstr "sampling_mode"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:67
+#: 8cc98276bf4544f7a6329fa1624ec233
+msgid "必须放满请求数量（strict_count）"
+msgstr "Require the Requested Count (strict_count)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:58
-#: c27a8ba2032045b3b0596509b2427ef6
-msgid "`str`，默认 `auto`。可选项："
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:69
+#: c24672ac8eb144bf96e7da3a64ce885a
+msgid "`bool`，默认 true。无法放满时整张输出失败；关闭后允许保留至少放入一个分子的部分结果。"
+msgstr ""
+"`bool`, default true. If the requested count cannot be placed, the entire output "
+"fails. When disabled, a partial result with at least one placed molecule may be "
+"retained."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:60
-#: b4a386a5334e42e3afd63b4807cf3e0c
-msgid ""
-"`auto`：水 + 内置离子中心时解析为 `ion-water`；只有水时解析为 `water`；其他溶"
-"剂解析为 `general`。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:71
+#: bbc6b8dac5d04c5fb6b37cefec35594f
+msgid "中心与放置"
+msgstr "Centers and Placement"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:61
-#: f3d93d6d18d14613a0de994fc5c49ef7
-msgid "`general`：在备用质心壳层内随机放置和取向。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:73
+#: d43b622e82df4738b6e1269e381f1aea
+msgid "放置方式（sampling_mode）"
+msgstr "Placement Mode (sampling_mode)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:62
-#: 6357c07208d34a2ba676fde503deee36
-msgid "`water`：在备用质心壳层内放置水，并让 O→H 中点的方向大致背离局部中心。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:75
+#: 88e21fc71f7b4ed0b7e9d7f3e3f3f7d1
+msgid "`str`，默认 `auto`。可选 `auto`、`general`、`water`、`ion-water`、`loose`、`dense`，含义见上表。"
+msgstr ""
+"`str`, default `auto`. Available values are `auto`, `general`, `water`, `ion-water`, "
+"`loose`, and `dense`; see the table above for their meanings."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:63
-#: 69656e1b90044523a4caef2b3fc09898
-msgid ""
-"`ion-water`：内置离子的前若干个水使用元素专属 ion–O 区间并让 H 侧背离离子；达"
-"到内置配位数后回到备用质心壳层。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:77
+#: 225ccc7d9fde4ba786d321ce3ba07c68
+msgid "中心选择（center_mode）"
+msgstr "Center Selection (center_mode)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:64
-#: a3948af82b5647e4902689e98aa2e948
-msgid ""
-"`loose` / `dense`：主要改变默认碰撞半径缩放；它们不会自动改写界面中的备用壳层"
-"数值。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:79
+#: 57cb14a6ac3e4f8db3dd8d128e032783
+msgid "`str`，默认 `all`。可选全部宿主原子、按元素、按 1-based 索引、按笛卡尔 z 范围。"
+msgstr ""
+"`str`, default `all`. Select all host atoms, by element, by 1-based index, or by a "
+"Cartesian z range."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:66
-#: b2eb4d10ccf24810b384ab17c5f51f5f
-msgid "中心原子选择"
-msgstr "Center selection"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:68
-#: 63475ac606ef479ab8ec5071e46bd60b
-msgid "溶剂化中心（center_mode）"
-msgstr "center_mode"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:70
-#: 21ec3e4d80a340678e23cfc23a71fd68
-msgid ""
-"`str`，默认 `all`。可选 `all`、`elements`、`indices`、`Z 轴范围`"
-"（`z_range`）。这决定哪些原子作为局部溶剂化中心。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:72
-#: e40efad08ee84eaa96e8ad1f8ef8527c
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:81
+#: 46a1dd292977476f9b6a5f168ac21382
 msgid "中心元素（center_elements）"
 msgstr "center_elements"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:74
-#: 8e1334c9eda54bf7888b16bdfe95eb47
-msgid "`str`，默认空。`center_mode=\"elements\"` 时生效，例如 `Ca,Na,O`。"
-msgstr "`str`, empty by default; elements mode only. Example: `Ca,Na,O`."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:83
+#: 24350c1cd89144f5bd1f1b8cc663d620
+msgid "`str`，默认空。按元素选择时填写，例如 `Ca,Na`。"
+msgstr "`str`, empty by default. Used for element selection; for example, `Ca,Na`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:76
-#: 1a8036bdf4b746aab1749fe7517704bd
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:85
+#: e768fcf196af410cbd0f44e75dcfc573
 msgid "中心索引（center_indices）"
 msgstr "center_indices"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:78
-#: 14ef5e24ea1349b698cb87fc615fe17e
-msgid ""
-"`str`，默认空。`center_mode=\"indices\"` 时生效，使用 1-based 索引和范围，例"
-"如 `1,3,5-8`。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:87
+#: 0abf7f348ea64f92b3e699c80dff71db
+msgid "`str`，默认空。按索引选择时填写，例如 `1,3,5-8`。"
+msgstr "`str`, empty by default. Used for index selection; for example, `1,3,5-8`."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:89
+#: 3ed97c2f1aa64c029946585cd4918b5b
+msgid "笛卡尔 z 范围（z_range）"
+msgstr "Cartesian z Range (z_range)"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:91
+#: 8d545655cae14ce5a79f2e76cadd2039
+msgid "`tuple[float, float]`，默认 `(0.0, 0.0)`，单位 Å。按输入结构的笛卡尔 z 坐标选择中心。"
 msgstr ""
-"`str`, empty by default; indices mode only. Uses 1-based indices and ranges "
-"such as `1,3,5-8`."
+"`tuple[float, float]`, default `(0.0, 0.0)`, in Å. Selects centers by their Cartesian"
+" z coordinates in the input structure."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:80
-#: 041d8c5cc7b04c6b8f22c261f4a60650
-msgid "Z 轴范围（z_range）"
-msgstr "z_range"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:93
+#: e9c1767a91a64d89a0e09539d39db5d1
+msgid "备用中心到质心壳层（shell）"
+msgstr "Fallback Center-to-COM Shell (shell)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:82
-#: 826571bb5a184df6b8d120d67b42ad7c
-msgid ""
-"`tuple[float, float]`，默认 `(0.0, 0.0)`。`center_mode=\"z_range\"` 时按笛卡"
-"尔 z 坐标选择中心原子。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:95
+#: 8c568d5a4fd140529b2b01681ab7eb3b
+msgid "`tuple[float, float]`，默认 `(2.2, 4.5)`，单位 Å。普通放置使用中心到溶剂质心的范围；受支持的第一水合壳填满之前不使用。"
 msgstr ""
-"`tuple[float,float]`, default `(0.0,0.0)`; z-range mode only. Selects "
-"centers by Cartesian z."
+"`tuple[float, float]`, default `(2.2, 4.5)`, in Å. Ordinary placement uses this "
+"center-to-solvent-COM range. It is not used until a supported first hydration shell "
+"is full."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:84
-#: faf3392c70284c27b852357fb0ee1bc4
-msgid "几何约束"
-msgstr "Geometric constraints"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:97
+#: e3736d5ad1fb4007a0ccb69e96074bea
+msgid "碰撞检查"
+msgstr "Collision Checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:86
-#: 60d06b8473224310ae83e2f0ba4b411c
-msgid "备用中心-质心壳层（shell）"
-msgstr "shell"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:99
+#: c0acdb78f0a841aca62b7b2482f776a2
+msgid "统一最小距离（min_distance）"
+msgstr "Global Minimum Distance (min_distance)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:88
-#: f8ac4e5304154ca6bd7dac237b77e1e9
-msgid ""
-"`tuple[float, float]`，默认 `(2.2, 4.5)`，单位 Å。普通放置时是局部中心到溶剂"
-"质心的采样范围；`ion-water` 的第一配位壳不使用它，而是使用元素专属 ion–O 区"
-"间。外半径必须大于内半径。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:101
+#: d4c2272137264eadb7e62ffe84a12ed5
+msgid "`float`，默认 0，单位 Å。正数覆盖所有元素半径判据；0 使用元素半径。"
+msgstr ""
+"`float`, default 0, in Å. A positive value overrides all element-radius criteria; 0 "
+"uses element radii."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:90
-#: 15ea67d25a964c778845fe7d96f94dab
-msgid "统一最小距离覆盖值（min_distance）"
-msgstr "min_distance"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:92
-#: a2937111db674e47a1a5b8627616697a
-msgid ""
-"`float`，默认 0。大于 0 时，所有试放溶剂原子与已有原子之间都使用同一个最小距"
-"离，且会忽略 `元素半径碰撞缩放`（`collision_scale`）；等于 0 时才使用元素碰撞"
-"半径和 `元素半径碰撞缩放`（`collision_scale`）。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:94
-#: 6f122311052043b090d5847eb1ab2e4e
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:103
+#: 47fbd5922d724436822f24889c153dfc
 msgid "元素半径碰撞缩放（collision_scale）"
 msgstr "collision_scale"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:96
-#: 1bc8a85ce890473aa8c54fe67cebe28a
-msgid ""
-"`float`，默认 0。等于 0 时使用解析后放置模式的内置半径缩放；大于 0 时覆盖模式"
-"默认值。仅在 `min_distance=0` 时生效。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:98
-#: 48e38e9ecc6843ef9b1f364e5e582060
-msgid "最大尝试次数（max_attempts）"
-msgstr "max_attempts"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:100
-#: 6a97cc0b3d0746338dcabea77b2458cf
-msgid ""
-"`int`，默认 3000。每个输出结构全部溶剂分子共享的总尝试次数，不是“每个分子 "
-"3000 次”。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:102
-#: 5bb25ff90fbf42399f48a3356d12fb26
-msgid "严格数量（strict_count）"
-msgstr "strict_count"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:104
-#: e2fed334988f4b2093e4a4382eb0e207
-msgid ""
-"`bool`，默认 true。打开后，未插满 `每个输出的溶剂分子数`（`solvent_count`）就"
-"失败；关闭后允许输出至少放入 1 个分子的部分结果。若一个分子都放不进去，即使关"
-"闭严格数量也会报错，避免输出带标签但实际未溶剂化的原结构。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:106
-#: 4bc3795c5c7d40a884bb295133f6889d
-msgid "非周期输出"
-msgstr "Nonperiodic output"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:108
-#: 6be0abb26f9e4ba48854aee916e795ac
-msgid "自动设置晶胞（auto_box）"
-msgstr "auto_box"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:110
-#: e631712dc2484ef49d08376e63863b5b
-msgid ""
-"`bool`，默认 false。仅当输入没有有效 cell 时生效，打开后按输出坐标生成非周期"
-"显示盒。输入已有有效 cell（包括周期晶胞）时，卡片始终保留原 cell 和 PBC，不会"
-"因为这个选项把周期体系改成非周期体系。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:112
-#: ebfed05d4463410d91aaf8dea2d99000
-msgid "固定盒尺寸（box_size）"
-msgstr "box_size"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:114
-#: 98905b008ef0441db42955294626358a
-msgid ""
-"`float`，默认 100.0，单位 Å。输入没有有效 cell 且 `auto_box=False` 时，输出会"
-"居中放入这个固定的非周期显示盒。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:116
-#: fbb3c24fbc2f42a4808e738a8c645803
-msgid "晶胞留白（box_padding）"
-msgstr "box_padding"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:118
-#: fa2ccbb592f14d039325152ec53a5f67
-msgid "`float`，默认 8.0，单位 Å。`auto_box=True` 时在坐标包围盒外增加的边距。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:105
+#: 4fe17641409b4df3beeeb17e7a03837d
+msgid "`float`，默认 0。0 使用放置方式的默认值；仅在 `min_distance=0` 时生效。"
 msgstr ""
-"`float`, default `8.0` Å. Margin around coordinates when `auto_box=True`."
+"`float`, default 0. A value of 0 uses the placement mode's default. This parameter "
+"applies only when `min_distance=0`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:120
-#: e545c312ab2b4163bf0ea756ed4394b9
-msgid "最小晶胞尺寸（min_box）"
-msgstr "min_box"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:107
+#: 8d8ec612277c49d288662909c7f44278
+msgid "每个输出的放置尝试次数（max_attempts）"
+msgstr "Placement Attempts per Output (max_attempts)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:122
-#: f1ccb3a8e3884dd3991a6bf40d28ae41
-msgid "`float`，默认 0.0，单位 Å。`auto_box=True` 时每条盒边的最小长度。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:109
+#: a973d808cd3440b18916f9671156c6d4
+msgid "`int`，默认 3000。一个输出内所有溶剂分子共享的总尝试预算。"
 msgstr ""
-"`float`, default `0.0` Å. Minimum cell length when automatic boxing is "
-"enabled."
+"`int`, default 3000. Total attempt budget shared by all solvent molecules within one "
+"output."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:124
-#: 4d37ff35bc4b4255b3880d9c542ff7c3
-msgid "柔性溶剂"
-msgstr "Flexible solvent molecules"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:111
+#: 613f855ee5e24f36b17da334f7433f5c
+msgid "非周期显示盒"
+msgstr "Nonperiodic Display Box"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:126
-#: ebcffd0392834d6bb56efdf46e0697bd
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:113
+#: 79fb766b1e884c23bb12932b9fc09cb2
+msgid "这些参数仅在输入没有有效晶胞时生效；已有 cell 和 PBC 会原样保留。"
+msgstr ""
+"These parameters apply only when the input has no valid cell. An existing cell and "
+"PBC are preserved unchanged."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:115
+#: 0fd2e4b23d2c48deaa59787cfe0a35fe
+msgid "自动设置显示盒（auto_box）"
+msgstr "Set Display Box Automatically (auto_box)"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:117
+#: 52ddb7d3d0b04730a8eeed45f7fd091d
+msgid "`bool`，默认 false。按最终坐标包围盒设置非周期显示盒。"
+msgstr ""
+"`bool`, default false. Sets the nonperiodic display box from the final coordinate "
+"bounding box."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:119
+#: a41bc4b6c2e1424b8a6f6962da8dd59f
+msgid "固定显示盒（box_size）"
+msgstr "Fixed Display Box (box_size)"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:121
+#: 772999cb14be44d4ab698a7bd9ce007e
+msgid "`float`，默认 100.0 Å。`auto_box=false` 时使用的立方显示盒边长。"
+msgstr ""
+"`float`, default 100.0 Å. Side length of the cubic display box used when "
+"`auto_box=false`."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:123
+#: d28793593ba94fbf813a0ae4e1df6710
+msgid "自动显示盒留白（box_padding）"
+msgstr "Automatic Box Padding (box_padding)"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:125
+#: 772999cb14be44d4ab698a7bd9ce007e
+msgid "`float`，默认 8.0 Å。自动显示盒在坐标范围外增加的留白。"
+msgstr "`float`, default 8.0 Å. Padding added beyond the coordinate range by automatic boxing."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:127
+#: 992c6e058feb40d689c9ae74f8414c2b
+msgid "自动显示盒最小边长（min_box）"
+msgstr "Minimum Automatic Box Length (min_box)"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:129
+#: 85f9642370a943639dbd725949a62032
+msgid "`float`，默认 0.0 Å。自动显示盒每条边的下限。"
+msgstr "`float`, default 0.0 Å. Lower bound for each side of an automatically generated box."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:131
+#: ce568e407d004e0dab2402404aeb0c78
+msgid "溶剂模板"
+msgstr "Solvent Template"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:133
+#: b7f87d29c7c54799a2f92186d3c436ae
+msgid "溶剂 XYZ（solvent_xyz）"
+msgstr "solvent_xyz"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:135
+#: dcea0101d86b4aacafbc9e2c2964e835
+msgid "`str`，默认是一分子水的 XYZ 文本。只接受一个非空分子，不是文件路径。"
+msgstr ""
+"`str`, defaulting to the XYZ text for one water molecule. It accepts one nonempty "
+"molecule, not a file path."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:137
+#: 428b5d632b1c48bbb082ad4c1176fb8c
 msgid "启用柔性溶剂（flex_solvent）"
 msgstr "flex_solvent"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:128
-#: f5dc446a3d9f42a4810bf78712efb54a
-msgid ""
-"`bool`，默认 false。打开后复用“有机构象采样”的几何启发式拓扑，先生成溶剂构象"
-"池，再用于插入。刚性水分子没有可旋转单键，因此打开后主要只会得到高斯坐标噪"
-"声；普通水无需打开。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:139
+#: 705d21b320ce44a39084ddf96ae71ec0
+msgid "`bool`，默认 false。先生成溶剂构象池，再从池中选择模板放置。刚性水通常无需开启。"
+msgstr ""
+"`bool`, default false. Generates a solvent conformer pool first, then selects "
+"templates from the pool for placement. This is usually unnecessary for rigid water."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:130
-#: 9605d21e39c443608363b3cc27009946
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:141
+#: 132098559fc34b04ba7af35e1eaeb4cb
 msgid "柔性构象池（flex_pool）"
 msgstr "flex_pool"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:132
-#: fbfc18b7918f43eda26fdd7c0d8b2304
-msgid "`int`，默认 32。柔性溶剂构象池大小。"
-msgstr ""
-"`int`, default `32`. Size of the conformer pool for a flexible solvent."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:143
+#: 007cc426e6f84173973d0f25e2372af0
+msgid "`int`，默认 32。预生成的溶剂构象数。"
+msgstr "`int`, default 32. Number of solvent conformers generated in advance."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:134
-#: 8a48215120f741cf9c0c9d002ac46843
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:145
+#: ba5446d95b1c4579984d0afd34fc0b5f
 msgid "柔性扭转角范围（flex_torsion_range）"
 msgstr "flex_torsion_range"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:136
-#: f2d4caa262174dd09d65e6524c045f4b
-msgid ""
-"`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时附"
-"加的扭转角增量范围。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:147
+#: d4274b7d70394694b587514ad68ce998
+msgid "`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。"
+msgstr "`tuple[float, float]`, default `(-180.0, 180.0)`, in degrees."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:138
-#: 6cf300c49ddb41009d91b4d4552796c4
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:149
+#: 1e79b50f51a64c8bad80f0c25d0088df
 msgid "柔性采样最大扭转键数（flex_max_torsions）"
 msgstr "flex_max_torsions"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:140
-#: c1d74f20a5db46af8f486101e611997b
-msgid "`int`，默认 5。每个柔性构象最多扰动多少个可旋转键。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:151
+#: 439d2dc706364310b02140fba6cce78a
+msgid "`int`，默认 5。每个溶剂构象最多扰动的可旋转键数。"
 msgstr ""
-"`int`, default `5`. Maximum number of rotatable bonds perturbed in each "
-"flexible conformer."
+"`int`, default 5. Maximum number of rotatable bonds perturbed in each solvent "
+"conformer."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:142
-#: 7bd9b0cb72344ef7b2c383d40f69f2ca
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:153
+#: 38fe32df28c646cf98a3aa855dd01588
 msgid "柔性采样高斯宽度（flex_gaussian_sigma）"
 msgstr "flex_gaussian_sigma"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:144
-#: b088781087104ac6bdd2f56ed35f4e50
-msgid "`float`，默认 0.03，单位 Å。柔性构象生成时叠加的坐标噪声。"
-msgstr ""
-"`float`, default `0.03` Å. Coordinate noise added while generating flexible "
-"conformers."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:155
+#: 85f9642370a943639dbd725949a62032
+msgid "`float`，默认 0.03 Å。柔性构象生成时叠加的坐标噪声。"
+msgstr "`float`, default 0.03 Å. Coordinate noise added while generating flexible conformers."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:146
-#: abd6a50f73074d69b8d11877331635ca
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:157
+#: e3df5a55c5dc4c9eba4c5fc00b60df8b
 msgid "随机性"
 msgstr "Randomness"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:148
-#: 490d81fbe5144fcf98b4be854b0669c3
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:159
+#: 15fe0e77505b48099b30145472e9edc5
 msgid "使用随机种子（use_seed）"
-msgstr "use_seed"
+msgstr "Use Random Seed (use_seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:150
-#: 2ce2ea11b7eb439cb6d61d862abfb3d6
-msgid "`bool`，默认 false。打开后，同一输入结构、参数和 seed 会生成相同输出。"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:161
+#: 52ddb7d3d0b04730a8eeed45f7fd091d
+msgid "`bool`，默认 false。打开后，相同输入、参数、顺序和种子产生相同结果。"
 msgstr ""
-"`bool`, default `false`. When enabled, identical input, parameters, and seed "
-"produce identical output."
+"`bool`, default false. When enabled, identical input, parameters, order, and seed "
+"produce identical results."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:152
-#: 9a386d6d72504212b2985032359a660a
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:163
+#: 8c94b131a3b249099157657316e16ed7
 msgid "随机种子（seed）"
-msgstr "seed"
+msgstr "Random Seed (seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:154
-#: b6fa5baae4d34105846d08bc55569d2a
-msgid "`int`，默认 0。`use_seed=True` 时生效。"
-msgstr "`int`, default `0`. Used when `use_seed=True`."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:165
+#: 9cc1c510c5964907be401c501ff86604
+msgid "`int`，默认 0。仅在使用随机种子时生效。"
+msgstr "`int`, default 0. Used only when random seeding is enabled."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:156
-#: b1329cd584214ed08fa4923de92c6a02
-msgid "推荐预设"
-msgstr "Recommended presets"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:167
+#: 1eff6ad3c214492e8baa8bbfd60ca83d
+msgid "输出与检查"
+msgstr "Output and Checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:158
-#: 3d7bcc9574244a6db0a4a097c3ce2d7f
-msgid "Ca 第一水合壳（6 个水，固定 seed）"
-msgstr "First Ca hydration shell (six waters, fixed seed)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:160
-#: 548b4a628cce480dabad4e2d0989edc1
-msgid ""
-"{\n"
-"  \"class\": \"LocalSolvationCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"structures\": 1,\n"
-"    \"solvent_count\": 6,\n"
-"    \"sampling_mode\": \"auto\",\n"
-"    \"center_mode\": \"elements\",\n"
-"    \"center_elements\": \"Ca\",\n"
-"    \"shell\": [2.6, 3.4],\n"
-"    \"min_distance\": 0.8,\n"
-"    \"strict_count\": true,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 42\n"
-"  }\n"
-"}\n"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:169
+#: ca71d781ad464c2894f3c70d7f89a1bc
+msgid "输出保留宿主结构的 cell、PBC、info 和 arrays，并追加标签："
 msgstr ""
+"The output preserves the host structure's cell, PBC, `info`, and `arrays`, and "
+"appends the label:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:179
-#: 0803c032131d461c858090bdb799255b
-msgid "表面含水局部环境（按 z 选中心，允许部分输出）"
-msgstr ""
-"Local aqueous surface environment (z-selected centers, partial output "
-"allowed)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:181
-#: f6243495ee01467184118e58e9762695
-msgid ""
-"{\n"
-"  \"class\": \"LocalSolvationCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"structures\": 3,\n"
-"    \"solvent_count\": 12,\n"
-"    \"sampling_mode\": \"water\",\n"
-"    \"center_mode\": \"z_range\",\n"
-"    \"z_range\": [8.0, 14.0],\n"
-"    \"shell\": [2.4, 5.0],\n"
-"    \"min_distance\": 0.9,\n"
-"    \"strict_count\": false,\n"
-"    \"auto_box\": false,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 7\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:201
-#: 87a964b28d894a11ae4f1a3c0e539810
-msgid "推荐组合"
-msgstr "Recommended combinations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:203
-#: d174bb2930624833abc4e4293acb4fab
-msgid ""
-"`Local Solvation → Geometry Filter`：先生成局部溶剂环境，再剔除短接触或异常体"
-"积结构。"
-msgstr ""
-"`Local Solvation` -> `Geometry Filter`: reject short contacts or abnormal "
-"cells after insertion."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:204
-#: 5ff5a648a64142ba856d581f7765b1a9
-msgid "`Local Solvation → FPS Filter`：局部溶剂化批量生成后抽代表结构送 DFT。"
-msgstr ""
-"`Local Solvation` -> `FPS Filter`: select representative solvated candidates "
-"for DFT."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:206
-#: 17252087a5884acbaefb13aa2acec7ed
-msgid "常见问题"
-msgstr "Common questions"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:208
-#: dd57cdf6db43439fad31d9882f4cf514
-msgid ""
-"没有选到中心原子：检查 `溶剂化中心`（`center_mode`）是否和 `中心元素`"
-"（`center_elements`）、`中心索引`（`center_indices`）或 `Z 轴范围`"
-"（`z_range`）匹配。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:209
-#: f653e00ac54342caa4983dff61b394f2
-msgid ""
-"一直插不满目标数量：降低 `每个输出的溶剂分子数`（`solvent_count`），放宽备用"
-"壳层，减小统一最小距离或碰撞缩放；如果目标是周期整盒溶剂，优先改用 `Solvent "
-"Box Fill`。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:210
-#: 8ef6c7b5aae64571aed54b46b850e9b4
-msgid ""
-"调了备用壳层但 Ca–O 距离没变化：`ion-water` 第一配位壳使用内置 ion–O 区间；卡"
-"片预览会列出实际范围。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:211
-#: df2edfd9bb0647c3947cb2802a3d7358
-msgid ""
-"输出有明显短接触：增大 `统一最小距离覆盖值`（`min_distance`）或 `元素半径碰撞"
-"缩放`（`collision_scale`），再接 `Geometry Filter` 和 DFT/MD 预松弛。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:213
-#: 1fd78a7aa8d240e9b59584c854edaefd
-msgid "输出标签"
-msgstr "Output labels"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:215
-#: 922797f88eb74a1a979fbfa624ca6290
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:171
+#: 85519a5867e748608c2a8d17b34a8013
+#, python-brace-format
 msgid "`SolvLocal(mode={mode},n={placed},sel={center_count})`"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:217
-#: e7afcf1a58a04e09ac9e51c98539a4dc
-msgid "可复现性"
-msgstr "Reproducibility"
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:173
+#: 15e0270e225d44bdbd9b0dca2bd623f3
+msgid "建议重点检查：实际放入数量、中心到 O/质心距离、非键短接触，以及预松弛后溶剂壳是否仍稳定。"
+msgstr ""
+"Inspect the number actually placed, center-to-O or center-to-COM distances, short "
+"nonbonded contacts, and whether the solvent shell remains stable after pre-"
+"relaxation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/local-solvation-card.md:219
-#: c0d8ffef562e4b2f874a334eb6cff692
-msgid ""
-"打开 `使用随机种子`（`use_seed`）后，相同输入结构、结构顺序、参数和 `随机种子"
-"`（`seed`）会生成相同插入结果。若输入结构顺序、中心原子集合或溶剂分子文本发生"
-"变化，输出也会随之变化。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:175
+#: 052953d0e81946788e1ceecdbbd57a91
+msgid "常见问题"
+msgstr "Troubleshooting"
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:177
+#: 8c0818fa7b8e4a4ebdf84f38c2d91d53
+msgid "**为什么调节备用壳层后 Ca–O 没有变化？** 第一水合壳使用离子专属的 ion–O 范围；备用壳层只用于超出第一壳容量的分子。"
+msgstr ""
+"**Why does changing the fallback shell not affect Ca–O distances?** The first "
+"hydration shell uses an ion-specific ion–O range. The fallback shell is used only for"
+" molecules beyond the first-shell capacity."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:178
+#: a530ddd2eb0e445d932253d13c5a7fca
+msgid "**为什么多个中心没有各自得到设定数量？** `solvent_count` 是所有中心共享的总数。需要更多覆盖时提高总数，并检查实际中心分配。"
+msgstr ""
+"**Why does each of several centers not receive the specified count?** `solvent_count`"
+" is the total shared by all centers. Increase the total for broader coverage and "
+"inspect the actual distribution among centers."
+
+#: ../../source/module/make-dataset-cards/cards/local-solvation-card.md:179
+#: 02bbb89474494ab8b4771c4652d16be4
+msgid "**为什么一直无法放满？** 减少溶剂总数、扩大壳层或可用空间，并检查统一最小距离是否过大。"
+msgstr ""
+"**Why can the requested count never be reached?** Reduce the solvent count, enlarge "
+"the shell or available space, and check whether the global minimum distance is too "
+"large."
 
 #~ msgid ""
-#~ "`Local Solvation` 在选中原子周围插入一批溶剂分子，用来补充离子水合壳、局部"
-#~ "极性环境、溶质附近初始溶剂排布等候选构型。它只生成几何初态，不做力场或 "
-#~ "DFT 优化。"
+#~ "`Local Solvation` "
+#~ "在选中原子周围插入一批溶剂分子，用来补充离子水合壳、局部极性环境、溶质附近初始溶剂排布等候选构型。它只生成几何初态，不做力场或 DFT "
+#~ "优化。"
 #~ msgstr ""
-#~ "`Local Solvation` inserts solvent molecules around selected atoms to "
-#~ "generate candidate ion hydration shells, local polar environments, or "
-#~ "initial solvent arrangements near a solute. It creates geometry only and "
-#~ "performs neither force-field nor DFT optimization."
+#~ "`Local Solvation` inserts solvent molecules around"
+#~ " selected atoms to generate candidate ion "
+#~ "hydration shells, local polar environments, or "
+#~ "initial solvent arrangements near a solute. It"
+#~ " creates geometry only and performs neither "
+#~ "force-field nor DFT optimization."
 
-#~ msgid ""
-#~ "这张卡保留输入结构，并追加溶剂原子；输出会写入 `SolvLocal(...)` 标签，便于"
-#~ "后续在 `NEP Dataset Display` 中筛选。"
+#~ msgid "这张卡保留输入结构，并追加溶剂原子；输出会写入 `SolvLocal(...)` 标签，便于后续在 `NEP Dataset Display` 中筛选。"
 #~ msgstr ""
-#~ "The input structure is retained and solvent atoms are appended. Output "
-#~ "receives a `SolvLocal(...)` label for later filtering in `NEP Dataset "
-#~ "Display`."
+#~ "The input structure is retained and solvent"
+#~ " atoms are appended. Output receives a "
+#~ "`SolvLocal(...)` label for later filtering in "
+#~ "`NEP Dataset Display`."
 
 #~ msgid ""
-#~ "参数设置：`center_mode=\"elements\"`，`center_elements=\"Ca\"`，"
-#~ "`sampling_mode=\"auto\"`，`solvent_count=6`，`shell=(2.6, 3.4)`，"
-#~ "`min_distance=0.8`，打开 `use_seed`。"
+#~ "参数设置：`center_mode=\"elements\"`，`center_elements=\"Ca\"`，`sampling_mode=\"auto\"`，`solvent_count=6`，`shell=(2.6,"
+#~ " 3.4)`，`min_distance=0.8`，打开 `use_seed`。"
 #~ msgstr ""
 #~ "Parameters: `center_mode=\"elements\"`, `center_elements=\"Ca\"`, "
 #~ "`sampling_mode=\"auto\"`, `solvent_count=6`, `shell=(2.6,3.4)`, "
 #~ "`min_distance=0.8`, and `use_seed` enabled."
 
-#~ msgid ""
-#~ "`int`，默认 30。每个输出结构插入多少个溶剂分子。离子第一壳通常从 4-8 开"
-#~ "始；大分子局部溶剂环境再按中心原子数量扩大。"
+#~ msgid "`int`，默认 30。每个输出结构插入多少个溶剂分子。离子第一壳通常从 4-8 开始；大分子局部溶剂环境再按中心原子数量扩大。"
 #~ msgstr ""
-#~ "`int`, default `30`. Solvent molecules inserted per output. Start around "
-#~ "4-8 for a first ion shell and scale deliberately for larger solutes or "
-#~ "multiple centers."
+#~ "`int`, default `30`. Solvent molecules inserted "
+#~ "per output. Start around 4-8 for a first"
+#~ " ion shell and scale deliberately for "
+#~ "larger solutes or multiple centers."
 
 #~ msgid ""
-#~ "`str`，默认 `auto`。可选 `auto`、`general`、`water`、`ion-water`、"
-#~ "`loose`、`dense`。`auto` 会在水分子和离子中心同时出现时使用 `ion-water`，"
-#~ "只有水分子时使用 `water`，否则使用 `general`。"
+#~ "`str`，默认 `auto`。可选 `auto`、`general`、`water`、`ion-"
+#~ "water`、`loose`、`dense`。`auto` 会在水分子和离子中心同时出现时使用 `ion-"
+#~ "water`，只有水分子时使用 `water`，否则使用 `general`。"
 #~ msgstr ""
-#~ "`str`, default `auto`. Options are `auto`, `general`, `water`, `ion-"
-#~ "water`, `loose`, and `dense`. Auto selects `ion-water` for water around "
-#~ "ionic centers, `water` for water otherwise, and `general` for other "
-#~ "solvents."
+#~ "`str`, default `auto`. Options are `auto`, "
+#~ "`general`, `water`, `ion-water`, `loose`, and "
+#~ "`dense`. Auto selects `ion-water` for water"
+#~ " around ionic centers, `water` for water "
+#~ "otherwise, and `general` for other solvents."
 
-#~ msgid ""
-#~ "`str`，默认 `all`。可选 `all`、`elements`、`indices`、`z_range`。这决定哪"
-#~ "些原子作为局部溶剂化中心。"
+#~ msgid "`str`，默认 `all`。可选 `all`、`elements`、`indices`、`z_range`。这决定哪些原子作为局部溶剂化中心。"
 #~ msgstr ""
-#~ "`str`, default `all`. One of `all`, `elements`, `indices`, or `z_range`; "
-#~ "selects solvation centers."
+#~ "`str`, default `all`. One of `all`, "
+#~ "`elements`, `indices`, or `z_range`; selects "
+#~ "solvation centers."
 
-#~ msgid ""
-#~ "`tuple[float, float]`，默认 `(2.2, 4.5)`，单位 Å。局部溶剂中心到溶剂分子参"
-#~ "考位置的采样壳层。外半径必须大于内半径。"
+#~ msgid "`tuple[float, float]`，默认 `(2.2, 4.5)`，单位 Å。局部溶剂中心到溶剂分子参考位置的采样壳层。外半径必须大于内半径。"
 #~ msgstr ""
-#~ "`tuple[float,float]`, default `(2.2,4.5)` Å. Radial shell for the solvent "
-#~ "reference position around a center. Outer radius must exceed inner radius."
+#~ "`tuple[float,float]`, default `(2.2,4.5)` Å. Radial "
+#~ "shell for the solvent reference position "
+#~ "around a center. Outer radius must exceed "
+#~ "inner radius."
 
-#~ msgid ""
-#~ "`float`，默认 0。大于 0 时作为全局原子-原子最小距离；等于 0 时使用元素碰撞"
-#~ "半径和 `collision_scale`。"
+#~ msgid "`float`，默认 0。大于 0 时作为全局原子-原子最小距离；等于 0 时使用元素碰撞半径和 `collision_scale`。"
 #~ msgstr ""
-#~ "`float`, default `0`. A positive value is the global minimum atom-atom "
-#~ "distance. At `0`, element-specific collision radii scaled by "
-#~ "`collision_scale` are used."
+#~ "`float`, default `0`. A positive value is "
+#~ "the global minimum atom-atom distance. At "
+#~ "`0`, element-specific collision radii scaled "
+#~ "by `collision_scale` are used."
 
-#~ msgid ""
-#~ "`float`，默认 0。等于 0 时使用 `sampling_mode` 的内置半径缩放；大于 0 时覆"
-#~ "盖模式默认值。它控制插入溶剂与已有原子之间的非键接触下限。"
+#~ msgid "`float`，默认 0。等于 0 时使用 `sampling_mode` 的内置半径缩放；大于 0 时覆盖模式默认值。它控制插入溶剂与已有原子之间的非键接触下限。"
 #~ msgstr ""
-#~ "`float`, default `0`. Zero uses the sampling-mode collision scale; a "
-#~ "positive value overrides it as a global minimum nonbonded contact "
-#~ "distance."
+#~ "`float`, default `0`. Zero uses the "
+#~ "sampling-mode collision scale; a positive value"
+#~ " overrides it as a global minimum nonbonded"
+#~ " contact distance."
 
-#~ msgid ""
-#~ "`int`，默认 3000。每个输出结构的最大插入尝试次数。达到上限仍插不满时，"
-#~ "`strict_count=True` 会报错。"
+#~ msgid "`int`，默认 3000。每个输出结构的最大插入尝试次数。达到上限仍插不满时，`strict_count=True` 会报错。"
 #~ msgstr ""
-#~ "`int`, default `3000`. Maximum placement attempts per output. If the "
-#~ "target is not reached, `strict_count=True` raises an error."
+#~ "`int`, default `3000`. Maximum placement attempts"
+#~ " per output. If the target is not "
+#~ "reached, `strict_count=True` raises an error."
 
-#~ msgid ""
-#~ "`bool`，默认 true。打开后，未插满 `solvent_count` 就失败；关闭后允许输出部"
-#~ "分插入结果。"
+#~ msgid "`bool`，默认 true。打开后，未插满 `solvent_count` 就失败；关闭后允许输出部分插入结果。"
 #~ msgstr ""
-#~ "`bool`, default `true`. Fail unless all requested molecules are inserted; "
-#~ "disabled permits partial output."
+#~ "`bool`, default `true`. Fail unless all "
+#~ "requested molecules are inserted; disabled permits"
+#~ " partial output."
 
 #~ msgid "`bool`，默认 false。打开后按输出坐标自动生成非周期盒子。"
-#~ msgstr ""
-#~ "`bool`, default `false`. Build a nonperiodic cell around output "
-#~ "coordinates."
+#~ msgstr "`bool`, default `false`. Build a nonperiodic cell around output coordinates."
 
 #~ msgid ""
-#~ "`float`，默认 100.0，单位 Å。输入没有有效 cell 且 `auto_box=False` 时，输"
-#~ "出会居中放入这个固定盒子；这对应原脚本的 `-box` 默认行为。"
+#~ "`float`，默认 100.0，单位 Å。输入没有有效 cell 且 `auto_box=False`"
+#~ " 时，输出会居中放入这个固定盒子；这对应原脚本的 `-box` 默认行为。"
 #~ msgstr ""
-#~ "`float`, default `100.0` Å. Fixed box used when the input lacks a valid "
-#~ "cell and `auto_box=False`."
+#~ "`float`, default `100.0` Å. Fixed box used "
+#~ "when the input lacks a valid cell and"
+#~ " `auto_box=False`."
+
+#~ msgid "`bool`，默认 false。打开后复用仓库已有 torsion-guard core 生成溶剂构象池，再用于插入。"
+#~ msgstr ""
+#~ "`bool`, default `false`. Use the existing "
+#~ "torsion-guard core to build a solvent "
+#~ "conformer pool before insertion."
+
+#~ msgid "`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时的扭转角范围。"
+#~ msgstr ""
+#~ "`tuple[float, float]`, default `(-180.0, 180.0)` "
+#~ "degrees. Torsion-angle range used to generate"
+#~ " flexible conformers."
+
+#~ msgid "没有选到中心原子：检查 `center_mode` 是否和 `center_elements`、`center_indices` 或 `z_range` 匹配。"
+#~ msgstr ""
+#~ "No centers selected: check that mode and "
+#~ "its element, index, or z-range parameter match"
+#~ " the input."
 
 #~ msgid ""
-#~ "`bool`，默认 false。打开后复用仓库已有 torsion-guard core 生成溶剂构象池，"
-#~ "再用于插入。"
+#~ "一直插不满目标数量：降低 `solvent_count`，放宽 `shell`，减小 `min_distance` "
+#~ "或 `collision_scale`；如果目标是周期整盒溶剂，优先改用 `Solvent Box Fill`。"
 #~ msgstr ""
-#~ "`bool`, default `false`. Use the existing torsion-guard core to build a "
-#~ "solvent conformer pool before insertion."
+#~ "Cannot reach the target count: reduce count,"
+#~ " widen the shell, or revise collision "
+#~ "limits. For a full periodic solvent box, "
+#~ "use `Solvent Box Fill` instead."
+
+#~ msgid "输出有明显短接触：增大 `min_distance` 或 `collision_scale`，再接 `Geometry Filter` 和 DFT/MD 预松弛。"
+#~ msgstr ""
+#~ "Obvious short contacts: increase collision "
+#~ "separation, apply `Geometry Filter`, and pre-"
+#~ "relax with DFT or MD."
 
 #~ msgid ""
-#~ "`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时"
-#~ "的扭转角范围。"
+#~ "打开 `use_seed` 后，相同输入结构、结构顺序、参数和 `seed` "
+#~ "会生成相同插入结果。若输入结构顺序、中心原子集合或溶剂分子文本发生变化，输出也会随之变化。"
 #~ msgstr ""
-#~ "`tuple[float, float]`, default `(-180.0, 180.0)` degrees. Torsion-angle "
-#~ "range used to generate flexible conformers."
+#~ "With `use_seed`, identical structures, order, "
+#~ "parameters, centers, solvent text, and seed "
+#~ "reproduce insertion. Changing any of those can"
+#~ " change output."
+
+#~ msgid "局部溶剂壳（Local Solvation）"
+#~ msgstr "Local Solvation"
 
 #~ msgid ""
-#~ "没有选到中心原子：检查 `center_mode` 是否和 `center_elements`、"
-#~ "`center_indices` 或 `z_range` 匹配。"
-#~ msgstr ""
-#~ "No centers selected: check that mode and its element, index, or z-range "
-#~ "parameter match the input."
+#~ "`Local Solvation` "
+#~ "在选中原子周围插入一批溶剂分子，用来补充离子水合壳、局部极性环境、溶质附近初始溶剂排布等候选构型。它只生成几何初态，不做力场或 DFT "
+#~ "优化，也不保证得到平衡溶剂化数或平衡取向。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
-#~ "一直插不满目标数量：降低 `solvent_count`，放宽 `shell`，减小 "
-#~ "`min_distance` 或 `collision_scale`；如果目标是周期整盒溶剂，优先改用 "
-#~ "`Solvent Box Fill`。"
-#~ msgstr ""
-#~ "Cannot reach the target count: reduce count, widen the shell, or revise "
-#~ "collision limits. For a full periodic solvent box, use `Solvent Box Fill` "
-#~ "instead."
+#~ "这张卡保留输入结构，并追加溶剂原子；碰撞检查只负责排除明显短接触。`Auto` "
+#~ "会根据溶剂是否为一水分子以及中心元素是否包含内置离子来解析实际放置模式。卡片首帧预览会显示中心数、溶剂分子式、解析后的模式和真正采用的碰撞规则。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
-#~ "输出有明显短接触：增大 `min_distance` 或 `collision_scale`，再接 "
-#~ "`Geometry Filter` 和 DFT/MD 预松弛。"
-#~ msgstr ""
-#~ "Obvious short contacts: increase collision separation, apply `Geometry "
-#~ "Filter`, and pre-relax with DFT or MD."
+#~ "程序先按中心选择规则得到中心原子集合 $\\mathcal C$，再在球壳 $r_{\\min}\\le r\\le"
+#~ " r_{\\max}$ 中抽样溶剂质心。若按体积均匀采样，半径可写为"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
-#~ "打开 `use_seed` 后，相同输入结构、结构顺序、参数和 `seed` 会生成相同插入结"
-#~ "果。若输入结构顺序、中心原子集合或溶剂分子文本发生变化，输出也会随之变化。"
+#~ "每个候选分子还会随机取向，并对宿主、已放置溶剂及周期镜像执行碰撞检查。`自动/水/疏松/ "
+#~ "致密`模式选择不同的预设碰撞尺度和采样策略；用户显式填写碰撞尺度时覆盖预设。柔性构象 "
+#~ "选项会先生成有限构象池再参与放置，不是在放置过程中做分子动力学。达到尝试上限仍无合法 位置时会失败，不会把重叠结构当作成功结果。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "场景：模型没有见过离子第一水合壳"
+#~ msgstr "Scenario: The first hydration shell of an ion is missing"
+
+#~ msgid ""
+#~ "你训练了含 Ca 的体系，但训练集里 Ca 周围几乎都是干结构。模型在含水环境里预测 Ca-O "
+#~ "局部相互作用时异常。先用 `Local Solvation` 选中 Ca 原子，插入 4-8"
+#~ " 个水分子，生成候选水合壳，再经过几何检查和 DFT 松弛。"
 #~ msgstr ""
-#~ "With `use_seed`, identical structures, order, parameters, centers, "
-#~ "solvent text, and seed reproduce insertion. Changing any of those can "
-#~ "change output."
+#~ "A Ca-containing training set is almost "
+#~ "entirely dry and gives abnormal Ca-O "
+#~ "interactions in water. Select Ca centers and"
+#~ " insert 4-8 water molecules to propose "
+#~ "hydration shells, then apply geometry checks "
+#~ "and DFT relaxation before using them as "
+#~ "labels."
+
+#~ msgid "参数设置：中心选择“按元素”并填 `Ca`，放置模式选“自动识别溶剂 / 离子”，每个输出放 6 个水分子，统一最小距离可先设为 `0.8 Å`，打开固定种子。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "在 `ion-water` 模式下，Ca 第一配位壳的 O 原子距离来自内置 "
+#~ "`2.30–2.60 Å` 区间；界面上的“备用质心壳层”只在该离子的内置配位数填满之后使用。不要把备用壳层误认为第一壳 "
+#~ "Ca–O 距离。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "检查输出时重点看 Ca-O 距离、短 H-H/O-H 非键接触、以及 DFT 松弛后是否仍保持合理水合结构。"
+#~ msgstr ""
+#~ "Inspect Ca-O distances, short nonbonded H-H/O-H "
+#~ "contacts, and whether the shell remains "
+#~ "physically meaningful after DFT relaxation."
+
+#~ msgid "溶剂输入"
+#~ msgstr "Solvent input"
+
+#~ msgid "`str`，默认是一个三原子水分子 XYZ。这里保存的是溶剂分子文本，而不是文件路径，因此 card JSON 可以脱离原始文件复现。"
+#~ msgstr ""
+#~ "`str`, default a three-atom water XYZ "
+#~ "block. The parameter stores molecule text "
+#~ "rather than a path, allowing card JSON "
+#~ "to reproduce the input without the original"
+#~ " file."
+
+#~ msgid "`int`，默认 6。每个输出结构插入多少个溶剂分子。离子第一壳通常从 4–8 开始；大分子局部溶剂环境再按中心原子数量扩大。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`str`，默认 `auto`。可选项："
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`auto`：水 + 内置离子中心时解析为 `ion-water`；只有水时解析为 `water`；其他溶剂解析为 `general`。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`ion-water`：内置离子的前若干个水使用元素专属 ion–O 区间并让 H 侧背离离子；达到内置配位数后回到备用质心壳层。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`loose` / `dense`：主要改变默认碰撞半径缩放；它们不会自动改写界面中的备用壳层数值。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "中心原子选择"
+#~ msgstr "Center selection"
+
+#~ msgid "`str`，默认 `all`。可选 `all`、`elements`、`indices`、`Z 轴范围`（`z_range`）。这决定哪些原子作为局部溶剂化中心。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`str`，默认空。`center_mode=\"elements\"` 时生效，例如 `Ca,Na,O`。"
+#~ msgstr "`str`, empty by default; elements mode only. Example: `Ca,Na,O`."
+
+#~ msgid "`str`，默认空。`center_mode=\"indices\"` 时生效，使用 1-based 索引和范围，例如 `1,3,5-8`。"
+#~ msgstr ""
+#~ "`str`, empty by default; indices mode only."
+#~ " Uses 1-based indices and ranges such as"
+#~ " `1,3,5-8`."
+
+#~ msgid "几何约束"
+#~ msgstr "Geometric constraints"
+
+#~ msgid ""
+#~ "`float`，默认 0。大于 0 时，所有试放溶剂原子与已有原子之间都使用同一个最小距离，且会忽略 "
+#~ "`元素半径碰撞缩放`（`collision_scale`）；等于 0 时才使用元素碰撞半径和 "
+#~ "`元素半径碰撞缩放`（`collision_scale`）。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "`bool`，默认 true。打开后，未插满 `每个输出的溶剂分子数`（`solvent_count`）就失败；关闭后允许输出至少放入"
+#~ " 1 个分子的部分结果。若一个分子都放不进去，即使关闭严格数量也会报错，避免输出带标签但实际未溶剂化的原结构。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "非周期输出"
+#~ msgstr "Nonperiodic output"
+
+#~ msgid ""
+#~ "`bool`，默认 false。仅当输入没有有效 cell 时生效，打开后按输出坐标生成非周期显示盒。输入已有有效 "
+#~ "cell（包括周期晶胞）时，卡片始终保留原 cell 和 PBC，不会因为这个选项把周期体系改成非周期体系。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`float`，默认 100.0，单位 Å。输入没有有效 cell 且 `auto_box=False` 时，输出会居中放入这个固定的非周期显示盒。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "柔性溶剂"
+#~ msgstr "Flexible solvent molecules"
+
+#~ msgid ""
+#~ "`bool`，默认 "
+#~ "false。打开后复用“有机构象采样”的几何启发式拓扑，先生成溶剂构象池，再用于插入。刚性水分子没有可旋转单键，因此打开后主要只会得到高斯坐标噪声；普通水无需打开。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`int`，默认 0。`use_seed=True` 时生效。"
+#~ msgstr "`int`, default `0`. Used when `use_seed=True`."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "Ca 第一水合壳（6 个水，固定 seed）"
+#~ msgstr "First Ca hydration shell (six waters, fixed seed)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"LocalSolvationCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"structures\": 1,\n"
+#~ "    \"solvent_count\": 6,\n"
+#~ "    \"sampling_mode\": \"auto\",\n"
+#~ "    \"center_mode\": \"elements\",\n"
+#~ "    \"center_elements\": \"Ca\",\n"
+#~ "    \"shell\": [2.6, 3.4],\n"
+#~ "    \"min_distance\": 0.8,\n"
+#~ "    \"strict_count\": true,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 42\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "表面含水局部环境（按 z 选中心，允许部分输出）"
+#~ msgstr "Local aqueous surface environment (z-selected centers, partial output allowed)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"LocalSolvationCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"structures\": 3,\n"
+#~ "    \"solvent_count\": 12,\n"
+#~ "    \"sampling_mode\": \"water\",\n"
+#~ "    \"center_mode\": \"z_range\",\n"
+#~ "    \"z_range\": [8.0, 14.0],\n"
+#~ "    \"shell\": [2.4, 5.0],\n"
+#~ "    \"min_distance\": 0.9,\n"
+#~ "    \"strict_count\": false,\n"
+#~ "    \"auto_box\": false,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 7\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "推荐组合"
+#~ msgstr "Recommended combinations"
+
+#~ msgid "`Local Solvation → Geometry Filter`：先生成局部溶剂环境，再剔除短接触或异常体积结构。"
+#~ msgstr ""
+#~ "`Local Solvation` -> `Geometry Filter`: reject "
+#~ "short contacts or abnormal cells after "
+#~ "insertion."
+
+#~ msgid "`Local Solvation → FPS Filter`：局部溶剂化批量生成后抽代表结构送 DFT。"
+#~ msgstr ""
+#~ "`Local Solvation` -> `FPS Filter`: select "
+#~ "representative solvated candidates for DFT."
+
+#~ msgid ""
+#~ "没有选到中心原子：检查 `溶剂化中心`（`center_mode`）是否和 "
+#~ "`中心元素`（`center_elements`）、`中心索引`（`center_indices`）或 `Z "
+#~ "轴范围`（`z_range`）匹配。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "一直插不满目标数量：降低 "
+#~ "`每个输出的溶剂分子数`（`solvent_count`），放宽备用壳层，减小统一最小距离或碰撞缩放；如果目标是周期整盒溶剂，优先改用 `Solvent"
+#~ " Box Fill`。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "调了备用壳层但 Ca–O 距离没变化：`ion-water` 第一配位壳使用内置 ion–O 区间；卡片预览会列出实际范围。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "输出有明显短接触：增大 `统一最小距离覆盖值`（`min_distance`）或 "
+#~ "`元素半径碰撞缩放`（`collision_scale`），再接 `Geometry Filter` 和 "
+#~ "DFT/MD 预松弛。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid ""
+#~ "打开 `使用随机种子`（`use_seed`）后，相同输入结构、结构顺序、参数和 "
+#~ "`随机种子`（`seed`）会生成相同插入结果。若输入结构顺序、中心原子集合或溶剂分子文本发生变化，输出也会随之变化。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."

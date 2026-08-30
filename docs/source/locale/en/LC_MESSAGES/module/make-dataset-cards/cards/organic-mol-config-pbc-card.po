@@ -8,988 +8,1320 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-30 16:56+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:3
-#: 9feb5bf1288644e183c323dfdfd2d786
-msgid "有机构象采样（Organic Mol Config）"
-msgstr "Organic Molecular Conformation Sampling (Organic Mol Config)"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:3
+#: c3934257644e463bb0703307aa35c4d8
+msgid "分子构象（Molecular Conformers）"
+msgstr "Molecular Conformers"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:5
-#: d876f6befa684b13b39c2707c8fb3d78
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:5
+#: ef606769fc834529bbeeabdc457164a5
 msgid "**分类：** 分子与溶剂"
 msgstr "**Category:** Molecules and solvents"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:7
-#: 244fe6326c4d46bba1a9713f7b0aaf23
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:7
+#: 7be00c0cdc04483982c4060188f523e8
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:9
-#: addb8d1313894efc866bb75c47a94ac4
-msgid ""
-"对有机分子体系做单键子树旋转，并可叠加逐原子的高斯坐标噪声。程序先按共价半"
-"径、距离上限和 Pauling 键级阈值建立启发式拓扑；只有从拓扑中删除后能分开两侧子"
-"树的内部键才会参与旋转，因此环内键不会被当成普通可旋转单键。"
-msgstr "Rotate single-bond subtrees in organic molecular systems and optionally add per-atom Gaussian coordinate noise. The program first builds a heuristic topology from covalent radii, distance limits, and Pauling bond-order thresholds. Only internal bonds whose removal separates the two subtrees participate in rotation, so ring bonds are not treated as ordinary rotatable single bonds."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:9
+#: 68a5b5efb4d4400e87e9170aa4363157
+msgid "从一个非周期分子或三维周期分子体系出发，按当前几何识别分子键和可旋转单键，旋转单键一侧的原子子树，并可叠加少量坐标噪声，生成一组同组成构象。"
+msgstr ""
+"Starting from a nonperiodic molecule or a three-dimensionally periodic molecular "
+"system, identify molecular bonds and rotatable single bonds from the current "
+"geometry, rotate the atomic subtree on one side of a single bond, and optionally add "
+"small coordinate noise to generate conformers with unchanged composition."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:11
-#: 65cdbb3b554a468885901acef086f3f9
-msgid ""
-"每个候选还要经过原始键对的长度检查和非键原子的碰撞检查；失败时会减半旋转角与"
-"噪声后重试，全部重试仍失败的候选会被跳过，不会用未变化的输入结构冒充成功输"
-"出。"
-msgstr "Each candidate also undergoes checks on original bonded-pair lengths and nonbonded collisions. On failure, the card halves the rotation angle and noise and retries; candidates that still fail all retries are skipped rather than returned as unchanged pseudo-successes."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:11
+#: f31c57f799e0410a88bbc045844bd258
+msgid "卡片采用“尽力生成”合同：每个输入最多生成指定数量的构象。候选若未通过键长或非键距离检查会重试或跳过，因此实际数量可能更少。"
+msgstr ""
+"The card uses a best-effort contract: each input produces up to the requested number "
+"of conformers. Candidates that fail bond-length or nonbonded-distance checks are "
+"retried or skipped, so the actual count may be smaller."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:13
-#: 09f17f4262934465b75ddb1e72796d3e
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:13
+#: 0788992fd0f44929a6cc027c2ab42105
+msgid "界面预览会先显示首个输入的原子数、检测键数、可旋转键数、分子连通分量、边界模式和理论最大输出数。若检测结果与化学直觉不符，应先调整拓扑识别参数。"
+msgstr ""
+"The preview first shows the atom count, detected-bond count, rotatable-bond count, "
+"molecular connected components, boundary mode, and theoretical maximum output count "
+"for the first input. If detection conflicts with chemical expectations, adjust "
+"topology-detection parameters first."
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:15
+#: 0108a9c67cba4e86b7279ed65e19722d
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:15
-#: 2ee720541c1e4c1083ebaaf1ff8e879c
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:17
+#: bb57b7b624c0478c84e3b2df1dd86f68
+msgid "程序以共价半径和当前原子距离构造几何拓扑。距离满足检测半径且估算 Pauling 键级超过阈值的原子对会成为拓扑边："
+msgstr ""
+"The program constructs a geometric topology from covalent radii and current "
+"interatomic distances. An atom pair becomes a topology edge when its distance lies "
+"within the detection radius and its estimated Pauling bond order exceeds the "
+"threshold:"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:19
+#: 72818f25f4d54462988b24163f8c6cea
 msgid ""
-"\\Delta\\theta\\sim U(\\theta_{\\min},\\theta_{\\max}),\\quad "
-"\\Delta\\mathbf{r}_i\\sim\\mathcal{N}(0,\\sigma^2),\\quad d_{ij}\\text{ 的阈"
-"值均按 }r_i^{\\mathrm{cov}}+r_j^{\\mathrm{cov}}\\text{ 缩放}"
-msgstr "\\Delta\\theta\\sim U(\\theta_{\\min},\\theta_{\\max}),\\quad \\Delta\\mathbf{r}_i\\sim\\mathcal{N}(0,\\sigma^2),\\quad d_{ij}\\text{ thresholds are scaled by }r_i^{\\mathrm{cov}}+r_j^{\\mathrm{cov}}\\text{.}"
+"\n"
+"B_{ij}=\\exp\\left(\\frac{r_i^{\\mathrm{cov}}+r_j^{\\mathrm{cov}}-d_{ij}}{c}\\right)."
+"\n"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:17
-#: f824a80a3ef04a64b9985e3c30db2b8e
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:23
+#: fb10ba8eb9fd4a4eb6f6d4ca2ba8d89b
+msgid "删除后能把拓扑分成两个子树的内部键才可能旋转；环内键不会成为这种桥边。每个候选随机选择不超过设定数量的可旋转键，并为每条键抽取角度增量"
+msgstr ""
+"Only an internal bond whose removal divides the topology into two subtrees can "
+"rotate; bonds within rings are not such bridges. Each candidate randomly selects no "
+"more than the configured number of rotatable bonds and samples an angle increment for"
+" every selected bond"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:25
+#: cbc41503af254045a544095db970dfe9
+#, python-brace-format
 msgid ""
-"$\\Delta\\theta$ 是被选可旋转键的子树转角，$\\sigma$ 是逐 Cartesian 分量的高"
-"斯标准差， $r_i^{\\mathrm{cov}}$ 是元素共价半径。拓扑、键长保护和非键碰撞三道"
-"检查共同决定候选是否 接受，公式中的随机抽样本身并不保证化学合理。"
-msgstr "$\\Delta\\theta$ is the subtree rotation angle for a selected rotatable bond, $\\sigma$ is the Gaussian standard deviation per Cartesian component, and $r_i^{\\mathrm{cov}}$ is the covalent radius of element $i$. Topology, bond-length protection, and nonbonded-collision checks jointly determine whether a candidate is accepted; random sampling alone does not guarantee chemical validity."
+"\n"
+"\\Delta\\theta\\sim U(\\theta_{\\min},\\theta_{\\max}).\n"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:22
-#: 164b49e9216d4a7e9b2dd94920a6aef5
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:29
+#: b9de661349a746db93d8bd08dfb1c431
+msgid "旋转完成后，可再对每个原子的三个笛卡尔分量加入独立高斯噪声"
+msgstr ""
+"After rotation, independent Gaussian noise may be added to each atom's three "
+"Cartesian components"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:31
+#: a4588f3d00884605b21399c2ac314ce9
+#, python-brace-format
 msgid ""
-"这里的“键”和“可旋转键”来自几何启发式，不是 RDKit 等化学感知工具给出的正式键"
-"型。金属配位、离子对、非常规价态或已经严重畸变的输入可能识别错误；先看卡片首"
-"帧预览中的“检测键数 / 可旋转键数”，再抽查输出。"
-msgstr "The `bonds` and `rotatable bonds` here come from geometric heuristics, not formal bond types from a chemistry-aware tool such as RDKit. Metal coordination, ion pairs, unusual valences, or severely distorted inputs may be identified incorrectly; inspect the preview's detected/rotatable bond counts before reviewing outputs."
+"\n"
+"\\Delta r_{i\\alpha}\\sim\\mathcal N(0,\\sigma^2).\n"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:25
-#: e876fc5d8b8d44d482bd2807a634c8a7
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:35
+#: abfd5fe04c354f0c82f335341c6c4784
+msgid ""
+"候选随后检查原始键对的长度和非键原子的最近距离。失败重试时，扭转角增量与坐标噪声都会减半。周期输入使用完整非正交晶胞的最小镜像几何；非周期输出写入一个仅用于显示的立方 "
+"cell，并保持 PBC 关闭。"
+msgstr ""
+"The candidate is then checked against original bond-pair lengths and minimum "
+"distances between nonbonded atoms. On a failed retry, both torsion increments and "
+"coordinate noise are halved. Periodic inputs use minimum-image geometry for the full "
+"non-orthogonal cell. Nonperiodic outputs receive a cubic cell used only for display "
+"while PBC remains disabled."
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:37
+#: ebb6c1b9bb1c4a8aa3ff825f8754e78f
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:27
-#: 089a11fb190143e7a6a9f19c090cc156
-msgid "场景：模型在小分子构象变化上的力预测完全不准"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:39
+#: 640e2f4cae2f4dda80de9010cd9722c2
+msgid "下面是一条带一个可旋转内部键的 C4 链。保存为 XYZ 后载入即可观察预览中的 `3 detected bonds / 1 rotatable`："
 msgstr ""
-"Scenario: force predictions fail when a small molecule changes conformation"
+"The following C4 chain has one rotatable internal bond. Save it as XYZ and load it to"
+" see `3 detected bonds / 1 rotatable` in the preview:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:29
-#: 598816f43b3744139f0dbe55e29b7d5f
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:41
+#: 137b327da3fd43f89884d525cb6f867e
 msgid ""
-"你在一个有机分子晶体上训练了一个 NEP 模型，分子内的平衡键长和键角都学得不错。"
-"但你把同一个分子旋转一个二面角后，力的 MAE 跳了 4 倍。诊断发现训练集里每个分"
-"子只有一种构象——模型不知道扭转角改变时力场该怎么变。"
+"4\n"
+"C4 torsion example\n"
+"C  0.000  0.000  0.000\n"
+"C  1.400  0.000  0.000\n"
+"C  2.800  0.200  0.000\n"
+"C  4.100  0.200  1.000\n"
 msgstr ""
-"You trained an NEP model for an organic molecular crystal. It reproduces "
-"equilibrium bond lengths and angles, but the force MAE increases fourfold "
-"after rotating one dihedral in the same molecule. The training set contains "
-"only one conformation per molecule, so the model has no basis for learning "
-"how forces change along torsional degrees of freedom."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:31
-#: 6bd12c78cf434baea3d7db3c76687a01
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:50
+#: 8b209af4ab9c497284aa5353fd894de7
 msgid ""
-"**诊断思路：** 有机分子的势能面在二面角方向上是多极值的（如 gauche 和 anti 构"
-"象）。如果训练集只有一种构象，模型在这个柔性自由度上只能外推。需要系统地对可"
-"旋转二面角做采样，并保留那些键长不崩、非键不穿插的构象作为训练样本。"
+"建议先用 20 个最大输出、`-60° → 60°`、每个输出旋转 1 条键、`0.01 Å` "
+"坐标噪声和固定种子。生成后抽查二面角分布、连续键长和非键最近距离，再决定是否扩大角度或输出数量。"
 msgstr ""
-"**Diagnosis:** The potential-energy surface of an organic molecule often has "
-"multiple minima along a dihedral coordinate, such as gauche and anti "
-"conformers. With only one conformation in the training set, the model must "
-"extrapolate along that flexible degree of freedom. Sample rotatable "
-"dihedrals systematically and retain candidates that preserve bonds and avoid "
-"nonbonded overlap."
+"Begin with a maximum of 20 outputs, `-60° → 60°`, one rotated bond per output, `0.01 "
+"Å` coordinate noise, and a fixed seed. After generation, spot-check the dihedral "
+"distribution, connected bond lengths, and nearest nonbonded distances before widening"
+" the angle or increasing the output count."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:33
-#: 05d8dfbbb73a45009d022c07342dd8aa
-msgid ""
-"**输入：** 一个有机分子或全三维周期的分子晶体；程序按当前几何估计分子拓扑"
-msgstr "**Input:** an organic molecule or a fully three-dimensional periodic molecular crystal; the program estimates molecular topology from the current geometry."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:35
-#: 19f4e2dddad244b6b29f4327523fa09c
-msgid ""
-"**目标：** 每帧生成 100 个构象候选，扭转角在 ±60 度内采样，sigma 0.03 的高斯"
-"位移"
-msgstr ""
-"**Goal:** Generate 100 conformation candidates per frame, sample torsions "
-"within ±60°, and add Gaussian displacements with σ = 0.03 Å."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:37
-#: 3eb63a877a3345aebe4409cc9facee62
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:38
-#: 1f2ab041fd7a48af8f3498ef30b62b54
-msgid "`每个输入的请求输出数`（`perturb_per_frame`） = `100`"
-msgstr "`Requested outputs per input` (`perturb_per_frame`) = `100`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:39
-#: 7c00a5db86574fa5aa8b0bfe6377912f
-msgid "`扭转角增量`（`torsion_range_deg`） = `[-60, 60]`"
-msgstr "`Torsion-angle range` (`torsion_range_deg`) = `[-60, 60]`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:40
-#: ec7a8d899ad84bcb9812f5b0d0a691dc
-msgid "`每个输出旋转的键数`（`max_torsions_per_conf`） = `5`"
-msgstr "`Bonds rotated per output` (`max_torsions_per_conf`) = `5`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:41
-#: e3d5a0fd2154411cbe980abd6d8d66bd
-msgid "`高斯坐标噪声`（`gaussian_sigma`） = `0.03 Å`"
-msgstr "`Gaussian coordinate noise` (`gaussian_sigma`) = `0.03 Å`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:42
-#: 7bb404bdc8844dd997d3a4dc92d3bb5d
-msgid "展开“拓扑和几何保护设置”，勾选 `Enable upper bound`"
-msgstr "Expand `Topology and geometry protection` and enable `Enable upper bound`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:44
-#: af55b5df183b48c091f116b1a329a078
-msgid ""
-"**输出：** 最多 100 个通过保护条件的构象，带 `TG(req=100,ok={实际成功"
-"数},sig=0.03,pbc=auto)` 标签"
-msgstr "**Output:** up to 100 conformations that pass the protection checks, labeled `TG(req=100,ok={actual_successes},sig=0.03,pbc=auto)`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:46
-#: 7f5852589bd94aa8bd8a9927a5566eb0
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:47
-#: 72ef5a0ae97e449088ae13dc5ebebdf9
-msgid "重训后对手动旋转二面角后的测试构型推理，力 MAE 应显著缩小"
-msgstr ""
-"After DFT labeling and retraining, evaluate held-out structures with "
-"manually rotated dihedrals; their force MAE should decrease substantially."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:48
-#: 46c7df68a5d14b6793320dcdb6131393
-msgid ""
-"抽查键长分布：原始检测键没有短于 `0.6 * (r_i^cov+r_j^cov)`；打开上限后也没有"
-"长于设定上限"
-msgstr "Inspect the bond-length distribution: no detected original bond is shorter than `0.6 * (r_i^cov+r_j^cov)`; with the upper bound enabled, none exceeds the configured limit."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:49
-#: 0651ffbc88104f4b8d346141f9148f4f
-msgid "抽查非键距离：没有低于 `0.8 * (r_i^cov+r_j^cov)` 的非键原子对"
-msgstr "Inspect nonbonded distances: no nonbonded atom pair is below `0.8 * (r_i^cov+r_j^cov)`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:50
-#: b32b1cf2ec01466e9e8239affd7fbc81
-msgid ""
-"如果成功率低（< 10%），放宽 `最大保留键长系数`（`bond_keep_max_factor`）或增"
-"大 `最大重试次数`（`max_retries`）"
-msgstr "If the success rate is low (< 10%), relax `Maximum kept-bond length factor` (`bond_keep_max_factor`) or increase `Maximum retries` (`max_retries`)."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:52
-#: 3275f4cd25d1487ab8ed2cb2ffaf2fa1
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:54
-#: 4a3dee42fb0c4d58bab7cb9ba1cf10f8
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:55
-#: 695ec06d12254f63a4128630f5cfda98
-msgid "研究有机小分子、分子晶体或非周期分子的构象空间"
-msgstr "Study conformational space in organic molecules, molecular crystals, or nonperiodic molecules."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:56
-#: 163b7d8afbd9457481c0f7944667b490
-msgid "模型对柔性自由度的预测差（扭转角变化引起力/能量跳变）"
-msgstr ""
-"The model is inaccurate along flexible degrees of freedom, with force or "
-"energy errors changing sharply as torsions rotate."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:57
-#: 1a0923aec6b2406c85a773f51bdf758b
-msgid "需要覆盖分子内多种构象（gauche, anti, eclipsed）"
-msgstr "gauche, anti, eclipsed"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:59
-#: 4f0b3c7425924355b7a01f390ee442d5
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:60
-#: 1f5a75d7d3c4448f809df4a2864327ba
-msgid "纯无机体系（没有可旋转二面角）"
-msgstr "The system is purely inorganic and has no rotatable dihedrals."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:61
-#: 1133e38470c44f27b95ca78422eea48f
-msgid "分子本身是刚性的（如苯环），且你也不需要高斯坐标噪声"
-msgstr "The molecule is rigid (such as a benzene ring) and Gaussian coordinate noise is unnecessary."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:62
-#: 9f761e4781b94a5bb7e075068453483e
-msgid "需要化学价态、芳香性或反应键的严格识别；这张卡只有几何启发式拓扑"
-msgstr "You need strict identification of valence, aromaticity, or reaction bonds; this card provides only a geometric heuristic topology."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:63
-#: 409d80a7b05548c1b3a2dcc5b8b11071
-msgid "只需要坐标扰动 → 用 `Atomic Perturb`"
-msgstr "You need only coordinate noise → use `Atomic Perturb`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:65
-#: 984d0f3256e74a04ab2ef43545ea024e
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:52
+#: 4d6eff6793f047f89a9f88417573604e
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:67
-#: 0f427b8c598d43d1858a9ab02ed4fef2
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:54
+#: 37df631a64c841a8b76004b225874847
 msgid "构象采样"
 msgstr "Conformation sampling"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:69
-#: 670d5d13a221484dbf6b74815aadc2d2
-msgid "每个输入的请求输出数（perturb_per_frame）"
-msgstr "perturb_per_frame"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:56
+#: 5aee7e35f8e14e9392614d2e6ec75fe0
+msgid "最大输出数（perturb_per_frame）"
+msgstr "Maximum Outputs (perturb_per_frame)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:71
-#: 7bca843eb91c4d5da75e4726bb8bad8b
-msgid ""
-"`int`，默认 100。每个输入结构尝试生成多少个候选，20–100 为常规。保护条件失败"
-"的候选会被跳过，所以实际输出数可能小于该值；若一个都没有通过，卡片直接报错。"
-msgstr "`int`, default 100. Number of candidates attempted per input; 20–100 is typical. Candidates that fail protection checks are skipped, so the actual output may be smaller; if none passes, the card fails."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:58
+#: 964d28a7032246c78b04031214d306e9
+msgid "`int`，默认 20。每个输入最多请求的构象数；保护检查可能使实际输出更少。"
+msgstr ""
+"`int`, default 20. Maximum requested conformers per input; protection checks may "
+"reduce the actual count."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:73
-#: 9d63f294573042328aef8033b7f15ccc
-msgid "扭转角增量（torsion_range_deg）"
-msgstr "torsion_range_deg"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:60
+#: fa45e55eeff3497fa83c891d66b344ae
+msgid "扭转增量范围（torsion_range_deg）"
+msgstr "Torsion-Increment Range (torsion_range_deg)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:75
-#: e22a7d0fe03045b182dda80da644ab21
-msgid ""
-"`tuple[float, float]`，默认 `(-180.0, 180.0)`。这是加到当前构象上的**旋转增量"
-"**范围，不是输出二面角的绝对目标值。±30° 较保守，±180° 覆盖更广；范围越大，几"
-"何保护失败概率通常越高。"
-msgstr "`tuple[float, float]`, default `(-180.0, 180.0)`. The **rotation increment** added to the current conformation, not an absolute target dihedral. ±30° is conservative and ±180° covers more space; wider ranges usually increase geometry-protection failures."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:62
+#: 8de3eefb49134326aeea1406cef07a5d
+msgid "`tuple[float,float]`，默认 `(-60,60)`，单位为度。它是加到当前构象上的角度增量，不是绝对二面角。"
+msgstr ""
+"`tuple[float,float]`, default `(-60,60)`, in degrees. This is an angle increment "
+"added to the current conformation, not an absolute dihedral angle."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:77
-#: 3af15c851b444d22a12e112195f6aa49
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:64
+#: 198c48091acc4ad3a5453b66b32e3e53
 msgid "每个输出旋转的键数（max_torsions_per_conf）"
 msgstr "max_torsions_per_conf"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:79
-#: 471fbaf8c21f4b11b170d78b6a7a93dd
-msgid ""
-"`int`，默认 5。每个输出最多选择多少条不同的可旋转键。实际数量不会超过首帧预览"
-"显示的可旋转键数；设为 0 时只保留高斯坐标噪声。"
-msgstr "`int`, default 5. Maximum number of distinct rotatable bonds selected per output. The actual number cannot exceed the rotatable-bond count shown in the first-frame preview; set it to 0 to keep only Gaussian coordinate noise."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:66
+#: 76e2c7b1691d47b983e8b3b459330e9b
+msgid "`int`，默认 1。实际旋转数不会超过预览中的可旋转键数；设为 0 时仅保留坐标噪声。"
+msgstr ""
+"`int`, default 1. The actual number of rotations cannot exceed the rotatable-bond "
+"count shown in the preview. Set it to 0 to retain coordinate noise only."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:81
-#: a1d37c4b562b4962b18d3c484feec5fa
-msgid "高斯坐标噪声（gaussian_sigma）"
-msgstr "gaussian_sigma"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:68
+#: d8e1997423d9474c953ed6ddb83c2cb0
+msgid "坐标噪声（gaussian_sigma）"
+msgstr "Coordinate Noise (gaussian_sigma)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:83
-#: aa645414905348bbaf59a66ed658c225
-msgid ""
-"`float`，默认 0.03 Å。扭转之后，对**每个原子**独立添加笛卡尔高斯噪声；它不是"
-"只作用于局部子树。常规可从 0.01–0.03 Å 开始。"
-msgstr "`float`, default 0.03 Å. After torsion, add independent Cartesian Gaussian noise to **every atom**; it is not limited to the local subtree. A typical starting range is 0.01–0.03 Å."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:70
+#: 4b18622eab24427f830dcf25d939c211
+msgid "`float`，默认 `0.01 Å`。扭转后施加到每个原子笛卡尔坐标分量的高斯标准差。"
+msgstr ""
+"`float`, default `0.01 Å`. Gaussian standard deviation applied to each Cartesian "
+"atomic-coordinate component after torsion."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:85
-#: 2bc27aae9f34472587cb6a7cb718cfbe
-msgid "最大重试次数（max_retries）"
-msgstr "max_retries"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:72
+#: bfabed6719e74ecdbdf4754044580746
+msgid "边界"
+msgstr "Boundaries"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:87
-#: da6999df549348a188ef82e018663f03
-msgid ""
-"`int`，默认 12。每个候选在保护条件失败后的额外重试次数。每次重试都会把旋转增"
-"量和高斯噪声减半；增大该值会增加耗时，也可能让最终通过的结构越来越接近输入。"
-msgstr "`int`, default 12. Extra retries after a candidate fails protection checks. Each retry halves the rotation increment and Gaussian noise; larger values increase runtime and may make accepted structures increasingly close to the input."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:74
+#: 4550f437ac314be398d84c5976f91473
+msgid "输出边界（pbc_mode）"
+msgstr "Output Boundaries (pbc_mode)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:89
-#: 2c47704f5c6d477c82de25b895e80323
-msgid "PBC 和局部环境"
-msgstr "Periodic boundaries and local environment"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:76
+#: 1050029ef1af4b5ab8d019fed87d30e6
+msgid "`str`，默认 `auto`。"
+msgstr "`str`, default `auto`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:91
-#: 03a0f834e7f94608a696f3c05b245863
-msgid "周期边界模式（pbc_mode）"
-msgstr "pbc_mode"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: e601c2f0adc24ff0b04783dea3fa49b2
+msgid "选项"
+msgstr "Option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:93
-#: 9bfb062824514877aceadf9ff80832df
-msgid "`str`，默认 `'auto'`。可选值："
-msgstr "`str`, default `'auto'`. Options:"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: 3409b9e1ae2d41b994cdb05d03e58414
+msgid "含义"
+msgstr "Meaning"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:95
-#: b5a1c1df3a874f97ac449514a223875a
-msgid ""
-"`auto`：只在输入三个 PBC 方向都打开时使用周期模式；普通无周期分子不会因为带一"
-"个显示 cell 就被误判为周期体系。"
-msgstr "`auto`: use periodic mode only when all three input PBC directions are enabled; an ordinary nonperiodic molecule is not misclassified merely because it has a display cell."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: 8fc409e651a24ab3a2fb1e81c4e97a33
+msgid "`auto`"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:96
-#: e35720812b404144bc6451b06ad31727
-msgid "`yes`：强制全三维周期，输入必须有有限且非奇异的 3×3 cell。"
-msgstr "`yes`: force full three-dimensional periodicity; the input must have a finite, nonsingular 3×3 cell."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: 84b7f873d58d457fb99d2f59cc8e5d53
+msgid "跟随输入；接受全三维周期或完全非周期输入"
+msgstr "Follow the input; accepts fully three-dimensional periodic or fully nonperiodic inputs"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:97
-#: 0695b1d7e006409fb7b9293d783d1267
-msgid "`no`：按非周期分子处理，并在输出中写入显示盒。"
-msgstr "`no`: treat the input as a nonperiodic molecule and write a display box to the output."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: cad00e32999b489888e809ebb67a804e
+msgid "`yes`"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:99
-#: 5122a5d8999341198e1823167a93f37f
-msgid ""
-"二维或一维混合 PBC 暂不支持；`auto` 会明确报错，不会把部分周期静默改成全三维"
-"周期。"
-msgstr "Mixed two- or one-dimensional PBC is not supported yet; `auto` fails explicitly instead of silently converting partial periodicity to full three-dimensional periodicity."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: fed28b56980946abafcf57978387bb34
+msgid "强制按全三维周期体系处理"
+msgstr "Force treatment as a fully three-dimensionally periodic system"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:101
-#: 561ee9c8192348f198be3f62be84171a
-msgid "局部截断距离（local_cutoff）"
-msgstr "local_cutoff"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: e1425e4bc08f4c279b97a81aeb5ba8ae
+msgid "`no`"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:103
-#: c9c22a167b9040139b38d0bbc33b24cd
-msgid ""
-"`int`，默认 150。这不是距离 cutoff，而是切换局部模式的**总原子数阈值**。当输"
-"入原子数大于该值时，每次旋转的子树会受 `仅旋转局部子树`（`local_subtree`）限"
-"制；小体系则旋转完整一侧子树。"
-msgstr "`int`, default 150. This is not a distance cutoff, but the **total-atom threshold** for switching to local mode. When the input exceeds it, each rotation is limited by `Rotate local subtree only` (`local_subtree`); smaller systems rotate the complete subtree on one side."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md
+#: e5e7d9c0c5dd4cf0bb6e2f11709c4213
+msgid "按非周期分子处理，输出 PBC 关闭"
+msgstr "Treat as a nonperiodic molecule and disable PBC in the output"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:105
-#: 1d6dcc8df8d6409b9e5f5e8e17302ea6
-msgid "仅旋转局部子树（local_subtree）"
-msgstr "local_subtree"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:84
+#: 08db622dcd2c4717a223da90c24acd1e
+msgid "一维或二维混合 PBC 在 `auto` 模式下会明确报错；需要先选择非周期模式或提供完整周期晶胞。"
+msgstr ""
+"Mixed one- or two-dimensional PBC reports an explicit error in `auto` mode. Select "
+"nonperiodic mode first or provide a fully periodic cell."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:107
-#: c1b3edc4ad1848f0b70a387a1c4d48f1
-msgid ""
-"`int`，默认 40。局部模式中，一条键一侧最多一起旋转的原子数。它只有在输入原子"
-"数超过 `局部截断距离`（`local_cutoff`）时生效。"
-msgstr "`int`, default 40. In local mode, maximum number of atoms rotated together on one side of a bond. It takes effect only when the input exceeds `Local cutoff` (`local_cutoff`)."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:86
+#: 955691e3c8914133bbfe5b7bd858a0ce
+msgid "非周期显示盒（nonpbc_box_size）"
+msgstr "Nonperiodic Display Box (nonpbc_box_size)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:109
-#: 6a6750f4d3204cbcb1eafbf8d9d6a242
-msgid "非周期晶胞尺寸（nonpbc_box_size）"
-msgstr "nonpbc_box_size"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:88
+#: e30d9bfc528d4b4883388a2564712b41
+msgid "`float`，默认 `100 Å`。仅在解析出的输出为非周期时生效；它不参与周期碰撞检查。"
+msgstr ""
+"`float`, default `100 Å`. Used only when the resolved output is nonperiodic; it does "
+"not participate in periodic collision checks."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:111
-#: a9f321eeac514033bf3d0640830305bd
-msgid ""
-"`float`，默认 100.0 Å。非周期输出被居中后写入的立方显示 cell 边长。输出 PBC "
-"仍为 false，因此该盒子不会参与碰撞检查，也不会制造周期镜像。"
-msgstr "`float`, default 100.0 Å. Edge length of the cubic display cell written after centering a nonperiodic output. Output PBC remains false, so this box is not used for collision checks and does not create periodic images."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:90
+#: 0e3fff7f03e843419b99e739b89442fc
+msgid "拓扑识别"
+msgstr "Topology Detection"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:113
-#: 6188bc93a06e434eae123f57122e3461
-msgid "键识别和键长约束"
-msgstr "Bond detection and bond-length constraints"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:92
+#: 45200999bdfc4f3bba133f2267bb95b8
+msgid "大分子阈值（local_cutoff）"
+msgstr "Large-Molecule Threshold (local_cutoff)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:115
-#: 4eda892b366c4c3ebbc36db8025adb12
-msgid "成键识别系数（bond_detect_factor）"
-msgstr "bond_detect_factor"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:94
+#: 6e823e65823947aa82eec3e366230958
+msgid "`int`，默认 150 个原子。输入超过该规模后，旋转使用受限局部子树。"
+msgstr ""
+"`int`, default 150 atoms. Above this input size, rotation uses a bounded local "
+"subtree."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:117
-#: 8713379292ac45298b37253811478661
-msgid ""
-"`float`，默认 1.15。候选键距离必须不超过 `factor * (r_i^cov+r_j^cov)`，同时还"
-"要通过 `键级阈值`（`bo_threshold`）。数值越大越容易把相邻分子或配位接触误识别"
-"为键。"
-msgstr "`float`, default 1.15. Candidate bond distances must not exceed `factor * (r_i^cov+r_j^cov)` and must pass `Bond-order threshold` (`bo_threshold`). Larger values make adjacent molecules or coordination contacts more likely to be misidentified as bonds."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:96
+#: 725da59205c340be9049bf794590cee2
+msgid "局部子树上限（local_subtree）"
+msgstr "Local-Subtree Limit (local_subtree)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:119
-#: 4a15ce87692541c5a14035b861ece926
-msgid "最小保留键长系数（bond_keep_min_factor）"
-msgstr "bond_keep_min_factor"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:98
+#: 88316bf5d3af4ffbbe8fad7dc55707b4
+msgid "`int`，默认 40 个原子。仅在大分子局部模式中生效。"
+msgstr "`int`, default 40 atoms. Used only in large-molecule local mode."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:121
-#: 3275ecdf77d3417a888994dd61fd3520
-msgid ""
-"`float`，默认 0.6。原始检测键允许的最短距离为 `factor * (r_i^cov+r_j^cov)`。"
-"它防的是过度压缩，不是断键；设太大会拒绝合理的短键。"
-msgstr "`float`, default 0.6. The shortest allowed original detected bond is `factor * (r_i^cov+r_j^cov)`. This prevents over-compression, not bond breaking; setting it too high rejects reasonable short bonds."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:100
+#: de291db5847a4862815d2de1e224d8be
+msgid "成键检测半径（bond_detect_factor）"
+msgstr "Bond-Detection Radius (bond_detect_factor)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:123
-#: 4e67f5588ef44378ab8705833ca7bd01
-msgid "最大保留键长系数（bond_keep_max_factor）"
-msgstr "bond_keep_max_factor"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:102
+#: 87cdd579737945c38bea36844ab274fd
+msgid "`float`，默认 1.15。最大检测距离为该系数乘以两原子的共价半径之和，必须大于 0。"
+msgstr ""
+"`float`, default 1.15. The maximum detection distance is this factor multiplied by "
+"the sum of the two covalent radii, and must be greater than 0."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:125
-#: f754aeb0c38a44c8a670622c43ed82ac
-msgid "`float`，默认 1.15。勾选上限后，原始检测键允许的最长距离系数。"
-msgstr "`float`, default 1.15. Maximum distance factor for original detected bonds when the upper bound is enabled."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:104
+#: 89788354f5904969a6c61ce24ef2fb2c
+msgid "Pauling 衰减长度（bo_c_const）"
+msgstr "Pauling Decay Length (bo_c_const)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:127
-#: 8e897fc649834128a37463731f19fa22
-msgid "启用最大保留键长（bond_keep_max_enable）"
-msgstr "bond_keep_max_enable"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:106
+#: 37224cb3964049e5a8da17b22ad9d917
+msgid "`float`，默认 `0.3 Å`。控制键级估算随距离的衰减速度。"
+msgstr ""
+"`float`, default `0.3 Å`. Controls how rapidly the estimated bond order decays with "
+"distance."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:129
-#: db97d8e4844a486ebb0820000292e42e
-msgid ""
-"`bool`，默认 false。打开后才启用键长上限检查；关闭时没有隐藏的默认上限。研究"
-"非反应构象时建议打开；反应路径或软配位键可能需要关闭。"
-msgstr "`bool`, default false. Enables the bond-length upper-bound check; when disabled, no hidden default upper bound applies. Enable it for nonreactive conformations; reaction paths or soft coordination bonds may require it to remain disabled."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:131
-#: e8bc31ed599e4d2d94b022fc52391302
-msgid "多重键系数（mult_bond_factor）"
-msgstr "mult_bond_factor"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:133
-#: 63e938cae2d44c019d2a4329d19fbbb3
-msgid ""
-"`float`，默认 0.87。短于 `factor * (r_i^cov+r_j^cov)` 的键不参与旋转；估计键"
-"级大于等于 2 的键也不参与。环内键由于不是拓扑桥边，同样不会旋转。"
-msgstr "`float`, default 0.87. Bonds shorter than `factor * (r_i^cov+r_j^cov)` are not rotated; estimated bond order ≥ 2 is also excluded. Ring bonds are likewise not rotated because they are not topological bridge edges."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:135
-#: 784fd96182a1444e9d0ef1622e2bc42e
-msgid "键级 C 常数（bo_c_const）"
-msgstr "bo_c_const"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:137
-#: 1a15075e2745415fb7f2218996ff15ca
-msgid ""
-"`float`，默认 0.3 Å。用于 `exp((r_i^cov+r_j^cov-d)/c)` 的衰减常数。它影响拓扑"
-"边和估计键级，除非预览中的检测键数明显不合理，否则保持默认。"
-msgstr "`float`, default 0.3 Å. Decay constant in `exp((r_i^cov+r_j^cov-d)/c)`. It affects topology edges and estimated bond order; keep the default unless the preview's detected-bond count is clearly unreasonable."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:139
-#: 54ad2e65583747b7aefcaeff7272778e
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:108
+#: 83948fe5a5954a1eaa49c599a2c0f261
 msgid "键级阈值（bo_threshold）"
 msgstr "bo_threshold"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:141
-#: 445abe5f3aae4c6ea195075711e4c619
-msgid ""
-"`float`，默认 0.2。估计 Pauling 键级必须高于该值才会形成拓扑边；阈值越低，越"
-"容易把弱接触当成键。"
-msgstr "`float`, default 0.2. The estimated Pauling bond order must exceed this value to form a topology edge; lower thresholds more easily treat weak contacts as bonds."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:110
+#: a13b68a95f224a688c1fd1a751b4d8b1
+msgid "`float`，默认 0.2，范围 `[0,1]`。估算键级达到阈值后才建立拓扑边。"
+msgstr ""
+"`float`, default 0.2, range `[0,1]`. A topology edge is created only when the "
+"estimated bond order reaches this threshold."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:143
-#: b42bbaddef664defb03ee497c5d632f7
-msgid "非键约束"
-msgstr "Nonbonded constraints"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:112
+#: 53fe3dc54ecc4100941547ef58cbc682
+msgid "短键旋转截止（mult_bond_factor）"
+msgstr "Short-Bond Rotation Cutoff (mult_bond_factor)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:145
-#: d506d5b2a44b4c8494582cf4505a9184
-msgid "非键原子最小距离系数（nonbond_min_factor）"
-msgstr "nonbond_min_factor"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:114
+#: 44db71c770d54ae78b5deade950b03cb
+msgid "`float`，默认 0.87。短于该共价半径系数的键不参与旋转；估算多重键也不会作为普通单键旋转。"
+msgstr ""
+"`float`, default 0.87. Bonds shorter than this covalent-radius factor do not rotate; "
+"estimated multiple bonds are also not rotated as ordinary single bonds."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:147
-#: 695f0dd111514ae4af50397e67666ac8
-msgid ""
-"`float`，默认 0.8。非键原子允许的最近距离为 `factor * (r_i^cov+r_j^cov)`；这"
-"里使用的是共价半径，不是范德华半径。发现穿插时可适当调大，但过大会大量拒绝紧"
-"密堆积的分子晶体候选。"
-msgstr "`float`, default 0.8. The nearest allowed nonbonded distance is `factor * (r_i^cov+r_j^cov)`; covalent radii, not van der Waals radii, are used. Increase it moderately when atoms interpenetrate, but an excessive value rejects many densely packed molecular-crystal candidates."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:116
+#: 2bf469dceee7476a8e045ce00072a105
+msgid "几何保护"
+msgstr "Geometry Protection"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:149
-#: cb6e57d1265f477183fcf463ef38cc8d
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:118
+#: de772fcb16ff46df862fdf27d1c52035
+msgid "最小原始键长（bond_keep_min_factor）"
+msgstr "Minimum Original Bond Length (bond_keep_min_factor)"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:120
+#: 25d4815e242e4ad39b2817f174d28e1c
+msgid "`float`，默认 0.6。原始检测键不得短于该共价半径系数；0 表示关闭下限。"
+msgstr ""
+"`float`, default 0.6. Original detected bonds cannot be shorter than this covalent-"
+"radius factor; 0 disables the lower bound."
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:122
+#: 76c1fe53899d4badaefa67ac75c340ee
+msgid "最大原始键长（bond_keep_max_factor）"
+msgstr "Maximum Original Bond Length (bond_keep_max_factor)"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:124
+#: 37224cb3964049e5a8da17b22ad9d917
+msgid "`float`，默认 1.15。仅在启用最大键长限制后生效，且不能小于最小键长系数。"
+msgstr ""
+"`float`, default 1.15. Used only when the maximum bond-length limit is enabled and "
+"cannot be smaller than the minimum bond-length factor."
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:126
+#: f72ccb76b03d47e7b8a5d7eb133405f2
+msgid "启用最大键长（bond_keep_max_enable）"
+msgstr "Enable Maximum Bond Length (bond_keep_max_enable)"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:128
+#: 37224cb3964049e5a8da17b22ad9d917
+msgid "`bool`，默认 false。打开后检查原始检测键的长度上限。"
+msgstr ""
+"`bool`, default false. When enabled, checks the upper length limit of original "
+"detected bonds."
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:130
+#: 6ba53fa41af74567b3cd5d0c1783773b
+msgid "最小非键距离（nonbond_min_factor）"
+msgstr "Minimum Nonbonded Distance (nonbond_min_factor)"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:132
+#: c11b2400fcdf46ebacfde1a076d0fa0f
+msgid "`float`，默认 0.8。非键原子对不得短于该共价半径系数；0 表示关闭检查。"
+msgstr ""
+"`float`, default 0.8. Nonbonded atom pairs cannot be closer than this covalent-radius"
+" factor; 0 disables the check."
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:134
+#: c9fd4f03a63347ec8014a4a0684635f7
+msgid "每个输出重试次数（max_retries）"
+msgstr "Retries per Output (max_retries)"
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:136
+#: 4aa4fd1865ba486d99bdd49a3cf1017b
+msgid "`int`，默认 12。每次失败重试会把扭转增量和坐标噪声减半；次数越多，最终通过的构象可能越接近输入。"
+msgstr ""
+"`int`, default 12. Every failed retry halves the torsion increment and coordinate "
+"noise. With more retries, an accepted conformer may become increasingly close to the "
+"input."
+
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:138
+#: 7ffc301e03a14b6f8a3b6daab7b83a23
 msgid "随机性"
 msgstr "Randomness"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:151
-#: 497ec9eea67b4d54a00aa110ecb048ba
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:140
+#: e731f0c73cea45fab822e6c4a98ee512
 msgid "使用随机种子（use_seed）"
-msgstr "use_seed"
+msgstr "Use Random Seed (use_seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:153
-#: 4d46bd0b88d34af59058de17a51bcb59
-msgid ""
-"`bool`，默认 false。打开 + 固定 seed 后同参数同输入可复现。种子与结构的稳定 "
-"ID 联合影响采样路径。"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:142
+#: ef8d08fe2723430aa0f978a5af46e0ba
+msgid "`bool`，默认 false。打开后，同一输入、参数和 seed 可复现。"
 msgstr ""
-"`bool`, default: `false`. Enable with a fixed seed for reproducible sampling "
-"from the same input and parameters. The seed and the structure's stable ID "
-"jointly determine the sampling path."
+"`bool`, default false. When enabled, the same input, parameters, and seed are "
+"reproducible."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:155
-#: 793e1ac5fa39474a9deb8bd25c8168f4
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:144
+#: 5ea927b21bae4bd7967943b9f7d03612
 msgid "随机种子（seed）"
-msgstr "seed"
+msgstr "Random Seed (seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:157
-#: 61be50d258b447a293cf7ec12cedf718
-msgid ""
-"`int`，默认 0。固定随机种子值。仅 `使用随机种子`（`use_seed`）打开时生效，两"
-"个不同 seed 产生两组不同的扭转角和扰动方向。"
-msgstr "`int`, default 0. Fixed random-seed value. Used only when `Use random seed` (`use_seed`) is enabled; different seeds produce different torsion angles and perturbation directions."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:146
+#: f0fbf9d9c6d24d61b3ea59e56dd677d4
+msgid "`int`，默认 0，仅在 `use_seed=true` 时生效。"
+msgstr "`int`, default 0, used only when `use_seed=true`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:159
-#: fd78307ec2844b39aac3fe2b9548c2fa
-msgid "生效条件：`use_seed=True`。"
-msgstr "Active only when `use_seed=True`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:161
-#: b01a575c77ab4056a84ed2d8b5bcecd6
-msgid "推荐预设"
-msgstr "Recommended presets"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:163
-#: fb7da8b6b7f449f29597f6201717555a
-msgid "保守（小角度扭转，±30°，50 候选）"
-msgstr "Conservative (small torsions, ±30°, 50 candidates)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:164
-#: f6692b59abf046b7b446419d0ef99ed5
-msgid ""
-"{\n"
-"  \"class\": \"OrganicMolConfigPBCCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"perturb_per_frame\": 50,\n"
-"    \"torsion_range_deg\": [-30, 30],\n"
-"    \"max_torsions_per_conf\": 3,\n"
-"    \"gaussian_sigma\": 0.01,\n"
-"    \"pbc_mode\": \"auto\",\n"
-"    \"local_cutoff\": 150,\n"
-"    \"local_subtree\": 40,\n"
-"    \"bond_detect_factor\": 1.15,\n"
-"    \"bond_keep_min_factor\": 0.6,\n"
-"    \"bond_keep_max_factor\": 1.15,\n"
-"    \"bond_keep_max_enable\": true,\n"
-"    \"nonbond_min_factor\": 0.8,\n"
-"    \"max_retries\": 12,\n"
-"    \"mult_bond_factor\": 0.87,\n"
-"    \"nonpbc_box_size\": 100.0,\n"
-"    \"bo_c_const\": 0.3,\n"
-"    \"bo_threshold\": 0.2,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 42\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:192
-#: 5c6bc0d0890545aab9d48577a3ad93e9
-msgid "平衡（中等扭转，±60°，100 候选）"
-msgstr "Balanced (moderate torsions, ±60°, 100 candidates)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:193
-#: d21a1965098c47ce99c4bc6686cf2f05
-msgid ""
-"{\n"
-"  \"class\": \"OrganicMolConfigPBCCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"perturb_per_frame\": 100,\n"
-"    \"torsion_range_deg\": [-60, 60],\n"
-"    \"max_torsions_per_conf\": 5,\n"
-"    \"gaussian_sigma\": 0.03,\n"
-"    \"pbc_mode\": \"auto\",\n"
-"    \"local_cutoff\": 150,\n"
-"    \"local_subtree\": 40,\n"
-"    \"bond_detect_factor\": 1.15,\n"
-"    \"bond_keep_min_factor\": 0.6,\n"
-"    \"bond_keep_max_factor\": 1.15,\n"
-"    \"bond_keep_max_enable\": true,\n"
-"    \"nonbond_min_factor\": 0.8,\n"
-"    \"max_retries\": 12,\n"
-"    \"mult_bond_factor\": 0.87,\n"
-"    \"nonpbc_box_size\": 100.0,\n"
-"    \"bo_c_const\": 0.3,\n"
-"    \"bo_threshold\": 0.2,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 42\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:221
-#: 264af265fdc442599ad394e159eb982f
-msgid "探索（大角度扭转，±120°，100 候选）"
-msgstr "Exploratory (large torsions, ±120°, 100 candidates)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:222
-#: 293cfe2958da4199a18ec7deda05b114
-msgid ""
-"{\n"
-"  \"class\": \"OrganicMolConfigPBCCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"perturb_per_frame\": 100,\n"
-"    \"torsion_range_deg\": [-120, 120],\n"
-"    \"max_torsions_per_conf\": 8,\n"
-"    \"gaussian_sigma\": 0.05,\n"
-"    \"pbc_mode\": \"auto\",\n"
-"    \"local_cutoff\": 150,\n"
-"    \"local_subtree\": 40,\n"
-"    \"bond_detect_factor\": 1.15,\n"
-"    \"bond_keep_min_factor\": 0.6,\n"
-"    \"bond_keep_max_factor\": 1.15,\n"
-"    \"bond_keep_max_enable\": true,\n"
-"    \"nonbond_min_factor\": 0.8,\n"
-"    \"max_retries\": 20,\n"
-"    \"mult_bond_factor\": 0.87,\n"
-"    \"nonpbc_box_size\": 100.0,\n"
-"    \"bo_c_const\": 0.3,\n"
-"    \"bo_threshold\": 0.2,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 42\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:250
-#: b8498f24452843e1a9c54e6d10e582bd
-msgid "推荐组合"
-msgstr "Recommended combinations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:252
-#: 141a921a767f4e2b9bf597c2943c68e2
-msgid "`Organic Mol Config` → `Atomic Perturb`：先做构象主采样，再加轻度热噪声"
-msgstr ""
-"`Organic Mol Config` → `Atomic Perturb`: sample the main conformational "
-"degrees of freedom, then add mild thermal-like noise."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:253
-#: f823cd518cb14277b2f42343f137be77
-msgid "`Organic Mol Config` → `FPS Filter`：大批量生成后做代表性筛选"
-msgstr ""
-"`Organic Mol Config` → `FPS Filter`: select representative structures after "
-"large-scale generation."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:254
-#: a2499ae0ef2140318be69f0fd8f57b9a
-msgid "对有机体系后筛时，优先看键长、非键距离和拓扑保持情况"
-msgstr ""
-"When filtering an organic system, prioritize bond lengths, nonbonded "
-"distances, and topology preservation."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:256
-#: 950e3f2ad48947938f76d2b41e5c7d18
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:148
+#: a30cac8b73904b1b8c6fef848e622e13
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:258
-#: 07af223d9a584fd69bf0fb9c1365b8cf
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:150
+#: b680f12429084f019e6aa59836abd078
 msgid ""
-"**输出数量明显小于请求值。** 其余候选没有通过保护条件。先检查预览中的检测键和"
-"可旋转键是否合理，再收窄 `扭转角增量`（`torsion_range_deg`）、减小高斯噪声，"
-"或调整真正导致失败的保护阈值。增大 `最大重试次数`（`max_retries`）只会用更小"
-"扰动继续尝试。"
-msgstr "**The output count is far below the request.** The remaining candidates failed protection checks. First inspect whether the detected and rotatable bonds in the preview are reasonable, then narrow `Torsion-angle range` (`torsion_range_deg`), reduce Gaussian noise, or adjust the threshold that actually causes failure. Increasing `Maximum retries` (`max_retries`) only retries with smaller perturbations."
+"**预览没有可旋转键。** "
+"先确认输入是否确有非环内部单键，再查看检测键数和分子连通分量。若分子被拆成多个分量，可小幅增大成键检测半径；若相邻分子被错误连成一体，应减小该值或提高键级阈值。"
+msgstr ""
+"**The preview shows no rotatable bonds.** First confirm that the input contains a "
+"non-ring internal single bond, then inspect detected-bond count and molecular "
+"connected components. If a molecule is split into several components, increase the "
+"bond-detection radius slightly. If neighboring molecules are incorrectly connected, "
+"decrease it or raise the bond-order threshold."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:260
-#: 5e546470d43e4fd183081e568ab77b4c
-msgid ""
-"**键被拉断了。** `启用最大保留键长`（`bond_keep_max_enable`）没开，或者 `最大"
-"保留键长系数`（`bond_keep_max_factor`）太大。开启该约束并设定合理上限。"
-msgstr "**A bond was stretched too far.** `Enable maximum kept-bond length` (`bond_keep_max_enable`) is disabled, or `Maximum kept-bond length factor` (`bond_keep_max_factor`) is too large. Enable the constraint and set a reasonable upper bound."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:152
+#: be40a1cd42b74d0dafabf100341ad3fd
+msgid "**实际输出少于请求数。** 候选未通过几何保护。先收窄扭转角或减小坐标噪声，再根据失败原因调整相应距离阈值。"
+msgstr ""
+"**The actual output count is smaller than requested.** Candidates failed geometry "
+"protection. Narrow the torsion range or reduce coordinate noise first, then adjust "
+"the relevant distance threshold according to the failure reason."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:262
-#: 7b25c9d364984249a3004d1e80cf18be
-msgid ""
-"**非键原子穿插。** `非键原子最小距离系数`（`nonbond_min_factor`）太小。增大"
-"到 0.9~1.0。"
-msgstr "**Nonbonded atoms interpenetrate.** `Nonbonded minimum-distance factor` (`nonbond_min_factor`) is too small. Increase it to 0.9–1.0."
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:154
+#: e44b147777b6489c8d1f5cf7461edac1
+msgid "**非周期输出为什么带有 cell？** 该立方 cell 只用于显示和文件格式兼容，PBC 仍为 false。"
+msgstr ""
+"**Why does a nonperiodic output contain a cell?** The cubic cell is used only for "
+"display and file-format compatibility; PBC remains false."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:264
-#: ca0c3b085add47caa7396b8dfadd5e81
-msgid ""
-"**预览显示 0 条可旋转键。** 环内键、多重键、端基键以及一侧没有邻居的键不会参"
-"与子树旋转。若高斯噪声大于 0，卡片仍能生成坐标扰动；若只想做这种扰动，"
-"`Atomic Perturb` 更直接。"
-msgstr "**The preview shows zero rotatable bonds.** Ring bonds, multiple bonds, terminal bonds, and bonds with no neighbors on one side do not participate in subtree rotation. If Gaussian noise is nonzero, the card can still generate coordinate perturbations; use `Atomic Perturb` directly if that is all you need."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:266
-#: 658f97fe331341e7b3b89e27caaf206c
-msgid ""
-"**普通无周期分子在 Auto 下报奇异 cell。** 当前版本会按输入的 PBC 标志判断，不"
-"会再把零 cell 当成周期晶胞；如果仍看到该错误，请确认是否手动选择了“强制全三"
-"维 PBC”。"
-msgstr "**An ordinary nonperiodic molecule reports a singular cell in Auto mode.** The current version uses the input PBC flags and no longer treats a zero cell as periodic. If the error persists, check whether `Force full 3D PBC` was selected manually."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:268
-#: fa666f9661f2433fa04decf8823a701f
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:156
+#: 8ed680a659604475b7da1866be858b89
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:270
-#: 25abf94922c040ff9094aef137c8cda8
-msgid "`TG(req={请求数},ok={实际成功数},sig={sigma},pbc={模式})`"
-msgstr "`TG(req={requested},ok={actual_successes},sig={sigma},pbc={mode})`"
+#: ../../source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:158
+#: 0d8bf9121b8046d9bcfb77d7d46b86aa
+#, python-brace-format
+msgid "TG(req={请求数},ok={成功数},sig={坐标噪声},pbc={边界模式})\n"
+msgstr ""
+"TG(req={requested count},ok={successful count},sig={coordinate noise},pbc={boundary "
+"mode})\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:272
-#: de7d5cd4e29943de8c43a9835d68aa0a
-msgid "可复现性"
-msgstr "Reproducibility"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/organic-mol-config-pbc-card.md:274
-#: 279e2144d6da459f8cb5a19291d6544d
-msgid ""
-"勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复"
-"现。构象生成受 seed + 结构稳定 ID 联合控制，不同 seed 产生不同的扭转角和扰动"
-"方向。"
-msgstr "Enable `Use random seed` (`use_seed`) and fix `Random seed` (`seed`) to reproduce the same input. Conformation generation is controlled jointly by the seed and stable structure ID; different seeds produce different torsion angles and perturbation directions."
-
-#~ msgid ""
-#~ "对有机分子体系进行扭转角采样 + 高斯局域扰动，生成构象候选用作训练数据。通"
-#~ "过键长约束和非键最小距离约束保证输出的化学合理性——不会把构象采样做成断键采"
-#~ "样。"
+#~ msgid "对有机分子体系进行扭转角采样 + 高斯局域扰动，生成构象候选用作训练数据。通过键长约束和非键最小距离约束保证输出的化学合理性——不会把构象采样做成断键采样。"
 #~ msgstr ""
-#~ "Generate training candidates for organic molecular systems by combining "
-#~ "torsional sampling with local Gaussian perturbations. Bond-length and "
-#~ "nonbonded-distance constraints reject chemically implausible results, "
-#~ "keeping conformation sampling distinct from bond-breaking sampling."
+#~ "Generate training candidates for organic molecular"
+#~ " systems by combining torsional sampling with "
+#~ "local Gaussian perturbations. Bond-length and "
+#~ "nonbonded-distance constraints reject chemically "
+#~ "implausible results, keeping conformation sampling "
+#~ "distinct from bond-breaking sampling."
 
 #~ msgid "**输入：** 一个有机分子晶体结构，分子拓扑可由程序自动识别"
 #~ msgstr ""
-#~ "**Input:** An organic molecular-crystal structure whose molecular "
-#~ "topology can be inferred automatically."
+#~ "**Input:** An organic molecular-crystal structure"
+#~ " whose molecular topology can be inferred "
+#~ "automatically."
 
 #~ msgid "`Bond Keep Min Factor` = `[0.6]`，`Bond Keep Max Enable` = 勾选"
 #~ msgstr "`Bond Keep Min Factor` = `[0.6]`; enable `Bond Keep Max Enable`."
 
 #~ msgid "**输出：** 最多 100 个构象，带 `TG(n=100,sig=0.03,pbc=auto)` 标签"
-#~ msgstr ""
-#~ "**Output:** Up to 100 conformations labeled `TG(n=100,sig=0.03,pbc=auto)`."
+#~ msgstr "**Output:** Up to 100 conformations labeled `TG(n=100,sig=0.03,pbc=auto)`."
 
-#~ msgid ""
-#~ "抽查键长分布：输出分子中没有明显短于 `0.6 * r0` 或长于 `1.15 * r0` 的键"
+#~ msgid "抽查键长分布：输出分子中没有明显短于 `0.6 * r0` 或长于 `1.15 * r0` 的键"
 #~ msgstr ""
-#~ "Inspect the bond-length distribution. Output molecules should have no "
-#~ "bonds appreciably shorter than `0.6 * r0` or longer than `1.15 * r0`."
+#~ "Inspect the bond-length distribution. Output "
+#~ "molecules should have no bonds appreciably "
+#~ "shorter than `0.6 * r0` or longer than"
+#~ " `1.15 * r0`."
 
 #~ msgid "抽查非键距离：没有不同片段原子重叠（距离 > `0.8 * r_vdw`）"
 #~ msgstr ""
-#~ "Inspect nonbonded distances and confirm that atoms from different "
-#~ "fragments do not overlap; distances should exceed `0.8 * r_vdw`."
+#~ "Inspect nonbonded distances and confirm that "
+#~ "atoms from different fragments do not overlap;"
+#~ " distances should exceed `0.8 * r_vdw`."
 
-#~ msgid ""
-#~ "如果成功率低（< 10%），放宽 `bond_keep_max_factor` 或增大 `max_retries`"
+#~ msgid "如果成功率低（< 10%），放宽 `bond_keep_max_factor` 或增大 `max_retries`"
 #~ msgstr ""
-#~ "If fewer than 10% of candidates are accepted, relax "
-#~ "`bond_keep_max_factor` or increase `max_retries`."
+#~ "If fewer than 10% of candidates are "
+#~ "accepted, relax `bond_keep_max_factor` or increase "
+#~ "`max_retries`."
 
 #~ msgid "研究有机分子晶体、聚合物、分子体系的构象空间"
 #~ msgstr ""
-#~ "You are exploring conformational space in an organic crystal, polymer, or "
-#~ "molecular system."
+#~ "You are exploring conformational space in an"
+#~ " organic crystal, polymer, or molecular system."
 
 #~ msgid "分子本身是刚性的（如苯环），扭转采样没有意义"
 #~ msgstr ""
-#~ "The molecule is rigid, such as an isolated benzene ring, so torsional "
-#~ "sampling adds no meaningful degree of freedom."
+#~ "The molecule is rigid, such as an "
+#~ "isolated benzene ring, so torsional sampling "
+#~ "adds no meaningful degree of freedom."
 
 #~ msgid ""
-#~ "`int`，默认 100。每个输入帧生成多少个构象候选，20~100 为常规。实际有效输"
-#~ "出 = 候选数 x 成功率，后面约束越严、保留率越低，产出的结构数可能明显少于候"
-#~ "选数。"
+#~ "`int`，默认 100。每个输入帧生成多少个构象候选，20~100 为常规。实际有效输出 = 候选数 "
+#~ "x 成功率，后面约束越严、保留率越低，产出的结构数可能明显少于候选数。"
 #~ msgstr ""
-#~ "`int`, default: `100`. Number of conformation candidates attempted per "
-#~ "input frame; 20–100 is typical. The effective output count is the "
-#~ "candidate count multiplied by the acceptance rate. Stricter constraints "
-#~ "lower that rate, so the card may return substantially fewer structures "
-#~ "than requested."
+#~ "`int`, default: `100`. Number of conformation "
+#~ "candidates attempted per input frame; 20–100 "
+#~ "is typical. The effective output count is "
+#~ "the candidate count multiplied by the "
+#~ "acceptance rate. Stricter constraints lower that "
+#~ "rate, so the card may return substantially "
+#~ "fewer structures than requested."
 
 #~ msgid ""
 #~ "`tuple[float, float]`，默认 `(-180.0, 180.0)`。二面角旋转范围（度），格式 "
-#~ "`[最小值, 最大值]`。±30° 保守，±180° 全覆盖。范围越大成功率越低，你需要权"
-#~ "衡覆盖面和出产率。"
+#~ "`[最小值, 最大值]`。±30° 保守，±180° 全覆盖。范围越大成功率越低，你需要权衡覆盖面和出产率。"
 #~ msgstr ""
-#~ "`tuple[float, float]`, default: `(-180.0, 180.0)`. Dihedral rotation "
-#~ "range in degrees, expressed as `[minimum, maximum]`. ±30° is "
-#~ "conservative; ±180° spans the full angular range. Wider scans typically "
-#~ "reduce acceptance, so balance coverage against yield."
+#~ "`tuple[float, float]`, default: `(-180.0, 180.0)`. "
+#~ "Dihedral rotation range in degrees, expressed "
+#~ "as `[minimum, maximum]`. ±30° is conservative; "
+#~ "±180° spans the full angular range. Wider "
+#~ "scans typically reduce acceptance, so balance "
+#~ "coverage against yield."
 
-#~ msgid ""
-#~ "`int`，默认 50。每个构象最多旋转几个二面角，常规 1~5。设越多构象越复杂、成"
-#~ "功率越低，建议从 3 起步试探。"
+#~ msgid "`int`，默认 50。每个构象最多旋转几个二面角，常规 1~5。设越多构象越复杂、成功率越低，建议从 3 起步试探。"
 #~ msgstr ""
-#~ "`int`, default: `50`. Maximum number of dihedrals rotated in one "
-#~ "candidate. A practical range is 1–5. Rotating more dihedrals creates more "
-#~ "complex conformations and lowers acceptance; start with 3 when tuning a "
-#~ "new system."
+#~ "`int`, default: `50`. Maximum number of "
+#~ "dihedrals rotated in one candidate. A "
+#~ "practical range is 1–5. Rotating more "
+#~ "dihedrals creates more complex conformations and "
+#~ "lowers acceptance; start with 3 when tuning"
+#~ " a new system."
 
-#~ msgid ""
-#~ "`float`，默认 0.03 Å。局域高斯扰动的标准差，常规 0.01~0.03。数值越大原子偏"
-#~ "移越剧烈。"
+#~ msgid "`float`，默认 0.03 Å。局域高斯扰动的标准差，常规 0.01~0.03。数值越大原子偏移越剧烈。"
 #~ msgstr ""
-#~ "`float`, default: `0.03` Å. Standard deviation of the local Gaussian "
-#~ "displacement. A typical range is 0.01–0.03 Å; larger values produce "
-#~ "stronger coordinate perturbations."
+#~ "`float`, default: `0.03` Å. Standard deviation "
+#~ "of the local Gaussian displacement. A typical"
+#~ " range is 0.01–0.03 Å; larger values "
+#~ "produce stronger coordinate perturbations."
 
-#~ msgid ""
-#~ "`int`，默认 12。每个构象候选在约束失败后的最大重试次数。增大能提高成功率但"
-#~ "线性增加耗时——设到 20 以上时先检查是不是约束太严了。"
+#~ msgid "`int`，默认 12。每个构象候选在约束失败后的最大重试次数。增大能提高成功率但线性增加耗时——设到 20 以上时先检查是不是约束太严了。"
 #~ msgstr ""
-#~ "`int`, default: `12`. Maximum retries after a candidate fails the "
-#~ "constraints. Increasing it can improve yield but raises cost linearly. "
-#~ "Before using more than 20 retries, check whether the constraints "
-#~ "themselves are unnecessarily strict."
+#~ "`int`, default: `12`. Maximum retries after a"
+#~ " candidate fails the constraints. Increasing it"
+#~ " can improve yield but raises cost "
+#~ "linearly. Before using more than 20 retries,"
+#~ " check whether the constraints themselves are "
+#~ "unnecessarily strict."
 
-#~ msgid ""
-#~ "`str`，默认 `'auto'`。构象扰动时的周期边界处理方式，可选 `auto` / `pbc` / "
-#~ "`nonpbc`。"
+#~ msgid "`str`，默认 `'auto'`。构象扰动时的周期边界处理方式，可选 `auto` / `pbc` / `nonpbc`。"
 #~ msgstr ""
-#~ "`str`, default: `'auto'`. Periodic-boundary treatment during conformation "
-#~ "perturbation. Choices are `auto`, `pbc`, and `nonpbc`."
+#~ "`str`, default: `'auto'`. Periodic-boundary "
+#~ "treatment during conformation perturbation. Choices "
+#~ "are `auto`, `pbc`, and `nonpbc`."
 
-#~ msgid ""
-#~ "`int`，默认 200。局部构象扰动的影响范围。小 cutoff 更局域，大 cutoff 会带"
-#~ "动更大分子片段一起动——柔性链或配体适合调大。"
+#~ msgid "`int`，默认 200。局部构象扰动的影响范围。小 cutoff 更局域，大 cutoff 会带动更大分子片段一起动——柔性链或配体适合调大。"
 #~ msgstr ""
-#~ "`int`, default: `200`. Spatial extent of a local conformational "
-#~ "perturbation. A smaller cutoff localizes the change; a larger cutoff "
-#~ "moves a larger molecular fragment and may be appropriate for flexible "
-#~ "chains or ligands."
+#~ "`int`, default: `200`. Spatial extent of a "
+#~ "local conformational perturbation. A smaller cutoff"
+#~ " localizes the change; a larger cutoff "
+#~ "moves a larger molecular fragment and may "
+#~ "be appropriate for flexible chains or ligands."
 
-#~ msgid ""
-#~ "`int`，默认 100。打开后扭转沿分子拓扑传播到子树，适合真实单键旋转；关掉时"
-#~ "更像纯局部坐标噪声。"
+#~ msgid "`int`，默认 100。打开后扭转沿分子拓扑传播到子树，适合真实单键旋转；关掉时更像纯局部坐标噪声。"
 #~ msgstr ""
-#~ "`int`, default: `100`. When enabled, a torsion propagates through the "
-#~ "molecular-topology subtree, as expected for rotation about a real single "
-#~ "bond. When disabled, the operation behaves more like local coordinate "
-#~ "noise."
+#~ "`int`, default: `100`. When enabled, a torsion"
+#~ " propagates through the molecular-topology "
+#~ "subtree, as expected for rotation about a "
+#~ "real single bond. When disabled, the operation"
+#~ " behaves more like local coordinate noise."
 
-#~ msgid ""
-#~ "`float`，默认 100.0 Å。非周期分子包围盒尺寸。盒子太小会制造假镜像接触，太"
-#~ "大只增加体积相关过滤风险。"
+#~ msgid "`float`，默认 100.0 Å。非周期分子包围盒尺寸。盒子太小会制造假镜像接触，太大只增加体积相关过滤风险。"
 #~ msgstr ""
-#~ "`float`, default: `100.0` Å. Bounding-box size for a nonperiodic "
-#~ "molecule. A box that is too small creates artificial image contacts; an "
-#~ "excessively large box can interact poorly with volume-based filters."
+#~ "`float`, default: `100.0` Å. Bounding-box size"
+#~ " for a nonperiodic molecule. A box that "
+#~ "is too small creates artificial image "
+#~ "contacts; an excessively large box can "
+#~ "interact poorly with volume-based filters."
 
-#~ msgid ""
-#~ "`float`，默认 1.15。成键检测因子，数值越大越容易把较远的原子对判定为成键。"
+#~ msgid "`float`，默认 1.15。成键检测因子，数值越大越容易把较远的原子对判定为成键。"
 #~ msgstr ""
-#~ "`float`, default: `1.15`. Bond-detection factor. Larger values make more "
-#~ "distant atom pairs likely to be classified as bonded."
+#~ "`float`, default: `1.15`. Bond-detection factor. "
+#~ "Larger values make more distant atom pairs "
+#~ "likely to be classified as bonded."
 
-#~ msgid ""
-#~ "`float`，默认 0.6。允许的最短键长 = `factor * r0`（r0 为平衡键长）。设太小"
-#~ "会放过断键结构，设太大又可能拒绝略压缩的合理构象。"
+#~ msgid "`float`，默认 0.6。允许的最短键长 = `factor * r0`（r0 为平衡键长）。设太小会放过断键结构，设太大又可能拒绝略压缩的合理构象。"
 #~ msgstr ""
-#~ "`float`, default: `0.6`. Minimum allowed bond length, `factor * r0`, "
-#~ "where `r0` is the reference bond length. A value that is too small admits "
-#~ "broken or collapsed geometries; one that is too large rejects reasonably "
-#~ "compressed conformations."
+#~ "`float`, default: `0.6`. Minimum allowed bond "
+#~ "length, `factor * r0`, where `r0` is the"
+#~ " reference bond length. A value that is "
+#~ "too small admits broken or collapsed "
+#~ "geometries; one that is too large rejects "
+#~ "reasonably compressed conformations."
 
-#~ msgid ""
-#~ "`float`，默认 1.15。允许的最长键长上限系数。值太小会拒绝合理的柔性拉伸构"
-#~ "象，太大又可能放过实质断键的结构。"
+#~ msgid "`float`，默认 1.15。允许的最长键长上限系数。值太小会拒绝合理的柔性拉伸构象，太大又可能放过实质断键的结构。"
 #~ msgstr ""
-#~ "`float`, default: `1.15`. Maximum bond-length factor. Too small a value "
-#~ "rejects legitimate flexible stretching; too large a value can admit "
-#~ "effectively broken bonds."
+#~ "`float`, default: `1.15`. Maximum bond-length "
+#~ "factor. Too small a value rejects legitimate"
+#~ " flexible stretching; too large a value can"
+#~ " admit effectively broken bonds."
 
-#~ msgid ""
-#~ "`bool`，默认 false。打开后才启用键长上限检查。当你需要严格保护分子内键不被"
-#~ "拉伸时打开；但如果体系本身含软键或反应路径，打开反而会误删高能但有意义的构"
-#~ "型。"
+#~ msgid "`bool`，默认 false。打开后才启用键长上限检查。当你需要严格保护分子内键不被拉伸时打开；但如果体系本身含软键或反应路径，打开反而会误删高能但有意义的构型。"
 #~ msgstr ""
-#~ "`bool`, default: `false`. Enables the maximum bond-length check. Use it "
-#~ "when intramolecular bonds must remain intact. For systems with soft bonds "
-#~ "or reactive pathways, it may reject high-energy but scientifically "
-#~ "relevant configurations."
+#~ "`bool`, default: `false`. Enables the maximum "
+#~ "bond-length check. Use it when intramolecular "
+#~ "bonds must remain intact. For systems with "
+#~ "soft bonds or reactive pathways, it may "
+#~ "reject high-energy but scientifically relevant "
+#~ "configurations."
 
-#~ msgid ""
-#~ "`float`，默认 0.87。多重键（C=C、C=O、芳香环等）的识别系数。含这些键的体系"
-#~ "需要用它限制扭转自由度；纯单键柔性分子影响很小。"
+#~ msgid "`float`，默认 0.87。多重键（C=C、C=O、芳香环等）的识别系数。含这些键的体系需要用它限制扭转自由度；纯单键柔性分子影响很小。"
 #~ msgstr ""
-#~ "`float`, default: `0.87`. Detection factor for multiple bonds such as "
-#~ "C=C, C=O, and aromatic bonds. It restricts torsional freedom in systems "
-#~ "containing such bonds and has little effect on molecules dominated by "
+#~ "`float`, default: `0.87`. Detection factor for "
+#~ "multiple bonds such as C=C, C=O, and "
+#~ "aromatic bonds. It restricts torsional freedom "
+#~ "in systems containing such bonds and has "
+#~ "little effect on molecules dominated by "
 #~ "flexible single bonds."
 
-#~ msgid ""
-#~ "`float`，默认 0.3。键级估计的衰减常数，影响哪些键被当成强键保护。除非你在"
-#~ "调试键识别，保持默认就好。"
+#~ msgid "`float`，默认 0.3。键级估计的衰减常数，影响哪些键被当成强键保护。除非你在调试键识别，保持默认就好。"
 #~ msgstr ""
-#~ "`float`, default: `0.3`. Decay constant used in bond-order estimation and "
-#~ "therefore in deciding which bonds receive strong protection. Keep the "
-#~ "default unless you are diagnosing bond detection."
+#~ "`float`, default: `0.3`. Decay constant used "
+#~ "in bond-order estimation and therefore in "
+#~ "deciding which bonds receive strong protection. "
+#~ "Keep the default unless you are diagnosing "
+#~ "bond detection."
 
-#~ msgid ""
-#~ "`float`，默认 0.2。化学键保留的键级阈值。阈值越高，只有更强的键被识别和保"
-#~ "护；阈值越低，更多弱相互作用被当成键，可能过度限制构象自由度。"
+#~ msgid "`float`，默认 0.2。化学键保留的键级阈值。阈值越高，只有更强的键被识别和保护；阈值越低，更多弱相互作用被当成键，可能过度限制构象自由度。"
 #~ msgstr ""
-#~ "`float`, default: `0.2`. Bond-order threshold for preserving chemical "
-#~ "bonds. Raising it protects only stronger bonds; lowering it classifies "
-#~ "more weak interactions as bonds and may overconstrain conformational "
-#~ "freedom."
+#~ "`float`, default: `0.2`. Bond-order threshold "
+#~ "for preserving chemical bonds. Raising it "
+#~ "protects only stronger bonds; lowering it "
+#~ "classifies more weak interactions as bonds and"
+#~ " may overconstrain conformational freedom."
 
-#~ msgid ""
-#~ "`float`，默认 0.8。非键原子允许的最近距离 = `factor * r_vdw`（r_vdw 为范德"
-#~ "华半径）。发现原子穿插时调大到 0.9~1.0。"
+#~ msgid "`float`，默认 0.8。非键原子允许的最近距离 = `factor * r_vdw`（r_vdw 为范德华半径）。发现原子穿插时调大到 0.9~1.0。"
 #~ msgstr ""
-#~ "`float`, default: `0.8`. Minimum nonbonded distance, `factor * r_vdw`, "
-#~ "where `r_vdw` is the van der Waals reference distance used by the "
-#~ "implementation. Increase this to 0.9–1.0 if atoms interpenetrate."
+#~ "`float`, default: `0.8`. Minimum nonbonded distance,"
+#~ " `factor * r_vdw`, where `r_vdw` is the "
+#~ "van der Waals reference distance used by "
+#~ "the implementation. Increase this to 0.9–1.0 "
+#~ "if atoms interpenetrate."
 
-#~ msgid ""
-#~ "`int`，默认 0。固定随机种子值。仅 `use_seed` 打开时生效，两个不同 seed 产"
-#~ "生两组不同的扭转角和扰动方向。"
+#~ msgid "`int`，默认 0。固定随机种子值。仅 `use_seed` 打开时生效，两个不同 seed 产生两组不同的扭转角和扰动方向。"
 #~ msgstr ""
-#~ "`int`, default: `0`. Fixed random seed used only when `use_seed` is "
-#~ "enabled. Different seeds produce different torsion angles and "
+#~ "`int`, default: `0`. Fixed random seed used"
+#~ " only when `use_seed` is enabled. Different "
+#~ "seeds produce different torsion angles and "
 #~ "perturbation directions."
 
 #~ msgid ""
-#~ "**输出成功率很低（<10%）。** 约束太严或者扭转范围太大导致大部分候选被拒"
-#~ "绝。先收窄 `torsion_range_deg`，增大 `max_retries`，放宽 "
-#~ "`bond_keep_max_factor`。"
+#~ "**输出成功率很低（<10%）。** 约束太严或者扭转范围太大导致大部分候选被拒绝。先收窄 `torsion_range_deg`，增大"
+#~ " `max_retries`，放宽 `bond_keep_max_factor`。"
 #~ msgstr ""
-#~ "**The acceptance rate is below 10%.** Most candidates are being rejected "
-#~ "because the constraints are too strict or the torsion range is too wide. "
-#~ "First narrow `torsion_range_deg`, then increase `max_retries` or relax "
-#~ "`bond_keep_max_factor` as justified by the chemistry."
+#~ "**The acceptance rate is below 10%.** Most "
+#~ "candidates are being rejected because the "
+#~ "constraints are too strict or the torsion "
+#~ "range is too wide. First narrow "
+#~ "`torsion_range_deg`, then increase `max_retries` or "
+#~ "relax `bond_keep_max_factor` as justified by the "
+#~ "chemistry."
 
-#~ msgid ""
-#~ "**键被拉断了。** `bond_keep_max_enable` 没开，或者 `bond_keep_max_factor` "
-#~ "太大。开启该约束并设定合理上限。"
+#~ msgid "**键被拉断了。** `bond_keep_max_enable` 没开，或者 `bond_keep_max_factor` 太大。开启该约束并设定合理上限。"
 #~ msgstr ""
-#~ "**Bonds are being stretched to the point of breaking.** "
-#~ "`bond_keep_max_enable` is disabled or `bond_keep_max_factor` is too "
-#~ "large. Enable the upper bond-length constraint and choose a chemically "
-#~ "defensible limit."
+#~ "**Bonds are being stretched to the point "
+#~ "of breaking.** `bond_keep_max_enable` is disabled or"
+#~ " `bond_keep_max_factor` is too large. Enable the"
+#~ " upper bond-length constraint and choose a"
+#~ " chemically defensible limit."
 
 #~ msgid "**非键原子穿插。** `nonbond_min_factor` 太小。增大到 0.9~1.0。"
-#~ msgstr ""
-#~ "**Nonbonded atoms interpenetrate.** Increase `nonbond_min_factor` to 0.9–"
-#~ "1.0."
+#~ msgstr "**Nonbonded atoms interpenetrate.** Increase `nonbond_min_factor` to 0.9–1.0."
 
-#~ msgid ""
-#~ "**扭转角采样没有效果。** 确认分子中存在可旋转的单键。刚性环分子没有可旋转"
-#~ "二面角。"
+#~ msgid "**扭转角采样没有效果。** 确认分子中存在可旋转的单键。刚性环分子没有可旋转二面角。"
 #~ msgstr ""
-#~ "**Torsional sampling has no visible effect.** Confirm that the molecule "
-#~ "contains a rotatable single bond. A rigid ring has no freely rotatable "
-#~ "dihedral."
+#~ "**Torsional sampling has no visible effect.** "
+#~ "Confirm that the molecule contains a rotatable"
+#~ " single bond. A rigid ring has no "
+#~ "freely rotatable dihedral."
 
-#, python-brace-format
 #~ msgid "`TG(n={候选数},sig={sigma},pbc={模式})`"
 #~ msgstr "`TG(n={candidate count},sig={sigma},pbc={mode})`"
 
 #~ msgid ""
-#~ "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。构象生成受 seed + 结构稳"
-#~ "定 ID 联合控制，不同 seed 产生不同的扭转角和扰动方向。"
+#~ "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。构象生成受 "
+#~ "seed + 结构稳定 ID 联合控制，不同 seed 产生不同的扭转角和扰动方向。"
 #~ msgstr ""
-#~ "Enable `use_seed` and fix `seed` to reproduce the result for the same "
-#~ "input. Conformation generation is controlled jointly by the seed and the "
-#~ "structure's stable ID; different seeds produce different torsions and "
+#~ "Enable `use_seed` and fix `seed` to reproduce"
+#~ " the result for the same input. "
+#~ "Conformation generation is controlled jointly by "
+#~ "the seed and the structure's stable ID; "
+#~ "different seeds produce different torsions and "
 #~ "perturbation directions."
+
+#~ msgid "有机构象采样（Organic Mol Config）"
+#~ msgstr "Organic Molecular Conformation Sampling (Organic Mol Config)"
+
+#~ msgid ""
+#~ "对有机分子体系做单键子树旋转，并可叠加逐原子的高斯坐标噪声。程序先按共价半径、距离上限和 Pauling "
+#~ "键级阈值建立启发式拓扑；只有从拓扑中删除后能分开两侧子树的内部键才会参与旋转，因此环内键不会被当成普通可旋转单键。"
+#~ msgstr ""
+#~ "Rotate single-bond subtrees in organic "
+#~ "molecular systems and optionally add per-atom"
+#~ " Gaussian coordinate noise. The program first "
+#~ "builds a heuristic topology from covalent "
+#~ "radii, distance limits, and Pauling bond-order"
+#~ " thresholds. Only internal bonds whose removal"
+#~ " separates the two subtrees participate in "
+#~ "rotation, so ring bonds are not treated "
+#~ "as ordinary rotatable single bonds."
+
+#~ msgid "每个候选还要经过原始键对的长度检查和非键原子的碰撞检查；失败时会减半旋转角与噪声后重试，全部重试仍失败的候选会被跳过，不会用未变化的输入结构冒充成功输出。"
+#~ msgstr ""
+#~ "Each candidate also undergoes checks on "
+#~ "original bonded-pair lengths and nonbonded "
+#~ "collisions. On failure, the card halves the"
+#~ " rotation angle and noise and retries; "
+#~ "candidates that still fail all retries are "
+#~ "skipped rather than returned as unchanged "
+#~ "pseudo-successes."
+
+#~ msgid ""
+#~ "\\Delta\\theta\\sim U(\\theta_{\\min},\\theta_{\\max}),\\quad "
+#~ "\\Delta\\mathbf{r}_i\\sim\\mathcal{N}(0,\\sigma^2),\\quad d_{ij}\\text{ "
+#~ "的阈值均按 }r_i^{\\mathrm{cov}}+r_j^{\\mathrm{cov}}\\text{ 缩放}"
+#~ msgstr ""
+#~ "\\Delta\\theta\\sim U(\\theta_{\\min},\\theta_{\\max}),\\quad "
+#~ "\\Delta\\mathbf{r}_i\\sim\\mathcal{N}(0,\\sigma^2),\\quad d_{ij}\\text{ "
+#~ "thresholds are scaled by "
+#~ "}r_i^{\\mathrm{cov}}+r_j^{\\mathrm{cov}}\\text{.}"
+
+#~ msgid ""
+#~ "$\\Delta\\theta$ 是被选可旋转键的子树转角，$\\sigma$ 是逐 Cartesian "
+#~ "分量的高斯标准差， $r_i^{\\mathrm{cov}}$ 是元素共价半径。拓扑、键长保护和非键碰撞三道检查共同决定候选是否 "
+#~ "接受，公式中的随机抽样本身并不保证化学合理。"
+#~ msgstr ""
+#~ "$\\Delta\\theta$ is the subtree rotation angle "
+#~ "for a selected rotatable bond, $\\sigma$ is"
+#~ " the Gaussian standard deviation per Cartesian"
+#~ " component, and $r_i^{\\mathrm{cov}}$ is the "
+#~ "covalent radius of element $i$. Topology, "
+#~ "bond-length protection, and nonbonded-collision "
+#~ "checks jointly determine whether a candidate "
+#~ "is accepted; random sampling alone does not"
+#~ " guarantee chemical validity."
+
+#~ msgid ""
+#~ "这里的“键”和“可旋转键”来自几何启发式，不是 RDKit "
+#~ "等化学感知工具给出的正式键型。金属配位、离子对、非常规价态或已经严重畸变的输入可能识别错误；先看卡片首帧预览中的“检测键数 / "
+#~ "可旋转键数”，再抽查输出。"
+#~ msgstr ""
+#~ "The `bonds` and `rotatable bonds` here come"
+#~ " from geometric heuristics, not formal bond "
+#~ "types from a chemistry-aware tool such "
+#~ "as RDKit. Metal coordination, ion pairs, "
+#~ "unusual valences, or severely distorted inputs "
+#~ "may be identified incorrectly; inspect the "
+#~ "preview's detected/rotatable bond counts before "
+#~ "reviewing outputs."
+
+#~ msgid "场景：模型在小分子构象变化上的力预测完全不准"
+#~ msgstr "Scenario: force predictions fail when a small molecule changes conformation"
+
+#~ msgid ""
+#~ "你在一个有机分子晶体上训练了一个 NEP 模型，分子内的平衡键长和键角都学得不错。但你把同一个分子旋转一个二面角后，力的 MAE"
+#~ " 跳了 4 倍。诊断发现训练集里每个分子只有一种构象——模型不知道扭转角改变时力场该怎么变。"
+#~ msgstr ""
+#~ "You trained an NEP model for an organic"
+#~ " molecular crystal. It reproduces equilibrium "
+#~ "bond lengths and angles, but the force "
+#~ "MAE increases fourfold after rotating one "
+#~ "dihedral in the same molecule. The training"
+#~ " set contains only one conformation per "
+#~ "molecule, so the model has no basis for"
+#~ " learning how forces change along torsional "
+#~ "degrees of freedom."
+
+#~ msgid ""
+#~ "**诊断思路：** 有机分子的势能面在二面角方向上是多极值的（如 gauche 和 anti "
+#~ "构象）。如果训练集只有一种构象，模型在这个柔性自由度上只能外推。需要系统地对可旋转二面角做采样，并保留那些键长不崩、非键不穿插的构象作为训练样本。"
+#~ msgstr ""
+#~ "**Diagnosis:** The potential-energy surface of "
+#~ "an organic molecule often has multiple minima"
+#~ " along a dihedral coordinate, such as "
+#~ "gauche and anti conformers. With only one "
+#~ "conformation in the training set, the model"
+#~ " must extrapolate along that flexible degree "
+#~ "of freedom. Sample rotatable dihedrals "
+#~ "systematically and retain candidates that preserve"
+#~ " bonds and avoid nonbonded overlap."
+
+#~ msgid "**输入：** 一个有机分子或全三维周期的分子晶体；程序按当前几何估计分子拓扑"
+#~ msgstr ""
+#~ "**Input:** an organic molecule or a fully "
+#~ "three-dimensional periodic molecular crystal; the"
+#~ " program estimates molecular topology from the"
+#~ " current geometry."
+
+#~ msgid "**目标：** 每帧生成 100 个构象候选，扭转角在 ±60 度内采样，sigma 0.03 的高斯位移"
+#~ msgstr ""
+#~ "**Goal:** Generate 100 conformation candidates per"
+#~ " frame, sample torsions within ±60°, and "
+#~ "add Gaussian displacements with σ = 0.03 "
+#~ "Å."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid "`每个输入的请求输出数`（`perturb_per_frame`） = `100`"
+#~ msgstr "`Requested outputs per input` (`perturb_per_frame`) = `100`"
+
+#~ msgid "`扭转角增量`（`torsion_range_deg`） = `[-60, 60]`"
+#~ msgstr "`Torsion-angle range` (`torsion_range_deg`) = `[-60, 60]`"
+
+#~ msgid "`每个输出旋转的键数`（`max_torsions_per_conf`） = `5`"
+#~ msgstr "`Bonds rotated per output` (`max_torsions_per_conf`) = `5`"
+
+#~ msgid "`高斯坐标噪声`（`gaussian_sigma`） = `0.03 Å`"
+#~ msgstr "`Gaussian coordinate noise` (`gaussian_sigma`) = `0.03 Å`"
+
+#~ msgid "展开“拓扑和几何保护设置”，勾选 `Enable upper bound`"
+#~ msgstr "Expand `Topology and geometry protection` and enable `Enable upper bound`."
+
+#~ msgid "**输出：** 最多 100 个通过保护条件的构象，带 `TG(req=100,ok={实际成功数},sig=0.03,pbc=auto)` 标签"
+#~ msgstr ""
+#~ "**Output:** up to 100 conformations that pass"
+#~ " the protection checks, labeled "
+#~ "`TG(req=100,ok={actual_successes},sig=0.03,pbc=auto)`."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后对手动旋转二面角后的测试构型推理，力 MAE 应显著缩小"
+#~ msgstr ""
+#~ "After DFT labeling and retraining, evaluate "
+#~ "held-out structures with manually rotated "
+#~ "dihedrals; their force MAE should decrease "
+#~ "substantially."
+
+#~ msgid "抽查键长分布：原始检测键没有短于 `0.6 * (r_i^cov+r_j^cov)`；打开上限后也没有长于设定上限"
+#~ msgstr ""
+#~ "Inspect the bond-length distribution: no "
+#~ "detected original bond is shorter than `0.6"
+#~ " * (r_i^cov+r_j^cov)`; with the upper bound "
+#~ "enabled, none exceeds the configured limit."
+
+#~ msgid "抽查非键距离：没有低于 `0.8 * (r_i^cov+r_j^cov)` 的非键原子对"
+#~ msgstr ""
+#~ "Inspect nonbonded distances: no nonbonded atom "
+#~ "pair is below `0.8 * (r_i^cov+r_j^cov)`."
+
+#~ msgid "如果成功率低（< 10%），放宽 `最大保留键长系数`（`bond_keep_max_factor`）或增大 `最大重试次数`（`max_retries`）"
+#~ msgstr ""
+#~ "If the success rate is low (< 10%), "
+#~ "relax `Maximum kept-bond length factor` "
+#~ "(`bond_keep_max_factor`) or increase `Maximum retries` "
+#~ "(`max_retries`)."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "研究有机小分子、分子晶体或非周期分子的构象空间"
+#~ msgstr ""
+#~ "Study conformational space in organic molecules, "
+#~ "molecular crystals, or nonperiodic molecules."
+
+#~ msgid "模型对柔性自由度的预测差（扭转角变化引起力/能量跳变）"
+#~ msgstr ""
+#~ "The model is inaccurate along flexible degrees"
+#~ " of freedom, with force or energy errors"
+#~ " changing sharply as torsions rotate."
+
+#~ msgid "需要覆盖分子内多种构象（gauche, anti, eclipsed）"
+#~ msgstr "gauche, anti, eclipsed"
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "纯无机体系（没有可旋转二面角）"
+#~ msgstr "The system is purely inorganic and has no rotatable dihedrals."
+
+#~ msgid "分子本身是刚性的（如苯环），且你也不需要高斯坐标噪声"
+#~ msgstr ""
+#~ "The molecule is rigid (such as a benzene"
+#~ " ring) and Gaussian coordinate noise is "
+#~ "unnecessary."
+
+#~ msgid "需要化学价态、芳香性或反应键的严格识别；这张卡只有几何启发式拓扑"
+#~ msgstr ""
+#~ "You need strict identification of valence, "
+#~ "aromaticity, or reaction bonds; this card "
+#~ "provides only a geometric heuristic topology."
+
+#~ msgid "只需要坐标扰动 → 用 `Atomic Perturb`"
+#~ msgstr "You need only coordinate noise → use `Atomic Perturb`."
+
+#~ msgid ""
+#~ "`int`，默认 100。每个输入结构尝试生成多少个候选，20–100 "
+#~ "为常规。保护条件失败的候选会被跳过，所以实际输出数可能小于该值；若一个都没有通过，卡片直接报错。"
+#~ msgstr ""
+#~ "`int`, default 100. Number of candidates "
+#~ "attempted per input; 20–100 is typical. "
+#~ "Candidates that fail protection checks are "
+#~ "skipped, so the actual output may be "
+#~ "smaller; if none passes, the card fails."
+
+#~ msgid ""
+#~ "`tuple[float, float]`，默认 `(-180.0, "
+#~ "180.0)`。这是加到当前构象上的**旋转增量**范围，不是输出二面角的绝对目标值。±30° 较保守，±180° "
+#~ "覆盖更广；范围越大，几何保护失败概率通常越高。"
+#~ msgstr ""
+#~ "`tuple[float, float]`, default `(-180.0, 180.0)`. "
+#~ "The **rotation increment** added to the "
+#~ "current conformation, not an absolute target "
+#~ "dihedral. ±30° is conservative and ±180° "
+#~ "covers more space; wider ranges usually "
+#~ "increase geometry-protection failures."
+
+#~ msgid "`float`，默认 0.03 Å。扭转之后，对**每个原子**独立添加笛卡尔高斯噪声；它不是只作用于局部子树。常规可从 0.01–0.03 Å 开始。"
+#~ msgstr ""
+#~ "`float`, default 0.03 Å. After torsion, add"
+#~ " independent Cartesian Gaussian noise to **every"
+#~ " atom**; it is not limited to the "
+#~ "local subtree. A typical starting range is "
+#~ "0.01–0.03 Å."
+
+#~ msgid "PBC 和局部环境"
+#~ msgstr "Periodic boundaries and local environment"
+
+#~ msgid "`auto`：只在输入三个 PBC 方向都打开时使用周期模式；普通无周期分子不会因为带一个显示 cell 就被误判为周期体系。"
+#~ msgstr ""
+#~ "`auto`: use periodic mode only when all "
+#~ "three input PBC directions are enabled; an "
+#~ "ordinary nonperiodic molecule is not misclassified"
+#~ " merely because it has a display cell."
+
+#~ msgid "`yes`：强制全三维周期，输入必须有有限且非奇异的 3×3 cell。"
+#~ msgstr ""
+#~ "`yes`: force full three-dimensional periodicity; "
+#~ "the input must have a finite, nonsingular "
+#~ "3×3 cell."
+
+#~ msgid "`no`：按非周期分子处理，并在输出中写入显示盒。"
+#~ msgstr ""
+#~ "`no`: treat the input as a nonperiodic "
+#~ "molecule and write a display box to the"
+#~ " output."
+
+#~ msgid "二维或一维混合 PBC 暂不支持；`auto` 会明确报错，不会把部分周期静默改成全三维周期。"
+#~ msgstr ""
+#~ "Mixed two- or one-dimensional PBC is not"
+#~ " supported yet; `auto` fails explicitly instead"
+#~ " of silently converting partial periodicity to"
+#~ " full three-dimensional periodicity."
+
+#~ msgid ""
+#~ "`int`，默认 150。这不是距离 cutoff，而是切换局部模式的**总原子数阈值**。当输入原子数大于该值时，每次旋转的子树会受"
+#~ " `仅旋转局部子树`（`local_subtree`）限制；小体系则旋转完整一侧子树。"
+#~ msgstr ""
+#~ "`int`, default 150. This is not a "
+#~ "distance cutoff, but the **total-atom "
+#~ "threshold** for switching to local mode. When"
+#~ " the input exceeds it, each rotation is "
+#~ "limited by `Rotate local subtree only` "
+#~ "(`local_subtree`); smaller systems rotate the "
+#~ "complete subtree on one side."
+
+#~ msgid "`int`，默认 40。局部模式中，一条键一侧最多一起旋转的原子数。它只有在输入原子数超过 `局部截断距离`（`local_cutoff`）时生效。"
+#~ msgstr ""
+#~ "`int`, default 40. In local mode, maximum "
+#~ "number of atoms rotated together on one "
+#~ "side of a bond. It takes effect only "
+#~ "when the input exceeds `Local cutoff` "
+#~ "(`local_cutoff`)."
+
+#~ msgid ""
+#~ "`float`，默认 100.0 Å。非周期输出被居中后写入的立方显示 cell 边长。输出 PBC"
+#~ " 仍为 false，因此该盒子不会参与碰撞检查，也不会制造周期镜像。"
+#~ msgstr ""
+#~ "`float`, default 100.0 Å. Edge length of "
+#~ "the cubic display cell written after centering"
+#~ " a nonperiodic output. Output PBC remains "
+#~ "false, so this box is not used for "
+#~ "collision checks and does not create periodic"
+#~ " images."
+
+#~ msgid "键识别和键长约束"
+#~ msgstr "Bond detection and bond-length constraints"
+
+#~ msgid ""
+#~ "`float`，默认 1.15。候选键距离必须不超过 `factor * "
+#~ "(r_i^cov+r_j^cov)`，同时还要通过 `键级阈值`（`bo_threshold`）。数值越大越容易把相邻分子或配位接触误识别为键。"
+#~ msgstr ""
+#~ "`float`, default 1.15. Candidate bond distances "
+#~ "must not exceed `factor * (r_i^cov+r_j^cov)` "
+#~ "and must pass `Bond-order threshold` "
+#~ "(`bo_threshold`). Larger values make adjacent "
+#~ "molecules or coordination contacts more likely "
+#~ "to be misidentified as bonds."
+
+#~ msgid ""
+#~ "`float`，默认 0.6。原始检测键允许的最短距离为 `factor * "
+#~ "(r_i^cov+r_j^cov)`。它防的是过度压缩，不是断键；设太大会拒绝合理的短键。"
+#~ msgstr ""
+#~ "`float`, default 0.6. The shortest allowed "
+#~ "original detected bond is `factor * "
+#~ "(r_i^cov+r_j^cov)`. This prevents over-compression, "
+#~ "not bond breaking; setting it too high "
+#~ "rejects reasonable short bonds."
+
+#~ msgid "`bool`，默认 false。打开后才启用键长上限检查；关闭时没有隐藏的默认上限。研究非反应构象时建议打开；反应路径或软配位键可能需要关闭。"
+#~ msgstr ""
+#~ "`bool`, default false. Enables the bond-length"
+#~ " upper-bound check; when disabled, no "
+#~ "hidden default upper bound applies. Enable it"
+#~ " for nonreactive conformations; reaction paths or"
+#~ " soft coordination bonds may require it to"
+#~ " remain disabled."
+
+#~ msgid ""
+#~ "`float`，默认 0.87。短于 `factor * (r_i^cov+r_j^cov)` "
+#~ "的键不参与旋转；估计键级大于等于 2 的键也不参与。环内键由于不是拓扑桥边，同样不会旋转。"
+#~ msgstr ""
+#~ "`float`, default 0.87. Bonds shorter than "
+#~ "`factor * (r_i^cov+r_j^cov)` are not rotated; "
+#~ "estimated bond order ≥ 2 is also "
+#~ "excluded. Ring bonds are likewise not rotated"
+#~ " because they are not topological bridge "
+#~ "edges."
+
+#~ msgid ""
+#~ "`float`，默认 0.3 Å。用于 `exp((r_i^cov+r_j^cov-d)/c)` "
+#~ "的衰减常数。它影响拓扑边和估计键级，除非预览中的检测键数明显不合理，否则保持默认。"
+#~ msgstr ""
+#~ "`float`, default 0.3 Å. Decay constant in "
+#~ "`exp((r_i^cov+r_j^cov-d)/c)`. It affects topology edges"
+#~ " and estimated bond order; keep the default"
+#~ " unless the preview's detected-bond count "
+#~ "is clearly unreasonable."
+
+#~ msgid "`float`，默认 0.2。估计 Pauling 键级必须高于该值才会形成拓扑边；阈值越低，越容易把弱接触当成键。"
+#~ msgstr ""
+#~ "`float`, default 0.2. The estimated Pauling "
+#~ "bond order must exceed this value to "
+#~ "form a topology edge; lower thresholds more"
+#~ " easily treat weak contacts as bonds."
+
+#~ msgid "非键约束"
+#~ msgstr "Nonbonded constraints"
+
+#~ msgid ""
+#~ "`float`，默认 0.8。非键原子允许的最近距离为 `factor * "
+#~ "(r_i^cov+r_j^cov)`；这里使用的是共价半径，不是范德华半径。发现穿插时可适当调大，但过大会大量拒绝紧密堆积的分子晶体候选。"
+#~ msgstr ""
+#~ "`float`, default 0.8. The nearest allowed "
+#~ "nonbonded distance is `factor * (r_i^cov+r_j^cov)`;"
+#~ " covalent radii, not van der Waals radii,"
+#~ " are used. Increase it moderately when "
+#~ "atoms interpenetrate, but an excessive value "
+#~ "rejects many densely packed molecular-crystal "
+#~ "candidates."
+
+#~ msgid "`bool`，默认 false。打开 + 固定 seed 后同参数同输入可复现。种子与结构的稳定 ID 联合影响采样路径。"
+#~ msgstr ""
+#~ "`bool`, default: `false`. Enable with a fixed"
+#~ " seed for reproducible sampling from the "
+#~ "same input and parameters. The seed and "
+#~ "the structure's stable ID jointly determine "
+#~ "the sampling path."
+
+#~ msgid "`int`，默认 0。固定随机种子值。仅 `使用随机种子`（`use_seed`）打开时生效，两个不同 seed 产生两组不同的扭转角和扰动方向。"
+#~ msgstr ""
+#~ "`int`, default 0. Fixed random-seed value. "
+#~ "Used only when `Use random seed` (`use_seed`)"
+#~ " is enabled; different seeds produce different"
+#~ " torsion angles and perturbation directions."
+
+#~ msgid "生效条件：`use_seed=True`。"
+#~ msgstr "Active only when `use_seed=True`."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "保守（小角度扭转，±30°，50 候选）"
+#~ msgstr "Conservative (small torsions, ±30°, 50 candidates)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"OrganicMolConfigPBCCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"perturb_per_frame\": 50,\n"
+#~ "    \"torsion_range_deg\": [-30, 30],\n"
+#~ "    \"max_torsions_per_conf\": 3,\n"
+#~ "    \"gaussian_sigma\": 0.01,\n"
+#~ "    \"pbc_mode\": \"auto\",\n"
+#~ "    \"local_cutoff\": 150,\n"
+#~ "    \"local_subtree\": 40,\n"
+#~ "    \"bond_detect_factor\": 1.15,\n"
+#~ "    \"bond_keep_min_factor\": 0.6,\n"
+#~ "    \"bond_keep_max_factor\": 1.15,\n"
+#~ "    \"bond_keep_max_enable\": true,\n"
+#~ "    \"nonbond_min_factor\": 0.8,\n"
+#~ "    \"max_retries\": 12,\n"
+#~ "    \"mult_bond_factor\": 0.87,\n"
+#~ "    \"nonpbc_box_size\": 100.0,\n"
+#~ "    \"bo_c_const\": 0.3,\n"
+#~ "    \"bo_threshold\": 0.2,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 42\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "平衡（中等扭转，±60°，100 候选）"
+#~ msgstr "Balanced (moderate torsions, ±60°, 100 candidates)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"OrganicMolConfigPBCCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"perturb_per_frame\": 100,\n"
+#~ "    \"torsion_range_deg\": [-60, 60],\n"
+#~ "    \"max_torsions_per_conf\": 5,\n"
+#~ "    \"gaussian_sigma\": 0.03,\n"
+#~ "    \"pbc_mode\": \"auto\",\n"
+#~ "    \"local_cutoff\": 150,\n"
+#~ "    \"local_subtree\": 40,\n"
+#~ "    \"bond_detect_factor\": 1.15,\n"
+#~ "    \"bond_keep_min_factor\": 0.6,\n"
+#~ "    \"bond_keep_max_factor\": 1.15,\n"
+#~ "    \"bond_keep_max_enable\": true,\n"
+#~ "    \"nonbond_min_factor\": 0.8,\n"
+#~ "    \"max_retries\": 12,\n"
+#~ "    \"mult_bond_factor\": 0.87,\n"
+#~ "    \"nonpbc_box_size\": 100.0,\n"
+#~ "    \"bo_c_const\": 0.3,\n"
+#~ "    \"bo_threshold\": 0.2,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 42\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "探索（大角度扭转，±120°，100 候选）"
+#~ msgstr "Exploratory (large torsions, ±120°, 100 candidates)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"OrganicMolConfigPBCCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"perturb_per_frame\": 100,\n"
+#~ "    \"torsion_range_deg\": [-120, 120],\n"
+#~ "    \"max_torsions_per_conf\": 8,\n"
+#~ "    \"gaussian_sigma\": 0.05,\n"
+#~ "    \"pbc_mode\": \"auto\",\n"
+#~ "    \"local_cutoff\": 150,\n"
+#~ "    \"local_subtree\": 40,\n"
+#~ "    \"bond_detect_factor\": 1.15,\n"
+#~ "    \"bond_keep_min_factor\": 0.6,\n"
+#~ "    \"bond_keep_max_factor\": 1.15,\n"
+#~ "    \"bond_keep_max_enable\": true,\n"
+#~ "    \"nonbond_min_factor\": 0.8,\n"
+#~ "    \"max_retries\": 20,\n"
+#~ "    \"mult_bond_factor\": 0.87,\n"
+#~ "    \"nonpbc_box_size\": 100.0,\n"
+#~ "    \"bo_c_const\": 0.3,\n"
+#~ "    \"bo_threshold\": 0.2,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 42\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "推荐组合"
+#~ msgstr "Recommended combinations"
+
+#~ msgid "`Organic Mol Config` → `Atomic Perturb`：先做构象主采样，再加轻度热噪声"
+#~ msgstr ""
+#~ "`Organic Mol Config` → `Atomic Perturb`: "
+#~ "sample the main conformational degrees of "
+#~ "freedom, then add mild thermal-like noise."
+
+#~ msgid "`Organic Mol Config` → `FPS Filter`：大批量生成后做代表性筛选"
+#~ msgstr ""
+#~ "`Organic Mol Config` → `FPS Filter`: select"
+#~ " representative structures after large-scale "
+#~ "generation."
+
+#~ msgid "对有机体系后筛时，优先看键长、非键距离和拓扑保持情况"
+#~ msgstr ""
+#~ "When filtering an organic system, prioritize "
+#~ "bond lengths, nonbonded distances, and topology "
+#~ "preservation."
+
+#~ msgid ""
+#~ "**输出数量明显小于请求值。** 其余候选没有通过保护条件。先检查预览中的检测键和可旋转键是否合理，再收窄 "
+#~ "`扭转角增量`（`torsion_range_deg`）、减小高斯噪声，或调整真正导致失败的保护阈值。增大 "
+#~ "`最大重试次数`（`max_retries`）只会用更小扰动继续尝试。"
+#~ msgstr ""
+#~ "**The output count is far below the "
+#~ "request.** The remaining candidates failed "
+#~ "protection checks. First inspect whether the "
+#~ "detected and rotatable bonds in the preview"
+#~ " are reasonable, then narrow `Torsion-angle "
+#~ "range` (`torsion_range_deg`), reduce Gaussian noise, "
+#~ "or adjust the threshold that actually causes"
+#~ " failure. Increasing `Maximum retries` (`max_retries`)"
+#~ " only retries with smaller perturbations."
+
+#~ msgid ""
+#~ "**键被拉断了。** `启用最大保留键长`（`bond_keep_max_enable`）没开，或者 "
+#~ "`最大保留键长系数`（`bond_keep_max_factor`）太大。开启该约束并设定合理上限。"
+#~ msgstr ""
+#~ "**A bond was stretched too far.** `Enable "
+#~ "maximum kept-bond length` (`bond_keep_max_enable`) "
+#~ "is disabled, or `Maximum kept-bond length "
+#~ "factor` (`bond_keep_max_factor`) is too large. "
+#~ "Enable the constraint and set a reasonable "
+#~ "upper bound."
+
+#~ msgid "**非键原子穿插。** `非键原子最小距离系数`（`nonbond_min_factor`）太小。增大到 0.9~1.0。"
+#~ msgstr ""
+#~ "**Nonbonded atoms interpenetrate.** `Nonbonded minimum-"
+#~ "distance factor` (`nonbond_min_factor`) is too "
+#~ "small. Increase it to 0.9–1.0."
+
+#~ msgid ""
+#~ "**预览显示 0 条可旋转键。** 环内键、多重键、端基键以及一侧没有邻居的键不会参与子树旋转。若高斯噪声大于 "
+#~ "0，卡片仍能生成坐标扰动；若只想做这种扰动，`Atomic Perturb` 更直接。"
+#~ msgstr ""
+#~ "**The preview shows zero rotatable bonds.** "
+#~ "Ring bonds, multiple bonds, terminal bonds, "
+#~ "and bonds with no neighbors on one side"
+#~ " do not participate in subtree rotation. If"
+#~ " Gaussian noise is nonzero, the card can"
+#~ " still generate coordinate perturbations; use "
+#~ "`Atomic Perturb` directly if that is all "
+#~ "you need."
+
+#~ msgid ""
+#~ "**普通无周期分子在 Auto 下报奇异 cell。** 当前版本会按输入的 PBC "
+#~ "标志判断，不会再把零 cell 当成周期晶胞；如果仍看到该错误，请确认是否手动选择了“强制全三维 PBC”。"
+#~ msgstr ""
+#~ "**An ordinary nonperiodic molecule reports a "
+#~ "singular cell in Auto mode.** The current "
+#~ "version uses the input PBC flags and no"
+#~ " longer treats a zero cell as periodic. "
+#~ "If the error persists, check whether `Force"
+#~ " full 3D PBC` was selected manually."
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid ""
+#~ "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → "
+#~ "相同输入可复现。构象生成受 seed + 结构稳定 ID 联合控制，不同 seed "
+#~ "产生不同的扭转角和扰动方向。"
+#~ msgstr ""
+#~ "Enable `Use random seed` (`use_seed`) and fix"
+#~ " `Random seed` (`seed`) to reproduce the "
+#~ "same input. Conformation generation is controlled"
+#~ " jointly by the seed and stable structure"
+#~ " ID; different seeds produce different torsion"
+#~ " angles and perturbation directions."

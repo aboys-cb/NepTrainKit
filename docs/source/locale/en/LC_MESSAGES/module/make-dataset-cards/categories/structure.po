@@ -1,0 +1,37 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/categories/structure.md:1
+#: 851599ec4315449193b9c2dcad48fc57
+msgid "结构"
+msgstr "Structures"
+
+#: ../../source/module/make-dataset-cards/categories/structure.md:3
+#: c47ef75d68c64053868f732d4d27b003
+msgid ""
+"与卡片 UI 的“结构”分组一致。这些卡片负责随机排布、层状复制和逐原子结构分组： `Random Packing` 在输入晶胞中重新随机放置全部原子，`Layer "
+"Stack` 复制完整层状结构， `Layer Groups` 沿晶面法向识别原子层并写入逐原子 A/B 标签。"
+msgstr ""
+"This section matches the `Structures` group in the card picker. These cards handle "
+"random placement, layer-wise replication, and per-atom structural grouping: `Random "
+"Packing` randomly relocates all atoms within the input cell, `Layer Stack` replicates"
+" a complete layered structure, and `Layer Groups` identifies atomic layers along a "
+"plane normal and writes per-atom A/B labels."

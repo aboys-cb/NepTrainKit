@@ -47,97 +47,110 @@ msgstr "it then shows the structure count, exact composition points, blocker cou
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10196
 #: 2f8708391b82473ca4421ef539500260
 msgid "「Start here」只列最多 3 个最高优先级问题，并给出下一步动作；"
-msgstr "Details for this option"
+msgstr "`Start here` lists at most three highest-priority issues and gives the next action for each;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10197
 #: f810c625c1084ea2a1375c79be739f3e
 msgid ""
 "完整复核项按「必须处理」「建议复核」「支持证据」「不可用检查」分组；只有阻塞"
 "项默认展开；"
-msgstr "Details for this option"
+msgstr ""
+"The complete review list is grouped into `Must fix`, `Review recommended`, "
+"`Supporting evidence`, and `Unavailable checks`; only blockers are expanded by "
+"default;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10198
 #: 8769d4102335477e829c2245d9b7283c
 msgid ""
 "普通复核详情、组分清单、相／磁地图、输入参数和运行指纹默认折叠，需要追证据时"
 "再展开。"
-msgstr "Details for this option"
+msgstr ""
+"Routine review details, composition lists, phase/magnetism maps, input parameters, "
+"and run fingerprints are collapsed by default and can be expanded when evidence "
+"needs to be traced."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10200
 #: c2b9291efa3243f5ac910cf9f970a1f7
 msgid ""
 "因此，收到报告的人应先读状态横幅和 `Start here`，再展开与自己判断有关的证据。"
 "报告中仍保留："
-msgstr "Details for this option"
+msgstr ""
+"A report recipient should therefore read the status banner and `Start here` first, "
+"then expand the evidence relevant to the decision at hand. The report still "
+"retains:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10202
 #: 71e7b6a2cb8f40cda9a9ab4eb1f16141
 msgid "评估范围、生成时间、数据与模型指纹；"
-msgstr "Details for this option"
+msgstr "The audit scope, generation time, and data and model fingerprints;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10203
 #: 0b0852e0cf17495ea6531fa36e43d99c
 msgid "数据质量、组分、标签、局域环境、结构相和磁类型摘要；"
-msgstr "Details for this option"
+msgstr "Summaries of data quality, composition, labels, local environments, structural phases, and magnetic types;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10204
 #: 47595231eeed491996895979385e752a
 msgid "复核项对应的真实结构索引；"
-msgstr "Details for this option"
+msgstr "The actual structure indices associated with each review item;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10205
 #: 09892adeee344ab7a493118b64bcac1a
 msgid "每项判据和能力边界。"
-msgstr "Details for this option"
+msgstr "The criterion and capability boundary for each item."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10207
 #: bc8e38944e0c4379b8e735d64f3c6cb6
 msgid "报告用于记录和协作，不是全局覆盖证明，也不是自动采样指令。"
-msgstr "Details for this option"
+msgstr "The report supports record-keeping and collaboration; it is neither proof of global coverage nor an automatic sampling instruction."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10209
 #: 42261c435e744771bb4a114d98a49765
 msgid "当前不能单独回答什么"
-msgstr "Details for this option"
+msgstr "Questions the audit cannot answer on its own"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10211
 #: f008e51584b44628b7090eb74e7e2283
 msgid "训练集评估不能单独回答："
-msgstr "Details for this option"
+msgstr "Training Set Audit cannot determine on its own:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10213
 #: 7d7bd74b00f545888a2a0728a6ec5acb
 msgid "数据是否覆盖某个温度、压力、缺陷、界面或相变目标；"
-msgstr "Details for this option"
+msgstr "Whether the data cover a particular temperature, pressure, defect, interface, or phase-transition target;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10214
 #: 7e4cea06b33149f1a69c35195ef4638e
 msgid "哪种目标结构一定缺失；"
-msgstr "Details for this option"
+msgstr "Which target structures are definitively missing;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10215
 #: 8837642b4e164adea6ff7f72deb4b06d
 msgid "势函数在独立测试集上的误差；"
-msgstr "Details for this option"
+msgstr "The potential's error on an independent test set;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10216
 #: bbc59ac016f04beeb8a57bcbd1be6da4
 msgid "长时间分子动力学是否稳定；"
-msgstr "Details for this option"
+msgstr "Whether long-timescale molecular dynamics are stable;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10217
 #: 29d5cdc4dc4c432d88caa7334963a6a0
 msgid "某项物性的误差是否可接受；"
-msgstr "Details for this option"
+msgstr "Whether the error in a particular property is acceptable;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10218
 #: 679d010021d54273b38c4bdecb38f7ec
 msgid "单帧结构和自旋标签对应的热力学相是否稳定。"
-msgstr "Details for this option"
+msgstr "Whether the thermodynamic phase represented by a single-frame structure and spin label is stable."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:10220
 #: 4ce61c4dc9c641579a82977e43f9be52
 msgid ""
 "这些问题分别需要明确的目标空间、目标结构或轨迹、模型预测、独立参考数据和物性"
 "验证协议。「当前数据中少」只表示相对稀少，不等于研究目标中缺失。"
-msgstr "Details for this option"
+msgstr ""
+"These questions require an explicit target space, target structures or trajectories, "
+"model predictions, independent reference data, and property-validation protocols. "
+"`Rare in the current data` means only relatively scarce; it does not mean absent "
+"from the research target."

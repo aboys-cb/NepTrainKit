@@ -9,6 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Final
+from urllib.parse import urljoin
 
 from PySide6.QtCore import QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
@@ -16,6 +17,7 @@ from loguru import logger
 
 from NepTrainKit import module_path
 from NepTrainKit.config import Config
+from NepTrainKit.version import DOCS_ROOT_URL
 
 SUPPORTED_LANGUAGES: Final[tuple[str, ...]] = ("auto", "en_US", "zh_CN")
 LANGUAGE_LABELS: Final[dict[str, str]] = {
@@ -174,3 +176,35 @@ def install_translator(app: QApplication, language: object | None = None) -> str
 def current_language() -> str:
     """Return the most recently resolved runtime language."""
     return _installed_language
+
+
+def documentation_language(language: object | None = None) -> str:
+    """Return the Read the Docs language matching the running application."""
+    resolved = current_language() if language is None else resolve_language(language)
+    return "zh_CN" if resolved == "zh_CN" else "en"
+
+
+def localized_docs_base_url(language: object | None = None) -> str:
+    """Return the latest-documentation root for the requested UI language."""
+    return f"{DOCS_ROOT_URL}{documentation_language(language)}/latest/"
+
+
+def localized_docs_url(value: object = "", language: object | None = None) -> str:
+    """Localize an official documentation path or URL for the current UI."""
+    text = str(value or "").strip()
+    base_url = localized_docs_base_url(language)
+    if not text:
+        return base_url
+
+    official_prefixes = (
+        f"{DOCS_ROOT_URL}en/latest/",
+        f"{DOCS_ROOT_URL}zh_CN/latest/",
+    )
+    for prefix in official_prefixes:
+        if text.startswith(prefix):
+            text = text[len(prefix):]
+            break
+    else:
+        if text.startswith(("http://", "https://")):
+            return text
+    return urljoin(base_url, text.lstrip("/"))

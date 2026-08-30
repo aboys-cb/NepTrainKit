@@ -27,6 +27,8 @@ Use this map to edit only what is needed.
 - `docs/source/module/make-dataset-cards/cards/*.md`: per-card docs.
 - `docs/source/module/make-dataset-cards/writing-guide.md`: **authoritative doc style reference.** Read before writing any card doc.
 - `tools/docs/audit_card_docs.py`: minimal integrity check (key consistency, code-doc defaults match). Does NOT enforce style — style is enforced by the writing guide.
+- `tools/docs/i18n.py`: gettext catalog freshness、英文残留检查与中英文严格构建。
+- `tools/docs/screenshots/`: 隔离用户配置的中英文 UI 截图场景、清单与像素检查。
 - `skills/make-dataset-card-dev/references/requirements-to-card-spec-template.md`: pre-coding card spec template.
 
 ## Tests to touch first
@@ -39,6 +41,7 @@ Use this map to edit only what is needed.
 - `tests/test_workflow_branching.py`: 分流合并、永久分叉、拖拽目标、展开收起、运行语义、递归 JSON 和真实尺寸。
 - `tests/test_workflow_library.py`: 工作流/模板 CRUD、运行态数据排除和工作台接入。
 - `tests/test_i18n.py`: TS/QM 完整性和运行时翻译。
+- `tests/test_i18n.py`: 软件语言与 Read the Docs `/zh_CN/latest/`、`/en/latest/` 跳转一致性。
 - `tests/test_makedata_failure_semantics.py`: 成功、合法空输出、失败和工作流链终态。
 - `tests/test_threads.py`: 通用后台任务、回调线程和线程清理。
 - Operation tests should avoid Qt setup: call `Operation().run_structure(atoms, Params(...))`, `run_dataset(...)`, or `generate(...)` directly.

@@ -37,28 +37,43 @@ msgid ""
 "历当前评估范围内的所有结构；不需要另找按钮启动。大体系如果不希望自动分析，可"
 "在「设置 → 个性化」中关闭「自动分析结构证据」。分析完成后会增加两种视图，但不"
 "会擅自切换当前组分图："
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr ""
+"On first entry, bar height shows the number of structures at each composition. "
+"After the basic diagnostics appear, the page automatically scans every structure "
+"in the current audit scope in the background; there is no separate start button. "
+"For large systems, disable `Analyze structure evidence automatically` under "
+"`Settings → Personalization` if automatic analysis is undesirable. Completion "
+"adds two more views without switching away from the current composition map:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1194
 #: 244a8879fad64816a85f06c80947cda3
 msgid ""
 "**结构相：** FCC、HCP、BCC，以及通过保守模板确认的 A4、L1₀、L1₂、B1、B2、B3、"
 "B4、C1、B8₁、D0₃、L2₁、C1ᵦ、D0₁₉、C14、C15；其余显示为混合局域结构或未解析；"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr ""
+"**Structural phase:** FCC, HCP, BCC, plus A4, L1₀, L1₂, B1, B2, B3, B4, C1, "
+"B8₁, D0₃, L2₁, C1ᵦ, D0₁₉, C14, and C15 when confirmed by conservative "
+"templates; all other cases are shown as mixed local structure or unresolved;"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1195
 #: f87e0ae8da6f42fa99d3fba25436efa0
 msgid ""
 "**磁类型：** FM、AFM（未细分）、逐层 AFM（`↑↓`）、双层 AFM（`↑↑↓↓`）、FiM、"
 "PM-like（自旋无序）、其他非共线、未识别、低／零磁矩和无有效 `spin` 字段。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr ""
+"**Magnetic type:** FM, AFM (not further classified), layer-by-layer AFM "
+"(`↑↓`), double-layer AFM (`↑↑↓↓`), FiM, PM-like (spin-disordered), other "
+"noncollinear, unrecognized, low/zero moment, and no valid `spin` field."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1197
 #: 0f76f44aef1545eca02cf2ad8e84c20a
 msgid ""
 "分析结束后，可以先选组分，再用结构相和磁类型下拉框继续筛选。点击「查看选中的"
 "结构」即可回到 `NEP Dataset Display`。"
-msgstr "Details for this option"
+msgstr ""
+"After analysis, select a composition first, then refine the selection with the "
+"structural-phase and magnetic-type lists. Click `View selected structures` to "
+"return to `NEP Dataset Display`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1199
 #: dc06f796ae954174b7addd76989eff2b
@@ -66,7 +81,11 @@ msgid ""
 "相和磁是两条独立证据。同一个 FCC 或 BCC 骨架可以承载不同磁结构，所以页面不会"
 "把它们合成一个不可拆分的标签。`Config_type` 只是来源元数据，不参与结构相或磁"
 "类型判断。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr ""
+"Phase and magnetism are independent evidence channels. The same FCC or BCC "
+"framework can support different magnetic structures, so the page does not merge "
+"them into one inseparable label. `Config_type` is source metadata only and does "
+"not participate in structural-phase or magnetic-type identification."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1201
 #: f52d6ec07c3b4d1ca6115230428b08c5
@@ -75,13 +94,19 @@ msgid ""
 "相中的磁类型占比、每个磁类型中的结构相占比，以及整个评估范围的磁类型占比。颜"
 "色段中的百分比和右侧帧数分别回答“占多少”和“有多少帧”；点击任一颜色段可回选对"
 "应结构。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr ""
+"Under `Advanced Evidence → Magnetic Order`, three 100% stacked charts normalized "
+"by structure-frame count are available: magnetic-type shares within each "
+"structural phase, structural-phase shares within each magnetic type, and magnetic-"
+"type shares across the full audit scope. Percentages inside colored segments show "
+"the share, while frame counts on the right show the absolute number of frames. "
+"Click any segment to select its structures."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1203
 #: 6c15522228cb4f629c70c0fdd9b00b89
 msgid ""
 "训练集评估的磁类型占比视图，显示图表切换、结构帧占比、颜色图例和结构回选入口"
-msgstr "Details for this option"
+msgstr "Training Set Audit magnetic-type share view, showing chart switching, structure-frame shares, the color legend, and structure-selection entry point"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1203
 #: 6c15522228cb4f629c70c0fdd9b00b89
@@ -94,7 +119,7 @@ msgstr ""
 #: e46f762d761e41778c19f3d6b23f9559
 msgid ""
 "训练集评估的组分地图，标出证据层切换、相分布柱图、精确组分表和结构回选控件"
-msgstr "Details for this option"
+msgstr "Training Set Audit composition map, highlighting evidence-layer switching, the phase-distribution bars, exact-composition table, and structure-selection controls"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/training-set-assessment-content.md:1208
 #: e46f762d761e41778c19f3d6b23f9559
@@ -110,4 +135,10 @@ msgid ""
 "板都没有给出强证据，因此柱子显示为灰色「未解析」。这不是程序出错，而是「当前"
 "几何证据不足以给出已支持标签」。如果数据带有有效 `spin:R:3`，右上角证据层还会"
 "出现「按磁序着色」，下方磁序筛选框也会启用。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr ""
+"The example above has only one exact composition point, `Pb:Te = 1:1`, and "
+"neither a-CNA nor the built-in prototype templates provide strong evidence. The "
+"bar is therefore gray and labeled `Unresolved`. This is not an application error; "
+"it means the current geometric evidence is insufficient for a supported label. If "
+"the data contain a valid `spin:R:3` field, `Color by magnetic order` also appears "
+"in the evidence-layer selector and the magnetic-order filter below is enabled."

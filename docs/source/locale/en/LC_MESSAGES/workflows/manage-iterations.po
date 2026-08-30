@@ -56,22 +56,22 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:17
 #: 1b645e880d524374a29ea6986e2e61a6
 msgid "`candidate_pool.xyz`：生成卡片的原始输出，可能包含异常结构。"
-msgstr "See the parameter description for details."
+msgstr "`candidate_pool.xyz`: raw output from generation cards; it may still contain anomalous structures."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:18
 #: 3e42c4e9b9f64998b98a34a670b2b8f4
 msgid "`candidate_pool_clean.xyz`：完成几何和预测预筛后的候选池。"
-msgstr "See the parameter description for details."
+msgstr "`candidate_pool_clean.xyz`: the candidate pool after geometry and prediction-based pre-screening."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:19
 #: 604f826fa9384d7ca05a211664cb28ec
 msgid "`dft_labeled.xyz`：已经得到 DFT 标签的结构。"
-msgstr "See the parameter description for details."
+msgstr "`dft_labeled.xyz`: structures that already have DFT labels."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:20
 #: 40af865b8d004b64aac746393d9de213
 msgid "`train.xyz`：真正进入本轮训练的数据，可能还包含历史数据。"
-msgstr "See the parameter description for details."
+msgstr "`train.xyz`: data actually used in this training iteration; it may also include historical data."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:22
 #: 921e21621bff4407adf59e6071d05c49
@@ -164,4 +164,7 @@ msgstr "What the clearest data gap for the next round is."
 msgid ""
 "`Data Management` 只保存项目、路径、标签和备注，不会复制大体积训练数据。移动"
 "目录后必须更新记录， 也不能把数据库记录当成数据备份。"
-msgstr "See the parameter description for details."
+msgstr ""
+"`Data Management` stores only projects, paths, labels, and notes; it does not "
+"copy large training datasets. Update records after moving directories, and do "
+"not treat database entries as data backups."

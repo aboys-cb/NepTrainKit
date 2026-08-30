@@ -22,7 +22,7 @@ msgstr ""
 #: ../../source/module/nep-main-tool-net-force.md:1
 #: 3930b54bfe074720bc92dbf72c8cd2c2
 msgid "检查净力（Check Net Force）"
-msgstr "Details for this option"
+msgstr "Check Net Force"
 
 #: ../../source/module/nep-main-tool-net-force.md:3
 #: c4dca606a19f4d5891c6bb7a18b4fcae
@@ -32,7 +32,7 @@ msgstr "Purpose and use cases"
 #: ../../source/module/nep-main-tool-net-force.md:5
 #: acc4fe4c52db416d92a7c62117d6ed0a
 msgid "计算每个结构所有原子力的矢量和 `|ΣF|`，并选中超过阈值的结构。它常用于发现未满足平移不变性、 标签映射错误或 DFT 输出异常的数据。"
-msgstr "Details for this option"
+msgstr "Compute the vector sum `|ΣF|` of all atomic forces in each structure and select structures above a threshold. This often reveals broken translational invariance, incorrect label mapping, or anomalous DFT output."
 
 #: ../../source/module/nep-main-tool-net-force.md:8
 #: 91ab1f55ada842fba52891f5f6d9a90f
@@ -42,7 +42,7 @@ msgstr "Decision principle"
 #: ../../source/module/nep-main-tool-net-force.md:10
 #: 68cccb6971a44814b6a5876c83c72867
 msgid "对含 $N$ 个原子的结构，程序先求参考力的矢量和，再取欧氏模："
-msgstr "Details for this option"
+msgstr "For a structure with $N$ atoms, the program sums the reference-force vectors and then takes the Euclidean norm:"
 
 #: ../../source/module/nep-main-tool-net-force.md:12
 #: 6211c8c40768453c89b53459e18b9f17
@@ -63,9 +63,7 @@ msgid ""
 "当 $F_{\\mathrm{net}}>F_{\\mathrm{threshold}}$ 时选中该结构。力的单位为 eV/Å，所以净力和阈值 "
 "也都是 eV/Å。理想的孤立周期体系满足平移不变性时净力应接近零，但有限 SCF 精度、 "
 "约束计算或外场也可能带来真实残差；这个工具是质量复核门槛，不是自动纠错器。"
-msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+msgstr "Select the structure when $F_{\\mathrm{net}}>F_{\\mathrm{threshold}}$. Force, net force, and the threshold are all in eV/Å. An ideal isolated periodic system satisfying translational invariance should have nearly zero net force, but finite SCF precision, constraints, or external fields can produce real residuals. This tool is a review gate, not an automatic correction."
 
 #: ../../source/module/nep-main-tool-net-force.md:22
 #: 1d9a55232b9f49509019bf6e9d0f23fc
@@ -75,32 +73,32 @@ msgstr "Parameters and execution result"
 #: ../../source/module/nep-dataset-display-content.md:7334
 #: 15ed729fa45f43df8ded0e879ee2a12a
 msgid "输入控件：`净力阈值`，即 `|ΣF|`。"
-msgstr "Details for this option"
+msgstr "Control: `Net-force threshold`, i.e. `|ΣF|`."
 
 #: ../../source/module/nep-dataset-display-content.md:7335
 #: 4adf51722ded48d1b1c6484a33de54b3
 msgid "范围：`[0, 1e6]`，10 位小数。"
-msgstr "Details for this option"
+msgstr "Range: `[0, 1e6]`, with ten decimal places."
 
 #: ../../source/module/nep-dataset-display-content.md:7336
 #: 8e32e02d7fa2408e9ec91af12fca286b
 msgid "默认值：`widget.force_balance_threshold`（缺省 `1e-3`）。"
-msgstr "Details for this option"
+msgstr "Default: `widget.force_balance_threshold` (fallback `1e-3`)."
 
 #: ../../source/module/nep-dataset-display-content.md:7337
 #: 45b8bb1412d64fcca49033d07685d245
 msgid "执行结果：选中超阈值结构，并显示统计消息。"
-msgstr "Details for this option"
+msgstr "Result: select structures above the threshold and show a summary message."
 
 #: ../../source/module/nep-dataset-display-content.md:7339
 #: 99495f71783e40e7bdbace418a66b166
 msgid "![检查净力对话框](../_static/image/generated/show_nep_reference/g_force_dialog.png)"
-msgstr "See the figure for the corresponding control and result."
+msgstr "![Check Net Force dialog](../_static/image/generated/show_nep_reference/g_force_dialog.png)"
 
 #: ../../source/module/nep-dataset-display-content.md:7339
 #: 5c8808b7b7f742ca9b8c7a331584ed0b
 msgid "检查净力对话框"
-msgstr "Details for this option"
+msgstr "Check-net-force dialog"
 
 #: ../../source/module/nep-dataset-display-content.md:7339
 #: 5c8808b7b7f742ca9b8c7a331584ed0b
@@ -119,4 +117,4 @@ msgstr "Post-operation checks"
 #: ../../source/module/nep-main-tool-net-force.md:31
 #: ea25ec1c530c43999adadf04ca2c166e
 msgid "阈值单位为 `eV/Å`，必须大于零。选中后结合结构原子数、计算精度和标签来源判断； 工具只标出超阈值结构，不会修改力标签。"
-msgstr "Details for this option"
+msgstr "The threshold is in `eV/Å` and must be positive. Interpret selected structures in light of atom count, calculation precision, and label provenance. The tool only flags structures above the threshold; it does not modify force labels."

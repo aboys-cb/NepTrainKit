@@ -20,12 +20,12 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:1
 #: 5e5371d20255434792c693de9f718026
 msgid "查找疑似非物理结构"
-msgstr "Details for this option"
+msgstr "Find Suspected Nonphysical Structures"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:3
 #: 030ec4b243494a7593cab5c23bdc9989
 msgid "界面按钮：`查找疑似非物理结构`。"
-msgstr "Details for this option"
+msgstr "Toolbar action: `Find suspected nonphysical structures`."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:5
 #: 221d8c70e243437d88effbcd6b6953dc
@@ -37,7 +37,7 @@ msgstr "Purpose and use cases"
 msgid ""
 "按近邻距离扫描当前活动结构，选中疑似存在原子重叠或异常短接触的构型。适合检查"
 "强扰动、 随机缺陷、表面吸附和随机堆积产生的候选池。"
-msgstr "Details for this option"
+msgstr "Scan active structures by neighbor distance and select configurations that may contain overlapping atoms or anomalously short contacts. Use it to review candidate pools produced by strong perturbations, random defects, surface adsorption, or random packing."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:10
 #: 8c7cded4fb5046b1b302e6d0e55c1156
@@ -47,7 +47,7 @@ msgstr "Decision principle"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:12
 #: eca5bd1a1e5c402fb0181e98d2951c59
 msgid "对每一对元素 $A,B$，程序用共价半径之和给出元素相关的距离下限："
-msgstr "Details for this option"
+msgstr "For each element pair $A,B$, the program derives an element-dependent distance limit from the sum of covalent radii:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:14
 #: 08b481ce0d844f51aba14503d014997d
@@ -65,7 +65,7 @@ msgstr ""
 msgid ""
 "其中 $r_{\\mathrm{cov}}$ 是共价半径，$c_r$ 是界面设置中的半径系数，默认 "
 "0.7。 程序在周期边界条件下扫描原子对；只要存在"
-msgstr "Details for this option"
+msgstr "Here $r_{\\mathrm{cov}}$ is the covalent radius and $c_r$ is the radius coefficient from the interface, default 0.7. The program scans atom pairs under periodic boundary conditions; whenever"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:21
 #: bff9af9418dd4f9490913cbd063768d7
@@ -81,22 +81,22 @@ msgstr ""
 msgid ""
 "该结构就会被选中。与统一的绝对距离阈值相比，这种判据会随元素尺寸变化，但它仍"
 "不知道 键级、压力或特殊化学环境，因此只能称为“疑似非物理”。"
-msgstr "Details for this option"
+msgstr "the structure is selected. Unlike one universal absolute-distance threshold, this criterion adapts to element size. It still knows nothing about bond order, pressure, or unusual chemical environments, so the result is only a suspected nonphysical structure."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:28
 #: d51ed050e7ef47d2ac21f2c18c44af5e
 msgid "判定与结果"
-msgstr "Details for this option"
+msgstr "Criterion and Result"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7184
 #: 41ed7043438d48e9935ff5bb84ae96b1
 msgid "参数来源：`widget.radius_coefficient`（默认 `0.7`）。"
-msgstr "Details for this option"
+msgstr "Parameter source: `widget.radius_coefficient` (default `0.7`)."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7185
 #: e493b94c87424f0b9912977c334ae578
 msgid "执行结果：扫描后选中疑似非物理结构。"
-msgstr "Details for this option"
+msgstr "Result: select structures flagged as potentially nonphysical after the scan."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-nonphysical.md:35
 #: 1347899b3daf451490ee2431f8b058d0
@@ -108,4 +108,4 @@ msgstr "Post-operation checks"
 msgid ""
 "扫描结果只是复核集合，不会自动删除。逐个查看最短键长和局部几何；高压结构或特"
 "殊成键体系 可能具有真实的短距离，不能只因被选中就判为坏结构。"
-msgstr "Details for this option"
+msgstr "The scan produces a review set and never deletes automatically. Inspect the shortest bond and local geometry of each structure. High-pressure structures or unusual bonding systems can have genuinely short distances, so selection alone does not make a structure invalid."

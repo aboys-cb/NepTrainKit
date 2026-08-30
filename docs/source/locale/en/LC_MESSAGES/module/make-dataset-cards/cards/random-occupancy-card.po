@@ -8,536 +8,417 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:3
-#: 8f651ecdd87c4a2e8c5df4ce4b4023c2
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:3
+#: 9a51caf9aedb4968a75fc023eebcc5bc
 msgid "随机占位（Random Occupancy）"
 msgstr "Random Occupancy"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:5
-#: b5b4fdaf39234fd5a1a187d40a15e639
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:5
+#: 52c198fba2ff4dc8ba1d887f17b75be9
 msgid "**分类：** 合金与组分"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "**Category:** Alloys and Composition"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:7
-#: 79e4fc20c2dc491bb867b6d64023eea6
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:7
+#: 346a76a8b1c34d5696f5b27c5e77acaa
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:9
-#: 698669e66bd44d9a9b18a5695182a9fa
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:9
+#: 34f786fe71704dfe994f3d2bd29ac839
 msgid ""
-"在给定总成分约束下，将目标配比真正落到原子占位上。读取 `Comp(...)` 标签或手工"
-"输入的成分字符串，用精确或随机模式把各元素分配到离散晶格位点，输出带 "
-"`Occ(...)` 标签的真实化学占位结构。"
+"这张卡把目标比例落实为实际原子占位。目标组成只能来自二者之一：`Auto (Comp tag)` 严格读取输入 `Config_type` 中最后一个 "
+"`Comp(...)` 标签；`Manual` 严格读取界面的“元素 / 目标比例”表格。所选来源缺少有效组成时会报错，不会退回另一来源。"
 msgstr ""
-"Realize a target composition as discrete atomic occupations. The card reads "
-"a `Comp(...)` label or a manual composition, assigns species to lattice "
-"sites in Exact or Random mode, and outputs actual chemical configurations "
-"labeled `Occ(...)`."
+"Convert a target fraction into actual atomic occupancy. The target composition comes "
+"from exactly one of two sources: `Auto (Comp tag)` strictly reads the last "
+"`Comp(...)` label in the input `Config_type`, while `Manual` strictly reads the "
+"`Element / Target fraction` table in the interface. If the selected source lacks a "
+"valid composition, the operation reports an error and does not fall back to the other"
+" source."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:11
-#: 7bf39e6af7054590b2dccaae42bd0b62
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:11
+#: afb1721f7b724a079adcc9ce82c7580a
 msgid ""
-"典型用法：接在 `Composition Space Sampling` 之后，把目标配比计划转化为可以跑 "
-"DFT/NEP 的实际结构。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"它适合接在 `Composition Space Sampling` 后把组成计划变成真实结构，也可对手工组成生成多个随机占位样本。若只想替换某一种现有元素，应使用 "
+"`Random Doping`。"
+msgstr ""
+"Use it after `Composition Space Sampling` to turn composition plans into real "
+"structures, or to generate several random occupancy samples for a manually specified "
+"composition. Use `Random Doping` when only one existing element should be replaced."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:13
-#: 978154ed271649a8b810aef8e3816fe1
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:13
+#: c06176ebf2d349e38d577dc66f30be47
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:15
-#: 6b14d614088844579f574aeb4feb2572
-msgid "设可占位点数为 $N$，归一化目标比例为 $p_e$。`精确`模式使用最大余数法："
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:15
+#: 3b5135dad63e4d44a248c22001a5cb29
+msgid "设目标位点数为 $N$，归一化目标比例为 $p_e$。`Exact` 使用最大余数法得到固定的最近可行整数计数："
+msgstr ""
+"Let $N$ be the number of target sites and $p_e$ the normalized target fraction. "
+"`Exact` uses the largest-remainder method to obtain one fixed nearest-feasible "
+"integer count:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:17
-#: 02c1f6f470934c02af32bde57d6fd7da
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:17
+#: 2cc72218fc484137a1e6ae000661c9af
+#, python-brace-format
 msgid ""
 "\n"
 "n_e^{(0)}=\\lfloor Np_e\\rfloor,\\qquad\n"
 "\\sum_e n_e=N,\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:22
-#: fc8f0ce3065246558870e04c321d2842
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:22
+#: 99294ca3bad34723b778543fd313925c
+#, python-brace-format
 msgid ""
-"不足的位点按 $Np_e-n_e^{(0)}$ 从大到小补齐，然后把含 $n_e$ 个元素 $e$ 的占位"
-"池 随机打乱。`随机`模式则一次性从多项分布 $\\mathbf "
-"n\\sim\\operatorname{Multinomial}(N,\\mathbf p)$ 抽取计数，再打乱占位池。 因"
-"此精确模式每个样本的元素计数相同；随机模式只在大量样本的统计平均上接近目标比"
-"例。 `分组筛选`会把 $N$ 限制为命中 group 标签的位点数。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"不足的位点按余数 $Np_e-n_e^{(0)}$ 从大到小补齐。若多个元素的余数相同，连续比例本身不能唯一决定多出的位点给谁，因此应以界面预览和输出 metadata "
+"中的实际整数计数为准。`Random` 则对每个样本独立抽取"
+msgstr ""
+"Unassigned sites are filled in descending order of the remainders $Np_e-n_e^{(0)}$. "
+"If several elements have equal remainders, the continuous fractions alone do not "
+"uniquely determine which receives the extra site. Use the preview and realized "
+"integer counts in output metadata as authoritative. `Random` instead independently "
+"draws for every sample"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:28
-#: 060638197336452c82b0c69e541848da
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:24
+#: 5a17e1dc542849c2bccc7342f45794f4
+#, python-brace-format
+msgid ""
+"\n"
+"\\mathbf n\\sim\\operatorname{Multinomial}(N,\\mathbf p).\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:28
+#: b8ece0212d64404bb40bbfb5c12eb5a9
+msgid ""
+"两种模式都会随机打乱元素在目标位点上的位置。`Exact` 的每个样本具有相同整数计数，但该计数不一定与连续目标比例完全相等；`Random` "
+"的计数会在样本间波动，只在统计平均上接近目标比例。"
+msgstr ""
+"Both modes randomly shuffle species across the target sites. Every `Exact` sample has"
+" the same integer counts, although those counts may not exactly match the continuous "
+"target fractions. `Random` counts vary between samples and approach the target only "
+"in a statistical average."
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:30
+#: 2d7ff37c95f64e1e8aaad0fc483a59e6
+msgid ""
+"填写 `group_filter` 时，$N$ 只计算 `atoms.arrays[\"group\"]` 中命中标签的位点，其他位点的元素保持不变。每个输入严格生成 "
+"`samples` 个输出，因此"
+msgstr ""
+"When `group_filter` is provided, $N$ counts only sites whose labels match in "
+"`atoms.arrays[\"group\"]`; species on all other sites remain unchanged. Each input "
+"produces exactly `samples` outputs, so"
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:32
+#: 9a5e0e3cd508431d88057a912cbf6ac9
+#, python-brace-format
+msgid ""
+"\n"
+"N_\\mathrm{out}=N_\\mathrm{input}\\times \\mathrm{samples}.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:36
+#: 8bce26e6dd0b4e0bac728a2a6c99ba0f
+msgid "不同样本可能得到相同计数甚至相同排布；卡片不去重，也不声称直接控制短程有序参数。"
+msgstr ""
+"Different samples may have identical counts or even identical arrangements. The card "
+"does not deduplicate and does not claim to directly control short-range-order "
+"parameters."
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:38
+#: be3f8be4bb8a41fd8e144e9fd4c970d7
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:30
-#: e0c9866138124d8783c59f8deecd14c2
-msgid "场景：同成分不同排布下的能量预测，模型偏差从 5 跳到 50 meV/atom"
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:40
+#: c07c9fed9e3240828e71cd4040f97cf4
+msgid "同一组成缺少占位多样性"
+msgstr "Insufficient Occupancy Diversity at One Composition"
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:42
+#: d7f773a9a0c1413993dd35b654a8785b
+msgid ""
+"如果训练集中每种组成只有一种占位，模型可能没有见过同一整数计数下的其他局域化学环境。可在带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3334)` "
+"标签的结构后添加本卡，选择 `Exact` 并把 `samples` 设为 5。"
 msgstr ""
-"Scenario: Error jumps from 5 to 50 meV/atom between arrangements at one "
-"composition"
+"If a training set has only one occupancy arrangement for each composition, the model "
+"may not have encountered other local chemical environments at the same integer "
+"counts. Add this card after a structure labeled "
+"`Comp(Co=0.3333,Cr=0.3333,Ni=0.3334)`, select `Exact`, and set `samples` to 5."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:32
-#: 100628a12a434542a98a17b90a377670
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:44
+#: 17871fae9b894dd9b10009f309fb85b1
 msgid ""
-"你在 CoCrNi 训练集上跑了 `Composition Space Sampling`，覆盖了从纯元素到等摩尔"
-"的各种配比。但每个配比只生成了一个占位结构——对 Co0.33Cr0.33Ni0.33，训练集里 "
-"Cr 永远在角落、Co 永远在面心。模型学到的不是\"这个成分\"，而是\"这个成分 + 这"
-"个特定排布\"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 "
-"meV/atom 跳到了 50 meV/atom。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:34
-#: 587476d12f094fe886f2a08bb66eae24
-msgid ""
-"**诊断思路：** 对给定成分，短程化学有序度——哪种原子偏好和哪种原子做邻居——显著"
-"影响总能量和局域力。训练集里每种成分只有一个排布样本，模型就把成分和特定排布"
-"绑死了。解决：给每个目标配比生成多个不同占位版本。"
+"每个输入会得到 5 个随机占位样本，整数计数相同但排布允许重复。验证时先检查 `random_occupancy` metadata 中的 `actual_counts`"
+" 与 `eligible_sites`，再按实际组成比较不同排布上的留出误差；若唯一排布数很小，应减少 `samples`，而不是把重复输出当成新覆盖。"
 msgstr ""
-"**Diagnosis:** Short-range chemical order at fixed composition strongly "
-"affects energy and forces. Generate several occupation variants for each "
-"target fraction so the model does not conflate composition with one "
-"arrangement."
+"Each input receives five random occupancy samples with identical integer counts, but "
+"repeated arrangements are allowed. During validation, first inspect `actual_counts` "
+"and `eligible_sites` in the `random_occupancy` metadata, then compare holdout errors "
+"across arrangements at the realized composition. If few unique arrangements exist, "
+"reduce `samples` instead of treating duplicate outputs as new coverage."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:36
-#: 349269e6286a4927a3f6eac29205a18c
-msgid ""
-"**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 "
-"`Composition Space Sampling`）"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:38
-#: 7ba5b9099ed0449a88b811593ab0bce9
-msgid "**目标：** 每个目标配比生成 5 个不同原子排布版本，覆盖排布多样性"
-msgstr ""
-"**Objective:** Generate five distinct occupations per target composition."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:40
-#: 304f83b47ea244b0bf65fe5103b8feb6
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:41
-#: 3c79b2768a654b08b242f48aea7b22bf
-msgid "`来源`（`source`） = `Auto (Comp tag)` （自动读取上游 Comp 标签）"
-msgstr "See the parameter description for details."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:42
-#: 678306603ea14b749babfca940284b26
-msgid ""
-"`模式`（`mode`） = `Exact` （精确匹配目标配比，每次排布不同但元素计数一致）"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:43
-#: bd6da7d158dc48f0a91a6b6e743f7c9f
-msgid "`样本数`（`samples`） = `5`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:45
-#: 0144ee84dfab4120801bcb1e19ffa46d
-msgid ""
-"**输出：** 每个输入结构产生 5 个带 `Occ(E)` 标签的结构，元素组成与 Comp 标签"
-"一致但原子排布各不相同"
-msgstr ""
-"**Output:** Five `Occ(E)` structures per input, with species counts matching "
-"`Comp` and distinct arrangements."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:47
-#: 567731e9a2e1423780645313882525dc
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:48
-#: 3839e100ad7b4efc89aa6d195030f59d
-msgid ""
-"重训后对同一成分的不同排布跑推理，能量方差应该合理——不应全坍缩到一个值，也不"
-"应异常发散"
-msgstr ""
-"After labeling and retraining, predictions across arrangements at one "
-"composition should reflect physical differences without anomalous divergence."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:49
-#: b7410f856dee460b8f81e19909954704
-msgid ""
-"抽查几个占位输出，确认元素计数与目标配比一致（Exact 模式）或统计上接近"
-"（Random 模式）"
-msgstr ""
-"Check several outputs: Exact counts should match the target integer "
-"allocation, while Random counts should approach it statistically."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:50
-#: f3dcd4fb668841f4a26513b5da36cd7e
-msgid ""
-"如果不同排布之间的能量差异非常小且体系对排布不敏感，可以减少 `样本数`"
-"（`samples`）；差异大则增大"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:51
-#: de2ab5dc539049078e5d9191575d48cf
-msgid ""
-"如果上游没有 `Comp(...)` 标签导致输出=输入，切换到手工模式并填写 `手动`"
-"（`manual`）成分字符串"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:53
-#: 72d9dd2ca21e496e8db225d44c739bd6
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:55
-#: 55f8ee7dd33440eb8fe2c550b28bc137
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:56
-#: 7b5a8012170849d29392fe307c1b6338
-msgid ""
-"上游有 `Composition Space Sampling` 或手工定义了目标配比，需要落到具体原子占"
-"位"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:57
-#: e095d4bc3d2c4552ad59c0c0b13c2b71
-msgid "同一成分下需要多个不同原子排布来覆盖短程化学有序度"
-msgstr ""
-"Several arrangements at one composition are needed to cover short-range "
-"chemical order"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:58
-#: 3caf75d152aa4442957f6dee9aa160ed
-msgid "高熵合金、固溶体等需要成分-排布联合采样的体系"
-msgstr ""
-"A high-entropy alloy or solid solution requires joint composition-"
-"arrangement sampling"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:60
-#: 307b5bf307ab4a48aa345670643aca00
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:61
-#: 572ab5f6b2224892810c6ff8d45f0cff
-msgid "不需要改变原子占位"
-msgstr "Atomic occupations should not change"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:62
-#: b4264d1515c04e9db1088f002828caa5
-msgid "需要直接指定替换规则而非从配比出发 → 用 `Random Doping`"
-msgstr "A direct substitution rule is known; use `Random Doping`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:63
-#: 78cea078798441d7953ed280751a896b
-msgid "输入本身已经是真实的离散占位结构且不再需要多样性"
-msgstr ""
-"The input already has realized occupations and no additional arrangement "
-"diversity is needed"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:65
-#: 4a6faf9582554ea8bb410e0eee721f5f
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:46
+#: 2a2d5eee29c7414fbe27e15feeddcae6
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:67
-#: 6d3d5c8db3b042249cf65c10e9749f10
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:48
+#: 959063a489a44227a20766586465966c
 msgid "来源（source）"
 msgstr "source"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:69
-#: 82bc917b2bd543abafec5602efa3b2b2
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:50
+#: a7db9a0e895e4aef80ac3b3b91657427
 msgid ""
-"`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 `Config_type` 中读取 "
-"`Comp(...)` 标签作为目标配比，适合接在 `Composition Space Sampling` 之后。`手"
-"动`（`manual`）从下面的 `手动`（`manual`）字段读取手工配比字符串。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"`str`，默认 `Auto (Comp tag)`。可选值为 `Auto (Comp tag)` 和 `Manual`。Auto 严格读取 `Config_type` "
+"中最后一个有效 `Comp(...)`；Manual 严格读取下面的表格，两者不会互相回退。"
+msgstr ""
+"`str`, default `Auto (Comp tag)`. Available values are `Auto (Comp tag)` and "
+"`Manual`. Auto strictly reads the last valid `Comp(...)` in `Config_type`; Manual "
+"strictly reads the table below. Neither falls back to the other."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:71
-#: badd105282aa47c48ab083378a40b791
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:52
+#: 609384a3b41a40e48b164a2f789d69e4
 msgid "手动（manual）"
 msgstr "manual"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:73
-#: 0fa887d4d8ee4373a830cf79f987b635
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:54
+#: e69da5f0ae9d48ecbafa2e339ecce24c
 msgid ""
-"`str`，默认空。成分字符串，如 `Co:0.333,Cr:0.333,Ni:0.334`，仅在 "
-"`source=Manual` 时生效。比例会被自动归一化。只输入单个元素如 `Ge` 时按 "
-"`Ge:1.0` 处理；输入 `Ge,C` 则两个元素默认权重都是 1.0。"
+"`str`，默认空。仅在 `source=Manual` 时显示“元素 / 目标比例”表格；序列化为 "
+"`Co:0.333,Cr:0.333,Ni:0.334`。比例是无量纲非负权重，运行时会自动归一化，至少需要一个正值。"
 msgstr ""
-"`str`, empty by default; Manual only. Composition such as "
-"`Co:0.333,Cr:0.333,Ni:0.334`; fractions are normalized. `Ge` means `Ge:1.0`, "
-"while `Ge,C` gives both unit weight."
+"`str`, empty by default. The `Element / Target fraction` table appears only when "
+"`source=Manual` and is serialized as `Co:0.333,Cr:0.333,Ni:0.334`. Fractions are "
+"dimensionless nonnegative weights, normalized automatically at runtime, with at least"
+" one positive value required."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:75
-#: f1b425aded4a4a4a88ccdf9b188a3dad
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:56
+#: 63dde2297d1d45e1887ea1be7c31b73b
 msgid "模式（mode）"
 msgstr "mode"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:77
-#: 95250ccb230c47009611a5d9ac6f04af
-msgid ""
-"`str`，默认 `Exact`。`Exact` 精确匹配目标配比，每个原子的元素分配满足目标计数"
-"（向下取整后按余数补足），适合对比实验。`Random` 按目标比例概率采样，整体统计"
-"接近但不严格匹配，适合探索性跑样。"
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:58
+#: 06aaae94c104464290ecbf7d997e5c75
+msgid "`str`，默认 `Exact`。`Exact` 为每个样本使用同一组最近可行整数计数；`Random` 为每个样本从多项分布重新抽取计数。两种模式都会随机分配具体位置。"
 msgstr ""
-"`str`, default `Exact`. `Exact` converts fractions to integer counts by "
-"floor-and-remainder allocation, giving fixed composition for comparisons. "
-"`Random` samples species probabilities and matches only statistically, which "
-"suits exploration."
+"`str`, default `Exact`. `Exact` uses the same nearest-feasible integer counts for "
+"every sample; `Random` redraws counts from a multinomial distribution for each "
+"sample. Both modes assign concrete sites randomly."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:79
-#: b899311408f046cea859ba21ade1b239
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:60
+#: 156cb444cd5b407ebaa69bec5c29da39
 msgid "样本数（samples）"
 msgstr "samples"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:81
-#: a350fa00f9694df5aa705f268ddbf511
-msgid ""
-"`int`，默认 1。每个输入结构为每个目标配比生成多少个不同占位版本。典型值 "
-"1-20。注意总输出 = 上游配比点数 x 这个值，先估算规模再跑。"
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:62
+#: bc7d1639418847ba936966dd7b849c46
+msgid "`int`，默认 1，单位为“个结构/输入”。输出数量严格等于输入帧数乘以该值，但输出之间不保证唯一。"
 msgstr ""
-"`int`, default `1`. Occupation variants per input target, commonly 1-20. "
-"Total output equals upstream target count times this value; estimate before "
-"running."
+"`int`, default 1, measured in structures per input. The output count is exactly the "
+"input-frame count multiplied by this value, but outputs are not guaranteed to be "
+"unique."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:83
-#: 6f27adb880884abf99d1e282a21e7aba
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:64
+#: cfe5906c48f948fba1f957f0f42b09f5
 msgid "分组筛选（group_filter）"
 msgstr "group_filter"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:85
-#: fc8ce6659a404d05b7dd07ec4123d7ac
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:66
+#: 8ad9b8e6ccf543de868da52fb09893f8
 msgid ""
-"`str`，默认空。逗号分隔的 group 标签，如 `A,B`。限制只在这些 group 内的位点上"
-"做占位分配。填写后，输入必须带 `atoms.arrays['group']` 且至少有一个标签命中；"
-"否则卡片会明确报错，不会退化成全结构占位。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"`str`，默认空。逗号分隔的 group 标签，如 `A,B`。留空表示全部位点；非空时只改变命中标签的局部目标集合。输入必须带 "
+"`atoms.arrays['group']` 且至少有一个标签命中，否则显式失败。"
+msgstr ""
+"`str`, empty by default. Comma-separated group labels such as `A,B`. Empty means all "
+"sites; a nonempty value changes only the local target set matching those labels. The "
+"input must contain `atoms.arrays['group']` with at least one matching label, "
+"otherwise the operation fails explicitly."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:87
-#: 9df21e024b6e44119d4c5413a0861c7c
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:68
+#: b229c4b8a5114ecabb73c78cd0025cc9
 msgid "使用随机种子（use_seed）"
-msgstr "use_seed"
+msgstr "Use Random Seed (use_seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:89
-#: 77e5562c834e4109b7161e12b788ace4
-msgid ""
-"`bool`，默认 false。打开后固定随机路径，`随机种子`（`seed`）不同取值产生不同"
-"占位分布。程序会结合输入结构的 stable config ID 为每个样本派生独立种子。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:70
+#: 1dd885a9d1b1412d895f7005c816f0e3
+msgid "`bool`，默认 false。开启后，程序由基础 seed、输入 `Config_type` 的稳定 ID 和样本序号派生随机种子。"
+msgstr ""
+"`bool`, default false. When enabled, the program derives the random seed from the "
+"base seed, a stable ID of the input `Config_type`, and the sample index."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:91
-#: 6c6df71b9c544e88ab972f1387f2e85a
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:72
+#: 51268ff37b1a4d348cab9ecfe3aa500f
 msgid "随机种子（seed）"
-msgstr "seed"
+msgstr "Random Seed (seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:93
-#: 02a409b845354120971f160167aaf3eb
-msgid "`int`，默认 0。不同取值产生不同的占位分布。"
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:74
+#: 075f6ff596f74e2baf7e5765c8a9ad44
+msgid "`int`，默认 0，无单位，仅在 `use_seed=true` 时生效。相同输入参数、`Config_type` 和 seed 可复现；数据集中的帧顺序不参与派生。"
 msgstr ""
-"`int`, default `0`. Different values generate different occupation "
-"distributions."
+"`int`, default 0, dimensionless and used only when `use_seed=true`. Results are "
+"reproducible for identical input parameters, `Config_type`, and seed. Dataset frame "
+"order is not part of the derivation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:95
-#: e1544f253b604058bff717ff2c3542d8
-msgid "生效条件：`use_seed=True`。"
-msgstr "Active only when `use_seed=True`."
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:76
+#: 65b138fba1b74b6fa0721c849def6d2e
+msgid "推荐配置"
+msgstr "Recommended Configuration"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:97
-#: 98594e688a634896a22c401db9352160
-msgid "推荐预设"
-msgstr "Recommended presets"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:99
-#: 3785a7549346404284e1e4ae6afb1aad
-msgid "单样本落地（每配比 1 排布，快速验证占位路径）"
-msgstr "Single realization per composition for a quick path check"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:100
-#: ee4505ff1e5f44eda7ba83e006cec719
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:78
+#: f784ecb329a14a6d8822e051c188e183
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"RandomOccupancyCard\",\n"
 "  \"check_state\": true,\n"
-"  \"source\": \"Auto (Comp tag)\",\n"
-"  \"manual\": \"\",\n"
-"  \"mode\": \"Exact\",\n"
-"  \"samples\": [1],\n"
-"  \"group_filter\": \"\",\n"
-"  \"use_seed\": false,\n"
-"  \"seed\": [0]\n"
+"  \"params\": {\n"
+"    \"source\": \"Auto (Comp tag)\",\n"
+"    \"manual\": \"\",\n"
+"    \"mode\": \"Exact\",\n"
+"    \"samples\": 5,\n"
+"    \"group_filter\": \"\",\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:114
-#: 3a14309c7e18454f8e37f18a73a70acd
-msgid "多样性占位（每配比 5 排布，常规训练用）"
-msgstr "Diverse occupations (five per composition for routine training)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:115
-#: 92fd2a64f60d4f2682a67295757955ce
-msgid ""
-"{\n"
-"  \"class\": \"RandomOccupancyCard\",\n"
-"  \"check_state\": true,\n"
-"  \"source\": \"Auto (Comp tag)\",\n"
-"  \"manual\": \"\",\n"
-"  \"mode\": \"Exact\",\n"
-"  \"samples\": [5],\n"
-"  \"group_filter\": \"\",\n"
-"  \"use_seed\": true,\n"
-"  \"seed\": [42]\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:129
-#: c33dd38f37f248b1891a67f44b8d5287
-msgid "高多样性子晶格（每配比 20 排布，仅限 group A）"
-msgstr "High-diversity sublattice sampling (20 per composition, group A only)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:130
-#: 1a32475c3a7e44c5a414a4662ee2a073
-msgid ""
-"{\n"
-"  \"class\": \"RandomOccupancyCard\",\n"
-"  \"check_state\": true,\n"
-"  \"source\": \"Auto (Comp tag)\",\n"
-"  \"manual\": \"\",\n"
-"  \"mode\": \"Random\",\n"
-"  \"samples\": [20],\n"
-"  \"group_filter\": \"A\",\n"
-"  \"use_seed\": true,\n"
-"  \"seed\": [42]\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:144
-#: 4c54157d92534351b8456b7594584f4f
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:94
+#: bff5ba4e7e7c4b45ab61e30ed815ea1d
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:146
-#: af7eca132af14f04b1b8cb427a39831c
-msgid ""
-"`Composition Space Sampling` → `Random Occupancy`：标准合金 pipeline，配比 → "
-"落位。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:96
+#: e676401b3a5d41b486989faea0c2920a
+msgid "`Composition Space Sampling` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。"
+msgstr "`Composition Space Sampling` → `Random Occupancy`: the standard alloy pipeline, from target composition to explicit site occupations."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:147
-#: f38a21c10d3f4ac19ba92ed690db1972
-msgid "`Group Label` → `Random Occupancy`：先打 group 标签，再限制占位区域。"
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:97
+#: 19a52d753bee493b81c2291a58520d03
+msgid "`Layer Groups` → `Random Occupancy`：先按原子层写入 group 标签，再限制占位区域。"
 msgstr ""
-"`Group Label` -> `Random Occupancy`: label a sublattice before restricting "
-"occupation."
+"`Layer Groups` → `Random Occupancy`: assign group labels by atomic layer first, then "
+"restrict the occupancy region."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:148
-#: f58e61b788dd4db2ac1ee96957fbb4c8
-msgid "`Random Occupancy` → `Atomic Perturb`：占位后加坐标噪声松驰局部应力。"
-msgstr ""
-"`Random Occupancy` -> `Atomic Perturb`: add coordinate diversity after "
-"occupation; use relaxation for physical structures."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:150
-#: 5de32cb8346c49248df99eabc87c66f3
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:99
+#: 0bdf5480edb2475e89849b582160d7cc
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:152
-#: ebfacd07ed524248bc9148ebe02cb82c
-msgid ""
-"**提示缺少目标成分。** 上游没有 `Comp(...)` 标签且 `手动`（`manual`）为空时，"
-"卡片会停止并报错。检查 `来源`（`source`）设置，或切换到 Manual 模式并填写成"
-"分；它不会再把原结构当成成功输出。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:154
-#: 2431b6f55a864c63a2835a7352e3757c
-msgid ""
-"**占位后元素数量与标签不一致。** `Random` 模式下统计浮动是正常的。换 `Exact` "
-"模式可精确匹配。"
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:101
+#: f9930207119140c1aaa667899cdfb83a
+msgid "**提示缺少目标成分。** Auto 模式下检查上游是否有有效 `Comp(...)`；Manual 模式下检查表格是否至少含一个正权重。卡片不会静默使用另一来源。"
 msgstr ""
-"**Species counts differ from the target.** Random mode fluctuates "
-"statistically; use Exact for deterministic integer counts."
+"**The card reports a missing target composition.** In Auto mode, check that an "
+"upstream operation provided a valid `Comp(...)`. In Manual mode, check that the table"
+" contains at least one positive weight. The card never silently uses the other "
+"source."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:156
-#: 7ed08cf31fed45d9a7299f4b3152d892
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:103
+#: b2917144bcad4c778751f588cbb8620a
 msgid ""
-"**输出数量远超预期。** 输出 = 输入帧数 x `样本数`（`samples`）。上游 500 个配"
-"比点 x `samples=5` = 2500 个结构。先估算总规模再跑。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"**实际比例与 Comp 标签不完全相等。** 有限位点需要整数计数。Exact 返回最近可行计数；Random 还包含多项抽样波动。应以输出 chemical "
+"symbols 和 metadata 的 `actual_counts` 为准。"
+msgstr ""
+"**The realized fraction does not exactly match the Comp label.** A finite set of "
+"sites requires integer counts. Exact returns the nearest feasible counts, while "
+"Random also includes multinomial sampling fluctuations. Use output chemical symbols "
+"and metadata `actual_counts` as authoritative."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:158
-#: f974cfedde634ae5953634ae844edbb5
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:105
+#: f81230f801954acf816acf27a7a7445b
+msgid "**多个输出完全相同。** 样本是独立随机抽取，不做唯一性筛选；位点少或组成偏斜时重复概率更高。"
+msgstr ""
+"**Several outputs are identical.** Samples are drawn independently without uniqueness"
+" filtering. Repetition is more likely with few sites or a highly skewed composition."
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:107
+#: 44c5f1fce58a44e6aaf26ea43234cee7
 msgid ""
-"**group_filter 报错。** 检查输入结构是否有 `atoms.arrays['group']` 且标签拼写"
-"完全匹配。缺少数组和零命中都会报错，避免本来只想改 A 组却意外改完整个结构。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"**group_filter 报错。** 检查输入是否有与原子数等长的 "
+"`atoms.arrays['group']`，且至少一个标签命中。空结构、空标签项、缺少数组和零命中均会显式失败。"
+msgstr ""
+"**group_filter reports an error.** Check that the input has an "
+"`atoms.arrays['group']` array matching the atom count and that at least one label "
+"matches. Empty structures, empty label entries, missing arrays, and zero matches all "
+"fail explicitly."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:160
-#: 1ffa58dff7aa4f8f869d7097872ccbf3
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:109
+#: cf4cb44178ea4f5eaf1199a04366d47d
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:162
-#: a4e2ada62098432782ca5b9c02f024d6
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:111
+#: cef8937084004528b37312ab6e51a132
 msgid ""
-"`Occ(E)` / `Occ(R)` / `Occ(E,s=...)` / `Occ(R,s=...)`。E = Exact，R = "
-"Random。使用 seed 时附加种子值便于追踪。"
+"`Config_type` 追加 `Occ(E)` / `Occ(R)`；使用固定种子时写为 `Occ(E,s=...)` / `Occ(R,s=...)`。E 和 R "
+"只表示计数模式，不表示排布唯一。"
 msgstr ""
-"`Occ(E)`, `Occ(R)`, `Occ(E,s=...)`, or `Occ(R,s=...)`; E means Exact and R "
-"Random. Seeded output includes the seed for traceability."
+"`Occ(E)` / `Occ(R)` is appended to `Config_type`; with fixed seeding it becomes "
+"`Occ(E,s=...)` / `Occ(R,s=...)`. E and R indicate only the count mode, not "
+"arrangement uniqueness."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:164
-#: d9ba80b8eff248d8ad8ad1b23752f480
-msgid "可复现性"
-msgstr "Reproducibility"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/random-occupancy-card.md:166
-#: 8622603c89d846da80790281fd8fe038
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:113
+#: bc8acdc7e9924b70beca681e0c81b016
 msgid ""
-"勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`）可复现。种子与输"
-"入结构的 stable config ID 联合派生样本级种子，相同配置 + 相同 seed → 相同占位"
-"序列。注意输入结构顺序变化会影响结果。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"`atoms.info[\"random_occupancy\"]` 是 JSON 字符串，包含目标组成 `target`、实际 `actual_counts` / "
+"`actual_fractions`、目标位点数 `eligible_sites`、分组 `groups`、模式 `mode`、样本序号 `sample_index` "
+"和实际派生 `seed`。实际化学组成以输出结构的 chemical symbols 与这些字段为准；原 `Comp(...)` 仍表示请求目标。"
+msgstr ""
+"`atoms.info[\"random_occupancy\"]` is a JSON string containing target composition "
+"`target`, realized `actual_counts` / `actual_fractions`, target-site count "
+"`eligible_sites`, groups `groups`, mode `mode`, sample index `sample_index`, and the "
+"actual derived `seed`. The output structure's chemical symbols and these fields "
+"define the realized chemical composition; the original `Comp(...)` continues to "
+"represent the requested target."
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:115
+#: b29fd8df477849fd8c2ae9c80f655665
+msgid "未知元素、负数或非有限权重、非法模式、非正 `samples`、负 seed、空结构及无有效目标位点都会显式失败，不会返回伪成功结果。"
+msgstr ""
+"Unknown elements, negative or nonfinite weights, invalid modes, nonpositive "
+"`samples`, negative seeds, empty structures, and the absence of valid target sites "
+"all fail explicitly rather than returning a falsely successful result."
+
+#~ msgid "典型用法：接在 `Composition Sweep` 之后，把目标配比计划转化为可以跑 DFT/NEP 的实际结构。"
+#~ msgstr ""
+#~ "The standard use is after `Composition Sweep`,"
+#~ " converting composition plans into structures "
+#~ "that can be relaxed and labeled by DFT."
 
 #~ msgid ""
-#~ "典型用法：接在 `Composition Sweep` 之后，把目标配比计划转化为可以跑 DFT/"
-#~ "NEP 的实际结构。"
+#~ "你在 CoCrNi 训练集上跑了 `Composition "
+#~ "Sweep`，覆盖了从纯元素到等摩尔的各种配比。但每个配比只生成了一个占位结构——对 Co0.33Cr0.33Ni0.33，训练集里 Cr"
+#~ " 永远在角落、Co 永远在面心。模型学到的不是\"这个成分\"，而是\"这个成分 + "
+#~ "这个特定排布\"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 meV/atom "
+#~ "跳到了 50 meV/atom。"
 #~ msgstr ""
-#~ "The standard use is after `Composition Sweep`, converting composition "
-#~ "plans into structures that can be relaxed and labeled by DFT."
+#~ "A CoCrNi composition sweep covers pure-to-"
+#~ "equiatomic fractions, but each composition has "
+#~ "one occupation. At Co0.33Cr0.33Ni0.33, Cr always "
+#~ "occupies one site family and Co another. "
+#~ "The model binds composition to that "
+#~ "arrangement and fails when Co and Cr "
+#~ "exchange sites."
 
-#~ msgid ""
-#~ "你在 CoCrNi 训练集上跑了 `Composition Sweep`，覆盖了从纯元素到等摩尔的各种"
-#~ "配比。但每个配比只生成了一个占位结构——对 Co0.33Cr0.33Ni0.33，训练集里 Cr "
-#~ "永远在角落、Co 永远在面心。模型学到的不是\"这个成分\"，而是\"这个成分 + 这"
-#~ "个特定排布\"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 "
-#~ "meV/atom 跳到了 50 meV/atom。"
+#~ msgid "**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 `Composition Sweep`）"
 #~ msgstr ""
-#~ "A CoCrNi composition sweep covers pure-to-equiatomic fractions, but each "
-#~ "composition has one occupation. At Co0.33Cr0.33Ni0.33, Cr always occupies "
-#~ "one site family and Co another. The model binds composition to that "
-#~ "arrangement and fails when Co and Cr exchange sites."
-
-#~ msgid ""
-#~ "**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上"
-#~ "游 `Composition Sweep`）"
-#~ msgstr ""
-#~ "**Input:** Structures labeled `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` by "
-#~ "`Composition Sweep`."
+#~ "**Input:** Structures labeled "
+#~ "`Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` by `Composition Sweep`."
 
 #~ msgid "`source` = `Auto (Comp tag)` （自动读取上游 Comp 标签）"
 #~ msgstr "`source` = `Auto (Comp tag)`"
@@ -545,81 +426,349 @@ msgstr "This section explains the option, its parameters, operation, and expecte
 #~ msgid "`mode` = `Exact` （精确匹配目标配比，每次排布不同但元素计数一致）"
 #~ msgstr "`mode` = `Exact` to keep counts fixed while changing arrangements."
 
-#~ msgid ""
-#~ "如果不同排布之间的能量差异非常小且体系对排布不敏感，可以减少 `samples`；差"
-#~ "异大则增大"
+#~ msgid "如果不同排布之间的能量差异非常小且体系对排布不敏感，可以减少 `samples`；差异大则增大"
 #~ msgstr ""
-#~ "Reduce `samples` when validated arrangement energies are nearly "
-#~ "insensitive; increase it when short-range order matters strongly."
+#~ "Reduce `samples` when validated arrangement energies"
+#~ " are nearly insensitive; increase it when "
+#~ "short-range order matters strongly."
+
+#~ msgid "如果上游没有 `Comp(...)` 标签导致输出=输入，切换到手工模式并填写 `manual` 成分字符串"
+#~ msgstr ""
+#~ "If no upstream `Comp(...)` label exists, "
+#~ "switch to Manual and provide the composition"
+#~ " explicitly."
+
+#~ msgid "上游有 `Composition Sweep` 或手工定义了目标配比，需要落到具体原子占位"
+#~ msgstr ""
+#~ "A target composition from `Composition Sweep` "
+#~ "or manual input must be realized as "
+#~ "sites"
 
 #~ msgid ""
-#~ "如果上游没有 `Comp(...)` 标签导致输出=输入，切换到手工模式并填写 `manual` "
-#~ "成分字符串"
+#~ "`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 "
+#~ "`Config_type` 中读取 `Comp(...)` 标签作为目标配比，适合接在 `Composition"
+#~ " Sweep` 之后。`Manual` 从下面的 `manual` 字段读取手工配比字符串。"
 #~ msgstr ""
-#~ "If no upstream `Comp(...)` label exists, switch to Manual and provide the "
-#~ "composition explicitly."
+#~ "`str`, default `Auto (Comp tag)`. `Auto` reads"
+#~ " a `Comp(...)` target from `Config_type`, "
+#~ "normally after `Composition Sweep`. `Manual` reads"
+#~ " the `manual` field."
 
 #~ msgid ""
-#~ "上游有 `Composition Sweep` 或手工定义了目标配比，需要落到具体原子占位"
+#~ "`str`，默认空。逗号分隔的 group 标签，如 `A,B`。限制只在这些 group "
+#~ "内的位点上做占位分配。需要输入结构已带 `atoms.arrays['group']`。"
 #~ msgstr ""
-#~ "A target composition from `Composition Sweep` or manual input must be "
-#~ "realized as sites"
+#~ "`str`, empty by default. Comma-separated group"
+#~ " labels such as `A,B`; only those sites "
+#~ "are reassigned. Input must contain "
+#~ "`atoms.arrays['group']`."
 
 #~ msgid ""
-#~ "`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 `Config_type` 中读取 "
-#~ "`Comp(...)` 标签作为目标配比，适合接在 `Composition Sweep` 之后。`Manual` "
-#~ "从下面的 `manual` 字段读取手工配比字符串。"
+#~ "`bool`，默认 false。打开后固定随机路径，`seed` 不同取值产生不同占位分布。程序会结合输入结构的 stable"
+#~ " config ID 为每个样本派生独立种子。"
 #~ msgstr ""
-#~ "`str`, default `Auto (Comp tag)`. `Auto` reads a `Comp(...)` target from "
-#~ "`Config_type`, normally after `Composition Sweep`. `Manual` reads the "
-#~ "`manual` field."
+#~ "`bool`, default `false`. Fix the random path."
+#~ " The card combines `seed` with the stable"
+#~ " configuration ID to derive per-sample "
+#~ "seeds."
+
+#~ msgid "`Composition Sweep` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。"
+#~ msgstr ""
+#~ "`Composition Sweep` -> `Random Occupancy`: standard"
+#~ " alloy path from fractions to sites."
 
 #~ msgid ""
-#~ "`str`，默认空。逗号分隔的 group 标签，如 `A,B`。限制只在这些 group 内的位"
-#~ "点上做占位分配。需要输入结构已带 `atoms.arrays['group']`。"
+#~ "**输出 = 输入，没有变化。** 上游没有 `Comp(...)` 标签且 "
+#~ "`manual` 为空。检查 `source` 设置，或切换到 Manual 模式并填写成分。"
 #~ msgstr ""
-#~ "`str`, empty by default. Comma-separated group labels such as `A,B`; only "
-#~ "those sites are reassigned. Input must contain `atoms.arrays['group']`."
+#~ "**Output equals input.** No `Comp(...)` label "
+#~ "was found and `manual` is empty. Correct "
+#~ "`source` or enter a manual composition."
+
+#~ msgid "**输出数量远超预期。** 输出 = 输入帧数 x `samples`。上游 500 个配比点 x `samples=5` = 2500 个结构。先估算总规模再跑。"
+#~ msgstr ""
+#~ "**Output is much larger than expected.** Count"
+#~ " is input frames times `samples`; 500 "
+#~ "targets with five samples produce 2,500 "
+#~ "structures."
+
+#~ msgid "**group_filter 不生效。** 检查输入结构是否有 `atoms.arrays['group']` 且标签拼写完全匹配。"
+#~ msgstr ""
+#~ "**`group_filter` has no effect.** Confirm "
+#~ "`atoms.arrays['group']` exists and labels match "
+#~ "exactly."
 
 #~ msgid ""
-#~ "`bool`，默认 false。打开后固定随机路径，`seed` 不同取值产生不同占位分布。"
-#~ "程序会结合输入结构的 stable config ID 为每个样本派生独立种子。"
+#~ "勾选 `use_seed` + 固定 `seed` 可复现。种子与输入结构的 stable"
+#~ " config ID 联合派生样本级种子，相同配置 + 相同 seed → "
+#~ "相同占位序列。注意输入结构顺序变化会影响结果。"
 #~ msgstr ""
-#~ "`bool`, default `false`. Fix the random path. The card combines `seed` "
-#~ "with the stable configuration ID to derive per-sample seeds."
+#~ "Enable `use_seed` and fix `seed` to reproduce"
+#~ " occupations. Sample seeds derive from the "
+#~ "stable configuration ID and base seed. Input"
+#~ " order changes can affect output."
 
 #~ msgid ""
-#~ "`Composition Sweep` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。"
+#~ "在给定总成分约束下，将目标配比真正落到原子占位上。读取 `Comp(...)` "
+#~ "标签或手工输入的成分字符串，用精确或随机模式把各元素分配到离散晶格位点，输出带 `Occ(...)` 标签的真实化学占位结构。"
 #~ msgstr ""
-#~ "`Composition Sweep` -> `Random Occupancy`: standard alloy path from "
-#~ "fractions to sites."
+#~ "Realize a target composition as discrete "
+#~ "atomic occupations. The card reads a "
+#~ "`Comp(...)` label or a manual composition, "
+#~ "assigns species to lattice sites in Exact "
+#~ "or Random mode, and outputs actual chemical"
+#~ " configurations labeled `Occ(...)`."
+
+#~ msgid "典型用法：接在 `Composition Space Sampling` 之后，把目标配比计划转化为可以跑 DFT/NEP 的实际结构。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
-#~ "**输出 = 输入，没有变化。** 上游没有 `Comp(...)` 标签且 `manual` 为空。检"
-#~ "查 `source` 设置，或切换到 Manual 模式并填写成分。"
-#~ msgstr ""
-#~ "**Output equals input.** No `Comp(...)` label was found and `manual` is "
-#~ "empty. Correct `source` or enter a manual composition."
+#~ "不足的位点按 $Np_e-n_e^{(0)}$ 从大到小补齐，然后把含 $n_e$ 个元素 "
+#~ "$e$ 的占位池 随机打乱。`随机`模式则一次性从多项分布 $\\mathbf "
+#~ "n\\sim\\operatorname{Multinomial}(N,\\mathbf p)$ 抽取计数，再打乱占位池。 "
+#~ "因此精确模式每个样本的元素计数相同；随机模式只在大量样本的统计平均上接近目标比例。 `分组筛选`会把 $N$ 限制为命中 "
+#~ "group 标签的位点数。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "场景：同成分不同排布下的能量预测，模型偏差从 5 跳到 50 meV/atom"
+#~ msgstr "Scenario: Error jumps from 5 to 50 meV/atom between arrangements at one composition"
 
 #~ msgid ""
-#~ "**输出数量远超预期。** 输出 = 输入帧数 x `samples`。上游 500 个配比点 x "
-#~ "`samples=5` = 2500 个结构。先估算总规模再跑。"
-#~ msgstr ""
-#~ "**Output is much larger than expected.** Count is input frames times "
-#~ "`samples`; 500 targets with five samples produce 2,500 structures."
+#~ "你在 CoCrNi 训练集上跑了 `Composition Space "
+#~ "Sampling`，覆盖了从纯元素到等摩尔的各种配比。但每个配比只生成了一个占位结构——对 Co0.33Cr0.33Ni0.33，训练集里 "
+#~ "Cr 永远在角落、Co 永远在面心。模型学到的不是\"这个成分\"，而是\"这个成分 + "
+#~ "这个特定排布\"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 meV/atom "
+#~ "跳到了 50 meV/atom。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid ""
-#~ "**group_filter 不生效。** 检查输入结构是否有 `atoms.arrays['group']` 且标"
-#~ "签拼写完全匹配。"
+#~ "**诊断思路：** "
+#~ "对给定成分，短程化学有序度——哪种原子偏好和哪种原子做邻居——显著影响总能量和局域力。训练集里每种成分只有一个排布样本，模型就把成分和特定排布绑死了。解决：给每个目标配比生成多个不同占位版本。"
 #~ msgstr ""
-#~ "**`group_filter` has no effect.** Confirm `atoms.arrays['group']` exists "
-#~ "and labels match exactly."
+#~ "**Diagnosis:** Short-range chemical order at "
+#~ "fixed composition strongly affects energy and "
+#~ "forces. Generate several occupation variants for "
+#~ "each target fraction so the model does "
+#~ "not conflate composition with one arrangement."
 
 #~ msgid ""
-#~ "勾选 `use_seed` + 固定 `seed` 可复现。种子与输入结构的 stable config ID 联"
-#~ "合派生样本级种子，相同配置 + 相同 seed → 相同占位序列。注意输入结构顺序变"
-#~ "化会影响结果。"
+#~ "**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 "
+#~ "`Composition Space Sampling`）"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "**目标：** 每个目标配比生成 5 个不同原子排布版本，覆盖排布多样性"
+#~ msgstr "**Objective:** Generate five distinct occupations per target composition."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid "`来源`（`source`） = `Auto (Comp tag)` （自动读取上游 Comp 标签）"
+#~ msgstr "See the parameter description for details."
+
+#~ msgid "`模式`（`mode`） = `Exact` （精确匹配目标配比，每次排布不同但元素计数一致）"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`样本数`（`samples`） = `5`"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "**输出：** 每个输入结构产生 5 个带 `Occ(E)` 标签的结构，元素组成与 Comp 标签一致但原子排布各不相同"
 #~ msgstr ""
-#~ "Enable `use_seed` and fix `seed` to reproduce occupations. Sample seeds "
-#~ "derive from the stable configuration ID and base seed. Input order "
-#~ "changes can affect output."
+#~ "**Output:** Five `Occ(E)` structures per input, "
+#~ "with species counts matching `Comp` and "
+#~ "distinct arrangements."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后对同一成分的不同排布跑推理，能量方差应该合理——不应全坍缩到一个值，也不应异常发散"
+#~ msgstr ""
+#~ "After labeling and retraining, predictions across"
+#~ " arrangements at one composition should reflect"
+#~ " physical differences without anomalous divergence."
+
+#~ msgid "抽查几个占位输出，确认元素计数与目标配比一致（Exact 模式）或统计上接近（Random 模式）"
+#~ msgstr ""
+#~ "Check several outputs: Exact counts should "
+#~ "match the target integer allocation, while "
+#~ "Random counts should approach it statistically."
+
+#~ msgid "如果不同排布之间的能量差异非常小且体系对排布不敏感，可以减少 `样本数`（`samples`）；差异大则增大"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "如果上游没有 `Comp(...)` 标签导致输出=输入，切换到手工模式并填写 `手动`（`manual`）成分字符串"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "上游有 `Composition Space Sampling` 或手工定义了目标配比，需要落到具体原子占位"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "同一成分下需要多个不同原子排布来覆盖短程化学有序度"
+#~ msgstr ""
+#~ "Several arrangements at one composition are "
+#~ "needed to cover short-range chemical order"
+
+#~ msgid "高熵合金、固溶体等需要成分-排布联合采样的体系"
+#~ msgstr ""
+#~ "A high-entropy alloy or solid solution "
+#~ "requires joint composition-arrangement sampling"
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "不需要改变原子占位"
+#~ msgstr "Atomic occupations should not change"
+
+#~ msgid "需要直接指定替换规则而非从配比出发 → 用 `Random Doping`"
+#~ msgstr "A direct substitution rule is known; use `Random Doping`"
+
+#~ msgid "输入本身已经是真实的离散占位结构且不再需要多样性"
+#~ msgstr ""
+#~ "The input already has realized occupations and"
+#~ " no additional arrangement diversity is needed"
+
+#~ msgid ""
+#~ "`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 "
+#~ "`Config_type` 中读取 `Comp(...)` 标签作为目标配比，适合接在 `Composition"
+#~ " Space Sampling` 之后。`手动`（`manual`）从下面的 "
+#~ "`手动`（`manual`）字段读取手工配比字符串。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "`str`，默认空。成分字符串，如 `Co:0.333,Cr:0.333,Ni:0.334`，仅在 `source=Manual` "
+#~ "时生效。比例会被自动归一化。只输入单个元素如 `Ge` 时按 `Ge:1.0` 处理；输入 `Ge,C`"
+#~ " 则两个元素默认权重都是 1.0。"
+#~ msgstr ""
+#~ "`str`, empty by default; Manual only. "
+#~ "Composition such as `Co:0.333,Cr:0.333,Ni:0.334`; "
+#~ "fractions are normalized. `Ge` means `Ge:1.0`, "
+#~ "while `Ge,C` gives both unit weight."
+
+#~ msgid ""
+#~ "`str`，默认 `Exact`。`Exact` "
+#~ "精确匹配目标配比，每个原子的元素分配满足目标计数（向下取整后按余数补足），适合对比实验。`Random` "
+#~ "按目标比例概率采样，整体统计接近但不严格匹配，适合探索性跑样。"
+#~ msgstr ""
+#~ "`str`, default `Exact`. `Exact` converts fractions"
+#~ " to integer counts by floor-and-remainder"
+#~ " allocation, giving fixed composition for "
+#~ "comparisons. `Random` samples species probabilities "
+#~ "and matches only statistically, which suits "
+#~ "exploration."
+
+#~ msgid "`int`，默认 1。每个输入结构为每个目标配比生成多少个不同占位版本。典型值 1-20。注意总输出 = 上游配比点数 x 这个值，先估算规模再跑。"
+#~ msgstr ""
+#~ "`int`, default `1`. Occupation variants per "
+#~ "input target, commonly 1-20. Total output "
+#~ "equals upstream target count times this value;"
+#~ " estimate before running."
+
+#~ msgid ""
+#~ "`bool`，默认 false。打开后固定随机路径，`随机种子`（`seed`）不同取值产生不同占位分布。程序会结合输入结构的 stable"
+#~ " config ID 为每个样本派生独立种子。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`int`，默认 0。不同取值产生不同的占位分布。"
+#~ msgstr "`int`, default `0`. Different values generate different occupation distributions."
+
+#~ msgid "生效条件：`use_seed=True`。"
+#~ msgstr "Active only when `use_seed=True`."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "单样本落地（每配比 1 排布，快速验证占位路径）"
+#~ msgstr "Single realization per composition for a quick path check"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"RandomOccupancyCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"source\": \"Auto (Comp tag)\",\n"
+#~ "  \"manual\": \"\",\n"
+#~ "  \"mode\": \"Exact\",\n"
+#~ "  \"samples\": [1],\n"
+#~ "  \"group_filter\": \"\",\n"
+#~ "  \"use_seed\": false,\n"
+#~ "  \"seed\": [0]\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "多样性占位（每配比 5 排布，常规训练用）"
+#~ msgstr "Diverse occupations (five per composition for routine training)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"RandomOccupancyCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"source\": \"Auto (Comp tag)\",\n"
+#~ "  \"manual\": \"\",\n"
+#~ "  \"mode\": \"Exact\",\n"
+#~ "  \"samples\": [5],\n"
+#~ "  \"group_filter\": \"\",\n"
+#~ "  \"use_seed\": true,\n"
+#~ "  \"seed\": [42]\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "高多样性子晶格（每配比 20 排布，仅限 group A）"
+#~ msgstr "High-diversity sublattice sampling (20 per composition, group A only)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"RandomOccupancyCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"source\": \"Auto (Comp tag)\",\n"
+#~ "  \"manual\": \"\",\n"
+#~ "  \"mode\": \"Random\",\n"
+#~ "  \"samples\": [20],\n"
+#~ "  \"group_filter\": \"A\",\n"
+#~ "  \"use_seed\": true,\n"
+#~ "  \"seed\": [42]\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "`Random Occupancy` → `Atomic Perturb`：占位后加坐标噪声松驰局部应力。"
+#~ msgstr ""
+#~ "`Random Occupancy` -> `Atomic Perturb`: add "
+#~ "coordinate diversity after occupation; use "
+#~ "relaxation for physical structures."
+
+#~ msgid ""
+#~ "**提示缺少目标成分。** 上游没有 `Comp(...)` 标签且 "
+#~ "`手动`（`manual`）为空时，卡片会停止并报错。检查 `来源`（`source`）设置，或切换到 Manual "
+#~ "模式并填写成分；它不会再把原结构当成成功输出。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "**占位后元素数量与标签不一致。** `Random` 模式下统计浮动是正常的。换 `Exact` 模式可精确匹配。"
+#~ msgstr ""
+#~ "**Species counts differ from the target.** "
+#~ "Random mode fluctuates statistically; use Exact "
+#~ "for deterministic integer counts."
+
+#~ msgid ""
+#~ "**输出数量远超预期。** 输出 = 输入帧数 x `样本数`（`samples`）。上游 "
+#~ "500 个配比点 x `samples=5` = 2500 个结构。先估算总规模再跑。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "`Occ(E)` / `Occ(R)` / `Occ(E,s=...)` / "
+#~ "`Occ(R,s=...)`。E = Exact，R = Random。使用 seed "
+#~ "时附加种子值便于追踪。"
+#~ msgstr ""
+#~ "`Occ(E)`, `Occ(R)`, `Occ(E,s=...)`, or `Occ(R,s=...)`; "
+#~ "E means Exact and R Random. Seeded "
+#~ "output includes the seed for traceability."
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid ""
+#~ "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`）可复现。种子与输入结构的"
+#~ " stable config ID 联合派生样本级种子，相同配置 + 相同 seed"
+#~ " → 相同占位序列。注意输入结构顺序变化会影响结果。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."

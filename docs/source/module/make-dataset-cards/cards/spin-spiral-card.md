@@ -46,7 +46,7 @@ $$|\mathbf q|=2\pi/L$$
 | 旧版设置 | 新版对应设置 |
 | --- | --- |
 | `axis` | `Propagation direction q (Cartesian)` |
-| `period_range` | 将每个 $L$ 换算为 $|q|=2\pi/L$；需要多段时拆成明确路径 |
+| `period_range` | 将每个 $L$ 换算为 $\lvert\mathbf q\rvert=2\pi/L$；需要多段时拆成明确路径 |
 | `angle_gradient_range` | 先用 $L=360/g$ 换算周期，再换算 q |
 | `phase_range` | `Phase Deg`；多个相位使用多张明确配置 |
 | `mz` | `Cone Component` |

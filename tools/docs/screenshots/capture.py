@@ -171,7 +171,12 @@ def capture(spec: ScenarioSpec, output: Path, language: str) -> Path:
     if runner is None:
         raise RuntimeError(f"No runner registered for scenario '{spec.runner}'")
 
-    context = create_context(REPO_ROOT, spec.window_size, language)
+    context = create_context(
+        REPO_ROOT,
+        spec.window_size,
+        language,
+        context=str(spec.options.get("context", "main")),
+    )
     try:
         runner(context)
         pump_events(context.app, 80)

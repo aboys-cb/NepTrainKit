@@ -125,6 +125,12 @@ def annotate(pixmap: QPixmap, capture_widget: QWidget, annotations: tuple[Annota
         return pixmap
 
     result = QPixmap(pixmap)
+    resolved: list[tuple[Annotation, QRect, QPoint]] = []
+    for annotation in annotations:
+        rect = resolve_rect(capture_widget, capture_widget, annotation.target)
+        badge = _badge_point(rect, annotation.badge, result.width(), result.height())
+        resolved.append((annotation, rect, badge))
+
     painter = QPainter(result)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -132,12 +138,7 @@ def annotate(pixmap: QPixmap, capture_widget: QWidget, annotations: tuple[Annota
     text_font = QFont("Arial", 14)
     number_font = QFont("Arial", 13, QFont.Weight.Bold)
 
-    resolved: list[tuple[Annotation, QRect, QPoint]] = []
-    for annotation in annotations:
-        rect = resolve_rect(capture_widget, capture_widget, annotation.target)
-        badge = _badge_point(rect, annotation.badge, result.width(), result.height())
-        resolved.append((annotation, rect, badge))
-
+    for annotation, rect, badge in resolved:
         painter.setPen(QPen(ACCENT, 3))
         painter.setBrush(ACCENT_FILL)
         painter.drawRoundedRect(rect, 8, 8)

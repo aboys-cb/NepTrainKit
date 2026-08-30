@@ -8,486 +8,430 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:1
-#: 8cf2dd43d29d4cac87f3765d52398ac5
+#: ../../source/module/make-dataset-cards/writing-guide.md:1
+#: 7b4beff83d1f4b248428b6beaeaeec29
 msgid "卡片文档编写规范"
 msgstr "Writing Card Documentation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:3
-#: 112b3b263f9f43c4b70cbbdab3b948de
-msgid ""
-"目标：让用户从\"模型哪里不行 → 训练集缺什么数据 → 选哪张卡 → 设什么参数 → 怎"
-"么判断改善\"一路走通，而不是只解释每个参数的抽象含义。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:3
+#: c1a544a7c2994580a0cfa2897f15dd7d
+msgid "目标：让用户从\"模型哪里不行 → 训练集缺什么数据 → 选哪张卡 → 设什么参数 → 怎么判断改善\"一路走通，而不是只解释每个参数的抽象含义。"
 msgstr ""
-"Goal: guide users from “where the model fails → what data the training set "
-"lacks → which card to choose → which parameters to set → how to verify "
-"improvement,” rather than merely defining parameters in isolation."
+"Goal: guide users from “where the model fails → what data the training set lacks → "
+"which card to choose → which parameters to set → how to verify improvement,” rather "
+"than merely defining parameters in isolation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:5
-#: 9e597d7fb26743b7befbb97893d7d7b7
+#: ../../source/module/make-dataset-cards/writing-guide.md:5
+#: b24cab451af445b5b0993d54b5e67a4c
 msgid "语言风格"
 msgstr "Writing style"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:7
-#: e9d5485e636e433296c5b1ee10f9410e
+#: ../../source/module/make-dataset-cards/writing-guide.md:7
+#: 27f78baa31a44cb29d0d6309cd84e600
 msgid "核心原则：像人在给你讲，不像在查 schema"
-msgstr ""
-"Core principle: explain like a knowledgeable colleague, not a schema browser"
+msgstr "Core principle: explain like a knowledgeable colleague, not a schema browser"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:9
-#: 6a0268055e344e4f9ac101d0b0f7fbc2
-msgid ""
-"参数说明是写给用户的，不是写给数据库的。如果 33 张卡、每张卡 5-20 个参数，全"
-"用同一个句式写，用户读 3 张就疲劳了。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:9
+#: 85d95b75acda418594c237f762bc4793
+msgid "参数说明是写给用户的，不是写给数据库的。如果 33 张卡、每张卡 5-20 个参数，全用同一个句式写，用户读 3 张就疲劳了。"
 msgstr ""
-"Parameter descriptions are for users, not databases. Repeating one sentence "
-"pattern across dozens of cards and hundreds of parameters makes the manual "
-"exhausting to read."
+"Parameter descriptions are for users, not databases. Repeating one sentence pattern "
+"across dozens of cards and hundreds of parameters makes the manual exhausting to "
+"read."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:11
-#: 9de3bb05bad342938622000dceba863b
+#: ../../source/module/make-dataset-cards/writing-guide.md:11
+#: 6ae9f551b03349f98065d57bd15e1853
 msgid "禁止的写法"
 msgstr "Avoid"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:13
-#: ea046da9acd5485bbcfd1813011e1a8b
-msgid ""
-"每段以独立一行的 \"类型：X。默认：Y。\" 开头，然后再换行另起一段\"解释\"。类"
-"型和默认值是背景信息，不是段落主角。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:13
+#: 50f89992d6c44b5c844e388fbe752a8d
+msgid "每段以独立一行的 \"类型：X。默认：Y。\" 开头，然后再换行另起一段\"解释\"。类型和默认值是背景信息，不是段落主角。"
 msgstr ""
-"Opening every block with a standalone “Type: X. Default: Y.” line and moving "
-"the actual explanation to another paragraph. Type and default are context, "
-"not the main point."
+"Opening every block with a standalone “Type: X. Default: Y.” line and moving the "
+"actual explanation to another paragraph. Type and default are context, not the main "
+"point."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:14
-#: 4bc9eff26c2348c29b255f0350cf7f34
+#: ../../source/module/make-dataset-cards/writing-guide.md:14
+#: 1b47c6624f824718b7c603ece1ee9617
 msgid "所有参数用同一个句式：\"设置 XXX。\"\"决定是否 XXX。\"\"选择 XXX。\""
 msgstr ""
-"Using the same template for every parameter: “Sets X,” “Determines whether "
-"X,” or “Selects X.”"
+"Using the same template for every parameter: “Sets X,” “Determines whether X,” or "
+"“Selects X.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:15
-#: 572c8f0b0973469d9d2f382505b5f87a
-msgid ""
-"第一行和第二行语义重复——先说\"设置位移距离\"，再换行说\"每个原子的位移\"。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:15
+#: 7128f242e7cd443a87ac038d1aeaef91
+msgid "第一行和第二行语义重复——先说\"设置位移距离\"，再换行说\"每个原子的位移\"。"
 msgstr ""
-"Repeating the same idea in consecutive sentences, such as “sets the "
-"displacement distance” followed by “the displacement of each atom.”"
+"Repeating the same idea in consecutive sentences, such as “sets the displacement "
+"distance” followed by “the displacement of each atom.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:16
-#: 169f373a12554671a1e0edac1871f591
+#: ../../source/module/make-dataset-cards/writing-guide.md:16
+#: 2b7e0470a91d4fc8afbf5c36f9833082
 msgid "通篇没有\"你\"——读者感觉是在看机器生成的规格书，不是有人在跟自己说话。"
 msgstr ""
-"Never addressing the reader, which makes the page feel like a generated "
-"specification instead of practical guidance."
+"Never addressing the reader, which makes the page feel like a generated specification"
+" instead of practical guidance."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:18
-#: d38e8c118abf446690f7ba2b2c9581ca
+#: ../../source/module/make-dataset-cards/writing-guide.md:17
+#: 8b941d56424e41f697bdd8073cda1981
+msgid "用一串无关的“不做什么”定义功能，例如在原子扰动页罗列“不做弛豫、不做能量筛选”。如果用户从卡片名称和参数中本来就不会期待某项能力，不要专门否定它；直接说明真实效果或需要处理的具体风险。"
+msgstr "Do not define a feature through a list of unrelated things it does not do—for example, stating on the Atomic Perturb page that it does not relax structures or filter by energy. If users would not reasonably expect a capability from the card name or parameters, do not deny it explicitly. State the actual effect or the specific risk that must be handled."
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:19
+#: 125f9882c719492cad0717c50af35bd4
 msgid "推荐写法"
 msgstr "Preferred approach"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:20
-#: badb471942a643ea8b974db66d857565
-msgid ""
-"类型和默认值压缩成一句话，然后直接进入读者真正关心的内容。句式要有变化，要敢"
-"用\"你\"。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:21
+#: cb086969c3ca4566977c2a47b3d67267
+msgid "类型和默认值压缩成一句话，然后直接进入读者真正关心的内容。句式要有变化，要敢用\"你\"。"
 msgstr ""
-"Compress type and default into one sentence, then move directly to what the "
-"reader needs to decide. Vary sentence structure and address the reader "
-"naturally when giving advice."
+"Compress type and default into one sentence, then move directly to what the reader "
+"needs to decide. Vary sentence structure and address the reader naturally when giving"
+" advice."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:22
-#: 77a7b1914b4545ebbe7216d57eebd998
+#: ../../source/module/make-dataset-cards/writing-guide.md:23
+#: 7a88e40cbdb543d9bcff4f09bb348fe9
 msgid "**改前（机器感）：**"
 msgstr "**Before (schema-like):**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:24
-#: 36358a85f5af4cf5a2cf57ffc8c2724a
+#: ../../source/module/make-dataset-cards/writing-guide.md:25
+#: c8b67677b3ef414584587c6046fa4541
 msgid ""
 "### Max Distance（max_distance）\n"
 "类型：`float`。默认：`0.3`。设置原子随机位移的最大距离。\n"
 "\n"
-"每个原子的最大位移向量长度。这是绝对长度（单位 Å），不是每个 Cartesian 分量的"
-"上限，也不是百分比。室温下典型固体原子振动幅度约 0.05~0.1 Å，设 0.15~0.3 Å 通"
-"常合适。含 H 等轻元素时考虑开启 `use_element_scaling` 单独调大 H 的幅度。\n"
+"每个原子的最大位移向量长度。这是绝对长度（单位 Å），不是每个 Cartesian 分量的上限，也不是百分比。室温下典型固体原子振动幅度约 0.05~0.1 Å，设 "
+"0.15~0.3 Å 通常合适。含 H 等轻元素时考虑开启 `use_element_scaling` 单独调大 H 的幅度。\n"
 msgstr ""
 "\\### Max Distance (`max_distance`)\n"
 "Type: `float`. Default: `0.3`. Sets the maximum random atomic displacement.\n"
 "\n"
-"The maximum length of each atom's displacement vector. This is an absolute "
-"length in Å, not a per-component bound or a percentage. Typical room-"
-"temperature vibrational amplitudes are around 0.05–0.1 Å, so 0.15–0.3 Å is "
-"often suitable. For light elements such as H, consider "
-"`use_element_scaling`.\n"
+"The maximum length of each atom's displacement vector. This is an absolute length in "
+"Å, not a per-component bound or a percentage. Typical room-temperature vibrational "
+"amplitudes are around 0.05–0.1 Å, so 0.15–0.3 Å is often suitable. For light elements"
+" such as H, consider `use_element_scaling`.\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:31
-#: a01fbd838eff46c59604bbbedb95dd21
+#: ../../source/module/make-dataset-cards/writing-guide.md:32
+#: 323adb0d3297477aa2c074016fb90b37
 msgid "**改后：**"
 msgstr "**After:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:33
-#: 53817fcb912f41e48cd12830484a0563
+#: ../../source/module/make-dataset-cards/writing-guide.md:34
+#: 822b8a9a2b6d4504b791157afe914290
 msgid ""
 "### Max Distance（max_distance）\n"
 "\n"
 "`float`，默认 0.3。每个原子的最大位移，单位 Å。\n"
 "\n"
-"这个值不是 Cartesian 分量上限，也不是应变百分比——就是一个原子最多被挪多远。室"
-"温下原子振动幅度约 0.05~0.1 Å，设 0.15~0.3 Å 通常够用。如果体系含 H 等轻元"
-"素，H 的振幅天然更大，建议同时开启 `use_element_scaling` 单独给 H 调大。设到 "
-"0.3~0.5 Å 以上时，跑完务必抽查最近邻键长——这个量级已经可能拉断键了。\n"
+"这个值不是 Cartesian 分量上限，也不是应变百分比——就是一个原子最多被挪多远。室温下原子振动幅度约 0.05~0.1 Å，设 0.15~0.3 Å "
+"通常够用。如果体系含 H 等轻元素，H 的振幅天然更大，建议同时开启 `use_element_scaling` 单独给 H 调大。设到 0.3~0.5 Å "
+"以上时，跑完务必抽查最近邻键长——这个量级已经可能拉断键了。\n"
 "\n"
-"生效条件：开启 `use_element_scaling` 后，对在 `element_scalings` 中列出的元"
-"素，这个值会被覆盖。\n"
+"生效条件：开启 `use_element_scaling` 后，对在 `element_scalings` 中列出的元素，这个值会被覆盖。\n"
 msgstr ""
 "\\### Max Distance (`max_distance`)\n"
 "\n"
 "`float`, default: `0.3`. Maximum displacement of each atom, in Å.\n"
 "\n"
-"This is neither a Cartesian-component bound nor a strain percentage; it is "
-"the farthest an atom may move. Room-temperature vibrational amplitudes are "
-"often around 0.05–0.1 Å, so 0.15–0.3 Å is usually sufficient. If the system "
-"contains light elements such as H, enable `use_element_scaling` and give H a "
-"larger limit. At 0.3–0.5 Å or above, inspect nearest-neighbor distances "
-"after generation because bonds may be severely distorted.\n"
+"This is neither a Cartesian-component bound nor a strain percentage; it is the "
+"farthest an atom may move. Room-temperature vibrational amplitudes are often around "
+"0.05–0.1 Å, so 0.15–0.3 Å is usually sufficient. If the system contains light "
+"elements such as H, enable `use_element_scaling` and give H a larger limit. At "
+"0.3–0.5 Å or above, inspect nearest-neighbor distances after generation because bonds"
+" may be severely distorted.\n"
 "\n"
 "Effective when: with `use_element_scaling` enabled, values listed in "
 "`element_scalings` override this global limit.\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:43
-#: 625ec6803e7048269b33802f4111bf1d
+#: ../../source/module/make-dataset-cards/writing-guide.md:44
+#: 5b982cfa1f8947918c702c40b0f55323
 msgid "变化点："
 msgstr "What changed:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:44
-#: ac4944df8a064d5992952c8ea5f9a61b
-msgid ""
-"第一行不再是独立的 \"类型：X。默认：Y。\"，而是压缩成 `类型，默认值。描述。`"
+#: ../../source/module/make-dataset-cards/writing-guide.md:45
+#: 4dfa990de9b348748a29e13b2beedc68
+msgid "第一行不再是独立的 \"类型：X。默认：Y。\"，而是压缩成 `类型，默认值。描述。`"
 msgstr ""
 "The opening is one compact sentence—type, default, and purpose—instead of a "
 "standalone metadata line."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:45
-#: 543d9a7fd8684014b395f590708b6cee
+#: ../../source/module/make-dataset-cards/writing-guide.md:46
+#: 5fdc2aee45a64d4898e8f795d1608042
 msgid "\"你\"出现了——用户在读一个人写的东西"
-msgstr ""
-"The reader is addressed naturally, making the explanation sound written for "
-"a person."
+msgstr "The reader is addressed naturally, making the explanation sound written for a person."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:46
-#: 18d79247b49b42bb82e506ec6d1d4f82
+#: ../../source/module/make-dataset-cards/writing-guide.md:47
+#: 77492e2a192f4a2ab13ded9c28437300
 msgid "\"如果...建议...\" 替代了 \"考虑开启\""
-msgstr ""
-"A concrete condition and recommendation replace the vague phrase “consider "
-"enabling.”"
+msgstr "A concrete condition and recommendation replace the vague phrase “consider enabling.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:47
-#: 81998987e91e4144a58ec85f76beaed9
+#: ../../source/module/make-dataset-cards/writing-guide.md:48
+#: 9a8e974200664d1095b3f18e0b2f2d35
 msgid "\"务必\" 替代 \"需要\"——人的语气"
-msgstr ""
-"The warning uses direct, human wording instead of generic obligation "
-"language."
+msgstr "The warning uses direct, human wording instead of generic obligation language."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:48
-#: eda1fb4e7aad4ed0b766802976a5a017
+#: ../../source/module/make-dataset-cards/writing-guide.md:49
+#: 4bb5410a097e462f9bf17186c51514ce
 msgid "没有重复解释——不说一遍\"设置位移\"，又说一遍\"位移长度\""
 msgstr "The same meaning is not restated in adjacent sentences."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:49
-#: 1ae38df329ac4af58e3dd9178bce6d1c
+#: ../../source/module/make-dataset-cards/writing-guide.md:50
+#: e2069aea0bbf456c9010d226f68d7641
 msgid "生效条件放在末尾，不和主描述抢节奏"
 msgstr ""
-"The activation condition is placed at the end so it does not interrupt the "
-"main explanation."
+"The activation condition is placed at the end so it does not interrupt the main "
+"explanation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:51
-#: 9b53402756c04220b4eaacefa10b4edd
+#: ../../source/module/make-dataset-cards/writing-guide.md:52
+#: 95e138ccd6ad421f8870cc96426d79ad
 msgid "句式要有变化"
 msgstr "Vary sentence structure"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 092033b579cc401c8739ab567ddd3f98
+#: ../../source/module/make-dataset-cards/writing-guide.md f6061bd672e24e23ba5fd89d1f3c2f00
 msgid "不要总用"
 msgstr "Do not always write"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: e437fd8b7dca4fadb67779fb5a6a1f6a
+#: ../../source/module/make-dataset-cards/writing-guide.md 5fb1483dab1443e59e96809b78dc1ad8
 msgid "偶尔换成"
 msgstr "Alternative phrasing"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 707a5997b81f4aa486ca42f85fa62543
+#: ../../source/module/make-dataset-cards/writing-guide.md 3859e1a751104d9e8cc4392a7cde1206
 msgid "设置 XXX。"
 msgstr "Sets X."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 7dafcda1b97948ebaa518f61e2c17162
+#: ../../source/module/make-dataset-cards/writing-guide.md 9a2f4c31fafb446eb28ef818084c15ca
 msgid "XXX 控制... / 这个值决定... / 改了它会影响..."
 msgstr "X controls… / This value determines… / Changing it affects…"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: cdeb6d0882744dc8ae72946af666fee3
+#: ../../source/module/make-dataset-cards/writing-guide.md 3459984ed4fe4e00b6edcd5131dc2111
 msgid "决定是否 XXX。"
 msgstr "Determines whether X."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 6cb8766e36544cea9e6d307409b07b12
+#: ../../source/module/make-dataset-cards/writing-guide.md b79f625a36084cd19ef3db770e9a4109
 msgid "打开之后... / 关了的话..."
 msgstr "When enabled… / When disabled…"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 026a07d357564a2faed03c81989a378f
+#: ../../source/module/make-dataset-cards/writing-guide.md 2a0a3ffcc6304d28801f245d453d4c8f
 msgid "选择 XXX。"
 msgstr "Selects X."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 9dbdd1d58e47463cb408adb14098da52
+#: ../../source/module/make-dataset-cards/writing-guide.md 526fa71c1dc14205ab4aad35b9e68a69
 msgid "有两种模式：... / 可选值：... / 通常用..."
 msgstr "Two modes are available… / Choices are… / In most cases, use…"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: a8f4d2f59f5a49f2b082b58d043f3845
+#: ../../source/module/make-dataset-cards/writing-guide.md 3f0c0364fb7d45299a0285e6bf5eb68e
 msgid "建议..."
 msgstr "Recommended…"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 7d8e09051f68455ba05c7aee68fd1e38
+#: ../../source/module/make-dataset-cards/writing-guide.md 35faccd68d2a4b51bc78a44d1b055106
 msgid "你很可能只需要... / 大多数情况... / 除非...否则不用动"
-msgstr ""
-"You will usually need only… / In most cases… / Leave this unchanged unless…"
+msgstr "You will usually need only… / In most cases… / Leave this unchanged unless…"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:60
-#: fc80bfd88ab54142aebb9785687f295a
+#: ../../source/module/make-dataset-cards/writing-guide.md:61
+#: 9d028fb7d62a4f39ad74f5a306045c47
 msgid "什么时候用\"你\""
 msgstr "When to address the reader"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:62
-#: 602baa88f7ff450c89489a8c740e6b4d
+#: ../../source/module/make-dataset-cards/writing-guide.md:63
+#: a59f50f3e1db4622833e472aed1fe2bd
 msgid "以下情况应该用\"你\"："
 msgstr "Address the reader when:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:63
-#: 9799dd48564148feb96488dd8baeb112
+#: ../../source/module/make-dataset-cards/writing-guide.md:64
+#: f40423f96f3142a4ac362489206a2593
 msgid "给建议时：\"你很可能只需要默认值\""
 msgstr "Giving advice: “You will probably need only the default.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:64
-#: bc493bdcac0b433f8f24bbb2de822b6f
+#: ../../source/module/make-dataset-cards/writing-guide.md:65
+#: 393fa9bf9b484d4cb22a36e10cd0543a
 msgid "警告时：\"设太大可能会拉断键，你最好先抽查几个输出\""
 msgstr ""
-"Warning about consequences: “A large value may break bonds; inspect several "
-"outputs first.”"
+"Warning about consequences: “A large value may break bonds; inspect several outputs "
+"first.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:65
-#: 6fd65f30e2c04be7bdf28c3056f1b576
+#: ../../source/module/make-dataset-cards/writing-guide.md:66
+#: ffea576b035347d282e2bb319bbeecfd
 msgid "解释选择时：\"选 Exact 还是 Random 取决于你要不要严格配比\""
 msgstr ""
-"Explaining a choice: “Choose Exact or Random according to whether the "
-"composition must be strict.”"
+"Explaining a choice: “Choose Exact or Random according to whether the composition "
+"must be strict.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:67
-#: 9ec00f28188341ec9f05a508aeb96d64
+#: ../../source/module/make-dataset-cards/writing-guide.md:68
+#: 70937e5b40a84f738508c6022f534de1
 msgid "以下情况不用："
 msgstr "Do not force second-person wording into:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:68
-#: 8799039d4ae84b8a9cbd6e6c373e9358
+#: ../../source/module/make-dataset-cards/writing-guide.md:69
+#: 63623cc9e0864dc3adde110b41f07d4c
 msgid "类型和枚举列表：\"`str`，可选 `sphere` 或 `cone`\""
 msgstr "Type and enum lists: “`str`; choices are `sphere` and `cone`.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:69
-#: 1812378c0c474f2fa8dd4f8e6a11f359
+#: ../../source/module/make-dataset-cards/writing-guide.md:70
+#: 53156c5262a745809d55951e43ead71b
 msgid "纯事实陈述：\"PM 默认关闭，因为会显著增大输出规模\""
 msgstr ""
-"Plain factual statements: “PM is disabled by default because it "
-"substantially increases output.”"
+"Plain factual statements: “PM is disabled by default because it substantially "
+"increases output.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:71
-#: 13c3412035c4466298b5280b8a9cf34b
+#: ../../source/module/make-dataset-cards/writing-guide.md:72
+#: e2b5dc0e92dd4844acd57c96442216b0
 msgid "必备章节"
 msgstr "Required sections"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:73
-#: 80a4dbe3011e4e3b8bf14d99787fe226
+#: ../../source/module/make-dataset-cards/writing-guide.md:74
+#: cf2aaba21ae64a0dbaf7c3743bcdeb9f
 msgid "每张卡片页必须包含以下内容（标题可以调整，但信息不能缺）："
 msgstr ""
-"Every card page must contain the following information. Headings may vary, "
-"but the content may not be omitted."
+"Every card page must contain the following information. Headings may vary, but the "
+"content may not be omitted."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 30afbd9b41a9499b8ff01d6dfbe98bb1
+#: ../../source/module/make-dataset-cards/writing-guide.md fbb65a281f444bc3be55a4111f40eca6
 msgid "#"
 msgstr "#"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: e6dd84c5d7d045cb8f3ddd5cd68bf39f
+#: ../../source/module/make-dataset-cards/writing-guide.md 075c5fe4566247809277c07f00fc5d7b
 msgid "必须回答的问题"
 msgstr "Question the page must answer"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 13fabeab26964975a85510229617f83a
+#: ../../source/module/make-dataset-cards/writing-guide.md 032deae87d334fc6b540130f6e555422
 msgid "推荐标题"
 msgstr "Suggested heading"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 268d5aaa026c44b7af926d8c5728aacb
+#: ../../source/module/make-dataset-cards/writing-guide.md 2eb11b2144d549ccb6dca3e5caf61ce5
 msgid "1"
 msgstr "1"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: feea0bbee1634a6eb90b85bb2c1cf6ca
+#: ../../source/module/make-dataset-cards/writing-guide.md bf4de5ece5fd40be9a860fc0329f71c6
 msgid "这张卡做什么"
-msgstr "What does this card do?"
+msgstr "What This Card Does"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 38dbc5afaf1a4f8f81c5393ae29f55fe
+#: ../../source/module/make-dataset-cards/writing-guide.md d3e3b332fe654307bc6267f48f56fbf6
 msgid "`## 功能说明`"
 msgstr "`## What it does`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: d2f9d1111cc24f4b95d07882b5c878e7
+#: ../../source/module/make-dataset-cards/writing-guide.md d369572d92b540499053857da7d9d8aa
 msgid "2"
 msgstr "2"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 27d337e5b92e441d8875fa1f788cb23e
+#: ../../source/module/make-dataset-cards/writing-guide.md b1fd253ed1f443de851580338dff23e8
 msgid "模型出了什么问题要加这张卡，具体怎么操作，怎么验证改善"
 msgstr ""
-"Which model failure motivates this card, how is it used, and how is "
-"improvement verified?"
+"Which model failure motivates this card, how is it used, and how is improvement "
+"verified?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 4b81443a827647f199649e3b6b12ee36
+#: ../../source/module/make-dataset-cards/writing-guide.md 45f877509a9140b8acb2b40a04d25673
 msgid "`## 操作示例`"
 msgstr "`## Worked example`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 250d165689cd4d2bbdf8c9e33026b6d2
+#: ../../source/module/make-dataset-cards/writing-guide.md 612834d998ae49bc9542c8446b18dd45
 msgid "3"
 msgstr "3"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: ff634a6be3124db9af937d601c7c155a
+#: ../../source/module/make-dataset-cards/writing-guide.md b32f858d5f584442913d004f04a24962
 msgid "每个参数的含义、类型、默认值和场景化建议"
 msgstr ""
-"What does each parameter mean, what are its type and default, and how should "
-"it be chosen for a real scenario?"
+"What does each parameter mean, what are its type and default, and how should it be "
+"chosen for a real scenario?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: d5e37a4ed47b48fcbad0acc3277e55d6
+#: ../../source/module/make-dataset-cards/writing-guide.md 5f01791f843c4c979453bb264a625e15
 msgid "`## 参数说明`"
 msgstr "`## Parameters`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 361075cb54e14902b0885fe8b18f48c0
+#: ../../source/module/make-dataset-cards/writing-guide.md 28ddb0ea8fa842d2931f278843fc1bdf
 msgid "4"
 msgstr "4"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 5d5e01a185ac4a91abfb844ddc6a41f7
+#: ../../source/module/make-dataset-cards/writing-guide.md 719abb5687bf400da4829d28a98c6646
 msgid "可复制的 JSON 预设"
 msgstr "Copyable JSON presets"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 162fb55385214fdab20d233349e2d58c
+#: ../../source/module/make-dataset-cards/writing-guide.md 4993c45604424ed69207c8854841a383
 msgid "`## 推荐预设`"
 msgstr "`## Presets`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: da23cd3f706d49899d5ab3695a4fbd99
+#: ../../source/module/make-dataset-cards/writing-guide.md 6b46f26065144efa9c9079a72bf664c9
 msgid "5"
 msgstr "5"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: cfea65ca045046d2ab5d657fbbbb537f
+#: ../../source/module/make-dataset-cards/writing-guide.md b5463a03f7f84666bf950249c2a12116
 msgid "和哪些卡片配合，怎么串"
 msgstr "Which cards should be combined, and in what order?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 8cf03c4fa4ad43d1bb8c3e446acedcbe
+#: ../../source/module/make-dataset-cards/writing-guide.md bcf39eb40a1d4485b40187a9c26ec5fb
 msgid "`## 推荐组合`"
 msgstr "`## Recommended combinations`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: a36c8d3ebc124feba6a7a22bf0ccab32
+#: ../../source/module/make-dataset-cards/writing-guide.md 04714e5f57c24ce5b05e5dabe831888b
 msgid "6"
 msgstr "6"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 2fde26b53eea468a97e862317e247e89
+#: ../../source/module/make-dataset-cards/writing-guide.md e211f5d147854ff882d790f2396221c8
 msgid "出错了怎么排查"
 msgstr "How should failures be diagnosed?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: e39809b79d8d4f6cbaa0cfe500c96937
+#: ../../source/module/make-dataset-cards/writing-guide.md b398decc46fd4131917b48172f370f06
 msgid "`## 常见问题`"
 msgstr "`## Troubleshooting`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 2b3adb612e974addb2be2c53c9d5daa8
+#: ../../source/module/make-dataset-cards/writing-guide.md 9163811685134e9b80f1de9f98d8c3fb
 msgid "7"
 msgstr "7"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 55e131a3bcd54c709f2c901e4e8180ab
+#: ../../source/module/make-dataset-cards/writing-guide.md cd537cfa31ff46f7839571aff851e23c
 msgid "输出的 Config_type 标签是什么"
 msgstr "Which `Config_type` label is written?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 807d7465fbd142d4bb1f752f8e2a63b6
+#: ../../source/module/make-dataset-cards/writing-guide.md adbc095bd36c41a2a0092e5604b4edfa
 msgid "`## 输出标签`"
 msgstr "`## Output labels`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: 67d84b12f5294150adbc650a8b548d91
+#: ../../source/module/make-dataset-cards/writing-guide.md 6846f1d0bbab4c34934023508ee457a5
 msgid "8"
 msgstr "8"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: d851656f64634219b917645306f2b9a1
+#: ../../source/module/make-dataset-cards/writing-guide.md 2b0055d951594fb69728b80d7b09b516
 msgid "随机性、可复现条件"
 msgstr "What is random, and under which conditions is it reproducible?"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:0
-#: f183d0fee872456189d988956eb54a81
+#: ../../source/module/make-dataset-cards/writing-guide.md 936e6147dac145ac845d772185b6f10f
 msgid "`## 可复现性`"
 msgstr "`## Reproducibility`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:86
-#: 2893368eee454514b2d0a10d79f29865
-msgid ""
-"`适用场景与不适用场景` 和 `输入前提` 不再要求独立章节——合并到操作示例（\"什么"
-"时候加这张卡\"）和参数说明中。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:87
+#: 245313a9a613475195eedca70ed49014
+msgid "`适用场景与不适用场景` 和 `输入前提` 不再要求独立章节——合并到操作示例（\"什么时候加这张卡\"）和参数说明中。"
 msgstr ""
-"Separate “when to use / when not to use” and “input prerequisites” sections "
-"are optional. Integrate that information into the worked example and "
-"parameter guidance instead."
+"Separate “when to use / when not to use” and “input prerequisites” sections are "
+"optional. Integrate that information into the worked example and parameter guidance "
+"instead."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:88
-#: a97aab81f91749dbaf55ea0afc24f8e3
+#: ../../source/module/make-dataset-cards/writing-guide.md:89
+#: 9450ac77f7104379ab702e9d87d8fd75
 msgid "操作示例模板（最重要）"
 msgstr "Worked-example template (highest priority)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:90
-#: 2126f00f49ab42aab222fe866f4eeb5c
+#: ../../source/module/make-dataset-cards/writing-guide.md:91
+#: 42bbe5ff39e541a6bebb79df0082e305
 msgid "操作示例必须从**训练集诊断**出发，不能只写\"设参数→得结果\"。结构："
 msgstr ""
-"A worked example must begin with a **training-set diagnosis**, not merely "
-"“set parameters → get output.” Use this structure:"
+"A worked example must begin with a **training-set diagnosis**, not merely “set "
+"parameters → get output.” Use this structure:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:92
-#: a0406fe5b4f646939cfaf56acd5d3b92
+#: ../../source/module/make-dataset-cards/writing-guide.md:93
+#: 1c29c96fe5064e0fa2475f9bd1c72a98
 msgid ""
 "### 场景：模型在 [具体任务] 上 [具体失败表现]\n"
 "\n"
@@ -507,21 +451,20 @@ msgstr ""
 "**Goal:** [data to add and problem it should address]\n"
 "**Parameters:** [specific values]\n"
 "**Output:** [expected structures]\n"
-"**How to verify improvement:** [change expected after labeling and "
-"retraining; next adjustment if insufficient]\n"
+"**How to verify improvement:** [change expected after labeling and retraining; next "
+"adjustment if insufficient]\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:104
-#: fca8d0c796bc4752b0ed2ccce79d9419
+#: ../../source/module/make-dataset-cards/writing-guide.md:105
+#: 711d31550f774df3a08df4954d155476
 msgid "示例（Lattice Strain）："
 msgstr "Example: Lattice Strain"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:106
-#: 3257f7152e2a45a29603a843eceb62af
+#: ../../source/module/make-dataset-cards/writing-guide.md:107
+#: 0a06a66d484245cebca51dd88485a67d
 msgid ""
 "### 场景：模型预测的弹性常数偏差太大\n"
 "\n"
-"NEP 模型 C11 比 DFT 参考值高 15%。训练集所有结构都处在平衡体积附近，模型没见"
-"过被拉伸/压缩的晶胞，只能外推。\n"
+"NEP 模型 C11 比 DFT 参考值高 15%。训练集所有结构都处在平衡体积附近，模型没见过被拉伸/压缩的晶胞，只能外推。\n"
 "\n"
 "**输入：** 弛豫好的 Si 单胞\n"
 "**目标：** 加入 ±2% 单轴应变结构，让模型在弹性区内有内插依据\n"
@@ -531,111 +474,104 @@ msgid ""
 msgstr ""
 "\\### Scenario: the predicted elastic constant is too inaccurate\n"
 "\n"
-"The NEP value of C11 is 15% above the DFT reference. Every training "
-"structure lies near the equilibrium volume, so strained cells are "
-"extrapolations.\n"
+"The NEP value of C11 is 15% above the DFT reference. Every training structure lies "
+"near the equilibrium volume, so strained cells are extrapolations.\n"
 "\n"
 "**Input:** A relaxed Si unit cell\n"
-"**Goal:** Add ±2% uniaxial strain states so the elastic region is "
-"interpolative\n"
+"**Goal:** Add ±2% uniaxial strain states so the elastic region is interpolative\n"
 "**Parameters:** `Axes=uniaxial`, `x_range=[-2, 2, 1]`\n"
 "**Output:** Five structures at −2%, −1%, 0%, +1%, and +2%\n"
-"**How to verify improvement:** After DFT labeling and retraining, C11 should "
-"approach the reference; if needed, extend the range to ±5%\n"
+"**How to verify improvement:** After DFT labeling and retraining, C11 should approach"
+" the reference; if needed, extend the range to ±5%\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:118
-#: 339b7d7edb254b93810073aea3647c1d
+#: ../../source/module/make-dataset-cards/writing-guide.md:119
+#: 2e21743fac7a42fcab465bc720f06323
 msgid "示例（Magnetic Order）："
 msgstr "Example: Magnetic Order"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:120
-#: 25e7adf4036d4f75ac7dc8fde306c1d4
+#: ../../source/module/make-dataset-cards/writing-guide.md:121
+#: 7c7c16a501d14bb891799e246b3169cd
 msgid ""
 "### 场景：FM 模型在 AFM 相上预测崩了\n"
 "\n"
-"bcc Fe 的 NEP 模型，FM 构型推理准确但 AFM 构型能量误差是 FM 的 5 倍。训练集只"
-"有一种磁序。\n"
+"bcc Fe 的 NEP 模型，FM 构型推理准确但 AFM 构型能量误差是 FM 的 5 倍。训练集只有一种磁序。\n"
 "\n"
 "**输入：** bcc Fe 晶体，已知 Fe 磁矩约 2.2 μB\n"
 "**目标：** 生成 1 FM + 1 AFM + 8 PM，让模型见过不同磁序的局域磁环境\n"
 "**参数设置：** magmom_map=Fe:2.2, gen_fm+gen_afm+gen_pm, pm_count=8\n"
 "**输出：** 10 个不同磁序结构\n"
 "**怎么验证训练集质量改善：** 重训后 FM/AFM 推理能量误差差距应显著缩小\n"
-msgstr "\\### Scenario: an FM model fails on the AFM phase\n"
+msgstr ""
+"\\### Scenario: an FM model fails on the AFM phase\n"
 "\n"
-"A bcc Fe NEP predicts FM configurations accurately, but the AFM energy error is five times larger. The training set contains only one magnetic order.\n"
+"A bcc Fe NEP predicts FM configurations accurately, but the AFM energy error is five "
+"times larger. The training set contains only one magnetic order.\n"
 "\n"
 "**Input:** bcc Fe with a known Fe moment of about 2.2 μB\n"
-"**Goal:** generate 1 FM + 1 AFM + 8 PM structures so the model sees local environments from different magnetic orders\n"
+"**Goal:** generate 1 FM + 1 AFM + 8 PM structures so the model sees local "
+"environments from different magnetic orders\n"
 "**Parameters:** magmom_map=Fe:2.2, gen_fm+gen_afm+gen_pm, pm_count=8\n"
 "**Output:** 10 structures with different magnetic orders\n"
-"**How to verify improvement:** after retraining, the FM/AFM inference energy-error gap should shrink substantially\n"
+"**How to verify improvement:** after retraining, the FM/AFM inference energy-error "
+"gap should shrink substantially\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:132
-#: 540bb5a2c7034898b07fc3cb5afca444
+#: ../../source/module/make-dataset-cards/writing-guide.md:133
+#: cc700b100fb648d2ab19b747d3ce71b1
 msgid "示例（Random Doping）："
 msgstr "Example: Random Doping"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:134
-#: 89aa046254064b139073b495bce66a49
+#: ../../source/module/make-dataset-cards/writing-guide.md:135
+#: 70cbbb6754f341ccbf99b44f015a8345
 msgid ""
 "### 场景：纯元素模型在掺杂体系上完全失效\n"
 "\n"
-"纯 Si 训练的 NEP 模型碰到 Si:Ge 合金，力误差跳了一个数量级。模型从来没见过 "
-"Ge 原子。\n"
+"纯 Si 训练的 NEP 模型碰到 Si:Ge 合金，力误差跳了一个数量级。模型从来没见过 Ge 原子。\n"
 "\n"
 "**输入：** 纯 Si 超胞\n"
 "**目标：** 替换 3-8% 的 Si 为 Ge，每帧生成 20 个掺杂版本\n"
-"**参数设置：** "
-"rules(target=Si,dopants=Ge:1.0,use=atomic_percent,percent=[3,8]), "
+"**参数设置：** rules(target=Si,dopants=Ge:1.0,use=atomic_percent,percent=[3,8]), "
 "doping_type=Exact, max_structures=20\n"
 "**输出：** 20 个掺杂结构\n"
 "**怎么验证训练集质量改善：** 重训后 Si:Ge 测试集力 MAE 应回到纯 Si 水平\n"
 msgstr ""
 "\\### Scenario: an elemental model fails on a doped system\n"
 "\n"
-"An NEP model trained on pure Si shows an order-of-magnitude force-error "
-"increase on Si–Ge because it has never seen Ge environments.\n"
+"An NEP model trained on pure Si shows an order-of-magnitude force-error increase on "
+"Si–Ge because it has never seen Ge environments.\n"
 "\n"
 "**Input:** A pure-Si supercell\n"
-"**Goal:** Replace 3–8% of Si with Ge and generate 20 doped variants per "
-"frame\n"
-"**Parameters:** "
-"`rules(target=Si,dopants=Ge:1.0,use=atomic_percent,percent=[3,8])`, "
+"**Goal:** Replace 3–8% of Si with Ge and generate 20 doped variants per frame\n"
+"**Parameters:** `rules(target=Si,dopants=Ge:1.0,use=atomic_percent,percent=[3,8])`, "
 "`doping_type=Exact`, `max_structures=20`\n"
 "**Output:** Twenty doped structures\n"
-"**How to verify improvement:** After labeling and retraining, force MAE on a "
-"held-out Si–Ge test set should approach the pure-Si error\n"
+"**How to verify improvement:** After labeling and retraining, force MAE on a held-out"
+" Si–Ge test set should approach the pure-Si error\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:146
-#: c6a3ce4e21e3420ea66415924d18de15
+#: ../../source/module/make-dataset-cards/writing-guide.md:147
+#: 343ad87df68145d8beb568b281a2f255
 msgid "参数说明写法"
 msgstr "Writing parameter sections"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:148
-#: 63940fe00b0444b18e1b1ca4e0b10d75
-msgid ""
-"只允许一种参数写法：每个 `Params dataclass` 字段必须有独立标题，标题里的 key "
-"必须和代码字段完全一致。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:149
+#: 5a88105fe4cc4549bf88c3d548999638
+msgid "只允许一种参数写法：每个 `Params dataclass` 字段必须有独立标题，标题里的 key 必须和代码字段完全一致。"
 msgstr ""
-"Use one consistent structure: every field in the `Params` dataclass has its "
-"own heading, and the key in that heading must exactly match the code."
+"Use one consistent structure: every field in the `Params` dataclass has its own "
+"heading, and the key in that heading must exactly match the code."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:150
-#: 8a063f0eeae54099960ad5c1e54deebb
+#: ../../source/module/make-dataset-cards/writing-guide.md:151
+#: c6fd708e14c9424880d5cbc381c4034f
 msgid "参数少、没有明显功能组时，直接使用三级标题："
-msgstr ""
-"For a short parameter list with no natural groups, use level-three headings:"
+msgstr "For a short parameter list with no natural groups, use level-three headings:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:152
-#: 521b5d2298d94ed18a8100658964ea82
+#: ../../source/module/make-dataset-cards/writing-guide.md:153
+#: c64bb7805c4e4ad1868b7cbb7b858856
 msgid ""
 "### Axes（axes）\n"
 "\n"
 "类型：`str`。默认：`\"uniaxial\"`。决定对哪些晶格轴施加应变。\n"
 "\n"
-"物理直觉：单轴用于补 C11/C22/C33；双轴用于泊松耦合；各向同性用于 EOS 或体模量"
-"附近采样。\n"
+"物理直觉：单轴用于补 C11/C22/C33；双轴用于泊松耦合；各向同性用于 EOS 或体模量附近采样。\n"
 "\n"
 "| 选项 | 含义 | 什么时候选 |\n"
 "|------|------|-----------|\n"
@@ -645,29 +581,28 @@ msgid ""
 msgstr ""
 "\\### Axes (`axes`)\n"
 "\n"
-"`str`, default: `\"uniaxial\"`. Selects which lattice axes are strained "
-"together.\n"
+"`str`, default: `\"uniaxial\"`. Selects which lattice axes are strained together.\n"
 "\n"
-"Physical interpretation: use uniaxial strain for C11/C22/C33-like responses, "
-"biaxial strain for coupled in-plane or Poisson response, and isotropic "
-"strain for an equation of state or bulk modulus.\n"
+"Physical interpretation: use uniaxial strain for C11/C22/C33-like responses, biaxial "
+"strain for coupled in-plane or Poisson response, and isotropic strain for an equation"
+" of state or bulk modulus.\n"
 "\n"
 "| Option | Meaning | When to use |\n"
 "|--------|---------|-------------|\n"
-"| `uniaxial` | Strain one axis at a time | Elastic constants and anisotropic "
-"response |\n"
+"| `uniaxial` | Strain one axis at a time | Elastic constants and anisotropic response"
+" |\n"
 "| `biaxial` | Strain axis pairs | In-plane coupling and film strain |\n"
 "| `isotropic` | Scale all three axes equally | Energy–volume curves |\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:166
-#: cbb952715c7045f79374fe4de1826038
+#: ../../source/module/make-dataset-cards/writing-guide.md:167
+#: c7b91feb600a4b6aa4d69066aa46fd02
 msgid "参数多且存在天然功能组时，用三级标题表示功能组，用四级标题表示参数："
 msgstr ""
-"For many parameters with natural functional groups, use level-three headings "
-"for groups and level-four headings for fields:"
+"For many parameters with natural functional groups, use level-three headings for "
+"groups and level-four headings for fields:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:168
-#: 81dce311bdf447038041dfa3fff7ac54
+#: ../../source/module/make-dataset-cards/writing-guide.md:169
+#: 06c041b4b0fb46f18542ad32228f848d
 msgid ""
 "### 磁矩幅值来源\n"
 "\n"
@@ -675,245 +610,225 @@ msgid ""
 "\n"
 "类型：`str`。默认：`\"\"`。按元素指定磁矩幅值，例如 `Fe:2.2, Ni:0.6`。\n"
 "\n"
-"物理直觉：已知元素局域磁矩时优先用它，避免不同磁性卡各自写一套不一致的幅"
-"值。\n"
+"物理直觉：已知元素局域磁矩时优先用它，避免不同磁性卡各自写一套不一致的幅值。\n"
 msgstr ""
 "\\### Moment-magnitude source\n"
 "\n"
 "\\#### Magmom Map (`magmom_map`)\n"
 "\n"
-"`str`, default: `\"\"`. Assign element-specific magnitudes, for example "
-"`Fe:2.2, Ni:0.6`.\n"
+"`str`, default: `\"\"`. Assign element-specific magnitudes, for example `Fe:2.2, "
+"Ni:0.6`.\n"
 "\n"
-"Physical interpretation: when trusted local moments are known, define them "
-"once here so downstream magnetic cards do not drift into inconsistent "
-"magnitudes.\n"
+"Physical interpretation: when trusted local moments are known, define them once here "
+"so downstream magnetic cards do not drift into inconsistent magnitudes.\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:178
-#: 1f4ff9e5b4a4412a825822c2e71e0bdd
+#: ../../source/module/make-dataset-cards/writing-guide.md:179
+#: 9223cf93fcdb4d5396f3ff83858b0aca
 msgid "每个参数 block 固定包含："
 msgstr "Every parameter block contains:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:180
-#: e5bdd61b7f514c42aca3c1285459f5e1
+#: ../../source/module/make-dataset-cards/writing-guide.md:181
+#: 2220e53d3b7147c0a1f00fc9cf09de19
 msgid "第一段：类型、默认值、这个参数实际控制什么。"
-msgstr ""
-"First paragraph: type, default, and the quantity or behavior actually "
-"controlled."
+msgstr "First paragraph: type, default, and the quantity or behavior actually controlled."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:181
-#: aaac682f180d4b7b9aa5fe08a99b37ba
+#: ../../source/module/make-dataset-cards/writing-guide.md:182
+#: 82075b45c94e4f3ca00445914c0b749a
 msgid "第二段：物理直觉或数据集使用场景，必须给量级或判断依据。"
 msgstr ""
-"Second paragraph: physical intuition or a dataset scenario, including a "
-"useful scale or decision criterion."
+"Second paragraph: physical intuition or a dataset scenario, including a useful scale "
+"or decision criterion."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:182
-#: de0b75ce7336408ea0943038adf2e49a
+#: ../../source/module/make-dataset-cards/writing-guide.md:183
+#: 00c4fb78f522496e9b623af1d45080c4
 msgid "枚举参数：加表格，列出选项、含义、什么时候选。"
-msgstr ""
-"Enums: a table listing each real option, its meaning, and when to choose it."
+msgstr "Enums: a table listing each real option, its meaning, and when to choose it."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:183
-#: 40b61c314cc34d80a03e18613624774b
+#: ../../source/module/make-dataset-cards/writing-guide.md:184
+#: 7d35cc796fac499eba0fbb430f55d293
+msgid "条件参数：单独写 `生效条件：...`，不要让用户猜这个参数什么时候会被忽略。"
+msgstr ""
+"Conditional fields: an explicit `Effective when: ...` line so users know when the "
+"field is ignored."
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:186
+#: ccb922ea9d924f00b79f5d2adfead000
 msgid ""
-"条件参数：单独写 `生效条件：...`，不要让用户猜这个参数什么时候会被忽略。"
+"禁止把多个 key 合在一个标题里，例如 `Use Seed / Seed（use_seed / seed）`。必须拆成 `### Use Seed（use_seed）`"
+" 和 `### Seed（seed）`。 禁止用占位表格，例如 `以 UI 下拉项为准`。枚举表必须写出真实选项，如 Sobol/Uniform、Collinear"
+"/Non-collinear、sphere/cone。 禁止用可套在任何参数上的模板句。`物理直觉` "
+"必须能回答这个参数调大、调小、切换选项时具体改变了什么物理状态或数据分布。"
 msgstr ""
-"Conditional fields: an explicit `Effective when: ...` line so users know "
-"when the field is ignored."
+"Do not combine several keys under one heading such as `Use Seed / Seed (use_seed / "
+"seed)`; split them into `### Use Seed (use_seed)` and `### Seed (seed)`. Do not use "
+"placeholder enum tables such as “see the UI dropdown.” List real "
+"options—Sobol/Uniform, Collinear/Non-collinear, sphere/cone. Avoid generic text that "
+"fits any field. The physical explanation must state how increasing, decreasing, or "
+"switching the parameter changes the physical state or data distribution."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:185
-#: deb604fbef4d4f7790bca33ce66e715e
-msgid ""
-"禁止把多个 key 合在一个标题里，例如 `Use Seed / Seed（use_seed / seed）`。必"
-"须拆成 `### Use Seed（use_seed）` 和 `### Seed（seed）`。 禁止用占位表格，例"
-"如 `以 UI 下拉项为准`。枚举表必须写出真实选项，如 Sobol/Uniform、Collinear/"
-"Non-collinear、sphere/cone。 禁止用可套在任何参数上的模板句。`物理直觉` 必须"
-"能回答这个参数调大、调小、切换选项时具体改变了什么物理状态或数据分布。"
-msgstr ""
-"Do not combine several keys under one heading such as `Use Seed / Seed "
-"(use_seed / seed)`; split them into `### Use Seed (use_seed)` and `### Seed "
-"(seed)`. Do not use placeholder enum tables such as “see the UI dropdown.” "
-"List real options—Sobol/Uniform, Collinear/Non-collinear, sphere/cone. Avoid "
-"generic text that fits any field. The physical explanation must state how "
-"increasing, decreasing, or switching the parameter changes the physical "
-"state or data distribution."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:189
-#: b23852c488924087a07ba05606711700
+#: ../../source/module/make-dataset-cards/writing-guide.md:190
+#: adca7134708d4f108502d81bd70441aa
 msgid "**禁止在参数说明中出现的内容：**"
 msgstr "**Do not include the following in user-facing parameter sections:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:190
-#: ea083348a96f43ffa4ce59ce6a1fa527
+#: ../../source/module/make-dataset-cards/writing-guide.md:191
+#: 95294550f3d040cd96591206af57cf4c
 msgid "`UI Label`、`字段映射`、`控件标签`、`控件解释` 等 UI 实现细节"
 msgstr ""
-"UI implementation details such as `UI Label`, field mappings, widget labels, "
-"or widget explanations"
+"UI implementation details such as `UI Label`, field mappings, widget labels, or "
+"widget explanations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:191
-#: 18b40878b79f4054b1a83c4c33962a39
+#: ../../source/module/make-dataset-cards/writing-guide.md:192
+#: 422d69af45da458386d6af482a6ea52b
 msgid "序列化格式说明（如\"这是序列化结构字段，不是用户开关\"）"
 msgstr ""
-"Serialization-internal explanations such as “this is a serialized structure "
-"field, not a user option”"
+"Serialization-internal explanations such as “this is a serialized structure field, "
+"not a user option”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:192
-#: 791cc2c0fc67482cb09d69f708006fa3
+#: ../../source/module/make-dataset-cards/writing-guide.md:193
+#: 0cee774856c442c0a34db78071a3cc39
 msgid "`params` 作为独立参数块列出——这是内部实现，用户不需要知道"
 msgstr "A separate `params` parameter block; it is an implementation detail"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:193
-#: 4f4039bdda9e4371b0ee2b0947a196e8
-msgid ""
-"\"先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时再主动偏离\" 等"
-"模板填充句"
+#: ../../source/module/make-dataset-cards/writing-guide.md:194
+#: da7cd7737dd44d1a9b3dde916560a27e
+msgid "\"先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时再主动偏离\" 等模板填充句"
 msgstr ""
-"Filler advice such as “start with the default and change it only when you "
-"know it affects the distribution”"
+"Filler advice such as “start with the default and change it only when you know it "
+"affects the distribution”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:195
-#: 2867aaf5a89b4c74966526e23355b362
+#: ../../source/module/make-dataset-cards/writing-guide.md:196
+#: 1e32924a72d64542a248cfcfd5ba1e7b
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:197
-#: c2413470e4cc4668a3a166ed817a377d
+#: ../../source/module/make-dataset-cards/writing-guide.md:198
+#: b8da0f025335453c89a89a4b90769346
 msgid "至少覆盖以下 3 类真问题（不要泛化模板句）："
-msgstr ""
-"Cover at least these three concrete problem types without generic filler:"
+msgstr "Cover at least these three concrete problem types without generic filler:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:199
-#: 311639a620254bd5b07a61e087201487
+#: ../../source/module/make-dataset-cards/writing-guide.md:200
+#: 66fc69c040004fb4add98d3623b6a344
 msgid "输出为空时**这张卡最常见的原因**"
 msgstr "The card-specific reason output is empty"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:200
-#: ac29c0c5b4e3491fba4f761915520048
+#: ../../source/module/make-dataset-cards/writing-guide.md:201
+#: 030628ae6d0a4334ab42e475ccdc4945
 msgid "输出不合理时**具体怎么判断和回调**"
-msgstr ""
-"The concrete diagnostic and parameter adjustment for unreasonable output"
+msgstr "The concrete diagnostic and parameter adjustment for unreasonable output"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:201
-#: f911e96fc8b94b8cbe964ab823c4fa87
+#: ../../source/module/make-dataset-cards/writing-guide.md:202
+#: 95f40da35d2a4c728d907e5527b706c1
 msgid "参数冲突或越界时**程序的实际行为**"
-msgstr ""
-"The program's actual behavior when parameters conflict or exceed bounds"
+msgstr "The program's actual behavior when parameters conflict or exceed bounds"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:203
-#: 57d7d1c3c9da4497ab6fbb7679b28995
+#: ../../source/module/make-dataset-cards/writing-guide.md:204
+#: 59841880741d497eb6c8414db6fb4b08
 msgid "描述行为只能写代码的真实逻辑，不要臆造不存在的自动修复。"
-msgstr ""
-"Describe only behavior implemented in code; do not invent automatic recovery."
+msgstr "Describe only behavior implemented in code; do not invent automatic recovery."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:205
-#: 66651952e3064b5687c97ba9df9f4081
+#: ../../source/module/make-dataset-cards/writing-guide.md:206
+#: 2650dd8d7195415385640f47770cf451
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:207
-#: 1c184069030f4ba9ace7aafa8e574082
-msgid ""
-"必须写具体的卡片名，例如 `Lattice Strain → Atomic Perturb`，不要写\"当前卡片 "
-"→ 目标变换卡\"。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:208
+#: dd0ed940ed5147b8894292b409751b4c
+msgid "必须写具体的卡片名，例如 `Lattice Strain → Atomic Perturb`，不要写\"当前卡片 → 目标变换卡\"。"
 msgstr ""
-"Name concrete cards, for example `Lattice Strain → Atomic Perturb`, instead "
-"of placeholders such as “current card → target transformation.”"
+"Name concrete cards, for example `Lattice Strain → Atomic Perturb`, instead of "
+"placeholders such as “current card → target transformation.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:208
-#: c9588ae3a51e4ca2825d1fffeef16c30
+#: ../../source/module/make-dataset-cards/writing-guide.md:209
+#: a8467960a9154ee38a35a9379198e122
 msgid "至少 2 条不同目的的组合建议。"
 msgstr "Provide at least two combinations that serve distinct purposes."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:210
-#: cf01fa025383445895e1e4ff6db15de4
+#: ../../source/module/make-dataset-cards/writing-guide.md:211
+#: 8d6010f168854979a680bf093ea2e2ed
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:212
-#: 999540c19b2b487b907d392af83ab91e
+#: ../../source/module/make-dataset-cards/writing-guide.md:213
+#: f6673496025742779a0a394424a8c217
 msgid "每档必须有实质性参数差异，不要三档 JSON 几乎一样。"
-msgstr ""
-"Presets must differ materially; do not provide three nearly identical JSON "
-"blocks."
+msgstr "Presets must differ materially; do not provide three nearly identical JSON blocks."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:213
-#: b060819c3d9a46e28d0720b816e7409c
-msgid ""
-"每个 JSON 附带一行说明，解释\"这个预设解决什么问题，什么情况下选这一档\"。"
+#: ../../source/module/make-dataset-cards/writing-guide.md:214
+#: ddcfc8022bf6482fb648a53f79391364
+msgid "每个 JSON 附带一行说明，解释\"这个预设解决什么问题，什么情况下选这一档\"。"
 msgstr ""
-"Add one sentence to every JSON preset explaining the problem it solves and "
-"when to choose it."
+"Add one sentence to every JSON preset explaining the problem it solves and when to "
+"choose it."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:214
-#: 92b1c0902855410abd3243ea8388590a
+#: ../../source/module/make-dataset-cards/writing-guide.md:215
+#: f9b83dd96dd04f83a4298f0026dd3b96
 msgid "如果卡片参数少、不需要三档，允许只保留 1-2 个预设。"
 msgstr ""
-"For a simple card, one or two meaningful presets are better than three "
-"artificial tiers."
+"For a simple card, one or two meaningful presets are better than three artificial "
+"tiers."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:216
-#: 8b9540cd3a3d4bc2aaa70dc0f5b11bab
+#: ../../source/module/make-dataset-cards/writing-guide.md:217
+#: db14df8888134d268ff8a0339f4f2252
 msgid "禁止内容"
 msgstr "Prohibited content"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:218
-#: 626e104438c4484d944b3b853c118f3d
+#: ../../source/module/make-dataset-cards/writing-guide.md:219
+#: 0dff90c676c04635a6cbcfc14b8ac6fb
 msgid "\"先保守再放大\" 类空泛建议。"
 msgstr "Vague advice such as “start conservative, then scale up.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:219
-#: 880ceb449bab4fafb9d4be6cb2a86542
+#: ../../source/module/make-dataset-cards/writing-guide.md:220
+#: 2589882560644f6192d4de4d9a88716c
 msgid "\"先用默认值跑小样本\" 类模板填充句。"
 msgstr "Template filler such as “run a small sample with defaults first.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:220
-#: 424b8b2b4a624e6693b414d7d480dd83
+#: ../../source/module/make-dataset-cards/writing-guide.md:221
+#: 4f651ff6326d4ca6a6bf2641f5d09153
 msgid "与卡片无关的统一 Physics caution 模板句。"
-msgstr ""
-"A generic physics-caution paragraph unrelated to the card's actual behavior."
+msgstr "A generic physics-caution paragraph unrelated to the card's actual behavior."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:221
-#: 16997e054f114792817e77183127932a
+#: ../../source/module/make-dataset-cards/writing-guide.md:222
+#: 9e1faf490b5e40dab2f5aa1230bdf44b
+msgid "无关能力免责声明。只有当卡片名称或参数容易让用户产生合理误解，或者遗漏该边界会直接导致错误结果时，才说明“不会/不支持”；否则改写为实际效果、风险或下一步动作。"
+msgstr "Disclaimers about unrelated capabilities. State that a card `does not` or `does not support` something only when its name or parameters could reasonably imply otherwise, or when omitting the boundary would directly cause incorrect results. In other cases, describe the actual effect, risk, or next action instead."
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:223
+#: 2a9ef29a500f42fcacf81d2df5dab57f
 msgid "\"需要启用 XXX 对应行为时开启 / 希望保持默认时关闭\" 类同义反复。"
 msgstr ""
-"Tautologies such as “enable this when you need the enabled behavior; disable "
-"it otherwise.”"
+"Tautologies such as “enable this when you need the enabled behavior; disable it "
+"otherwise.”"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:222
-#: 3d54c2440a6147c49f011b8f331036cf
+#: ../../source/module/make-dataset-cards/writing-guide.md:224
+#: ad24829cab994003899dc5cb5a0b8472
 msgid "没有输入、没有目标、没有验证条件的\"伪示例\"。"
 msgstr "Pseudo-examples with no input, goal, or validation condition."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:223
-#: 5728475a2fe94648981e944f5d216133
+#: ../../source/module/make-dataset-cards/writing-guide.md:225
+#: 28f9bc927a4f48d8ab006e89fcdbd64f
 msgid "`params` 字段作为用户文档列在参数说明中。"
 msgstr "Listing the internal `params` field as a user parameter."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:225
-#: 034817136d6048f0ba15c588de077e2b
+#: ../../source/module/make-dataset-cards/writing-guide.md:227
+#: bcfa5985c0f843b79c90a32b31983500
 msgid "维护命令"
 msgstr "Maintenance commands"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:227
-#: 42aa73c5a3b34d13ba4abfec0eee45bb
+#: ../../source/module/make-dataset-cards/writing-guide.md:229
+#: 49cd4c2407314c9fa96290ff99ae482c
 msgid "`python tools/docs/audit_card_docs.py` — 检查 key 一致性和默认值"
-msgstr ""
-"`python tools/docs/audit_card_docs.py` — check field-key consistency and "
-"defaults"
+msgstr "`python tools/docs/audit_card_docs.py` — check field-key consistency and defaults"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/writing-guide.md:228
-#: 16b8664ca1504c2b8121023dd57d7c62
+#: ../../source/module/make-dataset-cards/writing-guide.md:230
+#: 4d4c82b1040e4cb182cf1e0a23eff1bc
 msgid "`python -m sphinx -W -b html docs/source docs/build/html` — 文档构建"
-msgstr ""
-"`python -m sphinx -W -b html docs/source docs/build/html` — build the "
-"documentation"
+msgstr "`python -m sphinx -W -b html docs/source docs/build/html` — build the documentation"
 
 #~ msgid ""
 #~ "### 场景：FM 模型在 AFM 相上预测崩了\n"
 #~ "\n"
-#~ "bcc Fe 的 NEP 模型，FM 构型推理准确但 AFM 构型能量误差是 FM 的 5 倍。训练"
-#~ "集只有一种磁序。\n"
+#~ "bcc Fe 的 NEP 模型，FM 构型推理准确但 AFM 构型能量误差是 FM 的 5 倍。训练集只有一种磁序。\n"
 #~ "\n"
 #~ "**输入：** bcc Fe 晶体，已知 Fe 磁矩约 2.2 μB\n"
 #~ "**目标：** 生成 1 FM + 1 AFM + 8 PM，让模型见过不同磁序的局域磁环境\n"
@@ -923,15 +838,19 @@ msgstr ""
 #~ msgstr ""
 #~ "\\### Scenario: an FM-trained model fails on AFM states\n"
 #~ "\n"
-#~ "An NEP model for bcc Fe is accurate on FM configurations, but its AFM "
-#~ "energy error is five times larger. The training set contains only one "
-#~ "magnetic order.\n"
+#~ "An NEP model for bcc Fe is accurate "
+#~ "on FM configurations, but its AFM energy "
+#~ "error is five times larger. The training "
+#~ "set contains only one magnetic order.\n"
 #~ "\n"
 #~ "**Input:** A bcc Fe crystal with an Fe reference moment near 2.2 μB\n"
-#~ "**Goal:** Generate 1 FM + 1 AFM + 8 PM-like states so the model sees "
+#~ "**Goal:** Generate 1 FM + 1 AFM + "
+#~ "8 PM-like states so the model sees "
 #~ "several local magnetic environments\n"
-#~ "**Parameters:** `magmom_map=Fe:2.2`, enable `gen_fm`, `gen_afm`, and "
-#~ "`gen_pm`, and set `pm_count=[8]`\n"
+#~ "**Parameters:** `magmom_map=Fe:2.2`, enable `gen_fm`, "
+#~ "`gen_afm`, and `gen_pm`, and set `pm_count=[8]`\n"
+#~ ""
 #~ "**Output:** Ten magnetic initializations\n"
-#~ "**How to verify improvement:** After labeling and retraining, the FM/AFM "
-#~ "energy-error gap should decrease substantially\n"
+#~ "**How to verify improvement:** After labeling "
+#~ "and retraining, the FM/AFM energy-error gap"
+#~ " should decrease substantially\n"

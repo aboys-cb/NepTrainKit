@@ -8,550 +8,461 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-30 16:56+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:3
-#: 81ed581f872f4175ba96ad8938a3a5b1
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:3
+#: c5cdd699e1984b379841394cc9956fb1
 msgid "条件替换（Conditional Replace）"
 msgstr "Conditional Replace"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:5
-#: 193aad67a69c489f88dec475793c60f4
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:5
+#: 8d09f215b5c34e7c8a7fbefdfcb5b49a
 msgid "**分类：** 合金与组分"
 msgstr "**Category:** Alloys and composition"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:7
-#: 504001ca7e1048ed838eb3d634908b49
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:7
+#: b764b3c9ce714053a7d48bce76ca8b57
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:9
-#: 3af352f57c534c2f9cd0d66c3e6e9797
-msgid ""
-"按空间坐标条件对指定元素做区域选择性替换。用笛卡尔 `x/y/z` 坐标表达式（如 "
-"`z>=8 and z<=10`）筛选候选位点；所有命中位点都会被替换，未命中区域保持原样。"
-"多个替换元素后面的比例只决定它们如何分配到命中位点，不表示“替换多少位点”。适"
-"合表面钝化、界面修饰、层状材料选择性改性等场景。"
-msgstr "Perform region-selective replacement of specified elements using spatial conditions. Cartesian `x/y/z` expressions such as `z>=8 and z<=10` select candidate sites; every matching site is replaced while nonmatching regions remain unchanged. Ratios after multiple replacement elements determine only how replacements are assigned to matching sites, not how many sites are replaced. Use it for surface passivation, interface modification, and selective changes in layered materials."
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:9
+#: 9f25580760334f498052858d5ef2534f
+msgid "条件替换会在每个输入结构中找到“指定元素且位于给定笛卡尔区域”的全部原子，再将这些位点分配给一个或多个替换元素。每个输入始终输出一个结构："
+msgstr ""
+"Conditional Replace finds every atom in each input structure that both has the "
+"specified element and lies within a given Cartesian region, then assigns those sites "
+"to one or more replacement elements. Every input always produces one output:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:11
-#: 2e53d49a1ac14ce6a090ca82bdf3551a
-msgid ""
-"与 `Random Doping` 的区别：`Conditional Replace` 用坐标表达式精确划定空间区"
-"域，输出一个结构并替换全部命中位点；`Random Doping` 按数量或浓度做部分替位，"
-"可以生成多个结构，也可以读取 `Group Label` 写入的 group 标签。"
-msgstr "Difference from `Random Doping`: `Conditional Replace` defines a spatial region precisely with an expression, produces one structure, and replaces every matching site. `Random Doping` performs partial substitution by count or concentration, can generate multiple structures, and can read group labels written by `Group Label`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:13
-#: d56c9465f9d647fc90701bf44804bf7c
-msgid "原理与公式"
-msgstr "Principle and formulas"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:15
-#: d1497c9e04d84fb8a4d0b137cafce1ec
-msgid "程序先用元素和 Cartesian 坐标条件形成候选集合"
-msgstr "The program first builds a candidate set from the element and Cartesian-coordinate condition"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:17
-#: d151509a345341939124ad7f513d1853
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:11
+#: 4dcf0087ffd548fc957337a9cbb52551
 msgid ""
 "\n"
-"\\mathcal I=\\{i: Z_i=Z_{\\mathrm{target}}\\}\\cap\n"
-"\\bigcap_k\\{i:x_{ik}\\ \\mathrm{op}_k\\ c_k\\}.\n"
+"N_{\\mathrm{out}}=N_{\\mathrm{in}}.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:22
-#: faa413c7c3234429a552f03e82db108f
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:15
+#: 53d54225b95e424ca25cd1c00a4d16ff
 msgid ""
-"其中 $k\\in\\{x,y,z\\}$，比较符可以是大于、小于或等于；等于判断使用固定 "
-"$10^{-4}$ Å 容差。替换权重会归一化为概率 $p_e$。`精确`模式对 $|\\mathcal I|$ "
-"个位点使用最大余数法确定每种替换元素的整数计数；`随机`模式让每个位点 独立按类"
-"别分布 $P(Z_i=e)=p_e$ 抽样。前者控制单个结构的计数，后者允许结构间产生组分涨"
-"落。"
-msgstr "Here $k\\in\\{x,y,z\\}$, and comparisons may use greater-than, less-than, or equality; equality uses a fixed $10^{-4}$ Å tolerance. Replacement weights are normalized to probabilities $p_e$. `Exact` mode uses the largest-remainder method to determine integer counts for $|\\mathcal I|$ sites; `Random` mode samples each site independently from $P(Z_i=e)=p_e$. The former controls counts within one structure, while the latter allows composition fluctuations between structures."
+"它适合表面钝化、界面局部改性和固定空间区域的元素替换。比例只控制多个替换元素如何瓜分命中位点，**不是替换率**；所有命中位点都会被替换。若要按浓度仅替换一部分位点，请使用随机掺杂（Random"
+" Doping）。"
+msgstr ""
+"It is suited to surface passivation, local interface modification, and element "
+"replacement within a fixed spatial region. Ratios control only how the matched sites "
+"are divided among multiple replacement elements; they are **not a replacement "
+"fraction**. Every matched site is replaced. Use Random Doping to replace only a "
+"concentration-dependent subset of sites."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:27
-#: bf9309e9d54c4c6a9c8a99927a0600e7
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:17
+#: 8a0c8db011ff40a68415f6609b3caa85
+msgid "原理与公式"
+msgstr "Principles and Equations"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:19
+#: 74fc08cb025843e59a801c167605b9a5
+msgid ""
+"对原子 $i$，元素为 $Z_i$，当前笛卡尔坐标为 $\\mathbf r_i=(x_i,y_i,z_i)$。位置表达式定义布尔判据 $\\phi(\\mathbf "
+"r_i)$，命中集合为"
+msgstr ""
+"For atom $i$, let its element be $Z_i$ and its current Cartesian coordinate be "
+"$\\mathbf r_i=(x_i,y_i,z_i)$. The position expression defines a Boolean predicate "
+"$\\phi(\\mathbf r_i)$, giving the matched set"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:21
+#: 782aa9fdd94a4ab197a577ded72b82cc
+msgid ""
+"\n"
+"\\mathcal I=\\{i\\mid Z_i=Z_{\\mathrm{target}}\\ \\text{且}\\ \\phi(\\mathbf "
+"r_i)=\\mathrm{true}\\}.\n"
+msgstr ""
+"\n"
+"\\mathcal I=\\{i\\mid Z_i=Z_{\\mathrm{target}}\\ \\text{ and }\\ \\phi(\\mathbf "
+"r_i)=\\mathrm{true}\\}.\n"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:25
+#: 889161175ce744849dbd3980574d554b
+#, python-brace-format
+msgid ""
+"表达式支持 `and`、`or`、比较和简单四则运算，例如 `z>=8 and z<=10`。这里的 X/Y/Z 是结构当前坐标原点下的**固定全局笛卡尔轴**，单位 "
+"Å；程序不做周期最小镜像、坐标 wrap 或晶格 $a/b/c$ 转换。`==` 和 `!=` 的比较容差为 $10^{-4}$ Å。"
+msgstr ""
+"Expressions support `and`, `or`, comparisons, and simple arithmetic, for example "
+"`z>=8 and z<=10`. Here X/Y/Z are **fixed global Cartesian axes** relative to the "
+"structure's current coordinate origin, in Å. The program performs no periodic "
+"minimum-image operation, coordinate wrapping, or conversion to lattice $a/b/c$. "
+"Comparisons using `==` and `!=` have a tolerance of $10^{-4}$ Å."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:27
+#: 2d140b1c6a0443ae83e3d2dcd4a168ca
+msgid "设命中位点数为 $N=|\\mathcal I|$，正的相对权重归一化为"
+msgstr ""
+"Let the number of matched sites be $N=|\\mathcal I|$. Positive relative weights are "
+"normalized as"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:29
+#: cd75ebd1d709483c94c3bc4b184d0474
+#, python-brace-format
+msgid ""
+"\n"
+"p_e=\\frac{w_e}{\\sum_j w_j}.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:33
+#: 708dcf1a1dc240dc87ab6cb94e2a3245
+msgid "**独立随机分配**：每个位点独立按 $P(Z_i=e)=p_e$ 抽样，单个结构中的元素计数会涨落。"
+msgstr ""
+"**Independent random allocation:** sample every site independently according to "
+"$P(Z_i=e)=p_e$, so element counts fluctuate within an individual structure."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:34
+#: 438bf4f5be244ec08965da9dca8570ee
+msgid ""
+"**匹配整体比例**：先计算 $q_e=Np_e$，取 $\\lfloor q_e\\rfloor$，再把剩余位点依次分给小数余数最大的元素。因此总计数严格等于 "
+"$N$，并尽量接近目标比例。"
+msgstr ""
+"**Match overall ratio:** first compute $q_e=Np_e$ and take $\\lfloor q_e\\rfloor$, "
+"then assign remaining sites in descending order of fractional remainder. The total "
+"count therefore equals $N$ exactly and is as close as possible to the target ratio."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:36
+#: 6663ec601f2f42c29d6fce46fc61eff8
+msgid ""
+"程序只改变元素符号；原子数、positions、cell 和 PBC 保持不变。现有 `spin` 与 ASE `initial_magmoms` "
+"也会按原位点原样保留。替换磁性元素后应检查或重新设置磁矩。"
+msgstr ""
+"The program changes only element symbols; atom count, positions, cell, and PBC remain"
+" unchanged. Existing `spin` and ASE `initial_magmoms` are also preserved at their "
+"original sites. Check or reset magnetic moments after replacing magnetic elements."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:38
+#: f9ac7ccba9314b3db1d33b21c93a70f8
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:29
-#: c040bb13054b43f5b48f911780489006
-msgid "场景：模型在表面化学上完全失效，但体相预测很好"
-msgstr "Scenario: Good bulk predictions but failed surface chemistry"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:40
+#: 256001f210c34d7d91e6a3d50becffc4
+msgid "一个表面结构中共有 10 个 O，其中 6 个满足 `z>=8 and z<=10`。设置："
+msgstr "A surface structure contains ten O atoms, six of which satisfy `z>=8 and z<=10`. Set:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:31
-#: 3f2047a309114923943e7991c417d488
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:42
+#: 61fb1ee3b08f41f088dbfb7175bd37db
 msgid ""
-"你在 MgO 表面上训练了一个 NEP 模型，训练数据覆盖了完美晶体和表面弛豫结构。体"
-"相弹性常数和声子谱都很好，但一跑有表面吸附或表面钝化的结构，模型就崩了——能量"
-"误差是体相的 10 倍。诊断结果是：训练集里所有 O 原子都处于体相八面体配位环境，"
-"模型从未见过低配位表面 O 的局域环境，更不知道表面 O 被 F 替换后会发生什么。"
+"目标元素：O\n"
+"替换混合物：F:0.7, Cl:0.3\n"
+"位置选择：z>=8 and z<=10\n"
+"元素分配：匹配整体比例\n"
 msgstr ""
-"An MgO NEP covers perfect crystals and relaxed clean surfaces and reproduces "
-"bulk elasticity and phonons, but its error rises tenfold for adsorbed or "
-"passivated surfaces. All training O atoms occupy bulk-like octahedral "
-"environments; low-coordination surface O and F-substituted surface sites are "
-"missing."
+"Target element: O\n"
+"Replacement mixture: F:0.7, Cl:0.3\n"
+"Position selection: z>=8 and z<=10\n"
+"Element allocation: Match overall ratio\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:33
-#: 7f924177161e4d2484d3e844d7b33594
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:49
+#: 74c443c7fe864817856ae55e644928a2
 msgid ""
-"**诊断思路：** 表面原子的化学环境与体相完全不同——配位数低、悬挂键多、更活泼。"
-"如果训练集缺少表面区域的元素变化（如 F 钝化表面 O），模型会对表面化学完全盲"
-"猜。解决办法是用条件替换把表面几层的特定元素换成钝化元素，让模型学习表面化学"
-"环境。"
+"程序只处理这 6 个 O。连续目标计数为 $6\\times(0.7,0.3)=(4.2,1.8)$，最大余数分配后得到 4 个 F 和 2 个 Cl；其他 4 个 O "
+"不变。输出写入 `Repl(O->F,Cl)` 标签。"
 msgstr ""
-"**Diagnosis:** Surface chemistry differs from the bulk through lower "
-"coordination and dangling bonds. Create region-specific substitutions, such "
-"as replacing O with F in the outer layers, so subsequent DFT labels teach "
-"the model those environments."
+"The program processes only these six O atoms. The continuous target counts are "
+"$6\\times(0.7,0.3)=(4.2,1.8)$; largest-remainder allocation gives four F and two Cl "
+"atoms, while the other four O atoms remain unchanged. The output receives a "
+"`Repl(O->F,Cl)` label."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:35
-#: ae85d2977c4a47009b87f20d3786b6cb
-msgid "**输入：** 一个 MgO 表面 slab 结构，z 方向 0-16 Å，表面 O 位于高 z 区域"
-msgstr "**Input:** An MgO slab spanning z = 0-16 Å with surface O at high z."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:37
-#: 43e58160fbcc4cf98d8c4749d17c959e
-msgid "**目标：** 把顶层 2 Å 区域内的 O 替换为 F，模拟表面氟化"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:51
+#: a36e8fe656b34ce2b5bdcc1dc7d38e53
+msgid "如果训练集缺少表面 O 被卤素替换后的局域环境，可以用这张卡补充明确区域内的化学变化，再检查输出元素计数和命中坐标是否符合预期。结构弛豫与能量判断属于后续计算步骤。"
 msgstr ""
-"**Objective:** Replace O with F in the top 2 Å to model surface fluorination."
+"If the training set lacks local environments where surface O is replaced by halogens,"
+" use this card to add chemical changes within an explicit region, then verify output "
+"element counts and matched coordinates. Structural relaxation and energy assessment "
+"belong to subsequent calculations."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:39
-#: 6f939f783adc4c819dd62b928055ad99
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:40
-#: 68db0d5c4bbe42e198261590c2b6a731
-msgid "`目标元素`（`target`） = `O`"
-msgstr "`Target element` (`target`) = `O`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:41
-#: e66de0b4e8fb424faa9042cd5e120ca4
-msgid "`替换元素及相对比例`（`replacements`） = `F:1.0`"
-msgstr "`Replacement elements and relative ratios` (`replacements`) = `F:1.0`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:42
-#: cad5c668b19843488c8e00a6677e76f0
-msgid "`位置筛选`（`condition`） = `z>=14 and z<=16`"
-msgstr "`Position filter` (`condition`) = `z>=14 and z<=16`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:43
-#: b08bf418fb7b4859a771c51449686d95
-msgid ""
-"`元素分配方式`（`mode`） = `1`（只有一种替换元素时，两个分配模式的结果相同）"
-msgstr "`Element allocation mode` (`mode`) = `1` (the modes are equivalent when only one replacement element is used)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:45
-#: 4f97f87a281c450b85d70343aee63b1a
-msgid ""
-"**输出：** 1 个结构，满足 z 在 14-16 Å 的所有 O 被替换为 F，其余区域不变。带 "
-"`Repl(O->F)` 标签"
-msgstr "**Output:** one structure in which every O with z between 14 and 16 Å is replaced by F; all other regions are unchanged. The structure carries the `Repl(O->F)` label."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:47
-#: 9a13937713b649e99c2ef853f36501b0
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:48
-#: 5e32c17ddb4a43e3a8e368e24aea795c
-msgid ""
-"重训后跑表面吸附测试，力的 MAE 应该显著降低，不再在表面区域出现异常大力误差"
-msgstr ""
-"After labeling and retraining, surface-adsorption force MAE should decrease "
-"and extreme errors should no longer concentrate at the surface."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:49
-#: 7ace5fb0be274ba680bdf0f700027669
-msgid ""
-"抽查输出，确认只有表面区域被替换，体相原子保持不变——如果体相也被动了，"
-"condition 表达式有问题"
-msgstr ""
-"Inspect output coordinates and confirm that only the surface region changed. "
-"Bulk substitutions indicate an incorrect condition."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:50
-#: 2f1dcf00841c42ac8d2313e4a98323ad
-msgid ""
-"如果需要多元素钝化，把 `替换元素及相对比例`（`replacements`）写成 "
-"`F:0.5,Cl:0.5`"
-msgstr "For multi-element passivation, set `Replacement elements and relative ratios` (`replacements`) to `F:0.5,Cl:0.5`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:51
-#: 0483b8f0471d4a228db526bab19ee014
-msgid "如果表面层厚度不确定，先用 `all` 条件验证替换配方正确性，再收紧 z 范围"
-msgstr ""
-"If the surface interval is uncertain, validate the replacement recipe with "
-"`all`, then narrow the z condition after inspecting coordinates."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:53
-#: 5a9a15617c6440b099bf4defea5bd891
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:55
-#: b29008abf5da486abdf550ca571e2424
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:56
-#: 594785825c034e7485a55ec8ead7fa3a
-msgid "模型对表面/界面/晶界区域的预测质量显著差于体相"
-msgstr ""
-"Surface, interface, or grain-boundary predictions are much worse than bulk "
-"predictions"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:57
-#: c1e312688ed749dda6947eb9a4c0479f
-msgid "需要做区域选择性化学改性：表面钝化、界面掺杂、层状材料夹层替换"
-msgstr ""
-"Region-selective chemistry is needed for passivation, interface doping, or "
-"layer replacement"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:58
-#: 0e45e5664aa2400aa66ee363db909225
-msgid "替换规则可以用 x/y/z 坐标表达式写清楚"
-msgstr "The target region can be expressed with x, y, and z coordinates"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:60
-#: 34adc16066914ab6ae6a178aec8ee72e
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:61
-#: 5a97474dac25468c8309b8f04a644d29
-msgid "不需要空间选择性 → 用 `Random Doping` 更直接"
-msgstr "No spatial selection is needed; use `Random Doping`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:62
-#: a6dfe720d2824256a3334c852cf3ca88
-msgid "替换规则无法用 x/y/z 表达式描述（如按近邻配位筛选）"
-msgstr "The rule depends on topology or coordination rather than coordinates"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:63
-#: 5c12a6257b9f4b259d0745ccaf2fdd86
-msgid ""
-"只需要全局组合配比变化 → `Composition Space Sampling` + `Random Occupancy`"
-msgstr "For global composition changes only → `Composition Space Sampling` + `Random Occupancy`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:65
-#: 0c6f96cea09d4b6c88f96e16c35312da
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:53
+#: d41663ef475446ad881663f3219c430e
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:67
-#: 7045c2bb4b364b9993d26dba01bfdac0
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:55
+#: a3893353f3934cf2b36c1120689b2d65
+msgid "替换规则"
+msgstr "Replacement Rule"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:57
+#: 782aa23a6d694da8a0cc9b66aa3eaaf7
 msgid "目标元素（target）"
 msgstr "target"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:69
-#: a39ff27033e34c3db102933c9a197e9f
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:59
+#: 9acb2136efca47cb92b2eee56e15f902
+msgid "默认留空。请选择输入结构中实际存在的一个元素，例如 `O`、`Si` 或 `Fe`；输入中不存在该元素时会明确报错。"
+msgstr ""
+"Empty by default. Select one element that actually exists in the input structure, "
+"such as `O`, `Si`, or `Fe`. An explicit error is reported if it is absent."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:61
+#: 8839d6a5bf9a43c494d9f8061c5c3633
+msgid "替换混合物（replacements）"
+msgstr "Replacement Mixture (replacements)"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:63
+#: d92d3e50f25d4cf09efcb2ddae022e90
 msgid ""
-"`str`，默认空。被替换的元素符号，如 `O`、`Si`。只替换匹配该元素且满足下面 `位"
-"置筛选`（`condition`）的那部分位点。"
-msgstr "`str`, default empty. The symbol of the element to replace, such as `O` or `Si`. Only sites matching this element and the `Position filter` (`condition`) below are replaced."
+"默认留空。添加一个或多个替换元素及其非负相对权重，例如 "
+"`F:0.7,Cl:0.3`。权重会自动归一化；零权重元素会被忽略，至少一个权重必须为正。同一元素不能重复，也不能包含目标元素本身。"
+msgstr ""
+"Empty by default. Add one or more replacement elements with nonnegative relative "
+"weights, for example `F:0.7,Cl:0.3`. Weights are normalized automatically; zero-"
+"weight elements are ignored, and at least one weight must be positive. Elements "
+"cannot repeat and the target element itself cannot be included."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:71
-#: 7a57191174114f478dd5b06e5ba610a7
-msgid "替换元素及相对比例（replacements）"
-msgstr "replacements"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:65
+#: a34a026d56a74677b600a577aadae602
+msgid "笛卡尔区域"
+msgstr "Cartesian Region"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:73
-#: 80f796ecb3614361b4ee2d8dc2b9b9df
-msgid ""
-"`str`，默认空。替换配方，支持逗号冒号 `F:0.7,N:0.3` 或 JSON dict "
-"`{\"F\":0.7,\"N\":0.3}` 两种写法。比例会被自动归一化，只用于在命中位点之间分"
-"配 F 和 N；它不是替换率，所有命中位点仍然都会被替换。只填 `F` 等价于 "
-"`F:1.0`。"
-msgstr "`str`, default empty. Replacement recipe, accepted as `F:0.7,N:0.3` or JSON dict `{\"F\":0.7,\"N\":0.3}`. Ratios are normalized automatically and only distribute F and N among matching sites; they are not a replacement rate, and every matching site is still replaced. Entering only `F` is equivalent to `F:1.0`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:75
-#: 7b3c0e48c5824e0e87d943b6c2d3cae8
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:67
+#: 6bd2878a82744b3aaa977f503c659b07
 msgid "位置筛选（condition）"
 msgstr "condition"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:77
-#: d3082e4b30eb4791935df295b8fb173d
-msgid ""
-"`str`，默认 `all`。空间条件表达式，`all` 表示所有目标元素都命中。支持变量 "
-"`x`/`y`/`z`（笛卡尔坐标，单位 Å），比较运算符 `<`/`>`/`<=`/`>=`/`==`/`!=`，逻"
-"辑 `and`/`or`/`not`，以及四则运算。相等判断可写 `x=0` 或 `x==0`，两者含义相"
-"同；内部使用 `1e-4 Å` 容差。"
-msgstr "`str`, default `all`. Spatial condition expression; `all` selects all target elements. Supported variables are `x`/`y`/`z` (Cartesian coordinates in Å), comparison operators `<`/`>`/`<=`/`>=`/`==`/`!=`, logical operators `and`/`or`/`not`, and arithmetic. Equality may be written as `x=0` or `x==0`; both have the same meaning and use a `1e-4 Å` tolerance internally."
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:69
+#: dafde6068a50453a8d9f4584744c41b2
+msgid "默认 `all`，表示选择所有目标元素。界面也可构造一个 X/Y/Z 边界，或输入高级表达式。典型表达式："
+msgstr ""
+"Default `all`, selecting every atom of the target element. The interface can also "
+"construct X/Y/Z bounds or accept an advanced expression. Typical expressions are:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:79
-#: 7dee72c30e60417b96a597e0d19c73dd
-msgid "典型例子："
-msgstr "Examples:"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:71
+#: 3eed961bba7748a2b9d51b221308d998
+msgid "`z>=8`：当前全局笛卡尔 Z 坐标不小于 8 Å；"
+msgstr "`z>=8`: current global Cartesian Z coordinate is at least 8 Å;"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:80
-#: 8b68451a68074dc7a5d87404e74cb9f3
-msgid "`z>=8 and z<=10`：替换 z 在 8-10 Å 范围内的 target 原子"
-msgstr "`z>=8 and z<=10`: select target atoms between 8 and 10 Å along z"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:72
+#: 41e8e8edb9284f6d9e4f345a9951876e
+msgid "`z>=8 and z<=10`：8–10 Å 区间；"
+msgstr "`z>=8 and z<=10`: the interval from 8 to 10 Å;"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:81
-#: ab1da0302d33404b8c9f28d5fd7db872
-msgid "`x>5 or y<2`：替换特定 xy 象限内的原子"
-msgstr "`x>5 or y<2`: select atoms in the specified xy regions"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:73
+#: a1b93d5de1b144ba90fa6e04ee514d63
+msgid "`x>5 or y<2`：满足任一条件的位点。"
+msgstr "`x>5 or y<2`: sites satisfying either condition."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:82
-#: 3f18271446df4ac7aad097ff33dc9ab9
-msgid "`z<=4`：只替换底层"
-msgstr "`z<=4`: select only the bottom layer"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:75
+#: 67469cc456b54be3aa2ebf149606a759
+msgid "元素分配"
+msgstr "Element Allocation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:84
-#: ce21d686189f4aa4af87efb650651eab
-msgid "元素分配方式（mode）"
-msgstr "mode"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:77
+#: c379f95874ab45a291d0e57adeaebe7d
+msgid "分配方式（mode）"
+msgstr "Allocation Mode (mode)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:86
-#: 4906a6f301274ec6983f4d749e6c01a8
-msgid ""
-"`int`，默认 0。两个模式都会替换所有命中位点，区别只在多个替换元素的数量分配："
-msgstr "`int`, default 0. Both modes replace every matching site; they differ only in how counts are allocated among multiple replacement elements:"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:79
+#: a24b13a990514245992cf32a7b926e71
+msgid "`0`：独立随机分配；"
+msgstr "`0`: independent random allocation;"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:88
-#: b1ff27a5811143d095ebbcf42e43de12
-msgid ""
-"`0` = `逐位随机分配`：每个位点独立按相对比例抽取替换元素，最终计数可能偏离目"
-"标比例。"
-msgstr "`0` = `Per-site random allocation`: sample a replacement element independently at each site according to the relative ratios; final counts may differ from the target ratios."
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:80
+#: 076c80316e374468bdc7d4e35130b22e
+msgid "`1`：匹配整体比例，使用最大余数法确定整数计数。"
+msgstr ""
+"`1`: match the overall ratio, using the largest-remainder method to determine integer"
+" counts."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:89
-#: 6911efa5ae444613889dcd757d594422
-msgid ""
-"`1` = `尽量匹配整体比例`：先把比例换算成整数计数，再随机分配到命中位点，最终"
-"计数尽量接近目标比例。"
-msgstr "`1` = `Match overall ratios`: convert ratios to integer counts first, then distribute them randomly among matching sites so the final counts are as close as possible to the target ratios."
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:82
+#: 4bf2d20bec77493cbe056655cb0b1731
+msgid "两种方式都会替换全部命中位点。只有一个替换元素时结果相同。"
+msgstr ""
+"Both methods replace every matched site. Their results are identical when there is "
+"only one replacement element."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:91
-#: 7847ffa9220447a3af2456a05282ddf5
-msgid "只有一个替换元素时，两个模式的结果相同。"
-msgstr "The two modes are equivalent when there is only one replacement element."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:93
-#: 88820c0cd0fb4925a416a78f0bb31f3d
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:84
+#: 78e1bb105dcc4fc2a38faad6f38a7df3
 msgid "随机种子（seed）"
-msgstr "seed"
+msgstr "Random Seed (seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:95
-#: 22804b235b9c46f5ac50f4d0e2618208
-msgid ""
-"`int`，默认 0。界面取消勾选“使用固定种子”时保存为 `0`，表示每次运行随机；勾选"
-"后保存输入的正整数，使位点分配可复现。"
-msgstr "`int`, default 0. When `Use fixed seed` is disabled, the interface saves `0` and each run is random; when enabled, it saves the entered positive integer so site allocation is reproducible."
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:86
+#: 69e0092c239a42768cac0e5304263903
+msgid "默认 0，表示每次运行使用新的随机序列。正整数会固定命中位点与替换元素之间的随机对应关系；匹配整体比例时固定 seed 也会固定各元素落在哪些位点。"
+msgstr ""
+"Default 0, which uses a new random sequence on each run. A positive integer fixes the"
+" random mapping between matched sites and replacement elements. In overall-ratio "
+"mode, a fixed seed also fixes the sites receiving each element."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:97
-#: 82387d6dc747471fa97940c453d966f8
-msgid "推荐预设"
-msgstr "Recommended presets"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:88
+#: f10abfb146594c90a1faba1420e15849
+msgid "与相邻卡片的区别"
+msgstr "Differences from Neighboring Cards"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:99
-#: 1c944c681c104284a5c0291a7a2e068b
-msgid "表面单元素钝化（表面 O→F，窄窗口）"
-msgstr "Single-species surface passivation (O -> F in a narrow window)"
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: efbb7268f985458bb7ecf756a2143360
+msgid "卡片"
+msgstr "Card"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:100
-#: 002329d75f904b38b473662c66cb465e
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 58edeb837751431db2d56e40ff7eca08
+msgid "选择依据"
+msgstr "Selection Basis"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 24bf2d7734e84247b0576079cb13c989
+msgid "实际操作"
+msgstr "Actual Operation"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: d3c983d1a1224e0fb3d8ba2b3f286349
+msgid "条件替换"
+msgstr "Conditional Replace"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: cb3856ad087c43649d99d9be286cccd5
+msgid "固定全局笛卡尔区域"
+msgstr "Fixed global Cartesian region"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 191275532fa54da8a90e5d19119e9078
+msgid "指定元素的全部命中位点做单向替换"
+msgstr "One-way replacement of all matched sites of a specified element"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 00e1fa149ca945bd99e39a4ac5009916
+msgid "随机掺杂"
+msgstr "Random Doping"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: a480328fb6ff49a58b61fd39a232471d
+msgid "数量、浓度或 group"
+msgstr "Count, concentration, or group"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 32c20caf946e4f49b5f29429766fd4fa
+msgid "只替换部分候选位点，可生成多个样本"
+msgstr "Replace only a subset of candidate sites and generate multiple samples"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: a51c9478feb04880ac4080c3bff6e0d2
+msgid "成分梯度"
+msgstr "Composition Gradient"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 5bad1a494e5d41149df16c550e63b5f7
+msgid "晶格分数坐标 $a/b/c$ 排序"
+msgstr "Ordering by lattice fractional coordinate $a/b/c$"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 96819e2df31c46e6bcf256d99f31a031
+msgid "形成连续的空间成分过渡"
+msgstr "Create a continuous spatial composition transition"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: e79c1c110cbf41348ce60853ede1d22b
+msgid "界面层混合"
+msgstr "Interface Layer Mixing"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: b31a2d7bd42644548a316a3e34ab5871
+msgid "界面两侧的晶格层"
+msgstr "Lattice layers on both sides of an interface"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md
+#: 4a1dac25a501459683cbc8ae33b2cb86
+msgid "两侧元素做双向互混"
+msgstr "Bidirectional mixing of elements on the two sides"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:97
+#: e1c4c6511c5743368ae3bb40b9bcc194
+msgid "常见问题"
+msgstr "Troubleshooting"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:99
+#: 0a0f4e96a3234a2689f8d6acedd35f30
+msgid "为什么提示没有命中原子？"
+msgstr "Why Are No Matching Atoms Reported?"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:101
+#: 833450cf91d44405bd90ea3ae0bb04f0
+msgid "先确认目标元素存在，再检查结构的实际笛卡尔坐标范围。原子跨越周期边界时，本卡不会自动按最小镜像重组区域。"
+msgstr ""
+"First confirm that the target element exists, then inspect the structure's actual "
+"Cartesian coordinate range. If atoms cross a periodic boundary, this card does not "
+"automatically reconstruct the region using minimum images."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:103
+#: f721d6db176d4e99afe342ee97e5265c
+msgid "为什么比例不是保留原元素的比例？"
+msgstr "Why Does the Ratio Not Describe How Much of the Original Element Is Retained?"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:105
+#: 884f3a81a0c04b9698abf5550a8e462b
+msgid "替换混合物只在新元素之间分配命中位点。若要保留一部分目标元素，请改用随机掺杂，而不要把目标元素写进替换混合物。"
+msgstr ""
+"The replacement mixture allocates matched sites only among new elements. To retain "
+"part of the target element, use Random Doping instead of adding the target element to"
+" the replacement mixture."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:107
+#: 4bb3194ea3524a338f54e5517f882c0f
+msgid "为什么替换后磁矩没有变化？"
+msgstr "Why Are Magnetic Moments Unchanged after Replacement?"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:109
+#: deb717db2d2c46b8825e338168742831
+msgid "磁矩数组按位点原样保留，程序无法仅凭新元素可靠推断物理磁矩。请在下游连接磁矩设置或磁序卡片，或手工检查磁矩。"
+msgstr ""
+"Magnetic-moment arrays are preserved at their original sites, and the program cannot "
+"reliably infer physical moments from the new elements alone. Connect Set Magnetic "
+"Moments or Magnetic Order downstream, or inspect moments manually."
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:111
+#: 4c21c0e7fb8542c79f549d41fc1cc347
+msgid "序列化示例"
+msgstr "Serialization Example"
+
+#: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:113
+#: 299167622f704e9bafa38256d527bafc
+#, python-brace-format
 msgid ""
 "{\n"
-"  \"class\": \"ConditionalReplaceCard\",\n"
-"  \"check_state\": true,\n"
 "  \"params\": {\n"
 "    \"target\": \"O\",\n"
-"    \"replacements\": \"F:1.0\",\n"
-"    \"condition\": \"z>=14 and z<=16\",\n"
+"    \"replacements\": \"F:0.7,Cl:0.3\",\n"
+"    \"condition\": \"z>=8 and z<=10\",\n"
 "    \"seed\": 101,\n"
 "    \"mode\": 1\n"
 "  }\n"
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:114
-#: 276d5aed2a8547f08b6d1170a711dccb
-msgid "表面多元素钝化（表面 O→F/N，宽窗口）"
-msgstr "Mixed surface passivation (O -> F/N in a wider window)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:115
-#: 97f66b90f9db409db53489ce1729f8b9
-msgid ""
-"{\n"
-"  \"class\": \"ConditionalReplaceCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"target\": \"O\",\n"
-"    \"replacements\": \"F:0.7,N:0.3\",\n"
-"    \"condition\": \"z>=6 and z<=14\",\n"
-"    \"seed\": 101,\n"
-"    \"mode\": 0\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:129
-#: 275f2f2e90584ef5b1770e2392554bbe
-msgid "全区域多元素替换（所有 O→F/N/Cl，用于探索区）"
-msgstr "Global mixed replacement (all O -> F/N/Cl for exploration)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:130
-#: 05fb470e92314521990e31cb43b17a6a
-msgid ""
-"{\n"
-"  \"class\": \"ConditionalReplaceCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"target\": \"O\",\n"
-"    \"replacements\": \"F:0.4,N:0.3,Cl:0.3\",\n"
-"    \"condition\": \"all\",\n"
-"    \"seed\": 101,\n"
-"    \"mode\": 0\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:144
-#: 5d6f680c5159465ab6dd37760d6db2fa
-msgid "推荐组合"
-msgstr "Recommended combinations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:146
-#: 24c7e7163be244dc9f7221cd40a34ff5
-msgid ""
-"`Crystal Prototype Builder` → `Conditional Replace`：先生成表面或界面模板，再"
-"按坐标区域做元素替换。"
-msgstr "`Crystal Prototype Builder` → `Conditional Replace`: generate a surface or interface template first, then replace elements by coordinate region."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:147
-#: 7064abc9d4d94aad981dcd36d7f1eccf
-msgid ""
-"`Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松弛替换引入的局"
-"部应力。"
-msgstr "`Conditional Replace` → `Atomic Perturb`: add coordinate noise after replacement to relax local stress introduced by the substitution."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:148
-#: 15bc2789c7914a14a90adfa7ee33bfa2
-msgid ""
-"`Conditional Replace` → `Random Doping`：先做区域选择性替换覆盖表面化学，再做"
-"全局替位补样。"
-msgstr ""
-"`Conditional Replace` -> `Random Doping`: cover region-specific surface "
-"chemistry before global substitution diversity."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:150
-#: a41da77bfeae47f8bb42a12728f6b923
-msgid ""
-"如果需要按 group 标签选择位点，应使用 `Group Label` → `Random Doping`；本卡不"
-"读取 group 标签。"
-msgstr "To select sites by group labels, use `Group Label` → `Random Doping`; this card does not read group labels."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:152
-#: 8ac9429619544c439f9039876b64f0e9
-msgid "常见问题"
-msgstr "Common questions"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:154
-#: 834c978ca68443eb8c8f767b75fef14d
-msgid ""
-"**输出 = 输入，没有替换。** `目标元素`（`target`）为空，或输入结构中不存在该"
-"元素，或 `位置筛选`（`condition`）把所有候选位点都过滤掉了。先用 "
-"`condition=all` 验证替换逻辑，再逐步收紧条件。"
-msgstr "**Output = input, with no replacement.** `Target element` (`target`) is empty, the input contains no such element, or `Position filter` (`condition`) removed every candidate site. First verify the replacement logic with `condition=all`, then tighten the condition gradually."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:156
-#: e57b8d352f754892b19ac8cefadef15c
-msgid ""
-"**替换了不该替换的位点。** condition 表达式区域范围写错了。检查结构坐标范围，"
-"确认上下限对应目标区域。Slab 的真空层可能导致 z 坐标超出预期。"
-msgstr ""
-"**Unexpected sites were replaced.** Inspect the structure's coordinate range "
-"and correct the condition bounds. Vacuum in a slab can make z limits "
-"unintuitive."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:158
-#: 0d662ed4f6314a1a93b91bf1665dce24
-msgid ""
-"**condition 解析失败。** 检查变量是否只用了 x/y/z，并确认没有 `===`、函数调用"
-"等不支持的语法。`=`、`==`、`>=`、`<=`、`!=` 都是合法写法；非法表达式会明确抛"
-"出 `ValueError`。"
-msgstr ""
-"**The condition could not be parsed.** Check that it uses only x/y/z "
-"variables and does not contain unsupported syntax such as `===` or function "
-"calls. `=`, `==`, `>=`, `<=`, and `!=` are all valid. An invalid expression "
-"raises `ValueError` explicitly."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:160
-#: dd323771f3284499bb8f9e28bd2364e4
-msgid ""
-"**随机模式为什么没有保留一部分原元素？** 这里的“随机”只表示在多个替换元素之间"
-"逐位随机分配，不表示随机决定是否替换。要控制替换数量或浓度，请使用 `Random "
-"Doping`。"
-msgstr "**Why does random mode not retain some original elements?** Here, `random` means only that replacement elements are assigned randomly site by site; it does not randomly decide whether to replace a site. To control the replacement count or concentration, use `Random Doping`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:162
-#: 52eec085e31246d0a801b24e1931d970
-msgid ""
-"**替换后键长不合理。** 纯化学替换不做结构弛豫。如果键长明显异常，建议后接弛豫"
-"计算。"
-msgstr ""
-"**Bond lengths are unreasonable after replacement.** This operation changes "
-"species without relaxation. Relax the structure before treating it as a "
-"physical configuration."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:164
-#: 4bc42b34abef4b91a3e97013794a8173
-msgid "输出标签"
-msgstr "Output labels"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:166
-#: bacb773ecb4d412d88d02040e7bbff17
-msgid "`Repl(O->F)` / `Repl(O->F,N,Cl)` 格式。仅在确实发生了替换时才写入标签。"
-msgstr ""
-"Formats: `Repl(O->F)` and `Repl(O->F,N,Cl)`. A label is added only when a "
-"replacement occurs."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:168
-#: dfd68fbeeb844280963316c971098ac9
-msgid "可复现性"
-msgstr "Reproducibility"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/conditional-replace-card.md:170
-#: c8a7456dff6240ad9a612a954fa49985
-msgid ""
-"固定非零 `随机种子`（`seed`） → 相同输入可复现。多元素替换模式下 seed 控制哪"
-"个位点分配到哪个替换元素。`seed=0` 表示每次运行随机。"
-msgstr "A fixed nonzero `Random seed` (`seed`) makes the same input reproducible. In multielement replacement mode, the seed controls which replacement element is assigned to each site. `seed=0` makes every run random."
-
 #~ msgid "`Group`: `Alloy` | `Class`: `ConditionalReplaceCard`"
 #~ msgstr "`Group`: `Alloy` | `Class`: `ConditionalReplaceCard`"
 
 #~ msgid ""
-#~ "按空间坐标条件对指定元素做区域选择性替换。用 x/y/z 坐标表达式（如 `z>=8 "
-#~ "and z<=10`）筛选候选位点，只替换命中区域内的原子，未命中区域保持原样。适合"
-#~ "表面钝化、界面修饰、层状材料选择性改性等场景。"
+#~ "按空间坐标条件对指定元素做区域选择性替换。用 x/y/z 坐标表达式（如 `z>=8 and "
+#~ "z<=10`）筛选候选位点，只替换命中区域内的原子，未命中区域保持原样。适合表面钝化、界面修饰、层状材料选择性改性等场景。"
 #~ msgstr ""
-#~ "Replace a selected element only where a spatial-coordinate condition is "
-#~ "true. Expressions such as `z>=8 and z<=10` select candidate sites; atoms "
-#~ "outside the region remain unchanged. Use this for surface passivation, "
-#~ "interface modification, or layer-selective chemistry."
+#~ "Replace a selected element only where a "
+#~ "spatial-coordinate condition is true. Expressions "
+#~ "such as `z>=8 and z<=10` select candidate "
+#~ "sites; atoms outside the region remain "
+#~ "unchanged. Use this for surface passivation, "
+#~ "interface modification, or layer-selective "
+#~ "chemistry."
 
 #~ msgid ""
-#~ "与 `Random Doping` 的区别：`Random Doping` 对全体 target 原子做无差别随机"
-#~ "替换；`Conditional Replace` 先用坐标条件筛选位点，再在命中区域内做替换。"
+#~ "与 `Random Doping` 的区别：`Random Doping` 对全体 "
+#~ "target 原子做无差别随机替换；`Conditional Replace` 先用坐标条件筛选位点，再在命中区域内做替换。"
 #~ msgstr ""
-#~ "Unlike `Random Doping`, which samples all target atoms globally, "
-#~ "`Conditional Replace` first restricts sites with a coordinate expression "
+#~ "Unlike `Random Doping`, which samples all "
+#~ "target atoms globally, `Conditional Replace` first"
+#~ " restricts sites with a coordinate expression "
 #~ "and replaces only within that region."
 
 #~ msgid "`target` = `O`"
@@ -566,82 +477,80 @@ msgstr "A fixed nonzero `Random seed` (`seed`) makes the same input reproducible
 #~ msgid "`mode` = `1` （Exact 模式，确保全部命中位点被替换）"
 #~ msgstr "`mode` = `1` (Exact mode)"
 
-#~ msgid ""
-#~ "**输出：** 1 个结构，满足 z 在 8-10 Å 的所有 O 被替换为 F，其余区域不变。"
-#~ "带 `Repl(O->F)` 标签"
+#~ msgid "**输出：** 1 个结构，满足 z 在 8-10 Å 的所有 O 被替换为 F，其余区域不变。带 `Repl(O->F)` 标签"
 #~ msgstr ""
-#~ "**Output:** One structure in which all matching O at z = 8-10 Å become F, "
-#~ "with all other regions unchanged and label `Repl(O->F)`."
+#~ "**Output:** One structure in which all "
+#~ "matching O at z = 8-10 Å become F,"
+#~ " with all other regions unchanged and label"
+#~ " `Repl(O->F)`."
 
 #~ msgid "如果需要多元素钝化，把 `replacements` 写成 `F:0.5,Cl:0.5`"
 #~ msgstr "For mixed passivation, use a recipe such as `F:0.5,Cl:0.5`."
 
 #~ msgid "只需要全局组合配比变化 → `Composition Sweep` + `Random Occupancy`"
 #~ msgstr ""
-#~ "Only global composition should change; use `Composition Sweep` with "
-#~ "`Random Occupancy`"
+#~ "Only global composition should change; use "
+#~ "`Composition Sweep` with `Random Occupancy`"
 
 #~ msgid "Target（target）"
 #~ msgstr "Target（target）"
 
-#~ msgid ""
-#~ "`str`，默认空。被替换的元素符号，如 `O`、`Si`。只替换匹配该元素且满足下面 "
-#~ "`condition` 的那部分位点。"
+#~ msgid "`str`，默认空。被替换的元素符号，如 `O`、`Si`。只替换匹配该元素且满足下面 `condition` 的那部分位点。"
 #~ msgstr ""
-#~ "`str`, empty by default. Element to replace, such as `O` or `Si`. A site "
-#~ "must match both this element and `condition`."
+#~ "`str`, empty by default. Element to replace,"
+#~ " such as `O` or `Si`. A site must "
+#~ "match both this element and `condition`."
 
 #~ msgid "Replacements（replacements）"
 #~ msgstr "Replacements（replacements）"
 
-#, python-brace-format
 #~ msgid ""
 #~ "`str`，默认空。替换配方，支持逗号冒号 `F:0.7,N:0.3` 或 JSON dict "
-#~ "`{\"F\":0.7,\"N\":0.3}` 两种写法。比例会被自动归一化，在命中区域内按比例随"
-#~ "机分配替换元素。"
+#~ "`{\"F\":0.7,\"N\":0.3}` 两种写法。比例会被自动归一化，在命中区域内按比例随机分配替换元素。"
 #~ msgstr ""
-#~ "`str`, empty by default. Replacement recipe in comma-colon form such as "
-#~ "`F:0.7,N:0.3` or as JSON ` {\"F\":0.7,\"N\":0.3}`. Fractions are "
-#~ "normalized and replacement species are assigned within the selected "
-#~ "region."
+#~ "`str`, empty by default. Replacement recipe in"
+#~ " comma-colon form such as `F:0.7,N:0.3` or"
+#~ " as JSON ` {\"F\":0.7,\"N\":0.3}`. Fractions are"
+#~ " normalized and replacement species are assigned"
+#~ " within the selected region."
 
 #~ msgid "Condition（condition）"
 #~ msgstr "Condition（condition）"
 
 #~ msgid ""
-#~ "`str`，默认空。空间条件表达式，不填或填 `all` = 所有 target 原子都命中。支"
-#~ "持变量 `x`/`y`/`z`（笛卡尔坐标，单位 Å），比较运算符 `<`/`>`/`<=`/`>=`/"
-#~ "`==`/`!=`，逻辑 `and`/`or`/`not`，以及四则运算。相等判断可写 `x=0` 或 "
-#~ "`x==0`，两者含义相同。"
+#~ "`str`，默认空。空间条件表达式，不填或填 `all` = 所有 target 原子都命中。支持变量"
+#~ " `x`/`y`/`z`（笛卡尔坐标，单位 Å），比较运算符 `<`/`>`/`<=`/`>=`/`==`/`!=`，逻辑 "
+#~ "`and`/`or`/`not`，以及四则运算。相等判断可写 `x=0` 或 `x==0`，两者含义相同。"
 #~ msgstr ""
-#~ "`str`, empty by default. A spatial condition expression. Leave it empty "
-#~ "or use `all` to match every target atom. Supported variables are `x`/`y`/"
-#~ "`z` (Cartesian coordinates in Å), comparison operators `<`/`>`/`<=`/`>=`/"
-#~ "`==`/`!=`, logical operators `and`/`or`/`not`, and arithmetic operators. "
-#~ "Equality may be written as `x=0` or `x==0`; the two forms are equivalent."
+#~ "`str`, empty by default. A spatial condition"
+#~ " expression. Leave it empty or use `all`"
+#~ " to match every target atom. Supported "
+#~ "variables are `x`/`y`/`z` (Cartesian coordinates in"
+#~ " Å), comparison operators `<`/`>`/`<=`/`>=`/`==`/`!=`, "
+#~ "logical operators `and`/`or`/`not`, and arithmetic "
+#~ "operators. Equality may be written as `x=0`"
+#~ " or `x==0`; the two forms are equivalent."
 
 #~ msgid "Mode（mode）"
 #~ msgstr "Mode（mode）"
 
-#~ msgid ""
-#~ "`int`，默认 0。`0` = Random 模式（按比例概率随机采样），`1` = Exact 模式"
-#~ "（尽量精确匹配比例计数）。"
+#~ msgid "`int`，默认 0。`0` = Random 模式（按比例概率随机采样），`1` = Exact 模式（尽量精确匹配比例计数）。"
 #~ msgstr ""
-#~ "`int`, default `0`. `0` is Random mode, which samples according to "
-#~ "probabilities; `1` is Exact mode, which matches integer species counts as "
-#~ "closely as possible."
+#~ "`int`, default `0`. `0` is Random mode, "
+#~ "which samples according to probabilities; `1` "
+#~ "is Exact mode, which matches integer species"
+#~ " counts as closely as possible."
 
 #~ msgid "Seed（seed）"
 #~ msgstr "Seed（seed）"
 
-#~ msgid ""
-#~ "`int`，默认 0。非 0 时固定随机路径，控制多元素替换的分配随机性。`0` 表示每"
-#~ "次运行随机。"
+#~ msgid "`int`，默认 0。非 0 时固定随机路径，控制多元素替换的分配随机性。`0` 表示每次运行随机。"
 #~ msgstr ""
-#~ "`int`, default `0`. A nonzero seed fixes the site-to-species assignment "
-#~ "for mixed replacements; zero requests a new random assignment on each run."
+#~ "`int`, default `0`. A nonzero seed fixes "
+#~ "the site-to-species assignment for mixed "
+#~ "replacements; zero requests a new random "
+#~ "assignment on each run."
 
-#, python-brace-format
 #~ msgid ""
 #~ "{\n"
 #~ "  \"class\": \"ConditionalReplaceCard\",\n"
@@ -663,7 +572,6 @@ msgstr "A fixed nonzero `Random seed` (`seed`) makes the same input reproducible
 #~ "  \"mode\": 1\n"
 #~ "}\n"
 
-#, python-brace-format
 #~ msgid ""
 #~ "{\n"
 #~ "  \"class\": \"ConditionalReplaceCard\",\n"
@@ -685,7 +593,6 @@ msgstr "A fixed nonzero `Random seed` (`seed`) makes the same input reproducible
 #~ "  \"mode\": 0\n"
 #~ "}\n"
 
-#, python-brace-format
 #~ msgid ""
 #~ "{\n"
 #~ "  \"class\": \"ConditionalReplaceCard\",\n"
@@ -707,40 +614,451 @@ msgstr "A fixed nonzero `Random seed` (`seed`) makes the same input reproducible
 #~ "  \"mode\": 0\n"
 #~ "}\n"
 
-#~ msgid ""
-#~ "`Group Label` → `Conditional Replace`：先打 group 标签分割区域，再用坐标条"
-#~ "件做精细筛选。"
+#~ msgid "`Group Label` → `Conditional Replace`：先打 group 标签分割区域，再用坐标条件做精细筛选。"
 #~ msgstr ""
-#~ "`Group Label` -> `Conditional Replace`: identify broad regions, then "
-#~ "refine selection with coordinates."
+#~ "`Group Label` -> `Conditional Replace`: identify "
+#~ "broad regions, then refine selection with "
+#~ "coordinates."
 
-#~ msgid ""
-#~ "`Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松驰替换引入的"
-#~ "局部应力。"
+#~ msgid "`Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松驰替换引入的局部应力。"
 #~ msgstr ""
-#~ "`Conditional Replace` -> `Atomic Perturb`: add local coordinate diversity "
-#~ "after substitution. DFT relaxation is still required for physical labels."
+#~ "`Conditional Replace` -> `Atomic Perturb`: add "
+#~ "local coordinate diversity after substitution. DFT"
+#~ " relaxation is still required for physical "
+#~ "labels."
 
 #~ msgid ""
 #~ "**输出 = 输入，没有替换。** `target` 为空，或输入结构中不存在该元素，或 "
-#~ "`condition` 把所有候选位点都过滤掉了。先用 `condition=all` 验证替换逻辑，"
-#~ "再逐步收紧条件。"
+#~ "`condition` 把所有候选位点都过滤掉了。先用 `condition=all` 验证替换逻辑，再逐步收紧条件。"
 #~ msgstr ""
-#~ "**Output equals input.** `target` is empty or absent, or `condition` "
-#~ "rejects every candidate. Test with `condition=all`, then narrow the "
+#~ "**Output equals input.** `target` is empty or"
+#~ " absent, or `condition` rejects every candidate."
+#~ " Test with `condition=all`, then narrow the "
 #~ "expression incrementally."
 
-#~ msgid ""
-#~ "固定非零 `seed` → 相同输入可复现。多元素替换模式下 seed 控制哪个位点分配到"
-#~ "哪个替换元素。`seed=0` 表示每次运行随机。"
+#~ msgid "固定非零 `seed` → 相同输入可复现。多元素替换模式下 seed 控制哪个位点分配到哪个替换元素。`seed=0` 表示每次运行随机。"
 #~ msgstr ""
-#~ "A fixed nonzero `seed` reproduces an input. For mixed replacements it "
-#~ "controls which site receives each species; `seed=0` generates a new "
-#~ "assignment each run."
+#~ "A fixed nonzero `seed` reproduces an input."
+#~ " For mixed replacements it controls which "
+#~ "site receives each species; `seed=0` generates "
+#~ "a new assignment each run."
+
+#~ msgid "**condition 解析失败。** 检查语法：变量只能用 x/y/z，运算符拼写正确（`and` 非 `AND`，`==` 非 `=`）。"
+#~ msgstr ""
+#~ "**The condition does not parse.** Variables "
+#~ "are limited to x, y, and z; use "
+#~ "lowercase `and` and comparison `==`, not "
+#~ "assignment `=`."
 
 #~ msgid ""
-#~ "**condition 解析失败。** 检查语法：变量只能用 x/y/z，运算符拼写正确"
-#~ "（`and` 非 `AND`，`==` 非 `=`）。"
+#~ "按空间坐标条件对指定元素做区域选择性替换。用笛卡尔 `x/y/z` 坐标表达式（如 `z>=8 and "
+#~ "z<=10`）筛选候选位点；所有命中位点都会被替换，未命中区域保持原样。多个替换元素后面的比例只决定它们如何分配到命中位点，不表示“替换多少位点”。适合表面钝化、界面修饰、层状材料选择性改性等场景。"
 #~ msgstr ""
-#~ "**The condition does not parse.** Variables are limited to x, y, and z; "
-#~ "use lowercase `and` and comparison `==`, not assignment `=`."
+#~ "Perform region-selective replacement of specified"
+#~ " elements using spatial conditions. Cartesian "
+#~ "`x/y/z` expressions such as `z>=8 and z<=10`"
+#~ " select candidate sites; every matching site "
+#~ "is replaced while nonmatching regions remain "
+#~ "unchanged. Ratios after multiple replacement "
+#~ "elements determine only how replacements are "
+#~ "assigned to matching sites, not how many "
+#~ "sites are replaced. Use it for surface "
+#~ "passivation, interface modification, and selective "
+#~ "changes in layered materials."
+
+#~ msgid ""
+#~ "与 `Random Doping` 的区别：`Conditional Replace` "
+#~ "用坐标表达式精确划定空间区域，输出一个结构并替换全部命中位点；`Random Doping` "
+#~ "按数量或浓度做部分替位，可以生成多个结构，也可以读取 `Group Label` 写入的 group "
+#~ "标签。"
+#~ msgstr ""
+#~ "Difference from `Random Doping`: `Conditional "
+#~ "Replace` defines a spatial region precisely "
+#~ "with an expression, produces one structure, "
+#~ "and replaces every matching site. `Random "
+#~ "Doping` performs partial substitution by count "
+#~ "or concentration, can generate multiple structures,"
+#~ " and can read group labels written by "
+#~ "`Group Label`."
+
+#~ msgid "程序先用元素和 Cartesian 坐标条件形成候选集合"
+#~ msgstr ""
+#~ "The program first builds a candidate set "
+#~ "from the element and Cartesian-coordinate "
+#~ "condition"
+
+#~ msgid ""
+#~ "\n"
+#~ "\\mathcal I=\\{i: Z_i=Z_{\\mathrm{target}}\\}\\cap\n"
+#~ "\\bigcap_k\\{i:x_{ik}\\ \\mathrm{op}_k\\ c_k\\}.\n"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "其中 $k\\in\\{x,y,z\\}$，比较符可以是大于、小于或等于；等于判断使用固定 $10^{-4}$ Å "
+#~ "容差。替换权重会归一化为概率 $p_e$。`精确`模式对 $|\\mathcal I|$ "
+#~ "个位点使用最大余数法确定每种替换元素的整数计数；`随机`模式让每个位点 独立按类别分布 $P(Z_i=e)=p_e$ "
+#~ "抽样。前者控制单个结构的计数，后者允许结构间产生组分涨落。"
+#~ msgstr ""
+#~ "Here $k\\in\\{x,y,z\\}$, and comparisons may use "
+#~ "greater-than, less-than, or equality; equality"
+#~ " uses a fixed $10^{-4}$ Å tolerance. "
+#~ "Replacement weights are normalized to probabilities"
+#~ " $p_e$. `Exact` mode uses the largest-"
+#~ "remainder method to determine integer counts "
+#~ "for $|\\mathcal I|$ sites; `Random` mode "
+#~ "samples each site independently from $P(Z_i=e)=p_e$."
+#~ " The former controls counts within one "
+#~ "structure, while the latter allows composition "
+#~ "fluctuations between structures."
+
+#~ msgid "场景：模型在表面化学上完全失效，但体相预测很好"
+#~ msgstr "Scenario: Good bulk predictions but failed surface chemistry"
+
+#~ msgid ""
+#~ "你在 MgO 表面上训练了一个 NEP "
+#~ "模型，训练数据覆盖了完美晶体和表面弛豫结构。体相弹性常数和声子谱都很好，但一跑有表面吸附或表面钝化的结构，模型就崩了——能量误差是体相的 10 "
+#~ "倍。诊断结果是：训练集里所有 O 原子都处于体相八面体配位环境，模型从未见过低配位表面 O 的局域环境，更不知道表面"
+#~ " O 被 F 替换后会发生什么。"
+#~ msgstr ""
+#~ "An MgO NEP covers perfect crystals and "
+#~ "relaxed clean surfaces and reproduces bulk "
+#~ "elasticity and phonons, but its error rises"
+#~ " tenfold for adsorbed or passivated surfaces. "
+#~ "All training O atoms occupy bulk-like "
+#~ "octahedral environments; low-coordination surface O"
+#~ " and F-substituted surface sites are missing."
+
+#~ msgid ""
+#~ "**诊断思路：** 表面原子的化学环境与体相完全不同——配位数低、悬挂键多、更活泼。如果训练集缺少表面区域的元素变化（如 F "
+#~ "钝化表面 O），模型会对表面化学完全盲猜。解决办法是用条件替换把表面几层的特定元素换成钝化元素，让模型学习表面化学环境。"
+#~ msgstr ""
+#~ "**Diagnosis:** Surface chemistry differs from the"
+#~ " bulk through lower coordination and dangling "
+#~ "bonds. Create region-specific substitutions, such"
+#~ " as replacing O with F in the outer"
+#~ " layers, so subsequent DFT labels teach the"
+#~ " model those environments."
+
+#~ msgid "**输入：** 一个 MgO 表面 slab 结构，z 方向 0-16 Å，表面 O 位于高 z 区域"
+#~ msgstr "**Input:** An MgO slab spanning z = 0-16 Å with surface O at high z."
+
+#~ msgid "**目标：** 把顶层 2 Å 区域内的 O 替换为 F，模拟表面氟化"
+#~ msgstr "**Objective:** Replace O with F in the top 2 Å to model surface fluorination."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid "`目标元素`（`target`） = `O`"
+#~ msgstr "`Target element` (`target`) = `O`"
+
+#~ msgid "`替换元素及相对比例`（`replacements`） = `F:1.0`"
+#~ msgstr "`Replacement elements and relative ratios` (`replacements`) = `F:1.0`"
+
+#~ msgid "`位置筛选`（`condition`） = `z>=14 and z<=16`"
+#~ msgstr "`Position filter` (`condition`) = `z>=14 and z<=16`"
+
+#~ msgid "`元素分配方式`（`mode`） = `1`（只有一种替换元素时，两个分配模式的结果相同）"
+#~ msgstr ""
+#~ "`Element allocation mode` (`mode`) = `1` (the"
+#~ " modes are equivalent when only one "
+#~ "replacement element is used)"
+
+#~ msgid "**输出：** 1 个结构，满足 z 在 14-16 Å 的所有 O 被替换为 F，其余区域不变。带 `Repl(O->F)` 标签"
+#~ msgstr ""
+#~ "**Output:** one structure in which every O "
+#~ "with z between 14 and 16 Å is "
+#~ "replaced by F; all other regions are "
+#~ "unchanged. The structure carries the `Repl(O->F)`"
+#~ " label."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后跑表面吸附测试，力的 MAE 应该显著降低，不再在表面区域出现异常大力误差"
+#~ msgstr ""
+#~ "After labeling and retraining, surface-adsorption"
+#~ " force MAE should decrease and extreme "
+#~ "errors should no longer concentrate at the "
+#~ "surface."
+
+#~ msgid "抽查输出，确认只有表面区域被替换，体相原子保持不变——如果体相也被动了，condition 表达式有问题"
+#~ msgstr ""
+#~ "Inspect output coordinates and confirm that "
+#~ "only the surface region changed. Bulk "
+#~ "substitutions indicate an incorrect condition."
+
+#~ msgid "如果需要多元素钝化，把 `替换元素及相对比例`（`replacements`）写成 `F:0.5,Cl:0.5`"
+#~ msgstr ""
+#~ "For multi-element passivation, set `Replacement "
+#~ "elements and relative ratios` (`replacements`) to"
+#~ " `F:0.5,Cl:0.5`."
+
+#~ msgid "如果表面层厚度不确定，先用 `all` 条件验证替换配方正确性，再收紧 z 范围"
+#~ msgstr ""
+#~ "If the surface interval is uncertain, validate"
+#~ " the replacement recipe with `all`, then "
+#~ "narrow the z condition after inspecting "
+#~ "coordinates."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "模型对表面/界面/晶界区域的预测质量显著差于体相"
+#~ msgstr ""
+#~ "Surface, interface, or grain-boundary predictions"
+#~ " are much worse than bulk predictions"
+
+#~ msgid "需要做区域选择性化学改性：表面钝化、界面掺杂、层状材料夹层替换"
+#~ msgstr ""
+#~ "Region-selective chemistry is needed for "
+#~ "passivation, interface doping, or layer replacement"
+
+#~ msgid "替换规则可以用 x/y/z 坐标表达式写清楚"
+#~ msgstr "The target region can be expressed with x, y, and z coordinates"
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "不需要空间选择性 → 用 `Random Doping` 更直接"
+#~ msgstr "No spatial selection is needed; use `Random Doping`"
+
+#~ msgid "替换规则无法用 x/y/z 表达式描述（如按近邻配位筛选）"
+#~ msgstr "The rule depends on topology or coordination rather than coordinates"
+
+#~ msgid "只需要全局组合配比变化 → `Composition Space Sampling` + `Random Occupancy`"
+#~ msgstr ""
+#~ "For global composition changes only → "
+#~ "`Composition Space Sampling` + `Random Occupancy`"
+
+#~ msgid "`str`，默认空。被替换的元素符号，如 `O`、`Si`。只替换匹配该元素且满足下面 `位置筛选`（`condition`）的那部分位点。"
+#~ msgstr ""
+#~ "`str`, default empty. The symbol of the "
+#~ "element to replace, such as `O` or `Si`."
+#~ " Only sites matching this element and the"
+#~ " `Position filter` (`condition`) below are "
+#~ "replaced."
+
+#~ msgid ""
+#~ "`str`，默认空。替换配方，支持逗号冒号 `F:0.7,N:0.3` 或 JSON dict "
+#~ "`{\"F\":0.7,\"N\":0.3}` 两种写法。比例会被自动归一化，只用于在命中位点之间分配 F 和 "
+#~ "N；它不是替换率，所有命中位点仍然都会被替换。只填 `F` 等价于 `F:1.0`。"
+#~ msgstr ""
+#~ "`str`, default empty. Replacement recipe, accepted"
+#~ " as `F:0.7,N:0.3` or JSON dict "
+#~ "`{\"F\":0.7,\"N\":0.3}`. Ratios are normalized "
+#~ "automatically and only distribute F and N "
+#~ "among matching sites; they are not a "
+#~ "replacement rate, and every matching site is"
+#~ " still replaced. Entering only `F` is "
+#~ "equivalent to `F:1.0`."
+
+#~ msgid ""
+#~ "`str`，默认 `all`。空间条件表达式，`all` 表示所有目标元素都命中。支持变量 "
+#~ "`x`/`y`/`z`（笛卡尔坐标，单位 Å），比较运算符 `<`/`>`/`<=`/`>=`/`==`/`!=`，逻辑 "
+#~ "`and`/`or`/`not`，以及四则运算。相等判断可写 `x=0` 或 `x==0`，两者含义相同；内部使用 "
+#~ "`1e-4 Å` 容差。"
+#~ msgstr ""
+#~ "`str`, default `all`. Spatial condition expression;"
+#~ " `all` selects all target elements. Supported "
+#~ "variables are `x`/`y`/`z` (Cartesian coordinates in"
+#~ " Å), comparison operators `<`/`>`/`<=`/`>=`/`==`/`!=`, "
+#~ "logical operators `and`/`or`/`not`, and arithmetic. "
+#~ "Equality may be written as `x=0` or "
+#~ "`x==0`; both have the same meaning and "
+#~ "use a `1e-4 Å` tolerance internally."
+
+#~ msgid "典型例子："
+#~ msgstr "Examples:"
+
+#~ msgid "`x>5 or y<2`：替换特定 xy 象限内的原子"
+#~ msgstr "`x>5 or y<2`: select atoms in the specified xy regions"
+
+#~ msgid "`z<=4`：只替换底层"
+#~ msgstr "`z<=4`: select only the bottom layer"
+
+#~ msgid "`int`，默认 0。两个模式都会替换所有命中位点，区别只在多个替换元素的数量分配："
+#~ msgstr ""
+#~ "`int`, default 0. Both modes replace every "
+#~ "matching site; they differ only in how "
+#~ "counts are allocated among multiple replacement "
+#~ "elements:"
+
+#~ msgid "`0` = `逐位随机分配`：每个位点独立按相对比例抽取替换元素，最终计数可能偏离目标比例。"
+#~ msgstr ""
+#~ "`0` = `Per-site random allocation`: sample "
+#~ "a replacement element independently at each "
+#~ "site according to the relative ratios; final"
+#~ " counts may differ from the target ratios."
+
+#~ msgid "`1` = `尽量匹配整体比例`：先把比例换算成整数计数，再随机分配到命中位点，最终计数尽量接近目标比例。"
+#~ msgstr ""
+#~ "`1` = `Match overall ratios`: convert ratios"
+#~ " to integer counts first, then distribute "
+#~ "them randomly among matching sites so the "
+#~ "final counts are as close as possible to"
+#~ " the target ratios."
+
+#~ msgid "只有一个替换元素时，两个模式的结果相同。"
+#~ msgstr "The two modes are equivalent when there is only one replacement element."
+
+#~ msgid "`int`，默认 0。界面取消勾选“使用固定种子”时保存为 `0`，表示每次运行随机；勾选后保存输入的正整数，使位点分配可复现。"
+#~ msgstr ""
+#~ "`int`, default 0. When `Use fixed seed` "
+#~ "is disabled, the interface saves `0` and "
+#~ "each run is random; when enabled, it "
+#~ "saves the entered positive integer so site "
+#~ "allocation is reproducible."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "表面单元素钝化（表面 O→F，窄窗口）"
+#~ msgstr "Single-species surface passivation (O -> F in a narrow window)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"ConditionalReplaceCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"target\": \"O\",\n"
+#~ "    \"replacements\": \"F:1.0\",\n"
+#~ "    \"condition\": \"z>=14 and z<=16\",\n"
+#~ "    \"seed\": 101,\n"
+#~ "    \"mode\": 1\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "表面多元素钝化（表面 O→F/N，宽窗口）"
+#~ msgstr "Mixed surface passivation (O -> F/N in a wider window)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"ConditionalReplaceCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"target\": \"O\",\n"
+#~ "    \"replacements\": \"F:0.7,N:0.3\",\n"
+#~ "    \"condition\": \"z>=6 and z<=14\",\n"
+#~ "    \"seed\": 101,\n"
+#~ "    \"mode\": 0\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "全区域多元素替换（所有 O→F/N/Cl，用于探索区）"
+#~ msgstr "Global mixed replacement (all O -> F/N/Cl for exploration)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"ConditionalReplaceCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"target\": \"O\",\n"
+#~ "    \"replacements\": \"F:0.4,N:0.3,Cl:0.3\",\n"
+#~ "    \"condition\": \"all\",\n"
+#~ "    \"seed\": 101,\n"
+#~ "    \"mode\": 0\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "推荐组合"
+#~ msgstr "Recommended combinations"
+
+#~ msgid "`Crystal Prototype Builder` → `Conditional Replace`：先生成表面或界面模板，再按坐标区域做元素替换。"
+#~ msgstr ""
+#~ "`Crystal Prototype Builder` → `Conditional Replace`:"
+#~ " generate a surface or interface template "
+#~ "first, then replace elements by coordinate "
+#~ "region."
+
+#~ msgid "`Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松弛替换引入的局部应力。"
+#~ msgstr ""
+#~ "`Conditional Replace` → `Atomic Perturb`: add "
+#~ "coordinate noise after replacement to relax "
+#~ "local stress introduced by the substitution."
+
+#~ msgid "`Conditional Replace` → `Random Doping`：先做区域选择性替换覆盖表面化学，再做全局替位补样。"
+#~ msgstr ""
+#~ "`Conditional Replace` -> `Random Doping`: cover "
+#~ "region-specific surface chemistry before global "
+#~ "substitution diversity."
+
+#~ msgid "如果需要按 group 标签选择位点，应使用 `Group Label` → `Random Doping`；本卡不读取 group 标签。"
+#~ msgstr ""
+#~ "To select sites by group labels, use "
+#~ "`Group Label` → `Random Doping`; this card "
+#~ "does not read group labels."
+
+#~ msgid ""
+#~ "**输出 = 输入，没有替换。** `目标元素`（`target`）为空，或输入结构中不存在该元素，或 "
+#~ "`位置筛选`（`condition`）把所有候选位点都过滤掉了。先用 `condition=all` 验证替换逻辑，再逐步收紧条件。"
+#~ msgstr ""
+#~ "**Output = input, with no replacement.** "
+#~ "`Target element` (`target`) is empty, the "
+#~ "input contains no such element, or `Position"
+#~ " filter` (`condition`) removed every candidate "
+#~ "site. First verify the replacement logic with"
+#~ " `condition=all`, then tighten the condition "
+#~ "gradually."
+
+#~ msgid "**替换了不该替换的位点。** condition 表达式区域范围写错了。检查结构坐标范围，确认上下限对应目标区域。Slab 的真空层可能导致 z 坐标超出预期。"
+#~ msgstr ""
+#~ "**Unexpected sites were replaced.** Inspect the "
+#~ "structure's coordinate range and correct the "
+#~ "condition bounds. Vacuum in a slab can "
+#~ "make z limits unintuitive."
+
+#~ msgid ""
+#~ "**condition 解析失败。** 检查变量是否只用了 x/y/z，并确认没有 "
+#~ "`===`、函数调用等不支持的语法。`=`、`==`、`>=`、`<=`、`!=` 都是合法写法；非法表达式会明确抛出 "
+#~ "`ValueError`。"
+#~ msgstr ""
+#~ "**The condition could not be parsed.** Check"
+#~ " that it uses only x/y/z variables and "
+#~ "does not contain unsupported syntax such as"
+#~ " `===` or function calls. `=`, `==`, `>=`,"
+#~ " `<=`, and `!=` are all valid. An "
+#~ "invalid expression raises `ValueError` explicitly."
+
+#~ msgid ""
+#~ "**随机模式为什么没有保留一部分原元素？** 这里的“随机”只表示在多个替换元素之间逐位随机分配，不表示随机决定是否替换。要控制替换数量或浓度，请使用"
+#~ " `Random Doping`。"
+#~ msgstr ""
+#~ "**Why does random mode not retain some "
+#~ "original elements?** Here, `random` means only "
+#~ "that replacement elements are assigned randomly "
+#~ "site by site; it does not randomly "
+#~ "decide whether to replace a site. To "
+#~ "control the replacement count or concentration, "
+#~ "use `Random Doping`."
+
+#~ msgid "**替换后键长不合理。** 纯化学替换不做结构弛豫。如果键长明显异常，建议后接弛豫计算。"
+#~ msgstr ""
+#~ "**Bond lengths are unreasonable after replacement.**"
+#~ " This operation changes species without "
+#~ "relaxation. Relax the structure before treating "
+#~ "it as a physical configuration."
+
+#~ msgid "输出标签"
+#~ msgstr "Output labels"
+
+#~ msgid "`Repl(O->F)` / `Repl(O->F,N,Cl)` 格式。仅在确实发生了替换时才写入标签。"
+#~ msgstr ""
+#~ "Formats: `Repl(O->F)` and `Repl(O->F,N,Cl)`. A label"
+#~ " is added only when a replacement occurs."
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid "固定非零 `随机种子`（`seed`） → 相同输入可复现。多元素替换模式下 seed 控制哪个位点分配到哪个替换元素。`seed=0` 表示每次运行随机。"
+#~ msgstr ""
+#~ "A fixed nonzero `Random seed` (`seed`) makes"
+#~ " the same input reproducible. In multielement "
+#~ "replacement mode, the seed controls which "
+#~ "replacement element is assigned to each site."
+#~ " `seed=0` makes every run random."

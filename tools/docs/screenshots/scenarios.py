@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -10,7 +11,7 @@ from typing import Callable
 import numpy as np
 from ase.io import read as ase_read
 from PySide6.QtCore import QThread, Qt
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget
 from qfluentwidgets import CaptionLabel, MessageBoxBase
 
 from NepTrainKit.core import CardManager
@@ -21,6 +22,8 @@ from NepTrainKit.core.cards.lattice import PerturbParams, SuperCellParams
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset, apply_energy_baseline
 from NepTrainKit.i18n import install_translator
 from NepTrainKit.main import create_app, create_main_window
+from NepTrainKit.core.workflow_library import WorkflowLibrary
+from NepTrainKit.ui.pages.makedata import MakeDataWidget
 from NepTrainKit.ui.widgets.dialog import (
     ArrowMessageBox,
     DFTD3MessageBox,
@@ -46,6 +49,7 @@ class ScenarioContext:
     repo_root: Path
     language: str
     capture_widget: QWidget | None = None
+    temporary_directory: tempfile.TemporaryDirectory | None = None
 
     def text(self, english: str, chinese: str) -> str:
         return chinese if self.language == "zh_CN" else english
@@ -78,10 +82,45 @@ def dismiss_transient_notifications(app: QApplication) -> None:
     pump_events(app, 20)
 
 
-def create_context(repo_root: Path, window_size: tuple[int, int], language: str) -> ScenarioContext:
+def create_context(
+    repo_root: Path,
+    window_size: tuple[int, int],
+    language: str,
+    *,
+    context: str = "main",
+) -> ScenarioContext:
     """Create a configured main window without entering the Qt event loop."""
     app = create_app(["capture-ui"])
     install_translator(app, language)
+    if context == "make_data":
+        temporary_directory = tempfile.TemporaryDirectory(
+            prefix="neptrainkit-docs-workflows-"
+        )
+        window = QWidget()
+        window.setObjectName("MakeDataScreenshotWindow")
+        layout = QVBoxLayout(window)
+        layout.setContentsMargins(0, 0, 0, 0)
+        page = MakeDataWidget(
+            window,
+            workflow_library=WorkflowLibrary(
+                root=Path(temporary_directory.name) / "workflows"
+            ),
+        )
+        layout.addWidget(page)
+        window.make_data_interface = page
+        window.resize(*window_size)
+        window.show()
+        pump_events(app, 80)
+        return ScenarioContext(
+            app=app,
+            window=window,
+            repo_root=repo_root,
+            language=language,
+            capture_widget=window,
+            temporary_directory=temporary_directory,
+        )
+    if context != "main":
+        raise ValueError(f"Unsupported screenshot context: {context}")
     window = create_main_window(show=True)
     window.resize(*window_size)
     pump_events(app, 80)
@@ -284,7 +323,8 @@ def training_set_audit_magnetic_shares(ctx: ScenarioContext) -> None:
 
 def make_data_empty(ctx: ScenarioContext) -> None:
     """Prepare an empty Make Data workspace."""
-    ctx.window.switchTo(ctx.window.make_data_interface)
+    if hasattr(ctx.window, "switchTo"):
+        ctx.window.switchTo(ctx.window.make_data_interface)
     pump_events(ctx.app, 100)
     ctx.window.make_data_run_button = _find_make_data_run_button(
         ctx,
@@ -294,6 +334,9 @@ def make_data_empty(ctx: ScenarioContext) -> None:
 
 def _find_make_data_run_button(ctx: ScenarioContext, page) -> QWidget:
     """Return the visible Run button used by the card tutorial annotations."""
+    direct_button = getattr(page.setting_group, "run_button", None)
+    if direct_button is not None and direct_button.isVisible():
+        return direct_button
     for widget in page.setting_group.setting_command.findChildren(QWidget):
         if widget.isVisible() and widget.toolTip() == ctx.text(
             "Run selected cards",
@@ -326,8 +369,8 @@ def _prepare_card_system_workflow(ctx: ScenarioContext):
 
     supercell = page.add_card("SuperCellCard")
     group = page.add_card("CardGroup")
-    perturb = page.add_card("PerturbCard")
-    geometry_filter = page.add_card("GeometryFilterCard")
+    perturb = page.add_card("PerturbCard", at_workflow_root=True)
+    geometry_filter = page.add_card("GeometryFilterCard", at_workflow_root=True)
     if None in (supercell, group, perturb, geometry_filter):
         raise RuntimeError("Card-system tutorial workflow could not be created")
 
@@ -395,18 +438,8 @@ def _prepare_card_system_workflow(ctx: ScenarioContext):
     ctx.window.card_workflow_perturb = perturb
     ctx.window.card_workflow_filter = geometry_filter
     ctx.window.make_data_run_button = _find_make_data_run_button(ctx, page)
-    ctx.window.make_data_paste_button = _find_make_data_console_button(
-        ctx,
-        page,
-        "Create card(s) from clipboard JSON",
-        "从剪贴板 JSON 创建卡片",
-    )
-    ctx.window.make_data_copy_button = _find_make_data_console_button(
-        ctx,
-        page,
-        "Copy current workflow card JSON",
-        "复制当前工作流卡片 JSON",
-    )
+    ctx.window.make_data_paste_button = page.workspace_card_widget.library_panel.paste_button
+    ctx.window.make_data_copy_button = page.workspace_card_widget.library_panel.copy_button
     dismiss_transient_notifications(ctx.app)
     pump_events(ctx.app, 160)
     return page, supercell, group, doping, vacancy, perturb, geometry_filter
@@ -417,6 +450,11 @@ def make_data_card_system_controls(ctx: ScenarioContext) -> None:
     page, supercell, *_rest = _prepare_card_system_workflow(ctx)
     for card in list(page.workspace_card_widget.cards)[1:]:
         card.hide()
+    page.workspace_card_widget.select_card(
+        supercell,
+        expand=True,
+        ensure_visible=False,
+    )
     supercell.setMinimumWidth(520)
     pump_events(ctx.app, 140)
 

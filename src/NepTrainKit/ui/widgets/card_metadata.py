@@ -42,6 +42,7 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit.core import CardManager, CardMetadata
+from NepTrainKit.i18n import localized_docs_url
 
 
 def _tr(text: str) -> str:
@@ -706,7 +707,7 @@ h3 {
                 "</tr>"
             )
     if metadata.docs_url:
-        url = escape(metadata.docs_url)
+        url = escape(localized_docs_url(metadata.docs_url))
         rows.append(
             "<tr>"
             f'<td class="key">{escape(_tr("Docs"))}</td>'
@@ -1442,7 +1443,7 @@ class CardLibraryDialog(QDialog):
             _source_label(metadata),
             metadata.version,
             metadata.license,
-            metadata.docs_url,
+            localized_docs_url(metadata.docs_url) if metadata.docs_url else "",
         )
         for index, ((key_label, value_label), value) in enumerate(
             zip(self._info_rows, values)

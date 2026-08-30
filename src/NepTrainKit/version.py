@@ -41,8 +41,9 @@ __version__ = _resolve_version()
 
 OWNER = "aboys-cb"
 REPO = "NepTrainKit"
-DOCS_BASE_URL = "https://neptrainkit.readthedocs.io/en/latest/"
-HELP_URL = "https://neptrainkit.readthedocs.io/en/latest/index.html"
+DOCS_ROOT_URL = "https://neptrainkit.readthedocs.io/"
+DOCS_BASE_URL = f"{DOCS_ROOT_URL}en/latest/"
+HELP_URL = f"{DOCS_BASE_URL}index.html"
 FEEDBACK_URL = f"https://github.com/{OWNER}/{REPO}/issues"
 RELEASES_URL = f"https://github.com/{OWNER}/{REPO}/releases"
 RELEASES_API_URL = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"

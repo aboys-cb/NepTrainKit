@@ -22,7 +22,7 @@ msgstr ""
 #: ../../source/module/nep-main-tool-max-error.md:1
 #: a211363fbcd742efb3564b6c8413f66c
 msgid "查找最大误差结构（Find Max Error Point）"
-msgstr "Details for this option"
+msgstr "Find Structures with the Largest Errors"
 
 #: ../../source/module/nep-main-tool-max-error.md:3
 #: f76f54a1261248c599914d0626e508f5
@@ -34,19 +34,17 @@ msgstr "Purpose and use cases"
 msgid ""
 "从当前图对应的误差指标中选出最大的前 `N` 个结构，用于快速定位最需要复核的标签、 异常构型或训练集缺口。结果依赖当前子图，切换 "
 "energy、force 或 virial 后含义不同。"
-msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+msgstr "Select the top `N` structures by the error metric represented in the current plot. Use this to locate labels, anomalous configurations, or training-set gaps that most need review. The meaning depends on the active subplot and changes between energy, force, and virial views."
 
 #: ../../source/module/nep-main-tool-max-error.md:8
 #: aca12fd065454c81933368c8874ad0af
 msgid "排名原理"
-msgstr "Details for this option"
+msgstr "Ranking Method"
 
 #: ../../source/module/nep-main-tool-max-error.md:10
 #: 95ada07fd22d4958a22b37d2cd5a709b
 msgid "当前图中 x 轴是 NEP 预测值，y 轴是参考值（通常为 DFT）。对图中第 $i$ 行数据， 程序按当前子图包含的分量计算绝对误差和："
-msgstr "Details for this option"
+msgstr "In the current plot, x is the NEP prediction and y is the reference value, usually from DFT. For row $i$, the program sums the absolute errors over the components shown by the active subplot:"
 
 #: ../../source/module/nep-main-tool-max-error.md:13
 #: 0bc935f67924403fbddedd79f414ff35
@@ -64,9 +62,7 @@ msgid ""
 "其中 $C$ 是当前图实际参与比较的列。例如能量图通常每个结构只有一行；力图中一个结构 会有多个原子行。程序先按 $e_i$ "
 "从大到小排序，再把行映射回结构编号并去重，直到得到 前 $N$ 个不同结构。因此在力图中，它回答的是“至少有一个原子分量误差很大的结构”， "
 "不是按结构平均 RMSE 排名。"
-msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+msgstr "Here $C$ is the set of columns actually compared in the current plot. An energy plot usually has one row per structure, whereas a force plot has several atomic rows for one structure. Rows are sorted by decreasing $e_i$, mapped back to structure indices, and deduplicated until `N` distinct structures remain. In a force plot, this therefore finds structures with at least one large atomic-component error; it is not a ranking by per-structure mean RMSE."
 
 #: ../../source/module/nep-main-tool-max-error.md:22
 #: 99b42d24a9af4189ae6ef0af2e1f9ed1
@@ -76,27 +72,27 @@ msgstr "Parameters and execution result"
 #: ../../source/module/nep-dataset-display-content.md:6213
 #: 5f754809735f43feb39ab3bb04953b5c
 msgid "输入控件：`结构数`（整数 `N`）。"
-msgstr "Details for this option"
+msgstr "Control: `Number of structures` (integer `N`)."
 
 #: ../../source/module/nep-dataset-display-content.md:6214
 #: 40738c2bba8346f18610ccd2d40405d2
 msgid "默认值：`widget.max_error_value`（缺省 `10`）。"
-msgstr "Details for this option"
+msgstr "Default: `widget.max_error_value` (fallback `10`)."
 
 #: ../../source/module/nep-dataset-display-content.md:6215
 #: 6959b176193f49029b5f670bab2b0dbb
 msgid "执行结果：选中当前轴上误差最大的前 `N` 个结构。"
-msgstr "Details for this option"
+msgstr "Result: select the top `N` structures with the largest errors on the current axes."
 
 #: ../../source/module/nep-dataset-display-content.md:6217
 #: 613aa8e59c4b402baba458032b435a20
 msgid "![查找最大误差结构对话框](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)"
-msgstr "See the figure for the corresponding control and result."
+msgstr "![Find Max Error Point dialog](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)"
 
 #: ../../source/module/nep-dataset-display-content.md:6217
 #: 0982781265604cc49132f6ec676aa919
 msgid "查找最大误差结构对话框"
-msgstr "Details for this option"
+msgstr "Find-largest-error-structures dialog"
 
 #: ../../source/module/nep-dataset-display-content.md:6217
 #: 0982781265604cc49132f6ec676aa919
@@ -117,6 +113,4 @@ msgstr "Post-operation checks"
 msgid ""
 "不要仅凭误差排名删除结构。点开选中的结构，结合 `Config_type`、几何和 DFT 来源判断： "
 "它可能是坏标签，也可能是训练集中真正缺少的重要边界构型。"
-msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+msgstr "Do not delete structures solely from their error ranking. Inspect each selected structure together with its `Config_type`, geometry, and DFT provenance: it may contain a bad label, or it may be an important boundary configuration missing from the training set."

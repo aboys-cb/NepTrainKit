@@ -8,478 +8,778 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:3
-#: 9a028457a3b14e9bb2ad5ddfee70beae
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:3
+#: 93f62a3eebd14056b20a0e7f41d86051
 msgid "晶格应变（Lattice Strain）"
 msgstr "Lattice Strain"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:5
-#: a0e22c76bdb9433592af9bb697631d64
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:5
+#: 7d5690cdd97b47fb8677cbdd768e11c8
 msgid "**分类：** 晶格"
 msgstr "**Category:** Lattice"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:7
-#: f48d5d2b7c7f4e5cbee283fb8bf24c12
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:7
+#: d48cf04e6c8948a4bc3941be3e7e8d4e
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:9
-#: f2c59d1797024371817e1cb0b18a3409
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:9
+#: 321f8312a702414ab6d56e45025e00d9
 msgid ""
-"对晶胞轴向做受控应变扫描。选定方向组合（单轴/双轴/三轴/各向同性），给定拉伸百"
-"分比和步长，程序按比例缩放晶格矢量，生成一组不同应变的结构。"
+"沿输入晶胞的晶格矢量 $\\mathbf a$、$\\mathbf b$、$\\mathbf c$ "
+"扫描法向工程应变。可生成三条单轴路径、三组双轴网格、一个三轴网格、各向同性路径，或只组合用户指定的晶格轴。"
 msgstr ""
-"Scan controlled axial strains of the cell. Choose a uniaxial, biaxial, "
-"triaxial, or isotropic mode and provide percentage ranges and steps; the "
-"card scales lattice vectors to generate the requested strain states."
+"Scan normal engineering strain along lattice vectors $\\mathbf a$, $\\mathbf b$, and "
+"$\\mathbf c$ of the input cell. The card can generate three uniaxial paths, three "
+"biaxial grids, one triaxial grid, an isotropic path, or combinations of only the "
+"lattice axes selected by the user."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:11
-#: f04745e8b01a42bcb8d998668181e2ce
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:11
+#: 2b6870a2a6204b038afe66c27d419dff
+msgid "这里的 `a / b / c` 是晶格矢量，不是 Cartesian `X / Y / Z`。对于旋转或非正交晶胞，两者不能混用。"
+msgstr ""
+"Here `a / b / c` refer to lattice vectors, not Cartesian `X / Y / Z`. The two "
+"coordinate systems are not interchangeable for rotated or non-orthogonal cells."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:13
+#: 7d7d87da794a4162b293b8ef924a324b
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:13
-#: ccd18e4c1901458fb51dd066bc8dae27
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:15
+#: 0912ff6d950a4dfd8036a930854b6edc
+msgid "给定百分数 $s_a,s_b,s_c$，工程应变为"
+msgstr "For percentages $s_a,s_b,s_c$, the engineering strain is"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:17
+#: 3a14f1c747ee4e27a9934b5f8a178ee8
+#, python-brace-format
 msgid ""
-"\\epsilon_i=\\frac{s_i}{100},\\quad \\mathbf{C}'=\\mathbf{D}\\mathbf{C},"
-"\\quad \\mathbf{D}=\\mathrm{diag}(1+\\epsilon_x,1+\\epsilon_y,1+\\epsilon_z)"
+"\n"
+"\\epsilon_i=\\frac{s_i}{100},\\qquad i\\in\\{a,b,c\\}.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:15
-#: 089c190cd96248c58c0c709b62efb693
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:21
+#: ac0bcc6e76e647c5bd5d0d7cd60a9bdc
+msgid "程序分别缩放晶胞矩阵的三条行向量："
+msgstr "The program scales the three row vectors of the cell matrix independently:"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:23
+#: ecbc82cb82d84c159584cc48e4be2368
 msgid ""
-"其中 $s_i$ 是界面输入的百分数，$\\epsilon_i$ 是无量纲工程应变，$\\mathbf C$ "
-"是原晶胞 矩阵。未选中的方向取 $\\epsilon_i=0$。原子分数坐标保持不变，所以生成"
-"的是晶胞和原子 共同经历的仿射应变。"
-msgstr "Here $s_i$ is the percentage entered in the UI, $\\epsilon_i$ is the dimensionless engineering strain, and $\\mathbf C$ is the original cell matrix. Unselected directions use $\\epsilon_i=0$. Atomic fractional coordinates remain unchanged, so the cell and atoms undergo the same affine strain."
+"\n"
+"\\mathbf a'=(1+\\epsilon_a)\\mathbf a,\\quad\n"
+"\\mathbf b'=(1+\\epsilon_b)\\mathbf b,\\quad\n"
+"\\mathbf c'=(1+\\epsilon_c)\\mathbf c.\n"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:19
-#: ca0d9dcedb64423780a6b5f9b92a693f
-msgid "操作示例"
-msgstr "Example workflow"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:29
+#: c585b83bf884446a8ef201c1f7955b1f
+msgid "原子分数坐标保持不变，因此 Cartesian 坐标随晶胞作仿射变换。应变必须大于 `-100%`，否则对应晶格矢量会坍缩或反向。"
+msgstr ""
+"Atomic fractional coordinates remain unchanged, so Cartesian coordinates undergo the "
+"same affine transformation as the cell. Strain must be greater than `-100%`; "
+"otherwise, the corresponding lattice vector would collapse or reverse direction."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:21
-#: 9169288f5da54c8dbbee3bae45f1cad5
-msgid "场景：模型预测的弹性常数偏差太大"
-msgstr "Scenario: Predicted elastic constants have a large bias"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:31
+#: 633bc117d3584cec9eba11dd192961c6
+msgid "模式与输出数量"
+msgstr "Modes and Output Counts"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:23
-#: 6742ab397b2e46908a33998aa90fbf36
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:33
+#: 40925a7d7d004d548aab9edd883c9308
+msgid "设三组范围分别含 $N_a$、$N_b$、$N_c$ 个点："
+msgstr "Let the three ranges contain $N_a$, $N_b$, and $N_c$ points, respectively:"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: ebe4f8a93fa2418c9b9e6c5608aecf2d
+msgid "模式"
+msgstr "Mode"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 9195b75739b9414fae7c615d4aba23e9
+msgid "实际生成内容"
+msgstr "Generated states"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 0c4fea6edeb241f0aa6ebdfc309bde1f
+msgid "去重前数量"
+msgstr "Count before deduplication"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 58f8f3bdf8a14b7ba09fd48b1c6344a3
+msgid "单轴路径"
+msgstr "Uniaxial paths"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 8616679d2a234b1ea7926e5e0a84092f
+msgid "分别扫描 $a$、$b$、$c$"
+msgstr "Scan $a$, $b$, and $c$ separately"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 68df14f42fe94d1b94a331194b332cd2
+msgid "$N_a+N_b+N_c$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: cfd1ae5c29e84719afa2116e6daaa26e
+msgid "双轴网格"
+msgstr "Biaxial grids"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 7800c31dc1084e0c8c98b9ac40b6b354
+msgid "合并 $ab$、$ac$、$bc$ 三个网格"
+msgstr "Combine the $ab$, $ac$, and $bc$ grids"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: bd815944f55f45db89ba5cfa40074ea6
+msgid "$N_aN_b+N_aN_c+N_bN_c$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 651c272bfad940aa95ff281b5ac9aaa2
+msgid "三轴网格"
+msgstr "Triaxial grid"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: f207b5c972bf4dfa974eeb4e844bfcee
+msgid "联合组合 $a$、$b$、$c$"
+msgstr "Combine $a$, $b$, and $c$ jointly"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 12fead6f9295478d97f98e057eeb00b7
+msgid "$N_aN_bN_c$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 8fa6f894dcc94548b4ef5f4999cd353c
+msgid "各向同性路径"
+msgstr "Isotropic path"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 681896285dc445bc846c3196e6c245c4
+msgid "使用第一组范围，令 $s_a=s_b=s_c$"
+msgstr "Use the first range and set $s_a=s_b=s_c$"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 392927c5be9b4d3da4e5960c73eab22c
+msgid "$N_a$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 37eb84c384cf4d93b7170fb71dbbf454
+msgid "指定晶格轴"
+msgstr "Selected lattice axes"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: a59c679d1d9842ba958280a520275beb
+msgid "只组合选中的轴"
+msgstr "Combine only the selected axes"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md
+#: 0e434516c2cd448baea74aa46b172357
+msgid "所选范围点数的乘积"
+msgstr "Product of the selected range sizes"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:43
+#: bdaad794537149ddbed4e473bd2203d6
+msgid "不同路径可能得到相同的应变向量。例如单轴扫描的三条路径都包含 `0%`，对应的都是原始结构。程序会按照 $(s_a,s_b,s_c)$ 去重，只输出一次完全相同的应变状态。"
+msgstr ""
+"Different paths can produce the same strain vector. For example, all three uniaxial "
+"paths include `0%`, and each of those points represents the original structure. The "
+"program deduplicates by $(s_a,s_b,s_c)$ and outputs an identical strain state only "
+"once."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:45
+#: e226d8f86e824bc880f44b4c5f54bfab
+msgid "默认三组范围均为 `-5%～5%`、步长 `1%`，每组 11 个点。去重后的默认数量为："
+msgstr ""
+"By default, all three ranges run from `-5%` to `5%` in steps of `1%`, giving 11 "
+"points per range. After deduplication, the default counts are:"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:47
+#: ec9b3baad9bd4544bb7ff6fde5ae8e32
+msgid "单轴路径：31 个；"
+msgstr "Uniaxial paths: 31."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:48
+#: 1c7ce7ea11f642659f237afb166cc4d6
+msgid "双轴网格：331 个；"
+msgstr "Biaxial grids: 331."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:49
+#: 58e488416c6145388a44423e6b65e332
+msgid "三轴网格：1331 个；"
+msgstr "Triaxial grid: 1,331."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:50
+#: 65e2a3e21a394337a24d20aa78024297
+msgid "各向同性路径：11 个。"
+msgstr "Isotropic path: 11."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:52
+#: c0e8ec7e2e354b1da45179a38b2a4d7f
+#, python-brace-format
 msgid ""
-"你在 Si 上训练了一个 NEP 模型，能量-体积曲线拟合得很好，但算出来的 C11 比 "
-"DFT 参考值高了 15%。这说明训练集里所有结构都处在平衡体积附近，模型没见过晶格"
-"被拉伸/压缩的构型，只能外推——外推不准。"
+"若输入结构数为 $N_\\mathrm{in}$，每个输入的去重后数量为 $N_\\mathrm{per}$，则总输出为 "
+"$N_\\mathrm{in}N_\\mathrm{per}$。界面摘要会随模式和范围实时显示该数量。"
 msgstr ""
-"A Si NEP reproduces the energy-volume curve but predicts C11 15% above the "
-"DFT reference. The training set is concentrated near equilibrium and does "
-"not show the model explicit tensile and compressive states, so the elastic "
-"derivative relies on extrapolation."
+"If there are $N_\\mathrm{in}$ input structures and $N_\\mathrm{per}$ deduplicated "
+"states per input, the total output count is $N_\\mathrm{in}N_\\mathrm{per}$. The "
+"interface summary updates this count as the mode and ranges change."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:25
-#: d3a37e92f73f4e3f8466dd7a990e967e
-msgid ""
-"**诊断思路：** 弹性常数是能量对应变的二阶导数。如果训练集在平衡点附近的应变成"
-"分太稀疏，导数拟合就不可靠。解决办法是往训练集里加入一组已知应变的晶格，让模"
-"型\"见过\"被拉伸和压缩的晶胞。"
-msgstr ""
-"**Diagnosis:** Elastic constants are second derivatives of energy with "
-"respect to strain. Sparse strain sampling around equilibrium makes these "
-"derivatives unreliable. Add cells with known tensile and compressive strains "
-"so the model interpolates locally."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:27
-#: 6e32de913e7148568c53482aa6966f1c
-msgid "**输入：** 一个弛豫好的 Si 单胞（当前训练集里唯一的结构）"
-msgstr ""
-"**Input:** A relaxed Si unit cell, currently the only structure in the "
-"training set."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:29
-#: 2ddfe83537dc4f7ca8211ee1853c08e1
-msgid ""
-"**目标：** 沿 x 方向做 -2% 到 +2% 的单轴应变，步长 1%，共 5 个结构，让模型在 "
-"±2% 范围内有内插依据"
-msgstr ""
-"**Objective:** Apply uniaxial x strains from -2% to +2% in 1% steps, "
-"producing five structures for interpolation within that range."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:31
-#: 9335df4ff87e4fd1870b3a871e6be23d
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:32
-#: c46002b2daab45a8804e839bf5272059
-msgid "`轴`（`axes`） = `uniaxial`"
-msgstr "`Axes` (`axes`) = `uniaxial`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:33
-#: de4dbd292f8a4d3b9ea7be74a2cc7ec7
-msgid "`X 轴范围`（`x_range`） = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）"
-msgstr "`X-axis range` (`x_range`) = `[-2, 2, 1]` (-2% to +2%, in 1% steps)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:35
-#: 5ef85c72020c4dc4b6320b4af9663549
-msgid ""
-"**输出：** 5 个结构（-2%, -1%, 0%, +1%, +2%），晶格 x 分量逐步拉长，原子分数"
-"坐标保持不变"
-msgstr ""
-"**Output:** Five structures (-2%, -1%, 0%, +1%, +2%) with progressively "
-"scaled x lattice vectors and fixed fractional coordinates."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:37
-#: 7436abdc1a594db1805b343a273f7ca2
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:38
-#: 45389096f51d4ced9e63a98a413bbb8b
-msgid "重训后重新计算 C11，应该比之前更接近 DFT 参考值"
-msgstr "Retrain and recompute C11; it should move closer to the DFT reference."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:39
-#: 8bff20018f0c46fa9d6008b99fd3c2c1
-msgid "如果改善不够，把范围扩大到 ±5%，加 biaxial 方向，增加采样密度"
-msgstr ""
-"If improvement is insufficient, extend the range toward ±5%, add biaxial "
-"states, or increase sampling density."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:40
-#: 56812dbcd97f4ad9be9086d25c4dd80c
-msgid ""
-"如果应变 +5% 后最近邻键长超过物理合理区间（和 DFT 参考键长差 > 0.2Å），说明到"
-"了非物理变形区，上限回调"
-msgstr ""
-"If +5% strain moves the nearest-neighbor distance more than 0.2 Å beyond the "
-"DFT reference, treat the deformation as suspect and reduce the upper bound."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:42
-#: b97e98cd4b584a718a92b283e0391c23
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:44
-#: 8b650847eeda438f9e3072e5a255b4d3
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:45
-#: 2aa0808e19dd40cab57348df6b63a7c2
-msgid "模型弹性常数、体模量、应力-应变响应系统性偏差大"
-msgstr ""
-"Elastic constants, bulk modulus, or stress-strain response show systematic "
-"bias"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:46
-#: f2e617a6b0784e35a084fd8eda2b7272
-msgid "训练集中所有结构体积/形状过于集中在平衡态附近"
-msgstr ""
-"Training-set cell volumes and shapes are concentrated too tightly around "
-"equilibrium"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:47
-#: d62868d834c84572a90d1ab5e4f2d17b
-msgid "需要模型在变形路径上有内插能力而非外推"
-msgstr ""
-"The model should interpolate rather than extrapolate along a deformation path"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:49
-#: e38de61fe92b43f0be0f2d324ebfbd96
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:50
-#: b701c09eabaa4e05853c8764c90005a8
-msgid "只需要局部原子坐标噪声（用 `Atomic Perturb` 更合适）"
-msgstr "Only local coordinate noise is needed; use `Atomic Perturb` instead"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:51
-#: 3c2616fe67fa48f38d96245984bb768e
-msgid "体系本身对应变不敏感（如刚性分子晶体），加了只是增大训练集体积没帮助"
-msgstr ""
-"The target system is insensitive to this strain and the added structures "
-"would only inflate the dataset"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:53
-#: ecd409527b174bff80d99a5d9bbf21bd
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:54
+#: 334508523bb947f5b41aa57144f28d22
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:54
-#: 0da56c67847d48349499d3f693c11b6e
-msgid "轴（axes）"
-msgstr "axes"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:56
+#: 8154c5900285436797eda607c8b25132
+msgid "扫描模式（axes）"
+msgstr "Scan Mode (axes)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:56
-#: 36c69286e6d2451197dfc59b4846ba3f
-msgid ""
-"`str`，默认 `'uniaxial'`。选 `uniaxial` 就只沿一个方向拉/压，补 C11/C22/C33 "
-"这类单轴弹性响应；`biaxial` 同时动两个方向，面内耦合和泊松效应都能覆盖；"
-"`isotropic` 三个方向等比例缩放，更接近 EOS 和体模量采样。注意，别在只想做体积"
-"曲线的时候打开三轴独立扫描（`triaxial`）——那会触发热爆炸级的组合数。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:58
+#: af3f66e55d5d419da187b15ac352eb4b
+msgid "默认 `uniaxial`。可选值及含义："
+msgstr "Default `uniaxial`. The available values are:"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:60
+#: e224f9049e6646b3b0ba5c08f5ca0870
+msgid "`uniaxial`：晶格 $a$、$b$、$c$ 三条单轴路径；"
+msgstr "`uniaxial`: Three uniaxial paths along lattice vectors $a$, $b$, and $c$."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:61
+#: 9cdde12643f4464893b407db9a94b6d4
+msgid "`biaxial`：$ab$、$ac$、$bc$ 三组双轴网格；"
+msgstr "`biaxial`: Three biaxial grids, $ab$, $ac$, and $bc$."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:62
+#: be616da8f33445e1bce4597e6481cacb
+msgid "`triaxial`：$abc$ 三轴联合网格；"
+msgstr "`triaxial`: One joint $abc$ triaxial grid."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:63
+#: ae4e6d61629a4215aaa6e800be1a9813
+msgid "`isotropic`：三轴使用同一个应变值；"
+msgstr "`isotropic`: Use one common strain value on all three axes."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:64
+#: 4e0e73498f2f468b9ab07465b020f9c4
+msgid "自定义轴：序列化为 `X`、`XY`、`XZ` 等旧格式，界面显示为 `a`、`ab`、`ac`。"
 msgstr ""
-"`str`, default `'uniaxial'`. `uniaxial` strains one direction for responses "
-"such as C11/C22/C33; `biaxial` strains two directions to sample in-plane "
-"coupling and Poisson response; `isotropic` scales all axes equally for EOS "
-"or bulk-modulus sampling. Do not choose independent `triaxial` scans for a "
-"simple volume curve: the Cartesian product can become enormous."
+"Custom axes: serialized in the legacy forms `X`, `XY`, `XZ`, and so on, while the "
+"interface displays `a`, `ab`, and `ac`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:58
-#: 7a6b9d84ce224f67ada487665c2243fb
-msgid "X 轴范围（x_range）"
-msgstr "x_range"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:66
+#: 2340493a3d2044058c6e60c22c22dc3a
+msgid "自定义轴不能重复，例如 `aa` 无效。"
+msgstr "A custom axis selection cannot contain duplicates; for example, `aa` is invalid."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:60
-#: aa829b4e7d6748f08477f617fc4487c8
-msgid ""
-"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。格式是 `[最小值, 最大"
-"值, 步长]`，单位 %。只有 `轴`（`axes`）激活的方向才生效；isotropic 模式只认 "
-"x_range。步长越小、范围越宽，输出的结构就越多。"
-msgstr "`tuple[float, float, float]`, default `(-5.0, 5.0, 1.0)`. Format: `[minimum, maximum, step]`, in %. Only directions activated by `Axes` (`axes`) take effect; isotropic mode uses only `x_range`. Smaller steps and wider ranges produce more structures."
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:68
+#: 0cff6685b864463d80473633b409a99a
+msgid "晶格 a 范围（x_range）"
+msgstr "Lattice a Range (x_range)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:62
-#: 13fdb3d3ca4c43369758aabe9a874ad2
-msgid ""
-"典型参考值：±1~2% 是大多数无机晶体的弹性区，键长变化一般不到 0.1 Å，补弹性常"
-"数首选这个区间。推到 ±3~5% 就进入非谐区了，适合做应力-应变曲线覆盖，抽检输出"
-"确认没有非物理键长。如果你设到 ±6% 以上，那是极端变形，很可能拉断键——每批跑完"
-"务必抽查最近邻距离。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:70
+#: dd51e909bcad40868a1c123aa86bfb7e
+msgid "默认 `(-5, 5, 1)`，依次为最小值、最大值、步长，单位 `%`。控制晶格矢量 $\\mathbf a$；各向同性模式也只读取这一组范围作为三轴共同应变。"
 msgstr ""
-"As a starting point, ±1-2% is the elastic regime for many inorganic crystals "
-"and usually changes bond lengths by less than 0.1 Å. ±3-5% enters a more "
-"anharmonic regime suitable for stress-strain coverage. Above ±6% is extreme; "
-"inspect nearest-neighbor distances in every batch."
+"Default `(-5, 5, 1)` in `%`, containing the minimum, maximum, and step in that order."
+" It controls lattice vector $\\mathbf a$. Isotropic mode also reads only this range "
+"and applies it as the common strain on all three axes."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:64
-#: 8bb8d46f5569433c903e5fbd97b8fa06
-msgid "Y 轴范围（y_range）"
-msgstr "y_range"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:72
+#: 61ca1ff8711c4c2dba2d52f9958f9afc
+msgid "晶格 b 范围（y_range）"
+msgstr "Lattice b Range (y_range)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:66
-#: d6c6106e753f40ff9f22c69eef23aaaa
-msgid ""
-"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。语法和 x_range 完全一"
-"样，仅作用在 y 轴。只有 `轴`（`axes`）激活的方向才生效。isotropic 模式不单独"
-"看 y_range。典型参考值和 x_range 一致：±1~2% 弹性区，±3~5% 非谐区，±6%+ 需要"
-"警惕非物理键长。"
-msgstr "`tuple[float, float, float]`, default `(-5.0, 5.0, 1.0)`. The syntax is the same as `x_range` and applies only to the y axis. It takes effect only when y is activated in `Axes`; isotropic mode does not use `y_range` separately. Typical values match `x_range`: ±1–2% elastic, ±3–5% anharmonic, and ≥±6% requires caution about unphysical bond lengths."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:68
-#: b740f3d94a6c45a4abb744e468cf6d66
-msgid "Z 轴范围（z_range）"
-msgstr "z_range"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:70
-#: 35786f317d7440f0901af381214a647d
-msgid ""
-"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。同上，只作用于 z 轴。"
-"isotropic 模式不单独看 z_range。典型参考值同上：±1~2% 弹性区，±3~5% 非谐区，"
-"±6%+ 注意抽查最近邻距离。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:74
+#: 38d74cdb3833467aa65697659081ec57
+msgid "默认 `(-5, 5, 1)`，控制晶格矢量 $\\mathbf b$。各向同性模式下不生效，因此界面会隐藏。"
 msgstr ""
-"`tuple[float, float, float]`, default `(-5.0, 5.0, 1.0)`. Same syntax and "
-"guidance as `x_range`, applied to z. Isotropic mode does not use it "
-"separately."
+"Default `(-5, 5, 1)`. Controls lattice vector $\\mathbf b$. It is unused and hidden "
+"in isotropic mode."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:72
-#: 0cc87e36663744f9b3e4ccfd10e7cb1f
-msgid "识别有机分子（identify_organic）"
-msgstr "identify_organic"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:76
+#: e6d5d49989fe400298599c6ebd7ccc49
+msgid "晶格 c 范围（z_range）"
+msgstr "Lattice c Range (z_range)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:74
-#: f6b106b1ffbc497da7f91303f6655dc8
-msgid ""
-"`bool`，默认 `false`。分子晶体、MOF、有机半导体这几种场景必须打开——打开后程序"
-"会识别有机分子团簇，晶格应变只作用在分子间，分子内部的键长尽量保持刚性。纯无"
-"机晶体关着就行，开了反而多算一堆团簇检测。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:78
+#: 0342e154838f47299eded7372fe45cfa
+msgid "默认 `(-5, 5, 1)`，控制晶格矢量 $\\mathbf c$。各向同性模式下不生效，因此界面会隐藏。"
 msgstr ""
-"`bool`, default `false`. Enable for molecular crystals, MOFs, and organic "
-"semiconductors. The card identifies molecular clusters and keeps "
-"intramolecular bonds approximately rigid while straining intermolecular "
-"geometry. Leave it disabled for purely inorganic crystals."
+"Default `(-5, 5, 1)`. Controls lattice vector $\\mathbf c$. It is unused and hidden "
+"in isotropic mode."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:76
-#: 31b9e461b83b422b96f6496b5eab8979
-msgid "推荐预设"
-msgstr "Recommended presets"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:80
+#: 156f27e908884819a411678b30fc841a
+msgid "三组范围都允许反向填写最小值和最大值，程序会按升序生成；步长必须为正数。"
+msgstr ""
+"All three ranges accept reversed minimum and maximum values; the program generates "
+"points in ascending order. The step must be positive."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:78
-#: 53ed2c75343c41c2bd0c334e089856a9
-msgid "近平衡弹性（isotropic ±1%，适合补体模量）"
-msgstr "Near-equilibrium elasticity (isotropic ±1%, suitable for bulk modulus)"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:82
+#: 2275aea955b140848f039187563589c5
+msgid "保持识别出的分子刚性（identify_organic）"
+msgstr "Preserve Detected Molecular Rigidity (identify_organic)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:79
-#: 238fd2eb5e8c4605be4811b10bd29316
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:84
+#: c471c540537e4282a16134c2625b9e18
+msgid "默认关闭。开启后，程序先施加晶胞仿射应变，再恢复检测到的分子团簇内部几何。周期网络和 MOF 的识别结果应结合实际结构抽查。"
+msgstr ""
+"Disabled by default. When enabled, the program first applies the affine cell strain "
+"and then restores the internal geometry of detected molecular clusters. Inspect "
+"representative structures when using this option with periodic networks or MOFs."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:86
+#: 808bd97054bb458cb0c0d0316f829c4d
+msgid "操作示例"
+msgstr "Example"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:88
+#: 105c009d466a4c9e8850c8e79136e9a7
+msgid "生成三条近平衡单轴路径"
+msgstr "Generate Three Near-Equilibrium Uniaxial Paths"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:90
+#: 479029a95bf54916b1bf93a7709726b6
+msgid "若训练集缺少晶格法向应变附近的结构，可设置："
+msgstr "If the training set lacks structures near normal lattice strain, use:"
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:92
+#: d2acd1848e604962b7eb4fc060907e20
+msgid "扫描模式：单轴路径（a、b、c）；"
+msgstr "Scan mode: uniaxial paths (a, b, and c)."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:93
+#: 8889f260606748b5af639fbdcc841faa
+msgid "三组范围：`-2%～2%`，步长 `1%`；"
+msgstr "All three ranges: `-2%` to `2%` with a `1%` step."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:94
+#: 07a0678493c043fdadb15b72173fe299
+msgid "保持识别出的分子刚性：关闭。"
+msgstr "Preserve detected molecular rigidity: off."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:96
+#: ba41cdc9cbe44aa8a795b667899c00ab
+msgid ""
+"每组有 5 个点，三条路径去重前为 15 个；三个 `0%` 状态合并后，每个输入生成 13 "
+"个独特结构。生成后应检查体积、最近邻距离及所需应力分量，再决定是否进入标注流程。"
+msgstr ""
+"Each range has five points, so the three paths contain 15 states before "
+"deduplication. Merging the three `0%` states leaves 13 unique structures per input. "
+"After generation, inspect volume, nearest-neighbor distances, and the required stress"
+" components before sending the structures for labeling."
+
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:98
+#: 4dda3956ec604603b1ca13daa7c993e2
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"CellStrainCard\",\n"
 "  \"check_state\": true,\n"
-"  \"organic\": false,\n"
-"  \"engine_type\": \"isotropic\",\n"
-"  \"x_range\": [-1, 1, 1],\n"
-"  \"y_range\": [-1, 1, 1],\n"
-"  \"z_range\": [-1, 1, 1]\n"
+"  \"params\": {\n"
+"    \"axes\": \"uniaxial\",\n"
+"    \"x_range\": [-2.0, 2.0, 1.0],\n"
+"    \"y_range\": [-2.0, 2.0, 1.0],\n"
+"    \"z_range\": [-2.0, 2.0, 1.0],\n"
+"    \"identify_organic\": false\n"
+"  }\n"
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:91
-#: 403d985bebf844f4a2fdcb4715dcb8af
-msgid "各向异性弹性（uniaxial ±3%，三个方向各 7 个点）"
-msgstr "Anisotropic elasticity (uniaxial ±3%, seven points per direction)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:92
-#: 4280d8ba689e4041b8d64412047e215f
-msgid ""
-"{\n"
-"  \"class\": \"CellStrainCard\",\n"
-"  \"check_state\": true,\n"
-"  \"organic\": false,\n"
-"  \"engine_type\": \"uniaxial\",\n"
-"  \"x_range\": [-3, 3, 1],\n"
-"  \"y_range\": [-3, 3, 1],\n"
-"  \"z_range\": [-3, 3, 1]\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:104
-#: 2931d82dfc2444e48a8974771e3de5cd
-msgid "全方向覆盖（biaxial ±6%，适合怀疑模型在大变形下崩溃）"
-msgstr ""
-"Broad directional coverage (biaxial ±6%, for diagnosing failure under large "
-"deformation)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:105
-#: 86ea28b7743b4e0d817bbb4d2f66369b
-msgid ""
-"{\n"
-"  \"class\": \"CellStrainCard\",\n"
-"  \"check_state\": true,\n"
-"  \"organic\": false,\n"
-"  \"engine_type\": \"biaxial\",\n"
-"  \"x_range\": [-6, 6, 2],\n"
-"  \"y_range\": [-6, 6, 2],\n"
-"  \"z_range\": [-6, 6, 2]\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:117
-#: 84058226b14c4f20a6fc087e0ab210b0
-msgid "推荐组合"
-msgstr "Recommended combinations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:119
-#: 717e416c41104dd7ae23bc5f491ba7ef
-msgid ""
-"`Lattice Strain` → `Atomic Perturb`：应变 + 坐标噪声，同时覆盖几何变形和热扰"
-"动"
-msgstr ""
-"`Lattice Strain` -> `Atomic Perturb`: combine cell deformation with "
-"coordinate noise"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:120
-#: 0a81c31415e14ffc9f948045b5bc2367
-msgid "`Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量"
-msgstr ""
-"`Lattice Strain` -> `Shear Matrix Strain`: sample axial strains before shear "
-"components"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:121
-#: 1c2c390b3c7e49c1a396f4eda0b87263
-msgid "`Super Cell` → `Lattice Strain`：先扩胞到目标尺寸，再做应变扫描"
-msgstr ""
-"`Super Cell` -> `Lattice Strain`: reach the target cell size before scanning "
-"strain"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:123
-#: ae6a4714b65541cfaad6a097c7afe740
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:112
+#: 5401550a0d9d4f0d9cfccf577d0688a4
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:125
-#: d491e5a39f3e47ed801257395b63f361
-msgid "**输出为空。** 步长 ≤ 0，或者最大值 < 最小值。检查 x/y/z_range。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:114
+#: a81e8b6e12d24be6a37b3b9f00dc7787
+msgid "**为什么单轴模式不是只沿一个方向？** “单轴路径”会枚举 $a$、$b$、$c$ 三条路径。若只需要一条，选择“指定晶格轴”并输入 `a`、`b` 或 `c`。"
 msgstr ""
-"**No output.** A step is nonpositive or a maximum is below its minimum. "
-"Check `x_range`, `y_range`, and `z_range`."
+"**Why does uniaxial mode not use only one direction?** `Uniaxial paths` enumerates "
+"separate paths along $a$, $b$, and $c$. To use only one, choose `Selected lattice "
+"axes` and enter `a`, `b`, or `c`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:127
-#: f205d43d19904cf3835945958104c9cf
-msgid ""
-"**结构角度异常变化。** 轴向应变不改变晶格角。如果变了，检查上游结构是否已经带"
-"非正交晶格。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:116
+#: 5e325ac202674ac19f5932bef8df1067
+msgid "**为什么输出数少于三个网格点数之和？** 不同路径重叠得到的相同应变向量只输出一次，最常见的是 `(0%,0%,0%)` 原始结构。"
 msgstr ""
-"**Cell angles changed unexpectedly.** Axial strain does not alter angles; "
-"inspect whether the upstream cell was already nonorthogonal."
+"**Why is the output count smaller than the sum of the three path sizes?** Identical "
+"strain vectors produced by overlapping paths are output only once. The most common "
+"overlap is the original `(0%,0%,0%)` structure."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:129
-#: 3354bc4168cc43839ca05c296a9e3f6e
-msgid ""
-"**组合爆炸。** `triaxial` + 步长 0.5% + ±5% = 21³ = 9261 个结构。先估算 Nx × "
-"Ny × Nz 再跑。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:118
+#: c6972000c0c54ab987593cac6d58b009
+msgid "**为什么各向同性模式只显示一组范围？** 三条晶格矢量使用同一个应变值，因此只需要共同范围。"
 msgstr ""
-"**Combinatorial explosion.** `triaxial` with 0.5% steps over ±5% produces "
-"21³ = 9,261 structures. Estimate Nx × Ny × Nz before running."
+"**Why does isotropic mode show only one range?** All three lattice vectors use the "
+"same strain value, so only one common range is needed."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:131
-#: f75d8a32e5ee495cac8b0bf210479a5b
-msgid "**有机分子键被拉断。** `识别有机分子`（`identify_organic`）没开。"
-msgstr "**An organic-molecule bond was broken.** `Identify organic molecules` (`identify_organic`) is disabled."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:133
-#: c6f7594486a94ba49cb0bca40e44e2d8
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:120
+#: 8a2f73c2b0a54d9e9ee9be3c5b24e0a2
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:135
-#: a6150e6ed41a46f3a8f889c097901a71
-msgid "`Str(x=-1%,y=2%)` / `Str(all=3%)` 等。"
-msgstr "Examples: `Str(x=-1%,y=2%)` and `Str(all=3%)`."
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:122
+#: f2f8241a8e4b4f8397d0b23d0bf774f0
+#, python-brace-format
+msgid "`Str(a={sa}%,b={sb}%,c={sc}%)`，记录每条晶格矢量的工程应变。"
+msgstr "`Str(a={sa}%,b={sb}%,c={sc}%)` records the engineering strain on each lattice vector."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:137
-#: 115041117252465185e5b9b7241134a9
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:124
+#: ecb542bc08144626862bde93ad9cd8a8
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-strain-card.md:139
-#: b4da929cbe91433884ae6c4fe7f283c0
-msgid "无随机性。同参数同输入 → 严格一致输出。"
+#: ../../source/module/make-dataset-cards/cards/cell-strain-card.md:126
+#: 6f60d59f0a09493c94d3739d0a7704cd
+msgid "无随机性。相同输入和参数会产生相同的去重后应变结构。"
 msgstr ""
-"Deterministic: identical inputs and parameters produce identical outputs."
+"There is no randomness. Identical inputs and parameters produce the same deduplicated"
+" strain structures."
 
 #~ msgid "`x_range` = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）"
 #~ msgstr "`x_range` = `[-2, 2, 1]` (-2% to +2% in 1% steps)"
 
 #~ msgid ""
-#~ "`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。格式是 `[最小值, 最"
-#~ "大值, 步长]`，单位 %。只有 `Axes` 激活的方向才生效；isotropic 模式只认 "
-#~ "x_range。步长越小、范围越宽，输出的结构就越多。"
+#~ "`tuple[float, float, float]`，默认 `(-5.0, 5.0, "
+#~ "1.0)`。格式是 `[最小值, 最大值, 步长]`，单位 %。只有 `Axes` "
+#~ "激活的方向才生效；isotropic 模式只认 x_range。步长越小、范围越宽，输出的结构就越多。"
 #~ msgstr ""
-#~ "`tuple[float, float, float]`, default `(-5.0, 5.0, 1.0)`. A `[minimum, "
-#~ "maximum, step]` range in percent. It applies only to directions enabled "
-#~ "under `Axes`; isotropic mode uses only `x_range`. Smaller steps and wider "
-#~ "ranges produce more structures."
+#~ "`tuple[float, float, float]`, default `(-5.0, 5.0,"
+#~ " 1.0)`. A `[minimum, maximum, step]` range "
+#~ "in percent. It applies only to directions "
+#~ "enabled under `Axes`; isotropic mode uses only"
+#~ " `x_range`. Smaller steps and wider ranges "
+#~ "produce more structures."
 
 #~ msgid ""
-#~ "`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。语法和 x_range 完全"
-#~ "一样，仅作用在 y 轴。只有 `Axes` 激活的方向才生效。isotropic 模式不单独看 "
-#~ "y_range。典型参考值和 x_range 一致：±1~2% 弹性区，±3~5% 非谐区，±6%+ 需要"
-#~ "警惕非物理键长。"
+#~ "`tuple[float, float, float]`，默认 `(-5.0, 5.0, "
+#~ "1.0)`。语法和 x_range 完全一样，仅作用在 y 轴。只有 `Axes` "
+#~ "激活的方向才生效。isotropic 模式不单独看 y_range。典型参考值和 x_range 一致：±1~2%"
+#~ " 弹性区，±3~5% 非谐区，±6%+ 需要警惕非物理键长。"
 #~ msgstr ""
-#~ "`tuple[float, float, float]`, default `(-5.0, 5.0, 1.0)`. Same syntax and "
-#~ "guidance as `x_range`, applied to y when that axis is enabled. Isotropic "
-#~ "mode does not use it separately."
+#~ "`tuple[float, float, float]`, default `(-5.0, 5.0,"
+#~ " 1.0)`. Same syntax and guidance as "
+#~ "`x_range`, applied to y when that axis "
+#~ "is enabled. Isotropic mode does not use "
+#~ "it separately."
 
 #~ msgid "**有机分子键被拉断。** `Identify organic` 没开。"
+#~ msgstr "**Intramolecular bonds are stretched or broken.** Enable `Identify organic`."
+
+#~ msgid "对晶胞轴向做受控应变扫描。选定方向组合（单轴/双轴/三轴/各向同性），给定拉伸百分比和步长，程序按比例缩放晶格矢量，生成一组不同应变的结构。"
 #~ msgstr ""
-#~ "**Intramolecular bonds are stretched or broken.** Enable `Identify "
-#~ "organic`."
+#~ "Scan controlled axial strains of the cell. "
+#~ "Choose a uniaxial, biaxial, triaxial, or "
+#~ "isotropic mode and provide percentage ranges "
+#~ "and steps; the card scales lattice vectors "
+#~ "to generate the requested strain states."
+
+#~ msgid ""
+#~ "\\epsilon_i=\\frac{s_i}{100},\\quad "
+#~ "\\mathbf{C}'=\\mathbf{D}\\mathbf{C},\\quad "
+#~ "\\mathbf{D}=\\mathrm{diag}(1+\\epsilon_x,1+\\epsilon_y,1+\\epsilon_z)"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "其中 $s_i$ 是界面输入的百分数，$\\epsilon_i$ 是无量纲工程应变，$\\mathbf C$ "
+#~ "是原晶胞 矩阵。未选中的方向取 $\\epsilon_i=0$。原子分数坐标保持不变，所以生成的是晶胞和原子 "
+#~ "共同经历的仿射应变。"
+#~ msgstr ""
+#~ "Here $s_i$ is the percentage entered in "
+#~ "the UI, $\\epsilon_i$ is the dimensionless "
+#~ "engineering strain, and $\\mathbf C$ is the"
+#~ " original cell matrix. Unselected directions use"
+#~ " $\\epsilon_i=0$. Atomic fractional coordinates remain"
+#~ " unchanged, so the cell and atoms undergo"
+#~ " the same affine strain."
+
+#~ msgid "场景：模型预测的弹性常数偏差太大"
+#~ msgstr "Scenario: Predicted elastic constants have a large bias"
+
+#~ msgid ""
+#~ "你在 Si 上训练了一个 NEP 模型，能量-体积曲线拟合得很好，但算出来的 C11 比"
+#~ " DFT 参考值高了 15%。这说明训练集里所有结构都处在平衡体积附近，模型没见过晶格被拉伸/压缩的构型，只能外推——外推不准。"
+#~ msgstr ""
+#~ "A Si NEP reproduces the energy-volume "
+#~ "curve but predicts C11 15% above the DFT"
+#~ " reference. The training set is concentrated "
+#~ "near equilibrium and does not show the "
+#~ "model explicit tensile and compressive states, "
+#~ "so the elastic derivative relies on "
+#~ "extrapolation."
+
+#~ msgid ""
+#~ "**诊断思路：** "
+#~ "弹性常数是能量对应变的二阶导数。如果训练集在平衡点附近的应变成分太稀疏，导数拟合就不可靠。解决办法是往训练集里加入一组已知应变的晶格，让模型\"见过\"被拉伸和压缩的晶胞。"
+#~ msgstr ""
+#~ "**Diagnosis:** Elastic constants are second "
+#~ "derivatives of energy with respect to strain."
+#~ " Sparse strain sampling around equilibrium makes"
+#~ " these derivatives unreliable. Add cells with "
+#~ "known tensile and compressive strains so the"
+#~ " model interpolates locally."
+
+#~ msgid "**输入：** 一个弛豫好的 Si 单胞（当前训练集里唯一的结构）"
+#~ msgstr ""
+#~ "**Input:** A relaxed Si unit cell, currently"
+#~ " the only structure in the training set."
+
+#~ msgid "**目标：** 沿 x 方向做 -2% 到 +2% 的单轴应变，步长 1%，共 5 个结构，让模型在 ±2% 范围内有内插依据"
+#~ msgstr ""
+#~ "**Objective:** Apply uniaxial x strains from "
+#~ "-2% to +2% in 1% steps, producing five"
+#~ " structures for interpolation within that range."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid "`轴`（`axes`） = `uniaxial`"
+#~ msgstr "`Axes` (`axes`) = `uniaxial`"
+
+#~ msgid "`X 轴范围`（`x_range`） = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）"
+#~ msgstr "`X-axis range` (`x_range`) = `[-2, 2, 1]` (-2% to +2%, in 1% steps)"
+
+#~ msgid "**输出：** 5 个结构（-2%, -1%, 0%, +1%, +2%），晶格 x 分量逐步拉长，原子分数坐标保持不变"
+#~ msgstr ""
+#~ "**Output:** Five structures (-2%, -1%, 0%, "
+#~ "+1%, +2%) with progressively scaled x lattice"
+#~ " vectors and fixed fractional coordinates."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后重新计算 C11，应该比之前更接近 DFT 参考值"
+#~ msgstr "Retrain and recompute C11; it should move closer to the DFT reference."
+
+#~ msgid "如果改善不够，把范围扩大到 ±5%，加 biaxial 方向，增加采样密度"
+#~ msgstr ""
+#~ "If improvement is insufficient, extend the "
+#~ "range toward ±5%, add biaxial states, or "
+#~ "increase sampling density."
+
+#~ msgid "如果应变 +5% 后最近邻键长超过物理合理区间（和 DFT 参考键长差 > 0.2Å），说明到了非物理变形区，上限回调"
+#~ msgstr ""
+#~ "If +5% strain moves the nearest-neighbor "
+#~ "distance more than 0.2 Å beyond the DFT"
+#~ " reference, treat the deformation as suspect "
+#~ "and reduce the upper bound."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "模型弹性常数、体模量、应力-应变响应系统性偏差大"
+#~ msgstr "Elastic constants, bulk modulus, or stress-strain response show systematic bias"
+
+#~ msgid "训练集中所有结构体积/形状过于集中在平衡态附近"
+#~ msgstr ""
+#~ "Training-set cell volumes and shapes are "
+#~ "concentrated too tightly around equilibrium"
+
+#~ msgid "需要模型在变形路径上有内插能力而非外推"
+#~ msgstr "The model should interpolate rather than extrapolate along a deformation path"
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "只需要局部原子坐标噪声（用 `Atomic Perturb` 更合适）"
+#~ msgstr "Only local coordinate noise is needed; use `Atomic Perturb` instead"
+
+#~ msgid "体系本身对应变不敏感（如刚性分子晶体），加了只是增大训练集体积没帮助"
+#~ msgstr ""
+#~ "The target system is insensitive to this "
+#~ "strain and the added structures would only "
+#~ "inflate the dataset"
+
+#~ msgid ""
+#~ "`str`，默认 `'uniaxial'`。选 `uniaxial` 就只沿一个方向拉/压，补 "
+#~ "C11/C22/C33 这类单轴弹性响应；`biaxial` 同时动两个方向，面内耦合和泊松效应都能覆盖；`isotropic` "
+#~ "三个方向等比例缩放，更接近 EOS "
+#~ "和体模量采样。注意，别在只想做体积曲线的时候打开三轴独立扫描（`triaxial`）——那会触发热爆炸级的组合数。"
+#~ msgstr ""
+#~ "`str`, default `'uniaxial'`. `uniaxial` strains one"
+#~ " direction for responses such as C11/C22/C33; "
+#~ "`biaxial` strains two directions to sample "
+#~ "in-plane coupling and Poisson response; "
+#~ "`isotropic` scales all axes equally for EOS"
+#~ " or bulk-modulus sampling. Do not choose"
+#~ " independent `triaxial` scans for a simple "
+#~ "volume curve: the Cartesian product can become"
+#~ " enormous."
+
+#~ msgid ""
+#~ "`tuple[float, float, float]`，默认 `(-5.0, 5.0, "
+#~ "1.0)`。格式是 `[最小值, 最大值, 步长]`，单位 %。只有 "
+#~ "`轴`（`axes`）激活的方向才生效；isotropic 模式只认 x_range。步长越小、范围越宽，输出的结构就越多。"
+#~ msgstr ""
+#~ "`tuple[float, float, float]`, default `(-5.0, 5.0,"
+#~ " 1.0)`. Format: `[minimum, maximum, step]`, in"
+#~ " %. Only directions activated by `Axes` "
+#~ "(`axes`) take effect; isotropic mode uses only"
+#~ " `x_range`. Smaller steps and wider ranges "
+#~ "produce more structures."
+
+#~ msgid ""
+#~ "典型参考值：±1~2% 是大多数无机晶体的弹性区，键长变化一般不到 0.1 Å，补弹性常数首选这个区间。推到 "
+#~ "±3~5% 就进入非谐区了，适合做应力-应变曲线覆盖，抽检输出确认没有非物理键长。如果你设到 ±6% "
+#~ "以上，那是极端变形，很可能拉断键——每批跑完务必抽查最近邻距离。"
+#~ msgstr ""
+#~ "As a starting point, ±1-2% is the "
+#~ "elastic regime for many inorganic crystals and"
+#~ " usually changes bond lengths by less than"
+#~ " 0.1 Å. ±3-5% enters a more anharmonic "
+#~ "regime suitable for stress-strain coverage. "
+#~ "Above ±6% is extreme; inspect nearest-neighbor"
+#~ " distances in every batch."
+
+#~ msgid ""
+#~ "`tuple[float, float, float]`，默认 `(-5.0, 5.0, "
+#~ "1.0)`。语法和 x_range 完全一样，仅作用在 y 轴。只有 "
+#~ "`轴`（`axes`）激活的方向才生效。isotropic 模式不单独看 y_range。典型参考值和 x_range "
+#~ "一致：±1~2% 弹性区，±3~5% 非谐区，±6%+ 需要警惕非物理键长。"
+#~ msgstr ""
+#~ "`tuple[float, float, float]`, default `(-5.0, 5.0,"
+#~ " 1.0)`. The syntax is the same as "
+#~ "`x_range` and applies only to the y "
+#~ "axis. It takes effect only when y is "
+#~ "activated in `Axes`; isotropic mode does not"
+#~ " use `y_range` separately. Typical values match"
+#~ " `x_range`: ±1–2% elastic, ±3–5% anharmonic, and"
+#~ " ≥±6% requires caution about unphysical bond "
+#~ "lengths."
+
+#~ msgid ""
+#~ "`tuple[float, float, float]`，默认 `(-5.0, 5.0, "
+#~ "1.0)`。同上，只作用于 z 轴。isotropic 模式不单独看 z_range。典型参考值同上：±1~2%"
+#~ " 弹性区，±3~5% 非谐区，±6%+ 注意抽查最近邻距离。"
+#~ msgstr ""
+#~ "`tuple[float, float, float]`, default `(-5.0, 5.0,"
+#~ " 1.0)`. Same syntax and guidance as "
+#~ "`x_range`, applied to z. Isotropic mode does"
+#~ " not use it separately."
+
+#~ msgid ""
+#~ "`bool`，默认 "
+#~ "`false`。分子晶体、MOF、有机半导体这几种场景必须打开——打开后程序会识别有机分子团簇，晶格应变只作用在分子间，分子内部的键长尽量保持刚性。纯无机晶体关着就行，开了反而多算一堆团簇检测。"
+#~ msgstr ""
+#~ "`bool`, default `false`. Enable for molecular "
+#~ "crystals, MOFs, and organic semiconductors. The "
+#~ "card identifies molecular clusters and keeps "
+#~ "intramolecular bonds approximately rigid while "
+#~ "straining intermolecular geometry. Leave it disabled"
+#~ " for purely inorganic crystals."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "近平衡弹性（isotropic ±1%，适合补体模量）"
+#~ msgstr "Near-equilibrium elasticity (isotropic ±1%, suitable for bulk modulus)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"CellStrainCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"organic\": false,\n"
+#~ "  \"engine_type\": \"isotropic\",\n"
+#~ "  \"x_range\": [-1, 1, 1],\n"
+#~ "  \"y_range\": [-1, 1, 1],\n"
+#~ "  \"z_range\": [-1, 1, 1]\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "各向异性弹性（uniaxial ±3%，三个方向各 7 个点）"
+#~ msgstr "Anisotropic elasticity (uniaxial ±3%, seven points per direction)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"CellStrainCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"organic\": false,\n"
+#~ "  \"engine_type\": \"uniaxial\",\n"
+#~ "  \"x_range\": [-3, 3, 1],\n"
+#~ "  \"y_range\": [-3, 3, 1],\n"
+#~ "  \"z_range\": [-3, 3, 1]\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "全方向覆盖（biaxial ±6%，适合怀疑模型在大变形下崩溃）"
+#~ msgstr ""
+#~ "Broad directional coverage (biaxial ±6%, for "
+#~ "diagnosing failure under large deformation)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"CellStrainCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"organic\": false,\n"
+#~ "  \"engine_type\": \"biaxial\",\n"
+#~ "  \"x_range\": [-6, 6, 2],\n"
+#~ "  \"y_range\": [-6, 6, 2],\n"
+#~ "  \"z_range\": [-6, 6, 2]\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "推荐组合"
+#~ msgstr "Recommended combinations"
+
+#~ msgid "`Lattice Strain` → `Atomic Perturb`：应变 + 坐标噪声，同时覆盖几何变形和热扰动"
+#~ msgstr ""
+#~ "`Lattice Strain` -> `Atomic Perturb`: combine "
+#~ "cell deformation with coordinate noise"
+
+#~ msgid "`Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量"
+#~ msgstr ""
+#~ "`Lattice Strain` -> `Shear Matrix Strain`: "
+#~ "sample axial strains before shear components"
+
+#~ msgid "`Super Cell` → `Lattice Strain`：先扩胞到目标尺寸，再做应变扫描"
+#~ msgstr "`Super Cell` -> `Lattice Strain`: reach the target cell size before scanning strain"
+
+#~ msgid "**输出为空。** 步长 ≤ 0，或者最大值 < 最小值。检查 x/y/z_range。"
+#~ msgstr ""
+#~ "**No output.** A step is nonpositive or "
+#~ "a maximum is below its minimum. Check "
+#~ "`x_range`, `y_range`, and `z_range`."
+
+#~ msgid "**结构角度异常变化。** 轴向应变不改变晶格角。如果变了，检查上游结构是否已经带非正交晶格。"
+#~ msgstr ""
+#~ "**Cell angles changed unexpectedly.** Axial strain"
+#~ " does not alter angles; inspect whether the"
+#~ " upstream cell was already nonorthogonal."
+
+#~ msgid "**组合爆炸。** `triaxial` + 步长 0.5% + ±5% = 21³ = 9261 个结构。先估算 Nx × Ny × Nz 再跑。"
+#~ msgstr ""
+#~ "**Combinatorial explosion.** `triaxial` with 0.5% "
+#~ "steps over ±5% produces 21³ = 9,261 "
+#~ "structures. Estimate Nx × Ny × Nz before"
+#~ " running."
+
+#~ msgid "**有机分子键被拉断。** `识别有机分子`（`identify_organic`）没开。"
+#~ msgstr ""
+#~ "**An organic-molecule bond was broken.** "
+#~ "`Identify organic molecules` (`identify_organic`) is "
+#~ "disabled."
+
+#~ msgid "`Str(x=-1%,y=2%)` / `Str(all=3%)` 等。"
+#~ msgstr "Examples: `Str(x=-1%,y=2%)` and `Str(all=3%)`."
+
+#~ msgid "无随机性。同参数同输入 → 严格一致输出。"
+#~ msgstr "Deterministic: identical inputs and parameters produce identical outputs."

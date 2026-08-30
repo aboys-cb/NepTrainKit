@@ -200,7 +200,7 @@ $$
 
 ## 输出标签
 
-`SolvBox(mode={mode},req={目标数},ok={实际放入数})`
+`SolvBox(mode={mode},req={target},ok={placed})`
 
 ## 可复现性
 

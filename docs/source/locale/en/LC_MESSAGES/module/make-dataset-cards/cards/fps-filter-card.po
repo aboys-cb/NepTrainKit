@@ -8,710 +8,493 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:3
-#: 7be6fe01cf9f44f9af0e9e2a083df557
-msgid "代表性采样（FPS）（Representative Sampling (FPS)）"
-msgstr "Representative Sampling (FPS)"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:3
+#: 7b294892a45644e993619e7363b79ee2
+msgid "FPS 代表性采样（FPS Sampling）"
+msgstr "FPS Representative Sampling"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:5
-#: aad2e5fd485a41c8b984aa4bd739a0a1
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:5
+#: fa1002dabdd641b8891f43ad82548af7
 msgid "**分类：** 筛选与采样"
 msgstr "**Category:** Filtering and sampling"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:7
-#: 4e1cef24bc6e4bb6b2d0337567ffe144
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:7
+#: d4db257bf8a74a0d8be46ef905f1be9f
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:9
-#: d3ac1769318c4f339bec550a3838f92e
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:9
+#: a851fed83e224a05ab88fb5b0d56479b
 msgid ""
-"基于结构级 NEP 均值描述符执行最远点采样（FPS），从大批量结构中挑选代表性子"
-"集。需要提供一个 NEP 模型文件（如内置的 `nep89.txt` 或你自己训练的模型）用于"
-"生成描述符。**代表性是相对于这个模型的描述符空间而言的**；换一个 NEP 模型，结"
-"构间距离和最终选择都可能改变。"
-msgstr "Perform farthest-point sampling (FPS) using structure-level mean NEP descriptors to select a representative subset from a large structure pool. Provide a NEP model file, such as the bundled `nep89.txt` or a model you trained, to generate descriptors. **Representativeness is relative to this model's descriptor space**; changing the model can change structure distances and the final selection."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:11
-#: 00a035fb9d634db5956bd051657fb8c7
-msgid "卡片提供两种采样方式："
-msgstr "The card provides two sampling strategies:"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:13
-#: 5874076dc9d2490aa6e7eb3c756f177c
-msgid ""
-"`global`：兼容原有行为，对全部结构执行一次全局 FPS；没有已有训练集时固定从输"
-"入第 1 个结构开始；"
-msgstr "`global`: preserves the original behavior by running one global FPS over all structures; without an existing training set, it starts from the first input structure;"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:14
-#: ec694121fa364bb8b0caa9aa4d18a584
-msgid ""
-"`element_set`：先按元素集合分组，每组至少获得一个名额，剩余名额按组大小的平方"
-"根分配，再从组内中心开始 FPS。该模式仍使用原始结构均值描述符，不启用实验性的"
-"分元素 mean/std 或 robust scaling。"
+"从候选池中选择描述符空间里的代表结构，输出数量不超过设定上限。它通常接在 `Geometry Filter` 后面：前者删除明确的几何异常，FPS "
+"再减少相似结构，控制进入 DFT 的数量。"
 msgstr ""
-"`element_set`: groups structures by element set, assigns at least one slot "
-"per group, distributes the remaining slots by the square root of group size, "
-"and starts FPS from each group center. This mode still uses the original "
-"structure-mean descriptor and does not enable experimental per-element mean/"
-"std features or robust scaling."
+"Select structures that represent the candidate pool in descriptor space, up to a "
+"configured output limit. It usually follows `Geometry Filter`: the first card removes"
+" clear geometric anomalies, and FPS then reduces similar structures to control the "
+"number sent to DFT."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:16
-#: 54e576e5211345518719b871565942d6
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:11
+#: f8436a9b96664dfe990dc90309e9991a
+msgid "“代表性”取决于所选 NEP 模型。模型改变后，描述符距离和入选结构也可能改变。"
+msgstr ""
+"What counts as representative depends on the selected NEP model. Changing the model "
+"may change both descriptor distances and the selected structures."
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:13
+#: 6126378a20634ddab3ee245fb706ed01
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:18
-#: 7959bb9510a64ef4a89ad699f37b8688
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:15
+#: 184c939b909843b29ed1374c381be259
+msgid "先把一个结构中 $N_i$ 个原子的 NEP 描述符取平均："
+msgstr "First average the NEP descriptors of the $N_i$ atoms in a structure:"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:17
+#: 4455f3375c154affbfbc10b9701b8f82
 msgid ""
-"\\mathbf{d}_i=\\frac{1}{N_i}\\sum_{a=1}^{N_i}\\mathbf{d}_{ia}^{\\mathrm{NEP}}"
+"\n"
+"\\mathbf d_i=\\frac{1}{N_i}\\sum_{a=1}^{N_i}\\mathbf d_{ia}^{\\mathrm{NEP}}.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:20
-#: 105f19b467de4d638d8233ca09ca89cc
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:21
+#: 3c425171f9b848588d97d631b487fe45
+msgid "FPS 每一步选择离当前已覆盖集合最远的候选："
+msgstr "At each step, FPS selects the candidate farthest from the currently covered set:"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:23
+#: adfe7ff712d3479eb4e94e6ff9b0b6f1
 msgid ""
-"i_t=\\arg\\max_j\\ \\min_{i\\in S_{t-1}}\\lVert\\mathbf{d}_j-\\mathbf{d}"
-"_i\\rVert_2,\\quad S_t=S_{t-1}\\cup\\{i_t\\}"
+"\n"
+"i_t=\\arg\\max_j\\min_{i\\in S_{t-1}}\\lVert\\mathbf d_j-\\mathbf d_i\\rVert_2.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:22
-#: d91882d5c60140688513a4f79f2cc018
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:27
+#: a74e8ded169c4920a2ecbd754cd34755
 msgid ""
-"$\\mathbf d_{ia}^{\\mathrm{NEP}}$ 是原子描述符，$\\mathbf d_i$ 是结构级均值描"
-"述符， $S_t$ 是第 $t$ 步已选集合。`最小距离`要求新代表点到已有集合的最近描述"
-"符距离不低于 阈值；已有训练集会作为初始 $S_0$，使候选优先补训练集尚未覆盖的区"
-"域。"
-msgstr "$\\mathbf d_{ia}^{\\mathrm{NEP}}$ is an atomic descriptor, $\\mathbf d_i$ is the structure-level mean descriptor, and $S_t$ is the selected set at step $t$. `Minimum distance` requires the nearest descriptor distance from a new representative to the existing set to be no smaller than the threshold. An existing training set acts as initial $S_0$, so candidates preferentially fill regions not covered by the training set."
+"若选择“基于已有训练集补选”，已有训练集的描述符会成为初始覆盖集合 $S_0$。FPS 在此基础上挑选离已有覆盖最远的新候选；已有训练集本身不进入本次输出。距离阈值大于 "
+"0 时，最远候选仍达不到阈值就提前停止，因此实际输出可能少于上限。"
+msgstr ""
+"When `Supplement existing set` is selected, descriptors from the existing training "
+"set form the initial covered set $S_0$. FPS then chooses new candidates farthest from"
+" that coverage; the existing training structures themselves are not included in this "
+"output. If the distance cutoff is greater than 0, selection stops when even the "
+"farthest candidate does not reach it, so the actual output may be smaller than the "
+"limit."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:26
-#: 2d4b24b3951a4a0184897f4fea4103e9
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:29
+#: 6d86307b4a1c41dc964aca747ed7c117
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:28
-#: 752be58967ad47e2ab9ba28514bddef5
-msgid "场景：2000 个候选结构训练出来效果不如 200 个精选的"
-msgstr "Scenario: 2,000 candidates perform worse than 200 selected structures"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:30
-#: 1bd91d06175343a190abf2a7a0f0b6f8
-msgid ""
-"你用多张生成卡产出了 2000 个候选结构，全部丢进训练集跑了 DFT 计算。重训后模型"
-"精度比只用前 200 个结构手动挑的版本还差——2000 个结构里大量重复构型，有效多样"
-"性反而被稀释了。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:31
+#: 42e306d209804c71a11d5d7013ea18a3
+msgid "候选池包含 80 个 Si、20 个 Ge 和 40 个 Si–Ge 结构，希望最多选择 30 帧："
 msgstr ""
-"Several generators produce 2,000 candidates and all are labeled by DFT, yet "
-"the retrained model is worse than one trained on 200 manually selected "
-"structures. Heavy duplication diluted effective diversity."
+"Suppose a candidate pool contains 80 Si, 20 Ge, and 40 Si–Ge structures, and you want"
+" to select at most 30 frames:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:32
-#: e0e7ee91d4bf4dec8fa589e0d05dd593
-msgid ""
-"**诊断思路：** 卡片生成的候选集有大量统计冗余。比如 `Random Vacancy` 生成了 "
-"200 个空位结构，但从描述符角度看可能只有 15 种真正不同的局域环境。FPS 可以在"
-"描述符空间里按\"最远优先\"的原则挑出最不相似的子集，保留多样性去掉冗余。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:33
+#: b9bfcc43763d4c3c9fc598a01c0d2a66
+msgid "先用 `Geometry Filter` 删除短键等异常帧。"
+msgstr "Use `Geometry Filter` first to remove frames with short bonds or other anomalies."
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:34
+#: aa510c00cb374a8cb75012630041fcef
+msgid "NEP 模型选择覆盖 Si 和 Ge 的模型。"
+msgstr "Select a NEP model that covers both Si and Ge."
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:35
+#: fbef2c0a9a054338befb17b1862450da
+msgid "选择“按元素集合均衡”，把最大输出设为 `30`。"
+msgstr "Select `Balance by element set` and set maximum output to `30`."
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:36
+#: c7a5b424fc02460fa50d20581280c905
+msgid "预览会显示 Si、Ge、Ge+Si 三组的计划名额；元素集合只看出现了哪些元素，不区分 SiGe 与 Si₂Ge 的化学计量。"
 msgstr ""
-"**Diagnosis:** Generated pools often contain statistical redundancy: 200 "
-"random vacancies may represent only 15 distinct local environments. FPS "
-"greedily chooses points farthest from the selected set in descriptor space, "
-"preserving diversity while removing near-duplicates."
+"The preview shows planned quotas for the Si, Ge, and Ge+Si groups. An element set "
+"records only which elements are present; it does not distinguish the stoichiometry of"
+" SiGe from Si₂Ge."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:34
-#: 5cbfd2d0be9a417a8fe0849feae8fd09
-msgid "**输入：** 2000 个候选结构，以及一个可用的 `nep89.txt` 模型文件"
-msgstr "**Input:** 2,000 cleaned candidates and a usable NEP model file."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:36
-#: e5fb54b3f2e646268e20db18816b2ae0
-msgid "**目标：** 从 2000 个中挑出 200 个最具代表性的结构"
-msgstr "**Objective:** Select 200 representative structures."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:38
-#: c3a41ea67bc4409e8cfe8c997457dc9d
-msgid ""
-"**参数设置：** `采样策略`选择“全局 FPS”，`描述符 NEP 模型`指向 NEP 模型， `最"
-"多保留结构数`填 `200`，`描述符距离阈值`填 `0.01`。"
-msgstr "**Parameters:** set `Sampling strategy` to `Global FPS`, point `Descriptor NEP model` to a NEP model, set `Maximum structures to keep` to `200`, and `Descriptor distance threshold` to `0.01`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:41
-#: 5f6577d1ac334848b3b2e5c22b4b1d8c
-msgid ""
-"**输出：** 最多 200 个结构，以贪心最远点规则扩展描述符空间覆盖。FPS 不保证全"
-"局最优，也不保证关键物性误差一定优于随机抽样。"
-msgstr "**Output:** up to 200 structures selected by the greedy farthest-point rule to expand descriptor-space coverage. FPS does not guarantee a global optimum or lower errors for every key property than random sampling."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:43
-#: df8349006cb04b8b86799d41dd1718bc
-msgid "**怎么验证挑选质量：**"
-msgstr "**How to verify selection quality:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:44
-#: 79725b1fc716478b8bd16ceae711a5a4
-msgid ""
-"重训后用同一组独立测试集比较 FPS 精选 200 个与随机抽取 200 个；不要预设 FPS "
-"一定更好"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:37
+#: 93e20112f3dd4101a1e5d1d9534d7243
+msgid "运行后检查实际输出数和元素集合覆盖。已有训练集或距离阈值可能使某组实际输出为 0，所以计划名额不是结果保证。"
 msgstr ""
-"After retraining, compare the 200 FPS-selected structures with 200 random "
-"structures on the same independent test set; do not assume FPS must be "
-"better."
+"After the run, inspect the actual output count and element-set coverage. An existing "
+"training set or distance cutoff may reduce a group's actual output to zero, so a "
+"planned quota is not an output guarantee."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:45
-#: 5fee78f4e6ea4057be977db7d36fd508
-msgid "如果 200 个不够，增大 `num_condition` 到 500"
-msgstr "If 200 is insufficient, increase `num_condition`, for example to 500."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:46
-#: 72abd19e44834025bde3bea2d32b24c2
-msgid "如果挑出的结构仍有重复感，增大 `min_distance_condition` 到 0.05~0.1"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:39
+#: 324a565d406e44ec92d6f0e0ddbe6af0
+msgid "用同一独立测试集比较 FPS 子集和等规模随机子集；如果关键结构类型本来不在候选池中，应回到上游补充，而不是继续调整 FPS。"
 msgstr ""
-"If selected structures remain redundant, test a larger "
-"`min_distance_condition`, such as 0.05-0.1."
+"Compare the FPS subset with an equally sized random subset on the same independent "
+"test set. If an important structure type is absent from the candidate pool, add it "
+"upstream instead of continuing to tune FPS."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:47
-#: 6d017877bf114618b21b631322d71546
-msgid "注意：FPS 只挑不造——如果输入池本身没有某类构型，FPS 不会凭空变出来"
-msgstr ""
-"FPS selects but never generates. A missing configuration family cannot "
-"appear unless it exists in the input pool."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:49
-#: aa914262efa042ac81ef0d78dd7764e4
-msgid "场景：多个化学体系共用一个候选池"
-msgstr "Scenario: multiple chemical systems share one candidate pool"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:51
-#: b5ea27297060438583103d05b6fbfe2d
-msgid ""
-"候选池同时包含单质、二元和三元结构时，全局 FPS 会让所有结构竞争同一预算。如果"
-"要求每种元素集合至少保留一个候选，可选择 `element_set`。例如 V、Co、Ni、V-"
-"Co、V-Ni、Co-Ni 和 V-Co-Ni 会形成 7 个组；当 `n_samples < 7` 时卡片明确报错，"
-"不静默漏组。"
-msgstr ""
-"When a candidate pool contains unary, binary, and ternary structures, global "
-"FPS makes every structure compete for one budget. Choose `element_set` when "
-"every element set must retain at least one candidate. For example, V, Co, "
-"Ni, V-Co, V-Ni, Co-Ni, and V-Co-Ni form seven groups; if `n_samples < 7`, "
-"the card raises an explicit error instead of silently omitting groups."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:53
-#: 650fadc5549542c59c738260172d889b
-msgid ""
-"已有训练集可作为 warm start，卡片会优先选择当前训练集尚未覆盖的区域。"
-"`global` 模式把全部已有结构作为距离起点；`element_set` 模式只比较元素集合相同"
-"的已有结构。已有训练集不计入 `最多保留结构数`（`n_samples`）输出数量。"
-msgstr "An existing training set can be used as a warm start, so the card prioritizes regions not covered by it. `global` uses all existing structures as distance anchors; `element_set` compares only existing structures with the same element set. Existing training structures do not count toward the output limit `Maximum structures to keep` (`n_samples`)."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:55
-#: c33522998b6f40ff8fc1baa3466211c6
-msgid ""
-"这里“元素集合”只看出现过哪些元素，不看化学计量比。例如 H₂O 和 H₂O₂ 都属于 "
-"`{H, O}` 组。"
-msgstr "Here, an `element set` records only which elements appear, not their stoichiometric ratios. For example, H₂O and H₂O₂ both belong to the `{H, O}` group."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:57
-#: 48c5bd31cae24147872aec26251cc731
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:59
-#: 07303e4c31a74c718afea5f3a00e0eab
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:60
-#: ae356aa0e7b04ec198c6ab07fde08b1e
-msgid "生成链条产生了大量结构（>500），需要去冗余"
-msgstr ""
-"A generation chain produced hundreds of structures and needs deduplication"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:61
-#: 47745ede200e4fd5abd56e5c52540936
-msgid "怀疑训练集有大量重复/高度相似的构型"
-msgstr ""
-"The pool likely contains many duplicate or highly similar configurations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:62
-#: 311f1470f5ba46f0b69205b9326152f6
-msgid "需要在保持覆盖的前提下压缩训练集体积"
-msgstr "The dataset must be compressed while retaining coverage"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:63
-#: d7509ed3443f4a159772bc1af1f0f677
-msgid "混合了多个元素集合，并要求每组都有明确预算"
-msgstr ""
-"The pool mixes multiple element sets and each group needs an explicit budget."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:65
-#: 9371596549c24a33ae6ad07c52c98af6
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:66
-#: 380c94df6241450aae179a239bed9369
-msgid "还在生成阶段，结构数量很少（<50）"
-msgstr "The pool is still small"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:67
-#: 67cac1f678b8495ab2c63e9cef1c69c4
-msgid "输入池本身还没经过物理清洗（如已用 NEP 预筛、剔除异常结构）"
-msgstr "The input pool has not yet been physically cleaned"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:68
-#: fa788c319a874a3cbec6d40ed7ba94dd
-msgid "模型还没训练出来——FPS 需要一个可用的 NEP 模型来生成描述符"
-msgstr "No suitable NEP model is available for descriptors"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:70
-#: 9a8939e1765242b7833251a105d79a36
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:41
+#: 74fe518f453c46689db44fc8dc931254
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:71
-#: bbccd9e5708846ec9bb7e84894f37c4d
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:43
+#: 4bac482cd3fa48028f65f6420398b7d0
 msgid "描述符 NEP 模型（nep_path）"
 msgstr "nep_path"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:73
-#: eccad75c3dc34807a117c2a3ebad7b75
-msgid ""
-"`str`。指向用于生成 NEP 描述符的模型文件，界面默认使用内置 `nep89.txt`。路径"
-"为空或文件不存在时卡片直接报错。内置模型便于快速筛选；正式数据选择更适合使用"
-"覆盖候选化学体系和局域环境的模型。"
-msgstr "`str`. Path to the model used to generate NEP descriptors; the UI defaults to the bundled `nep89.txt`. An empty or missing path fails immediately. The bundled model is convenient for quick screening; for production data, use a model covering the candidate chemistry and local environments."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:75
-#: d7ba8f66b3014f71a1f6c5d3b9f0a0cb
-msgid "最多保留结构数（n_samples）"
-msgstr "n_samples"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:77
-#: 993cfd61e43c4cc6baf5260bf23db879
-msgid ""
-"`int`，默认 100。FPS 过滤后保留结构数的上限。这是输出数量，不是上游生成数量。"
-"若候选数更少，最多保留全部候选；若距离阈值提前触发，实际输出也会少于该值。"
-msgstr "`int`, default 100. Maximum number of structures retained after FPS. This is an output limit, not the upstream generation count. Fewer candidates means fewer outputs; an active distance threshold can also stop earlier."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:79
-#: 30b7b4814e79447b8868c5ff5e53df8d
-msgid "描述符距离阈值（min_distance）"
-msgstr "min_distance"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:81
-#: d0cdf8b3df2b426bb5293aa8687b26e5
-msgid ""
-"`float`，默认 0。描述符空间中的最小距离阈值，没有物理单位，而且数值尺度依赖 "
-"NEP 模型。"
-msgstr "`float`, default 0. Minimum distance threshold in descriptor space. It has no physical unit and its scale depends on the NEP model."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:83
-#: 77b84c808f834fb5a448714484bf9a4e
-msgid "`0`：关闭距离提前停止，按数量上限选择；"
-msgstr "`0`: disable early stopping by distance and select up to the count limit;"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:84
-#: a23cce6aaebf4816a58f0afbbfbdc91c
-msgid "`>0`：下一个最远候选与已覆盖集合的距离低于该值时提前停止。"
-msgstr "`>0`: stop early when the next farthest candidate is closer than this value to the covered set."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:86
-#: a0a6b6e9389b492c88cbeba2ec381708
-msgid ""
-"值越大去重越激进，也越可能选不够目标数量。不要把某个模型上合适的阈值直接照搬"
-"到另一个模型。"
-msgstr "Larger values deduplicate more aggressively and make it more likely that the target count will not be reached. Do not copy a threshold that works for one model directly to another."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:88
-#: f8c3d3aacacb4fbd80cddcd8247332bc
-msgid "计算后端（backend）"
-msgstr "backend"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:90
-#: fc9919845c7447e6907ef5005f74048b
-msgid ""
-"`str`，默认 `'auto'`。描述符计算后端。正常保持 `auto` 让程序自己选可用的 NEP "
-"后端；只有在你需要调试性能或对比后端差异时才手动指定。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:45
+#: 8b385f9e4ef745589794e42f014b191d
+msgid "`str`，默认使用内置 `nep89.txt`。描述符距离由该模型决定；模型文件存在不等于一定覆盖候选元素，正式采样前应确认模型的化学体系。"
 msgstr ""
-"`str`, default `'auto'`. Descriptor backend. Keep automatic selection unless "
-"diagnosing performance or backend differences."
+"`str`, defaulting to the bundled `nep89.txt`. This model defines descriptor "
+"distances. A model file's existence does not guarantee that it covers the candidate "
+"elements; confirm its chemical system before production sampling."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:92
-#: 54ca7ebb85db4a5ab5f1671170d5bd23
-msgid "单批最大原子数（chunk_max_atoms）"
-msgstr "chunk_max_atoms"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:47
+#: ef12185a9c3c4bcba55b6a36111f95d1
+msgid "最大输出（n_samples）"
+msgstr "Maximum Output (n_samples)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:94
-#: 94ca58780b7a4bbfa11c2847c5d4accb
-msgid ""
-"`int`，默认 100000。每个描述符计算分块允许的总原子数，CPU 和 CUDA 使用同一语"
-"义。显存或内存不足时调小；它不是结构数量，同一分块中所有结构的原子数之和不能"
-"超过该值。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:49
+#: ee6830f7e8ad4b7c86f3bd60ef832214
+msgid "`int`，默认 `100`。本次最多保留的候选结构数。输入更少或距离阈值提前停止时，实际输出更少。"
 msgstr ""
-"`int`, default 100000. Maximum total atom count in each descriptor "
-"calculation chunk, with the same meaning on CPU and CUDA. Reduce it when "
-"device or host memory is insufficient. This is not a structure count; it "
-"limits the sum of atoms across all structures in the chunk."
+"`int`, default `100`. Maximum number of candidate structures retained in this run. "
+"The actual output is smaller when the input has fewer structures or the distance "
+"cutoff stops selection early."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:96
-#: f6afe47a336542848cc29bf9eb1f7996
-msgid "采样方式（strategy）"
-msgstr "strategy"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:51
+#: ef84a435593e44668d76193a50b97185
+msgid "距离阈值（min_distance）"
+msgstr "Distance Cutoff (min_distance)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:98
-#: 3a929fffcb3c4151b170cd5c6b75d830
-msgid "`str`，默认 `\"global\"`。可选值："
-msgstr "`str`, default `\"global\"`. Available values:"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:53
+#: 65773133bc7b4577bac60b0e9eca75b6
+msgid "`float`，默认 `0`。无物理单位，尺度依赖 NEP 模型。`0` 表示只按数量停止；大于 `0` 时用于提前停止近重复选择。"
+msgstr ""
+"`float`, default `0`. It has no physical unit and its scale depends on the NEP model."
+" `0` stops by count only; a positive value stops the selection of near-duplicates "
+"early."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
-#: 3cdbb4ed0d784a75a16089cb27911eaa
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:55
+#: 95c047ce929b41d7a2eb50d6f7a16df5
+msgid "采样计划（strategy）"
+msgstr "Sampling Plan (strategy)"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:57
+#: cde64e0e0388453cb6f205e8a82252db
+msgid "`str`，默认 `\"global\"`："
+msgstr "`str`, default `\"global\"`:"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: 17b89e6c3cd34cd1ab5fe4c6b2176a23
 msgid "值"
 msgstr "Value"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
-#: 29edfce5c32f4ec4a91b85496a05af35
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: 06891280eb574b79bbd2d55f76d31d5b
+msgid "界面名称"
+msgstr "Interface label"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: e73ec61fe6bb4a2d9e5cacd9faf375eb
 msgid "行为"
 msgstr "Behavior"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
-#: a23c0969949d4dee913405b0ef115fc4
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: b0020bef08e2415bb4377cb3f8271c9f
 msgid "`global`"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
-#: 5c16b5e95673481299dee4b122c6f42b
-msgid "兼容旧流程；全部结构共享一个预算，没有 warm start 时从输入索引 0 开始"
-msgstr "Compatible with the legacy workflow; all structures share one budget, and without a warm start the input index 0 is used first"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: aefa71471db346a28f832e8e174ef1ab
+msgid "全局预算"
+msgstr "Global budget"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
-#: 833f4e86f02a4b8ebb1bb822b06e22b0
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: 6d07ece84aa14f99b190dec26fba6531
+msgid "全部候选共享一个预算；没有已有训练集时从输入第 1 帧开始"
+msgstr ""
+"All candidates share one budget; without an existing training set, selection starts "
+"from the first input frame"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: 804624de09c34d7ea75810eddd2dadc0
 msgid "`element_set`"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:0
-#: 3b33152cbf1b4ea69e4594f5792c0e76
-msgid "按元素集合分组、平方根分配名额、组内从描述符中心开始 FPS"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: 9e1d4481214547eb8806cf214d6df59d
+msgid "按元素集合均衡"
+msgstr "Balance by element set"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
+#: 166730ed7f724f10b892c1a28cdfd500
+msgid "每组先计划一个名额，其余按组大小平方根分配；组内从描述符中心开始"
 msgstr ""
-"Groups by element set, allocates slots by square root, and starts FPS from "
-"the descriptor center of each group."
+"Plan one slot for each group first, then allocate the remainder in proportion to the "
+"square root of group size; within each group, start from the descriptor center"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:105
-#: fe925b0d41d148ebb72654f55fb9336c
-msgid ""
-"旧版卡片 JSON 没有该字段时按 `global` 恢复，避免加载旧工作流后静默改变输出。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:64
+#: adc916cccea04cf2abde3a124b004209
+msgid "当最大输出小于元素集合数时，均衡模式会明确报错。计划名额仍会受到已有覆盖和距离阈值影响。"
 msgstr ""
-"Legacy card JSON without this field restores as `global`, preventing silent "
-"output changes when older workflows are loaded."
+"Balanced mode reports an explicit error when maximum output is smaller than the "
+"number of element sets. Planned quotas are still affected by existing coverage and "
+"the distance cutoff."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:107
-#: d7503227c0a240d99a8e373dabc1d0e4
-msgid "已有数据集路径（existing_dataset_path）"
-msgstr "existing_dataset_path"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:66
+#: a00265dae030451fbd5037b75b888554
+msgid "已有训练集（existing_dataset_path）"
+msgstr "Existing Training Set (existing_dataset_path)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:109
-#: 7d0f4797611441bf887c05a24f42db14
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:68
+#: fd9c14cb7de64702a910ecda57c77236
 msgid ""
-"`str`，默认空字符串。指向已有 `.xyz` 或 `.extxyz` 训练集，作为描述符覆盖的 "
-"warm start。`global` 模式与全部已有结构比较；`element_set` 只与同元素集合结构"
-"比较。路径不存在、无法读取或不含结构时明确报错。"
-msgstr "`str`, default empty. Path to an existing `.xyz` or `.extxyz` training set used as a descriptor-coverage warm start. `global` compares with all existing structures; `element_set` compares only structures with the same element set. Missing, unreadable, or empty paths fail explicitly."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:111
-#: 46f7c16bd68e4b7397224d142fb62275
-msgid "推荐预设"
-msgstr "Recommended presets"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:113
-#: 3cc3ffe88b0a4a6da27a03aeb4c27747
-msgid "兼容旧流程"
-msgstr "Legacy-compatible workflow"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:114
-#: 95605490cc2143b483b0e76b07d2a7c0
-msgid ""
-"{\n"
-"  \"class\": \"FPSFilterDataCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"nep_path\": \"path/to/nep.txt\",\n"
-"    \"n_samples\": 100,\n"
-"    \"min_distance\": 0.0,\n"
-"    \"backend\": \"auto\",\n"
-"    \"chunk_max_atoms\": 100000,\n"
-"    \"strategy\": \"global\",\n"
-"    \"existing_dataset_path\": \"\"\n"
-"  }\n"
-"}\n"
+"`str`，默认空。选择一个 `.xyz` 或 `.extxyz` "
+"训练集作为补选起点。全局模式从全部已有结构的覆盖范围继续选；均衡模式只以元素集合相同的已有结构为起点。输出只包含本轮新选中的候选，不重复包含已有训练集。"
 msgstr ""
+"`str`, empty by default. Select an `.xyz` or `.extxyz` training set as the starting "
+"coverage for supplementary selection. Global mode continues from the coverage of all "
+"existing structures; balanced mode starts only from existing structures with the same"
+" element set. The output contains only candidates newly selected in this run and does"
+" not repeat the existing training set."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:130
-#: 4fa6361e07b7439a82dae4fc9130b66e
-msgid "多元素集合平衡采样"
-msgstr "Balanced sampling across element sets"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:70
+#: 0b533c1b4fa84f9583b333452bf90f2b
+msgid "计算后端（backend）"
+msgstr "backend"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:131
-#: 7f474e01cfae450a871033e2e7862eee
-msgid ""
-"{\n"
-"  \"class\": \"FPSFilterDataCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"nep_path\": \"path/to/nep.txt\",\n"
-"    \"n_samples\": 330,\n"
-"    \"min_distance\": 0.01,\n"
-"    \"backend\": \"auto\",\n"
-"    \"chunk_max_atoms\": 100000,\n"
-"    \"strategy\": \"element_set\",\n"
-"    \"existing_dataset_path\": \"path/to/train.xyz\"\n"
-"  }\n"
-"}\n"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:72
+#: 0049cae6a5ee44f6a8a8ab2d013cf1a8
+msgid "`str`，默认 `\"auto\"`。由全局 NEP 计算设置管理，卡片界面不单独暴露；旧 JSON 中的值仍会恢复。"
 msgstr ""
+"`str`, default `\"auto\"`. Managed by the global NEP compute settings and not exposed"
+" separately in the card interface; values from legacy JSON are still restored."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:147
-#: fbba6f794ed2411aa88cb57b7279d2c1
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:74
+#: 7cffd7209ed14125a5663fd64c439599
+msgid "单批最大原子数（chunk_max_atoms）"
+msgstr "chunk_max_atoms"
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:76
+#: cbd0a658b7c94ccf9bda8547b13bec31
+msgid "`int`，默认 `100000`。描述符计算的内存分块参数，由全局设置管理，不改变 FPS 选择规则。"
+msgstr ""
+"`int`, default `100000`. Memory-chunking parameter for descriptor calculation, "
+"managed by global settings. It does not change the FPS selection rule."
+
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:78
+#: 01b7283e74a947abb07888a12b8ac579
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:149
-#: 4ef119a6c77b4bb2ba20026ec9a6b9e1
-msgid ""
-"任意生成链 → `Geometry Filter` → `FPS Filter`：先去掉明显坏结构，再做代表性筛"
-"选"
-msgstr "Any generation chain → `Geometry Filter` → `FPS Filter`: remove obvious bad structures first, then perform representative selection."
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:80
+#: 5f63eab2f3914841a72fd283c8d54e10
+msgid "生成或扰动卡 → `Geometry Filter` → `FPS Filter`"
+msgstr "Generation or perturbation card → `Geometry Filter` → `FPS Filter`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:150
-#: ecd84841bda440beb6e466bfde52add5
-msgid "`FPS Filter` → 导出 DFT 计算：控制进入 DFT 计算的结构数量，节省计算资源"
-msgstr "`FPS Filter` -> DFT export: bound the number of expensive labels"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:81
+#: a83738135c4343529c6665d1c0afcc7c
+msgid "多分支汇总 → `FPS Filter` → 导出 DFT"
+msgstr "Merge multiple branches → `FPS Filter` → export for DFT"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:151
-#: 296760f560b54965832d0f5fe42cf977
-msgid "多分支汇总后 → `FPS Filter`：先汇总各分支输出，再统一挑选"
-msgstr ""
-"Merged branch outputs -> `FPS Filter`: select across all branches "
-"consistently"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:153
-#: 6aa54606c6664b949317c4c89f1c6d66
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:83
+#: 6a1ec7bcbbe14e4f9982c6e25c465b4e
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:155
-#: 3d4cd76f20d0490db4f00d0d33d27bf2
-msgid ""
-"**卡片报错\"NEP file does not exist\"。** `描述符 NEP 模型`（`nep_path`）指向"
-"的文件不存在。确认路径正确。"
-msgstr "**The card reports \"NEP file does not exist\".** The file pointed to by `Descriptor NEP model` (`nep_path`) is missing. Check the path."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:157
-#: 823962821749431bbf099d7305ec95e7
-msgid ""
-"**输出数量远小于目标上限。** 描述符距离阈值太严，无法选出足够多满足距离约束的"
-"结构。降低该阈值，或设为 0 只按数量停止。"
-msgstr "**The output count is far below the limit.** The descriptor distance threshold is too strict to select enough structures satisfying the distance constraint. Lower it or set it to 0 to stop only by count."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:159
-#: 6c86907b27ab4f62946a89f4d5d6e430
-msgid ""
-"**平衡模式提示目标数量不足。** `最多保留结构数`（`n_samples`）小于元素集合组"
-"数。提高目标数量，或者在上游移除本轮不需要的化学体系。"
-msgstr "**Balanced mode reports too few target structures.** `Maximum structures to keep` (`n_samples`) is smaller than the number of element-set groups. Increase the target or remove unnecessary chemistries upstream."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:161
-#: befdec2753b346eca6a0d5a35d4720dd
-msgid ""
-"**已有训练集没有改变结果。** warm start 只比较元素集合相同的结构。检查候选池"
-"与已有训练集的元素集合是否一致，并确认所用 NEP 模型支持这些元素。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:85
+#: 9e4433755b0549ad9b5f9b961f8a11db
+msgid "**为什么输出少于最大值？** 输入数量不足，或距离阈值让选择提前停止。查看预览中的阈值状态和运行后的实际输出。"
 msgstr ""
-"**The existing training set does not change the result.** The warm start "
-"compares only structures with matching element sets. Check that the "
-"candidate pool and existing training set use consistent element sets and "
-"that the NEP model supports those elements."
+"**Why is the output smaller than the maximum?** The input contains fewer structures, "
+"or the distance cutoff stopped selection early. Check the cutoff status in the "
+"preview and the actual output after the run."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:163
-#: 393e3f9e9e914bd7956022f29106cecd
-msgid ""
-"**挑出的结构覆盖不全。** FPS 只能从现有池里选。如果某些局域环境在输入池里本来"
-"就没有，FPS 也无法补充。回到上游增加生成多样性。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:87
+#: b3199372b2fe49509764fe8fc4f966b1
+msgid "**为什么均衡模式某组输出为 0？** 计划名额不是强制输出。已有训练集已经覆盖该组、同时启用距离阈值时，组内候选可能全部被判为过近。"
 msgstr ""
-"**Coverage remains incomplete.** FPS cannot create absent environments. Add "
-"the missing diversity upstream."
+"**Why does a group produce zero output in balanced mode?** A planned quota is not "
+"mandatory output. If the existing training set already covers the group and a "
+"distance cutoff is enabled, every candidate in that group may be considered too "
+"close."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:165
-#: 3aafdcf8b90d43aaa6c279ce51734043
-msgid ""
-"**描述符计算很慢。** 大批量时描述符计算可能耗时。`单批最大原子数`"
-"（`chunk_max_atoms`）控制单批总原子数；它不是最终 FPS 的分块采样参数，减小它"
-"只降低计算峰值内存，不会改变选择算法。"
-msgstr "**Descriptor calculation is slow.** Descriptor generation can take time for large batches. `Maximum atoms per chunk` (`chunk_max_atoms`) controls the total atoms in one batch; it is not a chunked-sampling parameter for FPS. Reducing it lowers peak memory only and does not change the selection algorithm."
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:89
+#: 3ca56895978e4febaa4c5f972eb7c834
+msgid "**为什么换模型后结果不同？** FPS 距离定义在模型产生的描述符空间中。不同模型对结构差异的表达不同。"
+msgstr ""
+"**Why does changing the model change the result?** FPS distance is defined in the "
+"descriptor space produced by the model. Different models represent structural "
+"differences differently."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:167
-#: b6f467b65d0b47e882e0474ac51f2925
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:91
+#: cead5fc7d4fc4344bdf6ebc0d5c7be91
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:169
-#: a4c779c603a0414ebb83c146b98a615c
-msgid "不新增专用 Config_type 标签。输出结构保留原标签。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:93
+#: 104448cd506e49778973115a7fc4fc4c
+msgid "输出保留原有 `Config_type`。全局模式按 FPS 选择顺序输出；按元素集合均衡模式保持入选帧在输入中的相对顺序。"
 msgstr ""
-"No dedicated `Config_type` is added; selected structures preserve their "
-"existing labels."
+"The output preserves the original `Config_type`. Global mode outputs structures in "
+"FPS selection order; element-set balanced mode preserves the selected frames' "
+"relative order in the input."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:171
-#: cd38e03c0a7343c9ad7164ff78d3c3e3
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:95
+#: 41212fac47cd424bbe66a95267edd4bd
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/fps-filter-card.md:173
-#: b44b9e30dc5d46cc951162c4129fb7cd
-msgid ""
-"无随机性。同参数同输入会得到一致输出。`global` 模式保留原有索引 0 起点，因此"
-"改变输入顺序可能改变选择；`element_set` 从各组描述符中心开始，对输入顺序更稳"
-"定。特征完全相同的近重复结构仍可能互换原始索引，但覆盖等价。"
+#: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:97
+#: 3bafa1fb95244f2b881cd83218257c1d
+msgid "本卡没有随机性。同一输入、模型和参数会得到相同结果；改变输入顺序可能改变全局模式的起点和选择顺序。"
 msgstr ""
-"There is no randomness: identical inputs and parameters produce identical "
-"output. `global` retains the original index-0 starting point, so reordering "
-"the input may change the selection; `element_set` starts from each group "
-"descriptor center and is more stable to input order. Near-duplicate "
-"structures with identical features may exchange original indices, but their "
-"coverage is equivalent."
+"This card has no randomness. The same input, model, and parameters produce the same "
+"result. Changing input order may change the starting point and selection order in "
+"global mode."
 
 #~ msgid "FPS 过滤（FPS Filter）"
 #~ msgstr "FPS Filter"
 
 #~ msgid ""
-#~ "基于结构级 NEP 均值描述符执行最远点采样（FPS），从大批量结构中挑选代表性子"
-#~ "集。需要提供一个 NEP 模型文件（如内置的 `nep89.txt` 或你自己训练的模型）用"
-#~ "于生成描述符。"
+#~ "基于结构级 NEP 均值描述符执行最远点采样（FPS），从大批量结构中挑选代表性子集。需要提供一个 NEP "
+#~ "模型文件（如内置的 `nep89.txt` 或你自己训练的模型）用于生成描述符。"
 #~ msgstr ""
-#~ "Run farthest-point sampling (FPS) on structure-level mean NEP descriptors "
-#~ "to select a representative subset from a large structure pool. Provide a "
-#~ "NEP model file, such as the bundled `nep89.txt` or your own trained "
-#~ "model, to generate descriptors."
+#~ "Run farthest-point sampling (FPS) on "
+#~ "structure-level mean NEP descriptors to select"
+#~ " a representative subset from a large "
+#~ "structure pool. Provide a NEP model file, "
+#~ "such as the bundled `nep89.txt` or your "
+#~ "own trained model, to generate descriptors."
 
 #~ msgid "`global`：兼容原有行为，对全部结构执行一次全局 FPS；"
 #~ msgstr ""
-#~ "`global`: preserves the original behavior and runs one global FPS pass "
-#~ "over all structures;"
+#~ "`global`: preserves the original behavior and "
+#~ "runs one global FPS pass over all "
+#~ "structures;"
 
 #~ msgid ""
-#~ "**参数设置：** `strategy=\"global\"`，`nep_path` 指向 NEP 模型，"
-#~ "`n_samples=200`，`min_distance=0.01`。"
+#~ "**参数设置：** `strategy=\"global\"`，`nep_path` 指向 NEP "
+#~ "模型，`n_samples=200`，`min_distance=0.01`。"
 #~ msgstr ""
-#~ "**Parameters:** set `strategy=\"global\"`, point `nep_path` to a NEP "
-#~ "model, use `n_samples=200`, and set `min_distance=0.01`."
+#~ "**Parameters:** set `strategy=\"global\"`, point "
+#~ "`nep_path` to a NEP model, use "
+#~ "`n_samples=200`, and set `min_distance=0.01`."
 
-#~ msgid ""
-#~ "**输出：** 200 个结构，在描述符空间中两两距离尽可能大，覆盖输入集的多样性"
+#~ msgid "**输出：** 200 个结构，在描述符空间中两两距离尽可能大，覆盖输入集的多样性"
 #~ msgstr ""
-#~ "**Output:** Up to 200 structures chosen to spread coverage through the "
-#~ "input descriptor space."
+#~ "**Output:** Up to 200 structures chosen to "
+#~ "spread coverage through the input descriptor "
+#~ "space."
 
 #~ msgid ""
-#~ "已有训练集可作为 warm start。只有元素集合相同的已有结构才参与候选距离初始"
-#~ "化，卡片会优先选择当前训练集尚未覆盖的区域。已有训练集不计入 `n_samples` "
+#~ "已有训练集可作为 warm "
+#~ "start。只有元素集合相同的已有结构才参与候选距离初始化，卡片会优先选择当前训练集尚未覆盖的区域。已有训练集不计入 `n_samples` "
 #~ "输出数量。"
 #~ msgstr ""
-#~ "An existing training set can be used as a warm start. Only existing "
-#~ "structures with the same element set initialize candidate distances, so "
-#~ "the card prioritizes regions not yet covered by the training set. "
-#~ "Existing structures do not count toward the `n_samples` output."
+#~ "An existing training set can be used as"
+#~ " a warm start. Only existing structures "
+#~ "with the same element set initialize candidate"
+#~ " distances, so the card prioritizes regions "
+#~ "not yet covered by the training set. "
+#~ "Existing structures do not count toward the"
+#~ " `n_samples` output."
 
 #~ msgid ""
-#~ "`str`，默认 `MISSING`。指向用于生成 NEP 描述符的模型文件，必须是一个可用"
-#~ "的 NEP 模型文件（如 `nep.txt` 或内置 `nep89.txt`）。路径为空或文件不存在时"
-#~ "卡片直接报错。"
+#~ "`str`，默认 `MISSING`。指向用于生成 NEP 描述符的模型文件，必须是一个可用的 NEP "
+#~ "模型文件（如 `nep.txt` 或内置 `nep89.txt`）。路径为空或文件不存在时卡片直接报错。"
 #~ msgstr ""
-#~ "`str`, default `MISSING`. Path to a usable NEP model such as `nep.txt` or "
-#~ "bundled `nep89.txt`. The card fails if the path is empty or nonexistent."
+#~ "`str`, default `MISSING`. Path to a usable "
+#~ "NEP model such as `nep.txt` or bundled "
+#~ "`nep89.txt`. The card fails if the path "
+#~ "is empty or nonexistent."
 
-#~ msgid ""
-#~ "`int`，默认 100。FPS 过滤后保留的代表结构数。这是输出数量，不是上游生成数"
-#~ "量——DFT 预算固定时直接设你计划算的上限；但设太小会把稀有构型也筛掉。"
+#~ msgid "`int`，默认 100。FPS 过滤后保留的代表结构数。这是输出数量，不是上游生成数量——DFT 预算固定时直接设你计划算的上限；但设太小会把稀有构型也筛掉。"
 #~ msgstr ""
-#~ "`int`, default `100`. Maximum representative outputs. It is an output "
-#~ "count, not an upstream generation count. Match it to the DFT budget while "
-#~ "leaving enough capacity for rare families."
+#~ "`int`, default `100`. Maximum representative "
+#~ "outputs. It is an output count, not an"
+#~ " upstream generation count. Match it to the"
+#~ " DFT budget while leaving enough capacity "
+#~ "for rare families."
 
-#~ msgid ""
-#~ "`float`，默认 0.01。描述符空间中的最小距离阈值。值越大去重越激进，但设太"
-#~ "大 FPS 会过早停、选不够数；设太小又可能混入近重复结构。"
+#~ msgid "`float`，默认 0.01。描述符空间中的最小距离阈值。值越大去重越激进，但设太大 FPS 会过早停、选不够数；设太小又可能混入近重复结构。"
 #~ msgstr ""
-#~ "`float`, default `0.01`. Minimum distance in descriptor space. Larger "
-#~ "values deduplicate more aggressively but can stop before reaching the "
-#~ "requested count; smaller values admit near-duplicates."
+#~ "`float`, default `0.01`. Minimum distance in "
+#~ "descriptor space. Larger values deduplicate more "
+#~ "aggressively but can stop before reaching the"
+#~ " requested count; smaller values admit near-"
+#~ "duplicates."
 
 #~ msgid "兼容旧流程；全部结构执行一次全局 FPS，从输入索引 0 开始"
 #~ msgstr ""
-#~ "Preserves the legacy workflow; runs one global FPS pass over all "
-#~ "structures starting from input index 0."
+#~ "Preserves the legacy workflow; runs one global"
+#~ " FPS pass over all structures starting from"
+#~ " input index 0."
 
 #~ msgid ""
-#~ "`str`，默认空字符串。仅 `strategy=\"element_set\"` 使用。指向已有 `.xyz` "
-#~ "或 `.extxyz` 训练集，作为同元素集合内的 warm start。路径不存在、无法读取或"
-#~ "不含结构时明确报错；`global` 模式忽略界面中隐藏的旧路径并序列化为空字符"
-#~ "串。"
+#~ "`str`，默认空字符串。仅 `strategy=\"element_set\"` 使用。指向已有 `.xyz` 或"
+#~ " `.extxyz` 训练集，作为同元素集合内的 warm "
+#~ "start。路径不存在、无法读取或不含结构时明确报错；`global` 模式忽略界面中隐藏的旧路径并序列化为空字符串。"
 #~ msgstr ""
-#~ "`str`, empty by default. Used only with `strategy=\"element_set\"`. Point "
-#~ "it to an existing `.xyz` or `.extxyz` training set as a warm start within "
-#~ "matching element sets. Missing, unreadable, or empty paths raise explicit "
-#~ "errors; `global` mode ignores hidden legacy paths and serializes an empty "
-#~ "string."
+#~ "`str`, empty by default. Used only with "
+#~ "`strategy=\"element_set\"`. Point it to an existing"
+#~ " `.xyz` or `.extxyz` training set as a "
+#~ "warm start within matching element sets. "
+#~ "Missing, unreadable, or empty paths raise "
+#~ "explicit errors; `global` mode ignores hidden "
+#~ "legacy paths and serializes an empty string."
 
-#~ msgid ""
-#~ "任意生成链 → `NEP Dataset Display` 清洗 → `FPS Filter`：先去掉明显坏结构，"
-#~ "再做代表性筛选"
+#~ msgid "任意生成链 → `NEP Dataset Display` 清洗 → `FPS Filter`：先去掉明显坏结构，再做代表性筛选"
 #~ msgstr ""
-#~ "Any generation chain -> clean in `NEP Dataset Display` -> `FPS Filter`: "
-#~ "remove invalid geometry before representative sampling"
+#~ "Any generation chain -> clean in `NEP "
+#~ "Dataset Display` -> `FPS Filter`: remove "
+#~ "invalid geometry before representative sampling"
 
-#~ msgid ""
-#~ "**卡片报错\"NEP file does not exist\"。** `nep_path` 指向的文件不存在。确"
-#~ "认路径正确。"
-#~ msgstr ""
-#~ "**`NEP file does not exist`.** Correct `nep_path` to an existing model "
-#~ "file."
+#~ msgid "**卡片报错\"NEP file does not exist\"。** `nep_path` 指向的文件不存在。确认路径正确。"
+#~ msgstr "**`NEP file does not exist`.** Correct `nep_path` to an existing model file."
 
-#~ msgid ""
-#~ "**输出数量远小于 `num_condition`。** `min_distance_condition` 太严，无法选"
-#~ "出足够多满足距离约束的结构。降低该阈值。"
+#~ msgid "**输出数量远小于 `num_condition`。** `min_distance_condition` 太严，无法选出足够多满足距离约束的结构。降低该阈值。"
 #~ msgstr ""
-#~ "**Output is far below `num_condition`.** `min_distance_condition` is too "
-#~ "strict; lower it to allow more selections."
+#~ "**Output is far below `num_condition`.** "
+#~ "`min_distance_condition` is too strict; lower it "
+#~ "to allow more selections."
 
-#~ msgid ""
-#~ "**平衡模式提示目标数量不足。** `n_samples` 小于元素集合组数。提高目标数"
-#~ "量，或者在上游移除本轮不需要的化学体系。"
+#~ msgid "**平衡模式提示目标数量不足。** `n_samples` 小于元素集合组数。提高目标数量，或者在上游移除本轮不需要的化学体系。"
 #~ msgstr ""
-#~ "**Balanced mode reports an insufficient target count.** `n_samples` is "
-#~ "smaller than the number of element-set groups. Increase the target or "
-#~ "remove chemical systems that are not needed in this run upstream."
+#~ "**Balanced mode reports an insufficient target "
+#~ "count.** `n_samples` is smaller than the "
+#~ "number of element-set groups. Increase the "
+#~ "target or remove chemical systems that are "
+#~ "not needed in this run upstream."
 
-#~ msgid ""
-#~ "**描述符计算很慢。** 大批量（>5000）时描述符计算可能耗时。先用 `FPS "
-#~ "Filter` 之前控制好上游输出量。"
+#~ msgid "**描述符计算很慢。** 大批量（>5000）时描述符计算可能耗时。先用 `FPS Filter` 之前控制好上游输出量。"
 #~ msgstr ""
-#~ "**Descriptor calculation is slow.** Pools above several thousand "
-#~ "structures can be expensive. Bound upstream generation and tune batch "
-#~ "size before sampling."
+#~ "**Descriptor calculation is slow.** Pools above "
+#~ "several thousand structures can be expensive. "
+#~ "Bound upstream generation and tune batch size"
+#~ " before sampling."
 
-#~ msgid ""
-#~ "`int`，默认 1000。描述符批处理大小，只影响吞吐和内存。GPU 或大体系可以调大"
-#~ "加速，内存紧张时适当调小。"
+#~ msgid "`int`，默认 1000。描述符批处理大小，只影响吞吐和内存。GPU 或大体系可以调大加速，内存紧张时适当调小。"
 #~ msgstr ""
-#~ "`int`, default `1000`. Descriptor batch size; affects throughput and "
-#~ "memory only. Increase when the backend and memory allow, and reduce under "
-#~ "memory pressure."
+#~ "`int`, default `1000`. Descriptor batch size; "
+#~ "affects throughput and memory only. Increase "
+#~ "when the backend and memory allow, and "
+#~ "reduce under memory pressure."
 
 #~ msgid "**参数设置：**"
 #~ msgstr "**Parameters:**"
@@ -730,5 +513,423 @@ msgstr ""
 
 #~ msgid "无随机性。同参数同输入 → 严格一致输出。FPS 是确定性贪心算法。"
 #~ msgstr ""
-#~ "Deterministic: identical inputs and parameters produce identical output "
-#~ "because FPS is a deterministic greedy algorithm."
+#~ "Deterministic: identical inputs and parameters "
+#~ "produce identical output because FPS is a "
+#~ "deterministic greedy algorithm."
+
+#~ msgid "代表性采样（FPS）（Representative Sampling (FPS)）"
+#~ msgstr "Representative Sampling (FPS)"
+
+#~ msgid ""
+#~ "基于结构级 NEP 均值描述符执行最远点采样（FPS），从大批量结构中挑选代表性子集。需要提供一个 NEP "
+#~ "模型文件（如内置的 `nep89.txt` 或你自己训练的模型）用于生成描述符。**代表性是相对于这个模型的描述符空间而言的**；换一个"
+#~ " NEP 模型，结构间距离和最终选择都可能改变。"
+#~ msgstr ""
+#~ "Perform farthest-point sampling (FPS) using "
+#~ "structure-level mean NEP descriptors to select"
+#~ " a representative subset from a large "
+#~ "structure pool. Provide a NEP model file, "
+#~ "such as the bundled `nep89.txt` or a "
+#~ "model you trained, to generate descriptors. "
+#~ "**Representativeness is relative to this model's "
+#~ "descriptor space**; changing the model can "
+#~ "change structure distances and the final "
+#~ "selection."
+
+#~ msgid "卡片提供两种采样方式："
+#~ msgstr "The card provides two sampling strategies:"
+
+#~ msgid "`global`：兼容原有行为，对全部结构执行一次全局 FPS；没有已有训练集时固定从输入第 1 个结构开始；"
+#~ msgstr ""
+#~ "`global`: preserves the original behavior by "
+#~ "running one global FPS over all structures;"
+#~ " without an existing training set, it "
+#~ "starts from the first input structure;"
+
+#~ msgid ""
+#~ "`element_set`：先按元素集合分组，每组至少获得一个名额，剩余名额按组大小的平方根分配，再从组内中心开始 "
+#~ "FPS。该模式仍使用原始结构均值描述符，不启用实验性的分元素 mean/std 或 robust scaling。"
+#~ msgstr ""
+#~ "`element_set`: groups structures by element set, "
+#~ "assigns at least one slot per group, "
+#~ "distributes the remaining slots by the square"
+#~ " root of group size, and starts FPS "
+#~ "from each group center. This mode still "
+#~ "uses the original structure-mean descriptor "
+#~ "and does not enable experimental per-element"
+#~ " mean/std features or robust scaling."
+
+#~ msgid "\\mathbf{d}_i=\\frac{1}{N_i}\\sum_{a=1}^{N_i}\\mathbf{d}_{ia}^{\\mathrm{NEP}}"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "i_t=\\arg\\max_j\\ \\min_{i\\in "
+#~ "S_{t-1}}\\lVert\\mathbf{d}_j-\\mathbf{d}_i\\rVert_2,\\quad "
+#~ "S_t=S_{t-1}\\cup\\{i_t\\}"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "$\\mathbf d_{ia}^{\\mathrm{NEP}}$ 是原子描述符，$\\mathbf d_i$ "
+#~ "是结构级均值描述符， $S_t$ 是第 $t$ 步已选集合。`最小距离`要求新代表点到已有集合的最近描述符距离不低于"
+#~ " 阈值；已有训练集会作为初始 $S_0$，使候选优先补训练集尚未覆盖的区域。"
+#~ msgstr ""
+#~ "$\\mathbf d_{ia}^{\\mathrm{NEP}}$ is an atomic "
+#~ "descriptor, $\\mathbf d_i$ is the structure-"
+#~ "level mean descriptor, and $S_t$ is the "
+#~ "selected set at step $t$. `Minimum distance`"
+#~ " requires the nearest descriptor distance from"
+#~ " a new representative to the existing set"
+#~ " to be no smaller than the threshold. "
+#~ "An existing training set acts as initial "
+#~ "$S_0$, so candidates preferentially fill regions "
+#~ "not covered by the training set."
+
+#~ msgid "场景：2000 个候选结构训练出来效果不如 200 个精选的"
+#~ msgstr "Scenario: 2,000 candidates perform worse than 200 selected structures"
+
+#~ msgid ""
+#~ "你用多张生成卡产出了 2000 个候选结构，全部丢进训练集跑了 DFT 计算。重训后模型精度比只用前 "
+#~ "200 个结构手动挑的版本还差——2000 个结构里大量重复构型，有效多样性反而被稀释了。"
+#~ msgstr ""
+#~ "Several generators produce 2,000 candidates and "
+#~ "all are labeled by DFT, yet the "
+#~ "retrained model is worse than one trained "
+#~ "on 200 manually selected structures. Heavy "
+#~ "duplication diluted effective diversity."
+
+#~ msgid ""
+#~ "**诊断思路：** 卡片生成的候选集有大量统计冗余。比如 `Random Vacancy` 生成了 "
+#~ "200 个空位结构，但从描述符角度看可能只有 15 种真正不同的局域环境。FPS "
+#~ "可以在描述符空间里按\"最远优先\"的原则挑出最不相似的子集，保留多样性去掉冗余。"
+#~ msgstr ""
+#~ "**Diagnosis:** Generated pools often contain "
+#~ "statistical redundancy: 200 random vacancies may "
+#~ "represent only 15 distinct local environments. "
+#~ "FPS greedily chooses points farthest from the"
+#~ " selected set in descriptor space, preserving "
+#~ "diversity while removing near-duplicates."
+
+#~ msgid "**输入：** 2000 个候选结构，以及一个可用的 `nep89.txt` 模型文件"
+#~ msgstr "**Input:** 2,000 cleaned candidates and a usable NEP model file."
+
+#~ msgid "**目标：** 从 2000 个中挑出 200 个最具代表性的结构"
+#~ msgstr "**Objective:** Select 200 representative structures."
+
+#~ msgid ""
+#~ "**参数设置：** `采样策略`选择“全局 FPS”，`描述符 NEP 模型`指向 NEP "
+#~ "模型， `最多保留结构数`填 `200`，`描述符距离阈值`填 `0.01`。"
+#~ msgstr ""
+#~ "**Parameters:** set `Sampling strategy` to `Global"
+#~ " FPS`, point `Descriptor NEP model` to a"
+#~ " NEP model, set `Maximum structures to "
+#~ "keep` to `200`, and `Descriptor distance "
+#~ "threshold` to `0.01`."
+
+#~ msgid "**输出：** 最多 200 个结构，以贪心最远点规则扩展描述符空间覆盖。FPS 不保证全局最优，也不保证关键物性误差一定优于随机抽样。"
+#~ msgstr ""
+#~ "**Output:** up to 200 structures selected by"
+#~ " the greedy farthest-point rule to expand"
+#~ " descriptor-space coverage. FPS does not "
+#~ "guarantee a global optimum or lower errors "
+#~ "for every key property than random sampling."
+
+#~ msgid "**怎么验证挑选质量：**"
+#~ msgstr "**How to verify selection quality:**"
+
+#~ msgid "重训后用同一组独立测试集比较 FPS 精选 200 个与随机抽取 200 个；不要预设 FPS 一定更好"
+#~ msgstr ""
+#~ "After retraining, compare the 200 FPS-selected"
+#~ " structures with 200 random structures on "
+#~ "the same independent test set; do not "
+#~ "assume FPS must be better."
+
+#~ msgid "如果 200 个不够，增大 `num_condition` 到 500"
+#~ msgstr "If 200 is insufficient, increase `num_condition`, for example to 500."
+
+#~ msgid "如果挑出的结构仍有重复感，增大 `min_distance_condition` 到 0.05~0.1"
+#~ msgstr ""
+#~ "If selected structures remain redundant, test "
+#~ "a larger `min_distance_condition`, such as 0.05-0.1."
+
+#~ msgid "注意：FPS 只挑不造——如果输入池本身没有某类构型，FPS 不会凭空变出来"
+#~ msgstr ""
+#~ "FPS selects but never generates. A missing "
+#~ "configuration family cannot appear unless it "
+#~ "exists in the input pool."
+
+#~ msgid "场景：多个化学体系共用一个候选池"
+#~ msgstr "Scenario: multiple chemical systems share one candidate pool"
+
+#~ msgid ""
+#~ "候选池同时包含单质、二元和三元结构时，全局 FPS 会让所有结构竞争同一预算。如果要求每种元素集合至少保留一个候选，可选择 "
+#~ "`element_set`。例如 V、Co、Ni、V-Co、V-Ni、Co-Ni 和 V-Co-Ni"
+#~ " 会形成 7 个组；当 `n_samples < 7` 时卡片明确报错，不静默漏组。"
+#~ msgstr ""
+#~ "When a candidate pool contains unary, binary,"
+#~ " and ternary structures, global FPS makes "
+#~ "every structure compete for one budget. Choose"
+#~ " `element_set` when every element set must "
+#~ "retain at least one candidate. For example,"
+#~ " V, Co, Ni, V-Co, V-Ni, Co-Ni, and"
+#~ " V-Co-Ni form seven groups; if `n_samples"
+#~ " < 7`, the card raises an explicit "
+#~ "error instead of silently omitting groups."
+
+#~ msgid ""
+#~ "已有训练集可作为 warm start，卡片会优先选择当前训练集尚未覆盖的区域。`global` "
+#~ "模式把全部已有结构作为距离起点；`element_set` 模式只比较元素集合相同的已有结构。已有训练集不计入 "
+#~ "`最多保留结构数`（`n_samples`）输出数量。"
+#~ msgstr ""
+#~ "An existing training set can be used as"
+#~ " a warm start, so the card prioritizes "
+#~ "regions not covered by it. `global` uses "
+#~ "all existing structures as distance anchors; "
+#~ "`element_set` compares only existing structures with"
+#~ " the same element set. Existing training "
+#~ "structures do not count toward the output "
+#~ "limit `Maximum structures to keep` (`n_samples`)."
+
+#~ msgid "这里“元素集合”只看出现过哪些元素，不看化学计量比。例如 H₂O 和 H₂O₂ 都属于 `{H, O}` 组。"
+#~ msgstr ""
+#~ "Here, an `element set` records only which "
+#~ "elements appear, not their stoichiometric ratios."
+#~ " For example, H₂O and H₂O₂ both belong "
+#~ "to the `{H, O}` group."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "生成链条产生了大量结构（>500），需要去冗余"
+#~ msgstr "A generation chain produced hundreds of structures and needs deduplication"
+
+#~ msgid "怀疑训练集有大量重复/高度相似的构型"
+#~ msgstr "The pool likely contains many duplicate or highly similar configurations"
+
+#~ msgid "需要在保持覆盖的前提下压缩训练集体积"
+#~ msgstr "The dataset must be compressed while retaining coverage"
+
+#~ msgid "混合了多个元素集合，并要求每组都有明确预算"
+#~ msgstr "The pool mixes multiple element sets and each group needs an explicit budget."
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "还在生成阶段，结构数量很少（<50）"
+#~ msgstr "The pool is still small"
+
+#~ msgid "输入池本身还没经过物理清洗（如已用 NEP 预筛、剔除异常结构）"
+#~ msgstr "The input pool has not yet been physically cleaned"
+
+#~ msgid "模型还没训练出来——FPS 需要一个可用的 NEP 模型来生成描述符"
+#~ msgstr "No suitable NEP model is available for descriptors"
+
+#~ msgid ""
+#~ "`str`。指向用于生成 NEP 描述符的模型文件，界面默认使用内置 "
+#~ "`nep89.txt`。路径为空或文件不存在时卡片直接报错。内置模型便于快速筛选；正式数据选择更适合使用覆盖候选化学体系和局域环境的模型。"
+#~ msgstr ""
+#~ "`str`. Path to the model used to "
+#~ "generate NEP descriptors; the UI defaults to"
+#~ " the bundled `nep89.txt`. An empty or "
+#~ "missing path fails immediately. The bundled "
+#~ "model is convenient for quick screening; for"
+#~ " production data, use a model covering the"
+#~ " candidate chemistry and local environments."
+
+#~ msgid "`int`，默认 100。FPS 过滤后保留结构数的上限。这是输出数量，不是上游生成数量。若候选数更少，最多保留全部候选；若距离阈值提前触发，实际输出也会少于该值。"
+#~ msgstr ""
+#~ "`int`, default 100. Maximum number of "
+#~ "structures retained after FPS. This is an "
+#~ "output limit, not the upstream generation "
+#~ "count. Fewer candidates means fewer outputs; "
+#~ "an active distance threshold can also stop "
+#~ "earlier."
+
+#~ msgid "`float`，默认 0。描述符空间中的最小距离阈值，没有物理单位，而且数值尺度依赖 NEP 模型。"
+#~ msgstr ""
+#~ "`float`, default 0. Minimum distance threshold "
+#~ "in descriptor space. It has no physical "
+#~ "unit and its scale depends on the NEP"
+#~ " model."
+
+#~ msgid "`0`：关闭距离提前停止，按数量上限选择；"
+#~ msgstr "`0`: disable early stopping by distance and select up to the count limit;"
+
+#~ msgid "`>0`：下一个最远候选与已覆盖集合的距离低于该值时提前停止。"
+#~ msgstr ""
+#~ "`>0`: stop early when the next farthest "
+#~ "candidate is closer than this value to "
+#~ "the covered set."
+
+#~ msgid "值越大去重越激进，也越可能选不够目标数量。不要把某个模型上合适的阈值直接照搬到另一个模型。"
+#~ msgstr ""
+#~ "Larger values deduplicate more aggressively and "
+#~ "make it more likely that the target "
+#~ "count will not be reached. Do not copy"
+#~ " a threshold that works for one model "
+#~ "directly to another."
+
+#~ msgid "`str`，默认 `'auto'`。描述符计算后端。正常保持 `auto` 让程序自己选可用的 NEP 后端；只有在你需要调试性能或对比后端差异时才手动指定。"
+#~ msgstr ""
+#~ "`str`, default `'auto'`. Descriptor backend. Keep"
+#~ " automatic selection unless diagnosing performance "
+#~ "or backend differences."
+
+#~ msgid ""
+#~ "`int`，默认 100000。每个描述符计算分块允许的总原子数，CPU 和 CUDA "
+#~ "使用同一语义。显存或内存不足时调小；它不是结构数量，同一分块中所有结构的原子数之和不能超过该值。"
+#~ msgstr ""
+#~ "`int`, default 100000. Maximum total atom "
+#~ "count in each descriptor calculation chunk, "
+#~ "with the same meaning on CPU and CUDA."
+#~ " Reduce it when device or host memory "
+#~ "is insufficient. This is not a structure "
+#~ "count; it limits the sum of atoms across"
+#~ " all structures in the chunk."
+
+#~ msgid "兼容旧流程；全部结构共享一个预算，没有 warm start 时从输入索引 0 开始"
+#~ msgstr ""
+#~ "Compatible with the legacy workflow; all "
+#~ "structures share one budget, and without a "
+#~ "warm start the input index 0 is used "
+#~ "first"
+
+#~ msgid "按元素集合分组、平方根分配名额、组内从描述符中心开始 FPS"
+#~ msgstr ""
+#~ "Groups by element set, allocates slots by "
+#~ "square root, and starts FPS from the "
+#~ "descriptor center of each group."
+
+#~ msgid "旧版卡片 JSON 没有该字段时按 `global` 恢复，避免加载旧工作流后静默改变输出。"
+#~ msgstr ""
+#~ "Legacy card JSON without this field restores"
+#~ " as `global`, preventing silent output changes"
+#~ " when older workflows are loaded."
+
+#~ msgid ""
+#~ "`str`，默认空字符串。指向已有 `.xyz` 或 `.extxyz` 训练集，作为描述符覆盖的 "
+#~ "warm start。`global` 模式与全部已有结构比较；`element_set` "
+#~ "只与同元素集合结构比较。路径不存在、无法读取或不含结构时明确报错。"
+#~ msgstr ""
+#~ "`str`, default empty. Path to an existing "
+#~ "`.xyz` or `.extxyz` training set used as "
+#~ "a descriptor-coverage warm start. `global` "
+#~ "compares with all existing structures; `element_set`"
+#~ " compares only structures with the same "
+#~ "element set. Missing, unreadable, or empty "
+#~ "paths fail explicitly."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "兼容旧流程"
+#~ msgstr "Legacy-compatible workflow"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"FPSFilterDataCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"nep_path\": \"path/to/nep.txt\",\n"
+#~ "    \"n_samples\": 100,\n"
+#~ "    \"min_distance\": 0.0,\n"
+#~ "    \"backend\": \"auto\",\n"
+#~ "    \"chunk_max_atoms\": 100000,\n"
+#~ "    \"strategy\": \"global\",\n"
+#~ "    \"existing_dataset_path\": \"\"\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"FPSFilterDataCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"nep_path\": \"path/to/nep.txt\",\n"
+#~ "    \"n_samples\": 330,\n"
+#~ "    \"min_distance\": 0.01,\n"
+#~ "    \"backend\": \"auto\",\n"
+#~ "    \"chunk_max_atoms\": 100000,\n"
+#~ "    \"strategy\": \"element_set\",\n"
+#~ "    \"existing_dataset_path\": \"path/to/train.xyz\"\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "`FPS Filter` → 导出 DFT 计算：控制进入 DFT 计算的结构数量，节省计算资源"
+#~ msgstr "`FPS Filter` -> DFT export: bound the number of expensive labels"
+
+#~ msgid "**卡片报错\"NEP file does not exist\"。** `描述符 NEP 模型`（`nep_path`）指向的文件不存在。确认路径正确。"
+#~ msgstr ""
+#~ "**The card reports \"NEP file does not "
+#~ "exist\".** The file pointed to by `Descriptor"
+#~ " NEP model` (`nep_path`) is missing. Check "
+#~ "the path."
+
+#~ msgid "**输出数量远小于目标上限。** 描述符距离阈值太严，无法选出足够多满足距离约束的结构。降低该阈值，或设为 0 只按数量停止。"
+#~ msgstr ""
+#~ "**The output count is far below the "
+#~ "limit.** The descriptor distance threshold is "
+#~ "too strict to select enough structures "
+#~ "satisfying the distance constraint. Lower it "
+#~ "or set it to 0 to stop only by "
+#~ "count."
+
+#~ msgid "**平衡模式提示目标数量不足。** `最多保留结构数`（`n_samples`）小于元素集合组数。提高目标数量，或者在上游移除本轮不需要的化学体系。"
+#~ msgstr ""
+#~ "**Balanced mode reports too few target "
+#~ "structures.** `Maximum structures to keep` "
+#~ "(`n_samples`) is smaller than the number of"
+#~ " element-set groups. Increase the target or"
+#~ " remove unnecessary chemistries upstream."
+
+#~ msgid "**已有训练集没有改变结果。** warm start 只比较元素集合相同的结构。检查候选池与已有训练集的元素集合是否一致，并确认所用 NEP 模型支持这些元素。"
+#~ msgstr ""
+#~ "**The existing training set does not change"
+#~ " the result.** The warm start compares only"
+#~ " structures with matching element sets. Check "
+#~ "that the candidate pool and existing training"
+#~ " set use consistent element sets and that"
+#~ " the NEP model supports those elements."
+
+#~ msgid "**挑出的结构覆盖不全。** FPS 只能从现有池里选。如果某些局域环境在输入池里本来就没有，FPS 也无法补充。回到上游增加生成多样性。"
+#~ msgstr ""
+#~ "**Coverage remains incomplete.** FPS cannot create"
+#~ " absent environments. Add the missing diversity"
+#~ " upstream."
+
+#~ msgid ""
+#~ "**描述符计算很慢。** 大批量时描述符计算可能耗时。`单批最大原子数`（`chunk_max_atoms`）控制单批总原子数；它不是最终 "
+#~ "FPS 的分块采样参数，减小它只降低计算峰值内存，不会改变选择算法。"
+#~ msgstr ""
+#~ "**Descriptor calculation is slow.** Descriptor "
+#~ "generation can take time for large batches."
+#~ " `Maximum atoms per chunk` (`chunk_max_atoms`) "
+#~ "controls the total atoms in one batch; "
+#~ "it is not a chunked-sampling parameter "
+#~ "for FPS. Reducing it lowers peak memory "
+#~ "only and does not change the selection "
+#~ "algorithm."
+
+#~ msgid "不新增专用 Config_type 标签。输出结构保留原标签。"
+#~ msgstr ""
+#~ "No dedicated `Config_type` is added; selected "
+#~ "structures preserve their existing labels."
+
+#~ msgid ""
+#~ "无随机性。同参数同输入会得到一致输出。`global` 模式保留原有索引 0 "
+#~ "起点，因此改变输入顺序可能改变选择；`element_set` "
+#~ "从各组描述符中心开始，对输入顺序更稳定。特征完全相同的近重复结构仍可能互换原始索引，但覆盖等价。"
+#~ msgstr ""
+#~ "There is no randomness: identical inputs and"
+#~ " parameters produce identical output. `global` "
+#~ "retains the original index-0 starting point, "
+#~ "so reordering the input may change the "
+#~ "selection; `element_set` starts from each group "
+#~ "descriptor center and is more stable to "
+#~ "input order. Near-duplicate structures with "
+#~ "identical features may exchange original indices,"
+#~ " but their coverage is equivalent."

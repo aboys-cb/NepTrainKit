@@ -523,6 +523,50 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertTrue(widget.local_center_selector.isHidden())
         widget.close()
 
+    def test_local_chemistry_status_does_not_stretch_control_row(self):
+        widget = TrainingSetAuditWidget()
+        widget.resize(1100, 760)
+        widget.show()
+        widget.set_result(self._local_chemistry_result())
+        widget.dimension_list.setCurrentRow(2)
+        widget.page_tabs.setCurrentIndex(1)
+        widget.data_map_tabs.setCurrentIndex(1)
+        self._app.processEvents()
+
+        control_bottom = max(
+            widget.local_scope_selector.geometry().bottom(),
+            widget.local_center_selector.geometry().bottom(),
+            widget.plot_selector.geometry().bottom(),
+        )
+        self.assertGreater(widget.analysis_status_label.geometry().top(), control_bottom)
+        self.assertGreater(
+            widget.analysis_status_label.width(),
+            widget.plot_selector.width(),
+        )
+        self.assertLessEqual(
+            widget.local_scope_selector.height(),
+            widget.local_scope_selector.sizeHint().height(),
+        )
+        widget.close()
+
+    def test_review_summary_stays_above_compact_action_row(self):
+        widget = TrainingSetAuditWidget()
+        widget.resize(760, 680)
+        widget.show()
+        widget.set_result(self._dashboard_result())
+        widget.page_tabs.setCurrentIndex(2)
+        self._app.processEvents()
+
+        self.assertGreater(
+            widget.review_state_selector.geometry().top(),
+            widget.review_summary_label.geometry().bottom(),
+        )
+        self.assertLessEqual(
+            widget.review_state_selector.height(),
+            widget.review_state_selector.sizeHint().height(),
+        )
+        widget.close()
+
     def test_model_panel_distinguishes_compute_filtering_from_absent_element_evidence(self):
         result = self._local_chemistry_result()
         local_overview = {

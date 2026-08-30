@@ -23774,6 +23774,76 @@ Magnetic: {magnetic}</source>
         <source>Exact composition groups</source>
         <translation>精确组分分组</translation>
     </message>
+    <message>
+        <location filename="../ui/widgets/audit_chart.py" line="92" />
+        <source>Export the current chart or its plotting data</source>
+        <translation>导出当前图表或其绘图数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/audit_chart.py" line="99" />
+        <source>Export current chart</source>
+        <translation>导出当前图表</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/audit_chart.py" line="106" />
+        <source>Export image…</source>
+        <translation>导出图片…</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/audit_chart.py" line="114" />
+        <source>Export plotting data…</source>
+        <translation>导出绘图数据…</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4821" />
+        <source>Select a chart before exporting an image.</source>
+        <translation>请先选择图表，再导出图片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4827" />
+        <source>Export audit chart image</source>
+        <translation>导出训练集评估图表</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4830" />
+        <source>PNG images (*.png)</source>
+        <translation>PNG 图片 (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4840" />
+        <source>Failed to export chart image.</source>
+        <translation>图表图片导出失败。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4844" />
+        <source>Chart image exported to: {path}</source>
+        <translation>图表图片已导出至：{path}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4850" />
+        <source>Select a chart before exporting plotting data.</source>
+        <translation>请先选择图表，再导出绘图数据。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4855" />
+        <source>Export audit chart plotting data</source>
+        <translation>导出训练集评估图表绘图数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4858" />
+        <source>CSV files (*.csv)</source>
+        <translation>CSV 文件 (*.csv)</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4868" />
+        <source>Failed to export plotting data.</source>
+        <translation>绘图数据导出失败。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4872" />
+        <source>Plotting data exported to: {path}</source>
+        <translation>绘图数据已导出至：{path}</translation>
+    </message>
 </context>
 <context>
     <name>TrainingSetAuditWindow</name>

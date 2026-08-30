@@ -1712,6 +1712,13 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")
             self.assertEqual(widget.rerun_button.text(), "重新检查")
             self.assertEqual(widget.export_report_button.text(), "导出 HTML 报告")
+            self.assertEqual(
+                [
+                    action.text()
+                    for action in widget.chart_widget.export_button.menu().actions()
+                ],
+                ["导出图片…", "导出绘图数据…"],
+            )
             self.assertEqual(widget.fact_total_atoms_label.text(), "原子总数")
             self.assertEqual(widget.fact_atom_range_label.text(), "每结构原子数")
             self.assertFalse(hasattr(widget, "fact_config_label"))
@@ -2075,6 +2082,48 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.rerun_button.click()
 
         self.assertEqual(received, ["rerun"])
+
+    def test_all_audit_charts_share_top_right_export_button_state(self):
+        widget = TrainingSetAuditWidget()
+        payload = self._histogram("export:test", "Export test")
+
+        for chart in (
+            widget.composition_chart,
+            widget.chart_widget,
+            widget.target_chart,
+        ):
+            button = chart.export_button
+            self.assertFalse(button.isEnabled())
+            self.assertEqual(button.text(), "")
+            self.assertEqual(button.accessibleName(), "Export current chart")
+            chart.set_plot(payload)
+            self.assertTrue(button.isEnabled())
+            chart.clear()
+            self.assertFalse(button.isEnabled())
+
+    def test_current_chart_export_handlers_write_png_and_csv(self):
+        from tempfile import TemporaryDirectory
+
+        widget = TrainingSetAuditWidget()
+        widget.chart_widget.set_plot(self._histogram("export:test", "Export test"))
+        widget.chart_widget.resize(640, 260)
+
+        with TemporaryDirectory() as tmp:
+            image_target = Path(tmp) / "chart_without_suffix"
+            data_target = Path(tmp) / "data_without_suffix"
+            with patch(
+                "NepTrainKit.ui.pages.training_set_audit.call_path_dialog",
+                side_effect=(str(image_target), str(data_target)),
+            ):
+                widget._export_chart_image(widget.chart_widget)
+                widget._export_chart_data(widget.chart_widget)
+
+            self.assertTrue(image_target.with_suffix(".png").is_file())
+            csv_text = data_target.with_suffix(".csv").read_text(
+                encoding="utf-8-sig"
+            )
+            self.assertIn("bin_left", csv_text)
+            self.assertIn("export:test", csv_text)
 
     def test_export_report_writes_html(self):
         from pathlib import Path

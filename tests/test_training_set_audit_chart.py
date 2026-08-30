@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import csv
+
 import pytest
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QImage
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
@@ -147,6 +150,66 @@ def test_histogram_state_can_be_set_and_cleared(app, histogram_payload):
 
     assert widget.plot_id == ""
     assert widget.has_data is False
+
+
+def test_plot_change_signal_tracks_export_availability(app, histogram_payload):
+    widget = AuditChartWidget()
+    states = []
+    widget.plotChangedSignal.connect(states.append)
+
+    widget.set_plot(histogram_payload)
+    widget.clear()
+
+    assert states == [True, False]
+
+
+def test_chart_exports_two_x_png_without_focus_marker(app, histogram_payload, tmp_path):
+    widget = AuditChartWidget()
+    widget.set_plot(histogram_payload)
+    widget.resize(640, 260)
+    widget.show()
+    widget.setFocus()
+    app.processEvents()
+    target = tmp_path / "histogram.png"
+
+    widget.save_png(target, scale=2.0)
+
+    image = QImage(str(target))
+    assert not image.isNull()
+    assert image.width() == 1280
+    assert image.height() == 520
+
+
+@pytest.mark.parametrize(
+    ("payload_fixture", "expected_field", "expected_rows"),
+    (
+        ("histogram_payload", "bin_left", 2),
+        ("categorical_payload", "category", 2),
+        ("composition_payload", "x_value", 3),
+        ("composition_phase_payload", "series_id", 6),
+        ("category_share_payload", "row_id", 4),
+    ),
+)
+def test_chart_exports_tidy_csv_for_every_plot_kind(
+    app,
+    request,
+    tmp_path,
+    payload_fixture,
+    expected_field,
+    expected_rows,
+):
+    widget = AuditChartWidget()
+    widget.set_plot(request.getfixturevalue(payload_fixture))
+    target = tmp_path / f"{payload_fixture}.csv"
+
+    widget.write_csv(target)
+
+    with target.open("r", encoding="utf-8-sig", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert len(rows) == expected_rows
+    assert expected_field in rows[0]
+    assert rows[0]["plot_id"] == widget.plot_id
+    assert "structure_indices" not in rows[0]
 
 
 def test_categorical_payload_is_accepted(app, categorical_payload):

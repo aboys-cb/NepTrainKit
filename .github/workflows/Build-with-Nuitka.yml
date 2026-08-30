@@ -92,8 +92,27 @@ jobs:
           if (-not (Test-Path "$dist/translations/neptrainkit_zh_CN.qm")) {
             throw "Chinese translation catalog is missing from the standalone package."
           }
-          if (-not (Test-Path "$dist/workflow_templates/01_crystal_strain.json")) {
-            throw "Built-in workflow templates are missing from the standalone package."
+          $templateSource = "${{ github.workspace }}/src/NepTrainKit/workflow_templates"
+          $templateDestination = "$dist/workflow_templates"
+          $sourceTemplates = @(
+            Get-ChildItem -LiteralPath $templateSource -Filter "*.json" -File |
+              Select-Object -ExpandProperty Name |
+              Sort-Object
+          )
+          $packagedTemplates = @(
+            Get-ChildItem -LiteralPath $templateDestination -Filter "*.json" -File |
+              Select-Object -ExpandProperty Name |
+              Sort-Object
+          )
+          if ($sourceTemplates.Count -eq 0) {
+            throw "No built-in workflow template JSON files were found in the source package."
+          }
+          $templateDiff = Compare-Object `
+            -ReferenceObject $sourceTemplates `
+            -DifferenceObject $packagedTemplates
+          if ($templateDiff) {
+            $templateDiffText = ($templateDiff | Out-String).Trim()
+            throw "Built-in workflow templates differ between source and standalone package:`n$templateDiffText"
           }
           New-Item -ItemType Directory -Force "$dist/Log"
           New-Item -ItemType File -Path "$dist/Log/.placeholder" -Force

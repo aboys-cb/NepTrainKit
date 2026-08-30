@@ -56,11 +56,6 @@ jobs:
         python -c "from NepTrainKit._native import _io, _audit, _phase, _magnetism"
         python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
 
-    - name: Select stable Qt platform on Windows
-      if: runner.os == 'Windows'
-      shell: bash
-      run: echo "QT_QPA_PLATFORM=windows" >> "$GITHUB_ENV"
-
     - name: Run tests with pytest
       run: |
         python -m pytest tests/ --cov=./src/NepTrainKit --junitxml=junit.xml -o junit_family=legacy

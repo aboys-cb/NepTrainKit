@@ -26,6 +26,9 @@ from .spin_disorder_card import SpinDisorderCard
 from .correlated_random_spin_card import CorrelatedRandomSpinCard
 from .spin_spiral_card import SpinSpiralCard
 from .folded_helix_card import FoldedHelixCard
+from .local_magnetic_response_card import LocalMagneticResponseCard
+from .soc_texture_response_card import SOCTextureResponseCard
+from .magnetoelastic_response_card import MagnetoelasticResponseCard
 from .group_label_card import GroupLabelCard
 from .random_vacancy_card import RandomVacancyCard
 from .vacancy_defect_card import VacancyDefectCard
@@ -35,12 +38,14 @@ from .organic_mol_config_pbc_card import OrganicMolConfigPBCCard
 from .local_solvation_card import LocalSolvationCard
 from .solvent_box_fill_card import SolventBoxFillCard
 from .layer_copy_card import LayerCopyCard
+from .interface_layer_mix_card import InterfaceLayerMixCard
 from .interstitial_adsorbate_card import InsertDefectCard
 
 from .fps_filter_card import FPSFilterDataCard
 from .geometry_filter_card import GeometryFilterCard
 from NepTrainKit.ui.widgets.card_widget import FilterDataCard
 from .card_group import CardGroup
+from .workflow_fork import WorkflowFork
 
 __all__ = [
     "SuperCellCard",
@@ -69,6 +74,9 @@ __all__ = [
     "CorrelatedRandomSpinCard",
     "SpinSpiralCard",
     "FoldedHelixCard",
+    "LocalMagneticResponseCard",
+    "SOCTextureResponseCard",
+    "MagnetoelasticResponseCard",
     "GroupLabelCard",
 
     "RandomVacancyCard",
@@ -79,10 +87,12 @@ __all__ = [
     "LocalSolvationCard",
     "SolventBoxFillCard",
     "LayerCopyCard",
+    "InterfaceLayerMixCard",
     "InsertDefectCard",
     "FPSFilterDataCard",
     "GeometryFilterCard",
     "FilterDataCard",
     "CardGroup",
+    "WorkflowFork",
 
 ]

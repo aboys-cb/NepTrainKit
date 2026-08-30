@@ -8,64 +8,90 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 09:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/example/index.rst:4
-msgid "能量基线平移"
-msgstr "Energy Baseline Shift"
-
-#: ../../source/example/index.rst:4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:7
 msgid "按索引选择结构"
 msgstr "Select Structures by Index"
 
-#: ../../source/example/index.rst:4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:7
 msgid "清理可疑结构"
 msgstr "Review Suspicious Structures"
 
-#: ../../source/example/index.rst:4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:7
 msgid "最大误差结构复核"
 msgstr "Review Largest-Error Structures"
 
-#: ../../source/example/index.rst:4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:7
 msgid "最远点采样"
 msgstr "Farthest-Point Sampling"
 
-#: ../../source/example/index.rst:4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:7
 msgid "批量编辑结构元数据"
 msgstr "Edit Structure Metadata in Batches"
 
-#: ../../source/example/index.rst:4
-msgid "训练集评估与分布"
-msgstr "Training set check and distributions"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:7
+msgid "选择、清洗与导出"
+msgstr "Select, clean, and export"
 
-#: ../../source/example/index.rst:4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
+msgid "能量基线平移"
+msgstr "Energy Baseline Shift"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
+msgid "训练集评估与分布"
+msgstr "Training Set Audit and distributions"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
 msgid "加上或减去 DFT-D3"
 msgstr "Add or Subtract DFT-D3"
 
-#: ../../source/example/index.rst:4
-msgid "用一条流程学会卡片系统"
-msgstr "Learn the Card System with One Workflow"
-
-#: ../../source/example/index.rst:4
-msgid "NEP 数据展示示例"
-msgstr "NEP Dataset Display Example"
-
-#: ../../source/example/index.rst:4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
 msgid "Descriptor 绘图示例"
 msgstr "Descriptor Plotting Example"
 
-#: ../../source/example/index.rst:2 cfc54c3526ce4ed194b024122e41351e
-msgid "示例"
-msgstr "Examples"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:17
+msgid "数值修正与分析"
+msgstr "Numerical corrections and analysis"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:26
+msgid "NEP Dataset Display 示例"
+msgstr "NEP Dataset Display examples"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:26
+msgid "用一条流程学会卡片系统"
+msgstr "Learn the Card System with One Workflow"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:26
+msgid "页面与卡片流程"
+msgstr "Page and card workflows"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:2
+#: 4090fc1dd55747f8a4775f17d927076b
+msgid "按具体任务操作"
+msgstr "Task-based procedures"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/index.rst:4
+#: 4a883ca1da594eb586c60828edf1c117
+msgid ""
+"这里的页面每次解决一个明确问题。需要跨越“生成候选结构、清洗、DFT、训练和复"
+"核” 多个阶段时，请改看 :doc:`../workflows/index`。"
+msgstr "Each page here solves one clearly defined problem. When a task spans candidate generation, cleaning, DFT, training, and review, use :doc:`../workflows/index` instead."
+
+#~ msgid "NEP 数据展示示例"
+#~ msgstr "NEP Dataset Display Example"
+
+#~ msgid "示例"
+#~ msgstr "Examples"
 
 #~ msgid "数据集摘要与分布"
 #~ msgstr "Dataset Summary and Distributions"

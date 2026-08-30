@@ -30,6 +30,8 @@ from packaging.version import InvalidVersion, Version
 
 PYPI_JSON_URL = "https://pypi.org/pypi/{distribution}/json"
 HEALTH_CHECK_FLAG = "--neptrainkit-runtime-health-check"
+NATIVE_HEALTH_CHECK_FLAG = "--neptrainkit-native-health-check"
+NATIVE_HELPER_MODULES = ("_io", "_audit", "_phase", "_magnetism")
 
 
 class RuntimePackageError(RuntimeError):
@@ -619,6 +621,28 @@ def run_runtime_health_command(argv: Sequence[str] | None = None) -> int | None:
     return 0
 
 
+def run_native_health_command(argv: Sequence[str] | None = None) -> int | None:
+    """Import every application-native helper in a fresh packaged process."""
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if not arguments or arguments[0] != NATIVE_HEALTH_CHECK_FLAG:
+        return None
+    if len(arguments) != 1:
+        print("Invalid native health-check arguments.", file=sys.stderr)
+        return 2
+
+    failures: list[str] = []
+    for module_name in NATIVE_HELPER_MODULES:
+        qualified_name = f"NepTrainKit._native.{module_name}"
+        try:
+            importlib.import_module(qualified_name)
+        except Exception as exc:  # noqa: BLE001 - report loader failures to CI
+            failures.append(f"{qualified_name}: {type(exc).__name__}: {exc}")
+    if failures:
+        print("\n".join(failures), file=sys.stderr)
+        return 4
+    return 0
+
+
 def _command_line(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -649,6 +673,8 @@ if __name__ == "__main__":
 
 __all__ = [
     "HEALTH_CHECK_FLAG",
+    "NATIVE_HEALTH_CHECK_FLAG",
+    "NATIVE_HELPER_MODULES",
     "MANAGED_RUNTIME_SPEC",
     "NEP_ADAPTERS_SPEC",
     "PYPI_JSON_URL",
@@ -666,5 +692,6 @@ __all__ = [
     "install_runtime_package_update",
     "rollback_runtime_package",
     "run_runtime_health_command",
+    "run_native_health_command",
     "seed_runtime_package",
 ]

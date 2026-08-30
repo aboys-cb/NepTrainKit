@@ -1,3 +1,5 @@
+from io import StringIO
+
 import numpy as np
 
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset, apply_energy_baseline
@@ -115,3 +117,22 @@ def test_apply_energy_baseline_preserves_high_precision_energy():
 
     assert abs(float(structure.additional_fields["energy_original"]) - precise_energy) < 1e-15
     assert abs(float(structure.energy) - (precise_energy - 0.358024679135801)) < 1e-15
+
+
+def test_apply_energy_baseline_xyz_contains_original_and_shifted_energy():
+    structure = _make_structure("A/1", ["H", "O"], 10.0)
+    preset = EnergyBaselinePreset(
+        alignment_mode="REF_GROUP",
+        elements=["H", "O"],
+        group_to_ref={"A/1": [1.0, 2.0]},
+        group_patterns=[],
+        config_to_group={"A/1": "A/1"},
+    )
+
+    apply_energy_baseline([structure], preset)
+    output = StringIO()
+    structure.write(output)
+    header = output.getvalue().splitlines()[1]
+
+    assert "energy=7" in header
+    assert "energy_original=10" in header

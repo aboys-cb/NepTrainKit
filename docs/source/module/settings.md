@@ -10,12 +10,14 @@
 | 力图数值不符合习惯 | `Force data format` | 在原始力和归一化显示之间切换 |
 | 打开目录时不想自动加载 | `Auto loading` | 控制是否自动读取启动路径里的相关结果文件 |
 | 卡片处理时原子顺序影响观察 | `Sort atoms` | 处理结构时按元素顺序重排原子 |
-| 卡片菜单太拥挤 | `Use card group menu` | 按卡片 `group` 分组显示 Make Dataset 菜单 |
-| DeepMD 导出不想丢目录层级 | `Keep DeepMD subfolders` | 导出 `deepmd/npy` 时保留导入时的子目录结构 |
+| 卡片菜单太拥挤 | `Use card group menu` | 按卡片 `group` 分组显示 生成数据集 菜单 |
 | 反复打开同一批输出较慢 | `Cache output files` | 缓存 `*.out` 和 `descriptor.out`，减少重复解析 |
 | 导出小数位不合适 | `Export significant digits` | 控制 `xyz` / `extxyz` 中逐原子数值的有效数字 |
 | 源文件没有 `Config_type` | `Default Config_type` | 给缺少标签的结构补默认来源标签 |
 | 非物理结构检测太松或太严 | `Covalent radius coefficient` | 调整近邻距离判据 |
+
+DeepMD 的标准/Mixed 格式和标准 NPY 的 `Config_type`/化学式分组方式已移到
+`NEP Dataset Display` 的导出弹窗。程序会记住上次选择，但它们不再占用通用设置页。
 
 ## NEP 后端
 

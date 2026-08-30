@@ -1,0 +1,114 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-index.md:1
+#: f62c9879a136422fb039e5609aa76a2c
+msgid "按索引选择（Select by Index）"
+msgstr "Select by index"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-index.md:3
+#: 34ab40733d0141418f0d728c734542ea
+msgid "作用与适用场景"
+msgstr "Purpose and use cases"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-index.md:5
+#: def214f2a8b24850a61dd24e9b30e7c5
+msgid ""
+"根据结构编号或切片表达式批量选择结构。适合复现实验记录中的结构编号、从外部异"
+"常清单回选结构， 或精确选择不连续的多个区间。这个工具只更新选择集，不会删除或"
+"修改结构。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-index.md:8
+#: 4b7a406e154345d68eddaa2e473d35fa
+msgid "参数与示例"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5219
+#: 0db2fd36eb184767af7215d58f678bc1
+msgid "输入控件："
+msgstr "Input controls:"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5220
+#: 6a2621a91d9c42048c66d90dc83c7930
+msgid "`indexEdit`：索引表达式"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5221
+#: d8bf650e9bdd4d00a96e0ec07c32778d
+msgid "`Use original indices`：默认勾选"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5222
+#: 09dd9176b5444641821b9c2cf9628bec
+msgid "索引表达式支持："
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5223
+#: cb58db1894844a9ca6c4ea922b797411
+msgid "单值：`3`, `-1`"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5224
+#: 2d237586dfcb40f686bea59276c95c64
+msgid "切片：`1:10`, `:100`, `::3`, `10:0:-1`"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5225
+#: 6c84b525277b4ea0a0542b13ef666e47
+msgid "多段：`1:10,20,30:40:2`（逗号或空白分隔）"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5226
+#: 3c38d8df69d44ec181ac8f4505895199
+msgid "执行结果：解析后选中结构；空表达式无效果。"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5228
+#: 4c3fef6d7f9d4c61ab7dcb2b6eab3011
+msgid ""
+"![Select by Index Dialog](../_static/image/generated/show_nep_reference/"
+"g_index_dialog.png)"
+msgstr ""
+"![Select by Index Dialog](../_static/image/generated/show_nep_reference/"
+"g_index_dialog.png)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5228
+#: 6776bc761be341b3af6cbe1ac222d02c
+msgid "Select by Index Dialog"
+msgstr "Select by Index Dialog"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5228
+#: 6776bc761be341b3af6cbe1ac222d02c
+msgid ""
+".. image:: ../_static/image/generated/show_nep_reference/g_index_dialog.png"
+msgstr ""
+".. image:: ../_static/image/generated/show_nep_reference/g_index_dialog.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-index.md:15
+#: c6098d3a267447a2a25f6973c2b51852
+msgid "操作后检查"
+msgstr "Post-operation checks"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-index.md:17
+#: 82340dde4a8d45c79cfc6efd0bf0c8b0
+msgid ""
+"查看底部 `Sel` 数量是否与表达式预期一致。勾选“使用原始索引”时，编号对应刚导入"
+"数据时的索引； 关闭后则对应当前活动数据的行号，删除结构后两者可能不同。"
+msgstr "Details for this option"

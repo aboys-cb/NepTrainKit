@@ -1,0 +1,60 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:1
+#: 6a052c56e38d4e5a86e5fb9e2bd34abf
+msgid "工作流与元数据"
+msgstr "Workflows and metadata"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:3
+#: 24d03c4ed79549ec8202d5d66824d4ee
+msgid ""
+"这组卡片不表达某一种材料结构操作，而是控制后续卡片如何识别原子集合、如何分支"
+"以及如何合并输出。"
+msgstr "These cards do not represent a particular structural operation. Instead, they control how later cards identify atom groups, branch the workflow, and merge outputs."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:0
+#: 56d0b9b3e79b472c8637dcab3be35608
+msgid "目标"
+msgstr "Goal"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:0
+#: 796ad023f35b4be1ae19593f2f6a59c2
+msgid "使用卡片"
+msgstr "Card to use"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:0
+#: e1e91866dd504bf98e4974e0bcc9ed1d
+msgid "给原子写入可复用的 `group` 标签"
+msgstr "Write reusable `group` labels to atoms"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:0
+#: 29b064b7dd914f62bb5358d9d21cb54e
+msgid "`Group Label`"
+msgstr "`Group Label`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:0
+#: 36e24ad52efe4430bf8297b4bcae91a2
+msgid "让同一输入进入多个分支并汇总结果"
+msgstr "Send the same input through multiple branches and combine the results"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/workflow-metadata.md:0
+#: dee3e1e6ff8848e8b221cc59ce93ff00
+msgid "`Card Group`"
+msgstr "`Card Group`"

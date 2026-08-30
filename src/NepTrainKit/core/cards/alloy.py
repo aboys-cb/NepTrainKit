@@ -8,6 +8,7 @@ import json
 import math
 import random
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from functools import lru_cache
 from itertools import combinations
@@ -20,8 +21,8 @@ from ase.data import atomic_masses, atomic_numbers
 
 from NepTrainKit.core.alloy import (
     assign_random_occupancy,
-    best_supercell_factors_max_atoms,
     fractions_to_counts_exact,
+    normalize_composition,
     parse_composition,
     parse_element_list,
     simplex_grid_points,
@@ -29,8 +30,41 @@ from NepTrainKit.core.alloy import (
 )
 from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 
+from .errors import CardOperationError
 from .geometry import scaled_positions
 from .operation import GeneratorOperation, StructureOperation
+
+
+def _invalidate_species_change_labels(
+    atoms,
+    *,
+    clear_species_initialization: bool = False,
+) -> None:
+    """Drop reference data that no longer describes changed chemical species."""
+    atoms.calc = None
+    for key in (
+        "energy",
+        "free_energy",
+        "virial",
+        "stress",
+        "dipole",
+        "magmom",
+    ):
+        atoms.info.pop(key, None)
+    array_keys = [
+        "forces",
+        "force",
+        "energies",
+        "atomic_energy",
+        "magmoms",
+        "charges",
+        "bec",
+        "born_effective_charges",
+    ]
+    if clear_species_initialization:
+        array_keys.extend(("spin", "initial_magmoms", "initial_charges"))
+    for key in array_keys:
+        atoms.arrays.pop(key, None)
 
 
 def _as_list(value: Any) -> list:
@@ -69,9 +103,12 @@ def _normalized_dopant_atom_ratios(
     dopant_list = [str(element) for element in dopant_list]
     ratios = np.array(list(ratios), dtype=float)
     if not dopant_list:
-        raise ValueError("At least one dopant is required.")
+        raise CardOperationError("alloy.dopant_required", "At least one dopant is required.")
     if ratios.size != len(dopant_list) or ratios.size == 0:
-        raise ValueError("Dopant ratios must match dopant elements.")
+        raise CardOperationError(
+            "alloy.dopant_ratio_count_mismatch",
+            "Dopant ratios must match dopant elements.",
+        )
     if np.any(~np.isfinite(ratios)) or np.any(ratios < 0.0):
         raise ValueError("Dopant ratios must be finite and non-negative.")
     invalid_elements = [
@@ -140,6 +177,104 @@ class RandomDopingParams:
 class RandomDopingOperation(StructureOperation):
     """Perform random atomic substitutions according to explicit rules."""
 
+    def sampling_summary(
+        self,
+        structure,
+        params: RandomDopingParams,
+    ) -> dict[str, object]:
+        """Validate one input and describe the exact output and rule bounds."""
+        if not isinstance(params.rules, list) or not params.rules:
+            raise CardOperationError(
+                "random_doping.empty_rules",
+                "Random Doping requires at least one replacement rule.",
+            )
+        if len(structure) <= 0:
+            raise CardOperationError(
+                "random_doping.empty_structure",
+                "Random Doping requires at least one atom in the input structure.",
+            )
+
+        allocation = str(params.doping_type).strip()
+        if allocation not in {"Random", "Exact"}:
+            raise CardOperationError(
+                "random_doping.invalid_allocation",
+                "Random Doping allocation must be Random or Exact.",
+            )
+        try:
+            outputs_per_input = int(params.max_structures)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_doping.invalid_outputs",
+                "Random Doping outputs per input must be an integer of at least 1.",
+            ) from exc
+        if outputs_per_input < 1:
+            raise CardOperationError(
+                "random_doping.invalid_outputs",
+                "Random Doping outputs per input must be at least 1.",
+            )
+        try:
+            seed = int(params.seed)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_doping.invalid_seed",
+                "Random Doping seed must be a non-negative integer.",
+            ) from exc
+        if seed < 0:
+            raise CardOperationError(
+                "random_doping.invalid_seed",
+                "Random Doping seed must be non-negative.",
+            )
+
+        validated_rules = self._validated_rules(params.rules)
+        prepared_rules = self._prepared_rules(structure, validated_rules)
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
+        group_values = np.asarray(
+            structure.arrays.get("group", np.empty(0, dtype=object)),
+            dtype=object,
+        )
+        rule_summaries: list[dict[str, object]] = []
+        for rule_index, (_label, rule, target, dopants, groups) in enumerate(
+            prepared_rules,
+            start=1,
+        ):
+            candidate_mask = symbols == target
+            if groups:
+                candidate_mask &= np.isin(group_values, groups)
+            candidate_indices = np.nonzero(candidate_mask)[0]
+            minimum, maximum = self._doping_count_bounds(
+                structure,
+                candidate_indices,
+                target,
+                dopants,
+                rule,
+            )
+            rule_summaries.append(
+                {
+                    "rule_index": rule_index,
+                    "target": target,
+                    "dopants": dict(dopants),
+                    "ratio_type": str(rule.get("ratio_type", "atom")),
+                    "amount_mode": str(rule.get("use", "atomic_percent")),
+                    "groups": tuple(groups),
+                    "eligible_sites": int(len(candidate_indices)),
+                    "replacement_min": int(minimum),
+                    "replacement_max": int(maximum),
+                }
+            )
+        if not any(int(item["replacement_max"]) > 0 for item in rule_summaries):
+            raise CardOperationError(
+                "random_doping.no_effect",
+                "Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.",
+            )
+        return {
+            "allocation": allocation,
+            "outputs_per_input": outputs_per_input,
+            "use_seed": bool(params.use_seed),
+            "seed": seed,
+            "rules": tuple(rule_summaries),
+            "prepared_rules": prepared_rules,
+        }
+
     @staticmethod
     def _validated_rules(
         rules: list[dict[str, Any]],
@@ -148,20 +283,37 @@ class RandomDopingOperation(StructureOperation):
         for rule_index, rule in enumerate(rules, start=1):
             label = f"RandomDoping rule {rule_index}"
             if not isinstance(rule, dict):
-                raise ValueError(f"{label} must be a mapping.")
+                raise CardOperationError(
+                    "random_doping.rule_not_mapping",
+                    "Random Doping rule {index} must be a mapping.",
+                    index=rule_index,
+                )
             target = str(rule.get("target", "") or "").strip()
             dopants = rule.get("dopants", {})
             if not target:
-                raise ValueError(f"{label} requires a target element.")
+                raise CardOperationError(
+                    "random_doping.missing_target",
+                    "Random Doping rule {index} requires an element to replace.",
+                    index=rule_index,
+                )
             if not isinstance(dopants, dict):
-                raise ValueError(
-                    f"{label} dopants must be an element->ratio mapping."
+                raise CardOperationError(
+                    "random_doping.invalid_dopants",
+                    "Random Doping rule {index} replacement elements must be an element-to-weight mapping.",
+                    index=rule_index,
                 )
             if not dopants:
-                raise ValueError(f"{label} requires at least one dopant element.")
+                raise CardOperationError(
+                    "random_doping.missing_dopants",
+                    "Random Doping rule {index} requires at least one replacement element.",
+                    index=rule_index,
+                )
             if target not in atomic_numbers:
-                raise ValueError(
-                    f"{label} has an unknown target element '{target}'."
+                raise CardOperationError(
+                    "random_doping.unknown_target",
+                    "Random Doping rule {index} has unknown target element {element}.",
+                    index=rule_index,
+                    element=target,
                 )
             invalid_dopants = [
                 str(element)
@@ -169,14 +321,18 @@ class RandomDopingOperation(StructureOperation):
                 if str(element) not in atomic_numbers
             ]
             if invalid_dopants:
-                raise ValueError(
-                    f"{label} has unknown dopant element(s): "
-                    + ", ".join(invalid_dopants)
-                    + "."
+                raise CardOperationError(
+                    "random_doping.unknown_dopants",
+                    "Random Doping rule {index} has unknown replacement element(s): {elements}.",
+                    index=rule_index,
+                    elements=", ".join(invalid_dopants),
                 )
             if target in dopants:
-                raise ValueError(
-                    f"{label} includes target element '{target}' as its own dopant."
+                raise CardOperationError(
+                    "random_doping.target_is_dopant",
+                    "Random Doping rule {index} cannot replace {element} with itself.",
+                    index=rule_index,
+                    element=target,
                 )
             ratio_type = str(rule.get("ratio_type", "atom"))
             try:
@@ -186,7 +342,12 @@ class RandomDopingOperation(StructureOperation):
                     ratio_type,
                 )
             except (TypeError, ValueError) as exc:
-                raise ValueError(f"{label}: {exc}") from exc
+                raise CardOperationError(
+                    "random_doping.invalid_dopant_weights",
+                    "Random Doping rule {index} has invalid replacement weights: {reason}",
+                    index=rule_index,
+                    reason=str(exc),
+                ) from exc
             validated.append((label, rule, target, dopants))
         return validated
 
@@ -294,19 +455,28 @@ class RandomDopingOperation(StructureOperation):
             candidate_mask = symbols == target
             if requested_groups:
                 if "group" not in structure.arrays:
-                    raise ValueError(
-                        f"{label} requests group labels, but the input structure "
-                        "has no group array."
+                    raise CardOperationError(
+                        "random_doping.missing_group_array",
+                        "Random Doping rule {index} uses group labels, but the input has no group array.",
+                        index=len(prepared) + 1,
                     )
                 candidate_mask &= np.isin(group_values, requested_groups)
             candidate_indices = np.nonzero(candidate_mask)[0]
             if len(candidate_indices) == 0:
-                scope = (
-                    f" in group {','.join(requested_groups)}"
-                    if requested_groups
-                    else ""
+                if requested_groups:
+                    raise CardOperationError(
+                        "random_doping.no_candidates",
+                        "Random Doping rule {index} matched no {element} atoms in groups {groups}.",
+                        index=len(prepared) + 1,
+                        element=target,
+                        groups=",".join(requested_groups),
+                    )
+                raise CardOperationError(
+                    "random_doping.no_candidates",
+                    "Random Doping rule {index} matched no {element} atoms in the input.",
+                    index=len(prepared) + 1,
+                    element=target,
                 )
-                raise ValueError(f"{label} matched no '{target}' atoms{scope}.")
 
             initial_max = self._doping_count(
                 structure,
@@ -349,30 +519,36 @@ class RandomDopingOperation(StructureOperation):
         return prepared
 
     def run_structure(self, structure, params: RandomDopingParams) -> list:
-        if not isinstance(params.rules, list) or not params.rules:
-            return [structure.copy()]
-
+        summary = self.sampling_summary(structure, params)
         structure_list = []
-        doping_type = str(params.doping_type).strip()
-        if doping_type not in {"Random", "Exact"}:
-            raise ValueError("RandomDoping: doping_type must be Random or Exact.")
-        exact = doping_type == "Exact"
-        max_structures = int(params.max_structures)
-        if max_structures <= 0:
-            raise ValueError("RandomDoping: max_structures must be >= 1.")
-        seed = int(params.seed)
-        if params.use_seed and seed < 0:
-            raise ValueError("RandomDoping: seed must be >= 0.")
+        allocation = str(summary["allocation"])
+        exact = allocation == "Exact"
+        outputs_per_input = int(summary["outputs_per_input"])
+        seed = int(summary["seed"])
         base_seed = seed if params.use_seed else None
-        validated_rules = self._validated_rules(params.rules)
-        prepared_rules = self._prepared_rules(structure, validated_rules)
-        rng: np.random.Generator | None = None
+        prepared_rules = summary["prepared_rules"]
+        config_id = stable_config_id(structure)
 
-        for _ in range(max_structures):
+        for sample_index in range(outputs_per_input):
+            if base_seed is None:
+                derived_seed = None
+                rng = np.random.default_rng()
+            else:
+                derived_seed = int(
+                    base_seed + config_id * 1000003 + sample_index
+                )
+                rng = np.random.default_rng(derived_seed)
             new_structure = structure.copy()
             symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
             total_doping = 0
-            for label, rule, target, dopants, requested_groups in prepared_rules:
+            rule_metadata: list[dict[str, object]] = []
+            for rule_index, (
+                label,
+                rule,
+                target,
+                dopants,
+                requested_groups,
+            ) in enumerate(prepared_rules, start=1):
                 if requested_groups:
                     group_values = np.asarray(new_structure.arrays["group"], dtype=object)
                     candidate_indices = np.nonzero(
@@ -395,8 +571,6 @@ class RandomDopingOperation(StructureOperation):
                         f"{label} can request up to {max_doping_num} replacements, "
                         f"but only {len(candidate_indices)} eligible atoms are available."
                     )
-                if rng is None:
-                    rng = np.random.default_rng(base_seed)
                 doping_num = self._doping_count(
                     new_structure,
                     candidate_indices,
@@ -408,6 +582,16 @@ class RandomDopingOperation(StructureOperation):
                 if doping_num < 0:
                     raise ValueError(f"{label} replacement count must be >= 0.")
                 if doping_num == 0:
+                    rule_metadata.append(
+                        {
+                            "rule_index": rule_index,
+                            "target": target,
+                            "groups": list(requested_groups),
+                            "eligible_sites": int(len(candidate_indices)),
+                            "replacement_count": 0,
+                            "actual_dopant_counts": {},
+                        }
+                    )
                     continue
                 idxs = rng.choice(candidate_indices, doping_num, replace=False)
 
@@ -424,10 +608,39 @@ class RandomDopingOperation(StructureOperation):
 
                 symbols[np.asarray(idxs, dtype=int)] = np.asarray(sample, dtype=object)
                 total_doping += doping_num
+                actual_dopant_counts = {
+                    element: int(count)
+                    for element, count in Counter(sample).items()
+                }
+                rule_metadata.append(
+                    {
+                        "rule_index": rule_index,
+                        "target": target,
+                        "groups": list(requested_groups),
+                        "eligible_sites": int(len(candidate_indices)),
+                        "replacement_count": int(doping_num),
+                        "actual_dopant_counts": actual_dopant_counts,
+                    }
+                )
 
             if total_doping:
                 new_structure.set_chemical_symbols(symbols.tolist())
-                append_config_tag(new_structure, f"Dop(n={total_doping})")
+                _invalidate_species_change_labels(
+                    new_structure,
+                    clear_species_initialization=True,
+                )
+            new_structure.info["random_doping"] = json.dumps(
+                {
+                    "allocation": allocation,
+                    "sample_index": int(sample_index),
+                    "seed": derived_seed,
+                    "total_replacements": int(total_doping),
+                    "rules": rule_metadata,
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            append_config_tag(new_structure, f"Dop(n={total_doping})")
             structure_list.append(new_structure)
 
         return structure_list
@@ -441,6 +654,13 @@ class RandomDopingOperation(StructureOperation):
         rule,
         rng: np.random.Generator | None,
     ) -> int:
+        minimum, maximum = self._doping_count_bounds(
+            structure,
+            candidate_indices,
+            target,
+            dopants,
+            rule,
+        )
         use_mode = rule.get("use", "atomic_percent")
 
         if use_mode == "atomic_percent":
@@ -448,8 +668,6 @@ class RandomDopingOperation(StructureOperation):
                 rule.get("percent", [0.0, 100.0]),
                 label="percent",
             )
-            if percent_min < 0.0 or percent_max > 100.0:
-                raise ValueError("percent must be within [0, 100].")
             value = (
                 float(percent_max)
                 if rng is None
@@ -462,8 +680,6 @@ class RandomDopingOperation(StructureOperation):
                 rule.get("percent", [0.0, 100.0]),
                 label="percent",
             )
-            if percent_min < 0.0 or percent_max > 100.0:
-                raise ValueError("percent must be within [0, 100].")
             target_mass_percent = (
                 float(percent_max)
                 if rng is None
@@ -478,26 +694,68 @@ class RandomDopingOperation(StructureOperation):
                 str(rule.get("ratio_type", "atom")),
             )
             dopant_masses = np.array(
-                [
-                    atomic_masses[atomic_numbers[element]]
-                    for element in dopant_elements
-                ],
+                [atomic_masses[atomic_numbers[element]] for element in dopant_elements],
                 dtype=float,
             )
-            avg_dopant_mass = float(np.dot(atom_ratios, dopant_masses))
+            average_dopant_mass = float(np.dot(atom_ratios, dopant_masses))
+            return int(total_target_mass * target_mass_percent / average_dopant_mass)
 
-            doped_mass = total_target_mass * target_mass_percent
-            return int(doped_mass / avg_dopant_mass)
+        if use_mode == "count":
+            count_mode = str(rule.get("count_mode", "")).lower()
+            if count_mode == "fixed" or (not count_mode and minimum == maximum):
+                return minimum
+            if rng is None:
+                return maximum
+            return int(rng.integers(minimum, maximum + 1))
 
+        raise ValueError(
+            "RandomDoping rule use must be atomic_percent, mass_percent, or count."
+        )
+
+    def _doping_count_bounds(
+        self,
+        structure,
+        candidate_indices,
+        target,
+        dopants,
+        rule,
+    ) -> tuple[int, int]:
+        """Return deterministic lower and upper replacement counts for one rule."""
+        use_mode = str(rule.get("use", "atomic_percent"))
+        if use_mode in {"atomic_percent", "mass_percent"}:
+            percent_min, percent_max = _range_pair(
+                rule.get("percent", [0.0, 100.0]),
+                label="percent",
+            )
+            if percent_min < 0.0 or percent_max > 100.0:
+                raise ValueError("percent must be within [0, 100].")
+            if use_mode == "atomic_percent":
+                return (
+                    int(len(candidate_indices) * percent_min / 100.0),
+                    int(len(candidate_indices) * percent_max / 100.0),
+                )
+            target_mass = atomic_masses[atomic_numbers[target]]
+            total_target_mass = len(candidate_indices) * target_mass
+            dopant_elements, atom_ratios = _normalized_dopant_atom_ratios(
+                dopants.keys(),
+                dopants.values(),
+                str(rule.get("ratio_type", "atom")),
+            )
+            dopant_masses = np.array(
+                [atomic_masses[atomic_numbers[element]] for element in dopant_elements],
+                dtype=float,
+            )
+            average_dopant_mass = float(np.dot(atom_ratios, dopant_masses))
+            return (
+                int(total_target_mass * percent_min / 100.0 / average_dopant_mass),
+                int(total_target_mass * percent_max / 100.0 / average_dopant_mass),
+            )
         if use_mode == "count":
             count_min_f, count_max_f = _range_pair(
                 rule.get("count", [1, 1]),
                 label="count",
             )
-            if (
-                not float(count_min_f).is_integer()
-                or not float(count_max_f).is_integer()
-            ):
+            if not float(count_min_f).is_integer() or not float(count_max_f).is_integer():
                 raise ValueError("count values must be integers.")
             count_min = int(count_min_f)
             count_max = int(count_max_f)
@@ -506,14 +764,14 @@ class RandomDopingOperation(StructureOperation):
             count_mode = str(rule.get("count_mode", "")).lower()
             if count_mode and count_mode not in {"fixed", "random"}:
                 raise ValueError("count_mode must be fixed or random.")
-            if count_mode == "fixed" or (not count_mode and count_min == count_max):
+            if count_mode == "fixed":
                 if count_min != count_max:
-                    raise ValueError("fixed count must use the same minimum and maximum.")
-                return count_min
-            if rng is None:
-                return count_max
-            return int(rng.integers(count_min, count_max + 1))
-
+                    raise CardOperationError(
+                        "random_doping.fixed_count_mismatch",
+                        "Fixed count must use the same minimum and maximum."
+                    )
+                return count_min, count_min
+            return count_min, count_max
         raise ValueError(
             "RandomDoping rule use must be atomic_percent, mass_percent, or count."
         )
@@ -524,7 +782,7 @@ class CompositionSweepParams:
     """Parameters for composition-space sweeps."""
 
     elements: str = "Co,Cr,Ni"
-    order: str = "2,3,4,5"
+    order: str = "2,3"
     method: str = "Grid"
     step: float = 0.1
     n_points: int = 50
@@ -539,37 +797,100 @@ class CompositionSweepParams:
 class CompositionSweepOperation(StructureOperation):
     """Create composition-tagged copies of each input structure."""
 
-    def run_structure(self, structure, params: CompositionSweepParams) -> list:
+    MAX_OUTPUTS_PER_INPUT = 10_000
+    MAX_GRID_TEMPLATES = 100_000
+
+    def sampling_summary(self, params: CompositionSweepParams) -> dict[str, object]:
+        """Validate settings and build the exact unique target-composition plan."""
         elements = parse_element_list(params.elements)
         if len(elements) < 2:
-            return [structure.copy()]
+            raise CardOperationError(
+                "composition_sweep.too_few_elements",
+                "Composition Space Sampling requires at least two valid elements.",
+            )
+        invalid_elements = [element for element in elements if element not in atomic_numbers]
+        if invalid_elements:
+            raise CardOperationError(
+                "composition_sweep.invalid_elements",
+                "Composition Space Sampling has unknown element symbol(s): {elements}.",
+                elements=", ".join(invalid_elements),
+            )
 
-        orders = [order for order in self._target_orders(params.order) if len(elements) >= order]
+        requested_orders = self._target_orders(params.order)
+        orders = [order for order in requested_orders if len(elements) >= order]
+        skipped_orders = [order for order in requested_orders if len(elements) < order]
+        if not orders:
+            raise CardOperationError(
+                "composition_sweep.no_feasible_orders",
+                "None of the selected component counts is feasible for {count} elements.",
+                count=len(elements),
+            )
+        method = str(params.method or "").strip()
+        if method not in {"Grid", "Sobol"}:
+            raise ValueError("Composition Space Sampling method must be Grid or Sobol.")
         max_outputs = int(params.max_outputs)
-        if max_outputs <= 0 or not orders:
-            return [structure.copy()]
+        if max_outputs < 1:
+            raise CardOperationError(
+                "composition_sweep.invalid_budget",
+                "Maximum target compositions per input must be at least 1.",
+            )
+        if max_outputs > self.MAX_OUTPUTS_PER_INPUT:
+            raise CardOperationError(
+                "composition_sweep.budget_too_large",
+                "Maximum target compositions per input cannot exceed {maximum}.",
+                maximum=self.MAX_OUTPUTS_PER_INPUT,
+            )
+        min_fraction = float(params.min_fraction)
+        if not np.isfinite(min_fraction) or min_fraction < 0.0 or min_fraction > 1.0:
+            raise ValueError("Minimum element fraction must be between 0 and 1.")
+        if params.use_seed and int(params.seed) < 0:
+            raise ValueError("Composition Space Sampling seed must be non-negative.")
 
-        out = []
         seed = int(params.seed) if params.use_seed else None
         combo_rng = np.random.default_rng(seed) if seed is not None else None
 
-        order_data = []
-        capacities = {}
+        order_data: list[dict[str, object]] = []
+        capacities: dict[int, int] = {}
         for order in orders:
-            points = self._simplex_points(order, params)
+            try:
+                if method == "Grid":
+                    self._validate_grid_size(order, params)
+                points = self._simplex_points(
+                    order,
+                    params,
+                    point_limit=max_outputs if method == "Sobol" else None,
+                )
+            except NotImplementedError as exc:
+                raise CardOperationError(
+                    "composition_sweep.grid_step",
+                    "Grid sampling for four or five components requires a step of 1/n, such as 0.1 or 0.05.",
+                ) from exc
             if not points:
                 continue
             combos = list(combinations(elements, order))
             if combo_rng is not None and combos:
                 combo_rng.shuffle(combos)
-            unique_total = len(combos) * len(points)
-            if unique_total <= 0:
+            available_total = len(combos) * len(points)
+            if available_total <= 0:
                 continue
-            capacities[order] = int(unique_total)
-            order_data.append({"order": order, "points": points, "combos": combos, "capacity": int(unique_total)})
+            nominal_points = int(params.n_points) if method == "Sobol" else len(points)
+            nominal_total = len(combos) * nominal_points
+            capacities[order] = int(nominal_total)
+            order_data.append(
+                {
+                    "order": order,
+                    "points": points,
+                    "combos": combos,
+                    "capacity": int(nominal_total),
+                    "available_capacity": int(available_total),
+                }
+            )
 
         if not order_data:
-            return [structure.copy()]
+            raise CardOperationError(
+                "composition_sweep.no_targets",
+                "The current composition constraints produce no target compositions.",
+            )
 
         active_orders = [int(item["order"]) for item in order_data]
         mode = self._budget_mode(params.budget_mode)
@@ -589,30 +910,130 @@ class CompositionSweepOperation(StructureOperation):
         else:
             emit = self._reflow_budget(active_orders, budgets, capacities, max_outputs)
 
-        for item in order_data:
-            order = int(item["order"])
-            points = item["points"]
-            combos = item["combos"]
-            order_budget = int(emit.get(order, 0))
-            if order_budget <= 0:
-                continue
-            unique_total = int(item["capacity"])
-            n_emit = min(order_budget, unique_total)
-            slot_seed = None if seed is None else int(seed + order * 104729)
-            slots = self._spread_slots(unique_total, n_emit, seed=slot_seed)
-            for slot in slots:
-                combo_idx = int(slot % len(combos))
-                point_idx = int(slot // len(combos))
-                elems = combos[combo_idx]
-                frac = points[point_idx]
-                comp = {elem: float(value) for elem, value in zip(elems, frac)}
-                new_structure = structure.copy()
-                tag = ",".join(f"{elem}={comp[elem]:.4g}" for elem in elems)
-                append_config_tag(new_structure, f"Comp({tag})")
-                out.append(new_structure)
-                if len(out) >= max_outputs:
-                    return out
-        return out or [structure]
+        iterators = {
+            int(item["order"]): self._target_iterator(item, seed=seed)
+            for item in order_data
+        }
+        exhausted = {order: False for order in active_orders}
+        seen: set[tuple[tuple[str, float], ...]] = set()
+        targets: list[tuple[int, tuple[tuple[str, float], ...]]] = []
+        emitted_by_order = {order: 0 for order in active_orders}
+
+        def take_unique(order: int, limit: int) -> None:
+            iterator = iterators[order]
+            while emitted_by_order[order] < limit and len(targets) < max_outputs:
+                try:
+                    key = next(iterator)
+                except StopIteration:
+                    exhausted[order] = True
+                    return
+                if key in seen:
+                    continue
+                seen.add(key)
+                targets.append((order, key))
+                emitted_by_order[order] += 1
+
+        for order in active_orders:
+            take_unique(order, int(emit.get(order, 0)))
+
+        if mode != "equal_legacy":
+            while len(targets) < max_outputs:
+                progressed = False
+                for order in active_orders:
+                    if exhausted[order] or len(targets) >= max_outputs:
+                        continue
+                    before = len(targets)
+                    take_unique(order, emitted_by_order[order] + 1)
+                    progressed = progressed or len(targets) > before
+                if not progressed:
+                    break
+
+        if not targets:
+            raise CardOperationError(
+                "composition_sweep.no_unique_targets",
+                "The current settings produce no unique target compositions.",
+            )
+        return {
+            "elements": tuple(elements),
+            "method": method,
+            "requested_orders": tuple(requested_orders),
+            "active_orders": tuple(active_orders),
+            "skipped_orders": tuple(skipped_orders),
+            "nominal_capacities": dict(capacities),
+            "emitted_by_order": dict(emitted_by_order),
+            "targets": tuple(targets),
+            "outputs_per_input": len(targets),
+            "max_outputs": max_outputs,
+            "budget_mode": mode,
+        }
+
+    def run_structure(self, structure, params: CompositionSweepParams) -> list:
+        summary = self.sampling_summary(params)
+        out = []
+        for _order, composition in summary["targets"]:
+            new_structure = structure.copy()
+            tag = ",".join(
+                f"{element}={fraction:.12g}" for element, fraction in composition
+            )
+            self._replace_composition_tag(new_structure, f"Comp({tag})")
+            out.append(new_structure)
+        return out
+
+    @staticmethod
+    def _canonical_target(
+        elements: tuple[str, ...],
+        fractions: tuple[float, ...],
+    ) -> tuple[tuple[str, float], ...]:
+        positive = [
+            (element, float(fraction))
+            for element, fraction in zip(elements, fractions)
+            if float(fraction) > 1.0e-12
+        ]
+        total = float(sum(fraction for _element, fraction in positive))
+        return tuple(
+            sorted(
+                (element, round(fraction / total, 12))
+                for element, fraction in positive
+            )
+        )
+
+    def _target_iterator(self, item: dict[str, object], *, seed: int | None):
+        order = int(item["order"])
+        points = item["points"]
+        combos = item["combos"]
+        total = int(item["available_capacity"])
+        slot_seed = None if seed is None else int(seed + order * 104729)
+        for slot in self._spread_slot_order(total, seed=slot_seed):
+            combo_idx = int(slot % len(combos))
+            point_idx = int(slot // len(combos))
+            yield self._canonical_target(combos[combo_idx], points[point_idx])
+
+    @classmethod
+    def _spread_slot_order(cls, total: int, *, seed: int | None):
+        total = int(total)
+        if total <= 0:
+            return
+        if seed is None:
+            start = 0
+            stride_hint = int(total * 0.6180339887498949)
+        else:
+            rng = np.random.default_rng(int(seed))
+            start = int(rng.integers(0, total))
+            stride_hint = int(rng.integers(1, total)) if total > 1 else 1
+        stride = cls._coprime_stride(total, stride_hint)
+        for index in range(total):
+            yield int((start + index * stride) % total)
+
+    @staticmethod
+    def _replace_composition_tag(structure, tag: str) -> None:
+        current = str(structure.info.get("Config_type", "") or "")
+        tokens = [token.strip() for token in re.split(r"[|\s]+", current) if token.strip()]
+        structure.info["Config_type"] = "|".join(
+            token
+            for token in tokens
+            if not (token.startswith("Comp(") and token.endswith(")"))
+        )
+        append_config_tag(structure, tag)
 
     def _target_orders(self, text: str) -> list[int]:
         text = (text or "").strip()
@@ -639,12 +1060,31 @@ class CompositionSweepOperation(StructureOperation):
                 continue
             if value not in orders:
                 orders.append(value)
-        return orders or [2, 3]
+        if not orders:
+            raise CardOperationError(
+                "composition_sweep.invalid_component_counts",
+                "Composition Space Sampling component counts must select 2, 3, 4, or 5.",
+            )
+        return orders
 
-    def _simplex_points(self, order: int, params: CompositionSweepParams) -> list[tuple[float, ...]]:
+    def _simplex_points(
+        self,
+        order: int,
+        params: CompositionSweepParams,
+        *,
+        point_limit: int | None = None,
+    ) -> list[tuple[float, ...]]:
         seed = int(params.seed) if params.use_seed else None
         if params.method == "Sobol":
-            return simplex_sobol_points(order, int(params.n_points), seed=seed, min_fraction=float(params.min_fraction))
+            n_points = int(params.n_points)
+            if point_limit is not None:
+                n_points = min(n_points, int(point_limit))
+            return simplex_sobol_points(
+                order,
+                n_points,
+                seed=seed,
+                min_fraction=float(params.min_fraction),
+            )
         points = simplex_grid_points(
             order,
             float(params.step),
@@ -656,13 +1096,52 @@ class CompositionSweepOperation(StructureOperation):
             rng.shuffle(points)
         return points
 
+    def _validate_grid_size(
+        self,
+        order: int,
+        params: CompositionSweepParams,
+    ) -> None:
+        """Reject grid templates that would block the synchronous exact preview."""
+        step = float(params.step)
+        if not np.isfinite(step) or step <= 0.0 or step > 1.0:
+            return
+        inverse = int(round(1.0 / step))
+        near_rational = inverse > 0 and abs(step - 1.0 / inverse) <= 1.0e-9
+        if near_rational:
+            min_each = 0 if params.include_endpoints else 1
+            if float(params.min_fraction) > 0.0:
+                min_each = max(
+                    min_each,
+                    int(math.ceil(float(params.min_fraction) * inverse - 1.0e-12)),
+                )
+            remaining = inverse - min_each * order
+            template_count = (
+                0
+                if remaining < 0
+                else math.comb(remaining + order - 1, order - 1)
+            )
+        else:
+            values = int(math.floor((1.0 + 1.0e-12) / step)) + 1
+            template_count = values if order == 2 else values * values
+        if template_count > self.MAX_GRID_TEMPLATES:
+            raise CardOperationError(
+                "composition_sweep.grid_too_dense",
+                "The Grid settings require about {count} simplex points before budgeting. Increase the step or use Sobol; the safe limit is {maximum}.",
+                count=template_count,
+                maximum=self.MAX_GRID_TEMPLATES,
+            )
+
     def _budget_mode(self, text: str) -> str:
         text = (text or "").strip().lower()
         if "legacy" in text:
             return "equal_legacy"
-        if "weight" in text:
+        if text in {"capacity-weighted", "favor larger composition spaces"}:
             return "weighted_reflow"
-        return "equal_reflow"
+        if text in {"equal+reflow", "balance component counts"}:
+            return "equal_reflow"
+        raise ValueError(
+            "Composition Space Sampling budget allocation must be Equal+Reflow, Capacity-weighted, or Equal (legacy)."
+        )
 
     @staticmethod
     def _allocate_equal(orders: list[int], max_outputs: int) -> dict[int, int]:
@@ -772,13 +1251,23 @@ class OrderedAlloyPrototypeParams:
     """Parameters for ordered-alloy prototype generation."""
 
     prototype: str = "L12/A3B"
-    a_range: tuple[float, float, float] = (3.6, 3.6, 0.1)
+    a_range: tuple[float, float, float] = (3.75, 3.75, 0.1)
     covera: float = 1.0
-    sublattice_elements: str = "A:X,B:X"
-    auto_supercell: bool = True
-    max_atoms: int = 128
-    rep: tuple[int, int, int] = (2, 2, 2)
+    sublattice_elements: str = "A:Cu,B:Au"
     max_outputs: int = 200
+
+
+@dataclass(frozen=True)
+class OrderedAlloyPrototypePlan:
+    """Exact base-cell preview for an ordered-alloy prototype request."""
+
+    prototype: str
+    a_values: tuple[float, ...]
+    atoms_per_output: int
+    cell_lengths: tuple[float, float, float]
+    sublattice_counts: dict[str, int]
+    sublattice_elements: dict[str, str]
+    truncated: bool
 
 
 @dataclass(frozen=True)
@@ -858,12 +1347,16 @@ def _canonical_prototype_name(text: str) -> str:
 def _canonical_element(text: str) -> str:
     symbol = str(text or "").strip()
     if not symbol:
-        symbol = "X"
+        raise CardOperationError(
+            "ordered-alloy-element-empty",
+            "Enter one element symbol or the X placeholder for every visible sublattice.",
+        )
     symbol = symbol[0].upper() + symbol[1:].lower()
     if symbol not in atomic_numbers:
-        raise ValueError(
-            f"Ordered Alloy Prototype: invalid element or placeholder {text!r}. "
-            "Use an element symbol or X."
+        raise CardOperationError(
+            "ordered-alloy-element-invalid",
+            "Invalid element or placeholder {element}; use a chemical element symbol or X.",
+            element=repr(text),
         )
     return symbol
 
@@ -886,11 +1379,14 @@ def _parse_sublattice_elements(text: str, labels: tuple[str, ...]) -> dict[str, 
             if not token.strip():
                 continue
             if ":" not in token:
-                raise ValueError("Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.")
+                raise CardOperationError(
+                    "ordered_alloy.invalid_sublattice_entries",
+                    "Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.",
+                )
             label, value = token.split(":", 1)
             raw[label.strip()] = value.strip()
 
-    required = tuple(dict.fromkeys(labels))
+    required = tuple(sorted(dict.fromkeys(labels)))
     known_labels = {label for definition in _ORDERED_PROTOTYPES.values() for label in definition.labels}
     extra = sorted(set(str(key) for key in raw) - known_labels)
     if extra:
@@ -900,7 +1396,10 @@ def _parse_sublattice_elements(text: str, labels: tuple[str, ...]) -> dict[str, 
 
 def _scan_lattice_values(values: tuple[float, float, float]) -> list[float]:
     if len(values) != 3:
-        raise ValueError("Ordered Alloy Prototype: a_range must contain start, stop, and step.")
+        raise CardOperationError(
+            "ordered_alloy.invalid_lattice_scan_length",
+            "Ordered Alloy Prototype: a_range must contain start, stop, and step.",
+        )
     start, stop, step = (float(value) for value in values)
     if not np.all(np.isfinite([start, stop, step])) or start <= 0.0 or stop <= 0.0 or step <= 0.0:
         raise ValueError("Ordered Alloy Prototype: a_range values must be finite and positive.")
@@ -913,45 +1412,20 @@ class OrderedAlloyPrototypeOperation(GeneratorOperation):
     """Generate periodic prototypes with an independent crystallographic sublattice array."""
 
     def generate(self, params: OrderedAlloyPrototypeParams) -> list:
-        prototype = _canonical_prototype_name(params.prototype)
+        plan = self.plan(params)
+        prototype = plan.prototype
         definition = _ORDERED_PROTOTYPES[prototype]
-        occupants = _parse_sublattice_elements(params.sublattice_elements, definition.labels)
-        max_atoms = int(params.max_atoms)
+        occupants = plan.sublattice_elements
         max_outputs = int(params.max_outputs)
-        if max_atoms <= 0:
-            raise ValueError("Ordered Alloy Prototype: max_atoms must be >= 1.")
-        if max_outputs <= 0:
-            raise ValueError("Ordered Alloy Prototype: max_outputs must be >= 1.")
-        if len(definition.labels) > max_atoms:
-            raise ValueError(
-                f"Ordered Alloy Prototype: {prototype} primitive/conventional cell has "
-                f"{len(definition.labels)} atoms, exceeding max_atoms={max_atoms}."
-            )
 
         outputs = []
-        for a in _scan_lattice_values(params.a_range):
-            base = self._build_base(definition, occupants, a, float(params.covera))
-            if params.auto_supercell:
-                factors = best_supercell_factors_max_atoms(base, max_atoms)
-                rep = (factors.na, factors.nb, factors.nc)
-            else:
-                rep = tuple(int(value) for value in params.rep)
-                if len(rep) != 3 or any(value <= 0 for value in rep):
-                    raise ValueError("Ordered Alloy Prototype: rep must contain three positive integers.")
-            atom_count = len(base) * math.prod(rep)
-            if atom_count > max_atoms:
-                raise ValueError(
-                    f"Ordered Alloy Prototype: rep={rep} produces {atom_count} atoms, "
-                    f"exceeding max_atoms={max_atoms}."
-                )
-
-            atoms = make_supercell(base, np.diag(rep))
+        for a in plan.a_values[:max_outputs]:
+            atoms = self._build_base(definition, occupants, a, float(params.covera))
             atoms.wrap()
             metadata = {
                 "prototype": prototype,
                 "a": float(a),
                 "covera": self._effective_covera(definition, float(params.covera)),
-                "rep": list(rep),
                 "sublattice_elements": occupants,
                 "sublattice_counts": {
                     label: int(np.count_nonzero(np.asarray(atoms.arrays["sublattice"], dtype=str) == label))
@@ -959,11 +1433,35 @@ class OrderedAlloyPrototypeOperation(GeneratorOperation):
                 },
             }
             atoms.info["ordered_alloy_prototype"] = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
-            append_config_tag(atoms, f"OrderedProto({prototype},a={a:.6g},rep={rep[0]}x{rep[1]}x{rep[2]})")
+            append_config_tag(atoms, f"OrderedProto({prototype},a={a:.6g})")
             outputs.append(atoms)
             if len(outputs) >= max_outputs:
                 break
         return outputs
+
+    def plan(self, params: OrderedAlloyPrototypeParams) -> OrderedAlloyPrototypePlan:
+        """Validate parameters and return the exact first base-cell preview."""
+        prototype = _canonical_prototype_name(params.prototype)
+        definition = _ORDERED_PROTOTYPES[prototype]
+        occupants = _parse_sublattice_elements(params.sublattice_elements, definition.labels)
+        max_outputs = int(params.max_outputs)
+        if max_outputs <= 0:
+            raise ValueError("Ordered Alloy Prototype: max_outputs must be >= 1.")
+        a_values = tuple(_scan_lattice_values(params.a_range))
+        base = self._build_base(definition, occupants, a_values[0], float(params.covera))
+        labels = np.asarray(base.arrays["sublattice"], dtype=str)
+        return OrderedAlloyPrototypePlan(
+            prototype=prototype,
+            a_values=a_values,
+            atoms_per_output=len(base),
+            cell_lengths=tuple(float(value) for value in base.cell.lengths()),
+            sublattice_counts={
+                label: int(np.count_nonzero(labels == label))
+                for label in sorted(dict.fromkeys(definition.labels))
+            },
+            sublattice_elements=dict(occupants),
+            truncated=len(a_values) > max_outputs,
+        )
 
     @staticmethod
     def _effective_covera(definition: _PrototypeDefinition, covera: float) -> float:
@@ -1027,6 +1525,9 @@ class FiniteCellAlloyEstimate:
     estimated_total_outputs: int
     max_outputs: int
     site_counts: tuple[tuple[str, int], ...]
+    fixed_realizations: tuple[
+        tuple[str, tuple[tuple[str, int], ...], int, str], ...
+    ]
 
 
 @dataclass(frozen=True)
@@ -1113,9 +1614,27 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             estimated_total_outputs=int(min(composition_count * per_composition, max_outputs)),
             max_outputs=max_outputs,
             site_counts=tuple((label, len(indices)) for label, indices in site_indices.items()),
+            fixed_realizations=tuple(
+                (
+                    space.label,
+                    tuple(
+                        (element, int(count))
+                        for element, count in zip(space.elements, space.lower)
+                    ),
+                    space.n_sites,
+                    space.realization,
+                )
+                for space in spaces
+                if space.realization in {"exact", "nearest_integer"}
+            ),
         )
 
     def run_structure(self, structure, params: FiniteCellAlloyOccupancyParams) -> list:
+        base_seed = int(params.seed) if params.use_seed else None
+        if base_seed is not None and base_seed < 0:
+            raise ValueError(
+                "Finite-Cell Alloy Occupancy: seed must be >= 0 when use_seed is enabled."
+            )
         site_indices = self._site_indices(structure)
         spaces = self._build_spaces(
             site_indices,
@@ -1124,7 +1643,6 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
         )
         estimate = self.estimate(structure, params)
         plan_count = estimate.composition_count
-        base_seed = int(params.seed) if params.use_seed else None
         cfg_id = int(stable_config_id(structure))
         selection_seed = None if base_seed is None else int(base_seed + cfg_id * 1_000_003)
         plan_indices = self._plan_indices(
@@ -1245,7 +1763,10 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
     @staticmethod
     def _site_indices(structure) -> dict[str, np.ndarray]:
         if len(structure) <= 0:
-            raise ValueError("Finite-Cell Alloy Occupancy: input structure has no sites.")
+            raise CardOperationError(
+                "finite_cell.empty_structure",
+                "Finite-Cell Alloy Occupancy: input structure has no sites.",
+            )
         if "sublattice" not in structure.arrays:
             return {"all": np.arange(len(structure), dtype=int)}
         raw = np.asarray(structure.arrays["sublattice"], dtype=str)
@@ -1572,6 +2093,7 @@ class CompositionGradientParams:
     end_composition: str = "Ni:0,Co:1"
     axis: str = "a"
     bins: int = 8
+    target_mode: str = "all"
     target_elements: str = ""
     samples: int = 1
     use_seed: bool = False
@@ -1583,34 +2105,96 @@ class CompositionGradientOperation(StructureOperation):
 
     AXIS_INDEX = {"a": 0, "b": 1, "c": 2, "x": 0, "y": 1, "z": 2}
 
-    def run_structure(self, structure, params: CompositionGradientParams) -> list:
+    @classmethod
+    def sampling_summary(
+        cls,
+        params: CompositionGradientParams,
+        structure=None,
+    ) -> dict[str, object]:
         elements = parse_element_list(params.elements)
         if len(elements) < 2:
-            raise ValueError("Composition Gradient requires at least two elements.")
-        start_comp = self._normalized_composition(params.start_composition, elements)
-        end_comp = self._normalized_composition(params.end_composition, elements)
+            raise CardOperationError(
+                "composition_gradient.too_few_elements",
+                "Composition Gradient requires at least two elements.",
+            )
+        start_comp = cls._normalized_composition(params.start_composition, elements)
+        end_comp = cls._normalized_composition(params.end_composition, elements)
         if not start_comp or not end_comp:
-            raise ValueError("Composition Gradient requires valid start and end compositions.")
+            raise ValueError(
+                "Composition Gradient requires valid start and end compositions."
+            )
 
-        candidate_indices = self._candidate_indices(structure, params.target_elements)
-        if candidate_indices.size == 0:
-            raise ValueError("Composition Gradient found no atoms matching target_elements.")
-
-        bins = max(1, int(params.bins))
         axis_key = str(params.axis).strip().lower()
-        if axis_key not in self.AXIS_INDEX:
+        if axis_key not in cls.AXIS_INDEX:
             raise ValueError("Composition Gradient axis must be one of a, b, or c.")
-        axis_idx = self.AXIS_INDEX[axis_key]
+        bins = int(params.bins)
+        if bins < 2:
+            raise CardOperationError(
+                "composition_gradient.too_few_groups",
+                "Composition Gradient requires at least two equal-count groups.",
+            )
+        samples = int(params.samples)
+        if samples < 1:
+            raise CardOperationError(
+                "composition_gradient.too_few_samples",
+                "Composition Gradient requires at least one random sample.",
+            )
+
+        summary: dict[str, object] = {
+            "elements": elements,
+            "start_composition": start_comp,
+            "end_composition": end_comp,
+            "axis": cls._axis_name(cls.AXIS_INDEX[axis_key]),
+            "requested_groups": bins,
+            "samples": samples,
+            "outputs_per_input": samples,
+        }
+        if structure is not None:
+            candidate_indices = cls._candidate_indices(
+                structure,
+                params.target_elements,
+                params.target_mode,
+            )
+            candidate_count = int(candidate_indices.size)
+            if candidate_count < 2:
+                raise CardOperationError(
+                    "composition_gradient.too_few_candidates",
+                    "Composition Gradient requires at least two eligible sites.",
+                )
+            effective_groups = min(bins, candidate_count)
+            quotient, remainder = divmod(candidate_count, effective_groups)
+            summary.update(
+                {
+                    "candidate_indices": candidate_indices,
+                    "candidate_sites": candidate_count,
+                    "effective_groups": effective_groups,
+                    "min_group_size": quotient,
+                    "max_group_size": quotient + (1 if remainder else 0),
+                }
+            )
+        return summary
+
+    def run_structure(self, structure, params: CompositionGradientParams) -> list:
+        summary = self.sampling_summary(params, structure)
+        elements = summary["elements"]
+        start_comp = summary["start_composition"]
+        end_comp = summary["end_composition"]
+        candidate_indices = summary["candidate_indices"]
+        bins = int(summary["effective_groups"])
+        axis_idx = self.AXIS_INDEX[str(summary["axis"])]
         coord = self._axis_coordinate(structure, axis_idx)
         order = candidate_indices[np.argsort(coord[candidate_indices], kind="mergesort")]
         groups = [group for group in np.array_split(order, bins) if len(group) > 0]
         if not groups:
-            raise ValueError("Composition Gradient could not build nonempty coordinate bins.")
+            raise CardOperationError(
+                "composition_gradient.empty_coordinate_bins",
+                "Composition Gradient could not build nonempty coordinate bins.",
+            )
 
         base_seed = int(params.seed) if params.use_seed else None
         cfg_id = stable_config_id(structure)
         outputs = []
-        for sample_idx in range(max(int(params.samples), 1)):
+        for sample_idx in range(int(summary["samples"])):
             if base_seed is None:
                 rng = np.random.default_rng()
                 seed_tag = ""
@@ -1643,10 +2227,24 @@ class CompositionGradientOperation(StructureOperation):
         return {element: float(value) for element, value in zip(elements, values)}
 
     @staticmethod
-    def _candidate_indices(structure, target_elements: str) -> np.ndarray:
+    def _candidate_indices(
+        structure,
+        target_elements: str,
+        target_mode: str = "all",
+    ) -> np.ndarray:
+        mode = str(target_mode or "all").strip().lower()
+        if mode not in {"all", "listed"}:
+            raise ValueError("Composition Gradient target mode must be all or listed.")
         targets = set(parse_element_list(target_elements))
-        if not targets:
+        # A nonempty legacy target list implied listed-site mode before the UI
+        # gained an explicit scope selector.
+        if mode == "all" and not targets:
             return np.arange(len(structure), dtype=int)
+        if not targets:
+            raise CardOperationError(
+                "composition_gradient.missing_targets",
+                "List one or more existing elements for the selected site scope.",
+            )
         return np.asarray(
             [idx for idx, symbol in enumerate(structure.get_chemical_symbols()) if symbol in targets],
             dtype=int,
@@ -1699,30 +2297,102 @@ class RandomOccupancyParams:
 class RandomOccupancyOperation(StructureOperation):
     """Assign elements to sites from a target composition."""
 
-    def run_structure(self, structure, params: RandomOccupancyParams) -> list:
-        comp = self._read_composition(structure, params)
-        if not comp:
-            raise ValueError(
-                "RandomOccupancy requires a Comp(...) tag or a non-empty manual composition."
+    def sampling_summary(self, structure, params: RandomOccupancyParams) -> dict[str, object]:
+        """Validate one input and describe the exact occupancy sampling contract."""
+        source = str(params.source).strip()
+        if source not in {"Auto (Comp tag)", "Manual"}:
+            raise CardOperationError(
+                "random_occupancy.invalid_source",
+                "RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.",
             )
-        invalid_elements = [element for element in comp if element not in atomic_numbers]
-        if invalid_elements:
-            raise ValueError(
-                "RandomOccupancy has unknown element symbol(s): "
-                + ", ".join(invalid_elements)
-                + "."
-            )
-
-        indices = self._eligible_indices(structure, params.group_filter)
         mode = str(params.mode).strip()
         if mode not in {"Exact", "Random"}:
-            raise ValueError("RandomOccupancy: mode must be Exact or Random.")
-        samples = int(params.samples)
+            raise CardOperationError(
+                "random_occupancy.invalid_mode",
+                "RandomOccupancy: mode must be Exact or Random.",
+            )
+        try:
+            samples = int(params.samples)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_occupancy.invalid_samples",
+                "RandomOccupancy: samples must be an integer >= 1.",
+            ) from exc
         if samples <= 0:
-            raise ValueError("RandomOccupancy: samples must be >= 1.")
-        seed = int(params.seed)
-        if params.use_seed and seed < 0:
-            raise ValueError("RandomOccupancy: seed must be >= 0.")
+            raise CardOperationError(
+                "random_occupancy.invalid_samples",
+                "RandomOccupancy: samples must be >= 1.",
+            )
+        try:
+            seed = int(params.seed)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "random_occupancy.invalid_seed",
+                "RandomOccupancy: seed must be a non-negative integer.",
+            ) from exc
+        if seed < 0:
+            raise CardOperationError(
+                "random_occupancy.invalid_seed",
+                "RandomOccupancy: seed must be >= 0.",
+            )
+        if len(structure) <= 0:
+            raise CardOperationError(
+                "random_occupancy.empty_structure",
+                "RandomOccupancy: input structure has no sites.",
+            )
+
+        comp = self._read_composition(structure, params, source=source)
+        invalid_elements = [element for element in comp if element not in atomic_numbers]
+        if invalid_elements:
+            raise CardOperationError(
+                "random_occupancy.unknown_elements",
+                "RandomOccupancy has unknown element symbol(s): {elements}.",
+                elements=", ".join(invalid_elements),
+            )
+        target = normalize_composition(comp)
+        if not target:
+            raise CardOperationError(
+                "random_occupancy.zero_target",
+                "RandomOccupancy: target composition must contain at least one positive weight.",
+            )
+
+        indices, groups = self._selection(structure, params.group_filter)
+        fixed_counts = None
+        fixed_fractions = None
+        if mode == "Exact":
+            counts = fractions_to_counts_exact(
+                np.asarray(list(target.values()), dtype=float),
+                len(indices),
+            )
+            fixed_counts = {
+                element: int(count)
+                for element, count in zip(target, counts)
+            }
+            fixed_fractions = {
+                element: int(count) / len(indices)
+                for element, count in zip(target, counts)
+            }
+        return {
+            "source": source,
+            "mode": mode,
+            "target": dict(target),
+            "eligible_indices": tuple(int(index) for index in indices),
+            "eligible_count": int(len(indices)),
+            "groups": groups,
+            "fixed_counts": fixed_counts,
+            "fixed_fractions": fixed_fractions,
+            "outputs_per_input": samples,
+            "use_seed": bool(params.use_seed),
+            "seed": seed,
+        }
+
+    def run_structure(self, structure, params: RandomOccupancyParams) -> list:
+        summary = self.sampling_summary(structure, params)
+        target = summary["target"]
+        indices = np.asarray(summary["eligible_indices"], dtype=int)
+        mode = str(summary["mode"])
+        samples = int(summary["outputs_per_input"])
+        seed = int(summary["seed"])
         base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
 
@@ -1730,34 +2400,103 @@ class RandomOccupancyOperation(StructureOperation):
         for sample_idx in range(samples):
             if base_seed is None:
                 rng = np.random.default_rng()
+                derived_seed = None
                 seed_note = ""
             else:
                 derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
                 rng = np.random.default_rng(derived_seed)
                 seed_note = f",s={derived_seed}"
 
-            new_atoms = assign_random_occupancy(structure, comp, indices=indices, mode=mode, rng=rng)
+            new_atoms = assign_random_occupancy(
+                structure,
+                target,
+                indices=indices,
+                mode=mode,
+                rng=rng,
+            )
+            actual_symbols = np.asarray(new_atoms.get_chemical_symbols(), dtype=object)[indices]
+            original_symbols = np.asarray(
+                structure.get_chemical_symbols(),
+                dtype=object,
+            )[indices]
+            if not np.array_equal(actual_symbols, original_symbols):
+                _invalidate_species_change_labels(
+                    new_atoms,
+                    clear_species_initialization=True,
+                )
+            actual_counts = {
+                element: int(np.count_nonzero(actual_symbols == element))
+                for element in target
+            }
+            actual_fractions = {
+                element: count / len(indices)
+                for element, count in actual_counts.items()
+            }
+            metadata = {
+                "target": target,
+                "actual_counts": actual_counts,
+                "actual_fractions": actual_fractions,
+                "eligible_sites": int(len(indices)),
+                "groups": list(summary["groups"]),
+                "mode": mode,
+                "sample_index": int(sample_idx),
+                "seed": derived_seed,
+            }
+            new_atoms.info["random_occupancy"] = json.dumps(
+                metadata,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
             mode_tag = "E" if mode == "Exact" else "R"
             append_config_tag(new_atoms, f"Occ({mode_tag}{seed_note})")
             out.append(new_atoms)
         return out
 
-    def _read_composition(self, structure, params: RandomOccupancyParams) -> dict[str, float]:
-        if params.source.lower().startswith("auto"):
-            comp = self._read_comp_from_config_type(structure)
+    def _read_composition(
+        self,
+        structure,
+        params: RandomOccupancyParams,
+        *,
+        source: str | None = None,
+    ) -> dict[str, float]:
+        source = str(params.source).strip() if source is None else source
+        if source == "Auto (Comp tag)":
+            try:
+                comp = self._read_comp_from_config_type(structure)
+            except (TypeError, ValueError, json.JSONDecodeError) as exc:
+                raise CardOperationError(
+                    "random_occupancy.invalid_composition",
+                    "RandomOccupancy could not parse the Comp(...) target: {error}",
+                    error=str(exc),
+                ) from exc
             if comp:
                 return comp
-        manual = params.manual.strip()
+            raise CardOperationError(
+                "random_occupancy.missing_comp_tag",
+                "RandomOccupancy Auto (Comp tag) requires a Comp(...) tag in Config_type.",
+            )
+        manual = str(params.manual or "").strip()
         if not manual:
-            return {}
-        return parse_composition(manual)
+            raise CardOperationError(
+                "random_occupancy.empty_manual",
+                "RandomOccupancy requires a Comp(...) tag in Auto mode or a non-empty "
+                "manual composition in Manual mode; Manual input is empty.",
+            )
+        try:
+            return parse_composition(manual)
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise CardOperationError(
+                "random_occupancy.invalid_composition",
+                "RandomOccupancy could not parse the manual composition: {error}",
+                error=str(exc),
+            ) from exc
 
     @staticmethod
     def _read_comp_from_config_type(structure) -> dict[str, float]:
         cfg = str(structure.info.get("Config_type", "") or "")
         if not cfg:
             return {}
-        for token in cfg.split("|"):
+        for token in reversed(cfg.split("|")):
             token = token.strip()
             if token.startswith("Comp(") and token.endswith(")"):
                 inner = token[5:-1].strip()
@@ -1766,16 +2505,25 @@ class RandomOccupancyOperation(StructureOperation):
         return {}
 
     @staticmethod
-    def _eligible_indices(structure, groups_text: str) -> np.ndarray | None:
-        groups_text = groups_text.strip()
+    def _eligible_indices(structure, groups_text: str) -> np.ndarray:
+        indices, _groups = RandomOccupancyOperation._selection(structure, groups_text)
+        return indices
+
+    @staticmethod
+    def _selection(structure, groups_text: str) -> tuple[np.ndarray, tuple[str, ...]]:
+        groups_text = str(groups_text or "").strip()
         if not groups_text:
-            return None
+            return np.arange(len(structure), dtype=int), ()
         allowed = {group.strip() for group in groups_text.split(",") if group.strip()}
         if not allowed:
-            return None
+            raise CardOperationError(
+                "random_occupancy.empty_group_filter",
+                "RandomOccupancy: group_filter must contain at least one non-empty group label.",
+            )
         if "group" not in structure.arrays:
-            raise ValueError(
-                "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure."
+            raise CardOperationError(
+                "random_occupancy.missing_group_array",
+                "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.",
             )
         groups = structure.arrays["group"]
         indices = np.array(
@@ -1783,12 +2531,12 @@ class RandomOccupancyOperation(StructureOperation):
             dtype=int,
         )
         if len(indices) == 0:
-            raise ValueError(
-                "RandomOccupancy group_filter matched no atoms: "
-                + ",".join(sorted(allowed))
-                + "."
+            raise CardOperationError(
+                "random_occupancy.no_matching_groups",
+                "RandomOccupancy group_filter matched no atoms: {groups}.",
+                groups=",".join(sorted(allowed)),
             )
-        return indices
+        return indices, tuple(sorted(allowed))
 
 
 def normalize_condition_expr(expr: str) -> str:
@@ -1892,28 +2640,184 @@ def _eval_condition_node(node: ast.AST, env: dict[str, float], tol: float) -> fl
             return all(bool(value) for value in vals)
         if isinstance(node.op, ast.Or):
             return any(bool(value) for value in vals)
-    raise ValueError("Unsupported expression")
+    raise CardOperationError(
+        "conditional_replace.unsupported_expression",
+        "Unsupported expression.",
+    )
 
 
-def evaluate_condition(expr: str, coords: np.ndarray) -> bool | np.ndarray:
-    """Safely evaluate a coordinate condition against one or more positions."""
+def _eval_condition_array(
+    node: ast.AST,
+    env: dict[str, np.ndarray],
+    tol: float,
+):
+    """Evaluate a validated condition tree against coordinate arrays."""
+    if isinstance(node, ast.Expression):
+        return _eval_condition_array(node.body, env, tol)
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.Name):
+        return env[node.id]
+    if isinstance(node, ast.UnaryOp):
+        value = _eval_condition_array(node.operand, env, tol)
+        if isinstance(node.op, ast.UAdd):
+            return +value
+        if isinstance(node.op, ast.USub):
+            return -value
+        if isinstance(node.op, ast.Not):
+            return np.logical_not(value)
+    if isinstance(node, ast.BinOp):
+        left = _eval_condition_array(node.left, env, tol)
+        right = _eval_condition_array(node.right, env, tol)
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if isinstance(node.op, ast.Div):
+            return left / right
+        if isinstance(node.op, ast.Pow):
+            return left**right
+    if isinstance(node, ast.Compare):
+        left = _eval_condition_array(node.left, env, tol)
+        result = True
+        for operator, comparator in zip(node.ops, node.comparators):
+            right = _eval_condition_array(comparator, env, tol)
+            if isinstance(operator, ast.Eq):
+                current = np.isclose(left, right, rtol=0.0, atol=tol)
+            elif isinstance(operator, ast.NotEq):
+                current = np.logical_not(
+                    np.isclose(left, right, rtol=0.0, atol=tol)
+                )
+            elif isinstance(operator, ast.Lt):
+                current = left < right
+            elif isinstance(operator, ast.LtE):
+                current = np.logical_or(
+                    left <= right,
+                    np.isclose(left, right, rtol=0.0, atol=tol),
+                )
+            elif isinstance(operator, ast.Gt):
+                current = left > right
+            elif isinstance(operator, ast.GtE):
+                current = np.logical_or(
+                    left >= right,
+                    np.isclose(left, right, rtol=0.0, atol=tol),
+                )
+            result = np.logical_and(result, current)
+            left = right
+        return result
+    if isinstance(node, ast.BoolOp):
+        values = [_eval_condition_array(value, env, tol) for value in node.values]
+        result = values[0]
+        for value in values[1:]:
+            if isinstance(node.op, ast.And):
+                result = np.logical_and(result, value)
+            elif isinstance(node.op, ast.Or):
+                result = np.logical_or(result, value)
+        return result
+    raise CardOperationError(
+        "conditional_replace.unsupported_expression",
+        "Unsupported expression.",
+    )
+
+
+def _parse_condition_tree(expr: str) -> ast.Expression:
+    """Parse and validate a Cartesian selection expression without evaluating it."""
     expr_py = normalize_condition_expr(expr)
     try:
         tree = ast.parse(expr_py, mode="eval")
     except SyntaxError as exc:
-        raise ValueError(f"Invalid condition expression {expr!r}: {exc.msg}.") from exc
+        raise CardOperationError(
+            "conditional_replace.condition_syntax",
+            "Invalid Cartesian position filter syntax: {reason}.",
+            reason=exc.msg,
+        ) from exc
     if not _is_allowed_condition_node(tree):
-        raise ValueError("Condition expression contains unsupported syntax.")
+        raise CardOperationError(
+            "conditional_replace.condition_unsupported",
+            "Cartesian position filter contains unsupported syntax.",
+        )
+    unknown_names = sorted(
+        {node.id for node in ast.walk(tree) if isinstance(node, ast.Name)}
+        - {"x", "y", "z"}
+    )
+    if unknown_names:
+        raise CardOperationError(
+            "conditional_replace.condition_names",
+            "Cartesian position filter may use only x, y, and z; unknown name(s): {names}.",
+            names=", ".join(unknown_names),
+        )
+    invalid_constant = any(
+        isinstance(node, ast.Constant)
+        and not isinstance(node.value, bool)
+        and (
+            not isinstance(node.value, (int, float))
+            or not np.isfinite(float(node.value))
+        )
+        for node in ast.walk(tree)
+    )
+    if invalid_constant:
+        raise CardOperationError(
+            "conditional_replace.condition_constants",
+            "Cartesian position filter may use only finite numeric constants.",
+        )
+    if not isinstance(tree.body, (ast.BoolOp, ast.Compare)) and not (
+        isinstance(tree.body, ast.UnaryOp) and isinstance(tree.body.op, ast.Not)
+    ) and not (
+        isinstance(tree.body, ast.Constant) and isinstance(tree.body.value, bool)
+    ):
+        raise CardOperationError(
+            "conditional_replace.condition_boolean",
+            "Cartesian position filter must be a comparison or a boolean expression.",
+        )
+    return tree
+
+
+def evaluate_condition(expr: str, coords: np.ndarray) -> bool | np.ndarray:
+    """Safely evaluate a coordinate condition against one or more positions."""
+    tree = _parse_condition_tree(expr)
     coords_arr = np.asarray(coords, dtype=float)
 
     def eval_single(pos) -> bool:
         x, y, z = map(float, pos[:3])
-        return bool(_eval_condition_node(tree, {"x": x, "y": y, "z": z}, tol=1e-4))
+        try:
+            return bool(
+                _eval_condition_node(tree, {"x": x, "y": y, "z": z}, tol=1e-4)
+            )
+        except ZeroDivisionError as exc:
+            raise CardOperationError(
+                "conditional_replace.condition_division",
+                "Cartesian position filter divides by zero for at least one atom.",
+            ) from exc
 
     if coords_arr.ndim == 1:
         return eval_single(coords_arr)
     if coords_arr.ndim == 2:
-        return np.array([eval_single(position) for position in coords_arr], dtype=bool)
+        if coords_arr.shape[1] < 3:
+            raise ValueError(f"Unsupported coordinate shape: {coords_arr.shape}")
+        try:
+            with np.errstate(divide="raise", invalid="raise", over="raise"):
+                result = _eval_condition_array(
+                    tree,
+                    {
+                        "x": coords_arr[:, 0],
+                        "y": coords_arr[:, 1],
+                        "z": coords_arr[:, 2],
+                    },
+                    tol=1.0e-4,
+                )
+        except FloatingPointError as exc:
+            raise CardOperationError(
+                "conditional_replace.condition_nonfinite",
+                "Cartesian position filter produces non-finite arithmetic for at least one atom.",
+            ) from exc
+        result_array = np.asarray(result, dtype=bool)
+        if result_array.ndim == 0:
+            return np.full(len(coords_arr), bool(result_array), dtype=bool)
+        if result_array.shape != (len(coords_arr),):
+            raise ValueError("Cartesian position filter returned an invalid shape.")
+        return result_array
     raise ValueError(f"Unsupported coordinate shape: {coords_arr.shape}")
 
 
@@ -1935,9 +2839,17 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
         for key, value in data.items():
             name = str(key).strip()
             ratio = float(value)
-            if name and ratio >= 0:
-                names.append(name)
-                ratios.append(ratio)
+            if not name:
+                raise CardOperationError(
+                    "conditional_replace.empty_replacement_element",
+                    "Replacement element names must not be empty.",
+                )
+            if not np.isfinite(ratio) or ratio < 0.0:
+                raise ValueError(
+                    "Replacement ratios must be finite and non-negative."
+                )
+            names.append(name)
+            ratios.append(ratio)
         return names, ratios
 
     for token in (item for item in text.split(",") if item.strip()):
@@ -1948,9 +2860,15 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
         else:
             name = token.strip()
             ratio = 1.0
-        if name and ratio >= 0:
-            names.append(name)
-            ratios.append(ratio)
+        if not name:
+            raise CardOperationError(
+                "conditional_replace.empty_replacement_element",
+                "Replacement element names must not be empty.",
+            )
+        if not np.isfinite(ratio) or ratio < 0.0:
+            raise ValueError("Replacement ratios must be finite and non-negative.")
+        names.append(name)
+        ratios.append(ratio)
     return names, ratios
 
 
@@ -1968,17 +2886,175 @@ class ConditionalReplaceParams:
 class ConditionalReplaceOperation(StructureOperation):
     """Replace atoms that match target species and coordinate condition."""
 
+    def selection_summary(
+        self,
+        params: ConditionalReplaceParams,
+        structure=None,
+    ) -> dict[str, object]:
+        """Validate the request and optionally count matching Cartesian sites."""
+        try:
+            targets = parse_element_list(str(params.target or ""))
+        except ValueError as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_target",
+                "Enter one valid target element symbol, such as O, Si, or Fe.",
+            ) from exc
+        if len(targets) != 1:
+            raise CardOperationError(
+                "conditional_replace.invalid_target",
+                "Enter one valid target element symbol, such as O, Si, or Fe.",
+            )
+        target = targets[0]
+        if target not in atomic_numbers:
+            raise CardOperationError(
+                "conditional_replace.unknown_target",
+                "Unknown target element symbol: {element}.",
+                element=target,
+            )
+
+        try:
+            raw_names, raw_ratios = parse_replacements(params.replacements)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_ratios",
+                "Replacement ratios must be finite and non-negative.",
+            ) from exc
+        if not raw_names:
+            raise CardOperationError(
+                "conditional_replace.no_replacements",
+                "Add at least one replacement element with a positive relative ratio.",
+            )
+
+        names: list[str] = []
+        ratios: list[float] = []
+        invalid_names: list[str] = []
+        for raw_name, raw_ratio in zip(raw_names, raw_ratios):
+            try:
+                parsed = parse_element_list(str(raw_name))
+            except ValueError:
+                parsed = []
+            if len(parsed) != 1 or parsed[0] not in atomic_numbers:
+                invalid_names.append(str(raw_name))
+                continue
+            name = parsed[0]
+            if name in names:
+                raise CardOperationError(
+                    "conditional_replace.duplicate_replacement",
+                    "Replacement element {element} appears more than once.",
+                    element=name,
+                )
+            names.append(name)
+            ratios.append(float(raw_ratio))
+        if invalid_names:
+            raise CardOperationError(
+                "conditional_replace.unknown_replacements",
+                "Unknown replacement element symbol(s): {elements}.",
+                elements=", ".join(invalid_names),
+            )
+        if target in names:
+            raise CardOperationError(
+                "conditional_replace.self_replacement",
+                "Replacement elements must not include the target element "
+                "{element}; use Random Doping for partial replacement.",
+                element=target,
+            )
+
+        positive = [
+            (name, ratio) for name, ratio in zip(names, ratios) if ratio > 0.0
+        ]
+        if not positive:
+            raise CardOperationError(
+                "conditional_replace.zero_ratios",
+                "Add at least one replacement element with a positive relative ratio.",
+            )
+        names = [name for name, _ratio in positive]
+        ratios_arr = np.asarray([ratio for _name, ratio in positive], dtype=float)
+        ratios_arr /= ratios_arr.sum()
+
+        try:
+            mode = int(params.mode)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_mode",
+                "Element allocation must be Independent random assignment or Match overall ratio.",
+            ) from exc
+        if mode not in (0, 1):
+            raise CardOperationError(
+                "conditional_replace.invalid_mode",
+                "Element allocation must be Independent random assignment or Match overall ratio.",
+            )
+        try:
+            seed = int(params.seed)
+        except (TypeError, ValueError) as exc:
+            raise CardOperationError(
+                "conditional_replace.invalid_seed",
+                "Conditional Replace seed must be a non-negative integer.",
+            ) from exc
+        if seed < 0:
+            raise CardOperationError(
+                "conditional_replace.invalid_seed",
+                "Conditional Replace seed must be a non-negative integer.",
+            )
+
+        condition = str(params.condition or "").strip() or "all"
+        _parse_condition_tree(condition)
+        summary: dict[str, object] = {
+            "target": target,
+            "replacement_elements": tuple(names),
+            "normalized_ratios": tuple(float(value) for value in ratios_arr),
+            "condition": condition,
+            "mode": mode,
+            "seed": seed,
+            "outputs_per_input": 1,
+        }
+        if structure is None:
+            return summary
+
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
+        positions = np.asarray(structure.get_positions(), dtype=float)
+        if positions.shape != (len(symbols), 3) or np.any(~np.isfinite(positions)):
+            raise CardOperationError(
+                "conditional_replace.invalid_positions",
+                "Conditional Replace requires finite Cartesian atom positions.",
+            )
+        target_mask = symbols == target
+        target_count = int(np.count_nonzero(target_mask))
+        if target_count == 0:
+            raise CardOperationError(
+                "conditional_replace.no_target_atoms",
+                "The input structure contains no {element} atoms.",
+                element=target,
+            )
+        condition_result = evaluate_condition(condition, positions)
+        condition_mask = (
+            np.asarray(condition_result, dtype=bool)
+            if isinstance(condition_result, np.ndarray)
+            else np.full(len(symbols), bool(condition_result), dtype=bool)
+        )
+        matched = int(np.count_nonzero(target_mask & condition_mask))
+        if matched == 0:
+            raise CardOperationError(
+                "conditional_replace.no_matches",
+                "The Cartesian position filter matches no {element} atoms.",
+                element=target,
+            )
+        summary["target_sites"] = target_count
+        summary["matched_sites"] = matched
+        if mode == 1:
+            counts = fractions_to_counts_exact(ratios_arr, matched)
+            summary["replacement_counts"] = tuple(
+                (name, int(count)) for name, count in zip(names, counts)
+            )
+        return summary
+
     def run_structure(self, structure, params: ConditionalReplaceParams) -> list:
-        target = params.target.strip()
-        if not target:
-            return [structure.copy()]
-
-        new_atoms, ratios = parse_replacements(params.replacements)
-        if not new_atoms or len(ratios) != len(new_atoms):
-            raise ValueError("Replacements must be provided as elem:ratio entries.")
-
-        seed = int(params.seed) if int(params.seed) != 0 else None
-        exact = int(params.mode) == 1
+        summary = self.selection_summary(params, structure)
+        target = str(summary["target"])
+        new_atoms = list(summary["replacement_elements"])
+        ratios = list(summary["normalized_ratios"])
+        seed_value = int(summary["seed"])
+        seed = seed_value if seed_value != 0 else None
+        exact = int(summary["mode"]) == 1
         new_structure, replaced = replace_atoms_with_conditions(
             structure,
             atom_to_replace=target,
@@ -1988,8 +3064,9 @@ class ConditionalReplaceOperation(StructureOperation):
             seed=seed,
             exact=exact,
         )
-        if replaced:
-            append_config_tag(new_structure, f"Repl({target}->{','.join(new_atoms)})")
+        if replaced != int(summary["matched_sites"]):
+            raise RuntimeError("Conditional Replace matched-site count changed during execution.")
+        append_config_tag(new_structure, f"Repl({target}->{','.join(new_atoms)})")
         return [new_structure]
 
 
@@ -2013,11 +3090,14 @@ def replace_atoms_with_conditions(
         condition_mask = np.full(len(symbols), bool(condition_result), dtype=bool)
     target_indices = np.nonzero(target_mask & condition_mask)[0]
     if len(target_indices) == 0:
-        return structure, 0
+        return structure.copy(), 0
 
     probs = np.asarray(probabilities, dtype=float)
     if probs.size != len(new_atoms) or probs.size == 0:
-        raise ValueError("Replacement probabilities must match replacement atoms.")
+        raise CardOperationError(
+            "conditional_replace.probability_count_mismatch",
+            "Replacement probabilities must match replacement atoms.",
+        )
     if np.any(~np.isfinite(probs)) or np.any(probs < 0.0):
         raise ValueError("Replacement probabilities must be finite and non-negative.")
     if np.all(probs <= 0):
@@ -2053,3 +3133,546 @@ def _exact_replacement_sample(new_atoms: list[str], probs: np.ndarray, total: in
         sampled.extend([name] * int(count))
     rng.shuffle(sampled)
     return np.array(sampled, dtype=object)
+# ----------------------------------------------------------------------
+# Interface thin-layer interdiffusion (界面随机互混)
+#
+# Detects a bilayer interface, picks near-interface atomic layers on both
+# sides (L = below the interface, R = above it), and swaps atom species
+# between the two selected regions at a fixed or gradient concentration.
+# ----------------------------------------------------------------------
+
+INTERFACE_AXIS_INDEX = {"a": 0, "b": 1, "c": 2}
+MIN_CONTRAST = 1e-4
+CONC_TOLERANCE = 1e-6
+
+
+@dataclass(frozen=True)
+class InterfaceLayerMixParams:
+    axis: str = "auto"
+    auto_position: bool = True
+    interface_position: float = 0.5
+    layer_tolerance: float = 0.25
+    left_layers: int = 2
+    right_layers: int = 2
+    mode: str = "fixed"
+    concentration: float = 0.5
+    gradient_start: float = 0.0
+    gradient_end: float = 1.0
+    num_structures: int = 1
+    use_seed: bool = False
+    seed: int = 0
+
+
+class InterfaceLayerMixOperation(StructureOperation):
+    """Swap atom species between near-interface layers of a bilayer."""
+
+    def run_structure(self, structure, params: InterfaceLayerMixParams) -> list:
+        resolved = self._resolve(structure, params)
+        c_schedule = self._concentration_schedule(params, resolved["c_max"])
+        outputs = []
+        base_seed = (
+            self._validated_integer(params.seed, "Random seed")
+            if bool(params.use_seed)
+            else None
+        )
+        cfg_id = stable_config_id(structure)
+        for sample_idx, c in enumerate(c_schedule):
+            if base_seed is None:
+                rng = np.random.default_rng()
+                seed_tag = ""
+            else:
+                derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
+                rng = np.random.default_rng(derived_seed)
+                seed_tag = f",s={derived_seed}"
+            atoms = structure.copy()
+            pair_count = self._pair_count(
+                c, resolved["n_total"], resolved["pair_capacity"]
+            )
+            c_effective = 2.0 * pair_count / resolved["n_total"]
+            changed = self._swap_atoms(atoms, resolved, pair_count, rng)
+            if changed:
+                _invalidate_species_change_labels(atoms)
+            target_tag = (
+                ""
+                if math.isclose(c_effective, c, rel_tol=0.0, abs_tol=CONC_TOLERANCE)
+                else f",target={c:.3g}"
+            )
+            append_config_tag(
+                atoms,
+                f"IfaceMix(L={int(params.left_layers)},R={int(params.right_layers)},"
+                f"c={c_effective:.3g}{target_tag}{seed_tag})",
+            )
+            outputs.append(atoms)
+        return outputs
+
+    def interface_summary(self, structure, params: InterfaceLayerMixParams) -> dict:
+        """Deterministic geometry summary for the preview panel (no RNG)."""
+        resolved = self._resolve(structure, params)
+        requested = self._concentration_schedule(params, resolved["c_max"])
+        effective = [
+            2.0
+            * self._pair_count(c, resolved["n_total"], resolved["pair_capacity"])
+            / resolved["n_total"]
+            for c in requested
+        ]
+        return {
+            "axis": resolved["axis"],
+            "position": resolved["position"],
+            "left_formula": resolved["left_formula"],
+            "right_formula": resolved["right_formula"],
+            "left_layers_available": resolved["left_layers_available"],
+            "right_layers_available": resolved["right_layers_available"],
+            "left_layers": int(params.left_layers),
+            "right_layers": int(params.right_layers),
+            "n_left": resolved["n_left"],
+            "n_right": resolved["n_right"],
+            "n_total": resolved["n_total"],
+            "c_max": resolved["c_max"],
+            "pair_capacity": resolved["pair_capacity"],
+            "requested_concentrations": requested,
+            "effective_concentrations": effective,
+            "num_structures": int(params.num_structures),
+            "mode": str(params.mode).strip(),
+        }
+
+    # ------------------------------------------------------------------
+    # geometry / validation
+    # ------------------------------------------------------------------
+
+    def _resolve(self, structure, params: InterfaceLayerMixParams) -> dict:
+        if int(getattr(structure.cell, "rank", 0)) < 3:
+            raise CardOperationError(
+                "interface.singular_cell",
+                "Interface Layer Mixing requires a non-singular 3D cell.",
+            )
+        if len(structure) < 2:
+            raise CardOperationError(
+                "interface.too_few_atoms",
+                "Interface Layer Mixing requires at least two atoms.",
+            )
+        cell = np.asarray(structure.cell.array, dtype=float)
+        positions = np.asarray(structure.positions, dtype=float)
+        if not np.all(np.isfinite(cell)) or not np.all(np.isfinite(positions)):
+            raise CardOperationError(
+                "interface.non_finite_geometry",
+                "Interface Layer Mixing requires finite cell vectors and atom positions.",
+            )
+
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
+        species = sorted(set(symbols.tolist()), key=lambda s: atomic_numbers.get(s, 200))
+        if len(species) < 2:
+            raise CardOperationError(
+                "interface.single_element",
+                "Interface Layer Mixing found only one element ({element}); "
+                "swapping would not change the structure.",
+                element=species[0],
+            )
+
+        left_layers = self._validated_integer(
+            params.left_layers, "L-side layer count"
+        )
+        right_layers = self._validated_integer(
+            params.right_layers, "R-side layer count"
+        )
+        if left_layers < 1:
+            raise CardOperationError(
+                "interface.left_layers",
+                "L-side layer count must be >= 1 (got {value}).",
+                value=left_layers,
+            )
+        if right_layers < 1:
+            raise CardOperationError(
+                "interface.right_layers",
+                "R-side layer count must be >= 1 (got {value}).",
+                value=right_layers,
+            )
+        num_structures = self._validated_integer(
+            params.num_structures, "Number of structures"
+        )
+        if num_structures < 1:
+            raise CardOperationError(
+                "interface.num_structures",
+                "Number of structures must be >= 1 (got {value}).",
+                value=num_structures,
+            )
+        if bool(params.use_seed):
+            seed = self._validated_integer(params.seed, "Random seed")
+            if seed < 0 or seed > 2**31 - 1:
+                raise CardOperationError(
+                    "interface.seed",
+                    "Random seed must be between 0 and {maximum} (got {value}).",
+                    maximum=2**31 - 1,
+                    value=seed,
+                )
+        layer_tolerance = float(params.layer_tolerance)
+        if not np.isfinite(layer_tolerance) or layer_tolerance <= 0.0:
+            raise CardOperationError(
+                "interface.layer_tolerance",
+                "Layer tolerance must be a finite distance greater than 0 Å (got {value}).",
+                value=params.layer_tolerance,
+            )
+
+        coord3 = scaled_positions(structure, wrap=True)
+        axis_key = str(params.axis).strip().lower()
+        axis_idx = INTERFACE_AXIS_INDEX.get(axis_key)
+        if axis_key != "auto" and axis_idx is None:
+            raise CardOperationError(
+                "interface.invalid_axis",
+                "Interface axis must be auto, a, b, or c (got {axis}).",
+                axis=params.axis,
+            )
+
+        pos = None
+        if axis_key == "auto":
+            best = None
+            for idx in range(3):
+                contrast, candidate_pos = self._best_split(symbols, species, coord3[:, idx])
+                if best is None or contrast > best[0]:
+                    best = (contrast, idx, candidate_pos)
+            contrast, axis_idx, pos = best
+            axis_key = ("a", "b", "c")[axis_idx]
+            if pos is None or contrast < MIN_CONTRAST:
+                raise CardOperationError(
+                    "interface.no_interface",
+                    "Auto-detection found no interface with distinct compositions "
+                    "(max contrast {contrast}). Check that the structure is a bilayer "
+                    "or pick the interface normal axis manually.",
+                    contrast=f"{contrast:.3g}",
+                )
+
+        if bool(params.auto_position):
+            if pos is None:
+                contrast, pos = self._best_split(symbols, species, coord3[:, axis_idx])
+            if pos is None or contrast < MIN_CONTRAST:
+                raise CardOperationError(
+                    "interface.no_interface",
+                    "Lattice axis {axis} shows no distinct-composition split "
+                    "(contrast {contrast}). Try another axis, or disable auto-locate "
+                    "and type the interface position.",
+                    axis=axis_key,
+                    contrast=f"{contrast:.3g}",
+                )
+        else:
+            pos = float(params.interface_position)
+            if not np.isfinite(pos) or not (0.0 < pos < 1.0):
+                raise CardOperationError(
+                    "interface.invalid_position",
+                    "Interface fractional position must be strictly between 0 and 1 (got {pos}).",
+                    pos=f"{pos:.4g}",
+                )
+
+        coord = coord3[:, axis_idx]
+        l_mask = coord < pos
+        r_mask = ~l_mask
+        idx = np.arange(len(structure), dtype=int)
+
+        normal_scale = 1.0 / float(np.linalg.norm(np.linalg.inv(cell)[:, axis_idx]))
+        l_layer_id, n_left_avail = self._layer_ids(
+            coord[l_mask], normal_scale, layer_tolerance
+        )
+        if n_left_avail < left_layers:
+            raise CardOperationError(
+                "interface.not_enough_layers",
+                "Not enough atomic layers below the interface: need {need}, only "
+                "{have} available. Reduce the L-side layer count.",
+                need=left_layers,
+                have=n_left_avail,
+            )
+        l_sel = np.zeros(len(structure), dtype=bool)
+        l_sel[l_mask] = n_left_avail - 1 - l_layer_id < left_layers
+
+        r_layer_id, n_right_avail = self._layer_ids(
+            coord[r_mask], normal_scale, layer_tolerance
+        )
+        if n_right_avail < right_layers:
+            raise CardOperationError(
+                "interface.not_enough_layers",
+                "Not enough atomic layers above the interface: need {need}, only "
+                "{have} available. Reduce the R-side layer count.",
+                need=right_layers,
+                have=n_right_avail,
+            )
+        r_sel = np.zeros(len(structure), dtype=bool)
+        r_sel[r_mask] = r_layer_id < right_layers
+
+        l_idx = idx[l_sel]
+        r_idx = idx[r_sel]
+        n_left = int(l_idx.size)
+        n_right = int(r_idx.size)
+
+        l_elements = set(symbols[l_idx].tolist())
+        r_elements = set(symbols[r_idx].tolist())
+        pair_capacity = self._unlike_pair_capacity(symbols[l_idx], symbols[r_idx])
+        if pair_capacity == 0:
+            raise CardOperationError(
+                "interface.same_elements",
+                "Both selected regions are the same single element {element}; "
+                "swapping would not change the structure.",
+                element=next(iter(l_elements & r_elements), "the same element"),
+            )
+
+        n_total = n_left + n_right
+        c_max = 2.0 * pair_capacity / n_total
+        return {
+            "axis": axis_key,
+            "position": pos,
+            "n_left": n_left,
+            "n_right": n_right,
+            "n_total": n_total,
+            "left_formula": self._formula(symbols[l_idx]),
+            "right_formula": self._formula(symbols[r_idx]),
+            "left_layers_available": n_left_avail,
+            "right_layers_available": n_right_avail,
+            "left_index": l_idx,
+            "right_index": r_idx,
+            "c_max": float(c_max),
+            "pair_capacity": int(pair_capacity),
+        }
+
+    def _concentration_schedule(self, params: InterfaceLayerMixParams, c_max: float) -> list[float]:
+        num = int(params.num_structures)
+        mode = str(params.mode).strip()
+        if mode == "fixed":
+            c = float(params.concentration)
+            if not np.isfinite(c) or c < 0.0 or c > c_max + CONC_TOLERANCE:
+                raise CardOperationError(
+                    "interface.concentration_exceeds_max",
+                    "Target concentration {c} exceeds this interface's swap capacity "
+                    "{c_max}. Lower the concentration or add more layers.",
+                    c=f"{c:.4g}",
+                    c_max=f"{c_max:.4g}",
+                )
+            return [c] * num
+        if mode == "gradient":
+            start = float(params.gradient_start)
+            end = float(params.gradient_end)
+            top = max(start, end)
+            if (
+                not np.all(np.isfinite([start, end]))
+                or start < 0.0
+                or end < 0.0
+                or top > c_max + CONC_TOLERANCE
+            ):
+                raise CardOperationError(
+                    "interface.concentration_exceeds_max",
+                    "Gradient concentration bound {top} exceeds this interface's swap "
+                    "capacity {c_max}. Lower the concentration or add more layers.",
+                    top=f"{top:.4g}",
+                    c_max=f"{c_max:.4g}",
+                )
+            if num == 1:
+                return [start]
+            return [start + (end - start) * i / (num - 1) for i in range(num)]
+        raise CardOperationError(
+            "interface.invalid_mode",
+            "Concentration mode must be fixed or gradient (got {mode}).",
+            mode=mode,
+        )
+
+    # ------------------------------------------------------------------
+    # helpers
+    # ------------------------------------------------------------------
+
+    def _best_split(self, symbols: np.ndarray, species: list[str], coord: np.ndarray) -> tuple[float, float | None]:
+        """Return (contrast, split position) for the best split on one axis."""
+        n_species = len(species)
+        species_index = {s: i for i, s in enumerate(species)}
+        sym_idx = np.asarray([species_index[s] for s in symbols], dtype=int)
+        uniq_vals, inv = np.unique(coord, return_inverse=True)
+        n_uniq = uniq_vals.size
+        if n_uniq < 2:
+            return 0.0, None
+        uniq_hist = np.zeros((n_uniq, n_species), dtype=float)
+        for s in range(n_species):
+            uniq_hist[:, s] = np.bincount(inv[sym_idx == s], minlength=n_uniq)
+        cum_hist = np.cumsum(uniq_hist, axis=0)
+        cum_count = np.cumsum(uniq_hist.sum(axis=1))
+        total = int(cum_count[-1])
+        best_contrast = 0.0
+        best_pos = None
+        for i in range(n_uniq - 1):
+            n_left = int(cum_count[i])
+            n_right = total - n_left
+            if n_left == 0 or n_right == 0:
+                continue
+            hist_l = cum_hist[i] / n_left
+            hist_r = (cum_hist[-1] - cum_hist[i]) / n_right
+            contrast = 1.0 - self._cosine(hist_l, hist_r)
+            pos = 0.5 * (float(uniq_vals[i]) + float(uniq_vals[i + 1]))
+            if contrast > best_contrast:
+                best_contrast = contrast
+                best_pos = pos
+        return float(best_contrast), best_pos
+
+    @staticmethod
+    def _cosine(a: np.ndarray, b: np.ndarray) -> float:
+        denom = float(np.sqrt(np.dot(a, a) * np.dot(b, b)))
+        if denom == 0.0:
+            return 0.0
+        return float(np.dot(a, b)) / denom
+
+    @staticmethod
+    def _layer_ids(
+        coords: np.ndarray, normal_scale: float, tolerance: float
+    ) -> tuple[np.ndarray, int]:
+        """Cluster nearby fractional coordinates using a physical Å tolerance."""
+        if coords.size == 0:
+            return np.zeros(0, dtype=int), 0
+        order = np.argsort(coords, kind="stable")
+        layer_ids = np.zeros(coords.size, dtype=int)
+        layer = 0
+        previous = float(coords[order[0]])
+        for atom_index in order[1:]:
+            current = float(coords[atom_index])
+            if (current - previous) * normal_scale > tolerance:
+                layer += 1
+            layer_ids[atom_index] = layer
+            previous = current
+        return layer_ids, layer + 1
+
+    @staticmethod
+    def _formula(symbols_subset: np.ndarray) -> str:
+        counts = Counter(symbols_subset.tolist())
+        order = sorted(counts, key=lambda s: atomic_numbers.get(s, 200))
+        g = 0
+        for v in counts.values():
+            g = math.gcd(g, v)
+        parts = []
+        for s in order:
+            n = counts[s] // g if g else counts[s]
+            parts.append(s if n == 1 else f"{s}{n}")
+        return "".join(parts)
+
+    @staticmethod
+    def _validated_integer(value, label: str) -> int:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            raise CardOperationError(
+                "interface.integer_parameter",
+                "{label} must be an integer (got {value}).",
+                label=label,
+                value=value,
+            ) from None
+        if not np.isfinite(number) or not number.is_integer():
+            raise CardOperationError(
+                "interface.integer_parameter",
+                "{label} must be an integer (got {value}).",
+                label=label,
+                value=value,
+            )
+        return int(number)
+
+    @staticmethod
+    def _unlike_pair_capacity(
+        left_symbols: np.ndarray, right_symbols: np.ndarray
+    ) -> int:
+        left = Counter(left_symbols.tolist())
+        right = Counter(right_symbols.tolist())
+        n_left = int(len(left_symbols))
+        n_right = int(len(right_symbols))
+        dominant = max(
+            (left[element] + right[element] for element in set(left) | set(right)),
+            default=0,
+        )
+        return max(0, min(n_left, n_right, n_left + n_right - dominant))
+
+    @staticmethod
+    def _pair_count(c: float, n_total: int, capacity: int) -> int:
+        return min(int(np.round(float(c) * n_total / 2.0)), int(capacity))
+
+    @classmethod
+    def _swap_atoms(
+        cls, atoms, resolved: dict, pair_count: int, rng: np.random.Generator
+    ) -> bool:
+        if pair_count <= 0:
+            return False
+        symbols = np.asarray(atoms.get_chemical_symbols(), dtype=object)
+        l_idx = resolved["left_index"]
+        r_idx = resolved["right_index"]
+        lp, rp = cls._sample_unlike_pairs(symbols, l_idx, r_idx, pair_count, rng)
+        old_l = symbols[lp].copy()
+        symbols[lp] = symbols[rp]
+        symbols[rp] = old_l
+        for name in ("spin", "initial_magmoms", "initial_charges"):
+            values = atoms.arrays.get(name)
+            if values is None:
+                continue
+            old_values = np.asarray(values[lp]).copy()
+            values[lp] = values[rp]
+            values[rp] = old_values
+        atoms.set_chemical_symbols(symbols.tolist())
+        return True
+
+    @staticmethod
+    def _sample_unlike_pairs(symbols, l_idx, r_idx, count, rng):
+        """Return exactly ``count`` cross-interface pairs with unlike species."""
+        left_groups = {
+            element: list(rng.permutation(l_idx[symbols[l_idx] == element]))
+            for element in sorted(set(symbols[l_idx].tolist()))
+        }
+        right_groups = {
+            element: list(rng.permutation(r_idx[symbols[r_idx] == element]))
+            for element in sorted(set(symbols[r_idx].tolist()))
+        }
+        left_species = list(rng.permutation(list(left_groups)))
+        right_species = list(rng.permutation(list(right_groups)))
+
+        source = 0
+        left_offset = 1
+        right_offset = left_offset + len(left_species)
+        sink = right_offset + len(right_species)
+        capacity = np.zeros((sink + 1, sink + 1), dtype=int)
+        for i, element in enumerate(left_species):
+            capacity[source, left_offset + i] = len(left_groups[element])
+        for j, element in enumerate(right_species):
+            capacity[right_offset + j, sink] = len(right_groups[element])
+        for i, left_element in enumerate(left_species):
+            for j, right_element in enumerate(right_species):
+                if left_element != right_element:
+                    capacity[left_offset + i, right_offset + j] = count
+
+        flow = np.zeros_like(capacity)
+        total_flow = 0
+        while total_flow < count:
+            parent = np.full(sink + 1, -1, dtype=int)
+            parent[source] = source
+            queue = [source]
+            for node in queue:
+                for nxt in range(sink + 1):
+                    if parent[nxt] < 0 and capacity[node, nxt] - flow[node, nxt] > 0:
+                        parent[nxt] = node
+                        queue.append(nxt)
+                        if nxt == sink:
+                            break
+                if parent[sink] >= 0:
+                    break
+            if parent[sink] < 0:
+                raise RuntimeError("Internal unlike-species matching failed.")
+            amount = count - total_flow
+            node = sink
+            while node != source:
+                prev = int(parent[node])
+                amount = min(amount, int(capacity[prev, node] - flow[prev, node]))
+                node = prev
+            node = sink
+            while node != source:
+                prev = int(parent[node])
+                flow[prev, node] += amount
+                flow[node, prev] -= amount
+                node = prev
+            total_flow += amount
+
+        left_pairs: list[int] = []
+        right_pairs: list[int] = []
+        for i, left_element in enumerate(left_species):
+            for j, right_element in enumerate(right_species):
+                amount = int(flow[left_offset + i, right_offset + j])
+                for _ in range(amount):
+                    left_pairs.append(left_groups[left_element].pop())
+                    right_pairs.append(right_groups[right_element].pop())
+        order = rng.permutation(len(left_pairs))
+        return (
+            np.asarray(left_pairs, dtype=int)[order],
+            np.asarray(right_pairs, dtype=int)[order],
+        )

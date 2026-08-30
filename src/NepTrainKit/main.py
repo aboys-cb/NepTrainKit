@@ -4,14 +4,22 @@
 
 import os
 import sys
+import tempfile
+
 if sys.platform == "darwin":
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
-from NepTrainKit.runtime_package import run_runtime_health_command
+from NepTrainKit.runtime_package import (
+    run_native_health_command,
+    run_runtime_health_command,
+)
 
 _runtime_health_exit = run_runtime_health_command()
 if _runtime_health_exit is not None:
     raise SystemExit(_runtime_health_exit)
+_native_health_exit = run_native_health_command()
+if _native_health_exit is not None:
+    raise SystemExit(_native_health_exit)
 
 from NepTrainKit.startup import load_config_class
 
@@ -194,6 +202,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.training_set_audit_window = TrainingSetAuditWindow(self)
         self.make_data_interface = MakeDataWidget(self)
         self.setting_interface = SettingsWidget(self)
+        self.setting_interface.canvasModeChanged.connect(
+            self.show_nep_interface.graph_widget.apply_canvas_mode
+        )
         self.data_manager_interface = DataManagerWidget(self)
         self._audited_result_data = None
         self._audited_result_signature = None

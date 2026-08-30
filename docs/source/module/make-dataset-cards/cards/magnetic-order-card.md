@@ -2,7 +2,7 @@
 
 # 磁序（Magnetic Order）
 
-`Group`: `Magnetism` | `Class`: `MagneticOrderCard`
+**分类：** 磁性
 
 ## 功能说明
 
@@ -10,10 +10,23 @@
 
 这张卡生成的是用于 DFT/NEP 数据准备的**初始自旋端点**，不是磁基态判断器，也不能证明某个输出是真正的热力学 FM、AFM 或 PM 相。后续仍需通过电子结构计算、能量比较和收敛后磁矩验证。
 
-`Magnetic Order` 与 `Spin Disorder` 的职责不同：
+`Magnetic Order` 与 `Moment Disorder` 的职责不同：
 
 - `Magnetic Order`：建立 FM、AFM 或完全随机 PM 端点。
-- `Spin Disorder`：从已有磁态出发，扫描局部翻转比例、随机化比例或锥角无序等中间状态。
+- `Moment Disorder`：从已有磁态出发，按比例翻转或重新定向一部分磁矩，生成不同无序程度的中间状态。
+
+## 原理与公式
+
+程序先为每个原子得到磁矩模长 $m_i$。共线输出写入标量
+$m_i s_i$，非共线输出沿参考轴 $\hat{\mathbf a}$ 写入
+$\mathbf m_i=m_i s_i\hat{\mathbf a}$。三类磁序的符号/方向规则为：
+
+- 铁磁（FM）：所有磁性原子 $s_i=+1$；
+- 反铁磁（AFM）：按 k 向量层号或 A/B 分组交替给出 $s_i=\pm1$；
+- 顺磁近似（PM）：共线模式随机取正负号，非共线模式按球面、圆锥、平面或轴向规则抽方向。
+
+`平衡正负磁矩`只约束有限样本中的正负数量尽量相等，不等价于热力学顺磁系综；这张卡生成
+的是用于训练覆盖的磁构型快照，不是在求磁性基态。
 
 ## 操作示例
 
@@ -25,14 +38,14 @@
 
 **参数设置：**
 
-- `Spin model` = `collinear`
-- `Reference axis` = `[0, 0, 1]`
+- `自旋模型`（`format`） = `collinear`
+- `参考轴`（`axis`） = `[0, 0, 1]`
 - `Element moments` = `Fe:2.2`
 - 开启 FM、AFM 和 PM
-- `AFM assignment` = `k_vector`
-- `AFM layer vector` = `111`
+- `AFM 分配方式`（`afm_mode`） = `k_vector`
+- `AFM 层向量`（`afm_kvec`） = `111`
 - `PM structures per input` = `8`
-- 开启随机种子并设置 `seed=42`
+- 开启`使用随机种子`并把`随机种子`设为 `42`
 
 **运行前检查：** 首输入预览应显示 16 个磁性原子、AFM `+8/-8`，并给出每个输入及整个数据集的预计输出数量。如果 AFM 只有一个符号，先扩胞或更换 layer vector。
 
@@ -67,7 +80,7 @@
 
 #### 元素磁矩（magmom_map）
 
-`str`，默认空。用于指定逐元素磁矩，单位为 $\mu_\mathrm{B}$：
+`str`，默认空。界面使用“元素 / 磁矩模长”表格，单位为 $\mu_\mathrm{B}$；序列化仍使用逐元素映射：
 
 ```text
 Fe:2.2,Co:1.7,Ni:0.6
@@ -93,13 +106,13 @@ Fe:[0,0,2.2],Cr:[0,0,-1.5]
 
 #### 未列元素磁矩（default_moment）
 
-`float`，默认 `0.0`。对作用范围内、但未出现在 `magmom_map` 中的元素使用该非负磁矩幅值。
+`float`，默认 `0.0`。对作用范围内、但未出现在 `元素磁矩`（`magmom_map`）中的元素使用该非负磁矩幅值。
 
 #### 仅作用于元素（apply_elements）
 
 `str`，默认空。逗号分隔，例如 `Fe,Co`。非空时，只有列出的元素参与磁矩映射；其他元素磁矩为 0。留空时考虑全部元素。
 
-执行顺序是：先按 `apply_elements` 选择元素，再从 `magmom_map` 读取幅值，未命中时使用 `default_moment`。如果最终没有任何非零磁矩，卡片明确失败，不生成带错误磁序标签的全零结构。
+执行顺序是：先按 `仅作用于元素`（`apply_elements`）选择元素，再从 `元素磁矩`（`magmom_map`）读取幅值，未命中时使用 `未列元素磁矩`（`default_moment`）。如果最终没有任何非零磁矩，卡片明确失败，不生成带错误磁序标签的全零结构。
 
 ### 输出分支
 
@@ -113,7 +126,7 @@ Fe:[0,0,2.2],Cr:[0,0,-1.5]
 
 #### 生成随机 PM（gen_pm）
 
-`bool`，默认 false。开启后生成 `pm_count` 个随机 PM 初始态。
+`bool`，默认 false。开启后生成 `每个输入的 PM 数量`（`pm_count`）个随机 PM 初始态。
 
 FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
@@ -150,7 +163,7 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 #### 每个输入的 PM 数量（pm_count）
 
-`int`，默认 `10`，最小为 1。总输出数为已开启的 FM/AFM 分支数加 `pm_count`。
+`int`，默认 `10`，最小为 1。总输出数为已开启的 FM/AFM 分支数加 `每个输入的 PM 数量`（`pm_count`）。
 
 #### PM 方向分布（pm_direction）
 
@@ -159,7 +172,7 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 - `sphere`：整个球面均匀随机。
 - `cone`：参考轴周围的锥内随机。
 - `plane`：垂直于参考轴的平面内随机。
-- `axis`：沿参考轴随机取正负方向。
+- `参考轴`（`axis`）：沿参考轴随机取正负方向。
 
 共线 PM 始终沿参考轴随机取正负号，不使用该参数。
 
@@ -185,7 +198,7 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 #### 每个输入最大输出（max_outputs）
 
-`int`，默认 `100`，最小为 1。如果 FM、AFM 和 PM 的预计输出总数超过该值，卡片明确失败，防止误设 `pm_count` 后生成过量结构。
+`int`，默认 `100`，最小为 1。如果 FM、AFM 和 PM 的预计输出总数超过该值，卡片明确失败，防止误设 `每个输入的 PM 数量`（`pm_count`）后生成过量结构。
 
 ## 推荐预设
 
@@ -287,14 +300,14 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 ## 推荐组合
 
-- `Group Label` → `Magnetic Order`：已有 coordinate-based group 时，用 `group_ab` 生成对应 AFM 正负号。
-- `Magnetic Order` → `Spin Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。
-- `Magnetic Order` → `Small-Angle Spin Tilt`：在端点附近补充确定性小角偏转。
-- `Magnetic Order` → `Spin Spiral`：复用元素磁矩幅值，生成位置连续的螺旋磁序。
+- `Layer Groups` → `Magnetic Order`：先生成逐层交替的 A/B 标签，再用 `group_ab` 赋予 AFM 正负号。
+- `Magnetic Order` → `Moment Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。
+- `Magnetic Order` → `Local Magnetic Response`：在端点附近补充确定性小角响应。
+- `Magnetic Order` → `SOC / Texture Response`：先建立参考磁态，再生成位置连续的有限 q 磁纹理。
 
 ## 常见问题
 
-**预览提示没有非零磁矩。** `magmom_map` 为空、磁矩都是 0，或 `apply_elements` 排除了所有映射元素。卡片不会把全零自旋标成 FM/AFM/PM。
+**预览提示没有非零磁矩。** `元素磁矩`（`magmom_map`）为空、磁矩都是 0，或 `仅作用于元素`（`apply_elements`）排除了所有映射元素。卡片不会把全零自旋标成 FM/AFM/PM。
 
 **AFM 提示只有一个符号。** 当前晶胞在所选 k-vector 下没有足够的交替相位。先扩胞或更换 layer vector。
 
@@ -302,7 +315,7 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 **配对后的 PM 净磁矩仍不完全为零。** 某种磁矩模长对应奇数个原子时会留下一个未配对方向；不同模长之间不会通过改变模长强行抵消。
 
-**PM 和 Spin Disorder 是否重复。** PM 分支把全部磁性原子直接放到一个随机端点；`Spin Disorder` 能按比例只扰动部分已有自旋并扫描中间无序度。
+**PM 和 Moment Disorder 是否重复。** PM 分支把全部磁性原子直接放到一个随机端点；`Moment Disorder` 能按比例只改变部分已有磁矩并扫描中间无序度。
 
 ## 输出标签
 
@@ -315,4 +328,4 @@ FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。
 
 ## 可复现性
 
-FM 和 AFM 没有随机性。PM 开启 `use_seed` 后，同一输入、参数和 seed 会得到相同输出。
+FM 和 AFM 没有随机性。PM 开启 `使用随机种子`（`use_seed`）后，同一输入、参数和 seed 会得到相同输出。

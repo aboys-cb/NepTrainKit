@@ -719,6 +719,7 @@ class ViewBoxWidget(scene.Widget):
             kwargs["edge_color"]=self.convert_color(pen)
             if isinstance(pen, QPen):
                 kwargs["edge_width"] = max(0.0, float(pen.widthF() or pen.width() or 1.0))
+        kwargs.setdefault("antialias", self.marker_antialias)
         signature = cache_signature
         if signature is None:
             signature = (
@@ -733,6 +734,7 @@ class ViewBoxWidget(scene.Widget):
                 str(kwargs.get("face_color")),
                 str(kwargs.get("edge_color")),
                 kwargs.get("edge_width"),
+                kwargs.get("antialias"),
             )
 
         if self.activate_scatter_layer(
@@ -874,7 +876,15 @@ class ViewBoxWidget(scene.Widget):
         if hasattr(ov, "update_gl_state"):
             ov.update_gl_state(depth_test=False)
         # initialize with empty data and hide from bounds
-        ov.set_data(np.empty((0, 2), dtype=np.float32), face_color=self.convert_color(color), edge_width=0, symbol=symbol, size=size)
+        marker_kwargs = {"antialias": self.marker_antialias} if symbol == 'o' else {}
+        ov.set_data(
+            np.empty((0, 2), dtype=np.float32),
+            face_color=self.convert_color(color),
+            edge_width=0,
+            symbol=symbol,
+            size=size,
+            **marker_kwargs,
+        )
         ov.visible = False
         self._overlays[name] = ov
         return ov
@@ -906,6 +916,8 @@ class ViewBoxWidget(scene.Widget):
         kwargs = {}
         if color is not None:
             kwargs['face_color'] = self.convert_color(color)
+        if symbol == 'o':
+            kwargs['antialias'] = self.marker_antialias
         # Use face fill for highlight; no edge for lower cost
         pos = np.asarray(pos, dtype=np.float32)
         ov.set_data(pos=pos, edge_width=0, symbol=symbol, size=size, **kwargs)
@@ -956,7 +968,8 @@ class ViewBoxWidget(scene.Widget):
         """
         empty = np.empty((0, 2), dtype=np.float32)
         for ov in self._overlays.values():
-            ov.set_data(pos=empty, edge_width=0, symbol='o', size=9)
+            kwargs = {"antialias": self.marker_antialias} if hasattr(ov, "_antialias") else {}
+            ov.set_data(pos=empty, edge_width=0, symbol='o', size=9, **kwargs)
             ov.visible = False
         for image in self._overlay_images.values():
             image.visible = False
@@ -1721,17 +1734,18 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
     @timeit
 
-    def plot_nep_result(self):
+    def plot_nep_result(self, preserve_selection=False):
         """Render all dataset scatter plots and refresh overlay layers.
         
         Notes
         -----
         Called after data mutations to keep the canvas in sync with the dataset.
         """
-        self.nep_result_data.select_index.clear()
-        clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
-        if clear_selection_history is not None:
-            clear_selection_history()
+        if not preserve_selection:
+            self.nep_result_data.select_index.clear()
+            clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+            if clear_selection_history is not None:
+                clear_selection_history()
         self._ensure_plot_dataset_indices()
         # Clear all overlays so deleted selections do not persist visually
         for plot in self.axes_list:
@@ -1783,6 +1797,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        if preserve_selection:
+            self.rebuild_selection_display()
         self._refresh_current_point_marker()
         self.prewarm_overlay_position_cache()
         if self._search_highlight_indices:

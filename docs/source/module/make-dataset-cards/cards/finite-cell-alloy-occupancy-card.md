@@ -2,99 +2,97 @@
 
 # 有限晶胞合金占位（Finite-Cell Alloy Occupancy）
 
-`Group`: `Alloy` | `Class`: `FiniteCellAlloyOccupancyCard`
+**分类：** 合金与组分
 
 ## 功能说明
 
-按有限位点上真正可实现的整数计数生成合金占位。输入若含 `atoms.arrays["sublattice"]`，每个子晶格独立约束；普通结构则全部位点组成名为 `all` 的单一 site set。
+这张卡把合金比例落实为有限晶胞中真正可实现的整数原子数，再为每种整数组成生成不重复的占位排布。输入含 `atoms.arrays["sublattice"]` 时，各子晶格分别约束；没有该数组时，全部位点属于名为 `all` 的单一位点集合。
 
-组成计划先确定每种元素的整数个数，再生成不重复的随机排布。卡片不会先采任意连续比例再静默取整，也不会把不可整除的目标写成 Exact。metadata 同时保存请求、实际计数、实际分数、composition ID 和 arrangement ID。
+组成模式有三种：
 
-卡片主界面是可视化规则编辑器。先选择“全部位点”或“按子晶格”，再为每个位点集合添加元素，并选择一种组成模式。模式切换后只显示当前需要的比例或计数字段：
+- `fixed_fraction`：指定固定目标比例；可整除时记为 `exact`，否则用最大余数法得到最近整数计划，并记为 `nearest_integer`。
+- `fraction_range`：枚举实际整数占比落在各元素范围内的计划。
+- `count_range`：枚举各元素整数计数落在范围内、且总和等于位点数的计划。
 
-- `fixed_fraction`：给出固定目标比例；可整除时记为 `exact`，否则采用确定性的最近整数计划并记为 `nearest_integer`。
-- `fraction_range`：枚举实际整数分数落在各元素范围内的计划。
-- `count_range`：枚举各元素整数计数落在范围内且总和等于位点数的计划。
+## 原理与公式
+
+有限晶胞不能实现任意连续比例。一个位点集合含 $N$ 个位点时，程序寻找满足
+
+$$
+n_e\in\mathbb Z_{\ge0},\qquad \sum_e n_e=N
+$$
+
+的整数计数。无量纲占比范围 $f_e\in[0,1]$ 会转换为
+
+$$
+\lceil f_{e,\min}N\rceil\le n_e\le\lfloor f_{e,\max}N\rfloor.
+$$
+
+给定一组计数后，该位点集合的不同排布总数为
+
+$$
+\Omega=\frac{N!}{\prod_e n_e!}.
+$$
+
+多个子晶格的排布数是各自 $\Omega$ 的乘积。设选中的整数组成集合为 $P$，每种组成请求 $A$ 个排布，总输出上限为 $M$，则实际输出数为
+
+$$
+N_\mathrm{out}=\min\left(M,\sum_{i\in P}\min(A,\Omega_i)\right).
+$$
+
+当预算不足时，卡片先覆盖不同组成，再轮流增加每种组成的第 2、第 3 个排布。它不会复制排布凑数，也不会把超出预算的结果称为已穷举。
 
 ## 操作示例
 
-### 场景：小晶胞 HEA 的“目标 20%”反复落到同一个实际组成
+### 小晶胞 HEA 的多个目标比例落到同一实际组成
 
-32 位点随机固溶体经过连续 Composition Space Sampling 后再取整，多个目标点可能都变成同一整数计数组合，训练集看似有很多组成，实际却重复。
+32 位点随机固溶体若先采连续比例再取整，多个目标点可能变成同一整数计数组合。此时应直接使用“计数范围”枚举 Fe/Co/Ni 的可行计数，设置“每种组成的排布数”为 4，并用“每个输入的最大输出数”控制规模。
 
-**输入：** 32 原子 A1/fcc 周期超胞。
-**目标：** 直接枚举 Fe/Co/Ni 的可实现整数计数，并为每个组成生成 4 个不同排布。
-**参数设置：** `site_rules` 使用 `all`（若输入含 A 单子晶格则用 `A`）和 `count_range`，给三种元素明确整数范围；`arrangements_per_composition=4`，固定 seed，设置 `max_outputs`。
-**输出：** 每个 composition ID 对应唯一整数计数组合；同一 composition 下的 arrangement ID 不重复。
-**怎么验证训练集质量改善：** 统计 metadata 中的 `counts`，确认每帧总和为 32、composition ID 无重复；重训时再按实际分数切片比较误差，而不是按原连续目标比例分组。
+输出中，相同实际计数组合具有相同的 composition ID；同一 composition 下的 arrangement ID 不重复。验证时应检查每帧 `counts` 之和为 32、`(composition_id, arrangement_id)` 二元组唯一，并按 metadata 中的实际占比切片比较模型误差。
 
 ## 参数说明
 
-### 位点划分与 Site Rules（site_rules）
+### 位点划分规则（site_rules）
 
-默认界面先显示 A/B 规则模板中的 `X` 占位符，但 `X` 不是可输出的元素。接入上游结构且规则尚未被手动编辑时，卡片会立即按首个输入结构的实际 site set、元素和当前比例生成安全规则。例如 Ni/Al 的 A/B 结构会自动得到真实的 Ni、Al 规则，而不会生成 `X` 原子。
+可视化编辑器用于选择“全部位点”或“按子晶格”，并为每个位点集合设置元素和组成模式。JSON 顶层 key 必须与输入的 `sublattice` 标签完全一致；无标签结构只使用 `all`。`group` 不会代替 `sublattice`。
 
-```json
-{"A":{"composition":{"X":1.0},"elements":["X"],"mode":"fixed_fraction"},"B":{"composition":{"X":1.0},"elements":["X"],"mode":"fixed_fraction"}}
-```
+未手动编辑规则时，接入上游结构会按**首个输入结构**的标签、元素和当前占比自动匹配规则。默认模板中的 `X` 只是占位符，不能输出；手动编辑、选择模板、粘贴 JSON 或恢复持久化参数后，规则不再被自动覆盖。
 
-“无子晶格标签（all）”模板会建立 `all` 规则；“A/B 子晶格”模板会建立彼此独立的 A、B 规则。JSON 顶层 key 必须与输入的 site set 完全一致。有 `sublattice` 时逐个编辑 A、B 等标签；没有时使用 `all`。卡片不会把 `all` 静默套到每个子晶格，也不会使用 `group` 代替 `sublattice`。
+固定比例为无量纲数，范围是 $[0,1]$，且可视化编辑器要求同一位点集合内的比例和为 1。计数范围的单位是“个位点”，上下限必须是非负整数。旧 JSON 中 `1 + 1` 这类相对权重仍可由底层归一化，但新规则应直接填写 `0.5 + 0.5`。
 
-规则仍由卡片自动管理时，载入上游结构会按实际标签和元素自动匹配：普通无标签结构使用 `all`，A1/A2/A3 等单子晶格原型使用单独的 `A` 规则，L1₂/B2/L1₀ 保持 A/B。界面会明确提示自动匹配结果。只要用户编辑过规则、主动选择过模板、粘贴过 JSON 或载入过持久化参数，卡片就不再自动覆盖，标签不匹配或仍含 `X` 时改为显示错误。
-
-切换位点划分或应用模板会整体替换当前规则。已有手动编辑时，界面会先确认，避免误删元素、范围和 site set。
-
-输入结构可用后，界面会在对应规则旁显示实际位点数，并即时提示缺少标签、多余标签、非法/重复元素、范围错误和无整数解。底层持久化仍是 `site_rules` 字符串；“高级：查看/粘贴 JSON”默认收起，可用于复制现有格式或粘贴旧配置。非法 JSON 不会覆盖当前有效的可视化规则。
-
-固定组成示例：
-
-```json
-{"A":{"elements":["Fe","Co"],"mode":"fixed_fraction","composition":{"Fe":0.5,"Co":0.5}}}
-```
-
-可视化编辑器要求固定比例之和为 1，例如 `0.5 + 0.5`。旧项目或直接调用 operation 的 JSON 若使用 `1 + 1` 这类相对权重，底层仍会归一化以保持兼容；界面新建和修改规则时不再依赖这种隐式归一化。
-
-分数范围示例：
-
-```json
-{"B":{"elements":["Al","Ni"],"mode":"fraction_range","fractions":{"Al":[0.25,0.75],"Ni":[0.25,0.75]}}}
-```
-
-整数范围示例：
+规则示例：
 
 ```json
 {"A":{"elements":["Fe","Co"],"mode":"count_range","counts":{"Fe":[8,16],"Co":[8,16]}}}
 ```
 
+“高级：查看或粘贴 JSON”可复制或载入旧规则；非法 JSON 不会覆盖当前有效规则。切换位点划分或应用模板会替换整组规则，已有手动编辑时界面会先确认。
+
 ### 每种组成的排布数（arrangements_per_composition）
 
-`int`，默认 1。每个实际整数计数组合请求多少个不同的原子排布。
-
-如果某个组成的理论唯一排布数小于请求值，只返回理论上存在的数量。例如两个位点各放一个 Fe/Co 只有 2 种排布，请求 10 也不会复制结果凑数。
+`int`，默认 1，单位为“个结构”。它表示每种实际整数组成请求多少个不同排布；若理论排布数 $\Omega$ 更少，则只返回实际存在的数量。
 
 ### 使用固定种子（use_seed）
 
-`bool`，默认 true。开启后，组成预算抽样和每个组成的排布都由固定 seed 派生。
+`bool`，默认 true。开启后，组成预算抽样和具体位点排布均由固定 seed 派生。
 
-组成可行域本身不随 seed 改变；seed 只决定超预算时选哪些计划以及元素落到哪些具体位点。
+### 随机种子（seed）
 
-### Seed（seed）
-
-`int`，默认 0。固定随机路径的基础种子。
-
-生效条件：`use_seed=true`。相同输入、规则和 seed 会得到相同 composition/arrangement 顺序与占位；更换 seed 时实际计数不变，但排布通常会改变。
+`int`，默认 0，无单位，仅在 `use_seed=true` 时生效。相同输入、规则和 seed 会得到相同结果。若所有可行组成都在预算内，改变 seed 不改变可行计数集合，只改变排布；若 `max_outputs` 截断了组成集合，seed 也会改变被选中的整数组成。
 
 ### 每个输入的最大输出数（max_outputs）
 
-`int`，默认 200。单个输入结构最多返回的总结构数。
+`int`，默认 200，单位为“个结构”。它限制每个输入结构返回的总结构数，并采用“先覆盖组成、再增加排布”的分配顺序。
 
-预算不足以覆盖全部组成时，operation 先在整数计划索引空间中按固定步长确定性选择可覆盖的组成，再采用“组成优先”的轮转调度：先为每个选中组成生成第 1 个排布，再生成各组成的第 2 个排布，以此类推。因此，小预算不会先被单一组成的多个排布耗尽。
+## 输出预览与失败条件
 
-输入结构与规则都可用时，UI 用数据集中的**首个输入结构**计算位点数和可行整数组成数，并显示输出上限估计。这个数字是 `可行组成数 × 每组成请求排布数` 的上界；某些组成的唯一排布数不足时，实际输出会更少。没有输入时只提示先载入上游结构，不显示伪精确数字。
+UI 只用数据集的**首个输入结构**计算位点数、可行整数组成数和输出上界。若同一数据集中的结构具有不同原子数、`sublattice` 标签或位点数，后续结构会按各自真实位点重新计算，输出数可能不同，也可能因规则不匹配而失败；这类数据最好分组处理。
 
-## 推荐预设
+以下情况会显式失败，不会返回伪成功的空结果：规则与位点集合不匹配、仍含 `X`、比例或计数范围非法，以及没有可行整数解。对于排布空间很大的组成，程序采用有上限的去重随机尝试；若尝试耗尽而未达到本应存在的目标数量，也会显式报告已生成数量与请求数量。
 
-### 32 位点二元随机固溶体
+## 推荐配置
+
+32 位点二元合金可从以下规则开始，再按训练集缺口收紧计数范围：
 
 ```json
 {
@@ -109,41 +107,22 @@
 }
 ```
 
-### L1₂ 子晶格部分无序
-
-```json
-{
-  "class": "FiniteCellAlloyOccupancyCard",
-  "params": {
-    "site_rules": "{\"A\":{\"elements\":[\"Fe\",\"Co\",\"Ni\"],\"mode\":\"fraction_range\",\"fractions\":{\"Fe\":[0.25,0.5],\"Co\":[0.25,0.5],\"Ni\":[0.0,0.5]}},\"B\":{\"elements\":[\"Al\",\"Ta\"],\"mode\":\"count_range\",\"counts\":{\"Al\":[4,8],\"Ta\":[0,4]}}}",
-    "arrangements_per_composition": 3,
-    "use_seed": true,
-    "seed": 23,
-    "max_outputs": 120
-  }
-}
-```
-
 ## 推荐组合
 
-- `Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`：覆盖 L1₂、B2、L1₀ 的有序和分子晶格无序占位。
-- `Crystal Prototype Builder → Super Cell → Finite-Cell Alloy Occupancy`：普通 FCC/BCC 结构没有 `sublattice` 时使用 `all` 单 site set 生成随机固溶体。
-- `Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`：占位确定后再补坐标和晶格扰动；磁矩仍交给 Magnetic Order 或 Spin Disorder。
+- `Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`：保留 L1₂、B2、L1₀ 等原型的子晶格划分，并在各子晶格内生成受约束的无序占位。
+- `Crystal Prototype Builder → Super Cell → Finite-Cell Alloy Occupancy`：先得到足够位点，再生成可实现的随机固溶体组成。
+- `Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`：先确定占位，再补充坐标和晶格扰动。
 
 ## 常见问题
 
-**提示 missing rules 或 unknown site sets。** 顶层 key 必须逐一匹配输入 `sublattice` 的实际标签；普通结构只能使用 `all`。operation 不会回退到 `group`。
+**为什么输出少于请求值？** 某种组成的理论排布数可能不足，或总输出已达到 `max_outputs`；卡片不会复制结构凑数。
 
-**提示没有整数解。** 各元素计数下限之和可能大于位点数，或上限之和小于位点数。分数范围也会先换算成当前晶胞可实现的整数边界，再检查总和。
+**为什么提示规则不匹配？** 顶层 key 必须逐一匹配输入的 `sublattice` 标签；无标签结构只能使用 `all`。
 
-**输出少于 `arrangements_per_composition`。** 该组成的理论排布数已耗尽，或触发了 `max_outputs`。这不是随机失败，卡片不会用重复排布伪造样本数。触发总输出上限时，卡片优先覆盖不同组成，再为同一组成增加排布。
+**为什么没有整数解？** 各元素下限之和可能大于位点数，或上限之和小于位点数；占比范围也会先换算为当前晶胞可实现的整数边界。
 
-**提示仍含占位元素 X。** `X` 只用于没有输入时展示规则结构，operation 会拒绝生成含 `X` 的结果。接入真实结构后可让未编辑的规则自动匹配，也可以手动把 `X` 替换为实际元素。
+## 输出标签与可复现性
 
-## 输出标签
+`Config_type` 追加 `FiniteAlloy(comp=<composition_id>,arr=<arrangement_id>)`。`finite_cell_alloy` metadata 保存实际 `counts`、`fractions`、请求规则、实现状态、composition ID、arrangement ID 和派生 seed。
 
-`Config_type` 追加 `FiniteAlloy(comp=<composition_id>,arr=<arrangement_id>)`。`finite_cell_alloy` metadata 是 JSON 字符串，包含每个 site set 的实际 `counts`、`fractions`、请求规则、实现状态、composition ID、arrangement ID 和派生 seed。
-
-## 可复现性
-
-固定 `use_seed=true` 与 `seed` 后严格可复现。超预算组成抽样使用确定索引顺序；排布去重以逐位元素序列为准，不依赖集合迭代顺序。
+固定 `use_seed=true` 和 `seed` 后结果可复现；关闭固定种子后不保证重复运行得到相同组成抽样或排布。

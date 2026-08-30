@@ -1,22 +1,30 @@
+import json
 import tempfile
+
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QSpinBox
 
 from NepTrainKit.core.io.importers import import_structures
 from NepTrainKit.core.magnetism import parse_magmom_map_any
+from NepTrainKit.ui.views._card.i18n_utils import set_combo_value
 
 from .magnetism_test_base import *
 
 
 class TestMagnetismOrderCards(MagnetismCardTest):
+    def test_set_magnetic_moments_card_fails_closed_for_invalid_map(self):
+        card = SetMagneticMomentsCard()
+        card.map_edit.setText("Fe:not-a-number")
+        with self.assertRaises(ValueError):
+            card.process_structure(self._spin_chain())
+
     def test_magnetic_order_card_fm_afm(self):
         proto = CrystalPrototypeBuilderCard()
-        proto.structure_combo.setCurrentText("bcc")
+        set_combo_value(proto.structure_combo, "bcc")
         proto.element_edit.setText("Fe")
         proto.a_frame.set_input_value([2.9, 2.9, 0.1])
-        proto.manual_supercell_button.setChecked(True)
-        proto.auto_supercell_button.setChecked(False)
-        proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.create_operation().generate(proto.get_params())[0]
+        base = proto.create_operation().generate(proto.get_params())[0].repeat((2, 2, 2))
 
         card = MagneticOrderCard()
         card.map_edit.setText("Fe:2.2")
@@ -155,11 +163,9 @@ class TestMagnetismOrderCards(MagnetismCardTest):
                 lattice="bcc",
                 element="Fe",
                 a_range=(2.9, 2.9, 0.1),
-                auto_supercell=False,
-                rep=(4, 4, 4),
                 max_outputs=1,
             )
-        )[0]
+        )[0].repeat((4, 4, 4))
         params = MagneticOrderParams(
             magmom_map="Fe:2.2",
             gen_fm=False,
@@ -195,11 +201,9 @@ class TestMagnetismOrderCards(MagnetismCardTest):
                 lattice="bcc",
                 element="Fe",
                 a_range=(2.9, 2.9, 0.1),
-                auto_supercell=False,
-                rep=(2, 2, 2),
                 max_outputs=1,
             )
-        )[0]
+        )[0].repeat((2, 2, 2))
         result = MagneticOrderOperation().run_structure(
             structure,
             MagneticOrderParams(
@@ -475,14 +479,11 @@ class TestMagnetismOrderCards(MagnetismCardTest):
 
     def test_magnetic_order_card_noncollinear_pm(self):
         proto = CrystalPrototypeBuilderCard()
-        proto.structure_combo.setCurrentText("fcc")
+        set_combo_value(proto.structure_combo, "fcc")
         proto.element_edit.setText("Ni")
         proto.a_frame.set_input_value([3.5, 3.5, 0.1])
-        proto.manual_supercell_button.setChecked(True)
-        proto.auto_supercell_button.setChecked(False)
-        proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.create_operation().generate(proto.get_params())[0]
+        base = proto.create_operation().generate(proto.get_params())[0].repeat((2, 2, 2))
 
         card = MagneticOrderCard()
         card.format_combo.setCurrentIndex(1)
@@ -527,6 +528,27 @@ class TestMagnetismOrderCards(MagnetismCardTest):
         self.assertEqual(restored.source_combo.currentText(), "Map/default magnitude")
         self.assertEqual(restored.format_combo.currentText(), "Non-collinear (vector)")
         self.assertEqual(restored.map_edit.text(), "Fe:2.5")
+
+    def test_set_magnetic_moments_reference_axis_uses_compact_integer_inputs(self):
+        card = SetMagneticMomentsCard()
+
+        self.assertEqual(card.axis_frame.get_input_value(), [0, 0, 1])
+        self.assertEqual(card.axis_frame.maximumWidth(), 16777215)
+        self.assertTrue(all(isinstance(control, QSpinBox) for control in card.axis_frame.object_list))
+
+    def test_set_magnetic_moments_element_picker_adds_validated_row(self):
+        card = SetMagneticMomentsCard()
+
+        card.map_edit._apply_element_selection("Fe")
+        self.assertEqual(card.map_edit.table.item(0, 0).text(), "Fe")
+        self.assertEqual(card.map_edit.table.item(0, 1).text(), "1.0")
+        self.assertEqual(card.map_edit.text(), "Fe:1.0")
+        self.assertFalse(
+            bool(card.map_edit.table.item(0, 0).flags() & Qt.ItemFlag.ItemIsEditable)
+        )
+
+        card.map_edit._apply_element_selection("Fe")
+        self.assertEqual(card.map_edit.table.rowCount(), 1)
 
     def test_set_and_order_magnetic_maps_honor_defaults_directions_and_element_scope(self):
         structure = Atoms(
@@ -624,14 +646,11 @@ class TestMagnetismOrderCards(MagnetismCardTest):
 
     def test_magmom_rotation_lifts_scalar_to_vector(self):
         proto = CrystalPrototypeBuilderCard()
-        proto.structure_combo.setCurrentText("bcc")
+        set_combo_value(proto.structure_combo, "bcc")
         proto.element_edit.setText("Fe")
         proto.a_frame.set_input_value([2.9, 2.9, 0.1])
-        proto.manual_supercell_button.setChecked(True)
-        proto.auto_supercell_button.setChecked(False)
-        proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.create_operation().generate(proto.get_params())[0]
+        base = proto.create_operation().generate(proto.get_params())[0].repeat((2, 2, 2))
 
         order = MagneticOrderCard()
         order.format_combo.setCurrentIndex(0)
@@ -676,7 +695,32 @@ class TestMagnetismOrderCards(MagnetismCardTest):
             norms = np.linalg.norm(ma, axis=1)
             self.assertTrue(np.all(norms >= 1.8 - 1e-12))
             self.assertTrue(np.all(norms <= 2.2 + 1e-12))
-            self.assertIn("MMR(", a.info.get("Config_type", ""))
+            self.assertIn("SpinPert(", a.info.get("Config_type", ""))
+
+    def test_magmom_rotation_defaults_cover_broad_training_perturbations(self):
+        params = MagneticMomentRotationParams()
+        self.assertEqual(params.max_angle, 30.0)
+        self.assertEqual(tuple(params.magnitude_factor), (0.8, 1.2))
+
+        card = MagneticMomentRotationCard()
+        card_params = card.get_params()
+        self.assertEqual(card_params.max_angle, params.max_angle)
+        self.assertEqual(tuple(card_params.magnitude_factor), tuple(params.magnitude_factor))
+
+    def test_random_spin_perturbation_samples_uniform_spherical_cap(self):
+        vectors = np.tile(np.array([[0.0, 0.0, 2.0]]), (20000, 1))
+        sampled, angles = MagneticMomentRotationOperation.sample_spherical_cap(
+            vectors,
+            30.0,
+            np.random.default_rng(19),
+        )
+
+        np.testing.assert_allclose(np.linalg.norm(sampled, axis=1), 2.0, atol=1e-12)
+        self.assertGreaterEqual(float(np.min(angles)), 0.0)
+        self.assertLessEqual(float(np.max(angles)), 30.0 + 1e-12)
+        expected_mean_cosine = 0.5 * (1.0 + np.cos(np.deg2rad(30.0)))
+        actual_mean_cosine = float(np.mean(sampled[:, 2] / 2.0))
+        self.assertAlmostEqual(actual_mean_cosine, expected_mean_cosine, delta=0.002)
 
     def test_magmom_rotation_card_roundtrips_selection_axis_and_magnitude_controls(self):
         params = MagneticMomentRotationParams(
@@ -697,3 +741,92 @@ class TestMagnetismOrderCards(MagnetismCardTest):
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), normalized_params)
+        self.assertTrue(card.axis_field.isHidden())
+        self.assertTrue(card.magnitude_factor_field.isHidden())
+        self.assertEqual(card.get_summary_text(), "≤ 17.5° · Fe,Ni · 6/input")
+
+        preview = MagneticMomentRotationCard()
+        preview.set_preview_input_count(2)
+        self.assertIn("Planned (valid input): 2 × 5 = 10 outputs", preview.get_guidance_text())
+
+    def test_magmom_rotation_fails_closed_for_inputs_that_cannot_change(self):
+        operation = MagneticMomentRotationOperation()
+        plain = self._spin_chain()
+        with self.assertRaisesRegex(ValueError, "requires spin or initial magnetic moments"):
+            operation.run_structure(plain, MagneticMomentRotationParams())
+
+        scalar = self._spin_chain()
+        scalar.set_initial_magnetic_moments([2.0] * len(scalar))
+        with self.assertRaisesRegex(ValueError, "must be lifted to vectors"):
+            operation.run_structure(
+                scalar,
+                MagneticMomentRotationParams(lift_scalar=False),
+            )
+        with self.assertRaisesRegex(ValueError, "non-zero"):
+            operation.run_structure(
+                scalar,
+                MagneticMomentRotationParams(axis=(0.0, 0.0, 0.0)),
+            )
+        with self.assertRaisesRegex(ValueError, "No non-zero magnetic moments match"):
+            operation.run_structure(
+                scalar,
+                MagneticMomentRotationParams(elements="Ni"),
+            )
+        with self.assertRaisesRegex(ValueError, "between 0 and 180"):
+            operation.run_structure(
+                scalar,
+                MagneticMomentRotationParams(max_angle=-1.0),
+            )
+        with self.assertRaisesRegex(ValueError, "Increase the perturbation angle"):
+            operation.run_structure(
+                scalar,
+                MagneticMomentRotationParams(
+                    max_angle=0.0,
+                    disturb_magnitude=False,
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "minimum must not exceed"):
+            operation.run_structure(
+                scalar,
+                MagneticMomentRotationParams(magnitude_factor=(1.2, 0.8)),
+            )
+        rotation_only = operation.run_structure(
+            scalar,
+            MagneticMomentRotationParams(
+                num_structures=1,
+                disturb_magnitude=False,
+                magnitude_factor=(1.2, 0.8),
+                use_seed=True,
+                seed=9,
+            ),
+        )
+        self.assertEqual(len(rotation_only), 1)
+
+    def test_magmom_rotation_uses_structure_seed_and_records_provenance(self):
+        first_structure = self._spin_chain()
+        first_structure.set_initial_magnetic_moments([2.0] * len(first_structure))
+        second_structure = first_structure.copy()
+        second_structure.positions[0, 0] += 0.2
+        params = MagneticMomentRotationParams(
+            max_angle=15.0,
+            num_structures=2,
+            disturb_magnitude=False,
+            use_seed=True,
+            seed=23,
+        )
+
+        first = MagneticMomentRotationOperation().run_structure(first_structure, params)
+        repeated = MagneticMomentRotationOperation().run_structure(first_structure, params)
+        second = MagneticMomentRotationOperation().run_structure(second_structure, params)
+
+        for left, right in zip(first, repeated):
+            np.testing.assert_allclose(left.arrays["spin"], right.arrays["spin"])
+        self.assertFalse(np.allclose(first[0].arrays["spin"], second[0].arrays["spin"]))
+
+        metadata = json.loads(first[0].info["spin_perturbation"])
+        self.assertEqual(metadata["direction_distribution"], "uniform_spherical_cap")
+        self.assertEqual(metadata["seed"], 23)
+        self.assertEqual(metadata["sample_index"], 0)
+        self.assertEqual(metadata["selected_count"], len(first_structure))
+        self.assertFalse(metadata["disturb_magnitude"])
+        self.assertGreater(metadata["realized_angle_max"], 0.0)

@@ -22,7 +22,13 @@ from qfluentwidgets import (
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import FiniteCellAlloyOccupancyOperation, FiniteCellAlloyOccupancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 from NepTrainKit.ui.widgets.alloy_site_rules import AlloySiteRulesEditor
 
 
@@ -43,7 +49,9 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self._rules_are_auto_managed = True
         self._applying_auto_rules = False
         self._allow_legacy_fraction_weights = False
-        self.setTitle(self.tr("Finite-Cell Alloy Occupancy"))
+        self._last_estimate = None
+        self._last_preview_error = ""
+        self.setTitle(self.tr("Finite Alloy"))
         self.init_ui()
 
     def init_ui(self):
@@ -67,11 +75,11 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             self.tr("Arrangements per composition"),
             self.setting_widget,
         )
+        self.arrangements_label.hide()
         self.arrangements_frame = SpinBoxUnitInputFrame(self)
         self.arrangements_frame.set_input("", 1, "int")
         self.arrangements_frame.setRange(1, 999999)
         self.arrangements_frame.set_input_value([1])
-        self.arrangements_frame.setMaximumWidth(220)
 
         self.seed_checkbox = CheckBox(self.tr("Use fixed seed"), self.setting_widget)
         self.seed_checkbox.setChecked(True)
@@ -79,17 +87,16 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self.seed_frame.set_input("", 1, "int")
         self.seed_frame.setRange(0, 2**31 - 1)
         self.seed_frame.set_input_value([0])
-        self.seed_frame.setMaximumWidth(220)
 
         self.max_outputs_label = BodyLabel(
             self.tr("Max outputs per input"),
             self.setting_widget,
         )
+        self.max_outputs_label.hide()
         self.max_outputs_frame = SpinBoxUnitInputFrame(self)
         self.max_outputs_frame.set_input("", 1, "int")
         self.max_outputs_frame.setRange(1, 999999)
         self.max_outputs_frame.set_input_value([200])
-        self.max_outputs_frame.setMaximumWidth(220)
 
         self.estimate_label = BodyLabel("", self.setting_widget)
         self.estimate_label.setWordWrap(True)
@@ -134,17 +141,47 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         advanced_layout.addWidget(self.json_error_label)
         self.advanced_widget.hide()
 
-        self.settingLayout.addWidget(self.rules_editor, 0, 0, 1, 3)
-        self.settingLayout.addWidget(self.auto_match_label, 1, 0, 1, 3)
-        self.settingLayout.addWidget(self.arrangements_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.arrangements_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_outputs_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_outputs_frame, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.estimate_label, 5, 0, 1, 3)
-        self.settingLayout.addWidget(self.advanced_button, 6, 0, 1, 3)
-        self.settingLayout.addWidget(self.advanced_widget, 7, 0, 1, 3)
+        rules_section = InspectorSection(
+            self.tr("Site rules"),
+            self.setting_widget,
+            self.tr("Choose the site partition, then edit allowed elements and integer-feasible ranges."),
+        )
+        rules_section.addWidget(self.rules_editor)
+        rules_section.addWidget(self.auto_match_label)
+
+        generation_section = InspectorSection(self.tr("Generation"), self.setting_widget)
+        generation_grid = ResponsiveFormGrid(generation_section)
+        arrangements_field = CompactField(
+            self.tr("Arrangements per composition"),
+            self.arrangements_frame,
+            generation_section,
+        )
+        seed_row = QWidget(generation_section)
+        seed_layout = QHBoxLayout(seed_row)
+        seed_layout.setContentsMargins(0, 0, 0, 0)
+        seed_layout.setSpacing(6)
+        seed_layout.addWidget(self.seed_checkbox)
+        seed_layout.addWidget(self.seed_frame, 1)
+        seed_field = CompactField(self.tr("Reproducibility"), seed_row, generation_section)
+        max_outputs_field = CompactField(
+            self.tr("Max outputs per input"),
+            self.max_outputs_frame,
+            generation_section,
+        )
+        generation_grid.add_field(arrangements_field)
+        generation_grid.add_field(max_outputs_field)
+        generation_grid.add_field(seed_field, span=2)
+        generation_section.addWidget(generation_grid)
+        generation_section.addWidget(self.estimate_label)
+
+        advanced_section = InspectorSection(self.tr("Advanced"), self.setting_widget)
+        advanced_section.addWidget(self.advanced_button)
+        advanced_section.addWidget(self.advanced_widget)
+
+        self.settingLayout.setVerticalSpacing(4)
+        self.settingLayout.addWidget(rules_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(generation_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(advanced_section, 2, 0, 1, 3)
 
         self.seed_checkbox.stateChanged.connect(self._on_seed_changed)
         self.arrangements_frame.object_list[0].valueChanged.connect(self._refresh_validation_and_estimate)
@@ -266,6 +303,16 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self._auto_match_rules_to_input()
         self.rules_editor.set_input_counts(self._input_counts)
         self._refresh_validation_and_estimate()
+        self.refresh_compact_presentation()
+
+    def set_preview_structure(self, structure) -> None:
+        """Preview the first upstream structure without changing runtime input."""
+        self._input_structure = structure
+        self._input_counts = self._site_counts(structure)
+        self._auto_match_rules_to_input()
+        self.rules_editor.set_input_counts(self._input_counts)
+        self._refresh_validation_and_estimate()
+        self.refresh_compact_presentation()
 
     @staticmethod
     def _rules_from_structure(structure) -> dict[str, dict[str, object]]:
@@ -360,6 +407,8 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             return
         self._refreshing = True
         try:
+            self._last_estimate = None
+            self._last_preview_error = ""
             self.rules_editor.set_input_counts(self._input_counts)
             errors = self.rules_editor.validation_errors(self._input_counts)
             if self._input_structure is None:
@@ -370,23 +419,32 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
                 )
                 return
             if errors:
+                self._last_preview_error = self.tr(
+                    "Fix the highlighted site-rule errors to calculate a feasible output estimate."
+                )
                 self.estimate_label.setText(
-                    self.tr("Fix the highlighted site-rule errors to calculate a feasible output estimate.")
+                    self._last_preview_error
                 )
                 return
 
             try:
-                estimate = self.create_operation().estimate(
+                operation = self.create_operation()
+                params = self._params_from_controls()
+                estimate = operation.estimate(
                     self._input_structure,
-                    self._params_from_controls(),
+                    params,
                 )
             except ValueError as exc:
                 message = str(exc)
                 friendly = self._show_operation_error_near_site(message)
-                self.estimate_label.setText(
-                    self.tr("No feasible integer composition: {error}").format(error=friendly)
-                )
+                self._last_preview_error = self.tr(
+                    "No feasible integer composition: {error}"
+                ).format(error=friendly)
+                self.estimate_label.setText(self._last_preview_error)
                 return
+
+            self._last_estimate = estimate
+            fixed_realization = self._fixed_realization_preview(estimate)
 
             count_map = dict(estimate.site_counts)
             ordered_labels = [
@@ -397,29 +455,86 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             counts = ", ".join(f"{label}={count_map[label]}" for label in ordered_labels)
             theoretical = estimate.composition_count * estimate.arrangements_per_composition
             truncated = theoretical > estimate.max_outputs
-            self.estimate_label.setText(
-                self.tr(
-                    "First input sites: {counts} · {compositions} feasible integer compositions · "
-                    "{arrangements} arrangements requested per composition\n"
-                    "Output upper-bound estimate: {theoretical} · Max outputs per input: {maximum} · "
-                    "{truncation}"
-                ).format(
-                    counts=counts,
-                    compositions=estimate.composition_count,
-                    arrangements=estimate.arrangements_per_composition,
-                    theoretical=theoretical,
-                    maximum=estimate.max_outputs,
-                    truncation=(
-                        self.tr(
-                            "Will truncate; different compositions are covered before extra arrangements."
-                        )
-                        if truncated
-                        else self.tr("Within the output limit.")
-                    ),
-                )
+            estimate_text = self.tr(
+                "First input sites: {counts} · {compositions} feasible integer compositions · "
+                "{arrangements} arrangements requested per composition\n"
+                "Output upper-bound estimate: {theoretical} · Max outputs per input: {maximum} · "
+                "{truncation}"
+            ).format(
+                counts=counts,
+                compositions=estimate.composition_count,
+                arrangements=estimate.arrangements_per_composition,
+                theoretical=theoretical,
+                maximum=estimate.max_outputs,
+                truncation=(
+                    self.tr(
+                        "Will truncate; different compositions are covered before extra arrangements."
+                    )
+                    if truncated
+                    else self.tr("Within the output limit.")
+                ),
             )
+            if fixed_realization:
+                estimate_text += "\n" + self.tr(
+                    "Fixed realization: {details}"
+                ).format(details="; ".join(fixed_realization))
+            self.estimate_label.setText(estimate_text)
         finally:
             self._refreshing = False
+
+    def _fixed_realization_preview(self, estimate) -> list[str]:
+        """Describe exact finite-cell counts for fixed-fraction site rules."""
+        details: list[str] = []
+        for label, counts, n_sites, realization in estimate.fixed_realizations:
+            occupants = []
+            for element, count in counts:
+                percent = 100.0 * int(count) / max(1, n_sites)
+                percent_text = f"{percent:.1f}".rstrip("0").rstrip(".")
+                occupants.append(
+                    self.tr("{element} {count}/{sites} ({percent}%)").format(
+                        element=element,
+                        count=int(count),
+                        sites=n_sites,
+                        percent=percent_text,
+                    )
+                )
+            status = (
+                self.tr("exact")
+                if realization == "exact"
+                else self.tr("nearest integer")
+            )
+            details.append(
+                self.tr("{label}: {occupants} [{status}]").format(
+                    label=label,
+                    occupants=", ".join(occupants),
+                    status=status,
+                )
+            )
+        return details
+
+    def get_summary_text(self) -> str:
+        if self._input_structure is None:
+            return self.tr(
+                "Load an upstream structure to estimate outputs from its first structure."
+            )
+        if self._last_preview_error:
+            return self._last_preview_error
+        estimate = self._last_estimate
+        if estimate is None:
+            return ""
+        return self.tr(
+            "Site sets {site_sets} · feasible compositions {compositions} · up to {outputs}/input"
+        ).format(
+            site_sets=len(estimate.site_counts),
+            compositions=estimate.composition_count,
+            outputs=estimate.estimated_total_outputs,
+        )
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "The preview uses the first input structure. Keep the same site partition across inputs; "
+            "the actual output can be lower when unique arrangements are exhausted."
+        )
 
     def _show_operation_error_near_site(self, message: str) -> str:
         match = re.search(r"site set ['\"]([^'\"]+)['\"]", message)

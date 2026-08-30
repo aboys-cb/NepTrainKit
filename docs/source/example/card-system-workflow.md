@@ -1,13 +1,13 @@
-# 用一条流程学会 Make Dataset 卡片系统
+# 用一条流程学会 生成数据集卡片系统
 
-这不是四张卡片的功能介绍，而是一个完整的工作流示例。目标是从 2 原子的 Si 晶胞出发，同时生成掺杂和空位两类候选，再做小幅扰动和几何筛选。走完一次后，你应该能看懂卡片顺序、`Card Group` 分支、启停状态、输入输出数量以及流程复用方式。
+这不是四张卡片的功能介绍，而是一个完整的工作流示例。目标是从 2 原子的 Si 晶胞出发，同时生成掺杂和空位两类候选，再做小幅扰动和几何筛选。走完一次后，你应该能看懂卡片顺序、`Branch Merge` 分支、启停状态、输入输出数量以及流程复用方式。
 
 ## 先认清每张卡片上的按钮
 
 所有卡片共用同一组标题栏按钮：
 
 ```{image} ../_static/image/generated/tutorials/card_system_controls.png
-:alt: Make Dataset 卡片标题栏通用按钮
+:alt: 生成数据集卡片标题栏通用按钮
 :class: docs-screenshot
 ```
 
@@ -27,13 +27,13 @@
 ## 组装这个例子
 
 1. 用左上角 `Load` 导入 `Si2.vasp`。
-2. 用 `Add new card` 或 `Find card` 依次添加 `Super Cell`、`Card Group`、`Random Doping`、`Vacancy Defect`、`Atomic Perturb` 和 `Geometry Filter`。新卡片先出现在顶层。
-3. 按住 `Random Doping` 的标题栏，把它拖进 `Card Group` 的空白区域；再用同样方法拖入 `Vacancy Defect`。拖错时，把子卡片拖回工作区空白处即可回到顶层。
+2. 用 `Add new card` 或 `Find card` 依次添加 `Super Cell`、`Branch Merge`、`Random Doping`、`Vacancy Defect`、`Atomic Perturb` 和 `Geometry Filter`。新卡片先出现在顶层。
+3. 按住 `Random Doping` 的标题栏，把它拖进 `Branch Merge` 的空白区域；再用同样方法拖入 `Vacancy Defect`。拖错时，把子卡片拖回工作区空白处即可回到顶层。
 4. 拖动标题栏，把剩余顶层卡片排成下面的顺序，再填写参数。
 
 ```text
 Super Cell
-→ Card Group [Random Doping | Vacancy Defect]
+→ Branch Merge [Random Doping | Vacancy Defect]
 → Atomic Perturb
 → Geometry Filter
 ```
@@ -57,19 +57,19 @@ Super Cell
 
 掺杂元素输入框不是 JSON。单一元素直接写 `Ge`；多元素比例写 `Ge:0.7,C:0.3`。界面恢复已保存参数时也会保持这种写法，便于直接照着修改。
 
-## 线性链和 Card Group 不要混淆
+## 线性链和 Branch Merge 不要混淆
 
-顶层卡片是**串行**的：`Super Cell` 的输出进入 `Card Group`，分支汇总结果再进入 `Atomic Perturb`，最后交给 `Geometry Filter`。所以扩胞应放在缺陷生成前，筛选应放在随机生成后。
+顶层卡片是**串行**的：`Super Cell` 的输出进入 `Branch Merge`，分支汇总结果再进入 `Atomic Perturb`，最后交给 `Geometry Filter`。所以扩胞应放在缺陷生成前，筛选应放在随机生成后。
 
-`Card Group` 内部是**并行分支**。本例的掺杂卡和空位卡都收到同一个 16 原子 Si 超胞，它们不会前后相接：
+`Branch Merge` 内部是**独立分支**。本例的掺杂卡和空位卡都收到同一个 16 原子 Si 超胞，它们不会前后相接：
 
 ```text
                  ┌→ Random Doping ─┐
-Si16 → Card Group│                  ├→ 汇总为 4 个结构
+Si16 → Branch Merge│                ├→ 汇总为 4 个结构
                  └→ Vacancy Defect ┘
 ```
 
-只有“同一个输入要走几条不同路线”时才使用 `Card Group`。如果你想先掺杂、再从掺杂结构中造空位，就应把两张卡放在顶层，按 `Random Doping → Vacancy Defect` 排列，而不是放进同一个组。
+只有“同一个输入要走几条不同路线”时才使用 `Branch Merge`。如果你想先掺杂、再从掺杂结构中造空位，就应把两张卡放在顶层，按 `Random Doping → Vacancy Defect` 排列，而不是放进同一个组。
 
 ## 运行后沿着数量检查
 

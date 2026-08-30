@@ -4,34 +4,115 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/workflows/index.rst:7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:53
 msgid "候选结构清洗后再进入 DFT"
 msgstr "Clean Candidate Structures Before DFT"
 
-#: ../../source/workflows/index.rst:2 ef14e3ca8a3c4811b2df93edb4cd9fee
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:53
+msgid "从训练误差定位下一轮数据缺口"
+msgstr "Find the next data gap from training errors"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:53
+msgid "组织多轮数据和模型版本"
+msgstr "Manage data and model versions across iterations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:2
+#: 16c720ad88f545148f0482c47c2c4f7f
 msgid "工作流"
 msgstr "Workflows"
 
-#: ../../source/workflows/index.rst:4 c3e1509f024d41b88f7d330fc32505e3
-msgid "这里的页面按真实任务组织，而不是按按钮组织。按钮细节可以查模块参考；工作流页只回答： 数据从哪里来，在哪一步该判断什么，最后输出给谁。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:4
+#: 4cbc1eb774804514b3b3267ad3bc616d
+msgid ""
+"这里的页面按真实任务组织，而不是按按钮组织。按钮细节可以查模块参考；工作流页"
+"只回答： 数据从哪里来，在哪一步该判断什么，最后输出给谁。"
 msgstr ""
-"These pages are organized by real tasks rather than toolbar buttons. Use the"
-" module reference for individual controls; use workflow pages to understand "
+"These pages are organized by real tasks rather than toolbar buttons. Use the "
+"module reference for individual controls; use workflow pages to understand "
 "where data comes from, what to decide at each stage, and where the result "
 "goes next."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:7
+#: 60c7618ffb5a42ac9a02036b11433506
+msgid "三条工作流分别对应“训练前、训练后和跨轮次管理”："
+msgstr "The three workflows cover work before training, work after training, and management across iterations:"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:12
+#: be31f3a45d25414f90627bca7a7b3fde
+msgid "训练前：清洗候选结构"
+msgstr "Before training: clean candidate structures"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:16
+#: 5218f8985f154e9e9daf41e8d09350ea
+msgid ""
+"已经生成候选池，但还没有送 DFT。先排除明显坏结构，再选择代表样本。 输出通常"
+"是 ``candidate_pool_clean.xyz`` 或待标注子集。"
+msgstr "You already have a candidate pool, but it has not gone to DFT. Remove clearly bad structures first, then select representative samples. The output is usually ``candidate_pool_clean.xyz`` or a subset ready for labeling."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:19
+#: 0e08eb978d484ef1a59682a88e48e830
+msgid "训练后：从误差找缺口"
+msgstr "After training: find gaps from errors"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:23
+#: cc2cf220ea4043d3a1559eb4dc8eab9e
+msgid ""
+"已经有训练／测试结果。把最大误差和异常点映射回结构，判断下一轮该补什么数据。 "
+"输出通常是复核结构集和下一轮生成目标。"
+msgstr "You already have training or test results. Map the largest errors and outliers back to structures, then decide what data to add next. The output is usually a review set and a target list for the next generation round."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:26
+#: 380b746ec22e44f28927f01933e6c92e
+msgid "多轮迭代：管理版本"
+msgstr "Across iterations: manage versions"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:30
+#: bf723e4ad6b6462a957e0735a7f10371
+msgid ""
+"已经开始第二轮及以后。固定数据、模型和报告的对应关系，避免覆盖上一轮结果。 输"
+"出是可追溯的轮次目录和记录。"
+msgstr "You are starting the second iteration or later. Keep the relationships between data, models, and reports fixed so that earlier results are not overwritten. The output is a traceable iteration directory and record."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:33
+#: 96fd29248b86433aa535efc7bbe54225
+msgid "它们在完整流程中的关系是："
+msgstr "Their relationship in the complete workflow is:"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:35
+#: 7f17d85c298a4e61a8d0d06b7fd32daa
+msgid ""
+"生成候选结构\n"
+"     │\n"
+"     ▼\n"
+"清洗候选结构 ──→ DFT 标注 ──→ GPUMD 训练\n"
+"                                   │\n"
+"                                   ▼\n"
+"                           从训练误差定位缺口\n"
+"                                   │\n"
+"                                   └──→ 下一轮候选结构\n"
+"\n"
+"“组织多轮数据和模型版本”贯穿每一轮，记录输入、输出和模型对应关系。"
+msgstr "Generate candidate structures\n     │\n     ▼\nClean candidate structures ──→ DFT labeling ──→ GPUMD training\n                                   │\n                                   ▼\n                           Find gaps from training errors\n                                   │\n                                   └──→ Next-round candidate structures\n\n“Manage data and model versions across iterations” applies to every round and records the relationships between inputs, outputs, and models."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/index.rst:49
+#: 20e73e749ab44a6f8cf3944b90131227
+msgid ""
+"如果你只是看不懂某个按钮或参数，不必从工作流开始，直接进入 :doc:`../module/"
+"index`。 如果你要完成一次具体的单步操作，例如能量平移或按索引选结构，进"
+"入 :doc:`../example/index`。"
+msgstr "If you only need help with a button or parameter, do not start with a workflow; open :doc:`../module/index`. If you need to complete a specific one-step task, such as shifting energies or selecting structures by index, open :doc:`../example/index`."

@@ -271,17 +271,18 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             self.ci.layout.setRowStretchFactor(row, factor)
 
     @timeit
-    def plot_nep_result(self):
+    def plot_nep_result(self, preserve_selection=False):
         """Render all dataset scatter plots and their annotations.
         
         Notes
         -----
         Invoked after data mutations (delete, undo, reload) to refresh the canvas.
         """
-        self.nep_result_data.select_index.clear()
-        clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
-        if clear_selection_history is not None:
-            clear_selection_history()
+        if not preserve_selection:
+            self.nep_result_data.select_index.clear()
+            clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+            if clear_selection_history is not None:
+                clear_selection_history()
 
         for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
@@ -340,6 +341,8 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        if preserve_selection:
+            self.rebuild_selection_display()
         if self._search_highlight_indices:
             self.set_search_highlight(self._search_highlight_indices)
 
@@ -584,38 +587,26 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         if plot is None:
             plot = self.current_axes
         if plot:
-
             view = plot.getViewBox()
+            scatter_data = getattr(plot._scatter, "data", None)
+            if scatter_data is None or not scatter_data.dtype.names:
+                x_range = [0.0, 1.0]
+                y_range = [0.0, 1.0]
+            else:
+                x = np.asarray(scatter_data["x"], dtype=float)
+                y = np.asarray(scatter_data["y"], dtype=float)
+                valid = np.isfinite(x) & np.isfinite(y)
+                if not np.any(valid):
+                    x_range = [0.0, 1.0]
+                    y_range = [0.0, 1.0]
+                else:
+                    x = x[valid]
+                    y = y[valid]
+                    x_range = [float(np.min(x)), float(np.max(x))]
+                    y_range = [float(np.min(y)), float(np.max(y))]
 
-            x_range = [10000, -10000]
-            y_range = [10000, -10000]
-            for item in view.addedItems:
-                if isinstance(item, ScatterPlotItem):
-
-                    x = item.data["x"]
-                    y = item.data["y"]
-
-                    x = x[x > -10000]
-                    y = y[y > -10000]
-                    if x.size == 0:
-                        x_range = [0, 1]
-                        y_range = [0, 1]
-                        continue
-                    x_min = np.min(x)
-                    x_max = np.max(x)
-                    y_min = np.min(y)
-                    y_max = np.max(y)
-                    if x_min < x_range[0]:
-                        x_range[0] = x_min
-                    if x_max > x_range[1]:
-                        x_range[1] = x_max
-                    if y_min < y_range[0]:
-                        y_range[0] = y_min
-                    if y_max > y_range[1]:
-                        y_range[1] = y_max
-            if plot.title != "descriptor":
-
-                real_range = (min(x_range[0], y_range[0]), max(x_range[1], y_range[1]))
+            if plot.parity_mode and plot.title != "descriptor":
+                real_range = [min(x_range[0], y_range[0]), max(x_range[1], y_range[1])]
                 view.setRange(xRange=real_range, yRange=real_range)
             else:
                 view.setRange(xRange=x_range, yRange=y_range)

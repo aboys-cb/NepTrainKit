@@ -1,0 +1,86 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-distributions.md:1
+#: e07f072885ea469c966b7a73bdee77bb
+msgid "查看数据分布（Explore distributions）"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-distributions.md:3
+#: cce7e1c7c1424e409a2329d1ad712f49
+msgid "作用与适用场景"
+msgstr "Purpose and use cases"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-distributions.md:5
+#: 80afbd2172bc445fb2ac1d2dc9412cc0
+msgid ""
+"在统一的训练集评估页面中查看能量、力、virial、预测值或误差分布，并从分箱反向"
+"选择结构。 适合先看整体长尾，再追到对应结构，而不是逐帧浏览。"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-distributions.md:8
+#: fb17b82ae59c4b32a116060ebde72f98
+msgid "可选字段与联动"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9007
+#: 36aa65f2f3c94f9986335126d831e4ec
+msgid ""
+"点击后打开 `训练集评估 → 数据分布`，不再弹出独立的 Distribution Inspector 窗"
+"口。"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9008
+#: 4c1b884232644e448fed7ed352076953
+msgid "默认只需要选择 `字段 / 数值类型 / 分组方式 / 数据范围`。"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9009
+#: 4265322d6a364b59af80361f6506ff47
+msgid "`选择方式 / 分箱数 / 辅助曲线 / 向量模长` 收入“高级选项”。"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9010
+#: f12c85ef38074aa896ea3e1b2ec46fe8
+msgid ""
+"`Metric / Series` 与分布图联动；点击分箱会把对应结构选择回写到 Dataset "
+"Display。"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9011
+#: 8bf64487ac4f46318dc807b893614bf7
+msgid "Reference / Prediction / Error 只在底层数据支持时产生有效结果。"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9013
+#: 9fe7105e603d467b9d02a8cc43053c49
+msgid "原有独立窗口暂时作为兼容实现保留，但工具栏入口已经切换到统一页面。"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-distributions.md:15
+#: e13b2efd940b42a8b5f313ec16bf6f55
+msgid "操作后检查"
+msgstr "Post-operation checks"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-distributions.md:17
+#: 1b1847625f2b4ae0940feb285c172001
+msgid ""
+"确认当前字段是否真的提供 Reference、Prediction 或 Error。点击分箱后检查回写的"
+"结构数量； 分布只描述当前活动数据，已经删除的结构不在统计范围内。"
+msgstr "This section explains the option, its parameters, operation, and expected result."

@@ -94,6 +94,7 @@ from NepTrainKit.core.cards.structure import (
 from NepTrainKit.core.cards.solvation import (
     LocalSolvationOperation,
     LocalSolvationParams,
+    PeriodicSpatialHash,
     SolventBoxFillOperation,
     SolventBoxFillParams,
     estimate_solvent_count_from_density,

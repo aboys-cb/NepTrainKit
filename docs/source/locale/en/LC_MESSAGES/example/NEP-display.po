@@ -4,12 +4,11 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -21,146 +20,433 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/example/NEP-display.md:1 d34f2af8a8eb4daf91cbf849efa05abe
-msgid "NEP Dataset Display 示例"
-msgstr "NEP Dataset Display Example"
+msgid "NEP Dataset Display 操作演示"
+msgstr "NEP Dataset Display walkthrough"
 
-#: ../../source/example/NEP-display.md:3 0a1d1232acbb427fbe169cd15cc117b7
+#: ../../source/example/NEP-display.md:3 d2f7ad086d8a4a34bdb025831085a2f9
 msgid ""
-"本页以操作演示为主。完整工具说明与参数手册请见： [`NEP Dataset Display 详细参考`](../module/show-nep-"
-"reference.md)"
+"本页带你完成一次最短的“打开数据 → 看图 → 选结构 → 导出”流程。动图只演示操作位置； "
+"参数含义和算法原理请进入对应的[功能指南](../module/NEP-dataset-display.md)。"
 msgstr ""
-"This page is a task-oriented walkthrough. For the complete tool and "
-"parameter reference, see [the detailed NEP Dataset Display "
-"reference](../module/show-nep-reference.md)."
+"This page walks through the shortest workflow: open data → inspect plots "
+"→ select structures → export. The animations show only where to click; "
+"see the corresponding [Feature Guide](../module/NEP-dataset-display.md) "
+"for parameter meanings and algorithm principles."
 
-#: ../../source/example/NEP-display.md:6 4a5df3ed61ec4a07b1e7a4f42f173eed
-msgid "数据导入"
-msgstr "Import data"
+#: ../../source/example/NEP-display.md:6 2e22e01bf9dc42abaeee765dece75826
+msgid "开始前准备什么"
+msgstr "Before you start"
 
-#: ../../source/example/NEP-display.md:8 24481be576fd429883a2305a809b524e
-msgid "使用 `nep.txt` 与 `train.xyz` 作为最小输入；支持拖拽导入。"
+#: ../../source/example/NEP-display.md 38594348bf024f59a1531ced2d5a4614
+msgid "我手里的文件"
+msgstr "Files you have"
+
+#: ../../source/example/NEP-display.md 861a16b9c1554ccca8bf421fe9a3ce37
+msgid "可以做什么"
+msgstr "What you can do"
+
+#: ../../source/example/NEP-display.md bcdf1d101362451bba781e178f880869
+msgid "只有 `train.xyz`"
+msgstr "Only `train.xyz`"
+
+#: ../../source/example/NEP-display.md f83c0c5a4cba400b8fad7b7ccc26f964
+msgid "查看结构、标签和已有 DFT 数据"
+msgstr "Inspect structures, labels, and existing DFT data"
+
+#: ../../source/example/NEP-display.md 349d2a4614054510b6d68b3d42953533
+msgid "`train.xyz` + `nep.txt`"
 msgstr ""
-"Use `nep.txt` and `train.xyz` as the minimal input pair. You can also drag "
-"and drop them into the application."
 
-#: ../../source/example/NEP-display.md:10 acc353fbce9b4decae9d9ef0212ba29b
-msgid "![GIF Image](../_static/image/example/display/import.gif)"
+#: ../../source/example/NEP-display.md 3ae403e049be461088951cb9cf0dc377
+msgid "重新预测并比较 NEP 与参考值"
+msgstr "Run predictions again and compare NEP with reference values"
+
+#: ../../source/example/NEP-display.md 55e72e5d3ac54accab0ac1dda9e51454
+msgid "`train.xyz` + `energy/force/virial_*.out`"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:10 ../../source/example/NEP-display.md:18
-#: ../../source/example/NEP-display.md:22 ../../source/example/NEP-display.md:23
-#: ../../source/example/NEP-display.md:24 ../../source/example/NEP-display.md:25
-#: ../../source/example/NEP-display.md:31 0bb5bd5792b84a88a135863ad1079083
-#: 0cdbd2b45de1466e9576b976995414e0 370956a7f59648159074624229f899a4
-#: 37aa6d7bf2be4316bd8d7e2377d03e96 405babf95456480087d693ae19c67717
-#: a824c293fe58497eb720431c13a53223 ea65577bc3da46ba8375579eac77f43d
-msgid "GIF Image"
-msgstr ""
+#: ../../source/example/NEP-display.md 1a9710efbf724fa2ade2e4d99f63fde2
+msgid "直接回看 GPUMD 已输出的训练或测试结果"
+msgstr "Review training or test results already produced by GPUMD"
 
-#: ../../source/example/NEP-display.md:10 405babf95456480087d693ae19c67717
+#: ../../source/example/NEP-display.md:14 70c9cf5a9e0f4b78b4c85bb4866a5537
+msgid "如果文件不能导入，先按文件类型查看[支持格式](../formats.md)，不要反复更改扩展名尝试。"
+msgstr ""
+"If a file cannot be imported, first check [Supported "
+"formats](../formats.md) for its file type instead of repeatedly changing "
+"the extension."
+
+#: ../../source/example/NEP-display.md:16 778a039f13d54a74bc0242623fd909db
+msgid "1. 打开结构和模型"
+msgstr "1. Open the structure and model"
+
+#: ../../source/example/NEP-display.md:18 62333d47bf68484f9722d8218fafae30
+msgid ""
+"把 `train.xyz` 拖入窗口，或从顶部 `Open` 菜单选择结构文件。需要现场计算预测值时， 再打开 "
+"`nep.txt`；只查看已有标签时不必加载模型。"
+msgstr ""
+"Drag `train.xyz` into the window or choose a structure file from the top "
+"`Open` menu. Open `nep.txt` only when you need on-the-fly predictions; "
+"loading a model is unnecessary when viewing existing labels."
+
+#: ../../source/example/NEP-display.md:21 acc353fbce9b4decae9d9ef0212ba29b
+msgid "![拖入结构文件并加载数据](../_static/image/example/display/import.gif)"
+msgstr ""
+"![Drag in a structure file and load "
+"data](../_static/image/example/display/import.gif)"
+
+#: ../../source/example/NEP-display.md:21 5f8d390a3bfd46478e01ea9837f35c70
+msgid "拖入结构文件并加载数据"
+msgstr "Drag in a structure file and load data"
+
+#: ../../source/example/NEP-display.md:21 5f8d390a3bfd46478e01ea9837f35c70
 msgid ".. image:: ../_static/image/example/display/import.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:12 ba3a6934f13c4a4481102ba7d1355ec1
-msgid "轨迹播放"
-msgstr "Play a trajectory"
+#: ../../source/example/NEP-display.md:23 bed1741e28124f26bb1dd1166fd30a29
+msgid "看完动图后检查："
+msgstr "After the animation, check:"
 
-#: ../../source/example/NEP-display.md:14 62bf651f2c714416bd6bce20824067a5
-msgid "点击播放按钮可逐帧预览结构："
-msgstr "Click the play button to inspect the structures frame by frame:"
-
-#: ../../source/example/NEP-display.md:16 b4193a29c72d4edd8063cdac2f97340b
-msgid "play"
+#: ../../source/example/NEP-display.md:25 bc6940afaf084b7e9c3f3e7f2fcf3cc4
+msgid "顶部和状态栏显示的结构数量是否与文件一致；"
 msgstr ""
+"whether the structure count at the top and in the status bar matches the "
+"file;"
 
-#: ../../source/example/NEP-display.md:16 b4193a29c72d4edd8063cdac2f97340b
+#: ../../source/example/NEP-display.md:26 929cc404bda04c9daa52ff89864564a7
+msgid "主图区是否出现能量、力或 virial 图；"
+msgstr "whether energy, force, or virial plots appear in the main area;"
+
+#: ../../source/example/NEP-display.md:27 57d4dc634e3b4a62b732f6c4a26258f6
+msgid "结构区能否显示当前帧。没有标签的数据不会凭空出现误差图。"
+msgstr ""
+"whether the structure view can display the current frame. Data without "
+"labels cannot produce error plots by itself."
+
+#: ../../source/example/NEP-display.md:29 51e3fb57773f457a8f355bdb5dc4320c
+msgid "2. 逐帧查看结构"
+msgstr "2. Inspect structures frame by frame"
+
+#: ../../source/example/NEP-display.md:31 eed30518269b4ba4b398dd549094b95a
+msgid "点击播放按钮可按当前顺序逐帧切换结构。播放只改变当前显示帧，不会删除、重新排序或修改数据。"
+msgstr ""
+"Click the play button to switch through structures in the current order. "
+"Playback changes only the displayed frame; it does not delete, reorder, "
+"or modify data."
+
+#: ../../source/example/NEP-display.md:33 4ec73ff73dc94920b2130a4ec93f902a
+msgid "播放结构序列"
+msgstr "Play the structure sequence"
+
+#: ../../source/example/NEP-display.md:33 4ec73ff73dc94920b2130a4ec93f902a
 msgid ".. image:: ../_static/image/generated/show_nep_icons/play.svg"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:18 5ef6410c8d544e208bd730f806719c33
-msgid "![GIF Image](../_static/image/example/display/play.gif)"
+#: ../../source/example/NEP-display.md:35 5ef6410c8d544e208bd730f806719c33
+msgid "![播放并逐帧查看结构](../_static/image/example/display/play.gif)"
 msgstr ""
+"![Play and inspect structures frame by "
+"frame](../_static/image/example/display/play.gif)"
 
-#: ../../source/example/NEP-display.md:18 a824c293fe58497eb720431c13a53223
+#: ../../source/example/NEP-display.md:35 62bf651f2c714416bd6bce20824067a5
+msgid "播放并逐帧查看结构"
+msgstr "Play and inspect structures frame by frame"
+
+#: ../../source/example/NEP-display.md:35 62bf651f2c714416bd6bce20824067a5
 msgid ".. image:: ../_static/image/example/display/play.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:20 222729be159f437abdd3cc3285d92dbf
-msgid "数据筛选"
-msgstr "Filter the dataset"
-
-#: ../../source/example/NEP-display.md:22 53014a51838c4264a817b8108c4e9be0
-msgid "最大误差点筛选：![GIF Image](../_static/image/example/display/maxerror.gif)"
+#: ../../source/example/NEP-display.md:37 dd47b5b48b8740abb594300e0e1724ef
+msgid "发现明显异常时先暂停，再记录当前结构编号或将其标记。大数据集不适合只靠播放检查， 应结合误差、几何过滤和搜索条件缩小范围。"
 msgstr ""
-"Select the largest-error structures: ![GIF "
-"Image](../_static/image/example/display/maxerror.gif)"
+"Pause when you spot an obvious anomaly, then record or mark the current "
+"structure index. Large datasets should not be checked by playback alone; "
+"narrow the search with errors, geometry filters, and search conditions."
 
-#: ../../source/example/NEP-display.md:22 37aa6d7bf2be4316bd8d7e2377d03e96
+#: ../../source/example/NEP-display.md:40 d93934939b4746f4bef34bd3dc4650c8
+msgid "3. 从最大误差回到原结构"
+msgstr "3. Return to structures from the largest errors"
+
+#: ../../source/example/NEP-display.md:42 08bdb0297f7f4f2a8382d018da1980d9
+msgid "最大误差工具按当前图中参考值与预测值的差异找结构。能量图通常一行对应一个结构； 力图会先把原子分量映射回结构并去重。"
+msgstr ""
+"The maximum-error tool finds structures by the difference between "
+"reference and predicted values in the current plot. An energy plot "
+"usually has one row per structure; a force plot maps atomic components "
+"back to structures and deduplicates them."
+
+#: ../../source/example/NEP-display.md:45 53014a51838c4264a817b8108c4e9be0
+msgid "![按最大误差选择结构](../_static/image/example/display/maxerror.gif)"
+msgstr ""
+"![Select structures by maximum "
+"error](../_static/image/example/display/maxerror.gif)"
+
+#: ../../source/example/NEP-display.md:45 deed7dadbfab43768caf8cb4a5ab8d08
+msgid "按最大误差选择结构"
+msgstr "Select structures by maximum error"
+
+#: ../../source/example/NEP-display.md:45 deed7dadbfab43768caf8cb4a5ab8d08
 msgid ".. image:: ../_static/image/example/display/maxerror.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:23 0c0e48facb4b461ca0adf57e61115b00
-msgid "FPS 稀疏采样：![GIF Image](../_static/image/example/display/fps.gif)"
+#: ../../source/example/NEP-display.md:47 95142fadeccd4cf7ad44061b8daaabae
+msgid ""
+"运行后不要只看“选中了多少个”。点击几个被选结构，确认异常来自真实的数据缺口， "
+"而不是短键、错误晶胞、错误元素或标签损坏。详细规则见[最大误差筛选](../module/nep-main-tool-max-error.md)。"
 msgstr ""
-"Select representative structures with FPS: ![GIF "
-"Image](../_static/image/example/display/fps.gif)"
+"After running, do not look only at the number selected. Open several "
+"selected structures to confirm that the anomaly is a real data gap rather"
+" than a short bond, wrong cell, wrong element, or damaged label. See "
+"[Maximum-error filtering](../module/nep-main-tool-max-error.md) for the "
+"detailed rules."
 
-#: ../../source/example/NEP-display.md:23 ea65577bc3da46ba8375579eac77f43d
+#: ../../source/example/NEP-display.md:50 7265c344576a42ddb3ac7b7b6fa98b9a
+msgid "4. 用 FPS 选择代表结构"
+msgstr "4. Select representative structures with FPS"
+
+#: ../../source/example/NEP-display.md:52 bed06fb28b484dbeba8ce29dbf451514
+msgid "FPS 根据描述符距离从候选池中选择分散的代表结构。它适合减少已经清洗过的候选池， 不负责判断结构是否物理合理。"
+msgstr ""
+"FPS selects well-separated representative structures from a candidate "
+"pool using descriptor distances. It is suitable for reducing a pool that "
+"has already been cleaned, but does not judge physical validity."
+
+#: ../../source/example/NEP-display.md:55 5ef6410c8d544e208bd730f806719c33
+msgid "![使用 FPS 选择代表结构](../_static/image/example/display/fps.gif)"
+msgstr ""
+"![Use FPS to select representative "
+"structures](../_static/image/example/display/fps.gif)"
+
+#: ../../source/example/NEP-display.md:55 cb4192550bbf4a968e71c49a470362bb
+msgid "使用 FPS 选择代表结构"
+msgstr "Use FPS to select representative structures"
+
+#: ../../source/example/NEP-display.md:55 cb4192550bbf4a968e71c49a470362bb
 msgid ".. image:: ../_static/image/example/display/fps.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:24 3ff9ade5f14c42ae96ef7a9ea78e8369
-msgid "鼠标选择/反选：![GIF Image](../_static/image/example/display/mouse.gif)"
+#: ../../source/example/NEP-display.md:57 f3fe6a27fe08404ba355679d10100d78
+msgid ""
+"运行前先确认候选池已清除明显坏结构；运行后检查实际选择数是否因最小距离或 $R^2$ "
+"阈值提前停止。算法和多种模式见[代表性采样](../module/nep-main-tool-sparse-samples.md)。"
 msgstr ""
-"Select or deselect structures with the mouse: ![GIF "
-"Image](../_static/image/example/display/mouse.gif)"
+"Before running, confirm that obvious bad structures have been removed "
+"from the candidate pool. Afterward, check whether the actual selection "
+"count stopped early because of the minimum distance or $R^2$ threshold. "
+"See [Representative sampling](../module/nep-main-tool-sparse-samples.md) "
+"for the algorithm and available modes."
 
-#: ../../source/example/NEP-display.md:24 0bb5bd5792b84a88a135863ad1079083
+#: ../../source/example/NEP-display.md:60 8828fcbeb59740b0b788b3aa71459d7f
+msgid "5. 在图上直接框选或反选"
+msgstr "5. Box-select or invert selection directly on the plot"
+
+#: ../../source/example/NEP-display.md:62 11d344ba4d004fe4b43473dc1bbc8a9d
+msgid "鼠标选择适合处理肉眼可辨的局部点群。先切到选择模式，在图中框选点，再使用反选或清除选择 调整范围；选择会同步回结构列表。"
+msgstr ""
+"Mouse selection is useful for locally visible point groups. Switch to "
+"selection mode, box-select points in the plot, then invert or clear the "
+"selection to adjust the range; the selection is synchronized with the "
+"structure list."
+
+#: ../../source/example/NEP-display.md:65 23b41630cc5744a29569028b4cff4bab
+msgid "![在散点图中框选和反选](../_static/image/example/display/mouse.gif)"
+msgstr ""
+"![Box-select and invert selection in a scatter "
+"plot](../_static/image/example/display/mouse.gif)"
+
+#: ../../source/example/NEP-display.md:65 057fba8baf4f4bcd93d68f67d7124187
+msgid "在散点图中框选和反选"
+msgstr "Box-select and invert selection in a scatter plot"
+
+#: ../../source/example/NEP-display.md:65 057fba8baf4f4bcd93d68f67d7124187
 msgid ".. image:: ../_static/image/example/display/mouse.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:25 f37f8a4bc73e4f8e9d92dc4316f7e85b
-msgid "`Config_type` 组合筛选：![GIF Image](../_static/image/example/display/config1.gif)"
+#: ../../source/example/NEP-display.md:67 6862013c51c94487b3f9c3e557e5e96b
+msgid "图上一个点不一定总等于一个结构：在力图和 virial 分量图中，同一结构可能贡献多行数据。 导出前应回到结构列表确认最终结构数量。"
 msgstr ""
-"Filter by combinations of `Config_type` values: ![GIF "
-"Image](../_static/image/example/display/config1.gif)"
+"One point in a plot does not always equal one structure: a structure can "
+"contribute multiple rows in force and virial-component plots. Return to "
+"the structure list and confirm the final count before exporting."
 
-#: ../../source/example/NEP-display.md:25 0cdbd2b45de1466e9576b976995414e0
+#: ../../source/example/NEP-display.md:70 71519c4787cc4f30a56f8d4024ba2696
+msgid "6. 按 `Config_type` 组合筛选"
+msgstr "6. Filter by `Config_type` combinations"
+
+#: ../../source/example/NEP-display.md:72 19edf830c6a0404f87461a47fb273be3
+msgid "切换到标签筛选后，可以组合多个 `Config_type` 标签定位来源相近的结构。这个字段通常记录 生成卡片、计算批次或数据来源，不是化学式。"
+msgstr ""
+"After switching to label filtering, combine multiple `Config_type` labels"
+" to locate structures with similar origins. This field usually records "
+"the generating card, calculation batch, or data source; it is not a "
+"chemical formula."
+
+#: ../../source/example/NEP-display.md:75 f37f8a4bc73e4f8e9d92dc4316f7e85b
+msgid "![按 Config_type 组合筛选](../_static/image/example/display/config1.gif)"
+msgstr ""
+"![Filter by Config_type "
+"combinations](../_static/image/example/display/config1.gif)"
+
+#: ../../source/example/NEP-display.md:75 1f6f5b1a67624f5d9d0369bc63435f07
+msgid "按 Config_type 组合筛选"
+msgstr "Filter by Config_type combinations"
+
+#: ../../source/example/NEP-display.md:75 1f6f5b1a67624f5d9d0369bc63435f07
 msgid ".. image:: ../_static/image/example/display/config1.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:27 30d678b3cb244d97b8930cf03d2060df
-msgid "导出"
-msgstr "Export"
-
-#: ../../source/example/NEP-display.md:29 473ef8684b014607894b3c2636b75570
-msgid "过滤完成后导出数据："
-msgstr "Export the filtered dataset when the selection is ready:"
-
-#: ../../source/example/NEP-display.md:31 23b41630cc5744a29569028b4cff4bab
-msgid "![GIF Image](../_static/image/example/display/save.gif)"
+#: ../../source/example/NEP-display.md:77 0ad6610b14854869b80436a77ee8a69b
+msgid ""
+"如果标签命名不统一，先用[批量编辑结构元数据](edit-structure-metadata.md)整理，再建立筛选条件。 "
+"完整表达式和元素筛选方式见[筛选栏](../module/nep-display-filter.md)。"
 msgstr ""
+"If label names are inconsistent, first organize them with [Batch-edit "
+"structure metadata](edit-structure-metadata.md), then create filter "
+"conditions. See [Filter bar](../module/nep-display-filter.md) for "
+"complete expressions and element-filtering syntax."
 
-#: ../../source/example/NEP-display.md:31 370956a7f59648159074624229f899a4
+#: ../../source/example/NEP-display.md:80 b827995c73dd4d80ae8e45e47c9dead1
+msgid "7. 只导出确认过的子集"
+msgstr "7. Export only the confirmed subset"
+
+#: ../../source/example/NEP-display.md:82 93aee207b16f42b7968dea465fc0c57c
+msgid "完成标记后，从 `Save` 菜单选择导出当前活动结构或所选结构。导出前最后确认状态栏中的 活动数、选中数和删除数，避免把已排除结构重新写回文件。"
+msgstr ""
+"After marking the structures, use the `Save` menu to export the active or"
+" selected structures. Before exporting, confirm the active, selected, and"
+" deleted counts in the status bar so excluded structures are not written "
+"back to the file."
+
+#: ../../source/example/NEP-display.md:85 23b41630cc5744a29569028b4cff4bab
+msgid "![导出清洗或筛选后的结构](../_static/image/example/display/save.gif)"
+msgstr ""
+"![Export cleaned or filtered "
+"structures](../_static/image/example/display/save.gif)"
+
+#: ../../source/example/NEP-display.md:85 0582bcf196b249c9af21295e304106ba
+msgid "导出清洗或筛选后的结构"
+msgstr "Export cleaned or filtered structures"
+
+#: ../../source/example/NEP-display.md:85 0582bcf196b249c9af21295e304106ba
 msgid ".. image:: ../_static/image/example/display/save.gif"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:35 d7826ab26abe46aabfb8e8988a4cb880
-msgid "更多细节："
-msgstr "For more detail:"
-
-#: ../../source/example/NEP-display.md:37 863b8f9540e340f7b6b852cb3da995de
+#: ../../source/example/NEP-display.md:87 e788605a78c4499894de5fc2df3a04e2
 msgid ""
-"图标对照与每个工具逻辑：[`../module/show-nep-reference.md`](../module/show-nep-"
-"reference.md)"
+"建议使用能表达阶段的文件名，例如 `candidate_pool_clean.xyz` 或 "
+"`max_error_review.xyz`。导出格式和字段保留规则见[支持格式](../formats.md)。"
 msgstr ""
-"For the icon legend and the behavior of each tool, see the [detailed "
-"reference](../module/show-nep-reference.md)."
+"Use filenames that describe the processing stage, such as "
+"`candidate_pool_clean.xyz` or `max_error_review.xyz`. See [Supported "
+"formats](../formats.md) for export formats and field-preservation rules."
 
-#: ../../source/example/NEP-display.md:38 e09ed2d4bfed47429e321292e30ef334
-msgid ""
-"导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-reference.md`](../module/show-nep-"
-"reference.md)"
+#: ../../source/example/NEP-display.md:90 5fb2bf8bcc224bd6b96625b76a7d8644
+msgid "下一步查哪里"
+msgstr "Where to go next"
+
+#: ../../source/example/NEP-display.md:92 1659aaf73d92452a90484163a9edaafc
+msgid "不认识主图区按钮：看[主图区工具](../module/nep-display-main-plot-tools.md)。"
 msgstr ""
-"For import and export paths, switching NEP models, and search syntax, see "
-"the [detailed reference](../module/show-nep-reference.md)."
+"Do not recognize a main-plot button? See [Main plot tools](../module/nep-"
+"display-main-plot-tools.md)."
+
+#: ../../source/example/NEP-display.md:93 805b99851c8e474e921dccfb03b2b906
+msgid "不认识结构区按钮：看[结构区工具](../module/nep-display-structure-tools.md)。"
+msgstr ""
+"Do not recognize a structure-view button? See [Structure-view "
+"tools](../module/nep-display-structure-tools.md)."
+
+#: ../../source/example/NEP-display.md:94 8721e823d0f949fca21d78e2c57630b2
+msgid "不会导入、导出或切换模型：看[打开数据与切换模型](../module/nep-display-open-data.md)。"
+msgstr ""
+"Need help importing, exporting, or switching models? See [Open data and "
+"switch models](../module/nep-display-open-data.md)."
+
+#: ../../source/example/NEP-display.md:95 e4f6cb52188d494b98cd6ab14e74e62d
+msgid "页面没有图、数量不对或工具不可用：看[状态栏与常见提示](../module/nep-display-status-and-errors.md)。"
+msgstr ""
+"No plots, incorrect counts, or unavailable tools? See [Status bar and "
+"common messages](../module/nep-display-status-and-errors.md)."
+
+#~ msgid "NEP Dataset Display 示例"
+#~ msgstr "NEP Dataset Display Example"
+
+#~ msgid ""
+#~ "本页以操作演示为主。完整工具说明与参数手册请见： [Related guide](../module"
+#~ "/show-nep-reference.md)"
+#~ msgstr ""
+#~ "This page is a task-oriented "
+#~ "walkthrough. For the complete tool and"
+#~ " parameter reference, see [the detailed "
+#~ "NEP Dataset Display reference](../module/show-"
+#~ "nep-reference.md)."
+
+#~ msgid "数据导入"
+#~ msgstr "Import data"
+
+#~ msgid "使用 `nep.txt` 与 `train.xyz` 作为最小输入；支持拖拽导入。"
+#~ msgstr ""
+#~ "Use `nep.txt` and `train.xyz` as the "
+#~ "minimal input pair. You can also "
+#~ "drag and drop them into the "
+#~ "application."
+
+#~ msgid "轨迹播放"
+#~ msgstr "Play a trajectory"
+
+#~ msgid "点击播放按钮可逐帧预览结构："
+#~ msgstr "Click the play button to inspect the structures frame by frame:"
+
+#~ msgid "数据筛选"
+#~ msgstr "Filter the dataset"
+
+#~ msgid "最大误差点筛选：![GIF Image](../_static/image/example/display/maxerror.gif)"
+#~ msgstr ""
+#~ "Select the largest-error structures: "
+#~ "![GIF Image](../_static/image/example/display/maxerror.gif)"
+
+#~ msgid "FPS 稀疏采样：![GIF Image](../_static/image/example/display/fps.gif)"
+#~ msgstr ""
+#~ "Select representative structures with FPS: "
+#~ "![GIF Image](../_static/image/example/display/fps.gif)"
+
+#~ msgid "鼠标选择/反选：![GIF Image](../_static/image/example/display/mouse.gif)"
+#~ msgstr ""
+#~ "Select or deselect structures with the"
+#~ " mouse: ![GIF "
+#~ "Image](../_static/image/example/display/mouse.gif)"
+
+#~ msgid ""
+#~ "`Config_type` 组合筛选：![GIF "
+#~ "Image](../_static/image/example/display/config1.gif)"
+#~ msgstr ""
+#~ "Filter by combinations of `Config_type` "
+#~ "values: ![GIF "
+#~ "Image](../_static/image/example/display/config1.gif)"
+
+#~ msgid "导出"
+#~ msgstr "Export"
+
+#~ msgid "过滤完成后导出数据："
+#~ msgstr "Export the filtered dataset when the selection is ready:"
+
+#~ msgid "更多细节："
+#~ msgstr "For more detail:"
+
+#~ msgid ""
+#~ "图标对照与每个工具逻辑：[`../module/show-nep-reference.md`](../module"
+#~ "/show-nep-reference.md)"
+#~ msgstr ""
+#~ "For the icon legend and the "
+#~ "behavior of each tool, see the "
+#~ "[detailed reference](../module/show-nep-"
+#~ "reference.md)."
+
+#~ msgid ""
+#~ "导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-"
+#~ "reference.md`](../module/show-nep-reference.md)"
+#~ msgstr ""
+#~ "For import and export paths, switching"
+#~ " NEP models, and search syntax, see"
+#~ " the [detailed reference](../module/show-nep-"
+#~ "reference.md)."

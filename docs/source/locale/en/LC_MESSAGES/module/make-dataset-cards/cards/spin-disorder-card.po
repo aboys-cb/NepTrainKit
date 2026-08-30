@@ -4,321 +4,344 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-26 11:17+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:3
-#: 5b491b3b511a4307b0916630cb66c7d5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:3
+#: c354cb9178244a22a1d4f2834872e084
 msgid "自旋无序（Spin Disorder）"
 msgstr "Spin Disorder"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:5
-#: d142b96bb6534f85a7a2dde4afd5b034
-msgid "`Group`: `Magnetism` | `Class`: `SpinDisorderCard`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:5
+#: 03a733f1fcac4b5089549eb3c77aa2bb
+msgid "**分类：** 磁性"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:7
-#: 7136b4d24faa449a9160d1a81d1e3928
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:7
+#: f209fbdd7dcf42f8b2153762a37f0a5a
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:9
-#: e0da927a55f14535b25444cf04ddfebe
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:9
+#: 14d8ccff8a074dd782f3bd4f61043940
 msgid ""
-"`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆盖 FM/AFM 到 PM 之间的离散翻转、随机方向和"
-" cone disorder，不把这些离散无序混进 `Magmom Rotation` 的连续小角扰动语义里。"
+"`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆"
+"盖 FM/AFM 到 PM 之间的离散翻转、随机方向和 cone disorder，不把这些离散无序混"
+"进 `Magmom Rotation` 的连续小角扰动语义里。"
 msgstr ""
-"`Spin Disorder` starts from existing moments or an element map and "
-"generates intermediate magnetic states at selected disorder fractions. It"
-" covers discrete flips, randomized directions, and cone disorder between "
-"FM/AFM and PM-like limits, keeping this discrete semantics separate from "
-"continuous small-angle `Magmom Rotation`."
+"`Spin Disorder` starts from existing moments or an element map and generates "
+"intermediate magnetic states at selected disorder fractions. It covers "
+"discrete flips, randomized directions, and cone disorder between FM/AFM and "
+"PM-like limits, keeping this discrete semantics separate from continuous "
+"small-angle `Magmom Rotation`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:11
-#: 8020c71cd9f44b8b9ec576a852351f39
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:11
+#: 409743c0d25d48529b4957e2dc56e0fa
+msgid "原理与公式"
+msgstr "Principle and equations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:13
+#: b1b1c7344f6a43218f9f62a9a2c3621f
+msgid ""
+"设符合元素筛选且磁矩非零的原子数为 $N_m$，无序比例为 $f$。每个样本实际改动"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:15
+#: 6ee27cee218c4fc1a05582e3d3929ca6
+msgid ""
+"\n"
+"N_{\\mathrm{change}}=\\min\\!\\left(N_m,\\max\\left[1,\n"
+"\\operatorname{round}(fN_m)\\right]\\right)\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:20
+#: b9bec1a490f3446fae05a5848e23ac2c
+msgid ""
+"个不重复原子。`翻转一定比例`使用 $\\mathbf m_i'=-\\mathbf m_i$；`圆锥无序`在"
+"原方向周围半角 $\\theta_{\\max}$ 的球冠上均匀抽样，其中 $\\cos\\theta\\sim "
+"U(\\cos\\theta_{\\max},1)$；`随机化一定比例`在整个单位球面上抽取新方向。 三种"
+"模式都保留被改动磁矩的模长，只改变方向。固定随机种子后，结构编号、比例和样本"
+"编号 共同派生每个输出的随机路径。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:27
+#: ca9a03b2f1a4483a82c355c36ffdd69e
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:13
-#: 667fc3ac3bae444e8c71b8c56779f006
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:29
+#: 0a44dee18e8d478787c523b09d9d0c76
 msgid "场景：模型只见过 FM/AFM 和完全随机 PM"
-msgstr "Scenario: The model sees only FM/AFM and fully random PM-like endpoints"
+msgstr ""
+"Scenario: The model sees only FM/AFM and fully random PM-like endpoints"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:15
-#: 78df2ac064ea43b5a1b0688f8d684140
-#, python-format
-msgid "FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻转的中间无序态。模型在有限温度磁态上能量排序不稳定。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:31
+#: 814ee349cbc14102a80ca3ad51863d7c
+msgid ""
+"FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻转的中间无序态。"
+"模型在有限温度磁态上能量排序不稳定。"
 msgstr ""
 "An FeCo set includes FM, AFM, and fully random PM-like states but lacks "
 "intermediate states with 10-70% local flips, leading to unstable finite-"
 "temperature energy ordering."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:17
-#: dcc8f2179aba48e6a134f3d554c62306
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:33
+#: 74423a60027c447497e7f7e33dfcafd9
 msgid ""
-"**输入：** 已经通过 `Magnetic Order` 或 `Set Magnetic Moments` 写入磁矩的结构。 **目标：** "
-"生成 `0.1,0.3,0.5,0.7` 四档局部翻转，让训练集覆盖有序到无序的连续路径。 **参数设置：** `mode=Flip "
-"fraction`，`fractions=0.1,0.3,0.5,0.7`，`samples_per_fraction=3`，开启 "
-"`use_seed`。 **输出：** 每个输入结构生成 12 个自旋无序结构。 **怎么验证训练集质量改善：** "
-"重训后，中间翻转比例测试集的能量/磁力误差应不再显著高于 FM/AFM 端点。"
-msgstr ""
-"**Input:** Structures initialized by `Magnetic Order` or `Set Magnetic "
-"Moments`. **Objective:** Sample flip fractions `0.1,0.3,0.5,0.7`. "
-"**Parameters:** `mode=Flip fraction`, those four fractions, "
-"`samples_per_fraction=3`, and `use_seed` enabled. **Output:** Twelve "
-"states per input. **Verification:** After retraining, energy and "
-"magnetic-force errors at intermediate fractions should no longer greatly "
-"exceed endpoint errors."
+"**输入：** 已经通过 `Magnetic Order` 或 `Set Magnetic Moments` 写入磁矩的结"
+"构。 **目标：** 生成 `0.1,0.3,0.5,0.7` 四档局部翻转，让训练集覆盖有序到无序的"
+"连续路径。 **参数设置：** `无序方式`选择“翻转一定比例”，`无序比例`填 "
+"`0.1,0.3,0.5,0.7`，`每个比例的样本数`填 `3`，并开启`使用随机种子`。 **输出："
+"** 每个输入结构生成 12 个自旋无序结构。 **怎么验证训练集质量改善：** 重训后，"
+"中间翻转比例测试集的能量/磁力误差应不再显著高于 FM/AFM 端点。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:23
-#: 32acbbadf8c045509304dc7596d3e76a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:40
+#: 6ee0b3a905d344a69ccebe8db0338ed2
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:25
-#: 83248d6df55d4057b6d0df051a97e4f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:42
+#: f66dcc31a2fb45079a8e821a8243ba5c
 msgid "无序模型"
 msgstr "Disorder model"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:27
-#: a727634375a44c769741ad6219ad8837
-msgid "Mode（mode）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:44
+#: d9353e43c038464193deb66824e74e0d
+msgid "模式（mode）"
+msgstr "mode"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:29
-#: 3d6f7386cafd417aa0cef9be1361db6f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:46
+#: 45796852a78d409b97212f6593fc8857
 msgid ""
-"`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 FM/AFM 到 PM "
-"的离散无序梯度；`Randomize fraction` 把选中自旋完全随机化；`Cone disorder` "
-"保持围绕参考方向的有限温非共线扰动。"
-msgstr ""
-"`str`, default `'Flip fraction'`. `Flip fraction` preserves the collinear"
-" axis and flips signs; `Randomize fraction` assigns fully random "
-"directions to selected spins; `Cone disorder` adds finite-temperature "
-"noncollinear deviations around references."
+"`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 FM/"
+"AFM 到 PM 的离散无序梯度；`Randomize fraction` 把选中自旋方向在完整球面上随机"
+"化；`Cone disorder` 保持围绕参考方向的有限温非共线扰动。这三个值与下拉框和序"
+"列化参数完全一致。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:31
-#: f0ccc72c005d4bdca496cac9154aa303
-msgid "Fractions（fractions）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:48
+#: 27a64dbff8e846eea3910ca768c3b21b
+msgid "比例（fractions）"
+msgstr "fractions"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:33
-#: 4d5ac42add2347aba37d6ec94483e54e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:50
+#: df4f2b79cf0846e4a5d077d78baacf22
 msgid ""
-"`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，从 0 到 1。0.1/0.3/0.5/0.7 可覆盖 "
-"FM/AFM 到 PM 之间的无序梯度。"
-msgstr ""
-"`str`, default `'0.1,0.3,0.5,0.7'`. Fractions from 0 to 1 of spins to "
-"flip or randomize. The default spans an ordered-to-disordered path."
+"`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，必须是逗号分隔且位"
+"于 `(0, 1]` 的有限数值；非法文本和超范围值会明确报错，不会被忽略或截断。"
+"0.1/0.3/0.5/0.7 可覆盖 FM/AFM 到 PM 之间的无序梯度。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:35
-#: 3aba8e07812a46fea589c1492d3d1cbf
-msgid "Samples Per Fraction（samples_per_fraction）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:52
+#: 7980882ebe1848068d797c4393be1a30
+msgid "每个无序比例的样本数（samples_per_fraction）"
+msgstr "samples_per_fraction"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:37
-#: c0eda30ace1c4b3184ee6bc0633fda14
-msgid "`int`，默认 `1`。同一无序度下不同随机选择会给不同局域环境。1 个用于路径扫描，3-10 个用于统计训练。"
-msgstr ""
-"`int`, default `1`. Independent site selections per fraction. One traces "
-"a path; 3-10 sample local variability."
-
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:39
-#: 6b85a5d41ddf4c2488fbb6d4f2e94987
-msgid "Cone Angle（cone_angle）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:41
-#: fa90dacb08b247779a171ffa3746b79b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:54
+#: 314b8daff1de467d8762a8ac98a82336
 msgid ""
-"`float`，默认 `30.0`。Cone disorder 中限制随机方向偏离参考轴的最大角。10-30° 表示有序态附近有限温扰动；接近 "
-"90° 时已接近强无序。"
+"`int`，默认 `1`。同一无序度下不同随机选择会给不同局域环境。1 个用于路径扫描，"
+"3-10 个用于统计训练。"
 msgstr ""
-"`float`, default `30.0` degrees. Maximum cone deviation. About 10-30 "
-"degrees stays near order; values approaching 90 degrees represent strong "
-"disorder."
+"`int`, default `1`. Independent site selections per fraction. One traces a "
+"path; 3-10 sample local variability."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:43
-#: 4b66249c1a124cea8d2ce5f4b388af92
-msgid "生效条件：`mode` 或方向模型选择 cone/noncollinear 随机化时。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:56
+#: a8d50dae792f4ccba799f47b745ce5a5
+msgid "锥角（cone_angle）"
+msgstr "cone_angle"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:58
+#: dd3c029da92647379604eec69439cad0
+msgid ""
+"`float`，默认 `30.0`。Cone disorder 中限制随机方向偏离参考轴的最大角。10-30° "
+"表示有序态附近有限温扰动；接近 90° 时已接近强无序。"
 msgstr ""
-"Used when the mode or direction model selects cone/noncollinear "
-"randomization."
+"`float`, default `30.0` degrees. Maximum cone deviation. About 10-30 degrees "
+"stays near order; values approaching 90 degrees represent strong disorder."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:45
-#: 5091dd84f0e74a4d8eedc2c4f0e79f40
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:60
+#: b80abc0da07c49519e1b9009311df3f3
+msgid "生效条件：`模式`（`mode`）或方向模型选择 cone/noncollinear 随机化时。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:62
+#: 404c20b6abbe4d909ecf8c4551beb0ea
 msgid "磁矩幅值"
 msgstr "Moment magnitudes"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:47
-#: 2ad91bb9bdfd497d82acb2002e22f71d
-msgid "Magnitude Source（magnitude_source）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:64
+#: 87abc1fee5a34976bf772a2a9606d716
+msgid "磁矩大小来源（magnitude_source）"
+msgstr "magnitude_source"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:49
-#: 209eed05e4e84439a580c8b98d64cfc8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:66
+#: d7f190788bd94251943b182bd981226c
 msgid ""
-"`str`，默认 `'Existing initial magmoms'`。输入有 `spin:R:3` 时优先复用；没有 `spin` 时兼容旧"
-" `initial_magmoms`。两者都没有时用 `magmom_map`/`default_moment` "
-"构造幅值。不要用默认幅值替代已知元素磁矩。"
-msgstr ""
-"`str`, default `'Existing initial magmoms'`. Reuse `spin:R:3` when "
-"present and accept legacy `initial_magmoms` only when `spin` is absent. "
-"If neither exists, construct magnitudes from `magmom_map` and "
-"`default_moment`; never replace known element moments with a generic "
-"default."
+"`str`，默认 `'Existing initial magmoms'`。输入有 `spin:R:3` 时优先复用；没有 "
+"`spin` 时兼容旧 `initial_magmoms`。两者都没有时用 `元素磁矩表`"
+"（`magmom_map`）/`默认磁矩`（`default_moment`）构造幅值。不要用默认幅值替代已"
+"知元素磁矩。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:51
-#: eed10a72d7e941ecb736d4767b4cd5a9
-msgid "Magmom Map（magmom_map）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:68
+#: 444a164cef7e45b5988ff783897aed3f
+msgid "元素磁矩表（magmom_map）"
+msgstr "magmom_map"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:53
-#: 6761b4f98dc04c48b703936064b96ef2
-msgid "`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:70
+#: 1aea961ad723403cb2aa3f97334947a3
+msgid ""
+"`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不"
+"要用默认值伪造先验。"
 msgstr ""
 "`str`, default `''`. Provide known element-resolved local moments "
 "explicitly, for example `Fe:2.2,Ni:0.6`. Do not invent a prior for an "
 "unknown element through a default value."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:55
-#: f4970fc0265d453db00dec51bca4739d
-msgid "Default Moment（default_moment）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:72
+#: 0f11b525816745b9b7779c9b6eddfcbd
+msgid "默认磁矩（default_moment）"
+msgstr "default_moment"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:57
-#: 0c3d60d36bbd402bb54c4f9b745a7f49
-msgid "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。"
-msgstr ""
-"`float`, default `0.0`. Used only when an element is absent from "
-"`magmom_map`. List important magnetic elements explicitly; nonmagnetic "
-"elements should normally remain at 0."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:74
+#: 628da11990c647e4add6a9d61abf0573
+msgid ""
+"`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅"
+"值。关键磁性元素应显式列出，非磁元素通常保持 0。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:59
-#: a02db1e630f349d0b8706cda42a3521c
-msgid "Lift Scalar（lift_scalar）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:76
+#: a93608f806cb4684bc0eb3ad64d09194
+msgid "标量磁矩转为矢量（lift_scalar）"
+msgstr "lift_scalar"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:61
-#: 4635310bc429405a89dd90547e485860
-msgid "`bool`，默认 `True`。输入是标量磁矩但下游需要非共线向量时打开；如果原始数据已有方向信息，不要重新提升覆盖它。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:78
+#: e32bfadf4dfc40a3a31bb956f7134897
+msgid ""
+"`bool`，默认 `True`。输入是标量磁矩但下游需要非共线向量时打开；如果原始数据已"
+"有方向信息，不要重新提升覆盖它。"
 msgstr ""
 "`bool`, default `True`. Enable when scalar moments must be promoted to "
-"noncollinear vectors. Do not promote again when the input already "
-"contains directional information."
+"noncollinear vectors. Do not promote again when the input already contains "
+"directional information."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:63
-#: 67470d571a5540dea3efdca2dadd49bd
-msgid "Axis（axis）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:80
+#: 78bae9d22d4242678c6af5902c11e459
+msgid "轴（axis）"
+msgstr "axis"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:65
-#: c7121474f7554a8187e1ff5c8235884f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:82
+#: 2825490a1aee4ec0b395cc06da1d5b11
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
-"1.0)`。这是方向参考，不是普通数值——改它会改变分层、表面法向或磁矩方向。使用前先确认 cell 取向和目标物理方向。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。这是方向"
+"参考，不是普通数值——改它会改变分层、表面法向或磁矩方向。使用前先确认 cell 取"
+"向和目标物理方向。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. "
-"This is a directional reference, not an ordinary scalar setting: changing"
-" it changes a layering direction, surface normal, or moment direction. "
-"Confirm the cell orientation and intended physical direction first."
+"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. This "
+"is a directional reference, not an ordinary scalar setting: changing it "
+"changes a layering direction, surface normal, or moment direction. Confirm "
+"the cell orientation and intended physical direction first."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:67
-#: e6ea4bc24151434882ba283b73b8de11
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:84
+#: 63b717e06f7c40158dde4d3218fa0295
 msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
 msgstr ""
 "Used by modes that depend on a direction, layering, a surface, or vector "
 "initialization."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:69
-#: 40ce52a9613a46768afd2c39e1870a9b
-msgid "Apply Elements（apply_elements）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:86
+#: a030ef90fa554760b4ad7c16e097ef09
+msgid "应用元素（apply_elements）"
+msgstr "apply_elements"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:71
-#: 2aaa77b09ec34ba89744bcb9f660e4f1
-msgid "`str`，默认 `''`。只对列出的磁性元素翻转或随机化。合金/界面里应显式列出磁性元素，避免给非磁原子写入无意义磁矩。留空则全部参与。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:88
+#: 85bea8e885234f06b5df50e99b253234
+msgid ""
+"`str`，默认 `''`。只对列出的磁性元素翻转或随机化。合金/界面里应显式列出磁性元"
+"素，避免给非磁原子写入无意义磁矩。留空则全部参与。"
 msgstr ""
 "`str`, default `''`. Limit processing to listed magnetic elements. "
-"Explicitly list them in alloys or interfaces to avoid assigning moments "
-"to a nonmagnetic host. Empty means all eligible atoms."
+"Explicitly list them in alloys or interfaces to avoid assigning moments to a "
+"nonmagnetic host. Empty means all eligible atoms."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:73
-#: 19a306463fb04b0181669d795748e819
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:90
+#: 7e7e618d606348129be0de5c0c8046d9
 msgid "随机性和预算"
 msgstr "Randomness and output budget"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:75
-#: d1a1dbf0cdcb4a88a93c1506067d4d94
-msgid "Use Seed（use_seed）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:92
+#: 1f50cb5f03394eb3938cfca8dab7047c
+msgid "使用随机种子（use_seed）"
+msgstr "use_seed"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:77
-#: 4b6c3b42d2374a558527f39672dd71cf
-msgid "`bool`，默认 `False`。勾选后固定种子可复现。对比实验时开，最终大规模随机探索可以关——但关后结果不能逐帧复现。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:94
+#: fc410c326e584dd6b41d8d561e070590
+msgid ""
+"`bool`，默认 `False`。勾选后固定种子可复现。对比实验时开，最终大规模随机探索"
+"可以关——但关后结果不能逐帧复现。"
 msgstr ""
-"`bool`, default `False`. Enable to reproduce with a fixed seed. It may be"
-" disabled for large exploration, but individual outputs then cannot be "
+"`bool`, default `False`. Enable to reproduce with a fixed seed. It may be "
+"disabled for large exploration, but individual outputs then cannot be "
 "reproduced."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:79
-#: 34ec06a6389c479aa1c7f9cf358ef8a3
-msgid "Seed（seed）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:96
+#: 0cb015e683b041c1a96b4539583956ad
+msgid "随机种子（seed）"
+msgstr "seed"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:81
-#: 468da7e265d54137bedbc277748f035f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:98
+#: 9c6f4bfc939f4956876f232e84173e1c
 msgid "`int`，默认 `0`。同一输入、同一参数和同一 seed 应生成同一批候选。"
 msgstr ""
-"`int`, default `0`. Identical input, parameters, and seed produce the "
-"same candidates."
+"`int`, default `0`. Identical input, parameters, and seed produce the same "
+"candidates."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:83
-#: eb42cf1f06ae4e9ebe1d1787b2e10b4b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:100
+#: f4f8d9ffcbf841bc964bbdaf25c5a4af
 msgid "生效条件：`use_seed=True`。"
 msgstr "Active only when `use_seed=True`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:85
-#: 57d2650c6d9d441bb6dff7d1e21271ef
-msgid "Max Outputs（max_outputs）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:102
+#: a15ff305bdc64e4da867895ddd3d1c29
+msgid "最大输出数（max_outputs）"
+msgstr "max_outputs"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:87
-#: 7bb6645368264099b8c19fd4b72f890d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:104
+#: 6ec62d14b6934bd7bd336b7cd8a5b065
 msgid ""
-"`int`，默认 `100`。总输出约等于 fractions 数量乘以 "
-"samples_per_fraction。链式输入多时必须设上限，避免磁无序样本淹没结构样本。"
+"`int`，默认 `100`。总输出约等于 fractions 数量乘以 samples_per_fraction。链式"
+"输入多时必须设上限，避免磁无序样本淹没结构样本。"
 msgstr ""
 "`int`, default `100`. Output is approximately number of fractions times "
 "samples per fraction. Keep a cap when many upstream frames could let "
 "magnetic variants overwhelm structural diversity."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:89
-#: ae7ee35d8d5942299aefb9f02a494ba1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:106
+#: 0d3ca1dc3cc2405092d820b9b3374433
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:91
-#: 2a46119e36c0476898e0aeb86585566d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:108
+#: 78e876c6cb0545a5bf4d6d1d4fac3a56
 msgid "共线翻转梯度"
 msgstr "Collinear flip-fraction path"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:93
-#: d63ab420f9e542ff8c7b86bb314a76cd
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:110
+#: 69d0797836d54b64b0265deb0fa913af
 msgid ""
 "{\n"
 "  \"class\": \"SpinDisorderCard\",\n"
@@ -340,19 +363,18 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:114
-#: cd0ad24d6f0c4b3b8c752ce05a6c7bac
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:131
+#: 9677a3d526084e359d5fcf8cc7f91855
 msgid "用于从 FM/AFM 参考态生成局部翻转比例扫描。"
 msgstr "Scan local flip fractions from an FM or AFM reference."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:116
-#: fe0db0a2f1fd48b48d4fb144076653a5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:133
+#: 326b30266b0d4114bd488a6f5722bd50
 msgid "非共线 cone disorder"
 msgstr "Noncollinear cone disorder"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:118
-#: f8fe1b17d08248ab9fa4f13323c1cdef
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:135
+#: bd0891138f6c487b891e8dabe69f41a0
 msgid ""
 "{\n"
 "  \"class\": \"SpinDisorderCard\",\n"
@@ -374,106 +396,181 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:139
-#: 733041c671b6424cbcee1e00edd667c2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:156
+#: 4a2592118ad846b48c07b0d42edc6154
 msgid "用于有限温度附近的非共线方向扰动。"
 msgstr ""
-"Add noncollinear directional fluctuations near an ordered finite-"
-"temperature state."
+"Add noncollinear directional fluctuations near an ordered finite-temperature "
+"state."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:141
-#: d8a8860c061a42169e7985c181972e4e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:158
+#: ab7aad52631d41d78c6005b625100627
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:143
-#: 0d2c82a532a54b5390d4cc09cb26bbe0
-msgid "`Magnetic Order → Spin Disorder`：先建立 FM/AFM 参考态，再生成中间无序比例。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:160
+#: 9ea19af6596b411b963137eab09bc4d4
+msgid ""
+"`Magnetic Order → Spin Disorder`：先建立 FM/AFM 参考态，再生成中间无序比例。"
 msgstr ""
 "`Magnetic Order` -> `Spin Disorder`: establish an FM/AFM reference, then "
 "generate intermediate disorder fractions."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:144
-#: 11ad0cc7328c4df9a0e02fb3b17f83b8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:161
+#: c63bad995af74707a47caedbcd8ceb0f
 msgid ""
-"`Set Magnetic Moments → Spin Disorder → Small-Angle Spin "
-"Tilt`：先统一磁矩模长，再做无序化和小角偏转。"
+"`Set Magnetic Moments → Spin Disorder → Small-Angle Spin Tilt`：先统一磁矩模"
+"长，再做无序化和小角偏转。"
 msgstr ""
-"`Set Magnetic Moments` -> `Spin Disorder` -> `Small-Angle Spin Tilt`: "
-"define magnitudes, apply discrete disorder, then add small angular "
-"deviations."
+"`Set Magnetic Moments` -> `Spin Disorder` -> `Small-Angle Spin Tilt`: define "
+"magnitudes, apply discrete disorder, then add small angular deviations."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:145
-#: 077a7c8f269d45c79131bb53501ee385
-msgid "`Spin Disorder → Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何清洗。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:162
+#: 631b7a116e5747348d57e6bc4e530693
+msgid ""
+"`Spin Disorder → Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何"
+"清洗。"
 msgstr ""
-"`Spin Disorder` -> `Geometry Filter`: clean geometry if magnetic variants"
-" also underwent strong structural perturbation."
+"`Spin Disorder` -> `Geometry Filter`: clean geometry if magnetic variants "
+"also underwent strong structural perturbation."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:147
-#: 2836b381fb5b454ea2387dd99decc0e1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:164
+#: c9f8fff9c0d24b61bc3719ddccacc328
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:149
-#: 907c139017214f1090463e92fa57678f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:166
+#: a34b3ecfdbe9466a955ffbcf544fcc25
 msgid ""
-"**运行报错：找不到 eligible magnetic moments。** 输入没有可用磁矩，或 `apply_elements` "
-"没有匹配任何非零磁矩。先用 `Set Magnetic Moments` 或 `Magnetic Order` 初始化。"
-msgstr ""
-"**No eligible magnetic moments.** The input lacks usable moments or "
-"`apply_elements` matches none with nonzero magnitude. Initialize with "
-"`Set Magnetic Moments` or `Magnetic Order`."
+"**运行报错：找不到 eligible magnetic moments。** 输入没有可用磁矩，或 `应用元"
+"素`（`apply_elements`）没有匹配任何非零磁矩。先用 `Set Magnetic Moments` 或 "
+"`Magnetic Order` 初始化。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:151
-#: 2fec83f56404475a8697b2f0e56b5899
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:168
+#: d05998961b40487baab72ab9b881abc3
 msgid ""
-"**翻转数量不是精确小数比例。** 原子数是离散的，程序按 fraction 转成整数个原子，至少选 1 个且不超过 eligible atom "
-"数。"
+"**翻转数量不是精确小数比例。** 原子数是离散的，程序按 fraction 转成整数个原"
+"子，至少选 1 个且不超过 eligible atom 数。"
 msgstr ""
 "**The flipped count is not the exact decimal fraction.** Atom counts are "
 "discrete; the fraction is converted to an integer between one and the "
 "eligible count."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:153
-#: e927317918e842f19784d0799a9841ec
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:170
+#: c584dbafe2a746d49b04cc495426c0a7
 msgid ""
-"**`Cone disorder` 看起来和 PM 不一样。** cone disorder 只在参考方向附近随机，不是全空间 PM。全空间随机用"
-" `Randomize fraction`。"
+"**`Cone disorder` 看起来和 PM 不一样。** cone disorder 只在参考方向附近随机，"
+"不是全空间 PM。全空间随机用 `Randomize fraction`。"
 msgstr ""
 "**Cone disorder does not look PM-like.** It samples only near reference "
 "directions. Use `Randomize fraction` for full-sphere randomness."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:155
-#: a0dab9836810400e983855e75f911ef7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:172
+#: 7fdd2eb9537240e0bdfd2b88a0ece48c
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:157
-#: eefab29ab6b34b95bde355411a02d3ac
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:174
+#: 0e20fbb645d046daabb0fef325daf21d
 msgid ""
-"`SpinDis(f={fraction},n={count},mode={flip|rand|cone},s={seed},a={cone_angle})`。`s`"
-" 只在 `use_seed=True` 时出现，`a` 只在 cone disorder 输出中出现。"
+"`SpinDis(f={fraction},n={count},mode={flip|rand|"
+"cone},s={seed},a={cone_angle})`。`s` 只在 `use_seed=True` 时出现，`a` 只在 "
+"cone disorder 输出中出现。"
 msgstr ""
-"`SpinDis(f={fraction},n={count},mode={flip|rand|cone},s={seed},a={cone_angle})`;"
-" `s` appears only with `use_seed=True`, and `a` only for cone output."
+"`SpinDis(f={fraction},n={count},mode={flip|rand|"
+"cone},s={seed},a={cone_angle})`; `s` appears only with `use_seed=True`, and "
+"`a` only for cone output."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:159
-#: 4cff6cfb16904e1483c9e2449c6d4e4b
-msgid "所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:176
+#: f8c02050d5314778b5cb1639a66defdf
+msgid ""
+"所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。"
 msgstr ""
-"All exported outputs use `spin:R:3`; an ASE vector-valued "
-"`initial_magmoms` alias is kept in sync internally."
+"All exported outputs use `spin:R:3`; an ASE vector-valued `initial_magmoms` "
+"alias is kept in sync internally."
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:161
-#: f1cbb65bc0784ba8910f97e95cdb3666
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:178
+#: b223c5ca4f814cf1b66c615e52c85db7
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:163
-#: 1db1fcd34e70442c946460ce54e9699f
-msgid "开启 `use_seed` 后，随机原子选择和方向采样由 `seed`、输入结构标识、fraction 序号和 sample 序号共同决定。"
-msgstr ""
-"With `use_seed`, site selection and directions are determined by the "
-"seed, input identity, fraction index, and sample index."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-disorder-card.md:180
+#: 4564d50e7f1b4df88660646e99821fe5
+msgid ""
+"开启 `使用随机种子`（`use_seed`）后，随机原子选择和方向采样由 `随机种子`"
+"（`seed`）、输入结构标识、fraction 序号和 sample 序号共同决定。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**输入：** 已经通过 `Magnetic Order` 或 `Set Magnetic Moments` 写入磁矩的"
+#~ "结构。 **目标：** 生成 `0.1,0.3,0.5,0.7` 四档局部翻转，让训练集覆盖有序到"
+#~ "无序的连续路径。 **参数设置：** `mode=Flip fraction`，"
+#~ "`fractions=0.1,0.3,0.5,0.7`，`samples_per_fraction=3`，开启 `use_seed`。 "
+#~ "**输出：** 每个输入结构生成 12 个自旋无序结构。 **怎么验证训练集质量改善："
+#~ "** 重训后，中间翻转比例测试集的能量/磁力误差应不再显著高于 FM/AFM 端点。"
+#~ msgstr ""
+#~ "**Input:** Structures initialized by `Magnetic Order` or `Set Magnetic "
+#~ "Moments`. **Objective:** Sample flip fractions `0.1,0.3,0.5,0.7`. "
+#~ "**Parameters:** `mode=Flip fraction`, those four fractions, "
+#~ "`samples_per_fraction=3`, and `use_seed` enabled. **Output:** Twelve "
+#~ "states per input. **Verification:** After retraining, energy and magnetic-"
+#~ "force errors at intermediate fractions should no longer greatly exceed "
+#~ "endpoint errors."
+
+#~ msgid ""
+#~ "`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 "
+#~ "FM/AFM 到 PM 的离散无序梯度；`Randomize fraction` 把选中自旋完全随机化；"
+#~ "`Cone disorder` 保持围绕参考方向的有限温非共线扰动。"
+#~ msgstr ""
+#~ "`str`, default `'Flip fraction'`. `Flip fraction` preserves the collinear "
+#~ "axis and flips signs; `Randomize fraction` assigns fully random "
+#~ "directions to selected spins; `Cone disorder` adds finite-temperature "
+#~ "noncollinear deviations around references."
+
+#~ msgid ""
+#~ "`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，从 0 到 1。"
+#~ "0.1/0.3/0.5/0.7 可覆盖 FM/AFM 到 PM 之间的无序梯度。"
+#~ msgstr ""
+#~ "`str`, default `'0.1,0.3,0.5,0.7'`. Fractions from 0 to 1 of spins to "
+#~ "flip or randomize. The default spans an ordered-to-disordered path."
+
+#~ msgid "生效条件：`mode` 或方向模型选择 cone/noncollinear 随机化时。"
+#~ msgstr ""
+#~ "Used when the mode or direction model selects cone/noncollinear "
+#~ "randomization."
+
+#~ msgid ""
+#~ "`str`，默认 `'Existing initial magmoms'`。输入有 `spin:R:3` 时优先复用；没"
+#~ "有 `spin` 时兼容旧 `initial_magmoms`。两者都没有时用 `magmom_map`/"
+#~ "`default_moment` 构造幅值。不要用默认幅值替代已知元素磁矩。"
+#~ msgstr ""
+#~ "`str`, default `'Existing initial magmoms'`. Reuse `spin:R:3` when "
+#~ "present and accept legacy `initial_magmoms` only when `spin` is absent. "
+#~ "If neither exists, construct magnitudes from `magmom_map` and "
+#~ "`default_moment`; never replace known element moments with a generic "
+#~ "default."
+
+#~ msgid ""
+#~ "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元"
+#~ "素应显式列出，非磁元素通常保持 0。"
+#~ msgstr ""
+#~ "`float`, default `0.0`. Used only when an element is absent from "
+#~ "`magmom_map`. List important magnetic elements explicitly; nonmagnetic "
+#~ "elements should normally remain at 0."
+
+#~ msgid ""
+#~ "**运行报错：找不到 eligible magnetic moments。** 输入没有可用磁矩，或 "
+#~ "`apply_elements` 没有匹配任何非零磁矩。先用 `Set Magnetic Moments` 或 "
+#~ "`Magnetic Order` 初始化。"
+#~ msgstr ""
+#~ "**No eligible magnetic moments.** The input lacks usable moments or "
+#~ "`apply_elements` matches none with nonzero magnitude. Initialize with "
+#~ "`Set Magnetic Moments` or `Magnetic Order`."
+
+#~ msgid ""
+#~ "开启 `use_seed` 后，随机原子选择和方向采样由 `seed`、输入结构标识、"
+#~ "fraction 序号和 sample 序号共同决定。"
+#~ msgstr ""
+#~ "With `use_seed`, site selection and directions are determined by the "
+#~ "seed, input identity, fraction index, and sample index."

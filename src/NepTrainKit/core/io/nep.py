@@ -18,6 +18,7 @@ from NepTrainKit.core.adapter_api import (
     nep_adapters_version,
 )
 from NepTrainKit.core import MessageManager
+from NepTrainKit.core.calculator import NepCalculator
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.paths import as_path
@@ -34,7 +35,6 @@ from .base import (
 )
 from NepTrainKit.core.utils import (
     aggregate_per_atom_to_structure,
-    check_fullbatch,
     concat_nep_dft_array,
     read_nep_in,
     read_nep_out_file,
@@ -155,6 +155,9 @@ class NepTrainResultData(ResultData):
         self._force_vector_dataset = None
         self._spin_force_vector_dataset = None
         self._pending_prediction: Prediction | None = None
+        self._force_recalculate_outputs = False
+        self._validated_energy_array: npt.NDArray[Any] | None = None
+        self._validated_force_array: npt.NDArray[Any] | None = None
     @property
     def datasets(self):
         """Return datasets exposed to the UI in display order."""
@@ -337,6 +340,100 @@ class NepTrainResultData(ResultData):
             required_paths.extend((self.charge_out_path, self.bec_out_path))
         return all(path is not None and path.exists() for path in required_paths)
 
+    def _prediction_manifest_alignment_error(self) -> str | None:
+        """Validate available NepTrainKit provenance without requiring a calculator."""
+        if not self.prediction_meta_path.exists():
+            return None
+        try:
+            metadata = json.loads(
+                self.prediction_meta_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError):
+            return None
+        if metadata.get("schema_version") != 1:
+            return None
+        record = metadata.get("predictions", {}).get(self.data_xyz_path.name)
+        if not isinstance(record, dict):
+            return None
+
+        dataset_record = record.get("dataset", {})
+        recorded_dataset_hash = dataset_record.get("sha256")
+        if recorded_dataset_hash and recorded_dataset_hash != self._sha256(
+            self.data_xyz_path
+        ):
+            return "prediction.meta.json records a different structure file"
+        recorded_structures = dataset_record.get("structures")
+        if recorded_structures is not None and int(recorded_structures) != int(
+            len(self.atoms_num_list)
+        ):
+            return "prediction.meta.json records a different structure count"
+        recorded_atoms = dataset_record.get("atoms")
+        if recorded_atoms is not None and int(recorded_atoms) != int(
+            np.sum(self.atoms_num_list)
+        ):
+            return "prediction.meta.json records a different atom count"
+
+        model_record = record.get("model", {})
+        recorded_model_hash = model_record.get("sha256")
+        if (
+            recorded_model_hash
+            and self.nep_txt_path.exists()
+            and recorded_model_hash != self._sha256(self.nep_txt_path)
+        ):
+            return "prediction.meta.json records a different NEP model"
+        return None
+
+    def _prepare_cached_output_alignment(self) -> None:
+        """Validate complete cached outputs before descriptors are attached."""
+        if getattr(self, "nep_calc", None) is not None:
+            return
+        if self._validated_energy_array is not None:
+            return
+        storage_dtype = get_storage_float_dtype()
+        try:
+            energy_array = read_nep_out_file(
+                self.energy_out_path, dtype=storage_dtype, ndmin=2
+            )
+            force_array = read_nep_out_file(
+                self.force_out_path, dtype=storage_dtype, ndmin=2
+            )
+            alignment_error = self._prediction_manifest_alignment_error()
+            if alignment_error is None:
+                alignment_error = self._cached_output_alignment_error(
+                    energy_array, force_array
+                )
+        except Exception as error:
+            alignment_error = f"cached outputs could not be validated: {error}"
+            energy_array = np.array([])
+            force_array = np.array([])
+
+        if alignment_error is None:
+            self._validated_energy_array = energy_array
+            self._validated_force_array = force_array
+            return
+
+        self._force_recalculate_outputs = True
+        MessageManager.send_warning_message(
+            self.tr(
+                "Existing NEP outputs do not match the loaded structure order "
+                "({reason}). NepTrainKit will recalculate them."
+            ).format(reason=alignment_error)
+        )
+        self.nep_calc = NepCalculator(
+            model_file=self.nep_txt_path.as_posix(),
+            backend=self._calculation_backend(),
+            chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
+        )
+
+    def _cached_descriptors_are_usable(self) -> bool:
+        """Reject descriptors whenever the paired official outputs are stale."""
+        return not self._force_recalculate_outputs
+
+    def _load_descriptors(self) -> None:
+        """Validate cached output alignment before loading paired descriptors."""
+        self._prepare_cached_output_alignment()
+        super()._load_descriptors()
+
     def _load_dataset(self) -> None:
         """Populate plot datasets from cached outputs or by recalculating with NEP."""
         nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
@@ -353,8 +450,14 @@ class NepTrainResultData(ResultData):
                 energy_array, force_array, virial_array, stress_array = results
         else:
             storage_dtype = get_storage_float_dtype()
-            energy_array = read_nep_out_file(self.energy_out_path, dtype=storage_dtype, ndmin=2)
-            force_array = read_nep_out_file(self.force_out_path, dtype=storage_dtype, ndmin=2)
+            energy_array = self._validated_energy_array
+            if energy_array is None:
+                energy_array = read_nep_out_file(self.energy_out_path, dtype=storage_dtype, ndmin=2)
+            force_array = self._validated_force_array
+            if force_array is None:
+                force_array = read_nep_out_file(self.force_out_path, dtype=storage_dtype, ndmin=2)
+            self._validated_energy_array = None
+            self._validated_force_array = None
             virial_array = read_nep_out_file(self.virial_out_path, dtype=storage_dtype, ndmin=2)
             stress_array = read_nep_out_file(self.stress_out_path, dtype=storage_dtype, ndmin=2)
             if self.spin_force_out_path:
@@ -401,7 +504,7 @@ class NepTrainResultData(ResultData):
                 self._bec_dataset = NepPlotData(bec_array, group_list=self.atoms_num_list, title="bec")
             else:
                 self._bec_dataset = None
-    def _should_recalculate(self, nep_in: dict) -> bool:
+    def _should_recalculate(self, nep_in: dict | None = None) -> bool:
         """Return ``True`` when cached outputs are missing or inconsistent.
         
         Parameters
@@ -414,7 +517,7 @@ class NepTrainResultData(ResultData):
         bool
             ``True`` if NEP predictions need to be regenerated.
         """
-        if not self.cache_outputs_enabled():
+        if self._force_recalculate_outputs or not self.cache_outputs_enabled():
             return True
         required_paths = [
             self.energy_out_path,
@@ -712,6 +815,7 @@ class NepTrainResultData(ResultData):
 
         self.write_prediction()
         self._write_prediction_meta()
+        self._force_recalculate_outputs = False
         return result
 
     def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:
@@ -807,23 +911,26 @@ class NepPolarizabilityResultData(ResultData):
             except Exception:
                 pass
         return inst
-    def _should_recalculate(self, nep_in: dict) -> bool:
+    def _should_recalculate(self, nep_in: dict | None = None) -> bool:
         """Return ``True`` when cached polarizability outputs are missing or stale.
         
         Parameters
         ----------
-        nep_in : dict
-            Parsed ``nep.in`` metadata controlling batching behaviour.
+        nep_in : dict, optional
+            Retained for compatibility; prediction mode is not used to
+            validate cached polarizability outputs.
         
         Returns
         -------
         bool
             ``True`` if NEP polarizability predictions must be regenerated.
         """
+        if self._force_recalculate_outputs:
+            return True
         output_files_exist = all([
             self.polarizability_out_path.exists(),
         ])
-        return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
+        return not output_files_exist
     def _recalculate_and_save(self ):
         """Recompute polarizability predictions and persist them to disk.
         
@@ -841,6 +948,7 @@ class NepPolarizabilityResultData(ResultData):
                 MessageManager.send_warning_message("The nep calculator fails to calculate the polarizability, use the original polarizability instead.")
             nep_polarizability_array = self._save_polarizability_data(  nep_polarizability_array)
             self.write_prediction()
+            self._force_recalculate_outputs = False
         except Exception as e:
             # logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
@@ -877,8 +985,8 @@ class NepPolarizabilityResultData(ResultData):
         return polarizability_array
     def _load_dataset(self) -> None:
         """Populate polarizability datasets from cached outputs or by recalculating."""
-        nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
-        if self._should_recalculate(nep_in):
+        self._prepare_polarizability_alignment()
+        if self._should_recalculate():
             polarizability_array = self._recalculate_and_save( )
         else:
             polarizability_array = read_nep_out_file(self.polarizability_out_path, dtype=get_storage_float_dtype(), ndmin=2)
@@ -889,6 +997,29 @@ class NepPolarizabilityResultData(ResultData):
                 polarizability_array = self._recalculate_and_save()
         self._polarizability_diagonal_dataset = NepPlotData(polarizability_array[:, [0,1,2,6,7,8]], title="Polar Diag")
         self._polarizability_no_diagonal_dataset = NepPlotData(polarizability_array[:, [3,4,5,9,10,11]], title="Polar NoDiag")
+
+    def _prepare_polarizability_alignment(self) -> None:
+        if getattr(self, "_force_recalculate_outputs", False) or not self.polarizability_out_path.exists():
+            return
+        try:
+            array = read_nep_out_file(self.polarizability_out_path, dtype=get_storage_float_dtype(), ndmin=2)
+            expected = np.vstack([s.nep_polarizability for s in self.structure.now_data])
+            error = self._cached_single_output_alignment_error(array, expected, self.polarizability_out_path)
+        except (KeyError, AttributeError, ValueError, OSError) as exc:
+            error = f"unable to read or validate {self.polarizability_out_path.name}: {exc}"
+        if error is not None:
+            self._force_recalculate_outputs = True
+            MessageManager.send_warning_message(
+                self.tr("Existing polarizability outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.").format(reason=error)
+            )
+            return
+
+    def _load_descriptors(self) -> None:
+        self._prepare_polarizability_alignment()
+        super()._load_descriptors()
+
+    def _cached_descriptors_are_usable(self) -> bool:
+        return not getattr(self, "_force_recalculate_outputs", False)
 class NepDipoleResultData(ResultData):
     """Result loader for NEP dipole predictions."""
     FORCE_CPU_BACKEND = True
@@ -957,23 +1088,26 @@ class NepDipoleResultData(ResultData):
             except Exception:
                 pass
         return inst
-    def _should_recalculate(self, nep_in: dict) -> bool:
+    def _should_recalculate(self, nep_in: dict | None = None) -> bool:
         """Return ``True`` when cached dipole outputs are missing or stale.
         
         Parameters
         ----------
-        nep_in : dict
-            Parsed ``nep.in`` metadata controlling batching behaviour.
+        nep_in : dict, optional
+            Retained for compatibility; prediction mode is not used to
+            validate cached dipole outputs.
         
         Returns
         -------
         bool
             ``True`` if NEP dipole predictions must be regenerated.
         """
+        if self._force_recalculate_outputs:
+            return True
         output_files_exist = all([
             self.dipole_out_path.exists(),
         ])
-        return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
+        return not output_files_exist
     def _recalculate_and_save(self ):
         """Recompute dipole predictions and persist them to disk.
         
@@ -991,6 +1125,7 @@ class NepDipoleResultData(ResultData):
                 MessageManager.send_warning_message("The nep calculator fails to calculate the dipole, use the original dipole instead.")
             nep_dipole_array = self._save_dipole_data(  nep_dipole_array)
             self.write_prediction()
+            self._force_recalculate_outputs = False
         except Exception as e:
             # logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
@@ -1027,8 +1162,8 @@ class NepDipoleResultData(ResultData):
         return dipole_array
     def _load_dataset(self) -> None:
         """Populate dipole datasets from cached outputs or by recalculating."""
-        nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
-        if self._should_recalculate(nep_in):
+        self._prepare_dipole_alignment()
+        if self._should_recalculate():
             dipole_array = self._recalculate_and_save( )
         else:
             dipole_array = read_nep_out_file(self.dipole_out_path, dtype=get_storage_float_dtype(), ndmin=2)
@@ -1038,3 +1173,25 @@ class NepDipoleResultData(ResultData):
                     return self._load_dataset()
                 dipole_array = self._recalculate_and_save()
         self._dipole_dataset = NepPlotData(dipole_array, title="dipole")
+
+    def _prepare_dipole_alignment(self) -> None:
+        if getattr(self, "_force_recalculate_outputs", False) or not self.dipole_out_path.exists():
+            return
+        try:
+            array = read_nep_out_file(self.dipole_out_path, dtype=get_storage_float_dtype(), ndmin=2)
+            expected = np.vstack([s.nep_dipole for s in self.structure.now_data])
+            error = self._cached_single_output_alignment_error(array, expected, self.dipole_out_path)
+        except (KeyError, AttributeError, ValueError, OSError) as exc:
+            error = f"unable to read or validate {self.dipole_out_path.name}: {exc}"
+        if error is not None:
+            self._force_recalculate_outputs = True
+            MessageManager.send_warning_message(
+                self.tr("Existing dipole outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.").format(reason=error)
+            )
+
+    def _load_descriptors(self) -> None:
+        self._prepare_dipole_alignment()
+        super()._load_descriptors()
+
+    def _cached_descriptors_are_usable(self) -> bool:
+        return not getattr(self, "_force_recalculate_outputs", False)

@@ -1,231 +1,127 @@
 <!-- card-schema: {"card_name": "Folded Helix", "source_file": "src/NepTrainKit/ui/views/_card/folded_helix_card.py", "serialized_keys": ["params"]} -->
 
-# 折返螺旋（Folded Helix）
+# 折返螺旋磁序（Folded Helix）
 
-`Group`: `Magnetism` | `Class`: `FoldedHelixCard`
+**分类：** 磁性
 
 ## 功能说明
 
-按层离散定义对称折返螺旋磁矩纹理。磁矩被限制在垂直于 `plane_normal` 的平面内，沿 `layer_axis` 方向在前半周期逐层按固定角度旋转、到转折层后按相同步长反向旋转，形成一个"先顺时针、到中间再逆时针"的三角相位轮廓。
+这张卡把原子按指定方向分层，并为各层写入“逐层转动 → 到达转折点 → 反向转回”的确定性磁矩方向。输出是镜面对称或周期重复的三角相位纹理，磁矩模长保持不变。
 
-$$s(k)=\begin{cases}k,&0\le k\le h\\2h-k,&h\lt k\lt2h\end{cases}$$
+它与其他磁性卡的边界是：
 
-$$\phi(k)=\phi_0+\sigma\cdot s(k)\cdot\Delta\phi$$
+- `SOC / Texture Response` 生成单向线性有限 q 纹理；本卡的相位是非单调折返的。
+- `Correlated Spins` 和 `Spin Perturb` 生成随机方向；本卡没有随机性。
 
-默认 `half_period_mode = Auto from layer count`，会在当前层范围上自动构造首尾闭合的折返周期。
+输入必须沿分层方向识别出至少 3 层，并且目标元素中至少有一个非零磁矩。
 
-**和 `Spin Spiral` 的区别：** `Spin Spiral` 沿传播轴连续旋转（单向、不折返）。本卡生成的是"走一段、折回来"的分层离散纹理，更适合二维磁体、异质结界面或需要镜像对称磁矩分布的场景。
+## 原理与公式
+
+设按笛卡尔方向 `layer_axis` 排序后共有 $N$ 层，层号为 $k=0,\ldots,N-1$。
+
+自动模式只在整个层堆栈上折返一次：
+
+$$
+s_{\mathrm{auto}}(k)=\min(k,N-1-k).
+$$
+
+手动模式用半周期 $h$ 构造可重复三角波。令 $r=k\bmod 2h$，则
+
+$$
+s_{\mathrm{manual}}(k)=\min(r,2h-r).
+$$
+
+第 $i$ 个原子属于第 $k_i$ 层，其相位和磁矩为
+
+$$
+\phi_i=\phi_0+\sigma s(k_i)\Delta\phi,
+$$
+
+$$
+\mathbf m_i=M_i\left(\cos\phi_i\,\mathbf e_1+
+\sin\phi_i\,\mathbf e_2\right).
+$$
+
+$\mathbf e_1$、$\mathbf e_2$ 位于 `plane_normal` 垂直的平面内；$M_i$ 是输入或元素表给出的磁矩模长；$\sigma=\pm1$ 对应两种相反的折返方向。
 
 ## 操作示例
 
-### 场景：层状反铁磁模型在非均匀自旋纹理上预测崩塌
+一个沿 z 方向有 8 层、每层 Fe 磁矩模长为 2 的结构，使用自动模式、每层 30°、初相位 90°时，层相位为：
 
-你训练了一个层状磁性模型（如 CrI3 双层），训练数据里层内是 FM、层间是 AFM——这是完美均匀的磁序。但实验发现施加电场后，顶层磁矩偏了 15 度而底层偏了 -15 度——这是一个非单调的、分层的自旋纹理。模型对此完全无法预测。
+```text
+90°, 60°, 30°, 0°, 0°, 30°, 60°, 90°
+```
 
-**诊断思路：** 训练集里的自旋变化是单调的（要么全同向、要么交替翻转）。模型从未见过磁矩方向在空间中"先转过去、再转回来"的纹理。需要生成按层离散的折返螺旋构型，让模型学习分层磁矩分布的能量面。
-
-**输入：** 一个已有 `initial_magmoms` 的层状磁性结构（或通过 `magnitude_source = Map/default magnitude` 指定磁矩模长）
-
-**目标：** 用 auto 模式自动适配当前层数，生成 3 个层间转角（15/30/45 度）、4 个全局相位（0/30/60/90 度）、2 种手性顺序，共 3x4x2 = 24 个折返螺旋构型
-
-**参数设置：**
-- `Layer Axis` = `[0, 0, 1]`（沿 z 轴分层）
-- `Plane Normal` = `[0, 0, 1]`（磁矩在 xy 面内旋转）
-- `Half-Period Mode` = `Auto from layer count`
-- `Angle Step Range` = `[15, 45, 15]`
-- `Phase Range` = `[0, 90, 30]`
-- `Sequence` = `Both`
-
-**输出：** 24 个结构，磁矩在 xy 面内按层折返旋转，带 `FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)` 标签。
-
-**怎么验证训练集质量改善：**
-- 重训后跑几组不同层间转角的测试构型，能量排序应合理（近 FM 的转角能量低，近 180 度的高）
-- 抽查输出：层 0 磁矩方向 = 全局相位，中间层达到最大转角，顶层回到接近全局相位
-- 如果 auto 模式给出的半周期不合适——比如你的结构有 10 层但 auto 给了 h=4——切到 manual 模式手动指定 `half_period_layers`
-
-### 什么时候加这张卡、什么时候不加
-
-**加：**
-- 层状磁体（vdW 磁体、异质结、超晶格）需要非单调的分层磁矩纹理
-- 想构造镜像对称的自旋分布（两半周期互为镜像）
-- 需要同层原子共享磁矩方向（layer-locked 行为是内置的）
-
-**不加：**
-- 需要标准单向传播的螺旋 → 用 `Spin Spiral`
-- 需要连续坐标依赖的相位（非分层）→ 用 `Spin Spiral` 的 continuous 模式
-- 体系没有层状结构 → 分层无意义
+选择 `Both` 会生成另一份方向相反的完整配对。检查输出时确认：同层原子方向一致、相位到中部后反向、首尾层方向相同、目标磁矩模长没有改变。
 
 ## 参数说明
 
-### 分层定义
+### 层方向（layer_axis）
 
-#### Layer Axis（layer_axis）
+默认 `(0,0,1)`，笛卡尔方向。程序把原子位置投影到该方向后识别层；它不是 Miller 指数或晶格轴编号。
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。原子坐标沿此方向投影后用于分层，格式 `[x, y, z]`。
+### 旋转平面法向（plane_normal）
 
-#### Plane Normal（plane_normal）
+默认跟随 `layer_axis`，因此磁矩直接在原子层面内旋转，普通用户不需要再填写第二个方向。只有选择“自定义磁矩平面”后才显示该笛卡尔向量；例如 `(0,0,1)` 表示在 xy 平面旋转。旧 JSON 中与层方向不同的法向会自动恢复为自定义模式。
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。磁矩旋转平面的法向。例如 `[0, 0, 1]` 表示磁矩在 xy 面内旋转。
+### 分层容差（layer_tolerance）
 
-#### Layer Tolerance（layer_tolerance）
+默认 0.05 Å。投影距离不超过该值的原子归为同一层。过大会合并相邻层，过小会把有层内起伏的原子拆开。
 
-`float`，默认 `0.05`。投影坐标差不超过此阈值的原子归为同一层，单位 Å。
-- 保守：`0.01`（严格分层）
-- 平衡：`0.03~0.10`（容忍小幅层内起伏）
-- 如果层内有明显 rumpling，适当放宽
+### 半周期模式（half_period_mode）
 
-### 半周期控制
+默认 `Auto from layer count`。自动模式在检测出的完整层堆栈上折返一次；`Manual` 按指定半周期重复三角相位。
 
-#### Half Period Mode（half_period_mode）
+### 半周期层步数（half_period_layers）
 
-`str`，默认 `'Auto from layer count'`。`Auto from layer count` 由当前层数自动推导半周期，保证首尾闭合（大多数情况推荐这个）。`Manual` 手动指定 `half_period_layers` 扫描范围，适合比较不同折返周期。
+默认 `(2,4,1)`，格式为 `[最小值, 最大值, 步长]`，仅在手动模式下使用。$h=2$ 表示每经过两个层间步进到达一次转折点。
 
-#### Half Period Layers（half_period_layers）
+### 每层角度变化（angle_step_range）
 
-`list[int] | tuple[int, int, int]`，默认 `(2, 4, 1)`。仅在 manual 模式下生效。`[min, max, step]` 格式，半周期的层步进数。
-- 保守：`[2, 2, 1]`（最短折返）
-- 平衡：`[2, 6, 1]`
-- 探索：`[4, 12, 2]`
+默认 `(15,45,15)`°，格式为 `[最小值, 最大值, 步长]`。它控制相邻层的相位增量；折返点之后符号自动反转。
 
-### 旋转参数
+### 全局相位（phase_range）
 
-#### Angle Step Range（angle_step_range）
+默认 `(0,0,15)`°。每个取值都会把完整折返纹理在旋转平面内整体转动，并增加一组输出。
 
-`list[float] | tuple[float, float, float]`，默认 `(15.0, 45.0, 15.0)`。`[min, max, step]`，相邻层之间的面内转角，单位度。
-- 保守：`[5, 15, 5]`（小转角）
-- 平衡：`[15, 45, 15]`（中转角）
-- 探索：`[30, 90, 15]`（大转角）
+### 折返方向（sequence_mode）
 
-#### Phase Range（phase_range）
+默认 `Clockwise then counterclockwise`。反向选项改变 $\sigma$；`Both` 总是输出完整的正反方向配对，输出上限不会拆散一对。
 
-`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 15.0)`。`[min, max, step]`，全局相位偏移，单位度。
-- 保守：`[0, 0, 15]`
-- 平衡：`[0, 90, 30]`
-- 探索：`[-180, 180, 30]`
+### 磁矩来源（magnitude_source）
 
-#### Sequence Mode（sequence_mode）
+默认 `Existing initial magmoms`，要求输入已有非零磁矩，缺失时明确报错。选择 `Map/default magnitude` 后才会根据元素表建立目标磁矩模长。
 
-`str`，默认 `'Clockwise then counterclockwise'`。`Clockwise then counterclockwise` 前半周期顺时针、后半周期逆时针；`Counterclockwise then clockwise` 相反；`Both` 两种都生成。
+### 元素磁矩表（magmom_map）
 
-### 磁矩幅值
+仅在元素表模式下使用，格式如 `Fe:2.2,Ni:0.6`。
 
-#### Magnitude Source（magnitude_source）
+### 默认磁矩（default_moment）
 
-`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` 复用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。
+默认 0.0，仅在元素表模式下使用，作为表中未列出元素的模长。
 
-**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。
+### 目标元素（apply_elements）
 
-#### Magmom Map（magmom_map）
+默认留空，表示所有元素。可填写 `Fe,Co` 等逗号分隔符号；未选中的已有磁矩保持原方向和模长。
 
-`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。
+### 最大输出数（max_outputs）
 
-#### Default Moment（default_moment）
+默认 100。理论数量为
 
-`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
+$$
+N_h\times N_{\Delta\phi}\times N_{\phi_0}\times N_{\mathrm{sequence}}.
+$$
 
-#### Apply Elements（apply_elements）
-
-`str`，默认 `''`。限制哪些元素施加折返纹理，留空则全部参与。
-
-### 输出预算
-
-#### Max Outputs（max_outputs）
-
-`int`，默认 `100`。半周期、角度、相位和手性会相乘放大输出数量。先用几十个确认相位和层识别无误，再放大到研究级扫描。
-
-## 推荐预设
-
-### auto 模式单折返验证（~2 个输出，先确认分层和方向正确）
-```json
-{
-  "class": "FoldedHelixCard",
-  "check_state": true,
-  "layer_axis": [0.0, 0.0, 1.0],
-  "plane_normal": [0.0, 0.0, 1.0],
-  "layer_tolerance": [0.03],
-  "half_period_mode": "Auto from layer count",
-  "half_period_layers": [2, 2, 1],
-  "angle_step_range": [10.0, 10.0, 5.0],
-  "phase_range": [0.0, 0.0, 15.0],
-  "sequence_mode": "Clockwise then counterclockwise",
-  "magnitude_source": "Existing initial magmoms",
-  "magmom_map": "",
-  "default_moment": [0.0],
-  "apply_elements": "",
-  "max_outputs": [16]
-}
-```
-
-### 多转角多相位常规覆盖（~24 个输出，适合层状磁体训练）
-```json
-{
-  "class": "FoldedHelixCard",
-  "check_state": true,
-  "layer_axis": [0.0, 0.0, 1.0],
-  "plane_normal": [0.0, 0.0, 1.0],
-  "layer_tolerance": [0.05],
-  "half_period_mode": "Auto from layer count",
-  "half_period_layers": [2, 6, 1],
-  "angle_step_range": [15.0, 45.0, 15.0],
-  "phase_range": [0.0, 90.0, 30.0],
-  "sequence_mode": "Both",
-  "magnitude_source": "Existing initial magmoms",
-  "magmom_map": "",
-  "default_moment": [0.0],
-  "apply_elements": "",
-  "max_outputs": [100]
-}
-```
-
-### 手动多周期 + 全相位探索（~500 个输出，研究级）
-```json
-{
-  "class": "FoldedHelixCard",
-  "check_state": true,
-  "layer_axis": [0.0, 0.0, 1.0],
-  "plane_normal": [0.0, 0.0, 1.0],
-  "layer_tolerance": [0.10],
-  "half_period_mode": "Manual",
-  "half_period_layers": [4, 12, 2],
-  "angle_step_range": [30.0, 90.0, 15.0],
-  "phase_range": [-180.0, 180.0, 30.0],
-  "sequence_mode": "Both",
-  "magnitude_source": "Map/default magnitude",
-  "magmom_map": "Fe:2.2",
-  "default_moment": [0.0],
-  "apply_elements": "",
-  "max_outputs": [500]
-}
-```
-
-## 推荐组合
-
-- `Magnetic Order` → `Folded Helix`：先建立 FM/AFM 局域磁矩模长，再按层折返旋转
-- `Set Magnetic Moments` → `Folded Helix`：手动指定元素模长，再生成折返纹理
-- `Group Label` → `Folded Helix`：先打 group 标签，再在特定子晶格上施加折返
+达到上限后停止生成。`Both` 模式以两份为一组，因此奇数上限会向下取到最近的完整偶数；上限小于 2 时明确报错。
 
 ## 常见问题
 
-**输出只有原始输入。** 磁矩幅值全为 0。检查 `magnitude_source` 和 `magmom_map`。结构只有 1 层时折返无意义——至少需要 2 层。
+**为什么提示检测层数不足？** 折返至少需要“起点—转折—返回”三层。检查层方向是否正确，并确认分层容差没有把不同层合并。
 
-**分层结果不符合预期。** `layer_axis` 方向是否正确？调整 `layer_tolerance`——太小把同层拆散，太大把不同层合并。
+**为什么输出数比理论数量少？** `max_outputs` 限制了扫描预算。界面会同时显示理论数量和预算内实际数量；`Both` 不会只保留单侧方向。
 
-**auto 模式的半周期太小或太大。** auto 模式取 `(总层数 - 1) // 2`。如果结构有偶数层且你期望一个层作为转折峰，切到 manual 模式手动指定 `half_period_layers`。
+**为什么元素表没有生效？** 只有选择“元素表 / 默认值”来源后才读取该表；已有磁矩模式不会自动回退到元素表。
 
-**输出相位看起来没有折返。** 如果层数太少（如 3 层），折返曲线不明显。用 6 层以上的结构效果更直观。
+## 输出
 
-## 输出标签
-
-- `FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)`
-  - `h`：半周期层步数
-  - `da`：层间转角
-  - `ph`：全局相位
-  - `seq`：手性顺序（`cw-ccw` 或 `ccw-cw`）
-  - `ax`：分层轴标签
-  - `pn`：旋转平面法向标签
-
-所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别名。
-
-## 可复现性
-
-无随机性。相同输入结构和相同参数 → 严格一致输出。分层原点固定为沿 `layer_axis` 投影后的最小层号。
+每个成功结果写入 `spin:R:3` 并同步 ASE 初始磁矩，`Config_type` 追加 `FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)`。该操作没有随机性，相同输入和参数产生相同输出。

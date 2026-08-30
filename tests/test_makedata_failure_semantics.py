@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 import pytest
 from ase import Atoms
-from PySide6.QtCore import QEventLoop, QTimer
+from PySide6.QtCore import QCoreApplication, QEvent, QEventLoop, QTimer
+from PySide6.QtTest import QSignalSpy
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.core.cards.operation import DatasetOperation, StructureOperation
@@ -45,6 +46,11 @@ class _SlowOperation(StructureOperation):
     def run_structure(self, structure, params):
         time.sleep(0.08)
         return [structure.copy()]
+
+
+class _EmptyOperation(StructureOperation):
+    def run_structure(self, structure, params):
+        return []
 
 
 class _KeepFirstOperation(DatasetOperation):
@@ -105,6 +111,7 @@ def test_failed_card_discards_partial_output_and_stops_page_chain():
     page.dataset = [Atoms("H"), Atoms("He")]
     following.result_dataset = [Atoms("Li")]
     following.set_output_available(True)
+    completion = QSignalSpy(failing.runFinishedSignal)
 
     with patch(
         "NepTrainKit.ui.widgets.card_widget.MessageManager.send_error_message"
@@ -112,7 +119,8 @@ def test_failed_card_discards_partial_output_and_stops_page_chain():
         "NepTrainKit.ui.pages.makedata.MessageManager.send_success_message"
     ) as success_message:
         page.run_card()
-        assert _wait_until(lambda: failing.run_outcome == "failed")
+        assert completion.count() or completion.wait(10000)
+        assert failing.run_outcome == "failed"
 
     assert failing.result_dataset == []
     assert not failing.view_output_button.isEnabled()
@@ -123,6 +131,10 @@ def test_failed_card_discards_partial_output_and_stops_page_chain():
     assert page._last_completed_card_index is None
     error_message.assert_called_once()
     success_message.assert_not_called()
+    page.close()
+    page.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    QApplication.processEvents()
 
 
 def test_card_group_propagates_child_failure_without_running_later_children():
@@ -165,6 +177,86 @@ def test_card_group_finishes_after_enabled_post_filter():
     assert completions == [group.index]
     assert len(group.result_dataset) == 1
     assert group.result_dataset == filter_card.result_dataset
+    assert group._merged_count == 2
+    assert "2 merged → 1 kept" in group.merge_count_label.text()
+    assert "2 input → 2 merged → 1 kept" in group.summary_label.text()
+    assert group.status_badge.state() == "succeeded"
+    assert group.status_badge.label.text() == "Done · 2→1"
+
+
+def test_enabled_card_group_requires_at_least_one_enabled_branch():
+    group = CardGroup()
+    child = _OperationCard(_CopyOperation(), group)
+    filter_card = _FilterCard(group)
+    group.add_card(child)
+    group.set_filter_card(filter_card)
+    child.state_checkbox.setChecked(False)
+    group.set_dataset([Atoms("H")])
+    completions = []
+    group.runFinishedSignal.connect(completions.append)
+
+    with patch.object(filter_card, "run") as filter_run, patch(
+        "NepTrainKit.ui.views._card.card_group.MessageManager.send_error_message"
+    ) as error_message:
+        group.run()
+
+    assert group.run_outcome == "failed"
+    assert group.result_dataset == []
+    assert not group.view_output_button.isEnabled()
+    assert completions == [group.index]
+    assert "Run failed" in group.merge_count_label.text()
+    assert group.status_badge.state() == "failed"
+    filter_run.assert_not_called()
+    error_message.assert_called_once_with(
+        "Branch Merge needs at least one enabled branch."
+    )
+
+
+def test_disabled_card_group_still_bypasses_input():
+    group = CardGroup()
+    filter_card = _FilterCard(group)
+    group.set_filter_card(filter_card)
+    source = [Atoms("H")]
+    group.state_checkbox.setChecked(False)
+    group.set_dataset(source)
+    completions = []
+    group.runFinishedSignal.connect(completions.append)
+
+    with patch.object(filter_card, "run") as filter_run:
+        group.run()
+
+    assert group.run_outcome == "succeeded"
+    assert group.result_dataset is source
+    assert group.view_output_button.isEnabled()
+    assert completions == [group.index]
+    assert "1 merged structures" in group.merge_count_label.text()
+    assert "kept" not in group.merge_count_label.text()
+    assert group.status_badge.state() == "disabled"
+    filter_run.assert_not_called()
+
+
+def test_workflow_reports_legal_empty_output_without_generated_success_message():
+    page = MakeDataWidget()
+    group = CardGroup(page)
+    group.add_card(_OperationCard(_EmptyOperation(), group))
+    page.workspace_card_widget.add_card(group)
+    page.dataset = [Atoms("H")]
+
+    with patch(
+        "NepTrainKit.ui.pages.makedata.MessageManager.send_success_message"
+    ) as success_message, patch(
+        "NepTrainKit.ui.pages.makedata.MessageManager.send_info_message"
+    ) as info_message:
+        page.run_card()
+        assert _wait_until(lambda: group.run_outcome == "succeeded")
+
+    assert group.result_dataset == []
+    assert group.status_badge.state() == "succeeded"
+    assert group.status_badge.label.text() == "Done · 1→0"
+    success_message.assert_not_called()
+    info_message.assert_called_once_with(
+        "Workflow completed with 0 output structures."
+    )
 
 
 def test_card_group_toggle_preserves_individual_branch_choices():

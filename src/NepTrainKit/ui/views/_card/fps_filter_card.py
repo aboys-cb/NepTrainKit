@@ -2,16 +2,13 @@
 
 from __future__ import annotations
 
-from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QWidget
 from qfluentwidgets import (
-    BodyLabel,
     CaptionLabel,
     ComboBox,
     FluentIcon,
     LineEdit,
     PushButton,
-    ToolTipFilter,
-    ToolTipPosition,
     TransparentToolButton,
 )
 
@@ -20,10 +17,16 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.core.types import get_configured_nep_backend
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
-from NepTrainKit.ui.widgets import FilterDataCard
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    FilterDataCard,
+    InspectorSection,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
@@ -52,58 +55,59 @@ class FPSFilterDataCard(FilterDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self._backend = Config.get("nep", "backend", "auto")
+        self._backend = get_configured_nep_backend().value
         self._chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000)
         self._last_group_report = {}
         self._input_dataset = []
-        self.setTitle(self.tr("Representative Sampling (FPS)"))
+        self.setTitle(self.tr("FPS Sampling"))
         self.init_ui()
 
     def init_ui(self):
-        """Build a compact Fluent form with progressive disclosure."""
+        """Build a compact inspector around budget, coverage, and preview."""
         self.setObjectName("fps_filter_card_widget")
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setVerticalSpacing(4)
 
-        self.strategy_label = BodyLabel(self.tr("Sampling strategy"), self.setting_widget)
         self.strategy_combo = ComboBox(self.setting_widget)
         self.strategy_combo.addItem(
-            self.tr("All structures together (legacy)"),
+            self.tr("Global budget"),
             userData="global",
         )
         self.strategy_combo.addItem(
-            self.tr("Guarantee every element set"),
+            self.tr("Balance by element set"),
             userData="element_set",
         )
-        self.strategy_label.setToolTip(
-            self.tr(
-                "Legacy global FPS starts from the first input unless an existing training set is supplied"
-            )
+        self.strategy_combo.setAccessibleName(self.tr("Sampling plan"))
+        self.strategy_field = CompactField(
+            self.tr("Sampling plan"),
+            self.strategy_combo,
+            self.setting_widget,
         )
-        self.strategy_label.installEventFilter(
-            ToolTipFilter(self.strategy_label, 300, ToolTipPosition.TOP)
-        )
+        self.strategy_label = self.strategy_field.caption
 
         self.strategy_hint = CaptionLabel("", self.setting_widget)
         self.strategy_hint.setWordWrap(True)
 
-        self.num_label = BodyLabel(self.tr("Maximum structures to keep"), self.setting_widget)
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("", 1, "int")
         self.num_condition_frame.setRange(1, 10000000)
         self.num_condition_frame.set_input_value([100])
-        self.num_label.setToolTip(
-            self.tr("This is an upper bound; the distance cutoff can stop selection earlier")
+        self.num_condition_frame.setFixedWidth(144)
+        self.num_condition_frame.setAccessibleName(self.tr("Maximum output"))
+        self.num_field = CompactField(
+            self.tr("Maximum output"),
+            self.num_condition_frame,
+            self.setting_widget,
+            self.tr("This is an upper bound; the distance cutoff can stop selection earlier."),
+            inline=True,
+            input_max_width=144,
         )
-        self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
-
-        self.nep_path_label = BodyLabel(self.tr("Descriptor NEP model"), self.setting_widget)
+        self.num_label = self.num_field.caption
 
         self.nep_path_lineedit = LineEdit(self.setting_widget)
         self.nep_path_lineedit.setPlaceholderText(self.tr("nep.txt path"))
         self.nep_path_lineedit.setClearButtonEnabled(True)
-        self.nep_path_label.setToolTip(
-            self.tr("Descriptor distances depend on this model; prefer a model relevant to the candidate chemistry")
-        )
-        self.nep_path_label.installEventFilter(ToolTipFilter(self.nep_path_label, 300, ToolTipPosition.TOP))
+        self.nep_path_lineedit.setAccessibleName(self.tr("Descriptor NEP model"))
 
         self.nep89_path = str(module_path/ "Config/nep89.txt" )
         self.nep_path_lineedit.setText(self.nep89_path )
@@ -118,50 +122,63 @@ class FPSFilterDataCard(FilterDataCard):
         self.nep_browse_button.clicked.connect(self._browse_nep_model)
         self.nep_path_layout.addWidget(self.nep_browse_button, 0)
 
+        self.nep_path_field = CompactField(
+            self.tr("Descriptor NEP model"),
+            self.nep_path_widget,
+            self.setting_widget,
+            self.tr("Descriptor distances depend on this model; use one that covers the candidate chemistry."),
+        )
+        self.nep_path_label = self.nep_path_field.caption
+
+        plan_section = InspectorSection(
+            self.tr("Sampling plan"),
+            self.setting_widget,
+            self.tr("FPS keeps candidates that extend coverage in NEP descriptor space."),
+        )
+        plan_grid = ResponsiveFormGrid(plan_section)
+        plan_grid.add_field(self.strategy_field, span=2)
+        plan_grid.add_field(self.strategy_hint, span=2)
+        plan_grid.add_field(self.num_field, span=2)
+        plan_section.addWidget(plan_grid)
+
         self.advanced_button = PushButton(
             FluentIcon.SETTING,
-            self.tr("Distance cutoff and existing coverage"),
+            self.tr("Supplement existing set"),
             self.setting_widget,
         )
         self.advanced_button.setCheckable(True)
         self.advanced_button.setToolTip(
-            self.tr("Optionally stop near duplicates and avoid regions already covered by a training set")
+            self.tr(
+                "Use an existing training set as the covered baseline, then select new candidates farthest from it."
+            )
         )
         self.advanced_button.toggled.connect(self._set_advanced_visible)
 
         self.advanced_frame = QFrame(self.setting_widget)
-        self.advanced_layout = QGridLayout(self.advanced_frame)
+        self.advanced_layout = QVBoxLayout(self.advanced_frame)
         self.advanced_layout.setContentsMargins(0, 2, 0, 0)
-        self.advanced_layout.setHorizontalSpacing(4)
-        self.advanced_layout.setVerticalSpacing(4)
+        self.advanced_layout.setSpacing(4)
         self.min_distance_condition_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_condition_frame.set_input("", 1,"float")
         self.min_distance_condition_frame.setRange(0, 100)
         self.min_distance_condition_frame.object_list[0].setDecimals(4)   # pyright:ignore
         self.min_distance_condition_frame.set_input_value([0.0])
-
-        self.min_distance_label = BodyLabel(
-            self.tr("Descriptor distance cutoff"),
+        self.min_distance_condition_frame.setFixedWidth(144)
+        self.min_distance_condition_frame.setAccessibleName(self.tr("Distance cutoff"))
+        self.min_distance_field = CompactField(
+            self.tr("Distance cutoff"),
+            self.min_distance_condition_frame,
             self.setting_widget,
+            self.tr("Model-dependent and unitless; 0 disables early stopping."),
+            inline=True,
+            input_max_width=144,
         )
-        self.min_distance_label.setToolTip(
-            self.tr("0 disables early stopping; the scale is model-dependent and has no physical unit")
-        )
+        self.min_distance_label = self.min_distance_field.caption
 
-        self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
-
-        self.existing_dataset_label = BodyLabel(self.tr("Existing training set"), self.advanced_frame)
         self.existing_dataset_lineedit = LineEdit(self.advanced_frame)
-        self.existing_dataset_lineedit.setPlaceholderText(self.tr("Optional train.xyz for warm start"))
+        self.existing_dataset_lineedit.setPlaceholderText(self.tr("Optional train.xyz"))
         self.existing_dataset_lineedit.setClearButtonEnabled(True)
-        self.existing_dataset_label.setToolTip(
-            self.tr(
-                "Candidates near this training set are deprioritized; balanced mode compares only matching element sets"
-            )
-        )
-        self.existing_dataset_label.installEventFilter(
-            ToolTipFilter(self.existing_dataset_label, 300, ToolTipPosition.TOP)
-        )
+        self.existing_dataset_lineedit.setAccessibleName(self.tr("Existing training set"))
         self.existing_dataset_widget = QWidget(self.advanced_frame)
         self.existing_dataset_layout = QHBoxLayout(self.existing_dataset_widget)
         self.existing_dataset_layout.setContentsMargins(0, 0, 0, 0)
@@ -176,24 +193,35 @@ class FPSFilterDataCard(FilterDataCard):
         self.existing_browse_button.clicked.connect(self._browse_existing_dataset)
         self.existing_dataset_layout.addWidget(self.existing_browse_button, 0)
 
-        self.advanced_layout.addWidget(self.min_distance_label, 0, 0, 1, 1)
-        self.advanced_layout.addWidget(self.min_distance_condition_frame, 0, 1, 1, 2)
-        self.advanced_layout.addWidget(self.existing_dataset_label, 1, 0, 1, 1)
-        self.advanced_layout.addWidget(self.existing_dataset_widget, 1, 1, 1, 2)
+        self.existing_dataset_field = CompactField(
+            self.tr("Existing training set"),
+            self.existing_dataset_widget,
+            self.advanced_frame,
+            self.tr("Used as the selection baseline; only newly selected candidates are output."),
+        )
+        self.existing_dataset_label = self.existing_dataset_field.caption
+        advanced_grid = ResponsiveFormGrid(self.advanced_frame)
+        advanced_grid.add_field(self.existing_dataset_field, span=2)
+        self.advanced_layout.addWidget(advanced_grid)
 
-        self.settingLayout.addWidget(self.strategy_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.strategy_combo, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.strategy_hint, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.num_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.num_condition_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.nep_path_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.nep_path_widget, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.advanced_button, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.advanced_frame, 5, 0, 1, 3)
+        coverage_section = InspectorSection(
+            self.tr("Descriptor coverage"),
+            self.setting_widget,
+        )
+        coverage_section.addWidget(self.nep_path_field)
+        coverage_section.addWidget(self.min_distance_field)
+        coverage_section.addWidget(self.advanced_button)
+        coverage_section.addWidget(self.advanced_frame)
+
         self.preview_label = CaptionLabel("", self.setting_widget)
         self.preview_label.setWordWrap(True)
         self.preview_label.setObjectName("fpsFilterPreview")
-        self.settingLayout.addWidget(self.preview_label, 6, 0, 1, 3)
+        self.preview_section = InspectorSection(self.tr("Selection preview"), self.setting_widget)
+        self.preview_section.addWidget(self.preview_label)
+
+        self.settingLayout.addWidget(plan_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(coverage_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(self.preview_section, 2, 0, 1, 3)
 
         self.strategy_combo.currentIndexChanged.connect(self._update_strategy_ui)
         self.nep_path_lineedit.textChanged.connect(self._refresh_preview)
@@ -235,20 +263,48 @@ class FPSFilterDataCard(FilterDataCard):
         if balanced:
             self.strategy_hint.setText(
                 self.tr(
-                    "Each element set gets at least one slot; remaining slots follow sqrt(group size)."
+                    "Plans one slot per element set, then distributes the rest by sqrt(group size). "
+                    "Existing coverage or the distance cutoff can reduce actual output."
                 )
             )
         else:
             self.strategy_hint.setText(
                 self.tr(
-                    "One shared budget; without an existing set, input 1 is always the first selected structure."
+                    "All candidates share one budget; without an existing set, selection starts from input 1."
                 )
             )
+        self.strategy_hint.updateGeometry()
         self._refresh_preview()
 
     def create_operation(self):
         """Return the UI-independent FPS operation."""
         return FPSFilterOperation()
+
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        strategy = (
+            self.tr("global budget")
+            if params.strategy == "global"
+            else self.tr("balanced by element set")
+        )
+        return self.tr("keep at most {count} · {strategy}").format(
+            count=params.n_samples,
+            strategy=strategy,
+        )
+
+    def get_guidance_text(self) -> str:
+        params = self.get_params()
+        cutoff = (
+            self.tr("distance early-stop disabled")
+            if params.min_distance == 0.0
+            else self.tr("model-dependent cutoff {value}").format(
+                value=f"{params.min_distance:.4g}"
+            )
+        )
+        return self.tr(
+            "Use a descriptor model relevant to the candidate chemistry; {cutoff}. "
+            "The structure count is an upper bound."
+        ).format(cutoff=cutoff)
 
     def get_params(self) -> FPSFilterParams:
         """Read FPS parameters from UI controls."""
@@ -287,9 +343,9 @@ class FPSFilterDataCard(FilterDataCard):
         if not hasattr(self, "preview_label"):
             return
         if not self._input_dataset:
-            self.preview_label.setText(
+            self._set_preview_text(
                 self.tr(
-                    "Load upstream structures to preview the output cap and element-set quotas."
+                    "Load upstream structures to preview the output cap and planned element-set quotas."
                 )
             )
             return
@@ -299,7 +355,7 @@ class FPSFilterDataCard(FilterDataCard):
                 self.get_params(),
             )
         except (TypeError, ValueError) as exc:
-            self.preview_label.setText(
+            self._set_preview_text(
                 "⚠ "
                 + self.tr("Preview unavailable: {error}").format(
                     error=translate_runtime_message(exc)
@@ -317,15 +373,23 @@ class FPSFilterDataCard(FilterDataCard):
                 )
             else:
                 strategy_text = self.tr(
-                    "{count} element sets with guaranteed coverage"
+                    "planned quotas for {count} element sets"
                 ).format(count=summary["group_count"])
         else:
             strategy_text = self.tr("one global FPS budget")
         model_text = (
-            self.tr("model found: {name}").format(name=summary["model_name"])
+            self.tr("model file found: {name}").format(name=summary["model_name"])
             if summary["model_exists"]
             else self.tr("model path is missing")
         )
+        if not summary["existing_configured"]:
+            existing_text = self.tr("no existing set")
+        elif summary["existing_exists"]:
+            existing_text = self.tr("supplementing {name}; output contains new selections only").format(
+                name=summary["existing_name"]
+            )
+        else:
+            existing_text = self.tr("existing set path is missing")
         cutoff_text = (
             self.tr("no distance early-stop")
             if summary["min_distance"] == 0.0
@@ -333,17 +397,29 @@ class FPSFilterDataCard(FilterDataCard):
                 value=f"{summary['min_distance']:.4g}"
             )
         )
-        self.preview_label.setText(
+        self._set_preview_text(
             self.tr(
-                "Input {input} structures → keep at most {output} · {strategy} · {cutoff} · {model}"
+                "Input {input} → keep at most {output} · {strategy} · {cutoff} · {existing} · {model}"
             ).format(
                 input=summary["input_count"],
                 output=summary["max_output"],
                 strategy=strategy_text,
                 cutoff=cutoff_text,
+                existing=existing_text,
                 model=model_text,
             )
         )
+
+    def _set_preview_text(self, text: str) -> None:
+        self.preview_label.setText(text)
+        self.preview_label.updateGeometry()
+        self.preview_section.layout().invalidate()
+        self.preview_section.layout().activate()
+        self.preview_section.updateGeometry()
+        self.settingLayout.invalidate()
+        self.settingLayout.activate()
+        self.setting_widget.updateGeometry()
+        self.updateGeometry()
 
     def on_processing_finished(self):
         operation = getattr(getattr(self, "worker_thread", None), "operation", None)
@@ -353,9 +429,14 @@ class FPSFilterDataCard(FilterDataCard):
     def _format_dataset_info(self) -> str:
         text = super()._format_dataset_info()
         if self._last_group_report:
-            text = self.tr("{summary} | Element groups: {count}").format(
+            covered = sum(
+                report.selected_count > 0
+                for report in self._last_group_report.values()
+            )
+            text = self.tr("{summary} | Output element-set coverage: {covered}/{total}").format(
                 summary=text,
-                count=len(self._last_group_report),
+                covered=covered,
+                total=len(self._last_group_report),
             )
         return text
 

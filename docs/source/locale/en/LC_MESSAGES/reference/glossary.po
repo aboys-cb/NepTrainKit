@@ -1,0 +1,319 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language: en\n"
+"Language-Team: none\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/reference/glossary.md:1 69ec953716cc4ad6bf8a41d61e986e7d
+msgid "术语表"
+msgstr "Glossary"
+
+#: ../../source/reference/glossary.md:3 49a1a2de6c3b44e6965233e13fffdeb8
+msgid ""
+"本页解释 NepTrainKit 界面和文档中反复出现的术语。要查按钮和参数，请回到 "
+"[功能指南](../module/index.rst)；要查文件字段契约，请看[支持格式](../formats.md)。"
+msgstr ""
+"This page explains terms that recur in the NepTrainKit interface and "
+"documentation. To look up buttons and parameters, return to the [Feature "
+"Guide](../module/index.rst); to check file-field contracts, see "
+"[Supported formats](../formats.md)."
+
+#: ../../source/reference/glossary.md:6 6a9d41709fe04008a5777b10090c5523
+msgid "数据、标签和模型"
+msgstr "Data, labels, and models"
+
+#: ../../source/reference/glossary.md:8 db3ce889c37a4a4884831101fd6e3fe2
+msgid "参考值（reference / DFT）"
+msgstr "Reference value (reference / DFT)"
+
+#: ../../source/reference/glossary.md:10 424766dc0f3a42fab0a79dcc7280f992
+msgid ""
+"结构文件中已有的能量、力或 virial 标签，通常来自 DFT。NepTrainKit 把它们作为比较基准， "
+"但不会仅凭字段存在就判断其计算设置是否一致。"
+msgstr ""
+"Energy, force, or virial labels already stored in a structure file, "
+"usually produced by DFT. NepTrainKit uses them as comparison references, "
+"but the presence of a field alone does not prove that the calculation "
+"settings are consistent."
+
+#: ../../source/reference/glossary.md:13 0da5c223ea244532a6fde809730da8ee
+msgid ""
+"在 NEP 散点图中，当前约定是 **x 轴为 NEP 预测值，y 轴为参考值**。不要根据其他软件 输出列的先后顺序猜坐标含义；以 "
+"NepTrainKit 图上的轴标题为准。"
+msgstr ""
+"In NEP scatter plots, the current convention is **x-axis = NEP prediction"
+" and y-axis = reference value**. Do not infer the axes from the column "
+"order used by another program; use the axis titles shown in NepTrainKit."
+
+#: ../../source/reference/glossary.md:16 99a5e9ffd4054a749fce2f8e17785fbb
+msgid "预测值（prediction / NEP）"
+msgstr "Prediction (prediction / NEP)"
+
+#: ../../source/reference/glossary.md:18 af65e249d3df4b26bd0ca0e72c4de077
+msgid ""
+"由当前加载的 `nep.txt` 计算，或从 GPUMD 输出文件读取的模型结果。预测值不是新的 DFT 标签， "
+"也不会在没有模型或结果文件时自动出现。"
+msgstr ""
+"A model result computed from the loaded `nep.txt` or read from GPUMD "
+"output. A prediction is not a new DFT label and does not appear "
+"automatically without a model or result file."
+
+#: ../../source/reference/glossary.md:21 0bc3f6e795f24986b073c1239acc1bdd
+msgid "`nep.txt`"
+msgstr "`nep.txt`"
+
+#: ../../source/reference/glossary.md:23 36102b3742f4468691a74880e304cc67
+msgid "NEP 模型文件。它可用于计算能量、力、virial 和描述符。模型必须支持数据中出现的元素； 换模型后，预测误差和描述符距离都可能改变。"
+msgstr ""
+"The NEP model file used to compute energy, forces, virial, and "
+"descriptors. The model must support every element in the data; changing "
+"the model can change both prediction errors and descriptor distances."
+
+#: ../../source/reference/glossary.md:26 446bd5d1826e452793e195adfa086004
+msgid "`Config_type`"
+msgstr "`Config_type`"
+
+#: ../../source/reference/glossary.md:28 83e5977caa494970b44a9f598bc7abe0
+msgid ""
+"结构级标签，存放在 `atoms.info[\"Config_type\"]`。NepTrainKit 用它记录数据来源、生成步骤或 "
+"用户分组，并可据此搜索、筛选和分目录导出。它不是化学式，也不保证代表唯一物理相。"
+msgstr ""
+"A structure-level label stored in `atoms.info[\"Config_type\"]`. "
+"NepTrainKit uses it to record data sources, generation steps, or user "
+"groups for searching, filtering, and directory export. It is not a "
+"chemical formula and does not identify a unique physical phase."
+
+#: ../../source/reference/glossary.md:31 919f8bb57d9542cbaa3fdf125dc7cbce
+msgid "`energy_original`"
+msgstr "`energy_original`"
+
+#: ../../source/reference/glossary.md:33 9c29079786f94d87bd411b3649dd9e56
+msgid ""
+"第一次执行能量基线平移前保存的结构总能量。后续再次平移不会覆盖已经存在的 `energy_original`。导出 EXTXYZ 后可同时检查 "
+"`energy` 和 `energy_original`。"
+msgstr ""
+"The structure's total energy saved before the first energy-baseline "
+"shift. Later shifts do not overwrite an existing `energy_original`. After"
+" exporting EXTXYZ, inspect both `energy` and `energy_original`."
+
+#: ../../source/reference/glossary.md:36 22d58df890ff4501802e8012ec4a2d78
+msgid "EXTXYZ"
+msgstr "EXTXYZ"
+
+#: ../../source/reference/glossary.md:38 c534c50c3f904376a10f58fd347b9569
+msgid ""
+"扩展 XYZ。除元素和坐标外，还能在帧头声明晶胞、周期边界、能量、virial 和字段布局， 并通过 `Properties` "
+"描述逐原子列。NepTrainKit 的训练数据交换优先使用这种明确的数据契约。"
+msgstr ""
+"Extended XYZ. In addition to elements and coordinates, the frame header "
+"can declare the cell, periodicity, energy, virial, and field layout, "
+"while `Properties` describes per-atom columns. NepTrainKit prefers this "
+"explicit contract for training-data exchange."
+
+#: ../../source/reference/glossary.md:41 0f4f630600844945bc2a88fa541dae8c
+msgid "采样和结构生成"
+msgstr "Sampling and structure generation"
+
+#: ../../source/reference/glossary.md:43 c879aee9489b4331a4d64672597e778f
+msgid "卡片（card）"
+msgstr "Card"
+
+#: ../../source/reference/glossary.md:45 57b9ffea4f4448d69e1941b92ecbe4f3
+msgid ""
+"“生成数据集”页面中的一个操作单元。卡片可以生成结构、变换输入结构、过滤数据或组织分支。 "
+"勾选状态决定本次是否运行；卡片在工作区中的位置不一定代表所有子卡都会顺序串联。"
+msgstr ""
+"An operation unit on the Make Dataset page. A card can generate "
+"structures, transform input structures, filter data, or organize "
+"branches. Its checked state controls whether it runs; workspace position "
+"does not necessarily mean that all child cards are chained serially."
+
+#: ../../source/reference/glossary.md:48 fb42cc4979224894adf6186c5140bd7f
+msgid "配方（recipe）"
+msgstr "Recipe"
+
+#: ../../source/reference/glossary.md:50 057035154fbc46cebf00de4a57f9196a
+msgid "为一个完整目标组合多张卡片的示例，例如高熵合金、富缺陷表面或磁性数据。配方给出可复用 起点，不代表参数可以不经检查直接用于所有材料。"
+msgstr ""
+"An example that combines cards for a complete goal, such as a high-"
+"entropy alloy, a defect-rich surface, or magnetic data. A recipe is a "
+"reusable starting point; its parameters still require checking for each "
+"material."
+
+#: ../../source/reference/glossary.md:53 c7573d6090e94a86a0c61114268d5bd3
+msgid "FPS（Farthest Point Sampling，最远点采样）"
+msgstr "FPS (Farthest Point Sampling)"
+
+#: ../../source/reference/glossary.md:55 bc2413f621b54fc899f8c52aaff82810
+msgid ""
+"在描述符空间中反复选择离已有集合最远的候选点，用于从干净候选池中减少冗余。 “代表性”只相对于当前模型的描述符空间成立；FPS "
+"不检查短键，也不会补出输入池中不存在的构型。"
+msgstr ""
+"Repeatedly select the candidate farthest from the selected set in "
+"descriptor space to reduce redundancy in a cleaned candidate pool. "
+"Representativeness is relative to the current model's descriptor space; "
+"FPS does not detect short bonds or invent configurations absent from the "
+"input pool."
+
+#: ../../source/reference/glossary.md:58 7bec14aab53642bfbb8ae3ac2db2d2a2
+msgid "描述符（descriptor）"
+msgstr "Descriptor"
+
+#: ../../source/reference/glossary.md:60 cdacf94305c5492fbe2a8932fc4e3aea
+msgid ""
+"NEP 对局域原子环境的数值表示。NepTrainKit 的 FPS 默认把逐原子描述符取结构级均值后计算距离。 描述符坐标通常没有 Å 或 eV"
+" 这样的直接物理单位，数值尺度也依赖模型。"
+msgstr ""
+"A numerical representation of a local atomic environment in NEP. "
+"NepTrainKit's FPS computes distances from structure-level means of per-"
+"atom descriptors by default. Descriptor coordinates normally have no "
+"direct unit such as Å or eV, and their scale depends on the model."
+
+#: ../../source/reference/glossary.md:63 f3d81192c0c64aa6ada9be54cd2ea860
+msgid "warm start / 已有训练集"
+msgstr "Warm start / existing training set"
+
+#: ../../source/reference/glossary.md:65 b1dd4c1ef3574ccb9e61dc0d6f2c8510
+msgid "在代表性采样开始前，把已有训练集当作已经覆盖的集合。新候选会优先补充离现有覆盖较远的区域； 已有训练集不计入本轮输出数量。"
+msgstr ""
+"Treat the existing training set as already covered before representative "
+"sampling starts. New candidates preferentially fill regions far from that"
+" coverage; existing training structures are not counted in this round's "
+"output."
+
+#: ../../source/reference/glossary.md:68 3a04d7001b994bf6961af2ca3d1cd313
+msgid "GSFE（Generalized Stacking Fault Energy，广义层错能）"
+msgstr "GSFE (Generalized Stacking Fault Energy)"
+
+#: ../../source/reference/glossary.md:70 b0f3f6b1a99e49c1ab620d7988def944
+msgid ""
+"沿指定晶面和面内滑移方向逐步移动晶体的一部分，用能量差除以层错面面积得到的路径。 “层错 / GSFE 路径”卡只生成结构路径，不替用户计算 "
+"DFT 能量，也不会自动判断周期晶胞中的界面数。"
+msgstr ""
+"A path obtained by moving part of a crystal step by step along a "
+"specified plane and in-plane direction, with energy differences divided "
+"by the fault-plane area. The Stacking Fault / GSFE Path card only "
+"generates structures; it does not calculate DFT energies or infer the "
+"number of interfaces in a periodic cell."
+
+#: ../../source/reference/glossary.md:73 9bc2031f986a40a7b7f85bd5d9743cd0
+msgid "力、应力和磁性"
+msgstr "Forces, stress, and magnetism"
+
+#: ../../source/reference/glossary.md:75 5f2c4e4d24274fdd92264dbc93dd2292
+msgid "virial"
+msgstr "virial"
+
+#: ../../source/reference/glossary.md:77 75370687b7454cadac165c892081c855
+msgid ""
+"结构级张量，NepTrainKit 内部按 eV 保存。只有 stress 时，结构层会结合晶胞体积换算 virial； "
+"两者不能脱离体积和符号约定直接当成同一个数比较。导入、导出契约见[支持格式](../formats.md)。"
+msgstr ""
+"A structure-level tensor stored in eV internally. When only stress is "
+"available, the structure layer converts it to virial using the cell "
+"volume; the two cannot be compared as the same quantity without "
+"accounting for volume and sign conventions. See [Supported "
+"formats](../formats.md) for the import/export contract."
+
+#: ../../source/reference/glossary.md:80 67cfdb68f58740c094f68e30e5faff95
+msgid "净力（net force）"
+msgstr "Net force"
+
+#: ../../source/reference/glossary.md:82 edd522b8df484db081fbf68c0aaed492
+msgid "一个结构中所有参考原子力的矢量和再取模。它用于发现可能不满足平衡或标签契约异常的结构， 不是逐原子最大力，也不能单独决定结构是否应该删除。"
+msgstr ""
+"The magnitude of the vector sum of all reference atomic forces in a "
+"structure. It helps find structures that may be out of equilibrium or "
+"violate the label contract; it is not the maximum per-atom force and "
+"cannot by itself decide whether a structure should be deleted."
+
+#: ../../source/reference/glossary.md:85 be124ff1e9f04b69a68e09b109b047a6
+msgid "`spin:R:3`"
+msgstr "`spin:R:3`"
+
+#: ../../source/reference/glossary.md:87 186db3efac014d868c67c14c30498ba3
+msgid ""
+"EXTXYZ 中每个原子的三分量自旋／磁矩向量字段。`R` 表示实数，`3` 表示每个原子有三个分量。 "
+"磁性卡片和训练集评估以该字段作为磁结构证据；`mforce` 或 `force_mag` 不是自旋状态。"
+msgstr ""
+"A three-component spin or magnetic-moment vector for each atom in EXTXYZ."
+" `R` means real-valued and `3` means three components per atom. Magnetic "
+"cards and Training Set Audit use this field as evidence of magnetic "
+"structure; `mforce` and `force_mag` are not spin states."
+
+#: ../../source/reference/glossary.md:90 cee4e3bd3d894922b0251a6c34e846ec
+msgid "FM / AFM / FiM / PM-like"
+msgstr "FM / AFM / FiM / PM-like"
+
+#: ../../source/reference/glossary.md:92 6da64f60eda9451eafd8ba2a4b2deaea
+msgid "FM：铁磁，磁矩主要同向；"
+msgstr "FM: ferromagnetic, with moments mostly aligned;"
+
+#: ../../source/reference/glossary.md:93 bf8752f062f2459f8622f8a0d1fe9040
+msgid "AFM：反铁磁，存在补偿的反平行有序；"
+msgstr "AFM: antiferromagnetic, with compensated antiparallel order;"
+
+#: ../../source/reference/glossary.md:94 f93b8e291e3046d7b8dbf0fc0ac17dda
+msgid "FiM：亚铁磁，反平行子晶格未完全补偿；"
+msgstr ""
+"FiM: ferrimagnetic, with incompletely compensated antiparallel "
+"sublattices;"
+
+#: ../../source/reference/glossary.md:95 5bb972ef9fd8457d9fa4faa9ae5222bd
+msgid "PM-like：当前有限结构快照表现为自旋无序。"
+msgstr "PM-like: the finite structure snapshot appears spin-disordered."
+
+#: ../../source/reference/glossary.md:97 9fb7d4eb017d433aa5ba810e0ccdc645
+msgid "训练集评估给出的分类是当前结构和阈值下的模式识别，不等同于有限温度热力学相判定。"
+msgstr ""
+"A Training Set Audit classification is pattern recognition for the "
+"current structures and thresholds; it is not a finite-temperature "
+"thermodynamic phase determination."
+
+#: ../../source/reference/glossary.md:99 a18351d4ea2a485f9c9a78317a63de56
+msgid "页面状态"
+msgstr "Page states"
+
+#: ../../source/reference/glossary.md:101 64b601761b4645969096317ae3f92a51
+msgid "活动结构、选中结构和删除结构"
+msgstr "Active, selected, and removed structures"
+
+#: ../../source/reference/glossary.md:103 992a59eb31bd4d49b7420ffa8647e323
+msgid ""
+"活动结构仍参与当前查看和导出；选中结构只是当前操作目标；删除结构已从活动集合排除。 三者不是同一状态。导出前应核对状态栏中的 `Orig / "
+"Now / Rm / Sel / Unsel / Rej`。"
+msgstr ""
+"Active structures remain in the current view and exports; selected "
+"structures are only the current operation target; removed structures are "
+"excluded from the active set. These are different states. Before "
+"exporting, check `Orig / Now / Rm / Sel / Unsel / Rej` in the status bar."
+
+#: ../../source/reference/glossary.md:106 82600837d0ee4867a9d5862928c937f0
+msgid "训练集评估（Training Set Audit）"
+msgstr "Training Set Audit"
+
+#: ../../source/reference/glossary.md:108 d9264f91eaac44a7b6823ad8c71fdedc
+msgid ""
+"对当前活动数据快照做标签、组成、局域环境、结构相和磁类型检查。它提供复核证据， "
+"不会在没有独立测试集时宣称模型已经可靠，也不会自动替用户决定哪些结构必须删除。"
+msgstr ""
+"Check labels, composition, local environments, structural phases, and "
+"magnetic types in the current active-data snapshot. It provides review "
+"evidence; without an independent test set it does not claim that a model "
+"is reliable, nor does it decide automatically which structures must be "
+"removed."

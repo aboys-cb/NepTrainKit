@@ -136,16 +136,6 @@ _RUNTIME_TEXT_REPLACEMENTS = (
     ("CellScaling: max_num must be >= 1.", "CellScaling：max_num 必须 >= 1。"),
     ("CellScaling requires three nonzero lattice vectors.", "CellScaling 需要三条非零晶格矢量。"),
     ("Perturb: max_num must be >= 1.", "Perturb：max_num 必须 >= 1。"),
-    ("VacancyDefect requires at least two atoms.", "VacancyDefect 至少需要两个原子。"),
-    ("VacancyDefect: engine_type must be 0 (Sobol) or 1 (Uniform).", "全局随机空位：采样方式必须是 Sobol（0）或均匀随机（1）。"),
-    ("VacancyDefect: count_mode must be fixed or random.", "全局随机空位：每个输出的空位数模式必须是 fixed 或 random。"),
-    ("VacancyDefect: max_structures must be an integer.", "全局随机空位：最大输出数必须是整数。"),
-    ("VacancyDefect: max_structures must be >= 1.", "全局随机空位：最大输出数必须 >= 1。"),
-    ("VacancyDefect: vacancy count must be an integer.", "全局随机空位：空位数量必须是整数。"),
-    ("VacancyDefect: vacancy count must be >= 1.", "全局随机空位：空位数量必须 >= 1。"),
-    ("VacancyDefect: vacancy fraction must be greater than 0 and less than 1.", "全局随机空位：空位比例必须大于 0 且小于 1。"),
-    ("VacancyDefect: seed must be an integer.", "全局随机空位：随机种子必须是整数。"),
-    ("VacancyDefect: seed must be >= 0.", "全局随机空位：随机种子必须 >= 0。"),
     ("InsertDefect requires at least one host atom.", "插隙与表面吸附至少需要一个宿主原子。"),
     ("InsertDefect requires a finite, non-singular 3x3 cell.", "插隙与表面吸附需要有限且非奇异的 3x3 晶胞。"),
     ("InsertDefect: mode must be 0 (Interstitial) or 1 (Adsorption).", "插隙与表面吸附：模式必须是体相插隙（0）或表面吸附（1）。"),
@@ -161,24 +151,6 @@ _RUNTIME_TEXT_REPLACEMENTS = (
     ("InsertDefect: species must contain at least one element.", "插隙与表面吸附：请至少填写一种插入元素。"),
     ("InsertDefect: seed must be an integer.", "插隙与表面吸附：随机种子必须是整数。"),
     ("InsertDefect: seed must be >= 0.", "插隙与表面吸附：随机种子必须 >= 0。"),
-    ("StrictGSFEPath requires at least one atom.", "显式 GSFE 路径至少需要一个原子。"),
-    ("StrictGSFEPath requires a finite, nonsingular 3x3 cell.", "显式 GSFE 路径需要有限且非奇异的 3x3 晶胞。"),
-    ("StrictGSFEPath plane_hkl must contain exactly three integers.", "显式 GSFE 路径：层错面必须包含三个整数。"),
-    ("StrictGSFEPath slip_uvw must contain exactly three integers.", "显式 GSFE 路径：滑移方向必须包含三个整数。"),
-    ("StrictGSFEPath plane_hkl must not be (0,0,0).", "显式 GSFE 路径：层错面不能是 (0,0,0)。"),
-    ("StrictGSFEPath slip_uvw must not be (0,0,0).", "显式 GSFE 路径：滑移方向不能是 (0,0,0)。"),
-    ("StrictGSFEPath slip_uvw produced a zero vector.", "层错 / GSFE 路径：滑移方向产生了零向量。"),
-    ("StrictGSFEPath slip_uvw must lie in the fault plane.", "层错 / GSFE 路径：滑移方向必须位于层错面内。"),
-    ("StrictGSFEPath displacement_unit must be fraction_of_vector or angstrom.", "显式 GSFE 路径：位移单位必须是滑移向量分数或 Å。"),
-    ("StrictGSFEPath requires finite Cartesian atom positions.", "显式 GSFE 路径需要有限的笛卡尔原子坐标。"),
-    ("StrictGSFEPath requires atoms on at least two distinct planes.", "显式 GSFE 路径至少需要两个不同的投影原子层。"),
-    ("StrictGSFEPath cut_fraction must be between 0 and 1.", "显式 GSFE 路径：厚度分数必须在 0 到 1 之间。"),
-    ("StrictGSFEPath layer_index must be an integer.", "显式 GSFE 路径：原子层索引必须是整数。"),
-    ("StrictGSFEPath layer_index must select a layer below the top layer.", "显式 GSFE 路径：原子层索引必须位于最高层以下。"),
-    ("StrictGSFEPath cut_mode must be middle, fractional, or layer_index.", "显式 GSFE 路径：切面位置模式无效。"),
-    ("StrictGSFEPath cut must leave atoms on both sides; adjust the cut position.", "显式 GSFE 路径：切面两侧都必须有原子，请调整切面位置。"),
-    ("StrictGSFEPath requires a nonzero third cell vector.", "显式 GSFE 路径需要非零的第三晶胞矢量。"),
-    ("StrictGSFEPath requires a slab-oriented cell: the third cell vector must be normal to plane_hkl.", "显式 GSFE 路径需要已定向晶胞：第三晶胞矢量必须垂直于层错面。"),
     ("OrganicMolConfig requires at least one atom.", "有机构象采样至少需要一个原子。"),
     ("OrganicMolConfig requires finite Cartesian atom positions.", "有机构象采样需要有限的笛卡尔原子坐标。"),
     ("OrganicMolConfig: pbc_mode must be auto, yes, or no.", "有机构象采样：边界处理模式必须是 auto、yes 或 no。"),
@@ -293,7 +265,23 @@ def translate_runtime_message(message) -> str:
     """Translate late-bound UI messages and common runtime errors."""
     if isinstance(message, CardOperationError):
         template = QCoreApplication.translate("CardOperationError", message.template)
-        return template.format(**message.values)
+        values = dict(message.values)
+        if isinstance(values.get("field"), str):
+            values["field"] = QCoreApplication.translate(
+                "CardOperationField", values["field"]
+            )
+        for key in ("error", "reason"):
+            if isinstance(values.get(key), str):
+                raw_value = values[key]
+                translated_value = translate_runtime_message(raw_value)
+                if (
+                    translated_value != raw_value
+                    and _zh_runtime_messages_enabled()
+                    and translated_value.endswith(".")
+                ):
+                    translated_value = translated_value[:-1] + "。"
+                values[key] = translated_value
+        return template.format(**values)
     text = str(message)
     translated = QCoreApplication.translate("RuntimeMessage", text)
     if translated != text:
@@ -321,15 +309,1089 @@ def _runtime_message_catalog() -> None:
         *_RUNTIME_EXCEPTION_REPLACEMENTS,
     ):
         QCoreApplication.translate("RuntimeMessage", text)
+    QCoreApplication.translate(
+        "RuntimeMessage",
+        "Conditional Replace matched-site count changed during execution.",
+    )
+    QCoreApplication.translate(
+        "RuntimeMessage",
+        "CellStrain output-count preview disagrees with generation.",
+    )
 
 
 def _card_operation_error_catalog() -> None:
     """Literal catalog for structured card errors discovered by lupdate."""
     QCoreApplication.translate(
         "CardOperationError",
+        "Could not build surface plane {hkl} with {repeats} normal repeats and {vacuum} Å vacuum per side: {reason}",
+    )
+    QCoreApplication.translate("CardOperationError", "Surface Slab Scan requires a non-empty bulk structure.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Surface Slab Scan requires finite positions and a finite, non-singular 3D cell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Surface Slab Scan requires a bulk input periodic along all three cell directions."
+    )
+    QCoreApplication.translate("CardOperationError", "A non-periodic surface normal requires positive vacuum per side.")
+    QCoreApplication.translate("CardOperationError", "Maximum outputs per input must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Generated atom budget per input must be a positive integer.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Surface Slab Scan requests {requested} outputs per input, above the limit of {limit}. Reduce planes or scan points, or raise the limit deliberately.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Surface Slab Scan requests {requested} generated atoms per input, above the budget of {budget}. Reduce planes or normal repeats, or raise the budget deliberately.",
+    )
+    QCoreApplication.translate("CardOperationError", "Add at least one Miller plane.")
+    QCoreApplication.translate(
+        "CardOperationError", "Each Miller plane must contain exactly three integer indices h, k, and l."
+    )
+    QCoreApplication.translate("CardOperationError", "Each Miller index must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Miller plane (0, 0, 0) is not defined.")
+    QCoreApplication.translate("CardOperationError", "{label} must contain start, stop, and step.")
+    QCoreApplication.translate("CardOperationError", "{label} values must be integers.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "{label} requires start and stop >= {minimum}, start <= stop, and a positive step.",
+    )
+    QCoreApplication.translate("CardOperationError", "{label} values must be finite numbers.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "{label} requires finite start and stop >= {minimum}, start <= stop, and a positive step.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum output {budget} is smaller than the {groups} element sets. "
+        "Increase the output limit or remove unneeded systems.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
         "Perturb: Sobol sampling supports at most {max_atoms} atoms; "
         "use Uniform sampling for larger structures.",
     )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: {element} is not a valid element symbol for a displacement limit.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: element {element} has more than one displacement limit; keep only one row.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: the displacement limit for {element} must be finite and non-negative.",
+    )
+    QCoreApplication.translate("CardOperationError", "Unsupported crystal prototype: {lattice}.")
+    QCoreApplication.translate("CardOperationError", "Maximum outputs must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError", "The hcp c/a ratio must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Enter one valid chemical element symbol, for example Cu, Fe, or Mg.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The lattice-constant range must contain finite numbers."
+    )
+    QCoreApplication.translate("CardOperationError", "Lattice constants must be positive.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Lattice perturbation produced an invalid or singular cell. Reduce the maximum relative change.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Lattice strain values must be greater than -100%."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Select one or more unique lattice axes: a, b, or c."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The lattice-constant step must be positive."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Enter one element symbol or the X placeholder for every visible sublattice.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Invalid element or placeholder {element}; use a chemical element symbol or X.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The mode coefficient scale must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Modes combined per sample must be at least 1."
+    )
+    QCoreApplication.translate("CardOperationError", "Structures per input must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Structures per input must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError", "Coefficient distribution must be Normal or Uniform."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The absolute frequency cutoff must be a finite non-negative number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vibrational perturbation needs at least one usable mode on every input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Finite frequencies are required when frequency filtering or scaling is enabled.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Frequency weighting requires non-zero frequencies for every usable mode.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Modes per sample is {requested}, but only {available} usable modes are available.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum perturbation angle must be between 0 and 180 degrees."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Perturb requires spin or initial magnetic moments on every input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Scalar magnetic moments must be lifted to vectors before they can be rotated.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The scalar lift direction must contain three finite Cartesian components.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The scalar lift direction must be non-zero."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Perturb could not convert the input magnetic moments to vectors.",
+    )
+    QCoreApplication.translate("CardOperationError", "Structures per input must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Maximum attempts per atom must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Generated atom budget per input must be a positive integer.")
+    QCoreApplication.translate("CardOperationError", "Random seed must be a non-negative integer.")
+    QCoreApplication.translate(
+        "CardOperationError", "Global minimum distance must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random Packing requires a finite, non-singular input cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition mode must be Use input composition or Manual atom counts.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Packing needs at least one atom. Load a non-empty input or enter a manual composition.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Requested outputs contain {requested} generated atoms per input, exceeding the budget of {budget}. Reduce structures or atom counts, or raise the budget deliberately.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown chemical element {element} in the composition."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Invalid composition item {item}; use Element:count, for example Fe:32."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Atom count for {element} must be a positive integer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Invalid pair-distance rule {item}; use A-B:value, for example Fe-O:1.8."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown chemical element {element} in a pair-distance rule."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Minimum distance for {left}-{right} must be a positive finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Packing could not place {element} after {attempts} attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Packing could not generate any output after {failures} failed attempts. Reduce the minimum distances, enlarge the cell, or lower the atom count.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Magnitude scale bounds must be finite and non-negative."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Magnitude scale minimum must not exceed the maximum."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Increase the perturbation angle or enable a magnitude scale range that changes the moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Exact correlated sampling supports at most {maximum} eligible non-zero moments; "
+        "the current selection has {actual}. Reduce the target elements or use a smaller structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Spin Spiral maximum outputs must be at least 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No lattice-compatible spin-spiral period exists in the requested range. "
+        "For a period of {period} Å, try a {multipliers} supercell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No lattice-compatible spin-spiral period exists in the requested range. "
+        "Change the period range or expand the cell along the propagation axis.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Spiral requires at least one non-zero magnetic moment. "
+        "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum outputs must be at least {minimum} for the selected folded-helix sequence mode.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Folded Helix requires at least one non-zero magnetic moment. "
+        "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Folded Helix needs at least 3 detected layers along the layer axis; "
+        "the current settings detect {actual}. Check the layer axis and tolerance.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Groups needs at least two detected atomic layers; the current settings detect {actual}. "
+        "Expand the cell, choose another plane, or reduce the layer tolerance.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer Groups needs a finite, non-singular 3D cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer tolerance must be a positive finite distance."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Plane index must be 100, 010, 001, 110, or 111."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer group labels must be non-empty."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer group A and B labels must be different."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing requires a non-singular 3D cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing requires at least two atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing requires finite cell vectors and atom positions."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface Layer Mixing found only one element ({element}); swapping would not change the structure."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "L-side layer count must be >= 1 (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "R-side layer count must be >= 1 (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Number of structures must be >= 1 (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Layer tolerance must be a finite distance greater than 0 Å (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface axis must be auto, a, b, or c (got {axis})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Auto-detection found no interface with distinct compositions (max contrast {contrast}). Check that the structure is a bilayer or pick the interface normal axis manually."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Lattice axis {axis} shows no distinct-composition split (contrast {contrast}). Try another axis, or disable auto-locate and type the interface position."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Interface fractional position must be strictly between 0 and 1 (got {pos})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Not enough atomic layers below the interface: need {need}, only {have} available. Reduce the L-side layer count."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Not enough atomic layers above the interface: need {need}, only {have} available. Reduce the R-side layer count."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Both selected regions are the same single element {element}; swapping would not change the structure."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Target concentration {c} exceeds this interface's swap capacity {c_max}. Lower the concentration or add more layers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Gradient concentration bound {top} exceeds this interface's swap capacity {c_max}. Lower the concentration or add more layers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Concentration mode must be fixed or gradient (got {mode})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{label} must be an integer (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random seed must be between 0 and {maximum} (got {value})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Targeted Vacancy requires at least one vacancy rule."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Targeted Vacancy requires at least two atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} is invalid."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} requires an element."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} needs one integer count or an ordered minimum/maximum pair.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} count must be at least 0."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} count mode must be Fixed count or Random range.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} fixed count must use the same minimum and maximum.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} fixed count must be at least 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} random range must allow at least one vacancy.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} group must contain at least one non-empty label.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} requests group labels, but the input structure has no group array.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy rule {rule} matched no atoms ({target})."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy rule {rule} requests up to {requested} vacancies, but only {available} atoms match ({target}).",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum outputs per input must be at least 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random seed must be at least 0."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{field} must be an integer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{field} must be at least {minimum}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{field} must be a finite number."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{field} must be positive."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Molecular Conformers requires at least one atom."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Molecular Conformers requires finite Cartesian atom positions."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Output boundary must be Follow input, 3D periodic, or Nonperiodic."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Follow input does not support mixed periodic boundaries; choose Nonperiodic or provide full 3D PBC."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "3D periodic mode requires a finite, nonsingular 3×3 cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Torsion increment range must contain a minimum and maximum."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Torsion increment minimum must not exceed its maximum."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum bond length must not be smaller than minimum bond length."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Bond-order threshold must be between 0 and 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The current settings cannot change coordinates; add coordinate noise or provide an active rotatable bond."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "All requested conformers failed the geometry guards; narrow the torsion range, reduce coordinate noise, or inspect the distance limits."
+    )
+    QCoreApplication.translate("CardOperationError", "Solvent Shell requires at least one host atom.")
+    QCoreApplication.translate("CardOperationError", "Solvent Shell requires finite Cartesian atom positions.")
+    QCoreApplication.translate("CardOperationError", "Periodic input requires a finite, nonsingular 3×3 cell.")
+    QCoreApplication.translate("CardOperationError", "Solvent XYZ must describe one valid non-empty molecule.")
+    QCoreApplication.translate("CardOperationError", "Cartesian z range must contain a minimum and maximum.")
+    QCoreApplication.translate("CardOperationError", "The center selection does not match any host atoms.")
+    QCoreApplication.translate("CardOperationError", "Fallback center-to-COM shell must contain an inner and outer radius.")
+    QCoreApplication.translate("CardOperationError", "Fallback shell outer radius must be larger than its inner radius.")
+    QCoreApplication.translate("CardOperationError", "Fixed box size must be positive.")
+    QCoreApplication.translate("CardOperationError", "Flexible torsion range must contain a minimum and maximum.")
+    QCoreApplication.translate("CardOperationError", "Flexible torsion minimum must not exceed its maximum.")
+    QCoreApplication.translate("CardOperationError", "No solvent molecule could be placed; adjust the centers, shell, collision rule, or free volume.")
+    QCoreApplication.translate("CardOperationError", "No solvent molecule could be placed; adjust the centers, shell, collision rule, or free volume. The periodic structure appears to have no solvent-accessible void; use a structure with free volume or a larger periodic cell.")
+    QCoreApplication.translate("CardOperationError", "Only {placed} of {requested} solvent molecules could be placed.")
+    QCoreApplication.translate("CardOperationError", "Unsupported placement method: {mode}.")
+    QCoreApplication.translate("CardOperationError", "Supported ion hydration requires a water solvent molecule.")
+    QCoreApplication.translate("CardOperationError", "Supported ion hydration requires every selected center to be Li, Na, K, Mg, Ca, Sr, Ba, or Zn.")
+    QCoreApplication.translate("CardOperationError", "Enter at least one center element.")
+    QCoreApplication.translate("CardOperationError", "Unsupported center selection: {mode}.")
+    QCoreApplication.translate("CardOperationError", "Enter at least one 1-based center index.")
+    QCoreApplication.translate("CardOperationError", "Center index {index} is outside the valid range 1–{natoms}.")
+    QCoreApplication.translate("CardOperationError", "Center indices must use 1-based integers and ranges such as 1,3,5-8.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Targeted Vacancy could not generate a valid non-empty structure. "
+        "Reduce overlapping rule counts, broaden the groups, or expand the structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Global Vacancy requires at least two atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Site sampling must be Uniform or Sobol."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancies per output must be Fixed or Variable."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Maximum outputs per input must be a positive integer."
+    )
+    QCoreApplication.translate("CardOperationError", "Vacancies must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Vacancies must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancies must be at most {maximum} for this input so at least one atom remains.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Vacancy fraction must be greater than 0 and less than 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Vacancy fraction is too small for this input; use at least {minimum} to remove one atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Sobol sampling supports at most {maximum} atoms; use Uniform for larger inputs.",
+    )
+    QCoreApplication.translate("CardOperationError", "Random seed must be an integer.")
+    QCoreApplication.translate("CardOperationError", "Random seed must be at least 0.")
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires at least one atom."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires a finite, nonsingular 3×3 cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The fault-plane indices must not all be zero."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The in-plane direction must not be zero."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The in-plane indices produce a zero shift vector."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The shift direction must lie in the fault plane."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Displacement unit must be Vector fraction or Å distance."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires finite Cartesian atom positions."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Displacement path needs a start, end, and positive step."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{label} must contain exactly three integers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The fault-plane indices produce a zero normal."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires a nonzero third cell vector."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The third cell vector must be normal to the current ab fault plane."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires finite projected atom coordinates."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "GSFE Path requires atoms on at least two distinct layers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Thickness fraction must be between 0 and 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Lower layer index must select a layer below the top layer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Cut position must be Middle, Thickness, or Layer index."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The cut must leave atoms on both sides; adjust its position."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "{label} must be an integer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Invalid element symbols in the target list: {elements}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "No non-zero magnetic moments match the selected elements."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic response needs vector spin or initial magnetic moments on the input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic response needs finite magnetic moments with at least one non-zero vector.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum structures is smaller than the coordinate count of one complete response group.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No non-zero magnetic moments match the selected atoms and elements.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The input needs a non-zero magnetic moment in both group '{group_a}' and group '{group_b}'. "
+        "Check the group labels or add Layer Groups upstream.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No atom pairs match the selected neighbor shell and automatic-pair filters.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "No valid magnetic atom pairs match the left and right indices.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum structures must be at least {required} for the selected texture response path.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Cell-reciprocal q needs a finite, non-singular 3D cell."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The reciprocal-cell index must contain three finite integers."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The reciprocal-cell index cannot be (0, 0, 0) for a spiral response.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "q definition must be Cell reciprocal vector or Cartesian vector.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The Cartesian base q vector must be non-zero for a spiral response.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "q does not close across periodic cell vector {index}. Use the cell-reciprocal q mode, "
+        "or change q and the supercell together.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The two symmetric-shear directions must be perpendicular Cartesian vectors.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The Bain lattice axis must be a, b, or c."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Angle strain produced an invalid or singular cell. Reduce the angle increments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian shear produced an invalid or singular cell. Reduce the shear components.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient requires at least two equal-count groups.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient requires at least one random sample.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient requires at least two eligible sites.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "List one or more existing elements for the selected site scope.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Space Sampling requires at least two valid elements.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Space Sampling has unknown element symbol(s): {elements}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "None of the selected component counts is feasible for {count} elements.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum target compositions per input must be at least 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Grid sampling for four or five components requires a step of 1/n, such as 0.1 or 0.05.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The current composition constraints produce no target compositions.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The current settings produce no unique target compositions.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum target compositions per input cannot exceed {maximum}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The Grid settings require about {count} simplex points before budgeting. Increase the step or use Sobol; the safe limit is {maximum}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Invalid Cartesian position filter syntax: {reason}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter contains unsupported syntax.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter may use only x, y, and z; unknown name(s): {names}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter may use only finite numeric constants.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter must be a comparison or a boolean expression.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter divides by zero for at least one atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian position filter produces non-finite arithmetic for at least one atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Enter one valid target element symbol, such as O, Si, or Fe.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown target element symbol: {element}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Replacement ratios must be finite and non-negative.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Add at least one replacement element with a positive relative ratio.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Replacement element {element} appears more than once."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Unknown replacement element symbol(s): {elements}."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Replacement elements must not include the target element "
+        "{element}; use Random Doping for partial replacement.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Element allocation must be Independent random assignment or Match overall ratio.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Conditional Replace seed must be a non-negative integer.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Conditional Replace requires finite Cartesian atom positions.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "The input structure contains no {element} atoms."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The Cartesian position filter matches no {element} atoms.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer spacing must use Surface gap or Copy translation.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Total layers must be an integer of at least {minimum}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Warp selection must be All atoms, Selected elements, or Cartesian z range.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Atom budget per output must be an integer of at least {minimum}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer spacing must be a finite non-negative distance.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Additional top vacuum must be a finite non-negative distance.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Cartesian z range must contain two finite distances.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Copy translation must be positive when total layers is greater than 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Stack would create {actual} atoms per output, above the {limit}-atom "
+        "budget. Reduce the layer count or increase the budget.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Copy translation {translation} Å is smaller than the warped slab thickness "
+        "{thickness} Å, giving a negative surface gap {gap} Å.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Stack needs a finite, non-singular 3D cell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Extending the cell requires lattice vector c to have a positive Cartesian z component.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Layer Stack would create a singular or inverted final cell.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: mode must be Exact or Random."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: samples must be an integer >= 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: samples must be >= 1."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: seed must be a non-negative integer."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: seed must be >= 0."
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "RandomOccupancy: input structure has no sites."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy has unknown element symbol(s): {elements}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy: target composition must contain at least one positive weight.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy could not parse the Comp(...) target: {error}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy Auto (Comp tag) requires a Comp(...) tag in Config_type.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy requires a Comp(...) tag in Auto mode or a non-empty manual composition in Manual mode; Manual input is empty.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy could not parse the manual composition: {error}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy: group_filter must contain at least one non-empty group label.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "RandomOccupancy group_filter matched no atoms: {groups}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping requires at least one replacement rule.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping requires at least one atom in the input structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping allocation must be Random or Exact.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping outputs per input must be an integer of at least 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping outputs per input must be at least 1.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping seed must be a non-negative integer.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping seed must be non-negative.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError", "Random Doping rule {index} must be a mapping."
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} requires an element to replace.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} replacement elements must be an element-to-weight mapping.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} requires at least one replacement element.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} has unknown target element {element}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} has unknown replacement element(s): {elements}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} cannot replace {element} with itself.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} has invalid replacement weights: {reason}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} uses group labels, but the input has no group array.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} matched no {element} atoms in groups {groups}.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Random Doping rule {index} matched no {element} atoms in the input.",
+    )
+    QCoreApplication.translate("CardOperationError", "At least one dopant is required.")
+    QCoreApplication.translate("CardOperationError", "Dopant ratios must match dopant elements.")
+    QCoreApplication.translate("CardOperationError", "Fixed count must use the same minimum and maximum.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Space Sampling component counts must select 2, 3, 4, or 5.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Ordered Alloy Prototype: a_range must contain start, stop, and step.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Finite-Cell Alloy Occupancy: input structure has no sites.",
+    )
+    QCoreApplication.translate("CardOperationError", "Composition Gradient requires at least two elements.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Composition Gradient could not build nonempty coordinate bins.",
+    )
+    QCoreApplication.translate("CardOperationError", "Unsupported expression.")
+    QCoreApplication.translate("CardOperationError", "Replacement element names must not be empty.")
+    QCoreApplication.translate("CardOperationError", "Replacement probabilities must match replacement atoms.")
+    QCoreApplication.translate("CardOperationError", "Stacking Fault hkl must contain exactly three integers.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Insert Defect could not determine the adsorption surface normal.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Geometry Filter: minimum volume/atom must not exceed maximum volume/atom.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Geometry Filter: minimum density must not exceed maximum density.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Perturb: samples must have shape (n_structures, n_atoms, 3).",
+    )
+    QCoreApplication.translate("CardOperationError", "Perturb: radii must contain one value per atom.")
+    QCoreApplication.translate("CardOperationError", "Supercell: fixed_axis_flags must contain three values.")
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: select at least one of FM, AFM, or PM.")
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: PM structures must be at least 1.")
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: maximum outputs must be at least 1.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic Order: AFM positive and negative group labels must differ.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Magnetic Order: AFM group mode needs at least one magnetic atom in both the positive and negative groups.",
+    )
+    QCoreApplication.translate("CardOperationError", "Magnetic Order: sign array length does not match atoms.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt found no nonzero magnetic moments to tilt.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt global mode found no eligible magnetic atoms; check apply_elements and magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt single-spin mode matched no target atoms; check target_mode, target_indices, apply_elements, and magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt atom-pair mode matched no valid pairs; check pair source, indices, shell, element/group filters, and magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Small-angle Spin Tilt produced no tilted structures from the selected targets.",
+    )
+    QCoreApplication.translate("CardOperationError", "Spin Disorder found no eligible nonzero magnetic moments.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Spin Disorder requires at least one fraction within (0, 1].",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Correlated Random Spin found no eligible nonzero magnetic moments.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Correlated Random Spin covariance is not positive definite for this structure/kernel.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Solvent Box Fill: flex_torsion_range must contain two values.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Solvent Box Fill: flex_torsion_range minimum must not exceed maximum.",
+    )
+    QCoreApplication.translate("CardOperationError", "Solvation: solvent molecule contains no atoms.")
+    QCoreApplication.translate("CardOperationError", "Unsupported comparison operator.")
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Only direct function calls are allowed (for example, sin(x)).",
+    )
+    QCoreApplication.translate("CardOperationError", "String constants are not allowed.")
+    QCoreApplication.translate("CardOperationError", "The dz expression produced NaN/Inf values.")
+
+
+def _card_operation_field_catalog() -> None:
+    """Literal field names interpolated into structured card errors."""
+    QCoreApplication.translate("CardOperationField", "Maximum outputs per input")
+    QCoreApplication.translate("CardOperationField", "Bonds rotated per output")
+    QCoreApplication.translate("CardOperationField", "Large-molecule threshold")
+    QCoreApplication.translate("CardOperationField", "Local subtree cap")
+    QCoreApplication.translate("CardOperationField", "Retries per output")
+    QCoreApplication.translate("CardOperationField", "Coordinate noise")
+    QCoreApplication.translate("CardOperationField", "Torsion increment range")
+    QCoreApplication.translate("CardOperationField", "Bond detection radius")
+    QCoreApplication.translate("CardOperationField", "Minimum bond length")
+    QCoreApplication.translate("CardOperationField", "Maximum bond length")
+    QCoreApplication.translate("CardOperationField", "Minimum nonbonded distance")
+    QCoreApplication.translate("CardOperationField", "Short-bond rotation cutoff")
+    QCoreApplication.translate("CardOperationField", "Nonperiodic display box")
+    QCoreApplication.translate("CardOperationField", "Pauling decay length")
+    QCoreApplication.translate("CardOperationField", "Bond-order threshold")
+    QCoreApplication.translate("CardOperationField", "Random seed")
+    QCoreApplication.translate("CardOperationField", "Independent outputs per input")
+    QCoreApplication.translate("CardOperationField", "Total solvent molecules per output")
+    QCoreApplication.translate("CardOperationField", "Placement attempts per output")
+    QCoreApplication.translate("CardOperationField", "Cartesian z range")
+    QCoreApplication.translate("CardOperationField", "Fallback center-to-COM shell")
+    QCoreApplication.translate("CardOperationField", "Uniform minimum distance")
+    QCoreApplication.translate("CardOperationField", "Element-radius collision scale")
+    QCoreApplication.translate("CardOperationField", "Fixed box size")
+    QCoreApplication.translate("CardOperationField", "Auto-box padding")
+    QCoreApplication.translate("CardOperationField", "Minimum auto-box edge")
+    QCoreApplication.translate("CardOperationField", "Flexible conformer pool")
+    QCoreApplication.translate("CardOperationField", "Flexible torsions per conformer")
+    QCoreApplication.translate("CardOperationField", "Flexible conformer noise")
+    QCoreApplication.translate("CardOperationField", "Flexible torsion range")
 
 
 class MessageManager(QObject):

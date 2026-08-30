@@ -13,14 +13,18 @@ from qfluentwidgets import (
     CaptionLabel,
     CardWidget,
     ComboBox,
-    DoubleSpinBox,
     FluentIcon,
     LineEdit,
     PushButton,
-    SpinBox,
     StrongBodyLabel,
     TransparentToolButton,
 )
+
+from NepTrainKit.core.alloy import fractions_to_counts_exact
+
+from .compact_form import SegmentedControl
+from .input import AdaptiveCompactSpinBox, AdaptiveInlineDoubleSpinBox
+from .parameter_inputs import ElementLineEdit
 
 
 RULE_MODES = ("fixed_fraction", "fraction_range", "count_range")
@@ -42,41 +46,47 @@ class AlloyElementRuleRow(QWidget):
 
     def __init__(self, element: str = "X", parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self._mode = "fixed_fraction"
         layout = QGridLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setHorizontalSpacing(6)
 
-        self.element_edit = LineEdit(self)
+        self.element_edit = ElementLineEdit(self)
         self.element_edit.setText(element)
         self.element_edit.setPlaceholderText(self.tr("Element"))
-        self.element_edit.setMinimumWidth(70)
+        self.element_edit.setMinimumWidth(0)
+        self.element_edit.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.element_edit.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
-        self.fixed_fraction_spin = DoubleSpinBox(self)
+        self.fixed_fraction_spin = AdaptiveInlineDoubleSpinBox(self)
         self.fixed_fraction_spin.setRange(0.0, 1.0)
         self.fixed_fraction_spin.setDecimals(6)
         self.fixed_fraction_spin.setSingleStep(0.05)
         self.fixed_fraction_spin.setValue(1.0)
-        self.fixed_fraction_spin.setMinimumWidth(82)
+        self.fixed_fraction_spin.setMinimumWidth(0)
+        self.fixed_fraction_spin.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.fixed_fraction_spin.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
-        self.fraction_min_spin = DoubleSpinBox(self)
-        self.fraction_max_spin = DoubleSpinBox(self)
+        self.fraction_min_spin = AdaptiveInlineDoubleSpinBox(self)
+        self.fraction_max_spin = AdaptiveInlineDoubleSpinBox(self)
         for spin in (self.fraction_min_spin, self.fraction_max_spin):
             spin.setRange(0.0, 1.0)
             spin.setDecimals(6)
             spin.setSingleStep(0.05)
-            spin.setMinimumWidth(82)
+            spin.setMinimumWidth(0)
+            spin.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
             spin.setFixedHeight(COMPACT_CONTROL_HEIGHT)
         self.fraction_min_spin.setValue(0.0)
         self.fraction_max_spin.setValue(1.0)
 
-        self.count_min_spin = SpinBox(self)
-        self.count_max_spin = SpinBox(self)
+        self.count_min_spin = AdaptiveCompactSpinBox(self)
+        self.count_max_spin = AdaptiveCompactSpinBox(self)
         for spin in (self.count_min_spin, self.count_max_spin):
             spin.setRange(0, 1_000_000)
-            spin.setMinimumWidth(82)
+            spin.setMinimumWidth(0)
+            spin.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
             spin.setFixedHeight(COMPACT_CONTROL_HEIGHT)
         self.count_min_spin.setValue(0)
         self.count_max_spin.setValue(1)
@@ -88,13 +98,15 @@ class AlloyElementRuleRow(QWidget):
         self.delete_button.clicked.connect(lambda: self.removeRequested.emit(self))
 
         layout.addWidget(self.element_edit, 0, 0)
-        layout.addWidget(self.fixed_fraction_spin, 0, 1)
+        layout.addWidget(self.fixed_fraction_spin, 0, 1, 1, 2)
         layout.addWidget(self.fraction_min_spin, 0, 1)
         layout.addWidget(self.fraction_max_spin, 0, 2)
         layout.addWidget(self.count_min_spin, 0, 1)
         layout.addWidget(self.count_max_spin, 0, 2)
         layout.addWidget(self.delete_button, 0, 3)
         layout.setColumnStretch(0, 1)
+        layout.setColumnStretch(1, 1)
+        layout.setColumnStretch(2, 1)
 
         self.element_edit.textChanged.connect(self.changed)
         for spin in (
@@ -168,6 +180,8 @@ class AlloySiteSetRuleEditor(CardWidget):
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Maximum)
         self._expanded = True
         self._site_count: int | None = None
         self.element_rows: list[AlloyElementRuleRow] = []
@@ -189,17 +203,16 @@ class AlloySiteSetRuleEditor(CardWidget):
         self.label_edit = LineEdit(self)
         self.label_edit.setText(label)
         self.label_edit.setPlaceholderText(self.tr("Label"))
-        self.label_edit.setMinimumWidth(64)
-        self.label_edit.setMaximumWidth(88)
+        self.label_edit.setMinimumWidth(0)
+        self.label_edit.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.label_edit.setFixedHeight(COMPACT_CONTROL_HEIGHT)
         self.site_count_label = CaptionLabel(self.tr("Site count unknown"), self)
-        self.site_count_label.setMinimumWidth(76)
 
         self.mode_combo = ComboBox(self)
         self.mode_combo.addItem(self.tr("Fixed fraction"), userData="fixed_fraction")
         self.mode_combo.addItem(self.tr("Fraction range"), userData="fraction_range")
         self.mode_combo.addItem(self.tr("Count range"), userData="count_range")
-        self.mode_combo.setMinimumWidth(136)
+        self.mode_combo.setMinimumWidth(0)
         self.mode_combo.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
         self.delete_button = TransparentToolButton(FluentIcon.DELETE, self)
@@ -210,17 +223,36 @@ class AlloySiteSetRuleEditor(CardWidget):
 
         header.addWidget(self.collapse_button)
         header.addWidget(self.title_label)
-        header.addWidget(self.label_edit)
-        header.addWidget(self.site_count_label)
         header.addStretch(1)
-        header.addWidget(self.mode_combo)
         header.addWidget(self.delete_button)
         root.addLayout(header)
 
+        metadata = QGridLayout()
+        metadata.setContentsMargins(30, 0, 0, 2)
+        metadata.setHorizontalSpacing(6)
+        metadata.setVerticalSpacing(3)
+        label_caption = CaptionLabel(self.tr("Label"), self)
+        mode_caption = CaptionLabel(self.tr("Composition mode"), self)
+        label_caption.setStyleSheet("color:#8a95a0;")
+        mode_caption.setStyleSheet("color:#8a95a0;")
+        metadata.addWidget(label_caption, 0, 0)
+        metadata.addWidget(mode_caption, 0, 1)
+        metadata.addWidget(self.label_edit, 1, 0)
+        metadata.addWidget(self.mode_combo, 1, 1)
+        metadata.addWidget(self.site_count_label, 2, 0, 1, 2)
+        metadata.setColumnStretch(0, 1)
+        metadata.setColumnStretch(1, 2)
+        root.addLayout(metadata)
+
         self.body_widget = QWidget(self)
+        self.body_widget.setMinimumWidth(0)
+        self.body_widget.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Maximum,
+        )
         body = QVBoxLayout(self.body_widget)
-        body.setContentsMargins(22, 0, 0, 0)
-        body.setSpacing(2)
+        body.setContentsMargins(30, 2, 0, 0)
+        body.setSpacing(6)
 
         self.column_header = QWidget(self.body_widget)
         column_layout = QGridLayout(self.column_header)
@@ -237,12 +269,16 @@ class AlloySiteSetRuleEditor(CardWidget):
         column_layout.addWidget(self.value_2_header, 0, 2)
         column_layout.addWidget(self.action_header, 0, 3)
         column_layout.setColumnStretch(0, 1)
-        body.addWidget(self.column_header)
-
         self.rows_widget = QWidget(self.body_widget)
+        self.rows_widget.setMinimumWidth(0)
+        self.rows_widget.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Maximum,
+        )
         self.rows_layout = QVBoxLayout(self.rows_widget)
         self.rows_layout.setContentsMargins(0, 0, 0, 0)
         self.rows_layout.setSpacing(2)
+        body.addWidget(self.column_header)
         body.addWidget(self.rows_widget)
 
         self.add_element_button = PushButton(FluentIcon.ADD, self.tr("Add element"), self.body_widget)
@@ -330,15 +366,53 @@ class AlloySiteSetRuleEditor(CardWidget):
 
     def _on_mode_changed(self) -> None:
         mode = self.mode()
+        previous_mode = (
+            self.element_rows[0]._mode
+            if self.element_rows
+            else mode
+        )
         if mode == "fixed_fraction":
             headers = (self.tr("Target fraction"), "")
+            tooltips = (self.tr("Target fraction"), "")
         elif mode == "fraction_range":
-            headers = (self.tr("Minimum fraction"), self.tr("Maximum fraction"))
+            headers = (self.tr("Min fraction"), self.tr("Max fraction"))
+            tooltips = (self.tr("Minimum fraction"), self.tr("Maximum fraction"))
         else:
-            headers = (self.tr("Minimum count"), self.tr("Maximum count"))
+            headers = (self.tr("Min count"), self.tr("Max count"))
+            tooltips = (self.tr("Minimum count"), self.tr("Maximum count"))
         self.value_1_header.setText(headers[0])
         self.value_2_header.setText(headers[1])
+        self.value_1_header.setToolTip(tooltips[0])
+        self.value_2_header.setToolTip(tooltips[1])
         self.value_2_header.setVisible(bool(headers[1]))
+        if (
+            mode == "count_range"
+            and previous_mode != "count_range"
+            and self._site_count is not None
+            and self.element_rows
+        ):
+            if previous_mode == "fixed_fraction":
+                weights = [
+                    float(row.fixed_fraction_spin.value())
+                    for row in self.element_rows
+                ]
+            else:
+                weights = [
+                    0.5
+                    * (
+                        float(row.fraction_min_spin.value())
+                        + float(row.fraction_max_spin.value())
+                    )
+                    for row in self.element_rows
+                ]
+            if sum(weights) <= 0.0:
+                weights = [1.0] * len(self.element_rows)
+            counts = fractions_to_counts_exact(weights, self._site_count)
+            for row, count in zip(self.element_rows, counts):
+                for spin in (row.count_min_spin, row.count_max_spin):
+                    spin.blockSignals(True)
+                    spin.setValue(int(count))
+                    spin.blockSignals(False)
         for row in self.element_rows:
             row.set_mode(mode)
         self.changed.emit()
@@ -501,6 +575,8 @@ class AlloySiteRulesEditor(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Maximum)
         self._loading = False
         self._confirm_replacement: Callable[[], bool] | None = None
         self.site_editors: list[AlloySiteSetRuleEditor] = []
@@ -509,14 +585,14 @@ class AlloySiteRulesEditor(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(4)
 
-        partition_row = QHBoxLayout()
+        partition_row = QVBoxLayout()
         partition_row.setContentsMargins(0, 0, 0, 0)
         partition_row.setSpacing(4)
         self.partition_label = BodyLabel(self.tr("Site partition"), self)
-        self.partition_mode_combo = ComboBox(self)
+        self.partition_mode_combo = SegmentedControl(parent=self)
         self.partition_mode_combo.addItem(self.tr("Entire structure"), userData="all")
         self.partition_mode_combo.addItem(self.tr("Sublattices"), userData="sublattices")
-        self.partition_mode_combo.setMinimumWidth(150)
+        self.partition_mode_combo.setMinimumWidth(0)
         self.partition_mode_combo.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
         self.single_template_button = PushButton(
@@ -534,22 +610,35 @@ class AlloySiteRulesEditor(QWidget):
             self.add_site_button,
         ):
             button.setFixedHeight(COMPACT_CONTROL_HEIGHT)
+            button.setMinimumWidth(0)
+        for button in (self.single_template_button, self.ab_template_button):
+            button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+            button.setMinimumWidth(
+                button.fontMetrics().horizontalAdvance(button.text()) + 24
+            )
 
         partition_row.addWidget(self.partition_label)
         partition_row.addWidget(self.partition_mode_combo)
-        partition_row.addStretch(1)
-        partition_row.addWidget(self.add_site_button)
         root.addLayout(partition_row)
 
-        template_row = QHBoxLayout()
-        template_row.setContentsMargins(0, 0, 0, 0)
-        template_row.setSpacing(4)
+        self.partition_hint = CaptionLabel(
+            self.tr(
+                "Use upstream sublattice labels; choose Entire structure when the input has no sublattice array."
+            ),
+            self,
+        )
+        self.partition_hint.setWordWrap(True)
+        root.addWidget(self.partition_hint)
+
         self.template_label = CaptionLabel(self.tr("Rule templates"), self)
-        template_row.addWidget(self.template_label)
-        template_row.addWidget(self.single_template_button)
-        template_row.addWidget(self.ab_template_button)
-        template_row.addStretch(1)
-        root.addLayout(template_row)
+        self.template_label.hide()
+        self.single_template_button.hide()
+        self.ab_template_button.hide()
+        action_row = QHBoxLayout()
+        action_row.setContentsMargins(0, 0, 0, 0)
+        action_row.addStretch(1)
+        action_row.addWidget(self.add_site_button)
+        root.addLayout(action_row)
 
         self.status_label = CaptionLabel("", self)
         self.status_label.setWordWrap(True)
@@ -557,6 +646,11 @@ class AlloySiteRulesEditor(QWidget):
         root.addWidget(self.status_label)
 
         self.rules_widget = QWidget(self)
+        self.rules_widget.setMinimumWidth(0)
+        self.rules_widget.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Maximum,
+        )
         self.rules_layout = QVBoxLayout(self.rules_widget)
         self.rules_layout.setContentsMargins(0, 0, 0, 0)
         self.rules_layout.setSpacing(4)

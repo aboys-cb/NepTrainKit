@@ -1,7 +1,25 @@
-# Make Dataset
+# 生成数据集
 
-`Make Dataset` 是候选训练结构的生产台。它把“扩胞、应变、扰动、缺陷、表面、掺杂、磁性设置”
+`生成数据集` 是候选训练结构的生产台。它把“扩胞、应变、扰动、缺陷、表面、掺杂、磁性设置”
 这些操作拆成卡片，让你把一批可信初始结构扩展成候选池。
+
+```{toctree}
+:maxdepth: 4
+:hidden:
+
+如何选择卡片 <make-dataset-cards/index>
+配方示例 <make-dataset-cards/recipes>
+晶格 <make-dataset-cards/categories/structure-cell>
+结构 <make-dataset-cards/categories/structure>
+表面 <make-dataset-cards/categories/surface>
+缺陷 <make-dataset-cards/categories/defect-surface>
+扰动 <make-dataset-cards/categories/deformation-perturbation>
+合金与组分 <make-dataset-cards/categories/composition-alloy>
+磁性 <make-dataset-cards/categories/magnetism>
+分子与溶剂 <make-dataset-cards/categories/molecule-solvation>
+筛选 <make-dataset-cards/categories/filter-sampling>
+容器 <make-dataset-cards/categories/workflow-metadata>
+```
 
 它的输出通常还不是最终训练集。更稳的路线是：
 
@@ -14,7 +32,7 @@
 ```
 
 ```{image} ../_static/image/generated/make_data_empty.png
-:alt: Make Dataset workspace
+:alt: 生成数据集 workspace
 :class: docs-screenshot
 ```
 
@@ -44,24 +62,8 @@ Super Cell → Lattice Strain → Atomic Perturb
 - 先做确定性结构变换，再做随机扰动。
 - 先生成候选池，再做清洗和采样。
 
-如果同一个输入结构要走多条分支，例如一支做表面、一支做空位，可以用 `Card Group`。
+如果同一个输入结构要走多条分支，例如一支做表面、一支做空位，可以用 `Branch Merge`（分支合并）。
 组内卡片共享同一输入，输出再汇总。
-
-## 第一次选哪张卡
-
-| 目标 | 先看这些卡 |
-| --- | --- |
-| 扩大晶胞 | `Super Cell` |
-| 从标准晶体原型开始 | `Crystal Prototype Builder` |
-| 补弹性响应 | `Lattice Strain` / `Shear Matrix Strain` / `Shear Angle Strain` |
-| 补四方相变或层错 / GSFE 路径 | `Bain Path` / `Stacking Fault / GSFE Path` |
-| 补近平衡扰动 | `Atomic Perturb` / `Vibration Perturb` |
-| 做缺陷 | `Random Vacancy` / `Vacancy Defect` / `Insert Defect` |
-| 做表面或层错 | `Random Slab` / `Stacking Fault / GSFE Path` |
-| 做合金或占位变化 | `Random Doping` / `Random Occupancy` / `Composition Space Sampling` |
-| 做磁性构型 | `Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral` |
-
-完整选择表见 [Make Dataset 卡片手册](make-dataset-cards/index.md)。
 
 ## 什么时候导出
 
@@ -75,31 +77,24 @@ candidate_pool_fps.xyz
 
 这样后续发现问题时，可以追溯到底是生成阶段、清洗阶段还是采样阶段引入的。
 
-## FPS Filter 放在哪里
+## 使用工作流库和模板
 
-`FPS Filter` 适合在候选结构已经基本干净后做代表性采样。它不负责判断结构是否物理合理。
+左侧工作流库分为三类：
 
-如果候选池来自强扰动、随机缺陷、表面切片或随机占位，建议先导出候选结构，
-到 `NEP Dataset Display` 里清洗，再回来或继续使用 `FPS Filter` 采样。
+- `My workflows`：已经命名并保存的工作流。
+- `Built-in`：随软件提供的起始配方，只读。
+- `My templates`：你保存或导入的模板。
 
-完整流程见 [候选结构清洗后再进入 DFT](../workflows/clean-candidate-structures.md)。
+双击模板只会打开**未修改的预览**，不会立刻算作新建工作流，也不会触发离开前的未保存提示。首次修改参数、卡片或顺序后，状态才变为“基于该模板”的未保存工作流；需要保留时，点击 `Save as workflow` 另存自己的副本。模板始终不会被改写。
 
-## 保存和恢复工作区
+第一批内置模板包括晶体应变、超胞原子扰动、合金成分与占位、超胞空位候选和已有磁矩扰动。鼠标停在模板上会显示输入要求。例如，“已有磁矩扰动”只读取结构中已有的 `spin` 或 ASE 初始磁矩，不会为缺失磁矩的元素猜测数值。
 
-顶部 `Save` / `Load` 会把当前工作区的卡片顺序、参数和启停状态保存成 JSON。
-这适合保存一条可复用的生成方案，例如“某个合金体系的缺陷候选池生成流程”。
+工作流和用户模板以独立 JSON 文件保存在用户配置目录的 `workflows/saved` 和 `workflows/templates` 下；它们不存入 `config.sqlite`。内置模板则打包在软件中，不写入用户目录。两类 JSON 都只保存卡片顺序、参数和启停状态，不保存输入结构、运行结果或运行状态。
 
-保存工作区不等于保存生成结构。结构结果仍需要从卡片导出。
-
-## 文档入口
-
-- [快速开始](../quickstart.md)：从安装到生成第一批候选结构。
-- [卡片手册](make-dataset-cards/index.md)：按目标选卡、易混卡片对比、每张卡的完整参数说明。
-- [配方示例](make-dataset-cards/recipes.md)：多卡组合示例。
-- [自定义卡片开发](custom-card-development.md)：把已有脚本封装成 Make Dataset 卡片。
+保存工作流不等于保存生成结构。结构结果仍需从卡片导出。
 
 ## 从文档 JSON 直接创建卡片
 
-如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `Make Dataset` 页面执行 `Load → Paste Card JSON`。
+如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `生成数据集` 页面执行 `Load → Paste Card JSON`。
 
 这个入口不会清空当前工作区，只会把剪贴板里的卡片追加到末尾。需要完整替换工作区时，仍然使用 `Load → Import Card Config` 导入保存好的 JSON 文件。

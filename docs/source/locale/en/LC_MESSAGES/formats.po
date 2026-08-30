@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-26 10:43+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -33,87 +33,239 @@ msgstr ""
 "internal `Structure` representation for visualization, filtering, "
 "candidate generation, and export."
 
-#: ../../source/formats.md:6 624b09267918454b9e3b60b07ddb1069
-msgid "结构文件"
-msgstr "Structure files"
+#: ../../source/formats.md:6 34195f109efc453795bc2da170e130fe
+msgid "30 秒快速判断"
+msgstr "30-second quick check"
 
-#: ../../source/formats.md 73b945dcc09446b4a4aad9231698ab33
-#: d6a3c5be7d1142878bbf514f5e4f8605
-msgid "文件"
-msgstr "File"
+#: ../../source/formats.md f95b7e2e131049d7bae4f1b5d3fd3ce9
+msgid "你手里的内容"
+msgstr "What you have"
 
-#: ../../source/formats.md d1a8cf6e8cb748dc9325a43f77cc8cf3
-msgid "推荐入口"
-msgstr "Recommended entry point"
+#: ../../source/formats.md 3380bd939b304244bf4f0d852dd6971a
+msgid "能否直接打开"
+msgstr "Can it be opened directly?"
 
-#: ../../source/formats.md 136a29b8f27642648fdda7c33587b218
-msgid "常见用途"
-msgstr "Typical use"
+#: ../../source/formats.md 5ff36f1ef04841fa982127018ac6743e
+msgid "从哪里打开"
+msgstr "Where to open it"
 
-#: ../../source/formats.md feae16b5b3e6490ab9e2e8f1aaf7bc41
+#: ../../source/formats.md df8cb4c696604be3bf46e829d55b669f
+msgid "打开后通常做什么"
+msgstr "Typical next step"
+
+#: ../../source/formats.md ../../source/formats.md:23
+#: feae16b5b3e6490ab9e2e8f1aaf7bc41
 msgid "`.xyz` / `.extxyz`"
 msgstr "`.xyz` / `.extxyz`"
 
-#: ../../source/formats.md 21247a1bcb4c4d819ee426b5bd22dec5
-msgid "`Make Dataset` 或 `NEP Dataset Display`"
+#: ../../source/formats.md b8ae1997a05a4e0eb86e1a8df41bd4c2
+#: d1853ca1fce34c5da57937fbe9a0a49a d80e1a69112d4d2f81a032bb22cef80b
+msgid "可以"
+msgstr "Yes"
+
+#: ../../source/formats.md ../../source/formats.md:23
+#: 21247a1bcb4c4d819ee426b5bd22dec5
+msgid "`生成数据集` 或 `NEP Dataset Display`"
 msgstr "`Make Dataset` or `NEP Dataset Display`"
 
-#: ../../source/formats.md 5cb9d13b1adc4a18a913841f1dbd0b5a
-msgid "作为初始结构、候选池或训练集"
-msgstr "Starting structures, a candidate pool, or a training set"
+#: ../../source/formats.md c480f6d746da464886f04fb05cefc627
+msgid "继续生成，或检查、筛选和导出"
+msgstr "Continue generating, or inspect, filter, and export"
 
 #: ../../source/formats.md b806c34f2d8a4b9d9b9206152c234084
-msgid "`POSCAR` / `CONTCAR`"
-msgstr "`POSCAR` / `CONTCAR`"
+msgid "`POSCAR` / `CONTCAR` / `.cif`"
+msgstr "`POSCAR` / `CONTCAR` / `.cif`"
 
-#: ../../source/formats.md b0385ff2774540daaeaa93ab960c24b0
-#: dd44111f59834dcb93363515d7a97785
-msgid "`Make Dataset`"
+#: ../../source/formats.md ../../source/formats.md:23
+#: 9da2e7561750476a946c229309060d51 a9284883812b4a0f82e87fcd4c43f2f4
+#: ca0b824c2ddf4d3a80384a9380d10315
+msgid "`生成数据集`"
 msgstr "`Make Dataset`"
 
 #: ../../source/formats.md 4430bb99d23045e59d475f2d8180af76
-msgid "作为初始晶体结构生成候选池"
-msgstr "Generate a candidate pool from an initial crystal structure"
+msgid "作为基础晶体生成候选结构"
+msgstr "Use as a base crystal for candidate generation"
 
-#: ../../source/formats.md ff7ec82f2601436980243a9f46aeecf7
-msgid "`CIF`"
-msgstr "`CIF`"
+#: ../../source/formats.md b806c34f2d8a4b9d9b9206152c234084
+msgid "`OUTCAR` / `XDATCAR`"
+msgstr "`OUTCAR` / `XDATCAR`"
 
-#: ../../source/formats.md 03b90f09dce84df4b1ae2f995711aded
-msgid "从晶体结构开始构建候选集"
-msgstr "Build a candidate set from a crystal structure"
-
-#: ../../source/formats.md 188dbab4148041409014cd496d4a777f
-msgid "ASE `.traj`"
-msgstr "ASE `.traj`"
-
-#: ../../source/formats.md 9710f95fdbef47aa94a986f4dd734990
-#: f4f9293375c64bcfa57eddd23782e87f
+#: ../../source/formats.md ../../source/formats.md:23
+#: 9710f95fdbef47aa94a986f4dd734990
 msgid "`NEP Dataset Display`"
 msgstr "`NEP Dataset Display`"
 
-#: ../../source/formats.md aa9f94873a2b41e496b2932f3323809d
-msgid "查看已有轨迹或转换结构"
-msgstr "Inspect an existing trajectory or convert structures"
+#: ../../source/formats.md 99638d3e84dc4dd3ad3e4627a25e3e07
+msgid "检查或转换 VASP 结果"
+msgstr "Inspect or convert VASP results"
 
-#: ../../source/formats.md 2a964db8ee9a4bb9801d137dea70e313
+#: ../../source/formats.md eba8f233246343b98556522434629deb
+msgid "`dump` / `lammpstrj`"
+msgstr "`dump` / `lammpstrj`"
+
+#: ../../source/formats.md 203d7ae052a8425a96ca55a2f84517af
+msgid "通常可以"
+msgstr "Usually"
+
+#: ../../source/formats.md dca9b4d86fe74a6aa2afaca80a786a9c
+msgid "查看 LAMMPS 轨迹；数值 `type` 需要元素映射"
+msgstr "View LAMMPS trajectories; numeric `type` values need an element mapping"
+
+#: ../../source/formats.md ../../source/formats.md:23
+#: 2a964db8ee9a4bb9801d137dea70e313
 msgid "DeepMD `deepmd/npy` 目录"
 msgstr "DeepMD `deepmd/npy` directory"
 
+#: ../../source/formats.md 61e11d7ba9da4e7b8bfae581491aa5b0
+msgid "可以，但必须是完整目录"
+msgstr "Yes, but the complete directory is required"
+
 #: ../../source/formats.md 5686a8e5341340e09b389c405e59c737
+msgid "查看或转换 DeepMD 数据"
+msgstr "View or convert DeepMD data"
+
+#: ../../source/formats.md d6cb9bedc52b47d4a696642ad8274b6f
+msgid "`energy_*.out` / `force_*.out` / `virial_*.out`"
+msgstr "`energy_*.out` / `force_*.out` / `virial_*.out`"
+
+#: ../../source/formats.md 3de647a2c23841758fc3fb830e19ca23
+msgid "不能单独使用"
+msgstr "Cannot be used alone"
+
+#: ../../source/formats.md e555219d83c04324943e7ca48c2051cc
+msgid "与对应结构文件一起打开"
+msgstr "Open together with the corresponding structure file"
+
+#: ../../source/formats.md aa55dcea402848198474a2e68a348d44
+msgid "回看预测值与参考值"
+msgstr "Review predictions and reference values"
+
+#: ../../source/formats.md acdac1f593a9436a874426332f7f9e17
+msgid "CP2K 优化或 MD 的多步主输出"
+msgstr "Multi-step main output from CP2K optimization or MD"
+
+#: ../../source/formats.md 3772560cf3444b1aa701f39cb344584a
+msgid "不建议直接打开"
+msgstr "Direct opening is not recommended"
+
+#: ../../source/formats.md db70a103278e449f96bc2507928a23f0
+#: ed190edd6d774624b0c900382ae586ea
+msgid "先转换成 EXTXYZ"
+msgstr "Convert to EXTXYZ first"
+
+#: ../../source/formats.md 6632ecf50365415e847022ad0c2d64d3
+msgid "保留逐步晶胞、坐标和标签"
+msgstr "Preserve per-step cells, coordinates, and labels"
+
+#: ../../source/formats.md fee90fff3e4b437482ef3f814700cefc
+msgid "不在表中的结构或轨迹"
+msgstr "Other structures or trajectories"
+
+#: ../../source/formats.md a23370edc38a449cbbb2e3e1a07bb72d
+msgid "不要只改扩展名"
+msgstr "Do not merely rename the extension"
+
+#: ../../source/formats.md a890770ae79541c08861fe02b8244299
+msgid "用 `Lattice`、`Properties` 和 `pbc` 明确数据契约"
+msgstr "Make the data contract explicit with `Lattice`, `Properties`, and `pbc`"
+
+#: ../../source/formats.md:19 38cafb93c5804a9292383004b4129aee
+msgid ""
+"只想确认“我的 `.xyz` 能不能打开”时，先看文件首帧：原子数要与原子行一致；周期结构应有 有效 `Lattice`；逐原子列必须与 "
+"`Properties` 声明一致。满足这些条件的普通 XYZ/EXTXYZ "
+"可以直接尝试导入。失败时根据错误信息检查具体字段，不要用补零或伪元素绕过。"
+msgstr ""
+"To check whether an `.xyz` file can be opened, inspect its first frame: "
+"the atom count must match the atom rows; periodic structures need a valid"
+" `Lattice`; per-atom columns must match the `Properties` declaration. "
+"Ordinary XYZ/EXTXYZ files meeting these conditions can be imported "
+"directly. If import fails, inspect the named fields instead of padding "
+"values or using fake elements."
+
+#: ../../source/formats.md:24 faf1a36c0f4d449a9537473c582713ba
+msgid ""
+"要继续生成新结构，进入 `生成数据集`；要看图、删结构、筛选或导出子集，进入 `NEP Dataset "
+"Display`。同一种文件在两个入口中的用途不同，但底层结构数据不会因为入口不同 自动增加 DFT 标签。"
+msgstr ""
+"To generate new structures, open `Make Dataset`; to view, delete, filter,"
+" or export a subset, open `NEP Dataset Display`. The same file serves "
+"different purposes in these two entry points, but the underlying data do "
+"not gain DFT labels merely because the entry point changes."
+
+#: ../../source/formats.md:29 998c32e61baa4c56b9ce618c70f86d66
+msgid "对应操作入口："
+msgstr "Relevant entry points:"
+
+#: ../../source/formats.md:31 60b0cca02cbd458dadd2d3cb0ca23a25
+msgid "[在“生成数据集”中打开基础结构](module/make-dataset.md)"
+msgstr "[Open a base structure in `Make Dataset`](module/make-dataset.md)"
+
+#: ../../source/formats.md:32 1e82fc296b2747c78f14eb224b5c6324
+msgid "[在“NEP Dataset Display”中打开结构、模型和训练输出](module/nep-display-open-data.md)"
+msgstr ""
+"[Open structures, models, and training outputs in `NEP Dataset "
+"Display`](module/nep-display-open-data.md)"
+
+#: ../../source/formats.md:33 3384c7f43275460f83dc5b7ff1bb1da8
+msgid "[导入失败时按症状排查](reference/troubleshooting.md)"
+msgstr "[Troubleshoot imports by symptom](reference/troubleshooting.md)"
+
+#: ../../source/formats.md:35 624b09267918454b9e3b60b07ddb1069
+msgid "结构文件"
+msgstr "Structure files"
+
+#: ../../source/formats.md:23 73b945dcc09446b4a4aad9231698ab33
+msgid "文件"
+msgstr "File"
+
+#: ../../source/formats.md:23 d1a8cf6e8cb748dc9325a43f77cc8cf3
+msgid "推荐入口"
+msgstr "Recommended entry point"
+
+#: ../../source/formats.md:23 136a29b8f27642648fdda7c33587b218
+msgid "常见用途"
+msgstr "Typical use"
+
+#: ../../source/formats.md:23 5cb9d13b1adc4a18a913841f1dbd0b5a
+msgid "作为初始结构、候选池或训练集"
+msgstr "Starting structures, a candidate pool, or a training set"
+
+#: ../../source/formats.md:23 b806c34f2d8a4b9d9b9206152c234084
+msgid "`POSCAR` / `CONTCAR`"
+msgstr "`POSCAR` / `CONTCAR`"
+
+#: ../../source/formats.md:23 4430bb99d23045e59d475f2d8180af76
+msgid "作为初始晶体结构生成候选池"
+msgstr "Generate a candidate pool from an initial crystal structure"
+
+#: ../../source/formats.md:23 ff7ec82f2601436980243a9f46aeecf7
+msgid "`CIF`"
+msgstr "`CIF`"
+
+#: ../../source/formats.md:23 03b90f09dce84df4b1ae2f995711aded
+msgid "从晶体结构开始构建候选集"
+msgstr "Build a candidate set from a crystal structure"
+
+#: ../../source/formats.md:23 188dbab4148041409014cd496d4a777f
+msgid "ASE `.traj`"
+msgstr "ASE `.traj`"
+
+#: ../../source/formats.md:23 aa9f94873a2b41e496b2932f3323809d
+msgid "查看已有轨迹或转换结构"
+msgstr "Inspect an existing trajectory or convert structures"
+
+#: ../../source/formats.md:23 5686a8e5341340e09b389c405e59c737
 msgid "查看或导出 DeepMD 风格结构数据"
 msgstr "Inspect or export data in DeepMD format"
 
-#: ../../source/formats.md:16 bdc1aad9dff2491e882db74a41c5aeeb
-msgid ""
-"如果你要继续生成新结构，优先导入 `Make Dataset`。如果你要检查、删除、筛选或导出子集， 优先导入 `NEP Dataset "
-"Display`。"
+#: ../../source/formats.md:45 bdc1aad9dff2491e882db74a41c5aeeb
+msgid "如果你要继续生成新结构，优先导入 `生成数据集`。如果你要检查、删除、筛选或导出子集， 优先导入 `NEP Dataset Display`。"
 msgstr ""
-"Import the data into `Make Dataset` when you want to generate more "
-"structures. Use `NEP Dataset Display` when the next task is to inspect, "
-"remove, filter, or export a subset."
+"If you want to generate new structures, open `Make Dataset` first. If you"
+" want to inspect, delete, filter, or export a subset, open `NEP Dataset "
+"Display` first."
 
-#: ../../source/formats.md:19 a637ae4748b84ec5bc5fdd79255810b5
+#: ../../source/formats.md:48 a637ae4748b84ec5bc5fdd79255810b5
 msgid ""
 "DeepMD 目录导入要求存在 `type.raw`、`type_map.raw`、`set.* / box.npy` 和 `set.* / "
 "coord.npy`，并且帧数、原子数、元素映射、晶胞和坐标必须一致。缺少这些契约时 会明确失败，不会用伪元素、单位晶胞或不完整帧继续加载。"
@@ -124,11 +276,11 @@ msgstr ""
 " contracts fail explicitly instead of continuing with placeholder "
 "elements, an identity cell, or incomplete frames."
 
-#: ../../source/formats.md:23 7d6cee168ec04dfe9f895c1a595b2e2c
+#: ../../source/formats.md:52 7d6cee168ec04dfe9f895c1a595b2e2c
 msgid "EXTXYZ 数据契约"
 msgstr "EXTXYZ data contract"
 
-#: ../../source/formats.md:25 34274d27749f4844b1ac48847bd7cfc6
+#: ../../source/formats.md:54 34274d27749f4844b1ac48847bd7cfc6
 msgid ""
 "`NEP Dataset Display` 会按扩展 XYZ 契约校验原子数、`Lattice`、`Properties`、元素符号、 "
 "逐原子列数和逻辑字段。文件声明的原子数与实际行数不一致、列缺失、非法元素、非法 PBC 或周期晶胞退化时会明确失败，不会用零值补齐。与 "
@@ -140,67 +292,67 @@ msgstr ""
 "extended XYZ contract. A frame fails explicitly if its declared atom "
 "count differs from the number of rows, columns are missing, an element or"
 " PBC value is invalid, or a periodic cell is degenerate; missing data is "
-"never padded with zeros. Consistent with the GPUMD/NEP EXTXYZ convention, "
-"frames without `pbc` default to fully periodic `T T T`. Nonperiodic or "
+"never padded with zeros. Consistent with the GPUMD/NEP EXTXYZ convention,"
+" frames without `pbc` default to fully periodic `T T T`. Nonperiodic or "
 "partially periodic data must declare `pbc` explicitly in the header."
 
-#: ../../source/formats.md:30 f4a5b236ce0844a6bd0d18c80b7b7ef0
+#: ../../source/formats.md:59 f4a5b236ce0844a6bd0d18c80b7b7ef0
 msgid "NEP 训练相关文件"
 msgstr "NEP training files"
 
-#: ../../source/formats.md 225b3c63bcc44a95835f35674ab2d6ca
+#: ../../source/formats.md:23 225b3c63bcc44a95835f35674ab2d6ca
 msgid "作用"
 msgstr "Purpose"
 
-#: ../../source/formats.md 0bd31cc3847f488ca4dd08fc281cbc27
+#: ../../source/formats.md:23 0bd31cc3847f488ca4dd08fc281cbc27
 msgid "`nep.txt`"
 msgstr "`nep.txt`"
 
-#: ../../source/formats.md 22a56c1f95c6406cba9860b570701861
+#: ../../source/formats.md:23 22a56c1f95c6406cba9860b570701861
 msgid "NEP 模型文件，可用于预测、回看或预筛"
 msgstr "NEP model used for prediction, retrospective inspection, or prescreening"
 
-#: ../../source/formats.md 8a59fbca097845cca201fc2a2f5c751f
+#: ../../source/formats.md:23 8a59fbca097845cca201fc2a2f5c751f
 msgid "`energy_*.out`"
 msgstr "`energy_*.out`"
 
-#: ../../source/formats.md 56e6fdc5615f414397235418c43ef528
+#: ../../source/formats.md:23 56e6fdc5615f414397235418c43ef528
 msgid "能量预测/标签结果"
 msgstr "Energy predictions or reference labels"
 
-#: ../../source/formats.md 903e9ab95faa4540bc1e26837976191c
+#: ../../source/formats.md:23 903e9ab95faa4540bc1e26837976191c
 msgid "`force_*.out`"
 msgstr "`force_*.out`"
 
-#: ../../source/formats.md 3425b8e2d0c740abb3fd60bc40f34f9e
+#: ../../source/formats.md:23 3425b8e2d0c740abb3fd60bc40f34f9e
 msgid "力预测/标签结果"
 msgstr "Force predictions or reference labels"
 
-#: ../../source/formats.md ca2c4fd892514240aacd04964d90fb6a
+#: ../../source/formats.md:23 ca2c4fd892514240aacd04964d90fb6a
 msgid "`virial_*.out`"
 msgstr "`virial_*.out`"
 
-#: ../../source/formats.md cc9e2986e82d4254987c9ce0b32e4372
+#: ../../source/formats.md:23 cc9e2986e82d4254987c9ce0b32e4372
 msgid "virial 预测/标签结果"
 msgstr "Virial predictions or reference labels"
 
-#: ../../source/formats.md b1665a5a70d540339346711ea60b8f5c
+#: ../../source/formats.md:23 b1665a5a70d540339346711ea60b8f5c
 msgid "`stress_*.out`"
 msgstr "`stress_*.out`"
 
-#: ../../source/formats.md 40c1d46e19564c749f4d8b7f0a52a4ef
+#: ../../source/formats.md:23 40c1d46e19564c749f4d8b7f0a52a4ef
 msgid "stress 预测/标签结果"
 msgstr "Stress predictions or reference labels"
 
-#: ../../source/formats.md 744b5ee75bd7495fa1693738e007a989
+#: ../../source/formats.md:23 744b5ee75bd7495fa1693738e007a989
 msgid "`descriptor*.out`"
 msgstr "`descriptor*.out`"
 
-#: ../../source/formats.md 3bc25b197d18484ca7ba09d58a4bc719
+#: ../../source/formats.md:23 3bc25b197d18484ca7ba09d58a4bc719
 msgid "描述符输出，用于可视化或采样分析"
 msgstr "Descriptor output used for visualization or sampling analysis"
 
-#: ../../source/formats.md:41 8d125966e99245dd98d0c602d47d417f
+#: ../../source/formats.md:70 8d125966e99245dd98d0c602d47d417f
 msgid ""
 "训练结束后，把训练结构和这些输出一起导入 `NEP Dataset Display`，可以查看散点图、 "
 "定位误差最大的结构，并导出下一轮要处理的子集。"
@@ -209,56 +361,56 @@ msgstr ""
 "in `NEP Dataset Display`. You can inspect scatter plots, locate the "
 "largest-error structures, and export a subset for the next iteration."
 
-#: ../../source/formats.md:44 6bbff08d434c44508cb0fe8f004c7918
+#: ../../source/formats.md:73 6bbff08d434c44508cb0fe8f004c7918
 msgid "VASP"
 msgstr "VASP"
 
-#: ../../source/formats.md:46 457f0a07adfa49319bef09a7ab445872
+#: ../../source/formats.md:75 457f0a07adfa49319bef09a7ab445872
 msgid "`OUTCAR`：读取晶胞、坐标、力、应力和 virial。"
 msgstr "`OUTCAR`: reads the cell, coordinates, forces, stress, and virial."
 
-#: ../../source/formats.md:47 93418f9ab4224b6b866bfc3605263911
+#: ../../source/formats.md:76 93418f9ab4224b6b866bfc3605263911
 msgid "`XDATCAR`：读取逐帧晶胞和坐标。"
 msgstr "`XDATCAR`: reads the cell and coordinates for each frame."
 
-#: ../../source/formats.md:49 b0406520401749ef804f9a55e8cdde28
+#: ../../source/formats.md:78 b0406520401749ef804f9a55e8cdde28
 msgid "VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP Dataset Display` 中检查标签质量。"
 msgstr ""
 "VASP results are commonly used to convert DFT labels into training "
 "structures or to inspect label quality in `NEP Dataset Display`."
 
-#: ../../source/formats.md:51 fc09ad1697784053a8048e35e8867c6f
+#: ../../source/formats.md:80 fc09ad1697784053a8048e35e8867c6f
 msgid "高级结构格式"
 msgstr "Advanced structure formats"
 
-#: ../../source/formats.md:53 9d59542e25f1426aa2a20ddca4156641
+#: ../../source/formats.md:82 9d59542e25f1426aa2a20ddca4156641
 msgid ""
 "`NEP Dataset Display → Open File…` 的 `Advanced / experimental structure "
 "files` 筛选器 还会显示 CP2K 输出与 n2p2 `input.data`。这两个入口按文件内容识别格式，不会只因为扩展名 "
 "匹配就把损坏文件当成有效数据。"
 msgstr ""
 "The `Advanced / experimental structure files` filter under `NEP Dataset "
-"Display → Open File…` also exposes CP2K output and n2p2 `input.data`. Both "
-"importers identify the format from file contents; a matching extension alone "
-"does not make a damaged file valid."
+"Display → Open File…` also exposes CP2K output and n2p2 `input.data`. "
+"Both importers identify the format from file contents; a matching "
+"extension alone does not make a damaged file valid."
 
-#: ../../source/formats.md:57 ea0b97c1301e4415862660f788d34751
+#: ../../source/formats.md:86 ea0b97c1301e4415862660f788d34751
 msgid "CP2K 单点输出"
 msgstr "CP2K single-point output"
 
-#: ../../source/formats.md:59 7c66afbbe7814ef79efa6b18ec0a9633
+#: ../../source/formats.md:88 7c66afbbe7814ef79efa6b18ec0a9633
 msgid "支持带 CP2K 签名的 `.out` / `.log` 主输出。"
 msgstr "Main `.out` / `.log` files containing a CP2K signature are supported."
 
-#: ../../source/formats.md:60 27bd2fc344534b7a9d2a7786d835d4bb
+#: ../../source/formats.md:89 27bd2fc344534b7a9d2a7786d835d4bb
 msgid "当前入口只支持包含一组坐标和一组力的三维周期单点输出；优化或 MD 的多步历史应先转换为 EXTXYZ，不能直接把多个坐标块拼成一个结构。"
 msgstr ""
-"This entry point currently supports only three-dimensional periodic single-"
-"point output containing one coordinate block and one force block. Convert "
-"multi-step optimization or MD histories to EXTXYZ first; multiple coordinate "
-"blocks are never concatenated into one structure."
+"This entry point currently supports only three-dimensional periodic "
+"single-point output containing one coordinate block and one force block. "
+"Convert multi-step optimization or MD histories to EXTXYZ first; multiple"
+" coordinate blocks are never concatenated into one structure."
 
-#: ../../source/formats.md:62 ef2413872a644b638cd7586c97f75ea2
+#: ../../source/formats.md:91 ef2413872a644b638cd7586c97f75ea2
 msgid ""
 "读取 `CELL| Vector a/b/c [angstrom]`、`MODULE QUICKSTEP: ATOMIC COORDINATES "
 "IN ANGSTROM`、Hartree 能量、原子单位力和 GPa stress，并转换到 eV、Å 和 eV/Å³。"
@@ -267,71 +419,73 @@ msgstr ""
 "ATOMIC COORDINATES IN ANGSTROM`, Hartree energy, forces in atomic units, "
 "and stress in GPa, then converts them to eV, Å, and eV/Å³."
 
-#: ../../source/formats.md:65 2924b85c8c9040ab8aca56f5d588e521
+#: ../../source/formats.md:94 2924b85c8c9040ab8aca56f5d588e521
 msgid "缺少完整 cell、没有坐标、力数量不一致、cell 退化或含多个坐标/力块时会明确失败。"
 msgstr ""
-"Import fails explicitly when the complete cell or coordinates are missing, "
-"the force count does not match, the cell is degenerate, or multiple "
-"coordinate or force blocks are present."
+"Import fails explicitly when the complete cell or coordinates are "
+"missing, the force count does not match, the cell is degenerate, or "
+"multiple coordinate or force blocks are present."
 
-#: ../../source/formats.md:66 aacab49c2abb47a9af86539530dc9776
+#: ../../source/formats.md:95 aacab49c2abb47a9af86539530dc9776
 msgid ""
 "当前 CP2K 主输出入口记录 `pbc=\"T T T\"`，因此不要用于 `PERIODIC NONE` 或部分周期计算。 这类计算应从 "
 "CP2K 导出带明确 `Lattice` 和 `pbc` 的 EXTXYZ 后再导入。"
 msgstr ""
 "The current CP2K main-output entry point records `pbc=\"T T T\"`; do not "
-"use it for `PERIODIC NONE` or partially periodic calculations. Export those "
-"calculations from CP2K as EXTXYZ with explicit `Lattice` and `pbc`, then "
-"import that file."
+"use it for `PERIODIC NONE` or partially periodic calculations. Export "
+"those calculations from CP2K as EXTXYZ with explicit `Lattice` and `pbc`,"
+" then import that file."
 
-#: ../../source/formats.md:69 6599f261acd84b51bbc8f7dd0658edd6
+#: ../../source/formats.md:98 6599f261acd84b51bbc8f7dd0658edd6
 msgid "CP2K 的几何优化文档也建议使用轨迹或最终结构文件承载多步几何；主输出并不是完整轨迹容器。"
 msgstr ""
-"The CP2K geometry-optimization documentation likewise recommends trajectory "
-"or final-structure files for multi-step geometries; the main output is not a "
-"complete trajectory container."
+"The CP2K geometry-optimization documentation likewise recommends "
+"trajectory or final-structure files for multi-step geometries; the main "
+"output is not a complete trajectory container."
 
-#: ../../source/formats.md:71 d5db711f62564ce6b29c0f7a329022ab
+#: ../../source/formats.md:100 d5db711f62564ce6b29c0f7a329022ab
 msgid "n2p2 `input.data`"
 msgstr "n2p2 `input.data`"
 
-#: ../../source/formats.md:73 b956da274b8d4fdc828c62f6fd967bcc
+#: ../../source/formats.md:102 b956da274b8d4fdc828c62f6fd967bcc
 msgid "支持名为 `input.data` 的文件以及 `.data` / `.cfg` 文件。"
-msgstr "Files named `input.data` and files with `.data` or `.cfg` extensions are supported."
+msgstr ""
+"Files named `input.data` and files with `.data` or `.cfg` extensions are "
+"supported."
 
-#: ../../source/formats.md:74 0fcbc776705341d28bdd226833bf76ea
+#: ../../source/formats.md:103 0fcbc776705341d28bdd226833bf76ea
 msgid "结构块必须由 `begin` / `end` 完整包围；每个 atom 行严格包含位置、元素、电荷、逐原子能量 和三维力。"
 msgstr ""
-"Every structure block must be enclosed by `begin` and `end`. Each atom row "
-"must contain position, element, charge, per-atom energy, and a three-"
+"Every structure block must be enclosed by `begin` and `end`. Each atom "
+"row must contain position, element, charge, per-atom energy, and a three-"
 "dimensional force."
 
-#: ../../source/formats.md:76 3fc1f2d9d36f48f2b24e1135a3e75759
+#: ../../source/formats.md:105 3fc1f2d9d36f48f2b24e1135a3e75759
 msgid "n2p2 CFG 数值按 Bohr / Hartree 读取，并转换为 Å、eV 和 eV/Å。"
 msgstr ""
-"n2p2 CFG values are read in Bohr and Hartree, then converted to Å, eV, and "
-"eV/Å."
+"n2p2 CFG values are read in Bohr and Hartree, then converted to Å, eV, "
+"and eV/Å."
 
-#: ../../source/formats.md:77 607fc84768e443709b04f9a210d31450
+#: ../../source/formats.md:106 607fc84768e443709b04f9a210d31450
 msgid "0 或 3 行 lattice 都是合法契约；只有 1–2 行 lattice、损坏数值、非法元素或缺少 `end` 会使整次导入失败。"
 msgstr ""
-"Either zero or three lattice rows form a valid contract. One or two lattice "
-"rows, damaged numeric values, invalid elements, or a missing `end` marker "
-"cause the entire import to fail."
+"Either zero or three lattice rows form a valid contract. One or two "
+"lattice rows, damaged numeric values, invalid elements, or a missing "
+"`end` marker cause the entire import to fail."
 
-#: ../../source/formats.md:80 550770ae52034cf2a0f03a1a0df164f6
+#: ../../source/formats.md:109 550770ae52034cf2a0f03a1a0df164f6
 msgid "LAMMPS"
 msgstr "LAMMPS"
 
-#: ../../source/formats.md:82 1b97d4380a274e62b070f61595bf1b00
+#: ../../source/formats.md:111 1b97d4380a274e62b070f61595bf1b00
 msgid "`dump`"
 msgstr "`dump`"
 
-#: ../../source/formats.md:83 eec88ab8f8564dd2b3002b9275ad9620
+#: ../../source/formats.md:112 eec88ab8f8564dd2b3002b9275ad9620
 msgid "`lammpstrj`"
 msgstr "`lammpstrj`"
 
-#: ../../source/formats.md:85 5973bfb51b854a9a8a2e72a4fd92a463
+#: ../../source/formats.md:114 5973bfb51b854a9a8a2e72a4fd92a463
 msgid ""
 "支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。 每一帧必须包含完整的 `BOX BOUNDS` "
 "边界标志、一个完整坐标三元组（`xs/ys/zs`、 `x/y/z` 或 `xu/yu/zu`）以及 `element` 或 `type` "
@@ -349,17 +503,17 @@ msgstr ""
 "missing mappings, or degenerate cells fail the entire import instead of "
 "returning a partial trajectory."
 
-#: ../../source/formats.md:91 19d4ae08c8014cef9835d832ff44479e
+#: ../../source/formats.md:120 19d4ae08c8014cef9835d832ff44479e
 msgid "带自旋的推荐 dump"
 msgstr "Recommended dump format with spins"
 
-#: ../../source/formats.md:93 f0a3aeb5c68a4ba8ab1545a8f4a86542
+#: ../../source/formats.md:122 f0a3aeb5c68a4ba8ab1545a8f4a86542
 msgid "使用 spin LAMMPS 时，推荐按下面的列名输出磁矩："
 msgstr ""
 "When using spin LAMMPS, use the following column names to output magnetic"
 " moments:"
 
-#: ../../source/formats.md:95 330eecb051fd46eea7a0fea93f467a01
+#: ../../source/formats.md:124 330eecb051fd46eea7a0fea93f467a01
 msgid ""
 "compute spin all property/atom sp spx spy spz fmx fmy fmz fx fy fz\n"
 "dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] "
@@ -369,7 +523,7 @@ msgstr ""
 "dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] "
 "c_spin[2] c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]\n"
 
-#: ../../source/formats.md:100 3b52d2a1e78a40f09be51cb1fe20f0c6
+#: ../../source/formats.md:129 3b52d2a1e78a40f09be51cb1fe20f0c6
 msgid ""
 "导入器把 `c_spin[1]` 解释为磁矩模长，把 `c_spin[2]`、`c_spin[3]`、`c_spin[4]` "
 "解释为三个方向分量，并重建逐原子自旋向量："
@@ -378,7 +532,7 @@ msgstr ""
 "`c_spin[3]`, and `c_spin[4]` as the three direction components, then "
 "reconstructs the per-atom spin vector:"
 
-#: ../../source/formats.md:102 3620f2b3d8c4400d926ef57f02dbf8be
+#: ../../source/formats.md:131 3620f2b3d8c4400d926ef57f02dbf8be
 msgid ""
 "\n"
 "\\mathbf s_i=c_{\\mathrm{spin}[1]}\n"
@@ -390,7 +544,7 @@ msgstr ""
 "\\left(c_{\\mathrm{spin}[2]},c_{\\mathrm{spin}[3]},c_{\\mathrm{spin}[4]}\\right)."
 "\n"
 
-#: ../../source/formats.md:107 d96e134b9baf478f985dfa37ba410d31
+#: ../../source/formats.md:136 d96e134b9baf478f985dfa37ba410d31
 msgid ""
 "`c_spin[5]`、`c_spin[6]`、`c_spin[7]` 是磁力分量，不会写入 `spin:R:3`。如果缺少 "
 "`c_spin[1:4]` 中任意一列，导入器不会为该帧生成自旋字段。"
@@ -399,21 +553,21 @@ msgstr ""
 "and are not written to `spin:R:3`. If any column in `c_spin[1:4]` is "
 "missing, the importer does not create a spin field for that frame."
 
-#: ../../source/formats.md:109 45c76f76fb534a04aa83f159f114e140
+#: ../../source/formats.md:138 45c76f76fb534a04aa83f159f114e140
 msgid "导出"
 msgstr "Export"
 
-#: ../../source/formats.md:111 8418f19c8c044c09938d828fe4a20143
+#: ../../source/formats.md:140 8418f19c8c044c09938d828fe4a20143
 msgid "`NEP Dataset Display` 可以把当前数据导出为两类结果："
 msgstr "`NEP Dataset Display` can export the current data in two main forms:"
 
-#: ../../source/formats.md:113 8ef3cf9e3cd04a95bcc0f3386baaf940
-msgid "`xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 Make Dataset 流程。"
+#: ../../source/formats.md:142 8ef3cf9e3cd04a95bcc0f3386baaf940
+msgid "`xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 生成数据集 流程。"
 msgstr ""
-"`xyz` / `extxyz`: suitable for continuing in GPUMD, ASE, or a Make "
-"Dataset workflow."
+"`xyz` / `extxyz`: suitable for returning to a GPUMD, ASE, or Make Dataset"
+" workflow."
 
-#: ../../source/formats.md:114 88291e59da404e22bb0160045b5d6a48
+#: ../../source/formats.md:143 88291e59da404e22bb0160045b5d6a48
 msgid ""
 "`deepmd/npy`：适合接入 DeepMD 风格数据管理；是否保留导入时的子目录层级由 `Settings → Keep DeepMD "
 "subfolders` 控制。"
@@ -422,7 +576,7 @@ msgstr ""
 " DeepMD subfolders` controls whether the imported subdirectory hierarchy "
 "is preserved."
 
-#: ../../source/formats.md:116 be3ba45e7eb64d49bc1795f03d2055e7
+#: ../../source/formats.md:145 be3ba45e7eb64d49bc1795f03d2055e7
 msgid ""
 "导出 `deepmd/npy` 时，NepTrainKit 会保留全周期或全非周期 PBC；全非周期目录写入 `nopbc`。同一 "
 "`Config_type` 下的结构必须具有一致的元素/原子数、PBC、逐原子字段和 能量/virial 覆盖。DeepMD "
@@ -439,28 +593,50 @@ msgstr ""
 "round-trip with their original types, while atom order is canonicalized "
 "by `type_map`."
 
-#: ../../source/formats.md:122 e12e472ab1f54c7dbb2e3b7f48928606
+#: ../../source/formats.md:151 e12e472ab1f54c7dbb2e3b7f48928606
 msgid "大数据和导入说明"
 msgstr "Large datasets and import behavior"
 
-#: ../../source/formats.md:124 3a938f0d1f984b0484f87563ddd340a0
+#: ../../source/formats.md:153 3a938f0d1f984b0484f87563ddd340a0
 msgid "大数据集导入时，界面显示可能做抽样或延迟渲染；底层选择和导出仍以完整数据为准。"
 msgstr ""
 "For a large dataset, the interface may sample or defer rendering for "
 "responsiveness. Selection and export still operate on the complete "
 "dataset."
 
-#: ../../source/formats.md:125 4ca20eb04c974c54a39bd07a9eb20078
+#: ../../source/formats.md:154 4ca20eb04c974c54a39bd07a9eb20078
 msgid "导入过程支持中断。"
 msgstr "You can cancel an import while it is running."
 
-#: ../../source/formats.md:126 4d049707da7a4475a271bf186d7a3c13
+#: ../../source/formats.md:155 4d049707da7a4475a271bf186d7a3c13
 msgid ""
 "不同来源的文件最好保留清晰命名，例如 "
 "`candidate_pool.xyz`、`candidate_pool_clean.xyz`、`dft_labeled.xyz`。"
 msgstr ""
 "Use descriptive names for files from different stages, such as "
 "`candidate_pool.xyz`, `candidate_pool_clean.xyz`, and `dft_labeled.xyz`."
+
+#~ msgid "`Make Dataset` 或 `NEP Dataset Display`"
+#~ msgstr "`Make Dataset` or `NEP Dataset Display`"
+
+#~ msgid "`Make Dataset`"
+#~ msgstr "`Make Dataset`"
+
+#~ msgid ""
+#~ "如果你要继续生成新结构，优先导入 `Make Dataset`。如果你要检查、删除、筛选或导出子集， "
+#~ "优先导入 `NEP Dataset Display`。"
+#~ msgstr ""
+#~ "Import the data into `Make Dataset` "
+#~ "when you want to generate more "
+#~ "structures. Use `NEP Dataset Display` "
+#~ "when the next task is to inspect,"
+#~ " remove, filter, or export a subset."
+
+#~ msgid "`xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 Make Dataset 流程。"
+#~ msgstr ""
+#~ "`xyz` / `extxyz`: suitable for "
+#~ "continuing in GPUMD, ASE, or a "
+#~ "Make Dataset workflow."
 
 #~ msgid "支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。"
 #~ msgstr ""

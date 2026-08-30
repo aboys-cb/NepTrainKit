@@ -4,430 +4,534 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:3
-#: 5b9ce37c18c84b38b047dc3edf43db8c
-msgid "严格 GSFE 路径（Strict GSFE Path）"
-msgstr "Strict GSFE Path"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:3
+#: 85c4489a59da419eae4450638fb2c695
+msgid "层错 / GSFE 路径（Stacking Fault / GSFE Path）"
+msgstr "Stacking Fault / GSFE Path"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:5
-#: 73d4cf1ecee24aacb8b40fe66f5266f6
-msgid "`Group`: `Defect` | `Class`: `StrictGSFEPathCard`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:5
+#: 5c46091e4141475b9e829afc119d58fb
+msgid "**分类：** 缺陷"
+msgstr "**Category:** Defects"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:7
-#: 4cdc502bf36545db9e1f9cd22fb86230
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:7
+#: eee7a6fe8d194a96a653204dc64457bf
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:9
-#: 40f44594f44745a6b197ee3ce386b439
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:9
+#: 9be09b7ec0384924ba581243df601a13
 msgid ""
-"按显式晶面 `hkl` 和滑移方向 `uvw` 生成未弛豫的广义层错能（GSFE）路径结构。输入必须已经是 slab-oriented "
-"cell：第三晶胞方向要垂直于 `plane_hkl`，否则周期边界会把断层面错接成重合或过近原子，程序会直接报错。"
-msgstr ""
-"Generate unrelaxed generalized stacking-fault energy (GSFE) path structures "
-"from an explicit plane `hkl` and slip direction `uvw`. The input must "
-"already be slab oriented: its third cell direction must be normal to "
-"`plane_hkl`. Otherwise periodic boundaries can reconnect the fault into "
-"overlapping or excessively close atoms, and the card fails explicitly."
+"按显式晶面 `hkl` 和滑移方向 `uvw` 生成层错结构或未弛豫的广义层错（GSF）位移路"
+"径。卡片先在原子层之间放置切面，再把切面上方的原子作为一个整体沿面内方向移"
+"动；它只生成结构，不计算能量，也不做原子弛豫。"
+msgstr "Generate stacking-fault structures or unrelaxed generalized stacking-fault (GSF) displacement paths from an explicit plane `hkl` and slip direction `uvw`. The card places a cut plane between atomic layers, then moves atoms above the plane as one group along an in-plane direction; it only generates structures and does not calculate energies or relax atoms."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:11
-#: 8e62921566144df9b7bef63c713b06c8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:11
+#: 8880f969ae2643a1a3178054bc9b605c
 msgid ""
-"相比 `Stacking Fault`，这张卡把滑移方向写成明确的晶向，并提供 `middle`、`fractional`、`layer_index` "
-"三种切面选择。它适合你已经知道目标滑移系统，想要严格控制 GSFE 路径几何的场景。"
-msgstr ""
-"Unlike `Stacking Fault`, this card specifies a crystallographic slip "
-"direction and offers `middle`, `fractional`, and `layer_index` cut modes. "
-"Use it when the target slip system is known and the GSFE geometry must be "
-"controlled explicitly."
+"它不限定 fcc、(111) 面或某一种 Burgers 矢量，但输入必须已经按目标晶面定向：第"
+"三晶胞矢量要垂直于 `层错面 (h k l)`（`plane_hkl`），否则程序会直接报错。"
+"`hkl` 和 `uvw` 都是相对于**当前晶胞基矢**的指数，不会自动识别或重定向原始体相"
+"晶胞里的 `(111)`、`[11-2]` 等晶向。"
+msgstr "The card is not limited to fcc, the (111) plane, or one Burgers vector, but the input must already be oriented to the target plane: the third cell vector must be perpendicular to `Fault plane (h k l)` (`plane_hkl`), otherwise the program fails. Both `hkl` and `uvw` are indices in the **current cell basis**; the card does not automatically identify or reorient directions such as `(111)` or `[11-2]` in the original bulk cell."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:13
-#: 3f30c70d908e40d3ac9908faff548ee1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:13
+#: 2ef9f86abc3c4bed93c14053d14d1a04
+msgid ""
+"滑移方向必须本来就在层错面内；若含有面外分量，卡片会报错，不会静默投影成另一"
+"个方向。若只是为了补充训练集，可以直接使用输出结构；若要从能量差换算 GSFE，还"
+"必须自行确认周期边界中有一个还是两个层错界面，并使用正确的界面面积和界面数。"
+msgstr "The slip direction must lie in the fault plane. If it has an out-of-plane component, the card fails instead of silently projecting it to another direction. For training-set augmentation, the outputs can be used directly; to convert energy differences to GSFE, determine whether the periodic cell contains one or two fault interfaces and use the correct interface area and count."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:15
+#: dfa72b71455d4b4ea1c0f6355675733c
+msgid "原理与公式"
+msgstr "Principle and equations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:17
+#: f715a658de394049a7f43100c5f30592
+msgid ""
+"当前晶胞基矢为 $\\mathbf a,\\mathbf b,\\mathbf c$。用户给出的滑移指数定义"
+msgstr "Let the current cell basis be $\\mathbf a,\\mathbf b,\\mathbf c$. The user-provided slip indices define"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:19
+#: ae26c34813ff47d4861b123f1c790a46
+msgid ""
+"\n"
+"\\mathbf b_{\\mathrm{slip}}=u\\mathbf a+v\\mathbf b+w\\mathbf c,\n"
+"\\qquad hu+kv+lw=0,\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:24
+#: f2b00d0bcb644623b6c44ea4bf692288
+msgid ""
+"第二式是滑移方向位于 $(hkl)$ 面内的必要检查。对位移参数 $\\lambda$，分数向量"
+"模式使用 $\\Delta\\mathbf r=\\lambda\\mathbf b_{\\mathrm{slip}}$；Å 模式使用 "
+"\\(\\Delta\\mathbf r=d\\,\\mathbf b_{\\mathrm{slip}}/ \\|\\mathbf "
+"b_{\\mathrm{slip}}\\|\\)。切面上方原子统一加该位移，下方保持不动。"
+msgstr "The second equation checks that the slip direction lies in the $(hkl)$ plane. For displacement parameter $\\lambda$, fractional-vector mode uses $\\Delta\\mathbf r=\\lambda\\mathbf b_{\\mathrm{slip}}$; Å mode uses $\\Delta\\mathbf r=d\\,\\mathbf b_{\\mathrm{slip}}/\\|\\mathbf b_{\\mathrm{slip}}\\|$. Atoms above the cut receive this displacement together, while atoms below remain fixed."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:29
+#: 371e0752523641c6bf464d47e8987bb6
+msgid "若用能量差计算广义层错能，应另行使用"
+msgstr "To calculate generalized stacking-fault energy from energy differences, use separately"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:31
+#: bb898f0282444bec93bed13e73574be6
+msgid ""
+"\n"
+"\\gamma(\\lambda)=\n"
+"\\frac{E(\\lambda)-E(0)}{n_{\\mathrm{interface}}A},\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:36
+#: 639a5610b3d64c0da6fb0b6ce9bb3830
+msgid ""
+"其中 $A$ 是层错面面积，$n_{\\mathrm{interface}}$ 是周期晶胞中的界面数。本卡只"
+"生成路径， 不会替用户判断 $n_{\\mathrm{interface}}$ 或计算 $\\gamma$。"
+msgstr "Here $A$ is the fault-plane area and $n_{\\mathrm{interface}}$ is the number of interfaces in the periodic cell. This card only generates the path; it does not determine $n_{\\mathrm{interface}}$ or calculate $\\gamma$ for you."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:39
+#: 66aadfe5266743a0a28e7c957b487871
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:15
-#: 67bc038a3c914e4b9b65abf60f887ea6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:41
+#: ca147a530de241649ece9323733faf95
 msgid "场景：模型在指定滑移系的 GSFE 峰值严重偏低"
 msgstr "Scenario: The GSFE peak is too low for a specified slip system"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:17
-#: be42a435d0e543be83d6c1955cc98eca
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:43
+#: 2562caddf03a4b23afd85be3fe3ea376
 msgid ""
-"你在 fcc Ni 上训练了 NEP，体相和弹性响应都不错，但 (111)<112> 的 GSFE 峰值比 DFT "
-"低很多。训练集里虽然有随机扰动和表面，但没有沿这个滑移系系统移动半晶体的结构，模型没学到层间错排的能量代价。"
+"你在 fcc Ni 上训练了 NEP，体相和弹性响应都不错，但 (111)<112> 的 GSFE 峰值比 "
+"DFT 低很多。训练集里虽然有随机扰动和表面，但没有沿这个滑移系系统移动半晶体的"
+"结构，模型没学到层间错排的能量代价。"
 msgstr ""
-"An fcc Ni NEP has good bulk and elastic response but strongly underestimates"
-" the (111)<112> GSFE peak. Random perturbations and surfaces do not replace "
+"An fcc Ni NEP has good bulk and elastic response but strongly underestimates "
+"the (111)<112> GSFE peak. Random perturbations and surfaces do not replace "
 "systematic half-crystal displacement along that slip system."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:19
-#: a8aa6c3933d34ad6915f410e0ac7d675
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:45
+#: 68f9a07aac004241966b1f2311ead70d
 msgid ""
-"**输入：** 一个 fcc111 slab-oriented 周期超胞，例如 `Crystal Prototype Builder` 的 "
-"`fcc111` 原型。"
+"**输入：** 一个 fcc111 slab-oriented 周期超胞，例如 `Crystal Prototype "
+"Builder` 的 `fcc111` 原型。"
 msgstr ""
 "**Input:** A periodic fcc111 slab-oriented cell, such as the `fcc111` "
 "prototype from `Crystal Prototype Builder`."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:21
-#: d10632830e334c2aa828f402ebb99c49
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:47
+#: b833ab659b2943d9b519e69a2e7fb836
 msgid ""
-"**目标：** 沿 slab cell 的 `(001)` 面和面内 `[100]` 周期方向生成 0 到 1 个滑移向量的路径，步长 0.1；这个 "
-"`(001)` 就是原始 fcc 的 `(111)` 面。"
-msgstr ""
-"**Objective:** In the slab cell, scan from 0 to one slip vector in 0.1 "
-"increments along in-plane `[100]` on `(001)`. In this oriented basis, "
-"`(001)` corresponds to the original fcc `(111)` plane."
+"**目标：** 沿当前 slab cell 的 `(001)` 面和面内 `[100]` 周期方向生成 0 到 1 "
+"个滑移向量的路径，步长 0.1；在这个特定定向晶胞里，`(001)` 对应原始 fcc 的 "
+"`(111)` 面。"
+msgstr "**Goal:** generate a path from 0 to 1 full slip vector along the `(001)` plane and in-plane `[100]` periodic direction of the current slab cell, with a step of 0.1. In this particular oriented cell, `(001)` corresponds to the original fcc `(111)` plane."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:23
-#: 56c4b01605d34e0bb021ac70e6e02804
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:49
+#: cb7814618f794c9b8ce6bfa46a621659
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:24
-#: ef1a6c7abbe444cd9d995aa936353a06
-msgid "`plane_hkl = [0, 0, 1]`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:50
+#: 069078852c3b44c7b7ec579e26f3da1d
+msgid "`层错面 (h k l)`填 `[0, 0, 1]`；"
+msgstr "Set `Fault plane (h k l)` to `[0, 0, 1]`;"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:25
-#: 627acf378104411182c2ce6d7237a752
-msgid "`slip_uvw = [1, 0, 0]`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:51
+#: e5156b9813e04880890b6fc7dab114d5
+msgid "`滑移方向 [u v w]`填 `[1, 0, 0]`；"
+msgstr "Set `Slip direction [u v w]` to `[1, 0, 0]`;"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:26
-#: a2763274dd7040179f07bc7a92fa3047
-msgid "`displacement_range = [0.0, 1.0, 0.1]`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:52
+#: d5ad20908a1541d48582dd843c22fcd4
+msgid "`位移范围`填 `[0.0, 1.0, 0.1]`；"
+msgstr "Set `Displacement range` to `[0.0, 1.0, 0.1]`;"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:27
-#: 2d6403aa873f4e52a2af554a1afe34ac
-msgid "`displacement_unit = \"fraction_of_vector\"`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:53
+#: 3731d8ad2d4445f1bbab852c39529347
+msgid "`位移单位`选择“滑移向量分数”；"
+msgstr "Set `Displacement unit` to `Fraction of slip vector`;"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:28
-#: 9091b6aed4df4f0f9754cf87e97a80d2
-msgid "`cut_mode = \"middle\"`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:54
+#: 4a10d8fdf2fd469b820461e19f0bf5d4
+msgid "`切面位置`选择“中间原子层”。"
+msgstr "Set `Cut position` to `Middle atomic layer`."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:30
-#: 83911295eab44747be881f53752c0d32
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:56
+#: 2f6297060d964769843ed887b327a9c0
 msgid "**输出：** 11 个未弛豫层错结构，带 `GSFE(hkl=001,uvw=100,d=...)` 标签。"
 msgstr ""
 "**Output:** Eleven unrelaxed fault structures labeled "
 "`GSFE(hkl=001,uvw=100,d=...)`."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:32
-#: 7fab8110670f400cb143d9524c2bd1d5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:58
+#: ce50baaf2dee4b8ea4c4305d83e07bdc
 msgid ""
-"**怎么验证训练集质量改善：** 对输出结构做 DFT 单点或短弛豫后加入训练集，重训再扫同一 GSFE 路径。峰值、局部极小位置和曲线对称性应更接近 "
-"DFT；如果只有峰值改善但曲线仍有锯齿，把步长从 0.1 缩到 0.05。"
+"**怎么验证训练集质量改善：** 对输出结构做 DFT 单点或短弛豫后加入训练集，重训"
+"再扫同一 GSFE 路径。峰值、局部极小位置和曲线对称性应更接近 DFT；如果只有峰值"
+"改善但曲线仍有锯齿，把步长从 0.1 缩到 0.05。"
 msgstr ""
 "**How to verify the improvement:** Obtain DFT single points or consistently "
 "defined short relaxations, retrain, and rescan the same path. Compare peak "
 "height, local minima, and curve symmetry with DFT. If the peak improves but "
 "the curve remains jagged, refine the displacement step from 0.1 to 0.05."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:34
-#: 28062cec71e7411c854471c1814cdf3b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:60
+#: 85e10eac1aad4280b0df4d6e727d5b9a
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:36
-#: 5aa1a1cdbb094a5e8f2414512354b791
-msgid "Plane HKL（plane_hkl）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:62
+#: 57356902859a44a581b80099781d8d2f
+msgid "层错面 (h k l)（plane_hkl）"
+msgstr "plane_hkl"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:38
-#: d67e289f6264438080336320578bffe2
-msgid "`Sequence[int]`，默认 `(0, 0, 1)`。Miller 指数，定义哪一个晶面作为层错切面；该面的法向必须平行于第三晶胞方向。"
-msgstr ""
-"`Sequence[int]`, default `(0,0,1)`. Miller indices of the fault plane. Its "
-"normal must be parallel to the third cell direction."
-
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:40
-#: 51119331faff409a82d8bc4b3ad0f345
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:64
+#: 5b2040c6f2cc4b58b39d534f8786eb83
 msgid ""
-"低指数面最常用：fcc111 slab cell 里用 `(001)` 表示原始 fcc `(111)` 面。`(0, 0, 0)` "
-"没有物理意义，程序会直接报错。普通 cubic fcc cell 里的 `(111)` 不满足 slab-oriented 要求，不能直接使用。"
+"`Sequence[int]`，默认 `(0, 0, 1)`。当前晶胞基矢下的 Miller 指数，定义层错面的"
+"法向；该法向必须平行于第三晶胞矢量。"
+msgstr "`Sequence[int]`, default `(0, 0, 1)`. Miller indices in the current cell basis defining the fault-plane normal; this normal must be parallel to the third cell vector."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:66
+#: a48d0f678dcb4c03b9e656b42eee8fba
+msgid ""
+"低指数面最常用：fcc111 slab cell 里用 `(001)` 表示原始 fcc `(111)` 面。`(0, "
+"0, 0)` 没有物理意义，程序会直接报错。普通 cubic fcc cell 里的 `(111)` 不满足 "
+"slab-oriented 要求，不能直接使用。"
 msgstr ""
 "Low-index planes are typical. In an fcc111-oriented slab cell, `(001)` "
-"denotes the original fcc `(111)` plane. `(0,0,0)` is invalid. A conventional"
-" cubic fcc cell with `(111)` does not satisfy the required slab orientation "
+"denotes the original fcc `(111)` plane. `(0,0,0)` is invalid. A conventional "
+"cubic fcc cell with `(111)` does not satisfy the required slab orientation "
 "without reorientation."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:42
-#: b54c2390d8a14f01899c537e376f49a5
-msgid "Slip UVW（slip_uvw）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:68
+#: a32d0533ee184cd7841019a0131c7ad2
+msgid "滑移方向 [u v w]（slip_uvw）"
+msgstr "slip_uvw"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:44
-#: 255d98a3264f41d1b748c4407e6a5fe8
-msgid "`Sequence[int]`，默认 `(1, 0, 0)`。晶向指数，定义滑移方向；程序会把它投影到 `plane_hkl` 所在平面内。"
-msgstr ""
-"`Sequence[int]`, default `(1,0,0)`. Crystallographic direction projected "
-"into `plane_hkl` to define slip."
-
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:46
-#: 22d8b85006f949d4a4157696759c5e80
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:70
+#: 919bf2aeebd4449ca6399e0cc33c47ec
 msgid ""
-"如果 `slip_uvw` 平行于晶面法向，投影后长度为零，程序会报错。对于 fcc111 slab cell，先用 `[100]` "
-"或另一个面内周期方向做完整周期路径；如果要扫特定 partial 位移，需要把 slab cell 的面内基矢先构造成对应路径。"
-msgstr ""
-"If `slip_uvw` is parallel to the plane normal, its in-plane projection is "
-"zero and the card fails. For an fcc111 slab cell, begin with `[100]` or "
-"another periodic in-plane direction. A specific partial path requires "
-"constructing an in-plane basis that represents it."
+"`Sequence[int]`，默认 `(1, 0, 0)`。当前晶胞基矢下的方向指数，真实滑移向量为 "
+"`u*a + v*b + w*c`。"
+msgstr "`Sequence[int]`, default `(1, 0, 0)`. Direction indices in the current cell basis; the physical slip vector is `u*a + v*b + w*c`."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:48
-#: fa9a31c7e6c6417298dd49f70e615cd0
-msgid "Displacement Range（displacement_range）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:72
+#: 9b6c340daa534b35bc63e70017f6aca2
+msgid ""
+"方向必须位于 `层错面 (h k l)`（`plane_hkl`）面内；在晶格指数下等价于 `h*u + "
+"k*v + l*w = 0`。不满足时程序会报错，避免用户填写 `[u v w]`，实际却得到另一个"
+"投影方向。对于 fcc111 slab cell，可以用 `[100]`、`[010]` 或另一个面内方向；如"
+"果要扫特定 partial 位移，需要让当前晶胞的面内基矢或 Å 位移范围对应目标 "
+"Burgers 矢量。"
+msgstr "The direction must lie in `Fault plane (h k l)` (`plane_hkl`), equivalent to `h*u + k*v + l*w = 0` in lattice indices. The program fails otherwise, preventing a user-entered `[u v w]` from silently becoming a different projected direction. For an fcc111 slab cell, use `[100]`, `[010]`, or another in-plane direction; to scan a specific partial displacement, make the in-plane basis or Å range correspond to the target Burgers vector."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:50
-#: 906f1c1aa6f84f59bd688d815361bdb5
-msgid "`Sequence[float]`，默认 `(0.0, 1.0, 0.5)`。格式是 `[起点, 终点, 步长]`，扫描滑移位移。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:74
+#: 5a6479c6627044678239e35851eec77c
+msgid "位移范围（displacement_range）"
+msgstr "displacement_range"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:76
+#: be2c89fc115a4e17a44e65faff898b4f
+msgid ""
+"`Sequence[float]`，默认 `(0.0, 1.0, 0.5)`。格式是 `[起点, 终点, 步长]`，扫描"
+"滑移位移。"
 msgstr ""
 "`Sequence[float]`, default `(0.0,1.0,0.5)`. Slip displacement scan as "
 "`[start,stop,step]`."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:52
-#: 4c7492ed17274d94861839fbf5afb41b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:78
+#: e24456e914c54416b16af60a8fe99af8
 msgid ""
-"如果 `displacement_unit = \"fraction_of_vector\"`，`1.0` 表示完整投影滑移向量；如果单位是 "
-"`angstrom`，数值就是 A。GSFE 曲线通常需要至少 0.05-0.1 的分辨率；只做 smoke 时可以用 0、0.5、1.0 "
-"三个点快速确认几何没错。"
-msgstr ""
-"With `displacement_unit=\"fraction_of_vector\"`, `1.0` is the full projected"
-" slip vector. With `angstrom`, values are Å. A GSFE curve commonly needs "
-"0.05-0.1 resolution; points 0, 0.5, and 1.0 are sufficient only for a "
-"geometry smoke test."
+"如果 `displacement_unit = \"fraction_of_vector\"`，`1.0` 表示完整 `滑移方向 "
+"[u v w]`（`slip_uvw`）向量；如果单位是 `angstrom`，数值就是沿该方向的实际距"
+"离。起点和终点都包含在输出中，步长必须为正。GSFE 曲线通常需要至少 0.05–0.1 的"
+"分辨率；只做 smoke 时可以用 0、0.5、1.0 三个点快速确认几何没错。"
+msgstr "If `displacement_unit = \"fraction_of_vector\"`, `1.0` means one full `Slip direction [u v w]` (`slip_uvw`) vector; with `angstrom`, the value is the physical distance along that direction. Both endpoints are included, and the step must be positive. GSFE curves typically need a resolution of at least 0.05–0.1; for a smoke test, use 0, 0.5, and 1.0 to verify the geometry quickly."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:54
-#: 052a2c89074447c68e180f7fe6c45c68
-msgid "Displacement Unit（displacement_unit）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:80
+#: dccb3dd139ff49e19ee55f641a3e184c
+msgid "位移单位（displacement_unit）"
+msgstr "displacement_unit"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:56
-#: 50d343396bf747d7868a615a78bf8da4
-msgid "`str`，默认 `\"fraction_of_vector\"`。决定 `displacement_range` 里的数值怎么转成真实位移。"
-msgstr ""
-"`str`, default `\"fraction_of_vector\"`. Converts `displacement_range` "
-"values to physical displacements."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:82
+#: 89e29d311dce4adf9c951dcc54324c59
+msgid ""
+"`str`，默认 `\"fraction_of_vector\"`。决定 `位移范围`（`displacement_range`）"
+"里的数值怎么转成真实位移。"
+msgstr "`str`, default `\"fraction_of_vector\"`. Determines how values in `Displacement range` (`displacement_range`) are converted to physical displacements."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 0a6ff4dfadd44dbd973df7d28d6fda11 3c2a285834404ac88e019ba422940e7e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 19fe7de192584d838fd123c00f453718 4558d2dd865249d1bf2dbe45743ce6fb
 msgid "选项"
 msgstr "Options"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: a629c8ef0a004553bcdb27061a7866ec eda6ecb20011455784846b59c6f2c34d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: a5d08027588e4cecbe89ea99768751f5 82bfb312a9c34d268da846930039f83d
 msgid "含义"
 msgstr "Meaning"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 93b11598df8c402daa0a65eb2f666f71 d3687ee8c6a7494d92d2542d83ab5f3d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 3017a454cab249a2b3bc44072fd3b66f 5561dd789e744e58841a95da6567e7a7
 msgid "什么时候选"
 msgstr "When to choose it"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: e4450768f03d455dbce9740e7274dd69
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 8b86d383a2774d65b8def301c2233ac5
 msgid "`fraction_of_vector`"
-msgstr ""
+msgstr "`fraction_of_vector`"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 75b2694af2fd4ff8ad69625b3077c3c5
-msgid "位移 = 数值乘以投影后的 `slip_uvw` 向量"
-msgstr "Displacement equals the value times the projected `slip_uvw` vector"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: fbd7e78d8b974ddfa67c17b68ff086d0
+msgid "位移 = 数值乘以 `滑移方向 [u v w]`（`slip_uvw`）向量"
+msgstr "Displacement = value multiplied by the `Slip direction [u v w]` (`slip_uvw`) vector"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: cc22b60f01c142a780efebc0b37c0bbb
-msgid "扫完整 GSFE 周期或按晶向分数描述路径"
-msgstr ""
-"Scan a complete GSFE period or express a path as fractions of a "
-"crystallographic vector"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 0ffacea9059043aaa5e3d123b522d0a1
+msgid "扫完整周期或按滑移向量分数描述路径"
+msgstr "Scan a full period or describe the path as a fraction of the slip vector"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: a4134f571fb54e048fe1e68be7e12abd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: d22bae21d0014d5c8bc2eb310859c077
 msgid "`angstrom`"
-msgstr ""
+msgstr "`angstrom`"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 408cb0561995489ba3f3ecf233416a62
-msgid "位移 = 数值 A，方向为投影滑移方向的单位向量"
-msgstr "Displacement is the value in Å along the normalized projected slip direction"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 8ad25ef41686413890861381f64e4574
+msgid "位移 = 数值 Å，方向为 `滑移方向 [u v w]`（`slip_uvw`）的单位向量"
+msgstr "Displacement = value in Å along the unit vector of `Slip direction [u v w]` (`slip_uvw`)"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 19ac35f89e384f4ea751348e72bf7ac2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 7eb87771a5c34dcaa1f64f1f9b746ef6
 msgid "已经知道实际位移长度，或只想小范围推开层间结构"
 msgstr "Use a known physical displacement or a small interlayer probe"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:63
-#: 847dea73fd9c49b681d41a52d9e65fd0
-msgid "Cut Mode（cut_mode）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:89
+#: 4c5bb624cc544de9a69694c0f0e8577e
+msgid "切面位置（cut_mode）"
+msgstr "cut_mode"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:65
-#: 2722debb6d0c45409b7ff124f13ae90b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:91
+#: 7e69d90ed3ab4030b8f2ff5133f07146
 msgid "`str`，默认 `\"middle\"`。决定哪一侧原子会被整体滑移。"
 msgstr ""
 "`str`, default `\"middle\"`. Selects the cut that separates stationary and "
 "shifted atoms."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: bcce84a3c6394d64836c35979bdb7bff
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: ea8212dc2d3e487f8bf1616b32342fbf
 msgid "`middle`"
-msgstr ""
+msgstr "`middle`"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 616b988923ec45f690ac0cac554b0155
-msgid "按投影坐标中位数切开"
-msgstr "Cut at the median projected coordinate"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 53cd03b801984fc9b7113cdb3c4c9508
+msgid "在最接近结构中部的两个离散原子层之间切开"
+msgstr "Cut between the two discrete atomic layers nearest the structure center"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 07a88b2132d948a5988dc2efbb38b867
-msgid "普通超胞快速生成上下两半"
-msgstr "Quickly split a roughly uniform cell into two halves"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: ea8340a9deec412287b25ee816a2fa61
+msgid "普通超胞快速生成上下两部分"
+msgstr "Quickly create upper and lower parts in an ordinary supercell"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 9455c0f4178a454e8e05cbe6709711b8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: f797b9af971a4bb38084e05e40f47a59
 msgid "`fractional`"
-msgstr ""
+msgstr "`fractional`"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: d9e3f43172bd48139e3ac4a5ee95b2b3
-msgid "按投影坐标范围的 `cut_fraction` 位置切开"
-msgstr "Cut at `cut_fraction` of the projected coordinate range"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 712b4b338e074e7093d3997ae386b70d
+msgid "按最低与最高投影原子层之间的厚度分数切开"
+msgstr "Cut at a fraction of the thickness between the lowest and highest projected atomic layers"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 9c824cfbbbed497da734460ab8cd31f2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 6f38b488486d4305a62fe328915b9d87
 msgid "想明确控制切面在胞内的相对高度"
 msgstr "Control the relative cut height inside the cell"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: dc604bc0214943e4a0a77bb1e3819be0
-msgid "`layer_index`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 238bf67218994d1e9d3a7db60c1c01be
+msgid "`下方原子层索引`（`layer_index`）"
+msgstr "`layer_index`"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 25654be66dec4c5c915b4f155e7bf5ee
-msgid "按排序后的离散层位置切开"
-msgstr "Cut between sorted discrete layers"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: fa2d660e075144d1ac2c1d63c19f4938
+msgid "在指定离散层和下一层之间切开"
+msgstr "Cut between the specified discrete layer and the next layer"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
-#: 994660b94c374995a74862f785dd30c8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:0
+#: 657bbdd1462f4d93b4713321122a376a
 msgid "层状结构或 slab 中想从第几层上方开始滑移"
 msgstr "Choose the exact layer above which a slab or layered structure moves"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:73
-#: d07db32a09104754b8aea5b9beba273a
-msgid "Cut Fraction（cut_fraction）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:75
-#: 7c7e3e8f07344fcbb80183ffdad1cb7e
-msgid "`float`，默认 `0.5`。当 `cut_mode = \"fractional\"` 时使用，范围是 0 到 1。"
-msgstr "`float`, default `0.5`; used with `cut_mode=\"fractional\"`, range 0-1."
-
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:77
-#: 2e55cc26d9a641d88d3e327330bd73f1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:99
+#: 14466b80457e40d59eb1e44fd672c745
 msgid ""
-"`0.5` 接近中间切面；`0.25` 会让更多原子处在上半部分并被滑移；`0.75` 则只移动靠近上侧的原子。这个值越靠近 0 或 "
-"1，移动的原子数越不平衡，适合 slab 或非均匀层结构，不适合普通体相路径的第一轮扫描。"
-msgstr ""
-"`0.5` is near the middle. `0.25` shifts more atoms and `0.75` only the upper"
-" region. Values near 0 or 1 create unbalanced halves and are more "
-"appropriate for slabs or nonuniform layering than a first bulk scan."
+"无论选择哪种模式，切面两侧都必须至少有一个原子；卡片不会接受“所有原子一起移"
+"动”或“没有原子移动”的伪层错。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:79
-#: 98c0518e89fa453f9fb1f048db1db154
-msgid "生效条件：`cut_mode` 必须是 `fractional`。"
-msgstr "Active only when `cut_mode` is `fractional`."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:101
+#: b1d6b2a210774b8089ef687a99b611c7
+msgid "厚度分数（cut_fraction）"
+msgstr "cut_fraction"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:81
-#: a0ba2cfe9b1a4e0795bfce7144d17d37
-msgid "Layer Index（layer_index）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:83
-#: 3c2ae7808f4d45f2b89aa2c606a42155
-msgid "`int`，默认 `0`。当 `cut_mode = \"layer_index\"` 时使用，选择哪一层下面保持不动、上面的层整体滑移。"
-msgstr ""
-"`int`, default `0`; used with `cut_mode=\"layer_index\"`. Layers below the "
-"selected interface remain fixed and those above move."
-
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:85
-#: 797bdf549fa34fa59ce30fcefc512901
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:103
+#: 9325a1cc610e4dbca7f4c60d7e16b4b9
 msgid ""
-"索引从 0 开始，必须选到顶层以下的位置；如果选到最后一层，程序会报错，因为那样没有上半部分可移动。层状材料、slab "
-"或你已经知道滑移面夹在哪两层之间时，用它比 `middle` 更明确。"
+"`float`，默认 `0.5`。当 `cut_mode = \"fractional\"` 时使用，界面范围是 0 到 "
+"0.9999；核心参数必须满足 `0 <= cut_fraction <= 1`，但 `1` 会因为上方没有原子"
+"而报错。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:105
+#: 9264fcc4c37f46f2bc65e72c43368335
+msgid ""
+"`0.5` 接近中间切面；`0.25` 会让更多原子处在上半部分并被滑移；`0.75` 则只移动"
+"靠近上侧的原子。这个值越靠近 0 或 1，移动的原子数越不平衡，适合 slab 或非均匀"
+"层结构，不适合普通体相路径的第一轮扫描。"
+msgstr ""
+"`0.5` is near the middle. `0.25` shifts more atoms and `0.75` only the upper "
+"region. Values near 0 or 1 create unbalanced halves and are more appropriate "
+"for slabs or nonuniform layering than a first bulk scan."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:107
+#: 3ff8149ac10f4d5f87f7d0a73d3e6d11
+msgid "生效条件：`切面位置`（`cut_mode`）必须是 `fractional`。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:109
+#: 0d0c933e90fa4817b576bdd0e35f288c
+msgid "下方原子层索引（layer_index）"
+msgstr "layer_index"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:111
+#: b03d137bffab4faeae00bf9e03e528fa
+msgid ""
+"`int`，默认 `0`。当 `cut_mode = \"layer_index\"` 时使用。索引指定切面下方的原"
+"子层，切面实际放在该层和下一层的中间。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:113
+#: 92e04dd8a4ef4b2b89af0e719e1a4e41
+msgid ""
+"索引从 0 开始，必须选到顶层以下的位置；如果选到最后一层，程序会报错，因为那样"
+"没有上半部分可移动。层状材料、slab 或你已经知道滑移面夹在哪两层之间时，用它"
+"比 `middle` 更明确。"
 msgstr ""
 "Indices start at 0 and must select an interface below the top layer. "
 "Choosing the final layer fails because no upper atoms remain. This mode is "
 "clearest when the interface between discrete layers is known."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:87
-#: fac56ce5a0c145698433f6d5aa246832
-msgid "生效条件：`cut_mode` 必须是 `layer_index`。"
-msgstr "Active only when `cut_mode` is `layer_index`."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:115
+#: d3b217f9fded4123a2737f98e2a2561c
+msgid ""
+"生效条件：`切面位置`（`cut_mode`）必须是 `下方原子层索引`（`layer_index`）。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:89
-#: 2a665611a3b646c392ef100ee3873049
-msgid "Wrap（wrap）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:117
+#: 01929e79a0a844fba9cb59ea7022b806
+msgid "将移动后的原子包回晶胞（wrap）"
+msgstr "wrap"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:91
-#: 9306bf8a38c842dc9dee34977882f3cb
-msgid "`bool`，默认 `true`。打开后把滑移后的原子坐标包回周期晶胞内；关闭则保留真实 Cartesian 位移。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:119
+#: 27a5d778ddea4c97893b9b83ce07d5dd
+msgid ""
+"`bool`，默认 `true`。打开后把滑移后的原子坐标包回周期晶胞内；关闭则保留真实 "
+"Cartesian 位移。"
 msgstr ""
 "`bool`, default `true`. Wrap shifted atoms back into the periodic cell. "
 "Disable to retain unwrapped Cartesian displacements for geometry inspection."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:93
-#: f20fe5138f4846f2b5fb554fe75d5d55
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:121
+#: c9821a294fc14887891a59fae49ca442
 msgid ""
-"训练集导出通常建议打开，避免原子跑出可视化盒子导致后续工具误判。做几何调试或想直接看半晶体移动了多远时可以关闭；关闭后输出仍然是同一个周期 "
-"cell，但坐标可能超过原胞边界。"
-msgstr ""
-"Keep wrapping enabled for normal export so downstream tools see atoms inside"
-" the visualization cell. With it disabled, the periodic cell is unchanged "
-"but coordinates may lie outside its bounds."
+"训练集导出通常建议打开，避免原子跑出可视化盒子导致后续工具误判。做几何调试或"
+"想直接看上半部分移动了多远时可以关闭；关闭后输出仍然是同一个周期 cell，但坐标"
+"可能超过原胞边界。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:95
-#: d5bfe676e2b747c4a0f18b2f1d52dd9d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:123
+#: ce0333f636f44919b9b546b3443e547c
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:97
-#: 2d4fb19c64e144bbab6123a72f90d039
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:125
+#: c7bbe74583fa4181afb45ea33f7c98c3
+msgid "对应 Atomsk 的 fcc (111) 半晶体滑移"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:127
+#: 74db4ad1fa8c47cbb137079db19f8d33
+msgid ""
+"参考脚本先把原始 fcc 晶体定向为 `x=[1-10]`、`y=[11-2]`、`z=[111]`，再移动 `z "
+"> 0.5*box` 的上半部分，位移沿当前 y 方向。把同一已定向结构送入本卡片时，对应"
+"参数是："
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:129
+#: 9886697e9f474d6282d747e1b3139f3b
+msgid "`plane_hkl = [0, 0, 1]`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:130
+#: 6a8a0b5593544313b15e94021e5c8d3a
+msgid "`slip_uvw = [0, 1, 0]`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:131
+#: 31d4f1afae65498286408a9effc66a38
+msgid "`displacement_range = [0.0, 1.47786, 0.073893]`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:132
+#: 4115d9394b7347b1984be52faa23170b
+msgid "`displacement_unit = \"angstrom\"`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:133
+#: ff4049ee2fe244509e73e6d254734755
+msgid "`cut_mode = \"fractional\"`，`cut_fraction = 0.5`"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:135
+#: e00a01d2855146349ae8fc279118edb1
+msgid ""
+"对晶格常数 $a=3.62$ Å，终点 $1.47786 \\approx a/\\sqrt{6}$ Å，正好扫描一个 "
+"fcc Shockley partial 位移。参考脚本随后增加真空层；本卡片不自动改晶胞，因此若"
+"目标是含真空的单内部层错 slab，应在上游先准备好真空和定向。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:137
+#: 1f8cb1ac130e4d74ab9f185aebc80c6c
 msgid "fcc111 slab 完整分数路径"
 msgstr "Complete fractional path in an fcc111 slab"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:99
-#: 3d93cbf44d5c401c9b5ed039e2c63fb8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:139
+#: 4d32926037f942f488efe19b8c4c1d55
 msgid "适合 GSFE 曲线第一轮覆盖，输出 11 个结构。"
 msgstr "Suitable for an initial GSFE curve; produces 11 structures."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:101
-#: d09adf6b2cb644f9a47e451157ba49aa
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:141
+#: 9c8dd2cf60bb49219ce149a386331eaa
 msgid ""
 "{\n"
 "  \"class\": \"StrictGSFEPathCard\",\n"
@@ -445,19 +549,18 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:118
-#: 338aebbf953448c0b9161ad283ad9306
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:158
+#: f4e5b17b316a4c51af128310ce8e4211
 msgid "小位移 Angstrom 探针"
 msgstr "Small-displacement Å probe"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:120
-#: 1de79603e1a64ad688d55c0e75d8813e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:160
+#: 50b14aefa0ce4236af08b1d7a7e66d65
 msgid "适合只想补层间微小错排，不扫完整滑移周期。"
 msgstr "Use for small interlayer offsets without a complete period."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:122
-#: 142e237672c54599a4f1d91164e6eed3
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:162
+#: e500b47f9f254084a7b6e0cda30125e4
 msgid ""
 "{\n"
 "  \"class\": \"StrictGSFEPathCard\",\n"
@@ -475,21 +578,20 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:139
-#: b4645193dac346bd810762e11c8573e9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:179
+#: 80fd0123d3be4c9abd534335cb0db83f
 msgid "指定层间切面"
 msgstr "Explicit interlayer cut"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:141
-#: 94b9d5408946404aa3e784b9eb362696
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:181
+#: ab94c9f70bc542d5920a8f442ecfe30f
 msgid "适合 slab 或层状材料，希望从第 2 层上方开始滑移。"
 msgstr ""
 "Use for a slab or layered material when motion should begin above a known "
 "layer."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:143
-#: d58e7344d4374254bd77e3b13a2d298d
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:183
+#: 277f8c263b634d3abebc9623333b39dd
 msgid ""
 "{\n"
 "  \"class\": \"StrictGSFEPathCard\",\n"
@@ -507,79 +609,257 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:160
-#: 898847f97aab46368cb0f3692e5d2fc6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:200
+#: 403bed49e9e54a25a5a38be6267afb19
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:162
-#: 5d6d36b225ba4d0ca081775cca3d57f1
-msgid "`Super Cell` → `Strict GSFE Path`：先扩胞，再切面滑移，降低小胞周期重复带来的假相互作用。"
-msgstr ""
-"`Super Cell` -> `Strict GSFE Path`: enlarge before slip to reduce artificial"
-" periodic interactions."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:202
+#: 2e5c716d3e47450e9a30bc54befcd57d
+msgid ""
+"`Super Cell` → `Stacking Fault / GSFE Path`：先扩胞，再切面滑移，降低小胞周期"
+"重复带来的假相互作用。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:163
-#: 2ba82ee930684370bc41ad4f7275e21f
-msgid "`Strict GSFE Path` → `Atomic Perturb`：在每个位移点附近加入小扰动，让模型不仅见过理想路径，也见过热扰动后的层错环境。"
-msgstr ""
-"`Strict GSFE Path` -> `Atomic Perturb`: add small finite-temperature "
-"geometry around each ideal displacement."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:203
+#: eff32cf61e6e4604844728a321319000
+msgid ""
+"`Stacking Fault / GSFE Path` → `Atomic Perturb`：在每个位移点附近加入小扰动，"
+"让模型不仅见过理想路径，也见过热扰动后的层错环境。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:164
-#: eb8b0d8408c147bebf189bafb2436b7d
-msgid "`Bain Path` → `Strict GSFE Path`：先改变晶胞形状，再扫层错路径，用于相变或应变下的 GSFE 数据。"
-msgstr ""
-"`Bain Path` -> `Strict GSFE Path`: scan a fault path in a transformed or "
-"strained cell."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:204
+#: 0095c977927d4101836e500b8abc4a75
+msgid ""
+"`Bain Path` → `Stacking Fault / GSFE Path`：先改变晶胞形状，再扫层错路径，用"
+"于相变或应变下的 GSFE 数据。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:166
-#: 7493eabc6675413ab3d27261b71b019a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:206
+#: 9e252d2d5eba4ac7a0f0c0ce250833cf
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:168
-#: f3555d83e85c45bd9475cbf8ba46e4a1
-msgid "**程序提示 slip_uvw 平行于 plane normal。** 这个方向投影到晶面内后长度为零，不能作为滑移方向。换一个面内晶向。"
-msgstr ""
-"**`slip_uvw` is parallel to the plane normal.** Its in-plane projection is "
-"zero; choose an in-plane direction."
-
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:170
-#: 287ce8a0055c469e90f1bbff158684c2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:208
+#: de735b868cd247248dbe554236a0ead4
 msgid ""
-"**移动的原子层不是预期那一半。** 先切到 `layer_index` 模式，用离散层索引明确切面；普通 `middle` 适合均匀体相，不一定适合 "
-"slab。"
-msgstr ""
-"**The wrong layers move.** Use `layer_index` to select an explicit "
-"interface. `middle` suits a uniform bulk-like cell but may not suit a slab."
+"**程序提示 slip_uvw 不在层错面内。** 检查 `h*u + k*v + l*w` 是否为 0。卡片不"
+"会把面外分量静默投影掉，请填写真实的面内晶向。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:172
-#: 10381fdfe09142deae5146c5c19a7683
-msgid "**输出坐标超过晶胞边界。** 打开 `wrap`。如果你为了检查真实位移故意关闭了 `wrap`，这不是错误，但后续导出和可视化要知道坐标未包回。"
-msgstr ""
-"**Coordinates exceed cell bounds.** Enable `wrap`. If it was intentionally "
-"disabled, treat output as unwrapped in later export and visualization."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:210
+#: edb16f81ba7e47f293db7f4262013ff2
+msgid ""
+"**移动的原子层不是预期那一半。** 先切到 `下方原子层索引`（`layer_index`）模"
+"式，用离散层索引明确切面；普通 `middle` 适合均匀体相，不一定适合 slab。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:174
-#: 65fdccee4a77401aa68cf217271f420c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:212
+#: f5930074f2ec4a7c81c2fad2128a0b10
+msgid ""
+"**输出坐标超过晶胞边界。** 打开 `将移动后的原子包回晶胞`（`wrap`）。如果你为"
+"了检查真实位移故意关闭了 `将移动后的原子包回晶胞`（`wrap`），这不是错误，但后"
+"续导出和可视化要知道坐标未包回。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:214
+#: bcea10ec2a6343848632652c1df0cb38
+msgid ""
+"**能量差除以面积后为什么和参考 GSFE 差一倍。** 先检查周期方向上有几个层错界"
+"面。纯周期体相超胞把上半部分整体平移时，胞内切面和周期边界都可能形成错配；若"
+"两处界面等价，换算单界面 GSFE 时还要除以 2。含真空 slab 通常只有一个内部切"
+"面，但仍应检查几何而不是按卡片名称直接假设。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:216
+#: fe804b5e0078442f94c9697266752b4c
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:176
-#: e1345091b10a4574af606a97e314b0b6
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:218
+#: 30710f143d634b6099b836930f0116ce
 msgid "`GSFE(hkl={hkl},uvw={uvw},d={位移量})`"
 msgstr "`GSFE(hkl={hkl},uvw={uvw},d={displacement})`"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:178
-#: f9a0c8b5db614cd0a7fcc68060a0ca40
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:220
+#: 5332254466c142708034613fbc6e5343
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:180
-#: 644778cd62a64856a2e0e5007edb0b37
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:222
+#: 216ec33c29d94e0c8f2cd61185a81e2d
 msgid "无随机性。同一输入结构和同一参数会生成完全一致的结构列表。"
 msgstr ""
 "Deterministic: the same input structure and parameters produce exactly the "
 "same structure list."
+
+#~ msgid "严格 GSFE 路径（Strict GSFE Path）"
+#~ msgstr "Strict GSFE Path"
+
+#~ msgid ""
+#~ "按显式晶面 `hkl` 和滑移方向 `uvw` 生成未弛豫的广义层错能（GSFE）路径结构。"
+#~ "输入必须已经是 slab-oriented cell：第三晶胞方向要垂直于 `plane_hkl`，否则"
+#~ "周期边界会把断层面错接成重合或过近原子，程序会直接报错。"
+#~ msgstr ""
+#~ "Generate unrelaxed generalized stacking-fault energy (GSFE) path "
+#~ "structures from an explicit plane `hkl` and slip direction `uvw`. The "
+#~ "input must already be slab oriented: its third cell direction must be "
+#~ "normal to `plane_hkl`. Otherwise periodic boundaries can reconnect the "
+#~ "fault into overlapping or excessively close atoms, and the card fails "
+#~ "explicitly."
+
+#~ msgid ""
+#~ "相比 `Stacking Fault`，这张卡把滑移方向写成明确的晶向，并提供 `middle`、"
+#~ "`fractional`、`layer_index` 三种切面选择。它适合你已经知道目标滑移系统，想"
+#~ "要严格控制 GSFE 路径几何的场景。"
+#~ msgstr ""
+#~ "Unlike `Stacking Fault`, this card specifies a crystallographic slip "
+#~ "direction and offers `middle`, `fractional`, and `layer_index` cut modes. "
+#~ "Use it when the target slip system is known and the GSFE geometry must be "
+#~ "controlled explicitly."
+
+#~ msgid ""
+#~ "**目标：** 沿 slab cell 的 `(001)` 面和面内 `[100]` 周期方向生成 0 到 1 个"
+#~ "滑移向量的路径，步长 0.1；这个 `(001)` 就是原始 fcc 的 `(111)` 面。"
+#~ msgstr ""
+#~ "**Objective:** In the slab cell, scan from 0 to one slip vector in 0.1 "
+#~ "increments along in-plane `[100]` on `(001)`. In this oriented basis, "
+#~ "`(001)` corresponds to the original fcc `(111)` plane."
+
+#~ msgid ""
+#~ "`Sequence[int]`，默认 `(0, 0, 1)`。Miller 指数，定义哪一个晶面作为层错切"
+#~ "面；该面的法向必须平行于第三晶胞方向。"
+#~ msgstr ""
+#~ "`Sequence[int]`, default `(0,0,1)`. Miller indices of the fault plane. "
+#~ "Its normal must be parallel to the third cell direction."
+
+#~ msgid ""
+#~ "`Sequence[int]`，默认 `(1, 0, 0)`。晶向指数，定义滑移方向；程序会把它投影"
+#~ "到 `plane_hkl` 所在平面内。"
+#~ msgstr ""
+#~ "`Sequence[int]`, default `(1,0,0)`. Crystallographic direction projected "
+#~ "into `plane_hkl` to define slip."
+
+#~ msgid ""
+#~ "如果 `slip_uvw` 平行于晶面法向，投影后长度为零，程序会报错。对于 fcc111 "
+#~ "slab cell，先用 `[100]` 或另一个面内周期方向做完整周期路径；如果要扫特定 "
+#~ "partial 位移，需要把 slab cell 的面内基矢先构造成对应路径。"
+#~ msgstr ""
+#~ "If `slip_uvw` is parallel to the plane normal, its in-plane projection is "
+#~ "zero and the card fails. For an fcc111 slab cell, begin with `[100]` or "
+#~ "another periodic in-plane direction. A specific partial path requires "
+#~ "constructing an in-plane basis that represents it."
+
+#~ msgid ""
+#~ "如果 `displacement_unit = \"fraction_of_vector\"`，`1.0` 表示完整投影滑移"
+#~ "向量；如果单位是 `angstrom`，数值就是 A。GSFE 曲线通常需要至少 0.05-0.1 的"
+#~ "分辨率；只做 smoke 时可以用 0、0.5、1.0 三个点快速确认几何没错。"
+#~ msgstr ""
+#~ "With `displacement_unit=\"fraction_of_vector\"`, `1.0` is the full "
+#~ "projected slip vector. With `angstrom`, values are Å. A GSFE curve "
+#~ "commonly needs 0.05-0.1 resolution; points 0, 0.5, and 1.0 are sufficient "
+#~ "only for a geometry smoke test."
+
+#~ msgid ""
+#~ "`str`，默认 `\"fraction_of_vector\"`。决定 `displacement_range` 里的数值怎"
+#~ "么转成真实位移。"
+#~ msgstr ""
+#~ "`str`, default `\"fraction_of_vector\"`. Converts `displacement_range` "
+#~ "values to physical displacements."
+
+#~ msgid "位移 = 数值乘以投影后的 `slip_uvw` 向量"
+#~ msgstr "Displacement equals the value times the projected `slip_uvw` vector"
+
+#~ msgid "扫完整 GSFE 周期或按晶向分数描述路径"
+#~ msgstr ""
+#~ "Scan a complete GSFE period or express a path as fractions of a "
+#~ "crystallographic vector"
+
+#~ msgid "位移 = 数值 A，方向为投影滑移方向的单位向量"
+#~ msgstr ""
+#~ "Displacement is the value in Å along the normalized projected slip "
+#~ "direction"
+
+#~ msgid "按投影坐标中位数切开"
+#~ msgstr "Cut at the median projected coordinate"
+
+#~ msgid "普通超胞快速生成上下两半"
+#~ msgstr "Quickly split a roughly uniform cell into two halves"
+
+#~ msgid "按投影坐标范围的 `cut_fraction` 位置切开"
+#~ msgstr "Cut at `cut_fraction` of the projected coordinate range"
+
+#~ msgid "按排序后的离散层位置切开"
+#~ msgstr "Cut between sorted discrete layers"
+
+#~ msgid ""
+#~ "`float`，默认 `0.5`。当 `cut_mode = \"fractional\"` 时使用，范围是 0 到 "
+#~ "1。"
+#~ msgstr ""
+#~ "`float`, default `0.5`; used with `cut_mode=\"fractional\"`, range 0-1."
+
+#~ msgid "生效条件：`cut_mode` 必须是 `fractional`。"
+#~ msgstr "Active only when `cut_mode` is `fractional`."
+
+#~ msgid ""
+#~ "`int`，默认 `0`。当 `cut_mode = \"layer_index\"` 时使用，选择哪一层下面保"
+#~ "持不动、上面的层整体滑移。"
+#~ msgstr ""
+#~ "`int`, default `0`; used with `cut_mode=\"layer_index\"`. Layers below "
+#~ "the selected interface remain fixed and those above move."
+
+#~ msgid "生效条件：`cut_mode` 必须是 `layer_index`。"
+#~ msgstr "Active only when `cut_mode` is `layer_index`."
+
+#~ msgid ""
+#~ "训练集导出通常建议打开，避免原子跑出可视化盒子导致后续工具误判。做几何调试"
+#~ "或想直接看半晶体移动了多远时可以关闭；关闭后输出仍然是同一个周期 cell，但"
+#~ "坐标可能超过原胞边界。"
+#~ msgstr ""
+#~ "Keep wrapping enabled for normal export so downstream tools see atoms "
+#~ "inside the visualization cell. With it disabled, the periodic cell is "
+#~ "unchanged but coordinates may lie outside its bounds."
+
+#~ msgid ""
+#~ "`Super Cell` → `Strict GSFE Path`：先扩胞，再切面滑移，降低小胞周期重复带"
+#~ "来的假相互作用。"
+#~ msgstr ""
+#~ "`Super Cell` -> `Strict GSFE Path`: enlarge before slip to reduce "
+#~ "artificial periodic interactions."
+
+#~ msgid ""
+#~ "`Strict GSFE Path` → `Atomic Perturb`：在每个位移点附近加入小扰动，让模型"
+#~ "不仅见过理想路径，也见过热扰动后的层错环境。"
+#~ msgstr ""
+#~ "`Strict GSFE Path` -> `Atomic Perturb`: add small finite-temperature "
+#~ "geometry around each ideal displacement."
+
+#~ msgid ""
+#~ "`Bain Path` → `Strict GSFE Path`：先改变晶胞形状，再扫层错路径，用于相变或"
+#~ "应变下的 GSFE 数据。"
+#~ msgstr ""
+#~ "`Bain Path` -> `Strict GSFE Path`: scan a fault path in a transformed or "
+#~ "strained cell."
+
+#~ msgid ""
+#~ "**程序提示 slip_uvw 平行于 plane normal。** 这个方向投影到晶面内后长度为"
+#~ "零，不能作为滑移方向。换一个面内晶向。"
+#~ msgstr ""
+#~ "**`slip_uvw` is parallel to the plane normal.** Its in-plane projection "
+#~ "is zero; choose an in-plane direction."
+
+#~ msgid ""
+#~ "**移动的原子层不是预期那一半。** 先切到 `layer_index` 模式，用离散层索引明"
+#~ "确切面；普通 `middle` 适合均匀体相，不一定适合 slab。"
+#~ msgstr ""
+#~ "**The wrong layers move.** Use `layer_index` to select an explicit "
+#~ "interface. `middle` suits a uniform bulk-like cell but may not suit a "
+#~ "slab."
+
+#~ msgid ""
+#~ "**输出坐标超过晶胞边界。** 打开 `wrap`。如果你为了检查真实位移故意关闭了 "
+#~ "`wrap`，这不是错误，但后续导出和可视化要知道坐标未包回。"
+#~ msgstr ""
+#~ "**Coordinates exceed cell bounds.** Enable `wrap`. If it was "
+#~ "intentionally disabled, treat output as unwrapped in later export and "
+#~ "visualization."

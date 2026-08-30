@@ -1,11 +1,17 @@
-name: Build with Nuitka and Upload to Release
+name: Build Windows Standalone with Nuitka
 
 on:
   workflow_dispatch:
     inputs:
-      tag_name:
-        description: 'Existing Tag (e.g., v1.0)'
+      ref_name:
+        description: 'Branch, tag, or commit to build'
         required: true
+        default: 'dev'
+      publish_release:
+        description: 'Upload the archive to the existing release named by ref_name'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -21,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.tag_name }}
+          ref: ${{ inputs.ref_name }}
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -32,12 +38,26 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build   setuptools setuptools-scm -U
+          pip install build setuptools setuptools-scm pybind11 -U
           
           pip install -r requirements.txt
           pip install imageio
           python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
           python -m setuptools_scm  --force-write-version-files
+
+      - name: Build and verify native helpers
+        shell: pwsh
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src
+        run: |
+          python setup.py build_ext --inplace
+          if ($LASTEXITCODE -ne 0) {
+            throw "Building NepTrainKit native helpers failed with exit code $LASTEXITCODE."
+          }
+          python -c "import NepTrainKit._native._io, NepTrainKit._native._audit, NepTrainKit._native._phase, NepTrainKit._native._magnetism"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Importing NepTrainKit native helpers failed with exit code $LASTEXITCODE."
+          }
 
 
       - name: Build with Nuitka
@@ -46,6 +66,7 @@ jobs:
           nuitka-version: main
           script-name: NepTrainKit/main.py
           include-package: NepTrainKit
+          include-module: NepTrainKit._native._io,NepTrainKit._native._audit,NepTrainKit._native._phase,NepTrainKit._native._magnetism
           output-file: NepTrainKit.exe
           mode: standalone
           windows-console-mode: disable
@@ -65,10 +86,14 @@ jobs:
           }
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination "$dist/Config" -Force
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/translations -Destination "$dist/translations" -Force
+          Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/workflow_templates -Destination "$dist/workflow_templates" -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe "$dist/update.exe"
 
           if (-not (Test-Path "$dist/translations/neptrainkit_zh_CN.qm")) {
             throw "Chinese translation catalog is missing from the standalone package."
+          }
+          if (-not (Test-Path "$dist/workflow_templates/01_crystal_strain.json")) {
+            throw "Built-in workflow templates are missing from the standalone package."
           }
           New-Item -ItemType Directory -Force "$dist/Log"
           New-Item -ItemType File -Path "$dist/Log/.placeholder" -Force
@@ -108,11 +133,18 @@ jobs:
             throw "External nep-adapters health check failed with exit code $($process.ExitCode)."
           }
 
-      - name: Upload Artifact (backup)
-        uses: actions/upload-artifact@v4
-        with:
-          name: NepTrainKit-${{ matrix.os }}-${{ inputs.tag_name }}
-          path: ${{ github.workspace }}/src/build/main.dist/
+      - name: Verify packaged native helpers
+        shell: pwsh
+        run: |
+          $exe = "${{ github.workspace }}/src/build/main.dist/NepTrainKit.exe"
+          $process = Start-Process `
+            -FilePath $exe `
+            -ArgumentList "--neptrainkit-native-health-check" `
+            -Wait `
+            -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged native helper health check failed with exit code $($process.ExitCode)."
+          }
 
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
@@ -137,8 +169,35 @@ jobs:
             exit 1
           }
           Write-Host "File exists: $filePath"
+
+      - name: Upload packaged archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: NepTrainKit-windows-x86_64-${{ github.run_number }}
+          path: ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip
+          if-no-files-found: error
+
+      - name: Verify release source tag
+        if: ${{ inputs.publish_release }}
+        shell: pwsh
+        env:
+          SOURCE_REF: ${{ inputs.ref_name }}
+        run: |
+          $tagRef = "refs/tags/$env:SOURCE_REF"
+          git show-ref --verify --quiet $tagRef
+          if ($LASTEXITCODE -ne 0) {
+            throw "Release publishing requires ref_name to be an existing tag: $tagRef"
+          }
+          $headCommit = git rev-parse HEAD
+          $tagCommit = git rev-list -n 1 $tagRef
+          if ($headCommit -ne $tagCommit) {
+            throw "Checked-out commit $headCommit does not match release tag $tagRef ($tagCommit)."
+          }
+
       - name: Upload Release
+        if: ${{ inputs.publish_release }}
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ inputs.tag_name }}" "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip" --repo "$env:GITHUB_REPOSITORY" --clobber
+          RELEASE_TAG: ${{ inputs.ref_name }}
+        run: gh release upload "$env:RELEASE_TAG" "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip" --repo "$env:GITHUB_REPOSITORY" --clobber

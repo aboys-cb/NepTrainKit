@@ -1,0 +1,274 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language: en_US\n"
+"Language-Team: none\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/nep-display-main-plot-tools.md:1
+#: 0480af2b6d9449a8b9f7ee3ec5b41723
+msgid "主图区：看图、选择与处理数据"
+msgstr "Main plot: inspect, select, and process data"
+
+#: ../../source/module/nep-display-main-plot-tools.md:3
+#: 61c1f7fab1204cab80d5a21707a1d564
+msgid "这一页对应软件左侧主图区及其竖向工具栏。目录顺序与界面按钮从上到下保持一致。 点击左侧目录中的具体工具，可以直接查看参数、默认行为和执行结果。"
+msgstr ""
+"This page covers the main plot and its vertical toolbar on the left side "
+"of the application. The page follows the buttons from top to bottom. "
+"Select a tool in the local table of contents to see its parameters, "
+"default behavior, and result."
+
+#: ../../source/module/nep-display-main-plot-tools.md:26
+#: e05356812976448985651e2e4c2b2a23
+msgid "按界面顺序选择工具"
+msgstr "Choose a tool in interface order"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: c49025a35d144e08843167fc7cb6ff63
+msgid "界面按钮"
+msgstr "Interface button"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 001ffd80aabc4e0ca8aa4588ca0225ff
+msgid "什么时候用"
+msgstr "When to use it"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: ecdef6cab9994f9fb8fbd4d361629612
+msgid "参数入口"
+msgstr "Parameter page"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 2e74a76683a64e7eae032d2fd451d836
+msgid "`Reset View` / `Pan View` / `Mouse Selection` 等"
+msgstr "See the parameter description for details."
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 8e1125efb66e459a9e163c4c6a9827ea
+msgid "调整主图、圈选、反选、撤销或删除"
+msgstr "Adjust the main plot, select points, invert the selection, undo, or delete"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: a61ec15096454e018138acfdb6988177
+msgid "[浏览与基础选择](nep-main-tool-basic.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-basic.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 5484412a7f544ddbaff165eaa0aa2871
+msgid "`Select by Index`"
+msgstr "`Select by Index`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: fd9ee25211f04b8995d856a3a29402e4
+msgid "已知结构编号或切片"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: eebcb13e8df849f1b789fcfb7041d265
+msgid "[按索引选择](nep-main-tool-select-index.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-select-index.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: c789dab73a6e4b51bafe309d26f36919
+msgid "`Select by Range`"
+msgstr "`Select by Range`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: a2082cf0be884cd382d4881d19989c6d
+msgid "按当前图的 x/y 范围选点"
+msgstr "Select points within the current plot's x/y range"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 2e866a26c6864e288ce7a2305ff0adcb
+msgid "[按图上范围选择](nep-main-tool-select-range.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-select-range.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: f5764a37bd074dfb8af5cc65230ad930
+msgid "`Select by Lattice`"
+msgstr "`Select by Lattice`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: c4e443c5833a435fb71022c5d2726b03
+msgid "按晶格长度和角度筛选"
+msgstr "Filter by lattice lengths and angles"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: d4a96b220d9348659de4aac640415aff
+msgid "[按晶格参数选择](nep-main-tool-select-lattice.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-select-lattice.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 760d37fe894948d0a053fc97f9384243
+msgid "`Find Max Error Point`"
+msgstr "`Find Max Error Point`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 9026ca34b528471ebc5449d9719c04fa
+msgid "找当前指标误差最大的前 N 个结构"
+msgstr "Find the N structures with the largest error for the current metric"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 7f16c1b57f804e14b7374357fb106a64
+msgid "[查找最大误差结构](nep-main-tool-max-error.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-max-error.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 2dc58589cc0d4cfea4cfec46450d48df
+msgid "`Sparse samples`"
+msgstr "`Sparse samples`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 3281ac5291494bbf89adb2f8ce0b6ef8
+msgid "用 FPS 选择代表结构"
+msgstr "Select representative structures with FPS"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: c3019eac1a2c454ab7a9e8d4fa5891ce
+msgid "[代表性采样](nep-main-tool-sparse-samples.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-sparse-samples.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 433c783722fc4c00bd0bbda12fc81bb1
+msgid "`Finding non-physical structures`"
+msgstr "`Finding non-physical structures`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: d416923a7a3147a9982cd569cfdf9f9f
+msgid "查找近邻距离异常结构"
+msgstr "Find structures with anomalous neighbor distances"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 72bc5b27a7db46e5975b21027e202ceb
+msgid "[查找疑似非物理结构](nep-main-tool-nonphysical.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-nonphysical.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: fc45f071115d4aa7a828440194fb28bd
+msgid "`Check Net Force`"
+msgstr "`Check Net Force`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 3d0c6b8f4aef45998fef64d6053309f0
+msgid "按净力阈值检查标签"
+msgstr "Check labels against a net-force threshold"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: da88f1219eae4f47acf7eb3f47cecd84
+msgid "[检查净力](nep-main-tool-net-force.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-net-force.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: b7b8ccb06d3540b781cf0b8bf335fae1
+msgid "`Edit Info`"
+msgstr "`Edit Info`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: e9f9be231b2848548e15d91504f8d34e
+msgid "批量增加、删除或重命名 metadata"
+msgstr "Add, delete, or rename metadata in batches"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: e90a29b2bb594259b3a4594b2d622b20
+msgid "[编辑结构信息](nep-main-tool-edit-info.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-edit-info.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: be08af836b82450980507ca4ce644f38
+msgid "`Export structure descriptor`"
+msgstr "`Export structure descriptor`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 286150c2f7d44bf88fc6e425a4ffde04
+msgid "导出当前数据的结构描述符"
+msgstr "Export structural descriptors for the current data"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: a5c5c8440a2b4ae5807412f3c486e639
+msgid "[导出结构描述符](nep-main-tool-export-descriptor.md)"
+msgstr ""
+"Details for this option ([Related guide](nep-main-tool-export-"
+"descriptor.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 79b6f04295834fb894200da20ce83af1
+msgid "`Energy Baseline Shift`"
+msgstr "`Energy Baseline Shift`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: fb92afdbec9a413487cb23f6e0e9b902
+msgid "拟合并应用能量基线平移"
+msgstr "Fit and apply an energy-baseline shift"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 211332c7edfd498f9cfaad5451c32e04
+msgid "[能量基线平移](nep-main-tool-energy-shift.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-energy-shift.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: dbf9f2bf35dc4e00999b5ef1882adcbf
+msgid "`DFT D3`"
+msgstr "`DFT D3`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 41ffed9464104c8ab76c6cba790a3f04
+msgid "增加或移除 DFT-D3 修正"
+msgstr "Add or remove a DFT-D3 correction"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 48110f37ddf847d793ed47eeea37fe3e
+msgid "[DFT-D3 修正](nep-main-tool-dft-d3.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-dft-d3.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 0e8b11cc549340e39d276c8c31dae14e
+msgid "`Training Set Audit`"
+msgstr "`Training Set Audit`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: 14d02213b1a04f9bb27acf2b34228064
+msgid "打开训练集整体质量评估"
+msgstr "Open the overall training-set audit"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: fb702d9a3e4844fb8cb57bc771dcdc76
+msgid "[进入训练集评估](nep-main-tool-training-audit.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-training-audit.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: eafc1802b76b4d43a361a0af94e66a06
+msgid "`Explore distributions`"
+msgstr "`Explore distributions`"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: aafb583eb0144b21b00a8b2d457a2ed3
+msgid "查看数值字段分布并反向选结构"
+msgstr "Inspect numeric-field distributions and select structures from them"
+
+#: ../../source/module/nep-display-main-plot-tools.md:6
+#: c1d2be2c0cfd424cabc1ec3f0ae65d99
+msgid "[查看数据分布](nep-main-tool-distributions.md)"
+msgstr "Details for this option ([Related guide](nep-main-tool-distributions.md))"
+
+#: ../../source/module/nep-display-main-plot-tools.md:45
+#: 448d21778350443cb69aaecfa8462983
+msgid "英文名称来自软件按钮，目录名称统一采用“中文用途（界面按钮）”，便于中文阅读和界面对照。"
+msgstr ""
+"The English names come from the application buttons. The Chinese table of"
+" contents uses “Chinese purpose (interface button)” consistently so that "
+"Chinese readers can match the documentation to the interface."

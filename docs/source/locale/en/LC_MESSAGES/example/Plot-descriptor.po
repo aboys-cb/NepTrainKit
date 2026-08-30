@@ -4,112 +4,126 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/example/Plot-descriptor.md:1 80740a05a80b40d590b7e8c2e721f8ec
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:1
+#: 81cb4c770a504b5581a866b9b942c616
 msgid "Descriptor 绘图示例"
 msgstr "Descriptor Plotting Example"
 
-#: ../../source/example/Plot-descriptor.md:3 8651e63c16b64e85a4d2d4ed686aa4fd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:3
+#: 2f2da52d406c4506bf81813d9b8e002e
 msgid "以 CsPbI3 为例，导出 descriptor 后绘制结构分布。"
 msgstr ""
 "This example exports descriptors for CsPbI3 and plots the resulting "
 "distribution of structures."
 
-#: ../../source/example/Plot-descriptor.md:5 136fd3e699e34ae0b618f7c1757fa667
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:5
+#: b68b26264e7d456383f246f0aa1b8218
 msgid "![Image](../_static/image/example/plot_descriptor/main_ui.png)"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:5
-#: ../../source/example/Plot-descriptor.md:20 1a5149981c1044ccab4b9a22625f7d69
-#: e524e51b2bd14f1cac5074a44ae05608
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:20
+#: 79eceed986a346a7a90f2b459b44dac5 4efb730e402c4479b8fbc1d3235b1603
 msgid "Image"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:5 e524e51b2bd14f1cac5074a44ae05608
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:5
+#: 79eceed986a346a7a90f2b459b44dac5
 msgid ".. image:: ../_static/image/example/plot_descriptor/main_ui.png"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:7 d3e479ee66a246319374ae56b5f78fb6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:7
+#: 605b9738f23d4141bf4ef47cae0660d7
 msgid "导出步骤"
 msgstr "Export the descriptors"
 
-#: ../../source/example/Plot-descriptor.md:9 5ac1e40229414f3fbf13fa899ad9e087
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:9
+#: 7fb2fdf78546475f920e5e49b0cd4f92
 msgid ""
 "选择结构：<img src=\"../_static/image/generated/show_nep_icons/pen.svg\" "
 "alt=\"pen\" width='30' height='30' />"
 msgstr ""
-"Select the structures: <img "
-"src=\"../_static/image/generated/show_nep_icons/pen.svg\" alt=\"pen\" "
-"width='30' height='30' />"
+"Select the structures: <img src=\"../_static/image/generated/show_nep_icons/"
+"pen.svg\" alt=\"pen\" width='30' height='30' />"
 
-#: ../../source/example/Plot-descriptor.md:9 f0eef507ad634362a4231bb119cee5f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:9
+#: 350442f3039142408e663978177a6bdd
 msgid "pen"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:9 f0eef507ad634362a4231bb119cee5f0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:9
+#: 350442f3039142408e663978177a6bdd
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pen.svg"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:10 4f3794d797614140bcb56ba9c83bd237
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:10
+#: 601b82c7329843819d753c8dc57c84e8
 msgid ""
 "点击导出：<img src=\"../_static/image/generated/show_nep_icons/export.svg\" "
 "alt=\"export\" width='30' height='30' />"
 msgstr ""
-"Click Export descriptors: <img "
-"src=\"../_static/image/generated/show_nep_icons/export.svg\" alt=\"export\" "
-"width='30' height='30' />"
+"Click Export descriptors: <img src=\"../_static/image/generated/"
+"show_nep_icons/export.svg\" alt=\"export\" width='30' height='30' />"
 
-#: ../../source/example/Plot-descriptor.md:10 d64028e7092741a6b3ef47e50cd53b8c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:10
+#: f682c3c3081f43b49776fcb09d490477
 msgid "export"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:10 d64028e7092741a6b3ef47e50cd53b8c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:10
+#: f682c3c3081f43b49776fcb09d490477
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export.svg"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:11 aec3994fe93f476581e4c68c199f0f5c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:11
+#: df7692a1fbfa46108a86c3f37b71d6fc
 msgid "选择文件路径"
 msgstr "Choose the output path."
 
-#: ../../source/example/Plot-descriptor.md:13 7efbc319b0214c909b1fe3c2878e5fe0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:13
+#: c89619c0b5814fce80745a4d56b41ab8
 msgid "绘图"
 msgstr "Plot the distribution"
 
-#: ../../source/example/Plot-descriptor.md:15 8f7688a0106643d9b8202a524499a005
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:15
+#: f595a6c0b1154854a87c35cb8eed0a0d
 msgid ""
-"使用 [plot_descriptor.py](https://github.com/aboys-"
-"cb/NepTrainKit/blob/master/tools/plot_descriptor.py)， 配置 `config` 和 `method`"
-" 后执行："
+"使用 [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/"
+"master/tools/plot_descriptor.py)， 配置 `config` 和 `method` 后执行："
 msgstr ""
-"Open [plot_descriptor.py](https://github.com/aboys-"
-"cb/NepTrainKit/blob/master/tools/plot_descriptor.py), set `config` and "
-"`method`, and then run:"
+"Open [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/"
+"master/tools/plot_descriptor.py), set `config` and `method`, and then run:"
 
-#: ../../source/example/Plot-descriptor.md:18 9d28a185688e420691cc3d8491e8e318
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:18
+#: d0aa5c860e1e4bfe923aaf7e4f930687
 msgid "`python plot_descriptor.py`"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:20 b1f3af16c42641b6bbbada82d848375f
-msgid "![Image](../_static/image/example/plot_descriptor/descriptor_scatter_plot.png)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:20
+#: d0104a68b2024a31b1183601fe1a404f
+msgid ""
+"![Image](../_static/image/example/plot_descriptor/"
+"descriptor_scatter_plot.png)"
 msgstr ""
 
-#: ../../source/example/Plot-descriptor.md:20 1a5149981c1044ccab4b9a22625f7d69
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:20
+#: 4efb730e402c4479b8fbc1d3235b1603
 msgid ""
-".. image:: "
-"../_static/image/example/plot_descriptor/descriptor_scatter_plot.png"
+".. image:: ../_static/image/example/plot_descriptor/"
+"descriptor_scatter_plot.png"
 msgstr ""

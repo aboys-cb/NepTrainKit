@@ -18,6 +18,7 @@ os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdat
 
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
 from NepTrainKit.core.io.base import DPPlotData, NepPlotData
+from NepTrainKit.core import MessageManager
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset
 from NepTrainKit.core.precision import get_storage_float_dtype
 from numpy.testing import assert_allclose
@@ -103,6 +104,23 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertEqual(result.stress.num, 25)
         self.assertEqual(result.virial.num, 25)
 
+    def test_export_model_npy_skips_empty_removed_dataset_and_clears_stale_output(self):
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
+        result.load()
+
+        stale_removed = Path(tmp_dir) / "export_remove_model"
+        stale_removed.mkdir()
+        (stale_removed / "stale.txt").write_text("old", encoding="utf8")
+
+        with patch.object(MessageManager, "send_info_message") as send_info:
+            result.export_model_npy(tmp_dir, group_by_config_type=False)
+
+        self.assertTrue((Path(tmp_dir) / "export_good_model").is_dir())
+        self.assertFalse(stale_removed.exists())
+        send_info.assert_called_once_with(f"File exported to: {tmp_dir}")
+
     def _make_nep_workdir(self) -> str:
         tmp_path = Path(tempfile.mkdtemp(prefix=f"nep_test_{uuid.uuid4().hex}_"))
         tmp_dir = str(tmp_path)
@@ -129,6 +147,31 @@ class TestNepTrainResultData( unittest.TestCase):
         result.export_active_xyz(export_path)
         exported = Structure.read_multiple(export_path)
         self.assertEqual(len(exported), int(result.structure.now_data.shape[0]))
+
+    def test_mixed_export_dialog_choice_reaches_active_npy_writer(self):
+        export_method = MagicMock()
+        widget = SimpleNamespace(
+            _dataset_ready=lambda: True,
+            _choose_export_format=lambda: ("deepmd/npy/mixed", True, 16),
+            nep_result_data=SimpleNamespace(
+                structure=SimpleNamespace(now_data=np.empty(1, dtype=object)),
+                export_active_npy=export_method,
+            ),
+        )
+        worker = MagicMock()
+        with (
+            patch.object(show_nep_module, "BackgroundTask", return_value=worker),
+            patch.object(show_nep_module, "call_path_dialog", return_value="/tmp/export"),
+        ):
+            show_nep_module.ShowNepWidget.export_active_structures(widget)
+
+        worker.start_work.assert_called_once_with(
+            export_method,
+            "/tmp/export",
+            npy_format="mixed",
+            group_by_config_type=True,
+            mixed_atom_numb_pad=16,
+        )
 
     def test_sync_structures_updates_all_fields(self):
         tmp_dir = self._make_nep_workdir()
@@ -451,14 +494,15 @@ class TestNepResultPlotWidgetShiftEnergyBaseline(unittest.TestCase):
 class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
     def _set_canvas_config(self, canvas_type, threshold=50):
         previous_canvas = Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)
-        previous_threshold = Config.get("widget", "auto_vispy_point_threshold", None)
+        threshold_option = nep_view_module.AUTO_VISPY_THRESHOLD_OPTION
+        previous_threshold = Config.get("widget", threshold_option, None)
         self.addCleanup(lambda: Config.set("widget", "canvas_type", previous_canvas))
         if previous_threshold is None:
-            self.addCleanup(lambda: Config.delete("widget", "auto_vispy_point_threshold"))
+            self.addCleanup(lambda: Config.delete("widget", threshold_option))
         else:
-            self.addCleanup(lambda: Config.set("widget", "auto_vispy_point_threshold", previous_threshold))
+            self.addCleanup(lambda: Config.set("widget", threshold_option, previous_threshold))
         Config.set("widget", "canvas_type", canvas_type)
-        Config.set("widget", "auto_vispy_point_threshold", threshold)
+        Config.set("widget", threshold_option, threshold)
 
     @staticmethod
     def _plot_dataset(points):
@@ -483,6 +527,21 @@ class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
         canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
             widget, self._plot_dataset(50)
         )
+
+        self.assertEqual(canvas_type, CanvasMode.VISPY.value)
+
+    def test_auto_canvas_uses_total_points_across_result_plots(self):
+        self._set_canvas_config(CanvasMode.AUTO.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = False
+        dataset = SimpleNamespace(
+            datasets=[
+                SimpleNamespace(x=np.zeros(30, dtype=np.float32)),
+                SimpleNamespace(x=np.zeros(30, dtype=np.float32)),
+            ]
+        )
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(widget, dataset)
 
         self.assertEqual(canvas_type, CanvasMode.VISPY.value)
 
@@ -530,9 +589,13 @@ class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
         )
         dataset = SimpleNamespace(datasets=[object(), object()])
 
-        def switch_canvas(canvas_type):
+        def switch_canvas(canvas_type, *, dataset, preserve_state):
             widget._canvas_type = canvas_type
             widget.canvas = new_canvas
+            new_canvas.init_axes(len(dataset.datasets))
+            new_canvas.set_nep_result_data(dataset)
+            new_canvas.plot_nep_result(preserve_selection=preserve_state)
+            return True
 
         widget.swith_canvas = MagicMock(side_effect=switch_canvas)
 
@@ -543,10 +606,126 @@ class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
         ):
             nep_view_module.NepResultPlotWidget.set_dataset(widget, dataset)
 
-        widget.swith_canvas.assert_called_once_with(CanvasMode.VISPY.value)
+        widget.swith_canvas.assert_called_once_with(
+            CanvasMode.VISPY.value,
+            dataset=dataset,
+            preserve_state=True,
+        )
         new_canvas.init_axes.assert_called_once_with(2)
         new_canvas.set_nep_result_data.assert_called_once_with(dataset)
-        new_canvas.plot_nep_result.assert_called_once()
+        new_canvas.plot_nep_result.assert_called_once_with(preserve_selection=True)
+
+    def test_manual_pyqtgraph_can_accept_one_time_large_result_switch(self):
+        self._set_canvas_config(CanvasMode.PYQTGRAPH.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._canvas_type = CanvasMode.PYQTGRAPH.value
+        widget._vispy_unavailable = False
+        widget.last_figure_num = 1
+        widget.canvas = SimpleNamespace(nep_result_data=None)
+        dataset = self._plot_dataset(50)
+        widget.swith_canvas = MagicMock(return_value=True)
+
+        with patch.object(widget, "_confirm_large_dataset_vispy_switch", return_value=True) as confirm_mock:
+            nep_view_module.NepResultPlotWidget.set_dataset(widget, dataset)
+
+        confirm_mock.assert_called_once_with(50)
+        widget.swith_canvas.assert_called_once_with(
+            CanvasMode.VISPY.value,
+            dataset=dataset,
+            preserve_state=True,
+        )
+
+    def test_large_result_switch_prompt_is_only_shown_once(self):
+        option = nep_view_module.LARGE_DATASET_CANVAS_PROMPTED_OPTION
+        previous = Config.get("widget", option, None)
+        self.addCleanup(
+            lambda: Config.delete("widget", option)
+            if previous is None
+            else Config.set("widget", option, previous)
+        )
+        Config.delete("widget", option)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._parent = None
+        box = SimpleNamespace(
+            yesButton=SimpleNamespace(setText=MagicMock()),
+            cancelButton=SimpleNamespace(setText=MagicMock()),
+            setClosableOnMaskClicked=MagicMock(),
+            exec=MagicMock(return_value=True),
+        )
+
+        with patch.object(nep_view_module, "MessageBox", return_value=box) as message_box:
+            first = nep_view_module.NepResultPlotWidget._confirm_large_dataset_vispy_switch(widget, 100000)
+            second = nep_view_module.NepResultPlotWidget._confirm_large_dataset_vispy_switch(widget, 100000)
+
+        self.assertTrue(first)
+        self.assertFalse(second)
+        message_box.assert_called_once()
+
+    def test_auto_switch_notice_is_only_sent_once(self):
+        option = nep_view_module.AUTO_VISPY_NOTICE_SHOWN_OPTION
+        previous = Config.get("widget", option, None)
+        self.addCleanup(
+            lambda: Config.delete("widget", option)
+            if previous is None
+            else Config.set("widget", option, previous)
+        )
+        Config.delete("widget", option)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+
+        with patch.object(nep_view_module.MessageManager, "send_info_message") as info_mock:
+            nep_view_module.NepResultPlotWidget._show_auto_vispy_notice_once(widget, 100000)
+            nep_view_module.NepResultPlotWidget._show_auto_vispy_notice_once(widget, 100000)
+
+        info_mock.assert_called_once()
+
+    def test_apply_canvas_mode_hot_switches_loaded_dataset(self):
+        self._set_canvas_config(CanvasMode.VISPY.value, threshold=50)
+        dataset = self._plot_dataset(10)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._canvas_type = CanvasMode.PYQTGRAPH.value
+        widget._vispy_unavailable = False
+        widget.canvas = SimpleNamespace(nep_result_data=dataset)
+        widget.swith_canvas = MagicMock(return_value=True)
+
+        switched = nep_view_module.NepResultPlotWidget.apply_canvas_mode(widget, CanvasMode.VISPY.value)
+
+        self.assertTrue(switched)
+        widget.swith_canvas.assert_called_once_with(
+            CanvasMode.VISPY.value,
+            dataset=dataset,
+            preserve_state=True,
+        )
+
+    def test_failed_prepared_switch_keeps_existing_canvas(self):
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._layout = MagicMock()
+        widget._canvas_fallback_warned = False
+        widget._vispy_unavailable = False
+        old_canvas = object()
+        old_host = object()
+        widget.canvas = old_canvas
+        widget._canvas_host_widget = old_host
+        candidate = SimpleNamespace(
+            init_axes=MagicMock(side_effect=RuntimeError("render failed")),
+            close=MagicMock(),
+        )
+        candidate_host = MagicMock()
+        dataset = SimpleNamespace(datasets=[object()])
+
+        with patch.object(nep_view_module, "create_result_canvas", return_value=(candidate, False)), patch.object(
+            nep_view_module, "resolve_canvas_host_widget", return_value=candidate_host
+        ), patch.object(nep_view_module.MessageManager, "send_warning_message") as warn_mock:
+            switched = nep_view_module.NepResultPlotWidget.swith_canvas(
+                widget,
+                CanvasMode.VISPY.value,
+                dataset=dataset,
+            )
+
+        self.assertFalse(switched)
+        self.assertIs(widget.canvas, old_canvas)
+        widget._layout.removeWidget.assert_not_called()
+        candidate.close.assert_called_once_with()
+        warn_mock.assert_called_once()
 
     def test_swith_canvas_uses_factory_and_host_widget(self):
         widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)

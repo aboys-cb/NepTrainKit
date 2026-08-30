@@ -711,6 +711,7 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_chart.selectedGroupSignal.connect(
             self._on_composition_group_selected
         )
+        self._connect_chart_export(self.composition_chart)
         composition_visual_layout.addWidget(self.composition_chart, stretch=1)
 
         composition_table_panel = QWidget(self.composition_splitter)
@@ -893,11 +894,13 @@ class TrainingSetAuditWidget(QWidget):
         chart_controls.addWidget(self.local_center_selector)
         chart_controls.addWidget(self.plot_selector_label)
         chart_controls.addWidget(self.plot_selector)
-        chart_controls.addWidget(self.analysis_status_label, stretch=1)
+        chart_controls.addStretch(1)
         chart_layout.addLayout(chart_controls)
+        chart_layout.addWidget(self.analysis_status_label)
         self.chart_widget = AuditChartWidget(self.analysis_tabs)
         self.chart_widget.setObjectName("auditChart")
         self.chart_widget.selectedGroupSignal.connect(self._on_chart_group_selected)
+        self._connect_chart_export(self.chart_widget)
         chart_layout.addWidget(self.chart_widget, stretch=1)
         chart_action_layout = QHBoxLayout()
         self.chart_selection_label = QLabel("", self.analysis_tabs)
@@ -951,12 +954,16 @@ class TrainingSetAuditWidget(QWidget):
         review_layout.setSpacing(10)
         self.review_banner = QFrame(review_tab)
         self.review_banner.setObjectName("auditReviewBanner")
-        review_banner_layout = QHBoxLayout(self.review_banner)
+        review_banner_layout = QVBoxLayout(self.review_banner)
         review_banner_layout.setContentsMargins(14, 10, 14, 10)
+        review_banner_layout.setSpacing(8)
         self.review_summary_label = QLabel("", self.review_banner)
         self.review_summary_label.setObjectName("reviewSummary")
         self.review_summary_label.setWordWrap(True)
-        review_banner_layout.addWidget(self.review_summary_label, stretch=1)
+        review_banner_layout.addWidget(self.review_summary_label)
+        review_actions = QHBoxLayout()
+        review_actions.setContentsMargins(0, 0, 0, 0)
+        review_actions.addStretch(1)
         self.review_state_selector = ComboBox(self.review_banner)
         for label, value in (
             (self.tr("Pending"), "pending"),
@@ -969,8 +976,9 @@ class TrainingSetAuditWidget(QWidget):
             self.tr("Set state"), self.review_banner
         )
         self.apply_review_state_button.clicked.connect(self._apply_review_state)
-        review_banner_layout.addWidget(self.review_state_selector)
-        review_banner_layout.addWidget(self.apply_review_state_button)
+        review_actions.addWidget(self.review_state_selector)
+        review_actions.addWidget(self.apply_review_state_button)
+        review_banner_layout.addLayout(review_actions)
         review_layout.addWidget(self.review_banner)
         review_layout.addWidget(self.findings_panel, stretch=3)
         review_layout.addWidget(self.evidence_panel, stretch=2)
@@ -1050,6 +1058,7 @@ class TrainingSetAuditWidget(QWidget):
 
         self.target_chart = AuditChartWidget(target_tab)
         self.target_chart.setObjectName("auditTargetChart")
+        self._connect_chart_export(self.target_chart)
         self.target_chart.setMinimumHeight(160)
         self.target_chart.selectedGroupSignal.connect(self._on_target_group_selected)
         target_main.addWidget(self.target_chart, stretch=3)
@@ -4792,6 +4801,76 @@ class TrainingSetAuditWidget(QWidget):
             AuditStatus.PARTIAL: self.tr("Partial data"),
             AuditStatus.UNAVAILABLE: self.tr("Not calculated"),
         }[status]
+
+    def _connect_chart_export(self, chart: AuditChartWidget) -> None:
+        """Route a chart's compact export menu to the page-level dialogs."""
+        chart.exportImageRequested.connect(
+            lambda current=chart: self._export_chart_image(current)
+        )
+        chart.exportDataRequested.connect(
+            lambda current=chart: self._export_chart_data(current)
+        )
+
+    @staticmethod
+    def _chart_export_stem(chart: AuditChartWidget) -> str:
+        stem = re.sub(r"[^0-9A-Za-z._-]+", "_", chart.plot_id).strip("._-")
+        return stem or "audit_chart"
+
+    def _export_chart_image(self, chart: AuditChartWidget) -> None:
+        if not chart.has_data:
+            MessageManager.send_info_message(
+                self.tr("Select a chart before exporting an image.")
+            )
+            return
+        path = call_path_dialog(
+            self,
+            self.tr("Export audit chart image"),
+            "file",
+            default_filename=f"{self._chart_export_stem(chart)}.png",
+            file_filter=self.tr("PNG images (*.png)"),
+        )
+        if not path:
+            return
+        target = Path(path).with_suffix(".png")
+        try:
+            chart.save_png(target, scale=2.0)
+        except Exception:
+            logger.exception("Failed to export audit chart image")
+            MessageManager.send_warning_message(
+                self.tr("Failed to export chart image.")
+            )
+            return
+        MessageManager.send_info_message(
+            self.tr("Chart image exported to: {path}").format(path=target)
+        )
+
+    def _export_chart_data(self, chart: AuditChartWidget) -> None:
+        if not chart.has_data:
+            MessageManager.send_info_message(
+                self.tr("Select a chart before exporting plotting data.")
+            )
+            return
+        path = call_path_dialog(
+            self,
+            self.tr("Export audit chart plotting data"),
+            "file",
+            default_filename=f"{self._chart_export_stem(chart)}.csv",
+            file_filter=self.tr("CSV files (*.csv)"),
+        )
+        if not path:
+            return
+        target = Path(path).with_suffix(".csv")
+        try:
+            chart.write_csv(target)
+        except Exception:
+            logger.exception("Failed to export audit chart plotting data")
+            MessageManager.send_warning_message(
+                self.tr("Failed to export plotting data.")
+            )
+            return
+        MessageManager.send_info_message(
+            self.tr("Plotting data exported to: {path}").format(path=target)
+        )
 
     def export_report(self, path: str | Path) -> None:
         """Export the current audit result as a static HTML report."""

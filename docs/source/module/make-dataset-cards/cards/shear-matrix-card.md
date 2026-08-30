@@ -2,139 +2,134 @@
 
 # 剪切矩阵应变（Shear Matrix Strain）
 
-`Group`: `Lattice` | `Class`: `ShearMatrixCard`
+**分类：** 晶格
 
 ## 功能说明
 
-通过 xy/yz/xz 剪切矩阵分量生成非对角形变样本。对晶格矢量的三个剪切通道做系统扫描，每个通道独立控制 min/max/step。
+在固定的全局笛卡尔 $x/y/z$ 坐标系中扫描剪切矩阵分量。它适合生成简单剪切路径，或补充非对角应变张量分量。
 
-$$\gamma_{xy}=\frac{s_{xy}}{100},\quad \mathbf{S}=\begin{bmatrix}1&\gamma_{xy}&\gamma_{xz}\\0&1&\gamma_{yz}\\0&0&1\end{bmatrix},\quad \mathbf{C}'=\mathbf{C}\mathbf{S}$$
+这里的 `xy`、`yz`、`xz` 指笛卡尔矩阵分量，不是晶格矢量 $a/b/c$ 的组合。对旋转或三斜晶胞仍使用同一全局笛卡尔定义。
 
-`symmetric=true` 时填充 S 的下三角对应项，使剪切路径更接近对称形变。
+## 原理与公式
+
+程序按 ASE 的行矢量晶胞约定计算：
+
+$$
+\mathbf C'=\mathbf C\mathbf S.
+$$
+
+### 简单剪切 γij
+
+$$
+\mathbf S_{\mathrm{simple}}=
+\begin{bmatrix}
+1 & \gamma_{xy} & \gamma_{xz}\\
+0 & 1 & \gamma_{yz}\\
+0 & 0 & 1
+\end{bmatrix}.
+$$
+
+界面输入单位为百分数，例如 `xy = 5%` 表示 $\gamma_{xy}=0.05$。坐标变换可写成：
+
+$$
+x'=x,\qquad
+y'=y+\gamma_{xy}x,\qquad
+z'=z+\gamma_{xz}x+\gamma_{yz}y.
+$$
+
+### 对称应变 εij
+
+$$
+\mathbf S_{\mathrm{symmetric}}=
+\begin{bmatrix}
+1 & \varepsilon_{xy} & \varepsilon_{xz}\\
+\varepsilon_{xy} & 1 & \varepsilon_{yz}\\
+\varepsilon_{xz} & \varepsilon_{yz} & 1
+\end{bmatrix}.
+$$
+
+此模式的输入是应变张量非对角分量。在线性小应变约定下，工程剪切量满足：
+
+$$
+\gamma_{ij}=2\varepsilon_{ij}.
+$$
+
+因此，对称模式输入 `5%` 表示 $\varepsilon_{xy}=0.05$，对应工程剪切量 $\gamma_{xy}=0.10$；它与简单剪切模式的 `5%` 不是同一个物理幅度。
+
+原子分数坐标随晶胞保持不变。`spin:R:3` 与 ASE `initial_magmoms` 保留输入全局坐标系中的笛卡尔分量，不随晶胞形变改写。
+
+若三条范围分别产生 $N_{xy}$、$N_{yz}$、$N_{xz}$ 个值，则：
+
+$$
+N_{\mathrm{out}}=N_{\mathrm{in}}N_{xy}N_{yz}N_{xz}.
+$$
+
+默认每条范围为 `[-2, 2, 2]`%，对应小应变弹性响应中的负向、参考和正向三点，
+因此每个输入生成 $3^3=27$ 个结构。界面会显示组合数和预计总输出数。
+
+每个输出都必须保持有限、非奇异且为右手晶胞；否则程序会提示减小剪切分量。
 
 ## 操作示例
 
-### 场景：模型预测剪切模量 C44 比 DFT 低 40%
+生成 $xy$ 简单剪切路径，范围为 $-3\%$ 到 $3\%$，步长 $1\%$：
 
-你在 fcc Al 上训练了一个 NEP 模型，C11/C12 都对，但 C44 只有 DFT 值的 60%。诊断发现：C44 是对应于 xy/yz/xz 方向剪切的分量，而训练集里所有结构都是轴向拉伸/压缩（通过 `Lattice Strain` 生成的），模型没见过非对角剪切变形。
+```text
+Deformation mode: Simple shear γij
+γxy: -3, 3, 1
+γyz: 0, 0, 1
+γxz: 0, 0, 1
+```
 
-**诊断思路：** 剪切弹性常数来源于非对角应变。如果训练集只覆盖对角应变（axial strain），模型对剪切方向的刚度完全靠外推。需要往训练集里加入已知剪切分量的结构。
-
-**输入：** 一个弛豫好的 fcc Al 单胞
-
-**目标：** 沿 xy 方向做 -3% 到 +3% 剪切，步长 1%，对称模式，共 7 个结构
-
-**参数设置：**
-- `xy_range` = `[-3, 3, 1]`
-- `yz_range` = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值写进去，否则 range 为空不生成
-- `xz_range` = `[0, 0, 1]` （不扫 xz）
-- `symmetric` = `true`
-
-**输出：** 7 个结构，剪切矩阵的 xy 分量从 -0.03 到 +0.03，yz 和 xz 分量为 0
-
-**怎么验证训练集质量改善：**
-- 重训后重新计算弹性常数矩阵，C44 应该更接近 DFT 参考值
-- 检查输出结构的晶格角变化：单斜/triclinic 体系剪切后角度会偏离正交，确认变化在物理合理范围
-- 如果 C44 改善但 C55/C66 仍有偏差，再单独扫 yz_range 和 xz_range
-- 如果三个分量都需要同时补，再同时放开三个 range —— 但注意输出数 = Nxy * Nyz * Nxz，组合数很快爆炸
-
-### 什么时候加这张卡、什么时候不加
-
-**加：**
-- 模型剪切模量、非对角弹性常数系统性偏差
-- 训练集缺少非正交晶格构型、所有结构都在高对称格点
-- 需要覆盖剪切方向的应力-应变响应
-
-**不加：**
-- 只需要体积和单轴应变 → `Lattice Strain` 更直接
-- 想通过角度而非矩阵分量控制剪切 → `Shear Angle Strain` 更适合
-- 体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `identify_organic`
+每个输入得到 7 个结构。`xy = 3%` 对应 $y'=y+0.03x$。不扫描的通道填写 `[0, 0, 1]`，因为步长必须为正数。
 
 ## 参数说明
 
-### XY Range（xy_range）
+### xy 分量范围（xy_range）
 
-`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。剪切矩阵 xy 分量的扫描区间，格式 `[min, max, step]`，单位 %。比如 `sxy=5` 对应剪切矩阵分量 0.05。如果你只扫一个分量，把另外两个设为一个点就行——但注意不能设成 `[0, 0, 0]`（步长为 0 会让 range 变空），正确写法是 `[0, 0, 1]` 保证至少生成一个 0 点。
+默认 `[-2, 2, 2]`，格式为 `[min, max, step]`，单位为百分数。其含义由形变模式决定：简单剪切中为 $\gamma_{xy}$，对称应变中为 $\varepsilon_{xy}$。
 
-### YZ Range（yz_range）
+### yz 分量范围（yz_range）
 
-`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。yz 分量的扫描区间，单位和语法同 xy_range。同理，不扫时写 `[0, 0, 1]`。
+默认 `[-2, 2, 2]`。简单剪切中为 $\gamma_{yz}$，对称应变中为 $\varepsilon_{yz}$。
 
-### XZ Range（xz_range）
+### xz 分量范围（xz_range）
 
-`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。xz 分量的扫描区间，同上。不扫时写 `[0, 0, 1]`。
+默认 `[-2, 2, 2]`。简单剪切中为 $\gamma_{xz}$，对称应变中为 $\varepsilon_{xz}$。
 
-输出总数 = Nxy * Nyz * Nxz。三个通道同时按默认值跑 = 11^3 = 1331 个结构。建议先单通道试跑验证参数，再逐步加通道。
+### 形变模式（symmetric）
 
-### Symmetric（symmetric）
+默认 `true`，表示对称应变张量模式；`false` 表示简单剪切模式。该字段沿用布尔序列化值，界面中以两个明确的模式名称呈现。
 
-`bool`，默认 `true`。打开后剪切矩阵下三角同步填充（比如 `S[1,0] = S[0,1]`），形变路径更接近物理上的对称剪切。如果你在研究非对称畸变（比如某些铁弹相变），把这个关掉。
+### 保持识别出的分子刚性（identify_organic）
 
-### Identify Organic（identify_organic）
+默认关闭。开启后，程序在晶胞仿射形变后恢复检测到的分子团内部几何。对希望保持分子内键长和键角的体系可开启。
 
-`bool`，默认 `false`。分子晶体必须打开——否则剪切变形会撕裂分子内键。纯无机体系关着即可。
+## 配置示例
 
-## 推荐预设
-
-### 单分量弹性补样（仅 xy，±3%，对称）
 ```json
 {
   "class": "ShearMatrixCard",
   "check_state": true,
-  "xy_range": [-3, 3, 1],
-  "yz_range": [0, 0, 1],
-  "xz_range": [0, 0, 1],
-  "symmetric": true,
-  "identify_organic": false
+  "params": {
+    "xy_range": [-3, 3, 1],
+    "yz_range": [0, 0, 1],
+    "xz_range": [0, 0, 1],
+    "symmetric": false,
+    "identify_organic": false
+  }
 }
 ```
-
-### 双分量剪切覆盖（xy+yz，±5%，对称，~121 个输出）
-```json
-{
-  "class": "ShearMatrixCard",
-  "check_state": true,
-  "xy_range": [-5, 5, 1],
-  "yz_range": [-5, 5, 1],
-  "xz_range": [0, 0, 1],
-  "symmetric": true,
-  "identify_organic": false
-}
-```
-
-### 三通道研究级（xy+yz+xz，±6%，步长 2%，非对称，~343 个输出）
-```json
-{
-  "class": "ShearMatrixCard",
-  "check_state": true,
-  "xy_range": [-6, 6, 2],
-  "yz_range": [-6, 6, 2],
-  "xz_range": [-6, 6, 2],
-  "symmetric": false,
-  "identify_organic": false
-}
-```
-
-## 推荐组合
-
-- `Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量，覆盖完整弹性张量
-- `Shear Matrix Strain` → `Atomic Perturb`：剪切变形后加坐标噪声
-- `Super Cell` → `Shear Matrix Strain`：先扩胞再剪切，适合研究大尺度剪切响应
 
 ## 常见问题
 
-**输出为空。** 检查 range 的步长是否 > 0。如果不扫某个分量，不能设置 `[0, 0, 0]` —— 步长为 0 会导致 range 为空。应该设置 `[0, 0, 1]` 确保至少生成一个点（0）。
+**为什么输出数会很快增加？** 三个范围按笛卡尔积组合，默认是 $3\times3\times3=27$ 个结构/输入。单通道扫描时，把另外两条范围设为 `[0, 0, 1]`。
 
-**输出数量爆炸。** 三通道联扫的输出数 = Nxy * Nyz * Nxz。默认 `[-5, 5, 1]` 三个通道同时开 = 11^3 = 1331 个结构。建议先单通道试跑验证参数合理性后再加通道。
+**为什么对称模式和简单剪切的相同百分数效果不同？** 两者输入的物理量不同：简单剪切使用工程剪切量 $\gamma$，对称模式使用张量分量 $\varepsilon$；在线性小应变下 $\gamma=2\varepsilon$。
 
-**剪切后结构物理不合理。** 剪切幅度过大导致晶格条件数恶化（接近奇异）。抽查最近邻距离和晶格行列式。±5% 以上建议逐步增加并每步检查。
-
-**vs Shear Angle Strain 如何选择。** Shear Matrix 在笛卡尔坐标下直接修改剪切矩阵分量，适合和弹性常数计算对齐；Shear Angle 修改晶胞角度 alpha/beta/gamma，适合和 XRD/晶体学角度对齐。两者产生不同的形变路径，可以互补使用。
+**为什么提示晶胞无效？** 当前分量组合使矩阵奇异或翻转成左手晶胞。减小范围，或避免同时使用过大的多个分量。
 
 ## 输出标签
 
-`Shr(xy={sxy}%,yz={syz}%,xz={sxz}%,sym={0|1})`
+`Shr(xy={sxy}%,yz={syz}%,xz={sxz}%,mode={simple|symmetric})`
 
-## 可复现性
-
-无随机性。同参数同输入 → 严格一致输出。所有剪切分量按固定网格扫描。
+零分量也会明确记录。全零组合是严格 no-op；该操作无随机性。

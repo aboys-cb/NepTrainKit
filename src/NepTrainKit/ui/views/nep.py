@@ -5,7 +5,7 @@ import traceback
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 from loguru import logger
 from qfluentwidgets import MessageBox
@@ -40,7 +40,10 @@ from NepTrainKit.core.energy_shift import (
     suggest_group_patterns,
 )
 
-AUTO_VISPY_POINT_THRESHOLD = 50000
+AUTO_VISPY_POINT_THRESHOLD = 100000
+AUTO_VISPY_THRESHOLD_OPTION = "auto_vispy_total_point_threshold"
+LARGE_DATASET_CANVAS_PROMPTED_OPTION = "large_dataset_canvas_prompted"
+AUTO_VISPY_NOTICE_SHOWN_OPTION = "auto_vispy_notice_shown"
 
 
 class NepResultPlotWidget(QWidget):
@@ -58,6 +61,8 @@ class NepResultPlotWidget(QWidget):
     tool_bar : NepDisplayGraphicsToolBar
         Toolbar whose actions manipulate the canvas and underlying dataset.
     """
+
+    structureIndexChanged = Signal(int)
 
     def __init__(self, parent=None):
         """Create the widget layout and load the canvas defined in user preferences.
@@ -80,6 +85,7 @@ class NepResultPlotWidget(QWidget):
         self._distribution_inspector = None
         self._canvas_fallback_warned = False
         self._vispy_unavailable = False
+        self._large_dataset_vispy_override = None
         self._overlay_dialog_refs: list[TrainingOverlayDialog] = []
         self.swith_canvas(canvas_type)
 
@@ -93,7 +99,123 @@ class NepResultPlotWidget(QWidget):
             return CanvasMode.VISPY.value
         return CanvasMode.PYQTGRAPH.value
 
-    def swith_canvas(self, canvas_type: CanvasMode = "pyqtgraph"):
+    @staticmethod
+    def _canvas_dataset_index(canvas, axes, dataset) -> int | None:
+        """Return the result-dataset index displayed by one backend axes."""
+        try:
+            axes_dataset = canvas.get_axes_dataset(axes)
+        except (AttributeError, IndexError, TypeError, ValueError):
+            return None
+        for index, item in enumerate(getattr(dataset, "datasets", []) or []):
+            if item is axes_dataset:
+                return index
+        return None
+
+    @classmethod
+    def _capture_canvas_state(cls, canvas, dataset) -> dict:
+        """Capture backend-neutral interaction state before replacing a canvas."""
+        state = {
+            "current_dataset_index": None,
+            "ranges": {},
+            "search_indices": set(getattr(canvas, "_search_highlight_indices", set()) or set()),
+            "structure_index": int(getattr(canvas, "structure_index", 0) or 0),
+            "draw_mode": bool(getattr(canvas, "draw_mode", False)),
+        }
+        current_axes = getattr(canvas, "current_axes", None)
+        state["current_dataset_index"] = cls._canvas_dataset_index(canvas, current_axes, dataset)
+        for axes in getattr(canvas, "axes_list", []) or []:
+            dataset_index = cls._canvas_dataset_index(canvas, axes, dataset)
+            if dataset_index is None:
+                continue
+            try:
+                if hasattr(axes, "viewRange"):
+                    x_range, y_range = axes.viewRange()
+                    state["ranges"][dataset_index] = (
+                        (float(x_range[0]), float(x_range[1])),
+                        (float(y_range[0]), float(y_range[1])),
+                    )
+                    continue
+                rect = axes.view.camera.rect
+                state["ranges"][dataset_index] = (
+                    (float(rect.left), float(rect.right)),
+                    (float(rect.bottom), float(rect.top)),
+                )
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                continue
+        return state
+
+    @classmethod
+    def _restore_canvas_state(cls, canvas, dataset, state: dict) -> None:
+        """Restore focus, ranges, current point and overlays on a new backend."""
+        canvas.structure_index = int(state.get("structure_index", 0))
+        canvas.draw_mode = bool(state.get("draw_mode", False))
+        current_dataset_index = state.get("current_dataset_index")
+        axes_by_dataset = {}
+        for axes in getattr(canvas, "axes_list", []) or []:
+            dataset_index = cls._canvas_dataset_index(canvas, axes, dataset)
+            if dataset_index is not None:
+                axes_by_dataset[dataset_index] = axes
+
+        current_axes = axes_by_dataset.get(current_dataset_index)
+        if current_axes is not None:
+            canvas.set_current_axes(current_axes)
+
+        for dataset_index, ranges in state.get("ranges", {}).items():
+            axes = axes_by_dataset.get(dataset_index)
+            if axes is None:
+                continue
+            x_range, y_range = ranges
+            try:
+                if hasattr(axes, "setRange"):
+                    axes.setRange(xRange=x_range, yRange=y_range, padding=0)
+                else:
+                    axes.view.camera.rect = (
+                        x_range[0],
+                        y_range[0],
+                        x_range[1] - x_range[0],
+                        y_range[1] - y_range[0],
+                    )
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                continue
+
+        plot_current_point = getattr(canvas, "plot_current_point", None)
+        if callable(plot_current_point):
+            plot_current_point(state.get("structure_index", 0))
+        search_indices = state.get("search_indices") or set()
+        if search_indices:
+            canvas.set_search_highlight(search_indices)
+
+    @staticmethod
+    def _dispose_canvas(canvas, host_widget) -> None:
+        """Release Qt and OpenGL resources owned by a replaced canvas."""
+        if canvas is not None:
+            try:
+                canvas.close()
+            except (AttributeError, RuntimeError):
+                pass
+        if host_widget is not None:
+            try:
+                host_widget.setParent(None)
+            except (AttributeError, RuntimeError):
+                pass
+            try:
+                host_widget.deleteLater()
+            except (AttributeError, RuntimeError):
+                pass
+
+    def _connect_canvas_signals(self, canvas) -> None:
+        try:
+            canvas.structureIndexChanged.connect(self.structureIndexChanged.emit)
+        except (AttributeError, RuntimeError):
+            pass
+
+    def _disconnect_canvas_signals(self, canvas) -> None:
+        try:
+            canvas.structureIndexChanged.disconnect(self.structureIndexChanged.emit)
+        except (AttributeError, RuntimeError):
+            pass
+
+    def swith_canvas(self, canvas_type: CanvasMode = "pyqtgraph", dataset=None, preserve_state=False) -> bool:
         """Instantiate the requested plotting backend and attach it to the layout.
 
         Parameters
@@ -102,24 +224,43 @@ class NepResultPlotWidget(QWidget):
             Backend identifier used to select between the supported canvases.
         """
         old_canvas = getattr(self, "canvas", None)
+        old_host = getattr(self, "_canvas_host_widget", None)
+        state = self._capture_canvas_state(old_canvas, dataset) if preserve_state and old_canvas is not None else None
+        requested_mode = self._canvas_mode_value(canvas_type)
+        candidate = None
+        candidate_host = None
+        try:
+            candidate, fallback = create_result_canvas(canvas_type, self)
+            candidate_host = resolve_canvas_host_widget(candidate)
+            if dataset is not None:
+                candidate.init_axes(len(dataset.datasets))
+                candidate.set_nep_result_data(dataset)
+                if state is not None:
+                    candidate.structure_index = state["structure_index"]
+                    candidate.draw_mode = state["draw_mode"]
+                candidate.plot_nep_result(preserve_selection=bool(preserve_state))
+                if state is not None:
+                    self._restore_canvas_state(candidate, dataset, state)
+        except Exception:
+            logger.exception("Failed to prepare replacement result canvas")
+            self._dispose_canvas(candidate, candidate_host)
+            MessageManager.send_warning_message(
+                self.tr("Failed to switch canvas backend; the current canvas was kept.")
+            )
+            return False
+
         if old_canvas is not None:
             self._disconnect_canvas_toolbar(old_canvas)
-
-        old_host = getattr(self, "_canvas_host_widget", None)
+            self._disconnect_canvas_signals(old_canvas)
         if old_host is not None:
             try:
                 self._layout.removeWidget(old_host)
-            except Exception:
-                pass
-            try:
-                old_host.setParent(None)
-            except Exception:
+            except (AttributeError, RuntimeError):
                 pass
 
-        requested_mode = self._canvas_mode_value(canvas_type)
-        self.canvas, fallback = create_result_canvas(canvas_type, self)
-        self._canvas_host_widget = resolve_canvas_host_widget(self.canvas)
-        self._layout.addWidget(self._canvas_host_widget)
+        self.canvas = candidate
+        self._canvas_host_widget = candidate_host
+        self._layout.addWidget(candidate_host)
         self._canvas_type = CanvasMode.PYQTGRAPH.value if fallback or requested_mode == CanvasMode.AUTO.value else requested_mode
         if fallback:
             self._vispy_unavailable = True
@@ -129,6 +270,12 @@ class NepResultPlotWidget(QWidget):
             )
             self._canvas_fallback_warned = True
         self._connect_canvas_toolbar(self.canvas)
+        self._connect_canvas_signals(self.canvas)
+        if old_canvas is not None:
+            self._dispose_canvas(old_canvas, old_host)
+        if dataset is not None:
+            self.last_figure_num = len(dataset.datasets)
+        return True
 
     def _connect_canvas_toolbar(self, canvas):
         """Connect canvas-specific toolbar actions to the active canvas."""
@@ -898,13 +1045,55 @@ class NepResultPlotWidget(QWidget):
             return int(getattr(plot_data, "num", 0) or 0)
 
     @classmethod
-    def _max_plot_point_count(cls, dataset) -> int:
-        """Return the largest plotted point count among result sub-datasets."""
-        return max((cls._plot_point_count(item) for item in getattr(dataset, "datasets", []) or []), default=0)
+    def _total_plot_point_count(cls, dataset) -> int:
+        """Return the total number of points rendered across all result plots."""
+        return sum(cls._plot_point_count(item) for item in getattr(dataset, "datasets", []) or [])
+
+    @staticmethod
+    def _auto_vispy_threshold() -> int:
+        threshold = Config.getint("widget", AUTO_VISPY_THRESHOLD_OPTION, AUTO_VISPY_POINT_THRESHOLD)
+        if threshold is None or threshold <= 0:
+            return AUTO_VISPY_POINT_THRESHOLD
+        return threshold
+
+    def _confirm_large_dataset_vispy_switch(self, point_count: int) -> bool:
+        """Offer a one-time VisPy switch when PyQtGraph was explicitly selected."""
+        if Config.getboolean("widget", LARGE_DATASET_CANVAS_PROMPTED_OPTION, False):
+            return False
+        Config.set("widget", LARGE_DATASET_CANVAS_PROMPTED_OPTION, True)
+        parent = self._parent if isinstance(self._parent, QWidget) else self
+        box = MessageBox(
+            self.tr("Large plot detected"),
+            self.tr(
+                "This result contains {point_count:,} plotted points. "
+                "PyQtGraph may become less responsive at this size. Switch this result view to VisPy?"
+            ).format(point_count=point_count),
+            parent,
+        )
+        box.yesButton.setText(self.tr("Switch to VisPy"))
+        box.cancelButton.setText(self.tr("Keep PyQtGraph"))
+        box.setClosableOnMaskClicked(True)
+        return bool(box.exec())
+
+    def _show_auto_vispy_notice_once(self, point_count: int) -> None:
+        if Config.getboolean("widget", AUTO_VISPY_NOTICE_SHOWN_OPTION, False):
+            return
+        Config.set("widget", AUTO_VISPY_NOTICE_SHOWN_OPTION, True)
+        MessageManager.send_info_message(
+            self.tr(
+                "Large result ({point_count:,} plotted points): switched to VisPy to keep the plot responsive."
+            ).format(point_count=point_count)
+        )
 
     def _desired_canvas_type_for_dataset(self, dataset) -> str:
         """Resolve the active canvas backend for this dataset and user setting."""
         configured = self._canvas_mode_value(Config.get("widget", "canvas_type", CanvasMode.AUTO))
+        if (
+            configured == CanvasMode.PYQTGRAPH.value
+            and getattr(self, "_large_dataset_vispy_override", None) is dataset
+            and not getattr(self, "_vispy_unavailable", False)
+        ):
+            return CanvasMode.VISPY.value
         if configured == CanvasMode.VISPY.value and getattr(self, "_vispy_unavailable", False):
             return CanvasMode.PYQTGRAPH.value
         if configured != CanvasMode.AUTO.value:
@@ -913,12 +1102,28 @@ class NepResultPlotWidget(QWidget):
         if getattr(self, "_vispy_unavailable", False):
             return CanvasMode.PYQTGRAPH.value
 
-        threshold = Config.getint("widget", "auto_vispy_point_threshold", AUTO_VISPY_POINT_THRESHOLD)
-        if threshold is None or threshold <= 0:
-            threshold = AUTO_VISPY_POINT_THRESHOLD
-        if self._max_plot_point_count(dataset) >= threshold:
+        if self._total_plot_point_count(dataset) >= self._auto_vispy_threshold():
             return CanvasMode.VISPY.value
         return CanvasMode.PYQTGRAPH.value
+
+    def apply_canvas_mode(self, canvas_type: object) -> bool:
+        """Apply a settings change immediately to the currently displayed result."""
+        self._large_dataset_vispy_override = None
+        configured = self._canvas_mode_value(canvas_type)
+        dataset = getattr(getattr(self, "canvas", None), "nep_result_data", None)
+        if dataset is None:
+            desired = CanvasMode.PYQTGRAPH.value if configured == CanvasMode.AUTO.value else configured
+            if getattr(self, "_canvas_type", None) == desired:
+                return False
+            return self.swith_canvas(desired)
+
+        desired = self._desired_canvas_type_for_dataset(dataset)
+        if getattr(self, "_canvas_type", None) == desired:
+            return False
+        switched = self.swith_canvas(desired, dataset=dataset, preserve_state=True)
+        if switched and configured == CanvasMode.AUTO.value and self._canvas_type == CanvasMode.VISPY.value:
+            self._show_auto_vispy_notice_once(self._total_plot_point_count(dataset))
+        return switched
 
     def set_dataset(self, dataset):
         """Attach a NEP result dataset to the canvas and refresh the plots.
@@ -928,10 +1133,25 @@ class NepResultPlotWidget(QWidget):
         dataset : Any
             Loaded NEP result container exposing descriptors and structures.
         """
+        configured = self._canvas_mode_value(Config.get("widget", "canvas_type", CanvasMode.AUTO))
+        point_count = self._total_plot_point_count(dataset)
         desired_canvas_type = self._desired_canvas_type_for_dataset(dataset)
+        if (
+            configured == CanvasMode.PYQTGRAPH.value
+            and desired_canvas_type == CanvasMode.PYQTGRAPH.value
+            and not getattr(self, "_vispy_unavailable", False)
+            and point_count >= self._auto_vispy_threshold()
+            and self._confirm_large_dataset_vispy_switch(point_count)
+        ):
+            self._large_dataset_vispy_override = dataset
+            desired_canvas_type = CanvasMode.VISPY.value
+
         if getattr(self, "_canvas_type", None) != desired_canvas_type:
-            self.swith_canvas(desired_canvas_type)
-            self.last_figure_num = None
+            switched = self.swith_canvas(desired_canvas_type, dataset=dataset, preserve_state=True)
+            if switched:
+                if configured == CanvasMode.AUTO.value and self._canvas_type == CanvasMode.VISPY.value:
+                    self._show_auto_vispy_notice_once(point_count)
+                return
 
         if self.last_figure_num != len(dataset.datasets):
             self.canvas.init_axes(len(dataset.datasets))

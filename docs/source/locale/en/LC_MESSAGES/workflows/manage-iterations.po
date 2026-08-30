@@ -1,0 +1,167 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:1
+#: 9d54485587a64905b316394781fee560
+msgid "组织多轮数据和模型版本"
+msgstr "Organize multiple data and model iterations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:3
+#: d7ae6f9ce141450085e9d65fd1f78a5c
+msgid ""
+"当同一体系已经经历多轮候选生成、DFT 和训练后，最容易丢失的不是文件，而是“这一"
+"轮为什么存在”。 这条流程把中间数据文件和 `Data Management` 记录结合起来，保证"
+"后续能回到来源。"
+msgstr "After a system goes through repeated candidate generation, DFT, and training, the easiest thing to lose is not a file but the reason that a round existed. This workflow combines intermediate files with `Data Management` records so every result can be traced back to its source."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:6
+#: 540a9d435b91401fac8237a864c5b3b5
+msgid "每轮保留四个边界"
+msgstr "Keep four boundaries for each round"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:8
+#: 9122803f05244a86aecb6753f6d66d42
+msgid "建议每轮至少区分："
+msgstr "At minimum, distinguish these stages in every round:"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:10
+#: 7f3db12971254727a1c4a043fae094b1
+msgid ""
+"candidate_pool.xyz\n"
+"candidate_pool_clean.xyz\n"
+"dft_labeled.xyz\n"
+"train.xyz\n"
+msgstr ""
+"candidate_pool.xyz\n"
+"candidate_pool_clean.xyz\n"
+"dft_labeled.xyz\n"
+"train.xyz\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:17
+#: 1b645e880d524374a29ea6986e2e61a6
+msgid "`candidate_pool.xyz`：生成卡片的原始输出，可能包含异常结构。"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:18
+#: 3e42c4e9b9f64998b98a34a670b2b8f4
+msgid "`candidate_pool_clean.xyz`：完成几何和预测预筛后的候选池。"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:19
+#: 604f826fa9384d7ca05a211664cb28ec
+msgid "`dft_labeled.xyz`：已经得到 DFT 标签的结构。"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:20
+#: 40af865b8d004b64aac746393d9de213
+msgid "`train.xyz`：真正进入本轮训练的数据，可能还包含历史数据。"
+msgstr "See the parameter description for details."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:22
+#: 921e21621bff4407adf59e6071d05c49
+msgid ""
+"不要用同一个文件名反复覆盖四个阶段。否则发现问题时无法判断是生成、清洗、DFT "
+"还是合并阶段引入。"
+msgstr "Do not repeatedly overwrite all four stages with one filename. Otherwise you cannot tell whether a problem was introduced during generation, cleaning, DFT, or merging."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:24
+#: 4eb2e52186d048d58cd125c84546ba91
+msgid "在 Data Management 中记录什么"
+msgstr "What to record in Data Management"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:26
+#: 9e2e7ef0d97f4a2b9c149ec669b799c5
+msgid ""
+"以材料体系或研究目标建立 `Project`，每次正式训练建立一个 `Model(version)`。每"
+"个版本至少记录："
+msgstr "Create a `Project` for a material system or research goal, and a `Model(version)` for each formal training run. Each version should record at least:"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:28
+#: 71ebbd03bff044be8c382fd67c841177
+msgid "模型和训练结果目录；"
+msgstr "The model and training-result directories;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:29
+#: d0faf81ffea4471e8da59956863b1e77
+msgid "本轮训练集路径；"
+msgstr "The training-set path for this round;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:30
+#: 32a3dbe97342480e90e6fca1856953f0
+msgid "新增结构的来源和数量；"
+msgstr "The source and count of newly added structures;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:31
+#: 7ee73d883f864afc87eb25198a565326
+msgid "删除或隔离了哪些异常结构；"
+msgstr "Which anomalous structures were removed or isolated;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:32
+#: 882c2713a3c24f03a0e0e37a4bf4be82
+msgid "本轮主要目标，例如 `surface`、`vacancy`、`magnetic` 或 `high-force`；"
+msgstr "The main goal of the round, such as `surface`, `vacancy`, `magnetic`, or `high-force`;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:33
+#: bb37f9fa91a64772a7b99766b6c8d980
+msgid "当前已知限制。"
+msgstr "Known limitations at this point."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:35
+#: c56793a314004b61acbc25f7b7b84190
+msgid ""
+"建议使用连续版本名，例如 `v001`、`v002`，不要把“final”“final2”“new-final”当成"
+"版本关系。"
+msgstr "Use consecutive version names such as `v001` and `v002`; do not use “final”, “final2”, or “new-final” as version relationships."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:37
+#: c113784d16d74c80b225b4f021f7fa49
+msgid "一轮结束时的检查"
+msgstr "End-of-round review"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:39
+#: 9b79c93761ee452c9f90faf6753c2d1b
+msgid "完成训练和误差复核后，再写版本记录。记录应能回答："
+msgstr "Write the version record after training and error review. It should answer:"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:41
+#: 101142b97ee440c5bdc17621a3999d26
+msgid "这一轮相对上一轮增加了什么；"
+msgstr "What this round added relative to the previous one;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:42
+#: 7fd115d7b94f4b71b16c39c29c73b145
+msgid "哪些判断来自 DFT，哪些只来自 NEP 预测预筛；"
+msgstr "Which conclusions came from DFT and which came only from NEP pre-screening;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:43
+#: 395fa966953d4375ad95eb0027d85b16
+msgid "模型在哪些结构范围内做过检查；"
+msgstr "Which structural ranges were checked for the model;"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:44
+#: bf70781c005c4b6aa1dc2d7c5388718c
+msgid "下一轮最明确的数据缺口是什么。"
+msgstr "What the clearest data gap for the next round is."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/workflows/manage-iterations.md:46
+#: 179be9292ba843f88a81ba04d91b190c
+msgid ""
+"`Data Management` 只保存项目、路径、标签和备注，不会复制大体积训练数据。移动"
+"目录后必须更新记录， 也不能把数据库记录当成数据备份。"
+msgstr "See the parameter description for details."

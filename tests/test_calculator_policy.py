@@ -16,7 +16,11 @@ from nep_adapters import (
 
 from NepTrainKit.core.calculator import NepCalculator
 from NepTrainKit.core.io.nep import NepDipoleResultData, NepPolarizabilityResultData
-from NepTrainKit.core.types import NepBackend
+from NepTrainKit.core.types import (
+    NepBackend,
+    get_configured_nep_backend,
+    parse_nep_backend,
+)
 
 
 MODEL_INFO = ModelInfo(
@@ -66,6 +70,44 @@ def test_explicit_cuda_fails_before_model_load_when_unavailable(monkeypatch):
 
     with pytest.raises(BackendUnavailableError, match="Select CPU"):
         NepCalculator(Path("nep.txt"), backend="cuda")
+
+
+def test_legacy_gpu_backend_alias_preserves_cpu_fallback(monkeypatch):
+    loaded = []
+
+    class FakeAdapter:
+        def __init__(self, _model, backend):
+            loaded.append(backend)
+            self.model_info = MODEL_INFO
+
+    monkeypatch.setattr(
+        "NepTrainKit.core.calculator.backend_status", lambda _name: _status(False)
+    )
+    monkeypatch.setattr(
+        "NepTrainKit.core.calculator.AdapterCalculator", FakeAdapter
+    )
+
+    calculator = NepCalculator(Path("nep.txt"), backend="gpu")
+
+    assert calculator.selection.requested is NepBackend.AUTO
+    assert calculator.selection.resolved is NepBackend.CPU
+    assert loaded == ["cpu"]
+
+
+def test_legacy_gpu_config_is_migrated_to_auto(monkeypatch):
+    writes = []
+    monkeypatch.setattr(
+        "NepTrainKit.core.types.Config.get",
+        lambda section, option, fallback: "gpu",
+    )
+    monkeypatch.setattr(
+        "NepTrainKit.core.types.Config.set",
+        lambda section, option, value: writes.append((section, option, value)),
+    )
+
+    assert parse_nep_backend("gpu") is NepBackend.AUTO
+    assert get_configured_nep_backend() is NepBackend.AUTO
+    assert writes == [("nep", "backend", "auto")]
 
 
 def test_auto_falls_back_only_during_backend_selection(monkeypatch):

@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from dataclasses import dataclass
 
 import numpy as np
+from ase.data import atomic_numbers
 from ase.geometry import get_distances
 
 from NepTrainKit.core.config_type import append_config_tag, sanitize_config_tag, stable_config_id
@@ -30,7 +32,9 @@ from NepTrainKit.core.magnetism import (
     spiral_unit_vectors,
 )
 
+from .errors import CardOperationError
 from .operation import StructureOperation
+from .sampling import derived_structure_seed
 
 
 def parse_angle_list(text: str) -> list[float]:
@@ -186,66 +190,48 @@ def coerce_scan_triplet(values, *, default_step: float) -> list[float]:
 @dataclass(frozen=True)
 class MagneticMomentRotationParams:
     elements: str = ""
-    max_angle: float = 10.0
+    max_angle: float = 30.0
     num_structures: int = 5
     lift_scalar: bool = True
     axis: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
     disturb_magnitude: bool = True
-    magnitude_factor: list[float] | tuple[float, float] = (0.95, 1.05)
+    magnitude_factor: list[float] | tuple[float, float] = (0.8, 1.2)
     use_seed: bool = False
     seed: int = 0
 
 
 class MagneticMomentRotationOperation(StructureOperation):
-    """Rotate and optionally rescale atomic magnetic moments."""
+    """Sample random spin directions in spherical caps and optionally rescale them."""
 
     @staticmethod
-    def rotate_vector(vector: np.ndarray, angle_deg: float, rng: np.random.Generator) -> np.ndarray:
-        vec = np.asarray(vector, dtype=float)
-        if not np.any(vec) or angle_deg <= 0:
-            return vec.copy()
-
-        axis = rng.normal(size=3)
-        axis_norm = np.linalg.norm(axis)
-        axis = np.array([0.0, 0.0, 1.0]) if axis_norm <= 1e-12 else axis / axis_norm
-
-        theta = math.radians(angle_deg)
-        cos_t = math.cos(theta)
-        sin_t = math.sin(theta)
-        ux, uy, uz = axis
-        rotation_matrix = np.array([
-            [cos_t + ux * ux * (1 - cos_t), ux * uy * (1 - cos_t) - uz * sin_t, ux * uz * (1 - cos_t) + uy * sin_t],
-            [uy * ux * (1 - cos_t) + uz * sin_t, cos_t + uy * uy * (1 - cos_t), uy * uz * (1 - cos_t) - ux * sin_t],
-            [uz * ux * (1 - cos_t) - uy * sin_t, uz * uy * (1 - cos_t) + ux * sin_t, cos_t + uz * uz * (1 - cos_t)],
-        ])
-        return rotation_matrix @ vec
-
-    @staticmethod
-    def rescale_vector(vector: np.ndarray, target_length: float) -> np.ndarray:
-        vec = np.asarray(vector, dtype=float)
-        current = np.linalg.norm(vec)
-        if current == 0 or target_length == 0:
-            return np.zeros_like(vec)
-        return vec / current * target_length
-
-    @staticmethod
-    def rotate_vectors(vectors: np.ndarray, angle_deg: np.ndarray, axes: np.ndarray) -> np.ndarray:
+    def sample_spherical_cap(
+        vectors: np.ndarray,
+        max_angle_deg: float,
+        rng: np.random.Generator,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Sample directions uniformly in solid angle around each input vector."""
         vec = np.asarray(vectors, dtype=float)
         if vec.size == 0:
-            return vec.copy()
+            return vec.copy(), np.empty(0, dtype=float)
 
-        axis = np.asarray(axes, dtype=float)
-        axis_norm = np.linalg.norm(axis, axis=1)
-        safe_axis = np.zeros_like(axis)
-        nonzero_axis = axis_norm > 1e-12
-        safe_axis[nonzero_axis] = axis[nonzero_axis] / axis_norm[nonzero_axis, None]
-        safe_axis[~nonzero_axis] = np.array([0.0, 0.0, 1.0], dtype=float)
+        lengths = np.linalg.norm(vec, axis=1)
+        base = vec / lengths[:, None]
+        reference = np.zeros_like(base)
+        use_x = np.abs(base[:, 2]) > 0.9
+        reference[~use_x, 2] = 1.0
+        reference[use_x, 0] = 1.0
+        tangent_x = np.cross(reference, base)
+        tangent_x /= np.linalg.norm(tangent_x, axis=1)[:, None]
+        tangent_y = np.cross(base, tangent_x)
 
-        theta = np.deg2rad(np.asarray(angle_deg, dtype=float))
-        cos_t = np.cos(theta)[:, None]
-        sin_t = np.sin(theta)[:, None]
-        dot = np.sum(safe_axis * vec, axis=1)[:, None]
-        return vec * cos_t + np.cross(safe_axis, vec) * sin_t + safe_axis * dot * (1.0 - cos_t)
+        cos_min = math.cos(math.radians(float(max_angle_deg)))
+        cos_theta = rng.uniform(cos_min, 1.0, size=len(vec))
+        sin_theta = np.sqrt(np.clip(1.0 - cos_theta * cos_theta, 0.0, 1.0))
+        phi = rng.uniform(0.0, 2.0 * math.pi, size=len(vec))
+        radial = np.cos(phi)[:, None] * tangent_x + np.sin(phi)[:, None] * tangent_y
+        directions = cos_theta[:, None] * base + sin_theta[:, None] * radial
+        angles = np.degrees(np.arccos(np.clip(cos_theta, -1.0, 1.0)))
+        return directions * lengths[:, None], angles
 
     @staticmethod
     def rescale_vectors(vectors: np.ndarray, target_lengths: np.ndarray) -> np.ndarray:
@@ -258,59 +244,166 @@ class MagneticMomentRotationOperation(StructureOperation):
         return out
 
     def run_structure(self, structure, params: MagneticMomentRotationParams) -> list:
-        num_structures = int(params.num_structures)
+        num_structures_value = float(params.num_structures)
+        if not np.isfinite(num_structures_value) or not num_structures_value.is_integer():
+            raise CardOperationError(
+                "magmom-rotation-output-integer",
+                "Structures per input must be an integer.",
+            )
+        num_structures = int(num_structures_value)
         if num_structures <= 0:
-            return [structure.copy()]
+            raise CardOperationError(
+                "magmom-rotation-output-count",
+                "Structures per input must be at least 1.",
+            )
+
+        max_angle = float(params.max_angle)
+        if not np.isfinite(max_angle) or not 0.0 <= max_angle <= 180.0:
+            raise CardOperationError(
+                "magmom-rotation-angle",
+                "Maximum perturbation angle must be between 0 and 180 degrees.",
+            )
 
         raw_magmoms = existing_moments(structure)
         if raw_magmoms is None:
-            return [structure.copy()]
+            raise CardOperationError(
+                "magmom-rotation-missing-moments",
+                "Spin Perturb requires spin or initial magnetic moments on every input structure.",
+            )
 
         is_vector = raw_magmoms.ndim == 2 and raw_magmoms.shape == (len(structure), 3)
-        can_rotate = float(params.max_angle) > 0 and (is_vector or params.lift_scalar)
-        axis = normalize_vector(np.array(params.axis, dtype=float))
-        base_vectors = existing_moment_vectors(structure, axis=axis, lift_scalar=True)
+        if not is_vector and not params.lift_scalar:
+            raise CardOperationError(
+                "magmom-rotation-scalar-disabled",
+                "Scalar magnetic moments must be lifted to vectors before they can be rotated.",
+            )
+        axis = np.array([0.0, 0.0, 1.0])
+        if not is_vector:
+            axis_values = np.asarray(params.axis, dtype=float)
+            if axis_values.shape != (3,) or not np.isfinite(axis_values).all():
+                raise CardOperationError(
+                    "magmom-rotation-axis-finite",
+                    "The scalar lift direction must contain three finite Cartesian components.",
+                )
+            if np.linalg.norm(axis_values) <= 1e-12:
+                raise CardOperationError(
+                    "magmom-rotation-axis-zero",
+                    "The scalar lift direction must be non-zero.",
+                )
+            axis = normalize_vector(axis_values)
+        base_vectors = existing_moment_vectors(
+            structure,
+            axis=axis,
+            lift_scalar=bool(params.lift_scalar),
+        )
         if base_vectors is None:
-            return [structure.copy()]
-
-        base_seed = int(params.seed) if params.use_seed else None
-        rng = np.random.default_rng(base_seed)
-        elements = parse_element_set(params.elements)
-        if not elements:
-            elements = set(structure.get_chemical_symbols())
+            raise CardOperationError(
+                "magmom-rotation-unusable-moments",
+                "Spin Perturb could not convert the input magnetic moments to vectors.",
+            )
 
         min_factor, max_factor = [float(v) for v in params.magnitude_factor]
-        if min_factor > max_factor:
-            min_factor, max_factor = max_factor, min_factor
+        if params.disturb_magnitude:
+            if (
+                not np.isfinite([min_factor, max_factor]).all()
+                or min_factor < 0.0
+                or max_factor < 0.0
+            ):
+                raise CardOperationError(
+                    "magmom-rotation-magnitude-range",
+                    "Magnitude scale bounds must be finite and non-negative.",
+                )
+            if min_factor > max_factor:
+                raise CardOperationError(
+                    "magmom-rotation-magnitude-order",
+                    "Magnitude scale minimum must not exceed the maximum.",
+                )
+        else:
+            min_factor = max_factor = 1.0
+        if max_angle == 0.0 and (
+            not params.disturb_magnitude
+            or (min_factor == 1.0 and max_factor == 1.0)
+        ):
+            raise CardOperationError(
+                "magmom-rotation-no-change",
+                "Increase the perturbation angle or enable a magnitude scale range that changes the moments.",
+            )
+
+        base_seed = (
+            derived_structure_seed(int(params.seed), structure)
+            if params.use_seed
+            else None
+        )
+        rng = np.random.default_rng(base_seed)
+        elements = parse_element_set(params.elements)
+        invalid_elements = sorted(symbol for symbol in elements if atomic_numbers.get(symbol, 0) <= 0)
+        if invalid_elements:
+            raise CardOperationError(
+                "magmom-rotation-invalid-elements",
+                "Invalid element symbols in the target list: {elements}.",
+                elements=", ".join(invalid_elements),
+            )
 
         results = []
         symbols = structure.get_chemical_symbols()
+        if not elements:
+            elements = set(symbols)
         selected_mask = np.array([symbol in elements for symbol in symbols], dtype=bool)
-        selected_indices = np.nonzero(selected_mask)[0]
         base_lengths = np.linalg.norm(base_vectors, axis=1)
-        for _ in range(num_structures):
+        selected_mask &= base_lengths > 1e-12
+        selected_indices = np.nonzero(selected_mask)[0]
+        if selected_indices.size == 0:
+            raise CardOperationError(
+                "magmom-rotation-no-targets",
+                "No non-zero magnetic moments match the selected elements.",
+            )
+
+        can_rotate = max_angle > 0.0
+        for sample_index in range(num_structures):
             new_structure = structure.copy()
             moment_array = np.array(base_vectors, copy=True)
-            if selected_indices.size:
-                if can_rotate:
-                    angles = rng.uniform(0.0, float(params.max_angle), size=selected_indices.size)
-                    axes = rng.normal(size=(selected_indices.size, 3))
-                    rotated = self.rotate_vectors(base_vectors[selected_indices], angles, axes)
-                    if params.disturb_magnitude:
-                        scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
-                        rotated = self.rescale_vectors(rotated, base_lengths[selected_indices] * scales)
-                    moment_array[selected_indices] = rotated
-                elif params.disturb_magnitude:
+            scales = np.ones(selected_indices.size, dtype=float)
+            realized_angles = np.zeros(selected_indices.size, dtype=float)
+            if can_rotate:
+                rotated, realized_angles = self.sample_spherical_cap(
+                    base_vectors[selected_indices], max_angle, rng
+                )
+                if params.disturb_magnitude:
                     scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
-                    moment_array[selected_indices] *= scales[:, None]
+                    rotated = self.rescale_vectors(rotated, base_lengths[selected_indices] * scales)
+                moment_array[selected_indices] = rotated
+            elif params.disturb_magnitude:
+                scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
+                moment_array[selected_indices] *= scales[:, None]
             set_initial_magmoms_safe(new_structure, moment_array)
-            label = "MMR" if can_rotate else "MMS"
+            label = "SpinPert" if can_rotate else "SpinScale"
             details = []
             if can_rotate:
                 details.append(f"a={float(params.max_angle):.1f}")
             if params.disturb_magnitude:
                 details.append(f"s={min_factor:.2f}-{max_factor:.2f}")
             append_config_tag(new_structure, label + (("(" + ",".join(details) + ")") if details else ""))
+            new_structure.info["spin_perturbation"] = json.dumps(
+                {
+                    "direction_distribution": "uniform_spherical_cap",
+                    "elements": sorted(elements),
+                    "max_angle": max_angle,
+                    "num_structures": num_structures,
+                    "lifted_scalar": not is_vector,
+                    "scalar_lift_direction": axis.tolist() if not is_vector else None,
+                    "disturb_magnitude": bool(params.disturb_magnitude),
+                    "magnitude_factor": [min_factor, max_factor],
+                    "seed": int(params.seed) if params.use_seed else None,
+                    "derived_seed": base_seed,
+                    "sample_index": sample_index,
+                    "selected_count": int(selected_indices.size),
+                    "realized_angle_max": float(np.max(realized_angles)),
+                    "realized_angle_mean": float(np.mean(realized_angles)),
+                    "sampled_scale_min": float(np.min(scales)),
+                    "sampled_scale_max": float(np.max(scales)),
+                },
+                separators=(",", ":"),
+            )
             results.append(new_structure)
         return results
 
@@ -573,7 +666,10 @@ class MagneticOrderOperation(StructureOperation):
     def _prepare(self, structure, params: MagneticOrderParams) -> _MagneticOrderState:
         spin_model = self.normalize_format(params.format)
         if not (params.gen_fm or params.gen_afm or params.gen_pm):
-            raise ValueError("MagneticOrder: select at least one of FM, AFM, or PM.")
+            raise CardOperationError(
+                "magnetic_order.no_order_selected",
+                "Magnetic Order: select at least one of FM, AFM, or PM.",
+            )
 
         axis = np.asarray(params.axis, dtype=float)
         if (
@@ -603,7 +699,10 @@ class MagneticOrderOperation(StructureOperation):
                     )
             pm_count = int(params.pm_count)
             if pm_count < 1:
-                raise ValueError("MagneticOrder: PM structures must be at least 1.")
+                raise CardOperationError(
+                    "magnetic_order.invalid_pm_count",
+                    "Magnetic Order: PM structures must be at least 1.",
+                )
             if (
                 spin_model == "noncollinear"
                 and pm_direction == "cone"
@@ -620,7 +719,10 @@ class MagneticOrderOperation(StructureOperation):
         if params.gen_pm:
             max_outputs = int(params.max_outputs)
             if max_outputs < 1:
-                raise ValueError("MagneticOrder: max outputs must be at least 1.")
+                raise CardOperationError(
+                    "magnetic_order.invalid_max_outputs",
+                    "Magnetic Order: maximum outputs must be at least 1.",
+                )
             if output_count > max_outputs:
                 raise ValueError(
                     f"MagneticOrder: requested {output_count} outputs per input, "
@@ -674,22 +776,26 @@ class MagneticOrderOperation(StructureOperation):
         if "group" not in structure.arrays:
             raise ValueError(
                 "MagneticOrder: AFM group mode requires atoms.arrays['group']; "
-                "add Group Label upstream or choose k-vector mode."
+                "add Layer Groups upstream or choose k-vector mode."
             )
         group_a = str(params.afm_group_a or "").strip()
         group_b = str(params.afm_group_b or "").strip()
         if not group_a or not group_b:
             raise ValueError("MagneticOrder: AFM group labels must be non-empty.")
         if group_a == group_b:
-            raise ValueError("MagneticOrder: AFM positive and negative group labels must differ.")
+            raise CardOperationError(
+                "magnetic_order.same_afm_groups",
+                "Magnetic Order: AFM positive and negative group labels must differ.",
+            )
 
         groups = np.asarray(structure.arrays["group"], dtype=str)
         mask_a = (groups == group_a) & magnetic_mask
         mask_b = (groups == group_b) & magnetic_mask
         if not np.any(mask_a) or not np.any(mask_b):
-            raise ValueError(
-                "MagneticOrder: AFM group mode needs at least one magnetic atom "
-                "in both the positive and negative groups."
+            raise CardOperationError(
+                "magnetic_order.empty_afm_group",
+                "Magnetic Order: AFM group mode needs at least one magnetic atom "
+                "in both the positive and negative groups.",
             )
 
         signs = np.zeros(len(structure), dtype=float)
@@ -706,7 +812,10 @@ class MagneticOrderOperation(StructureOperation):
     ) -> np.ndarray:
         values = np.asarray(signs, dtype=float).reshape(-1)
         if values.shape != state.magnitudes.shape:
-            raise ValueError("MagneticOrder: sign array length does not match atoms.")
+            raise CardOperationError(
+                "magnetic_order.sign_count_mismatch",
+                "Magnetic Order: sign array length does not match atoms.",
+            )
         if state.spin_model == "noncollinear":
             return (
                 values[:, None]
@@ -780,18 +889,42 @@ class SpinSpiralOperation(StructureOperation):
         phases = range_values(list(params.phase_range))
         mz_values = self.mz_values(params)
         max_outputs = int(params.max_outputs)
+        if max_outputs < 1:
+            raise CardOperationError(
+                "spin_spiral_invalid_output_limit",
+                "Spin Spiral maximum outputs must be at least 1.",
+            )
         axis = normalize_vector(np.array(params.axis, dtype=float))
 
         if params.only_commensurate_periods:
             discovered_periods = discover_commensurate_periods_in_bounds(period_bounds, structure=structure, axis=axis)
             periods = periods if discovered_periods is None else discovered_periods
             if not periods:
-                suggest_supercell_multipliers(original_periods, structure=structure, axis=axis)
-                return [structure.copy()]
+                suggestion = suggest_supercell_multipliers(
+                    original_periods, structure=structure, axis=axis
+                )
+                if suggestion is not None:
+                    period, multipliers = suggestion
+                    raise CardOperationError(
+                        "spin_spiral_no_commensurate_period_with_suggestion",
+                        "No lattice-compatible spin-spiral period exists in the requested range. "
+                        "For a period of {period} Å, try a {multipliers} supercell.",
+                        period=f"{period:.6g}",
+                        multipliers=" × ".join(str(value) for value in multipliers),
+                    )
+                raise CardOperationError(
+                    "spin_spiral_no_commensurate_period",
+                    "No lattice-compatible spin-spiral period exists in the requested range. "
+                    "Change the period range or expand the cell along the propagation axis.",
+                )
 
         mags = self.magnitudes(structure, params)
         if mags.shape[0] != len(structure) or not np.any(mags > 0):
-            return [structure.copy()]
+            raise CardOperationError(
+                "spin_spiral_no_moments",
+                "Spin Spiral requires at least one non-zero magnetic moment. "
+                "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+            )
 
         positions = np.asarray(structure.get_positions(), dtype=float)
         phase_positions = self.phase_positions(positions, axis, params)
@@ -926,6 +1059,7 @@ class SpinSpiralOperation(StructureOperation):
             mags = existing_moment_magnitudes(structure)
             if mags is not None:
                 return mags
+            return np.zeros(len(structure), dtype=float)
         return mapped_moment_magnitudes(
             structure,
             parse_magmom_map_any(params.magmom_map),
@@ -1095,8 +1229,9 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 "provide initial_magmoms or select Map/default magnitude."
             )
         if not np.any(np.linalg.norm(base_moments, axis=1) > 1e-10):
-            raise ValueError(
-                "SmallAngleSpinTilt found no nonzero magnetic moments to tilt."
+            raise CardOperationError(
+                "small_angle_spin_tilt.no_nonzero_moments",
+                "Small-angle Spin Tilt found no nonzero magnetic moments to tilt.",
             )
 
         angles = parse_angle_list(params.angle_list) or [1.0, 2.0, 5.0, 10.0]
@@ -1112,9 +1247,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         if params.canting_mode == "Global tilt":
             target_indices = self.all_eligible_indices(structure, base_moments, params)
             if not target_indices:
-                raise ValueError(
-                    "SmallAngleSpinTilt global mode found no eligible magnetic atoms; "
-                    "check apply_elements and magnetic moments."
+                raise CardOperationError(
+                    "small_angle_spin_tilt.no_global_targets",
+                    "Small-angle Spin Tilt global mode found no eligible magnetic atoms; "
+                    "check apply_elements and magnetic moments.",
                 )
             for angle_deg in angles:
                 for sign_tag, sign_value in self.signs(params):
@@ -1133,9 +1269,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         elif params.canting_mode == "Single-spin tilt":
             target_indices = self.candidate_indices(structure, base_moments, params)
             if not target_indices:
-                raise ValueError(
-                    "SmallAngleSpinTilt single-spin mode matched no target atoms; "
-                    "check target_mode, target_indices, apply_elements, and magnetic moments."
+                raise CardOperationError(
+                    "small_angle_spin_tilt.no_single_targets",
+                    "Small-angle Spin Tilt single-spin mode matched no target atoms; "
+                    "check target_mode, target_indices, apply_elements, and magnetic moments.",
                 )
             for atom_index in target_indices:
                 for angle_deg in angles:
@@ -1163,9 +1300,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 )
             pairs = self.pair_targets(structure, base_moments, params)
             if not pairs:
-                raise ValueError(
-                    "SmallAngleSpinTilt atom-pair mode matched no valid pairs; "
-                    "check pair source, indices, shell, element/group filters, and magnetic moments."
+                raise CardOperationError(
+                    "small_angle_spin_tilt.no_valid_pairs",
+                    "Small-angle Spin Tilt atom-pair mode matched no valid pairs; "
+                    "check pair source, indices, shell, element/group filters, and magnetic moments.",
                 )
             for left_idx, right_idx in pairs:
                 for angle_deg in angles:
@@ -1211,8 +1349,9 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                     break
 
         if not outputs:
-            raise ValueError(
-                "SmallAngleSpinTilt produced no tilted structures from the selected targets."
+            raise CardOperationError(
+                "small_angle_spin_tilt.no_outputs",
+                "Small-angle Spin Tilt produced no tilted structures from the selected targets.",
             )
         return outputs
 
@@ -1504,7 +1643,10 @@ class SpinDisorderOperation(StructureOperation):
 
         eligible = self.eligible_indices(structure, base_moments, params)
         if eligible.size == 0:
-            raise ValueError("Spin Disorder found no eligible nonzero magnetic moments.")
+            raise CardOperationError(
+                "spin_disorder.no_eligible_moments",
+                "Spin Disorder found no eligible nonzero magnetic moments.",
+            )
 
         base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
@@ -1572,8 +1714,9 @@ class SpinDisorderOperation(StructureOperation):
             seen.add(rounded)
             values.append(rounded)
         if not values:
-            raise ValueError(
-                "Spin Disorder requires at least one fraction within (0, 1]."
+            raise CardOperationError(
+                "spin_disorder.no_valid_fraction",
+                "Spin Disorder requires at least one fraction within (0, 1].",
             )
         return values
 
@@ -1701,11 +1844,17 @@ class CorrelatedRandomSpinOperation(StructureOperation):
 
         selected = self.eligible_indices(structure, base_moments, params)
         if selected.size == 0:
-            raise ValueError("Correlated Random Spin found no eligible nonzero magnetic moments.")
+            raise CardOperationError(
+                "correlated_random_spin.no_eligible_moments",
+                "Correlated Random Spin found no eligible nonzero magnetic moments.",
+            )
         if selected.size > max_atoms:
-            raise ValueError(
-                "Correlated Random Spin exact full covariance is limited to "
-                f"{max_atoms} eligible atoms; got {selected.size}. Reduce the selection or use a smaller structure."
+            raise CardOperationError(
+                "correlated_spin_too_many_eligible",
+                "Exact correlated sampling supports at most {maximum} eligible non-zero moments; "
+                "the current selection has {actual}. Reduce the target elements or use a smaller structure.",
+                maximum=max_atoms,
+                actual=selected.size,
             )
 
         positions = np.asarray(structure.get_positions(), dtype=float)[selected]
@@ -1718,7 +1867,10 @@ class CorrelatedRandomSpinOperation(StructureOperation):
         try:
             chol = np.linalg.cholesky(covariance)
         except np.linalg.LinAlgError as exc:
-            raise ValueError("Correlated Random Spin covariance is not positive definite for this structure/kernel.") from exc
+            raise CardOperationError(
+                "correlated_random_spin.invalid_covariance",
+                "Correlated Random Spin covariance is not positive definite for this structure/kernel.",
+            ) from exc
 
         base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
@@ -1859,20 +2011,45 @@ class FoldedHelixOperation(StructureOperation):
         angle_steps = range_values(list(params.angle_step_range), minimum=0.0)
         phases = range_values(list(params.phase_range))
         max_outputs = int(params.max_outputs)
+        sequences = self.sequence_values(params)
+        minimum_budget = len(sequences)
+        if max_outputs < minimum_budget:
+            raise CardOperationError(
+                "folded_helix_incomplete_sequence_budget",
+                "Maximum outputs must be at least {minimum} for the selected folded-helix sequence mode.",
+                minimum=minimum_budget,
+            )
 
         mags = self.magnitudes(structure, params)
         if mags.shape[0] != len(structure) or not np.any(mags > 0):
-            return [structure.copy()]
+            raise CardOperationError(
+                "folded_helix_no_moments",
+                "Folded Helix requires at least one non-zero magnetic moment. "
+                "Add moments upstream or select the element-map source and enter a non-zero magnitude.",
+            )
 
         layer_axis = normalize_vector(np.array(params.layer_axis, dtype=float))
         plane_normal = normalize_vector(np.array(params.plane_normal, dtype=float))
         e1, e2, plane_hat = orthonormal_frame(plane_normal)
+        existing_vectors = existing_moment_vectors(structure, axis=plane_normal)
+        base_moments = (
+            np.zeros((len(structure), 3), dtype=float)
+            if existing_vectors is None
+            else np.asarray(existing_vectors, dtype=float).copy()
+        )
         layer_ids = SpinSpiralOperation.layer_ids(
             np.asarray(structure.get_positions(), dtype=float),
             layer_axis,
             float(params.layer_tolerance),
         )
         layer_count = int(layer_ids.max()) + 1 if layer_ids.size else 0
+        if layer_count < 3:
+            raise CardOperationError(
+                "folded_helix_too_few_layers",
+                "Folded Helix needs at least 3 detected layers along the layer axis; "
+                "the current settings detect {actual}. Check the layer axis and tolerance.",
+                actual=layer_count,
+            )
         half_periods = self.half_period_values(params, layer_count=layer_count)
         auto_mode = params.half_period_mode == "Auto from layer count"
 
@@ -1888,14 +2065,20 @@ class FoldedHelixOperation(StructureOperation):
 
             for angle_step in angle_steps:
                 for phase_deg in phases:
-                    for seq_tag, seq_sign in self.sequence_values(params):
+                    if len(outputs) + len(sequences) > max_outputs:
+                        reached_limit = True
+                        break
+                    for seq_tag, seq_sign in sequences:
                         atoms = structure.copy()
                         phase_rad = np.deg2rad(float(phase_deg) + seq_sign * folded_steps * float(angle_step))
                         unit_vectors = (
                             np.cos(phase_rad)[:, None] * e1[None, :]
                             + np.sin(phase_rad)[:, None] * e2[None, :]
                         )
-                        set_initial_magmoms_safe(atoms, mags[:, None] * unit_vectors)
+                        moments = base_moments.copy()
+                        target_mask = mags > 0.0
+                        moments[target_mask] = mags[target_mask, None] * unit_vectors[target_mask]
+                        set_initial_magmoms_safe(atoms, moments)
                         append_config_tag(
                             atoms,
                             (
@@ -1916,6 +2099,22 @@ class FoldedHelixOperation(StructureOperation):
                 break
 
         return outputs or [structure.copy()]
+
+    @classmethod
+    def output_counts(cls, params: FoldedHelixParams) -> tuple[int, int]:
+        """Return theoretical and budget-capped counts per valid input."""
+        half_period_count = (
+            len(int_range_values(list(params.half_period_layers), minimum=1))
+            if params.half_period_mode == "Manual"
+            else 1
+        )
+        angle_count = len(range_values(list(params.angle_step_range), minimum=0.0))
+        phase_count = len(range_values(list(params.phase_range)))
+        sequence_count = len(cls.sequence_values(params))
+        theoretical = half_period_count * angle_count * phase_count * sequence_count
+        max_outputs = max(0, int(params.max_outputs))
+        capped_budget = max_outputs - max_outputs % sequence_count
+        return theoretical, min(theoretical, capped_budget)
 
     @staticmethod
     def sequence_values(params: FoldedHelixParams) -> list[tuple[str, int]]:
@@ -1949,6 +2148,7 @@ class FoldedHelixOperation(StructureOperation):
             if mags is not None:
                 mask = element_mask(structure.get_chemical_symbols(), apply_elements)
                 return np.where(mask, mags, 0.0)
+            return np.zeros(len(structure), dtype=float)
         return mapped_moment_magnitudes(
             structure,
             parse_magmom_map_any(params.magmom_map),

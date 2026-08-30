@@ -1,13 +1,13 @@
 # 候选结构清洗后再进入 DFT
 
-这条流程适合处理 `Make Dataset` 生成的大批候选结构。目标不是在本地得到最终训练标签，
+这条流程适合处理 `生成数据集` 生成的大批候选结构。目标不是在本地得到最终训练标签，
 而是在 DFT 之前删掉明显不值得计算的结构，避免把计算资源花在坏构型和重复构型上。
 
 一条稳妥路线是：
 
 ```text
 弛豫好的初始结构
--> Make Dataset 生成候选结构
+-> 生成数据集 生成候选结构
 -> NEP Dataset Display 查看和清洗异常结构
 -> FPS Filter 或其他采样方法选择代表结构
 -> DFT 标注
@@ -18,10 +18,10 @@
 
 先准备一批可信的初始结构。它们通常来自已有训练集、弛豫后的晶体、表面模型、缺陷模型或手工构建的原型。
 
-在 `Make Dataset` 页面，先用顶部 `Open` 导入这些初始结构，再添加生成卡片。
+在 `生成数据集` 页面，先用顶部 `Open` 导入这些初始结构，再添加生成卡片。
 
 ```{image} ../_static/image/generated/make_data_empty.png
-:alt: Make Dataset input and workspace
+:alt: 生成数据集 input and workspace
 :class: docs-screenshot
 ```
 
@@ -30,7 +30,7 @@
 
 ## 2. 生成候选结构，不要急着 DFT
 
-`Make Dataset` 负责把初始结构扩展成候选池。例如：
+`生成数据集` 负责把初始结构扩展成候选池。例如：
 
 - `Lattice Strain` / `Shear Strain`：补应变附近结构。
 - `Atomic Perturb` / `Vibration Perturb`：补近平衡扰动。
@@ -107,7 +107,7 @@ DFT 标注完成后，把带有能量、力、应力的结构再导入 `NEP Data
 - 某些构型族是否过多或过少。
 - 训练后模型在哪些结构上误差最大。
 
-这一步的输出会决定下一轮 `Make Dataset` 应该补什么：是补某类缺陷、某个应变范围，
+这一步的输出会决定下一轮 `生成数据集` 应该补什么：是补某类缺陷、某个应变范围，
 还是缩小某张生成卡的参数范围。
 
 ## 常见误区

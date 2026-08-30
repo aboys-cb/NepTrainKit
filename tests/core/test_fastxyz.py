@@ -31,6 +31,15 @@ def _escaped_json_trajectory() -> bytes:
     ).encode("ascii")
 
 
+def _shifted_energy_trajectory() -> bytes:
+    return (
+        '1\n'
+        'Lattice="3 0 0 0 3 0 0 0 3" Properties=species:S:1:pos:R:3 '
+        'Config_type=shifted energy=-10.25 energy_original=-12.5 pbc="T T T"\n'
+        'B 0 0 0\n'
+    ).encode("ascii")
+
+
 def _single_atom_trajectory(frame_count: int) -> bytes:
     frame = (
         b"1\n"
@@ -67,6 +76,18 @@ def test_parse_escaped_json_keeps_following_fields(monkeypatch):
     assert additional_fields["energy"] == -10.25
     assert additional_fields["stress"].shape == (9,)
     assert additional_fields["pbc"] == "T T T"
+
+
+def test_parse_shifted_energy_keeps_original_energy_numeric(monkeypatch):
+    fastxyz = pytest.importorskip("NepTrainKit._native._io")
+    monkeypatch.setenv("NEPKIT_FASTXYZ_SPECIES_MODE", "str")
+
+    frame = fastxyz.parse_all(memoryview(_shifted_energy_trajectory()), 1)[0]
+    additional_fields = frame["additional_fields"]
+
+    assert additional_fields["energy"] == -10.25
+    assert additional_fields["energy_original"] == -12.5
+    assert isinstance(additional_fields["energy_original"], float)
 
 
 def test_index_frames_yields_the_gil_during_large_scans():

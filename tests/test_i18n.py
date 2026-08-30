@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import sys
 import xml.etree.ElementTree as ET
@@ -131,6 +132,7 @@ _TASK5_TRANSLATIONS = {
         "Please import the structure file first. You can drag it in directly or import it from the upper left corner!": "请先导入结构文件。你可以直接拖入，或从左上角导入。",
         "No card selected. Please select a card in the workspace.": "尚未选择卡片，请先在工作区选择一个卡片。",
         "Training structures generated.": "训练结构已生成。",
+        "Workflow completed with 0 output structures.": "工作流已完成，输出 0 个结构。",
         "no card": "没有卡片",
         "No cards in workspace.": "工作区中没有卡片。",
         "Card configuration exported successfully.": "卡片配置已导出。",
@@ -249,6 +251,70 @@ def test_legacy_runtime_translation_table_is_frozen():
     assert replacement_count <= 258
 
 
+def test_card_core_has_no_mixed_language_constant_runtime_errors():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    cards_root = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "core" / "cards"
+    english_markers = (
+        " requires ",
+        " must ",
+        " at least ",
+        " cannot ",
+        " could not ",
+        " invalid ",
+        " unsupported ",
+        " failed ",
+        " needs ",
+        " is empty",
+    )
+    failures = []
+    for path in sorted(cards_root.glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Raise) or not isinstance(node.exc, ast.Call):
+                continue
+            call = node.exc
+            if not isinstance(call.func, ast.Name) or call.func.id not in {
+                "ValueError",
+                "RuntimeError",
+            }:
+                continue
+            if not call.args or not isinstance(call.args[0], ast.Constant):
+                continue
+            source = call.args[0].value
+            if not isinstance(source, str):
+                continue
+            translated = translate_runtime_message(source)
+            if translated == source or any(
+                marker in translated.lower() for marker in english_markers
+            ):
+                failures.append((path.name, node.lineno, source, translated))
+    assert failures == []
+
+
+def test_composition_gradient_and_internal_invariants_translate_fully():
+    from NepTrainKit.core.cards.alloy import (
+        CompositionGradientOperation,
+        CompositionGradientParams,
+    )
+
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    with pytest.raises(CardOperationError) as raised:
+        CompositionGradientOperation.sampling_summary(
+            CompositionGradientParams(elements="")
+        )
+
+    assert translate_runtime_message(raised.value) == "成分梯度至少需要两种元素。"
+    assert translate_runtime_message(
+        "Conditional Replace matched-site count changed during execution."
+    ) == "条件替换执行期间，匹配位点数量发生了变化。"
+    assert translate_runtime_message(
+        "CellStrain output-count preview disagrees with generation."
+    ) == "晶格应变的输出数量预览与实际生成结果不一致。"
+
+
 def test_structured_card_error_formats_in_english():
     app = QApplication.instance() or QApplication([])
     i18n.install_translator(app, "en_US")
@@ -283,6 +349,78 @@ def test_structured_card_error_uses_qt_catalog_in_chinese():
     assert i18n.normalize_language("  zh_CN  ") == "zh_CN"
     assert i18n.normalize_language("zh") == "auto"
     assert i18n.normalize_language(None) == "auto"
+
+
+def test_structured_card_error_translates_interpolated_field_name():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    error = CardOperationError(
+        "organic-bond-detection-radius-positive",
+        "{field} must be positive.",
+        field="Bond detection radius",
+    )
+
+    assert translate_runtime_message(error) == "成键检测半径必须为正数。"
+
+
+def test_local_solvation_structured_errors_are_fully_chinese():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    field_error = CardOperationError(
+        "local-solvation-solvent-count-minimum",
+        "{field} must be at least {minimum}.",
+        field="Total solvent molecules per output",
+        minimum=1,
+    )
+    mode_error = CardOperationError(
+        "local-solvation-ion-water-requires-water",
+        "Supported ion hydration requires a water solvent molecule.",
+    )
+
+    assert translate_runtime_message(field_error) == "每个输出的溶剂分子总数必须至少为 1。"
+    assert translate_runtime_message(mode_error) == "受支持的离子水合模式要求溶剂分子为水。"
+
+
+def test_random_occupancy_structured_errors_are_fully_chinese():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    source_error = CardOperationError(
+        "random_occupancy.invalid_source",
+        "RandomOccupancy: source must be 'Auto (Comp tag)' or 'Manual'.",
+    )
+    parse_error = CardOperationError(
+        "random_occupancy.invalid_composition",
+        "RandomOccupancy could not parse the manual composition: {error}",
+        error="Composition ratio for Fe must be non-negative.",
+    )
+
+    assert translate_runtime_message(source_error) == (
+        "随机占位：组成来源必须是“自动（Comp 标签）”或“手动”。"
+    )
+    assert translate_runtime_message(parse_error) == (
+        "随机占位无法解析手动组成：Composition ratio for Fe 必须为非负数。"
+    )
+
+
+def test_random_doping_structured_errors_are_fully_chinese():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+
+    empty_rules = CardOperationError(
+        "random_doping.empty_rules",
+        "Random Doping requires at least one replacement rule.",
+    )
+    no_effect = CardOperationError(
+        "random_doping.no_effect",
+        "Random Doping cannot replace any atoms with the current rules and input. Increase the amount or use a larger structure.",
+    )
+
+    assert translate_runtime_message(empty_rules) == "随机掺杂至少需要一条替换规则。"
+    assert translate_runtime_message(no_effect) == (
+        "当前规则和输入无法替换任何原子。请提高替换用量或使用更大的结构。"
+    )
 
 
 def test_translation_path_uses_runtime_resource_root(monkeypatch, tmp_path):

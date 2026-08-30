@@ -1,4 +1,9 @@
-# Make Dataset 配方示例（Recipes）
+# 生成数据集配方示例（Recipes）
+
+```{contents} 本页目录
+:local:
+:depth: 2
+```
 
 这份页面回答两个问题：
 
@@ -144,7 +149,7 @@
 
 ### 卡片顺序
 
-`Super Cell → Random Slab → Insert Defect → Vacancy Defect Generation → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`Super Cell → Random Slab → Insert Defect → Global Vacancy → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
@@ -206,7 +211,7 @@
 
 **每步预期输出：** 每个 slab 再生成 2 个上表面随机吸附候选；这里只做连续横向采样和最小距离约束，不识别顶位、桥位或空位。
 
-#### Step 4. `Vacancy Defect Generation`
+#### Step 4. `Global Vacancy`
 
 ```json
 {
@@ -252,7 +257,7 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder(fcc111) → Stacking Fault / GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
+`Crystal Prototype Builder(fcc111) → GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
 
 ### 每步 JSON 配置
 
@@ -276,7 +281,7 @@
 
 **每步预期输出：** 1 个 slab-oriented 周期 cell。当前 cell 的 `(001)` 面对应原始 fcc 的 `(111)` 面，第三晶胞方向已经垂直于层错面。
 
-#### Step 2. `Stacking Fault / GSFE Path`
+#### Step 2. `GSFE Path`
 
 ```json
 {
@@ -304,7 +309,7 @@
 
 ### 常见失败点
 
-- 直接把普通 `fcc` cubic cell 送进 `Stacking Fault / GSFE Path`：第三晶胞方向不垂直于目标 `(111)` 面，程序会报 slab-oriented 错误。
+- 直接把普通 `fcc` cubic cell 送进 `GSFE Path`：第三晶胞方向没有按目标 `(111)` 面定向，程序会报错。
 - 把这里的 `fcc111` 当成真空表面：它是周期 cell，不含真空层；如果要自由表面，用 `Random Slab`。
 - 位移步长太粗：0.1 适合第一轮覆盖；如果峰值附近曲线不平滑，把步长缩到 0.05。
 
@@ -321,18 +326,18 @@
 
 ### 卡片顺序
 
-`Group Label → Magnetic Order → Magmom Rotation`
+`Layer Groups → Magnetic Order → Spin Perturb`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Group Label`
+#### Step 1. `Layer Groups`
 
 ```json
 {
   "class": "GroupLabelCard",
   "params": {
-    "mode": "k_vector",
-    "kvec": "111",
+    "miller_index": "111",
+    "layer_tolerance": 0.05,
     "group_a": "A",
     "group_b": "B",
     "overwrite": false
@@ -375,7 +380,7 @@
 
 **每步预期输出：** 得到 1 个 FM、1 个 AFM 和 8 个 PM 候选；`afm_mode=group_ab` 时，真正起作用的是 `afm_group_a/b`，不是 `afm_kvec`。
 
-#### Step 3. `Magmom Rotation`
+#### Step 3. `Spin Perturb`
 
 ```json
 {
@@ -406,13 +411,13 @@
 
 - 没有先提供 `magmom_map` 或合理 `default_moment`：生成的磁矩幅值会退化。
 - `afm_mode` 设成 `group A/B` 却没有 `group` 数组：AFM 分支会失去预期分组信息。
-- 直接用 `Magmom Rotation` 处理没有初始磁矩的结构：旋转对象本身就不存在。
+- 直接用 `Spin Perturb` 处理没有初始磁矩的结构：扰动对象本身就不存在。
 
 ## 有机构象
 
 ### 目标说明
 
-为有机分子或分子晶体生成构象样本，再叠加轻微原子扰动，得到更适合 NEP 训练的局部结构分布。
+为有机分子或分子晶体生成扭转构象，并在同一步中叠加可控的轻微坐标噪声。
 
 ### 输入假设
 
@@ -421,11 +426,11 @@
 
 ### 卡片顺序
 
-`Organic Mol Config → Atomic Perturb → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`Molecular Conformers → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Organic Mol Config`
+#### Step 1. `Molecular Conformers`
 
 ```json
 {
@@ -435,7 +440,7 @@
     "torsion_range_deg": [-25.0, 25.0],
     "max_torsions_per_conf": 2,
     "gaussian_sigma": 0.01,
-    "pbc_mode": "molecule in box",
+    "pbc_mode": "no",
     "local_cutoff": 5,
     "local_subtree": 100,
     "bond_detect_factor": 1.15,
@@ -456,26 +461,6 @@
 
 **每步预期输出：** 每帧输入扩出 8 个构象版本；主变化来自扭转角和局部高斯扰动，而不是晶格变形。
 
-#### Step 2. `Atomic Perturb`
-
-```json
-{
-  "class": "PerturbCard",
-  "params": {
-    "engine_type": 0,
-    "max_distance": 0.03,
-    "max_num": 3,
-    "identify_organic": true,
-    "use_element_scaling": false,
-    "element_scalings": {},
-    "use_seed": true,
-    "seed": 6
-  }
-}
-```
-
-**每步预期输出：** 每个有机构象再扩出 3 个轻微原子热扰动版本；`organic=true` 会尽量保持分子内部拓扑不被原子级随机位移破坏。
-
 ### 最终数据集特征
 
 - 同时覆盖扭转构象和局部热噪声
@@ -484,6 +469,5 @@
 
 ### 常见失败点
 
-- `organic` 没开：原子级扰动更容易拉坏分子内部键。
 - `torsion_range_deg` 设得太宽：容易生成明显高能或自相交构象。
-- 先做大幅原子扰动再做构象采样：会把构象变化和非物理断键混在一起。
+- 预览中的检测键数或连通分量明显不对，却直接批量生成：后续扭转对象会偏离预期。

@@ -4,7 +4,7 @@ from dataclasses import fields, is_dataclass
 from unittest.mock import patch
 import time
 
-from PySide6.QtCore import QEvent, QPointF, Qt
+from PySide6.QtCore import QEvent, QPoint, QPointF, Qt, qInstallMessageHandler
 from PySide6.QtGui import QMouseEvent
 
 from NepTrainKit.core.cards.operation import (
@@ -14,7 +14,7 @@ from NepTrainKit.core.cards.operation import (
 )
 from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.ui.threads import DataProcessingThread
-from NepTrainKit.ui.widgets import FilterDataCard
+from NepTrainKit.ui.widgets import FilterDataCard, adapt_legacy_inspector_form
 
 
 class TestCardContracts(BaseCardTest):
@@ -188,6 +188,35 @@ class TestCardContracts(BaseCardTest):
             card.mouseMoveEvent(large_move_event)
             self.assertEqual(FakeDrag.calls, 1)
 
+    def test_drag_handle_maps_child_coordinates_without_qt_hierarchy_warning(self):
+        card = _ExternalTestCard()
+        card.resize(420, 160)
+        card.show()
+        self._app.processEvents()
+        local_pos = QPoint(5, 6)
+        expected = card.drag_handle.mapTo(card, local_pos)
+        messages = []
+        previous_handler = qInstallMessageHandler(
+            lambda _type, _context, message: messages.append(message)
+        )
+        try:
+            press_event = QMouseEvent(
+                QEvent.Type.MouseButtonPress,
+                QPointF(local_pos),
+                QPointF(card.drag_handle.mapToGlobal(local_pos)),
+                Qt.MouseButton.LeftButton,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.NoModifier,
+            )
+            QApplication.sendEvent(card.drag_handle, press_event)
+        finally:
+            qInstallMessageHandler(previous_handler)
+
+        self.assertEqual(card._drag_start_pos, expected)
+        self.assertFalse(
+            any("parent must be in parent hierarchy" in message for message in messages)
+        )
+
     def test_operation_cards_write_only_params(self):
         for class_name, card_cls in CardManager.card_info_dict.items():
             if not hasattr(card_cls, "create_operation"):
@@ -217,6 +246,32 @@ class TestCardContracts(BaseCardTest):
                 card.get_params(),
                 f"{class_name} should preserve params through to_dict/from_dict",
             )
+
+    def test_inspector_reflow_preserves_builtin_card_json_and_params(self):
+        for class_name, card_cls in CardManager.card_info_dict.items():
+            metadata = CardManager.card_metadata_dict[class_name]
+            if "_card" not in metadata.source_path:
+                continue
+            card = card_cls()
+            if not hasattr(card, "setting_widget"):
+                continue
+
+            payload = card.to_dict()
+            adapt_legacy_inspector_form(card.setting_widget, card.settingLayout)
+            self.assertEqual(
+                card.to_dict(),
+                payload,
+                f"{class_name} JSON changed after inspector-only reflow",
+            )
+
+            restored = card_cls()
+            restored.from_dict(payload)
+            if hasattr(card, "get_params") and hasattr(restored, "get_params"):
+                self.assertEqual(
+                    restored.get_params(),
+                    card.get_params(),
+                    f"{class_name} old JSON no longer restores the same params",
+                )
 
     def test_builtin_operation_cards_expose_complete_frozen_params_contract(self):
         operation_types = (StructureOperation, DatasetOperation, GeneratorOperation)
@@ -315,6 +370,7 @@ class TestCardContracts(BaseCardTest):
                 extend_cell_z=False,
                 extra_vacuum=1.0,
                 layers=2,
+                distance_mode="translation",
                 distance=4.0,
             ),
         )

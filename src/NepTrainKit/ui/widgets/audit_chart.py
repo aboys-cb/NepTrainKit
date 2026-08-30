@@ -1,14 +1,22 @@
 """Deterministic QPainter charts for Training Set Audit plot payloads."""
 from __future__ import annotations
 
+import csv
 from collections.abc import Mapping, Sequence
 from math import ceil, expm1, isfinite, log1p
 from numbers import Integral
+from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import QRectF, QSize, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPen
+from PySide6.QtCore import QCoreApplication, QPoint, QRectF, QSize, Qt, Signal
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QImage, QPainter, QPen
 from PySide6.QtWidgets import QWidget
+from qfluentwidgets import (
+    Action,
+    FluentIcon,
+    RoundMenu,
+    TransparentDropDownToolButton,
+)
 
 
 _BACKGROUND = QColor("#FFFFFF")
@@ -61,6 +69,9 @@ class AuditChartWidget(QWidget):
     """Render one normalized audit plot and emit clicked structure groups."""
 
     selectedGroupSignal = Signal(list)
+    plotChangedSignal = Signal(bool)
+    exportImageRequested = Signal()
+    exportDataRequested = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -68,10 +79,49 @@ class AuditChartWidget(QWidget):
         self._bar_rects: list[tuple[QRectF, list[int] | None]] = []
         self._bar_tooltips: list[str] = []
         self._focused_bar_index = 0
+        self._export_rendering = False
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setAccessibleName(self.tr("Training-set audit chart"))
         self.setMinimumHeight(220)
+        self.export_button = TransparentDropDownToolButton(
+            FluentIcon.IMAGE_EXPORT, self
+        )
+        self.export_button.setFixedSize(32, 32)
+        self.export_button.setToolTip(
+            QCoreApplication.translate(
+                "TrainingSetAuditWidget",
+                "Export the current chart or its plotting data",
+            )
+        )
+        self.export_button.setAccessibleName(
+            QCoreApplication.translate(
+                "TrainingSetAuditWidget", "Export current chart"
+            )
+        )
+        export_menu = RoundMenu(parent=self.export_button)
+        export_image_action = Action(
+            FluentIcon.IMAGE_EXPORT,
+            QCoreApplication.translate(
+                "TrainingSetAuditWidget", "Export image…"
+            ),
+            self.export_button,
+        )
+        export_image_action.triggered.connect(self.exportImageRequested)
+        export_data_action = Action(
+            FluentIcon.DOCUMENT,
+            QCoreApplication.translate(
+                "TrainingSetAuditWidget", "Export plotting data…"
+            ),
+            self.export_button,
+        )
+        export_data_action.triggered.connect(self.exportDataRequested)
+        export_menu.addAction(export_image_action)
+        export_menu.addAction(export_data_action)
+        self.export_button.setMenu(export_menu)
+        self.export_button.setEnabled(False)
+        self.plotChangedSignal.connect(self.export_button.setEnabled)
+        self._position_export_button()
 
     @property
     def plot_id(self) -> str:
@@ -88,6 +138,14 @@ class AuditChartWidget(QWidget):
     def sizeHint(self) -> QSize:
         return QSize(640, 260)
 
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._position_export_button()
+
+    def _position_export_button(self) -> None:
+        self.export_button.move(max(0, self.width() - 40), 4)
+        self.export_button.raise_()
+
     def set_plot(self, plot: Mapping[str, Any] | None) -> None:
         """Normalize and render one plot payload emitted by an audit dimension."""
         self._plot = self._normalize_plot(plot)
@@ -95,6 +153,7 @@ class AuditChartWidget(QWidget):
         self._bar_tooltips = []
         self._focused_bar_index = 0
         self.update()
+        self.plotChangedSignal.emit(self.has_data)
 
     def clear(self) -> None:
         """Discard the current plot and render the empty state."""
@@ -103,6 +162,165 @@ class AuditChartWidget(QWidget):
         self._bar_tooltips = []
         self._focused_bar_index = 0
         self.update()
+        self.plotChangedSignal.emit(False)
+
+    def save_png(self, path: str | Path, *, scale: float = 2.0) -> None:
+        """Render the current chart to a high-resolution PNG file."""
+        if self._plot is None:
+            raise ValueError("No audit chart data is available for export.")
+        if not isfinite(scale) or scale <= 0:
+            raise ValueError("PNG export scale must be a positive finite number.")
+        pixel_width = max(1, int(round(self.width() * scale)))
+        pixel_height = max(1, int(round(self.height() * scale)))
+        image = QImage(
+            pixel_width,
+            pixel_height,
+            QImage.Format.Format_ARGB32_Premultiplied,
+        )
+        image.setDevicePixelRatio(scale)
+        image.fill(_BACKGROUND)
+        painter = QPainter(image)
+        export_button_visible = self.export_button.isVisible()
+        try:
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            self._export_rendering = True
+            self.export_button.hide()
+            self.render(painter, QPoint())
+        finally:
+            self.export_button.setVisible(export_button_visible)
+            self._export_rendering = False
+            painter.end()
+        target = Path(path)
+        if not image.save(str(target), "PNG"):
+            raise OSError(f"Failed to save audit chart image to {target}")
+
+    def write_csv(self, path: str | Path) -> None:
+        """Write the current chart's plotting values as a tidy UTF-8 CSV file."""
+        if self._plot is None:
+            raise ValueError("No audit chart data is available for export.")
+        columns, rows = self._csv_table()
+        with Path(path).open("w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(columns)
+            writer.writerows(rows)
+
+    @staticmethod
+    def _export_number(value: float) -> str:
+        return str(int(value)) if float(value).is_integer() else f"{value:.17g}"
+
+    def _csv_table(self) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...]]:
+        plot = self._plot
+        if plot is None:
+            raise ValueError("No audit chart data is available for export.")
+        kind = plot["kind"]
+        common_columns = ("plot_id", "plot_kind", "title", "x_axis", "y_axis")
+        common = (
+            plot["id"],
+            kind,
+            plot["title"],
+            plot["x_label"],
+            plot["y_label"],
+        )
+        rows: list[tuple[str, ...]] = []
+
+        if kind == "histogram":
+            columns = common_columns + (
+                "bin_index", "bin_left", "bin_right", "bin_label", "count", "low_frequency"
+            )
+            labels = plot.get("bin_labels", ())
+            for index, count in enumerate(plot["counts"]):
+                left = plot["bin_edges"][index]
+                right = plot["bin_edges"][index + 1]
+                label = labels[index] if index < len(labels) else f"{left:g}–{right:g}"
+                rows.append(
+                    common
+                    + (
+                        str(index),
+                        self._export_number(left),
+                        self._export_number(right),
+                        label,
+                        self._export_number(count),
+                        "true" if index in plot["highlighted_bins"] else "false",
+                    )
+                )
+        elif kind == "categorical_bars":
+            columns = common_columns + (
+                "category_index", "category_id", "category", "count", "low_frequency"
+            )
+            bar_ids = plot.get("bar_ids", ())
+            for index, (label, count) in enumerate(zip(plot["labels"], plot["counts"])):
+                rows.append(
+                    common
+                    + (
+                        str(index),
+                        bar_ids[index] if index < len(bar_ids) else "",
+                        label,
+                        self._export_number(count),
+                        "true" if index in plot["highlighted_bins"] else "false",
+                    )
+                )
+        elif kind == "composition_stems":
+            columns = common_columns + (
+                "point_index", "x_value", "label", "count", "target_point", "low_frequency"
+            )
+            targets = plot["target_points"]
+            for index, (x_value, label, count) in enumerate(
+                zip(plot["x_values"], plot["labels"], plot["counts"])
+            ):
+                rows.append(
+                    common
+                    + (
+                        str(index),
+                        self._export_number(x_value),
+                        label,
+                        self._export_number(count),
+                        "true" if any(abs(x_value - target) <= 1.0e-12 for target in targets) else "false",
+                        "true" if index in plot["highlighted_bins"] else "false",
+                    )
+                )
+        elif kind == "composition_phase_stacks":
+            columns = common_columns + (
+                "point_index", "x_value", "label", "series_id", "series_label", "count", "total", "share"
+            )
+            for series in plot["series"]:
+                for index, (x_value, label, count, total) in enumerate(
+                    zip(plot["x_values"], plot["labels"], series["counts"], plot["counts"])
+                ):
+                    rows.append(
+                        common
+                        + (
+                            str(index),
+                            self._export_number(x_value),
+                            label,
+                            series["id"],
+                            series["label"],
+                            self._export_number(count),
+                            self._export_number(total),
+                            self._export_number(count / total if total else 0.0),
+                        )
+                    )
+        else:
+            columns = common_columns + (
+                "row_index", "row_id", "row_label", "series_id", "series_label", "count", "total", "share"
+            )
+            for series in plot["series"]:
+                for index, (row_id, label, count, total) in enumerate(
+                    zip(plot["row_ids"], plot["row_labels"], series["counts"], plot["counts"])
+                ):
+                    rows.append(
+                        common
+                        + (
+                            str(index),
+                            row_id,
+                            label,
+                            series["id"],
+                            series["label"],
+                            self._export_number(count),
+                            self._export_number(total),
+                            self._export_number(count / total if total else 0.0),
+                        )
+                    )
+        return columns, tuple(rows)
 
     @staticmethod
     def _normalize_plot(plot: Mapping[str, Any] | None) -> dict[str, Any] | None:
@@ -428,7 +646,7 @@ class AuditChartWidget(QWidget):
             self._draw_category_share_stacks(painter)
         else:
             self._draw_composition_stems(painter)
-        if self.hasFocus() and self._bar_rects:
+        if self.hasFocus() and not self._export_rendering and self._bar_rects:
             self._focused_bar_index = min(
                 self._focused_bar_index, len(self._bar_rects) - 1
             )
@@ -443,14 +661,14 @@ class AuditChartWidget(QWidget):
         title_font.setPointSize(max(9, title_font.pointSize()))
         painter.setFont(title_font)
         painter.setPen(_TEXT)
-        painter.drawText(QRectF(8, 6, max(1, self.width() - 16), 22), Qt.AlignmentFlag.AlignLeft, self._plot["title"])
+        painter.drawText(QRectF(8, 6, max(1, self.width() - 58), 22), Qt.AlignmentFlag.AlignLeft, self._plot["title"])
         if self._plot["highlighted_bins"]:
             legend = self.tr("Orange = low-frequency range")
             metrics = QFontMetrics(painter.font())
             width = metrics.horizontalAdvance(legend)
-            painter.fillRect(QRectF(self.width() - width - 32, 12, 10, 10), _ORANGE)
+            painter.fillRect(QRectF(self.width() - width - 74, 12, 10, 10), _ORANGE)
             painter.drawText(
-                QRectF(self.width() - width - 18, 5, width + 10, 22),
+                QRectF(self.width() - width - 60, 5, width + 10, 22),
                 Qt.AlignmentFlag.AlignVCenter,
                 legend,
             )

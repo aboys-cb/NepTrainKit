@@ -4,7 +4,7 @@
 # @email    : 1747193328@qq.com
 
 
-from PySide6.QtCore import QUrl, Qt
+from PySide6.QtCore import QUrl, Qt, Signal
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
  
@@ -28,6 +28,7 @@ from NepTrainKit.core.types import (
     ForcesMode,
     CanvasMode,
     NepBackend,
+    get_configured_nep_backend,
     DataPrecision,
     parse_forces_mode,
     parse_data_precision,
@@ -49,6 +50,8 @@ class SettingsWidget(ScrollArea):
     parent : QWidget
         Parent container that hosts the settings page.
     """
+
+    canvasModeChanged = Signal(str)
 
     def __init__(self,parent):
         """Initialise setting groups, cards, and default values.
@@ -166,15 +169,6 @@ class SettingsWidget(ScrollArea):
             parent=self.personal_group
         )
         self.use_group_menu_card.setValue(use_group_menu_config)
-        preserve_deepmd = Config.getboolean("widget", "deepmd_preserve_subfolders", True)
-        self.deepmd_preserve_card = SwitchSettingCard(
-            FluentIcon.FOLDER,
-            self.tr('Keep DeepMD subfolders'),
-            self.tr('Preserve imported folder hierarchy when exporting deepmd/npy'),
-            parent=self.personal_group
-        )
-        self.deepmd_preserve_card.setValue(preserve_deepmd)
-
         cache_outputs = Config.getboolean("io", "cache_outputs", True)
         self.cache_outputs_card = SwitchSettingCard(
             FluentIcon.SAVE,
@@ -230,12 +224,8 @@ class SettingsWidget(ScrollArea):
         self.radius_coefficient_Card.setRange(0.0, 1.5)
 
         # NEP backend selection
-        nep_backend_default = Config.get("nep", "backend","auto")
-        try:
-            nep_backend_enum = NepBackend(nep_backend_default)
-        except ValueError:
-            nep_backend_enum = NepBackend.AUTO
-            nep_backend_default = nep_backend_enum.value
+        nep_backend_enum = get_configured_nep_backend()
+        nep_backend_default = nep_backend_enum.value
         self.nep_backend_card = MyComboBoxSettingCard(
             OptionsConfigItem("nep", "backend", nep_backend_enum, OptionsValidator(NepBackend),
                               EnumSerializer(NepBackend)),
@@ -471,7 +461,6 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.radius_coefficient_Card)
         self.personal_group.addSettingCard(self.sort_atoms_card)
         self.personal_group.addSettingCard(self.use_group_menu_card)
-        self.personal_group.addSettingCard(self.deepmd_preserve_card)
         self.personal_group.addSettingCard(self.cache_outputs_card)
         self.personal_group.addSettingCard(self.auto_structure_evidence_card)
         self.personal_group.addSettingCard(self.export_digits_card)
@@ -519,7 +508,7 @@ class SettingsWidget(ScrollArea):
         None
             Hooks persist user choices into the ``Config`` store.
         """
-        self.canvas_card.optionChanged.connect(lambda option:Config.set("widget","canvas_type",option ))
+        self.canvas_card.optionChanged.connect(self._on_canvas_mode_changed)
         self.radius_coefficient_Card.valueChanged.connect(lambda value:Config.set("widget","radius_coefficient",value))
         self.optimization_forces_card.optionChanged.connect(lambda option:Config.set("widget","forces_data",option ))
         self.language_combo.currentIndexChanged.connect(self._on_language_changed)
@@ -536,7 +525,6 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
-        self.deepmd_preserve_card.checkedChanged.connect(lambda state: Config.set("widget", "deepmd_preserve_subfolders", state))
         self.cache_outputs_card.checkedChanged.connect(lambda state: Config.set("io", "cache_outputs", state))
         self.auto_structure_evidence_card.checkedChanged.connect(
             lambda state: Config.set(
@@ -568,6 +556,11 @@ class SettingsWidget(ScrollArea):
         # self.about_card.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
         self.feedback_card.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))
+
+    def _on_canvas_mode_changed(self, option: str) -> None:
+        """Persist and broadcast canvas changes for live result-view switching."""
+        Config.set("widget", "canvas_type", option)
+        self.canvasModeChanged.emit(str(option))
 
     def _on_language_changed(self, index: int) -> None:
         """Persist the selected UI language."""

@@ -65,3 +65,33 @@ def test_worktree_snapshot_detects_rewrite_of_already_modified_file(tmp_path):
     assert before.status == after.status
     assert before.tracked_diff != after.tracked_diff
     assert run_card_checks.report_worktree_drift(before, after) == 1
+
+
+def test_ui_mode_adds_real_workflow_interface_regressions():
+    commands = run_card_checks.build_commands(
+        full=False,
+        with_docs=False,
+        ui=True,
+    )
+    ui_command = next(
+        command
+        for command in commands
+        if "tests/test_workflow_branching.py" in command
+    )
+
+    assert "tests/test_compact_form_widgets.py" in ui_command
+    assert "tests/test_card_library_dialog.py" in ui_command
+    assert "tests/test_workflow_library.py" in ui_command
+    assert "tests/test_i18n.py" in ui_command
+
+
+def test_quick_mode_keeps_ui_suite_opt_in():
+    commands = run_card_checks.build_commands(
+        full=False,
+        with_docs=False,
+    )
+
+    assert all(
+        "tests/test_workflow_branching.py" not in command
+        for command in commands
+    )

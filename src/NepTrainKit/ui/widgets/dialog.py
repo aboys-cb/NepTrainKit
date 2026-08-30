@@ -91,6 +91,7 @@ from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.core.utils import get_xyz_nframe, read_nep_out_file, get_rmse
 from .distribution import DistributionExplorerWidget, DistributionInspectorMessageBox
+from .periodic_table import PeriodicTableDialog
 
 
 class GetIntMessageBox(MessageBoxBase):
@@ -126,27 +127,77 @@ class GetFloatMessageBox(MessageBoxBase):
 
 
 class ExportFormatMessageBox(MessageBoxBase):
-    """Message box that lets the user pick an export format (XYZ vs DeepMD/NPY)."""
+    """Choose an export layout and format-specific DeepMD options."""
 
-    def __init__(self, parent=None, default_format: str = "xyz"):
+    def __init__(
+        self,
+        parent=None,
+        default_format: str = "xyz",
+        group_by_config_type: bool = True,
+        mixed_atom_numb_pad: int = 0,
+    ):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(self.tr("Choose export format"), self)
         self.titleLabel.setWordWrap(True)
 
         self.formatCombo = ComboBox(self)
-        self.formatCombo.addItem("XYZ (.xyz / extxyz)", userData="xyz")
-        self.formatCombo.addItem("DeepMD/NPY (deepmd/npy)", userData="deepmd/npy")
+        self.formatCombo.addItem(self.tr("XYZ (.xyz / extxyz)"), userData="xyz")
+        self.formatCombo.addItem(self.tr("DeepMD NPY"), userData="deepmd/npy")
+        self.formatCombo.addItem(
+            self.tr("DeepMD NPY (Mixed)"), userData="deepmd/npy/mixed"
+        )
+
+        self.standardGroupingWidget = QWidget(self)
+        grouping_layout = QHBoxLayout(self.standardGroupingWidget)
+        grouping_layout.setContentsMargins(0, 0, 0, 0)
+        grouping_layout.addWidget(CaptionLabel(self.tr("Subfolder grouping"), self))
+        self.standardGroupingCombo = ComboBox(self.standardGroupingWidget)
+        self.standardGroupingCombo.addItem(
+            self.tr("By Config_type"), userData="config_type"
+        )
+        self.standardGroupingCombo.addItem(
+            self.tr("By chemical formula"), userData="formula"
+        )
+        self.standardGroupingCombo.setCurrentIndex(0 if group_by_config_type else 1)
+        grouping_layout.addWidget(self.standardGroupingCombo, 1)
+
+        self.mixedPaddingWidget = QWidget(self)
+        padding_layout = QGridLayout(self.mixedPaddingWidget)
+        padding_layout.setContentsMargins(0, 0, 0, 0)
+        padding_layout.addWidget(CaptionLabel(self.tr("Virtual atom padding"), self), 0, 0)
+        self.mixedPaddingSpinBox = SpinBox(self.mixedPaddingWidget)
+        self.mixedPaddingSpinBox.setRange(0, 1000000)
+        self.mixedPaddingSpinBox.setValue(max(0, int(mixed_atom_numb_pad)))
+        padding_layout.addWidget(self.mixedPaddingSpinBox, 0, 1)
+        padding_hint = CaptionLabel(
+            self.tr("0 groups exact atom counts; 8 rounds them up to multiples of 8."),
+            self.mixedPaddingWidget,
+        )
+        padding_hint.setWordWrap(True)
+        padding_layout.addWidget(padding_hint, 1, 0, 1, 2)
 
         default = (default_format or "xyz").strip().lower()
-        if default in {"deepmd", "deepmd/npy", "npy", "dp"}:
+        if default in {"deepmd/npy/mixed", "npy/mixed", "mixed"}:
+            self.formatCombo.setCurrentIndex(2)
+        elif default in {"deepmd", "deepmd/npy", "npy", "dp"}:
             self.formatCombo.setCurrentIndex(1)
         else:
             self.formatCombo.setCurrentIndex(0)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.formatCombo)
+        self.viewLayout.addWidget(self.standardGroupingWidget)
+        self.viewLayout.addWidget(self.mixedPaddingWidget)
+        self.formatCombo.currentIndexChanged.connect(self._update_option_visibility)
+        self._update_option_visibility()
 
-        self.widget.setMinimumWidth(320)
+        self.widget.setMinimumWidth(380)
+
+    def _update_option_visibility(self, *_args) -> None:
+        """Show only the options belonging to the selected DeepMD layout."""
+        selected = self.formatCombo.currentData()
+        self.standardGroupingWidget.setVisible(selected == "deepmd/npy")
+        self.mixedPaddingWidget.setVisible(selected == "deepmd/npy/mixed")
 
     def selected_format(self) -> str:
         """Return the selected export format identifier."""
@@ -154,7 +205,18 @@ class ExportFormatMessageBox(MessageBoxBase):
         if isinstance(data, str) and data:
             return data
         text = self.formatCombo.currentText().lower()
+        if "mixed" in text:
+            return "deepmd/npy/mixed"
         return "deepmd/npy" if "deepmd" in text or "npy" in text else "xyz"
+
+    def group_by_config_type(self) -> bool:
+        """Return standard NPY grouping; ignored for XYZ and mixed output."""
+        return self.standardGroupingCombo.currentData() == "config_type"
+
+    def mixed_atom_numb_pad(self) -> int | None:
+        """Return dpdata-compatible Mixed padding, or None when disabled."""
+        value = int(self.mixedPaddingSpinBox.value())
+        return value if value > 0 else None
 
 
 class GetStrMessageBox(MessageBoxBase):
@@ -973,78 +1035,6 @@ class ProgressDialog(FramelessDialog):
 
     def run_task(self, task_function, *args, **kwargs):
         self.__thread.start_work(task_function, *args, **kwargs)
-
-
-class PeriodicTableDialog(FramelessDialog):
-    """Dialog showing a simple periodic table."""
-
-    elementSelected = Signal(str)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setTitleBar(FluentTitleBar(self))
-        self.setWindowTitle(self.tr("Periodic table"))
-        self.setWindowIcon(QIcon(":/images/src/images/logo.png"))
-        self.resize(400, 350)
-
-        with open(module_path / "Config/ptable.json", "r", encoding="utf-8") as f:
-            self.table_data = {int(k): v for k, v in json.load(f).items()}
-
-        self.group_colors = {}
-        for info in self.table_data.values():
-            g = info.get("group", 0)
-            if g not in self.group_colors:
-                self.group_colors[g] = info.get("color", "#FFFFFF")
-
-        self.__layout = QGridLayout(self)
-        self.__layout.setContentsMargins(2, 2, 2, 2)
-        self.__layout.setSpacing(1)
-        self.setLayout(self.__layout)
-        self.__layout.setMenuBar(self.titleBar)
-
-        # self.__layout.addWidget(self.titleBar,0,0,1,18)
-        for num in range(1, 119):
-            info = self.table_data.get(num)
-            if not info:
-                continue
-            group = info.get("group", 0)
-            period = self._get_period(num)
-            row, col = self._grid_position(num, group, period)
-            btn = QPushButton(info["symbol"], self)
-            btn.setFixedSize(30, 30)
-            btn.setStyleSheet(f"background-color: {info.get('color', '#FFFFFF')};")
-            btn.clicked.connect(lambda _=False, sym=info["symbol"]: self.elementSelected.emit(sym))
-            self.__layout.addWidget(btn, row + 1, col)
-
-    def _get_period(self, num: int) -> int:
-        if num <= 2:
-            return 1
-        elif num <= 10:
-            return 2
-        elif num <= 18:
-            return 3
-        elif num <= 36:
-            return 4
-        elif num <= 54:
-            return 5
-        elif num <= 86:
-            return 6
-        else:
-            return 7
-
-    def _grid_position(self, num: int, group: int, period: int) -> tuple[int, int]:
-        if group == 0:
-            if 57 <= num <= 71:
-                row = 8
-                col = num - 53
-            elif 89 <= num <= 103:
-                row = 9
-                col = num - 85
-            else:
-                row, col = period, 1
-        else:
-            row, col = period, group
-        return row - 1, col - 1
 
 
 class DFTD3MessageBox(MessageBoxBase):

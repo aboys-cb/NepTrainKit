@@ -2,6 +2,9 @@
 
 这页只做一件事：从安装到生成第一批候选结构。跑通以后，再去看完整清洗流程和每张卡片的参数。
 
+如果软件已经能正常启动，你只是想查某个页面的按钮或参数，不必从头阅读本页，直接进入
+[功能指南](module/index.rst)。功能指南按桌面软件页面顺序组织。
+
 ## 1. 安装
 
 建议使用独立环境，Python 版本用 3.10 到 3.13。
@@ -28,17 +31,17 @@ python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.bac
 nepkit
 ```
 
-## 2. 打开 Make Dataset
+## 2. 打开 生成数据集
 
-第一次建议从 `Make Dataset` 开始。它的职责是制作训练集候选结构：输入一批基础结构，
+第一次建议从 `生成数据集` 开始。它的职责是制作训练集候选结构：输入一批基础结构，
 选择一张或多张卡片，生成应变、扰动、缺陷、表面、掺杂或磁性构型。
 
-切到 `Make Dataset` 后，先点击窗口顶部的 `Open` 按钮导入初始结构。这里的初始结构
+切到 `生成数据集` 后，先点击窗口顶部的 `Open` 按钮导入初始结构。这里的初始结构
 通常是已经弛豫好的 `xyz`、`extxyz`、`POSCAR` 或 `CIF` 文件；后面的卡片都会以这批结构
 作为输入继续生成候选构型。
 
 ```{image} _static/image/generated/make_data_empty.png
-:alt: Make Dataset empty workspace
+:alt: 生成数据集 empty workspace
 :class: docs-screenshot
 ```
 
@@ -51,18 +54,18 @@ nepkit
 
 ## 3. 生成一组候选结构
 
-这里用 `Lattice Strain` 作为第一张卡。它的输入是已有结构，输出是一组晶格被拉伸或压缩后的结构。
+这里用“晶格应变（`Lattice Strain`）”作为第一张卡。它的输入是已有结构，输出是一组晶格被拉伸或压缩后的结构。
 这一步得到的是候选结构，不是最终训练集。
 
 1. 先用 `Open` 导入初始结构。
 2. 点击 `Add new card`。
-3. 选择 `Lattice Strain`。
+3. 选择“晶格应变（`Lattice Strain`）”。
 4. 设置一个小范围，例如 X/Y/Z 都从 `-2%` 到 `2%`，步长 `1%`。
 5. 勾选这张卡，点击顶部 `Run`。
 6. 运行完成后，从卡片上的导出按钮保存结果。
 
 ```{image} _static/image/generated/make_data_lattice_strain.png
-:alt: Lattice Strain quickstart
+:alt: 晶格应变卡片快速上手
 :class: docs-screenshot
 ```
 
@@ -74,7 +77,7 @@ nepkit
 
 ## 4. 检查候选结构
 
-`Make Dataset` 生成的是候选结构，不建议默认直接送 DFT。最短检查路径是：
+`生成数据集` 生成的是候选结构，不建议默认直接送 DFT。最短检查路径是：
 
 ```{image} _static/image/generated/show_nep_overview.png
 :alt: NEP Dataset Display overview
@@ -94,6 +97,6 @@ nepkit
 完整的清洗顺序、为什么不要先 FPS、以及如何用 NEP 预测做预筛，见
 [候选结构清洗后再进入 DFT](workflows/clean-candidate-structures.md)。
 
-如果你在做缺陷、表面、掺杂或磁性结构，直接去看 [Make Dataset 卡片手册](module/make-dataset-cards/index.md)。手册按卡片用途组织，比逐个试菜单更快。
+如果你在做缺陷、表面、掺杂或磁性结构，直接去看 [生成数据集卡片手册](module/make-dataset-cards/index.md)。手册按卡片用途组织，比逐个试菜单更快。
 
-如果你要从标准晶体开始，而不是导入已有结构，可以先用 `Crystal Prototype Builder` 生成 `fcc`、`bcc`、`hcp` 或 `fcc111` 原型。需要扫 fcc (111) 的 GSFE 路径时，先生成 `fcc111` 原型，再接 `Stacking Fault / GSFE Path`；不要把普通 cubic `fcc` cell 直接拿去扫 `(111)`。
+如果你要从标准晶体开始，而不是导入已有结构，可以先用 `Crystal Prototype Builder` 生成 `fcc`、`bcc`、`hcp` 或 `fcc111` 原型。需要扫 fcc (111) 的 GSFE 路径时，先生成 `fcc111` 原型，再接 `GSFE Path`；不要把普通 cubic `fcc` cell 直接拿去扫 `(111)`。

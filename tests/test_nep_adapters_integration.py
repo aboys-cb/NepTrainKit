@@ -2,11 +2,227 @@ import json
 import shutil
 from pathlib import Path
 
+import numpy as np
 from ase.io import read as ase_read
 
+from NepTrainKit.core import MessageManager
 from NepTrainKit.core.calculator import NepCalculator
 from NepTrainKit.core.io.importers import ase_atoms_to_structure
-from NepTrainKit.core.io.nep import NepTrainResultData
+from NepTrainKit.core.io.nep import (
+    NepDipoleResultData,
+    NepPolarizabilityResultData,
+    NepTrainResultData,
+)
+from NepTrainKit.core.structure import Structure
+
+
+def _labeled_structure(energy: float, forces: list[list[float]]) -> Structure:
+    natoms = len(forces)
+    return Structure(
+        lattice=np.eye(3),
+        atomic_properties={
+            "species": ["Fe"] * natoms,
+            "pos": np.zeros((natoms, 3)),
+            "forces": np.asarray(forces, dtype=np.float64),
+        },
+        properties=[
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+            {"name": "forces", "type": "R", "count": 3},
+        ],
+        additional_fields={"energy": energy, "pbc": "T T T"},
+    )
+
+
+def _alignment_result(tmp_path: Path, structures: list[Structure]) -> NepTrainResultData:
+    result = NepTrainResultData(
+        tmp_path / "nep.txt",
+        tmp_path / "train.xyz",
+        tmp_path / "energy_train.out",
+        tmp_path / "force_train.out",
+        tmp_path / "stress_train.out",
+        tmp_path / "virial_train.out",
+        tmp_path / "descriptor.out",
+        charge_model=False,
+        spin_model=False,
+    )
+    result.set_structures(structures)
+    result.load_structures()
+    result.nep_calc = None
+    return result
+
+
+def _response_structures() -> list[Structure]:
+    structures = []
+    for dipole, diagonal in (
+        ((1.0, 2.0, 3.0), (1.0, 2.0, 3.0)),
+        ((4.0, 5.0, 6.0), (4.0, 5.0, 6.0)),
+    ):
+        structures.append(
+            Structure(
+                lattice=np.eye(3),
+                atomic_properties={
+                    "species": ["Fe"],
+                    "pos": np.zeros((1, 3)),
+                },
+                properties=[
+                    {"name": "species", "type": "S", "count": 1},
+                    {"name": "pos", "type": "R", "count": 3},
+                ],
+                additional_fields={
+                    "dipole": " ".join(map(str, dipole)),
+                    "pol": " ".join(
+                        map(
+                            str,
+                            (
+                                diagonal[0], 0.0, 0.0,
+                                0.0, diagonal[1], 0.0,
+                                0.0, 0.0, diagonal[2],
+                            ),
+                        )
+                    ),
+                    "pbc": "T T T",
+                },
+            )
+        )
+    return structures
+
+
+def test_cached_output_reference_check_allows_normal_text_precision_loss(tmp_path: Path):
+    structure = _labeled_structure(
+        -3408.80019046875,
+        [[0.123456789, -0.00000012, 2.34567891]],
+    )
+    result = _alignment_result(tmp_path, [structure])
+    energy = np.array([[-8.15, -3408.80029297]])
+    force = np.array([[9.0, 8.0, 7.0, 0.12345679, -0.0000001, 2.3456789]])
+
+    assert result._cached_output_alignment_error(energy, force) is None
+
+
+def test_cached_output_reference_check_detects_same_size_reordering(tmp_path: Path):
+    structures = [
+        _labeled_structure(1.0, [[1.0, 2.0, 3.0]]),
+        _labeled_structure(2.0, [[4.0, 5.0, 6.0]]),
+    ]
+    result = _alignment_result(tmp_path, structures)
+    force = np.array(
+        [
+            [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
+            [40.0, 50.0, 60.0, 4.0, 5.0, 6.0],
+        ]
+    )
+
+    energy_error = result._cached_output_alignment_error(
+        np.array([[0.0, 2.0], [0.0, 1.0]]),
+        force,
+    )
+    force_error = result._cached_output_alignment_error(
+        np.array([[0.0, 1.0], [0.0, 2.0]]),
+        force[::-1],
+    )
+
+    assert energy_error is not None and "energy_train.out" in energy_error
+    assert force_error is not None and "force_train.out" in force_error
+
+
+def test_cached_output_mismatch_activates_recalculation(tmp_path: Path, monkeypatch):
+    structures = [
+        _labeled_structure(1.0, [[1.0, 2.0, 3.0]]),
+        _labeled_structure(2.0, [[4.0, 5.0, 6.0]]),
+    ]
+    result = _alignment_result(tmp_path, structures)
+    result.energy_out_path.write_text("0 2\n0 1\n", encoding="utf-8")
+    result.force_out_path.write_text(
+        "0 0 0 1 2 3\n0 0 0 4 5 6\n", encoding="utf-8"
+    )
+    result.nep_txt_path.write_text("nep4 1 Fe\n", encoding="utf-8")
+    fake_calculator = object()
+    warnings: list[str] = []
+    monkeypatch.setattr("NepTrainKit.core.io.nep.NepCalculator", lambda **_kwargs: fake_calculator)
+    monkeypatch.setattr(MessageManager, "send_warning_message", warnings.append)
+
+    result._prepare_cached_output_alignment()
+
+    assert result._force_recalculate_outputs is True
+    assert result._should_recalculate({}) is True
+    assert result.nep_calc is fake_calculator
+    assert result._cached_descriptors_are_usable() is False
+    assert warnings and "will recalculate" in warnings[0]
+
+
+def test_polarizability_mismatch_activates_recalculation(tmp_path: Path, monkeypatch):
+    structures = _response_structures()
+    output_path = tmp_path / "polarizability_train.out"
+    result = NepPolarizabilityResultData(
+        tmp_path / "nep.txt",
+        tmp_path / "train.xyz",
+        output_path,
+        tmp_path / "descriptor.out",
+    )
+    result.set_structures(structures)
+    result.load_structures()
+    references = np.vstack([structure.nep_polarizability for structure in structures])
+    np.savetxt(output_path, np.column_stack([np.zeros_like(references), references[::-1]]))
+    monkeypatch.setattr(MessageManager, "send_warning_message", lambda _message: None)
+
+    result._prepare_polarizability_alignment()
+
+    assert result._force_recalculate_outputs is True
+    assert result._should_recalculate() is True
+    assert result._cached_descriptors_are_usable() is False
+
+
+def test_dipole_mismatch_activates_recalculation(tmp_path: Path, monkeypatch):
+    structures = _response_structures()
+    output_path = tmp_path / "dipole_train.out"
+    result = NepDipoleResultData(
+        tmp_path / "nep.txt",
+        tmp_path / "train.xyz",
+        output_path,
+        tmp_path / "descriptor.out",
+    )
+    result.set_structures(structures)
+    result.load_structures()
+    references = np.vstack([structure.nep_dipole for structure in structures])
+    np.savetxt(output_path, np.column_stack([np.zeros_like(references), references[::-1]]))
+    monkeypatch.setattr(MessageManager, "send_warning_message", lambda _message: None)
+
+    result._prepare_dipole_alignment()
+
+    assert result._force_recalculate_outputs is True
+    assert result._should_recalculate() is True
+    assert result._cached_descriptors_are_usable() is False
+
+
+def test_prediction_manifest_detects_same_dataset_with_different_model(tmp_path: Path):
+    structure = _labeled_structure(1.0, [[1.0, 2.0, 3.0]])
+    result = _alignment_result(tmp_path, [structure])
+    result.data_xyz_path.write_text("dataset", encoding="utf-8")
+    result.nep_txt_path.write_text("current model", encoding="utf-8")
+    result.prediction_meta_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "predictions": {
+                    "train.xyz": {
+                        "dataset": {
+                            "sha256": result._sha256(result.data_xyz_path),
+                            "structures": 1,
+                            "atoms": 1,
+                        },
+                        "model": {"sha256": "another-model"},
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert (
+        result._prediction_manifest_alignment_error()
+        == "prediction.meta.json records a different NEP model"
+    )
 
 
 def test_result_writes_official_outputs_and_prediction_manifest(

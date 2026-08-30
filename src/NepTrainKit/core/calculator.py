@@ -25,7 +25,7 @@ from NepTrainKit.core.adapter_api import (
     UnsupportedModelError,
     backend_status,
 )
-from NepTrainKit.core.types import NepBackend
+from NepTrainKit.core.types import NepBackend, parse_nep_backend
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure
 from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.utils import timeit
@@ -97,7 +97,7 @@ class NepCalculator:
         chunk_max_atoms: int | None = None,
     ) -> None:
         self.model_path = as_path(model_file)
-        self.requested_backend = NepBackend(backend or NepBackend.AUTO)
+        self.requested_backend = parse_nep_backend(backend)
         self.chunk_max_atoms = int(chunk_max_atoms or DEFAULT_CHUNK_MAX_ATOMS)
         if self.chunk_max_atoms <= 0:
             raise ValueError("chunk_max_atoms must be positive")

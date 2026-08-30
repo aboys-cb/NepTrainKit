@@ -4,42 +4,42 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:3
-#: 748b54ffe7c54a05b7d888ddc2359c81
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:3
+#: e82f556712724593bbf7b465a5b0078c
 msgid "晶体原型构建（Crystal Prototype Builder）"
 msgstr "Crystal Prototype Builder"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:5
-#: ec536f25fc174eefa1e8e8f7f4ce3a81
-msgid "`Group`: `Lattice` | `Class`: `CrystalPrototypeBuilderCard`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:5
+#: b01ef6e7e6cc4bbeb6278f935b9c41cd
+msgid "**分类：** 晶格"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:7
-#: 248c849ec3d34aa5bb15aa36c81f048c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:7
+#: 9841615dd0c64f9ba7753a522d0c1e60
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:9
-#: df751280af114cbebcd9c0c3fb983a41
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:9
+#: 48c63c9720d64aa8b203df6a21194924
 msgid ""
-"从 `fcc`、`bcc`、`hcp`、`fcc111` "
-"等标准晶格原型直接生成晶体结构。选定元素和晶格常数后，程序按模板构造单胞并自动扩胞至目标原子数。这是一张生成器卡（Generator），不需要输入结构。"
+"从 `fcc`、`bcc`、`hcp`、`fcc111` 等标准晶格原型直接生成晶体结构。选定元素和晶"
+"格常数后，程序按模板构造单胞并自动扩胞至目标原子数。这是一张生成器卡"
+"（Generator），不需要输入结构。"
 msgstr ""
 "Generate crystal structures directly from standard lattice prototypes such "
 "as `fcc`, `bcc`, `hcp`, and `fcc111`. After you choose an element and "
@@ -47,377 +47,394 @@ msgstr ""
 "repeat it toward a target atom count. This is a Generator card, so it does "
 "not require an input structure."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:11
-#: ff73ea6ddcc64fd491c8c14ae7c6981d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:11
+#: 2d95f601c638415f97c21abc8c75ee91
+msgid "原理与公式"
+msgstr "Principle and equations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:13
+#: c6f9ded9309a444ba07bc3b8ac3e424d
+msgid ""
+"每种原型由固定的基胞矩阵 $\\mathbf C_0(a,c/a)$ 和分数坐标集合 $\\{\\mathbf "
+"s_j\\}_{j=1}^{N_0}$ 定义。扩胞重复数为 $(n_a,n_b,n_c)$ 时，"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:17
+#: 8758101bad47470bb2ad3b57e10cf727
+msgid ""
+"\n"
+"\\mathbf C'=\\operatorname{diag}(n_a,n_b,n_c)\\mathbf C_0,\\qquad\n"
+"N'=N_0n_an_bn_c.\n"
+msgstr ""
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:22
+#: 68a5d8d6b51d4d39a0ad7301ce415759
+msgid ""
+"`自动扩胞`在 $N'\\le N_{\\max}$ 的约束下选择尽可能利用原子预算、同时形状不过"
+"分失衡的 三轴重复数；`手动重复`直接采用用户指定整数。`hcp`等非立方原型还使用 "
+"$c=a(c/a)$。这张卡按理想模板生成未弛豫结构，不会自动优化晶格常数或内部坐标。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:26
+#: 4c442706816d4cd685eff04594f43b2d
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:13
-#: 97c17a186bdc42e9b41feafe8aff57d4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:28
+#: 7541264e7c9547b7a762f4db91cdf7b0
 msgid "场景：训练集缺少跨晶型的比较样本"
 msgstr "Scenario: the training set lacks samples for comparing crystal phases"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:15
-#: 71ba024d3fe34096b3be26c34928606f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:30
+#: 8301f9c677274af7a175ed2b04c1672d
 msgid ""
-"你在 fcc Ni 上训练了一个 NEP 模型，fcc 相的弹性、声子都很好。但这个 Ni 体系理论上可能存在 hcp 亚稳相——模型在 hcp "
-"相上预测的能量偏高，无法正确给出 fcc/hcp 的能量差。"
+"你在 fcc Ni 上训练了一个 NEP 模型，fcc 相的弹性、声子都很好。但这个 Ni 体系理"
+"论上可能存在 hcp 亚稳相——模型在 hcp 相上预测的能量偏高，无法正确给出 fcc/hcp "
+"的能量差。"
 msgstr ""
-"You trained an NEP model on fcc Ni, and it reproduces the elastic and phonon"
-" properties of the fcc phase well. However, Ni may also have a metastable "
-"hcp phase. The model overestimates the hcp energy and fails to reproduce the"
-" fcc–hcp energy difference."
+"You trained an NEP model on fcc Ni, and it reproduces the elastic and phonon "
+"properties of the fcc phase well. However, Ni may also have a metastable hcp "
+"phase. The model overestimates the hcp energy and fails to reproduce the fcc–"
+"hcp energy difference."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:17
-#: d6efdd47b977498d9818f75b465548b4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:32
+#: ff1758fc5801458b8d951f3f99c20b9d
 msgid ""
-"**诊断思路：** 训练集里只有一种晶型，模型自然偏向它见过的唯一结构。需要把 fcc 和 hcp "
-"两种原型的干净结构都加入训练集，让模型有内插依据来比较不同晶型的能量。这些原型结构不需要是真实实验构型——它们作为\"锚点\"帮助模型构造相空间。"
+"**诊断思路：** 训练集里只有一种晶型，模型自然偏向它见过的唯一结构。需要把 "
+"fcc 和 hcp 两种原型的干净结构都加入训练集，让模型有内插依据来比较不同晶型的能"
+"量。这些原型结构不需要是真实实验构型——它们作为\"锚点\"帮助模型构造相空间。"
 msgstr ""
 "**Diagnosis:** The training set contains only one crystal phase, so the "
-"model naturally favors the only structure it has seen. Add clean fcc and hcp"
-" prototype structures so the model has reference points from which to learn "
+"model naturally favors the only structure it has seen. Add clean fcc and hcp "
+"prototype structures so the model has reference points from which to learn "
 "the relative energies of the two phases. These prototypes need not be "
 "experimentally observed configurations; they act as anchors that help the "
 "model organize this region of configuration space."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:19
-#: 8b19e551c0c64526b94d0efde7445851
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:34
+#: edef64ccf18748a9981b74388f2b5b83
 msgid "**输入：** 无（生成器卡，不依赖上游结构）"
 msgstr ""
 "**Input:** None. This Generator card does not depend on an upstream "
 "structure."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:21
-#: c26479d2d82740549b517f65f80ee41a
-msgid "**目标：** 生成 fcc + hcp 两种晶型的 Ni 结构，晶格常数在实验值附近略有扫描"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:36
+#: 3ed89edc62274521a92044385e4c9d75
+msgid ""
+"**目标：** 生成 fcc + hcp 两种晶型的 Ni 结构，晶格常数在实验值附近略有扫描"
 msgstr ""
-"**Goal:** Generate both fcc and hcp Ni structures while scanning the lattice"
-" constant over a small range around the experimental value."
+"**Goal:** Generate both fcc and hcp Ni structures while scanning the lattice "
+"constant over a small range around the experimental value."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:23
-#: 8fed51ab0d41457e836d7087a14d5b9e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:38
+#: f885c107d0ab4b9fb0caf4abcdb77510
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:24
-#: a76c3130980844dca63f6e1956b0c2d6
-msgid "`lattice = \"fcc\"`，`element = \"Ni\"`，`a_range = [3.52, 3.52, 0.05]`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:25
-#: 5e45a714dde04017aeaba28d351f59fb
-msgid "`auto_supercell = true`，`max_atoms = 256`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:26
-#: bba41f7f6d8e49468d6571f43458cac3
-msgid "再开一张同参数但 `lattice = \"hcp\"` 的卡"
-msgstr "Add a second card with the same parameters but set `lattice = \"hcp\"`."
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:28
-#: f4356a036889464eaa4b588422a2eb1d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:39
+#: 060bc0d942b347d59605d29f9bd47224
 msgid ""
-"**输出：** fcc 和 hcp 两种晶型的 Ni 超胞结构，带 `Proto(fcc,a=...,rep=...)` / "
-"`Proto(hcp,a=...,rep=...)` 标签"
+"`晶格`选择“面心立方”，`元素`填 `Ni`，`晶格常数范围`填 `[3.52, 3.52, 0.05]`；"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:40
+#: 734431254e9f44f48e991a250af81f65
+msgid "开启`自动扩胞`，`最大原子数`填 `256`；"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:41
+#: 8c9b14fa19574417858011e24dda7015
+msgid "再开一张同参数但把`晶格`改为“六方密排”的卡。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:43
+#: 88c485a21aa74b30abc3845016c5624e
+msgid ""
+"**输出：** fcc 和 hcp 两种晶型的 Ni 超胞结构，带 "
+"`Proto(fcc,a=...,rep=...)` / `Proto(hcp,a=...,rep=...)` 标签"
 msgstr ""
 "**Output:** Ni supercells in the fcc and hcp phases, labeled "
 "`Proto(fcc,a=...,rep=...)` and `Proto(hcp,a=...,rep=...)`."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:30
-#: b66f7985c1e34f5cb64e8160664ebfa4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:45
+#: 50e50e3417594e1c84caf75db3ce356e
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:31
-#: 2fac5c0cc3d646cda8983d879ad1a1d1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:46
+#: f9dd1432074d4e53aa56db8e7f089d34
 msgid "重训后计算 fcc/hcp 能量差，应接近 DFT 参考"
 msgstr ""
 "After retraining, calculate the fcc–hcp energy difference and compare it "
 "with the DFT reference."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:32
-#: 4b512a960de64571833a3a7fda5d5126
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:47
+#: ffbf778fca9146f38be54e2f99362b26
 msgid "检查输出结构原子数和对称性：fcc 应为立方对称，hcp 六角对称"
 msgstr ""
 "Check the atom count and symmetry of the output structures: fcc should be "
 "cubic and hcp should be hexagonal."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:33
-#: 79f080b61a784e0a88736db7286bb2d5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:48
+#: 84d5525fc4d4414ba0dd082798b49a7a
 msgid ""
-"如果输出原子数远小于 `max_atoms`，说明 auto_supercell 找不到合适的扩胞因子——关掉 `auto_supercell`，手动设"
-" `Rep`"
-msgstr ""
-"If the output contains far fewer atoms than `max_atoms`, automatic supercell"
-" selection could not find a suitable repetition. Disable `auto_supercell` "
-"and set `Rep` manually."
+"如果输出原子数远小于 `最大原子数`（`max_atoms`），说明 auto_supercell 找不到"
+"合适的扩胞因子——关掉 `自动扩胞`（`auto_supercell`），手动设 `重复倍数`"
+"（`rep`）"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:35
-#: 6da9fb76302b4693bb97f7c4af1f054a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:50
+#: 775d7bdf8e1b4e808d16e91912faae58
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:37
-#: 82441a697a724edba22514110b0ff1cc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:52
+#: 6d108ce7cd0b43388ca0bb80d31f35ee
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:38
-#: daa1c45f1d7140feb4fe71038a64fe9f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:53
+#: 9b283e65ea2b4e5dab9282777d83368f
 msgid "训练集缺少某种标准晶型的干净构型"
-msgstr "The training set lacks clean configurations of a standard crystal phase."
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:39
-#: 59f7477e4bc04eb0ae6263dcbcaae812
-msgid "需要对比不同晶型的能量（相稳定性）"
 msgstr ""
-"You need to compare the energies of different phases for a phase-stability "
-"study."
+"The training set lacks clean configurations of a standard crystal phase."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:40
-#: dbcf2140db9a4d45966db227bc1541a0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:54
+#: 518bb79501dd457798f9f37d0934e5fe
+msgid "需要对比不同晶型的能量（相稳定性）"
+msgstr "Details for this option"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:55
+#: a25ced8ede0642f6bb10b2a386323679
 msgid "作为后续缺陷/表面/磁性流程的结构工厂起点"
 msgstr ""
-"You need a structure factory as the starting point for a defect, surface, or"
-" magnetic workflow."
+"You need a structure factory as the starting point for a defect, surface, or "
+"magnetic workflow."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:42
-#: 968396c23bdd4fef8042edb247f722c3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:57
+#: fe9f1bdf6b294edfbd2065ba35e5202e
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:43
-#: a17af5a1dea9413e9507c1e5d92bfb23
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:58
+#: 77e784e08b7240679e3f13b416501f3c
 msgid "已经有充足的真实结构（实验或 DFT 弛豫的），不需要人造原型"
 msgstr ""
 "You already have enough experimental or DFT-relaxed structures and do not "
 "need synthetic prototypes."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:44
-#: be88a14e7ce44988ace6e2b24405a530
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:59
+#: 5c65dd53548c499e900ec7c1f763cefa
 msgid "体系是复杂多相材料，简单晶格原型不能代表实际相"
 msgstr ""
 "The system is a complex multiphase material that cannot be represented by "
 "simple lattice prototypes."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:46
-#: 92bd0a3ba8034e3f8398789cd49950cb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:61
+#: 9b2ae2804cb34f6e90cec2f8fbf3e98c
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:48
-#: 6ef3d52784b8411fbcba3483f03de3f2
-msgid "Lattice（lattice）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:63
+#: aba38a2510664d3087c12c882731ffe7
+msgid "晶格（lattice）"
+msgstr "lattice"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:49
-#: d6347c140875440c923780675bc2b21c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:65
+#: cc818f14761149a48affdb5d063750d6
 msgid "`str`，默认 `'fcc'`。晶格原型类型，支持 `fcc`、`bcc`、`hcp`、`fcc111`。"
 msgstr ""
 "`str`, default: `'fcc'`. Lattice prototype. Supported values are `fcc`, "
 "`bcc`, `hcp`, and `fcc111`."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 7da2ac811801445499571c73d2694f3b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: b801c04d1c67423f92c1b7d1c171b1c0
 msgid "选项"
 msgstr "Options"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 84e9efacc34446bb89df4233654cef47
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 8114defa97934c1e8b4e34980861103e
 msgid "含义"
 msgstr "Meaning"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 32e3b3e1bee644af9081befc23ed374c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: e3bb7e9cd31d4d9d8cb6385612e8dd12
 msgid "什么时候选"
 msgstr "When to choose it"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 23f659a58e744719b5586d1a25ede870
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 8cb82cba28ea4c508382e6b6368bf2a7
 msgid "`fcc`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: cffb9921a1b74225bd5c541b76566f35
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: b477d3bdba264fdfa055de149ef61dc6
 msgid "常规面心立方 cubic cell"
 msgstr "Conventional face-centered-cubic cell"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 387cd743283945b7bbb3ef6e00b1b74d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: ec3a0ccb8f624f86842c81dd876b4fda
 msgid "fcc 体相、合金母相、普通应变或缺陷流程"
-msgstr "fcc bulk phases, alloy host lattices, and general strain or defect workflows"
+msgstr ""
+"fcc bulk phases, alloy host lattices, and general strain or defect workflows"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 3291b9ab982740439dd22779e2e32b41
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 5feca36c66ed4de4a078c8bc67cf7e0e
 msgid "`bcc`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 4e7bd14a2dbd4ed7bc69eaf9e583a570
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 18caab539ef34ba389d4c21ec2f0ede0
 msgid "常规体心立方 cubic cell"
 msgstr "Conventional body-centered-cubic cell"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 932563a7fd154b54bfb721b516f9ccc5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 3ea5c33e70e94ed98354412ac46a363d
 msgid "bcc 体相、Bain 路径、空位或磁性流程"
 msgstr "bcc bulk phases, Bain paths, and vacancy or magnetic workflows"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 518e302dafa34edf91334853e81200f1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 7d0cfcce15fc4361a31ea1c7c2cec085
 msgid "`hcp`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: c86d624c544b4f6ba458aa4a68b7af9d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 5195fce49299420eacd59ed29df4860d
 msgid "六方密堆结构"
 msgstr "Hexagonal close-packed structure"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 0044980a322c4532b18ca287ea26b266
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: 4412af8e49bb4d6594341f615e19f985
 msgid "hcp 亚稳相、相稳定性对比"
 msgstr "hcp metastable phases and phase-stability comparisons"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: a1f84d699bb74159b2c2c8f96a551826
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: c67c21b6321a41b1a9bace6dc97f543d
 msgid "`fcc111`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: ab70659ad35f42eb877a0596c83ecefe
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: ecb8a1caa70e4a8fa529947c42d80935
 msgid "第三晶胞方向垂直于 fcc (111) 面的周期 slab-oriented cell"
 msgstr ""
 "Periodic slab-oriented cell whose third cell vector is normal to the fcc "
 "(111) plane"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md
-#: 89a4e6fb2f4247928c8a8ff6726d5596
-msgid "接 `Strict GSFE Path`，扫 fcc (111) 面内滑移"
-msgstr "Use before `Strict GSFE Path` to scan in-plane slip on fcc (111)."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:0
+#: d300ba198e7a43669ef14de3a1eb21a6
+msgid "接 `Stacking Fault / GSFE Path`，扫 fcc (111) 面内滑移"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:58
-#: b18f41bdea0f4456b75319a19fe04086
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:74
+#: f379312c449142b4ab75f195ead52b7a
 msgid ""
-"`fcc111` 不是带真空的表面 slab；它仍然是周期 cell，只是把原始 fcc 的 (111) 面转成当前 cell 的 `(001)` "
-"面。这样 `Strict GSFE Path` 可以安全地按第三晶胞方向切开上下两半。"
-msgstr ""
-"`fcc111` is not a surface slab with vacuum. It remains a periodic cell, but "
-"the original fcc (111) plane is reoriented to the current cell's `(001)` "
-"plane. This lets `Strict GSFE Path` safely divide the structure into upper "
-"and lower halves along the third cell direction."
+"`fcc111` 不是带真空的表面 slab；它仍然是周期 cell，只是把原始 fcc 的 (111) 面"
+"转成当前 cell 的 `(001)` 面。这样 `Stacking Fault / GSFE Path` 可以安全地按第"
+"三晶胞方向切开上下两半。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:60
-#: dee68d19980e4aaba1ae3ef622c25737
-msgid "Element（element）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:76
+#: f3a4ec8480364fada0df5eb780f7f2d8
+msgid "元素（element）"
+msgstr "element"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:61
-#: 513d10fbc4f64356bc5e320dd2e2f9f2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:78
+#: 750846314509402990c13ecfaa3d24b2
 msgid ""
-"`str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），这里只用第一个元素——后续需要用 "
-"`Composition Sweep` + `Random Occupancy` 来实现多元素分布。"
-msgstr ""
-"`str`, default: `'Cu'`. Element symbol, such as `Cu`, `Ni`, or `Si`. For "
-"compound prototypes such as rocksalt, this card uses only the first element."
-" Use `Composition Sweep` followed by `Random Occupancy` to introduce "
-"multiple elements."
+"`str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 "
+"rocksalt），这里只用第一个元素——后续需要用 `Composition Space Sampling` + "
+"`Random Occupancy` 来实现多元素分布。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:63
-#: f7b5a4ff3f214026b877432a2006fc14
-msgid "A Range（a_range）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:80
+#: 45deaf4a622e4490934e457b354ff6de
+msgid "晶格常数 a 范围（a_range）"
+msgstr "a_range"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:64
-#: c30abb71f3364e0584782965d99daabc
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:82
+#: 9b70076cb3cf4650a6ae996f47ad37c0
 msgid ""
-"`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，格式 `[最小值, "
-"最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` "
-"产 6 个。步长越小结构越多，记得用 `max_outputs` 控制总量。"
-msgstr ""
-"`tuple[float, float, float]`, default: `(3.6, 3.6, 0.1)`. Scan range for "
-"lattice constant *a*, in Å, expressed as `[minimum, maximum, step]`. A "
-"single-point range such as `[3.52, 3.52, 0.1]` produces one structure; "
-"`[3.50, 3.60, 0.02]` produces six. Smaller steps produce more structures, so"
-" use `max_outputs` to cap the total."
+"`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，"
+"格式 `[最小值, 最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个"
+"结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `最大"
+"输出数`（`max_outputs`）控制总量。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:66
-#: f00d98fbdf534017894a0b3af9c94d4f
-msgid "C/A（covera）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:84
+#: 052562d799d0474fa204db9ed00b5708
+msgid "晶格轴比 c/a（covera）"
+msgstr "covera"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:67
-#: f4e4d70255a149048161ad5a687b7f85
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:86
+#: 0eb627df5bd64a81bdb6fbd11055b067
 msgid "`float`，默认 1.633。仅 hcp 晶型使用，c/a 轴比，理想值约 1.633。"
 msgstr ""
 "`float`, default: `1.633`. The *c/a* ratio used only for the hcp prototype. "
 "The ideal value is approximately 1.633."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:69
-#: ac58c294a1cc48a4908c0e2966e17eff
-msgid "Auto Supercell（auto_supercell）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:88
+#: cd58970ff12a40ecb6072bb722bbe99c
+msgid "自动扩胞（auto_supercell）"
+msgstr "auto_supercell"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:70
-#: 5ffc2d8941d74e04a9e824220bd579c2
-msgid "`bool`，默认 true。勾选后程序自动计算扩胞因子以逼近 `Max Atoms`；不勾选则手动通过 `Rep` 指定扩胞倍数。"
-msgstr ""
-"`bool`, default: `true`. When enabled, the card chooses repetition factors "
-"that approach `Max Atoms`. When disabled, set the repetition factors "
-"manually with `Rep`."
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:72
-#: 49b42a7c1b8b4de19697a5b64ed6d3ad
-msgid "Max Atoms（max_atoms）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:73
-#: 35b5f61029f64e86a5c51e65f3724f66
-msgid "`int`，默认 512。目标最大原子数，仅 `auto_supercell` 开启时生效。常规范围 256~512。"
-msgstr ""
-"`int`, default: `512`. Target maximum atom count, used only when "
-"`auto_supercell` is enabled. A typical range is 256–512."
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:75
-#: 03e3f1632406494495715cf5edf52903
-msgid "Rep（rep）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:76
-#: 08f5bfad0ca94ab69cc9082f26c86cb7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:90
+#: bc4ff5afa58945a0af28154ac8c50631
 msgid ""
-"`tuple[int, int, int]`，默认 `(4, 4, 4)`。三个方向的扩胞倍数 `[na, nb, nc]`，仅 "
-"`auto_supercell` 关闭时生效。"
-msgstr ""
-"`tuple[int, int, int]`, default: `(4, 4, 4)`. Repetition factors `[na, nb, "
-"nc]` along the three cell directions, used only when `auto_supercell` is "
-"disabled."
+"`bool`，默认 true。勾选后程序自动计算扩胞因子以逼近 `Max Atoms`；不勾选则手动"
+"通过 `重复倍数`（`rep`）指定扩胞倍数。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:78
-#: d4c217cd175540a1901b5efe5be5396d
-msgid "Max Outputs（max_outputs）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:92
+#: b0e9222f44ac42339ca6661951dca07b
+msgid "最大原子数（max_atoms）"
+msgstr "max_atoms"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:79
-#: b886d64c590c423aafb38854471b3c8a
-msgid "`int`，默认 200。这张卡输出结构总数的硬上限，防止 a_range 扫描 + 多晶型组合爆炸。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:94
+#: 545823895dc5472e8694e3c072150d9d
+msgid ""
+"`int`，默认 512。目标最大原子数，仅 `自动扩胞`（`auto_supercell`）开启时生"
+"效。常规范围 256~512。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:96
+#: c0229354fa41452185901389ef3e1851
+msgid "重复倍数（rep）"
+msgstr "rep"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:98
+#: 3c1b99fea93c419d9138715c724239b0
+msgid ""
+"`tuple[int, int, int]`，默认 `(4, 4, 4)`。三个方向的扩胞倍数 `[na, nb, nc]`，"
+"仅 `自动扩胞`（`auto_supercell`）关闭时生效。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:100
+#: 9f78f6b87d25404db7241625981eaeba
+msgid "最大输出数（max_outputs）"
+msgstr "max_outputs"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:102
+#: 3892f18be55a4fca8193c2931c91e09b
+msgid ""
+"`int`，默认 200。这张卡输出结构总数的硬上限，防止 a_range 扫描 + 多晶型组合爆"
+"炸。"
 msgstr ""
 "`int`, default: `200`. Hard cap on the total number of output structures, "
 "preventing a lattice-constant scan or multi-prototype workflow from growing "
 "unexpectedly large."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:81
-#: e423a65b2eaf4df5884f1f804ee5bd89
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:104
+#: 4bb9ec7d60f84f8aa283892231921e22
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:83
-#: 11a7018e38704ca1b33c4566880c8af9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:106
+#: 31ee6d0f76434889ab49acbcced10b46
 msgid "fcc Cu 单点（1 个输出，作为流程起点）"
 msgstr "Single-point fcc Cu (1 output; a workflow starting point)"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:84
-#: fc46109c6ca74701a5a53a1fa066adb3
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:107
+#: 52a9a57d0d4340b48d8043b9a605c0d8
 msgid ""
 "{\n"
 "  \"class\": \"CrystalPrototypeBuilderCard\",\n"
@@ -435,14 +452,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:101
-#: c2d8b7325593476db9636dc01fefa7d4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:124
+#: 259bf1b863104ec786ad3bcbb48bc7b9
 msgid "fcc Cu 晶格扫描（5 个点，覆盖平衡晶格附近）"
 msgstr "fcc Cu lattice scan (5 points around the equilibrium lattice constant)"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:102
-#: 3f377dcd120841c4967e17b474ef0615
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:125
+#: 8e89f7922da44a239a1a9cf77876c7ec
 msgid ""
 "{\n"
 "  \"class\": \"CrystalPrototypeBuilderCard\",\n"
@@ -460,14 +476,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:119
-#: 4452d14cc27e45b89e63af898c3a08fa
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:142
+#: 3e98d90853ec489d92a58bb58dcfb3a7
 msgid "多晶型探索（fcc + hcp，各 5 个点）"
 msgstr "Multiple-phase exploration (fcc and hcp, 5 points each)"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:120
-#: 01759362372f464da7ea4be73c75669d
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:143
+#: 4c70c8a4529c4130b420acd7e80e7597
 msgid ""
 "{\n"
 "  \"class\": \"CrystalPrototypeBuilderCard\",\n"
@@ -485,14 +500,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:137
-#: 3482c759450e4df5a8964c75a5190b5e
-msgid "fcc111 GSFE 起点（1 个输出，接 Strict GSFE Path）"
-msgstr "fcc111 GSFE starting structure (1 output; connect to Strict GSFE Path)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:160
+#: 2059dadb41ef45c1ba26c519df80dd95
+msgid "fcc111 GSFE 起点（1 个输出，接 Stacking Fault / GSFE Path）"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:138
-#: d302112b18d1477eb68a1f1e21eb0e15
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:161
+#: 020e7103f94b448aaecfc21723322175
 msgid ""
 "{\n"
 "  \"class\": \"CrystalPrototypeBuilderCard\",\n"
@@ -510,104 +524,206 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:155
-#: fe27263659904cbc83896550ff1b481f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:178
+#: 27183397427849f2844dd1164e2df15c
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:157
-#: 4982864b9f00440db5e8af957056b124
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:180
+#: 5a7714393f7d4d79a49dd7c98d39871a
 msgid "`Crystal Prototype Builder` → `Atomic Perturb`：先建原型，再加坐标噪声"
 msgstr ""
 "`Crystal Prototype Builder` → `Atomic Perturb`: build the prototype, then "
 "add coordinate noise."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:158
-#: 7c5df9fa4f2a495ea739d80fcc09872f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:181
+#: 09d7557805874d7c873407434b29f025
 msgid ""
-"`Crystal Prototype Builder` → `Composition Sweep` → `Random "
+"`Crystal Prototype Builder` → `Composition Space Sampling` → `Random "
 "Occupancy`：先生成干净模板，再进行成分修饰"
-msgstr ""
-"`Crystal Prototype Builder` → `Composition Sweep` → `Random Occupancy`: "
-"generate a clean template, then modify its composition."
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:159
-#: 0207ac636b7b4f1881e007d2095cef01
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:182
+#: 99179297e17848ccada567fa5c354e73
 msgid "`Crystal Prototype Builder` → `Lattice Strain`：先建原型，再做应变扫描"
 msgstr ""
 "`Crystal Prototype Builder` → `Lattice Strain`: build the prototype, then "
 "scan strain states."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:160
-#: 3aee45693c124d6d95859cd1abdd7c04
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:183
+#: ef2a5789447543c78110fca3827d9988
 msgid ""
-"`Crystal Prototype Builder(fcc111)` → `Strict GSFE Path`：先生成 slab-oriented "
-"周期 cell，再扫 fcc (111) 的 GSFE 路径"
-msgstr ""
-"`Crystal Prototype Builder(fcc111)` → `Strict GSFE Path`: generate a slab-"
-"oriented periodic cell, then scan the fcc (111) GSFE path."
+"`Crystal Prototype Builder(fcc111)` → `Stacking Fault / GSFE Path`：先生成 "
+"slab-oriented 周期 cell，再扫 fcc (111) 的 GSFE 路径"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:162
-#: 1cac0bf9d71b4671931f2442267c0f83
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:185
+#: 9794f67764fb41caaa3bd66bb88e7597
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:164
-#: 27bc9824fc914f66987c7569d7255d34
-msgid "**输出只有 1 个结构。** a_range 的起点=终点且步长>0 时只产生单点。如果需要扫描，设定不同起点和终点。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:187
+#: 1ece06f68487431388c8c75fb2149678
+msgid ""
+"**输出只有 1 个结构。** a_range 的起点=终点且步长>0 时只产生单点。如果需要扫"
+"描，设定不同起点和终点。"
 msgstr ""
 "**Only one structure is produced.** When the start and end of `a_range` are "
 "equal and the step is positive, the range contains a single point. Use "
 "different start and end values to perform a scan."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:166
-#: 682b7f9ec5df490ea38c9944e4a3f3d9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:189
+#: de7d5549b2604c96885c4ad9bf27e11e
 msgid ""
-"**原子数远小于 `max_atoms`。** auto_supercell 的扩胞因子是整数，可能因为单胞原子数多导致最近整数倍已超过 "
-"max_atoms。手动关掉 auto_supercell 改 `rep`。"
-msgstr ""
-"**The atom count is far below `max_atoms`.** Supercell repetition factors "
-"must be integers. If the primitive cell already contains many atoms, the "
-"next larger repetition may exceed `max_atoms`. Disable `auto_supercell` and "
-"set `rep` manually."
+"**原子数远小于 `最大原子数`（`max_atoms`）。** auto_supercell 的扩胞因子是整"
+"数，可能因为单胞原子数多导致最近整数倍已超过 max_atoms。手动关掉 "
+"auto_supercell 改 `重复倍数`（`rep`）。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:168
-#: df6897ddfa734d51b3c5f4e8a6b24ef4
-msgid "**hcp 结构不是六角的。** hcp 的 ASE bulk 构造需要正确的 covera。确认 covera 在 1.6 左右。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:191
+#: 2e0b09c294214c8f96eff198b62ba963
+msgid ""
+"**hcp 结构不是六角的。** hcp 的 ASE bulk 构造需要正确的 covera。确认 covera "
+"在 1.6 左右。"
 msgstr ""
 "**The hcp structure is not hexagonal.** ASE's hcp bulk builder requires a "
 "sensible `covera` value. Check that `covera` is around 1.6."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:170
-#: d5141e97aa364e6d9e4dcb6ed1655c87
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:193
+#: 299388527e7e459784c95dd73792691e
 msgid ""
-"**Strict GSFE Path 报 slab-oriented 错误。** 普通 `fcc` cell 的 `(111)` 面不等于当前 cell"
-" 的 `(001)` 面，第三晶胞方向也不垂直于这个面。用 `lattice = \"fcc111\"` 重新生成起点结构，再在 `Strict "
-"GSFE Path` 里使用 `plane_hkl = [0, 0, 1]`。"
-msgstr ""
-"**Strict GSFE Path reports a slab-orientation error.** In a conventional "
-"`fcc` cell, the `(111)` plane is not the current cell's `(001)` plane, and "
-"the third cell vector is not normal to it. Regenerate the starting structure"
-" with `lattice = \"fcc111\"`, then use `plane_hkl = [0, 0, 1]` in `Strict "
-"GSFE Path`."
+"**Stacking Fault / GSFE Path 报 slab-oriented 错误。** 普通 `fcc` cell 的 "
+"`(111)` 面不等于当前 cell 的 `(001)` 面，第三晶胞方向也不垂直于这个面。用 "
+"`lattice = \"fcc111\"` 重新生成起点结构，再在层错卡中使用 `plane_hkl = [0, "
+"0, 1]`。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:172
-#: 1c5cfa692b4a46e3b2af8afcb01b0f9c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:195
+#: 787b9cf72cb44fa3b52340b0668e3d4a
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:174
-#: 70418403d7de41ab916c1b8b0a457188
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:197
+#: 3219b0d433bb4b6dbbd8436a7271cb3b
 msgid "`Proto({晶格类型},a={晶格常数},rep={na}x{nb}x{nc})`"
 msgstr "`Proto({lattice type},a={lattice constant},rep={na}x{nb}x{nc})`"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:176
-#: bd0c8814c6e84dc98f989fb0df86ee65
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:199
+#: c9a4ebee1e71418aa48397346249f2e3
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:178
-#: 47f2e31873cd4f5488240da25e100474
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/crystal-prototype-builder-card.md:201
+#: 221aa7221ec5475a9983c597bdb8b63d
 msgid "无随机性。同参数 → 严格一致输出。"
 msgstr "Deterministic. Identical parameters produce identical output."
+
+#~ msgid "再开一张同参数但 `lattice = \"hcp\"` 的卡"
+#~ msgstr ""
+#~ "Add a second card with the same parameters but set `lattice = \"hcp\"`."
+
+#~ msgid ""
+#~ "如果输出原子数远小于 `max_atoms`，说明 auto_supercell 找不到合适的扩胞因子"
+#~ "——关掉 `auto_supercell`，手动设 `Rep`"
+#~ msgstr ""
+#~ "If the output contains far fewer atoms than `max_atoms`, automatic "
+#~ "supercell selection could not find a suitable repetition. Disable "
+#~ "`auto_supercell` and set `Rep` manually."
+
+#~ msgid "接 `Strict GSFE Path`，扫 fcc (111) 面内滑移"
+#~ msgstr "Use before `Strict GSFE Path` to scan in-plane slip on fcc (111)."
+
+#~ msgid ""
+#~ "`fcc111` 不是带真空的表面 slab；它仍然是周期 cell，只是把原始 fcc 的 "
+#~ "(111) 面转成当前 cell 的 `(001)` 面。这样 `Strict GSFE Path` 可以安全地按"
+#~ "第三晶胞方向切开上下两半。"
+#~ msgstr ""
+#~ "`fcc111` is not a surface slab with vacuum. It remains a periodic cell, "
+#~ "but the original fcc (111) plane is reoriented to the current cell's "
+#~ "`(001)` plane. This lets `Strict GSFE Path` safely divide the structure "
+#~ "into upper and lower halves along the third cell direction."
+
+#~ msgid ""
+#~ "`str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 "
+#~ "rocksalt），这里只用第一个元素——后续需要用 `Composition Sweep` + `Random "
+#~ "Occupancy` 来实现多元素分布。"
+#~ msgstr ""
+#~ "`str`, default: `'Cu'`. Element symbol, such as `Cu`, `Ni`, or `Si`. For "
+#~ "compound prototypes such as rocksalt, this card uses only the first "
+#~ "element. Use `Composition Sweep` followed by `Random Occupancy` to "
+#~ "introduce multiple elements."
+
+#~ msgid ""
+#~ "`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范"
+#~ "围，格式 `[最小值, 最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` "
+#~ "产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记"
+#~ "得用 `max_outputs` 控制总量。"
+#~ msgstr ""
+#~ "`tuple[float, float, float]`, default: `(3.6, 3.6, 0.1)`. Scan range for "
+#~ "lattice constant *a*, in Å, expressed as `[minimum, maximum, step]`. A "
+#~ "single-point range such as `[3.52, 3.52, 0.1]` produces one structure; "
+#~ "`[3.50, 3.60, 0.02]` produces six. Smaller steps produce more structures, "
+#~ "so use `max_outputs` to cap the total."
+
+#~ msgid ""
+#~ "`bool`，默认 true。勾选后程序自动计算扩胞因子以逼近 `Max Atoms`；不勾选则"
+#~ "手动通过 `Rep` 指定扩胞倍数。"
+#~ msgstr ""
+#~ "`bool`, default: `true`. When enabled, the card chooses repetition "
+#~ "factors that approach `Max Atoms`. When disabled, set the repetition "
+#~ "factors manually with `Rep`."
+
+#~ msgid ""
+#~ "`int`，默认 512。目标最大原子数，仅 `auto_supercell` 开启时生效。常规范围 "
+#~ "256~512。"
+#~ msgstr ""
+#~ "`int`, default: `512`. Target maximum atom count, used only when "
+#~ "`auto_supercell` is enabled. A typical range is 256–512."
+
+#~ msgid ""
+#~ "`tuple[int, int, int]`，默认 `(4, 4, 4)`。三个方向的扩胞倍数 `[na, nb, "
+#~ "nc]`，仅 `auto_supercell` 关闭时生效。"
+#~ msgstr ""
+#~ "`tuple[int, int, int]`, default: `(4, 4, 4)`. Repetition factors `[na, "
+#~ "nb, nc]` along the three cell directions, used only when `auto_supercell` "
+#~ "is disabled."
+
+#~ msgid "fcc111 GSFE 起点（1 个输出，接 Strict GSFE Path）"
+#~ msgstr ""
+#~ "fcc111 GSFE starting structure (1 output; connect to Strict GSFE Path)"
+
+#~ msgid ""
+#~ "`Crystal Prototype Builder` → `Composition Sweep` → `Random Occupancy`：先"
+#~ "生成干净模板，再进行成分修饰"
+#~ msgstr ""
+#~ "`Crystal Prototype Builder` → `Composition Sweep` → `Random Occupancy`: "
+#~ "generate a clean template, then modify its composition."
+
+#~ msgid ""
+#~ "`Crystal Prototype Builder(fcc111)` → `Strict GSFE Path`：先生成 slab-"
+#~ "oriented 周期 cell，再扫 fcc (111) 的 GSFE 路径"
+#~ msgstr ""
+#~ "`Crystal Prototype Builder(fcc111)` → `Strict GSFE Path`: generate a slab-"
+#~ "oriented periodic cell, then scan the fcc (111) GSFE path."
+
+#~ msgid ""
+#~ "**原子数远小于 `max_atoms`。** auto_supercell 的扩胞因子是整数，可能因为单"
+#~ "胞原子数多导致最近整数倍已超过 max_atoms。手动关掉 auto_supercell 改 "
+#~ "`rep`。"
+#~ msgstr ""
+#~ "**The atom count is far below `max_atoms`.** Supercell repetition factors "
+#~ "must be integers. If the primitive cell already contains many atoms, the "
+#~ "next larger repetition may exceed `max_atoms`. Disable `auto_supercell` "
+#~ "and set `rep` manually."
+
+#~ msgid ""
+#~ "**Strict GSFE Path 报 slab-oriented 错误。** 普通 `fcc` cell 的 `(111)` 面"
+#~ "不等于当前 cell 的 `(001)` 面，第三晶胞方向也不垂直于这个面。用 `lattice "
+#~ "= \"fcc111\"` 重新生成起点结构，再在 `Strict GSFE Path` 里使用 `plane_hkl "
+#~ "= [0, 0, 1]`。"
+#~ msgstr ""
+#~ "**Strict GSFE Path reports a slab-orientation error.** In a conventional "
+#~ "`fcc` cell, the `(111)` plane is not the current cell's `(001)` plane, "
+#~ "and the third cell vector is not normal to it. Regenerate the starting "
+#~ "structure with `lattice = \"fcc111\"`, then use `plane_hkl = [0, 0, 1]` "
+#~ "in `Strict GSFE Path`."

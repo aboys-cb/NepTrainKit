@@ -1,0 +1,122 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language: en_US\n"
+"Language-Team: none\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/nep-main-tool-net-force.md:1
+#: 3930b54bfe074720bc92dbf72c8cd2c2
+msgid "检查净力（Check Net Force）"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-net-force.md:3
+#: c4dca606a19f4d5891c6bb7a18b4fcae
+msgid "作用与适用场景"
+msgstr "Purpose and use cases"
+
+#: ../../source/module/nep-main-tool-net-force.md:5
+#: acc4fe4c52db416d92a7c62117d6ed0a
+msgid "计算每个结构所有原子力的矢量和 `|ΣF|`，并选中超过阈值的结构。它常用于发现未满足平移不变性、 标签映射错误或 DFT 输出异常的数据。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-net-force.md:8
+#: 91ab1f55ada842fba52891f5f6d9a90f
+msgid "判定原理"
+msgstr "Decision principle"
+
+#: ../../source/module/nep-main-tool-net-force.md:10
+#: 68cccb6971a44814b6a5876c83c72867
+msgid "对含 $N$ 个原子的结构，程序先求参考力的矢量和，再取欧氏模："
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-net-force.md:12
+#: 6211c8c40768453c89b53459e18b9f17
+msgid ""
+"\n"
+"\\mathbf F_{\\mathrm{net}}=\\sum_{i=1}^{N}\\mathbf F_i,\\qquad\n"
+"F_{\\mathrm{net}}=\\left\\|\\mathbf F_{\\mathrm{net}}\\right\\|_2\n"
+"=\\sqrt{F_x^2+F_y^2+F_z^2}.\n"
+msgstr ""
+"\n"
+"\\mathbf F_{\\mathrm{net}}=\\sum_{i=1}^{N}\\mathbf F_i,\\qquad\n"
+"F_{\\mathrm{net}}=\\left\\|\\mathbf F_{\\mathrm{net}}\\right\\|_2\n"
+"=\\sqrt{F_x^2+F_y^2+F_z^2}.\n"
+
+#: ../../source/module/nep-main-tool-net-force.md:18
+#: d52917e5c4ee4b0fb924345b8e02e2ac
+msgid ""
+"当 $F_{\\mathrm{net}}>F_{\\mathrm{threshold}}$ 时选中该结构。力的单位为 eV/Å，所以净力和阈值 "
+"也都是 eV/Å。理想的孤立周期体系满足平移不变性时净力应接近零，但有限 SCF 精度、 "
+"约束计算或外场也可能带来真实残差；这个工具是质量复核门槛，不是自动纠错器。"
+msgstr ""
+"This section explains the option, its parameters, operation, and expected"
+" result."
+
+#: ../../source/module/nep-main-tool-net-force.md:22
+#: 1d9a55232b9f49509019bf6e9d0f23fc
+msgid "参数与执行结果"
+msgstr "Parameters and execution result"
+
+#: ../../source/module/nep-dataset-display-content.md:7334
+#: 15ed729fa45f43df8ded0e879ee2a12a
+msgid "输入控件：`净力阈值`，即 `|ΣF|`。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:7335
+#: 4adf51722ded48d1b1c6484a33de54b3
+msgid "范围：`[0, 1e6]`，10 位小数。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:7336
+#: 8e32e02d7fa2408e9ec91af12fca286b
+msgid "默认值：`widget.force_balance_threshold`（缺省 `1e-3`）。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:7337
+#: 45b8bb1412d64fcca49033d07685d245
+msgid "执行结果：选中超阈值结构，并显示统计消息。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:7339
+#: 99495f71783e40e7bdbace418a66b166
+msgid "![检查净力对话框](../_static/image/generated/show_nep_reference/g_force_dialog.png)"
+msgstr "See the figure for the corresponding control and result."
+
+#: ../../source/module/nep-dataset-display-content.md:7339
+#: 5c8808b7b7f742ca9b8c7a331584ed0b
+msgid "检查净力对话框"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:7339
+#: 5c8808b7b7f742ca9b8c7a331584ed0b
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_force_dialog.png"
+msgstr ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_force_dialog.png"
+
+#: ../../source/module/nep-main-tool-net-force.md:29
+#: 63e53a37e88f4edca2e290a038583fe1
+msgid "操作后检查"
+msgstr "Post-operation checks"
+
+#: ../../source/module/nep-main-tool-net-force.md:31
+#: ea25ec1c530c43999adadf04ca2c166e
+msgid "阈值单位为 `eV/Å`，必须大于零。选中后结合结构原子数、计算精度和标签来源判断； 工具只标出超阈值结构，不会修改力标签。"
+msgstr "Details for this option"

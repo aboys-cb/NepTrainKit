@@ -1,0 +1,138 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language: en_US\n"
+"Language-Team: none\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:1
+#: a465af4531614fd3967ffc78c1047981
+msgid "DFT-D3 修正"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:3
+#: 46dd90bd47864a97b32a81a839088071
+msgid "界面按钮：`DFT D3`。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:5
+#: 45c8873b6d5c461d8fe8f0842cbb7a0e
+msgid "作用与适用场景"
+msgstr "Purpose and use cases"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:7
+#: 9fceea134f94465f81c59be92c85e1f0
+msgid ""
+"计算 DFT-D3 色散修正，并按所选模式加到或从当前能量、力和 virial 中扣除。 适合统一训练数据是否包含 D3 "
+"的标签约定，不是用于随意改善散点图。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:11
+#: 9c604589d0c74a1c89d3bcdc29aebe6b
+msgid "DFT-D3 计算仅支持 CPU。即使 NEP 后端选择了 GPU，执行这项操作时也会改用 CPU。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:14
+#: ac603ddb154148cc97bc573243fa08e7
+msgid "修正原理"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:16
+#: f3573f73a5a14429bbe040379b3d8b31
+msgid ""
+"DFT-D3 用元素、原子间距和配位环境计算经验色散能 $E_{\\mathrm{D3}}$，并由其对坐标和 应变的导数得到力 $\\mathbf"
+" F_{\\mathrm{D3}}$ 与 virial $\\mathbf W_{\\mathrm{D3}}$。本工具不重新做 "
+"DFT，只对已有标签执行一致的加减："
+msgstr ""
+"This section explains the option, its parameters, operation, and expected"
+" result."
+
+#: ../../source/module/nep-main-tool-dft-d3.md:20
+#: 02b29beeae604139bae1bacd2ba9c6c6
+msgid ""
+"\n"
+"\\begin{aligned}\n"
+"E' &= E+sE_{\\mathrm{D3}},\\\\\n"
+"\\mathbf F'_i &= \\mathbf F_i+s\\mathbf F_{\\mathrm{D3},i},\\\\\n"
+"\\mathbf W' &= \\mathbf W+s\\mathbf W_{\\mathrm{D3}},\n"
+"\\end{aligned}\n"
+"\\qquad\n"
+"s=\\begin{cases}+1,&\\text{加上}\\\\-1,&\\text{减去。}\\end{cases}\n"
+msgstr ""
+"\n"
+"This section explains the option, its parameters, operation, and expected"
+" result.\n"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:30
+#: 2c028ef9b18b4acdb72a57bee7f84fce
+msgid ""
+"`交换-相关泛函`决定 D3 阻尼参数，必须与原始 DFT 泛函一致；`D3 截断半径`控制色散原子对， "
+"`配位数截断半径`控制配位环境计算，两者单位均为 Å。截断半径不是“精度越大越好”的普通滑块： "
+"增大会提高计算量，也可能改变与原始标签约定的一致性。"
+msgstr ""
+"This section explains the option, its parameters, operation, and expected"
+" result."
+
+#: ../../source/module/nep-main-tool-dft-d3.md:34
+#: b4e479039e8a4a6c94917afa41551dcf
+msgid "参数与执行结果"
+msgstr "Parameters and execution result"
+
+#: ../../source/module/nep-dataset-display-content.md:8385
+#: 267c7f02fc0f40349b3498a8d70d3180
+msgid "输入控件：`交换-相关泛函`、`D3 截断半径`、`配位数截断半径`和`修正方式（加上/减去）`。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:8386
+#: ecfe4b8661cf4cc3aa5151918da64a4d
+msgid "执行结果：后台应用 DFT-D3 修正并重绘。"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:8388
+#: 6032eb32105947d6bafe520b6532890b
+msgid ""
+"![DFT-D3 "
+"修正对话框](../_static/image/generated/show_nep_reference/g_dftd3_dialog.png)"
+msgstr "See the figure for the corresponding control and result."
+
+#: ../../source/module/nep-dataset-display-content.md:8388
+#: 294e151520964c538d576bf3c33e97aa
+msgid "DFT-D3 修正对话框"
+msgstr "Details for this option"
+
+#: ../../source/module/nep-dataset-display-content.md:8388
+#: 294e151520964c538d576bf3c33e97aa
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
+msgstr ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:41
+#: f9be5978a94f42358a742335b9d70a0d
+msgid "操作后检查"
+msgstr "Post-operation checks"
+
+#: ../../source/module/nep-main-tool-dft-d3.md:43
+#: 888bb0311e3746c1bce9467a7c598a0d
+msgid ""
+"`functional` 必须与原始 DFT 计算采用的泛函一致。完成后比较修正前后的能量和力分布， 并确认 `Add/Subtract` "
+"与目标标签约定一致；方向选反会造成整批数据系统性偏移。"
+msgstr ""
+"This section explains the option, its parameters, operation, and expected"
+" result."

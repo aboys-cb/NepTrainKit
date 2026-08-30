@@ -4,76 +4,92 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:3
-#: 0417a507b943450d95e7bfc430c85441
-msgid "晶格扰动（Lattice Perturb）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:3
+#: bbaddb27e73f4b339843c8f87ea0f3ab
+msgid "晶格随机扰动（Lattice Perturb）"
 msgstr "Lattice Perturb"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:5
-#: 2243a5273a11437db47c40ce6c09a6f1
-msgid "`Group`: `Lattice` | `Class`: `CellScalingCard`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:5
+#: 9f1dfaa88b31491796384014ce84a343
+msgid "**分类：** 晶格"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:7
-#: 77fc4041dd5c4dbcbb555fc7216dc011
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:7
+#: ed841de3e1f74c4793e0576129e2138f
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:9
-#: ed5eb01b2e1e433dbd3ab0a71bd3e901
-msgid "对晶胞尺度和角度做轻量随机扰动，为近平衡态补充几何变化样本。每个输出结构在原始晶格基础上引入独立随机的长度缩放和（可选的）角度缩放。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:9
+#: 0b021731e3dd4163b308d2366c1a0d88
+msgid ""
+"对晶胞尺度和角度做轻量随机扰动，为近平衡态补充几何变化样本。每个输出结构在原"
+"始晶格基础上引入独立随机的长度缩放和（可选的）角度缩放。"
 msgstr ""
 "Apply small random changes to cell lengths and, optionally, cell angles to "
 "sample geometry near equilibrium. Every output receives an independent "
 "perturbation of the original lattice."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:11
-#: 92e9ad2feaea4524936326605cc0b81b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:11
+#: 2071eb2337fa4d12abe9bfe78c59037c
+msgid "原理与公式"
+msgstr "Principle and equations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:13
+#: 4c5e6490bb2a405787f972e6f8c6525b
 msgid "f_k\\in[1-m,1+m],\\quad a_i'=f_i a_i,\\quad \\theta_j'=g_j\\theta_j"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:13
-#: 0a318c774b3841c783ace5ccf31fde65
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:15
+#: db2f70197f1043af8db646601e4f10b9
+msgid ""
+"其中 $m$ 是最大相对缩放，$f_i$ 是第 $i$ 条晶格矢量的随机长度因子；开启角度扰"
+"动时 $g_j$ 同样在指定范围内抽样并作用于晶格角。原子分数坐标保持不变，因此 "
+"Cartesian 坐标 会随新晶胞同步变化。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:19
+#: 68f6f4d674504a9fbc2207d463a5bb2d
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:15
-#: d13b8bf2baaa4c09946dc56094a73a52
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:21
+#: dccdf67ec73341259164519f8e440bae
 msgid "场景：模型预测热膨胀系数偏差超过 30%"
 msgstr "Scenario: Thermal expansion is wrong by more than 30%"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:17
-#: 26a5d67ffdd5477f9022a1e5896d763c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:23
+#: e65da08fcc844984b0f419ce19f11fc6
 msgid ""
-"你在 Si 上训练了一个 NEP 模型，弛豫态的能量和力精度都过关，但用准谐近似算出来的热膨胀系数比实验值大了 "
-"30%。诊断发现：训练集里所有结构都处在同一平衡体积，模型对体积轻微变化时的能量梯度完全是外推出来的——外推不准。"
+"你在 Si 上训练了一个 NEP 模型，弛豫态的能量和力精度都过关，但用准谐近似算出来"
+"的热膨胀系数比实验值大了 30%。诊断发现：训练集里所有结构都处在同一平衡体积，"
+"模型对体积轻微变化时的能量梯度完全是外推出来的——外推不准。"
 msgstr ""
-"A Si NEP has acceptable energy and force errors at relaxed structures, yet a"
-" quasiharmonic calculation overestimates thermal expansion by 30%. Every "
+"A Si NEP has acceptable energy and force errors at relaxed structures, yet a "
+"quasiharmonic calculation overestimates thermal expansion by 30%. Every "
 "training structure has the same equilibrium volume, so energy gradients "
 "under small volume changes are extrapolated."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:19
-#: b4f23a3fd6c04887bb6875826b38759c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:25
+#: 00274edde6cd49f5840e0c43db9d4f2b
 msgid ""
-"**诊断思路：** "
-"热膨胀系数取决于声子频率对体积的导数，归根结底需要模型在平衡体积附近有足够的体积-能量采样点。纯静态弛豫结构只有一个体积，不够。解决办法是围绕平衡晶格随机生成一批稍微膨胀或收缩的结构，用少量白噪声覆盖近邻体积空间。"
+"**诊断思路：** 热膨胀系数取决于声子频率对体积的导数，归根结底需要模型在平衡体"
+"积附近有足够的体积-能量采样点。纯静态弛豫结构只有一个体积，不够。解决办法是围"
+"绕平衡晶格随机生成一批稍微膨胀或收缩的结构，用少量白噪声覆盖近邻体积空间。"
 msgstr ""
 "**Diagnosis:** Thermal expansion depends on volume derivatives of phonon "
 "frequencies, which requires adequate volume-energy sampling around "
@@ -81,267 +97,275 @@ msgstr ""
 "contractions and expansions around the equilibrium lattice to cover the "
 "nearby cell space."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:21
-#: 9663d3a772004f15ac0c1074f0be1521
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:27
+#: 12977e6ecb4447318014a56b19b9bb49
 msgid "**输入：** 一个弛豫好的 Si 单胞"
 msgstr "**Input:** A relaxed Si unit cell."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:23
-#: 1598a1564ea0474494a0551d35246e37
-msgid "**目标：** 围绕平衡体积生成 30 个随机晶格扰动的结构，缩放幅度 4%，覆盖 ±4% 的体积范围"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:29
+#: 2c655c5958d94bc992dd0b0b5c0c0271
+msgid ""
+"**目标：** 围绕平衡体积生成 30 个随机晶格扰动的结构，缩放幅度 4%，覆盖 ±4% 的"
+"体积范围"
 msgstr ""
-"**Objective:** Generate 30 random lattice variants around equilibrium with a"
-" 4% scaling amplitude."
+"**Objective:** Generate 30 random lattice variants around equilibrium with a "
+"4% scaling amplitude."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:25
-#: 96b4f8c99b444d21b0b9f52e390165ad
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:31
+#: 26c1207e8f5a4d9f90e62297bf4c9341
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:26
-#: 4795173f1ff242c49bca51485d3558a0
-msgid "`max_scaling` = `0.04` （4% 缩放幅度）"
-msgstr "`max_scaling` = `0.04` (4% scaling amplitude)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:32
+#: fec377c1e5734410a007e025dc7d2f50
+msgid "`最大缩放`（`max_scaling`） = `0.04` （4% 缩放幅度）"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:27
-#: 21a44c7b9fa7453cb8d333d9dc73c018
-msgid "`max_num` = `30`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:33
+#: 3e104c52902647599281af4196ebf0c4
+msgid "`最大输出数量`（`max_num`） = `30`"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:28
-#: b9476d4db09a4e4599e0beae7d6dd988
-msgid "`perturb_angle` = `false` （先只看长度变化，避免角度扰动混入）"
-msgstr "`perturb_angle` = `false` (isolate length changes first)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:34
+#: c170e3e9363147d88cd5b13896bc1a78
+msgid ""
+"`扰动角度`（`perturb_angle`） = `false` （先只看长度变化，避免角度扰动混入）"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:30
-#: 5fa2faff530943ae9e010dd7b4997b93
-msgid "**输出：** 30 个结构，每个的晶格长度在原始值的 96%~104% 之间随机分布，原子分数坐标随晶格同步缩放"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:36
+#: 6b2c9263ea564a9f833bf7728720e9ef
+msgid ""
+"**输出：** 30 个结构，每个的晶格长度在原始值的 96%~104% 之间随机分布，原子分"
+"数坐标随晶格同步缩放"
 msgstr ""
 "**Output:** Thirty structures whose lattice lengths are sampled between 96% "
 "and 104% of the input values, with atoms following the cell at fixed "
 "fractional coordinates."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:32
-#: 9c6ae6f1ed5b47feb8bbd0c1cfc0d73f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:38
+#: ce5937a3c0a943a3803a63929dd64675
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:33
-#: f4fecc46efbc42e58eb9e92a6a388b4c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:39
+#: 6fefaa88167246ed8e94108b27513166
 msgid "重训后重新跑准谐近似计算热膨胀系数，应更接近实验值"
 msgstr ""
 "After retraining, repeat the quasiharmonic calculation; thermal expansion "
 "should move closer to experiment."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:34
-#: 7aa80459004f44049e30571b412f3684
-msgid "检查输出结构的体积分布直方图：应均匀覆盖 [V*(1-0.04), V*(1+0.04)]，不要在两端堆积"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:40
+#: 431fabc20ad3403a83fe599a9df04179
+msgid ""
+"检查输出结构的体积分布直方图：应均匀覆盖 [V*(1-0.04), V*(1+0.04)]，不要在两端"
+"堆积"
 msgstr ""
 "Inspect the output volume histogram. It should cover the intended "
 "neighborhood without strong endpoint clustering."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:35
-#: 663e00570f4444f7aedd273c61a29824
-msgid "如果改善不够，增大 `max_scaling` 到 0.06~0.08，同时换 Sobol 引擎覆盖更均匀"
-msgstr ""
-"If coverage remains insufficient, increase `max_scaling` toward 0.06-0.08 "
-"and consider the Sobol engine for a more even small-sample design."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:41
+#: 0f326e24ab70445d8a8f0edceb9fa0a4
+msgid ""
+"如果改善不够，增大 `最大缩放`（`max_scaling`）到 0.06~0.08，同时换 Sobol 引擎"
+"覆盖更均匀"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:36
-#: 3ae39a356f57480faf9d2bdd113ec20f
-msgid "抽查最短键长：如果 4% 缩放后最短键比 DFT 参考键长短了 > 0.2 Å，说明缩放过大，回调 `max_scaling`"
-msgstr ""
-"Spot-check nearest-neighbor distances. If a 4% perturbation shortens a bond "
-"by more than 0.2 Å relative to the DFT reference, reduce `max_scaling`."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:42
+#: edbcf746229c47c2b39c05e1880fd373
+msgid ""
+"抽查最短键长：如果 4% 缩放后最短键比 DFT 参考键长短了 > 0.2 Å，说明缩放过大，"
+"回调 `最大缩放`（`max_scaling`）"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:38
-#: fcff631c411548e98bab29e3c0d2443a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:44
+#: 27d5bce1f2154c898aec6ddbf0215cff
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:40
-#: a3567becefec4a048581852c0176bbe7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:46
+#: ed05ec200d784466ad1a922e5955a2e0
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:41
-#: ec06460c96104b8ea8737b136a491e9b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:47
+#: 57bc8ec95efc4693b3b4046ce7b7e087
 msgid "模型对体积变化敏感，体积-能量曲线或热膨胀相关性质偏差大"
 msgstr ""
 "Volume-sensitive predictions, the volume-energy curve, or thermal-expansion "
 "properties are inaccurate"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:42
-#: c2042607a683468786cd9983c9299cea
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:48
+#: 756d18e724c341c2b64bd298f174228b
 msgid "训练集中所有结构体积过于集中，缺少近平衡体积散布"
 msgstr ""
 "Training volumes are concentrated at one value with no near-equilibrium "
 "spread"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:43
-#: 2a89096cd84140babdd638f1e8b029c6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:49
+#: 2eafde9ef0e144c39c9751fcdef591fc
 msgid "需要模型在 ±5% 体积范围内有内插能力"
 msgstr "The model needs interpolation coverage over modest volume changes"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:45
-#: 8439113b963b4e0080506dd7340fb58d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:51
+#: f1cf608f00914536b7076cea023fcf8e
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:46
-#: c2a0586b9d8449aaaf36adca38c45b63
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:52
+#: 1b8586c8827e4ac1ad6792d86ffb1515
 msgid "只需要特定方向、特定幅度的应变 → 用 `Lattice Strain` 更精确控制"
 msgstr ""
-"A specific direction and strain magnitude are required; use `Lattice Strain`"
-" for controlled scanning"
+"A specific direction and strain magnitude are required; use `Lattice Strain` "
+"for controlled scanning"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:47
-#: 316f6484bda94aff89a02e6041b6879e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:53
+#: 951fdab871e0406594cd1b7363496cd1
 msgid "体系本身刚度极大、体积变化无物理意义（如高压相），扰动只产生无意义结构"
 msgstr ""
 "Volume changes are outside the intended physical regime, for example a "
 "tightly constrained high-pressure phase"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:48
-#: b9d35088540f4e7cb03442fffe4a95e7
-msgid "输入结构含有机分子但没开 `identify_organic` —— 分子内键会被错误拉伸"
-msgstr ""
-"The input contains molecules but `identify_organic` is disabled, which would"
-" distort intramolecular bonds"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:54
+#: d8ada78fd66b4c648d58c0e571665351
+msgid ""
+"输入结构含有机分子但没开 `识别有机分子`（`identify_organic`） —— 分子内键会被"
+"错误拉伸"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:50
-#: 00445d63f7f7445588c39343b9e9ab32
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:56
+#: 3090639d3e88428b849effcd8a3bd13c
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:52
-#: 95a2cd3bfadb4739aa0635b30c7cb231
-msgid "Engine Type（engine_type）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:58
+#: 9d8f398e256f44d683d59971b3995ac8
+msgid "生成方式（engine_type）"
+msgstr "engine_type"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:54
-#: ec7f0e1ecac048f2b54dba73e7ce7cf1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:60
+#: af3f53dde6c74c51bf637e169605ec55
 msgid ""
-"`int`，默认 1。`0` = Sobol 准随机序列，`1` = Uniform 均匀随机。Sobol 在少量样本（< "
-"20）时覆盖明显更均匀，Uniform 则生成更快。样本数上到 50 以后两者差异很小，选哪个都行。如果你只跑十几个结构，优先 Sobol。"
+"`int`，默认 1。`0` = Sobol 准随机序列，`1` = Uniform 均匀随机。Sobol 在少量样"
+"本（< 20）时覆盖明显更均匀，Uniform 则生成更快。样本数上到 50 以后两者差异很"
+"小，选哪个都行。如果你只跑十几个结构，优先 Sobol。"
 msgstr ""
 "`int`, default `1`. `0` selects a Sobol low-discrepancy sequence and `1` "
-"uniform random sampling. Sobol gives more even coverage for fewer than about"
-" 20 samples; uniform sampling is simpler and differences diminish around 50 "
+"uniform random sampling. Sobol gives more even coverage for fewer than about "
+"20 samples; uniform sampling is simpler and differences diminish around 50 "
 "samples. Prefer Sobol for a small design."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:56
-#: 7ea9316167f4438b9ddc018a97042175
-msgid "Max Scaling（max_scaling）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:62
+#: 2999033298b5462aa413ffc99c75dda5
+msgid "最大缩放（max_scaling）"
+msgstr "max_scaling"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:58
-#: bfd3a5ad4034482c8b22102be72569dd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:64
+#: 57bb684ac72e4f5dbe880ed14fa48f0a
 msgid ""
-"`float`，默认 `0.04`。晶格长度的随机缩放幅度系数 `m`，实际长度会在 `[1-m, 1+m]` 范围内均匀采样。如果同时开启了 "
-"`perturb_angle`，角度也在这个相对范围内同步缩放。0.01~0.03 适合补近平衡声子区；推到 0.04~0.06 覆盖热膨胀；设到 "
-"0.08 以上时务必抽查最近邻距离，防止出现非物理键长。"
-msgstr ""
-"`float`, default `0.04`. Lattice lengths are sampled with factors in `[1-m, "
-"1+m]`. With `perturb_angle`, angles receive the same relative scaling. "
-"Values around 0.01-0.03 target near-equilibrium phonon sampling, while "
-"0.04-0.06 broadens thermal-expansion coverage. Above 0.08, inspect nearest-"
-"neighbor distances for nonphysical bonds."
+"`float`，默认 `0.04`。晶格长度的随机缩放幅度系数 `m`，实际长度会在 `[1-m, "
+"1+m]` 范围内均匀采样。如果同时开启了 `扰动角度`（`perturb_angle`），角度也在"
+"这个相对范围内同步缩放。0.01~0.03 适合补近平衡声子区；推到 0.04~0.06 覆盖热膨"
+"胀；设到 0.08 以上时务必抽查最近邻距离，防止出现非物理键长。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:60
-#: 6f67f82341794db492f61256c059f195
-msgid "Max Num（max_num）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:66
+#: 491de6b418cb47588a0043f187b93f0d
+msgid "最大输出数量（max_num）"
+msgstr "max_num"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:62
-#: cede72f3db28494295df461807452d29
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:68
+#: 66d37bed3096446094f5c887263ffdeb
 msgid ""
-"`int`，默认 50。每个输入结构生成多少个扰动版本。注意这不是晶格方向数——是输出结构的数量。20~30 个足够覆盖 ±4% 体积空间的 3D "
-"长度自由度；50~100 个适用于同时扰动角度的 6D 空间。这里是随机采样而不是系统网格，增大这个值提高的是覆盖密度，不是覆盖范围。"
+"`int`，默认 50。每个输入结构生成多少个扰动版本。注意这不是晶格方向数——是输出"
+"结构的数量。20~30 个足够覆盖 ±4% 体积空间的 3D 长度自由度；50~100 个适用于同"
+"时扰动角度的 6D 空间。这里是随机采样而不是系统网格，增大这个值提高的是覆盖密"
+"度，不是覆盖范围。"
 msgstr ""
 "`int`, default `50`. Number of perturbed outputs per input, not the number "
 "of lattice directions. Roughly 20-30 samples can cover three length degrees "
 "of freedom at modest amplitude; 50-100 are more appropriate when angles "
-"expand the space to six dimensions. Increasing the count raises density, not"
-" range."
+"expand the space to six dimensions. Increasing the count raises density, not "
+"range."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:64
-#: dfc507454e2b4bf590b1b381b13dfbc0
-msgid "Perturb Angle（perturb_angle）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:70
+#: 9b617ff634624e93820168b6f2bde9a5
+msgid "扰动角度（perturb_angle）"
+msgstr "perturb_angle"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:66
-#: 641481410ddc4ea7bcfb12f5ab2f7b1d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:72
+#: 2cf1fe3dbe3b47dab0ef0b340867f3b3
 msgid ""
-"`bool`，默认 "
-"`true`。打开后晶格角度（alpha/beta/gamma）也跟着一起随机缩放——注意这是乘性缩放（原始角度乘以一个随机因子），不是加性偏移。非正交晶格体系（单斜、三斜）建议保持打开；正交或更高对称的晶系可以先关掉，长度覆盖够用以后再开。"
+"`bool`，默认 `true`。打开后晶格角度（alpha/beta/gamma）也跟着一起随机缩放——注"
+"意这是乘性缩放（原始角度乘以一个随机因子），不是加性偏移。非正交晶格体系（单"
+"斜、三斜）建议保持打开；正交或更高对称的晶系可以先关掉，长度覆盖够用以后再"
+"开。"
 msgstr ""
 "`bool`, default `true`. Randomly scale alpha, beta, and gamma as well as "
 "lengths. This is multiplicative, not an additive angular offset. It is "
 "useful for monoclinic or triclinic cells; for orthogonal or higher-symmetry "
 "cells, begin with it disabled and add angle coverage only when needed."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:68
-#: 6fb6b9d407174c3489b0016e30868572
-msgid "Identify Organic（identify_organic）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:74
+#: e82ab5e0343843c089ece7a6638b47c0
+msgid "识别有机分子（identify_organic）"
+msgstr "identify_organic"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:70
-#: 6a0267cdb0aa42ad935b34be1d26046a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:76
+#: 5b0fcaba02bb4745ad5e6d23393c7102
 msgid ""
-"`bool`，默认 "
-"`false`。打开后程序识别有机分子团簇，扰动时团簇做刚性整体移动，分子内键长不参与缩放。分子晶体（MOF、有机半导体）必须开，否则晶格缩放会直接把分子内键拉断。纯无机体系关着省计算。"
+"`bool`，默认 `false`。打开后程序识别有机分子团簇，扰动时团簇做刚性整体移动，"
+"分子内键长不参与缩放。分子晶体（MOF、有机半导体）必须开，否则晶格缩放会直接把"
+"分子内键拉断。纯无机体系关着省计算。"
 msgstr ""
 "`bool`, default `false`. Detect molecular clusters and move each "
-"approximately as a rigid body so intramolecular bonds are not scaled. Enable"
-" for molecular crystals, MOFs, and organic semiconductors; leave disabled "
-"for purely inorganic systems."
+"approximately as a rigid body so intramolecular bonds are not scaled. Enable "
+"for molecular crystals, MOFs, and organic semiconductors; leave disabled for "
+"purely inorganic systems."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:72
-#: d4daa2c0f6954a8584f010138cd8f474
-msgid "Use Seed（use_seed）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:78
+#: 4bfadf9c276e4281ae45826c862cdcfe
+msgid "使用随机种子（use_seed）"
+msgstr "use_seed"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:74
-#: a3865ba16f374f8996ec017577c91bab
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:80
+#: ee937a98bd034387883cec1626d5081d
 msgid ""
-"`bool`，默认 `false`。打开后每次同一输入 + 同一参数 + 同一 seed "
-"得到完全相同的扰动结果。做对比实验或需要复现的时候打开，纯探索阶段可以关着。"
+"`bool`，默认 `false`。打开后每次同一输入 + 同一参数 + 同一 seed 得到完全相同"
+"的扰动结果。做对比实验或需要复现的时候打开，纯探索阶段可以关着。"
 msgstr ""
 "`bool`, default `false`. Enable to reproduce perturbations from the same "
 "input, parameters, and seed. Use it for controlled comparisons; exploratory "
 "generation may leave it disabled."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:76
-#: e6996562b4854cfc92eb53898989d4a0
-msgid "Seed（seed）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:82
+#: 69a1f67085644fdfb381c2ef743dab86
+msgid "随机种子（seed）"
+msgstr "seed"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:78
-#: 2841bdd03df241ce9789e259ec19430e
-msgid "`int`，默认 0。随机种子值，仅在 `use_seed` 打开时生效。两个不同的 seed 会产生两组不同的扰动分布。"
-msgstr ""
-"`int`, default `0`. Random seed used only when `use_seed` is enabled. "
-"Different seeds produce different perturbation designs."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:84
+#: dd9080c304034a098e7cd4930e2cc19d
+msgid ""
+"`int`，默认 0。随机种子值，仅在 `使用随机种子`（`use_seed`）打开时生效。两个"
+"不同的 seed 会产生两组不同的扰动分布。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:80
-#: 28365b08311c42f582d760d0e4e2b5ec
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:86
+#: e4c03d25d82a4f9091ace0027694f0ac
 msgid "生效条件：`use_seed=True`。"
 msgstr "Active only when `use_seed=True`."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:82
-#: d0a0a72abe8342e5a0af896c91353729
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:88
+#: 88d328be2570445bada26673d4839b44
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:84
-#: fe1062f360964d82a3421564ad4f3d36
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:90
+#: 5c7339cf4cb84e1daedfe1623d097230
 msgid "近平衡声子覆盖（max_scaling=2%，仅长度，Sobol）"
 msgstr "Near-equilibrium phonon coverage (2% length-only scaling with Sobol)"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:85
-#: fc864d64e4914912aaa8088f6010690f
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:91
+#: 9560a19df3ce4e6fa05bde5266769dbf
 msgid ""
 "{\n"
 "  \"class\": \"CellScalingCard\",\n"
@@ -358,14 +382,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:101
-#: c5a6843bf4ee4797b9e7031083daa331
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:107
+#: 537b15609e5f41f0ba8da645c09d24d2
 msgid "热膨胀 + 角度覆盖（max_scaling=5%，长度+角度，50 样本）"
-msgstr "Thermal expansion plus angle coverage (5%, lengths and angles, 50 samples)"
+msgstr ""
+"Thermal expansion plus angle coverage (5%, lengths and angles, 50 samples)"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:102
-#: 03f021cb81ad476f9df04a4441bcaf99
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:108
+#: 203893af8bf141218cae70946313dbdb
 msgid ""
 "{\n"
 "  \"class\": \"CellScalingCard\",\n"
@@ -382,14 +406,13 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:118
-#: 7d8addb0263047f79cc39b3aaa942bdf
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:124
+#: 4b5a82b410f7410c9f7b5624cdbc4172
 msgid "大范围探索（max_scaling=8%，100 样本，含有机保护）"
 msgstr "Broad exploration (8%, 100 samples, molecular protection enabled)"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:119
-#: 31bff982d9d34873b8b694ef01720259
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:125
+#: 409958401ff14780a0bb1de7523c5a84
 msgid ""
 "{\n"
 "  \"class\": \"CellScalingCard\",\n"
@@ -406,99 +429,179 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:135
-#: 7aaeebd8e73c4aa5943b495bf73899e3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:141
+#: 9a44a7f35d1b4a10a904f1582c905c1d
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:137
-#: caf9fadc1b60489c87dbe5954700332c
-msgid "`Lattice Strain` → `Lattice Perturb`：先系统扫特定方向应变，再补充随机近邻散布"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:143
+#: 1e21edb90d5b40f68400d5aff2badbc7
+msgid ""
+"`Lattice Strain` → `Lattice Perturb`：先系统扫特定方向应变，再补充随机近邻散"
+"布"
 msgstr ""
 "`Lattice Strain` -> `Lattice Perturb`: scan controlled directional strains, "
 "then add random local coverage"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:138
-#: 3af85519d180449b9f247dacf2295051
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:144
+#: a8d4f3ca5fa846e6ba8185be2ebe15e9
 msgid "`Lattice Perturb` → `Atomic Perturb`：晶格扰动后再加原子级坐标噪声"
 msgstr ""
 "`Lattice Perturb` -> `Atomic Perturb`: perturb the cell before adding atom-"
 "level coordinate noise"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:139
-#: 4e4022cf1f3a4a5eb26a90d4e0b8c9a0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:145
+#: 47b4424d52cc44ce80be3a38d2889c02
 msgid "`Super Cell` → `Lattice Perturb`：扩胞后在更大尺度上做晶格扰动"
 msgstr ""
 "`Super Cell` -> `Lattice Perturb`: expand the structure before perturbing "
 "its cell"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:141
-#: d6dd08aaf7fc4f409d82e8ec1ef9957d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:147
+#: 7382e96552b64e12a62736366bfee1fd
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:143
-#: 0b9dcb53fe274f998447fedb3fef9a36
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:149
+#: 922884f4e5bf4caba5f2dcec83e489ea
 msgid ""
-"**输出全是相同结构或分布极窄。** `max_scaling` 是否太小（如 0.001）？或者 `max_num` 太小导致偶然均匀。先增大 "
-"`max_scaling` 到 0.02 以上，增大 `max_num` 到 20 以上。"
-msgstr ""
-"**Outputs are identical or cover an extremely narrow range.** Check whether "
-"`max_scaling` or `max_num` is too small. As a diagnostic, try `max_scaling` "
-"of at least 0.02 and `max_num` of at least 20."
+"**输出全是相同结构或分布极窄。** `最大缩放`（`max_scaling`）是否太小（如 "
+"0.001）？或者 `最大输出数量`（`max_num`）太小导致偶然均匀。先增大 `最大缩放`"
+"（`max_scaling`）到 0.02 以上，增大 `最大输出数量`（`max_num`）到 20 以上。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:145
-#: 32946ff062b4497983939bcfb383a04b
-msgid "**分子晶体输出中键被拉断。** `identify_organic` 没开。对于 MOF、有机晶体等，必须开启此开关，否则晶格缩放会直接拉伸分子内键。"
-msgstr ""
-"**Bonds break in a molecular crystal.** Enable `identify_organic`; otherwise"
-" cell scaling directly distorts intramolecular geometry."
-
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:147
-#: 552b9a2b2dbb408baef21b8384a9f09c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:151
+#: 44d7fc03ae4b4867b6ff6292cc854e8b
 msgid ""
-"**角度扰动后结构角度变化不符合预期。** 注意此卡的角度扰动是乘性缩放（原始角度乘以随机因子），不是加性偏移。如果原始角度是 90 "
-"度、`max_scaling=0.04`，新角度在 86.4~93.6 度之间。"
+"**分子晶体输出中键被拉断。** `识别有机分子`（`identify_organic`）没开。对于 "
+"MOF、有机晶体等，必须开启此开关，否则晶格缩放会直接拉伸分子内键。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:153
+#: 51d80899c32e4243aeeacd54f9410f8a
+msgid ""
+"**角度扰动后结构角度变化不符合预期。** 注意此卡的角度扰动是乘性缩放（原始角度"
+"乘以随机因子），不是加性偏移。如果原始角度是 90 度、`max_scaling=0.04`，新角"
+"度在 86.4~93.6 度之间。"
 msgstr ""
-"**Angle changes differ from expectation.** The card multiplies each angle by"
-" a random factor rather than adding an offset. At 90 degrees with "
+"**Angle changes differ from expectation.** The card multiplies each angle by "
+"a random factor rather than adding an offset. At 90 degrees with "
 "`max_scaling=0.04`, the range is 86.4-93.6 degrees."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:149
-#: 2850f6d940de4c0093057c63db61d818
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:155
+#: 393599cb993c43fabf8e769ead808501
 msgid ""
-"**Sobol 和 Uniform 输出差异大。** `max_num` 较小时（< 20）Sobol 覆盖明显更均匀。样本数 ≥ 50 "
-"后两者差异缩小。如果在意复现性，固定 `engine_type` + `use_seed`。"
-msgstr ""
-"**Sobol and uniform outputs differ strongly.** This is expected for fewer "
-"than about 20 samples, where Sobol is more even. Differences shrink around "
-"50 samples. For reproducibility, fix both `engine_type` and the seed."
+"**Sobol 和 Uniform 输出差异大。** `最大输出数量`（`max_num`）较小时（< 20）"
+"Sobol 覆盖明显更均匀。样本数 ≥ 50 后两者差异缩小。如果在意复现性，固定 `生成"
+"方式`（`engine_type`） + `使用随机种子`（`use_seed`）。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:151
-#: 1830c5de878d43fc9cd4a1a35ddd5c42
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:157
+#: d5edafd517f74043960e21fb7ba5c5ff
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:153
-#: 893d131dd0064b17bc19faa6228aa5c9
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:159
+#: aaae62363ad7482fa9e4dccd3ca393bb
 msgid "`LSc(max={max_scaling},{U|S})` —— `U` 表示 Uniform，`S` 表示 Sobol。"
-msgstr "`LSc(max={max_scaling},{U|S})`, where `U` means uniform and `S` means Sobol."
+msgstr ""
+"`LSc(max={max_scaling},{U|S})`, where `U` means uniform and `S` means Sobol."
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:155
-#: 15c1a538bf644261ad17c32123cccab9
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:161
+#: 31fe29ec9c3f4c58b7d32f250e4cba6b
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/cell-scaling-card.md:157
-#: faa88e1cbab5434eb1e90c80726175e6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/cell-scaling-card.md:163
+#: 925958047e224af0919cad897e0d91e9
 msgid ""
-"勾选 `use_seed` + 固定 `seed` → 相同输入可复现。seed "
-"会与单帧结构内容共同派生，因此几何或晶胞不同的帧不会机械复用同一组缩放因子，数据集重新排序也不改变单帧结果；完全相同的重复帧仍得到相同结果。Sobol 引擎的 "
-"scramble 同样受这个派生 seed 控制。"
-msgstr ""
-"Enable `use_seed` and fix `seed` to reproduce an input. The seed is combined "
-"with each structure's content, so frames with different geometry or cells do"
-" not reuse the same scale factors, and reordering the dataset does not change"
-" a frame's result. Exactly duplicated frames still receive identical "
-"results. The derived seed also controls Sobol scrambling."
+"勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复"
+"现。seed 会与单帧结构内容共同派生，因此几何或晶胞不同的帧不会机械复用同一组缩"
+"放因子，数据集重新排序也不改变单帧结果；完全相同的重复帧仍得到相同结果。"
+"Sobol 引擎的 scramble 同样受这个派生 seed 控制。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "晶格扰动（Lattice Perturb）"
+#~ msgstr "Lattice Perturb"
+
+#~ msgid "`max_scaling` = `0.04` （4% 缩放幅度）"
+#~ msgstr "`max_scaling` = `0.04` (4% scaling amplitude)"
+
+#~ msgid "`perturb_angle` = `false` （先只看长度变化，避免角度扰动混入）"
+#~ msgstr "`perturb_angle` = `false` (isolate length changes first)"
+
+#~ msgid ""
+#~ "如果改善不够，增大 `max_scaling` 到 0.06~0.08，同时换 Sobol 引擎覆盖更均匀"
+#~ msgstr ""
+#~ "If coverage remains insufficient, increase `max_scaling` toward 0.06-0.08 "
+#~ "and consider the Sobol engine for a more even small-sample design."
+
+#~ msgid ""
+#~ "抽查最短键长：如果 4% 缩放后最短键比 DFT 参考键长短了 > 0.2 Å，说明缩放过"
+#~ "大，回调 `max_scaling`"
+#~ msgstr ""
+#~ "Spot-check nearest-neighbor distances. If a 4% perturbation shortens a "
+#~ "bond by more than 0.2 Å relative to the DFT reference, reduce "
+#~ "`max_scaling`."
+
+#~ msgid "输入结构含有机分子但没开 `identify_organic` —— 分子内键会被错误拉伸"
+#~ msgstr ""
+#~ "The input contains molecules but `identify_organic` is disabled, which "
+#~ "would distort intramolecular bonds"
+
+#~ msgid ""
+#~ "`float`，默认 `0.04`。晶格长度的随机缩放幅度系数 `m`，实际长度会在 `[1-m, "
+#~ "1+m]` 范围内均匀采样。如果同时开启了 `perturb_angle`，角度也在这个相对范围"
+#~ "内同步缩放。0.01~0.03 适合补近平衡声子区；推到 0.04~0.06 覆盖热膨胀；设到 "
+#~ "0.08 以上时务必抽查最近邻距离，防止出现非物理键长。"
+#~ msgstr ""
+#~ "`float`, default `0.04`. Lattice lengths are sampled with factors in `[1-"
+#~ "m, 1+m]`. With `perturb_angle`, angles receive the same relative scaling. "
+#~ "Values around 0.01-0.03 target near-equilibrium phonon sampling, while "
+#~ "0.04-0.06 broadens thermal-expansion coverage. Above 0.08, inspect "
+#~ "nearest-neighbor distances for nonphysical bonds."
+
+#~ msgid ""
+#~ "`int`，默认 0。随机种子值，仅在 `use_seed` 打开时生效。两个不同的 seed 会"
+#~ "产生两组不同的扰动分布。"
+#~ msgstr ""
+#~ "`int`, default `0`. Random seed used only when `use_seed` is enabled. "
+#~ "Different seeds produce different perturbation designs."
+
+#~ msgid ""
+#~ "**输出全是相同结构或分布极窄。** `max_scaling` 是否太小（如 0.001）？或者 "
+#~ "`max_num` 太小导致偶然均匀。先增大 `max_scaling` 到 0.02 以上，增大 "
+#~ "`max_num` 到 20 以上。"
+#~ msgstr ""
+#~ "**Outputs are identical or cover an extremely narrow range.** Check "
+#~ "whether `max_scaling` or `max_num` is too small. As a diagnostic, try "
+#~ "`max_scaling` of at least 0.02 and `max_num` of at least 20."
+
+#~ msgid ""
+#~ "**分子晶体输出中键被拉断。** `identify_organic` 没开。对于 MOF、有机晶体"
+#~ "等，必须开启此开关，否则晶格缩放会直接拉伸分子内键。"
+#~ msgstr ""
+#~ "**Bonds break in a molecular crystal.** Enable `identify_organic`; "
+#~ "otherwise cell scaling directly distorts intramolecular geometry."
+
+#~ msgid ""
+#~ "**Sobol 和 Uniform 输出差异大。** `max_num` 较小时（< 20）Sobol 覆盖明显更"
+#~ "均匀。样本数 ≥ 50 后两者差异缩小。如果在意复现性，固定 `engine_type` + "
+#~ "`use_seed`。"
+#~ msgstr ""
+#~ "**Sobol and uniform outputs differ strongly.** This is expected for fewer "
+#~ "than about 20 samples, where Sobol is more even. Differences shrink "
+#~ "around 50 samples. For reproducibility, fix both `engine_type` and the "
+#~ "seed."
+
+#~ msgid ""
+#~ "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。seed 会与单帧结构内容共同"
+#~ "派生，因此几何或晶胞不同的帧不会机械复用同一组缩放因子，数据集重新排序也不"
+#~ "改变单帧结果；完全相同的重复帧仍得到相同结果。Sobol 引擎的 scramble 同样受"
+#~ "这个派生 seed 控制。"
+#~ msgstr ""
+#~ "Enable `use_seed` and fix `seed` to reproduce an input. The seed is "
+#~ "combined with each structure's content, so frames with different geometry "
+#~ "or cells do not reuse the same scale factors, and reordering the dataset "
+#~ "does not change a frame's result. Exactly duplicated frames still receive "
+#~ "identical results. The derived seed also controls Sobol scrambling."

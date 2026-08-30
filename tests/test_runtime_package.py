@@ -14,6 +14,7 @@ from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 
 from NepTrainKit.runtime_package import (
+    NATIVE_HEALTH_CHECK_FLAG,
     NEP_ADAPTERS_SPEC,
     RuntimePackageError,
     RuntimePackageHealthError,
@@ -22,6 +23,7 @@ from NepTrainKit.runtime_package import (
     check_runtime_package_update,
     install_runtime_package_update,
     rollback_runtime_package,
+    run_native_health_command,
     seed_runtime_package,
 )
 
@@ -44,6 +46,37 @@ def test_nep_adapters_runtime_constraint_allows_future_major_versions() -> None:
     assert Version("1.0.1") in constraint
     assert Version("2.0.0") in constraint
     assert Version("99.0.0") in constraint
+
+
+def test_native_health_command_imports_all_helpers(monkeypatch) -> None:
+    imported: list[str] = []
+    monkeypatch.setattr(
+        "NepTrainKit.runtime_package.importlib.import_module",
+        lambda name: imported.append(name),
+    )
+
+    assert run_native_health_command([NATIVE_HEALTH_CHECK_FLAG]) == 0
+    assert imported == [
+        "NepTrainKit._native._io",
+        "NepTrainKit._native._audit",
+        "NepTrainKit._native._phase",
+        "NepTrainKit._native._magnetism",
+    ]
+
+
+def test_native_health_command_reports_import_failure(monkeypatch, capsys) -> None:
+    def import_module(name: str):
+        if name.endswith("._phase"):
+            raise ImportError("missing phase module")
+        return object()
+
+    monkeypatch.setattr(
+        "NepTrainKit.runtime_package.importlib.import_module",
+        import_module,
+    )
+
+    assert run_native_health_command([NATIVE_HEALTH_CHECK_FLAG]) == 4
+    assert "NepTrainKit._native._phase: ImportError: missing phase module" in capsys.readouterr().err
 
 
 class _Response:

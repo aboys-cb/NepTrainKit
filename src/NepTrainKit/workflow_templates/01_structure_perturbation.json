@@ -1,0 +1,140 @@
+{
+  "library_schema": 1,
+  "id": "builtin-structure-perturbation",
+  "name": "Structure perturbation",
+  "kind": "template",
+  "template_version": 1,
+  "category": "Perturbation",
+  "description": "Expand each input structure, branch into lattice strain and lattice perturbation, then apply atomic perturbations.",
+  "input_requirement": "Load one or more periodic structures. Review the supercell limit, lattice perturbation ranges, and atomic displacement settings before running.",
+  "created_at": "2026-08-29T00:00:00+00:00",
+  "updated_at": "2026-08-29T00:00:00+00:00",
+  "workflow": {
+    "software_version": "3.0.1.dev29",
+    "workflow_schema": 2,
+    "cards": [
+      {
+        "class": "SuperCellCard",
+        "check_state": true,
+        "metadata": {
+          "card_name": "Super Cell",
+          "card_version": "",
+          "contributors": [
+            "NepTrainKit"
+          ]
+        },
+        "params": {
+          "mode": "cell",
+          "output_mode": "single",
+          "target_policy": "at_least",
+          "super_scale": [
+            3,
+            3,
+            3
+          ],
+          "target_cell": [
+            15.0,
+            15.0,
+            15.0
+          ],
+          "max_atoms": 64,
+          "fixed_axis_flags": [
+            false,
+            false,
+            false
+          ],
+          "fixed_axis_scale": [
+            1,
+            1,
+            1
+          ]
+        }
+      },
+      {
+        "class": "CardGroup",
+        "check_state": true,
+        "metadata": {
+          "card_name": "Branch Merge",
+          "card_version": "",
+          "contributors": [
+            "NepTrainKit"
+          ]
+        },
+        "card_list": [
+          {
+            "class": "CellStrainCard",
+            "check_state": true,
+            "metadata": {
+              "card_name": "Lattice Strain",
+              "card_version": "",
+              "contributors": [
+                "NepTrainKit"
+              ]
+            },
+            "params": {
+              "axes": "triaxial",
+              "x_range": [
+                -5.0,
+                5.0,
+                1.0
+              ],
+              "y_range": [
+                -5.0,
+                5.0,
+                1.0
+              ],
+              "z_range": [
+                -5.0,
+                5.0,
+                1.0
+              ],
+              "identify_organic": true
+            }
+          },
+          {
+            "class": "CellScalingCard",
+            "check_state": true,
+            "metadata": {
+              "card_name": "Lattice Perturb",
+              "card_version": "",
+              "contributors": [
+                "NepTrainKit"
+              ]
+            },
+            "params": {
+              "engine_type": 1,
+              "max_scaling": 0.04,
+              "max_num": 50,
+              "perturb_angle": true,
+              "identify_organic": true,
+              "use_seed": false,
+              "seed": 0
+            }
+          }
+        ],
+        "filter_card": null
+      },
+      {
+        "class": "PerturbCard",
+        "check_state": true,
+        "metadata": {
+          "card_name": "Atomic Perturb",
+          "card_version": "",
+          "contributors": [
+            "NepTrainKit"
+          ]
+        },
+        "params": {
+          "engine_type": 1,
+          "max_distance": 0.3,
+          "max_num": 50,
+          "identify_organic": true,
+          "use_element_scaling": false,
+          "element_scalings": {},
+          "use_seed": false,
+          "seed": 0
+        }
+      }
+    ]
+  }
+}

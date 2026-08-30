@@ -1,112 +1,82 @@
 <!-- card-schema: {"card_name": "Geometry Filter", "source_file": "src/NepTrainKit/ui/views/_card/geometry_filter_card.py", "serialized_keys": ["params"]} -->
 
-# 几何过滤（Geometry Filter）
+# 几何筛选（Geometry Filter）
 
-`Group`: `Filter` | `Class`: `GeometryFilterCard`
+**分类：** 筛选与采样
 
 ## 功能说明
 
-`Geometry Filter` 按显式阈值过滤候选结构：最短原子间距、单原子体积、质量密度和有效晶胞。它不计算能量，不修复结构，也不替代 `FPS Filter`。它的职责是在代表性采样和 DFT 前挡掉几何上已经明显不可用的结构。
+按明确的几何门槛清洗候选结构，只保留全部条件都通过的帧。它通常放在结构生成或扰动之后、`FPS Filter` 之前，避免明显异常结构进入代表性采样和 DFT。
 
-空结构和含 NaN/Inf 坐标的结构始终被删除。其他阈值默认关闭，避免用一个通用数值误删含氢分子、slab 或带真空结构。
+空结构和含 NaN/Inf 坐标的结构始终删除。其余数值填 `0` 表示不启用该项。界面的“精确预览”会在后台检查完整输入，并显示保留数、删除数和每帧遇到的第一个失败原因。
 
-短距离检查会把整批结构交给原生邻居扫描一次完成；原生扩展不可用或遇到合法的奇异部分周期晶胞时，自动使用同一距离语义的 Python fallback。这个加速只改变响应时间，不改变阈值和筛选结果。
+## 原理与公式
 
-卡片中的保留/删除数量预览在后台计算，不会占用界面事件循环。连续调整参数时，中间请求会被合并，界面只采用最新参数对应的结果；正式运行仍会重新按当前参数处理完整输入。
+对含 $N$ 个原子的结构，程序计算
+
+$$
+d_{\min}=\min_{i<j}d_{ij}^{\mathrm{MIC}},\qquad
+v_{\mathrm{atom}}=\frac{|\det\mathbf C|}{N},\qquad
+\rho=1.66053906660\frac{\sum_i M_i}{|\det\mathbf C|}.
+$$
+
+- $d_{ij}^{\mathrm{MIC}}$：只在启用的周期方向使用最小镜像，单位 Å；距离严格小于下限时删除，恰好等于下限时保留。
+- $v_{\mathrm{atom}}$：完整晶胞体积除以原子数，单位 Å³/atom。
+- $\rho$：由完整晶胞体积和原子质量 $M_i$ 得到的质量密度，单位 g/cm³。
+
+体积和密度都使用整个晶胞，真空层也计入。因此 slab、界面、多孔结构或带盒子的分子只有在“完整晶胞数值”确实可比较时才适合启用这些门槛。
+
+筛选按以下顺序记录每帧的第一个失败原因：空结构 → 非有限坐标 → 无效晶胞 → 原子对过近 → 单原子体积过小/过大 → 密度过低/过高。正式运行与预览使用同一判定。
 
 ## 操作示例
 
-### 场景：随机占位和强扰动后出现短键结构
+随机占位和强扰动后，候选池中出现少量过短原子对。先查看距离分布，再把“最小原子对距离”设为低于所有合理键长的下限，例如金属候选池可从 `1.0 Å` 附近试起。预览若只删除低端离群帧，再运行筛选并接 `FPS Filter`。
 
-合金候选池经过 `Random Occupancy → Atomic Perturb` 后，少量结构出现 < 1.0 Å 的原子重叠。它们进入 DFT 会浪费队列，进入 FPS 会污染 descriptor 空间。
-
-**输入：** 已生成的候选结构池。
-**目标：** 在 FPS 前删除短键和异常体积结构。
-**参数设置：** `min_pair_distance=1.2`，`min_volume_per_atom=5.0`，`max_volume_per_atom=40.0`，密度阈值保持关闭。
-**输出：** 只保留满足所有开启阈值的结构。
-**怎么验证训练集质量改善：** 导入 `NEP Dataset Display` 后，最短键分布不再有低端离群点；FPS 选出的结构不应再包含明显重叠帧。
+混合化学体系不能照搬这个示例：H–H、O–H 等合理短键可能小于金属体系阈值。若无法给所有元素对确定统一下限，就保持 `0`。
 
 ## 参数说明
-### Shortest Allowed Pair Distance（min_pair_distance）
-`float`，默认 0 Å（关闭）。任意原子对允许的最近距离，是与元素种类无关的硬门槛。周期方向使用最小镜像距离，非周期分子即使没有晶胞也可以只做此项检查。
 
-阈值应低于候选池中所有合理键长。不要把金属体系常用的 1.0~1.5 Å 直接用于含 H–H、O–H 或其他短键的混合数据集；这张卡不会根据共价半径自动调整阈值。
+### 最小原子对距离（min_pair_distance）
 
-### Min Volume Per Atom（min_volume_per_atom）
-`float`，默认 0.0（关闭）。允许的最小单原子体积，过滤过度压缩的结构。阈值应来自同材料平衡体积的下界。多孔、slab 或含真空的体系不要随便打开，开了反而误删合理结构。
+`float`，默认 `0.5 Å`。所有元素对共用同一个距离下限；该值用于清除明显重叠，同时保留常见的 H–H 键。设为 `0` 可关闭。非周期分子即使没有有效晶胞，也可以单独使用这一项。
 
-### Max Volume Per Atom（max_volume_per_atom）
-`float`，默认 0.0（关闭）。允许的最大单原子体积，过滤过度拉伸或异常大 cell。体相候选池可以设一个合理上界；slab/分子体系有真空时这个阈值容易误杀。
+### 最小单原子体积（min_volume_per_atom）
 
-### Min Density（min_density）
-`float`，默认 0.0（关闭）。按质量密度过滤低密度异常结构。只在体相或近体相候选池打开；含真空、孔洞或表面模型应保持 0。
+`float`，默认 `0 Å³/atom`。删除单原子体积低于该值的结构；`0` 表示关闭。
 
-### Max Density（max_density）
-`float`，默认 0.0（关闭）。按质量密度过滤过度压缩的结构。阈值应参考该材料的真实密度上界，不要跨元素体系套同一个数字。
+### 最大单原子体积（max_volume_per_atom）
 
-### Require a Finite, Nonzero-Volume Cell（require_finite_cell）
-`bool`，默认 false。打开后，含 NaN/Inf 或行列式接近零的晶胞会被删除。任何体积或密度上下限只要开启，也会隐式要求有效的非零体积晶胞。晶体、slab、界面候选池建议开；孤立分子或非周期构型关掉。
+`float`，默认 `0 Å³/atom`。删除单原子体积高于该值的结构；`0` 表示关闭。
 
-## 推荐预设
+### 最小密度（min_density）
 
-### 短键门槛
+`float`，默认 `0 g/cm³`。删除密度低于该值的结构；`0` 表示关闭。
 
-```json
-{
-  "class": "GeometryFilterCard",
-  "params": {
-    "min_pair_distance": 1.2,
-    "min_volume_per_atom": 0.0,
-    "max_volume_per_atom": 0.0,
-    "min_density": 0.0,
-    "max_density": 0.0,
-    "require_finite_cell": false
-  }
-}
-```
+### 最大密度（max_density）
 
-用于随机扰动、插入缺陷或随机占位后的第一道硬检查。
+`float`，默认 `0 g/cm³`。删除密度高于该值的结构；`0` 表示关闭。
 
-### 晶体候选池清洗
+### 删除无效晶胞（require_finite_cell）
 
-```json
-{
-  "class": "GeometryFilterCard",
-  "params": {
-    "min_pair_distance": 1.1,
-    "min_volume_per_atom": 5.0,
-    "max_volume_per_atom": 60.0,
-    "min_density": 0.0,
-    "max_density": 0.0,
-    "require_finite_cell": true
-  }
-}
-```
-
-用于晶体、缺陷和表面候选池，防止零体积或极端体积结构进入后续流程。
+`bool`，默认 `false`。开启后删除含 NaN/Inf、奇异或近零体积的晶胞。只要启用了任一体积或密度门槛，无效晶胞也会自动删除。
 
 ## 推荐组合
 
-- `Atomic Perturb → Geometry Filter → FPS Filter`：先生成位移扰动，再删除短键，最后做代表性采样。
-- `Random Occupancy → Geometry Filter → FPS Filter`：合金占位后先做几何门槛，再选代表结构去 DFT。
-- `Random Slab → Insert Defect → Geometry Filter`：表面插入后检查吸附物和基底是否重叠。
+- `Atomic Perturb → Geometry Filter → FPS Filter`
+- `Random Occupancy → Geometry Filter → FPS Filter`
 
 ## 常见问题
 
-**输出为空。** 至少一个阈值过严。先看最短键和体积分布，确认阈值是否超出了当前体系的真实范围。
+**为什么预览的各原因之和等于删除总数？** 每帧只计入第一个失败原因，不会在多个原因中重复计数。
 
-**密度阈值不生效。** `min_density=0.0` 和 `max_density=0.0` 都表示关闭密度检查。只有大于 0 的阈值参与判定。
+**为什么 slab 的密度很低？** 真空层属于完整晶胞体积，会降低密度并增大单原子体积。此类数据通常只开原子对距离门槛。
 
-**非周期分子被删掉。** 如果开启了体积、密度或 `require_finite_cell`，零体积分子会被删除。分子构象清洗通常只开 `min_pair_distance`。
-
-**为什么不能给混合化学体系设置一个可靠的通用短键阈值？** 当前参数是统一的绝对距离，不读取元素对或键级。先查看数据中各元素对的合理距离范围；如果无法给出统一下界，应把阈值保持为 0，并在更合适的元素对检查工具中处理。
-
-**多个条件同时失败时预览怎么计数？** 预览按空结构、非有限坐标、无效晶胞、短距离、单原子体积、密度的顺序记录第一个失败原因，因此各原因计数之和等于删除总数，不代表后续条件一定通过。
+**为什么无晶胞分子仍能检查距离？** 只开原子对距离时不要求有效晶胞；周期最小镜像仅用于结构实际启用的周期方向。
 
 ## 输出标签
 
-本卡是过滤卡，不修改保留下来的 `Config_type`。
+保留下来的结构及其 `Config_type` 不变，输入顺序也不变。
 
 ## 可复现性
 
-本卡没有随机性。同一输入和同一阈值会得到相同输出。
+本卡没有随机性。同一输入和同一参数会得到相同结果。

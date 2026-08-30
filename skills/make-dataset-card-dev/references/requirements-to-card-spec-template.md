@@ -12,11 +12,12 @@
 
 - 类名：
 - `card_name`：
-- 查找弹窗一句简述：
+- 卡片目录一句简述：
 - `group`：
 - `menu_icon`：
 - `requires_input_dataset`：
-- Operation 类型：`StructureOperation` / `DatasetOperation` / `GeneratorOperation`
+- 节点类型：普通参数卡 / 工作流容器
+- Operation 类型（普通参数卡）：`StructureOperation` / `DatasetOperation` / `GeneratorOperation`
 - Core 模块：`lattice.py` / `structure.py` / `alloy.py` / `defect.py` / `magnetism.py` / `filter.py`
 
 ## 3. 卡片设计审查
@@ -31,7 +32,7 @@
 - 任意取向支持边界：
 - 常用参数与高级参数如何分层：
 - 哪些控件需要隐藏/禁用联动：
-- 新增下拉项、分组、枚举和提示的翻译触点：
+- 卡片目录、分类、枚举和提示的翻译触点：
 
 详细检查见 `card-design-review.md`。
 
@@ -52,7 +53,8 @@
 
 - 参数名（代码 key）：
 - Params 字段类型：
-- UI 控件类型（SpinBoxUnitInputFrame / ComboBox / CheckBox / LineEdit）：
+- UI 控件类型（SpinBoxUnitInputFrame / SegmentedControl / ComboBox / CheckBox / LineEdit）：
+- 检查器布局（CompactField / InspectorSection / ResponsiveFormGrid、单列/双列/整行）：
 - 类型与范围：
 - 默认值：
 - 步长/小数位：
@@ -74,6 +76,14 @@
 - preview/summary：无 / 精确 / 估算；预计规模与线程策略：
 - 异常处理策略（core 抛异常，UI 展示错误）：
 - `Config_type` 标签策略：
+
+普通参数卡额外填写：
+
+- `get_summary_text()` 展示什么：
+- `get_guidance_text()` 提醒什么：
+- 默认主窗口宽度下如何避免横向滚动和数值截断：
+
+工作流容器改读 `workflow-ui-contract.md`，填写公共输入、路径独立性、合并时机、插入目标、失败/停止传播和递归 JSON，不伪造 operation。
 
 ## 7. 绑定与序列化
 
@@ -100,7 +110,7 @@
 - 成功有输出 / 合法空输出 / 失败：
 - preview 与 run 一致性或估算边界：
 - 后台 preview 的防抖、最新结果和关闭生命周期：
-- 注册、文档 URL、查找简述和翻译：
+- 注册、文档 URL、卡片目录简述和翻译：
 - 多出口产物一致性（若适用）：
 
 详细检查见 `test-rigor-checklist.md`。
@@ -108,11 +118,13 @@
 ## 9. 接入与验证
 
 - 注册改动：
-- 查找弹窗与新增下拉框改动：
+- Fluent 卡片目录与分类改动：
+- 右侧检查器、卡片头和动作归属改动：
 - 文档改动：
 - 测试改动：
 - operation 直接测试：
 - UI 参数往返测试：
+- 默认尺寸、宽屏再缩回和无横向滚动测试：
 - 验证命令：
 
 ## 10. 评审检查点

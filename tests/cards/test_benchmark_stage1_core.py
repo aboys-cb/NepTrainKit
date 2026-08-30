@@ -12,6 +12,7 @@ from ase import Atoms
 from ase.build import fcc111
 
 from NepTrainKit.core.cards.defect import StrictGSFEPathOperation, StrictGSFEPathParams
+from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.core.cards.lattice import BainPathOperation, BainPathParams
 from NepTrainKit.core.cards.structure import CrystalPrototypeBuilderOperation, CrystalPrototypeBuilderParams
 
@@ -35,6 +36,60 @@ class TestBenchmarkStage1Core(unittest.TestCase):
         for item in out:
             self.assertAlmostEqual(item.get_volume(), volume, places=12)
             self.assertIn("Bain(ax=z", item.info.get("Config_type", ""))
+
+    def test_bain_relative_ca_is_the_actual_relative_axis_ratio(self):
+        atoms = Atoms("H", positions=[[0, 0, 0]], cell=[2, 3, 4], pbc=True)
+        original_lengths = atoms.cell.lengths()
+
+        out = BainPathOperation().run_structure(
+            atoms,
+            BainPathParams(
+                axis="z",
+                ca_range=(1.2, 1.2, 1.0),
+                coordinate_mode="relative_ca",
+                mode="constant_volume",
+            ),
+        )[0]
+
+        lengths = out.cell.lengths()
+        relative_ratio = (lengths[2] / lengths[0]) / (original_lengths[2] / original_lengths[0])
+        self.assertAlmostEqual(relative_ratio, 1.2, places=12)
+        self.assertAlmostEqual(out.get_volume(), atoms.get_volume(), places=12)
+        self.assertIn("ca=1.2", out.info.get("Config_type", ""))
+
+    def test_bain_legacy_axis_scale_preserves_previous_geometry(self):
+        atoms = Atoms("H", positions=[[0, 0, 0]], cell=[2, 3, 4], pbc=True)
+        out = BainPathOperation().run_structure(
+            atoms,
+            BainPathParams(
+                axis="z",
+                ca_range=(1.2, 1.2, 1.0),
+                coordinate_mode="axis_scale",
+                mode="constant_volume",
+            ),
+        )[0]
+
+        np.testing.assert_allclose(
+            out.cell.lengths(),
+            atoms.cell.lengths() * [1 / np.sqrt(1.2), 1 / np.sqrt(1.2), 1.2],
+        )
+        self.assertIn("s=1.2", out.info.get("Config_type", ""))
+
+    def test_bain_default_and_shape_volume_grid_have_multiple_points(self):
+        default = BainPathOperation.sampling_summary(BainPathParams())
+        grid = BainPathOperation.sampling_summary(
+            BainPathParams(
+                ca_range=(0.9, 1.1, 0.1),
+                mode="scale_volume",
+                volume_scale_range=(0.95, 1.05, 0.05),
+            )
+        )
+
+        self.assertEqual(default["path_points"], 3)
+        self.assertEqual(default["outputs_per_input"], 3)
+        self.assertEqual(grid["path_points"], 3)
+        self.assertEqual(grid["volume_points"], 3)
+        self.assertEqual(grid["outputs_per_input"], 9)
 
     def test_bain_free_c_only_changes_selected_cell_vector(self):
         atoms = Atoms("H", positions=[[0.1, 0.2, 0.3]], cell=[[2, 0, 0], [0.5, 3, 0], [0.2, 0.4, 4]], pbc=True)
@@ -209,46 +264,58 @@ class TestBenchmarkStage1Core(unittest.TestCase):
         self.assertEqual(summary["stationary_count"], 4)
         self.assertEqual(summary["moved_count"], 2)
         self.assertEqual(summary["output_count"], 3)
+        self.assertEqual(summary["values"], (0.0, 0.25, 0.5))
         self.assertAlmostEqual(summary["cut_position"], 1.5)
         self.assertAlmostEqual(summary["slip_length"], 4.0)
 
     def test_strict_gsfe_rejects_invalid_geometry(self):
         atoms = Atoms("H3", positions=[[0, 0, 0], [0, 0, 1], [0, 0, 2]], cell=[5, 5, 5], pbc=True)
         op = StrictGSFEPathOperation()
-        with self.assertRaisesRegex(ValueError, "plane_hkl"):
-            op.run_structure(atoms, StrictGSFEPathParams(plane_hkl=(0, 0, 0)))
-        with self.assertRaisesRegex(ValueError, "slip_uvw"):
-            op.run_structure(atoms, StrictGSFEPathParams(slip_uvw=(0, 0, 0)))
-        with self.assertRaisesRegex(ValueError, "fault plane"):
-            op.run_structure(atoms, StrictGSFEPathParams(plane_hkl=(0, 0, 1), slip_uvw=(0, 0, 1)))
-        with self.assertRaisesRegex(ValueError, "layer_index"):
-            op.run_structure(atoms, StrictGSFEPathParams(cut_mode="layer_index", layer_index=2))
-        with self.assertRaisesRegex(ValueError, "integers"):
-            op.run_structure(atoms, StrictGSFEPathParams(plane_hkl=(0, 0, 1.5)))
-        with self.assertRaisesRegex(ValueError, "integer"):
-            op.run_structure(
-                atoms,
+        cases = [
+            (StrictGSFEPathParams(plane_hkl=(0, 0, 0)), "gsfe_zero_plane"),
+            (StrictGSFEPathParams(slip_uvw=(0, 0, 0)), "gsfe_zero_direction"),
+            (
+                StrictGSFEPathParams(plane_hkl=(0, 0, 1), slip_uvw=(0, 0, 1)),
+                "gsfe_direction_out_of_plane",
+            ),
+            (
+                StrictGSFEPathParams(cut_mode="layer_index", layer_index=2),
+                "gsfe_invalid_layer_index",
+            ),
+            (
+                StrictGSFEPathParams(plane_hkl=(0, 0, 1.5)),
+                "gsfe_invalid_index_triplet",
+            ),
+            (
                 StrictGSFEPathParams(
                     cut_mode="layer_index",
                     layer_index=0.5,  # type: ignore[arg-type]
                 ),
-            )
-        with self.assertRaisesRegex(ValueError, "both sides"):
-            op.run_structure(
-                atoms,
-                StrictGSFEPathParams(
-                    cut_mode="fractional",
-                    cut_fraction=1.0,
-                ),
-            )
+                "gsfe_noninteger_value",
+            ),
+            (
+                StrictGSFEPathParams(cut_mode="fractional", cut_fraction=1.0),
+                "gsfe_empty_cut_side",
+            ),
+            (
+                StrictGSFEPathParams(displacement_range=(0.0, 1.0, 0.0)),
+                "gsfe_invalid_displacement_path",
+            ),
+        ]
+        for params, code in cases:
+            with self.subTest(params=params):
+                with self.assertRaises(CardOperationError) as caught:
+                    op.run_structure(atoms, params)
+                self.assertEqual(caught.exception.code, code)
         single_layer = Atoms(
             "H2",
             positions=[[0, 0, 0], [1, 0, 0]],
             cell=[5, 5, 5],
             pbc=True,
         )
-        with self.assertRaisesRegex(ValueError, "two distinct planes"):
+        with self.assertRaises(CardOperationError) as caught:
             op.run_structure(single_layer, StrictGSFEPathParams())
+        self.assertEqual(caught.exception.code, "gsfe_too_few_layers")
 
     def test_strict_gsfe_rejects_non_slab_oriented_plane(self):
         atoms = Atoms(
@@ -257,8 +324,9 @@ class TestBenchmarkStage1Core(unittest.TestCase):
             cell=[3.6, 3.6, 3.6],
             pbc=True,
         )
-        with self.assertRaisesRegex(ValueError, "slab-oriented"):
+        with self.assertRaises(CardOperationError) as caught:
             StrictGSFEPathOperation().run_structure(atoms, StrictGSFEPathParams(plane_hkl=(1, 1, 1)))
+        self.assertEqual(caught.exception.code, "gsfe_cell_not_oriented")
 
     def test_strict_gsfe_fcc111_slab_geometry(self):
         atoms = fcc111("Ni", size=(2, 4, 6), a=3.6, vacuum=None, periodic=True, orthogonal=True)
@@ -317,14 +385,12 @@ class TestBenchmarkStage1Core(unittest.TestCase):
                 lattice="fcc111",
                 element="Ni",
                 a_range=(3.6, 3.6, 0.1),
-                auto_supercell=False,
-                rep=(2, 2, 2),
                 max_outputs=1,
             )
         )
 
         self.assertEqual(len(frames), 1)
-        self.assertEqual(len(frames[0]), 48)
+        self.assertEqual(len(frames[0]), 6)
         self.assertAlmostEqual(frames[0].get_volume() / len(frames[0]), 11.664, places=12)
         self.assertAlmostEqual(frames[0].cell.angles()[0], 90.0, places=12)
         self.assertIn("Proto(fcc111", frames[0].info.get("Config_type", ""))

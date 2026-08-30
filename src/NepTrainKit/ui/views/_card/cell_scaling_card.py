@@ -1,138 +1,229 @@
 """Card for generating lattice perturbations via stochastic scaling."""
 
-from PySide6.QtWidgets import QFrame, QGridLayout
-from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
+from PySide6.QtWidgets import QHBoxLayout, QWidget
+from qfluentwidgets import CheckBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.lattice import CellScalingOperation, CellScalingParams
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
-from NepTrainKit.ui.widgets import MakeDataCard
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SegmentedControl,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
 class CellScalingCard(MakeDataCard):
-    """Generate perturbed lattice structures using stochastic scaling factors.
-    
-    Parameters
-    ----------
-    parent : QWidget, optional
-        Parent widget owning the card controls.
-    """
+    """Generate stochastic lattice-length and optional angle variations."""
 
     group = "Lattice"
-    card_name= "Lattice Perturb"
-    menu_icon=r":/images/src/images/scaling.svg"
-    contributors = [
-        {"name": "NepTrainKit", "role": "author"},
-    ]
-    def __init__(self, parent=None):
-        """Initialise the card and build its configuration widgets.
-        
-        Parameters
-        ----------
-        parent : QWidget, optional
-            Parent widget passed to the base card constructor.
-        """
-        super().__init__(parent)
-        self.setTitle(self.tr("Make Lattice Perturb"))
+    card_name = "Lattice Perturb"
+    menu_icon = r":/images/src/images/scaling.svg"
+    contributors = [{"name": "NepTrainKit", "role": "author"}]
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle(self.tr("Lattice Perturb"))
         self.init_ui()
 
     def init_ui(self):
-        """Build the form controls that expose the card configuration.
-        """
         self.setObjectName("cell_scaling_card_widget")
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setVerticalSpacing(4)
 
-
-        self.engine_label=BodyLabel(self.tr("Random engine:"),self.setting_widget)
-        self.engine_type_combo=ComboBox(self.setting_widget)
-        self.engine_type_combo.addItem(self.tr("Sobol"))
-        self.engine_type_combo.addItem(self.tr("Uniform"))
+        self.engine_type_combo = SegmentedControl(parent=self.setting_widget)
+        self.engine_type_combo.addItem(self.tr("Sobol"), userData=0)
+        self.engine_type_combo.addItem(self.tr("Uniform"), userData=1)
         self.engine_type_combo.setCurrentIndex(1)
-        self.engine_label.setToolTip(
+        engine_field = CompactField(
+            self.tr("Sampling sequence"),
+            self.engine_type_combo,
+            self.setting_widget,
             self.tr(
-                "Uniform is the general default; Sobol improves small-sample lattice coverage"
-            )
+                "Uniform gives independent random samples. Sobol spreads small sample sets more evenly; 32, 64, … outputs are preferred."
+            ),
         )
-        self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
 
-
+        # The serialized parameter remains a fraction: 4% <-> max_scaling=0.04.
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
-        self.scaling_condition_frame.set_input("",1,"float")
-        self.scaling_condition_frame.setDecimals(6)
-        self.scaling_condition_frame.setSingleStep(0.001)
-        self.scaling_condition_frame.setRange(0,1)
-        self.scaling_condition_frame.set_input_value([0.04])
+        self.scaling_condition_frame.set_input("%", 1, "float")
+        self.scaling_condition_frame.setDecimals(4)
+        self.scaling_condition_frame.setSingleStep(0.5)
+        self.scaling_condition_frame.setRange(0, 20)
+        self.scaling_condition_frame.set_input_value([4.0])
+        self.scaling_condition_frame.setFixedWidth(132)
+        scaling_field = CompactField(
+            self.tr("Maximum relative change"),
+            self.scaling_condition_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
+        )
+        # CompactField deliberately clears an input's minimum width. Restore
+        # this single-value field's readable width after it has been wrapped.
+        self.scaling_condition_frame.setMinimumWidth(132)
 
-        self.scaling_radio_label=BodyLabel(self.tr("Max Scaling:"),self.setting_widget)
-        self.scaling_radio_label.setToolTip(self.tr("Maximum scaling factor"))
-
-        self.scaling_radio_label.installEventFilter(ToolTipFilter(self.scaling_radio_label, 300, ToolTipPosition.TOP))
-
-        self.optional_frame=QFrame(self.setting_widget)
-        self.optional_frame_layout = QGridLayout(self.optional_frame)
-        self.optional_frame_layout.setContentsMargins(0,0,0,0)
-        self.optional_frame_layout.setSpacing(2)
-        self.perturb_angle_checkbox=CheckBox( self.setting_widget)
-        self.perturb_angle_checkbox.setText(self.tr("Perturb angle"))
+        self.perturb_angle_checkbox = CheckBox(
+            self.tr("Also vary cell angles"), self.setting_widget
+        )
         self.perturb_angle_checkbox.setChecked(True)
-        self.perturb_angle_checkbox.setToolTip(self.tr("Also perturb lattice angles"))
-        self.perturb_angle_checkbox.installEventFilter(ToolTipFilter(self.perturb_angle_checkbox, 300, ToolTipPosition.TOP))
-
-
-        self.optional_label=BodyLabel(self.tr("Optional"),self.setting_widget)
-        self.organic_checkbox=CheckBox(self.tr("Identify organic"), self.setting_widget)
+        self.organic_checkbox = CheckBox(
+            self.tr("Keep detected molecules rigid"), self.setting_widget
+        )
         self.organic_checkbox.setChecked(False)
-        self.organic_checkbox.setToolTip(self.tr("Treat organic molecules as rigid units"))
-        self.organic_checkbox.installEventFilter(ToolTipFilter(self.organic_checkbox, 300, ToolTipPosition.TOP))
-
-        self.optional_frame_layout.addWidget(self.perturb_angle_checkbox,0,0,1,1)
-        self.optional_frame_layout.addWidget(self.organic_checkbox,1,0,1,1)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
-        self.num_condition_frame.set_input("unit",1,"int")
-        self.num_condition_frame.setRange(1,10000)
-        self.num_label=BodyLabel(self.tr("Structures"),self.setting_widget)
+        self.num_condition_frame.set_input("", 1, "int")
+        self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([50])
-        self.num_label.setToolTip(self.tr("Number of scaled structures to generate"))
-        self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
+        self.num_condition_frame.setFixedWidth(132)
+        num_field = CompactField(
+            self.tr("Outputs per input"),
+            self.num_condition_frame,
+            self.setting_widget,
+            inline=True,
+            input_max_width=132,
+        )
+        self.num_condition_frame.setMinimumWidth(132)
 
         self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
-        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
         self.seed_frame.setRange(0, 2**31 - 1)
         self.seed_frame.set_input_value([0])
+        self.seed_frame.setFixedWidth(132)
         self.seed_frame.setEnabled(False)
-        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+        self.seed_frame.hide()
+        seed_row = QWidget(self.setting_widget)
+        seed_layout = QHBoxLayout(seed_row)
+        seed_layout.setContentsMargins(0, 0, 0, 0)
+        seed_layout.setSpacing(6)
+        seed_layout.addWidget(self.seed_checkbox)
+        seed_layout.addWidget(self.seed_frame)
+        seed_layout.addStretch(1)
 
-        self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
-        self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
+        sampling_section = InspectorSection(
+            self.tr("Lattice sampling"),
+            self.setting_widget,
+            self.tr(
+                "Each lattice length is multiplied independently within the selected ± range."
+            ),
+        )
+        sampling_grid = ResponsiveFormGrid(sampling_section)
+        sampling_grid.add_field(engine_field, span=2)
+        sampling_grid.add_field(scaling_field, span=2)
+        sampling_grid.add_field(self.perturb_angle_checkbox, span=2)
+        sampling_section.addWidget(sampling_grid)
 
-        self.settingLayout.addWidget(self.optional_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.optional_frame, 1, 1, 1,1)
+        molecule_section = InspectorSection(
+            self.tr("Molecular handling"),
+            self.setting_widget,
+            self.tr(
+                "After the cell changes, restore the internal geometry of detected molecular clusters."
+            ),
+        )
+        molecule_section.addWidget(self.organic_checkbox)
 
-        self.settingLayout.addWidget(self.scaling_radio_label, 2, 0, 1, 1)
+        generation_section = InspectorSection(self.tr("Generation"), self.setting_widget)
+        generation_grid = ResponsiveFormGrid(generation_section)
+        generation_grid.add_field(num_field, span=2)
+        generation_grid.add_field(seed_row, span=2)
+        generation_section.addWidget(generation_grid)
 
-        self.settingLayout.addWidget(self.scaling_condition_frame, 2, 1, 1,2)
-        self.settingLayout.addWidget(self.num_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(sampling_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(molecule_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(generation_section, 2, 0, 1, 3)
 
-        self.settingLayout.addWidget(self.num_condition_frame, 3, 1, 1,2)
-        self.settingLayout.addWidget(self.seed_checkbox, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 4, 1, 1, 2)
+        self.engine_type_combo.currentIndexChanged.connect(
+            self.refresh_compact_presentation
+        )
+        for control in (
+            self.scaling_condition_frame.object_list
+            + self.num_condition_frame.object_list
+        ):
+            control.valueChanged.connect(self.refresh_compact_presentation)
+        self.perturb_angle_checkbox.toggled.connect(self.refresh_compact_presentation)
+        self.organic_checkbox.toggled.connect(self.refresh_compact_presentation)
+        self.seed_checkbox.toggled.connect(self._on_seed_changed)
+        for control in self.seed_frame.object_list:
+            control.valueChanged.connect(self.refresh_compact_presentation)
+
+    def _on_seed_changed(self, checked: bool | None = None) -> None:
+        enabled = self.seed_checkbox.isChecked() if checked is None else bool(checked)
+        self.seed_frame.setEnabled(enabled)
+        self.seed_frame.setVisible(enabled)
+        self.refresh_compact_presentation()
+
+    @staticmethod
+    def _dataset_count(dataset) -> int:
+        if dataset is None:
+            return 0
+        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
+            return 1
+        try:
+            return len(dataset)
+        except TypeError:
+            return 0
+
+    def set_preview_input_count(self, count: int | None) -> None:
+        self._preview_input_count = None if count is None else max(0, int(count))
+        self.refresh_compact_presentation()
+
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        engine = self.tr("Sobol") if params.engine_type == 0 else self.tr("Uniform")
+        target = (
+            self.tr("lengths + angles")
+            if params.perturb_angle
+            else self.tr("lengths")
+        )
+        return self.tr("{engine} · {target} · ±{percent:g}% · {count}/input").format(
+            engine=engine,
+            target=target,
+            percent=params.max_scaling * 100.0,
+            count=params.max_num,
+        )
+
+    def get_guidance_text(self) -> str:
+        params = self.get_params()
+        input_count = getattr(self, "_preview_input_count", None)
+        if input_count is None:
+            input_count = self._dataset_count(getattr(self, "dataset", None)) or None
+        if input_count is None:
+            count_text = self.tr("Each input produces exactly {count} structures.").format(
+                count=params.max_num
+            )
+        else:
+            count_text = self.tr("{inputs} × {count} = {total} outputs.").format(
+                inputs=input_count,
+                count=params.max_num,
+                total=input_count * params.max_num,
+            )
+        angle_text = (
+            self.tr("Cell angles use the same relative ± range.")
+            if params.perturb_angle
+            else self.tr("Cell angles stay unchanged.")
+        )
+        notes = [count_text, angle_text]
+        if params.engine_type == 0 and params.max_num & (params.max_num - 1):
+            notes.append(
+                self.tr("Sobol balance is best with 4, 8, 16, 32, 64, … outputs.")
+            )
+        return " ".join(notes)
 
     def create_operation(self):
-        """Return the UI-independent lattice scaling operation."""
         return CellScalingOperation()
 
     def get_params(self) -> CellScalingParams:
-        """Read lattice scaling parameters from UI controls."""
         return CellScalingParams(
             engine_type=int(self.engine_type_combo.currentIndex()),
-            max_scaling=float(self.scaling_condition_frame.get_input_value()[0]),
+            max_scaling=float(self.scaling_condition_frame.get_input_value()[0])
+            / 100.0,
             max_num=int(self.num_condition_frame.get_input_value()[0]),
             perturb_angle=self.perturb_angle_checkbox.isChecked(),
             identify_organic=self.organic_checkbox.isChecked(),
@@ -141,17 +232,21 @@ class CellScalingCard(MakeDataCard):
         )
 
     def set_params(self, params: CellScalingParams) -> None:
-        """Apply lattice scaling parameters to UI controls."""
         self.engine_type_combo.setCurrentIndex(int(params.engine_type))
         self.perturb_angle_checkbox.setChecked(bool(params.perturb_angle))
         self.organic_checkbox.setChecked(bool(params.identify_organic))
-        self.scaling_condition_frame.set_input_value([float(params.max_scaling)])
+        percent = float(params.max_scaling) * 100.0
+        if percent > 20.0:
+            # Do not silently clamp an older workflow that used the former
+            # 0..1 fraction control. Core validation still rejects bad cells.
+            self.scaling_condition_frame.setRange(0, percent)
+        self.scaling_condition_frame.set_input_value([percent])
         self.num_condition_frame.set_input_value([int(params.max_num)])
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
+        self._on_seed_changed()
 
     def process_structure(self, structure):
-        """Generate lattice perturbations from UI-independent parameters."""
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
@@ -160,13 +255,6 @@ class CellScalingCard(MakeDataCard):
         return data
 
     def from_dict(self, data_dict):
-        """Restore the card configuration from serialized values.
-        
-        Parameters
-        ----------
-        data_dict : dict
-            Serialized configuration previously produced by ``to_dict``.
-        """
         super().from_dict(data_dict)
         raw_params = data_dict.get("params")
         if raw_params:

@@ -8,109 +8,116 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-21 23:13+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/example/select-structures-by-index.md:1
-#: d4823b452dd24db9806c4c567c78e46e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:1
+#: a486978c7b9948a3831b180fb0971a99
 msgid "按索引精确选中一批结构"
 msgstr "Select Structures Precisely by Index"
 
-#: ../../source/example/select-structures-by-index.md:3
-#: bc079932f08747e39d6d2366ecc6124c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:3
+#: 5275bcd76e8c40d1b7bf9bab67b6c508
 msgid ""
-"已经从日志、训练结果或外部脚本拿到结构编号时，不必在散点图里逐个点选。`Select by Index` "
-"可以一次选中离散编号和连续切片，适合复核、导出或删除一批已知结构。"
+"已经从日志、训练结果或外部脚本拿到结构编号时，不必在散点图里逐个点选。"
+"`Select by Index` 可以一次选中离散编号和连续切片，适合复核、导出或删除一批已"
+"知结构。"
 msgstr ""
-"When structure indices already come from a log, training result, or external"
-" script, you do not need to click points one by one. `Select by Index` "
+"When structure indices already come from a log, training result, or external "
+"script, you do not need to click points one by one. `Select by Index` "
 "accepts both individual indices and slices, making it useful for reviewing, "
 "exporting, or removing a known set of structures."
 
-#: ../../source/example/select-structures-by-index.md:5
-#: 5451b97c9ca94da6b66033730002b5ae
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:5
+#: 76c25adc27254eb8a3a7e354634f2ffd
 msgid "输入编号"
 msgstr "Enter the Indices"
 
-#: ../../source/example/select-structures-by-index.md:7
-#: 5464e748dc7743a1845b6c2d19b1758e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:7
+#: f86f7868f3c14e819943e98734bf1779
 msgid "打开数据后，点击工具栏中的 `Select by Index`。"
 msgstr "After loading the data, click `Select by Index` on the toolbar."
 
-#: ../../source/example/select-structures-by-index.md:9
-#: a9da1f45c8cc49d6b03e696aabe3727c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:9
+#: c8a3196e00bf445fa8b262c0bfa119dd
 msgid "按索引选择结构的入口"
 msgstr "Entry point for selecting structures by index"
 
-#: ../../source/example/select-structures-by-index.md:9
-#: a9da1f45c8cc49d6b03e696aabe3727c
-msgid ".. image:: ../_static/image/generated/tutorials/select_by_index_entry.png"
-msgstr ".. image:: ../_static/image/generated/tutorials/select_by_index_entry.png"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:9
+#: c8a3196e00bf445fa8b262c0bfa119dd
+msgid ""
+".. image:: ../_static/image/generated/tutorials/select_by_index_entry.png"
+msgstr ""
+".. image:: ../_static/image/generated/tutorials/select_by_index_entry.png"
 
-#: ../../source/example/select-structures-by-index.md:14
-#: a5a756d6abf04691aeb2c92a0fb07b1c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:14
+#: b853afa68fb04e78a19676b141ec19cc
 msgid "在弹窗中输入 `0, 5, 10:13`："
 msgstr "Enter `0, 5, 10:13` in the dialog:"
 
-#: ../../source/example/select-structures-by-index.md:16
-#: 8c788aa034314e3d833befb4f5a43244
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:16
+#: caee90326bdb436794af658f65f986d0
 msgid "按索引选择结构设置"
 msgstr "Index selection settings"
 
-#: ../../source/example/select-structures-by-index.md:16
-#: 8c788aa034314e3d833befb4f5a43244
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_index_dialog.png"
-msgstr ".. image:: ../_static/image/generated/show_nep_reference/g_index_dialog.png"
-
-#: ../../source/example/select-structures-by-index.md:21
-#: fc330e96ec0a4281b8b17c548c7762c4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:16
+#: caee90326bdb436794af658f65f986d0
 msgid ""
-"这里的编号从 `0` 开始，切片右端不包含在内，因此实际选中 `0、5、10、11、12`，共 5 个结构。逗号用于分隔多段输入，`10:13` "
-"的写法与 Python 切片一致。"
+".. image:: ../_static/image/generated/show_nep_reference/g_index_dialog.png"
+msgstr ""
+".. image:: ../_static/image/generated/show_nep_reference/g_index_dialog.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:21
+#: c73827eed074472bbdc757e022dfccbb
+msgid ""
+"这里的编号从 `0` 开始，切片右端不包含在内，因此实际选中 `0、5、10、11、12`，"
+"共 5 个结构。逗号用于分隔多段输入，`10:13` 的写法与 Python 切片一致。"
 msgstr ""
 "Indices start at `0`, and the right endpoint of a slice is excluded. This "
 "expression therefore selects `0, 5, 10, 11, 12`, for a total of five "
-"structures. Commas separate entries, and `10:13` follows Python slice "
-"syntax."
+"structures. Commas separate entries, and `10:13` follows Python slice syntax."
 
-#: ../../source/example/select-structures-by-index.md:23
-#: e9c8dc913ed3480a86afda6b3a4f49fd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:23
+#: 019453af028140389fb477e17444979e
 msgid ""
-"一般保持 `Use original indices` "
-"勾选。这样即使之前筛选或删除过结构，编号仍对应最初载入文件时的顺序；取消勾选后，编号指当前活动结构列表中的位置。"
+"一般保持 `Use original indices` 勾选。这样即使之前筛选或删除过结构，编号仍对"
+"应最初载入文件时的顺序；取消勾选后，编号指当前活动结构列表中的位置。"
 msgstr ""
 "Usually keep `Use original indices` enabled. The indices then refer to the "
 "order in the originally loaded file even after filtering or deletion. When "
 "disabled, they refer to positions in the current active-structure list."
 
-#: ../../source/example/select-structures-by-index.md:25
-#: 05084051169d429996e3e4a71feeda7b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:25
+#: 012f7a42b7e54c14adf7b1fb9e068307
 msgid "核对再处理"
 msgstr "Verify Before Processing"
 
-#: ../../source/example/select-structures-by-index.md:27
-#: 8500cebd5020437e8797c135edc47d6c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:27
+#: 21d58b382dab4ee59a02c20e2e10c6e7
 msgid "按索引选中五个结构后的界面"
 msgstr "Five structures selected by index"
 
-#: ../../source/example/select-structures-by-index.md:27
-#: 8500cebd5020437e8797c135edc47d6c
-msgid ".. image:: ../_static/image/generated/tutorials/select_by_index_result.png"
-msgstr ".. image:: ../_static/image/generated/tutorials/select_by_index_result.png"
-
-#: ../../source/example/select-structures-by-index.md:32
-#: 05523455e5834577bc79eb03cf16de8e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:27
+#: 21d58b382dab4ee59a02c20e2e10c6e7
 msgid ""
-"确认底部状态栏显示 `Sel: "
-"5`，再用右下角的结构编号逐个查看。后续可以只导出选中结构，也可以删除或继续分析。若编号来自另一个文件，先确认两个文件的结构顺序一致；仅凭编号相同不能说明结构相同。"
+".. image:: ../_static/image/generated/tutorials/select_by_index_result.png"
+msgstr ""
+".. image:: ../_static/image/generated/tutorials/select_by_index_result.png"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/select-structures-by-index.md:32
+#: 1b92e8c99be24ee0a8cfe8211c24d728
+msgid ""
+"确认底部状态栏显示 `Sel: 5`，再用右下角的结构编号逐个查看。后续可以只导出选中"
+"结构，也可以删除或继续分析。若编号来自另一个文件，先确认两个文件的结构顺序一"
+"致；仅凭编号相同不能说明结构相同。"
 msgstr ""
 "Confirm that the status bar shows `Sel: 5`, then inspect the structures one "
 "by one with the index control at the lower right. You can export only the "

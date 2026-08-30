@@ -14,7 +14,7 @@ import traceback
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
-from typing import Any,IO
+from typing import Any,IO, Literal
 
 import numpy as np
 import numpy.typing as npt
@@ -1654,9 +1654,20 @@ def get_vibration_modes(
             break
 
     if modes_source is None:
+        vector_pattern = re.compile(
+            r"(?:vibration|normal)?[_-]?mode[_-]?(\d+)$",
+            re.IGNORECASE,
+        )
         component_pattern = re.compile(r"(?:vibration|normal)?[_-]?mode[_-]?(\d+)[_-]?([xyz])$", re.IGNORECASE)
+        vector_store: dict[int, npt.NDArray[np.float64]] = {}
         component_store: dict[int, dict[str, npt.NDArray[np.float64]]] = defaultdict(dict)
         for name, values in arrays.items():
+            vector_match = vector_pattern.match(name)
+            if vector_match:
+                array = np.asarray(values, dtype=np.float64)
+                if array.shape == (len(structure), 3):
+                    vector_store[int(vector_match.group(1))] = array
+                continue
             match = component_pattern.match(name)
             if not match:
                 continue
@@ -1669,7 +1680,11 @@ def get_vibration_modes(
 
         ordered_modes: list[npt.NDArray[np.float64]] = []
         ordered_indices: list[int] = []
-        for idx in sorted(component_store.keys()):
+        for idx in sorted(set(vector_store) | set(component_store)):
+            if idx in vector_store:
+                ordered_modes.append(vector_store[idx])
+                ordered_indices.append(idx)
+                continue
             comp = component_store[idx]
             if not {"x", "y", "z"}.issubset(comp.keys()):
                 continue
@@ -1949,9 +1964,9 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
             raise ValueError(
                 f"DeepMD dataset {folder_path}, frame {index} has invalid coordinates."
             )
-        coords = coord_values.reshape(-1, 3)
-        atoms_num = int(coords.shape[0])
-        if atoms_num <= 0:
+        stored_coords = coord_values.reshape(-1, 3)
+        stored_atoms_num = int(stored_coords.shape[0])
+        if stored_atoms_num <= 0:
             raise ValueError(
                 f"DeepMD dataset {folder_path}, frame {index} contains no atoms."
             )
@@ -1963,24 +1978,32 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
         # species per frame: dpdata mixed uses real_atom_types per frame
         if is_mixed:
             real_types = dataset_dict['real_atom_types'][index].astype(int).reshape(-1)
-            if real_types.size != atoms_num:
+            if real_types.size != stored_atoms_num:
                 raise ValueError(
                     f"DeepMD dataset {folder_path}, frame {index} has "
                     "real_atom_types inconsistent with its coordinates."
                 )
-            if np.any(real_types < 0) or np.any(real_types >= len(type_map)):
+            if np.any(real_types < -1) or np.any(real_types >= len(type_map)):
                 raise ValueError(
                     f"DeepMD dataset {folder_path}, frame {index} contains "
                     "out-of-range real_atom_types."
                 )
-            species = type_map[real_types]
+            real_atom_mask = real_types >= 0
+            if not np.any(real_atom_mask):
+                raise ValueError(
+                    f"DeepMD dataset {folder_path}, frame {index} contains no real atoms."
+                )
+            species = type_map[real_types[real_atom_mask]]
+            coords = stored_coords[real_atom_mask]
         else:
-            if type_.size != atoms_num:
+            if type_.size != stored_atoms_num:
                 raise ValueError(
                     f"DeepMD dataset {folder_path}, frame {index} has "
-                    f"{atoms_num} coordinates but type.raw declares {type_.size} atoms."
+                    f"{stored_atoms_num} coordinates but type.raw declares {type_.size} atoms."
                 )
             species = type_map[type_]
+            real_atom_mask = np.ones(stored_atoms_num, dtype=bool)
+            coords = stored_coords
 
         properties = [
             {'name': 'species', 'type': 'S', 'count': 1},
@@ -1999,13 +2022,13 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
 
             prop = value[index]
             count = int(prop.shape[0])
-            if key not in {"energy", "virial", "stress"} and count >= atoms_num:
-                if count % atoms_num:
+            if key not in {"energy", "virial", "stress"} and count >= stored_atoms_num:
+                if count % stored_atoms_num:
                     raise ValueError(
                         f"DeepMD per-atom field {key!r} is not divisible by the atom count."
                     )
-                col = count // atoms_num
-                reshaped = prop.reshape((-1, col))
+                col = count // stored_atoms_num
+                reshaped = prop.reshape((-1, col))[real_atom_mask]
                 info[key] = reshaped.reshape(-1) if col == 1 else reshaped
                 kind = np.asarray(prop).dtype.kind
                 if kind in {"f", "c"}:
@@ -2295,8 +2318,226 @@ def _publish_directory(staging: Path, target: Path) -> None:
             )
 
 
+DeepmdNpyFormat = Literal["standard", "mixed"]
+
+
+def _deepmd_property_name(name: str) -> str:
+    """Return the canonical DeepMD array name for known EXTXYZ aliases."""
+    return {
+        "forces": "force",
+        "mforce": "force_mag",
+    }.get(name, name)
+
+
+def _deepmd_virial_9(values: Any) -> np.ndarray:
+    """Return a flattened 3x3 virial using the NEP six-component order."""
+    virial = np.asarray(values).reshape(-1)
+    if virial.size == 9:
+        return virial
+    xx, yy, zz, xy, yz, zx = virial
+    return np.asarray(
+        [xx, xy, zx, xy, yy, yz, zx, yz, zz],
+        dtype=virial.dtype,
+    )
+
+
+def _deepmd_structure_contract(
+    structure: Structure,
+    *,
+    type_map: list[str],
+) -> tuple[str, tuple[tuple[str, str, int, str], ...], tuple[bool, bool]]:
+    """Validate one frame and return its DeepMD compatibility contract."""
+    species = [str(item) for item in structure.elements]
+    missing_species = sorted(set(species) - set(type_map))
+    if missing_species:
+        raise ValueError(
+            "DeepMD type_map is missing elements: " + ", ".join(missing_species)
+        )
+    if "pbc" not in structure.additional_fields:
+        raise ValueError("DeepMD export requires explicit PBC metadata.")
+    pbc = structure_pbc_flags(structure).astype(bool)
+    if np.all(pbc):
+        pbc_mode = "periodic"
+    elif not np.any(pbc):
+        pbc_mode = "nonperiodic"
+    else:
+        raise ValueError("DeepMD export cannot represent partial PBC.")
+
+    cell = np.asarray(structure.lattice, dtype=np.float64)
+    positions = np.asarray(structure.atomic_properties.get("pos"), dtype=np.float64)
+    if cell.shape != (3, 3) or not np.all(np.isfinite(cell)):
+        raise ValueError("DeepMD structure has an invalid cell.")
+    if positions.shape != (len(species), 3) or not np.all(np.isfinite(positions)):
+        raise ValueError("DeepMD structure has invalid positions.")
+    if pbc_mode == "periodic" and abs(float(np.linalg.det(cell))) <= 1.0e-12:
+        raise ValueError("DeepMD periodic structures require a nonsingular cell.")
+
+    property_schema_items: list[tuple[str, str, int, str]] = []
+    seen_output_names: set[str] = set()
+    for prop in structure.properties:
+        source_name = str(prop["name"])
+        if source_name in {"species", "pos"}:
+            continue
+        output_name = _deepmd_property_name(source_name)
+        if output_name in seen_output_names:
+            raise ValueError(
+                f"DeepMD fields map to the duplicate output name {output_name!r}."
+            )
+        seen_output_names.add(output_name)
+        prop_type = str(prop["type"]).upper()
+        count = int(prop["count"])
+        values = np.asarray(structure.atomic_properties[source_name])
+        expected_shape = (len(species),) if count == 1 else (len(species), count)
+        if values.shape != expected_shape:
+            raise ValueError(
+                f"DeepMD per-atom field {source_name!r} has shape {values.shape}, "
+                f"expected {expected_shape}."
+            )
+        if prop_type == "R" and not np.all(np.isfinite(values)):
+            raise ValueError(
+                f"DeepMD per-atom field {source_name!r} contains NaN or infinity."
+            )
+        property_schema_items.append(
+            (output_name, prop_type, count, values.dtype.kind)
+        )
+
+    label_schema = (
+        "energy" in structure.additional_fields,
+        "virial" in structure.additional_fields,
+    )
+    if label_schema[0] and not np.isfinite(float(structure.energy)):
+        raise ValueError("DeepMD structure has non-finite energy.")
+    if label_schema[1]:
+        virial = np.asarray(
+            structure.additional_fields["virial"], dtype=np.float64
+        ).reshape(-1)
+        if virial.size not in {6, 9} or not np.all(np.isfinite(virial)):
+            raise ValueError("DeepMD structure has an invalid virial.")
+    return pbc_mode, tuple(sorted(property_schema_items)), label_schema
+
+
+def _save_mixed_npy_structure(
+    target_root: Path,
+    structures: list[Structure],
+    *,
+    type_map: list[str],
+    atom_numb_pad: int | None = None,
+    set_size: int = 2000,
+) -> None:
+    """Write native ``deepmd/npy/mixed`` output compatible with dpdata."""
+    if set_size <= 0:
+        raise ValueError("DeepMD set_size must be positive.")
+    if atom_numb_pad is not None and atom_numb_pad <= 0:
+        raise ValueError("DeepMD mixed atom_numb_pad must be positive or None.")
+
+    grouped: dict[int, list[Structure]] = defaultdict(list)
+    contracts: dict[int, tuple[str, tuple[tuple[str, str, int, str], ...], tuple[bool, bool]]] = {}
+    for structure in structures:
+        natoms = len(structure)
+        if natoms <= 0:
+            raise ValueError("DeepMD mixed export cannot contain empty structures.")
+        stored_natoms = (
+            ((natoms + atom_numb_pad - 1) // atom_numb_pad) * atom_numb_pad
+            if atom_numb_pad is not None
+            else natoms
+        )
+        contract = _deepmd_structure_contract(structure, type_map=type_map)
+        previous = contracts.get(stored_natoms)
+        if previous is not None and previous != contract:
+            raise ValueError(
+                "DeepMD NPY (Mixed) structures in the same padded atom-count group must "
+                "share PBC mode, per-atom fields, and label coverage."
+            )
+        contracts[stored_natoms] = contract
+        grouped[stored_natoms].append(structure)
+
+    ensure_directory(target_root.parent)
+    staging_root = Path(
+        tempfile.mkdtemp(
+            dir=target_root.parent,
+            prefix=f".{target_root.name or 'deepmd'}.staging.",
+        )
+    )
+    type_index = {symbol: index for index, symbol in enumerate(type_map)}
+    try:
+        for stored_natoms, frames in sorted(grouped.items()):
+            system_dir = ensure_directory(staging_root / str(stored_natoms))
+            pbc_mode, _, label_schema = contracts[stored_natoms]
+            if pbc_mode == "nonperiodic":
+                (system_dir / "nopbc").touch()
+            np.savetxt(system_dir / "type_map.raw", type_map, fmt="%s")
+            np.savetxt(
+                system_dir / "type.raw",
+                np.zeros(stored_natoms, dtype=np.int32),
+                fmt="%d",
+            )
+
+            arrays: dict[str, list[np.ndarray]] = defaultdict(list)
+            for structure in frames:
+                species = [str(item) for item in structure.elements]
+                natoms = len(species)
+                virtual_atoms = stored_natoms - natoms
+                arrays["box"].append(np.asarray(structure.lattice).reshape(-1))
+                arrays["coord"].append(
+                    np.pad(
+                        np.asarray(structure.atomic_properties["pos"]),
+                        ((0, virtual_atoms), (0, 0)),
+                    ).reshape(-1)
+                )
+                arrays["real_atom_types"].append(
+                    np.pad(
+                        np.asarray(
+                            [type_index[item] for item in species], dtype=np.int32
+                        ),
+                        (0, virtual_atoms),
+                        constant_values=-1,
+                    )
+                )
+                for prop in structure.properties:
+                    source_name = str(prop["name"])
+                    if source_name in {"species", "pos"}:
+                        continue
+                    count = int(prop["count"])
+                    values = np.asarray(
+                        structure.atomic_properties[source_name]
+                    ).reshape(natoms, count)
+                    arrays[_deepmd_property_name(source_name)].append(
+                        np.pad(values, ((0, virtual_atoms), (0, 0))).reshape(-1)
+                    )
+                if label_schema[0]:
+                    arrays["energy"].append(np.asarray([structure.energy]))
+                if label_schema[1]:
+                    arrays["virial"].append(
+                        _deepmd_virial_9(structure.additional_fields["virial"])
+                    )
+
+            frame_count = len(frames)
+            for set_index, start in enumerate(range(0, frame_count, set_size)):
+                stop = min(start + set_size, frame_count)
+                set_dir = ensure_directory(system_dir / f"set.{set_index:03d}")
+                for name, values in arrays.items():
+                    array = np.vstack(values[start:stop])
+                    if array.dtype.kind == "f":
+                        array = np.asarray(array, dtype=get_storage_float_dtype())
+                    np.save(set_dir / f"{name}.npy", array)
+
+        _fsync_tree(staging_root)
+        _publish_directory(staging_root, target_root)
+    finally:
+        if staging_root.exists():
+            shutil.rmtree(staging_root)
+
+
 @timeit
-def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:list[str]|None=None):
+def save_npy_structure(
+    folder: PathLike,
+    structures: list[Structure],
+    type_map: list[str] | None = None,
+    *,
+    format: DeepmdNpyFormat = "standard",
+    group_by_config_type: bool | None = None,
+    mixed_atom_numb_pad: int | None = None,
+):
 
 
     """Save structures to a DeepMD-style .npy dataset layout.
@@ -2308,7 +2549,19 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
     structures : list[Structure]
         Structures to persist. Per-atom arrays are saved under set.000 and
         per-frame values under the config folder.
-    type_map: list[str]
+    type_map : list[str], optional
+        Global element ordering written to ``type_map.raw``.
+    format : {"standard", "mixed"}, default="standard"
+        DeepMD NPY layout. Mixed output groups frames by atom count and writes
+        per-frame ``real_atom_types.npy``.
+    group_by_config_type : bool, optional
+        Standard NPY directory grouping. ``True`` uses ``Config_type`` and
+        ``False`` uses chemical formula. Ignored for mixed output. When omitted,
+        the legacy saved setting is used.
+    mixed_atom_numb_pad : int, optional
+        Mixed-NPY virtual-atom padding interval, matching dpdata's
+        ``atom_numb_pad``. Atom counts are rounded up to the next multiple;
+        omitted values keep exact-atom-count groups.
     """
     target_root = as_path(folder)
     if not structures:
@@ -2323,7 +2576,21 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
     if not type_map or len(type_map) != len(set(type_map)):
         raise ValueError("DeepMD type_map must contain unique element symbols.")
     type_map_set = set(type_map)
-    use_hierarchy = Config.getboolean("widget", "deepmd_preserve_subfolders", True)
+    if format not in {"standard", "mixed"}:
+        raise ValueError(f"Unsupported DeepMD NPY format: {format!r}")
+    if format == "mixed":
+        _save_mixed_npy_structure(
+            target_root,
+            structures,
+            type_map=type_map,
+            atom_numb_pad=mixed_atom_numb_pad,
+        )
+        return
+    use_hierarchy = (
+        Config.getboolean("widget", "deepmd_preserve_subfolders", True)
+        if group_by_config_type is None
+        else bool(group_by_config_type)
+    )
 
     for structure in structures:
         if use_hierarchy:

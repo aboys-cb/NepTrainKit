@@ -1,120 +1,104 @@
 NepTrainKit 文档
 ================
 
-NepTrainKit 是给 NEP 训练集准备、检查和可视化用的桌面工具。它不替代 GPUMD
-在服务器上的长时间训练，也不替代 DFT 计算；它负责训练前后最容易反复手工处理的部分：
-生成候选结构、查看结构是否合理、剔除异常样本、做代表性筛选，并把干净的数据导出回你的
-DFT 和训练流程。
-
-如果你第一次打开软件，可以先按下面两条主线理解界面。
-
-制作一批候选结构
-----------------
-
-``Make Dataset`` 的作用是制作训练集候选结构。它产出的结构通常还不能直接拿去训练：
-扰动、缺陷、表面、随机占位等操作都可能生成局部距离过近、受力异常或明显不合理的构型。
-这些结构应该先被检查和清洗，再进入 DFT。
-
-.. image:: _static/image/generated/make_data_empty.png
-   :alt: Empty Make Data workspace annotated overview
-   :class: docs-screenshot
-
-最小工作流分四步：
-
-1. 先导入初始结构。
-2. 添加一张生成或变换卡片。
-3. 勾选需要参与运行的卡片并点击 ``Run``。
-4. 在工作区检查每张卡的输入、参数和输出数量。
-
-下面是一张 ``Lattice Strain`` 卡配置后的样子。它会对输入结构施加一组受控晶格应变，
-适合用来补弹性响应附近的数据。
-
-.. image:: _static/image/generated/make_data_lattice_strain.png
-   :alt: Lattice Strain card annotated quickstart
-   :class: docs-screenshot
-
-不知道该选哪张卡时，先看 :doc:`module/make-dataset-cards/index`；已经知道目标时，
-可以直接查 :doc:`module/make-dataset-cards/recipes`。完整的候选结构清洗路线见
-:doc:`workflows/clean-candidate-structures`。
-
-检查和筛选结构
---------------
-
-``NEP Dataset Display`` 不只用于训练结束后的误差分析。只要你已经有一批结构，
-就可以把它们导入这里查看、标记、删除和导出。对于 ``Make Dataset`` 生成的大批候选结构，
-一个常见做法是先用内置或已有 NEP 模型做快速预测，去掉明显异常的结构，例如预测力特别大的样本；
-清洗后再做最远点采样，最后把代表结构送去 DFT。
-
-.. image:: _static/image/generated/show_nep_overview.png
-   :alt: NEP Dataset Display annotated overview
-   :class: docs-screenshot
-
-图里的四个区域对应一次常见检查：
-
-1. 打开候选结构、训练结构或训练结果目录。
-2. 看预测值、误差或分布，先定位最明显的问题。
-3. 直接查看对应结构，判断它是不是坏构型、边界情况或训练集缺口。
-4. 用标签、搜索和选择功能把这些结构单独标出来，再导出或删除。
-
-更细的按钮说明见 :doc:`module/show-nep-reference`。
-
-一条更真实的路线通常是：
-
-.. code-block:: text
-
-   Make Dataset 生成候选结构
-   → NEP Dataset Display 查看并清洗异常结构
-   → FPS Filter 或其他方法选择代表结构
-   → DFT 标注能量、力、应力
-   → GPUMD 训练 NEP
-   → NEP Dataset Display 回看训练结果并继续迭代
+NepTrainKit 用于准备、检查和可视化 NEP 训练数据。它负责生成候选结构、检查异常样本、
+筛选代表结构和回看训练结果；DFT 标注与 GPUMD 训练仍在对应软件中完成。
 
 从哪里开始
 ----------
 
+先按你现在遇到的问题选择入口。第一次使用才需要从“快速开始”按顺序阅读；已经打开软件、
+只是看不懂某个页面或参数时，直接进入“功能指南”。
+
 .. grid:: 1 1 2 2
    :gutter: 2
 
-   .. grid-item-card:: 我想先跑通一次
+   .. grid-item-card:: 第一次安装和使用
       :link: quickstart
       :link-type: doc
 
-      从安装、启动到生成候选结构，并理解为什么要先清洗再 DFT。
+      从安装、启动、生成第一批候选结构，一直走到清洗前的检查。
 
-   .. grid-item-card:: 我想清洗候选结构
+   .. grid-item-card:: 软件里的某个功能不会用
+      :link: module/index
+      :link-type: doc
+
+      按桌面软件页面顺序查按钮、参数、默认行为和输出。
+
+   .. grid-item-card:: 我已经有候选结构
       :link: workflows/clean-candidate-structures
       :link-type: doc
 
-      从 Make Dataset 输出候选池，到 NEP Dataset Display 删除异常结构，再采样去 DFT。
+      在 ``NEP Dataset Display`` 中检查异常，再做代表性采样并送去 DFT。
 
-   .. grid-item-card:: 我想分析已有训练结果
-      :link: module/NEP-dataset-display
+   .. grid-item-card:: 我想复盘训练结果
+      :link: workflows/review-training-results
       :link-type: doc
 
-      加载训练结构或训练结果，看误差、筛异常、导出子集。
+      从误差和异常结构追到数据缺口，组织下一轮补数据。
 
-   .. grid-item-card:: 我想系统扩充训练集
-      :link: module/make-dataset-cards/index
+   .. grid-item-card:: 软件报错或没有输出
+      :link: reference/troubleshooting
       :link-type: doc
 
-      按物理目的生成候选结构，然后接入清洗和采样流程。
+      按“导入失败、卡片无输出、CUDA 不可用”等症状直接排查。
 
-   .. grid-item-card:: 我想写自己的卡片
-      :link: module/custom-card-development
+   .. grid-item-card:: 看不懂术语或字段
+      :link: reference/glossary
       :link-type: doc
 
-      把已有脚本封装成 Make Dataset 卡片，供团队复用。
+      集中查询 ``Config_type``、FPS、GSFE、virial 和 ``spin:R:3``。
 
-安装提示
---------
-
-NepTrainKit 通过独立的 ``nep-adapters`` wheel 获得计算后端。macOS 和 Windows
-提供 CPU；Linux x86_64 的 wheel 同时提供 CPU 和 CUDA。安装 wheel 不要求本机
-安装 CUDA Toolkit；CUDA 计算仍需要兼容的 NVIDIA 驱动。确认命令见
-:doc:`quickstart`。
-
-引用 NepTrainKit
+按软件页面查功能
 ----------------
+
+下面的顺序与 NepTrainKit 左侧导航一致。进入功能页后，左侧目录会继续按该页面的界面顺序展开。
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 45 30
+
+   * - 软件页面
+     - 什么时候查
+     - 直接进入
+   * - ``NEP Dataset Display``
+     - 不会打开数据、看图、筛结构、改数据或导出
+     - :doc:`module/NEP-dataset-display`
+   * - ``Training Set Audit``
+     - 不清楚训练数据覆盖、质量、结构相或磁类型
+     - :doc:`module/training-set-assessment`
+   * - ``生成数据集``
+     - 不知道选哪张卡、参数怎么填或卡片如何串联
+     - :doc:`module/make-dataset`
+   * - ``Data Management``
+     - 不清楚项目、模型版本和结果路径如何管理
+     - :doc:`module/data-management`
+   * - ``Settings``
+     - 需要调整 NEP 后端、绘图、结构显示或更新行为
+     - :doc:`module/settings`
+
+理解完整数据流
+--------------
+
+NepTrainKit 在训练流程中的位置是：
+
+.. code-block:: text
+
+   生成数据集 生成候选结构
+   → NEP Dataset Display 检查并清洗异常结构
+   → FPS Filter 或其他方法选择代表结构
+   → DFT 标注能量、力、应力
+   → GPUMD 训练 NEP
+   → NEP Dataset Display 回看误差并开始下一轮
+
+如果你是在完成一整段工作，而不是查询单个按钮，进入 :doc:`workflows/index`。
+如果你已经知道具体目标，例如能量平移、最大误差筛选或 DFT-D3 修正，进入
+:doc:`example/index`。
+
+安装与引用
+----------
+
+安装、运行时后端检查和第一次操作见 :doc:`quickstart`。
 
 如果你的研究使用了 NepTrainKit，请引用：
 
@@ -134,11 +118,51 @@ NepTrainKit 通过独立的 ``nep-adapters`` wheel 获得计算后端。macOS �
 
 .. toctree::
    :maxdepth: 1
-   :caption: 文档目录
+   :caption: 开始使用
+   :hidden:
 
    快速开始 <quickstart>
-   工作流 <workflows/index>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 端到端工作流
+   :hidden:
+
+   工作流总览 <workflows/index>
+
+.. toctree::
+   :maxdepth: 5
+   :caption: 功能指南
+   :hidden:
+
+   功能总览 <module/index>
+   数据集查看（NEP Dataset Display） <module/NEP-dataset-display>
+   训练集评估（Training Set Audit） <module/training-set-assessment>
+   生成数据集 <module/make-dataset>
+   数据管理（Data Management） <module/data-management>
+   设置（Settings） <module/settings>
+
+.. toctree::
+   :maxdepth: 3
+   :caption: 操作指南
+   :hidden:
+
+   按具体任务操作 <example/index>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 参考资料
+   :hidden:
+
+   参考资料总览 <reference/index>
    支持格式 <formats>
-   功能模块 <module/index>
-   示例 <example/index>
-   API 参考 <api/index>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 开发者
+   :hidden:
+
+   开发者文档总览 <developer/index>
+   自定义卡片开发 <module/custom-card-development>
+   卡片文档编写规范 <module/make-dataset-cards/writing-guide>
+   Python API <api/index>

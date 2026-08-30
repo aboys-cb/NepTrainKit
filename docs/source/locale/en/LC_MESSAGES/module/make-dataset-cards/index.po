@@ -4,12 +4,11 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-26 11:17+0800\n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -21,16 +20,16 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/index.md:1
-#: 21712436ca9a473caa225eee669d64f3
-msgid "Make Dataset 卡片手册"
-msgstr "Make Dataset Card Guide"
+#: 75f4ce4a3d3340a5baf17b5eba2066c8
+msgid "选择生成数据集卡片"
+msgstr "Choose Make Dataset cards"
 
 #: ../../source/module/make-dataset-cards/index.md:3
-#: c827de8c65404a20b1f5e310cfa20be8
-msgid "这份手册不只解释“每个参数是什么意思”，更强调三件事："
+#: 5250d582ec2a434b8440b929f27c9dc7
+msgid "这页先帮你选对卡片。选定后，再进入对应分类查看输入前提、参数、输出和检查方法："
 msgstr ""
-"This manual does more than define individual parameters. It helps you "
-"answer three practical questions:"
+"This page helps you choose the right card first. After choosing one, open"
+" its category to review prerequisites, parameters, outputs, and checks:"
 
 #: ../../source/module/make-dataset-cards/index.md:5
 #: 4d58999e414e4e83981233cc78e1dd49
@@ -47,39 +46,37 @@ msgstr "When is this card worth adding to the workflow?"
 msgid "输出后我该怎么看结果是否合理"
 msgstr "How do I decide whether its output is reasonable?"
 
-#: ../../source/module/make-dataset-cards/index.md:9
-#: e2e5f7e27bb84a31a78b1faa985310de
-msgid "维护规范见 [卡片文档编写规范](writing-guide.md)。"
-msgstr ""
-"For documentation-maintenance conventions, see [Writing Card "
-"Documentation](writing-guide.md)."
+#: ../../source/module/make-dataset-cards/index.md:23
+#: 79eff1d41c84421fbe8a242761d591bd
+msgid "本页目录"
+msgstr "On this page"
 
-#: ../../source/module/make-dataset-cards/index.md:58
+#: ../../source/module/make-dataset-cards/index.md:29
 #: 0b0640420c53429aa319fbcd99d5ccf7
 msgid "快速上手路径"
 msgstr "Recommended learning path"
 
-#: ../../source/module/make-dataset-cards/index.md:60
+#: ../../source/module/make-dataset-cards/index.md:31
 #: e15d56d8907e41bea00b629d977b45bc
-msgid "如果你是第一次使用 Make Dataset，推荐先按下面顺序理解："
+msgid "如果你是第一次使用“生成数据集”，推荐先按下面顺序理解："
 msgstr "If this is your first time using Make Dataset, follow this order:"
 
-#: ../../source/module/make-dataset-cards/index.md:62
+#: ../../source/module/make-dataset-cards/index.md:33
 #: a2774f3b71774e049e4b1002ef91c69d
 msgid "先看“按目标选卡”，确定主卡片。"
 msgstr "Start with “Choose a card by goal” to identify the main operation."
 
-#: ../../source/module/make-dataset-cards/index.md:63
+#: ../../source/module/make-dataset-cards/index.md:34
 #: 884524afa2f64522ad55db11634aa6d1
 msgid "再看对应卡片页里的“操作示例”，确认参数量级。"
 msgstr "Read the card's worked example to establish sensible parameter scales."
 
-#: ../../source/module/make-dataset-cards/index.md:64
+#: ../../source/module/make-dataset-cards/index.md:35
 #: 917ff54540ea486a83fa28955df3ed9b
 msgid "最后参考 [配方示例（Recipes）](recipes.md) 组织多卡流程。"
 msgstr "Then use [Recipes](recipes.md) to assemble a multi-card workflow."
 
-#: ../../source/module/make-dataset-cards/index.md:67
+#: ../../source/module/make-dataset-cards/index.md:38
 #: 235747c377764f7d9bf0d6b290b097f3
 msgid ""
 "涉及 `FPS Filter` 的高通量流程，通常先导出 `xyz`，在 `NEP Dataset Display` "
@@ -94,653 +91,681 @@ msgstr ""
 "Filter` belongs near the end of the pipeline; it selects from candidates "
 "and does not replace structure generation."
 
-#: ../../source/module/make-dataset-cards/index.md:72
+#: ../../source/module/make-dataset-cards/index.md:43
+#: 43c0797a2304451d82f1e6a07785de64
+msgid "30 秒确定方向"
+msgstr "Choose a direction in 30 seconds"
+
+#: ../../source/module/make-dataset-cards/index.md:45
+#: 4f34147ff4944b2eac84191d5be26691
+msgid "先判断你要改变什么，再进入对应小表。不要从四十张卡片中逐个试："
+msgstr ""
+"Decide what you need to change before opening the corresponding table; do"
+" not try forty cards one by one:"
+
+#: ../../source/module/make-dataset-cards/index.md:47
+#: e6c2879b797e45c98589eb4efd4ae224
+msgid ""
+"没有初始结构\n"
+"├─ 从标准晶型开始 → 晶体原型构建\n"
+"└─ 从随机坐标开始 → 随机原子堆积\n"
+"\n"
+"已经有初始结构\n"
+"├─ 改晶胞或坐标 → 晶胞、应变与扰动\n"
+"├─ 改元素和组成 → 合金与组成\n"
+"├─ 改原子数或表面 → 缺陷与表面\n"
+"├─ 改磁矩 → 磁性构型\n"
+"├─ 做分子或溶剂 → 分子与溶剂\n"
+"└─ 不再生成，只想清洗或选代表结构 → 过滤与采样\n"
+msgstr "No initial structure\n├─ Start from a standard crystal structure → Crystal Prototype Builder\n└─ Start from random coordinates → Random Packing\n\nExisting initial structure\n├─ Change the cell or coordinates → Cell, strain, and perturbation\n├─ Change elements or composition → Alloys and composition\n├─ Change atom count or surfaces → Defects and surfaces\n├─ Change magnetic moments → Magnetic configurations\n├─ Work with molecules or solvents → Molecules and solvents\n└─ Do not generate more structures; clean or select representatives → Filtering and sampling\n"
+
+#: ../../source/module/make-dataset-cards/index.md:61
+#: e7fe11cf3fd1466180ebbeb68e75c0c0
+msgid "如果一条任务跨越多步，例如“生成表面并加入吸附原子”，先找改变边界条件的主卡， 再接局部操作卡。完整串联方式见[配方示例](recipes.md)。"
+msgstr ""
+"When a task spans multiple steps, such as generating a surface and adding"
+" adsorbates, choose the card that changes the boundary conditions first, "
+"then add local-operation cards. See [Recipes](recipes.md) for complete "
+"workflows."
+
+#: ../../source/module/make-dataset-cards/index.md:64
 #: da9ff972da854eb8ad2e689e23cf5d16
-msgid "按目标选卡"
-msgstr "Choose a card by goal"
+msgid "按场景选卡"
+msgstr "Choose cards by scenario"
 
 #: ../../source/module/make-dataset-cards/index.md:66
+#: 84079b4823ef42c98077de4ae962d172
+msgid "从哪里得到初始结构"
+msgstr "Where the initial structure comes from"
+
+#: ../../source/module/make-dataset-cards/index.md:37
 #: 67021c5397354d238da6a135016855a7
 msgid "我的需求"
 msgstr "Goal"
 
-#: ../../source/module/make-dataset-cards/index.md:66
+#: ../../source/module/make-dataset-cards/index.md:37
 #: 20909f983f3b40b7b179caca927fa18e
 msgid "推荐卡片"
 msgstr "Recommended card"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 7adcdc23708a4f35b6fc2c32c7a46e5c
-msgid "常见前置卡片"
-msgstr "Typical prerequisite"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 8ed0a69f30c24a23acefe81103dbb464 ea359b464edd4a29bba1c6ad4504c8f8
+msgid "使用前先确认"
+msgstr "Check before use"
 
-#: ../../source/module/make-dataset-cards/index.md:66
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 67100710b4bc4fd2b47a1aa97bf25d5f
+msgid "从标准晶型直接生成结构"
+msgstr "Generate a structure directly from a standard crystal prototype"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4a834d881fab4eb0a8be65a781a727cb
+msgid "[晶体原型构建](cards/crystal-prototype-builder-card.md)"
+msgstr "[Crystal Prototype Builder](cards/crystal-prototype-builder-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 95c790893dee46e1a6d4405dd105e36a
+msgid "原型、晶格常数和元素映射符合目标体系"
+msgstr ""
+"The prototype, lattice constants, and element mapping match the target "
+"system"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 07f57e20be6e43b49d9fc49a812abd81
+msgid "扩大现有晶胞，为缺陷或表面操作留空间"
+msgstr "Expand an existing cell to leave room for defect or surface operations"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 732305f937574738bbeae3fcd6096703
+msgid "[扩胞](cards/super-cell-card.md)"
+msgstr "[Super Cell](cards/super-cell-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 094e1e42ff5d41bfbd2746ae3779cab6
+msgid "这是重复晶胞，不会生成自由表面"
+msgstr "This repeats the cell; it does not create a free surface"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 0050ff274c0b449da7dc3ca27502833b
+msgid "在固定晶胞和组成下生成随机坐标初态"
+msgstr ""
+"Generate random-coordinate initial states with a fixed cell and "
+"composition"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7e563d038603411db85c365bdf4e3df0
+msgid "[随机原子堆积](cards/random-packing-card.md)"
+msgstr "[Random Packing](cards/random-packing-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 900c24d9f56f44e9b381afab2b72e241
+msgid "后接几何健全性过滤，不要把初态直接送 DFT"
+msgstr ""
+"Follow with a geometry sanity filter; do not send initial states directly"
+" to DFT"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 45f232fe9ea14e8eb91d064b996af518
+msgid "复制层状结构并控制层间重复距离"
+msgstr "Copy a layered structure and control the repeat distance between layers"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
+msgid "[分层堆叠](cards/layer-copy-card.md)"
+msgstr "[Layer Stack](cards/layer-copy-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 65172c9487bd47b5926815172486baf8
+msgid "输入已经是可重复的层状结构"
+msgstr "The input is already a repeatable layered structure"
+
+#: ../../source/module/make-dataset-cards/index.md:75
+#: b0566c12d4764ad08cde37845a3bc05c
+msgid "改晶胞、应变或原子坐标"
+msgstr "Change the cell, strain, or atomic coordinates"
+
+#: ../../source/module/make-dataset-cards/index.md:37
 #: c2f873df70384a0e971bdaa4b260f63f
 msgid "不要误用"
 msgstr "Common misuse"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 07f57e20be6e43b49d9fc49a812abd81
-msgid "扩大晶胞尺寸，为缺陷或表面操作留空间"
-msgstr "Enlarge a cell to make room for defects or surface operations"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b89cdcd5a4724915b1ee45fe9494f4d3
+msgid "扫描指定轴向的拉伸和压缩"
+msgstr "Scan tension and compression along selected axes"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 36a150eacb0a49a09ec0af7954090d57 42eca045ae034797a09516a978abca1c
-#: 654d7d80abfd41a3b14189957a251940 66f9337c263e48a5a0ef5f5d2f95b0df
-#: bbda2154ca404249903ae619ea9c3b63
-msgid "`Super Cell`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
+msgid "[晶格应变](cards/cell-strain-card.md)"
+msgstr "[Lattice Strain](cards/cell-strain-card.md)"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 6f5924be0292441b95bcd87b9b42325a 9f7972ae66fe40b0892b7df2e8ada314
-msgid "`Crystal Prototype Builder`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 08909c4379d94d40ac7a14467283a092
+msgid "用原子扰动改变晶格"
+msgstr "Change the lattice with atomic perturbations"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 24158ae073714aceab4c806655789f8c
-msgid "把 `Random Slab` 当成扩胞工具"
-msgstr "Using `Random Slab` as a supercell builder"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f26a59fdb5ac4fbba0667afab6e74dc7
+msgid "给晶格长度和角度加随机变化"
+msgstr "Add random changes to lattice lengths and angles"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 67100710b4bc4fd2b47a1aa97bf25d5f
-msgid "从晶体原型直接生成一批标准结构"
-msgstr "Generate standard structures directly from crystal prototypes"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
+msgid "[晶格随机扰动](cards/cell-scaling-card.md)"
+msgstr "[Lattice Perturb](cards/cell-scaling-card.md)"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4d40842d82a04f1394f1a0604275ad32 7e793d43120b445c807f2a48c969fd8a
-msgid "无"
-msgstr "None"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3d25bbad393b4f1790bcb4e4bd2cb0e4
+msgid "把随机扰动当成严格应变路径"
+msgstr "Treat a random perturbation as a strict strain path"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 489c1fc62b1b4a58bc97c60428a8c267
-msgid "用 `Super Cell` 手工拼基础晶型"
-msgstr "Trying to construct a missing crystal prototype manually with `Super Cell`"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 0050ff274c0b449da7dc3ca27502833b
-msgid "在固定 cell 和组成下生成无序原子坐标初态"
-msgstr "Generate disordered atomic coordinates at a fixed cell and composition"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 92a2382d1ea84e03aebe1ceaef6d4804
-msgid "`Random Packing`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 68e4a81bbc4c47ff9f12c4033a025a52 b32e89ec68a047dfaf4907cfa135441b
-msgid "`Geometry Filter`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 67f66210e2394a678b0fae595a82ac23
-msgid "把它当成磁矩无序卡"
-msgstr "Treating it as a magnetic-disorder card"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: a75183e216e0453d9adde56fa3c08f44
-msgid "过滤短键、异常体积或异常密度结构"
-msgstr "Reject short contacts, abnormal volumes, or abnormal densities"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 12aba3b9606c487798528b8a30091faa
-msgid "强扰动、随机占位、表面或缺陷生成卡"
-msgstr "A strong perturbation, random-occupancy, surface, or defect generator"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: ca4a16b4d6684762a4d5053c86da2cff
-msgid "把 `FPS Filter` 当成几何质量检查"
-msgstr "Using `FPS Filter` as a geometry-validity check"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4b7c946611e7477fa062033d1fc111c9
-msgid "给近平衡结构加轻微坐标噪声"
-msgstr "Add mild coordinate noise near equilibrium"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 0045754ed368446f9d0db53dd0aee568
-msgid "`Atomic Perturb`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4343346aea22405e8cb62b950c6c460a
-msgid "`Super Cell` / 已弛豫输入"
-msgstr "`Super Cell` / a relaxed input"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: b6fbb62d2ac342b498630d94ac7d0f37
-msgid "用大幅 `Lattice Perturb` 代替原子热扰动"
-msgstr "Using a large `Lattice Perturb` as atomic thermal noise"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 15889a74051e4f6d8e618182ffccd6c5
-msgid "给晶胞参数做体积或轴向缩放"
-msgstr "Scale cell volume or selected lattice directions"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 6da0395dcf29421f8092122c73a57797
-msgid "`Lattice Perturb` / `Lattice Strain`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c747c1bacc5f411ca214cae02b104d29
-msgid "用 `Atomic Perturb` 改晶格"
-msgstr "Using `Atomic Perturb` to change the lattice"
-
-#: ../../source/module/make-dataset-cards/index.md:66
+#: ../../source/module/make-dataset-cards/index.md:37
 #: 1a4519f8ea5c4ff4908f37366b50cf06
-msgid "沿四方相变或外延方向扫 `c/a`"
-msgstr "Scan `c/a` along a tetragonal transformation or epitaxial path"
+msgid "沿四方相变或外延方向扫描 `c/a`"
+msgstr "Scan `c/a` along a tetragonal transition or epitaxial direction"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4d535236389748e092b19e07ba8df5cf
-msgid "`Bain Path`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
+msgid "[Bain 路径](cards/bain-path-card.md)"
+msgstr "[Bain Path](cards/bain-path-card.md)"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 5e13410470424d29ac4015491d7a7238
-msgid "`Crystal Prototype Builder` / `Super Cell`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
+#: ../../source/module/make-dataset-cards/index.md:37
 #: cebbaec5c7854226afd4e726b957233a
-msgid "用普通轴向应变代替系统 Bain 路径"
-msgstr "Replacing a systematic Bain path with an arbitrary axial strain"
+msgid "用普通轴向应变替代系统路径"
+msgstr "Use ordinary axial strain instead of a systematic path"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 2eaa8b99a0214284b18c5c9b322dc723
-msgid "做剪切应变或角度应变"
-msgstr "Apply shear or angular strain"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 8cddb420f346459aa60fa42860283dd6
+msgid "做矩阵剪切或晶格角剪切"
+msgstr "Apply matrix shear or lattice-angle shear"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 0b7ee7aa385a4e5fba981d901aa08cc5
-msgid "`Shear Matrix Strain` / `Shear Angle Strain`"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 53201dbde1ff4893b962df25a8c1d186
+msgid "[剪切矩阵应变](cards/shear-matrix-card.md) / [剪切角应变](cards/shear-angle-card.md)"
 msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 35a49f870c694cd392c5c36aac91344b
-msgid "已知目标应变方向"
-msgstr "A known target strain direction"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: b48ddf51f35f41a5820063da8c3d8a51
-msgid "用 `Lattice Strain` 强行模拟纯剪切"
-msgstr "Forcing a pure-shear problem through `Lattice Strain`"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 67f0b1bb2ca2417d821895ade34381eb
-msgid "生成表面切片"
-msgstr "Generate surface slabs"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 86d82989f9f94f05bab6aea8bfe0250b
-msgid "`Random Slab`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 202f211e076642c39b6a7382f7f954f8
-msgid "用 `Vacancy Defect Generation` 做表面"
-msgstr "Using vacancy generation to create a surface"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: ecb23942da244b6ebe57de0366094916
-msgid "生成带 A/B 晶体学子晶格的有序合金原型"
-msgstr "Generate an ordered-alloy prototype with crystallographic A/B sublattices"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 5f6f934c559f4d3d810bd617ea3812a6
-msgid "`Ordered Alloy Prototype`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 19a721a92d774ecc9e423dc8eaf7703c
-msgid "用 `group` 代替 `sublattice` 身份"
-msgstr "Using `group` in place of crystallographic `sublattice` identity"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 999ccd1097084e41b4901609a5bca2b2
-msgid "在有限晶胞上枚举整数可实现的合金组成和排布"
-msgstr ""
-"Enumerate integer-realizable alloy compositions and arrangements in a "
-"finite cell"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 56d47f95918c4f4eb9cb267349aab083
-msgid "`Finite-Cell Alloy Occupancy`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 058788dba5ee4a93995a1d525ad1d447
-msgid "`Ordered Alloy Prototype` / `Super Cell`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 0c84f3be76d84a99a385dfd473dc4c96
-msgid "连续比例取整后仍标成精确组成"
-msgstr "Rounding continuous fractions while still labeling the result as exact"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 22ad039dfcbd49abb1b380d1a9a7cf58
-msgid "做单点随机合金"
-msgstr "Create a random alloy at one composition"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 87dee7b3ba724d74bbf00d905dc62a7a
-msgid "`Random Doping`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 7e42c80c00a84638ac842b9512df0e37
-msgid "`Composition Sweep` 可选"
-msgstr "Optional `Composition Sweep`"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: f0a02840d8d24c25b87650d00b5e980c
-msgid "用 `Composition Sweep` 代替具体占位落点"
-msgstr "Assuming `Composition Sweep` assigns actual sites"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: e78e24acee9c4ad7bc5998753984cc07
-msgid "扫描多种目标配比"
-msgstr "Scan several target compositions"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 0528a6cb6c984b8fa6e10400397e6666
-msgid "`Composition Sweep`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c764632c4b2643b0aa07d0789993b0df
-msgid "用 `Random Doping` 手工凑配比网格"
-msgstr "Building a composition grid manually with `Random Doping`"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 12dc059717ec4df4ab742b3316d32f40
-msgid "沿空间方向做配比梯度"
-msgstr "Create a spatial composition gradient"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 9faaa8e069a14141b770f32d859418ad
-msgid "`Composition Gradient`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4d5d39bb7b0d420089b6926312e09b54
-msgid "已扩胞且有足够层数的结构"
-msgstr "A sufficiently large structure with enough layers"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 8456d18afb8b43849aeff8c80f0a247b
-msgid "用全局随机占位假装扩散偶或梯度层"
-msgstr "Using global random occupancy as a diffusion couple or layered gradient"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4a429ba351d24e48824245d15cc0a895
-msgid "把目标配比真正落到原子占位上"
-msgstr "Realize a target composition on discrete atomic sites"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: f9a154cb92e547b2b9135d1a8239c52c
-msgid "`Random Occupancy`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: fb322a43b0b94a4d9797c746c9004af9
-msgid "只做 `Composition Sweep` 就当已经生成随机合金"
-msgstr "Stopping after `Composition Sweep` and calling it a random alloy"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4c4f43abcb434b34ba403a0195025ad1
-msgid "按条件替换某类位点"
-msgstr "Replace sites that satisfy explicit conditions"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 5b9ec20cc0d64abf853cac8b75ab41c3
-msgid "`Conditional Replace`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c2af685e4a90424eb86813d5d8f4b1cd e07f80873734425ba27d8933eb3680ad
-msgid "`Group Label` 可选"
-msgstr "Optional `Group Label`"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 3e1890f6093c4b269db7ac818c664957
-msgid "用 `Random Doping` 做规则替换"
-msgstr "Using `Random Doping` for deterministic rule-based replacement"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 743549ddce0a4fd18b9d90ef809e52ba
-msgid "做随机空位族"
-msgstr "Generate a family of random vacancies"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 62a50126cb9d432b9cd77b540b7b20d8
-msgid "`Vacancy Defect Generation`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 76cd8bbb5f80456eb47f7ffc28a3d6bf
-msgid "用 `Random Slab` 生成空位表面"
-msgstr "Using `Random Slab` to create surface vacancies"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c3da0df4f88f4676b280eb8056b01a48
-msgid "按元素或 group 精细删位"
-msgstr "Remove selected sites by element or group"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 5fb58b69374141149bac4d295d8a77c4
-msgid "`Random Vacancy`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 28ecab5cde854966aea1bcdf52f28b56
-msgid "用 `Vacancy Defect Generation` 写复杂规则"
-msgstr "Encoding complex site rules in `Vacancy Defect Generation`"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c5507bd12b0a4b12a185b8e44e5599e5
-msgid "做插隙或吸附缺陷"
-msgstr "Create interstitials or adsorbates"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 44db60d650d8432ab77995f8bc6c63ea
-msgid "`Insert Defect`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 313fd4831c7c478389b2c8f80593bf2e
-msgid "`Random Slab` / `Super Cell`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 24bdba68c5354a0b8b9680972e745686
-msgid "用 `Random Doping` 代替插入"
-msgstr "Using substitutional doping in place of insertion"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 865d858d434c448b843b1b1a0873b17a
-msgid "做层错样本"
-msgstr "Generate stacking-fault candidates"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 1387bdb6b0804eecb397e3b65f966396
-msgid "`Stacking Fault`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 9c5bdf0d04224bbc88e8fcc02ae925b5
-msgid "用 `Random Slab` 代替层错位移"
-msgstr "Using a surface cut instead of an interlayer displacement"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: b0ab5dd933ec4b249d69d4abdbfef852
-msgid "严格扫描指定滑移系统的 GSFE 路径"
-msgstr "Scan a specified GSFE slip path with explicit crystallography"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 9075a5109dda4455b7c3b2cac5506c8b
-msgid "`Strict GSFE Path`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 7abbbd892d844dd8b01bb8495690c6df
-msgid "`Crystal Prototype Builder` 的 `fcc111` 原型 / slab-oriented cell"
-msgstr ""
-"The `fcc111` prototype from `Crystal Prototype Builder`, or another slab-"
-"oriented periodic cell"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 32aac4d0a0e74d90a34dfa73a128906b
-msgid "用普通 cubic cell 直接扫 `(111)`"
-msgstr "Scanning `(111)` directly in a conventional cubic cell"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 8d835a87eda14681a912ee432d6fe52c
-msgid "给结构打分组标签，供后续分组操作使用"
-msgstr "Assign group labels for downstream group-aware operations"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4af9d2c98d174929a7dce5c5858efcad
-msgid "`Group Label`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 2324af3ce08d41838ac5db9bef5dbaab
-msgid "直接在磁卡里假设已有 group"
-msgstr "Assuming group labels already exist inside a magnetic card"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 17c42857d634441ba25758ef7c63263b
-msgid "初始化 FM / AFM / PM 磁序"
-msgstr "Initialize FM, AFM, and PM-like orders"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: dc51b1a136874d73b1a511481d6431ae
-msgid "`Magnetic Order`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 175d2dce8a514a8a93a833ec37dd3187
-msgid "用 `Set Magnetic Moments` 代替多磁态生成"
-msgstr "Using `Set Magnetic Moments` to generate multiple magnetic orders"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 14178635a3f14bbf8164aef9a967ba1d
-msgid "生成 FM/AFM 到 PM 之间的无序度梯度"
-msgstr "Generate an order-to-disorder gradient from FM/AFM toward PM-like states"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: fd304081c8414874a03832447ca1c979
-msgid "`Spin Disorder`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 9ab94c24a15a47c48785efb2121d0db9 d3917ac7283a49278fc5a07c8948893b
-msgid "`Set Magnetic Moments` / `Magnetic Order`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 29b409ed6c944632921bdbe693d8c11d
-msgid "把离散翻转塞进 `Magmom Rotation`"
-msgstr "Using continuous moment rotation for discrete sign flips"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: f2c90952928740f58d41d9f076ba490f
-msgid "生成有空间相关长度的非共线随机磁矩"
-msgstr "Generate noncollinear random moments with a spatial correlation length"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 184838ec2197432c8fb0be763a5a94cb
-msgid "`Correlated Random Spin`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 64edc55f49064acba76d64c6e84f000c
-msgid "把它叫成 `Spin Glass`"
-msgstr "Calling every correlated random texture a spin glass"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 271def6c8f294cb3aabeb62678f1a0cb
-msgid "只想把磁矩写到结构里，不想生成多磁态分支"
-msgstr "Write moments to a structure without creating several magnetic branches"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: bb2bc80874c84ec78a4650571ba60a81
-msgid "`Set Magnetic Moments`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: b88ec78b04884df9a59ce44e2f2a937f
-msgid "用 `Magnetic Order` 做静态赋值"
-msgstr "Using `Magnetic Order` for a single static assignment"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: d87b13d794f1438da8c26c5ae251fe2b
-msgid "基于已有磁矩做旋转、多步 canting、全局偏转或螺旋"
-msgstr ""
-"Rotate existing moments, scan canting, apply a global tilt, or generate a"
-" spiral"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: eb88018b50de4ff48edbad3070827ecd
-msgid ""
-"`Magmom Rotation` / `Small-Angle Spin Tilt` / `Spin Spiral` / `Folded "
-"Helix`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: b1a7bd353b4942a2b1f63c6e5a42b213
-msgid "直接拿空白结构做旋转"
-msgstr "Trying to rotate a structure with no initial moments"
-
-#: ../../source/module/make-dataset-cards/index.md:66
+"[Shear Matrix Strain](cards/shear-matrix-card.md) / [Shear Angle "
+"Strain](cards/shear-angle-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a9c0ff549ba74e1089e8a41b6ad85847
+msgid "用轴向应变模拟纯剪切"
+msgstr "Use axial strain to emulate pure shear"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4b7c946611e7477fa062033d1fc111c9
+msgid "给近平衡结构加坐标噪声"
+msgstr "Add coordinate noise to near-equilibrium structures"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 732305f937574738bbeae3fcd6096703
+msgid "[原子扰动](cards/perturb-card.md)"
+msgstr "[Atomic Perturb](cards/perturb-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 682c238841cf48b68bf4ca9bb365f04e
+msgid "用大幅晶格扰动代替热扰动"
+msgstr "Use large lattice perturbations as a substitute for thermal perturbations"
+
+#: ../../source/module/make-dataset-cards/index.md:37
 #: 6dabe4ba95084f0b93ca3df970b8d819
-msgid "从振动模式生成位移样本"
-msgstr "Generate displacement samples from vibrational modes"
+msgid "沿已有振动模态生成位移"
+msgstr "Generate displacements along existing vibrational modes"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c28ea8a1ef654213b5355bc097ef4e53
-msgid "`Vib Mode Perturb`"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
+msgid "[振动模式扰动](cards/vibration-perturb-card.md)"
+msgstr "[Vib Mode Perturb](cards/vibration-perturb-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b6e18704b17d4829b73cf56c321158b4
+msgid "输入没有模态数组时改用原子扰动"
+msgstr "Use Atomic Perturb when the input has no mode array"
+
+#: ../../source/module/make-dataset-cards/index.md:86
+#: 0680b780291c4abc8d18417355dc0f4d
+msgid "改元素、配比或占位"
+msgstr "Change elements, composition, or occupancy"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 86eee3f636e248ac9594150a5a3df54c e1a18aa99c8748248c3b56400108eeb8
+msgid "使用边界"
+msgstr "Usage boundary"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ecb23942da244b6ebe57de0366094916
+msgid "建立带晶体学子晶格的有序合金"
+msgstr "Build an ordered alloy with crystallographic sublattices"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3f62cf7994c443818a44f0980d6a4f01
+msgid "[有序合金原型](cards/ordered-alloy-prototype-card.md)"
+msgstr "[Ordered Alloy Prototype](cards/ordered-alloy-prototype-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3b0d349bee884c22b648788a2ff4aeaa
+msgid "`sublattice` 是位点身份，不等同于普通 `group`"
 msgstr ""
+"`sublattice` identifies a site and is not equivalent to an ordinary "
+"`group`"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 3059fced726e47d982dadd151970a025
-msgid "已包含模态数组的结构"
-msgstr "A structure that already contains mode arrays"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: b3b88a5d41a24a329cd3590ff8adffd2
-msgid "用 `Atomic Perturb` 代替模态扰动"
-msgstr "Treating arbitrary coordinate noise as mode-resolved sampling"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4b765e3550544317897d77f3bc7b20fd
-msgid "从有机分子构象空间采样"
-msgstr "Sample organic molecular conformations"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 2e91961128694fb7bc3b23ef52e556d8
-msgid "`Organic Mol Config`"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 999ccd1097084e41b4901609a5bca2b2
+msgid "枚举有限晶胞中整数可实现的组成和排布"
 msgstr ""
+"Enumerate integer-realizable compositions and arrangements in a finite "
+"cell"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: a5a22c97447a4b54b7623e0c42c51282
-msgid "已识别分子结构"
-msgstr "A recognizable molecular structure"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 28a6a14c07fe408aa9010834c726e778
+msgid "[有限晶胞合金占位](cards/finite-cell-alloy-occupancy-card.md)"
+msgstr "[Finite-Cell Alloy Occupancy](cards/finite-cell-alloy-occupancy-card.md)"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: d0f37ff251714532bed3924de56055c5
-msgid "用无机卡片强行扰动有机体系"
-msgstr "Applying an inorganic perturbation workflow indiscriminately to molecules"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a7657b44b7a04aa9b7c1a8630e305c68
+msgid "连续比例必须落到整数原子数"
+msgstr "Continuous fractions must map to integer atom counts"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 76176ae1ed6a437f8b7b16fda9a19e66
-msgid "在局部离子、极性中心或溶质周围补溶剂壳"
-msgstr "Build a local solvent shell around an ion, polar center, or solute"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f48317687be54c8cbe18aacd0f466b1f
+msgid "直接做一次随机替换或掺杂"
+msgstr "Perform one random replacement or doping operation"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 03a0000e13f841b3a6004683ebde5340
-msgid "`Local Solvation`"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b597fb6ed4f94230abc7f7ccbf468c7f
+msgid "[随机掺杂](cards/random-doping-card.md)"
+msgstr "[Random Doping](cards/random-doping-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 0a4943bd40b944429e22c496f4afe47e
+msgid "不适合系统扫描完整配比空间"
+msgstr "Not suitable for systematically scanning the full composition space"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: e78e24acee9c4ad7bc5998753984cc07
+msgid "先定义一组目标配比"
+msgstr "Define a set of target compositions first"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
+msgid "[成分空间采样](cards/composition-sweep-card.md)"
+msgstr "[Composition Space Sampling](cards/composition-sweep-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ac9eaccd6ed045728a6ddc0df0575b5b
+msgid "输出是目标配比标签，不代表占位已经改变"
 msgstr ""
+"The output carries target-composition labels; occupancy has not "
+"necessarily changed"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: a129ad7728434b9bb7a48132451e91ef
-msgid "已有溶质或离子结构"
-msgstr "An existing solute or ionic structure"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4a429ba351d24e48824245d15cc0a895
+msgid "把目标配比真正落到离散位点"
+msgstr "Assign the target composition to discrete sites"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 2a77ccdfdbd542f5a7b3a75be1786781
-msgid "把它当成平衡溶剂化或量化优化"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 286aa805d9984ebcb5fb64302cdfd8f4
+msgid "[随机占位](cards/random-occupancy-card.md)"
+msgstr "[Random Occupancy](cards/random-occupancy-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 02595417c8ba4fca855f8a1e43a5634a
+msgid "可接在成分空间采样之后"
+msgstr "Can follow Composition Space Sampling"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12dc059717ec4df4ab742b3316d32f40
+msgid "沿空间方向形成配比梯度"
+msgstr "Create a composition gradient along a spatial direction"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
+msgid "[成分梯度](cards/composition-gradient-card.md)"
+msgstr "[Composition Gradient](cards/composition-gradient-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: cd0567dc5e3e478cab42ca929a1a748c
+msgid "输入需要足够多的层或位点"
+msgstr "The input needs enough layers or sites"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 5c2b0122fd224b1895c91a2e0bc4cca5
+msgid "按坐标、元素或分组规则替换位点"
+msgstr "Replace sites by coordinate, element, or group rules"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d781031f798d4f4ba001953b88c4510d
+msgid "[条件替换](cards/conditional-replace-card.md)"
+msgstr "[Conditional Replace](cards/conditional-replace-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 48790b236d8a480abf6fb17183eb9b5f
+msgid "复杂规则不要退化成无约束随机掺杂"
+msgstr "Do not reduce complex rules to unconstrained random doping"
+
+#: ../../source/module/make-dataset-cards/index.md:98
+#: e83e845fa8244abcb3b313cfb082d3b7
+msgid "生成缺陷、表面或层错"
+msgstr "Generate defects, surfaces, or stacking faults"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7adcdc23708a4f35b6fc2c32c7a46e5c
+msgid "常见前置步骤"
+msgstr "Common prerequisites"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b3e71c520ed543288ffc2cfeda396dfe
+msgid "生成不同晶面的表面板层"
+msgstr "Generate slabs with different surface orientations"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
+msgid "[随机表面板层](cards/random-slab-card.md)"
+msgstr "[Random Slab](cards/random-slab-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: fe7a45b784b9448eb5b745cb5a98a82e
+msgid "先确认晶胞和 Miller 指数"
+msgstr "Confirm the cell and Miller indices first"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c4c13601c4164804bddf7628ba6dad6f
+msgid "在全部原子中按数量或比例随机删位"
+msgstr "Randomly delete sites among all atoms by count or concentration"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f108015f6464ff0b6422fb60deea3ab
+msgid "[全局随机空位](cards/vacancy-defect-card.md)"
+msgstr "[Global Random Vacancy](cards/vacancy-defect-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 959e86cf0f9243908699348f461a3022
+msgid "通常先扩胞"
+msgstr "Usually expand the cell first"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 93fbf698585c4e55a1708035458a54e4
+msgid "只删除指定元素或 `group` 中的位点"
+msgstr "Delete sites only from a specified element or `group`"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c85b3fd2dffa48abb6ec9c6ba5d81133
+msgid "[随机空位](cards/random-vacancy-card.md)"
+msgstr "[Random Vacancy](cards/random-vacancy-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 98e798f16e524c3ab79b2bdb45ff369d
+msgid "需要时先做分组标记"
+msgstr "Add group labels first when needed"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: e3d182201d314ab7b304ba713d6db926
+msgid "插入间隙原子或表面吸附原子"
+msgstr "Insert interstitial atoms or surface adsorbates"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f76c93be25cc4b8f9ae92f28313fee3a
+msgid "[插隙与表面吸附](cards/interstitial-adsorbate-card.md)"
 msgstr ""
-"Treating generated shells as equilibrated or quantum-optimized solvation "
-"structures"
+"[Interstitial and Surface Adsorption](cards/interstitial-adsorbate-"
+"card.md)"
 
-#: ../../source/module/make-dataset-cards/index.md:66
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12074332d36046369017fa785f7af3be
+msgid "体相通常先扩胞，吸附通常先建表面"
+msgstr "Expand bulk cells first; build a surface before adsorption"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 95b0d68456794ed7980e1a86d67781c7
+msgid "扫描指定晶面和滑移方向的层错路径"
+msgstr "Scan a stacking-fault path for a selected plane and slip direction"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 38ccd79d63a8401f8d1cbdbbb015c6c8
+msgid "[层错 / GSFE 路径](cards/strict-gsfe-path-card.md)"
+msgstr "[Stacking Fault / GSFE Path](cards/strict-gsfe-path-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 87127dcea2ac45fe808e678df76e0429
+msgid "输入必须已经按目标晶面定向"
+msgstr "The input must already be oriented to the target plane"
+
+#: ../../source/module/make-dataset-cards/index.md:108
+#: 8760297d3fa0423ab18453653d0aa02d
+msgid "生成磁性构型"
+msgstr "Generate magnetic configurations"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7d33a1aed919470c9cf070850afb0cae
+msgid "只把磁矩写入结构"
+msgstr "Write magnetic moments into the structure only"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: b3957e4c05544344821bfe8810c5845b
+msgid "[设置磁矩](cards/set-magnetic-moments-card.md)"
+msgstr "[Set Magnetic Moments](cards/set-magnetic-moments-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3616e7fc011d4a2183582739393f9b59
+msgid "这不会自动生成多种磁序"
+msgstr "This does not automatically generate multiple magnetic orders"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 14178635a3f14bbf8164aef9a967ba1d
+msgid "生成 FM、AFM 或 PM 分支"
+msgstr "Generate FM, AFM, or PM branches"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4a48bdfab06b422f9310937cf6d1db25
+msgid "[磁序](cards/magnetic-order-card.md)"
+msgstr "[Magnetic Order](cards/magnetic-order-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ad901dc69bbb4fd3a119bb1991fd3c7b
+msgid "AFM 可能需要先做分组标记"
+msgstr "AFM may require group labels first"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: aa1e19751f4d4cc580f4ebbf770f3cdc
+msgid "从有序磁态逐步增加无序度"
+msgstr "Increase disorder gradually from an ordered magnetic state"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 476e7e7b7428480ea80cf9e0405aaee2
+msgid "[自旋无序](cards/spin-disorder-card.md)"
+msgstr "[Spin Disorder](cards/spin-disorder-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a45969b79ea44b29ae1a33742a58ee84
+msgid "输入已有有效磁矩"
+msgstr "The input already contains valid magnetic moments"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f2c90952928740f58d41d9f076ba490f
+msgid "生成具有空间相关长度的非共线磁矩"
+msgstr "Generate non-collinear moments with a spatial correlation length"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 690b8d8c5a7f4e3cb8fa94071e83e17b
+msgid "[关联随机自旋](cards/correlated-random-spin-card.md)"
+msgstr "[Correlated Random Spin](cards/correlated-random-spin-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 15bb3d6247a849ea9f4551e977fe0726
+msgid "这是相关随机场，不应直接称为自旋玻璃"
+msgstr ""
+"This is a correlated random field and should not be called a spin glass "
+"directly"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d87b13d794f1438da8c26c5ae251fe2b
+msgid "旋转、canting 或生成螺旋磁序"
+msgstr "Rotate moments, introduce canting, or generate spin spirals"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12359e5a66a14b34a80574b59e5326e6
+msgid ""
+"[磁矩旋转](cards/magmom-rotation-card.md) / [小角度自旋倾斜](cards/small-angle-spin-"
+"tilt-card.md) / [自旋螺旋](cards/spin-spiral-card.md) / [折返螺旋磁序](cards"
+"/folded-helix-card.md)"
+msgstr ""
+"[Magmom Rotation](cards/magmom-rotation-card.md) / [Small-Angle Spin "
+"Tilt](cards/small-angle-spin-tilt-card.md) / [Spin Spiral](cards/spin-"
+"spiral-card.md) / [Folded Helix](cards/folded-helix-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3f7bbaed43174cdc87f0c1af5cadf097
+msgid "不要对没有磁矩的空白结构直接旋转"
+msgstr "Do not rotate a blank structure with no magnetic moments"
+
+#: ../../source/module/make-dataset-cards/index.md:118
+#: 973bfa24b47c45f195898ff7c5afa419
+msgid "处理分子和溶剂"
+msgstr "Work with molecules and solvents"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 574a41dd6141429f8ac0ec6b22e31057
+msgid "在周期边界中采样有机分子构象"
+msgstr "Sample organic-molecule conformations under periodic boundaries"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f018163f96f4a54a760890d521787cb
+msgid "[有机构象采样](cards/organic-mol-config-pbc-card.md)"
+msgstr "[Organic Molecule Config](cards/organic-mol-config-pbc-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 44e93deb7b1d44c1884e8d3eeb249ccf
+msgid "输入应能识别分子和可旋转键"
+msgstr "The input must expose identifiable molecules and rotatable bonds"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 7d268330eadc4411973c20d6d92cd625
+msgid "在溶质或离子周围补局部溶剂壳"
+msgstr "Add a local solvation shell around solutes or ions"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
+msgid "[局部溶剂壳](cards/local-solvation-card.md)"
+msgstr "[Local Solvation](cards/local-solvation-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 9577594ce09142b8a33b96e9ac274fab
+msgid "只生成初始构型，不代表已经平衡"
+msgstr "Generates initial configurations only; equilibration is not implied"
+
+#: ../../source/module/make-dataset-cards/index.md:37
 #: 7b4a34c3c64b4c99b61e7f6ce9fbd29d
-msgid "在周期 cell 中生成整盒溶剂初态"
-msgstr "Fill an entire periodic cell with solvent starting configurations"
+msgid "在周期晶胞中填充整盒溶剂"
+msgstr "Fill an entire periodic cell with solvent"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 73a786003058411787cfd84ee1e7ada9
-msgid "`Solvent Box Fill`"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
+msgid "[周期溶剂盒](cards/solvent-box-fill-card.md)"
+msgstr "[Solvent Box Fill](cards/solvent-box-fill-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: df070a21ec58426e85b02a8328e8ce8f
+msgid "晶胞必须有效且体积非零"
+msgstr "The cell must be valid and have nonzero volume"
+
+#: ../../source/module/make-dataset-cards/index.md:126
+#: 50926d4b8c3d47a0b077a8dd6764f3ab
+msgid "清洗、采样或组织流程"
+msgstr "Clean, sample, or organize a workflow"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 4441b9b456d4499e892c10870fb4d82b
+msgid "放在流程哪里"
+msgstr "Where to place it"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a75183e216e0453d9adde56fa3c08f44
+msgid "过滤短键、异常体积或异常密度"
+msgstr "Filter short bonds, abnormal volumes, or abnormal densities"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
+msgid "[几何健全性过滤](cards/geometry-filter-card.md)"
+msgstr "[Geometry Sanity Filter](cards/geometry-filter-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 12aba3b9606c487798528b8a30091faa
+msgid "放在强扰动、随机占位和缺陷生成之后"
 msgstr ""
+"Place it after strong perturbations, random occupancy, and defect "
+"generation"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: de8e197908b2417d8764e1d93b87c98c
-msgid "已有非奇异周期 cell"
-msgstr "A valid, nonsingular periodic cell"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: ac1922e54da34552befb93be86d8717d
-msgid "用局部溶剂壳卡替代整盒填充"
-msgstr "Using a local-shell card to fill the whole periodic box"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: acd77ba7fd3542bdb9727ed29a2282ba
-msgid "做容器化分支流程"
-msgstr "Create a containerized branching workflow"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 5a5616486e37403b8b130ff6da78a80d
-msgid "`Card Group`"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 5dbde5ccf8864b2481ff58d2fc8391ff
-msgid "任意共享输入"
-msgstr "Any shared input"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c4d8fc7ee7e348d2a12519c45893bc17
-msgid "把 `Card Group` 当成筛选器"
-msgstr "Treating `Card Group` as a filter"
-
-#: ../../source/module/make-dataset-cards/index.md:66
+#: ../../source/module/make-dataset-cards/index.md:37
 #: deaf6ac1c7464e05962a8f79e60c4c57
-msgid "从干净候选池中选代表性结构"
+msgid "从干净候选池中选代表结构"
 msgstr "Select representative structures from a clean candidate pool"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: c27f91f4e61541758def70b11ac4fd44
-msgid "`FPS Filter`"
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
+msgid "[代表性采样（FPS）](cards/fps-filter-card.md)"
+msgstr "[Representative Sampling (FPS)](cards/fps-filter-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: bb64bed6b4a6463e8582a3b1ce66e46e
+msgid "先清洗异常结构，再采样"
+msgstr "Clean anomalous structures before sampling"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 1c94678e73284986a6b4e625777c9efa
+msgid "为后续规则或 AFM 标记 A/B 组"
+msgstr "Mark A/B groups for later rules or AFM configurations"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
+msgid "[分组标记](cards/group-label-card.md)"
+msgstr "[Group Label](cards/group-label-card.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: cf969cd1dbc9464091bd00d67cde7bb6
+msgid "放在读取 `group` 的卡片之前"
+msgstr "Place it before cards that read `group` labels"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 64e73b02bced4a09b973b9e05caff672
+msgid "合并共享同一输入的多个分支"
+msgstr "Merge multiple branches that share the same input"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f108015f6464ff0b6422fb60deea3ab
+msgid "[分支合并组](cards/card-group.md)"
+msgstr "[Branch Merge Group](cards/card-group.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: ed8be3a8ea7d4d4fad8b486abf8250d7
+msgid "子卡并行接收同一输入，不是顺序流水线"
 msgstr ""
+"Child cards receive the same input in parallel; this is not a sequential "
+"pipeline"
 
-#: ../../source/module/make-dataset-cards/index.md:66
-#: bfc5d04354624864aa9b9d813da82d3f
-msgid "`NEP Dataset Display` 清洗后的候选池"
-msgstr "A candidate pool cleaned in `NEP Dataset Display`"
-
-#: ../../source/module/make-dataset-cards/index.md:66
-#: 4d17b21299a04d0a932ee1016cc8685f
-msgid "把 `FPS Filter` 当成第一道质量检查"
-msgstr "Using `FPS Filter` as the first quality gate"
-
-#: ../../source/module/make-dataset-cards/index.md:110
+#: ../../source/module/make-dataset-cards/index.md:135
 #: 0c41f11bfa554f28b6dc014470967234
 msgid "易混卡片对比"
 msgstr "Cards that are easy to confuse"
 
-#: ../../source/module/make-dataset-cards/index.md:112
-#: b9382a8149ba49edbfc29f850d20134f
-msgid "`Random Slab` vs `Vacancy Defect Generation`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:137
+#: be66863b88bb451c92ce65f31c51a700
+msgid "随机表面板层 vs 全局随机空位"
+msgstr "Random Slab vs. Global Random Vacancy"
 
-#: ../../source/module/make-dataset-cards/index.md:114
+#: ../../source/module/make-dataset-cards/index.md:139
 #: 06a0469a5c57456183111cac4a131ecc
 msgid "`Random Slab` 改的是边界条件和表面取向，结果会引入真空层与自由表面。"
 msgstr ""
 "`Random Slab` changes surface orientation and cell geometry, introducing "
 "vacuum and free surfaces."
 
-#: ../../source/module/make-dataset-cards/index.md:115
+#: ../../source/module/make-dataset-cards/index.md:140
 #: a23bcb5441574db28e72c443d073670f
 msgid "`Vacancy Defect Generation` 改的是体相或表面内部的删位强度，不会自动生成表面。"
 msgstr ""
 "`Vacancy Defect Generation` removes sites from an existing bulk or "
 "surface structure; it does not create a surface by itself."
 
-#: ../../source/module/make-dataset-cards/index.md:116
+#: ../../source/module/make-dataset-cards/index.md:141
 #: bfd0047e5d0c4118bcefef725a301da0
 msgid ""
 "想研究“表面缺陷”，通常先 `Random Slab`，再 `Insert Defect` 或 `Vacancy Defect "
@@ -749,38 +774,38 @@ msgstr ""
 "For surface defects, usually run `Random Slab` first, then `Insert "
 "Defect` or `Vacancy Defect Generation`."
 
-#: ../../source/module/make-dataset-cards/index.md:118
-#: 4bfae6428415467db97778de3e9156dd
-msgid "`Random Doping` vs `Composition Sweep` vs `Random Occupancy`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:143
+#: 01010da6322a4380a4f783a9f01f82c5
+msgid "随机掺杂 vs 成分空间采样 vs 随机占位"
+msgstr "Random Doping vs. Composition Space Sampling vs. Random Occupancy"
 
-#: ../../source/module/make-dataset-cards/index.md:120
+#: ../../source/module/make-dataset-cards/index.md:145
 #: 548c732d6aae40a6a1cdfb54cb340f04
-msgid "`Composition Sweep` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副本。"
+msgid "`Composition Space Sampling` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副本。"
 msgstr ""
-"`Composition Sweep` defines the target-composition space. Its outputs are"
-" still labeled copies, not realized site occupations."
+"`Composition Space Sampling` defines the target composition space; its "
+"output remains structure copies carrying target-composition labels."
 
-#: ../../source/module/make-dataset-cards/index.md:121
+#: ../../source/module/make-dataset-cards/index.md:146
 #: b148308f8ec4422cb09d9cce31983f85
 msgid "`Random Occupancy` 负责把目标配比真正落到离散原子位点上。"
 msgstr ""
 "`Random Occupancy` realizes each target composition on discrete atomic "
 "sites."
 
-#: ../../source/module/make-dataset-cards/index.md:122
+#: ../../source/module/make-dataset-cards/index.md:147
 #: cd5b7192f9a2485eb969202775989fcb
 msgid "`Random Doping` 更适合“给定规则后直接做一次随机替换”，而不是系统地扫完整配比空间。"
 msgstr ""
 "`Random Doping` is better for applying explicit random substitution rules"
 " than for scanning a complete composition space."
 
-#: ../../source/module/make-dataset-cards/index.md:124
-#: 08a893b1a9ca40a89790d227d2a2533b
-msgid "`Ordered Alloy Prototype` vs `Finite-Cell Alloy Occupancy`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:149
+#: 993857c2ddd74ee2b0d17fcf88c31579
+msgid "有序合金原型 vs 有限晶胞合金占位"
+msgstr "Ordered Alloy Prototype vs. Finite-Cell Alloy Occupancy"
 
-#: ../../source/module/make-dataset-cards/index.md:126
+#: ../../source/module/make-dataset-cards/index.md:151
 #: a35b3bbf11cb44e7be16598501afa339
 msgid "`Ordered Alloy Prototype` 建立晶胞、周期边界、分数坐标和 A/B 晶体学子晶格，不负责枚举组成。"
 msgstr ""
@@ -788,7 +813,7 @@ msgstr ""
 "fractional coordinates, and crystallographic A/B sublattices; it does not"
 " enumerate compositions."
 
-#: ../../source/module/make-dataset-cards/index.md:127
+#: ../../source/module/make-dataset-cards/index.md:152
 #: 8c2d0f3581564f288b0be1173a717ef5
 msgid "`Finite-Cell Alloy Occupancy` 接收已有位点或子晶格，先确定可实现的整数计数，再生成不重复排布。"
 msgstr ""
@@ -796,95 +821,102 @@ msgstr ""
 "first determines realizable integer counts, and then generates unique "
 "arrangements."
 
-#: ../../source/module/make-dataset-cards/index.md:128
+#: ../../source/module/make-dataset-cards/index.md:153
 #: bd1cf9837ee647668ee0e9eb48282183
 msgid "要覆盖 L1₂、B2、L1₀ 的有序到部分无序路径，通常先生成原型，再做有限晶胞占位。"
 msgstr ""
 "To cover ordered-to-partially-disordered paths for L1₂, B2, and L1₀, "
 "generate the prototype first and then apply finite-cell occupancy."
 
-#: ../../source/module/make-dataset-cards/index.md:130
-#: 2a70621d10fb48cebdc9eae7be64d6fa
-msgid "`Atomic Perturb` vs `Vib Mode Perturb`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:155
+#: 1608ac6c8fa54be4947f609fb66a6d36
+msgid "原子扰动 vs 振动模式扰动"
+msgstr "Atomic Perturb vs. Vib Mode Perturb"
 
-#: ../../source/module/make-dataset-cards/index.md:132
+#: ../../source/module/make-dataset-cards/index.md:157
 #: b8f4d92883674d04909b3efbc108a291
 msgid "`Atomic Perturb` 是无模型的随机位移，适合快速补近平衡噪声。"
 msgstr ""
 "`Atomic Perturb` adds model-free random displacements for quick near-"
 "equilibrium augmentation."
 
-#: ../../source/module/make-dataset-cards/index.md:133
+#: ../../source/module/make-dataset-cards/index.md:158
 #: 9527de1e4ca649f68dad03e3bc9575ba
 msgid "`Vib Mode Perturb` 基于已有振动模态，适合更接近特定频率空间的位移采样。"
 msgstr ""
 "`Vib Mode Perturb` uses existing normal modes to sample selected regions "
 "of vibrational-coordinate space."
 
-#: ../../source/module/make-dataset-cards/index.md:134
+#: ../../source/module/make-dataset-cards/index.md:159
 #: 24f7fe8763cd42af8020c130d2bc6d5d
 msgid "输入里没有模态数组时，不能直接用 `Vib Mode Perturb`。"
 msgstr ""
 "`Vib Mode Perturb` cannot operate until the input contains recognized "
 "mode arrays."
 
-#: ../../source/module/make-dataset-cards/index.md:136
-#: b108e00eee2248ba83a46fd1fcb13df8
-msgid "`Stacking Fault` vs `Strict GSFE Path`"
-msgstr ""
+#: ../../source/module/make-dataset-cards/index.md:161
+#: d675d3d06fc846f38079d1b213512ab2
+msgid "层错只保留一个新建入口"
+msgstr "Use one creation entry for stacking faults"
 
-#: ../../source/module/make-dataset-cards/index.md:138
-#: 80f0008e07ac4ea9915282186117af2c
-msgid "`Stacking Fault` 更适合快速生成层错候选，参数以滑移向量和切面比例为主。"
+#: ../../source/module/make-dataset-cards/index.md:163
+#: 55be924b9ed84a7d8e9b77d20075025c
+msgid ""
+"新任务统一使用 `Stacking Fault / GSFE Path`，显式填写 `plane_hkl`、位于面内的 "
+"`slip_uvw`、切面位置和位移路径。"
 msgstr ""
-"`Stacking Fault` is a quick candidate generator controlled mainly by a "
-"displacement vector and a cut fraction."
+"Use `Stacking Fault / GSFE Path` for new tasks and specify `plane_hkl`, "
+"the in-plane `slip_uvw`, the cut position, and the displacement path "
+"explicitly."
 
-#: ../../source/module/make-dataset-cards/index.md:139
-#: 729ff416a6334bd8a65969a9d0d1fe14
-msgid "`Strict GSFE Path` 适合你已经知道目标滑移系统，需要明确写出 `plane_hkl` 和 `slip_uvw`。"
-msgstr ""
-"`Strict GSFE Path` is for a known slip system specified explicitly by "
-"`plane_hkl` and `slip_uvw`."
-
-#: ../../source/module/make-dataset-cards/index.md:140
+#: ../../source/module/make-dataset-cards/index.md:164
 #: bd4f1272df624916bd656056523b89e6
 msgid ""
-"`Strict GSFE Path` 要求输入已经是 slab-oriented cell：第三晶胞方向必须垂直于 "
-"`plane_hkl`。如果只是普通 cubic fcc cell，先用 `Crystal Prototype Builder` 的 "
-"`fcc111` 原型或自己构造合适 slab cell。"
+"它不限材料和晶面，但要求输入已经定向：第三晶胞方向必须垂直于 `plane_hkl`。普通 cubic fcc cell 若要扫原始 "
+"`(111)` 面，应先用 `Crystal Prototype Builder` 的 `fcc111` 原型或自行构造已定向晶胞。"
 msgstr ""
-"`Strict GSFE Path` requires a slab-oriented periodic cell whose third "
-"cell vector is normal to `plane_hkl`. For a conventional cubic fcc input,"
-" first use the `fcc111` prototype from `Crystal Prototype Builder` or "
-"construct an equivalent oriented cell."
+"It is not restricted to a material or plane, but the input must already "
+"be oriented: the third cell direction must be perpendicular to "
+"`plane_hkl`. To scan the original `(111)` plane of a conventional cubic "
+"fcc cell, first use the `fcc111` prototype in `Crystal Prototype Builder`"
+" or construct an oriented cell yourself."
 
-#: ../../source/module/make-dataset-cards/index.md:142
-#: d8094294db844caa92118929ce22311e
-msgid "`Set Magnetic Moments` vs `Magnetic Order` vs `Magmom Rotation`"
+#: ../../source/module/make-dataset-cards/index.md:165
+#: 73923375fdc04f318ba319ccaede079d
+msgid ""
+"旧 `StackingFaultCard` 仍保留在序列化注册表中，用于载入历史 "
+"JSON；因为它自动从全局笛卡尔轴推导滑移方向，所以不再显示在“添加新卡片”和“查找卡片”中。"
 msgstr ""
+"The legacy `StackingFaultCard` remains in the serialization registry for "
+"loading historical JSON. Because it derives the slip direction from "
+"global Cartesian axes, it is no longer shown in `Add new card` or `Find "
+"card`."
 
-#: ../../source/module/make-dataset-cards/index.md:144
+#: ../../source/module/make-dataset-cards/index.md:167
+#: 7ee4dc2b1c30488b93b22f322c107e7d
+msgid "设置磁矩 vs 磁序 vs 磁矩旋转"
+msgstr "Set moments vs. magnetic order vs. moment rotation"
+
+#: ../../source/module/make-dataset-cards/index.md:169
 #: 47a98ef091e04ec2993d3de278c1dbca
 msgid "`Set Magnetic Moments` 只负责把磁矩写进去，适合静态初始化。"
 msgstr ""
 "`Set Magnetic Moments` writes one consistent moment state and is intended"
 " for static initialization."
 
-#: ../../source/module/make-dataset-cards/index.md:145
+#: ../../source/module/make-dataset-cards/index.md:170
 #: 7b72422df8644554bb1e69a22e40b5cc
 msgid "`Magnetic Order` 会生成 FM / AFM / PM 等多磁态分支。"
 msgstr "`Magnetic Order` branches into FM, AFM, and PM-like initial states."
 
-#: ../../source/module/make-dataset-cards/index.md:146
+#: ../../source/module/make-dataset-cards/index.md:171
 #: a081b72630794983bee4d8ddeeeba5b3
 msgid "`Magmom Rotation` 基于已有磁矩做角度扰动，适合补充非共线或局部旋转样本。"
 msgstr ""
 "`Magmom Rotation` perturbs existing directions and is suitable for local "
 "noncollinear augmentation."
 
-#: ../../source/module/make-dataset-cards/index.md:148
+#: ../../source/module/make-dataset-cards/index.md:173
 #: 361b554f119844ed99525f0ae3ca4478
 msgid ""
 "磁性卡片对外统一使用 NEP / Show NEP 的 `spin:R:3` EXTXYZ 字段。卡片内部仍同步维护 ASE 的 "
@@ -896,65 +928,430 @@ msgstr ""
 "external contract. Internally, they also keep ASE `initial_magmoms` in "
 "sync for ASE operations and legacy workflows; exported files retain only "
 "`spin`. Existing moments are read from `spin` first and fall back to "
-"legacy `initial_magmoms` only when `spin` is absent. Scalar mode converts "
-"values to three-component `spin` vectors using the card's explicit "
+"legacy `initial_magmoms` only when `spin` is absent. Scalar mode converts"
+" values to three-component `spin` vectors using the card's explicit "
 "`Axis`; a zero Axis fails clearly instead of silently assuming a "
 "direction."
 
-#: ../../source/module/make-dataset-cards/index.md:150
+#: ../../source/module/make-dataset-cards/index.md:175
 #: 8ad5274402014406b4b81e08a51caa5c
-msgid "按分组浏览"
-msgstr "Browse by category"
+msgid "按功能浏览"
+msgstr "Browse by function"
 
-#: ../../source/module/make-dataset-cards/index.md:152
-#: 04b07ad7ab18476b8bcea287eb15c301
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 065b4483d3d8478a95bb975d413edcef
+msgid "我正在处理什么"
+msgstr "What am I working on?"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 71032fdaca9742e5b15254827ca86049
+msgid "进入这里"
+msgstr "Open this section"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 8dcfa783a7014224a108ecb8b4381d0e
+msgid "初始结构、晶胞大小或层状结构"
+msgstr "Initial structures, cell size, or layered structures"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 732305f937574738bbeae3fcd6096703
+msgid "[结构来源与晶胞](categories/structure-cell.md)"
+msgstr "[Structure sources and cells](categories/structure-cell.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 3a2a09ba38da4734bc9ca8acdb7c235a
+msgid "应变、相变路径、原子或模态扰动"
+msgstr "Strain, transition paths, atomic or mode perturbations"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7f91c452cc540e1afcf6b7681dd5471
+msgid "[应变、路径与扰动](categories/deformation-perturbation.md)"
+msgstr "[Strain, paths, and perturbations](categories/deformation-perturbation.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 0680b780291c4abc8d18417355dc0f4d
+msgid "合金原型、配比、占位或替换"
+msgstr "Alloy prototypes, compositions, occupancy, or replacement"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: c458396d30d44d399a49eec8bf7a9518
+msgid "[合金与组成](categories/composition-alloy.md)"
+msgstr "[Alloys and composition](categories/composition-alloy.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: a7e1436640bc44b6b6f0868c7f95802d
+msgid "表面、空位、插隙、吸附或层错"
+msgstr "Surfaces, vacancies, interstitials, adsorbates, or stacking faults"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 6f108015f6464ff0b6422fb60deea3ab
+msgid "[缺陷与表面](categories/defect-surface.md)"
+msgstr "[Defects and surfaces](categories/defect-surface.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d97c20fa94d34751914f71424d3bbc25
+msgid "共线、非共线和空间相关磁构型"
+msgstr "Collinear, non-collinear, and spatially correlated magnetic configurations"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 79ac50666a9b4f518c87320ada225baa
+msgid "[磁性构型](categories/magnetism.md)"
+msgstr "[Magnetic configurations](categories/magnetism.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: f09f81ce291948bd9a2601696c04a89a
+msgid "有机构象、局部溶剂壳和周期溶剂盒"
+msgstr "Organic conformations, local solvation shells, and periodic solvent boxes"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: d7a1234a80184ba8a6368b48f0985cf7
+msgid "[分子与溶剂](categories/molecule-solvation.md)"
+msgstr "[Molecules and solvation](categories/molecule-solvation.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 57a3239d9ac84c56a229e66d09def1ce
+msgid "几何清洗或代表性采样"
+msgstr "Geometry cleaning or representative sampling"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 796e4a0a2b994d16afa5dac98837d87b
+msgid "[过滤与代表性采样](categories/filter-sampling.md)"
+msgstr "[Filtering and representative sampling](categories/filter-sampling.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: 9b9ad6f305bd43f18a2d05d5f9f1a5a0
+msgid "分组标签、分支和输出合并"
+msgstr "Group labels, branching, and output merging"
+
+#: ../../source/module/make-dataset-cards/index.md:37
+#: dd2b32e14b6c4559b4644a6d7ee584c8
+msgid "[工作流与元数据](categories/workflow-metadata.md)"
+msgstr "[Workflows and metadata](categories/workflow-metadata.md)"
+
+#: ../../source/module/make-dataset-cards/index.md:188
+#: 89d217e3dfed4d91a6cb732c824906b2
 msgid ""
-"`Lattice`: `Super Cell`、`Crystal Prototype Builder`、`Random "
-"Packing`、`Lattice Strain`、`Bain Path`、`Lattice Perturb`、`Shear Matrix "
-"Strain`、`Shear Angle Strain`"
+"旧版 `Stacking Fault` 只用于载入历史 JSON，不再属于新任务的卡片目录。迁移方法见 [旧版层错位移](cards"
+"/stacking-fault-card.md)。"
 msgstr ""
+"The legacy `Stacking Fault` card is retained only for loading historical "
+"JSON and is not part of the card catalog for new tasks. See [Legacy "
+"Stacking Fault](cards/stacking-fault-card.md) for migration guidance."
 
-#: ../../source/module/make-dataset-cards/index.md:153
-#: 6bc6ba3f3b12492c8e3c6df921e9f36e
-msgid "`Perturbation`: `Atomic Perturb`、`Vib Mode Perturb`"
-msgstr ""
+#~ msgid "Make Dataset 卡片手册"
+#~ msgstr "Make Dataset Card Guide"
 
-#: ../../source/module/make-dataset-cards/index.md:154
-#: c93429b3d45542e6b1f651f2e9a99228
-msgid ""
-"`Alloy`: `Ordered Alloy Prototype`、`Finite-Cell Alloy "
-"Occupancy`、`Composition Sweep`、`Composition Gradient`、`Random "
-"Occupancy`、`Random Doping`、`Conditional Replace`"
-msgstr ""
+#~ msgid "这份手册不只解释“每个参数是什么意思”，更强调三件事："
+#~ msgstr ""
+#~ "This manual does more than define "
+#~ "individual parameters. It helps you "
+#~ "answer three practical questions:"
 
-#: ../../source/module/make-dataset-cards/index.md:155
-#: 5feb86de4b384b8fac45e1517ac565b2
-msgid ""
-"`Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect "
-"Generation`、`Insert Defect`、`Stacking Fault`、`Strict GSFE Path`、`Layer "
-"Copy`"
-msgstr ""
+#~ msgid "维护规范见 [Related guide](writing-guide.md)。"
+#~ msgstr ""
+#~ "For documentation-maintenance conventions, see"
+#~ " [Writing Card Documentation](writing-guide.md)."
 
-#: ../../source/module/make-dataset-cards/index.md:156
-#: 54fc81e56f56496690a1f6e873ed5845
-msgid ""
-"`Magnetism`: `Set Magnetic Moments`、`Magnetic Order`、`Spin "
-"Disorder`、`Correlated Random Spin`、`Magmom Rotation`、`Small-Angle Spin "
-"Tilt`、`Spin Spiral`、`Folded Helix`"
-msgstr ""
+#~ msgid "如果你是第一次使用 Make Dataset，推荐先按下面顺序理解："
+#~ msgstr "If this is your first time using Make Dataset, follow this order:"
 
-#: ../../source/module/make-dataset-cards/index.md:157
-#: f62ea7b51a7247c4b093a28c5afca585
-msgid "`Filter / Container`: `Geometry Filter`、`FPS Filter`、`Card Group`"
-msgstr ""
+#~ msgid "按目标选卡"
+#~ msgstr "Choose a card by goal"
 
-#: ../../source/module/make-dataset-cards/index.md:158
-#: b4f3c0a504be46ea97f789264b38842a
-msgid "`Organic`: `Organic Mol Config`、`Local Solvation`、`Solvent Box Fill`"
-msgstr ""
+#~ msgid "常见前置卡片"
+#~ msgstr "Typical prerequisite"
+
+#~ msgid "扩大晶胞尺寸，为缺陷或表面操作留空间"
+#~ msgstr "Enlarge a cell to make room for defects or surface operations"
+
+#~ msgid "把 `Random Slab` 当成扩胞工具"
+#~ msgstr "Using `Random Slab` as a supercell builder"
+
+#~ msgid "从晶体原型直接生成一批标准结构"
+#~ msgstr "Generate standard structures directly from crystal prototypes"
+
+#~ msgid "无"
+#~ msgstr "None"
+
+#~ msgid "用 `Super Cell` 手工拼基础晶型"
+#~ msgstr ""
+#~ "Trying to construct a missing crystal"
+#~ " prototype manually with `Super Cell`"
+
+#~ msgid "在固定 cell 和组成下生成无序原子坐标初态"
+#~ msgstr "Generate disordered atomic coordinates at a fixed cell and composition"
+
+#~ msgid "把它当成磁矩无序卡"
+#~ msgstr "Treating it as a magnetic-disorder card"
+
+#~ msgid "过滤短键、异常体积或异常密度结构"
+#~ msgstr "Reject short contacts, abnormal volumes, or abnormal densities"
+
+#~ msgid "强扰动、随机占位、表面或缺陷生成卡"
+#~ msgstr "A strong perturbation, random-occupancy, surface, or defect generator"
+
+#~ msgid "把 `FPS Filter` 当成几何质量检查"
+#~ msgstr "Using `FPS Filter` as a geometry-validity check"
+
+#~ msgid "给近平衡结构加轻微坐标噪声"
+#~ msgstr "Add mild coordinate noise near equilibrium"
+
+#~ msgid "`Super Cell` / 已弛豫输入"
+#~ msgstr "`Super Cell` / a relaxed input"
+
+#~ msgid "用大幅 `Lattice Perturb` 代替原子热扰动"
+#~ msgstr "Using a large `Lattice Perturb` as atomic thermal noise"
+
+#~ msgid "给晶胞参数做体积或轴向缩放"
+#~ msgstr "Scale cell volume or selected lattice directions"
+
+#~ msgid "用 `Atomic Perturb` 改晶格"
+#~ msgstr "Using `Atomic Perturb` to change the lattice"
+
+#~ msgid "沿四方相变或外延方向扫 `c/a`"
+#~ msgstr "Scan `c/a` along a tetragonal transformation or epitaxial path"
+
+#~ msgid "用普通轴向应变代替系统 Bain 路径"
+#~ msgstr "Replacing a systematic Bain path with an arbitrary axial strain"
+
+#~ msgid "做剪切应变或角度应变"
+#~ msgstr "Apply shear or angular strain"
+
+#~ msgid "已知目标应变方向"
+#~ msgstr "A known target strain direction"
+
+#~ msgid "用 `Lattice Strain` 强行模拟纯剪切"
+#~ msgstr "Forcing a pure-shear problem through `Lattice Strain`"
+
+#~ msgid "生成表面切片"
+#~ msgstr "Generate surface slabs"
+
+#~ msgid "用 `Vacancy Defect Generation` 做表面"
+#~ msgstr "Using vacancy generation to create a surface"
+
+#~ msgid "生成带 A/B 晶体学子晶格的有序合金原型"
+#~ msgstr ""
+#~ "Generate an ordered-alloy prototype with"
+#~ " crystallographic A/B sublattices"
+
+#~ msgid "用 `group` 代替 `sublattice` 身份"
+#~ msgstr "Using `group` in place of crystallographic `sublattice` identity"
+
+#~ msgid "在有限晶胞上枚举整数可实现的合金组成和排布"
+#~ msgstr ""
+#~ "Enumerate integer-realizable alloy "
+#~ "compositions and arrangements in a "
+#~ "finite cell"
+
+#~ msgid "连续比例取整后仍标成精确组成"
+#~ msgstr "Rounding continuous fractions while still labeling the result as exact"
+
+#~ msgid "做单点随机合金"
+#~ msgstr "Create a random alloy at one composition"
+
+#~ msgid "`Composition Sweep` 可选"
+#~ msgstr "Optional `Composition Sweep`"
+
+#~ msgid "用 `Composition Sweep` 代替具体占位落点"
+#~ msgstr "Assuming `Composition Sweep` assigns actual sites"
+
+#~ msgid "扫描多种目标配比"
+#~ msgstr "Scan several target compositions"
+
+#~ msgid "用 `Random Doping` 手工凑配比网格"
+#~ msgstr "Building a composition grid manually with `Random Doping`"
+
+#~ msgid "沿空间方向做配比梯度"
+#~ msgstr "Create a spatial composition gradient"
+
+#~ msgid "已扩胞且有足够层数的结构"
+#~ msgstr "A sufficiently large structure with enough layers"
+
+#~ msgid "用全局随机占位假装扩散偶或梯度层"
+#~ msgstr "Using global random occupancy as a diffusion couple or layered gradient"
+
+#~ msgid "把目标配比真正落到原子占位上"
+#~ msgstr "Realize a target composition on discrete atomic sites"
+
+#~ msgid "只做 `Composition Sweep` 就当已经生成随机合金"
+#~ msgstr "Stopping after `Composition Sweep` and calling it a random alloy"
+
+#~ msgid "按条件替换某类位点"
+#~ msgstr "Replace sites that satisfy explicit conditions"
+
+#~ msgid "`Group Label` 可选"
+#~ msgstr "Optional `Group Label`"
+
+#~ msgid "用 `Random Doping` 做规则替换"
+#~ msgstr "Using `Random Doping` for deterministic rule-based replacement"
+
+#~ msgid "做随机空位族"
+#~ msgstr "Generate a family of random vacancies"
+
+#~ msgid "用 `Random Slab` 生成空位表面"
+#~ msgstr "Using `Random Slab` to create surface vacancies"
+
+#~ msgid "按元素或 group 精细删位"
+#~ msgstr "Remove selected sites by element or group"
+
+#~ msgid "用 `Vacancy Defect Generation` 写复杂规则"
+#~ msgstr "Encoding complex site rules in `Vacancy Defect Generation`"
+
+#~ msgid "做插隙或吸附缺陷"
+#~ msgstr "Create interstitials or adsorbates"
+
+#~ msgid "用 `Random Doping` 代替插入"
+#~ msgstr "Using substitutional doping in place of insertion"
+
+#~ msgid "做层错样本"
+#~ msgstr "Generate stacking-fault candidates"
+
+#~ msgid "用 `Random Slab` 代替层错位移"
+#~ msgstr "Using a surface cut instead of an interlayer displacement"
+
+#~ msgid "严格扫描指定滑移系统的 GSFE 路径"
+#~ msgstr "Scan a specified GSFE slip path with explicit crystallography"
+
+#~ msgid "`Crystal Prototype Builder` 的 `fcc111` 原型 / slab-oriented cell"
+#~ msgstr ""
+#~ "The `fcc111` prototype from `Crystal "
+#~ "Prototype Builder`, or another slab-"
+#~ "oriented periodic cell"
+
+#~ msgid "用普通 cubic cell 直接扫 `(111)`"
+#~ msgstr "Scanning `(111)` directly in a conventional cubic cell"
+
+#~ msgid "给结构打分组标签，供后续分组操作使用"
+#~ msgstr "Assign group labels for downstream group-aware operations"
+
+#~ msgid "直接在磁卡里假设已有 group"
+#~ msgstr "Assuming group labels already exist inside a magnetic card"
+
+#~ msgid "初始化 FM / AFM / PM 磁序"
+#~ msgstr "Initialize FM, AFM, and PM-like orders"
+
+#~ msgid "用 `Set Magnetic Moments` 代替多磁态生成"
+#~ msgstr "Using `Set Magnetic Moments` to generate multiple magnetic orders"
+
+#~ msgid "生成 FM/AFM 到 PM 之间的无序度梯度"
+#~ msgstr ""
+#~ "Generate an order-to-disorder gradient"
+#~ " from FM/AFM toward PM-like states"
+
+#~ msgid "把离散翻转塞进 `Magmom Rotation`"
+#~ msgstr "Using continuous moment rotation for discrete sign flips"
+
+#~ msgid "生成有空间相关长度的非共线随机磁矩"
+#~ msgstr "Generate noncollinear random moments with a spatial correlation length"
+
+#~ msgid "把它叫成 `Spin Glass`"
+#~ msgstr "Calling every correlated random texture a spin glass"
+
+#~ msgid "只想把磁矩写到结构里，不想生成多磁态分支"
+#~ msgstr "Write moments to a structure without creating several magnetic branches"
+
+#~ msgid "用 `Magnetic Order` 做静态赋值"
+#~ msgstr "Using `Magnetic Order` for a single static assignment"
+
+#~ msgid "基于已有磁矩做旋转、多步 canting、全局偏转或螺旋"
+#~ msgstr ""
+#~ "Rotate existing moments, scan canting, "
+#~ "apply a global tilt, or generate a"
+#~ " spiral"
+
+#~ msgid "直接拿空白结构做旋转"
+#~ msgstr "Trying to rotate a structure with no initial moments"
+
+#~ msgid "从振动模式生成位移样本"
+#~ msgstr "Generate displacement samples from vibrational modes"
+
+#~ msgid "已包含模态数组的结构"
+#~ msgstr "A structure that already contains mode arrays"
+
+#~ msgid "用 `Atomic Perturb` 代替模态扰动"
+#~ msgstr "Treating arbitrary coordinate noise as mode-resolved sampling"
+
+#~ msgid "从有机分子构象空间采样"
+#~ msgstr "Sample organic molecular conformations"
+
+#~ msgid "已识别分子结构"
+#~ msgstr "A recognizable molecular structure"
+
+#~ msgid "用无机卡片强行扰动有机体系"
+#~ msgstr ""
+#~ "Applying an inorganic perturbation workflow"
+#~ " indiscriminately to molecules"
+
+#~ msgid "在局部离子、极性中心或溶质周围补溶剂壳"
+#~ msgstr "Build a local solvent shell around an ion, polar center, or solute"
+
+#~ msgid "已有溶质或离子结构"
+#~ msgstr "An existing solute or ionic structure"
+
+#~ msgid "把它当成平衡溶剂化或量化优化"
+#~ msgstr ""
+#~ "Treating generated shells as equilibrated "
+#~ "or quantum-optimized solvation structures"
+
+#~ msgid "在周期 cell 中生成整盒溶剂初态"
+#~ msgstr "Fill an entire periodic cell with solvent starting configurations"
+
+#~ msgid "已有非奇异周期 cell"
+#~ msgstr "A valid, nonsingular periodic cell"
+
+#~ msgid "用局部溶剂壳卡替代整盒填充"
+#~ msgstr "Using a local-shell card to fill the whole periodic box"
+
+#~ msgid "做容器化分支流程"
+#~ msgstr "Create a containerized branching workflow"
+
+#~ msgid "任意共享输入"
+#~ msgstr "Any shared input"
+
+#~ msgid "把 `Card Group` 当成筛选器"
+#~ msgstr "Treating `Card Group` as a filter"
+
+#~ msgid "从干净候选池中选代表性结构"
+#~ msgstr "Select representative structures from a clean candidate pool"
+
+#~ msgid "`NEP Dataset Display` 清洗后的候选池"
+#~ msgstr "A candidate pool cleaned in `NEP Dataset Display`"
+
+#~ msgid "把 `FPS Filter` 当成第一道质量检查"
+#~ msgstr "Using `FPS Filter` as the first quality gate"
+
+#~ msgid "`Composition Sweep` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副本。"
+#~ msgstr ""
+#~ "`Composition Sweep` defines the target-"
+#~ "composition space. Its outputs are still"
+#~ " labeled copies, not realized site "
+#~ "occupations."
+
+#~ msgid "`Stacking Fault` 更适合快速生成层错候选，参数以滑移向量和切面比例为主。"
+#~ msgstr ""
+#~ "`Stacking Fault` is a quick candidate"
+#~ " generator controlled mainly by a "
+#~ "displacement vector and a cut fraction."
+
+#~ msgid "`Strict GSFE Path` 适合你已经知道目标滑移系统，需要明确写出 `plane_hkl` 和 `slip_uvw`。"
+#~ msgstr ""
+#~ "`Strict GSFE Path` is for a known"
+#~ " slip system specified explicitly by "
+#~ "`plane_hkl` and `slip_uvw`."
 
 #~ msgid ""
-#~ "`Alloy`: `Composition Sweep`、`Composition "
-#~ "Gradient`、`Random Occupancy`、`Random Doping`、`Conditional"
-#~ " Replace`"
+#~ "`Strict GSFE Path` 要求输入已经是 slab-oriented"
+#~ " cell：第三晶胞方向必须垂直于 `plane_hkl`。如果只是普通 cubic fcc"
+#~ " cell，先用 `Crystal Prototype Builder` 的 "
+#~ "`fcc111` 原型或自己构造合适 slab cell。"
 #~ msgstr ""
+#~ "`Strict GSFE Path` requires a slab-"
+#~ "oriented periodic cell whose third cell"
+#~ " vector is normal to `plane_hkl`. For"
+#~ " a conventional cubic fcc input, "
+#~ "first use the `fcc111` prototype from"
+#~ " `Crystal Prototype Builder` or construct"
+#~ " an equivalent oriented cell."
+
+#~ msgid "按分组浏览"
+#~ msgstr "Browse by category"

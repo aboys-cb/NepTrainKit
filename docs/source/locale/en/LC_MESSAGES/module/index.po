@@ -4,151 +4,259 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: NepTrainKit documentation team\n"
-"Language: en\n"
 "Language-Team: English\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/index.rst:34
-msgid "NEP 数据展示"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:2
+#: 2cf06994d2e9476f81b0197e62a59d54
+msgid "功能指南"
+msgstr "Feature Guide"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:4
+#: aa812b671d764c3792ee5ebccd7bb26f
+msgid ""
+"这里按 NepTrainKit 左侧页面顺序回答“我正在这个页面，具体该查哪一项”。首页负责"
+"选择 大方向；本页直接给出每个页面最常用的子入口。"
+msgstr "This section follows the order of NepTrainKit's left-hand pages and answers a practical question: “I am on this page—what should I look up?” The home page helps you choose a broad direction; this page links directly to the most useful subpages for each screen."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:8
+#: e57fd9b84e1745a297926f9f5abe5c1d
+msgid "NEP Dataset Display"
 msgstr "NEP Dataset Display"
 
-#: ../../source/module/index.rst:34
-msgid "训练集评估"
-msgstr "Training Set Audit"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:10
+#: 1fff78919f7a4c82b057978d61fd62dc
+msgid "用于打开结构和训练输出、查看散点图、定位结构、清洗数据和导出子集。"
+msgstr "Use it to open structures and training outputs, inspect scatter plots, locate structures, clean data, and export subsets."
 
-#: ../../source/module/index.rst:34
-msgid "NEP Dataset Display 详细参考"
-msgstr "NEP Dataset Display reference"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:12
+#: ffbf4eb131ab4e2bb1eb908c2255f698
+msgid "不会打开结构、``nep.txt`` 或训练输出：:doc:`nep-display-open-data`"
+msgstr "Cannot open structures, ``nep.txt``, or training outputs: :doc:`nep-display-open-data`"
 
-#: ../../source/module/index.rst:34
-msgid "数据生成（Make dataset）"
-msgstr "Generate data (Make Dataset)"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:13
+#: 2c286b398da54945ae9c6ab8e381fb52
+msgid "不认识图上工具或不清楚 x/y 含义：:doc:`nep-display-main-plot-tools`"
+msgstr "Do not recognize a plot tool or are unsure what x/y mean: :doc:`nep-display-main-plot-tools`"
 
-#: ../../source/module/index.rst:34
-msgid "数据生成卡片手册"
-msgstr "Make Dataset card manual"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:14
+#: 2b7be995338c48608c6a5c2615e6c0b1
+msgid "想按标签、元素或表达式筛选：:doc:`nep-display-filter`"
+msgstr "Want to filter by labels, elements, or expressions: :doc:`nep-display-filter`"
 
-#: ../../source/module/index.rst:34
-msgid "自定义卡片开发"
-msgstr "Develop custom cards"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:15
+#: 644c392758cf427e9be5e0711bcb3e36
+msgid "想标记、删除、恢复或导出结构：:doc:`nep-display-structure-tools`"
+msgstr "Want to tag, delete, restore, or export structures: :doc:`nep-display-structure-tools`"
 
-#: ../../source/module/index.rst:34
-msgid "数据管理"
-msgstr "Data management"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:16
+#: 98123cbebba64b11b7ec0d0413c275a3
+msgid "页面没图、数量不对或工具不可用：:doc:`nep-display-status-and-errors`"
+msgstr "The page has no plot, the count is wrong, or a tool is unavailable: :doc:`nep-display-status-and-errors`"
 
-#: ../../source/module/index.rst:34
-msgid "设置"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:17
+#: 429ecf6361f84be19bc350c2f98fc6e7
+msgid "先看完整页面逻辑：:doc:`NEP-dataset-display`"
+msgstr "Start with the complete page logic: :doc:`NEP-dataset-display`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:20
+#: befb31115821405c889465e64f9d33cb
+msgid "训练集评估（Training Set Audit）"
+msgstr "Training Set Audit (Training Set Audit)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:22
+#: c38e8236ad88446db0b878e1bf869f94
+msgid ""
+"用于检查当前训练数据快照的标签质量、组成、结构相、磁类型和需要人工复核的问"
+"题。"
+msgstr "Use it to inspect label quality, composition, structural phases, magnetic types, and issues that require manual review in the current training-data snapshot."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:24
+#: 0926de43bf2c433cae6d8de171211d57
+msgid "第一次进入，先处理阻塞项：:doc:`training-audit-overview`"
+msgstr "On your first visit, handle blocking issues first: :doc:`training-audit-overview`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:25
+#: 351c407c39684b72b6cc0638d046a70c
+msgid "查看组分、标签范围和数据分布：:doc:`training-audit-data-map`"
+msgstr "Inspect composition, label ranges, and data distributions: :doc:`training-audit-data-map`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:26
+#: a3fd02a2bef945498c00717f6ac3cfe3
+msgid "检查局域环境证据：:doc:`training-audit-advanced`"
+msgstr "Inspect local-environment evidence: :doc:`training-audit-advanced`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:27
+#: f33858e923ef42b7aef4eff59264c63c
+msgid ""
+"核对结构相或磁类型判据：:doc:`training-audit-phase` / :doc:`training-audit-"
+"magnetism`"
+msgstr "Check phase or magnetic-type criteria: :doc:`training-audit-phase` / :doc:`training-audit-magnetism`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:29
+#: 01411065b0564c94a137d8dae70d39fb
+msgid ""
+"记录人工判断并导出结果：:doc:`training-audit-review-queue` / :doc:`training-"
+"audit-report`"
+msgstr "Record manual decisions and export results: :doc:`training-audit-review-queue` / :doc:`training-audit-report`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:31
+#: 28631fe298924fcd83f1b03eead5bb12
+msgid "先理解整页阅读顺序：:doc:`training-set-assessment`"
+msgstr "Understand the reading order of the full page first: :doc:`training-set-assessment`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:34
+#: 620b3afae6ee407f9ef4c856f98f91fd
+msgid "生成数据集"
+msgstr "Make Dataset"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:36
+#: c204b45e98554839a9f651fdfde99637
+msgid "用于从基础结构生成应变、扰动、合金、缺陷、表面、分子或磁性候选构型。"
+msgstr "Use it to generate strained, perturbed, alloy, defect, surface, molecular, or magnetic candidate configurations from base structures."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:38
+#: 83100c1154b54f5ba27a27f71c844b3c
+msgid "不认识顶部按钮和卡片运行顺序：:doc:`make-dataset`"
+msgstr "Do not recognize the top buttons or card execution order: :doc:`make-dataset`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:39
+#: 3b09a3b03c25487497c3eb04d07cb7d5
+msgid "不知道该选哪张卡：:doc:`make-dataset-cards/index`"
+msgstr "Do not know which card to choose: :doc:`make-dataset-cards/index`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:40
+#: 78c4b9b9c488439db727b8e1b72581bf
+msgid ""
+"已经选定卡片，要查参数和原理：从 :doc:`make-dataset-cards/index` 进入对应分类"
+"和具体卡片"
+msgstr "Have chosen a card and need its parameters and principles: start at :doc:`make-dataset-cards/index`, then open the relevant category and card"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:42
+#: 4197a61f294b41cb9e31de2bca348699
+msgid "想直接参考完整多卡流程：:doc:`make-dataset-cards/recipes`"
+msgstr "Want a complete multi-card workflow: :doc:`make-dataset-cards/recipes`"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:45
+#: 949349ac16c54285b26af8b1a551e9f6
+msgid "数据管理（Data Management）"
+msgstr "Data Management (Data Management)"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:47
+#: 1dccf66ae2534e2ea7ef02949b1e113d
+msgid ""
+"用于记录项目、模型、数据和输出路径之间的关系。先看 :doc:`data-management` 中"
+"的推荐记录方式、常用操作和存储位置。它不替代结构文件本身， 也不会自动判断哪一"
+"版模型更可靠。"
+msgstr "Use it to record relationships between projects, models, data, and output paths. Start with the recommended record format, common operations, and storage locations in :doc:`data-management`. It does not replace the structure files themselves or decide automatically which model version is more reliable."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:52
+#: 8c2c2b49b03a402e87f557fcbb71c5d4
+msgid "设置（Settings）"
 msgstr "Settings"
 
-#: ../../source/module/index.rst:2 4d47c9fc1ddb48b485a77932853b6e0f
-msgid "功能模块"
-msgstr "Features"
-
-#: ../../source/module/index.rst:4 96ceeab6b63c4d0d9cf35676f5c2b46a
-msgid "NepTrainKit 的页面可以按数据流理解，而不是按菜单名称死记："
-msgstr "Think of NepTrainKit as a data flow rather than a list of menu names:"
-
-#: ../../source/module/index.rst:9 518b39c2886644cfb35c404d1f3e8789
-msgid "你现在要做什么"
-msgstr "What do you need to do?"
-
-#: ../../source/module/index.rst:10 75628927ba71487e87c7b4a499602af3
-msgid "进入哪里"
-msgstr "Where to go"
-
-#: ../../source/module/index.rst:11 5b3e6a15b5ff4cedb4b7678510360d8c
-msgid "典型输出"
-msgstr "Typical output"
-
-#: ../../source/module/index.rst:12 ad39a4550ff0478796edd4cfd1e49bbe
-msgid "制作一批候选训练结构"
-msgstr "Generate candidate training structures"
-
-#: ../../source/module/index.rst:13 f4d17710880842919c0b6e1711423e10
-msgid ":doc:`make-dataset`"
-msgstr ""
-
-#: ../../source/module/index.rst:14 a59eae9dd1504055aebabd7d2ceb6707
-msgid "``candidate_pool.xyz``"
-msgstr ""
-
-#: ../../source/module/index.rst:15 dd9ca2eb4964421aa9485ab5d81d1a59
-msgid "清洗候选结构、删除异常样本"
-msgstr "Clean candidates and remove problematic samples"
-
-#: ../../source/module/index.rst:16 6bb397afbad14e3aae38a6fc981ffabe
-msgid ":doc:`NEP-dataset-display`"
-msgstr ""
-
-#: ../../source/module/index.rst:17 f7c1715b25944da5bcd347044c8119f9
-msgid "``candidate_pool_clean.xyz``"
-msgstr ""
-
-#: ../../source/module/index.rst:18 589d36b9060949ddaf4b49397a3be4e8
-msgid "检查训练数据质量和分布线索"
-msgstr "Inspect training-data quality and distribution signals"
-
-#: ../../source/module/index.rst:19 ac98402d99b7461e99be6fe82d041372
-msgid ":doc:`training-set-assessment`"
-msgstr ""
-
-#: ../../source/module/index.rst:20 0b26ae5278d54dd78a797cdd12a4ffae
-msgid "可追溯的 Findings 和结构子集"
-msgstr "Traceable findings and structure subsets"
-
-#: ../../source/module/index.rst:21 a4dc55d5ccc44d0fb8ed7742871b3dd2
-msgid "查每张生成卡片的用途和参数"
-msgstr "Look up the purpose and parameters of a generation card"
-
-#: ../../source/module/index.rst:22 efb01a444d104be58e602ec14731bf34
-msgid ":doc:`make-dataset-cards/index`"
-msgstr ""
-
-#: ../../source/module/index.rst:23 9829e99e998f409b9ec6ad64cdf93018
-msgid "可复用的卡片配置"
-msgstr "Reusable card configurations"
-
-#: ../../source/module/index.rst:24 8f6b0250b1d1490c911aa6c2d4dffb80
-msgid "管理多个项目、模型版本和结果路径"
-msgstr "Manage projects, model versions, and result paths"
-
-#: ../../source/module/index.rst:25 dcfb1144d2de46348121c265a71b2d71
-msgid ":doc:`data-management`"
-msgstr ""
-
-#: ../../source/module/index.rst:26 a48495afc55e4904bf1f0c21d9c7fec5
-msgid "可检索的实验记录"
-msgstr "Searchable experiment records"
-
-#: ../../source/module/index.rst:27 b05d5564eabe49b7859b88b430500714
-msgid "调整显示、后端和性能行为"
-msgstr "Adjust display, backend, and performance behavior"
-
-#: ../../source/module/index.rst:28 0b0fadc934824302899f13ff5adeacc7
-msgid ":doc:`settings`"
-msgstr ""
-
-#: ../../source/module/index.rst:29 af0fdfed2f8243caa343f697c6e4a30f
-msgid "更适合本机环境的默认行为"
-msgstr "Defaults suited to the local machine"
-
-#: ../../source/module/index.rst:31 14e9281f6cdb449cab6e722210f79aba
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:54
+#: a953594a32704f96a23972e80402b786
 msgid ""
-"如果你还不确定该从哪开始，先看 :doc:`../quickstart`；如果你已经有一批候选结构， 直接看 :doc:`../workflows"
-"/clean-candidate-structures`。"
-msgstr ""
-"If you are not sure where to begin, start with :doc:`../quickstart`. If you "
-"already have a candidate pool, go directly to :doc:`../workflows/clean-"
-"candidate-structures`."
+"用于调整 NEP 后端、绘图、结构显示、NEP89 和更新行为。进入 :doc:`settings` "
+"后， 先确认设置影响的是计算、显示还是更新；遇到 CUDA 不可用时先看“NEP 后端”，"
+"不要只反复切换 下拉框。"
+msgstr "Use it to adjust the NEP backend, plotting, structure display, NEP89, and update behavior. After opening :doc:`settings`, first determine whether a setting affects computation, display, or updates. If CUDA is unavailable, read the “NEP backend” section instead of repeatedly switching the drop-down."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/index.rst:58
+#: ba13d80622c74517a9c1c075c8b54b65
+msgid ""
+"还不知道从哪里开始时，看 :doc:`../quickstart`；已经有候选结构准备送 DFT 时，"
+"看 :doc:`../workflows/clean-candidate-structures`。术语不清楚或遇到报错时，直"
+"接进入 :doc:`../reference/glossary` 或 :doc:`../reference/troubleshooting`。"
+msgstr "If you still do not know where to start, see :doc:`../quickstart`. If you already have candidate structures ready for DFT, see :doc:`../workflows/clean-candidate-structures`. If a term is unclear or an error occurs, go directly to :doc:`../reference/glossary` or :doc:`../reference/troubleshooting`."
+
+#~ msgid "NEP 数据展示"
+#~ msgstr "NEP Dataset Display"
+
+#~ msgid "训练集评估"
+#~ msgstr "Training Set Audit"
+
+#~ msgid "NEP Dataset Display 详细参考"
+#~ msgstr "NEP Dataset Display reference"
+
+#~ msgid "数据生成（Make dataset）"
+#~ msgstr "Generate data (Make Dataset)"
+
+#~ msgid "数据生成卡片手册"
+#~ msgstr "Make Dataset card manual"
+
+#~ msgid "自定义卡片开发"
+#~ msgstr "Develop custom cards"
+
+#~ msgid "数据管理"
+#~ msgstr "Data management"
+
+#~ msgid "设置"
+#~ msgstr "Settings"
+
+#~ msgid "功能模块"
+#~ msgstr "Features"
+
+#~ msgid "NepTrainKit 的页面可以按数据流理解，而不是按菜单名称死记："
+#~ msgstr ""
+#~ "Think of NepTrainKit as a data flow rather than a list of menu names:"
+
+#~ msgid "你现在要做什么"
+#~ msgstr "What do you need to do?"
+
+#~ msgid "进入哪里"
+#~ msgstr "Where to go"
+
+#~ msgid "典型输出"
+#~ msgstr "Typical output"
+
+#~ msgid "制作一批候选训练结构"
+#~ msgstr "Generate candidate training structures"
+
+#~ msgid "清洗候选结构、删除异常样本"
+#~ msgstr "Clean candidates and remove problematic samples"
+
+#~ msgid "检查训练数据质量和分布线索"
+#~ msgstr "Inspect training-data quality and distribution signals"
+
+#~ msgid "可追溯的 Findings 和结构子集"
+#~ msgstr "Traceable findings and structure subsets"
+
+#~ msgid "查每张生成卡片的用途和参数"
+#~ msgstr "Look up the purpose and parameters of a generation card"
+
+#~ msgid "可复用的卡片配置"
+#~ msgstr "Reusable card configurations"
+
+#~ msgid "管理多个项目、模型版本和结果路径"
+#~ msgstr "Manage projects, model versions, and result paths"
+
+#~ msgid "可检索的实验记录"
+#~ msgstr "Searchable experiment records"
+
+#~ msgid "调整显示、后端和性能行为"
+#~ msgstr "Adjust display, backend, and performance behavior"
+
+#~ msgid "更适合本机环境的默认行为"
+#~ msgstr "Defaults suited to the local machine"
+
+#~ msgid ""
+#~ "如果你还不确定该从哪开始，先看 :doc:`../quickstart`；如果你已经有一批候选"
+#~ "结构， 直接看 :doc:`../workflows/clean-candidate-structures`。"
+#~ msgstr ""
+#~ "If you are not sure where to begin, start with :doc:`../quickstart`. If "
+#~ "you already have a candidate pool, go directly to :doc:`../workflows/"
+#~ "clean-candidate-structures`."

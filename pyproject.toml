@@ -34,7 +34,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-"PySide6==6.9.0",
+"PySide6==6.11.1",
 "PySide6-Fluent-Widgets>=1.7.0",
 "loguru>=0.7.2",
 "requests>=2.32.3",
@@ -54,6 +54,7 @@ test = [
     "pytest-qt>=4.2.0",
     "pytest-cov>=4.0.0",
     "codecov>=2.0.0",
+    "dpdata>=1.1.0",
     "ruff>=0.12.0",
     "scikit-learn>=1.5.0",
     "tomli>=2.0; python_version < '3.11'"
@@ -82,6 +83,7 @@ include = ["NepTrainKit", "NepTrainKit.*" ]
 "NepTrainKit" = ["translations/*.qm", "translations/*.ts"]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json","nep.json","nep89.txt" ]
 "NepTrainKit.core.dataset" = ["catalogs/*.json"]
+"NepTrainKit.workflow_templates" = ["*.json"]
 
 [tool.setuptools_scm]
 

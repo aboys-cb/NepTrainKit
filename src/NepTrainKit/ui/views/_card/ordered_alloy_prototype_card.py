@@ -1,21 +1,35 @@
-"""Card for generating ordered-alloy prototypes with explicit sublattices."""
+"""Card for generating ordered-alloy base cells with explicit sublattices."""
 
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget
-from qfluentwidgets import BodyLabel, CaptionLabel, ComboBox, LineEdit, RadioButton, ToolTipFilter, ToolTipPosition
+from qfluentwidgets import CaptionLabel, ComboBox
 
-from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.alloy import OrderedAlloyPrototypeOperation, OrderedAlloyPrototypeParams
+from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.cards.alloy import (
+    OrderedAlloyPrototypeOperation,
+    OrderedAlloyPrototypeParams,
+)
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
-from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.views._card.i18n_utils import (
+    add_translated_items,
+    combo_value,
+    set_combo_value,
+)
+from NepTrainKit.ui.widgets import (
+    CompactField,
+    ElementLineEdit,
+    InspectorSection,
+    MakeDataCard,
+    ResponsiveFormGrid,
+    SpinBoxUnitInputFrame,
+)
 
 
 @CardManager.register_card
 class OrderedAlloyPrototypeCard(MakeDataCard):
-    """Generate A1/A2/A3/L12/B2/L10 cells with crystallographic site labels."""
+    """Generate A1/A2/A3/L12/B2/L10 base cells with sublattice labels."""
 
     group = "Alloy"
     card_name = "Ordered Alloy Prototype"
@@ -26,99 +40,164 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._loading = False
-        self._current_required_labels: tuple[str, ...] = ()
         self._current_prototype = ""
-        self._element_cache = {"A": "X", "B": "X"}
         self._covera_cache = {"A3/hcp": 1.633, "L10/AB": 1.0}
-        self.setTitle(self.tr("Ordered Alloy Prototype"))
+        self.setTitle(self.tr("Ordered Alloy"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("ordered_alloy_prototype_card_widget")
 
-        self.prototype_label = BodyLabel(self.tr("Prototype"), self.setting_widget)
         self.prototype_combo = ComboBox(self.setting_widget)
         add_translated_items(
             self,
             self.prototype_combo,
-            ["A1/fcc", "A2/bcc", "A3/hcp", "L12/A3B", "B2/AB", "L10/AB"],
+            [
+                ("A1/fcc", "A1 / FCC (single sublattice)"),
+                ("A2/bcc", "A2 / BCC (single sublattice)"),
+                ("A3/hcp", "A3 / HCP (single sublattice)"),
+                ("L12/A3B", "L1₂ / A₃B"),
+                ("B2/AB", "B2 / AB"),
+                ("L10/AB", "L1₀ / AB"),
+            ],
         )
         set_combo_value(self.prototype_combo, "L12/A3B")
-        self.prototype_label.setToolTip(self.tr("Ordered or elemental crystal prototype"))
-        self.prototype_label.installEventFilter(ToolTipFilter(self.prototype_label, 300, ToolTipPosition.TOP))
+        self.prototype_field = CompactField(
+            self.tr("Ordered prototype"),
+            self.prototype_combo,
+            self.setting_widget,
+            self.tr("Choose the fixed crystallographic sites and A/B sublattice topology."),
+        )
+
         self.sublattice_hint_label = CaptionLabel("", self.setting_widget)
         self.sublattice_hint_label.setWordWrap(True)
-        self.sublattice_hint_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.sublattice_hint_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.single_sublattice_tip = CaptionLabel("", self.setting_widget)
+        self.single_sublattice_tip.setWordWrap(True)
+        self.single_sublattice_tip.setStyleSheet("color:#8a6d20;")
 
-        self.a_label = BodyLabel(self.tr("a (Å)"), self.setting_widget)
         self.a_frame = SpinBoxUnitInputFrame(self)
-        self.a_frame.set_input(["-", "step", "Å"], 3, "float")
-        self.a_frame.setDecimals(6)
+        self.a_frame.set_input(["–", self.tr("step"), "Å"], 3, "float")
+        self.a_frame.setDecimals(4)
         self.a_frame.setRange(0.1, 100.0)
-        self.a_frame.set_input_value([3.6, 3.6, 0.1])
+        self.a_frame.set_input_value([3.75, 3.75, 0.1])
+        self.a_field = CompactField(
+            self.tr("Lattice constant a (min, max, step)"),
+            self.a_frame,
+            self.setting_widget,
+            self.tr("Each sampled a value produces one unexpanded base cell."),
+        )
 
-        self.covera_label = BodyLabel(self.tr("c/a"), self.setting_widget)
         self.covera_frame = SpinBoxUnitInputFrame(self)
         self.covera_frame.set_input("", 1, "float")
-        self.covera_frame.setDecimals(6)
+        self.covera_frame.setDecimals(4)
         self.covera_frame.setRange(0.1, 10.0)
         self.covera_frame.set_input_value([1.0])
-        self.covera_label.setToolTip(self.tr("Used by A3/hcp and L10/AB; cubic prototypes use 1"))
-        self.covera_label.installEventFilter(ToolTipFilter(self.covera_label, 300, ToolTipPosition.TOP))
+        self.covera_field = CompactField(
+            self.tr("c/a ratio"),
+            self.covera_frame,
+            self.setting_widget,
+            self.tr("Only A3/HCP and L1₀ use c/a; cubic prototypes keep c/a = 1."),
+            inline=True,
+            input_max_width=132,
+        )
+        self.covera_frame.setFixedWidth(132)
 
-        self.elements_label = BodyLabel(self.tr("Sublattice elements"), self.setting_widget)
-        self.elements_edit = LineEdit(self.setting_widget)
-        self.elements_edit.setText("A:X,B:X")
-        self.elements_edit.setPlaceholderText(self.tr("A:X,B:X (use X as a placeholder)"))
-        self.elements_label.setToolTip(self.tr("Element or X placeholder assigned to each crystallographic sublattice"))
-        self.elements_label.installEventFilter(ToolTipFilter(self.elements_label, 300, ToolTipPosition.TOP))
+        prototype_section = InspectorSection(
+            self.tr("Prototype"),
+            self.setting_widget,
+            self.tr("The output is an ideal, fully periodic base cell with a per-atom sublattice array."),
+        )
+        prototype_grid = ResponsiveFormGrid(prototype_section, two_column_threshold=520)
+        prototype_grid.add_field(self.prototype_field, span=2)
+        prototype_grid.add_field(self.a_field)
+        prototype_grid.add_field(self.covera_field)
+        prototype_section.addWidget(prototype_grid)
+        prototype_section.addWidget(self.sublattice_hint_label)
+        prototype_section.addWidget(self.single_sublattice_tip)
 
-        self.auto_supercell_button = RadioButton(self.tr("Auto supercell (max atoms)"), self.setting_widget)
-        self.auto_supercell_button.setChecked(True)
-        self.manual_supercell_button = RadioButton(self.tr("Manual supercell"), self.setting_widget)
+        self.element_a_edit = ElementLineEdit(self.setting_widget)
+        self.element_a_edit.setText("Cu")
+        self.element_a_edit.setPlaceholderText(self.tr("Element or X"))
+        self.element_a_field = CompactField(
+            self.tr("Sublattice A element"),
+            self.element_a_edit,
+            self.setting_widget,
+            self.tr("Use a real element for direct ordered occupancy, or X as a placeholder for a later occupancy card."),
+            inline=True,
+            input_max_width=132,
+        )
+        self.element_a_edit.setFixedWidth(132)
 
-        self.max_atoms_label = BodyLabel(self.tr("Max atoms"), self.setting_widget)
-        self.max_atoms_frame = SpinBoxUnitInputFrame(self)
-        self.max_atoms_frame.set_input("unit", 1, "int")
-        self.max_atoms_frame.setRange(1, 500000)
-        self.max_atoms_frame.set_input_value([128])
+        self.element_b_edit = ElementLineEdit(self.setting_widget)
+        self.element_b_edit.setText("Au")
+        self.element_b_edit.setPlaceholderText(self.tr("Element or X"))
+        self.element_b_field = CompactField(
+            self.tr("Sublattice B element"),
+            self.element_b_edit,
+            self.setting_widget,
+            self.tr("Shown only for two-sublattice prototypes; A and B are crystallographic site identities."),
+            inline=True,
+            input_max_width=132,
+        )
+        self.element_b_edit.setFixedWidth(132)
 
-        self.rep_label = BodyLabel(self.tr("Rep (na,nb,nc)"), self.setting_widget)
-        self.rep_frame = SpinBoxUnitInputFrame(self)
-        self.rep_frame.set_input("", 3, "int")
-        self.rep_frame.setRange(1, 999)
-        self.rep_frame.set_input_value([2, 2, 2])
+        occupant_section = InspectorSection(
+            self.tr("Sublattice occupants"),
+            self.setting_widget,
+            self.tr("X is an unresolved site placeholder and is not a trainable chemical element."),
+        )
+        occupant_grid = ResponsiveFormGrid(occupant_section, two_column_threshold=520)
+        occupant_grid.add_field(self.element_a_field)
+        occupant_grid.add_field(self.element_b_field)
+        occupant_section.addWidget(occupant_grid)
 
-        self.max_outputs_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)
         self.max_outputs_frame = SpinBoxUnitInputFrame(self)
-        self.max_outputs_frame.set_input("unit", 1, "int")
+        self.max_outputs_frame.set_input(self.tr("structures"), 1, "int")
         self.max_outputs_frame.setRange(1, 999999)
         self.max_outputs_frame.set_input_value([200])
+        self.max_outputs_field = CompactField(
+            self.tr("Maximum outputs"),
+            self.max_outputs_frame,
+            self.setting_widget,
+            self.tr("If the a scan has more points, only the first values in ascending scan order are kept."),
+            inline=True,
+            input_max_width=176,
+        )
+        self.max_outputs_frame.setFixedWidth(176)
+        self.output_preview = CaptionLabel("", self.setting_widget)
+        self.output_preview.setWordWrap(True)
+        output_section = InspectorSection(self.tr("Output preview"), self.setting_widget)
+        output_section.addWidget(self.max_outputs_field)
+        output_section.addWidget(self.output_preview)
 
-        self.settingLayout.addWidget(self.prototype_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.prototype_combo, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.sublattice_hint_label, 1, 0, 1, 3)
-        self.settingLayout.addWidget(self.a_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.a_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.covera_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.covera_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.elements_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.elements_edit, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.auto_supercell_button, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_label, 5, 1, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_frame, 5, 2, 1, 1)
-        self.settingLayout.addWidget(self.manual_supercell_button, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.rep_label, 6, 1, 1, 1)
-        self.settingLayout.addWidget(self.rep_frame, 6, 2, 1, 1)
-        self.settingLayout.addWidget(self.max_outputs_label, 7, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_outputs_frame, 7, 1, 1, 2)
+        self.next_step_tip = CaptionLabel("", self.setting_widget)
+        self.next_step_tip.setWordWrap(True)
+        self.next_step_tip.setStyleSheet("color:#4078a8; font-weight:600;")
+        self.legacy_expansion_notice = CaptionLabel("", self.setting_widget)
+        self.legacy_expansion_notice.setWordWrap(True)
+        self.legacy_expansion_notice.setStyleSheet("color:#c56a00; font-weight:600;")
+        self.legacy_expansion_notice.hide()
+        next_step_section = InspectorSection(self.tr("Next step"), self.setting_widget)
+        next_step_section.addWidget(self.next_step_tip)
+        next_step_section.addWidget(self.legacy_expansion_notice)
+
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setVerticalSpacing(4)
+        self.settingLayout.addWidget(prototype_section, 0, 0, 1, 3)
+        self.settingLayout.addWidget(occupant_section, 1, 0, 1, 3)
+        self.settingLayout.addWidget(output_section, 2, 0, 1, 3)
+        self.settingLayout.addWidget(next_step_section, 3, 0, 1, 3)
 
         self.prototype_combo.currentIndexChanged.connect(self._on_prototype_changed)
-        self.auto_supercell_button.toggled.connect(self._update_supercell_controls)
-        self.manual_supercell_button.toggled.connect(self._update_supercell_controls)
+        self.element_a_edit.textChanged.connect(self._on_elements_changed)
+        self.element_b_edit.textChanged.connect(self._on_elements_changed)
+        for frame in (self.a_frame, self.covera_frame, self.max_outputs_frame):
+            for control in frame.object_list:
+                control.valueChanged.connect(self._update_output_preview)
         self._on_prototype_changed()
-        self._update_supercell_controls()
-        self._update_tab_order()
 
     @staticmethod
     def _prototype_requirements(prototype: str) -> tuple[tuple[str, ...], str, bool]:
@@ -143,82 +222,124 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
                 mapping[label.strip()] = element.strip()
         return mapping
 
-    def _on_prototype_changed(self) -> None:
+    def _on_prototype_changed(self, *_args) -> None:
         if self._loading:
             return
-        prototype = combo_value(self.prototype_combo)
-        if self._current_prototype in self._covera_cache and self.covera_frame.isEnabled():
+        prototype = combo_value(self.prototype_combo, "L12/A3B")
+        if self._current_prototype in self._covera_cache:
             self._covera_cache[self._current_prototype] = float(
                 self.covera_frame.get_input_value()[0]
             )
-        if self._current_required_labels:
-            current = self._element_mapping(self.elements_edit.text())
-            for label in self._current_required_labels:
-                if label in current:
-                    self._element_cache[label] = current[label]
-
         required, ratio, uses_covera = self._prototype_requirements(prototype)
         self._current_prototype = prototype
-        self._current_required_labels = required
-        self.elements_edit.setText(
-            ",".join(f"{label}:{self._element_cache.get(label, 'X')}" for label in required)
-        )
+        self.element_b_field.setVisible("B" in required)
+        self.covera_field.setVisible(uses_covera)
+        if uses_covera:
+            self.covera_frame.set_input_value([self._covera_cache.get(prototype, 1.0)])
         self.sublattice_hint_label.setText(
-            self.tr("Required sublattices: {labels}. Conventional-cell sites: {ratio}.").format(
-                labels=", ".join(required),
-                ratio=ratio,
+            self.tr("Base-cell sites: {ratio}. The sublattice array stores these sublattice identities.").format(
+                ratio=ratio
             )
         )
-        if uses_covera:
-            self.covera_label.setText(self.tr("c/a"))
-            self.covera_frame.setEnabled(True)
-            self.covera_frame.set_input_value([self._covera_cache.get(prototype, 1.0)])
-        else:
-            self.covera_label.setText(self.tr("c/a (fixed at 1)"))
-            self.covera_frame.set_input_value([1.0])
-            self.covera_frame.setEnabled(False)
-        self._update_tab_order()
+        single = len(required) == 1
+        self.single_sublattice_tip.setVisible(single)
+        self.single_sublattice_tip.setText(
+            self.tr(
+                "A1/A2/A3 overlap geometrically with the Crystal Prototype Builder. "
+                "Use them here only when downstream steps need sublattice A labels or X placeholders."
+            )
+            if single
+            else ""
+        )
+        self._update_output_preview()
 
-    def _update_supercell_controls(self) -> None:
-        auto = self.auto_supercell_button.isChecked()
-        self.max_atoms_label.setEnabled(auto)
-        self.max_atoms_frame.setEnabled(auto)
-        self.rep_label.setEnabled(not auto)
-        self.rep_frame.setEnabled(not auto)
-        self._update_tab_order()
+    def _on_elements_changed(self, *_args) -> None:
+        self._update_output_preview()
 
-    def _update_tab_order(self) -> None:
-        widgets = [
-            self.prototype_combo,
-            *self.a_frame.object_list,
-            *self.covera_frame.object_list,
-            self.elements_edit,
-            self.auto_supercell_button,
-            *self.max_atoms_frame.object_list,
-            self.manual_supercell_button,
-            *self.rep_frame.object_list,
-            *self.max_outputs_frame.object_list,
-        ]
-        self.tab_order_widgets = [
-            widget for widget in widgets if widget.isEnabled() and not widget.isHidden()
-        ]
-        for previous, current in zip(self.tab_order_widgets, self.tab_order_widgets[1:]):
-            QWidget.setTabOrder(previous, current)
+    def _sublattice_text(self) -> str:
+        required, _ratio, _uses_covera = self._prototype_requirements(
+            combo_value(self.prototype_combo, "L12/A3B")
+        )
+        values = {"A": self.element_a_edit.text(), "B": self.element_b_edit.text()}
+        return ",".join(f"{label}:{values[label]}" for label in required)
+
+    def _update_output_preview(self, *_args) -> None:
+        params = self.get_params()
+        try:
+            plan = self.create_operation().plan(params)
+            shown = min(len(plan.a_values), params.max_outputs)
+            la, lb, lc = plan.cell_lengths
+            sites = ", ".join(
+                f"{label}={count} ({plan.sublattice_elements[label]})"
+                for label, count in plan.sublattice_counts.items()
+            )
+            text = self.tr(
+                "{shown} base-cell output(s); {atoms} sites each: {sites}; "
+                "first cell lengths {la:.3f} × {lb:.3f} × {lc:.3f} Å."
+            ).format(
+                shown=shown,
+                atoms=plan.atoms_per_output,
+                sites=sites,
+                la=la,
+                lb=lb,
+                lc=lc,
+            )
+            if plan.truncated:
+                text += " " + self.tr(
+                    "The scan has {total} points; later a values are truncated."
+                ).format(total=len(plan.a_values))
+            self.output_preview.setText(text)
+            has_placeholder = "X" in plan.sublattice_elements.values()
+            self.next_step_tip.setText(
+                self.tr(
+                    "X placeholders are not ready for training. Add Super Cell if a larger cell is needed, "
+                    "then use Finite-Cell Alloy Occupancy to assign real elements."
+                )
+                if has_placeholder
+                else self.tr(
+                    "Real elements produce a fixed-stoichiometry ordered base cell. Add Super Cell next when a larger cell is needed."
+                )
+            )
+        except ValueError as exc:
+            self.output_preview.setText(translate_runtime_message(exc))
+            self.next_step_tip.setText(
+                self.tr("Fix the highlighted parameter meaning before continuing downstream.")
+            )
+        self.refresh_compact_presentation()
 
     def create_operation(self):
         return OrderedAlloyPrototypeOperation()
 
+    def get_summary_text(self) -> str:
+        params = self.get_params()
+        try:
+            plan = self.create_operation().plan(params)
+            occupants = "/".join(plan.sublattice_elements.values())
+            count = min(len(plan.a_values), params.max_outputs)
+            return self.tr("{prototype} · {occupants} · {count} base-cell output(s)").format(
+                prototype=self.prototype_combo.currentText(),
+                occupants=occupants,
+                count=count,
+            )
+        except ValueError:
+            return self.tr("{prototype} · parameters need attention").format(
+                prototype=self.prototype_combo.currentText()
+            )
+
+    def get_guidance_text(self) -> str:
+        return self.tr(
+            "This card defines crystallographic A/B site identities. It does not expand the cell; "
+            "use Super Cell afterward when a larger cell is needed. Replace any X placeholder before training."
+        )
+
     def get_params(self) -> OrderedAlloyPrototypeParams:
-        prototype = combo_value(self.prototype_combo)
-        _, _, uses_covera = self._prototype_requirements(prototype)
+        prototype = combo_value(self.prototype_combo, "L12/A3B")
+        _required, _ratio, uses_covera = self._prototype_requirements(prototype)
         return OrderedAlloyPrototypeParams(
             prototype=prototype,
             a_range=tuple(float(value) for value in self.a_frame.get_input_value()),
             covera=float(self.covera_frame.get_input_value()[0]) if uses_covera else 1.0,
-            sublattice_elements=self.elements_edit.text(),
-            auto_supercell=self.auto_supercell_button.isChecked(),
-            max_atoms=int(self.max_atoms_frame.get_input_value()[0]),
-            rep=tuple(int(value) for value in self.rep_frame.get_input_value()),
+            sublattice_elements=self._sublattice_text(),
             max_outputs=int(self.max_outputs_frame.get_input_value()[0]),
         )
 
@@ -229,21 +350,15 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
             self.a_frame.set_input_value([float(value) for value in params.a_range])
             self.covera_frame.set_input_value([float(params.covera)])
             mapping = self._element_mapping(params.sublattice_elements)
-            self._element_cache.update(mapping)
-            self.elements_edit.setText(params.sublattice_elements)
-            self.auto_supercell_button.setChecked(bool(params.auto_supercell))
-            self.manual_supercell_button.setChecked(not bool(params.auto_supercell))
-            self.max_atoms_frame.set_input_value([int(params.max_atoms)])
-            self.rep_frame.set_input_value([int(value) for value in params.rep])
+            self.element_a_edit.setText(mapping.get("A", "X"))
+            self.element_b_edit.setText(mapping.get("B", "X"))
             self.max_outputs_frame.set_input_value([int(params.max_outputs)])
+            if params.prototype in self._covera_cache:
+                self._covera_cache[params.prototype] = float(params.covera)
         finally:
             self._loading = False
-        self._current_required_labels = ()
-        prototype = combo_value(self.prototype_combo)
-        if prototype in self._covera_cache:
-            self._covera_cache[prototype] = float(params.covera)
+        self._current_prototype = ""
         self._on_prototype_changed()
-        self._update_supercell_controls()
 
     def to_dict(self):
         data = super().to_dict()
@@ -253,10 +368,20 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
         raw = dict(data_dict.get("params") or {})
+        legacy_expansion = any(key in raw for key in ("auto_supercell", "max_atoms", "rep"))
+        for key in ("auto_supercell", "max_atoms", "rep"):
+            raw.pop(key, None)
         if raw:
-            raw["a_range"] = tuple(raw.get("a_range", [3.6, 3.6, 0.1]))
-            raw["rep"] = tuple(raw.get("rep", [2, 2, 2]))
+            raw["a_range"] = tuple(raw.get("a_range", [3.75, 3.75, 0.1]))
             params = OrderedAlloyPrototypeParams(**raw)
         else:
             params = OrderedAlloyPrototypeParams()
         self.set_params(params)
+        if legacy_expansion:
+            migration_message = self.tr(
+                "This saved Ordered Alloy Prototype used the removed expansion settings. "
+                "They were ignored; add a Super Cell card after it to restore the intended cell size."
+            )
+            self.legacy_expansion_notice.setText("⚠ " + migration_message)
+            self.legacy_expansion_notice.show()
+            MessageManager.send_warning_message(migration_message)

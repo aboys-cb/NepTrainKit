@@ -79,6 +79,9 @@ class DeepmdResultData(ResultData):
         self._mforce_dataset = None
         self._mforce_vector_dataset = None
         self._cached_outputs_only = bool(cached_outputs_only)
+        self._force_recalculate_outputs = False
+        self._validated_energy_array: npt.NDArray[Any] | None = None
+        self._validated_force_array: npt.NDArray[Any] | None = None
 
     STRUCTURE_SYNC_RULES = {
         'energy': StructureSyncRule('energy', 'x_cols', collect_energy_sync),
@@ -210,14 +213,69 @@ class DeepmdResultData(ResultData):
     def virial(self):
         """Return the per-atom virial dataset."""
         return self._virial_dataset
+
+    def _result_plot_data_class(self):
+        """Use DeepMD's DFT-first column adapter for reference validation."""
+        return DPPlotData
+
+    def _prepare_cached_output_alignment(self) -> None:
+        """Validate DeepMD result rows before descriptors are attached."""
+        if self._force_recalculate_outputs or self._validated_energy_array is not None:
+            return
+        if not (self.energy_out_path.exists() and self.force_out_path.exists()):
+            return
+        storage_dtype = get_storage_float_dtype()
+        try:
+            energy_array = read_nep_out_file(
+                self.energy_out_path, dtype=storage_dtype, ndmin=2
+            )
+            force_array = read_nep_out_file(
+                self.force_out_path, dtype=storage_dtype, ndmin=2
+            )
+            alignment_error = self._cached_output_alignment_error(
+                energy_array, force_array
+            )
+        except Exception as error:
+            alignment_error = f"cached outputs could not be validated: {error}"
+            energy_array = np.array([])
+            force_array = np.array([])
+
+        if alignment_error is None:
+            self._validated_energy_array = energy_array
+            self._validated_force_array = force_array
+            return
+
+        self._force_recalculate_outputs = True
+        MessageManager.send_warning_message(
+            self.tr(
+                "Existing DeepMD outputs do not match the loaded structure order "
+                "({reason}). NepTrainKit will recalculate them."
+            ).format(reason=alignment_error)
+        )
+
+    def _cached_descriptors_are_usable(self) -> bool:
+        """Reject descriptors whenever the paired DeepMD outputs are stale."""
+        return not self._force_recalculate_outputs
+
+    def _load_descriptors(self) -> None:
+        """Validate cached DeepMD rows before loading paired descriptors."""
+        self._prepare_cached_output_alignment()
+        super()._load_descriptors()
+
     def _load_dataset(self) -> None:
         """Populate plot datasets from cached files or NEP recalculation."""
         if self._should_recalculate( ):
             energy_array, force_array, virial_array = self._recalculate_and_save( )
         else:
             storage_dtype = get_storage_float_dtype()
-            energy_array = read_nep_out_file(self.energy_out_path, dtype=storage_dtype, ndmin=2)
-            force_array = read_nep_out_file(self.force_out_path, dtype=storage_dtype, ndmin=2)
+            energy_array = self._validated_energy_array
+            if energy_array is None:
+                energy_array = read_nep_out_file(self.energy_out_path, dtype=storage_dtype, ndmin=2)
+            force_array = self._validated_force_array
+            if force_array is None:
+                force_array = read_nep_out_file(self.force_out_path, dtype=storage_dtype, ndmin=2)
+            self._validated_energy_array = None
+            self._validated_force_array = None
             virial_array = read_nep_out_file(self.virial_out_path, dtype=storage_dtype, ndmin=2)
             if energy_array.shape[0]!=self.atoms_num_list.shape[0] and not self._cached_outputs_only:
                 if self.cache_outputs_enabled():
@@ -276,6 +334,8 @@ class DeepmdResultData(ResultData):
         bool
             ``True`` if any required DeepMD output file is absent.
         """
+        if self._force_recalculate_outputs:
+            return True
         if self._cached_outputs_only:
             return False
         output_files_exist = any([
@@ -371,6 +431,7 @@ class DeepmdResultData(ResultData):
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
             virial_array = self._save_virial_and_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
+            self._force_recalculate_outputs = False
             return energy_array,force_array,virial_array
         except Exception as e:
             # logger.debug(traceback.format_exc())

@@ -1,0 +1,418 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language: en_US\n"
+"Language-Team: none\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/reference/troubleshooting.md:1 e7ae87f6ec524c1e92ccfdfeea6efc65
+msgid "常见问题与故障排查"
+msgstr "FAQ and troubleshooting"
+
+#: ../../source/reference/troubleshooting.md:3 bb950d3349aa4b4e99faf83dc32236f2
+msgid "先按你看到的现象定位。每一项只给最短检查路径；需要完整参数时进入链接页面。"
+msgstr ""
+"Start with the symptom you see. Each item gives the shortest inspection "
+"path; follow the linked page when you need the complete parameter "
+"reference."
+
+#: ../../source/reference/troubleshooting.md:5 e2ad181573164515a18c495cda272ad0
+msgid "安装和启动"
+msgstr "Installation and launch"
+
+#: ../../source/reference/troubleshooting.md:7 5eb78518d637428abbb7c2c5a53ce767
+msgid "`nepkit` 启动后立即报错"
+msgstr "`nepkit` fails immediately after launch"
+
+#: ../../source/reference/troubleshooting.md:9 29b10f6f3200432cb9653203f8858049
+msgid "确认当前终端已激活安装 NepTrainKit 的环境。"
+msgstr ""
+"Confirm that the current terminal has activated the environment where "
+"NepTrainKit is installed."
+
+#: ../../source/reference/troubleshooting.md:10
+#: 64e64016b78c4463be912338c3ec103d
+msgid ""
+"运行 `python -c \"import NepTrainKit; "
+"print(NepTrainKit.__file__)\"`，确认导入来自预期环境。"
+msgstr ""
+"Run `python -c \"import NepTrainKit; print(NepTrainKit.__file__)\"` and "
+"confirm that the import comes from the expected environment."
+
+#: ../../source/reference/troubleshooting.md:11
+#: 9bd8cfa2fdd54717a1804efce2e4079e
+msgid "如果 traceback 指向某个缺失模块，重新核对安装是否完整，不要在多个环境间单独复制包文件。"
+msgstr ""
+"If the traceback points to a missing module, verify that the installation"
+" is complete; do not copy package files between environments."
+
+#: ../../source/reference/troubleshooting.md:12
+#: 80a860a909ed41d79ab9bdf5e9df430c
+msgid "如果是 macOS Dock 图标提示但主窗口仍能打开，应保留完整 traceback 判断是否只是图标初始化失败。"
+msgstr ""
+"If macOS reports a Dock-icon warning while the main window opens, keep "
+"the full traceback to determine whether only icon initialization failed."
+
+#: ../../source/reference/troubleshooting.md:14
+#: 6b0a428e45284bd885b1d44db8bb00fc
+msgid "安装和运行时检查见[快速开始](../quickstart.md)。"
+msgstr "See [Quick start](../quickstart.md) for installation and runtime checks."
+
+#: ../../source/reference/troubleshooting.md:16
+#: f45911ab8c0d49629f274ac4d10e9390
+msgid "CUDA 不可用或自动回退到 CPU"
+msgstr "CUDA unavailable or automatically falling back to CPU"
+
+#: ../../source/reference/troubleshooting.md:18
+#: 64cd019b393c4d8296589dd78f1360bb
+msgid "先运行："
+msgstr "Run first:"
+
+#: ../../source/reference/troubleshooting.md:20
+#: 59df1800b5694c4f86092240a6309687
+msgid ""
+"python -c \"import nep_adapters as n; print(n.backend_status('cpu')); "
+"print(n.backend_status('cuda'))\"\n"
+msgstr ""
+"python -c \"import nep_adapters as n; print(n.backend_status('cpu')); "
+"print(n.backend_status('cuda'))\"\n"
+
+#: ../../source/reference/troubleshooting.md:24
+#: 130b1b54ae33434181c842046eb63475
+msgid ""
+"`Auto` 会使用可用后端并说明 CUDA 不可用原因。只有必须使用 GPU 时才在设置中强制选 "
+"`CUDA`；强制选择但运行时不可用会明确失败。详细入口见[设置](../module/settings.md)。"
+msgstr ""
+"`Auto` uses an available backend and reports why CUDA is unavailable. "
+"Force `CUDA` in Settings only when GPU execution is required; an "
+"unavailable forced backend fails explicitly. See "
+"[Settings](../module/settings.md) for details."
+
+#: ../../source/reference/troubleshooting.md:27
+#: 6ca6bdfbc79c4a38bffb88840db78361
+msgid "导入和显示"
+msgstr "Import and display"
+
+#: ../../source/reference/troubleshooting.md:29
+#: 21409e1ca9ad49fbbd32be50ddb4291d
+msgid "`.xyz` / `.extxyz` 导入失败"
+msgstr "`.xyz` / `.extxyz` import fails"
+
+#: ../../source/reference/troubleshooting.md:31
+#: 066a4d02f80c44d6ae0ff03976dd4ad2
+msgid "依次检查首帧："
+msgstr "Check the first frame in order:"
+
+#: ../../source/reference/troubleshooting.md:33
+#: 6e597984c00e46dd99c7bfc4ba8cabfd
+msgid "声明的原子数是否等于实际原子行数；"
+msgstr "Does the declared atom count equal the actual number of atom rows?"
+
+#: ../../source/reference/troubleshooting.md:34
+#: af21c3a2ac10466f90f460651bc37f4b
+msgid "`Properties` 声明的列数是否与每行一致；"
+msgstr "Does the number of columns declared by `Properties` match every row?"
+
+#: ../../source/reference/troubleshooting.md:35
+#: 77b66c4357794306b1a04e2dd962ea22
+msgid "元素符号是否合法；"
+msgstr "Are the element symbols valid?"
+
+#: ../../source/reference/troubleshooting.md:36
+#: 7c6f1ce12e754f878813d8f55abf46a2
+msgid "周期结构的 `Lattice` 是否有效；"
+msgstr "Is `Lattice` valid for a periodic structure?"
+
+#: ../../source/reference/troubleshooting.md:37
+#: 2148c440a0824bed903834bc5f60fba1
+msgid "`pbc` 是否符合全周期、全非周期或部分周期的真实设置。"
+msgstr ""
+"Does `pbc` reflect the actual fully periodic, non-periodic, or partially "
+"periodic setup?"
+
+#: ../../source/reference/troubleshooting.md:39
+#: b0d45c0a34bf4ed6b50b1e9e116e139d
+msgid "不要通过补零、伪元素或只改扩展名绕过错误。各格式的完整契约见[支持格式](../formats.md)。"
+msgstr "Do not bypass errors by padding values, inventing elements, or merely changing the extension. See [Supported formats](../formats.md) for the complete format contract."
+
+#: ../../source/reference/troubleshooting.md:41
+#: 11a77534bff8483db7eb5776e2427482
+msgid "LAMMPS dump 提示缺少元素映射"
+msgstr "LAMMPS dump: missing element mapping"
+
+#: ../../source/reference/troubleshooting.md:43
+#: 2924256faf894d8da27a3ef5328f72f4
+msgid ""
+"只有数值 `type` 的 dump 不能自动知道真实元素。导入时提供完整的“类型编号 → 元素”映射， 或者在 dump 中直接写出 "
+"`element` 列。坐标还必须完整使用 `xs/ys/zs`、`x/y/z` 或 `xu/yu/zu` 中的一组。"
+msgstr ""
+"A dump containing only numeric `type` values cannot identify the actual elements. Provide "
+"a complete type-to-element mapping during import, or include an `element` column in the "
+"dump. Coordinates must also use one complete set: `xs/ys/zs`, `x/y/z`, or `xu/yu/zu`."
+
+#: ../../source/reference/troubleshooting.md:47
+#: 454801e96c364f68a72decc5bb5ea894
+msgid "打开结构后没有能量、力或 virial 图"
+msgstr "No energy, force, or virial plot after opening a structure"
+
+#: ../../source/reference/troubleshooting.md:49
+#: b12c1cc502ac4882afc858da9bf428ad
+msgid "结构坐标可以正常显示，不代表文件中一定有标签。检查是否同时提供了："
+msgstr "Coordinates can display normally even when a file has no labels. Check that you provided:"
+
+#: ../../source/reference/troubleshooting.md:51
+#: 66b9549b66184a76a38e1da4c9cfe172
+msgid "EXTXYZ 中的参考能量、力或 virial；"
+msgstr "Reference energy, forces, or virial in EXTXYZ;"
+
+#: ../../source/reference/troubleshooting.md:52
+#: a1bae099303b4dae9251f7b0d62fa681
+msgid "对应的 GPUMD 输出文件；或"
+msgstr "The corresponding GPUMD output file; or"
+
+#: ../../source/reference/troubleshooting.md:53
+#: b6b2166448a340f0a95c9cec09ef0460
+msgid "可用于现场预测的 `nep.txt`。"
+msgstr "A `nep.txt` that can be used for on-the-fly prediction."
+
+#: ../../source/reference/troubleshooting.md:55
+#: 056d1a19baf645799bba40896e9512f4
+msgid "数据入口和组合方式见[打开数据与切换模型](../module/nep-display-open-data.md)。"
+msgstr "See [Open data and switch models](../module/nep-display-open-data.md) for data entry and combination rules."
+
+#: ../../source/reference/troubleshooting.md:57
+#: 4872c5e602164882b540a996e16aa47e
+msgid "图上的 x、y 哪个是 DFT"
+msgstr "Which plot axis is DFT, x or y"
+
+#: ../../source/reference/troubleshooting.md:59
+#: cbd7c72f2d474d63a19f006e10685512
+msgid ""
+"NepTrainKit 当前 NEP 对比图中，**x 轴是 NEP 预测值，y 轴是参考值（通常为 DFT）**。 NEP "
+"与其他工具的输出列顺序不同，不影响本页面坐标约定。仍不确定时直接看坐标轴标题， 不要靠点云方向或文件列顺序猜测。"
+msgstr "In NepTrainKit NEP comparison plots, **the x-axis is the NEP prediction and the y-axis is the reference value (usually DFT)**. Different output-column orders in NEP and other tools do not change this convention. If unsure, read the axis titles instead of guessing from point-cloud orientation or file-column order."
+
+#: ../../source/reference/troubleshooting.md:63
+#: 4839c29fa3bd4b9897baf5876ba387dd
+msgid "生成数据集"
+msgstr "Make Dataset"
+
+#: ../../source/reference/troubleshooting.md:65
+#: 6a48cb9c5f1a408fa7fc75bb1c17cfe1
+msgid "点击运行后没有输出"
+msgstr "No output after clicking Run"
+
+#: ../../source/reference/troubleshooting.md:67
+#: 38ed9efde37e40e1bb29202b587e79a3
+msgid "按顺序检查："
+msgstr "Check these items in order:"
+
+#: ../../source/reference/troubleshooting.md:69
+#: f42d7e8a7581482399a476561664bfb1
+msgid "卡片是否已勾选；"
+msgstr "Whether the card is selected;"
+
+#: ../../source/reference/troubleshooting.md:70
+#: 1663358e640b4ec19d904765e2d14cd4
+msgid "需要输入的卡片是否已经导入结构；"
+msgstr "Whether cards that require input have imported structures;"
+
+#: ../../source/reference/troubleshooting.md:71
+#: 6edf7431d59048949aebfa6aae42455d
+msgid "参数范围是否真的产生采样点，例如起点、终点和步长是否一致；"
+msgstr "Whether the parameter range produces sample points, for example, whether the start, end, and step are consistent;"
+
+#: ../../source/reference/troubleshooting.md:72
+#: f5615eefee9e4d68a8990b2d0eba91b1
+msgid "过滤卡是否把全部结构排除；"
+msgstr "Whether a filter card excluded every structure;"
+
+#: ../../source/reference/troubleshooting.md:73
+#: aa077cfb53874977895e661d90336434
+msgid "状态提示是否说明输入前提、路径、元素或几何条件不满足。"
+msgstr "Whether the status message reports an unmet input, path, element, or geometry requirement."
+
+#: ../../source/reference/troubleshooting.md:75
+#: 1dacad4eae94472abf1c186ab054af24
+msgid ""
+"进入[卡片选择页](../module/make-dataset-cards/index.md)后打开具体卡片，查看“操作示例”和 "
+"“常见问题”。不要只反复点击运行。"
+msgstr "Open a specific card from the [card selection page](../module/make-dataset-cards/index.md) and read its “Example workflow” and “Common questions”. Do not simply click Run repeatedly."
+
+#: ../../source/reference/troubleshooting.md:78
+#: 5ed4b4f594f04113a38b95412b8309eb
+msgid "输出数量比预计少"
+msgstr "Fewer outputs than expected"
+
+#: ../../source/reference/troubleshooting.md:80
+#: 18c7b4f9c4d5423b8250c2d308484d0e
+msgid ""
+"常见原因包括：重复结果被去重、几何检查拒绝候选、距离阈值提前停止、随机尝试达到上限， "
+"或输入结构本身没有足够可操作位点。具体数量契约以卡片页的功能说明和参数说明为准。"
+msgstr "Common causes include deduplication, geometry rejection, an early distance-threshold stop, the random-attempt limit, or too few operable sites in the input. Follow the card page’s function and parameter contract for exact counts."
+
+#: ../../source/reference/troubleshooting.md:83
+#: fddddb1919b04e93b46a58cfa31f9273
+msgid "输出数量突然非常大"
+msgstr "A sudden explosion in output count"
+
+#: ../../source/reference/troubleshooting.md:85
+#: d5b4f1066e8f4d078185b34021796831
+msgid ""
+"多轴扫描、多元素组合、多个输入结构和多张卡片都可能相乘。先用单个输入和小范围预览， "
+"再逐步增加轴、配比或随机样本数。需要多分支时查看[配方示例](../module/make-dataset-cards/recipes.md)， "
+"不要一次把所有组合都送入 DFT。"
+msgstr "Multiple axes, element combinations, input structures, and cards can multiply the output. Start with one input and a small preview, then increase axes, compositions, or random samples gradually. For branching, see [Recipe examples](../module/make-dataset-cards/recipes.md) instead of sending every combination to DFT at once."
+
+#: ../../source/reference/troubleshooting.md:89
+#: 2e971c3f50ff45ccb65ad80f001237d5
+msgid "界面是中文，文档里为什么还出现英文"
+msgstr "Why does the documentation contain English when the interface is Chinese?"
+
+#: ../../source/reference/troubleshooting.md:91
+#: f47ce194c5f941a88452ef79b327bda6
+msgid ""
+"文档采用“中文用途（英文界面名／序列化名）”的方式：中文用于阅读，英文用于和旧 JSON、 "
+"代码字段或未翻译界面精确对应。参数标题先写中文标签，括号中保留稳定字段名。"
+msgstr "The documentation uses “Chinese purpose (English UI or serialized name)”: Chinese keeps the prose readable, while English preserves exact matches to legacy JSON, code fields, or untranslated UI labels. Parameter headings use Chinese labels first and retain stable field names in parentheses."
+
+#: ../../source/reference/troubleshooting.md:94
+#: 86722574174143dfaa4c9fb632fd8c94
+msgid "筛选、采样和数据修改"
+msgstr "Filtering, sampling, and data changes"
+
+#: ../../source/reference/troubleshooting.md:96
+#: 748e4249a2af4cc2a0c62d991013c917
+msgid "FPS 选择数远少于目标"
+msgstr "FPS selects far fewer structures than requested"
+
+#: ../../source/reference/troubleshooting.md:98
+#: ab874b4186b048569a0cd04c3649d6a1
+msgid ""
+"最小距离或 $R^2$ 阈值可能提前停止；也可能是候选池本身高度重复。降低阈值或关闭距离停止， 并检查实际停止原因。FPS "
+"只能从已有候选中选择，不会补出缺失的结构类型。详见 [代表性采样](../module/nep-main-tool-sparse-"
+"samples.md)。"
+msgstr "A minimum-distance or $R^2$ threshold may stop the process early, or the candidate pool may be highly redundant. Lower the threshold or disable distance stopping, then inspect the actual stop reason. FPS selects only from existing candidates; it cannot invent missing structure types. See [Representative sampling](../module/nep-main-tool-sparse-samples.md)."
+
+#: ../../source/reference/troubleshooting.md:102
+#: 9d631c2f8e094ba48a17bb771e0bb13b
+msgid "FPS 选出的结构仍然不合理"
+msgstr "FPS-selected structures are still unreasonable"
+
+#: ../../source/reference/troubleshooting.md:104
+#: 551fcab6308142b39ba647f604fb6686
+msgid ""
+"FPS 只看描述符空间距离，短键或坏晶胞反而可能因为“很不一样”而被选中。先执行几何和人工清洗， "
+"再做代表性采样。完整顺序见[候选结构清洗](../workflows/clean-candidate-structures.md)。"
+msgstr "FPS considers only descriptor-space distance, so a short bond or bad cell may be selected because it looks very different. Clean geometrically and manually first, then perform representative sampling. See the full order in [Clean candidate structures](../workflows/clean-candidate-structures.md)."
+
+#: ../../source/reference/troubleshooting.md:107
+#: 17d39c913c1b424389ada5610cf845ef
+msgid "能量平移后找不到原始能量"
+msgstr "Original energy cannot be found after shifting"
+
+#: ../../source/reference/troubleshooting.md:109
+#: e34c198a86c44b2c9ac57a94fae820bc
+msgid ""
+"第一次平移前的结构总能量写入 `energy_original`，新值写在 `energy`。导出 EXTXYZ 后检查这两个 "
+"帧级字段。再次平移不会覆盖已经保存的 `energy_original`。详见 [能量基线平移](../module/nep-main-tool-"
+"energy-shift.md)。"
+msgstr ""
+"Before the first shift, the structure's total energy is saved in `energy_original`, and the "
+"shifted value is written to `energy`. After exporting EXTXYZ, check both frame fields. A later "
+"shift does not overwrite the existing `energy_original`. See [Energy baseline shift](../module/"
+"nep-main-tool-energy-shift.md)."
+
+#: ../../source/reference/troubleshooting.md:113
+#: c0fb898c683f405eac8993ad8229f413
+msgid "最大误差选中的结构数和点数不一致"
+msgstr "The number of structures selected by maximum error differs from the number of points"
+
+#: ../../source/reference/troubleshooting.md:115
+#: 8578161ca9fc4dfb933312c0e5f3a0c2
+msgid "能量图通常一行对应一个结构；力图中一个结构有多个原子和分量。最大误差工具会把行映射回 结构编号并去重，所以最终结构数可以少于图上的候选点数。"
+msgstr "An energy plot usually has one point per structure, while a force plot has multiple atoms and components per structure. The maximum-error tool maps rows back to structure IDs and deduplicates them, so the final structure count can be lower than the number of plotted candidates."
+
+#: ../../source/reference/troubleshooting.md:118
+#: f97e64607a344831b5c0824977a5c79e
+msgid "训练集评估"
+msgstr "Training Set Audit"
+
+#: ../../source/reference/troubleshooting.md:120
+#: 6c823d25fca84412a7be137f367629d8
+msgid "页面显示“没有磁性数据”"
+msgstr "The page says “No magnetic data”"
+
+#: ../../source/reference/troubleshooting.md:122
+#: 73d6e649c40d45139aec29abf716989d
+msgid ""
+"磁性评估只读取有效的逐原子 `spin:R:3`。`mforce`、`force_mag` 或标量说明文字不能代替 三分量自旋字段。先在 "
+"EXTXYZ 的 `Properties` 和原子列中确认字段真实存在。"
+msgstr "Magnetic assessment reads only a valid per-atom `spin:R:3` field. `mforce`, `force_mag`, and scalar notes cannot replace the three-component spin field. Confirm the field in EXTXYZ `Properties` and atom columns."
+
+#: ../../source/reference/troubleshooting.md:125
+#: affa02bffcb6472ca76043a857c8f1ad
+msgid "结构相或磁类型和预期不同"
+msgstr "The structural phase or magnetic type differs from expectation"
+
+#: ../../source/reference/troubleshooting.md:127
+#: ad7b33fa38894485aaf4579a87d5174d
+msgid ""
+"评估结果是当前阈值和有限结构快照下的证据分类。先检查晶胞、周期边界、元素、邻居环境和 自旋字段，再进入[结构相判据](../module"
+"/training-audit-phase.md)或 [磁类型判据](../module/training-audit-"
+"magnetism.md)。不要把分类名称直接当成热力学相结论。"
+msgstr "The assessment is an evidence-based classification for the current thresholds and finite snapshots. Check the cell, periodic boundaries, elements, neighbor environments, and spin fields first, then consult [phase criteria](../module/training-audit-phase.md) or [magnetic-type criteria](../module/training-audit-magnetism.md). Do not treat a classification name as a thermodynamic phase conclusion."
+
+#: ../../source/reference/troubleshooting.md:131
+#: 24de724fe5464ed7998deae50d2bffba
+msgid "仍然无法定位"
+msgstr "Still cannot identify the cause"
+
+#: ../../source/reference/troubleshooting.md:133
+#: 720e7c0149b942379f5bc4f93e53e4dd
+msgid "保留以下信息再反馈问题："
+msgstr "Keep the following information when reporting the problem:"
+
+#: ../../source/reference/troubleshooting.md:135
+#: d11012b5f41f4a23b82940ce685b927f
+msgid "NepTrainKit 版本和操作系统；"
+msgstr "NepTrainKit version and operating system;"
+
+#: ../../source/reference/troubleshooting.md:136
+#: d5c8ebd6c3104bc3855213cad59a433e
+msgid "完整 traceback 或界面原始错误文本；"
+msgstr "The complete traceback or original UI error text;"
+
+#: ../../source/reference/troubleshooting.md:137
+#: a46fed2f1a8d4d849d95ac5e7ee8e5aa
+msgid "能复现问题的最小输入；"
+msgstr "The smallest input that reproduces the problem;"
+
+#: ../../source/reference/troubleshooting.md:138
+#: 61e1eb4f5e3b46a99f159f5c663c6d46
+msgid "使用的页面、卡片和参数；"
+msgstr "The page, card, and parameters used;"
+
+#: ../../source/reference/troubleshooting.md:139
+#: c5b52bb55f2f4c24b653a8d30fffcb16
+msgid "预期结果与实际结果。"
+msgstr "The expected and actual results."
+
+#: ../../source/reference/troubleshooting.md:141
+#: 2d3862942ea542bbbcc78f44161bbd81
+msgid "不要只截最后一行错误；根因通常在 traceback 前面的文件、字段或参数信息中。"
+msgstr "Do not report only the last error line; the root cause is usually in the file, field, or parameter information earlier in the traceback."

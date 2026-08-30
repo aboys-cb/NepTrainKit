@@ -1,0 +1,30 @@
+# English translations for NepTrainKit package.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"PO-Revision-Date: 2026-07-30 19:40+0800\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/molecule-solvation.md:1
+#: 5a071d02ec3245e1b72322bb3f5a365a
+msgid "分子与溶剂"
+msgstr "Molecules and solvation"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/molecule-solvation.md:3
+#: 25695a46e048423c8d4a42516358601e
+msgid ""
+"这组卡片面向有机分子构象和溶剂环境。局部溶剂壳与整盒周期溶剂的输出语义不同， "
+"都只生成初始结构，不代表体系已经完成平衡或量化优化。"
+msgstr "These cards target organic-molecule conformations and solvent environments. A local solvation shell and a periodic solvent box have different output semantics; both produce initial structures only and do not imply equilibration or quantum optimization."

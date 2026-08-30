@@ -4,167 +4,174 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-26 11:17+0800\n"
+"POT-Creation-Date: 2026-07-30 19:40+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:3
-#: ea21d36918a54ef19a1852264b250c0b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:3
+#: a20c9903d40e44a99724696c2900060b
 msgid "自旋螺旋（Spin Spiral）"
 msgstr "Spin Spiral"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:5
-#: 1b2a7d402a6e4fbbaba236eb47664297
-msgid "`Group`: `Magnetism` | `Class`: `SpinSpiralCard`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:5
+#: 7722a9ce940f49c8b3ac4908edd28291
+msgid "**分类：** 磁性"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:7
-#: 55c8c4763ba545ca866036a63bb5c873
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:7
+#: 21e78c95c9c8466fb740d35fc7f1bb4f
 msgid "功能说明"
 msgstr "What the card does"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:9
-#: cf2260bf8c3a471290edcbd6ee166834
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:9
+#: 7b5694f14a444a29b8fba1d90715e87b
 msgid ""
-"对输入结构按一维相位场写入非共线 `initial_magmoms`，生成一批不同周期、相位、手性和轴向分量的 spin spiral / "
-"helix / conical spiral 初始构型。支持两种等价的主控方式：直接扫周期 L_D 或扫每 Angstrom 转角梯度。"
+"对输入结构按一维相位场写入非共线 `initial_magmoms`，生成一批不同周期、相位、"
+"手性和轴向分量的 spin spiral / helix / conical spiral 初始构型。支持两种等价"
+"的主控方式：直接扫周期 L_D 或扫每 Angstrom 转角梯度。"
 msgstr ""
 "Write noncollinear `initial_magmoms` from a one-dimensional phase field, "
-"generating spin-spiral, planar-helix, and conical-spiral initial states "
-"over periods, phases, chiralities, and axial components. Control the "
-"spiral either by scanning its period `L_D` or by scanning the rotation "
-"gradient in degrees per Å."
+"generating spin-spiral, planar-helix, and conical-spiral initial states over "
+"periods, phases, chiralities, and axial components. Control the spiral "
+"either by scanning its period `L_D` or by scanning the rotation gradient in "
+"degrees per Å."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:11
-#: 2ef08fab24b444e3b5617dc3017a1a0e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:11
+#: 793eb3cf8e1e496186c3dc70d5892ec7
+msgid "原理与公式"
+msgstr "Principle and equations"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:13
+#: 519cd267dc1c4b9ab17c3bb67c1034cf
 msgid ""
-"\\mathbf{m}(u)=\\sqrt{1-m_z^2}\\left[\\cos\\phi(u)\\,\\mathbf{e}_1+\\sin\\phi(u)\\,\\mathbf{e}_2\\right]"
-" + m_z\\,\\hat{\\mathbf{n}}"
+"\\mathbf{m}(u)=\\sqrt{1-m_z^2}\\left[\\cos\\phi(u)\\,\\mathbf{e}_1+"
+"\\sin\\phi(u)\\,\\mathbf{e}_2\\right] + m_z\\,\\hat{\\mathbf{n}}"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:13
-#: f6ccb76522d24424bdb35454e1382d43
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:15
+#: c4e69d0116a245fcb09fdcab66511fa8
 msgid "\\phi(u)=s\\cdot \\frac{2\\pi u}{L_D}+\\phi_0,\\qquad s\\in\\{-1,+1\\}"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:15
-#: ce5dc0548a634149921d37671f5b3a36
-msgid "其中 m_z = m_parallel / |m| 是无量纲轴向分量。m_z=0 为平面 helix，m_z=0 为 conical spiral。"
-msgstr ""
-"Here `m_z = m_parallel / |m|` is the dimensionless component along the "
-"propagation axis. `m_z = 0` gives a planar helix; nonzero `m_z` gives a "
-"conical spiral."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:17
+#: c123f5e6b35c4fb98be93dae88ea0ca7
+msgid ""
+"其中 $m_z=m_\\parallel/|\\mathbf m|$ 是无量纲轴向分量。$m_z=0$ 为平面 "
+"helix， $0<|m_z|<1$ 为 conical spiral，$|m_z|=1$ 是完全沿轴的共线极限。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:17
-#: 9c4d003f096e43b2b01f00b57ba8f2a7
-msgid "**关键限制：** 这张卡只写入初始磁矩纹理，不改变晶体结构。如果当前晶格与目标周期不相容，需要先扩胞。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:20
+#: 49ad422bb0e14d9ca1bb005921f5706e
+msgid ""
+"**关键限制：** 这张卡只写入初始磁矩纹理，不改变晶体结构。如果当前晶格与目标周"
+"期不相容，需要先扩胞。"
 msgstr ""
-"**Important limitation:** This card changes only the initial moment "
-"texture. If the target period is incompatible with the current periodic "
-"cell, enlarge the structure first."
+"**Important limitation:** This card changes only the initial moment texture. "
+"If the target period is incompatible with the current periodic cell, enlarge "
+"the structure first."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:19
-#: 36c2c8c1f1c2418fbd3a833d0a769ca7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:22
+#: c6986f5833de4a05b2695db4b4de16c2
 msgid "操作示例"
 msgstr "Example workflow"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:21
-#: a645a874c93f407ab822bd72f5f0b2c8
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:24
+#: 45601bb0e5eb46178d8281559055164f
 msgid "场景：模型在螺旋磁结构上能量曲线完全不对"
 msgstr ""
-"Scenario: the predicted energy curve is wrong for spiral magnetic "
-"structures"
+"Scenario: the predicted energy curve is wrong for spiral magnetic structures"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:23
-#: dc27e2b937fd43d8a3b59dbde3be0bb5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:26
+#: d88281946ef848939fcb936b2ef1e557
 msgid ""
-"你训练了一个 NEP 模型，训练集里有 FM 和 AFM 构型。模型在共线磁序上表现尚可，但一跑到具有螺旋磁序的构型（如 CrNb3S6 或 "
-"MnSi 中的 chiral helimagnet），能量曲线形状完全错误——周期依赖的能量极小值位置偏离 DFT 结果超过 30%。"
+"你训练了一个 NEP 模型，训练集里有 FM 和 AFM 构型。模型在共线磁序上表现尚可，"
+"但一跑到具有螺旋磁序的构型（如 CrNb3S6 或 MnSi 中的 chiral helimagnet），能量"
+"曲线形状完全错误——周期依赖的能量极小值位置偏离 DFT 结果超过 30%。"
 msgstr ""
 "You trained an NEP model with FM and AFM configurations. It performs "
 "acceptably for collinear orders, but for spiral states such as chiral "
-"helices in CrNb3S6 or MnSi, the shape of the energy curve is wrong and "
-"the period-dependent minimum differs from DFT by more than 30%."
+"helices in CrNb3S6 or MnSi, the shape of the energy curve is wrong and the "
+"period-dependent minimum differs from DFT by more than 30%."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:25
-#: 8815069e95a24c93adaadfae2f2732fb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:28
+#: 6ba4e316cf4a4c05826497c717054d0b
 msgid ""
-"**诊断思路：** 模型从未见过磁矩在空间中连续旋转的构型。FM/AFM "
-"训练集隐式告诉了模型\"磁矩方向在空间中是分段常数\"的假设。需要在训练集里加入不同周期的螺旋磁纹理，让模型学习 q 空间不同波矢下的能量响应。"
+"**诊断思路：** 模型从未见过磁矩在空间中连续旋转的构型。FM/AFM 训练集隐式告诉"
+"了模型\"磁矩方向在空间中是分段常数\"的假设。需要在训练集里加入不同周期的螺旋"
+"磁纹理，让模型学习 q 空间不同波矢下的能量响应。"
 msgstr ""
-"**Diagnosis:** The model has never seen moments rotate continuously "
-"through space. FM and AFM examples cover only a few discrete directional "
-"patterns. Add spiral textures over several wave vectors so the model can "
-"learn the energy response `E(q)` across the relevant region of reciprocal"
-" space."
+"**Diagnosis:** The model has never seen moments rotate continuously through "
+"space. FM and AFM examples cover only a few discrete directional patterns. "
+"Add spiral textures over several wave vectors so the model can learn the "
+"energy response `E(q)` across the relevant region of reciprocal space."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:27
-#: 366238f15d7a4e008cb0fe26e95c7b86
-msgid "**输入：** 一个已知磁矩幅值的磁性结构（如 MnSi 单胞，Mn 磁矩约 2.0 μB，螺旋沿 [111] 方向）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:30
+#: 670857f9576e4f6f8c1a50616a9889ed
+msgid ""
+"**输入：** 一个已知磁矩幅值的磁性结构（如 MnSi 单胞，Mn 磁矩约 2.0 μB，螺旋"
+"沿 [111] 方向）"
 msgstr ""
 "**Input:** A magnetic structure with known moment magnitudes, such as an "
 "MnSi cell with approximately 2.0 μB on Mn and propagation along [111]."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:29
-#: efe9f241e26746f28cec5f4c898bd3de
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:32
+#: 5afa53e4a4ff4e1a85ceafa2f835338f
 msgid ""
-"**目标：** 沿 [111] 方向扫描 3 个周期（20/30/40 Angstrom），3 个全局相位（0/30/60 度），纯 "
-"helix（mz=0），正反手性成对。共 3x3x2 = 18 个螺旋构型"
+"**目标：** 沿 [111] 方向扫描 3 个周期（20/30/40 Angstrom），3 个全局相位"
+"（0/30/60 度），纯 helix（mz=0），正反手性成对。共 3x3x2 = 18 个螺旋构型"
 msgstr ""
-"**Goal:** Along [111], scan three periods (20, 30, and 40 Å), three "
-"global phases (0°, 30°, and 60°), a planar helix (`mz=0`), and both "
-"chiralities: 3 × 3 × 2 = 18 structures."
+"**Goal:** Along [111], scan three periods (20, 30, and 40 Å), three global "
+"phases (0°, 30°, and 60°), a planar helix (`mz=0`), and both chiralities: 3 "
+"× 3 × 2 = 18 structures."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:31
-#: 7ec9dc850df348e19cd11a9dafb3e688
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:34
+#: 7bc2b9a6c00a49d88f30934bbf5aaa22
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:32
-#: 2739e2412ec74552954abe7b2529eae7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:35
+#: a636aae805d2426a816772188f348d6f
 msgid "`Propagation Axis` = `[1, 1, 1]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:33
-#: 682445456f6942ccb9855c4789c82ff1
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:36
+#: 7a64fdc0c9344f8f90af2d2eef50d1ae
 msgid "`Spiral Parameter` = `Period (L_D)`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:34
-#: 268d7a9f3f704fdab331ca77b4b880d3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:37
+#: aab6f6fccb6c404d908697d139623a18
 msgid "`Period Range` = `[20, 40, 10]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:35
-#: e34be45f04b34d87882fdf6ab4df4d31
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:38
+#: f8c43d41474f4f5b92defa40edb39a39
 msgid "`Phase Range` = `[0, 60, 30]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:36
-#: 7c0e9bd9a2404f72848b9ca810ad25ab
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:39
+#: 6f2afe9a907c40c9a2c368c69f958066
 msgid "`m_parallel Range` = `[0, 0, 0.1]`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:37
-#: fd8feaf4c00c4b84b2e3791f06834908
-msgid "`Chirality` = `Both`"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:40
+#: 08afb37f0b034d88aa78becf0dca3d7c
+msgid "`手性`（`chirality`） = `Both`"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:39
-#: 420699141b0a4fbeb27f48303aedd8a4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:42
+#: 4d52f26c09884a0bbbf2ff138c0a29ce
 msgid ""
 "**输出：** 18 个结构，磁矩沿 [111] 方向逐层旋转，带 "
 "`Helix(L=...,ph=...,mz=0,chi=...,ax=...)` 标签。"
@@ -172,222 +179,225 @@ msgstr ""
 "**Output:** 18 structures whose moments rotate along [111], labeled "
 "`Helix(L=...,ph=...,mz=0,chi=...,ax=...)`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:41
-#: 0ac0356c220f4637afb26cf411dabab6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:44
+#: 987e184c0f0b4730b357e538620f08d0
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:42
-#: 235db63c01a9405fa2c0b0466face770
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:45
+#: c1311491c4a6415f95c5b9dc5b5e7242
 msgid "重训后用 DFT 计算几个螺旋构型的能量作为参考，对比模型预测的 E(q) 曲线"
 msgstr ""
-"After DFT labeling and retraining, compare the predicted `E(q)` curve "
-"with DFT energies for held-out spiral configurations."
+"After DFT labeling and retraining, compare the predicted `E(q)` curve with "
+"DFT energies for held-out spiral configurations."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:43
-#: 01d8048029e749379950adcff86455d4
-msgid "如果极小值位置仍偏离，加密 `period_range` 扫描（例如 `[10, 40, 5]`）"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:46
+#: e5bc3523cb3e49a89033e56551dbb8bf
+msgid ""
+"如果极小值位置仍偏离，加密 `周期范围`（`period_range`）扫描（例如 `[10, 40, "
+"5]`）"
+msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:47
+#: d1edf134ce914bf09c641a9e1f3b8acf
+msgid ""
+"如果发现 conical spiral（mz != 0）的能量比纯 helix 更低，加入 `mz = [0, 0.5, "
+"0.1]` 覆盖锥面螺旋"
 msgstr ""
-"If the position of the minimum remains inaccurate, densify "
-"`period_range`, for example to `[10, 40, 5]`."
+"If conical spirals with `mz != 0` are lower in energy than the planar helix, "
+"add `mz = [0, 0.5, 0.1]` to cover axial components."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:44
-#: 7e5f722a6f77445886356bd188b8bbd9
-msgid "如果发现 conical spiral（mz != 0）的能量比纯 helix 更低，加入 `mz = [0, 0.5, 0.1]` 覆盖锥面螺旋"
-msgstr ""
-"If conical spirals with `mz != 0` are lower in energy than the planar "
-"helix, add `mz = [0, 0.5, 0.1]` to cover axial components."
-
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:45
-#: 0812906966b945339597773121179c12
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:48
+#: f6c2c9c60a2148c680e56009c02a54c0
 msgid "如果需要晶格相容的周期，勾选 `Period Filter` 开启整周期约束"
 msgstr ""
-"Enable `Period Filter` when only periods commensurate with the current "
-"cell should be retained."
+"Enable `Period Filter` when only periods commensurate with the current cell "
+"should be retained."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:47
-#: ee7b1c0c93644017b07ecce75840735f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:50
+#: d062da3ab11942e2be751f3884425cd4
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:49
-#: 33dbce558e5f4d568a5667f1177dfb52
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:52
+#: b4ed0db797f74a4fbd92b3ff2442d2d0
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:50
-#: e8217d5266fb4b248d998ecda33c7543
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:53
+#: 0c151abe37f04083b7dd376ea207f2d6
 msgid "研究体系存在螺旋/非共线磁基态（如 chiral magnet、skyrmion 宿主材料）"
-msgstr ""
-"The system has a spiral or noncollinear magnetic state, as in a chiral "
-"magnet or skyrmion-host material."
+msgstr "Details for this option"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:51
-#: 74472798f24c45ccbf8062ec42123fd5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:54
+#: 43e1341b82f94a8cb7cb85c6e7b9f32c
 msgid "模型在非共线磁序上泛化失败"
 msgstr "The model fails to generalize to noncollinear magnetic order."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:52
-#: 075bac09c51f4928882e0363bd26ec01
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:55
+#: f8c0b5d5daa24529bb827e21ff68113c
 msgid "需要系统覆盖 q 空间的磁激发"
-msgstr "You need systematic coverage of magnetic excitations over wave vector `q`."
+msgstr ""
+"You need systematic coverage of magnetic excitations over wave vector `q`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:54
-#: 1910003a02c24ab2a24942230fd6c7f6
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:57
+#: f1fc95e138584f50bb3d12f3ec5ab137
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:55
-#: 9bcc8db8cea342689b14ea31384c8088
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:58
+#: 76dd9ca0f95643fa99656556f729ba0d
 msgid "体系只有共线磁序 → `Magnetic Order` 够用"
 msgstr "Only collinear order is relevant → `Magnetic Order` is sufficient."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:56
-#: c4c0f3ddc23e45769444729e77058ca7
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:59
+#: 60807313aa234c62b7a2a3a58764ca2f
 msgid "需要局部小角度偏转而非长程螺旋 → 用 `Small-Angle Spin Tilt`"
 msgstr ""
 "You need local small-angle canting rather than a long-range spiral → use "
 "`Small-Angle Spin Tilt`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:57
-#: bd21d3637b8e407796d8f2679ff4bffd
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:60
+#: 859a847aeffe49d08be3d57be958cfef
 msgid "晶体结构本身需要扩胞才能容纳目标周期 → 先扩胞再回来"
 msgstr ""
-"The target period does not fit the current cell → build a suitable "
-"supercell first."
+"The target period does not fit the current cell → build a suitable supercell "
+"first."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:59
-#: 0fa4620d626e448ca627d5428043b642
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:62
+#: afd47cb1a6c947b486abbb2a8d163e28
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:61
-#: ba32b03d536e4bb6952293638d3116bb
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:64
+#: 47e3b10151a54680b6a0755f4dc114e5
 msgid "螺旋轴和周期"
 msgstr "Propagation axis and period"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:63
-#: 22ce7c3723cf4ee791d19d4cb587745f
-msgid "Axis（axis）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:66
+#: 45e52ec3c1fa4404b2fde9914921ccb2
+msgid "轴（axis）"
+msgstr "axis"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:65
-#: 3629ccab87214b409e10ceea6e7624c0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:68
+#: 19d11809a6bc455991798179d8566f75
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
-"1.0)`。螺旋相位沿此方向传播，原子坐标在该方向的投影用于计算相位，格式 `[x, y, z]`。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。螺旋相位"
+"沿此方向传播，原子坐标在该方向的投影用于计算相位，格式 `[x, y, z]`。"
 msgstr ""
 "`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. "
-"Direction along which the phase propagates. Each atom's projected "
-"coordinate on this axis determines its phase. Format: `[x, y, z]`."
+"Direction along which the phase propagates. Each atom's projected coordinate "
+"on this axis determines its phase. Format: `[x, y, z]`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:67
-#: f20b4221a6a94cad83386d88e6fdb41a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:70
+#: 901264168c5e45b7a1114836c67fa5b9
 msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
 msgstr ""
 "Used by modes that depend on a direction, layering, a surface, or vector "
 "initialization."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:69
-#: 818fec2cbdc8475db167fb5b2a110f96
-msgid "Spiral Parameter Mode（spiral_parameter_mode）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:72
+#: 6d6ae5e2beee4f2c93631de7e214e8a9
+msgid "螺旋参数方式（spiral_parameter_mode）"
+msgstr "spiral_parameter_mode"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:71
-#: ef071daecdae4ded89b70cf7fb9a6f5b
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:74
+#: 2681aef069a741789dc115612dea4a41
 msgid ""
-"`str`，默认 `'Period (L_D)'`。`Period (L_D)` 适合已知螺旋周期或要扫 E(q) 曲线；`Angle "
-"gradient (deg/A)` 适合直接控制每埃旋转角。"
+"`str`，默认 `'Period (L_D)'`。`Period (L_D)` 适合已知螺旋周期或要扫 E(q) 曲"
+"线；`Angle gradient (deg/A)` 适合直接控制每埃旋转角。"
 msgstr ""
 "`str`, default: `'Period (L_D)'`. Use `Period (L_D)` when scanning known "
-"spiral periods or an `E(q)` curve. Use `Angle gradient (deg/A)` to "
-"control rotation directly in degrees per Å."
+"spiral periods or an `E(q)` curve. Use `Angle gradient (deg/A)` to control "
+"rotation directly in degrees per Å."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:73
-#: 12cdb545930144a58ee0a1219ac70ab7
-msgid "Period Range（period_range）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:76
+#: 6a339d518d354ea4bfec93d931145f9d
+msgid "周期范围（period_range）"
+msgstr "period_range"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:75
-#: 675001fd0341401d8f8bde6e8ae43a3c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:78
+#: ddfa0dfb17cc4c8fb07e950f97617b24
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(20.0, 40.0, 10.0)`。`[min,"
-" max, step]` 格式，单位 Å。"
+"`list[float] | tuple[float, float, float]`，默认 `(20.0, 40.0, 10.0)`。"
+"`[min, max, step]` 格式，单位 Å。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default: `(20.0, 40.0, "
-"10.0)`. Period range in Å, expressed as `[minimum, maximum, step]`."
+"`list[float] | tuple[float, float, float]`, default: `(20.0, 40.0, 10.0)`. "
+"Period range in Å, expressed as `[minimum, maximum, step]`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:76
-#: 62f2a102e72442e0a8b85b7c1237df4e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:79
+#: a02f661b413b4e2c9d003d165b543136
 msgid "保守：`[20, 20, 5]`（单周期）"
 msgstr "Conservative: `[20, 20, 5]` (one period)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:77
-#: 11bcabcd00fe42a7a6bea6b3b31997c4
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:80
+#: 698235cd9d0f45cc894c15475e915a17
 msgid "平衡：`[10, 40, 10]`（4 个周期）"
 msgstr "Balanced: `[10, 40, 10]` (four periods)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:78
-#: 5b74ebaf22aa4f2fa476454540f2b712
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:81
+#: 35f46c57a47f406d9a33a6140f7f5635
 msgid "探索：`[4, 80, 4]`（宽范围）"
 msgstr "Exploratory: `[4, 80, 4]` (broad range)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:80
-#: 21b6bf4bb2814ba4b52e165910e7010c
-msgid "Angle Gradient Range（angle_gradient_range）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:83
+#: 843cfa66dd1a43fabed208ff4094dfac
+msgid "角度梯度范围（angle_gradient_range）"
+msgstr "angle_gradient_range"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:82
-#: 04915aa068b6464e9e04384716d43b3d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:85
+#: b54e036900504d42a0bee7c9c26e9ef3
 msgid ""
 "`list[float] | tuple[float, float, float]`，默认 `(18.0, 18.0, 1.0)`。`[min, "
 "max, step]` 格式，单位 deg/A。值越大旋转越快——360/L_D = 梯度。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default: `(18.0, 18.0, 1.0)`."
-" Rotation-gradient range in degrees per Å, expressed as `[minimum, "
-"maximum, step]`. The gradient is `360 / L_D`, so larger values correspond"
-" to shorter periods."
+"`list[float] | tuple[float, float, float]`, default: `(18.0, 18.0, 1.0)`. "
+"Rotation-gradient range in degrees per Å, expressed as `[minimum, maximum, "
+"step]`. The gradient is `360 / L_D`, so larger values correspond to shorter "
+"periods."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:84
-#: b945a0b419cc4480904b14984ce798ee
-msgid "Layer Tolerance（layer_tolerance）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:87
+#: 54d0de8ca1f2429cb1380c38913946fb
+msgid "层容差（layer_tolerance）"
+msgstr "layer_tolerance"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:86
-#: ad2a63a0424544d1afebe8784ebb0c52
-msgid "`float`，默认 `0.05`。投影差小于此阈值的原子归为同一层。仅在 `Layer-locked` 模式下生效。"
-msgstr ""
-"`float`, default: `0.05`. Atoms whose projected coordinates differ by "
-"less than this tolerance are assigned to the same layer. Used only in "
-"`Layer-locked` mode."
-
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:88
-#: 47a32212fed3462caec320aa254bd2c5
-msgid "Only Commensurate Periods（only_commensurate_periods）"
-msgstr ""
-
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:90
-#: 43007f3b24284564b82a1f658dc69f1d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:89
+#: 51b32669828b457c83d4b9143d29bd08
 msgid ""
-"`bool`，默认 "
-"`False`。勾选后只保留与当前晶格周期边界相容的周期，程序在指定区间内自动搜索相容周期。如果没有相容周期，卡片会给出建议的超胞倍数。"
+"`float`，默认 `0.05`。投影差小于此阈值的原子归为同一层。仅在 `Layer-locked` "
+"模式下生效。"
 msgstr ""
-"`bool`, default: `False`. Retain only periods commensurate with the "
-"current periodic cell. The card searches the requested range and, if none"
-" fit, reports a suggested supercell multiplier."
+"`float`, default: `0.05`. Atoms whose projected coordinates differ by less "
+"than this tolerance are assigned to the same layer. Used only in `Layer-"
+"locked` mode."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:92
-#: 57980423b29341d4b72d39031b3eb6d2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:91
+#: 2342b36882b2457c99e50d0815cb4bc4
+msgid "仅生成公度周期（only_commensurate_periods）"
+msgstr "only_commensurate_periods"
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:93
+#: 49ca8ccc3099403b9ea9affadda31ca8
+msgid ""
+"`bool`，默认 `False`。勾选后只保留与当前晶格周期边界相容的周期，程序在指定区"
+"间内自动搜索相容周期。如果没有相容周期，卡片会给出建议的超胞倍数。"
+msgstr ""
+"`bool`, default: `False`. Retain only periods commensurate with the current "
+"periodic cell. The card searches the requested range and, if none fit, "
+"reports a suggested supercell multiplier."
+
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:95
+#: 290725c52a1e449dbcf2455ee4ac1db5
 msgid "相位和形状"
 msgstr "Phase and spiral shape"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:94
-#: 5cdf11a1b65348fc93d1e47202d238ae
-msgid "Phase Range（phase_range）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:97
+#: 9043d6b07de04275a9e67a1068c848f3
+msgid "相位范围（phase_range）"
+msgstr "phase_range"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:96
-#: b0082792ca9949a5a6d3968fd9cbc75d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:99
+#: 237297cc1ad84fcb923aa84935c61111
 msgid ""
 "`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 15.0)`。`[min, "
 "max, step]`，全局相位偏移，单位度。"
@@ -395,181 +405,183 @@ msgstr ""
 "`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 15.0)`. "
 "Global phase offsets as `[min, max, step]` in degrees."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:97
-#: 0af3965c9ad94005bf9bfbe46b60878c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:100
+#: c9249befc1a44b8cb840668f95d3d6c4
 msgid "保守：`[0, 0, 15]`（单个相位）"
 msgstr "Conservative: `[0, 0, 15]` (one phase)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:98
-#: ac4eb9948bfe4c019eedaa41d83338d3
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:101
+#: 3194161232cd4ea091bd1be9d3ffe93d
 msgid "平衡：`[0, 90, 30]`（4 个相位）"
 msgstr "Balanced: `[0, 90, 30]` (four phases)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:99
-#: db23094dedee482692d159d13a8688ad
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:102
+#: 6089ecc99ecc41fbb1f948538136adca
 msgid "探索：`[-180, 180, 30]`（全相位空间）"
 msgstr "Exploratory: `[-180, 180, 30]` (full phase range)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:101
-#: 8a4cd94f880a4daa88e35ccb40e4374d
-msgid "Mz（mz）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:104
+#: 549afbdd45cb4234b5a5012218829950
+msgid "z 方向磁矩分量（mz）"
+msgstr "mz"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:103
-#: ea4649817c2042f59284feb378d6c11d
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:106
+#: 0056c46b971e435b8369077116a0a6f9
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
-"0.1)`。沿传播轴的单位化分量，范围 [-1, 1]。0 = 纯 helix，非零 = conical spiral。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 0.1)`。沿传播轴"
+"的单位化分量，范围 [-1, 1]。0 = 纯 helix，非零 = conical spiral。"
 msgstr ""
 "`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 0.1)`. "
-"Normalized component along the propagation axis, in `[-1, 1]`. Zero gives"
-" a planar helix; a nonzero value gives a conical spiral."
+"Normalized component along the propagation axis, in `[-1, 1]`. Zero gives a "
+"planar helix; a nonzero value gives a conical spiral."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:104
-#: e4724922696c4a098d6998c19787680f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:107
+#: 89ec30e3fb5e472cb163d1e4890d3edc
 msgid "保守：`[0, 0, 0.1]`（纯 helix）"
 msgstr "Conservative: `[0, 0, 0.1]` (planar helix)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:105
-#: 3fefd9a221a74be1b25bed65680ebf5c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:108
+#: 77ae0b12e1bf4f3685bacac63dadb43c
 msgid "平衡：`[0, 0.5, 0.1]`（弱 conical）"
 msgstr "Balanced: `[0, 0.5, 0.1]` (moderate conical component)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:106
-#: 747bfbe302144da58e02e27ace8fc76a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:109
+#: 51bb6e9cc0d44d61a060885f13c3cf33
 msgid "探索：`[-0.9, 0.9, 0.1]`（全 conical 空间）"
 msgstr "Exploratory: `[-0.9, 0.9, 0.1]` (broad conical range)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:108
-#: 12edd71dab1a484eaf71fe4b877680ed
-msgid "Chirality（chirality）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:111
+#: d5c5a1e94c354b3bb050ec4889465691
+msgid "手性（chirality）"
+msgstr "chirality"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:110
-#: 30afa0278e7445528552c0471a87a39f
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:113
+#: cf0a764cbc8d401a99b260ce17323eb8
 msgid ""
-"`str`，默认 `'Both'`。`Clockwise` / `Counterclockwise` / `Both`。选 `Both` "
-"会对同一组参数生成一对手性相反的构型。"
+"`str`，默认 `'Both'`。`Clockwise` / `Counterclockwise` / `Both`。选 `Both` 会"
+"对同一组参数生成一对手性相反的构型。"
 msgstr ""
-"`str`, default: `'Both'`. Choose `Clockwise`, `Counterclockwise`, or "
-"`Both`. `Both` generates a pair of opposite chiralities for every other "
-"parameter combination."
+"`str`, default: `'Both'`. Choose `Clockwise`, `Counterclockwise`, or `Both`. "
+"`Both` generates a pair of opposite chiralities for every other parameter "
+"combination."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:112
-#: 8094e365dcd943458cfa508643530c19
-msgid "Phase Mode（phase_mode）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:115
+#: e6f5dadfbbc54be88c66eeae2db97ab3
+msgid "相位模式（phase_mode）"
+msgstr "phase_mode"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:114
-#: da79936f4f1342e4881061a83b813dc0
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:117
+#: 0a78c9e375f54f8da3f2bdc08b732c12
 msgid ""
-"`str`，默认 `'Continuous by position'`。`Continuous by "
-"position`：每个原子按自身投影坐标独立计算相位，适合标准连续螺旋。`Layer-"
-"locked`：先按投影坐标分层，同层原子共享相位，适合层状体系。"
+"`str`，默认 `'Continuous by position'`。`Continuous by position`：每个原子按"
+"自身投影坐标独立计算相位，适合标准连续螺旋。`Layer-locked`：先按投影坐标分"
+"层，同层原子共享相位，适合层状体系。"
 msgstr ""
 "`str`, default: `'Continuous by position'`. In `Continuous by position`, "
-"each atom's phase follows its own projected coordinate. In `Layer-"
-"locked`, projected positions are clustered into layers and all atoms in "
-"one layer share a phase."
+"each atom's phase follows its own projected coordinate. In `Layer-locked`, "
+"projected positions are clustered into layers and all atoms in one layer "
+"share a phase."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:116
-#: 126ec3b6fb8443ee8069e4fb74dec527
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:119
+#: 71d387a1d5b14d048f21841d0de30ecf
 msgid "磁矩幅值"
 msgstr "Moment magnitudes"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:118
-#: e5b3497f87074d11bc8cc3b70cb89679
-msgid "Magnitude Source（magnitude_source）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:121
+#: f13387d7c0124d028eecbe0fd7962204
+msgid "磁矩大小来源（magnitude_source）"
+msgstr "magnitude_source"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:120
-#: a8809eb36c0b46139f1ba8ba6c10c0ad
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:123
+#: fb829da040e14732abcd3fc29580fb85
 msgid ""
-"`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` "
-"复用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。"
+"`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` 复"
+"用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。"
 msgstr ""
 "`str`, default `'Existing initial magmoms'`. Choose `Existing initial "
 "magmoms` to reuse stored moments or `Map/default magnitude` to create "
 "magnitudes from an element map."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:122
-#: 57294f7dae82440b9deaa9977b7b1632
-msgid "**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。"
-msgstr ""
-"**`Magmom Map`** / **`Default Moment`**: used only in `Map/default "
-"magnitude` mode."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:125
+#: 9a0d9cd92f8e4ffea783ec17bb4624c7
+msgid ""
+"**`元素磁矩表`（`magmom_map`）** / **`默认磁矩`（`default_moment`）**：仅在 "
+"`Map/default magnitude` 模式下生效。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:124
-#: af77f8c621f84764899cb71c7081a366
-msgid "Magmom Map（magmom_map）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:127
+#: 143250798cac4676ae342af48d176d38
+msgid "元素磁矩表（magmom_map）"
+msgstr "magmom_map"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:126
-#: 7154568468c844758bf03ff825f43a7c
-msgid "`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:129
+#: 5deaea81a0f64958a4607e63c7e649d6
+msgid ""
+"`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不"
+"要用默认值伪造先验。"
 msgstr ""
 "`str`, default `''`. Provide known element-resolved local moments "
 "explicitly, for example `Fe:2.2,Ni:0.6`. Do not invent a prior for an "
 "unknown element through a default value."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:128
-#: d6d767563c9f440098341680513a060c
-msgid "Default Moment（default_moment）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:131
+#: 77b0ea3ce6544e08a584f146734d957e
+msgid "默认磁矩（default_moment）"
+msgstr "default_moment"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:130
-#: c7ca6016bbb84d938b621885dc05eb23
-msgid "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。"
-msgstr ""
-"`float`, default `0.0`. Used only when an element is absent from "
-"`magmom_map`. List important magnetic elements explicitly; nonmagnetic "
-"elements should normally remain at 0."
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:133
+#: cd38601a3e21494b987b34ad0ae0cee2
+msgid ""
+"`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅"
+"值。关键磁性元素应显式列出，非磁元素通常保持 0。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:132
-#: aacc6d40e37f499c93f94197bcd8c8d0
-msgid "Apply Elements（apply_elements）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:135
+#: ac76335e6f144cd5975a047fafe61cb1
+msgid "应用元素（apply_elements）"
+msgstr "apply_elements"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:134
-#: 6c0fc9914c684c90a0166b9b6ae7c850
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:137
+#: 4a3898ecda4f45efbc1e54346d4b8b6a
 msgid "`str`，默认 `''`。限制哪些元素施加螺旋纹理，留空则全部参与。"
 msgstr ""
 "`str`, default: `''`. Restricts the spiral texture to selected elements. "
 "Leave empty to include all elements."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:136
-#: 32f08a29ea1e4c519844420a07acb918
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:139
+#: 862bd3ad718748a8b83e2bda03c5a7f1
 msgid "输出预算"
 msgstr "Output budget"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:138
-#: d30f8a5cd7164455bc6fd0d88b29b4ce
-msgid "Max Outputs（max_outputs）"
-msgstr ""
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:141
+#: 47a692e299ee463385076bf7c85bb685
+msgid "最大输出数（max_outputs）"
+msgstr "max_outputs"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:140
-#: 185b2f97a0bf46b8b8bb4ab00fdc8416
-msgid "`int`，默认 `100`。周期、相位、手性和锥角组合会迅速相乘放大输出数量。E(q) 曲线先保留几十个点，全参数探索时再放大上限。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:143
+#: 07677d67aaf542ffb90b9c3bb26f2104
+msgid ""
+"`int`，默认 `100`。周期、相位、手性和锥角组合会迅速相乘放大输出数量。E(q) 曲"
+"线先保留几十个点，全参数探索时再放大上限。"
 msgstr ""
-"`int`, default: `100`. Periods, phases, chiralities, and axial components"
-" form a Cartesian product. Keep an initial `E(q)` scan to a few dozen "
-"points, then raise the cap only for a deliberate full-space study."
+"`int`, default: `100`. Periods, phases, chiralities, and axial components "
+"form a Cartesian product. Keep an initial `E(q)` scan to a few dozen points, "
+"then raise the cap only for a deliberate full-space study."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:142
-#: f67f077b2756445c9eb781563692093e
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:145
+#: 0cd05145291d4d4a9d82c48f8394456b
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:144
-#: bfc07703063d42fbb7a8115acd124460
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:147
+#: 87f1d9423cf44c5abaf6053ccd6d3d91
 msgid "单周期纯 helix 验证（2 个输出，先确认方向正确）"
 msgstr ""
 "Single-period planar-helix check (2 outputs; verify propagation and "
 "chirality)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:145
-#: e92bf5f5a45245b1b2ab35fbe42cfd7d
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:148
+#: 25e7c504cd4640fd93a033597c37280e
 msgid ""
 "{\n"
 "  \"class\": \"SpinSpiralCard\",\n"
@@ -592,16 +604,15 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:167
-#: b23acfbbd8ab4cd6b7073e630f22a321
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:170
+#: 05fde3a80f5c4e45aa89bfae5e659a40
 msgid "多周期多相位螺旋（~30 个输出，常规 E(q) 曲线拟合）"
 msgstr ""
 "Multiple-period, multiple-phase spirals (~30 outputs for routine `E(q)` "
 "fitting)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:168
-#: c4a7416c105b46e3a5b28b69b16fcb81
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:171
+#: 403adcf4a590418f9e0461bbdbd935b9
 msgid ""
 "{\n"
 "  \"class\": \"SpinSpiralCard\",\n"
@@ -624,16 +635,15 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:190
-#: 2d5f2b1053754d77b81bbd0d312d0c80
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:193
+#: 9b7e0a5674b646ea89a6ae56887dc55a
 msgid "全参数空间扫描（~500 个输出，研究级，含 conical + 整周期约束）"
 msgstr ""
 "Full parameter-space scan (~500 outputs; conical states with "
 "commensurability filtering)"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:191
-#: 4df8f0d88c8042fa82254f1c7cb7fc4a
-#, python-brace-format
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:194
+#: 3ecc4a8ae4e24feeb76b744f449a83ff
 msgid ""
 "{\n"
 "  \"class\": \"SpinSpiralCard\",\n"
@@ -656,114 +666,164 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:213
-#: 9ba6c558456e4aee937ffc3001ea595c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:216
+#: 04c856ec75654e9296857a9b7ce94e4d
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:215
-#: 60b60faf49934ab686f2a8b69038813c
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:218
+#: 314f9fc436d848308e2b4c8e6f0e5423
 msgid "`Magnetic Order` → `Spin Spiral`：先确定局域磁矩模长，再扫螺旋周期和 mz"
 msgstr ""
-"`Magnetic Order` → `Spin Spiral`: establish local moment magnitudes, then"
-" scan spiral period and `mz`."
+"`Magnetic Order` → `Spin Spiral`: establish local moment magnitudes, then "
+"scan spiral period and `mz`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:216
-#: 7258207f9d1346769f5df4d642947873
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:219
+#: 353294c6157c40c6a32ce7958f08eaa1
 msgid "`Set Magnetic Moments` → `Spin Spiral`：先统一写入磁矩幅值，再做螺旋"
 msgstr ""
-"`Set Magnetic Moments` → `Spin Spiral`: standardize moment magnitudes, "
-"then impose the spiral."
+"`Set Magnetic Moments` → `Spin Spiral`: standardize moment magnitudes, then "
+"impose the spiral."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:217
-#: 558f933b4f3d49139bcc318560e5ec11
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:220
+#: 2c478a62cffe46e8b982043f443b0c53
 msgid "`Super Cell` → `Spin Spiral`：扩胞后容纳更长周期，再用整周期约束锁相"
 msgstr ""
 "`Super Cell` → `Spin Spiral`: enlarge the cell to accommodate longer "
 "periods, then enforce commensurability."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:219
-#: 865e2ae857b24473bce5d0b0c1c70609
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:222
+#: 377e2be4a39c4aefba80a970585557f5
 msgid "常见问题"
 msgstr "Common questions"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:221
-#: 896a9716c01143eba63cbf6cd10d6d4a
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:224
+#: 8bbc05f1003e48499838a5de6ad655df
 msgid ""
-"**输出为空 / 只有原始输入。** 磁矩幅值全为 0（检查 `magnitude_source` 和 `magmom_map`）。`Period"
-" Filter` 开启且区间内没有相容周期——卡片会打印建议超胞倍数。"
-msgstr ""
-"**No output is produced, or only the original input remains.** All moment"
-" magnitudes may be zero; check `magnitude_source` and `magmom_map`. "
-"Alternatively, `Period Filter` found no commensurate period in the "
-"requested range; use the reported supercell suggestion."
+"**输出为空 / 只有原始输入。** 磁矩幅值全为 0（检查 `磁矩大小来源`"
+"（`magnitude_source`）和 `magmom_map`）。`Period Filter` 开启且区间内没有相容"
+"周期——卡片会打印建议超胞倍数。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:223
-#: 825ffe1f1d0043b5ae42debebd41d912
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:226
+#: cdcdfd67603840c6882c63547934a467
 msgid ""
-"**相邻层相位递进不对。** 检查 `Propagation Axis` 是否指向预期的传播方向。`Phase Mode = Layer-"
-"locked` 时调整 `layer_tolerance`。"
-msgstr ""
-"**Phase progression between layers is incorrect.** Check `Propagation "
-"Axis`. In `Phase Mode = Layer-locked`, also tune `layer_tolerance` so "
-"physical layers are neither split nor merged."
+"**相邻层相位递进不对。** 检查 `Propagation Axis` 是否指向预期的传播方向。"
+"`Phase Mode = Layer-locked` 时调整 `层容差`（`layer_tolerance`）。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:225
-#: 9bf2025867ac4d2b8aa972e0b6da1e73
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:228
+#: 3f647284f19a463abc59c83a000bf277
 msgid ""
-"**输出比预期的多很多。** `period_range` 步长太小，或 `mz` 范围太宽。设 `max_outputs` "
-"上限，先小步长试跑再扩大。"
-msgstr ""
-"**Far more structures are produced than expected.** `period_range` may "
-"use a fine step or `mz` may span too many values. Set `max_outputs` and "
-"validate a small scan before expanding it."
+"**输出比预期的多很多。** `周期范围`（`period_range`）步长太小，或 `z 方向磁矩"
+"分量`（`mz`）范围太宽。设 `最大输出数`（`max_outputs`）上限，先小步长试跑再扩"
+"大。"
+msgstr "This section explains the option, its parameters, operation, and expected result."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:227
-#: 9c02b7408384440a8330b7e2e3f554b2
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:230
+#: 5d1eae8302f242669172c2f207e6556a
 msgid ""
-"**conical spiral 的 mz 值看不懂。** mz 是无量纲比值 m_parallel / |m|，不是以 mu_B "
-"计的绝对磁矩。物理上它只能取 [-1, 1]。"
+"**conical spiral 的 mz 值看不懂。** mz 是无量纲比值 m_parallel / |m|，不是以 "
+"mu_B 计的绝对磁矩。物理上它只能取 [-1, 1]。"
 msgstr ""
-"**The meaning of conical-spiral `mz` is unclear.** It is the "
-"dimensionless ratio `m_parallel / |m|`, not an absolute moment in μB, and"
-" must lie in `[-1, 1]`."
+"**The meaning of conical-spiral `mz` is unclear.** It is the dimensionless "
+"ratio `m_parallel / |m|`, not an absolute moment in μB, and must lie in "
+"`[-1, 1]`."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:229
-#: 288cfe8d71ee401a81d3994af055dc74
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:232
+#: 68e1f9f9912d4cccadba01392b96a3bc
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:231
-#: 6b80cbc12fe248019a4a0dee1f43cbc5
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:234
+#: af4823ae4bf8480cac43650d1d482cc4
 msgid "`Helix(L=...,ph=...,mz=0,chi=...,ax=...)`：纯平面 helix"
 msgstr "`Helix(L=...,ph=...,mz=0,chi=...,ax=...)`: planar helix"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:232
-#: 927bc089c15a4473ac6995e4c4e8b4ed
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:235
+#: 747a4ac12c944a4eae9b2a5482c4253f
 msgid "`Spiral(L=...,ph=...,mz=...,chi=...,ax=...)`：conical spiral"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:233
-#: a88c3e1a0eec41cdabef7a890e8728ed
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:236
+#: 3ec04f1b7a0f41978468333261f72775
 msgid "附加 `pm=layer,ltol=...`：仅 layer-locked 模式"
 msgstr "Additional `pm=layer,ltol=...`: present only in layer-locked mode"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:235
-#: d7a240536d794422b4d3deda7f6ecc4c
-msgid "所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别名。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:238
+#: 84584576e2ae4718b1f18c6377ce4a0d
+msgid ""
+"所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别"
+"名。"
 msgstr ""
-"All exported outputs use `spin:R:3`; an ASE `initial_magmoms` "
-"three-component vector alias is kept in sync internally."
+"All exported outputs use `spin:R:3`; an ASE `initial_magmoms` three-"
+"component vector alias is kept in sync internally."
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:237
-#: 241392b4d4e54d458e0ee89db3418a75
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:240
+#: 1fe5d4728bd04ce680d117757e3071f0
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/spin-spiral-card.md:239
-#: 7611564eb16b4d83a4bd287087216f91
-msgid "无随机性。相同输入结构与相同参数 → 严格一致输出。相位原点固定为传播轴最小投影位置。"
+#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/spin-spiral-card.md:242
+#: 2668ac976fc24312a81fc3766e81fcf4
+msgid ""
+"无随机性。相同输入结构与相同参数 → 严格一致输出。相位原点固定为传播轴最小投影"
+"位置。"
 msgstr ""
 "Deterministic. The same input structure and parameters produce identical "
 "output. The phase origin is fixed at the minimum projection along the "
 "propagation axis."
+
+#~ msgid ""
+#~ "其中 m_z = m_parallel / |m| 是无量纲轴向分量。m_z=0 为平面 helix，m_z=0 "
+#~ "为 conical spiral。"
+#~ msgstr ""
+#~ "Here `m_z = m_parallel / |m|` is the dimensionless component along the "
+#~ "propagation axis. `m_z = 0` gives a planar helix; nonzero `m_z` gives a "
+#~ "conical spiral."
+
+#~ msgid "如果极小值位置仍偏离，加密 `period_range` 扫描（例如 `[10, 40, 5]`）"
+#~ msgstr ""
+#~ "If the position of the minimum remains inaccurate, densify "
+#~ "`period_range`, for example to `[10, 40, 5]`."
+
+#~ msgid ""
+#~ "**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式"
+#~ "下生效。"
+#~ msgstr ""
+#~ "**`Magmom Map`** / **`Default Moment`**: used only in `Map/default "
+#~ "magnitude` mode."
+
+#~ msgid ""
+#~ "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元"
+#~ "素应显式列出，非磁元素通常保持 0。"
+#~ msgstr ""
+#~ "`float`, default `0.0`. Used only when an element is absent from "
+#~ "`magmom_map`. List important magnetic elements explicitly; nonmagnetic "
+#~ "elements should normally remain at 0."
+
+#~ msgid ""
+#~ "**输出为空 / 只有原始输入。** 磁矩幅值全为 0（检查 `magnitude_source` 和 "
+#~ "`magmom_map`）。`Period Filter` 开启且区间内没有相容周期——卡片会打印建议超"
+#~ "胞倍数。"
+#~ msgstr ""
+#~ "**No output is produced, or only the original input remains.** All moment "
+#~ "magnitudes may be zero; check `magnitude_source` and `magmom_map`. "
+#~ "Alternatively, `Period Filter` found no commensurate period in the "
+#~ "requested range; use the reported supercell suggestion."
+
+#~ msgid ""
+#~ "**相邻层相位递进不对。** 检查 `Propagation Axis` 是否指向预期的传播方向。"
+#~ "`Phase Mode = Layer-locked` 时调整 `layer_tolerance`。"
+#~ msgstr ""
+#~ "**Phase progression between layers is incorrect.** Check `Propagation "
+#~ "Axis`. In `Phase Mode = Layer-locked`, also tune `layer_tolerance` so "
+#~ "physical layers are neither split nor merged."
+
+#~ msgid ""
+#~ "**输出比预期的多很多。** `period_range` 步长太小，或 `mz` 范围太宽。设 "
+#~ "`max_outputs` 上限，先小步长试跑再扩大。"
+#~ msgstr ""
+#~ "**Far more structures are produced than expected.** `period_range` may "
+#~ "use a fine step or `mz` may span too many values. Set `max_outputs` and "
+#~ "validate a small scan before expanding it."

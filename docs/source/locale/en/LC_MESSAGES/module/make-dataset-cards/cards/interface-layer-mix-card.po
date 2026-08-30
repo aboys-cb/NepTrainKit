@@ -1,0 +1,463 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:3
+#: 2e7e1f527ad74c61b4af25ca45ec188f
+msgid "界面层互混（Interface Layer Mixing）"
+msgstr "Interface Layer Mixing"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:5
+#: a31f28de6a3c429fbc2be8192464dcac
+msgid "**分类：** 合金与组成"
+msgstr "**Category:** Alloys and Composition"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:7
+#: c4364152160c4c20a86ec1cbacd7ab68
+msgid ""
+"这张卡从一个双层或界面结构中选定一处界面，在界面两侧的若干原子层之间交换**异种元素**。原子坐标、晶胞、PBC "
+"和总元素数保持不变，输出可用于补充界面互扩散的未弛豫候选构型。"
+msgstr ""
+"Select one interface in a bilayer or interfacial structure and exchange **different "
+"elements** between several atomic layers on its two sides. Atomic coordinates, the "
+"cell, PBC, and total element counts remain unchanged. The outputs provide unrelaxed "
+"candidate configurations for interfacial interdiffusion."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:9
+#: 7d9f5781aaf249128e5f106c3d5cc4ca
+msgid "功能说明"
+msgstr "Purpose"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:11
+#: 71bb0a0161b045ffa6dce797ee784a9a
+msgid ""
+"当模型在理想界面上表现正常，但在界面互扩散、元素错位或局部混合构型上误差较大时，可用本卡补充不同互混程度的结构。输入应至少包含两种元素，并且界面能沿某个晶格分数坐标 "
+"`a`、`b` 或 `c` 切分。"
+msgstr ""
+"Use this card to add structures with different degrees of mixing when a model "
+"performs well on ideal interfaces but has large errors for interdiffusion, antisite-"
+"like element placement, or locally mixed configurations. The input must contain at "
+"least two elements, and the interface must be separable along lattice fractional "
+"coordinate `a`, `b`, or `c`."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:13
+#: e3bb7e10ca054de7831c93ff3e4a6ddd
+msgid "它与相邻卡片的边界很清楚："
+msgstr "Its role differs clearly from neighboring cards:"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:15
+#: 4d5e97d2f02a4d2d99ea14e2eb0cd979
+msgid "**随机占位**：在选定位点上重新分配组成；"
+msgstr "**Random Occupancy:** redistribute composition over selected sites;"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:16
+#: d60945464dd1442a976fa731a9208b73
+msgid "**条件替换**：把满足空间条件的目标元素替换成指定元素；"
+msgstr ""
+"**Conditional Replace:** replace target elements satisfying a spatial condition with "
+"specified elements;"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:17
+#: 5308d7f08ad341649a7166f2571b16be
+msgid "**界面层互混**：只在选定界面两侧成对交换异种元素，因此总组成不变。"
+msgstr ""
+"**Interface Layer Mixing:** exchange unlike elements only in pairs across the "
+"selected interface, preserving the total composition."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:19
+#: d66b02b0b24741d68de6a92573103822
+msgid "原理与公式"
+msgstr "Principles and Equations"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:21
+#: ab138721349a4973803d7a97f332ab9a
+msgid "1. 选定界面"
+msgstr "1. Select the Interface"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:23
+#: 90c94f2db5d045f3b0dcada023cac17d
+msgid "程序按分数坐标 `a`、`b` 或 `c` 分层。这里的 `a/b/c` 是晶格分数坐标，不是笛卡尔 `X/Y/Z`；等分数坐标平面的法向对应倒易晶格方向。"
+msgstr ""
+"The program forms layers using fractional coordinate `a`, `b`, or `c`. Here `a/b/c` "
+"denotes lattice fractional coordinates rather than Cartesian `X/Y/Z`; the normal to a"
+" constant-fractional-coordinate plane follows the corresponding reciprocal-lattice "
+"direction."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:25
+#: 092ab61171bb407182bb1fac985572fe
+msgid "自动模式比较三个方向上成分切分前后的差异，选择最明显的方向和层间隙。手动模式则使用用户给出的方向与分数位置：低坐标一侧记为 L，高坐标一侧记为 R。"
+msgstr ""
+"Automatic mode compares composition contrast across candidate splits in all three "
+"directions and selects the strongest direction and interlayer gap. Manual mode uses "
+"the supplied direction and fractional position: the lower-coordinate side is L and "
+"the higher-coordinate side is R."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:27
+#: 9799ff2c81c24f2b86549dcd3ad83637
+msgid "2. 识别原子层"
+msgstr "2. Identify Atomic Layers"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:29
+#: 371cc1611b33427f93613cabac642ec4
+msgid ""
+"沿所选方向把相邻原子的等分数坐标平面间距换算为真实垂直距离。距离不大于 `layer_tolerance` 的原子归入同一层，然后从界面向两侧分别选取 "
+"`left_layers` 和 `right_layers` 层。"
+msgstr ""
+"Along the selected direction, separation between adjacent constant-fractional-"
+"coordinate planes is converted to a true perpendicular distance. Atoms separated by "
+"no more than `layer_tolerance` are assigned to the same layer. The card then selects "
+"`left_layers` and `right_layers` outward from the interface on the two sides."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:31
+#: 8abfae0e77004047bfa666dd7b0663a1
+msgid "3. 只交换异种元素"
+msgstr "3. Exchange Unlike Elements Only"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:33
+#: d778d7c31d4d4c4987e3e149f32e3a58
+msgid "设选中区域共有 $n=n_L+n_R$ 个原子，实际交换 $k$ 对原子。每一对必须来自界面两侧且元素不同，因此真正改变元素的原子数为 $2k$，实现浓度为"
+msgstr ""
+"Suppose the selected region contains $n=n_L+n_R$ atoms and $k$ atom pairs are "
+"actually exchanged. Every pair must come from opposite sides of the interface and "
+"contain different elements. Therefore, $2k$ atoms actually change species, and the "
+"realized concentration is"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:35
+#: e646adff54084d41b1707a1a2cd7a23c
+msgid ""
+"\n"
+"c_{\\mathrm{eff}}=\\frac{2k}{n_L+n_R}.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:39
+#: cbee1247d5e34a4da831a8482d230c10
+msgid "目标浓度 $c_{\\mathrm{target}}$ 先换算为离散交换对数"
+msgstr ""
+"The target concentration $c_{\\mathrm{target}}$ is first converted to a discrete "
+"number of exchange pairs:"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:41
+#: f9c619892ab54cc4bd7205d0395263f0
+msgid ""
+"\n"
+"k=\\operatorname{round}\\left(\\frac{c_{\\mathrm{target}}(n_L+n_R)}{2}\\right).\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:45
+#: 1e96735f971c4ebe9b41e3687b00698d
+msgid ""
+"有限原子数会使 $c_{\\mathrm{eff}}$ 与目标值略有不同。界面预览会显示“目标 → 实现”，`Config_type` "
+"记录实现浓度；若两侧元素分布不足以形成所需数量的异种配对，运行会在随机采样前报错。"
+msgstr ""
+"A finite atom count can make $c_{\\mathrm{eff}}$ differ slightly from the target. The"
+" interface preview displays `target → realized`, and `Config_type` records the "
+"realized concentration. If the element distributions on the two sides cannot form "
+"enough unlike pairs, the operation reports an error before random sampling."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:47
+#: 5d6f32c7d6234955993d3f2f83ce22b9
+msgid "4. 输出与标签"
+msgstr "4. Output and Labels"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:49
+#: 72e5ab1b778642859b843aff6b7b6ac8
+msgid ""
+"每个输入严格生成 `num_structures` 个输出。固定模式使用同一个目标浓度生成不同随机排布；梯度模式在起始值与终止值之间线性取 "
+"`num_structures` 个目标值。"
+msgstr ""
+"Each input produces exactly `num_structures` outputs. Fixed mode uses one target "
+"concentration to generate different random arrangements. Gradient mode linearly "
+"samples `num_structures` target values between its start and end."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:51
+#: 601c891d2e3f4b7e8cf395c83a9d7bf8
+msgid ""
+"改变元素后，原有能量、力、应力、virial、计算磁矩、原子电荷和 BEC 不再对应新结构，因此会被删除。`spin` 与 `initial_magmoms` "
+"随交换的元素一起移动；`group`、`sublattice` 等位点标签留在原位。"
+msgstr ""
+"After species are changed, existing energies, forces, stresses, virials, calculated "
+"magnetic moments, atomic charges, and BECs no longer correspond to the new structure "
+"and are removed. `spin` and `initial_magmoms` move with the exchanged elements, while"
+" site labels such as `group` and `sublattice` remain at their original positions."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:53
+#: b4d1b945fa224991b5b24ace1d835b6d
+msgid "输出标签示例："
+msgstr "Example output label:"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:55
+#: b4455182543646c490434b89666274f0
+msgid "IfaceMix(L=2,R=2,c=0.375,target=0.333,s=42)\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:59
+#: 43a9c8f5b736409297ac8fad500b006e
+msgid "其中 `c` 是实现浓度；只有发生离散取整时才附加 `target`。"
+msgstr ""
+"Here `c` is the realized concentration; `target` is included only when discrete "
+"rounding occurs."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:61
+#: fd3c88b5734b4238ae83671868cafffb
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:63
+#: b9545377fdd244bc8a78243bcb893e26
+msgid "分层方向（axis）"
+msgstr "Layering Direction (axis)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:65
+#: d453df54f2e949ac9449e5a657893694
+msgid "默认 `auto`。可选 `auto`、`a`、`b`、`c`。手动选择时表示按对应晶格分数坐标分层。"
+msgstr ""
+"Default `auto`. Available values are `auto`, `a`, `b`, and `c`. A manual choice forms"
+" layers by the corresponding lattice fractional coordinate."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:67
+#: b108687d1b354c37b267a3f853ab53b9
+msgid "自动定位界面（auto_position）"
+msgstr "Locate Interface Automatically (auto_position)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:69
+#: b8eba5e5bca94723a39464a5dbb4d4a9
+msgid "默认 `true`。开启时沿已选方向自动寻找成分差异最大的层间隙；关闭时使用 `interface_position`。"
+msgstr ""
+"Default `true`. When enabled, the card automatically finds the interlayer gap with "
+"the strongest composition contrast along the selected direction. When disabled, it "
+"uses `interface_position`."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:71
+#: 6ea712d80613401a9842904c7f9afca4
+msgid "界面位置（interface_position）"
+msgstr "Interface Position (interface_position)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:73
+#: 4c8ec9caef674015a5525515a31429d2
+msgid "默认 `0.5`，范围 `(0, 1)`。仅在手动定位时生效。低于该分数坐标的原子属于 L 侧，其余原子属于 R 侧。"
+msgstr ""
+"Default `0.5`, range `(0, 1)`. Used only for manual positioning. Atoms below this "
+"fractional coordinate belong to side L; all remaining atoms belong to side R."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:75
+#: 4da3367f63af449daa1ccd1735a09e80
+msgid "层容差（layer_tolerance）"
+msgstr "Layer Tolerance (layer_tolerance)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:77
+#: 900596b93359494080c0add99820ea64
+msgid "默认 `0.25 Å`，必须大于 0。控制轻微弛豫或层内起伏多大时仍视为同一原子层。容差过小会把一层拆开，过大会合并相邻层。"
+msgstr ""
+"Default `0.25 Å`, and must be greater than 0. Controls how much slight relaxation or "
+"intralayer corrugation is still treated as one atomic layer. A tolerance that is too "
+"small splits a layer; one that is too large merges adjacent layers."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:79
+#: 752ad03e03e748769a79b885b1b84ca1
+msgid "L 侧层数（left_layers）"
+msgstr "Layers on Side L (left_layers)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:81
+#: bec45eb2c1624435af22991a115dfbd7
+msgid "默认 `2`，范围 1–100。从界面向较低分数坐标方向选取的层数。"
+msgstr ""
+"Default `2`, range 1–100. Number of layers selected from the interface toward lower "
+"fractional coordinates."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:83
+#: e27492feb1f4425e8e98435ffcf88894
+msgid "R 侧层数（right_layers）"
+msgstr "Layers on Side R (right_layers)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:85
+#: c87a20e702064c51a943753aed8b185a
+msgid "默认 `2`，范围 1–100。从界面向较高分数坐标方向选取的层数。"
+msgstr ""
+"Default `2`, range 1–100. Number of layers selected from the interface toward higher "
+"fractional coordinates."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:87
+#: 89daddcd4afd4ba99213bcb5ee6de51f
+msgid "互混模式（mode）"
+msgstr "Mixing Mode (mode)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:89
+#: d215e33e917f4f85a88b6644f16bfdc7
+msgid "默认 `fixed`。`fixed` 对所有输出使用同一目标比例；`gradient` 在起始与终止比例之间线性扫描。"
+msgstr ""
+"Default `fixed`. `fixed` uses the same target fraction for every output; `gradient` "
+"scans linearly between start and end fractions."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:91
+#: 923ebdb377634f40bc5d28404293ae4e
+msgid "目标变化比例（concentration）"
+msgstr "Target Changed-Atom Fraction (concentration)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:93
+#: 10544227d4b547a594218b8f3089b83c
+msgid "默认 `0.5`，范围 0–1，仅在 `fixed` 模式生效。它表示选中层中希望改变元素的原子比例，不是单侧原子的换出比例。"
+msgstr ""
+"Default `0.5`, range 0–1, used only in `fixed` mode. It is the desired fraction of "
+"atoms whose species change within the selected layers, not the fraction swapped out "
+"from one side."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:95
+#: 7eeabda9822c4d86bc131b1b8a0501c3
+msgid "起始比例（gradient_start）"
+msgstr "Start Fraction (gradient_start)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:97
+#: 62343371ed4f404499abae4323abc1d7
+msgid "默认 `0.0`，范围 0–1，仅在 `gradient` 模式生效。"
+msgstr "Default `0.0`, range 0–1, used only in `gradient` mode."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:99
+#: 1540dc60ca52402bb0d900bca2be7646
+msgid "终止比例（gradient_end）"
+msgstr "End Fraction (gradient_end)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:101
+#: 4a5eeb1f80f748cb8c2faec0c039fee0
+msgid "默认 `1.0`，范围 0–1，仅在 `gradient` 模式生效。"
+msgstr "Default `1.0`, range 0–1, used only in `gradient` mode."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:103
+#: d30f8929792442939e31d50edda04f6c
+msgid "每个输入的输出数（num_structures）"
+msgstr "Outputs per Input (num_structures)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:105
+#: 60024261a9dd49019ea4ec2a67d047bb
+msgid "默认 `1`，范围 1–10000。总输出数为“输入结构数 × 每个输入的输出数”，界面会给出该预览。"
+msgstr ""
+"Default `1`, range 1–10000. The total output count is input structures × outputs per "
+"input, which the interface previews."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:107
+#: 215cc2f851514d09916534a0a02ab888
+msgid "使用固定随机种子（use_seed）"
+msgstr "Use Fixed Random Seed (use_seed)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:109
+#: 2078102bb92543b6b242274a243f2e85
+msgid "默认 `false`。开启后，相同输入、参数和种子可复现同一批交换结果。"
+msgstr ""
+"Default `false`. When enabled, the same input, parameters, and seed reproduce the "
+"same batch of exchange results."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:111
+#: 7ade8080f2ef4bcdb04cea9f796ef90e
+msgid "随机种子（seed）"
+msgstr "Random Seed (seed)"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:113
+#: 509d1e8b5f96439a927a9bbb47a35f9b
+msgid "默认 `0`，仅在 `use_seed=true` 时显示并生效。每个输入和输出帧会派生独立种子。"
+msgstr ""
+"Default `0`, displayed and used only when `use_seed=true`. An independent seed is "
+"derived for every input and output frame."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:115
+#: 2ea5365b6f664fa7beab2c3d59744154
+msgid "操作示例"
+msgstr "Example"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:117
+#: 1d00c44a809646d68a2ef44e7663fbca
+msgid "Ni/Al 界面两侧各选 2 层，生成 20 个目标互混比例为 50% 的候选："
+msgstr ""
+"Select two layers on each side of a Ni/Al interface and generate 20 candidates with a"
+" target mixing fraction of 50%:"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:119
+#: e7f3c24e0de14fb3a169f9b36311ee6c
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"InterfaceLayerMixCard\",\n"
+"  \"params\": {\n"
+"    \"axis\": \"c\",\n"
+"    \"auto_position\": true,\n"
+"    \"interface_position\": 0.5,\n"
+"    \"layer_tolerance\": 0.25,\n"
+"    \"left_layers\": 2,\n"
+"    \"right_layers\": 2,\n"
+"    \"mode\": \"fixed\",\n"
+"    \"concentration\": 0.5,\n"
+"    \"gradient_start\": 0.0,\n"
+"    \"gradient_end\": 1.0,\n"
+"    \"num_structures\": 20,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:140
+#: ed38813b0c294b058c90300d328d87ed
+msgid "导出前先检查预览中的界面位置、两侧元素式和“目标 → 实现”比例。生成后可统计选中层内发生元素变化的位点数，并对候选结构重新进行第一性原理计算。"
+msgstr ""
+"Before export, inspect the interface position, element formulas on both sides, and "
+"`target → realized` fraction in the preview. After generation, count the sites whose "
+"species changed within the selected layers and perform new first-principles "
+"calculations on the candidate structures."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:142
+#: 25606bbc1833465f916a06c39b837cee
+msgid "周期边界"
+msgstr "Periodic Boundaries"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:144
+#: 07a268d31f7a4af3ab5590d82c0a5a79
+msgid "若所选方向启用 PBC，结构通常还有一个跨周期边界的第二界面。本卡一次只修改当前选定的界面；需要处理另一处时，改用手动位置再运行一次。"
+msgstr ""
+"If PBC is enabled along the selected direction, the structure usually contains a "
+"second interface across the periodic boundary. This card modifies only the currently "
+"selected interface in one run. To process the other one, choose a manual position and"
+" run again."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:146
+#: 552b73fbdfdc49e8a1a762f686cce7db
+msgid "常见问题"
+msgstr "Troubleshooting"
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:148
+#: e0a707c2366c4e1abe131a4f596bbf48
+msgid "**预览显示的实现比例与输入值不同。** 交换必须落到整数原子对上。以预览中的实现比例为准；增大选中层数可获得更细的比例分辨率。"
+msgstr ""
+"**The realized fraction in the preview differs from the input value.** Exchanges must"
+" use an integer number of atom pairs. Use the realized fraction shown in the preview;"
+" selecting more layers gives finer fraction resolution."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:150
+#: d16f48f0acc746d98c109e5bb464ba60
+msgid "**自动检测选错界面。** 改为手动方向和手动位置，并根据两侧元素式确认选区。"
+msgstr ""
+"**Automatic detection selects the wrong interface.** Switch to a manual direction and"
+" position, then confirm the selected region from the element formulas on both sides."
+
+#: ../../source/module/make-dataset-cards/cards/interface-layer-mix-card.md:152
+#: a84e33c1b48b4437aceebb99deda601c
+msgid "**提示交换容量不足。** 两侧可形成的异种元素对少于目标值所需数量。可降低目标比例、增加选中层数，或检查界面两侧是否确有不同元素。"
+msgstr ""
+"**The interface reports insufficient exchange capacity.** The two sides can form "
+"fewer unlike-element pairs than the target requires. Reduce the target fraction, "
+"select more layers, or check whether the two sides actually contain different "
+"elements."

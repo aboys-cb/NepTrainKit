@@ -1,0 +1,269 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:3
+#: 10a439a752a743fda31f93d98dbecfed
+msgid "永久分叉（Branch Fork）"
+msgstr "Branch Fork"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:5
+#: 3ea003808aaf4550be8db53450039862
+msgid "**分类：** 容器"
+msgstr "**Category:** Containers"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:7
+#: b9061b2039984675bd83d4c104bacbe1
+msgid "功能说明"
+msgstr "Purpose"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:9
+#: 8ddb48cb0f684ed98dc12e9adbec36a4
+msgid "把同一份输入送入多条独立分支。每条分支可以继续串联多张卡，最后选择保留各自输出，或显式合并为一个数据集。"
+msgstr ""
+"Send the same input into multiple independent branches. Each branch can contain its "
+"own sequence of cards. At the end, either retain the branch outputs separately or "
+"merge them explicitly into one dataset."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:11
+#: f7bb90ceb826435f912b1ee53f5b16a0
+msgid ""
+"它与 [分支合并](card-group.md) 的区别是：`Branch Merge` 的同层子卡运行后立即合并；`Branch Fork` "
+"的每条分支可以先经过自己的多步卡片链。"
+msgstr ""
+"Unlike [Branch Merge](card-group.md), which merges sibling-card outputs immediately "
+"after they run, `Branch Fork` lets each branch pass through its own multi-step card "
+"chain first."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:13
+#: 0f46578f5dd042f8835338fae4277349
+msgid "工作原理"
+msgstr "How It Works"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:15
+#: ad4f3e177b364d189f364c3f299b0f72
+msgid "设输入为 $D$，第 $i$ 条分支中的卡片链为 $F_i$："
+msgstr "Let $D$ be the input and $F_i$ the card chain in branch $i$:"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:17
+#: 4349a550630945dfbb0a910bd54383cc
+msgid ""
+"\n"
+"O_i = F_i(D),\\qquad\n"
+"O_{\\mathrm{merge}} = O_1 \\mathbin{\\Vert} O_2 \\mathbin{\\Vert} \\cdots "
+"\\mathbin{\\Vert} O_n.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:22
+#: 1d55710f49f4451bb7fd8fe54be2c842
+msgid "其中 $O_i$ 是分支输出，$\\Vert$ 表示按界面顺序拼接。独立输出模式保留各 $O_i$；合并模式生成 $O_{\\mathrm{merge}}$。"
+msgstr ""
+"Here $O_i$ is a branch output and $\\Vert$ denotes concatenation in the order shown "
+"in the interface. Separate-output mode retains each $O_i$, while merge mode produces "
+"$O_{\\mathrm{merge}}$."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:24
+#: 8fdc5fecf3654d08bf79e13418948166
+msgid "操作示例"
+msgstr "Example"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:26
+#: 42c0150dd31648d8ac00997072274cee
+msgid "输入 1 个结构，建立两条分支："
+msgstr "Start with one input structure and create two branches:"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:28
+#: dd356c2431d54083ae42daa9825835d1
+msgid ""
+"Branch Fork\n"
+"  ├─ A: Random Slab → Atomic Perturb       → 6 个\n"
+"  └─ B: Lattice Strain → Geometry Filter   → 4 个\n"
+msgstr ""
+"Branch Fork\n"
+"  ├─ A: Random Slab → Atomic Perturb       → 6 structures\n"
+"  └─ B: Lattice Strain → Geometry Filter   → 4 structures\n"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:34
+#: d27fdf9700d140b9851b2e0624422935
+msgid "选择“保留独立输出”时，得到 A、B 两份结果；选择“合并为一个输出”时："
+msgstr ""
+"Choose `Keep separate outputs` to obtain separate results for A and B. Choose `Merge "
+"into one output` to obtain:"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:36
+#: 767d3bd5e4a743649045cd6c95e71ec1
+msgid ""
+"\n"
+"|O_{\\mathrm{merge}}|=|O_A|+|O_B|=6+4=10.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:40
+#: 32de13fc4533406d9f6505fe80285e03
+msgid "卡片会直接显示 `A 6 + B 4 → 合并 10`。"
+msgstr "The card displays `A 6 + B 4 → merged 10` directly."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:42
+#: 34536c11c85b410488aabfa4dfb56040
+msgid "界面操作"
+msgstr "Using the Interface"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:44
+#: bc55e43c729f4a1b96efaffaea1f77eb
+msgid "点击分支空白区选中目标分支，再从卡片库添加卡片。"
+msgstr "Click an empty area in a branch to select it, then add a card from the card library."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:45
+#: cdae7247627846ffb7f4334a0766a4e4
+msgid "在分支名称输入框中直接改名；名称会随工作流配置保存。"
+msgstr ""
+"Rename a branch directly in its name field. The name is saved with the workflow "
+"configuration."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:46
+#: e6acab6440e84489ac1fee391c217f5c
+msgid "使用“添加分支”增加分支；一个永久分叉最多三条。"
+msgstr ""
+"Use `Add branch` to create another branch. One Branch Fork supports at most three "
+"branches."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:47
+#: 13c169d2424b46309ac9ff5d27a5eafa
+msgid "选择“保留独立输出”或“合并为一个输出”，再运行工作流。"
+msgstr "Choose `Keep separate outputs` or `Merge into one output`, then run the workflow."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:49
+#: f990c6bf25624080aeb7cbc26ffa65f9
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:51
+#: 79a413f248b94306b089c69109057078
+msgid "分支（branches）"
+msgstr "Branches (branches)"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:53
+#: 074174fe51894066adc6f16da9eb43cd
+msgid "分支列表。每条分支保存稳定 `id`、显示名称、启用状态和内部卡片顺序。不同分支始终从同一份 Fork 输入开始。"
+msgstr ""
+"List of branches. Each branch stores a stable `id`, display name, enabled state, and "
+"internal card order. Every branch always starts from the same Fork input."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:55
+#: 472ea554d42e434382c2b3bcac682ca2
+msgid "显式合并（merge）"
+msgstr "Explicit Merge (merge)"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:57
+#: 25bb03127f5b4279af80e8eb52567c7f
+msgid "布尔值，默认 `false`。"
+msgstr "Boolean, default `false`."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:59
+#: fe52d80954644e80b924b6811571ee04
+msgid "`false`：每条分支保留自己的最终输出；Fork 后不能连接共同下游卡片。"
+msgstr ""
+"`false`: Each branch retains its own final output. A shared downstream card cannot be"
+" connected after the Fork."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:60
+#: c6b08ace70be4228a018a3bc83f84fef
+msgid "`true`：所有启用分支成功后，按分支顺序拼接输出；拼接结果成为后续卡片输入。"
+msgstr ""
+"`true`: After every enabled branch succeeds, concatenate their outputs in branch "
+"order. The concatenated result becomes the input to downstream cards."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:62
+#: 837da83e2ad14d9f9a0c670b9ff57339
+msgid "`Merge` 只拼接，不去重或筛选。"
+msgstr "`Merge` only concatenates outputs; it does not deduplicate or filter them."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:64
+#: 9986a503381e48cb860872d9ccab84ab
+msgid "失败与停止语义"
+msgstr "Failure and Stop Behavior"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:66
+#: c19bc5ef5ebb4fd48302d407ca4c4188
+msgid "启用的分支必须至少包含一张启用卡片，否则会在运行前提示具体分支。"
+msgstr ""
+"Every enabled branch must contain at least one enabled card. Otherwise, the specific "
+"branch is reported before the workflow starts."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:67
+#: 73700fc7398b4a4fa125bf688b9bfc76
+msgid "独立输出模式下，一条分支失败不会删除其他成功分支的输出；卡片显示“部分完成”。"
+msgstr ""
+"In separate-output mode, failure in one branch does not remove outputs from other "
+"successful branches; the card reports `Partially complete`."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:68
+#: 73a8038f7b2841a4b8af3ef5aa422601
+msgid "合并模式下，任一启用分支失败都会阻止 Merge 和共同下游。"
+msgstr ""
+"In merge mode, failure in any enabled branch prevents the merge and blocks the shared"
+" downstream path."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:69
+#: 3ce82db32c8d4faa9a066b0f7dcd75dc
+msgid "停止工作流会停止所有仍在运行的分支卡片；部分结果不会冒充成功输出。"
+msgstr ""
+"Stopping the workflow stops every branch card that is still running. Partial results "
+"are not presented as successful outputs."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:71
+#: 126d89fa0fcf4e1ba67633a4ce47c71a
+msgid "常见问题"
+msgstr "Troubleshooting"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:73
+#: e9cac6c3acfd4946be4c50d40c58eea1
+msgid "**为什么不能连接共同下游？** “保留独立输出”没有唯一输出；先切换到“合并输出”。"
+msgstr ""
+"**Why can I not connect a shared downstream card?** `Keep separate outputs` has no "
+"single output. Switch to merged output first."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:75
+#: c6fb48b969f54a8090ca9344a3f64bef
+msgid "**为什么运行前提示空分支？** 启用的分支必须包含至少一张启用卡片；添加卡片或关闭该分支即可。"
+msgstr ""
+"**Why is an empty branch reported before the run?** An enabled branch must contain at"
+" least one enabled card. Add a card or disable that branch."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:77
+#: d96c9b88a984404f9177d34b162afb74
+msgid "保存字段"
+msgstr "Saved Fields"
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:79
+#: 77c0d6f82b924085b4f48fcce9af922a
+msgid "`branches`：各分支的 `id`、名称、启用状态和卡片列表。"
+msgstr "`branches`: Each branch's `id`, name, enabled state, and card list."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:80
+#: 2f63ba1d8c8f4958ad3ad62cc78d03d5
+msgid "`merge`：是否显式合并输出。"
+msgstr "`merge`: Whether to merge branch outputs explicitly."
+
+#: ../../source/module/make-dataset-cards/cards/workflow-fork.md:82
+#: 8812f702b0934c548853c596f3a76e69
+msgid "旧配置中的类名 `WorkflowFork` 和旧显示名称仍可加载。"
+msgstr ""
+"The legacy class name `WorkflowFork` and legacy display names in existing "
+"configurations can still be loaded."

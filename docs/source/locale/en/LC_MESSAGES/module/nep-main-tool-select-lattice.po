@@ -22,7 +22,7 @@ msgstr ""
 #: ../../source/module/nep-main-tool-select-lattice.md:1
 #: f93bef698bb74be8ad62f5eda8c7232d
 msgid "按晶格参数选择（Select by Lattice）"
-msgstr "Details for this option"
+msgstr "Select by Lattice Parameters"
 
 #: ../../source/module/nep-main-tool-select-lattice.md:3
 #: a5be0b541ae840a39c4d8adbc2bd00af
@@ -32,7 +32,7 @@ msgstr "Purpose and use cases"
 #: ../../source/module/nep-main-tool-select-lattice.md:5
 #: dd7622f780dd4dcd93056847247ac921
 msgid "按照晶格长度 `a/b/c` 和晶格角 `α/β/γ` 选择结构。适合从混合数据中找特定尺寸、 体形或畸变范围的晶胞，不依赖当前散点图坐标。"
-msgstr "Details for this option"
+msgstr "Select structures by lattice lengths `a/b/c` and angles `α/β/γ`. Use it to find cells with a particular size, shape, or distortion range in mixed data; the selection does not depend on the current scatter-plot axes."
 
 #: ../../source/module/nep-main-tool-select-lattice.md:8
 #: 387ccf424c3941038a83b27dbb369b23
@@ -42,7 +42,7 @@ msgstr "Decision principle"
 #: ../../source/module/nep-main-tool-select-lattice.md:10
 #: 1d4bb67bd5bb4e6b91b422661b37a7dc
 msgid "对每个结构，程序从晶胞矩阵计算"
-msgstr "Details for this option"
+msgstr "For each structure, the program computes the following values from the cell matrix:"
 
 #: ../../source/module/nep-main-tool-select-lattice.md:12
 #: 3b8b3968de9c43018e018aee3d880ab2
@@ -59,9 +59,7 @@ msgid ""
 "其中 $a,b,c$ 是三条晶格矢量长度，单位为 Å；$\\alpha,\\beta,\\gamma$ 分别是 $\\mathbf b$ 与 "
 "$\\mathbf c$、$\\mathbf a$ 与 $\\mathbf c$、$\\mathbf a$ 与 $\\mathbf b$ "
 "的夹角，单位为度。结构只有在六个量都落入各自闭区间时才会被选中："
-msgstr ""
-"This section explains the option, its parameters, operation, and expected"
-" result."
+msgstr "Here $a,b,c$ are the three lattice-vector lengths in Å. $\\alpha,\\beta,\\gamma$ are respectively the angles between $\\mathbf b$ and $\\mathbf c$, $\\mathbf a$ and $\\mathbf c$, and $\\mathbf a$ and $\\mathbf b$, in degrees. A structure is selected only when all six quantities lie in their respective closed intervals:"
 
 #: ../../source/module/nep-main-tool-select-lattice.md:20
 #: 581e8df4b5694a41a7a23bb27b17ac8a
@@ -78,7 +76,7 @@ msgstr ""
 #: 11c0eba0c558422890cd8905dcb1be4a
 #, python-brace-format
 msgid "固定的 $10^{-4}$ 容差用于吸收浮点换算误差，并不是可调的物理容差。若某一维不想参与筛选， 应把该维范围放宽到覆盖全部数据。"
-msgstr "Details for this option"
+msgstr "The fixed $10^{-4}$ tolerance only absorbs floating-point conversion error; it is not an adjustable physical tolerance. To exclude one dimension from filtering, widen its range to cover all data."
 
 #: ../../source/module/nep-main-tool-select-lattice.md:28
 #: 9b033ecd3632491da02c43d22c1b8fd9
@@ -88,32 +86,32 @@ msgstr "Parameters and execution result"
 #: ../../source/module/nep-dataset-display-content.md:5920
 #: 58a71f11c79e498d84a7e9a55ea01745
 msgid "输入控件：晶格长度 `a / b / c` 与晶格角 `α / β / γ` 各自的最小值和最大值。"
-msgstr "Details for this option"
+msgstr "Controls: minimum and maximum values for lattice lengths `a / b / c` and angles `α / β / γ`."
 
 #: ../../source/module/nep-dataset-display-content.md:5921
 #: 312042d680384e9e8f31d51800ac0b2c
 msgid "范围：`[0, 1e6]`，4 位小数。"
-msgstr "Details for this option"
+msgstr "Range: `[0, 1e6]`, with four decimal places."
 
 #: ../../source/module/nep-dataset-display-content.md:5922
 #: cda2e1d58af5493f951512ca3d385df8
 msgid "默认值：当前活动结构的晶格参数范围。"
-msgstr "Details for this option"
+msgstr "Defaults: the lattice-parameter ranges of the currently active structures."
 
 #: ../../source/module/nep-dataset-display-content.md:5923
 #: 12665985583d4c97b1719387a5793e6a
 msgid "细节：内部比较带固定容差 `1e-4`。"
-msgstr "Details for this option"
+msgstr "Detail: internal comparisons use a fixed `1e-4` tolerance."
 
 #: ../../source/module/nep-dataset-display-content.md:5925
 #: 15d2ca6aeddd4f47bde70c7c199b3df4
 msgid "![按晶格参数选择对话框](../_static/image/generated/show_nep_reference/g_lattice_dialog.png)"
-msgstr "See the figure for the corresponding control and result."
+msgstr "![Select by Lattice dialog](../_static/image/generated/show_nep_reference/g_lattice_dialog.png)"
 
 #: ../../source/module/nep-dataset-display-content.md:5925
 #: 8aa7f313adcc4a4aaa61c0bf69522fa4
 msgid "按晶格参数选择对话框"
-msgstr "Details for this option"
+msgstr "Select-by-lattice-parameters dialog"
 
 #: ../../source/module/nep-dataset-display-content.md:5925
 #: 8aa7f313adcc4a4aaa61c0bf69522fa4
@@ -132,4 +130,4 @@ msgstr "Post-operation checks"
 #: ../../source/module/nep-main-tool-select-lattice.md:37
 #: a08bc32553214c8eb6243623f2732af8
 msgid "六组范围同时生效。若没有选中结果，先放宽不关心的晶格角或长度范围，再逐项收紧， 避免把无关维度设成过窄的过滤条件。"
-msgstr "Details for this option"
+msgstr "All six ranges apply simultaneously. If nothing is selected, first widen the length or angle ranges that are not relevant, then tighten the intended dimensions one at a time."

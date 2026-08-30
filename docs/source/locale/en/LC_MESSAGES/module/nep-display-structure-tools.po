@@ -1,438 +1,358 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-30 16:56+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:1
-#: e69c6315ba3f4ad2b87d0a268c42587f
+#: ../../source/module/nep-display-structure-tools.md:1 5801719e8bd2441a8a2ba2b4f9814f5b
 msgid "结构区：查看、标记与导出结构"
 msgstr "Structure view: inspect, tag, and export structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3
-#: 364b6475107b4970a81d4b1dcba3e305
-msgid ""
-"这一页对应软件右侧结构区及其工具栏。先用相机和键显示检查当前结构，再按需要显"
-"示向量、 标记异常结构或导出当前结构。"
-msgstr "This page covers the structure view and toolbar on the right. Use the camera and bond display to inspect the current structure, then show vectors, tag anomalies, or export the current structure as needed."
+#: ../../source/module/nep-display-structure-tools.md:3 5697f2a8226946359e9ba9b48cb4f5ea
+msgid "这一页对应软件右侧结构区及其工具栏。先用相机和键显示检查当前结构，再按需要显示向量、 标记异常结构或导出当前结构。"
+msgstr ""
+"This page covers the structure view and toolbar on the right. Use the camera and bond"
+" display to inspect the current structure, then show vectors, tag anomalies, or "
+"export the current structure as needed."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:5
-#: 3306905532fd42e3bb00cb52916e6618
+#: ../../source/module/nep-display-structure-tools.md:5 e86fb90ad7fb416ca1fd52817c554a02
 msgid "本页目录"
 msgstr "On this page"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:11
-#: 148691382b50469f83dacb0b721478e9
+#: ../../source/module/nep-display-structure-tools.md:11 8ae16ac936a8494cb29aac6b365b1123
 msgid "工具栏总表"
 msgstr "Toolbar overview"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:3198
-#: ed293667bb15415783412f1763b34e14
+#: ../../source/module/nep-dataset-display-content.md:3198 bc2e110446b84133bdb00752ff7f1ee9
 msgid "2.2 结构工具栏（右侧）"
-msgstr "Details for this option"
+msgstr "2.2 Structure toolbar (right)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
-#: 109a0ca5300f474ea326656d25f4a57c
+#: ../../source/module/nep-display-structure-tools.md:13 0577c7dbda474ae08ba8111449918903
 msgid "图标"
 msgstr "Icon"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: 285f91dca08c47379803981a2db2c74d 8c6a112d43db4a4c8335d95dbbfea375
+#: ../../source/module/nep-display-structure-tools.md:13
+#: ../../source/module/nep-display-structure-tools.md:18 3a0c90e2d0884d66b026e368d4fc3fb6
+#: bdab9fdf33084dba9e65083772617200
 msgid "按钮"
 msgstr "Buttons"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
-#: c8004494aea846a38448aa06b8eb444b
+#: ../../source/module/nep-display-structure-tools.md:13 0e9fd928b7b54de99cfa2593b2ca806b
 msgid "是否打开设置"
-msgstr "Details for this option"
+msgstr "Opens settings"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
-#: f92a5239f98943df8440e963841054f2
+#: ../../source/module/nep-display-structure-tools.md:13 65d5fdaa5eaa46a2934735a250400106
 msgid "作用"
 msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:13
-#: 1260f973839f4eba9206f549a3e450b9
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" "
-"width=\"20\" />"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" "
-"width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:13 e403b580a0934f49985c52d51941a877
+msgid "<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: 983bda5ccdc04a4e8b63f7659b6c1826
+#: ../../source/module/nep-dataset-display-content.md 74fe6891ef2242e7a05d3cdd06f14d2f
 msgid ".. image:: ../_static/image/generated/show_nep_icons/view_change.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/view_change.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3202
-#: a381791c06174c16afd0e110436aa9be 34199b79cd5b4f67b9781a9a77e109dd
+#: ../../source/module/nep-display-structure-tools.md:18
+#: ../../source/module/nep-display-structure-tools.md:3202 1b2822d3e7af4bd4a711bfd8e2a27789
+#: a6e921c24a744dbc9972b64b70a3ab16
 msgid "`Ortho View`"
 msgstr "`Ortho View`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3202
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3203
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3204
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3207
-#: 9f32c9f4c924440a8ffed83728110b25 992080ee1e494b6697c50be22f057441
-#: 18f96997c7e64b08b16b49602a3ba321 bd3a1ec9eea04987828eebcf772d01f2
+#: ../../source/module/nep-display-structure-tools.md:3202
+#: ../../source/module/nep-display-structure-tools.md:3203
+#: ../../source/module/nep-display-structure-tools.md:3204
+#: ../../source/module/nep-display-structure-tools.md:3207 43cd1a87500047ad9fe2bd2221ef671e
+#: 8dbe7a73cecd4f13a1d5a777bd669df3 b6934466f22e434699b375d42d65b035
+#: fe386cc9a93a4eaf881b9ef0a80d0e26
 msgid "否（开关）"
-msgstr "Details for this option"
+msgstr "No (toggle)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3202
-#: d8ac6b8d5ff1409a9c66fd59b619d382
+#: ../../source/module/nep-display-structure-tools.md:3202 9f4cdc4f13f749b9b5d6b3cf424ba1ba
 msgid "切换正交视图"
-msgstr "Details for this option"
+msgstr "Toggle orthographic projection"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3202
-#: f48df0e11b9f4e759bc783cb0f2cd56b
+#: ../../source/module/nep-display-structure-tools.md:3202 b73cb6caa8c4427a8af486c5bc1867d1
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" "
-"width=\"20\" />"
+"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" width=\"20\""
+" />"
 msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" "
-"width=\"20\" />"
+"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" width=\"20\""
+" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: 7606923f08414d75b99195f5b9445416
+#: ../../source/module/nep-dataset-display-content.md 3b3b88c27fcd4e37af133bf4058726e3
 msgid ".. image:: ../_static/image/generated/show_nep_icons/auto_distance.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/auto_distance.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3203
-#: 7cbea76e7c7b4ee095c53fae6f19efc5 0df733fa0f17403db73621879e5ca801
+#: ../../source/module/nep-display-structure-tools.md:18
+#: ../../source/module/nep-display-structure-tools.md:3203 842157b647d94357a7869adbd7114400
+#: db64feacd52a47d69b4bfe5b878e499b
 msgid "`Automatic View`"
 msgstr "`Automatic View`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3203
-#: 52a7eea61c284acbb299de09ae517e96
+#: ../../source/module/nep-display-structure-tools.md:3203 c802fd8fffad453db735943102fff007
 msgid "自动调整结构观察距离"
-msgstr "Details for this option"
+msgstr "Automatically fit the structure viewing distance"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3203
-#: cc03dbee84884151a1498dd0f842c4dd
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" "
-"width=\"20\" />"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" "
-"width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:3203 9108e807c0ce43468ceeef04e93d28dc
+msgid "<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: 30a8df6b1c104734b811c69ff8ef6355
+#: ../../source/module/nep-dataset-display-content.md 837d00c278cd491d98edc6ca11bb4415
 msgid ".. image:: ../_static/image/generated/show_nep_icons/show_bond.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/show_bond.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3204
-#: 2eb5cfc95f6141f195139c650e3d7cfc 050c0ed2610047ab9146f7d60d060784
+#: ../../source/module/nep-display-structure-tools.md:18
+#: ../../source/module/nep-display-structure-tools.md:3204 51e34d095a504c8cb6ff3daba1dfc5bb
+#: 8cbe77e2061e4687941930a7b1555c59
 msgid "`Show Bonds`"
 msgstr "`Show Bonds`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3204
-#: 7c5b295a3024464aa65a3107156b4012
+#: ../../source/module/nep-display-structure-tools.md:3204 d427523befdb4de5b0251944f0fa4e34
 msgid "显示或隐藏键连线"
-msgstr "Details for this option"
+msgstr "Show or hide bond lines"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3204
-#: 9889720439e34c69a60c2447f6b6c1be
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" width=\"20\" /"
-">"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" width=\"20\" /"
-">"
+#: ../../source/module/nep-display-structure-tools.md:3204 ee8132c92e354a6db593acb55cbc8d83
+msgid "<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: 4f71ffb3d66c407ea2231094705838e0
+#: ../../source/module/nep-dataset-display-content.md 29731567e0514c3a91f642aa6517455a
 msgid ".. image:: ../_static/image/generated/show_nep_icons/xyz.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/xyz.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3205
-#: 3a84743d33844e86893cbe98e40bbf6b
+#: ../../source/module/nep-display-structure-tools.md:3205 186fe3ce99254573b055bffbfb15dea8
 msgid "`Show Arrows`"
 msgstr "`Show Arrows`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3205
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3206
-#: cac9f6e57a314fb6ac285958e4eb7f0b 82c74b7b587a4fe9bd45237890139bf7
+#: ../../source/module/nep-display-structure-tools.md:3205
+#: ../../source/module/nep-display-structure-tools.md:3206 9cd7f77864c5495183365f6ee9bb4dab
+#: d08222539c284ab39992d622f85b8661
 msgid "是"
 msgstr "Yes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3205
-#: 58b9b1baff784ca484c86109346d32ef
+#: ../../source/module/nep-display-structure-tools.md:3205 7d8e75eb59724f7ebb11377d48a95719
 msgid "显示力、磁矩或其他向量箭头"
-msgstr "Details for this option"
+msgstr "Show force, magnetic-moment, or other vector arrows"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3205
-#: 38f8d5d9cbb74bcb999d982199ba24b3
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" "
-"width=\"20\" />"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" "
-"width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:3205 db8f3f4607ff453ab16793f81d10c58b
+msgid "<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: 5210ae3c5932414ea7a1ca8318fd413b
+#: ../../source/module/nep-dataset-display-content.md 18c1042b9c25478b90f5e8d8d20255eb
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export1.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/export1.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3206
-#: a55291dd77a242baada9896aabe11d61
+#: ../../source/module/nep-display-structure-tools.md:3206 505e84c0a6db4cffa809e097842aa692
 msgid "`Export current structure`"
 msgstr "`Export current structure`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3206
-#: dc9866eb5ac648789fa294e1f464d5d9
+#: ../../source/module/nep-display-structure-tools.md:3206 9aaaec0f34b94894bc77f49e33979c7c
 msgid "导出当前结构"
-msgstr "Details for this option"
+msgstr "Export the current structure"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3206
-#: d7f32f45c3f94b96a9996e28f48acb89
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" "
-"width=\"20\" />"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" "
-"width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:3206 2c3257acdd13459ba77d61302ee0a899
+msgid "<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: e5f5842b95ad4bf9a415cd94ae95f612
+#: ../../source/module/nep-dataset-display-content.md 63b98f2383584a30b788a58f522336d3
 msgid ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3207
-#: fd315eea7cd24765b3165ab49d7e9556
+#: ../../source/module/nep-display-structure-tools.md:3207 9011c6b53d984a8c81554776fe41f330
 msgid "`Mark Bad (Reject)`"
 msgstr "`Mark Bad (Reject)`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3207
-#: f3656fe5d2444fb08f9d58914db766c6
+#: ../../source/module/nep-display-structure-tools.md:3207 04160afd01d64900bd5b00b76d4155cb
 msgid "标记当前结构为 reject"
-msgstr "Details for this option"
+msgstr "Mark the current structure as rejected"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3207
-#: 428e3107d30240c896d3e7a576500f1c
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" "
-"width=\"20\" />"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" "
-"width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:3207 2eacd055961248cbafcb532452b91a91
+msgid "<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: a0814807bb4046a7b4309d86faae8a5e
+#: ../../source/module/nep-dataset-display-content.md 19d92014f59544089d49e1e53075c28e
 msgid ".. image:: ../_static/image/generated/show_nep_icons/delete.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/delete.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3208
-#: 8a1721be88ec4a34803c9bedf080c4b7
+#: ../../source/module/nep-display-structure-tools.md:3208 9971a67580c1496a9b34ede45320811e
 msgid "`Drop All Bad`"
 msgstr "`Drop All Bad`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3208
-#: 781c7c64bd4b4de5895db3134bcd2419
+#: ../../source/module/nep-display-structure-tools.md:3208 a35040cada55483c8af78b7865ae144c
 msgid "是（确认）"
-msgstr "Details for this option"
+msgstr "Yes (confirmation)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:3208
-#: 902c5ec378414e33ba6cb0ac64b7dc15
+#: ../../source/module/nep-display-structure-tools.md:3208 c0a698208f20494a87429b55ac5a271f
 msgid "删除所有 reject 结构"
-msgstr "Details for this option"
+msgstr "Delete all rejected structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9393
-#: 94c587790d854152a63fdda794f0c948
+#: ../../source/module/nep-dataset-display-content.md:9393 cb863b4f18ff4c3b9d682224f96e3300
 msgid "4. 结构工具栏（按按钮查）"
-msgstr "Details for this option"
+msgstr "4. Structure toolbar (by button)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9395
-#: 1499276e3ce4434db4e9ff5b9b4d03e3
+#: ../../source/module/nep-dataset-display-content.md:9395 0da23112edf54b5494092bd7fa98ca62
 msgid "4.1 相机与显示控制"
-msgstr "Details for this option"
+msgstr "4.1 Camera and display controls"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: 6aa9e0a8d6624946b1565534b400f72d
+#: ../../source/module/nep-display-structure-tools.md:18 a26b5e89cc724cdeaf01c3440c161da3
 msgid "行为"
 msgstr "Behavior"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: b3cc89eea2734105a6c9c038f402cad7
+#: ../../source/module/nep-display-structure-tools.md:18 0709dd0712b540238812b21d3a3beabe
 msgid "切换正交投影"
-msgstr "Details for this option"
+msgstr "Toggle orthographic projection"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: f356b2b32f4049f7b85f16d38f7cc84a
+#: ../../source/module/nep-display-structure-tools.md:18 e84dc1d868d642688be738b3dcb437dc
 msgid "自动视角/距离对齐"
-msgstr "Details for this option"
+msgstr "Automatically fit the camera angle and distance"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-structure-tools.md:18
-#: 308d63744bc54db49cf561e16d1c734d
+#: ../../source/module/nep-display-structure-tools.md:18 c0b82172275c44f484bfa45043acf02b
 msgid "显示/隐藏键；图标在 `show_bond/hide_bond` 间切换"
-msgstr "Details for this option"
+msgstr "Show or hide bonds; the icon switches between `show_bond` and `hide_bond`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9403
-#: e4077c10220d4e4fb28f67460dcea6d8
+#: ../../source/module/nep-dataset-display-content.md:9403 2d0b3a70397e436381a0633ad17921d7
 msgid "4.2 `Show Arrows`"
 msgstr "4.2 `Show Arrows`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9405
-#: 5c74b714765b4a5b828fc7d8049c8b4e
+#: ../../source/module/nep-dataset-display-content.md:9405 436b163952f342bc8fdbe5fa70a731ec
 msgid "前提：当前结构画布必须支持箭头 API（通常 vispy）。"
-msgstr "Details for this option"
+msgstr "Requirement: the current structure canvas must support the arrow API (normally vispy)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9406
-#: 7fb0c5dffdba47609fcaa584f27d9bee
+#: ../../source/module/nep-dataset-display-content.md:9406 1f2b4234a59f4c529931cc87e665a6d3
 msgid "输入控件："
 msgstr "Input controls:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9407
-#: fde23f634e7b46d481466ca4883a3faa
+#: ../../source/module/nep-dataset-display-content.md:9407 14439bc5e0fc4ce69cea382917603039
 msgid "`Property`：仅 `N x 3` 原子向量属性"
-msgstr "See the parameter description for details."
+msgstr "`Property`: atom-vector properties with shape `N x 3` only"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9408
-#: 46a57234d4b9446ab12ec4287117139e
+#: ../../source/module/nep-dataset-display-content.md:9408 c49ca42ad9744748ab7920856340338b
 msgid "`Scale`：`[0, 1000]`，默认 `1.0`"
-msgstr "See the parameter description for details."
+msgstr "`Scale`: `[0, 1000]`; default: `1.0`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9409
-#: cbee4f3113bd452584a954d357fd7342
+#: ../../source/module/nep-dataset-display-content.md:9409 b4c86c42f907412cb3d232147d0916aa
 msgid "`Colormap`：`viridis/magma/plasma/inferno/jet`"
 msgstr "`Colormap`：`viridis/magma/plasma/inferno/jet`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9410
-#: 7f6814502b524ef3a3b2fa35eee3b289
+#: ../../source/module/nep-dataset-display-content.md:9410 10ff1f3d996b452a9b0cc659c0ecaf89
 msgid "`Show arrows`：勾选显示，取消则清除"
-msgstr "See the parameter description for details."
+msgstr "`Show arrows`: check to display arrows; uncheck to clear them"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9412
-#: de3202c91a024cb9be814c0474c0cb14
+#: ../../source/module/nep-dataset-display-content.md:9412 71f5fd09fe824a92a9c32509753592fd
 msgid ""
-"![Show Arrows Dialog](../_static/image/generated/show_nep_reference/"
-"s_arrow_dialog.png)"
+"![Show Arrows "
+"Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
 msgstr ""
-"![Show Arrows Dialog](../_static/image/generated/show_nep_reference/"
-"s_arrow_dialog.png)"
+"![Show Arrows "
+"Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9412
-#: 3fcb8f26f7cc4a1b9e827ac206c31c01
+#: ../../source/module/nep-dataset-display-content.md:9412 53fd7fc8b0e541eaa78d2231a5c6d754
 msgid "Show Arrows Dialog"
 msgstr "Show Arrows Dialog"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9412
-#: 3fcb8f26f7cc4a1b9e827ac206c31c01
-msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
-msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
+#: ../../source/module/nep-dataset-display-content.md:9412 53fd7fc8b0e541eaa78d2231a5c6d754
+msgid ".. image:: ../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
+msgstr ".. image:: ../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9414
-#: 44c1085e35dc4d42814319871530db4d
+#: ../../source/module/nep-dataset-display-content.md:9414 db583b5f86774f3bb7b381657b8abf73
 msgid "4.3 `Export current structure`"
 msgstr "4.3 `Export current structure`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9416
-#: 31784ce374d749cb95a1a0809bbf8f4f
+#: ../../source/module/nep-dataset-display-content.md:9416 14772ef2df4c424b91e0ef880de5c77c
 msgid "第一步：选格式"
 msgstr "Step 1: choose a format"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9417
-#: bf354c8f7b264704a3618577aa433ea5
+#: ../../source/module/nep-dataset-display-content.md:9417 55ac178b8d82471f98fb082a42cdc770
 msgid "`XYZ (.xyz / extxyz)`"
 msgstr "`XYZ (.xyz / extxyz)`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9418
-#: 9bd6a49c2b844ab7852c5989f3064e88
-msgid "`DeepMD/NPY (deepmd/npy)`"
-msgstr "`DeepMD/NPY (deepmd/npy)`"
+#: ../../source/module/nep-dataset-display-content.md:9418 6298c6cdc5584dfdb2d85d0163e19ad7
+msgid "`DeepMD NPY`"
+msgstr "`DeepMD NPY`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9419
-#: 0a2a92589992402c842637c158e691a7
+#: ../../source/module/nep-dataset-display-content.md:9419 6298c6cdc5584dfdb2d85d0163e19ad7
+msgid "`DeepMD NPY (Mixed)`"
+msgstr "`DeepMD NPY (Mixed)`"
+
+#: ../../source/module/nep-dataset-display-content.md:9420 8ef112d70a5845dea4faaf19347b658b
+msgid ""
+"选择 `DeepMD NPY` 时，再选择子目录按 `Config_type` 还是按化学式分组。选择 Mixed 时显示“虚拟原子填充”：`0` "
+"按精确原子数分组，正整数按 dpdata 的 `atom_numb_pad` 规则向上补齐，使不同原子数可进入同一目录。XYZ 不显示这两个选项。"
+msgstr ""
+"When `DeepMD NPY` is selected, choose whether subdirectories are grouped by "
+"`Config_type` or by chemical formula. With Mixed, `Virtual-atom padding` is shown: "
+"`0` groups by exact atom count, while a positive integer rounds counts up according "
+"to dpdata's `atom_numb_pad` rule so systems with different atom counts can share a "
+"directory. These two options are not shown for XYZ."
+
+#: ../../source/module/nep-dataset-display-content.md:9421 dfd7d8dd5f6d410b929d5f13287b9156
 msgid "第二步：选路径"
 msgstr "Step 2: choose a path"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9420
-#: f86db99b86c346ca9613a4f73b80c190
+#: ../../source/module/nep-dataset-display-content.md:9422 e4f540d444604bfcab50da3f7c7d259e
+#, python-brace-format
 msgid "`xyz`：文件保存路径（默认 `structure_{index}.xyz`）"
-msgstr "See the parameter description for details."
+msgstr "`xyz`: output file path (default: `structure_{index}.xyz`)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9421
-#: 04b9d71a52ed484f8d48a0f69de069fb
-msgid "`deepmd/npy`：目录保存路径"
-msgstr "See the parameter description for details."
+#: ../../source/module/nep-dataset-display-content.md:9423 41343924d3f842b3bf56e5ba6fc9b8fa
+msgid "两种 DeepMD NPY：目录保存路径"
+msgstr "Both DeepMD NPY formats: directory output path"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9423
-#: 1c2a1335ce664d9f971daeed22fdd682
+#: ../../source/module/nep-dataset-display-content.md:9425 a05b8e5298ea481a832ceb5c88c26482
 msgid ""
-"![Export Format Dialog](../_static/image/generated/show_nep_reference/"
-"s_export_format.png)"
+"![Export Format "
+"Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
 msgstr ""
-"![Export Format Dialog](../_static/image/generated/show_nep_reference/"
-"s_export_format.png)"
+"![Export Format "
+"Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9423
-#: f30dba5860ea42efaacfbe7e558b759a
+#: ../../source/module/nep-dataset-display-content.md:9425 bb68fb54cbaa4adb8014667c04ba9945
 msgid "Export Format Dialog"
 msgstr "Export Format Dialog"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9423
-#: f30dba5860ea42efaacfbe7e558b759a
-msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/s_export_format.png"
-msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/s_export_format.png"
+#: ../../source/module/nep-dataset-display-content.md:9425 bb68fb54cbaa4adb8014667c04ba9945
+msgid ".. image:: ../_static/image/generated/show_nep_reference/s_export_format.png"
+msgstr ".. image:: ../_static/image/generated/show_nep_reference/s_export_format.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9425
-#: af13b37c55744f21b641de6fb0f4019a
+#: ../../source/module/nep-dataset-display-content.md:9427 ef970b2ea5534b9fb4159145e09f2de2
 msgid "4.4 `Mark Bad (Reject)` 与 `Drop All Bad`"
-msgstr "Details for this option"
+msgstr "4.4 `Mark Bad (Reject)` and `Drop All Bad`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9427
-#: 7e1083c78e4a41ef898b9608c1424408
+#: ../../source/module/nep-dataset-display-content.md:9429 f192dea6bc80482e9be69f47b5e64461
 msgid "`Mark Bad (Reject)`：只标记，不删除；主图显示 reject 高亮。"
-msgstr "See the parameter description for details."
+msgstr "`Mark Bad (Reject)`: mark without deleting; the main plot highlights rejected structures."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9428
-#: 6df72ce3fc4846b690744ddb744b2d23
-msgid ""
-"`Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
-msgstr "See the parameter description for details."
+#: ../../source/module/nep-dataset-display-content.md:9430 a8e720a81ef74007a4d791d9b00d6cf3
+msgid "`Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
+msgstr "`Drop All Bad`: after confirmation, delete every active rejected structure; then clear the rejected set and redraw the plot."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9430
-#: 269333af30554d05a491af9c62ad528a
+#: ../../source/module/nep-dataset-display-content.md:9432 995fc7b07dbb4d78bbab82739caf9b5a
 msgid ""
-"![Drop All Bad Confirm](../_static/image/generated/show_nep_reference/"
-"s_dropbad_confirm.png)"
+"![Drop All Bad "
+"Confirm](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
 msgstr ""
-"![Drop All Bad Confirm](../_static/image/generated/show_nep_reference/"
-"s_dropbad_confirm.png)"
+"![Drop All Bad "
+"Confirm](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9430
-#: d62a1543fc5b4e689b0f230c69e85eaf
+#: ../../source/module/nep-dataset-display-content.md:9432 124e2e2475d440de9a5162e607ad8f5d
 msgid "Drop All Bad Confirm"
 msgstr "Drop All Bad Confirm"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:9430
-#: d62a1543fc5b4e689b0f230c69e85eaf
-msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"s_dropbad_confirm.png"
-msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"s_dropbad_confirm.png"
+#: ../../source/module/nep-dataset-display-content.md:9432 124e2e2475d440de9a5162e607ad8f5d
+msgid ".. image:: ../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"
+msgstr ".. image:: ../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"

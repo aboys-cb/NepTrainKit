@@ -1,37 +1,53 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/defect-surface.md:1
-#: 92f8f844f3874020ad896723f7d796dc
-msgid "缺陷与表面"
-msgstr "Defects and surfaces"
+#: ../../source/module/make-dataset-cards/categories/defect-surface.md:1
+#: 88135efec4084a3f8b584b15855e6c8e
+msgid "缺陷"
+msgstr "Defects"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/defect-surface.md:3
-#: d8397d83914844a598806fe19db36359
-msgid ""
-"这组卡片改变表面边界或原子数，也包含显式层错路径。表面生成、删位、插入原子和"
-"层间滑移 是不同操作；需要组合时，按“先构造边界，再引入局部缺陷”的顺序执行。"
-msgstr "These cards change surface boundaries or atom counts and include explicit stacking-fault paths. Slab construction, vacancy creation, atom insertion, and interlayer sliding are different operations; when combining them, build the boundary first and then add local defects."
+#: ../../source/module/make-dataset-cards/categories/defect-surface.md:3
+#: 54573a55a1f94f09a09b19fd642fb60a
+msgid "与卡片 UI 的“缺陷”分组一致。这些卡片负责删位、插入原子、加入吸附原子或生成层错路径。 自由表面的构造单独放在“表面”分组；表面缺陷通常先建表面，再接这里的局部操作。"
+msgstr ""
+"This section matches the `Defects` group in the card picker. These cards remove "
+"sites, insert atoms, add adsorbates, or generate stacking-fault paths. Free surfaces "
+"are created separately in the `Surfaces` group; to create a surface defect, usually "
+"build the surface first and then apply one of the local operations listed here."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/defect-surface.md:16
-#: 1ab1fee89ad2459f95a5ca37ff4ead46
-msgid ""
-"旧版 `Stacking Fault` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用 "
-"`Stacking Fault / GSFE Path`。"
-msgstr "The legacy `Stacking Fault` card is hidden from the Add menu and retained only for historical JSON compatibility. Use `Stacking Fault / GSFE Path` for new tasks."
+#: ../../source/module/make-dataset-cards/categories/defect-surface.md:15
+#: 55f28a1ec51f461e9abd7791d20eb595
+msgid "旧版 `Stacking Fault` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用 `GSFE Path`。"
+msgstr ""
+"The legacy `Stacking Fault` card is hidden from the Add menu and retained only for "
+"historical JSON compatibility. Use `GSFE Path` for new workflows."
+
+#~ msgid "缺陷与表面"
+#~ msgstr "Defects and surfaces"
+
+#~ msgid "这组卡片改变表面边界或原子数，也包含显式层错路径。表面生成、删位、插入原子和层间滑移 是不同操作；需要组合时，按“先构造边界，再引入局部缺陷”的顺序执行。"
+#~ msgstr ""
+#~ "These cards change surface boundaries or atom"
+#~ " counts and include explicit stacking-fault "
+#~ "paths. Slab construction, vacancy creation, atom "
+#~ "insertion, and interlayer sliding are different "
+#~ "operations; when combining them, build the "
+#~ "boundary first and then add local defects."

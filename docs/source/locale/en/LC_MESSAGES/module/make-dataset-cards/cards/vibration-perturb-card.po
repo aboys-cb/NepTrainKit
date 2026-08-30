@@ -8,538 +8,586 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:3
-#: c09ca1d4cc1849d2adc809fbb90771bf
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:3
+#: 2c2d4d2f42054bb1ba2395c042a1b29f
 msgid "振动模式扰动（Vib Mode Perturb）"
 msgstr "Vib Mode Perturb"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:5
-#: 343cba6c8393441bb822016e5efa3081
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:5
+#: 1071c868fe0946648dade6d40fc7c9ee
 msgid "**分类：** 扰动"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "**Category:** Perturbations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:7
-#: 816adecf1ac748d0966d497c15cd6bf1
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:7
+#: b8a70482c5e6458f92bf80121add18ca
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:9
-#: 3b747c90b0e64b04b166026ad172658a
-msgid ""
-"沿声子振动模态方向施加位移扰动，比纯随机扰动更贴近动力学自由度。每个输出结构"
-"随机选取若干振动模态，按幅值叠加位移。可选按频率缩放（高频模态贡献更小）和排"
-"除近零频模态（避免平移/旋转伪模）。"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:9
+#: 0e43116e819642ad9e35273e95cc57a0
+msgid "沿输入结构已有的振动模式生成协同原子位移。它适合已有可信模态、希望在这些模态张成的子空间内补样的场景；没有模态数据时应使用“原子扰动”。"
 msgstr ""
-"Displace atoms along phonon eigenvectors so the sampled directions follow "
-"dynamical degrees of freedom rather than arbitrary coordinate noise. Each "
-"output combines a random subset of modes. Optional frequency scaling reduces "
-"the contribution of high-frequency modes, and a near-zero-frequency filter "
-"removes translational or rotational artifacts."
+"Generate coordinated atomic displacements along vibration modes already stored in the"
+" input structure. This is intended for cases with trustworthy modes where sampling "
+"should remain within the subspace they span. Use `Atomic Perturb` when no mode data "
+"are available."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:11
-#: acd54f4e91644ea7b7a69ae00d5e1688
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:11
+#: 2ed54519afa3469b9e3d81c89497cc99
+msgid "每个输入结构都必须带有可识别的模态数组。开启频率筛选或频率加权时，还必须为所有模态提供有限频率值；参与频率加权的频率不能为零。"
+msgstr ""
+"Every input structure must contain recognizable mode arrays. When frequency filtering"
+" or weighting is enabled, finite frequency values must also be provided for every "
+"mode, and frequencies used for weighting must be nonzero."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:13
+#: 1a4969360f8642e485bd9be7fe44ce64
+msgid "输入数据"
+msgstr "Input Data"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:15
+#: 73b5db279c5b429ea04360b35e8eb136
+msgid "推荐把每个模式保存为一个三列向量属性："
+msgstr "The recommended representation stores each mode as one three-column vector property:"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:17
+#: 6ecdef7f4c1a473db3fe6bc17eb62e09
+msgid ""
+"vibration_mode_0       # shape: (原子数, 3)\n"
+"vibration_frequency_0  # shape: (原子数,)\n"
+"vibration_mode_1       # shape: (原子数, 3)\n"
+"vibration_frequency_1  # shape: (原子数,)\n"
+"...\n"
+msgstr ""
+"vibration_mode_0       # shape: (number of atoms, 3)\n"
+"vibration_frequency_0  # shape: (number of atoms,)\n"
+"vibration_mode_1       # shape: (number of atoms, 3)\n"
+"vibration_frequency_1  # shape: (number of atoms,)\n"
+"...\n"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:25
+#: d3e5230d37884aeab8fa321b54ddf87b
+msgid ""
+"在 EXTXYZ 的 `Properties` 中，一个模式对应 `vibration_mode_0:R:3`，后面的 `3` 表示每个原子直接保存 x、y、z "
+"三个分量。频率对应 `vibration_frequency_0:R:1`；频率属于整个模式，但需要按原子重复同一个值。"
+msgstr ""
+"In EXTXYZ `Properties`, one mode is represented as `vibration_mode_0:R:3`; the "
+"trailing `3` means that the x, y, and z components are stored directly for every "
+"atom. Its frequency is `vibration_frequency_0:R:1`. Although the frequency belongs to"
+" the whole mode, the same value must be repeated for every atom."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:27
+#: 2194278e4f3949d9a9e4c4d0abe05c23
+msgid ""
+"程序仍兼容拆分的 `vibration_mode_0_x/y/z`、`normal_mode_*`、`mode_*`，以及聚合模态数组 "
+"`vibration_modes`、`normal_modes`、`modes`。聚合频率数组可命名为 "
+"`vibration_frequencies`、`normal_mode_frequencies`、`frequencies` 或 `freqs`。"
+msgstr ""
+"The program also accepts split arrays such as `vibration_mode_0_x/y/z`, "
+"`normal_mode_*`, and `mode_*`, as well as aggregate mode arrays named "
+"`vibration_modes`, `normal_modes`, or `modes`. Aggregate frequency arrays may be "
+"named `vibration_frequencies`, `normal_mode_frequencies`, `frequencies`, or `freqs`."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:29
+#: 43ebb753133f41809b1c4e4c36c80045
+msgid "频率没有内置固定单位。频率截止值与输入频率使用同一数值单位；同一批数据必须保持一致，不能混用 `cm⁻¹` 与 THz。"
+msgstr ""
+"No fixed frequency unit is built in. The frequency cutoff uses the same numerical "
+"unit as the input frequencies. A dataset must use one consistent unit and must not "
+"mix `cm⁻¹` with THz."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:31
+#: 97ba405ad3a541c9adcac4886138dfe4
+msgid "一个完整的两原子示例"
+msgstr "A Complete Two-Atom Example"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:33
+#: 9986e5de18c6458d87c0b7982910b0b8
+msgid "下面的 Si₂ 结构带有两个模式。每个模式都为每个原子保存一个三维矢量；这里假设频率统一使用 `cm⁻¹`："
+msgstr ""
+"The following Si₂ structure contains two modes. Each mode stores one three-"
+"dimensional vector for every atom; frequencies are assumed to use `cm⁻¹` "
+"consistently:"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 743d4e343a7045b5b57156655d5ad243
+msgid "原子"
+msgstr "Atom"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 92d98c5e0da0417fbc0ab2a038cbab7c
+msgid "坐标（Å）"
+msgstr "Coordinates (Å)"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 84d3291b81664155b7bbccc321789c4d
+msgid "模式 0 矢量"
+msgstr "Mode 0 Vector"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 6bf2842f0e234935ac59ad036fe8408e
+msgid "频率 0"
+msgstr "Frequency 0"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 3a52d2447268465a80ce568986871149
+msgid "模式 1 矢量"
+msgstr "Mode 1 Vector"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 04cf5975092a4c0e91ea0200a06e173d
+msgid "频率 1"
+msgstr "Frequency 1"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: fe144ebec5cb4c67ae1fbc7aa3b96ba7
+msgid "Si 0"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: f87b367f4b95437ea4240e816e3ef27a
+msgid "`(0.0, 0.0, 0.0)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: a3e299a2daa04cad8bdd2384bdf7388e
+msgid "`(+0.10, 0.00, 0.00)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 0ded5636fa6f4143add4611f1dc13872 51db7e0bd55b4131a232d77ef898723e
+msgid "100"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: ca79534da93a4be89f81bab0b46eb8dc
+msgid "`(0.00, +0.20, 0.00)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: 227f7b3a727647478e125fb9ba577f95 baa958f9dbf340f2b5f5f289684ddb0a
+msgid "250"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: a4d7a78fb80d461c901c7abfa5babdf4
+msgid "Si 1"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: c18aa5ee7d8a4332b45ca4b768c00e91
+msgid "`(2.3, 0.0, 0.0)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: b51637ef868942a2b0a90f6c4e1a532d
+msgid "`(-0.10, 0.00, 0.00)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md
+#: bb9d73b3a5b44e76b8669bb63b9ed7a8
+msgid "`(0.00, -0.20, 0.00)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:40
+#: ac242a5197f44890ab51f2927ebd7a3b
+msgid "对应的 ASE 结构可以这样构造："
+msgstr "The corresponding ASE structure can be constructed as follows:"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:42
+#: 30e7adb78f364a139063d75c9551b6c0
+msgid ""
+"import numpy as np\n"
+"from ase import Atoms\n"
+"\n"
+"atoms = Atoms(\n"
+"    \"Si2\",\n"
+"    positions=[[0.0, 0.0, 0.0], [2.3, 0.0, 0.0]],\n"
+"    cell=[10.0, 10.0, 10.0],\n"
+"    pbc=True,\n"
+")\n"
+"\n"
+"# 模式 0：两个原子沿 x 方向相向运动\n"
+"atoms.new_array(\n"
+"    \"vibration_mode_0\",\n"
+"    np.array([[+0.10, 0.00, 0.00], [-0.10, 0.00, 0.00]]),\n"
+")\n"
+"atoms.new_array(\"vibration_frequency_0\", np.array([100.0, 100.0]))\n"
+"\n"
+"# 模式 1：两个原子沿 y 方向反向运动\n"
+"atoms.new_array(\n"
+"    \"vibration_mode_1\",\n"
+"    np.array([[0.00, +0.20, 0.00], [0.00, -0.20, 0.00]]),\n"
+")\n"
+"atoms.new_array(\"vibration_frequency_1\", np.array([250.0, 250.0]))\n"
+msgstr ""
+"import numpy as np\n"
+"from ase import Atoms\n"
+"\n"
+"atoms = Atoms(\n"
+"    \"Si2\",\n"
+"    positions=[[0.0, 0.0, 0.0], [2.3, 0.0, 0.0]],\n"
+"    cell=[10.0, 10.0, 10.0],\n"
+"    pbc=True,\n"
+")\n"
+"\n"
+"# Mode 0: the two atoms move toward each other along x\n"
+"atoms.new_array(\n"
+"    \"vibration_mode_0\",\n"
+"    np.array([[+0.10, 0.00, 0.00], [-0.10, 0.00, 0.00]]),\n"
+")\n"
+"atoms.new_array(\"vibration_frequency_0\", np.array([100.0, 100.0]))\n"
+"\n"
+"# Mode 1: the two atoms move in opposite directions along y\n"
+"atoms.new_array(\n"
+"    \"vibration_mode_1\",\n"
+"    np.array([[0.00, +0.20, 0.00], [0.00, -0.20, 0.00]]),\n"
+")\n"
+"atoms.new_array(\"vibration_frequency_1\", np.array([250.0, 250.0]))\n"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:68
+#: abb84fb3a8e4489bb0d78137901d4bbe
+msgid ""
+"以 `vibration_mode_0` 为例，第一行 `[0.10, 0.00, 0.00]` 属于 Si 0，第二行 `[-0.10, 0.00, 0.00]` 属于"
+" Si 1。每行已经是该原子完整的三维模态矢量。"
+msgstr ""
+"For `vibration_mode_0`, the first row `[0.10, 0.00, 0.00]` belongs to Si 0 and the "
+"second row `[-0.10, 0.00, 0.00]` belongs to Si 1. Each row is already that atom's "
+"complete three-dimensional mode vector."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:70
+#: d6061b3445da4c2e948b7ce7e74cfcaf
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:13
-#: a2c1895672764fcb900ef3d419e15287
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:72
+#: 95b39ab6a8fa4e3ca4bdd0ea10afa3ea
+msgid "设筛选后共有 $M$ 个模式，第 $j$ 个模式为 $\\mathbf e_j$，频率为 $\\nu_j$。每个输出先无放回抽取 $K$ 个模式，再采样系数 $z_j$："
+msgstr ""
+"Suppose $M$ modes remain after filtering, with mode $j$ denoted by $\\mathbf e_j$ and"
+" its frequency by $\\nu_j$. Each output first samples $K$ modes without replacement, "
+"then samples coefficients $z_j$:"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:74
+#: acfc5e2e0ff549279500222ac61390a6
+#, python-brace-format
 msgid ""
-"\\mathbf{r}'=\\mathbf{r}+A\\sum_{k\\in\\mathcal{K}} c_k\\mathbf{u}_k,\\quad "
-"c_k\\sim\\mathcal{N}(0,1)\\ \\text{or}\\ \\mathcal{U}(-1,1)"
+"\n"
+"z_j\\sim\\mathcal N(0,1)\n"
+"\\quad\\text{或}\\quad\n"
+"z_j\\sim U(-1,1).\n"
+msgstr ""
+"\n"
+"z_j\\sim\\mathcal N(0,1)\n"
+"\\quad\\text{or}\\quad\n"
+"z_j\\sim U(-1,1).\n"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:80
+#: b548cc3077cf4654bd7d9844b0763f1e
+msgid "开启频率加权时："
+msgstr "With frequency weighting enabled:"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:82
+#: acc5ad6c4ff94e4b871beae57dd5584e
+msgid ""
+"\n"
+"c_j=\\frac{z_j}{\\sqrt{|\\nu_j|}};\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:15
-#: 32d42343ba444853b81d16a630f33a9a
-msgid ""
-"$\\mathbf u_k$ 是第 $k$ 个输入振动模态，$\\mathcal K$ 是本样本抽中的模态集"
-"合， $A$ 是总幅值尺度。开启频率缩放时，高频模态系数会按频率降低；最小频率门槛"
-"用于排除 近零平移/转动伪模。该卡不会自行计算本征模，公式完全依赖输入模态的归"
-"一化约定。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:86
+#: d3fbe8aaf1cc421b9274beea66c4ab5f
+msgid "关闭时 $c_j=z_j$。最终坐标为："
+msgstr "When it is disabled, $c_j=z_j$. The final coordinates are:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:19
-#: 183258d77c0f497eb4ba696f0805153a
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:88
+#: 3007e1bf390d4003a77b6938640607c5
+#, python-brace-format
 msgid ""
-"**关键前置条件：** 输入结构必须携带振动模态数据。如果来自 EXTXYZ 文件，需要包"
-"含 `mode_N_x/y/z` 和 `frequency_N` 列，或者整块数组 `modes` / "
-"`vibration_modes` 和 `frequencies` / `vibration_frequencies`。没有模态数据"
-"时，卡片返回空结果。"
+"\n"
+"\\mathbf R'=\\mathbf R+a\\sum_{j\\in S}c_j\\mathbf e_j,\n"
 msgstr ""
-"**Required input:** Every input structure must carry vibrational-mode data. "
-"An EXTXYZ file may provide `mode_N_x/y/z` and `frequency_N` columns, or "
-"block arrays named `modes` / `vibration_modes` and `frequencies` / "
-"`vibration_frequencies`. A structure without recognized mode data is "
-"skipped, so an all-missing input produces no output."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:21
-#: 4abaf5fa8c75458db007e09707b06ce6
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:92
+#: bfc25f2e6b0c42c796e575d8e25a2b6b
+msgid "其中 $a$ 是“模态系数尺度”，$S$ 是本次选中的模式集合。周期方向上的新坐标会回到原晶胞内。"
+msgstr ""
+"Here $a$ is the `Mode coefficient scale`, and $S$ is the set of modes selected for "
+"this output. New coordinates are wrapped into the original cell along periodic "
+"directions."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:94
+#: 0ed9fe5050fa4dbeaf65b743f1b56b11
+msgid "`a` 不是原子最大位移。实际位移还取决于模态矢量的归一化、抽到的随机系数、组合模式数和频率加权。正态分布无界，因此也不存在由 `a` 给出的硬位移上限。"
+msgstr ""
+"`a` is not the maximum atomic displacement. The actual displacement also depends on "
+"mode-vector normalization, the sampled random coefficients, the number of combined "
+"modes, and frequency weighting. A normal distribution is unbounded, so `a` does not "
+"impose a hard displacement limit."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:96
+#: c4218acb4740499581c7c92e21b681f9
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:23
-#: abc4fbd341a94e91897aeaa5f28abd59
-msgid "场景：加了 Atomic Perturb 后力 MAE 改善有限，低频声子支的预测仍然很差"
-msgstr ""
-"Scenario: Atomic Perturb improves force MAE only modestly and low-frequency "
-"phonon branches remain inaccurate"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:98
+#: 99991f32e9ec42acbc4f74eb69c0d98d
+msgid "用已有模态生成近平衡样本"
+msgstr "Generate Near-Equilibrium Samples from Existing Modes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:25
-#: b14bb8e7816b48b9ac348dbd2556ad18
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:100
+#: 09844d7da2634934b7109f04cf0402da
 msgid ""
-"你在 Si 上训练了一个 NEP 模型。加了 `Atomic Perturb`（0.2 Å 随机位移）后，力"
-"的 MAE 从 150 meV/A 降到了 80 meV/A，但计算出的声子色散在低频声学支上误差仍然"
-"很大。诊断发现：纯随机扰动在所有方向上均匀采样，但低频声子对应的是长波长的协"
-"同原子运动——纯随机扰动几乎不可能恰好对齐这些方向。"
+"导入频率单位统一的模态结构，将系数尺度设为 `0.02`、每个样本组合 2 个模式、每个输入生成 8 个结构，并启用 seed。先检查这 8 "
+"个结构的最大位移和最短原子间距；尺度合适后再增加输出数。"
 msgstr ""
-"You trained an NEP model for Si. Adding 0.2 Å `Atomic Perturb` samples "
-"reduces force MAE from 150 to 80 meV/Å, yet the low-frequency acoustic "
-"branches of the predicted phonon dispersion remain inaccurate. Independent "
-"random displacements sample generic directions, whereas low-frequency "
-"phonons involve collective, long-wavelength motion that random noise is "
-"unlikely to align with efficiently."
+"Import structures whose modes use a consistent frequency unit. Set the coefficient "
+"scale to `0.02`, combine two modes per sample, generate eight structures per input, "
+"and enable a seed. First inspect the maximum displacement and minimum interatomic "
+"distance in those eight structures; increase the output count only after confirming "
+"that the scale is appropriate."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:27
-#: 07cf3820856f476ea74f6f9ae6fb02d4
-msgid ""
-"**诊断思路：** 声子频率对位移的灵敏度在各个模态方向上差异巨大。低频声学模涉及"
-"大范围原子协同位移，但在局部键长上变化很小——纯随机扰动倾向于产生\"局域键长变"
-"化大\"的构型，这恰好是高频光学模的特征，不是低频模的特征。需要沿准确的振动模"
-"本征方向施加位移，让模型在模态坐标上也有训练点。"
-msgstr ""
-"**Diagnosis:** The energy response differs greatly among normal-mode "
-"directions. Low-frequency acoustic modes involve coordinated motion across "
-"many atoms while changing local bond lengths only slightly. Independent "
-"random perturbations emphasize local bond distortions and therefore cover "
-"those collective directions poorly. Displacements along trusted eigenvectors "
-"place training samples directly on the relevant normal-mode coordinates."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:29
-#: 55ec5dc21ca64bcb829361dd3dd0e88c
-msgid ""
-"**输入：** 一个 Si 超胞，EXTXYZ 文件已包含 phonopy 计算出的振动模态数据"
-"（`mode_1_x/y/z` 到 `mode_N_x/y/z` 和 `frequency_1` 到 `frequency_N`）"
-msgstr ""
-"**Input:** A Si supercell whose EXTXYZ data include phonopy-derived modes "
-"(`mode_1_x/y/z` through `mode_N_x/y/z`) and frequencies (`frequency_1` "
-"through `frequency_N`)."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:31
-#: 011878ccef9b49498878826aa74e4643
-msgid ""
-"**目标：** 生成 32 个扰动结构，每次随机选 3 个模态叠加，幅值 0.05，只使用频"
-"率 > 10 THz 的模态（或 < 10 的具体看体系）"
-msgstr ""
-"**Goal:** Generate 32 perturbed structures by combining three randomly "
-"selected modes per structure at amplitude 0.05. Choose a frequency threshold "
-"appropriate to the system; for example, retain only modes above 10 THz when "
-"intentionally targeting that range."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:33
-#: 240f3e9b258641869735a0564545deda
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:34
-#: 88e580b4e0604624aadbfda3b6a23f2d
-msgid "`振动幅度`（`amplitude`） = `0.05`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:35
-#: 31f1512921d34ca08ab111d93b4dfb22
-msgid "`每个样本的模式数`（`modes_per_sample`） = `3`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:36
-#: 8177a68d3f4d46c18f82f811e90c2eaa
-msgid "`最大输出数量`（`max_num`） = `32`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:37
-#: 48696d3a497a4a18ad239270f9a07b3b
-msgid "`最小频率`（`min_frequency`） = `0.0` （或设一个合理的过滤值）"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:38
-#: b5ae2159a66849548c20cf21cc686ebb
-msgid "`分布`（`distribution`） = `0` （高斯分布）"
-msgstr "See the parameter description for details."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:39
-#: 2036ba48080f49b89e7185e17fa8a34f
-msgid "`按频率缩放`（`scale_by_frequency`） = `true` （高频模自动衰减）"
-msgstr "See the parameter description for details."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:41
-#: 6c5d76d688ed46eb93ff2fd3eedbdcaf
-msgid ""
-"**输出：** 32 个结构，每个沿 3 个随机选取的振动模态方向偏移，位移幅值按频率缩"
-"放"
-msgstr ""
-"**Output:** 32 structures displaced along combinations of three randomly "
-"selected vibrational modes, with contributions scaled by frequency."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:43
-#: 9f357da064964eaf9ca32e4535ec7b19
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:44
-#: acd2e5c1d2854ffb9fa778d9e9f471bf
-msgid "重训后重新计算声子色散，低频声学支应更接近 DFT 结果"
-msgstr ""
-"After DFT labeling and retraining, recalculate the phonon dispersion and "
-"compare the low-frequency acoustic branches with DFT."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:45
-#: cfcb0ac60a96466fa44e39e628daac22
-msgid ""
-"检查输出中哪些模态被选中——如果低频模态总是被 `最小频率`（`min_frequency`）排"
-"除，降低此阈值"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:46
-#: ffd15518550c497e9c2207c4dfe0a03a
-msgid ""
-"如果模型对高频光学支仍然不准，增大 `每个样本的模式数`（`modes_per_sample`）"
-"到 4~5，或增大 `最大输出数量`（`max_num`）"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:47
-#: 70d2a979457247f1b75877be33233348
-msgid ""
-"如果 `按频率缩放`（`scale_by_frequency`）导致高频模位移太小（几乎看不到变"
-"化），关闭此开关试一批"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:49
-#: b8fb13f8536e486b9ef9204c8a2c3083
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:51
-#: c44d139a9d544f0287d5e01348c45640
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:52
-#: c33542045dec4bf1875df1fccfc2909e
-msgid "已有可信的振动模态数据，需要沿模态方向补充训练样本"
-msgstr ""
-"Trusted vibrational-mode data are available and the training set needs "
-"samples along those directions."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:53
-#: a2e14808bbce411ab1023dc6fa2fe282
-msgid "纯随机扰动改进有限，声子或振动相关性质仍有偏差"
-msgstr ""
-"Random perturbations have provided limited improvement and phonon or "
-"vibrational properties remain inaccurate."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:54
-#: edf5c29d988e41e4aa0c83678a4e7628
-msgid "需要模型学到模态方向上的势能面曲率"
-msgstr ""
-"The model needs potential-energy curvature information along normal-mode "
-"coordinates."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:56
-#: 2204e9c7de404874b3b027dbb57c845b
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:57
-#: 0cc80e7802224b97a07462ae52b69827
-msgid "输入结构没有模态数据——卡片直接返回空，先跑 phonopy/DFPT 生成模态"
-msgstr ""
-"The input has no mode data. Generate modes with phonopy or DFPT before using "
-"this card."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:58
-#: fc336dfa9edf4d758959555b46234746
-msgid "模态是从低精度方法（如经验势）算出来的——沿错误模态方向扰动只会引入噪声"
-msgstr ""
-"The modes come from an insufficiently accurate method. Sampling along "
-"incorrect eigenvectors may add noise rather than useful coverage."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:59
-#: 78df5432643146d79dfda38c43845635
-msgid "只需要覆盖高频局域环境——用 `Atomic Perturb` 更简单直接"
-msgstr ""
-"Only generic high-frequency local distortions are needed → `Atomic Perturb` "
-"is simpler."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:61
-#: f3546cdded5b49498a7e79abb3272c88
-msgid "输入格式：振动模态数据"
-msgstr "Input format: vibrational-mode data"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:63
-#: d96e37e111ef4387bf31fd4435517710
-msgid "输入结构需要以下数组之一（EXTXYZ 格式优先）："
-msgstr ""
-"The input structure must contain one of the following array layouts. EXTXYZ "
-"is recommended."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:65
-#: bb55a3e2ede04a8aab068f06e84bcd9a
-msgid "**方式一：按模态拆列（推荐，手写最友好）**"
-msgstr ""
-"**Layout 1: one set of columns per mode (recommended and easiest to write "
-"manually)**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:66
-#: d206c115d74d4e7b92bcddcc403c48e7
-msgid ""
-"2\n"
-"Properties=species:S:1:pos:R:3:mode_1_x:R:1:mode_1_y:R:1:mode_1_z:R:1:frequency_1:R:1 "
-"pbc=\"F F F\"\n"
-"H 0.000 0.000 0.000 0.10 0.00 0.00 1500.0\n"
-"H 0.740 0.000 0.000 -0.10 0.00 0.00 1500.0\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:72
-#: 67425fe5c54b4c60a12a675626bc5b48
-msgid ""
-"`mode_N_x/y/z`：第 N 个模态在每个原子上的位移分量。`frequency_N`：第 N 个模态"
-"的频率，每个原子行重复同一值。"
-msgstr ""
-"`mode_N_x/y/z` stores the displacement components of mode *N* for each atom. "
-"`frequency_N` stores that mode's frequency, repeated on every atomic row."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:74
-#: 5e0220ca337b4c19aab7282f62db0316
-msgid "**方式二：整块数组（适合多模态）**"
-msgstr "**Layout 2: block arrays (convenient for many modes)**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:75
-#: 25f7570dccbf426bb6ff3a794237b84d
-msgid ""
-"2\n"
-"Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc=\"F F F\"\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:79
-#: 39ec10a7ec2b4db78e8d4c149e527b74
-msgid ""
-"`modes:R:3N` 表示 N 个模态的位移分量，按 mode1_xyz + mode2_xyz + ... 顺序。"
-"`frequencies:R:N` 表示 N 个频率值，每行重复同一组。"
-msgstr ""
-"`modes:R:3N` stores the displacement components of *N* modes in `mode1_xyz + "
-"mode2_xyz + ...` order. `frequencies:R:N` stores the *N* frequency values, "
-"with the same set repeated on each row."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:81
-#: 5bc194ff5e1c4cd2b688e1feb728f3f7
-msgid ""
-"代码接受的键名：`vibration_modes` / `normal_modes` / `modes`，以及 "
-"`vibration_frequencies` / `normal_mode_frequencies` / `frequencies` / "
-"`freqs`。列名或形状不对时，卡片将该结构视为\"没有可用模态\"并跳过。"
-msgstr ""
-"Accepted mode keys are `vibration_modes`, `normal_modes`, and `modes`; "
-"accepted frequency keys are `vibration_frequencies`, "
-"`normal_mode_frequencies`, `frequencies`, and `freqs`. A structure with "
-"unrecognized names or incompatible shapes is treated as having no usable "
-"modes and is skipped."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:83
-#: edcaac11ff464ae0bbedcfbbd92be962
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:102
+#: 1e0781fb0d6f4b86ab2fc677f24b940e
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:85
-#: 585d58600c4c41e28ff2cf1076e8a989
-msgid "分布（distribution）"
-msgstr "distribution"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:104
+#: c831fc098ba64226b1baa83f7bec06d3
+msgid "系数分布（distribution）"
+msgstr "Coefficient Distribution (distribution)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:87
-#: fde80a36c06a400d83f3bda1c25984e3
-msgid ""
-"`int`，默认 0。模态系数的采样分布。`0` = 高斯（均值 0，大幅位移概率更低，更接"
-"近热振动统计）；`1` = 均匀。通常高斯更物理——你不希望模型被极端大位移的训练点"
-"带偏。"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:106
+#: 41d734655f64420a9c82a4bdc57429c7
+msgid "`int`，默认 `0`。`0` 为标准正态分布，系数无界；`1` 为 $[-1,1]$ 均匀分布。"
 msgstr ""
-"`int`, default: `0`. Distribution used to sample mode coefficients. `0` is a "
-"zero-mean Gaussian, which makes extreme amplitudes less likely; `1` is "
-"uniform. Gaussian sampling is usually the safer thermal-like default."
+"`int`, default `0`. `0` is a standard normal distribution with unbounded "
+"coefficients; `1` is a uniform distribution on $[-1,1]$."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:89
-#: 3a7318500aa341cfb8adaf7833f7aa65
-msgid "振动幅度（amplitude）"
-msgstr "amplitude"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:108
+#: 36dde7630ca84d38ac0e30a1575a864e
+msgid "模态系数尺度（amplitude）"
+msgstr "Mode Coefficient Scale (amplitude)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:91
-#: a841c6f30c30421eb6d828f99d1fc37e
-msgid ""
-"`float`，默认 `0.05`。模态叠加的总幅值系数，实际位移 = `amplitude * "
-"sum(coefficient * mode_vector)`。注意这个幅值是乘在归一化后的模态矢量上的——如"
-"果上游的模态归一化方式不同（mass-weighted vs. 不归一化），同样的 amplitude 产"
-"生的实际原子位移也不一样。0.01~0.03 适合微扰验证；0.05~0.08 常规补充；设到 "
-"0.1 以上建议后筛检查最近邻距离。"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:110
+#: 90a3a0af701847bb988fd506c55e57e6
+msgid "`float`，默认 `0.05`。对应公式中的 $a$，直接乘在组合模态上，不代表最大原子位移。"
 msgstr ""
-"`float`, default: `0.05`. Overall coefficient in `displacement = amplitude * "
-"sum(coefficient * mode_vector)`. The actual atomic displacement also depends "
-"on how the upstream mode vectors were normalized, including whether they are "
-"mass weighted. Use 0.01–0.03 for small-displacement checks and 0.05–0.08 for "
-"routine augmentation. Above 0.1, validate nearest-neighbor distances "
-"carefully."
+"`float`, default `0.05`. This is $a$ in the formula and directly multiplies the "
+"combined modes; it is not the maximum atomic displacement."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:93
-#: 9e2c857afee5475daa1807f60282b482
-msgid "每个样本的模式数（modes_per_sample）"
-msgstr "modes_per_sample"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:112
+#: fc7d1e1a1f7148ffa152a0ece0375204
+msgid "每个样本组合模式数（modes_per_sample）"
+msgstr "Modes per Sample (modes_per_sample)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:95
-#: a5b7f7c26ea54e6783dda0b2585b31fc
-msgid ""
-"`int`，默认 2。每个输出结构随机选几个模态来叠加。1~2 个适合单模态方向验证，能"
-"清楚看到每个模态的贡献；3~4 个做多模态混合覆盖；5 个以上单个模态的贡献会被稀"
-"释，而且组合数指数增长——通常 2~4 就够了。"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:114
+#: ebe4bc9c03fc4b2a8352327c36f5458f
+msgid "`int`，默认 `2`，至少为 1。每个输出无放回选择这么多个模式，不能超过筛选后的可用模式数。"
 msgstr ""
-"`int`, default: `2`. Number of randomly selected modes combined in each "
-"output. Use 1–2 to inspect individual-mode behavior and 3–4 for mixed-mode "
-"coverage. Above 5, each mode's contribution becomes harder to interpret and "
-"the combinatorial space grows rapidly; 2–4 is usually sufficient."
+"`int`, default `2`, with a minimum of 1. Each output selects this many modes without "
+"replacement; the value cannot exceed the number of available modes after filtering."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:97
-#: 8109e007260346d1b25fbc684801967a
-msgid "最小频率（min_frequency）"
-msgstr "min_frequency"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:116
+#: fa49cbde986c455782ceaea103af16c3
+msgid "绝对频率截止值（min_frequency）"
+msgstr "Absolute Frequency Cutoff (min_frequency)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:99
-#: b181556098924e75b30663a662dcf38d
-msgid ""
-"`float`，默认 `10.0`。频率低于这个值的模态不参与采样。仅在 "
-"`exclude_near_zero=true` 时生效。设 0 则不过滤。典型值：排除平移/旋转伪模设 "
-"0.1~1.0 THz；排除软模设 1~10 THz，具体看你的体系。"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:118
+#: 76011b4b6012472c92aa16b85c0ca770
+msgid "`float`，默认 `10.0`。对应 $\\nu_\\min$，单位跟随输入频率；关闭频率截止后不生效。"
 msgstr ""
-"`float`, default: `10.0`. Modes below this frequency are excluded when "
-"`exclude_near_zero=true`; use 0 to disable thresholding. A 0.1–1.0 THz "
-"threshold can remove translational or rotational artifacts, while 1–10 THz "
-"also removes soft modes. Choose the value from the calculated spectrum and "
-"the physics you intend to retain."
+"`float`, default `10.0`. This is $\\nu_\\min$ and uses the same unit as the input "
+"frequencies. It has no effect when frequency cutoff is disabled."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:101
-#: 65f5835baf94416e9af6eb0d69d6546a
-msgid "最大输出数量（max_num）"
-msgstr "max_num"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:120
+#: b3e01b25152c4921bb4785d35a1e5b33
+msgid "每个输入生成（max_num）"
+msgstr "Outputs per Input (max_num)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:103
-#: bbb36e2d954840689c16159523eb154a
-msgid ""
-"`int`，默认 32。每个输入结构生成多少个扰动样本。20~40 常规覆盖，50~100 高密度"
-"覆盖。建议后面接一张 `FPS Filter` 去重。"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:122
+#: f52d9d58529b4c84923c85fd1e36515f
+msgid "`int`，默认 `32`，至少为 1。表示每个输入结构各自生成的输出数。"
 msgstr ""
-"`int`, default: `32`. Number of perturbed samples generated per input "
-"structure. Use 20–40 for routine coverage and 50–100 for denser sampling. "
-"Follow large batches with `FPS Filter` to reduce redundancy."
+"`int`, default `32`, with a minimum of 1. Number of outputs generated separately for "
+"each input structure."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:105
-#: fb659f2503394b348331d4dca5d79e76
-msgid "按频率缩放（scale_by_frequency）"
-msgstr "scale_by_frequency"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:124
+#: d5153a35070141c5943ab8e91f9ce080
+msgid "频率加权（scale_by_frequency）"
+msgstr "Frequency Weighting (scale_by_frequency)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:107
-#: d6d53c3a00034146bdaa2f3fb587e0ad
-msgid ""
-"`bool`，默认 `true`。打开后每个模态系数除以 sqrt(frequency)，高频模态的贡献自"
-"动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频"
-"模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被"
-"过度采样，建议同时降低 `振动幅度`（`amplitude`）。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:126
+#: b0278288661a42759da9733c8eca753c
+#, python-brace-format
+msgid "`bool`，默认 `true`。开启后将系数除以 $\\sqrt{|\\nu|}$，相对增强低频模式。"
+msgstr ""
+"`bool`, default `true`. When enabled, coefficients are divided by $\\sqrt{|\\nu|}$, "
+"relatively increasing the contribution of low-frequency modes."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:109
-#: dd163ea808354b67bd3ef32ac8fd64c4
-msgid "排除近零频率（exclude_near_zero）"
-msgstr "exclude_near_zero"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:128
+#: f4c6c4a6ce0f421797dcb902a3f1a923
+msgid "频率截止（exclude_near_zero）"
+msgstr "Frequency Cutoff (exclude_near_zero)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:111
-#: 715c6d76261847c682c60f56d4a1d825
-msgid ""
-"`bool`，默认 `true`。打开后用 `最小频率`（`min_frequency`）做阈值过滤，排除近"
-"零频模态。一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些\"模态\"做位移"
-"会产生异常大的整体漂移。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:130
+#: 524b954e43844076bd5db4e2b8f74fe0
+msgid "`bool`，默认 `true`。开启后仅保留 $|\\nu|\\ge\\nu_\\min$ 的模式。"
+msgstr ""
+"`bool`, default `true`. When enabled, only modes satisfying $|\\nu|\\ge\\nu_\\min$ "
+"are retained."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:113
-#: 325021f2d8754ee7948db9c339f1d3f5
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:132
+#: 52abbc4ded384aeba71e0fb64bf16603
 msgid "使用随机种子（use_seed）"
-msgstr "use_seed"
+msgstr "Use Random Seed (use_seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:115
-#: 1bd197199d28461a86a2ecbf7336fb9f
-msgid ""
-"`bool`，默认 `false`。打开后每次同一输入 + 同一参数 + 同一 seed 得到完全相同"
-"的扰动结果。对比实验或需要复现时打开，纯探索阶段可以关着。"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:134
+#: 62db6f0470e24273a8efb31be2044f62
+msgid "`bool`，默认 `false`。开启后，相同结构与参数可重复得到相同结果。"
 msgstr ""
-"`bool`, default: `false`. Enable it to reproduce exactly the same "
-"perturbations from the same input, parameters, and seed. Use it for "
-"controlled comparisons; leave it off during exploratory sampling."
+"`bool`, default `false`. When enabled, the same structure and parameters reproducibly"
+" give the same results."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:117
-#: 1e01705a747246e18921932e46fa9649
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:136
+#: 75660e0488a14cb9aecced0b38ea16c4
 msgid "随机种子（seed）"
-msgstr "seed"
+msgstr "Random Seed (seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:119
-#: 63173b463ba74105ab9fc883f4c85e0d
-msgid ""
-"`int`，默认 0。随机种子值。仅在 `使用随机种子`（`use_seed`）打开时生效。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:121
-#: f9ba318e70e046a3baa90b5f903458d6
-msgid "生效条件：`use_seed=True`。"
-msgstr "Active only when `use_seed=True`."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:123
-#: 3b18b0cf1956421da4c04e6ca568f284
-msgid "推荐预设"
-msgstr "Recommended presets"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:125
-#: b72afc914315448793137dd57b0be89e
-msgid "微扰验证（幅值 0.02，2 模态，20 样本，高斯）"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:138
+#: 68d92d0e5574431bb783e673d63787a2
+msgid "`int`，默认 `0`。它与结构内容共同派生该结构的随机流。"
 msgstr ""
-"Small-displacement check (amplitude 0.02, 2 modes, 20 Gaussian samples)"
+"`int`, default `0`. It is combined with the structure content to derive that "
+"structure's random stream."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:126
-#: e3348713952b4f04a19b286f63af8582
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:140
+#: 92ecfb86b4de4d95a3f345fa47ca9212
+msgid "总输出数为："
+msgstr "The total output count is:"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:142
+#: e0125ffefb6d4bedb0bed60db572882b
+#, python-brace-format
 msgid ""
-"{\n"
-"  \"class\": \"VibrationModePerturbCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"distribution\": 0,\n"
-"    \"amplitude\": 0.02,\n"
-"    \"modes_per_sample\": 2,\n"
-"    \"min_frequency\": 0.1,\n"
-"    \"max_num\": 20,\n"
-"    \"scale_by_frequency\": true,\n"
-"    \"exclude_near_zero\": true,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 42\n"
-"  }\n"
-"}\n"
+"\n"
+"N_\\mathrm{out}=N_\\mathrm{input}\\times\\texttt{max\\_num}.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:144
-#: 52396f013d394599ba58feb6e05e030d
-msgid "常规声子覆盖（幅值 0.05，3 模态，32 样本，高斯）"
-msgstr "Routine phonon coverage (amplitude 0.05, 3 modes, 32 Gaussian samples)"
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:146
+#: a14f6262279d41e08154723701cab575
+msgid "使用步骤"
+msgstr "Usage Steps"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:145
-#: 0387a287557b48a7ab3dcc9811593f2c
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:148
+#: 37e04d2ce8ee4d7bb72c6f5689ff93a5
+msgid "导入带振动模式的结构；"
+msgstr "Import structures containing vibration modes;"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:149
+#: 8c5370ba863841f1924ae5cf0fbf94d9
+msgid "确认频率单位一致，并据此设置频率截止值；"
+msgstr "confirm that frequency units are consistent and set the cutoff accordingly;"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:150
+#: 99853074d80a45e3b3083ee46235f396
+msgid "先用较小的模态系数尺度和少量输出试算；"
+msgstr "begin with a small mode coefficient scale and a small number of trial outputs;"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:151
+#: d5449abe422c403dba5560f63808a628
+msgid "检查位移幅度、最短原子间距和所覆盖的模式，再扩大样本量。"
+msgstr ""
+"inspect displacement magnitudes, minimum interatomic distances, and covered modes "
+"before increasing the sample size."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:153
+#: 81225de23847421c85deddcef431c985
+msgid "如果筛选后没有模式、频率相关选项缺少有限频率，或组合模式数超过可用数，卡片会停止并说明原因，不会返回成功的空结果。"
+msgstr ""
+"If no modes remain after filtering, frequency-dependent options lack finite "
+"frequencies, or the requested number of combined modes exceeds the available count, "
+"the card stops and explains the reason. It does not return an empty result as a "
+"success."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:155
+#: 5e98635a2446490ca18a6e11f3c4ee08
+msgid "常见问题"
+msgstr "Troubleshooting"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:157
+#: 6a3f5ad127c442bc9dde702b8b337930
+msgid "**为什么尺度是 0.05，最大位移却不是 0.05 Å？** 尺度乘在模态矢量及随机系数的组合上；位移还取决于模态归一化、组合模式数和频率加权。"
+msgstr ""
+"**Why is the maximum displacement not 0.05 Å when the scale is 0.05?** The scale "
+"multiplies a combination of mode vectors and random coefficients. Displacement also "
+"depends on mode normalization, the number of combined modes, and frequency weighting."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:159
+#: bc7d13219ea244df9462b73d84ae274f
+msgid "**截止值 10 的单位是什么？** 与输入保存的频率单位相同。程序不自动判断或换算 `cm⁻¹` 与 THz。"
+msgstr ""
+"**What is the unit of a cutoff value of 10?** It is the same unit used by the stored "
+"input frequencies. The program does not automatically identify or convert between "
+"`cm⁻¹` and THz."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:161
+#: f997499ac38d43c382064f2d9f3b8ba8
+msgid "**为什么提示可用模式不足？** 频率筛选后的模式数小于“每个样本组合模式数”。降低组合数或调整截止值。"
+msgstr ""
+"**Why does the interface report too few available modes?** Fewer modes remain after "
+"frequency filtering than requested by `Modes per sample`. Reduce the combination "
+"count or adjust the cutoff."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:163
+#: c7196953153442ef9def6d301344f61e
+msgid "输出与复现"
+msgstr "Output and Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:165
+#: 594c1394ddd543899211fff8ca5e5743
+msgid "每个输入严格生成 `max_num` 个结构；"
+msgstr "each input produces exactly `max_num` structures;"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:166
+#: 56c873df8de74bd78bd107f7f1cfc068
+msgid "`Config_type` 追加 `Vib(a=<尺度>,m=<模式数>)`；"
+msgstr "`Vib(a=<scale>,m=<mode count>)` is appended to `Config_type`;"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:167
+#: 302060728f4d47b1b554a6c8ceb9ba6d
+msgid "`vibration_mode_perturb` metadata 记录参数、候选模式数、所选模式位置、对应频率、seed 和样本序号；"
+msgstr ""
+"the `vibration_mode_perturb` metadata records parameters, candidate-mode count, "
+"selected mode positions, corresponding frequencies, seed, and sample index;"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:168
+#: aa2fa3bb1261463e804a41e0bd8ee5c1
+msgid "相同结构、参数和 seed 得到相同结果；不同结构从同一基准 seed 派生不同随机流。"
+msgstr ""
+"the same structure, parameters, and seed produce the same results, while different "
+"structures derive different random streams from the same base seed."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:170
+#: 793458517aee47db8aacd60c03c2c2b0
+msgid "metadata 中的模式位置是“筛选后候选模式列表”的零基序号。"
+msgstr ""
+"Mode positions in the metadata are zero-based indices into the candidate-mode list "
+"after filtering."
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:175
+#: 17aec9cde5ca415194b10dc5b244cce2
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"VibrationModePerturbCard\",\n"
@@ -547,8 +595,8 @@ msgid ""
 "  \"params\": {\n"
 "    \"distribution\": 0,\n"
 "    \"amplitude\": 0.05,\n"
-"    \"modes_per_sample\": 3,\n"
-"    \"min_frequency\": 0.1,\n"
+"    \"modes_per_sample\": 2,\n"
+"    \"min_frequency\": 10.0,\n"
 "    \"max_num\": 32,\n"
 "    \"scale_by_frequency\": true,\n"
 "    \"exclude_near_zero\": true,\n"
@@ -558,230 +606,556 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:163
-#: 6ed5907f327c49f784e8350b089b0b07
-msgid "大位移非谐探索（幅值 0.1，5 模态，50 样本，不缩放）"
-msgstr ""
-"Large-displacement anharmonic exploration (amplitude 0.1, 5 modes, 50 "
-"samples, no frequency scaling)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:164
-#: f133e72e159d4cafa43c11af0eb5e362
-msgid ""
-"{\n"
-"  \"class\": \"VibrationModePerturbCard\",\n"
-"  \"check_state\": true,\n"
-"  \"params\": {\n"
-"    \"distribution\": 1,\n"
-"    \"amplitude\": 0.1,\n"
-"    \"modes_per_sample\": 5,\n"
-"    \"min_frequency\": 0.0,\n"
-"    \"max_num\": 50,\n"
-"    \"scale_by_frequency\": false,\n"
-"    \"exclude_near_zero\": false,\n"
-"    \"use_seed\": true,\n"
-"    \"seed\": 42\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:182
-#: f807ad0e7b2441a0912cffdb0210b262
-msgid "推荐组合"
-msgstr "Recommended combinations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:184
-#: 70d009b12c6e4708b1ffe617eef460ee
-msgid ""
-"`Vib Mode Perturb` → `Atomic Perturb`：先沿模态方向扰动，再补充纯随机方向"
-msgstr ""
-"`Vib Mode Perturb` → `Atomic Perturb`: sample normal-mode directions, then "
-"add generic random directions."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:185
-#: 4c7964d934414f5786cf0205d11fa993
-msgid ""
-"`phonopy/DFPT` 生成模态 → `Vib Mode Perturb`：计算完模态后直接喂入生成训练数"
-"据"
-msgstr ""
-"`phonopy/DFPT` modes → `Vib Mode Perturb`: calculate trusted modes, attach "
-"them to the structures, then generate training candidates."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:186
-#: f98700703eae455a8f9f1f35d9c25b7d
-msgid "`Vib Mode Perturb` → `FPS Filter`：大批量生成后去重"
-msgstr ""
-"`Vib Mode Perturb` → `FPS Filter`: reduce redundancy after large-scale "
-"generation."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:188
-#: 17e4118573ed44df8f8a3271fdc63255
-msgid "常见问题"
-msgstr "Common questions"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:190
-#: 631b4279d7ad4c29838c94ce891e1ea5
-msgid ""
-"**输出为空（无结构生成）。** 输入结构没有可识别的模态数据。检查：列名是否正确"
-"（`mode_1_x` 不是 `mode1_x`），频率列是否存在且命名正确，数组形状是否和原子数"
-"一致。可以用 ASE 读取 EXTXYZ 文件后查看 `arrays` 确认键名。"
-msgstr ""
-"**No structures are produced.** The input contains no recognized mode data. "
-"Check that columns use names such as `mode_1_x`, not `mode1_x`; verify the "
-"frequency columns and ensure every array shape matches the atom count. "
-"Reading the EXTXYZ with ASE and inspecting `arrays` is a direct way to "
-"confirm the keys."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:192
-#: 6eb976697f3f4ff1bb0c7c1df74b0531
-msgid ""
-"**部分模态始终没被选中。** 这是随机采样的正常现象。`每个样本的模式数`"
-"（`modes_per_sample`）较小时（1~2），样本数不够覆盖所有模态。增大 `最大输出数"
-"量`（`max_num`）或 `每个样本的模式数`（`modes_per_sample`）提高覆盖率。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:194
-#: 9b93d52db11d4d6fa2ccfc1244a5b739
-msgid ""
-"**关闭 `按频率缩放`（`scale_by_frequency`）后高频模位移过大。** 这是预期行为"
-"——`1/sqrt(frequency)` 的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，"
-"但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `振动幅度`"
-"（`amplitude`）补偿。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:196
-#: 586712af736448fd8793021252a4f5b6
-msgid ""
-"**`最小频率`（`min_frequency`）过滤后模态太少。** 如果体系存在大量软模（近零"
-"频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然"
-"后适当降低 `最小频率`（`min_frequency`）或关闭 `排除近零频率`"
-"（`exclude_near_zero`）。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:198
-#: 4d5d83a38a9148e5b4f1658c9f12f8e1
-msgid "输出标签"
-msgstr "Output labels"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:200
-#: a4219bac1c554dc696630cc14ccf712f
-msgid "`Vib(a={amplitude},m={modes_per_sample})`"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:202
-#: 069ab832946945fbbf207b385ab13808
-msgid "可复现性"
-msgstr "Reproducibility"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/vibration-perturb-card.md:204
-#: aaf21b3b4ee64c2aa8a21c7007376039
-msgid ""
-"勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复"
-"现。模态选择、系数采样均受 seed 控制。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
 #~ msgid "振动模态扰动（Vib Mode Perturb）"
 #~ msgstr "Vibrational-Mode Perturbation (Vib Mode Perturb)"
 
 #~ msgid "`min_frequency` = `0.0` （或设一个合理的过滤值）"
-#~ msgstr ""
-#~ "`min_frequency` = `0.0`, or a physically justified filtering threshold"
+#~ msgstr "`min_frequency` = `0.0`, or a physically justified filtering threshold"
 
 #~ msgid "`distribution` = `0` （高斯分布）"
 #~ msgstr "`distribution` = `0` (Gaussian)"
 
 #~ msgid "`scale_by_frequency` = `true` （高频模自动衰减）"
+#~ msgstr "`scale_by_frequency` = `true` (automatically attenuate high-frequency modes)"
+
+#~ msgid "检查输出中哪些模态被选中——如果低频模态总是被 `min_frequency` 排除，降低此阈值"
 #~ msgstr ""
-#~ "`scale_by_frequency` = `true` (automatically attenuate high-frequency "
-#~ "modes)"
+#~ "Inspect which modes were selected. If relevant"
+#~ " low-frequency modes are excluded by "
+#~ "`min_frequency`, lower the threshold."
+
+#~ msgid "如果模型对高频光学支仍然不准，增大 `modes_per_sample` 到 4~5，或增大 `max_num`"
+#~ msgstr ""
+#~ "If high-frequency optical branches remain "
+#~ "inaccurate, increase `modes_per_sample` to 4–5 or"
+#~ " raise `max_num`, then verify that the "
+#~ "added samples cover the intended modes."
+
+#~ msgid "如果 `scale_by_frequency` 导致高频模位移太小（几乎看不到变化），关闭此开关试一批"
+#~ msgstr ""
+#~ "If `scale_by_frequency` makes high-frequency "
+#~ "displacements negligibly small, generate a "
+#~ "controlled comparison with scaling disabled and "
+#~ "a correspondingly reduced amplitude."
 
 #~ msgid ""
-#~ "检查输出中哪些模态被选中——如果低频模态总是被 `min_frequency` 排除，降低此"
-#~ "阈值"
+#~ "`bool`，默认 `true`。打开后每个模态系数除以 "
+#~ "sqrt(frequency)，高频模态的贡献自动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被过度采样，建议同时降低"
+#~ " `amplitude`。"
 #~ msgstr ""
-#~ "Inspect which modes were selected. If relevant low-frequency modes are "
-#~ "excluded by `min_frequency`, lower the threshold."
+#~ "`bool`, default: `true`. Divides each mode "
+#~ "coefficient by `sqrt(frequency)`, attenuating high-"
+#~ "frequency contributions. This is a useful "
+#~ "thermal-like default because high-frequency modes"
+#~ " are energetically expensive at equal "
+#~ "displacement. When intentionally studying large-"
+#~ "amplitude anharmonicity, you may disable it, "
+#~ "but reduce `amplitude` to avoid over-sampling"
+#~ " high-frequency directions."
 
 #~ msgid ""
-#~ "如果模型对高频光学支仍然不准，增大 `modes_per_sample` 到 4~5，或增大 "
-#~ "`max_num`"
+#~ "`bool`，默认 `true`。打开后用 `min_frequency` "
+#~ "做阈值过滤，排除近零频模态。一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些\"模态\"做位移会产生异常大的整体漂移。"
 #~ msgstr ""
-#~ "If high-frequency optical branches remain inaccurate, increase "
-#~ "`modes_per_sample` to 4–5 or raise `max_num`, then verify that the added "
-#~ "samples cover the intended modes."
-
-#~ msgid ""
-#~ "如果 `scale_by_frequency` 导致高频模位移太小（几乎看不到变化），关闭此开关"
-#~ "试一批"
-#~ msgstr ""
-#~ "If `scale_by_frequency` makes high-frequency displacements negligibly "
-#~ "small, generate a controlled comparison with scaling disabled and a "
-#~ "correspondingly reduced amplitude."
-
-#~ msgid ""
-#~ "`bool`，默认 `true`。打开后每个模态系数除以 sqrt(frequency)，高频模态的贡"
-#~ "献自动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大"
-#~ "于低频模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方"
-#~ "向可能被过度采样，建议同时降低 `amplitude`。"
-#~ msgstr ""
-#~ "`bool`, default: `true`. Divides each mode coefficient by "
-#~ "`sqrt(frequency)`, attenuating high-frequency contributions. This is a "
-#~ "useful thermal-like default because high-frequency modes are "
-#~ "energetically expensive at equal displacement. When intentionally "
-#~ "studying large-amplitude anharmonicity, you may disable it, but reduce "
-#~ "`amplitude` to avoid over-sampling high-frequency directions."
-
-#~ msgid ""
-#~ "`bool`，默认 `true`。打开后用 `min_frequency` 做阈值过滤，排除近零频模态。"
-#~ "一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些\"模态\"做位移会产生异"
-#~ "常大的整体漂移。"
-#~ msgstr ""
-#~ "`bool`, default: `true`. Applies `min_frequency` to remove near-zero "
-#~ "modes. Keep it enabled in most workflows because translational and "
-#~ "rotational artifacts lie near zero frequency and can produce large rigid-"
-#~ "body drift."
+#~ "`bool`, default: `true`. Applies `min_frequency` to"
+#~ " remove near-zero modes. Keep it enabled"
+#~ " in most workflows because translational and "
+#~ "rotational artifacts lie near zero frequency "
+#~ "and can produce large rigid-body drift."
 
 #~ msgid "`int`，默认 0。随机种子值。仅在 `use_seed` 打开时生效。"
-#~ msgstr ""
-#~ "`int`, default: `0`. Random seed used only when `use_seed` is enabled."
+#~ msgstr "`int`, default: `0`. Random seed used only when `use_seed` is enabled."
 
 #~ msgid ""
-#~ "**部分模态始终没被选中。** 这是随机采样的正常现象。`modes_per_sample` 较小"
-#~ "时（1~2），样本数不够覆盖所有模态。增大 `max_num` 或 `modes_per_sample` 提"
-#~ "高覆盖率。"
+#~ "**部分模态始终没被选中。** 这是随机采样的正常现象。`modes_per_sample` 较小时（1~2），样本数不够覆盖所有模态。增大"
+#~ " `max_num` 或 `modes_per_sample` 提高覆盖率。"
 #~ msgstr ""
-#~ "**Some modes are never selected.** This is expected in finite random "
-#~ "sampling. With `modes_per_sample` of 1–2, the sample count may be too "
-#~ "small to cover the full pool. Increase `max_num` or `modes_per_sample` "
-#~ "and inspect the resulting coverage."
+#~ "**Some modes are never selected.** This is "
+#~ "expected in finite random sampling. With "
+#~ "`modes_per_sample` of 1–2, the sample count "
+#~ "may be too small to cover the full "
+#~ "pool. Increase `max_num` or `modes_per_sample` and"
+#~ " inspect the resulting coverage."
 
 #~ msgid ""
-#~ "**关闭 `scale_by_frequency` 后高频模位移过大。** 这是预期行为——`1/"
-#~ "sqrt(frequency)` 的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，但"
-#~ "注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `amplitude` "
+#~ "**关闭 `scale_by_frequency` 后高频模位移过大。** "
+#~ "这是预期行为——`1/sqrt(frequency)` "
+#~ "的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `amplitude` "
 #~ "补偿。"
 #~ msgstr ""
-#~ "**High-frequency displacements become too large after disabling "
-#~ "`scale_by_frequency`.** This is expected because `1/sqrt(frequency)` "
-#~ "normally attenuates them. Disable scaling only for a deliberate high-"
-#~ "frequency anharmonic study, and compensate by lowering `amplitude` while "
-#~ "validating geometry."
+#~ "**High-frequency displacements become too large "
+#~ "after disabling `scale_by_frequency`.** This is "
+#~ "expected because `1/sqrt(frequency)` normally attenuates"
+#~ " them. Disable scaling only for a "
+#~ "deliberate high-frequency anharmonic study, and "
+#~ "compensate by lowering `amplitude` while validating"
+#~ " geometry."
 
 #~ msgid ""
-#~ "**`min_frequency` 过滤后模态太少。** 如果体系存在大量软模（近零频），高阶"
-#~ "阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然后适当降"
-#~ "低 `min_frequency` 或关闭 `exclude_near_zero`。"
+#~ "**`min_frequency` 过滤后模态太少。** "
+#~ "如果体系存在大量软模（近零频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然后适当降低 `min_frequency` "
+#~ "或关闭 `exclude_near_zero`。"
 #~ msgstr ""
-#~ "**Too few modes remain after `min_frequency` filtering.** A system with "
-#~ "many soft modes can be left with a very small pool. First determine "
-#~ "whether the soft modes are physical or indicate incomplete relaxation, "
-#~ "then lower `min_frequency` or disable `exclude_near_zero` only when "
-#~ "justified."
+#~ "**Too few modes remain after `min_frequency` "
+#~ "filtering.** A system with many soft modes "
+#~ "can be left with a very small pool. "
+#~ "First determine whether the soft modes are "
+#~ "physical or indicate incomplete relaxation, then "
+#~ "lower `min_frequency` or disable `exclude_near_zero` "
+#~ "only when justified."
+
+#~ msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。模态选择、系数采样均受 seed 控制。"
+#~ msgstr ""
+#~ "Enable `use_seed` and fix `seed` to reproduce"
+#~ " the same result for the same input. "
+#~ "The seed controls both mode selection and "
+#~ "coefficient sampling."
+
+#~ msgid "沿声子振动模态方向施加位移扰动，比纯随机扰动更贴近动力学自由度。每个输出结构随机选取若干振动模态，按幅值叠加位移。可选按频率缩放（高频模态贡献更小）和排除近零频模态（避免平移/旋转伪模）。"
+#~ msgstr ""
+#~ "Displace atoms along phonon eigenvectors so "
+#~ "the sampled directions follow dynamical degrees "
+#~ "of freedom rather than arbitrary coordinate "
+#~ "noise. Each output combines a random subset"
+#~ " of modes. Optional frequency scaling reduces "
+#~ "the contribution of high-frequency modes, and"
+#~ " a near-zero-frequency filter removes "
+#~ "translational or rotational artifacts."
 
 #~ msgid ""
-#~ "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。模态选择、系数采样均受 "
-#~ "seed 控制。"
+#~ "\\mathbf{r}'=\\mathbf{r}+A\\sum_{k\\in\\mathcal{K}} c_k\\mathbf{u}_k,\\quad"
+#~ " c_k\\sim\\mathcal{N}(0,1)\\ \\text{or}\\ \\mathcal{U}(-1,1)"
 #~ msgstr ""
-#~ "Enable `use_seed` and fix `seed` to reproduce the same result for the "
-#~ "same input. The seed controls both mode selection and coefficient "
-#~ "sampling."
+
+#~ msgid ""
+#~ "$\\mathbf u_k$ 是第 $k$ 个输入振动模态，$\\mathcal K$ "
+#~ "是本样本抽中的模态集合， $A$ 是总幅值尺度。开启频率缩放时，高频模态系数会按频率降低；最小频率门槛用于排除 "
+#~ "近零平移/转动伪模。该卡不会自行计算本征模，公式完全依赖输入模态的归一化约定。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**关键前置条件：** 输入结构必须携带振动模态数据。如果来自 EXTXYZ 文件，需要包含 "
+#~ "`mode_N_x/y/z` 和 `frequency_N` 列，或者整块数组 `modes` /"
+#~ " `vibration_modes` 和 `frequencies` / "
+#~ "`vibration_frequencies`。没有模态数据时，卡片返回空结果。"
+#~ msgstr ""
+#~ "**Required input:** Every input structure must "
+#~ "carry vibrational-mode data. An EXTXYZ file"
+#~ " may provide `mode_N_x/y/z` and `frequency_N` "
+#~ "columns, or block arrays named `modes` / "
+#~ "`vibration_modes` and `frequencies` / "
+#~ "`vibration_frequencies`. A structure without recognized"
+#~ " mode data is skipped, so an all-"
+#~ "missing input produces no output."
+
+#~ msgid "场景：加了 Atomic Perturb 后力 MAE 改善有限，低频声子支的预测仍然很差"
+#~ msgstr ""
+#~ "Scenario: Atomic Perturb improves force MAE "
+#~ "only modestly and low-frequency phonon "
+#~ "branches remain inaccurate"
+
+#~ msgid ""
+#~ "你在 Si 上训练了一个 NEP 模型。加了 `Atomic Perturb`（0.2"
+#~ " Å 随机位移）后，力的 MAE 从 150 meV/A 降到了 80"
+#~ " "
+#~ "meV/A，但计算出的声子色散在低频声学支上误差仍然很大。诊断发现：纯随机扰动在所有方向上均匀采样，但低频声子对应的是长波长的协同原子运动——纯随机扰动几乎不可能恰好对齐这些方向。"
+#~ msgstr ""
+#~ "You trained an NEP model for Si. Adding"
+#~ " 0.2 Å `Atomic Perturb` samples reduces "
+#~ "force MAE from 150 to 80 meV/Å, yet "
+#~ "the low-frequency acoustic branches of the "
+#~ "predicted phonon dispersion remain inaccurate. "
+#~ "Independent random displacements sample generic "
+#~ "directions, whereas low-frequency phonons involve"
+#~ " collective, long-wavelength motion that random"
+#~ " noise is unlikely to align with "
+#~ "efficiently."
+
+#~ msgid ""
+#~ "**诊断思路：** "
+#~ "声子频率对位移的灵敏度在各个模态方向上差异巨大。低频声学模涉及大范围原子协同位移，但在局部键长上变化很小——纯随机扰动倾向于产生\"局域键长变化大\"的构型，这恰好是高频光学模的特征，不是低频模的特征。需要沿准确的振动模本征方向施加位移，让模型在模态坐标上也有训练点。"
+#~ msgstr ""
+#~ "**Diagnosis:** The energy response differs greatly"
+#~ " among normal-mode directions. Low-frequency "
+#~ "acoustic modes involve coordinated motion across "
+#~ "many atoms while changing local bond lengths"
+#~ " only slightly. Independent random perturbations "
+#~ "emphasize local bond distortions and therefore "
+#~ "cover those collective directions poorly. "
+#~ "Displacements along trusted eigenvectors place "
+#~ "training samples directly on the relevant "
+#~ "normal-mode coordinates."
+
+#~ msgid ""
+#~ "**输入：** 一个 Si 超胞，EXTXYZ 文件已包含 phonopy "
+#~ "计算出的振动模态数据（`mode_1_x/y/z` 到 `mode_N_x/y/z` 和 `frequency_1`"
+#~ " 到 `frequency_N`）"
+#~ msgstr ""
+#~ "**Input:** A Si supercell whose EXTXYZ data"
+#~ " include phonopy-derived modes (`mode_1_x/y/z` "
+#~ "through `mode_N_x/y/z`) and frequencies (`frequency_1` "
+#~ "through `frequency_N`)."
+
+#~ msgid "**目标：** 生成 32 个扰动结构，每次随机选 3 个模态叠加，幅值 0.05，只使用频率 > 10 THz 的模态（或 < 10 的具体看体系）"
+#~ msgstr ""
+#~ "**Goal:** Generate 32 perturbed structures by "
+#~ "combining three randomly selected modes per "
+#~ "structure at amplitude 0.05. Choose a "
+#~ "frequency threshold appropriate to the system; "
+#~ "for example, retain only modes above 10 "
+#~ "THz when intentionally targeting that range."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid "`振动幅度`（`amplitude`） = `0.05`"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`每个样本的模式数`（`modes_per_sample`） = `3`"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`最大输出数量`（`max_num`） = `32`"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`最小频率`（`min_frequency`） = `0.0` （或设一个合理的过滤值）"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`分布`（`distribution`） = `0` （高斯分布）"
+#~ msgstr "See the parameter description for details."
+
+#~ msgid "`按频率缩放`（`scale_by_frequency`） = `true` （高频模自动衰减）"
+#~ msgstr "See the parameter description for details."
+
+#~ msgid "**输出：** 32 个结构，每个沿 3 个随机选取的振动模态方向偏移，位移幅值按频率缩放"
+#~ msgstr ""
+#~ "**Output:** 32 structures displaced along "
+#~ "combinations of three randomly selected vibrational"
+#~ " modes, with contributions scaled by frequency."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后重新计算声子色散，低频声学支应更接近 DFT 结果"
+#~ msgstr ""
+#~ "After DFT labeling and retraining, recalculate "
+#~ "the phonon dispersion and compare the low-"
+#~ "frequency acoustic branches with DFT."
+
+#~ msgid "检查输出中哪些模态被选中——如果低频模态总是被 `最小频率`（`min_frequency`）排除，降低此阈值"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "如果模型对高频光学支仍然不准，增大 `每个样本的模式数`（`modes_per_sample`）到 4~5，或增大 `最大输出数量`（`max_num`）"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "如果 `按频率缩放`（`scale_by_frequency`）导致高频模位移太小（几乎看不到变化），关闭此开关试一批"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "已有可信的振动模态数据，需要沿模态方向补充训练样本"
+#~ msgstr ""
+#~ "Trusted vibrational-mode data are available "
+#~ "and the training set needs samples along "
+#~ "those directions."
+
+#~ msgid "纯随机扰动改进有限，声子或振动相关性质仍有偏差"
+#~ msgstr ""
+#~ "Random perturbations have provided limited "
+#~ "improvement and phonon or vibrational properties "
+#~ "remain inaccurate."
+
+#~ msgid "需要模型学到模态方向上的势能面曲率"
+#~ msgstr ""
+#~ "The model needs potential-energy curvature "
+#~ "information along normal-mode coordinates."
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "输入结构没有模态数据——卡片直接返回空，先跑 phonopy/DFPT 生成模态"
+#~ msgstr ""
+#~ "The input has no mode data. Generate "
+#~ "modes with phonopy or DFPT before using "
+#~ "this card."
+
+#~ msgid "模态是从低精度方法（如经验势）算出来的——沿错误模态方向扰动只会引入噪声"
+#~ msgstr ""
+#~ "The modes come from an insufficiently accurate"
+#~ " method. Sampling along incorrect eigenvectors "
+#~ "may add noise rather than useful coverage."
+
+#~ msgid "只需要覆盖高频局域环境——用 `Atomic Perturb` 更简单直接"
+#~ msgstr ""
+#~ "Only generic high-frequency local distortions "
+#~ "are needed → `Atomic Perturb` is simpler."
+
+#~ msgid "输入格式：振动模态数据"
+#~ msgstr "Input format: vibrational-mode data"
+
+#~ msgid "输入结构需要以下数组之一（EXTXYZ 格式优先）："
+#~ msgstr ""
+#~ "The input structure must contain one of "
+#~ "the following array layouts. EXTXYZ is "
+#~ "recommended."
+
+#~ msgid "**方式一：按模态拆列（推荐，手写最友好）**"
+#~ msgstr ""
+#~ "**Layout 1: one set of columns per mode"
+#~ " (recommended and easiest to write manually)**"
+
+#~ msgid ""
+#~ "2\n"
+#~ "Properties=species:S:1:pos:R:3:mode_1_x:R:1:mode_1_y:R:1:mode_1_z:R:1:frequency_1:R:1"
+#~ " pbc=\"F F F\"\n"
+#~ "H 0.000 0.000 0.000 0.10 0.00 0.00 1500.0\n"
+#~ "H 0.740 0.000 0.000 -0.10 0.00 0.00 1500.0\n"
+#~ msgstr ""
+
+#~ msgid "`mode_N_x/y/z`：第 N 个模态在每个原子上的位移分量。`frequency_N`：第 N 个模态的频率，每个原子行重复同一值。"
+#~ msgstr ""
+#~ "`mode_N_x/y/z` stores the displacement components of"
+#~ " mode *N* for each atom. `frequency_N` "
+#~ "stores that mode's frequency, repeated on "
+#~ "every atomic row."
+
+#~ msgid "**方式二：整块数组（适合多模态）**"
+#~ msgstr "**Layout 2: block arrays (convenient for many modes)**"
+
+#~ msgid ""
+#~ "2\n"
+#~ "Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc=\"F F F\"\n"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "`modes:R:3N` 表示 N 个模态的位移分量，按 mode1_xyz + "
+#~ "mode2_xyz + ... 顺序。`frequencies:R:N` 表示 N "
+#~ "个频率值，每行重复同一组。"
+#~ msgstr ""
+#~ "`modes:R:3N` stores the displacement components of"
+#~ " *N* modes in `mode1_xyz + mode2_xyz + "
+#~ "...` order. `frequencies:R:N` stores the *N* "
+#~ "frequency values, with the same set repeated"
+#~ " on each row."
+
+#~ msgid ""
+#~ "`int`，默认 0。模态系数的采样分布。`0` = 高斯（均值 0，大幅位移概率更低，更接近热振动统计）；`1`"
+#~ " = 均匀。通常高斯更物理——你不希望模型被极端大位移的训练点带偏。"
+#~ msgstr ""
+#~ "`int`, default: `0`. Distribution used to "
+#~ "sample mode coefficients. `0` is a zero-"
+#~ "mean Gaussian, which makes extreme amplitudes "
+#~ "less likely; `1` is uniform. Gaussian sampling"
+#~ " is usually the safer thermal-like default."
+
+#~ msgid ""
+#~ "`float`，默认 `0.05`。模态叠加的总幅值系数，实际位移 = `amplitude * "
+#~ "sum(coefficient * mode_vector)`。注意这个幅值是乘在归一化后的模态矢量上的——如果上游的模态归一化方式不同"
+#~ "（mass-weighted vs. 不归一化），同样的 amplitude "
+#~ "产生的实际原子位移也不一样。0.01~0.03 适合微扰验证；0.05~0.08 常规补充；设到 0.1 "
+#~ "以上建议后筛检查最近邻距离。"
+#~ msgstr ""
+#~ "`float`, default: `0.05`. Overall coefficient in "
+#~ "`displacement = amplitude * sum(coefficient * "
+#~ "mode_vector)`. The actual atomic displacement also"
+#~ " depends on how the upstream mode vectors"
+#~ " were normalized, including whether they are "
+#~ "mass weighted. Use 0.01–0.03 for small-"
+#~ "displacement checks and 0.05–0.08 for routine "
+#~ "augmentation. Above 0.1, validate nearest-neighbor"
+#~ " distances carefully."
+
+#~ msgid ""
+#~ "`int`，默认 2。每个输出结构随机选几个模态来叠加。1~2 个适合单模态方向验证，能清楚看到每个模态的贡献；3~4 "
+#~ "个做多模态混合覆盖；5 个以上单个模态的贡献会被稀释，而且组合数指数增长——通常 2~4 就够了。"
+#~ msgstr ""
+#~ "`int`, default: `2`. Number of randomly "
+#~ "selected modes combined in each output. Use"
+#~ " 1–2 to inspect individual-mode behavior "
+#~ "and 3–4 for mixed-mode coverage. Above "
+#~ "5, each mode's contribution becomes harder to"
+#~ " interpret and the combinatorial space grows "
+#~ "rapidly; 2–4 is usually sufficient."
+
+#~ msgid ""
+#~ "`float`，默认 `10.0`。频率低于这个值的模态不参与采样。仅在 `exclude_near_zero=true` "
+#~ "时生效。设 0 则不过滤。典型值：排除平移/旋转伪模设 0.1~1.0 THz；排除软模设 1~10"
+#~ " THz，具体看你的体系。"
+#~ msgstr ""
+#~ "`float`, default: `10.0`. Modes below this "
+#~ "frequency are excluded when `exclude_near_zero=true`; "
+#~ "use 0 to disable thresholding. A 0.1–1.0 "
+#~ "THz threshold can remove translational or "
+#~ "rotational artifacts, while 1–10 THz also "
+#~ "removes soft modes. Choose the value from "
+#~ "the calculated spectrum and the physics you"
+#~ " intend to retain."
+
+#~ msgid "`int`，默认 32。每个输入结构生成多少个扰动样本。20~40 常规覆盖，50~100 高密度覆盖。建议后面接一张 `FPS Filter` 去重。"
+#~ msgstr ""
+#~ "`int`, default: `32`. Number of perturbed "
+#~ "samples generated per input structure. Use "
+#~ "20–40 for routine coverage and 50–100 for "
+#~ "denser sampling. Follow large batches with "
+#~ "`FPS Filter` to reduce redundancy."
+
+#~ msgid ""
+#~ "`bool`，默认 `true`。打开后每个模态系数除以 "
+#~ "sqrt(frequency)，高频模态的贡献自动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被过度采样，建议同时降低"
+#~ " `振动幅度`（`amplitude`）。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "`bool`，默认 `true`。打开后用 "
+#~ "`最小频率`（`min_frequency`）做阈值过滤，排除近零频模态。一般建议保持打开——平移和旋转伪模的频率接近 "
+#~ "0，沿这些\"模态\"做位移会产生异常大的整体漂移。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`bool`，默认 `false`。打开后每次同一输入 + 同一参数 + 同一 seed 得到完全相同的扰动结果。对比实验或需要复现时打开，纯探索阶段可以关着。"
+#~ msgstr ""
+#~ "`bool`, default: `false`. Enable it to "
+#~ "reproduce exactly the same perturbations from "
+#~ "the same input, parameters, and seed. Use "
+#~ "it for controlled comparisons; leave it off"
+#~ " during exploratory sampling."
+
+#~ msgid "`int`，默认 0。随机种子值。仅在 `使用随机种子`（`use_seed`）打开时生效。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "生效条件：`use_seed=True`。"
+#~ msgstr "Active only when `use_seed=True`."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "微扰验证（幅值 0.02，2 模态，20 样本，高斯）"
+#~ msgstr "Small-displacement check (amplitude 0.02, 2 modes, 20 Gaussian samples)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"VibrationModePerturbCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"distribution\": 0,\n"
+#~ "    \"amplitude\": 0.02,\n"
+#~ "    \"modes_per_sample\": 2,\n"
+#~ "    \"min_frequency\": 0.1,\n"
+#~ "    \"max_num\": 20,\n"
+#~ "    \"scale_by_frequency\": true,\n"
+#~ "    \"exclude_near_zero\": true,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 42\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "常规声子覆盖（幅值 0.05，3 模态，32 样本，高斯）"
+#~ msgstr "Routine phonon coverage (amplitude 0.05, 3 modes, 32 Gaussian samples)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"VibrationModePerturbCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"distribution\": 0,\n"
+#~ "    \"amplitude\": 0.05,\n"
+#~ "    \"modes_per_sample\": 3,\n"
+#~ "    \"min_frequency\": 0.1,\n"
+#~ "    \"max_num\": 32,\n"
+#~ "    \"scale_by_frequency\": true,\n"
+#~ "    \"exclude_near_zero\": true,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 42\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "大位移非谐探索（幅值 0.1，5 模态，50 样本，不缩放）"
+#~ msgstr ""
+#~ "Large-displacement anharmonic exploration (amplitude "
+#~ "0.1, 5 modes, 50 samples, no frequency "
+#~ "scaling)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"VibrationModePerturbCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"distribution\": 1,\n"
+#~ "    \"amplitude\": 0.1,\n"
+#~ "    \"modes_per_sample\": 5,\n"
+#~ "    \"min_frequency\": 0.0,\n"
+#~ "    \"max_num\": 50,\n"
+#~ "    \"scale_by_frequency\": false,\n"
+#~ "    \"exclude_near_zero\": false,\n"
+#~ "    \"use_seed\": true,\n"
+#~ "    \"seed\": 42\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "推荐组合"
+#~ msgstr "Recommended combinations"
+
+#~ msgid "`Vib Mode Perturb` → `Atomic Perturb`：先沿模态方向扰动，再补充纯随机方向"
+#~ msgstr ""
+#~ "`Vib Mode Perturb` → `Atomic Perturb`: sample"
+#~ " normal-mode directions, then add generic "
+#~ "random directions."
+
+#~ msgid "`phonopy/DFPT` 生成模态 → `Vib Mode Perturb`：计算完模态后直接喂入生成训练数据"
+#~ msgstr ""
+#~ "`phonopy/DFPT` modes → `Vib Mode Perturb`: "
+#~ "calculate trusted modes, attach them to the"
+#~ " structures, then generate training candidates."
+
+#~ msgid "`Vib Mode Perturb` → `FPS Filter`：大批量生成后去重"
+#~ msgstr "`Vib Mode Perturb` → `FPS Filter`: reduce redundancy after large-scale generation."
+
+#~ msgid ""
+#~ "**输出为空（无结构生成）。** 输入结构没有可识别的模态数据。检查：列名是否正确（`mode_1_x` 不是 "
+#~ "`mode1_x`），频率列是否存在且命名正确，数组形状是否和原子数一致。可以用 ASE 读取 EXTXYZ "
+#~ "文件后查看 `arrays` 确认键名。"
+#~ msgstr ""
+#~ "**No structures are produced.** The input "
+#~ "contains no recognized mode data. Check that"
+#~ " columns use names such as `mode_1_x`, not"
+#~ " `mode1_x`; verify the frequency columns and "
+#~ "ensure every array shape matches the atom "
+#~ "count. Reading the EXTXYZ with ASE and "
+#~ "inspecting `arrays` is a direct way to "
+#~ "confirm the keys."
+
+#~ msgid ""
+#~ "**部分模态始终没被选中。** "
+#~ "这是随机采样的正常现象。`每个样本的模式数`（`modes_per_sample`）较小时（1~2），样本数不够覆盖所有模态。增大 "
+#~ "`最大输出数量`（`max_num`）或 `每个样本的模式数`（`modes_per_sample`）提高覆盖率。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**关闭 `按频率缩放`（`scale_by_frequency`）后高频模位移过大。** "
+#~ "这是预期行为——`1/sqrt(frequency)` "
+#~ "的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 "
+#~ "`振动幅度`（`amplitude`）补偿。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**`最小频率`（`min_frequency`）过滤后模态太少。** "
+#~ "如果体系存在大量软模（近零频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然后适当降低 "
+#~ "`最小频率`（`min_frequency`）或关闭 `排除近零频率`（`exclude_near_zero`）。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "输出标签"
+#~ msgstr "Output labels"
+
+#~ msgid "`Vib(a={amplitude},m={modes_per_sample})`"
+#~ msgstr ""
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复现。模态选择、系数采样均受 seed 控制。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."

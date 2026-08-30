@@ -1,0 +1,461 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:3
+#: c492e1df6a8747dc982b603445738715
+msgid "SOC / 纹理响应（SOC / Texture Response）"
+msgstr "SOC / Texture Response"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:5
+#: 74322fe0ec0344259c00b36e12311197
+msgid "**分类：** 磁性"
+msgstr "**Category:** Magnetism"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:7
+#: a9526a55fb5c44c483fdd57297a1bb75
+msgid "这张卡做什么"
+msgstr "What This Card Does"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:9
+#: 568636ea7a874c84b31be8ea53d5a2e9
+msgid "这张卡为含 SOC 的能量或磁力计算准备两类有序路径："
+msgstr ""
+"Prepare two types of ordered paths for energy or magnetic-force calculations that "
+"include SOC:"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:11
+#: 39207d4ac397439b9ca8034d652ac348
+msgid "**全局各向异性：** 整体旋转输入自旋纹理，保持所有相对自旋夹角不变。"
+msgstr ""
+"**Global anisotropy:** rigidly rotate the input spin texture while preserving all "
+"relative spin angles."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:12
+#: f4be0acd54a34d79a75577609d9dc665
+msgid "**有限 q 纹理：** 保留每个原子的磁矩模长，按 Bloch、cycloidal 或一般旋转平面重新生成全部方向。"
+msgstr ""
+"**Finite-q texture:** preserve each atom's moment magnitude while regenerating all "
+"directions in a Bloch, cycloidal, or general rotation plane."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:14
+#: a79dba525a2c45d4b21ef1b906465501
+msgid "有限 q 模式中的 `q=0` 是生成的共线参考帧，不是输入自旋方向的副本。"
+msgstr ""
+"In finite-q mode, `q=0` is a generated collinear reference frame, not a copy of the "
+"input spin directions."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:16
+#: 88e71931a2a34778af47d9e28ad40aaf
+msgid "原理与公式"
+msgstr "Principles and Equations"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:18
+#: 79af579d81db4db9bbf9cd9dbf93bf05
+msgid "全局刚性旋转"
+msgstr "Global Rigid Rotation"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:20
+#: f4ea03eb612e4848b5ca16756d78db61
+msgid "所有磁矩绕同一笛卡尔轴旋转："
+msgstr "All moments rotate around the same Cartesian axis:"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:22
+#: ff63d5626c6640c1ac61a2148d8a3b35
+msgid "\\mathbf S_i(\\theta)=R_{\\hat{\\mathbf n}}(\\theta)\\mathbf S_i."
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:24
+#: b2d8edde62fe4059908c8dec6f2fec60
+msgid ""
+"因此 $\\mathbf S_i\\cdot\\mathbf S_j$、磁矩模长、原子坐标和晶胞都保持不变。启用时间反演后，再生成一组 $-\\mathbf "
+"S_i(\\theta)$。"
+msgstr ""
+"Therefore, $\\mathbf S_i\\cdot\\mathbf S_j$, moment magnitudes, atomic coordinates, "
+"and the cell all remain unchanged. With time reversal enabled, an additional group "
+"$-\\mathbf S_i(\\theta)$ is generated."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:26
+#: 290a038f06dc4de9b62e7fd801af76f6
+msgid "有限 q 纹理"
+msgstr "Finite-q Texture"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:28
+#: c954fc61e6ba40df9db02635e3a34026
+msgid "对原子 $i$，令"
+msgstr "For atom $i$, let"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:30
+#: ceb1674b81014a74b05fed8220a2732a
+msgid ""
+"\n"
+"\\phi_i=\\mathbf q\\cdot\\mathbf r_i+\\phi_0,\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:34
+#: 02bdfa4778154d1ea9b896c5e427ef6d
+#, python-brace-format
+msgid ""
+"\n"
+"\\mathbf S_i=M_i\\left[\\sqrt{1-c^2}\\left(\n"
+"\\cos\\phi_i\\,\\mathbf e_1+\\sin\\phi_i\\,\\mathbf e_2\\right)\n"
+"+c\\,\\hat{\\mathbf n}\\right].\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:40
+#: 7056942c76d04362a1815990c624b15c
+#, python-brace-format
+msgid ""
+"$M_i$ 来自输入磁矩模长，$c=m_\\parallel/|m|$ 是沿旋转平面法向 $\\hat{\\mathbf n}$ 的归一化分量。$c=0$ "
+"为平面螺旋，$|c|=1$ 时旋转平面分量消失。"
+msgstr ""
+"$M_i$ is the input moment magnitude, and $c=m_\\parallel/|m|$ is the normalized "
+"component along the rotation-plane normal $\\hat{\\mathbf n}$. $c=0$ gives a planar "
+"spiral; when $|c|=1$, the in-plane rotating component vanishes."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:42
+#: b6eb4cbdf8b04630a383a8e5fbb8d33d
+msgid "三种几何的区别："
+msgstr "The three geometries differ as follows:"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:44
+#: ae3515cd844f4a0b8936c8be62d63a65
+msgid "**Bulk / Bloch：** 自动令旋转平面法向平行于 q。"
+msgstr "**Bulk / Bloch:** automatically make the rotation-plane normal parallel to q."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:45
+#: 58d97f22f7b440e8b331f5f3b1380ca6
+msgid "**Interfacial / Cycloidal：** 自旋在 q 与表面法向张成的平面内旋转。"
+msgstr ""
+"**Interfacial / Cycloidal:** spins rotate in the plane spanned by q and the surface "
+"normal."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:46
+#: b5a48e33bbae47489896a99ef013ed8b
+msgid "**General spiral：** 用户直接指定旋转平面法向。"
+msgstr "**General spiral:** the user specifies the rotation-plane normal directly."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:48
+#: d33fe9837b4d43e7a8a35d8e4d9b81c4
+msgid "有符号扫描使用 $\\mathbf q(s)=s\\mathbf q_0$；正负分支对应相反手性。"
+msgstr ""
+"A signed scan uses $\\mathbf q(s)=s\\mathbf q_0$; positive and negative branches "
+"correspond to opposite chiralities."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:50
+#: f2b9459100c241e6bf700cd233b6d172
+msgid "q 与周期晶胞"
+msgstr "q and the Periodic Cell"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:52
+#: 4f95c66242484825b13b6c7e898e8364
+msgid "新建卡片默认使用晶胞倒空间整数索引 $(h,k,l)$："
+msgstr "A newly created card uses integer reciprocal-cell indices $(h,k,l)$ by default:"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:54
+#: 127c2c7d2019426a8280e0b85f71b46d
+#, python-brace-format
+msgid ""
+"\n"
+"\\mathbf q_0=h\\mathbf b_1+k\\mathbf b_2+l\\mathbf b_3,\n"
+"\\qquad \\mathbf b_i\\cdot\\mathbf a_j=2\\pi\\delta_{ij}.\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:59
+#: 8b0d4ffd34e04f979d5995f8da73784e
+msgid ""
+"因此 q 会随输入晶胞自动换算，并在周期晶格矢量上严格闭合。默认 `(1,0,0)` 表示当前晶胞的第一根倒格矢，不等于笛卡尔 x 或 Miller "
+"晶面法向；它也与默认界面法向 `(0,0,1)` 正交，所以三种有限 q 预设都能直接运行。"
+msgstr ""
+"Thus q is converted automatically with the input cell and closes exactly along "
+"periodic lattice vectors. Default `(1,0,0)` denotes the first reciprocal vector of "
+"the current cell, not Cartesian x or a Miller-plane normal. It is also orthogonal to "
+"the default surface normal `(0,0,1)`, so all three finite-q presets can run directly."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:61
+#: 89a425ad4b894451815f4a5371b5e740
+msgid "自定义 Cartesian q 时，闭合条件为"
+msgstr "For a custom Cartesian q, the closure condition is"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:63
+#: 030d98833440421a897be8225a9221ed
+#, python-brace-format
+msgid "\\frac{\\mathbf q\\cdot\\mathbf a_i}{2\\pi}\\in\\mathbb Z"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:65
+#: be595f51b96942d19d9440e40f19c552
+msgid "对每个周期晶格矢量都成立。若不成立，应同时调整 q 和超胞，而不是关闭检查后生成带周期接缝的纹理。"
+msgstr ""
+"for every periodic lattice vector. If it is not satisfied, adjust q and the supercell"
+" together instead of disabling the check and generating a texture with a periodic "
+"seam."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:67
+#: 77dcadddb247429fa3bb52c94bfaa7c0
+msgid "输出数量怎么算"
+msgstr "How Output Count Is Calculated"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:69
+#: 9970cff576f941e2bfc25869afad5c14
+msgid "设扫描含 $N$ 个坐标："
+msgstr "Suppose the scan contains $N$ coordinates:"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:71
+#: 4e8ae4fa7eb9435e8043d627e1a03d33
+msgid "全局各向异性：生成 $N$ 帧；启用时间反演后生成两个完整组，共 $2N$ 帧。"
+msgstr ""
+"Global anisotropy: generate $N$ frames; with time reversal enabled, generate two "
+"complete groups for $2N$ frames total."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:72
+#: 7e646523c88a49738e2d25ed721b9607
+msgid "任一有限 q 模式：生成一个完整有符号 q 组，共 $N$ 帧。"
+msgstr "Any finite-q mode: generate one complete signed-q group containing $N$ frames."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:74
+#: 3a53c540493240fb8fde0610341ef96d
+msgid "“最大结构数”必须容纳全部请求组，不会静默省略时间反演组或截断路径。"
+msgstr ""
+"`Maximum structures` must accommodate every requested group. The card never silently "
+"omits the time-reversal group or truncates a path."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:76
+#: 60956d1ad5ac4d2da46314e6287996a7
+msgid "操作示例"
+msgstr "Example"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:78
+#: 7397cce349e44808ab708f71fc9f4447
+msgid ""
+"若模型在 SOC 计算中不能稳定区分相反手性的能量响应，可先构造包含目标传播方向的超胞，选择 `Bulk / Bloch`，使用默认晶胞倒空间 `(1,0,0)` 和 "
+"`-2,-1,0,1,2` 扫描。输出五帧分别对应 $-2q_0,-q_0,0,q_0,2q_0$；回填 DFT 标签后按 `response_group` 比较正负 q"
+" 分支。"
+msgstr ""
+"If a model cannot reliably distinguish energy responses of opposite chiralities in "
+"SOC calculations, first construct a supercell containing the target propagation "
+"direction. Select `Bulk / Bloch` and use the default reciprocal-cell index `(1,0,0)` "
+"with the scan `-2,-1,0,1,2`. The five outputs correspond to $-2q_0,-q_0,0,q_0,2q_0$. "
+"After filling DFT labels, compare positive and negative q branches by "
+"`response_group`."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:80
+#: e7163ba6f46c4dd7a81b83106204fe06
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:82
+#: c2523d7ca6884f6599a5ea8e349dd734
+msgid "响应类型（response_kind）"
+msgstr "Response Type (response_kind)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:84
+#: b6fc846a7da9496ea5410100ddb9689e
+msgid ""
+"默认 `Global anisotropy`。可选 `Global anisotropy`、`Bulk / Bloch`、`Interfacial / "
+"Cycloidal`、`General spiral`。"
+msgstr ""
+"Default `Global anisotropy`. Available values are `Global anisotropy`, `Bulk / "
+"Bloch`, `Interfacial / Cycloidal`, and `General spiral`."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:86
+#: 0923432877d8475ba4c5681ca3897078
+msgid "扫描坐标（coordinate_scan）"
+msgstr "Scan Coordinates (coordinate_scan)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:88
+#: 04aa3a2adad04d2f91975c0e38228603
+msgid "默认 `-2,-1,0,1,2`。全局模式中单位为度；有限 q 模式中表示基准 q 的有符号倍数。至少三个不同值并包含 0。"
+msgstr ""
+"Default `-2,-1,0,1,2`. In global mode, values are in degrees; in finite-q modes, they"
+" are signed multiples of the reference q. At least three distinct values are required"
+" and zero must be included."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:90
+#: e6cd9177518b419fb0679cc8a53a54d0
+msgid "全局旋转轴（rotation_axis）"
+msgstr "Global Rotation Axis (rotation_axis)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:92
+#: 4b338479b920477495981f66ca210105
+msgid "默认 `[0,1,0]`，为笛卡尔向量，仅用于全局各向异性。"
+msgstr "Default `[0,1,0]`, a Cartesian vector used only for global anisotropy."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:94
+#: 1152e8d297eb4b8197ed2d7e9aef4e70
+msgid "q 定义方式（q_definition）"
+msgstr "q Definition (q_definition)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:96
+#: d7b0b88e35804963b8c28c0d8f6887a5
+msgid "新建卡片默认 `Cell reciprocal vector`；也可选 `Cartesian vector`。旧工作流缺少该字段时按原 Cartesian q 恢复。"
+msgstr ""
+"A new card defaults to `Cell reciprocal vector`; `Cartesian vector` is also "
+"available. A legacy workflow lacking this field is restored using its original "
+"Cartesian q."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:98
+#: 8d619efe287845d68c46f91d3dda6cdd
+msgid "晶胞倒空间索引（q_reciprocal_index）"
+msgstr "Reciprocal-Cell Index (q_reciprocal_index)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:100
+#: f005928876594ef1b069dc47d334e8ba
+msgid "默认 `(1,0,0)`。三个整数共同定义基准 q，不能全为 0；仅在晶胞倒空间模式下生效。"
+msgstr ""
+"Default `(1,0,0)`. The three integers jointly define the reference q and cannot all "
+"be zero. Used only in reciprocal-cell mode."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:102
+#: a12ac9ee53af45208394c7cf493b61f0
+msgid "Cartesian q（q_vector_cart）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:104
+#: 7685e363675042d4a155f59f50913528
+msgid "默认旧值 `[0,0,0.1]` Å⁻¹，仅在 Cartesian 模式下生效。界面将其拆成笛卡尔方向和模长。"
+msgstr ""
+"Legacy default `[0,0,0.1]` Å⁻¹, used only in Cartesian mode. The interface presents "
+"it as a Cartesian direction and magnitude."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:106
+#: 9282015e93774af8ad1d459eebeedad9
+msgid "旋转平面法向（plane_normal）"
+msgstr "Rotation-Plane Normal (plane_normal)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:108
+#: 251fdf4d10ea4dc9b1a7ed09c6fbbfd9
+msgid "默认 `[0,1,0]`，为笛卡尔向量，仅用于 `General spiral`。"
+msgstr "Default `[0,1,0]`, a Cartesian vector used only for `General spiral`."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:110
+#: f435e0b59ac6486fb851f1ad3003806b
+msgid "表面法向（surface_normal）"
+msgstr "Surface Normal (surface_normal)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:112
+#: 8b11ce472ff64d9fb3ab28056919a606
+msgid "默认 `[0,0,1]`，为笛卡尔向量，仅用于 `Interfacial / Cycloidal`；不能与 q 平行。"
+msgstr ""
+"Default `[0,0,1]`, a Cartesian vector used only for `Interfacial / Cycloidal`; it "
+"cannot be parallel to q."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:114
+#: aa55cdf597704a40b9065eeb8353ac43
+msgid "法向磁矩分量（cone_component）"
+msgstr "Normal Moment Component (cone_component)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:116
+#: 5d1795945cfe4fa7839127a71ed081f2
+msgid "默认 `0`，范围 `[-1,1]`，表示 $m_\\parallel/|m|$。它改变锥形开口，但保持每个原子的磁矩模长。"
+msgstr ""
+"Default `0`, range `[-1,1]`, representing $m_\\parallel/|m|$. It changes the cone "
+"opening while preserving every atom's moment magnitude."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:118
+#: e689e36103ec47ce9681edebf3b7ed42
+msgid "初始相位（phase_deg）"
+msgstr "Initial Phase (phase_deg)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:120
+#: faf0fcee1432469d83c955e977952a46
+msgid "默认 `0` 度。作为 $\\phi_0$ 加到当前笛卡尔位置计算得到的相位上。"
+msgstr ""
+"Default `0` degrees. Added as $\\phi_0$ to the phase computed from the current "
+"Cartesian position."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:122
+#: c664a44a455c495fb0cad97b729f8f80
+msgid "时间反演对照（include_time_reversal）"
+msgstr "Time-Reversal Counterpart (include_time_reversal)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:124
+#: bcfc01ae49754da3859b85e5d83062e8
+msgid "默认关闭，仅用于全局各向异性。开启后增加一组逐帧取负的自旋纹理。"
+msgstr ""
+"Disabled by default and used only for global anisotropy. Enabling it adds one group "
+"in which every spin texture is negated frame by frame."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:126
+#: b72d3aadb7084ee6a0d6117281be0db3
+msgid "要求周期闭合（require_commensurate）"
+msgstr "Require Periodic Closure (require_commensurate)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:128
+#: 3b651356a873418390ae57fdc22a5d24
+msgid "默认开启，仅用于有限 q 模式。Cartesian q 不满足闭合条件时明确失败；晶胞倒空间整数索引天然满足该条件。"
+msgstr ""
+"Enabled by default and used only for finite-q modes. A Cartesian q that violates the "
+"closure condition fails explicitly; integer reciprocal-cell indices satisfy it by "
+"construction."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:130
+#: 471d782c076c4e15b8973c3f3a7ea6cc
+msgid "最大结构数（max_outputs）"
+msgstr "Maximum Structures (max_outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:132
+#: c734f342d5d14fa4a0e344d1a736493f
+msgid "默认 `100`。必须足以容纳当前完整路径；不足时运行前明确报错。"
+msgstr ""
+"Default `100`. It must be large enough for the complete current path; otherwise an "
+"explicit error is reported before running."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:134
+#: 31d4e84493014ae0a83ca0a0e4603588
+msgid "常见问题"
+msgstr "Troubleshooting"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:136
+#: abc70b0c01874226ad67a570c54d8f8e
+msgid "**Cartesian q 无法闭合：** 切换到晶胞倒空间模式，或同时调整 q 和超胞。"
+msgstr ""
+"**Cartesian q does not close:** switch to reciprocal-cell mode, or adjust q and the "
+"supercell together."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:137
+#: bdb1df73595d4263a0fa760af2d303ac
+msgid "**Cycloidal 模式提示法向平行：** 表面法向必须与 q 张成一个平面。"
+msgstr ""
+"**Cycloidal mode reports parallel normals:** the surface normal and q must span a "
+"plane."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:138
+#: 6fa87112ebc242248e07dd7f01b4bb5c
+msgid "**q=0 与输入自旋不同：** 有限 q 模式重新生成方向，q=0 是同一生成路径中的共线参考帧。"
+msgstr ""
+"**q=0 differs from the input spins:** finite-q mode regenerates directions; q=0 is "
+"the collinear reference frame within the same generated path."
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:140
+#: f737e9d3c7c64955b3038b80df95b7c2
+msgid "输出字段"
+msgstr "Output Fields"
+
+#: ../../source/module/make-dataset-cards/cards/soc-texture-response-card.md:142
+#: 6c1272e30c9943d397ba1308c28b5186
+msgid ""
+"输出磁矩写入 `spin:R:3`，并记录 `response_group`、有符号 `response_coordinate`、`response_branch` "
+"和任务来源。有限 q manifest 还保存 Cartesian q、晶胞倒空间坐标、周期、手性、平面法向、相位和法向分量。"
+msgstr ""
+"Output moments are written to `spin:R:3`, with `response_group`, signed "
+"`response_coordinate`, `response_branch`, and task provenance recorded. The finite-q "
+"manifest also stores Cartesian q, reciprocal-cell coordinates, period, chirality, "
+"plane normal, phase, and normal component."

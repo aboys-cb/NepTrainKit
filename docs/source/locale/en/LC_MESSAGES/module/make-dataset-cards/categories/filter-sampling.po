@@ -1,43 +1,54 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/filter-sampling.md:1
-#: 143ec2cdaa7f43e5997d126e6fb63739
-msgid "过滤与代表性采样"
-msgstr "Filtering and representative sampling"
+#: ../../source/module/make-dataset-cards/categories/filter-sampling.md:1
+#: fcbd0ce2a7be45638088c9b058de3f37
+msgid "筛选"
+msgstr "Filtering"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/filter-sampling.md:3
-#: ba1e97bd899e4bfabfe9c28ce3a6a62b
+#: ../../source/module/make-dataset-cards/categories/filter-sampling.md:3
+#: 8a4dde7e42714cd588f4e33c5a6da007
 msgid "这两张卡片处理整批结构，而不是逐个生成新构型："
-msgstr "These cards process a batch of structures instead of generating new configurations one by one:"
+msgstr ""
+"These cards process a batch of structures instead of generating new configurations "
+"one by one:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/filter-sampling.md:5
-#: 3076eac799bb4ffe9d464acb94620d65
+#: ../../source/module/make-dataset-cards/categories/filter-sampling.md:5
+#: 058f479dbdcf4b6e9db95413824b17cc
 msgid "先用 `Geometry Filter` 删除违反明确几何阈值的结构。"
-msgstr "Use `Geometry Filter` first to remove structures that violate explicit geometric thresholds."
+msgstr ""
+"Use `Geometry Filter` first to remove structures that violate explicit geometric "
+"thresholds."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/filter-sampling.md:6
-#: b20f1f04057c4741989c3584aaebbbf4
+#: ../../source/module/make-dataset-cards/categories/filter-sampling.md:6
+#: e0fe9996eb4048fd92dc8da99a3bef3c
 msgid "必要时在 `NEP Dataset Display` 中继续复核异常结构。"
 msgstr "If needed, continue reviewing anomalous structures in `NEP Dataset Display`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/categories/filter-sampling.md:7
-#: 1632f659f00e4c3284213b3df713256a
+#: ../../source/module/make-dataset-cards/categories/filter-sampling.md:7
+#: d7cab23570eb4cde9087a720e8ff6c4c
 msgid "候选池基本干净后，再用 `FPS Filter` 选择代表结构。"
-msgstr "Once the candidate pool is reasonably clean, use `FPS Filter` to select representative structures."
+msgstr ""
+"Once the candidate pool is reasonably clean, use `FPS Filter` to select "
+"representative structures."
+
+#~ msgid "过滤与代表性采样"
+#~ msgstr "Filtering and representative sampling"

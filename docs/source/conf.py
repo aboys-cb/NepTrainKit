@@ -7,7 +7,10 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 from pathlib import Path
+from importlib.metadata import PackageNotFoundError, version as package_version
+import gettext
 import os
+import runpy
 import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -18,7 +21,21 @@ if str(SRC_DIR) not in sys.path:
 project = 'NepTrainKit'
 copyright = '2024, NepTrain Team'
 author = 'NepTrain Team'
-release = '1.4.9'
+
+
+def _documentation_version() -> str:
+    """Resolve the version without importing the Qt-initializing package."""
+    try:
+        return package_version('NepTrainKit')
+    except PackageNotFoundError:
+        generated = SRC_DIR / 'NepTrainKit' / '_version.py'
+        if generated.is_file():
+            return str(runpy.run_path(str(generated)).get('version', '0+unknown'))
+        return '0+unknown'
+
+
+release = _documentation_version()
+version = release
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -164,9 +181,74 @@ _BILINGUAL_SCREENSHOTS = (
 )
 
 
+def _pretranslate_english_blocks(app, docname: str, text: str) -> str:
+    """Translate fenced code and display-math bodies before MyST parses them.
+
+    Sphinx's post-parse gettext transform can reduce a translated MyST literal
+    block or display equation to the placeholder ``::``.  The catalogs already
+    contain reviewed translations for those bodies, so apply only those exact
+    catalog matches while the Markdown delimiters are still present.
+    """
+    catalog = (
+        Path(app.srcdir)
+        / 'locale'
+        / 'en'
+        / 'LC_MESSAGES'
+        / f'{docname}.mo'
+    )
+    if not catalog.is_file():
+        return text
+
+    with catalog.open('rb') as stream:
+        translations = gettext.GNUTranslations(stream)
+
+    lines = text.splitlines(keepends=True)
+    index = 0
+    while index < len(lines):
+        stripped = lines[index].strip()
+        delimiter = ''
+        if stripped == '$$':
+            delimiter = '$$'
+        elif stripped.startswith(('```', '~~~')):
+            marker = stripped[0]
+            delimiter = marker * len(stripped) if set(stripped) == {marker} else ''
+            if not delimiter:
+                delimiter = marker * (len(stripped) - len(stripped.lstrip(marker)))
+
+        if not delimiter:
+            index += 1
+            continue
+
+        end = index + 1
+        while end < len(lines) and lines[end].strip() != delimiter:
+            end += 1
+        if end >= len(lines):
+            index += 1
+            continue
+
+        body = ''.join(lines[index + 1:end])
+        translated = translations.gettext(body)
+        if translated == body and delimiter == '$$':
+            # MyST's gettext key for ``$$`` display math retains the newline
+            # immediately after the opening delimiter, while the line-based
+            # source slice above naturally starts at the equation itself.
+            keyed_body = f'\n{body}'
+            keyed_translation = translations.gettext(keyed_body)
+            if keyed_translation != keyed_body:
+                translated = keyed_translation.removeprefix('\n')
+        if translated != body:
+            lines[index + 1:end] = [translated]
+            end = index + 2
+        index = end + 1
+
+    return ''.join(lines)
+
+
 def _use_english_screenshots(app, docname, source):
     if app.config.language != 'en':
         return
+
+    source[0] = _pretranslate_english_blocks(app, docname, source[0])
 
     # MyST keeps numbered section headings as literal source text in a few
     # tutorial pages, so they bypass the normal gettext title lookup.  Replace
@@ -202,10 +284,21 @@ def _use_english_screenshots(app, docname, source):
         '5. 在图上直接框选或反选': '5. Select or invert directly on the plot',
         '6. 按 Config_type 组合筛选': '6. Filter by Config_type groups',
         '7. 只导出确认过的子集': '7. Export only the reviewed subset',
+        '1. 导入结构并添加卡片': '1. Import a structure and add the card',
+        '2. 检查输出，不要直接送 DFT': '2. Inspect the output before sending it to DFT',
+        '1. 选定界面': '1. Select the interface',
+        '2. 识别原子层': '2. Identify atomic layers',
+        '3. 只交换异种元素': '3. Exchange unlike elements only',
+        '4. 输出与标签': '4. Output and labels',
+        '示例配置：BCC Fe 晶格扫描': 'Example configuration: BCC Fe lattice scan',
+        '示例配置：L1₂ Cu₃Au 基础晶胞': 'Example configuration: L1₂ Cu₃Au primitive cell',
+        '示例配置：0.10 Å Sobol 微扰': 'Example configuration: 0.10 Å Sobol perturbation',
+        '示例配置': 'Example configuration',
         '1. 界面总览': '1. Interface overview',
         '5. 导入导出与 NEP 模型切换': '5. Import/export and NEP model switching',
         '6. 结构筛选栏': '6. Structure filter bar',
         '7. 状态与常见提示': '7. Status and common messages',
+        '4. 结构工具栏（按按钮查）': '4. Structure toolbar (by button)',
         '6. 按 `Config_type` 组合筛选': '6. Filter by `Config_type` groups',
         '训练集评估概览页，标出当前结论、数据概况、建议复核顺序和 HTML 报告导出入口': 'Training Set Audit overview with conclusions, data summary, review order, and HTML report export',
         '训练集评估的磁类型占比视图，显示图表切换、结构帧占比、颜色图例和结构回选入口': 'Training Set Audit magnetic-type shares with chart controls, frame shares, legend, and structure selection',
@@ -219,11 +312,16 @@ def _use_english_screenshots(app, docname, source):
         english_filename = f'{Path(filename).stem}_en{Path(filename).suffix}'
         source[0] = source[0].replace(filename, english_filename)
 
-    source[0] = source[0].replace(
-        '../_static/image/example/display/main.png',
-        '../_static/image/generated/show_nep_overview_en.png',
-    )
 
+def _use_english_included_content(app, relative_path, parent_docname, source):
+    """Apply the same English preprocessing to text brought in by ``include``.
+
+    ``source-read`` sees only the wrapper page, not the body of an included Markdown
+    file.  Processing the ``include-read`` event keeps translated headings, literal
+    blocks, equations, and screenshot variants consistent on both direct and included
+    pages.
+    """
+    _use_english_screenshots(app, parent_docname, source)
 
 def _replace_english_fallback_text(app, exception):
     """Replace headings/alt text from included legacy pages in English HTML.
@@ -236,23 +334,34 @@ def _replace_english_fallback_text(app, exception):
     if exception is not None or app.config.language != 'en':
         return
     replacements = {
+        '1. 导入结构并添加卡片': '1. Import a structure and add the card',
+        '2. 检查输出，不要直接送 DFT': '2. Inspect the output before sending it to DFT',
         '1. 界面总览': '1. Interface overview',
         '5. 导入导出与 NEP 模型切换': '5. Import/export and NEP model switching',
         '6. 结构筛选栏': '6. Structure filter bar',
         '7. 状态与常见提示': '7. Status and common messages',
+        '4. 结构工具栏（按按钮查）': '4. Structure toolbar (by button)',
         '训练集评估概览页，标出当前结论、数据概况、建议复核顺序和 HTML 报告导出入口': 'Training Set Audit overview with conclusions, data summary, review order, and HTML report export',
         '训练集评估的磁类型占比视图，显示图表切换、结构帧占比、颜色图例和结构回选入口': 'Training Set Audit magnetic-type shares with chart controls, frame shares, legend, and structure selection',
         '训练集评估的组分地图，标出证据层切换、相分布柱图、精确组分表和结构回选控件': 'Training Set Audit composition map with evidence controls, phase bars, exact composition table, and structure selection',
+        'NEP Dataset Display 界面总览': 'NEP Dataset Display overview',
+        '旧值': 'Legacy value',
+        '新输出方式': 'Current output mode',
+        '新长度约束': 'Current length policy',
     }
     for path in app.outdir.rglob('*.html'):
         text = path.read_text(encoding='utf-8')
         updated = text
         for chinese, english in replacements.items():
             updated = updated.replace(chinese, english)
+        for filename in _BILINGUAL_SCREENSHOTS:
+            english_filename = f'{Path(filename).stem}_en{Path(filename).suffix}'
+            updated = updated.replace(filename, english_filename)
         if updated != text:
             path.write_text(updated, encoding='utf-8')
 
 
 def setup(app):
     app.connect('source-read', _use_english_screenshots)
+    app.connect('include-read', _use_english_included_content)
     app.connect('build-finished', _replace_english_fallback_text)

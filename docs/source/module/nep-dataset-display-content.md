@@ -10,7 +10,10 @@
 <!-- display-overview-start -->
 ## 1. 界面总览
 
-![NEP Dataset Display Main](../_static/image/example/display/main.png)
+```{image} ../_static/image/generated/show_nep_overview.png
+:alt: NEP Dataset Display 界面总览
+:class: docs-screenshot
+```
 
 - 左侧：误差散点主图区（descriptor / energy / force / pressure / potential energy 等子图）。
 - 右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。
@@ -623,7 +626,7 @@ expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共
 
 - 配置类型包含 `surface`
 - 必须包含元素 `Fe,O`
-- 自定义表达式 `natoms >= 64 && force.error.norm < 0.2`
+- 自定义表达式 `natoms >= 64 && force.err.norm < 0.2`
 
 三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，因此不会丢失 `!=`、晶格角、布尔字段或动态字段。
 <!-- display-filter-end -->

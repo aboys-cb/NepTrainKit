@@ -22,7 +22,7 @@ msgstr ""
 #: ../../source/module/nep-main-tool-training-audit.md:1
 #: f3796d6b2d4e4bf88c04524d69204523
 msgid "进入训练集评估（Training Set Audit）"
-msgstr "Details for this option"
+msgstr "Open Training Set Audit"
 
 #: ../../source/module/nep-main-tool-training-audit.md:3
 #: 909c3ff4e3a54ddd8d38e5fe6c8622b0
@@ -32,47 +32,47 @@ msgstr "Purpose and use cases"
 #: ../../source/module/nep-main-tool-training-audit.md:5
 #: da12f348f52f4af484ee9476d1666837
 msgid "把当前活动结构送入训练集评估页面，检查阻塞项、组分、标签、局域环境、结构相和磁类型。 这个入口不复制数据，也不会自动删除或修改结构。"
-msgstr "Details for this option"
+msgstr "Send the currently active structures to Training Set Audit to inspect blocking issues, composition, labels, local environments, structural phases, and magnetic types. This entry point does not copy data and never deletes or modifies structures automatically."
 
 #: ../../source/module/nep-main-tool-training-audit.md:8
 #: af3fd9a3fd36475d9f8ac3a72721e5a7
 msgid "评估范围与结果"
-msgstr "Details for this option"
+msgstr "Scope and results"
 
 #: ../../source/module/nep-dataset-display-content.md:8643
 #: 8c115027a6204d57b1d101e3b716ea5c
 msgid "位置：删除按钮后的分隔栏右侧。"
-msgstr "Details for this option"
+msgstr "Location: to the right of the separator after the delete action."
 
 #: ../../source/module/nep-dataset-display-content.md:8644
 #: 1fc8ae799c17437b93e4a871d38c0fb7
 msgid "评估范围：当前活动结构；已经删除的结构不参与。"
-msgstr "Details for this option"
+msgstr "Scope: currently active structures; deleted structures are excluded."
 
 #: ../../source/module/nep-dataset-display-content.md:8645
 #: fe97ba42c6f94478b913c4a339f0d88a
 msgid "概览：结构/原子统计、标签可用性、元素共现矩阵与精确元素集合。"
-msgstr "Details for this option"
+msgstr "Overview: structure and atom statistics, label availability, the element co-occurrence matrix, and exact element sets."
 
 #: ../../source/module/nep-dataset-display-content.md:8646
 #: e3b880c0ff674c449b5c4ebafd91044b
 msgid "证据：数据质量、局域化学、结构相和磁类型；耗时证据在后台计算。"
-msgstr "Details for this option"
+msgstr "Evidence: data quality, local chemistry, structural phases, and magnetic types; expensive evidence is computed in the background."
 
 #: ../../source/module/nep-dataset-display-content.md:8647
 #: 17d101d142ab4ca5b9e04ce7c31585f1
 msgid "结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset Display`。"
-msgstr "Details for this option"
+msgstr "Structure selection: clicking a chart, table, or review item sends the actual structure indices back to `NEP Dataset Display`."
 
 #: ../../source/module/nep-dataset-display-content.md:8648
 #: 2b23b243d2444ac8970e66fbee51e5da
 msgid "报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。"
-msgstr "Details for this option"
+msgstr "Report: `Export HTML report` saves the audited scope, fingerprint, evidence, criteria, and limitations."
 
 #: ../../source/module/nep-dataset-display-content.md:8650
 #: ba2813039a32454589faa07b5efe990d
 msgid "完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。"
-msgstr "Details for this option ([Related guide](training-set-assessment.md))"
+msgstr "See [Training Set Audit](training-set-assessment.md) for the complete workflow and identification rules."
 
 #: ../../source/module/nep-main-tool-training-audit.md:15
 #: 45ee4d71cffa403c8fbf91ae4597f65f
@@ -84,4 +84,8 @@ msgstr "Post-operation checks"
 msgid ""
 "先看概览中的训练阻塞项，再进入数据地图和复核队列。点击图表或复核项可以把真实结构索引 "
 "回选到数据集查看页面；数据变化后应重新检查，不能继续使用旧快照。"
-msgstr "Details for this option"
+msgstr ""
+"Review blocking issues on the Overview first, then continue to Data Map and "
+"Review Queue. Clicking a chart or review item selects the corresponding actual "
+"structure indices back in Dataset Display. Rerun the audit after the data changes; "
+"do not reuse a stale snapshot."

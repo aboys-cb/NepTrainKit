@@ -20,7 +20,7 @@ msgstr ""
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-edit-info.md:1
 #: 0ca177587cff47d18102dd86be122236
 msgid "编辑结构信息（Edit Info）"
-msgstr "Details for this option"
+msgstr "Edit Structure Information"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-edit-info.md:3
 #: e3b177b223c74dcb900115568d2ed5c9
@@ -32,42 +32,42 @@ msgstr "Purpose and use cases"
 msgid ""
 "批量修改当前选中结构的 metadata，例如补充 `Config_type`、重命名旧字段或删除错"
 "误标签。 它只修改结构信息，不改变元素、坐标、晶胞和数值标签。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "Edit metadata for the selected structures in bulk—for example, add `Config_type`, rename a legacy field, or remove an incorrect tag. This changes only structure information, not elements, coordinates, cells, or numerical labels."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-edit-info.md:8
 #: 9057fff300ad4704ad47f0cfc24508b4
 msgid "可执行操作"
-msgstr "Details for this option"
+msgstr "Available Operations"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7621
 #: 905fe869b1324deba7b22ae3366f2b38
 msgid "输入能力："
-msgstr "Details for this option"
+msgstr "Available edits:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7622
 #: d67760dc9b584410aae1c6ab50276ae7
 msgid "新增标签（`key/value`）"
-msgstr "Details for this option"
+msgstr "Add a tag (`key/value`)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7623
 #: fc08f43f0624438c955cff0853b98d3b
 msgid "删除标签"
-msgstr "Details for this option"
+msgstr "Remove a tag"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7624
 #: 6c7366f2697c4f178de612ae75bb9a17
 msgid "右键重命名标签"
-msgstr "Details for this option"
+msgstr "Right-click to rename a tag"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7625
 #: 90c8b225e2634e1c83045fd5ce79b026
 msgid "应用前确认：列出 `removed / renamed / added` 摘要。"
-msgstr "Details for this option"
+msgstr "Confirmation before applying: show a `removed / renamed / added` summary."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7626
 #: f99aae4b098349f88ccd8b5b2e7dda84
 msgid "执行结果：批量更新当前选中结构 metadata。"
-msgstr "Details for this option"
+msgstr "Result: update metadata for all selected structures."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7628
 #: b0297863a7b4436fb4852b74764a37cd
@@ -102,4 +102,4 @@ msgstr "Post-operation checks"
 msgid ""
 "应用前确认窗口会列出新增、删除和重命名摘要。执行后在结构信息区抽查一个选中结"
 "构， 再导出数据；未导出前的修改只存在于当前会话数据中。"
-msgstr "Details for this option"
+msgstr "The confirmation dialog lists added, removed, and renamed fields. After applying, inspect one selected structure in the information panel before exporting. Until exported, the edits exist only in the current session data."

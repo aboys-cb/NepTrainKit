@@ -4,7 +4,6 @@ import inspect
 import json
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin
 
 from ase.io import write as ase_write
 from PySide6.QtCore import Property, QCoreApplication, QEvent, QMimeData, QPoint, QSize, Qt, QUrl, Signal
@@ -26,10 +25,10 @@ from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
+from NepTrainKit.i18n import localized_docs_url
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask, DataProcessingThread, FilterProcessingThread
-from NepTrainKit.version import DOCS_BASE_URL
 
 from .card_metadata import CardMetadataDialog, localized_card_description
 from .compact_form import CategoryTag, StatusBadge, StatusDot
@@ -350,9 +349,9 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
             return ""
 
         if page_path.startswith(("http://", "https://")):
-            url = page_path
+            url = localized_docs_url(page_path)
         else:
-            url = urljoin(DOCS_BASE_URL, page_path.lstrip("/"))
+            url = localized_docs_url(page_path)
 
         anchor = str(getattr(self, "doc_anchor", "") or "").strip().lstrip("#")
         if anchor:

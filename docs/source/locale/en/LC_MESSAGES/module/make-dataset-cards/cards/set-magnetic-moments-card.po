@@ -8,460 +8,441 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:3
-#: 4d35fa849ab54c8b852fb28430400078
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:3
+#: 5ff8dd9fcb894d39829dc38b1ce3eb0f
 msgid "设置磁矩（Set Magnetic Moments）"
 msgstr "Set Magnetic Moments"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:5
-#: e4240d7033c94d4680d50bbb4f8d8248
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:5
+#: 67114bea8e354d80a576466c69de5263
 msgid "**分类：** 磁性"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "**Category:** Magnetism"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:7
-#: 24b88db07dc64fa59bdf506167433433
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:7
+#: 07f5156de6f745c5ae8cff7e20788424
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:9
-#: 9ae997a58a3e490c82ef29869c241376
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:9
+#: dd6b30f37c78428ab70f9c65840fa087
 msgid ""
-"把输入结构写成统一的 `spin:R:3` 表示。选择磁矩来源（已有磁矩 / 元素映射 / 常"
-"数幅值）、输出格式（标量 / 向量）、参考轴方向和生效元素范围。这是一张基础层卡"
-"片——不生成多磁序分支，只为后续磁性卡片提供干净、统一的初始磁矩。内部仍同步维"
-"护 ASE `initial_magmoms` 兼容别名。"
+"把输入结构写成统一的 `spin:R:3` 表示。选择磁矩来源（已有磁矩 / 元素映射 / 常数幅值）、输出格式（标量 / "
+"向量）、参考轴方向和生效元素范围。这是一张基础层卡片——不生成多磁序分支，只为后续磁性卡片提供干净、统一的初始磁矩。内部仍同步维护 ASE "
+"`initial_magmoms` 兼容别名。"
 msgstr ""
-"Write a consistent `spin:R:3` representation to each input structure. Choose "
-"the moment source—existing values, an element map, or a constant magnitude—"
-"the scalar or vector output format, a reference axis, and the elements to "
-"which it applies. This foundational card does not branch into multiple "
-"magnetic orders; it prepares a clean, uniform starting state for downstream "
-"magnetic cards. The internal ASE `initial_magmoms` compatibility alias is "
-"kept in sync."
+"Write a consistent `spin:R:3` representation to each input structure. Choose the "
+"moment source—existing values, an element map, or a constant magnitude—the scalar or "
+"vector output format, a reference axis, and the elements to which it applies. This "
+"foundational card does not branch into multiple magnetic orders; it prepares a clean,"
+" uniform starting state for downstream magnetic cards. The internal ASE "
+"`initial_magmoms` compatibility alias is kept in sync."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:11
-#: 3c059d6618be429d8c65a5c3ac72dccf
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:11
+#: a434d619b7884ec693e69b8bb7d6abd7
 msgid ""
-"**和 `Magnetic Order` 的区别：** `Magnetic Order` 从一个母相出发生成 "
-"FM+AFM+PM 多分支。本卡只标准化磁矩格式，不创建新磁序。如果你的流程里多张磁性"
-"卡都在重复配 `元素磁矩表`（`magmom_map`）和 `轴`（`axis`），用本卡统一初始化"
-"一次可以消除重复。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"**和 `Magnetic Order` 的区别：** `Magnetic Order` 从一个母相出发生成 FM+AFM+PM "
+"多分支。本卡只标准化磁矩格式，不创建新磁序。如果你的流程里多张磁性卡都在重复配 `元素磁矩表`（`magmom_map`）和 "
+"`轴`（`axis`），用本卡统一初始化一次可以消除重复。"
+msgstr ""
+"**Difference from `Magnetic Order`:** `Magnetic Order` generates FM, AFM, and PM "
+"branches from one parent phase. This card only standardizes the magnetic-moment "
+"representation; it does not create a new magnetic order. If several downstream "
+"magnetic cards repeat the same `magmom_map` and `axis`, initialize them once here."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:13
-#: c2258187b7b144ea979e5caf888f09af
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:13
+#: bdab3c798f724e038d60b879e4fc591c
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:15
-#: 8533031a8208462c9bcef4926232ca9e
-msgid ""
-"这张卡执行的是确定性映射而不是磁结构求解。对元素为 $e$ 的原子 $i$，标量模式写"
-"入"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:15
+#: 228bd45ffbf441caa09c604e64c1c00a
+msgid "这张卡执行的是确定性映射而不是磁结构求解。对元素为 $e$ 的原子 $i$，标量模式写入"
+msgstr "This card performs a deterministic mapping rather than solving for a magnetic structure. For atom $i$ of element $e$, scalar mode writes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:17
-#: dc94798de234471b99971bfcd58f1592
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:17
+#: c702007909534bb49f0c776b934ad735
 msgid ""
 "\n"
 "m_i=M(e),\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:21
-#: c9dfd60d74cb4491a37f372e3951a7ec
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:21
+#: bb102b692d3642aea19168077c24b740
 msgid "非共线模式写入"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "Non-collinear mode writes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:23
-#: 183ab40b9a5c4f5c8d9d3a765d0217bc
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:23
+#: 5fa2cba3fb0d4d1da600c24e6f62693f
+#, python-brace-format
 msgid ""
 "\n"
 "\\mathbf m_i=M(e)\\,\n"
 "\\frac{\\mathbf a_e}{\\|\\mathbf a_e\\|},\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:28
-#: 69350c1073004ac6aba820272b6e5ce2
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:28
+#: 38ff040f55444d4bb14428f6d06e7485
 msgid ""
-"其中 $M(e)$ 来自元素-磁矩表，$\\mathbf a_e$ 来自元素方向表；没有独立方向时使"
-"用全局 参考轴。未列元素按“默认磁矩”处理。数值单位为 $\\mu_B$。它只设置 "
-"`initial_magmoms` 初始标签，不会计算交换作用、自动判断磁性元素或保证 DFT 收敛"
-"到该磁态。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"其中 $M(e)$ 来自元素-磁矩表，$\\mathbf a_e$ 来自元素方向表；没有独立方向时使用全局 参考轴。未列元素按“默认磁矩”处理。数值单位为 "
+"$\\mu_B$。它只设置 `initial_magmoms` 初始标签，不会计算交换作用、自动判断磁性元素或保证 DFT 收敛到该磁态。"
+msgstr ""
+"Here $M(e)$ comes from the element-moment map and $\\mathbf a_e$ from the element-direction map; "
+"when no element-specific direction is given, the global reference axis is used. Unlisted elements "
+"use the default moment. Values are in $\\mu_B$. The card only sets the initial `initial_magmoms` "
+"labels; it neither computes exchange interactions nor identifies magnetic elements automatically, "
+"and it cannot guarantee that DFT converges to the requested magnetic state."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:32
-#: baab53e72e214662b9d88b01d71d9482
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:32
+#: 781945e218664a3db4d9987a6b91c0ee
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:34
-#: d0afd444be0047c487350410949d2756
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:34
+#: 642952ae3bfa40c08978e9f50b93f28f
 msgid "场景：多张磁性卡各自配 magmom_map，配错了一处"
-msgstr ""
-"Scenario: repeated `magmom_map` settings drift out of sync across magnetic "
-"cards"
+msgstr "Scenario: repeated `magmom_map` settings drift out of sync across magnetic cards"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:36
-#: 6366ec42171d4af1b4db470712b1b3e8
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:36
+#: a5e215c4b3714f6f85feb146294c319f
 msgid ""
-"你的训练流水线里有 `Magnetic Order` → `Small-Angle Spin Tilt` → `Spin "
-"Spiral` 三张磁性卡。每张卡都有一个 `元素磁矩表`（`magmom_map`）输入框，你填了"
-"三遍 `Fe:2.2,Co:1.7`。两周后改 Co 的磁矩为 1.5，只改了两张卡，第三张忘了——生"
-"成的数据里 Co 的磁矩默默用了旧值。训练出来的模型在含 Co 的构型上能量系统性偏"
-"高。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:38
-#: 3862336458784c368013c5677f3ca3f5
-msgid ""
-"**诊断思路：** 磁性流水线里，磁矩幅值的定义应该只在一处。用本卡在最前面做一次"
-"统一初始化，后续磁性卡全部选 \"Existing initial magmoms\" 模式，不再各自定义 "
-"magmom_map。"
+"你的训练流水线里有 `Magnetic Order` → `Local Magnetic Response` → `SOC / Texture Response` "
+"三张磁性卡。如果在多张卡里重复填写元素磁矩，两周后调整 Co 的磁矩时很容易漏改其中一处，导致同一批数据使用不一致的幅值。"
 msgstr ""
-"**Diagnosis:** Define moment magnitudes once in a magnetic workflow. Put "
-"this card first, then select `Existing initial magmoms` in downstream cards "
-"instead of redefining the element map repeatedly."
+"Suppose a training pipeline contains `Magnetic Order` → `Local Magnetic Response` → "
+"`SOC / Texture Response`. If element moments are entered repeatedly on several cards,"
+" a later change to the Co moment can easily be missed in one place, causing "
+"inconsistent magnitudes within the same dataset."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:40
-#: a5e1bd57e4ee4501be73b320af4c5664
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:38
+#: 9a81832c133b40a49a556229b41df28c
+msgid ""
+"**诊断思路：** 磁性流水线里，磁矩幅值的定义应该只在一处。用本卡在最前面做一次统一初始化，后续磁性卡全部选 \"Existing initial magmoms\" "
+"模式，不再各自定义 magmom_map。"
+msgstr ""
+"**Diagnosis:** Define moment magnitudes once in a magnetic workflow. Put this card "
+"first, then select `Existing initial magmoms` in downstream cards instead of "
+"redefining the element map repeatedly."
+
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:40
+#: 6b8798a1ef8847c3b64384c5b3dd7072
 msgid "**输入：** 一个磁性晶体结构，还没写 `spin` 或 `initial_magmoms`"
-msgstr ""
-"**Input:** A magnetic crystal structure without `spin` or `initial_magmoms`."
+msgstr "**Input:** A magnetic crystal structure without `spin` or `initial_magmoms`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:42
-#: 41cc5d6f72734ce6b60d979a7730fd23
-msgid ""
-"**目标：** 统一写入向量格式的初始磁矩，Fe 取 2.2 μB，Co 取 1.7 μB，沿 z 轴，"
-"后续卡片全部复用"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:42
+#: 45e4220ffe3640a28884cc01468dd163
+msgid "**目标：** 统一写入向量格式的初始磁矩，Fe 取 2.2 μB，Co 取 1.7 μB，沿 z 轴，后续卡片全部复用"
 msgstr ""
-"**Goal:** Initialize vector moments along *z*, using 2.2 μB for Fe and 1.7 "
-"μB for Co, then reuse them throughout the downstream workflow."
+"**Goal:** Initialize vector moments along *z*, using 2.2 μB for Fe and 1.7 μB for Co,"
+" then reuse them throughout the downstream workflow."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:44
-#: 472e7ae8b3c54e0fb1c6217289853c8d
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:44
+#: 6a11bea9da3c4de8ad4b3e033bfc7c66
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:45
-#: 3b57cabbeea54add9bd963e14b2a31d8
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:45
+#: b6e94063a3f94276ab17d81623173f71
 msgid "`来源`（`source`） = `Map/default magnitude`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "`Source` (`source`) = `Map/default magnitude`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:46
-#: a6a57e447b714513af349427c094fbf4
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:46
+#: 23d60aa40ec8441c8f65986c83d12936
 msgid "`格式`（`format`） = `Non-collinear (vector)`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "`Format` (`format`) = `Non-collinear (vector)`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:47
-#: f3a8f7d1c06f4419a6fb581ad8efbe5e
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:47
+#: 6acb6521a4b24ef2ae4bddf118da8a89
 msgid "`元素磁矩表`（`magmom_map`） = `Fe:2.2,Co:1.7`"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "`Element moment map` (`magmom_map`) = `Fe:2.2,Co:1.7`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:48
-#: e72fa91eadb5445b9acde8957cd5b3e7
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:48
+#: c82b6e25e40845dcaf63214016a1fa20
 msgid "`Apply Elements` = `Fe,Co`"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:50
-#: 0acdaacce8b943028bdb7d735d1b349a
-msgid ""
-"**输出：** 1 个结构，带 `MagSet(map,vec)` 标签和 `spin:R:3` 数组。原子位置和"
-"数量不变。"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:50
+#: ddb686d42c264182be7c0b2a84246ec9
+msgid "**输出：** 1 个结构，带 `MagSet(map,vec)` 标签和 `spin:R:3` 数组。原子位置和数量不变。"
 msgstr ""
-"**Output:** One structure labeled `MagSet(map,vec)` with a `spin:R:3` array. "
-"Atomic positions and counts are unchanged."
+"**Output:** One structure labeled `MagSet(map,vec)` with a `spin:R:3` array. Atomic "
+"positions and counts are unchanged."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:52
-#: 7a54ef9da33b420f8da7fdd18ca9d3d7
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:52
+#: 4ffd8183841d485995e9d137978db290
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:53
-#: 00b19da69621436585e0a6cf9eca4919
-msgid ""
-"后续磁性卡全部切到 \"Existing initial magmoms\"，检查输出磁矩幅值是否一致"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:53
+#: 5f5f97988ce845d7936ed2f54beee5cc
+msgid "后续磁性卡全部切到 \"Existing initial magmoms\"，检查输出磁矩幅值是否一致"
 msgstr ""
-"Set all downstream magnetic cards to `Existing initial magmoms` and verify "
-"that moment magnitudes remain consistent."
+"Set all downstream magnetic cards to `Existing initial magmoms` and verify that "
+"moment magnitudes remain consistent."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:54
-#: 8a19d244527e4a3a84f0a971eaa11747
-msgid ""
-"如果 Co 的磁矩需要精确到实验值，直接用 `元素磁矩表`（`magmom_map`）的精确定义"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:54
+#: 2487957b10544a0ea3a9fb806b5dcd63
+msgid "如果 Co 的磁矩需要精确到实验值，直接用 `元素磁矩表`（`magmom_map`）的精确定义"
+msgstr "If the Co moment must match a specific experimental value, enter that value explicitly in the element moment map (`magmom_map`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:55
-#: ac34b2992d854193afd7f92cfe9de2f8
-msgid ""
-"如果后续要同时跑标量和向量流程，分别用本卡输出两种格式的版本，而不是在后面卡"
-"片里切换"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:55
+#: bb583dae562a47679f85447fdc92a07e
+msgid "如果后续要同时跑标量和向量流程，分别用本卡输出两种格式的版本，而不是在后面卡片里切换"
 msgstr ""
-"If both scalar and vector workflows are needed, create one standardized "
-"branch for each format here instead of switching representations later."
+"If both scalar and vector workflows are needed, create one standardized branch for "
+"each format here instead of switching representations later."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:57
-#: 75d3f0af163b4563aaa8e853823b9d70
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:57
+#: 195cecf46e28415ca3f45e87c8a5bf5f
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:59
-#: 789fd9178efd41a4a0cfd8e189f49aa3
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:59
+#: f7197e562d3949e8a7950936b8313dc9
 msgid "**加：**"
 msgstr "**Add it when:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:60
-#: 11cb534c5a034cdf90bde54559dc2544
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:60
+#: e2f7dc516e044c359c80f7adcba5c3a9
 msgid "流水线里多张磁性卡都在重复配置磁矩幅值、格式、axis"
-msgstr ""
-"Several magnetic cards repeat the same moment magnitudes, format, and axis."
+msgstr "Several magnetic cards repeat the same moment magnitudes, format, and axis."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:61
-#: 6cb46e64f9cb489e90983177df54a3c7
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:61
+#: 7d0d764a68b1464baa019ac27049cf54
 msgid "输入结构的磁矩格式不统一（有的标量有的向量），需要标准化"
-msgstr ""
-"Input structures mix scalar and vector moments and must be standardized."
+msgstr "Input structures mix scalar and vector moments and must be standardized."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:62
-#: cdffbd378a4146a0842e9ec10bb07d20
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:62
+#: 1e3fa843473b4fd8a3ab18c827ae0b09
 msgid "只想初始化参考 FM 磁矩，不想生成多磁序分支"
 msgstr ""
-"You need one reference FM initialization without branching into several "
-"magnetic orders."
+"You need one reference FM initialization without branching into several magnetic "
+"orders."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:64
-#: 487b1c37b65846739238d7c6754814cc
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:64
+#: 017e5e40dc2844c9a605ccff595836a6
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:65
-#: e544dae6679a4c84bd79d9b004238360
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:65
+#: 323e2e9c38c2430b922baf35a01032d4
 msgid "只有一张磁性卡且不共享磁矩配置 → 直接在目标卡上配也可以"
 msgstr ""
-"Only one magnetic card uses the settings → configuring that card directly "
-"may be simpler."
+"Only one magnetic card uses the settings → configuring that card directly may be "
+"simpler."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:66
-#: 3fa37e0dadad4d689ebe60fc2d250791
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:66
+#: 30f4383a06c14f98b48886b2a827a011
 msgid "需要一次性生成 FM/AFM/PM 多磁序 → 用 `Magnetic Order` 一步完成"
-msgstr ""
-"You need FM, AFM, and paramagnetic-like branches → use `Magnetic Order`."
+msgstr "You need FM, AFM, and paramagnetic-like branches → use `Magnetic Order`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:68
-#: 972f8a6b93774ae0a8408bbc0901732c
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:68
+#: ff641795dfc54faf91b8283303a5a38c
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:70
-#: fe8ff490f14e4249a72940b164a5375e
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:70
+#: 9c7cbfe5c4434c829700f4669311db39
 msgid "磁矩来源"
 msgstr "Moment source"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:72
-#: d6ce419dc06e4ed5afb27975e50a4fc1
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:72
+#: 3c69cbd281aa4366b2d682d53da15f4e
 msgid "来源（source）"
 msgstr "source"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:74
-#: cbbfc80b1a044dd59cf69ed624e57e5c
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:74
+#: f88ca0995a2d4bf3bcfc4ceba6f45b02
 msgid "`str`，默认 `'Map/default magnitude'`。磁矩从哪里来。"
 msgstr ""
-"`str`, default: `'Map/default magnitude'`. Source from which moment values "
-"are obtained."
+"`str`, default: `'Map/default magnitude'`. Source from which moment values are "
+"obtained."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: c76a3e4efb0547cc86798d463a2a93f5
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: 6647439bb67741a0afddd06946c1b11c
 msgid "选项"
-msgstr "Options"
+msgstr "Option"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: 5976132fabdf4b4c99f6091b6a64bace
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: 6ba9f7212a1a4f2d9926f52bf044a925
 msgid "含义"
 msgstr "Meaning"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: 2f0e103274524e4abae1f41b8776b9a1
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: 96c1875abe98402b87bcc27185aff3f0
 msgid "`Map/default magnitude`"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: 9a46156c839043e6b8f1304f809198ef
-msgid ""
-"用 `元素磁矩表`（`magmom_map`） / `默认磁矩`（`default_moment`）生成。输入不"
-"需要已有磁矩"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: f7103cd595f140c19ac625dbdf8897af
+msgid "用 `元素磁矩表`（`magmom_map`） / `默认磁矩`（`default_moment`）生成。输入不需要已有磁矩"
+msgstr "Generate moments from the element moment map (`magmom_map`) and default moment (`default_moment`). The input does not need existing moments."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: c5fa0941742d4998a9a0aabb996443c1
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: e1ead44857564ac497586ffd0668509e
 msgid "`Existing initial magmoms`"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: 566b2c758c7d491595f1ac16a88019f2
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: e8620f7a8be941898dd3cc03a4fc9794
 msgid "保留输入已有的磁矩，只做格式转换。输入需要已有 `initial_magmoms`"
 msgstr ""
-"Preserve existing moment values and convert only their representation; the "
-"input must contain `initial_magmoms`."
+"Preserve existing moment values and convert only their representation; the input must"
+" contain `initial_magmoms`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: 74224ca0d7cf4ce89162193300ed1aaf
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: 83a69cb3f6ad4d208ccfb55a35773d5d
 msgid "`Constant magnitude`"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:0
-#: d8a0a52cf39c4b10ac9b4648f8e413ab
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md
+#: b930c14cd8054835914ffd726601209a
 msgid "所有目标元素统一用一个常数幅值，适合快速扫参考值"
 msgstr ""
-"Assign one constant magnitude to all target elements; useful for a quick "
-"reference-value scan."
+"Assign one constant magnitude to all target elements; useful for a quick reference-"
+"value scan."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:82
-#: 19d4f25c85af4435bcce025f741d3ae4
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:82
+#: 297e8139481f45e3818973b03fe4a673
 msgid "元素磁矩表（magmom_map）"
 msgstr "magmom_map"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:84
-#: b6b8d38bfa2f4889af346962977770e6
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:84
+#: c84471a62e2947a8a9c60ab310d28272
+#, python-brace-format
 msgid ""
-"`str`，默认 `''`。元素到磁矩的映射，格式如 `Fe:2.2,Ni:0.6`，也可用 JSON 向量"
-"如 `{\"Cr\":[0,0,1.0]}`。"
+"`str`，默认 `''`。界面使用“元素 / 磁矩或向量”表格；标量可填 `2.2`，向量可填 `[0,0,1.0]`。序列化仍兼容 `Fe:2.2,Ni:0.6` 和"
+" `{\"Cr\":[0,0,1.0]}`。"
 msgstr ""
-"`str`, default: `''`. Element-to-moment map such as `Fe:2.2,Ni:0.6`. JSON "
-"vectors such as `{\"Cr\":[0,0,1.0]}` are also accepted."
+"`str`, default `''`. The interface uses an `Element / Moment or vector` table; enter "
+"`2.2` for a scalar or `[0,0,1.0]` for a vector. Serialization remains compatible with"
+" `Fe:2.2,Ni:0.6` and `{\"Cr\":[0,0,1.0]}`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:86
-#: 8ce53ee64f504e3e8669d5e07cbf0164
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:86
+#: 048fb2448a36450580cb30e8df015ef4
 msgid "使用元素方向（use_element_dirs）"
 msgstr "use_element_dirs"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:88
-#: 584594bc00644c9ba8f07a6bec01422c
-msgid ""
-"`bool`，默认 `False`。勾选后 `元素磁矩表`（`magmom_map`）中提供的向量方向会被"
-"保留，而不是统一投到 `轴`（`axis`）。仅向量格式下有意义。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:88
+#: e476572edb50403bb1751637a7f42709
+msgid "`bool`，默认 `False`。勾选后 `元素磁矩表`（`magmom_map`）中提供的向量方向会被保留，而不是统一投到 `轴`（`axis`）。仅向量格式下有意义。"
+msgstr "`bool`, default `False`. When enabled, vector directions supplied in `magmom_map` are preserved instead of being projected onto `axis`. This setting only applies to vector output."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:90
-#: f8a036985fd8459a9da48ed2423aada5
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:90
+#: ccba322ea3554213924d5696bcef262a
 msgid "默认磁矩（default_moment）"
 msgstr "default_moment"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:92
-#: c91c50ed5fda40d1ad335712657dd562
-msgid ""
-"`float`，默认 `0.0`。`元素磁矩表`（`magmom_map`）未命中元素的默认幅值。设 0 "
-"则不给未配置元素写磁矩。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:92
+#: 3b87b263c0bc4b738b1218ea75458986
+msgid "`float`，默认 `0.0`。`元素磁矩表`（`magmom_map`）未命中元素的默认幅值。设 0 则不给未配置元素写磁矩。"
+msgstr "`float`, default `0.0`. Default magnitude for elements not present in `magmom_map`. A value of 0 leaves unconfigured elements without a moment."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:94
-#: 884cbfa1def94bdb9fa82526d4359677
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:94
+#: 4d56d4d1131a4ca78d2484e338d976d4
 msgid "固定磁矩（constant_moment）"
 msgstr "constant_moment"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:96
-#: ccd483ea0f5d454fa56b5984db90c9fe
-msgid ""
-"`float`，默认 `2.0`。`Source = Constant magnitude` 时所有目标元素的统一幅值。"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:96
+#: 875015cea5cb41f7ad91d508318dbf85
+msgid "`float`，默认 `2.0`。`Source = Constant magnitude` 时所有目标元素的统一幅值。"
 msgstr ""
-"`float`, default: `2.0`. Magnitude assigned to every target element when "
-"`Source = Constant magnitude`."
+"`float`, default: `2.0`. Magnitude assigned to every target element when `Source = "
+"Constant magnitude`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:98
-#: 11c161ac17a84ad294e6bb60b848bd45
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:98
+#: 63c346b54ae14390aee5ea7b4f70c11d
 msgid "输出格式"
 msgstr "Output representation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:100
-#: 9f05bb716fd04e24967ddb5145a4e6b8
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:100
+#: 903c8dee62cb41b5a6ad257e6b73ef21
 msgid "格式（format）"
 msgstr "format"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:102
-#: 6886123d1e914f888a8bdb15e36a7569
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:102
+#: 6313031519af4796920c04611fc3bdef
 msgid ""
-"`str`，默认 `'Non-collinear (vector)'`。`Collinear (scalar)` 或 `Non-"
-"collinear (vector)`。后续要做旋转、螺旋、canting 时优先选向量格式。"
+"`str`，默认 `'Non-collinear (vector)'`。`Collinear (scalar)` 或 `Non-collinear "
+"(vector)`。后续要做旋转、螺旋、canting 时优先选向量格式。"
 msgstr ""
-"`str`, default: `'Non-collinear (vector)'`. Choose `Collinear (scalar)` or "
-"`Non-collinear (vector)`. Use vectors for downstream rotation, spiral, or "
-"canting operations."
+"`str`, default: `'Non-collinear (vector)'`. Choose `Collinear (scalar)` or `Non-"
+"collinear (vector)`. Use vectors for downstream rotation, spiral, or canting "
+"operations."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:104
-#: 486c21f4f5234d3194d9843b443de3e0
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:104
+#: 20ee6193a158480f8e61f97566ddaf91
 msgid "标量磁矩转为矢量（lift_scalar）"
 msgstr "lift_scalar"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:106
-#: 4c7319733e164d7e90ed288c65cf7431
-msgid ""
-"`bool`，默认 `True`。输入是标量且目标格式是向量时，是否沿 `轴`（`axis`）抬"
-"升。通常保持开启。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:106
+#: a03c9bf070364673adc592a97eff2a21
+msgid "`bool`，默认 `True`。输入是标量且目标格式是向量时，是否沿 `轴`（`axis`）抬升。通常保持开启。"
+msgstr "`bool`, default `True`. When scalar input is converted to vector output, lift it along `axis`. Normally leave this enabled."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:108
-#: e5c6b5ecb14c44a6a418b0d1bdcabd55
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:108
+#: d27efa79771440eea30a66652cce8c03
 msgid "轴（axis）"
 msgstr "axis"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:110
-#: 9cc006891b5c4fdf8e51a8ab0ad117b0
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:110
+#: 150b388ac2264a5dafede48ee6420090
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。向量输出"
-"的参考方向、标量抬升的方向，格式为 `[x, y, z]`。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。向量输出的参考方向、标量抬升的方向，格式为"
+" `[x, y, z]`。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. "
-"Reference direction for generated vectors and for lifting scalar moments, "
-"expressed as `[x, y, z]`."
+"`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. Reference "
+"direction for generated vectors and for lifting scalar moments, expressed as `[x, y, "
+"z]`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:112
-#: 6640121adf7b47fa9a8503e611d48573
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:112
+#: bb02ff7d25854236a339385f0186fd0b
 msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
 msgstr ""
 "Used by modes that depend on a direction, layering, a surface, or vector "
 "initialization."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:114
-#: e74f92db9fca460fb4ad1470a3e0797c
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:114
+#: 074b24b7f07d4462b6f8c7f64215ac2f
 msgid "元素范围"
 msgstr "Element scope"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:116
-#: e5e44060b08e47ff8fc866316f8e9872
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:116
+#: 0b92c5a943f547c28278e2f0a773645e
 msgid "应用元素（apply_elements）"
 msgstr "apply_elements"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:118
-#: 3fb544f265ee4cebb774fee8644e4044
-msgid ""
-"`str`，默认 `''`。逗号分隔如 `Fe,Co`，只对列出的元素写磁矩，其余写 0。留空则"
-"全部生效。"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:118
+#: dbef0f48d4ee4b758a2139ce85f93214
+msgid "`str`，默认 `''`。逗号分隔如 `Fe,Co`，只对列出的元素写磁矩，其余写 0。留空则全部生效。"
 msgstr ""
-"`str`, default: `''`. Comma-separated element symbols such as `Fe,Co`. Only "
-"listed elements receive moments; others are set to zero. Leave empty to "
-"include all elements."
+"`str`, default: `''`. Comma-separated element symbols such as `Fe,Co`. Only listed "
+"elements receive moments; others are set to zero. Leave empty to include all "
+"elements."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:120
-#: 8b01a6c32cea488d8a902ecd95c0b73a
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:120
+#: 8ebe588305004f658e2714c5b986b931
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:122
-#: 4e0ba32c6b6a43c1b1f530d685557f47
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:122
+#: bce423d62003496385409cfdfe6b13b7
 msgid "标准化现有磁矩为向量（不改变幅值，适合接入已有数据）"
 msgstr "Convert existing moments to vectors without changing their magnitudes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:123
-#: 8fdfa989724643ba8dcb8e32c2258d65
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:123
+#: aabf1cddfe8e495e878ff56f6f35d72e
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"SetMagneticMomentsCard\",\n"
@@ -478,13 +459,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:139
-#: ea4648baf4b64897b73f5cabe1afa08e
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:139
+#: 674ecb1e6e6f4ae09eb9c86fc835c7b3
 msgid "按元素映射统一初始化（适合流水线第一张磁性卡）"
 msgstr "Initialize from one element map at the start of a magnetic workflow"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:140
-#: 42f171beb96d47dab1a4127c27f7b6a1
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:140
+#: 87f315a301e4410bb554f944914b2a1c
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"SetMagneticMomentsCard\",\n"
@@ -501,13 +483,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:156
-#: 3d138d532d63429ab850e148281439bc
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:156
+#: 5a6aa4400d004856ae896eae62e5c698
 msgid "常数幅值快速探索（扫不同参考磁矩的影响）"
 msgstr "Quick constant-magnitude exploration over reference values"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:157
-#: 36f6106c0edd464cb72b1df02f9d6f65
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:157
+#: fb196216e5ff4ad9957fa77a8b60e235
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"SetMagneticMomentsCard\",\n"
@@ -524,188 +507,191 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:173
-#: 9f7ef3a5de0e4150af42c4a040edd22f
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:173
+#: 061695161ba545c0b27be1b4fd0e0ca8
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:175
-#: b728646e71244c35be5e22b64cb6b176
-msgid ""
-"`Set Magnetic Moments` → `Magnetic Order`：先统一磁矩格式，再生成 FM/AFM/PM "
-"磁序"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:175
+#: e83f947c69bf442eb938e126e066e101
+msgid "`Set Magnetic Moments` → `Magnetic Order`：先统一磁矩格式，再生成 FM/AFM/PM 磁序"
 msgstr ""
-"`Set Magnetic Moments` → `Magnetic Order`: standardize representation, then "
-"generate FM, AFM, and paramagnetic-like orders."
+"`Set Magnetic Moments` → `Magnetic Order`: standardize representation, then generate "
+"FM, AFM, and paramagnetic-like orders."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:176
-#: f4deb1603cd34ead8fbdd9c4807ed4b6
-msgid ""
-"`Set Magnetic Moments` → `Small-Angle Spin Tilt`：先生成统一 FM 向量磁矩，再"
-"做 canting"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:176
+#: 3ec0a0a493b94be1888c96a9b5b9a0e7
+msgid "`Set Magnetic Moments` → `Local Magnetic Response`：先生成统一 FM 向量磁矩，再做局域响应扫描"
 msgstr ""
-"`Set Magnetic Moments` → `Small-Angle Spin Tilt`: create consistent FM "
-"vector moments, then apply canting."
+"`Set Magnetic Moments` → `Local Magnetic Response`: create consistent FM vector "
+"moments before scanning local responses"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:177
-#: 711a26977fd2481d8d1dc74ad614e8e2
-msgid "`Set Magnetic Moments` → `Spin Spiral`：先写入稳定模长，再生成螺旋初态"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:177
+#: dc425a39cb154a1082615100469c783a
+msgid "`Set Magnetic Moments` → `SOC / Texture Response`：先写入稳定模长，再生成有限 q 磁纹理"
 msgstr ""
-"`Set Magnetic Moments` → `Spin Spiral`: establish consistent magnitudes, "
-"then generate spiral starting states."
+"`Set Magnetic Moments` → `SOC / Texture Response`: establish stable moment magnitudes"
+" before generating finite-q magnetic textures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:179
-#: 65bf494f2004479fbda89536a7d30ee0
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:179
+#: 5486fffc113342d9ad200949149bca01
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:181
-#: f07ad2166b11417b9a8d5777598f9104
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:181
+#: 1fb221eeabab4988ac946398009ab28c
 msgid ""
-"**输出没有磁矩。** 检查 `来源`（`source`）模式是否匹配输入。`Existing` 模式优"
-"先读取 `spin:R:3`，没有时才读取旧 `initial_magmoms`。`Map/default` 需要填写 `"
-"元素磁矩表`（`magmom_map`）或合理的 `默认磁矩`（`default_moment`）。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"**输出没有磁矩。** 检查 `来源`（`source`）模式是否匹配输入。`Existing` 模式优先读取 `spin:R:3`，没有时才读取旧 "
+"`initial_magmoms`。`Map/default` 需要填写 `元素磁矩表`（`magmom_map`）或合理的 "
+"`默认磁矩`（`default_moment`）。"
+msgstr ""
+"**The output has no magnetic moments.** Check that `source` matches the input. `Existing` first "
+"reads `spin:R:3` and falls back to legacy `initial_magmoms`; `Map/default` requires an element "
+"moment map (`magmom_map`) or a suitable default moment (`default_moment`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:183
-#: 447bebe42f9d4d098e30ee2119304baf
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:183
+#: 1e2a543063064631a4906f74fbf83fb6
 msgid ""
-"**标量磁矩没变成向量。** `标量磁矩转为矢量`（`lift_scalar`）没开，且 `格式`"
-"（`format`）选了向量但输入只有标量。开启 `标量磁矩转为矢量`"
-"（`lift_scalar`）。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"**标量磁矩没变成向量。** `标量磁矩转为矢量`（`lift_scalar`）没开，且 `格式`（`format`）选了向量但输入只有标量。开启 "
+"`标量磁矩转为矢量`（`lift_scalar`）。"
+msgstr "**Scalar moments were not converted to vectors.** Vector output was selected but `lift_scalar` is disabled. Enable `Convert scalar moments to vectors` (`lift_scalar`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:185
-#: 8e61cdfa1d1e41319450cd70c42e81e5
-msgid ""
-"**某些元素磁矩被意外清零。** 检查 `应用元素`（`apply_elements`）是否为非空且"
-"遗漏了目标元素。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:185
+#: 2be5b3f8927c4c1aad6bfa338dd6f010
+msgid "**某些元素磁矩被意外清零。** 检查 `应用元素`（`apply_elements`）是否为非空且遗漏了目标元素。"
+msgstr "**Moments on some elements were unexpectedly cleared.** Check whether the nonempty `apply_elements` list omits the intended element."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:187
-#: 537bdfd9e76a4cc29163c8023ae80a14
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:187
+#: e381b057449e45bb808e76cfd3d5ce18
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:189
-#: 207973ba12aa40f08c9572c2c97c106d
-msgid ""
-"`MagSet(existing,sca)` / `MagSet(map,vec)` / `MagSet(const,vec)` 等：标记磁矩"
-"来源和输出格式"
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:189
+#: 99b421685ef2438abcfa888f8baffe32
+msgid "`MagSet(existing,sca)` / `MagSet(map,vec)` / `MagSet(const,vec)` 等：标记磁矩来源和输出格式"
 msgstr ""
-"`MagSet(existing,sca)`, `MagSet(map,vec)`, or `MagSet(const,vec)`, recording "
-"the moment source and output representation."
+"`MagSet(existing,sca)`, `MagSet(map,vec)`, or `MagSet(const,vec)`, recording the "
+"moment source and output representation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:191
-#: 2ed9530635b8421090de438ad5e85292
-msgid ""
-"所有导出输出写入 `spin:R:3`。标量格式必须提供非零 `轴`（`axis`），程序据此构"
-"造三分量自旋，不会静默假设方向。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:191
+#: 9d1a53f80ab44b449f0cc1eebde06124
+msgid "所有导出输出写入 `spin:R:3`。标量格式必须提供非零 `轴`（`axis`），程序据此构造三分量自旋，不会静默假设方向。"
+msgstr "Every exported output writes `spin:R:3`. Scalar format requires a nonzero `axis`, which is used to construct three-component spins; the program never assumes a direction silently."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:193
-#: 585422e8d6834140ab7a640a1aeabb8c
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:193
+#: c8df298f331a44c1bce11914946f46dd
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:195
-#: 00f0a3a585a24b80892ced7cf22b5bbd
+#: ../../source/module/make-dataset-cards/cards/set-magnetic-moments-card.md:195
+#: 368ba645870b462f92b0c9adf5d2ea61
 msgid "无随机性。相同输入、相同 `来源`（`source`）和相同参数 → 严格一致输出。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "There is no randomness. Identical input, `source`, and parameters produce identical output."
 
 #~ msgid ""
-#~ "**和 `Magnetic Order` 的区别：** `Magnetic Order` 从一个母相出发生成 "
-#~ "FM+AFM+PM 多分支。本卡只标准化磁矩格式，不创建新磁序。如果你的流程里多张磁"
-#~ "性卡都在重复配 `magmom_map` 和 `axis`，用本卡统一初始化一次可以消除重复。"
+#~ "**和 `Magnetic Order` 的区别：** `Magnetic Order` "
+#~ "从一个母相出发生成 FM+AFM+PM 多分支。本卡只标准化磁矩格式，不创建新磁序。如果你的流程里多张磁性卡都在重复配 "
+#~ "`magmom_map` 和 `axis`，用本卡统一初始化一次可以消除重复。"
 #~ msgstr ""
-#~ "**How this differs from `Magnetic Order`:** `Magnetic Order` branches one "
-#~ "parent structure into FM, AFM, and paramagnetic-like states. This card "
-#~ "only standardizes moment values and representation. Use it once at the "
-#~ "beginning when several downstream cards would otherwise repeat the same "
-#~ "`magmom_map` and `axis` settings."
+#~ "**How this differs from `Magnetic Order`:** "
+#~ "`Magnetic Order` branches one parent structure "
+#~ "into FM, AFM, and paramagnetic-like states."
+#~ " This card only standardizes moment values "
+#~ "and representation. Use it once at the "
+#~ "beginning when several downstream cards would "
+#~ "otherwise repeat the same `magmom_map` and "
+#~ "`axis` settings."
 
 #~ msgid ""
-#~ "你的训练流水线里有 `Magnetic Order` → `Small-Angle Spin Tilt` → `Spin "
-#~ "Spiral` 三张磁性卡。每张卡都有一个 `magmom_map` 输入框，你填了三遍 "
-#~ "`Fe:2.2,Co:1.7`。两周后改 Co 的磁矩为 1.5，只改了两张卡，第三张忘了——生成"
-#~ "的数据里 Co 的磁矩默默用了旧值。训练出来的模型在含 Co 的构型上能量系统性偏"
-#~ "高。"
+#~ "你的训练流水线里有 `Magnetic Order` → `Small-Angle Spin"
+#~ " Tilt` → `Spin Spiral` 三张磁性卡。每张卡都有一个 `magmom_map`"
+#~ " 输入框，你填了三遍 `Fe:2.2,Co:1.7`。两周后改 Co 的磁矩为 "
+#~ "1.5，只改了两张卡，第三张忘了——生成的数据里 Co 的磁矩默默用了旧值。训练出来的模型在含 Co "
+#~ "的构型上能量系统性偏高。"
 #~ msgstr ""
-#~ "Your workflow contains `Magnetic Order` → `Small-Angle Spin Tilt` → `Spin "
-#~ "Spiral`, and each card repeats `Fe:2.2,Co:1.7`. Later you change Co to "
-#~ "1.5 in two cards but overlook the third. Part of the generated data "
-#~ "silently retains the old Co magnitude, introducing an avoidable "
-#~ "inconsistency into the labeled set."
+#~ "Your workflow contains `Magnetic Order` → "
+#~ "`Small-Angle Spin Tilt` → `Spin Spiral`, "
+#~ "and each card repeats `Fe:2.2,Co:1.7`. Later "
+#~ "you change Co to 1.5 in two cards "
+#~ "but overlook the third. Part of the "
+#~ "generated data silently retains the old Co "
+#~ "magnitude, introducing an avoidable inconsistency "
+#~ "into the labeled set."
 
 #~ msgid "如果 Co 的磁矩需要精确到实验值，直接用 `Magmom Map` 的精确定义"
 #~ msgstr ""
-#~ "If Co requires a specific reference magnitude, enter that value "
-#~ "explicitly in `Magmom Map` and document its source."
+#~ "If Co requires a specific reference magnitude,"
+#~ " enter that value explicitly in `Magmom "
+#~ "Map` and document its source."
 
 #~ msgid "用 `magmom_map` / `default_moment` 生成。输入不需要已有磁矩"
 #~ msgstr ""
-#~ "Generate moments from `magmom_map` and `default_moment`; the input does "
-#~ "not need existing moments."
+#~ "Generate moments from `magmom_map` and "
+#~ "`default_moment`; the input does not need "
+#~ "existing moments."
 
-#~ msgid ""
-#~ "`bool`，默认 `False`。勾选后 `magmom_map` 中提供的向量方向会被保留，而不是"
-#~ "统一投到 `Axis`。仅向量格式下有意义。"
+#~ msgid "`bool`，默认 `False`。勾选后 `magmom_map` 中提供的向量方向会被保留，而不是统一投到 `Axis`。仅向量格式下有意义。"
 #~ msgstr ""
-#~ "`bool`, default: `False`. Preserve vector directions supplied in "
-#~ "`magmom_map` instead of projecting all mapped magnitudes onto `Axis`. "
-#~ "Relevant only for vector output."
+#~ "`bool`, default: `False`. Preserve vector directions"
+#~ " supplied in `magmom_map` instead of projecting"
+#~ " all mapped magnitudes onto `Axis`. Relevant "
+#~ "only for vector output."
 
-#~ msgid ""
-#~ "`float`，默认 `0.0`。`magmom_map` 未命中元素的默认幅值。设 0 则不给未配置"
-#~ "元素写磁矩。"
+#~ msgid "`float`，默认 `0.0`。`magmom_map` 未命中元素的默认幅值。设 0 则不给未配置元素写磁矩。"
 #~ msgstr ""
-#~ "`float`, default: `0.0`. Default magnitude for elements absent from "
-#~ "`magmom_map`. A value of zero leaves unconfigured elements nonmagnetic."
+#~ "`float`, default: `0.0`. Default magnitude for "
+#~ "elements absent from `magmom_map`. A value of"
+#~ " zero leaves unconfigured elements nonmagnetic."
 
-#~ msgid ""
-#~ "`bool`，默认 `True`。输入是标量且目标格式是向量时，是否沿 `Axis` 抬升。通"
-#~ "常保持开启。"
+#~ msgid "`bool`，默认 `True`。输入是标量且目标格式是向量时，是否沿 `Axis` 抬升。通常保持开启。"
 #~ msgstr ""
-#~ "`bool`, default: `True`. When converting scalar input to vector output, "
-#~ "lift each signed scalar along `Axis`. Keep enabled for the usual scalar-"
-#~ "to-vector conversion."
+#~ "`bool`, default: `True`. When converting scalar "
+#~ "input to vector output, lift each signed "
+#~ "scalar along `Axis`. Keep enabled for the "
+#~ "usual scalar-to-vector conversion."
 
 #~ msgid ""
-#~ "**输出没有磁矩。** 检查 `Source` 模式是否匹配输入。`Existing` 模式优先读"
-#~ "取 `spin:R:3`，没有时才读取旧 `initial_magmoms`。`Map/default` 需要填写 "
+#~ "**输出没有磁矩。** 检查 `Source` 模式是否匹配输入。`Existing` 模式优先读取 "
+#~ "`spin:R:3`，没有时才读取旧 `initial_magmoms`。`Map/default` 需要填写 "
 #~ "`magmom_map` 或合理的 `default_moment`。"
 #~ msgstr ""
-#~ "**The output has no moments.** Check that `Source` matches the input. "
-#~ "`Existing` reads `spin:R:3` first and falls back to legacy "
-#~ "`initial_magmoms` only when `spin` is absent. `Map/default` requires a "
-#~ "populated `magmom_map` or a nonzero, appropriate `default_moment`."
+#~ "**The output has no moments.** Check that "
+#~ "`Source` matches the input. `Existing` reads "
+#~ "`spin:R:3` first and falls back to legacy "
+#~ "`initial_magmoms` only when `spin` is absent. "
+#~ "`Map/default` requires a populated `magmom_map` or"
+#~ " a nonzero, appropriate `default_moment`."
 
-#~ msgid ""
-#~ "**标量磁矩没变成向量。** `Lift Scalar` 没开，且 `Format` 选了向量但输入只"
-#~ "有标量。开启 `lift_scalar`。"
+#~ msgid "**标量磁矩没变成向量。** `Lift Scalar` 没开，且 `Format` 选了向量但输入只有标量。开启 `lift_scalar`。"
 #~ msgstr ""
-#~ "**Scalar moments were not converted to vectors.** Enable `lift_scalar` "
-#~ "when `Format` is vector and the input contains only scalar values."
+#~ "**Scalar moments were not converted to "
+#~ "vectors.** Enable `lift_scalar` when `Format` is "
+#~ "vector and the input contains only scalar "
+#~ "values."
 
-#~ msgid ""
-#~ "**某些元素磁矩被意外清零。** 检查 `apply_elements` 是否为非空且遗漏了目标"
-#~ "元素。"
+#~ msgid "**某些元素磁矩被意外清零。** 检查 `apply_elements` 是否为非空且遗漏了目标元素。"
 #~ msgstr ""
-#~ "**Some elements were unintentionally set to zero.** Check whether a "
-#~ "nonempty `apply_elements` list omitted the intended species."
+#~ "**Some elements were unintentionally set to "
+#~ "zero.** Check whether a nonempty `apply_elements`"
+#~ " list omitted the intended species."
 
-#~ msgid ""
-#~ "所有导出输出写入 `spin:R:3`。标量格式必须提供非零 `Axis`，程序据此构造三分"
-#~ "量自旋，不会静默假设方向。"
+#~ msgid "所有导出输出写入 `spin:R:3`。标量格式必须提供非零 `Axis`，程序据此构造三分量自旋，不会静默假设方向。"
 #~ msgstr ""
-#~ "All exported outputs use `spin:R:3`. Scalar output requires a nonzero "
-#~ "`Axis`, which is used to construct three-component spins without silently "
-#~ "assuming a direction."
+#~ "All exported outputs use `spin:R:3`. Scalar "
+#~ "output requires a nonzero `Axis`, which is "
+#~ "used to construct three-component spins "
+#~ "without silently assuming a direction."
 
 #~ msgid "无随机性。相同输入、相同 `Source` 和相同参数 → 严格一致输出。"
-#~ msgstr ""
-#~ "Deterministic. The same input, `Source`, and parameters produce identical "
-#~ "output."
+#~ msgstr "Deterministic. The same input, `Source`, and parameters produce identical output."
 
 #~ msgid "所有输出写入 `initial_magmoms` 数组。"
 #~ msgstr "All outputs are written to the `initial_magmoms` array."
+
+#~ msgid ""
+#~ "你的训练流水线里有 `Magnetic Order` → `Small-Angle Spin"
+#~ " Tilt` → `Spin Spiral` 三张磁性卡。每张卡都有一个 "
+#~ "`元素磁矩表`（`magmom_map`）输入框，你填了三遍 `Fe:2.2,Co:1.7`。两周后改 Co 的磁矩为 "
+#~ "1.5，只改了两张卡，第三张忘了——生成的数据里 Co 的磁矩默默用了旧值。训练出来的模型在含 Co "
+#~ "的构型上能量系统性偏高。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."

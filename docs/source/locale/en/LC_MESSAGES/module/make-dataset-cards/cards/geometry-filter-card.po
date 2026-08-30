@@ -8,432 +8,513 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-30 16:56+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:3
-#: 12c79fb3f92e433cb961dbb5c8638748
-msgid "几何健全性过滤（Geometry Sanity Filter）"
-msgstr "Geometry Sanity Filter"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:3
+#: 95c1c5be3e664c3081c5b69709eaf015
+msgid "几何筛选（Geometry Filter）"
+msgstr "Geometry Filter"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:5
-#: 034be9d2ad73406687b7826b4868fa31
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:5
+#: 394d4643747f46fc99a8e4c7c11505d5
 msgid "**分类：** 筛选与采样"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "**Category:** Filtering"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:7
-#: be68bee9fd4d4553af1fb561d4876bf6
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:7
+#: 628c06bcb8a149bea72e1e297839375f
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:9
-#: b1b4e66f85fa4208baf52e502a4297fd
-msgid ""
-"`Geometry Filter` 按显式阈值过滤候选结构：最短原子间距、单原子体积、质量密度"
-"和有效晶胞。它不计算能量，不修复结构，也不替代 `FPS Filter`。它的职责是在代表"
-"性采样和 DFT 前挡掉几何上已经明显不可用的结构。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:9
+#: ff8a6b18bb11460799e40c55ed5dd76c
+msgid "按明确的几何门槛清洗候选结构，只保留全部条件都通过的帧。它通常放在结构生成或扰动之后、`FPS Filter` 之前，避免明显异常结构进入代表性采样和 DFT。"
+msgstr ""
+"Clean a candidate set using explicit geometric thresholds and retain only frames that"
+" pass every enabled condition. Place it after structure generation or perturbation "
+"and before `FPS Filter`, so clearly invalid structures do not enter representative "
+"sampling or DFT."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:11
-#: 29f1a91382834058a4cff3a5d383d058
-msgid ""
-"空结构和含 NaN/Inf 坐标的结构始终被删除。其他阈值默认关闭，避免用一个通用数值"
-"误删含氢分子、slab 或带真空结构。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:11
+#: d068940086a644be8fd0acd566aa0f26
+msgid "空结构和含 NaN/Inf 坐标的结构始终删除。其余数值填 `0` 表示不启用该项。界面的“精确预览”会在后台检查完整输入，并显示保留数、删除数和每帧遇到的第一个失败原因。"
+msgstr ""
+"Empty structures and structures containing NaN/Inf coordinates are always removed. "
+"For all other numeric thresholds, enter `0` to disable the check. The interface's "
+"`Exact preview` checks the complete input in the background and reports retained and "
+"removed counts plus the first failure reason encountered for each frame."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:13
-#: fb69e6fc6b024b59a9a077e841b1afe6
-msgid ""
-"短距离检查会把整批结构交给原生邻居扫描一次完成；原生扩展不可用或遇到合法的奇"
-"异部分周期晶胞时，自动使用同一距离语义的 Python fallback。这个加速只改变响应"
-"时间，不改变阈值和筛选结果。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:15
-#: 13f27b57d4934a8991c7d8b8cb0f06db
-msgid ""
-"卡片中的保留/删除数量预览在后台计算，不会占用界面事件循环。连续调整参数时，中"
-"间请求会被合并，界面只采用最新参数对应的结果；正式运行仍会重新按当前参数处理"
-"完整输入。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:17
-#: 403a7ca50ac243208afdb58573b99f68
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:13
+#: 88ecd7027c2a4234a08566df0eaea597
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:19
-#: f24d2c9cf3b84783815b8f74e101cff6
-msgid "对含 $N$ 个原子的有效晶胞，程序计算"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:15
+#: db58af8b13ec4bce94e3d77664dad715
+msgid "对含 $N$ 个原子的结构，程序计算"
+msgstr "For a structure containing $N$ atoms, the program computes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:21
-#: 9e9be0e94f454bfc9ece8fb553f4f99b
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:17
+#: a2e95a7fb2f043a4856bffe265b910be
 msgid ""
 "\n"
 "d_{\\min}=\\min_{i<j}d_{ij}^{\\mathrm{MIC}},\\qquad\n"
 "v_{\\mathrm{atom}}=\\frac{|\\det\\mathbf C|}{N},\\qquad\n"
-"\\rho=1.66053906660\\,\\frac{\\sum_i M_i}{|\\det\\mathbf C|}.\n"
+"\\rho=1.66053906660\\frac{\\sum_i M_i}{|\\det\\mathbf C|}.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:27
-#: 09e4b75922444a0397b0474a73380a60
-msgid ""
-"$d_{ij}^{\\mathrm{MIC}}$ 是按周期边界最小镜像得到的距离，单位 Å； "
-"$v_{\\mathrm{atom}}$ 的单位是 Å³/atom；原子质量 $M_i$ 用 u，换算后的 $\\rho$ "
-"为 g/cm³。所有已开启的上下限必须**同时满足**才保留结构。阈值为 0 表示关闭对"
-"应 检查；空结构、非有限坐标，以及被已开启晶胞相关检查命中的无效晶胞会被拒绝。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:23
+#: 4ce3ef08ee1b40e9808d1e81428228d4
+msgid "$d_{ij}^{\\mathrm{MIC}}$：只在启用的周期方向使用最小镜像，单位 Å；距离严格小于下限时删除，恰好等于下限时保留。"
+msgstr ""
+"$d_{ij}^{\\mathrm{MIC}}$: the minimum-image convention is applied only along enabled "
+"periodic directions, in Å. A structure is removed when the distance is strictly below"
+" the lower bound and retained when it equals the bound."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:32
-#: 2d5f310660ea4850ad05c3ef453583ad
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:24
+#: 40fd6c990bd74e7a90b0bf14a176bae7
+msgid "$v_{\\mathrm{atom}}$：完整晶胞体积除以原子数，单位 Å³/atom。"
+msgstr "$v_{\\mathrm{atom}}$: full cell volume divided by atom count, in Å³/atom."
+
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:25
+#: 3838222cb28f461aab0d91f2410c08de
+msgid "$\\rho$：由完整晶胞体积和原子质量 $M_i$ 得到的质量密度，单位 g/cm³。"
+msgstr ""
+"$\\rho$: mass density calculated from the full cell volume and atomic masses $M_i$, "
+"in g/cm³."
+
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:27
+#: 3e507aa90962485b91bb555eac302e11
+msgid "体积和密度都使用整个晶胞，真空层也计入。因此 slab、界面、多孔结构或带盒子的分子只有在“完整晶胞数值”确实可比较时才适合启用这些门槛。"
+msgstr ""
+"Both volume and density use the entire cell, including vacuum. Therefore, enable "
+"these thresholds for slabs, interfaces, porous structures, or boxed molecules only "
+"when their full-cell values are genuinely comparable."
+
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:29
+#: 61e2c768601846439c478eb9d6e65b82
+msgid "筛选按以下顺序记录每帧的第一个失败原因：空结构 → 非有限坐标 → 无效晶胞 → 原子对过近 → 单原子体积过小/过大 → 密度过低/过高。正式运行与预览使用同一判定。"
+msgstr ""
+"The filter records the first failure reason for each frame in this order: empty "
+"structure → nonfinite coordinates → invalid cell → atom pair too close → per-atom "
+"volume too small/large → density too low/high. The full run and preview use the same "
+"criteria."
+
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:31
+#: 0153b37716ed4dd2b9c6196f1bfe19dd
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:34
-#: fffe4493a9754e4295c3e08f1203edb8
-msgid "场景：随机占位和强扰动后出现短键结构"
-msgstr "Scenario: Short bonds after random occupation and strong perturbation"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:36
-#: f94716cbcd9645c7ad3ea8800797461e
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:33
+#: 4e78be81828f49109bcf1b7e3a0a20da
 msgid ""
-"合金候选池经过 `Random Occupancy → Atomic Perturb` 后，少量结构出现 < 1.0 Å "
-"的原子重叠。它们进入 DFT 会浪费队列，进入 FPS 会污染 descriptor 空间。"
+"随机占位和强扰动后，候选池中出现少量过短原子对。先查看距离分布，再把“最小原子对距离”设为低于所有合理键长的下限，例如金属候选池可从 `1.0 Å` "
+"附近试起。预览若只删除低端离群帧，再运行筛选并接 `FPS Filter`。"
 msgstr ""
-"After `Random Occupancy -> Atomic Perturb`, a few alloy candidates contain "
-"atom pairs below 1.0 Å. Sending them to DFT wastes jobs, while including "
-"them in FPS contaminates descriptor space."
+"After random occupancy and strong perturbation, a candidate pool may contain a few "
+"excessively short atom pairs. Inspect the distance distribution first, then set "
+"`Minimum atom-pair distance` below every physically reasonable bond length. For a "
+"metallic candidate pool, a value near `1.0 Å` can be an initial trial. If the preview"
+" removes only low-end outlier frames, run the filter and follow it with `FPS Filter`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:38
-#: a9d67f4b38b14aa38efd1e8e9ceef779
-msgid ""
-"**输入：** 已生成的候选结构池。 **目标：** 在 FPS 前删除短键和异常体积结构。 "
-"**参数设置：** `允许的最短原子对距离`填 `1.2 Å`，`最小单原子体积`填 `5.0 Å³/"
-"atom`，`最大单原子体积`填 `40.0 Å³/atom`，密度阈值保持关闭。 **输出：** 只保"
-"留满足所有开启阈值的结构。 **怎么验证训练集质量改善：** 导入 `NEP Dataset "
-"Display` 后，最短键分布不再有低端离群点；FPS 选出的结构不应再包含明显重叠帧。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:35
+#: cbdb0efa76f94f07bd84ee68046ef07a
+msgid "混合化学体系不能照搬这个示例：H–H、O–H 等合理短键可能小于金属体系阈值。若无法给所有元素对确定统一下限，就保持 `0`。"
+msgstr ""
+"Do not apply this example unchanged to mixed chemical systems: valid short bonds such"
+" as H–H and O–H may be below a threshold suitable for metals. If no single lower "
+"bound is valid for every element pair, keep the value at `0`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:45
-#: 5d7118c9f3cc41e2a8b617d2829d86ad
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:37
+#: 85bae7a30cb647bebf57bd9c9460640e
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:46
-#: 090df9fc67f440eeaa9c421f75596c80
-msgid "允许的最短原子对距离（min_pair_distance）"
-msgstr "min_pair_distance"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:39
+#: 7fb1cfac4d034e0899470e0643a159f5
+msgid "最小原子对距离（min_pair_distance）"
+msgstr "Minimum Atom-Pair Distance (min_pair_distance)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:48
-#: 9905d08e67ea4639be2d8924c99bc75f
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:41
+#: 337525fad93e4113a766e1a410e9a894
 msgid ""
-"`float`，默认 0 Å（关闭）。任意原子对允许的最近距离，是与元素种类无关的硬门"
-"槛。周期方向使用最小镜像距离，非周期分子即使没有晶胞也可以只做此项检查。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+"`float`，默认 `0.5 Å`。所有元素对共用同一个距离下限；该值用于清除明显重叠，同时保留常见的 H–H 键。设为 `0` "
+"可关闭。非周期分子即使没有有效晶胞，也可以单独使用这一项。"
+msgstr ""
+"`float`, default `0.5 Å`. All element pairs share one distance lower bound. The "
+"default removes clear overlaps while retaining a typical H–H bond. Set it to `0` to "
+"disable the check. This check can be used by itself for a nonperiodic molecule even "
+"when no valid cell is present."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:50
-#: 5db7a1a4fbea40258bad748a7330f893
-msgid ""
-"阈值应低于候选池中所有合理键长。不要把金属体系常用的 1.0~1.5 Å 直接用于含 H–"
-"H、O–H 或其他短键的混合数据集；这张卡不会根据共价半径自动调整阈值。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:52
-#: 6dc77ef720de417da7797e09b68a2214
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:43
+#: 49c6f58cec7a458abf56834943ad8f7b
 msgid "最小单原子体积（min_volume_per_atom）"
 msgstr "min_volume_per_atom"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:54
-#: f89a74ccdf22435c8395740bee63da89
-msgid ""
-"`float`，默认 0.0（关闭）。允许的最小单原子体积，过滤过度压缩的结构。阈值应来"
-"自同材料平衡体积的下界。多孔、slab 或含真空的体系不要随便打开，开了反而误删合"
-"理结构。"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:45
+#: eafcfbc7410442b4bf081959f148532f
+msgid "`float`，默认 `0 Å³/atom`。删除单原子体积低于该值的结构；`0` 表示关闭。"
 msgstr ""
-"`float`, default `0.0` (disabled). Minimum volume per atom for rejecting "
-"overcompressed cells. Derive it from the material's volume range. Avoid it "
-"for porous, slab, or vacuum-containing systems where it can reject valid "
-"structures."
+"`float`, default `0 Å³/atom`. Removes structures whose per-atom volume is below this "
+"value; `0` disables the check."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:56
-#: 3ea306dfc4a54ae5a3ea54018e8ce00f
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:47
+#: b2a16fec2cd64e79873d80292623782f
 msgid "最大单原子体积（max_volume_per_atom）"
 msgstr "max_volume_per_atom"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:58
-#: 91648486a1f5499cad1d2cfd7b270b4a
-msgid ""
-"`float`，默认 0.0（关闭）。允许的最大单原子体积，过滤过度拉伸或异常大 cell。"
-"体相候选池可以设一个合理上界；slab/分子体系有真空时这个阈值容易误杀。"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:49
+#: 246765181f9d4944b480312db1395b6f
+msgid "`float`，默认 `0 Å³/atom`。删除单原子体积高于该值的结构；`0` 表示关闭。"
 msgstr ""
-"`float`, default `0.0` (disabled). Maximum volume per atom for rejecting "
-"expanded or abnormal cells. A bulk pool may use a justified bound; slabs and "
-"molecular cells with vacuum generally should not."
+"`float`, default `0 Å³/atom`. Removes structures whose per-atom volume is above this "
+"value; `0` disables the check."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:60
-#: df5f5d8222b9461b88940f25deda35e8
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:51
+#: 91af640bf3324022af76b8b78cdf6c7f
 msgid "最小密度（min_density）"
 msgstr "min_density"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:62
-#: 1c0b56a6e8b24596b5fa895709a43a36
-msgid ""
-"`float`，默认 0.0（关闭）。按质量密度过滤低密度异常结构。只在体相或近体相候选"
-"池打开；含真空、孔洞或表面模型应保持 0。"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:53
+#: 670984902c6a4d0c9fc2920ec2b40562
+msgid "`float`，默认 `0 g/cm³`。删除密度低于该值的结构；`0` 表示关闭。"
 msgstr ""
-"`float`, default `0.0` (disabled). Minimum mass density. Enable only for "
-"bulk-like pools; keep zero for vacuum, pores, or surfaces."
+"`float`, default `0 g/cm³`. Removes structures whose density is below this value; `0`"
+" disables the check."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:64
-#: 2f07582729ea496c9b7ad2f17acb8f44
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:55
+#: 227b8ff6bd0f4af4a2e3321cdd9d9136
 msgid "最大密度（max_density）"
 msgstr "max_density"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:66
-#: a848a63a5dc1460083ae1eb8acc23887
-msgid ""
-"`float`，默认 0.0（关闭）。按质量密度过滤过度压缩的结构。阈值应参考该材料的真"
-"实密度上界，不要跨元素体系套同一个数字。"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:57
+#: b0d69dbfb59049e4be8f1661e42b5437
+msgid "`float`，默认 `0 g/cm³`。删除密度高于该值的结构；`0` 表示关闭。"
 msgstr ""
-"`float`, default `0.0` (disabled). Maximum mass density for rejecting "
-"overcompressed structures. Use a material-specific physical upper bound, not "
-"one value across chemical systems."
+"`float`, default `0 g/cm³`. Removes structures whose density is above this value; `0`"
+" disables the check."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:68
-#: 568ed4f8bdb9464e8da4105e3b7b75a4
-msgid "要求有限且非零体积的晶胞（require_finite_cell）"
-msgstr "require_finite_cell"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:59
+#: 35ac774892f148c8b33378f995c159b3
+msgid "删除无效晶胞（require_finite_cell）"
+msgstr "Remove Invalid Cells (require_finite_cell)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:70
-#: 602cf94478a0411c9bc13bb04b45fca1
-msgid ""
-"`bool`，默认 false。打开后，含 NaN/Inf 或行列式接近零的晶胞会被删除。任何体积"
-"或密度上下限只要开启，也会隐式要求有效的非零体积晶胞。晶体、slab、界面候选池"
-"建议开；孤立分子或非周期构型关掉。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:72
-#: 055a0f5c4e48442682e37ace49f97a33
-msgid "推荐预设"
-msgstr "Recommended presets"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:74
-#: aafd688fc8b94d83b500cd0016763edd
-msgid "短键门槛"
-msgstr "Short-distance gate"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:76
-#: b10500f33f554a2c977ccd4f8ad69ca9
-msgid ""
-"{\n"
-"  \"class\": \"GeometryFilterCard\",\n"
-"  \"params\": {\n"
-"    \"min_pair_distance\": 1.2,\n"
-"    \"min_volume_per_atom\": 0.0,\n"
-"    \"max_volume_per_atom\": 0.0,\n"
-"    \"min_density\": 0.0,\n"
-"    \"max_density\": 0.0,\n"
-"    \"require_finite_cell\": false\n"
-"  }\n"
-"}\n"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:61
+#: 141bec6645534767b7045bcde3e3875d
+msgid "`bool`，默认 `false`。开启后删除含 NaN/Inf、奇异或近零体积的晶胞。只要启用了任一体积或密度门槛，无效晶胞也会自动删除。"
 msgstr ""
+"`bool`, default `false`. When enabled, removes cells containing NaN/Inf values or "
+"having singular or near-zero volume. Invalid cells are also removed automatically "
+"whenever any volume or density threshold is enabled."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:90
-#: 3336cda3f9724925b9de59024f87f311
-msgid "用于随机扰动、插入缺陷或随机占位后的第一道硬检查。"
-msgstr ""
-"First hard check after random perturbation, defect insertion, or random "
-"occupation."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:92
-#: 0a41ff2e39f34dbd9fa30e327fbab764
-msgid "晶体候选池清洗"
-msgstr "Crystal candidate-pool cleaning"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:94
-#: 2f5848e3880c443c8ca42581f1c9f718
-msgid ""
-"{\n"
-"  \"class\": \"GeometryFilterCard\",\n"
-"  \"params\": {\n"
-"    \"min_pair_distance\": 1.1,\n"
-"    \"min_volume_per_atom\": 5.0,\n"
-"    \"max_volume_per_atom\": 60.0,\n"
-"    \"min_density\": 0.0,\n"
-"    \"max_density\": 0.0,\n"
-"    \"require_finite_cell\": true\n"
-"  }\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:108
-#: 8db547f7b6a04fcba44f9d626ec9e095
-msgid "用于晶体、缺陷和表面候选池，防止零体积或极端体积结构进入后续流程。"
-msgstr ""
-"Prevent zero-volume or extreme-volume crystal, defect, and surface "
-"structures from entering later stages."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:110
-#: d8c7b8b66d0b4903a183f0353c7e4cda
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:63
+#: dd4b8cf1894542a8bf5a5a789d8ee805
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:112
-#: 1cc26f5269ef482a8ec5b163656e01c4
-msgid ""
-"`Atomic Perturb → Geometry Filter → FPS Filter`：先生成位移扰动，再删除短键，"
-"最后做代表性采样。"
-msgstr ""
-"`Atomic Perturb` -> `Geometry Filter` -> `FPS Filter`: add displacement "
-"diversity, reject short bonds, then sample representatives."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:65
+#: 8f02997e50824b748066d711508340fe
+msgid "`Atomic Perturb → Geometry Filter → FPS Filter`"
+msgstr "`Atomic Perturb → Geometry Filter → FPS Filter`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:113
-#: ce5d2f9b64e145b28fcb1c70191cb495
-msgid ""
-"`Random Occupancy → Geometry Filter → FPS Filter`：合金占位后先做几何门槛，再"
-"选代表结构去 DFT。"
-msgstr ""
-"`Random Occupancy` -> `Geometry Filter` -> `FPS Filter`: gate alloy "
-"occupations geometrically before selecting DFT candidates."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:66
+#: ac35b8b3d53c493494c769addb79e4f9
+msgid "`Random Occupancy → Geometry Filter → FPS Filter`"
+msgstr "`Random Occupancy → Geometry Filter → FPS Filter`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:114
-#: d6b0478172c54a2782c62c95f17ae3d4
-msgid ""
-"`Random Slab → Insert Defect → Geometry Filter`：表面插入后检查吸附物和基底是"
-"否重叠。"
-msgstr ""
-"`Random Slab` -> `Insert Defect` -> `Geometry Filter`: detect adsorbate-"
-"substrate overlaps after surface insertion."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:116
-#: 36e84ce336ef444e84e422a935c18bc8
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:68
+#: 521a77343a6d48368e0e27834a0e1693
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:118
-#: 186fd7bb3c154b82a07484de789273ca
-msgid ""
-"**输出为空。** 至少一个阈值过严。先看最短键和体积分布，确认阈值是否超出了当前"
-"体系的真实范围。"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:70
+#: 89860a67893d48f1994e2bc0d7c29904
+msgid "**为什么预览的各原因之和等于删除总数？** 每帧只计入第一个失败原因，不会在多个原因中重复计数。"
 msgstr ""
-"**No output.** At least one threshold is too strict. Inspect pair-distance "
-"and volume distributions and compare the limits with the actual system."
+"**Why does the sum of preview reasons equal the total removed count?** Each frame is "
+"counted under its first failure reason only and is not duplicated across reasons."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:120
-#: 6d93990511834f01ade2db1052ed47b7
-msgid ""
-"**密度阈值不生效。** `min_density=0.0` 和 `max_density=0.0` 都表示关闭密度检"
-"查。只有大于 0 的阈值参与判定。"
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:72
+#: 93b8f5626318488fa3e24f5c4df7267a
+msgid "**为什么 slab 的密度很低？** 真空层属于完整晶胞体积，会降低密度并增大单原子体积。此类数据通常只开原子对距离门槛。"
 msgstr ""
-"**Density limits have no effect.** Zero disables `min_density` and "
-"`max_density`; only positive limits participate."
+"**Why is a slab's density low?** Vacuum is part of the full cell volume, which lowers"
+" density and raises per-atom volume. For such data, usually enable only the atom-pair"
+" distance threshold."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:122
-#: 99c56ee5c22f430ca2d99feb3e1dac2f
-msgid ""
-"**非周期分子被删掉。** 如果开启了体积、密度或 `要求有限且非零体积的晶胞`"
-"（`require_finite_cell`），零体积分子会被删除。分子构象清洗通常只开 `允许的最"
-"短原子对距离`（`min_pair_distance`）。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:74
+#: e305f8d8fa0c4a61854e7d631d59b459
+msgid "**为什么无晶胞分子仍能检查距离？** 只开原子对距离时不要求有效晶胞；周期最小镜像仅用于结构实际启用的周期方向。"
+msgstr ""
+"**Why can a molecule without a cell still be checked for distance?** A valid cell is "
+"not required when only the atom-pair distance check is enabled. Periodic minimum "
+"images are used only along directions in which the structure actually enables PBC."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:124
-#: 8f2ca2819a0241548e28f1bd44560718
-msgid ""
-"**为什么不能给混合化学体系设置一个可靠的通用短键阈值？** 当前参数是统一的绝对"
-"距离，不读取元素对或键级。先查看数据中各元素对的合理距离范围；如果无法给出统"
-"一下界，应把阈值保持为 0，并在更合适的元素对检查工具中处理。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:126
-#: 7a1b9b161fcc489caaeff0bb80741b15
-msgid ""
-"**多个条件同时失败时预览怎么计数？** 预览按空结构、非有限坐标、无效晶胞、短距"
-"离、单原子体积、密度的顺序记录第一个失败原因，因此各原因计数之和等于删除总"
-"数，不代表后续条件一定通过。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:128
-#: b9ac0de12dae4fd3bb8adec3c55f444e
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:76
+#: d452e42dd674422ea4ad1c36e641b6b6
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:130
-#: e841a1fc25814fe58884f05492be4c51
-msgid "本卡是过滤卡，不修改保留下来的 `Config_type`。"
-msgstr "This filter preserves `Config_type` on retained structures."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:78
+#: 530ab64d84b1469985bd32b54fdd9e5a
+msgid "保留下来的结构及其 `Config_type` 不变，输入顺序也不变。"
+msgstr ""
+"Retained structures and their `Config_type` values remain unchanged, as does the "
+"input order."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:132
-#: 95cb1cd6274b46b9943c65b5590339ec
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:80
+#: d495b8afc7584a9f96dddaeed4a070e1
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/geometry-filter-card.md:134
-#: b0778f38f39e47edb72e89d9e3cc1db3
-msgid "本卡没有随机性。同一输入和同一阈值会得到相同输出。"
-msgstr ""
-"The card is deterministic: identical inputs and thresholds produce identical "
-"outputs."
+#: ../../source/module/make-dataset-cards/cards/geometry-filter-card.md:82
+#: 394a89f49a324986bfcca58fa18bf069
+msgid "本卡没有随机性。同一输入和同一参数会得到相同结果。"
+msgstr "This card has no randomness. The same input and parameters produce the same result."
 
 #~ msgid "几何过滤（Geometry Filter）"
 #~ msgstr "Geometry Filter"
 
 #~ msgid ""
-#~ "`Geometry Filter` 按显式阈值过滤候选结构：最短原子间距、单原子体积、质量密"
-#~ "度和有限晶胞。它不计算能量，不修复结构，也不替代 `FPS Filter`。它的职责是"
-#~ "在代表性采样和 DFT 前挡掉几何上已经明显不可用的结构。"
+#~ "`Geometry Filter` 按显式阈值过滤候选结构：最短原子间距、单原子体积、质量密度和有限晶胞。它不计算能量，不修复结构，也不替代"
+#~ " `FPS Filter`。它的职责是在代表性采样和 DFT 前挡掉几何上已经明显不可用的结构。"
 #~ msgstr ""
-#~ "`Geometry Filter` rejects candidates using explicit thresholds for "
-#~ "minimum pair distance, volume per atom, mass density, and finite cell "
-#~ "volume. It computes no energy, repairs nothing, and does not replace `FPS "
-#~ "Filter`. Use it before representative sampling and DFT to remove geometry "
-#~ "that is already clearly unusable."
+#~ "`Geometry Filter` rejects candidates using explicit"
+#~ " thresholds for minimum pair distance, volume "
+#~ "per atom, mass density, and finite cell "
+#~ "volume. It computes no energy, repairs "
+#~ "nothing, and does not replace `FPS Filter`."
+#~ " Use it before representative sampling and "
+#~ "DFT to remove geometry that is already "
+#~ "clearly unusable."
 
 #~ msgid ""
-#~ "**输入：** 已生成的候选结构池。 **目标：** 在 FPS 前删除短键和异常体积结"
-#~ "构。 **参数设置：** `min_pair_distance=1.2`，`min_volume_per_atom=5.0`，"
-#~ "`max_volume_per_atom=40.0`，密度阈值保持关闭。 **输出：** 只保留满足所有开"
-#~ "启阈值的结构。 **怎么验证训练集质量改善：** 导入 `NEP Dataset Display` "
-#~ "后，最短键分布不再有低端离群点；FPS 选出的结构不应再包含明显重叠帧。"
+#~ "**输入：** 已生成的候选结构池。 **目标：** 在 FPS 前删除短键和异常体积结构。 "
+#~ "**参数设置：** "
+#~ "`min_pair_distance=1.2`，`min_volume_per_atom=5.0`，`max_volume_per_atom=40.0`，密度阈值保持关闭。"
+#~ " **输出：** 只保留满足所有开启阈值的结构。 **怎么验证训练集质量改善：** 导入 `NEP "
+#~ "Dataset Display` 后，最短键分布不再有低端离群点；FPS 选出的结构不应再包含明显重叠帧。"
 #~ msgstr ""
-#~ "**Input:** A generated candidate pool. **Objective:** Remove short-bond "
-#~ "and abnormal-volume structures before FPS. **Parameters:** "
+#~ "**Input:** A generated candidate pool. "
+#~ "**Objective:** Remove short-bond and abnormal-"
+#~ "volume structures before FPS. **Parameters:** "
 #~ "`min_pair_distance=1.2`, `min_volume_per_atom=5.0`, "
-#~ "`max_volume_per_atom=40.0`, with density checks disabled. **Output:** "
-#~ "Only structures satisfying every enabled threshold. **Verification:** The "
-#~ "nearest-distance distribution in `NEP Dataset Display` should have no low-"
-#~ "end outliers, and FPS output should contain no obvious overlaps."
+#~ "`max_volume_per_atom=40.0`, with density checks disabled."
+#~ " **Output:** Only structures satisfying every "
+#~ "enabled threshold. **Verification:** The nearest-"
+#~ "distance distribution in `NEP Dataset Display` "
+#~ "should have no low-end outliers, and FPS"
+#~ " output should contain no obvious overlaps."
 
 #~ msgid ""
-#~ "`float`，默认 1.0 Å。任意原子对允许的最近距离，硬短键门槛。应低于你目标体"
-#~ "系的正常最近邻键长，但远高于原子明显重叠的距离——金属/氧化物通常从 1.0~1.5 "
+#~ "`float`，默认 1.0 "
+#~ "Å。任意原子对允许的最近距离，硬短键门槛。应低于你目标体系的正常最近邻键长，但远高于原子明显重叠的距离——金属/氧化物通常从 1.0~1.5 "
 #~ "Å 起步。"
 #~ msgstr ""
-#~ "`float`, default `1.0` Å. Hard lower bound for every pair distance. Set "
-#~ "it below normal nearest-neighbor distances but safely above obvious "
-#~ "overlap; 1.0-1.5 Å is a common starting band for metals and oxides, "
-#~ "subject to the actual chemistry."
+#~ "`float`, default `1.0` Å. Hard lower bound "
+#~ "for every pair distance. Set it below "
+#~ "normal nearest-neighbor distances but safely "
+#~ "above obvious overlap; 1.0-1.5 Å is a "
+#~ "common starting band for metals and oxides,"
+#~ " subject to the actual chemistry."
+
+#~ msgid "`bool`，默认 false。打开后零体积 cell 的结构直接删除。晶体、slab、界面候选池建议开；孤立分子或非周期构型关掉。"
+#~ msgstr ""
+#~ "`bool`, default `false`. Reject zero-volume "
+#~ "cells. Enable for crystal, slab, and interface"
+#~ " pools; disable for isolated molecules or "
+#~ "nonperiodic configurations."
 
 #~ msgid ""
-#~ "`bool`，默认 false。打开后零体积 cell 的结构直接删除。晶体、slab、界面候选"
-#~ "池建议开；孤立分子或非周期构型关掉。"
+#~ "**非周期分子被删掉。** 如果开启了体积、密度或 `require_finite_cell`，零体积分子会被删除。分子构象清洗通常只开"
+#~ " `min_pair_distance`。"
 #~ msgstr ""
-#~ "`bool`, default `false`. Reject zero-volume cells. Enable for crystal, "
-#~ "slab, and interface pools; disable for isolated molecules or nonperiodic "
-#~ "configurations."
+#~ "**A nonperiodic molecule was removed.** Volume, "
+#~ "density, or `require_finite_cell` checks reject "
+#~ "zero-volume molecular cells. For molecular "
+#~ "conformers, normally enable only `min_pair_distance`."
 
 #~ msgid ""
-#~ "**非周期分子被删掉。** 如果开启了体积、密度或 `require_finite_cell`，零体"
-#~ "积分子会被删除。分子构象清洗通常只开 `min_pair_distance`。"
+#~ "`Geometry Filter` 按显式阈值过滤候选结构：最短原子间距、单原子体积、质量密度和有效晶胞。它不计算能量，不修复结构，也不替代"
+#~ " `FPS Filter`。它的职责是在代表性采样和 DFT 前挡掉几何上已经明显不可用的结构。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "空结构和含 NaN/Inf 坐标的结构始终被删除。其他阈值默认关闭，避免用一个通用数值误删含氢分子、slab 或带真空结构。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "短距离检查会把整批结构交给原生邻居扫描一次完成；原生扩展不可用或遇到合法的奇异部分周期晶胞时，自动使用同一距离语义的 Python "
+#~ "fallback。这个加速只改变响应时间，不改变阈值和筛选结果。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "卡片中的保留/删除数量预览在后台计算，不会占用界面事件循环。连续调整参数时，中间请求会被合并，界面只采用最新参数对应的结果；正式运行仍会重新按当前参数处理完整输入。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "\n"
+#~ "d_{\\min}=\\min_{i<j}d_{ij}^{\\mathrm{MIC}},\\qquad\n"
+#~ "v_{\\mathrm{atom}}=\\frac{|\\det\\mathbf C|}{N},\\qquad\n"
+#~ "\\rho=1.66053906660\\,\\frac{\\sum_i M_i}{|\\det\\mathbf C|}.\n"
 #~ msgstr ""
-#~ "**A nonperiodic molecule was removed.** Volume, density, or "
-#~ "`require_finite_cell` checks reject zero-volume molecular cells. For "
-#~ "molecular conformers, normally enable only `min_pair_distance`."
+
+#~ msgid ""
+#~ "$d_{ij}^{\\mathrm{MIC}}$ 是按周期边界最小镜像得到的距离，单位 Å； "
+#~ "$v_{\\mathrm{atom}}$ 的单位是 Å³/atom；原子质量 $M_i$ 用 "
+#~ "u，换算后的 $\\rho$ 为 g/cm³。所有已开启的上下限必须**同时满足**才保留结构。阈值为 0 "
+#~ "表示关闭对应 检查；空结构、非有限坐标，以及被已开启晶胞相关检查命中的无效晶胞会被拒绝。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "场景：随机占位和强扰动后出现短键结构"
+#~ msgstr "Scenario: Short bonds after random occupation and strong perturbation"
+
+#~ msgid ""
+#~ "合金候选池经过 `Random Occupancy → Atomic Perturb` "
+#~ "后，少量结构出现 < 1.0 Å 的原子重叠。它们进入 DFT 会浪费队列，进入 "
+#~ "FPS 会污染 descriptor 空间。"
+#~ msgstr ""
+#~ "After `Random Occupancy -> Atomic Perturb`, a"
+#~ " few alloy candidates contain atom pairs "
+#~ "below 1.0 Å. Sending them to DFT wastes"
+#~ " jobs, while including them in FPS "
+#~ "contaminates descriptor space."
+
+#~ msgid ""
+#~ "**输入：** 已生成的候选结构池。 **目标：** 在 FPS 前删除短键和异常体积结构。 "
+#~ "**参数设置：** `允许的最短原子对距离`填 `1.2 Å`，`最小单原子体积`填 `5.0 "
+#~ "Å³/atom`，`最大单原子体积`填 `40.0 Å³/atom`，密度阈值保持关闭。 **输出：** "
+#~ "只保留满足所有开启阈值的结构。 **怎么验证训练集质量改善：** 导入 `NEP Dataset "
+#~ "Display` 后，最短键分布不再有低端离群点；FPS 选出的结构不应再包含明显重叠帧。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "`float`，默认 0 Å（关闭）。任意原子对允许的最近距离，是与元素种类无关的硬门槛。周期方向使用最小镜像距离，非周期分子即使没有晶胞也可以只做此项检查。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "阈值应低于候选池中所有合理键长。不要把金属体系常用的 1.0~1.5 Å 直接用于含 H–H、O–H 或其他短键的混合数据集；这张卡不会根据共价半径自动调整阈值。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "`float`，默认 0.0（关闭）。允许的最小单原子体积，过滤过度压缩的结构。阈值应来自同材料平衡体积的下界。多孔、slab "
+#~ "或含真空的体系不要随便打开，开了反而误删合理结构。"
+#~ msgstr ""
+#~ "`float`, default `0.0` (disabled). Minimum volume"
+#~ " per atom for rejecting overcompressed cells. "
+#~ "Derive it from the material's volume range."
+#~ " Avoid it for porous, slab, or vacuum-"
+#~ "containing systems where it can reject valid"
+#~ " structures."
+
+#~ msgid "`float`，默认 0.0（关闭）。允许的最大单原子体积，过滤过度拉伸或异常大 cell。体相候选池可以设一个合理上界；slab/分子体系有真空时这个阈值容易误杀。"
+#~ msgstr ""
+#~ "`float`, default `0.0` (disabled). Maximum volume"
+#~ " per atom for rejecting expanded or "
+#~ "abnormal cells. A bulk pool may use a"
+#~ " justified bound; slabs and molecular cells "
+#~ "with vacuum generally should not."
+
+#~ msgid "`float`，默认 0.0（关闭）。按质量密度过滤低密度异常结构。只在体相或近体相候选池打开；含真空、孔洞或表面模型应保持 0。"
+#~ msgstr ""
+#~ "`float`, default `0.0` (disabled). Minimum mass "
+#~ "density. Enable only for bulk-like pools; "
+#~ "keep zero for vacuum, pores, or surfaces."
+
+#~ msgid "`float`，默认 0.0（关闭）。按质量密度过滤过度压缩的结构。阈值应参考该材料的真实密度上界，不要跨元素体系套同一个数字。"
+#~ msgstr ""
+#~ "`float`, default `0.0` (disabled). Maximum mass "
+#~ "density for rejecting overcompressed structures. Use"
+#~ " a material-specific physical upper bound, "
+#~ "not one value across chemical systems."
+
+#~ msgid ""
+#~ "`bool`，默认 false。打开后，含 NaN/Inf "
+#~ "或行列式接近零的晶胞会被删除。任何体积或密度上下限只要开启，也会隐式要求有效的非零体积晶胞。晶体、slab、界面候选池建议开；孤立分子或非周期构型关掉。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "短键门槛"
+#~ msgstr "Short-distance gate"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"GeometryFilterCard\",\n"
+#~ "  \"params\": {\n"
+#~ "    \"min_pair_distance\": 1.2,\n"
+#~ "    \"min_volume_per_atom\": 0.0,\n"
+#~ "    \"max_volume_per_atom\": 0.0,\n"
+#~ "    \"min_density\": 0.0,\n"
+#~ "    \"max_density\": 0.0,\n"
+#~ "    \"require_finite_cell\": false\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "用于随机扰动、插入缺陷或随机占位后的第一道硬检查。"
+#~ msgstr "First hard check after random perturbation, defect insertion, or random occupation."
+
+#~ msgid "晶体候选池清洗"
+#~ msgstr "Crystal candidate-pool cleaning"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"GeometryFilterCard\",\n"
+#~ "  \"params\": {\n"
+#~ "    \"min_pair_distance\": 1.1,\n"
+#~ "    \"min_volume_per_atom\": 5.0,\n"
+#~ "    \"max_volume_per_atom\": 60.0,\n"
+#~ "    \"min_density\": 0.0,\n"
+#~ "    \"max_density\": 0.0,\n"
+#~ "    \"require_finite_cell\": true\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "用于晶体、缺陷和表面候选池，防止零体积或极端体积结构进入后续流程。"
+#~ msgstr ""
+#~ "Prevent zero-volume or extreme-volume crystal,"
+#~ " defect, and surface structures from entering "
+#~ "later stages."
+
+#~ msgid "`Random Slab → Insert Defect → Geometry Filter`：表面插入后检查吸附物和基底是否重叠。"
+#~ msgstr ""
+#~ "`Random Slab` -> `Insert Defect` -> `Geometry"
+#~ " Filter`: detect adsorbate-substrate overlaps "
+#~ "after surface insertion."
+
+#~ msgid "**输出为空。** 至少一个阈值过严。先看最短键和体积分布，确认阈值是否超出了当前体系的真实范围。"
+#~ msgstr ""
+#~ "**No output.** At least one threshold is "
+#~ "too strict. Inspect pair-distance and volume"
+#~ " distributions and compare the limits with "
+#~ "the actual system."
+
+#~ msgid "**密度阈值不生效。** `min_density=0.0` 和 `max_density=0.0` 都表示关闭密度检查。只有大于 0 的阈值参与判定。"
+#~ msgstr ""
+#~ "**Density limits have no effect.** Zero "
+#~ "disables `min_density` and `max_density`; only "
+#~ "positive limits participate."
+
+#~ msgid ""
+#~ "**非周期分子被删掉。** 如果开启了体积、密度或 "
+#~ "`要求有限且非零体积的晶胞`（`require_finite_cell`），零体积分子会被删除。分子构象清洗通常只开 "
+#~ "`允许的最短原子对距离`（`min_pair_distance`）。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**为什么不能给混合化学体系设置一个可靠的通用短键阈值？** "
+#~ "当前参数是统一的绝对距离，不读取元素对或键级。先查看数据中各元素对的合理距离范围；如果无法给出统一下界，应把阈值保持为 "
+#~ "0，并在更合适的元素对检查工具中处理。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+#~ msgid ""
+#~ "**多个条件同时失败时预览怎么计数？** "
+#~ "预览按空结构、非有限坐标、无效晶胞、短距离、单原子体积、密度的顺序记录第一个失败原因，因此各原因计数之和等于删除总数，不代表后续条件一定通过。"
+#~ msgstr "This section explains the option, its parameters, operation, and expected result."

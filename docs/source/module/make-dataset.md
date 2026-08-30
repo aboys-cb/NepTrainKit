@@ -7,18 +7,18 @@
 :maxdepth: 4
 :hidden:
 
-如何选择卡片 <make-dataset-cards/index>
-配方示例 <make-dataset-cards/recipes>
-晶格 <make-dataset-cards/categories/structure-cell>
-结构 <make-dataset-cards/categories/structure>
-表面 <make-dataset-cards/categories/surface>
-缺陷 <make-dataset-cards/categories/defect-surface>
-扰动 <make-dataset-cards/categories/deformation-perturbation>
-合金与组分 <make-dataset-cards/categories/composition-alloy>
-磁性 <make-dataset-cards/categories/magnetism>
-分子与溶剂 <make-dataset-cards/categories/molecule-solvation>
-筛选 <make-dataset-cards/categories/filter-sampling>
-容器 <make-dataset-cards/categories/workflow-metadata>
+make-dataset-cards/index
+make-dataset-cards/recipes
+make-dataset-cards/categories/structure-cell
+make-dataset-cards/categories/structure
+make-dataset-cards/categories/surface
+make-dataset-cards/categories/defect-surface
+make-dataset-cards/categories/deformation-perturbation
+make-dataset-cards/categories/composition-alloy
+make-dataset-cards/categories/magnetism
+make-dataset-cards/categories/molecule-solvation
+make-dataset-cards/categories/filter-sampling
+make-dataset-cards/categories/workflow-metadata
 ```
 
 它的输出通常还不是最终训练集。更稳的路线是：
@@ -87,7 +87,7 @@ candidate_pool_fps.xyz
 
 双击模板只会打开**未修改的预览**，不会立刻算作新建工作流，也不会触发离开前的未保存提示。首次修改参数、卡片或顺序后，状态才变为“基于该模板”的未保存工作流；需要保留时，点击 `Save as workflow` 另存自己的副本。模板始终不会被改写。
 
-第一批内置模板包括晶体应变、超胞原子扰动、合金成分与占位、超胞空位候选和已有磁矩扰动。鼠标停在模板上会显示输入要求。例如，“已有磁矩扰动”只读取结构中已有的 `spin` 或 ASE 初始磁矩，不会为缺失磁矩的元素猜测数值。
+当前内置模板只保留“结构扰动”。它从扩胞开始，将晶格应变和晶格随机扰动放入分支合并，再接原子扰动，适合作为结构采样工作流的起点。鼠标停在模板上会显示输入要求。
 
 工作流和用户模板以独立 JSON 文件保存在用户配置目录的 `workflows/saved` 和 `workflows/templates` 下；它们不存入 `config.sqlite`。内置模板则打包在软件中，不写入用户目录。两类 JSON 都只保存卡片顺序、参数和启停状态，不保存输入结构、运行结果或运行状态。
 

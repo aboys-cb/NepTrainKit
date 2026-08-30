@@ -56,7 +56,7 @@ msgstr "Parameter page"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 2e74a76683a64e7eae032d2fd451d836
 msgid "`Reset View` / `Pan View` / `Mouse Selection` 等"
-msgstr "See the parameter description for details."
+msgstr "`Reset View` / `Pan View` / `Mouse Selection`, etc."
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 8e1125efb66e459a9e163c4c6a9827ea
@@ -66,7 +66,7 @@ msgstr "Adjust the main plot, select points, invert the selection, undo, or dele
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: a61ec15096454e018138acfdb6988177
 msgid "[浏览与基础选择](nep-main-tool-basic.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-basic.md))"
+msgstr "[Navigation and basic selection](nep-main-tool-basic.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 5484412a7f544ddbaff165eaa0aa2871
@@ -76,12 +76,12 @@ msgstr "`Select by Index`"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: fd9ee25211f04b8995d856a3a29402e4
 msgid "已知结构编号或切片"
-msgstr "Details for this option"
+msgstr "When structure indices or a slice are known"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: eebcb13e8df849f1b789fcfb7041d265
 msgid "[按索引选择](nep-main-tool-select-index.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-select-index.md))"
+msgstr "[Select by index](nep-main-tool-select-index.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: c789dab73a6e4b51bafe309d26f36919
@@ -96,7 +96,7 @@ msgstr "Select points within the current plot's x/y range"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 2e866a26c6864e288ce7a2305ff0adcb
 msgid "[按图上范围选择](nep-main-tool-select-range.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-select-range.md))"
+msgstr "[Select by plot range](nep-main-tool-select-range.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: f5764a37bd074dfb8af5cc65230ad930
@@ -111,7 +111,7 @@ msgstr "Filter by lattice lengths and angles"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: d4a96b220d9348659de4aac640415aff
 msgid "[按晶格参数选择](nep-main-tool-select-lattice.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-select-lattice.md))"
+msgstr "[Select by lattice parameters](nep-main-tool-select-lattice.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 760d37fe894948d0a053fc97f9384243
@@ -126,7 +126,7 @@ msgstr "Find the N structures with the largest error for the current metric"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 7f16c1b57f804e14b7374357fb106a64
 msgid "[查找最大误差结构](nep-main-tool-max-error.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-max-error.md))"
+msgstr "[Find highest-error structures](nep-main-tool-max-error.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 2dc58589cc0d4cfea4cfec46450d48df
@@ -141,7 +141,7 @@ msgstr "Select representative structures with FPS"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: c3019eac1a2c454ab7a9e8d4fa5891ce
 msgid "[代表性采样](nep-main-tool-sparse-samples.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-sparse-samples.md))"
+msgstr "[Representative sampling](nep-main-tool-sparse-samples.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 433c783722fc4c00bd0bbda12fc81bb1
@@ -156,7 +156,7 @@ msgstr "Find structures with anomalous neighbor distances"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 72bc5b27a7db46e5975b21027e202ceb
 msgid "[查找疑似非物理结构](nep-main-tool-nonphysical.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-nonphysical.md))"
+msgstr "[Find potentially non-physical structures](nep-main-tool-nonphysical.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: fc45f071115d4aa7a828440194fb28bd
@@ -171,7 +171,7 @@ msgstr "Check labels against a net-force threshold"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: da88f1219eae4f47acf7eb3f47cecd84
 msgid "[检查净力](nep-main-tool-net-force.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-net-force.md))"
+msgstr "[Check net force](nep-main-tool-net-force.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: b7b8ccb06d3540b781cf0b8bf335fae1
@@ -186,7 +186,7 @@ msgstr "Add, delete, or rename metadata in batches"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: e90a29b2bb594259b3a4594b2d622b20
 msgid "[编辑结构信息](nep-main-tool-edit-info.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-edit-info.md))"
+msgstr "[Edit structure metadata](nep-main-tool-edit-info.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: be08af836b82450980507ca4ce644f38
@@ -201,9 +201,7 @@ msgstr "Export structural descriptors for the current data"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: a5c5c8440a2b4ae5807412f3c486e639
 msgid "[导出结构描述符](nep-main-tool-export-descriptor.md)"
-msgstr ""
-"Details for this option ([Related guide](nep-main-tool-export-"
-"descriptor.md))"
+msgstr "[Export structure descriptors](nep-main-tool-export-descriptor.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 79b6f04295834fb894200da20ce83af1
@@ -218,7 +216,7 @@ msgstr "Fit and apply an energy-baseline shift"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 211332c7edfd498f9cfaad5451c32e04
 msgid "[能量基线平移](nep-main-tool-energy-shift.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-energy-shift.md))"
+msgstr "[Energy baseline shift](nep-main-tool-energy-shift.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: dbf9f2bf35dc4e00999b5ef1882adcbf
@@ -233,7 +231,7 @@ msgstr "Add or remove a DFT-D3 correction"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 48110f37ddf847d793ed47eeea37fe3e
 msgid "[DFT-D3 修正](nep-main-tool-dft-d3.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-dft-d3.md))"
+msgstr "[DFT-D3 correction](nep-main-tool-dft-d3.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: 0e8b11cc549340e39d276c8c31dae14e
@@ -248,7 +246,7 @@ msgstr "Open the overall training-set audit"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: fb702d9a3e4844fb8cb57bc771dcdc76
 msgid "[进入训练集评估](nep-main-tool-training-audit.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-training-audit.md))"
+msgstr "[Open Training Set Audit](nep-main-tool-training-audit.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: eafc1802b76b4d43a361a0af94e66a06
@@ -263,7 +261,7 @@ msgstr "Inspect numeric-field distributions and select structures from them"
 #: ../../source/module/nep-display-main-plot-tools.md:6
 #: c1d2be2c0cfd424cabc1ec3f0ae65d99
 msgid "[查看数据分布](nep-main-tool-distributions.md)"
-msgstr "Details for this option ([Related guide](nep-main-tool-distributions.md))"
+msgstr "[Explore data distributions](nep-main-tool-distributions.md)"
 
 #: ../../source/module/nep-display-main-plot-tools.md:45
 #: 448d21778350443cb69aaecfa8462983

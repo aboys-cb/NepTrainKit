@@ -1,0 +1,36 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/categories/surface.md:1
+#: bac780fc6b2040a1b6899094b4a2aa45
+msgid "表面"
+msgstr "Surfaces"
+
+#: ../../source/module/make-dataset-cards/categories/surface.md:3
+#: 9b8ae6491a5d4eae84e964d45ebd005d
+msgid ""
+"与卡片 UI 的“表面”分组一致。当前 `Random Slab` 根据晶面、厚度和真空设置生成自由表面； "
+"如果还要加入空位或吸附原子，应在它之后连接“缺陷”分组中的对应卡片。"
+msgstr ""
+"This section matches the `Surfaces` group in the card picker. `Random Slab` creates a"
+" free surface from the specified plane, thickness, and vacuum settings. To add "
+"vacancies or adsorbates, connect the corresponding card from the `Defects` group "
+"after it."

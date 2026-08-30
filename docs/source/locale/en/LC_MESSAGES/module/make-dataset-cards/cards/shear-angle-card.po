@@ -8,461 +8,587 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-30 16:56+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:3
-#: f5aabe2dfc9d45bf9f7d218251c426bf
-msgid "剪切角应变（Shear Angle Strain）"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:3
+#: a4a55c87d9eb4e68b61a89e50c8fee82
+msgid "晶格角应变（Shear Angle Strain）"
 msgstr "Shear Angle Strain"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:5
-#: 1493fa0fefbd4e348ce80c9acc3c3e27
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:5
+#: e4a4dc592ade4e39a18a612cbae751b4
 msgid "**分类：** 晶格"
 msgstr "**Category:** Lattice"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:7
-#: 8d1236fe54f34bdc9441613023acc695
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:7
+#: 8bed951335a6487da1d9414979f1fbf4
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:9
-#: d6cbb8ff1170454aa2d821459c44430e
-msgid ""
-"在保持晶格长度不变的前提下扰动 alpha/beta/gamma 角，采样角度剪切自由度。每个"
-"角度通道独立控制 min/max/step（单位：度），扫描的是相对原始角度的增量。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:9
+#: 6225e7f380c74dfdaf5eacdf1079e264
+msgid "保持三条晶格矢量的长度不变，扫描晶格角的增量。适合单独补充角度形变数据，或检查模型对低对称晶胞的外推误差。"
 msgstr ""
-"Sample angular shear by changing alpha, beta, and gamma while preserving "
-"lattice-vector lengths. Each channel has an independent minimum, maximum, "
-"and step in degrees, interpreted as offsets from the input angle."
+"Scan increments of the lattice angles while keeping all three lattice-vector lengths "
+"fixed. Use this card to add angle-deformation data independently or to examine model "
+"extrapolation for low-symmetry cells."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:11
-#: e253aafc85fc4bcb84f6171aef7a6ffb
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:11
+#: 754225870a474647888c18fb8915ff7d
+msgid "三个角的定义是："
+msgstr "The three angles are defined as:"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:13
+#: 094899844b9e4a1d874a313edecefe4b
+msgid "$\\alpha=\\angle(\\mathbf b,\\mathbf c)$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:14
+#: 31a2cef1f68c4e69982a54d106fc45b9
+msgid "$\\beta=\\angle(\\mathbf a,\\mathbf c)$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:15
+#: 498c2ca8480440b8ad30941612548501
+msgid "$\\gamma=\\angle(\\mathbf a,\\mathbf b)$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:17
+#: 9f5cfe88957d43e0b1ffedc8c3bcee5f
+msgid "输入框填写的是相对原始角度的**增量**，不是最终角度，单位均为度。"
+msgstr ""
+"The fields specify **increments** relative to the original angles, not final angles. "
+"All values are in degrees."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:19
+#: 1c78f0221b854314847fe205328c9a77
 msgid "原理与公式"
-msgstr "Principle and equations"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:13
-#: 63f9dcceb4194dd08e32e4fc52ee3940
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:21
+#: 8203b9cfa3124bb69456b46bfe709a4b
+msgid "对每组增量 $(\\Delta\\alpha,\\Delta\\beta,\\Delta\\gamma)$："
+msgstr "For each increment tuple $(\\Delta\\alpha,\\Delta\\beta,\\Delta\\gamma)$:"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:23
+#: 8203b9cfa3124bb69456b46bfe709a4b
 msgid ""
-"\\alpha'=\\alpha+\\Delta\\alpha,\\quad \\beta'=\\beta+\\Delta\\beta,\\quad "
-"\\gamma'=\\gamma+\\Delta\\gamma"
+"\n"
+"\\alpha'=\\alpha+\\Delta\\alpha,\\qquad\n"
+"\\beta'=\\beta+\\Delta\\beta,\\qquad\n"
+"\\gamma'=\\gamma+\\Delta\\gamma.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:15
-#: dfd42ef677494f0c8fd0763377c6a6e3
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:29
+#: 028b08bd2deb4ff592361159e840c985
 msgid ""
-"\\mathbf{C}'=\\mathrm{cellpar\\_to\\_cell}(a,b,c,\\alpha',\\beta',\\gamma')"
+"程序用 $(a,b,c,\\alpha',\\beta',\\gamma')$ 重建晶胞，其中 $a,b,c$ "
+"保持原值。原子分数坐标随晶胞保持不变，因此笛卡尔位置会随形变移动。"
+msgstr ""
+"The program reconstructs the cell from $(a,b,c,\\alpha',\\beta',\\gamma')$, keeping "
+"$a,b,c$ at their original values. Atomic fractional coordinates remain fixed relative"
+" to the cell, so Cartesian positions move with the deformation."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:31
+#: d3968200fb9b44b888bc2041775ab1dc
+msgid ""
+"重建过程保留输入晶胞的全局取向，不额外施加刚体旋转。因此项目使用的 `spin:R:3` 和 ASE 的 `initial_magmoms` "
+"均保留原笛卡尔分量。若输入同时含有这两类磁矩数据，两者都不会被角度应变改写。"
+msgstr ""
+"Reconstruction preserves the global orientation of the input cell and adds no rigid "
+"rotation. Therefore, both the project's `spin:R:3` data and ASE `initial_magmoms` "
+"retain their original Cartesian components. If the input contains both forms, neither"
+" is modified by the angle strain."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:33
+#: af33aaed89de45329ecc49a197eccd4c
+msgid "每个角范围按 `[min, max, step]` 取点。若三条范围分别产生 $N_\\alpha$、$N_\\beta$、$N_\\gamma$ 个值，则："
+msgstr ""
+"Each angle range is sampled as `[min, max, step]`. If the three ranges produce "
+"$N_\\alpha$, $N_\\beta$, and $N_\\gamma$ values, respectively:"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:35
+#: 8f2e9198173c49949b17e274acdf6668
+msgid ""
+"\n"
+"N_{\\mathrm{out}}=N_{\\mathrm{in}}N_\\alpha N_\\beta N_\\gamma.\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:17
-#: bf1d6407363c40b2bbba17bfa5babb1a
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:39
+#: c33771e0df1f4f54b9fe410e36eb2ec2
 msgid ""
-"$a,b,c$ 保持原长度，三个 $\\Delta$ 值单位均为度。程序从新的六个晶格参数重建晶"
-"胞， 不是直接给某个矩阵元素加角度数值；原子分数坐标保持不变。"
-msgstr "$a,b,c$ keep their original lengths, and the three $\\Delta$ values are in degrees. The program rebuilds the cell from the six new lattice parameters rather than adding angle values directly to matrix elements; atomic fractional coordinates remain unchanged."
+"默认每条范围为 `[-2, 2, 2]`，对应小角度弹性响应中的负向、参考和正向三点， 即每个输入生成 $3^3=27$ "
+"个结构。界面会直接显示每个输入和全部输入的预计输出数。"
+msgstr ""
+"Each range defaults to `[-2, 2, 2]`, representing negative, reference, and positive "
+"points for a small-angle elastic response. Each input therefore produces $3^3=27$ "
+"structures. The interface shows estimated counts per input and across all inputs."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:20
-#: c23ff72c49504c7f97927a117f961da1
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:42
+#: 62867fbbdf584c9fbd44dfa191b39616
+msgid "最终三个角必须都位于 $(0^\\circ,180^\\circ)$，并能组成非奇异、右手晶胞；不满足时会提示减小角度增量。"
+msgstr ""
+"All three final angles must lie within $(0^\\circ,180^\\circ)$ and form a "
+"nonsingular, right-handed cell. Otherwise, the program asks you to reduce the angle "
+"increments."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:44
+#: cef5bc04fcfd4d84aac9b0a40141a75a
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:22
-#: 6bc0fd8c3b5c4f4fbbfeff6bdb05ed9c
-msgid "场景：模型在单斜晶系上预测崩了，但正交晶系没问题"
-msgstr ""
-"Scenario: The model fails on a monoclinic phase but not an orthogonal one"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:46
+#: 0c1f951d6a47420c9cdb37ee024c3ac4
+msgid "只扫描 $\\beta$ 角的 $-4^\\circ$ 到 $4^\\circ$，步长 $2^\\circ$："
+msgstr "To scan only $\\beta$ from $-4^\\circ$ to $4^\\circ$ in steps of $2^\\circ$:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:24
-#: 667d8a695b8444bba9ca719e0e14b9da
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:48
+#: e5187530687f4cb1909cc5c59b519f22
 msgid ""
-"你在 HfO2 上训练了一个 NEP 模型。训练集里只有一个高温四方相（正交晶格），模型"
-"对四方相的能量和力预测很好。但一跑常温单斜相，能量误差跳了 3 倍——因为单斜相"
-"的 beta 角偏离 90 度约 10 度，模型没见过非正交的晶胞角度。"
+"Alpha increment: 0, 0, 1\n"
+"Beta increment: -4, 4, 2\n"
+"Gamma increment: 0, 0, 1\n"
 msgstr ""
-"A HfO2 NEP trained only on a high-temperature tetragonal phase performs well "
-"there but triples its error on the monoclinic phase, whose beta angle "
-"differs from 90 degrees. Nonorthogonal cell geometry is out of domain."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:26
-#: 96828b6144bc43aab9a81cdfd925e0d8
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:54
+#: 5f7071bd2364440098357d7cfd66309f
 msgid ""
-"**诊断思路：** 不同晶系的本质区别是晶胞角度。模型只在正交晶格上训练，隐式地学"
-"会了\"角度总是 90 度\"的先验。只要 beta 偏离 90 度，晶格矢量在笛卡尔空间的投"
-"影关系就变了，原子间距分布也跟着变——模型全靠外推。解决办法是沿角度方向生成一"
-"组结构，让模型见过非 90 度的晶胞。"
+"每个输入得到 5 个结构，对应 $\\Delta\\beta=-4,-2,0,2,4^\\circ$。三条晶格矢量长度不变；$\\alpha$ 和 $\\gamma$ "
+"不变。"
 msgstr ""
-"**Diagnosis:** Cell angles change the Cartesian projection of lattice "
-"vectors and therefore interatomic-distance distributions. Add controlled "
-"nonorthogonal cells so target angles are interpolated rather than "
-"extrapolated."
+"Each input produces five structures corresponding to "
+"$\\Delta\\beta=-4,-2,0,2,4^\\circ$. All lattice-vector lengths remain fixed, as do "
+"$\\alpha$ and $\\gamma$."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:28
-#: 6cc13cf656b947d18c054645c932eeb7
-msgid "**输入：** 一个弛豫好的 HfO2 四方相结构（alpha=beta=gamma=90°）"
-msgstr "alpha=beta=gamma=90°"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:56
+#: 4fedf5566a3545949c1ab6b02b5cd075
+msgid "不扫描某一通道时应填写 `[0, 0, 1]`。步长仍需为正数。"
+msgstr "Enter `[0, 0, 1]` for an angle that is not scanned. Its step must still be positive."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:30
-#: d6aabdf42a7545a7b8d7382672ce9fd5
-msgid ""
-"**目标：** 沿 beta 方向生成 -6° 到 +6° 的角度扫描，步长 2°，覆盖单斜相可能出"
-"现的 beta 偏离"
-msgstr ""
-"**Objective:** Scan beta offsets from -6 to +6 degrees in 2-degree steps."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:32
-#: 2ab2e7e9fca0445aadd17cc07a2cae35
-msgid "**参数设置：**"
-msgstr "**Parameters:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:33
-#: 46245342b7f14d77840ac8d9713c45c4
-msgid "`α 角范围`（`alpha_range`） = `[0, 0, 1]` （不扫 alpha）"
-msgstr "`α angle range` (`alpha_range`) = `[0, 0, 1]` (do not scan alpha)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:34
-#: 91207ab626fa45fe9cbd02a3a9fc1bfc
-msgid "`β 角范围`（`beta_range`） = `[-6, 6, 2]`"
-msgstr "`β angle range` (`beta_range`) = `[-6, 6, 2]`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:35
-#: 9b1d2d57230d4f72bba52e13de57cbf5
-msgid "`γ 角范围`（`gamma_range`） = `[0, 0, 1]` （不扫 gamma）"
-msgstr "`γ angle range` (`gamma_range`) = `[0, 0, 1]` (do not scan gamma)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:37
-#: 0471c6104fa14b0f9cc296b2ecf6ab3c
-msgid ""
-"**输出：** 7 个结构（-6°, -4°, -2°, 0°, +2°, +4°, +6°），晶格长度不变，只有 "
-"beta 角偏离 90 度"
-msgstr ""
-"**Output:** Seven structures with beta offsets -6, -4, -2, 0, +2, +4, and +6 "
-"degrees and unchanged lattice lengths."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:39
-#: 0faacc76ec8d4c4eb31ba6152f790d65
-msgid "**怎么验证训练集质量改善：**"
-msgstr "**How to verify that training-set quality improved:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:40
-#: 85310f9dc4d244d0b61f9dca175f6aa0
-msgid "重训后用单斜相参考数据做推理，能量误差应显著下降"
-msgstr ""
-"After labeling and retraining, error on held-out monoclinic references "
-"should decrease."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:41
-#: c16bbf8c88294c76ac05fd0491bfe1f2
-msgid ""
-"检查输出结构的体积：角度变化会轻微改变体积（晶格长度不变但矢量投影关系变"
-"了），确认体积变化 < 2%"
-msgstr ""
-"Check output volumes. Angles change vector projections even at fixed "
-"lengths, so define and verify an acceptable volume change for the study."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:42
-#: b23cae24729048aa93ae5e99e2e86f92
-msgid "如果模型对更多角度方向仍不准，同时放开 alpha 和 gamma 做多角度联合扫描"
-msgstr ""
-"If other angular directions remain inaccurate, add alpha and gamma scans "
-"deliberately."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:43
-#: ceaf681228904725951eb03a6d3c1bf3
-msgid ""
-"如果角度扫描范围 > ±10° 后结构明显非物理，可能是该体系不支持如此大的角度偏离"
-msgstr ""
-"If offsets beyond ±10 degrees produce implausible geometry, narrow the range "
-"to the material's intended phase space."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:45
-#: f245f8d2ac8747e8a1f66c9fb1d371cf
-msgid "什么时候加这张卡、什么时候不加"
-msgstr "When to add this card"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:47
-#: 59494baba9144a36b6f74b85cefb41bb
-msgid "**加：**"
-msgstr "**Add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:48
-#: 227160250b15429ebffd55709d5bf90a
-msgid ""
-"训练集仅覆盖高对称晶系（立方、四方），但目标体系存在低对称相（单斜、三斜）"
-msgstr ""
-"Training covers only high-symmetry cells while target phases are monoclinic "
-"or triclinic"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:49
-#: 8af1f5ad6e364b5fadba0fd73bc44891
-msgid "模型在角度相关性质（如压电系数、角度依赖的弹性常数）上偏差大"
-msgstr ""
-"Angle-dependent properties such as piezoelectric or elastic response are "
-"inaccurate"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:50
-#: b6556cb02e68464b89ab230ae5b82965
-msgid "需要区分\"角度变化\"和\"长度变化\"对模型的影响"
-msgstr "Angle and length effects need to be isolated"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:52
-#: e0627584d56842f181a20b765a247919
-msgid "**不加：**"
-msgstr "**Do not add it when:**"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:53
-#: 26b3968b68eb4129a48ad6a3db9f41bd
-msgid "体系始终维持高对称、角度不可能偏离 90 度 —— 加了产生无物理意义结构"
-msgstr ""
-"The intended system remains high symmetry and angular deviations are not "
-"physically relevant"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:54
-#: 190d374f189a450899b1da2f3d36ef83
-msgid "需要同时控制长度和角度 → 用 `Lattice Perturb` 同时扰动两者更方便"
-msgstr ""
-"Lengths and angles should vary stochastically together; use `Lattice Perturb`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:55
-#: 5ef3f5f38c364b3483c0c84e8c6d1d87
-msgid "想用矩阵分量而非角度控制剪切 → `Shear Matrix Strain` 更适合"
-msgstr ""
-"Shear should be parameterized by matrix components; use `Shear Matrix Strain`"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:57
-#: 0adf2b5ed5d3482a82c7a6f1c623a20d
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:58
+#: 438a10c28cad41e1825f3263efa3b336
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:59
-#: e9f2a3201f284ec1a4ebc9a0092aa335
-msgid "α 角范围（alpha_range）"
-msgstr "alpha_range"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:60
+#: 0158d2c4508f4e81857443a494a31a0c
+msgid "α 增量（alpha_range）"
+msgstr "α Increment (alpha_range)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:61
-#: c876610d54214f228d161b1efc12f84a
-msgid ""
-"`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。alpha 角相对于原始值的"
-"增量扫描区间，格式 `[min, max, step]`，单位度。注意最终角度 = 原始角度 + 增"
-"量，不是直接用增量替换。不扫的通道不能设 `[0, 0, 0]`，必须写 `[0, 0, 1]` 让 "
-"range 至少产生一个 0 点。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:62
+#: c5e9723e945147d2aeec61184c18cb4d
+msgid "默认 `[-2, 2, 2]`。$\\alpha=\\angle(\\mathbf b,\\mathbf c)$ 的增量范围，单位为度。"
 msgstr ""
-"`tuple[float, float, float]`, default `(-2.0, 2.0, 1.0)`. Alpha-offset scan "
-"as `[min,max,step]` in degrees. Final angle equals input plus offset. Use "
-"`[0,0,1]`, not a zero step, for an inactive channel."
+"Default `[-2, 2, 2]`. Increment range for $\\alpha=\\angle(\\mathbf b,\\mathbf c)$, "
+"in degrees."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:63
-#: 7fcc324221804a819b3c73336ecf2824
-msgid "β 角范围（beta_range）"
-msgstr "beta_range"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:64
+#: dd2d0e632c634e339ca8e0464d92fcaa
+msgid "β 增量（beta_range）"
+msgstr "β Increment (beta_range)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:65
-#: cdd43413d606442aad562ff7108b0b21
-msgid ""
-"`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。beta 角增量扫描区间，"
-"单位和语法同上。不扫时写 `[0, 0, 1]`。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:66
+#: 7d36078a5cbf469b8481e68aaf51c3cb
+msgid "默认 `[-2, 2, 2]`。$\\beta=\\angle(\\mathbf a,\\mathbf c)$ 的增量范围，单位为度。"
 msgstr ""
-"`tuple[float, float, float]`, default `(-2.0, 2.0, 1.0)`. Beta offsets with "
-"the same syntax; use `[0,0,1]` when inactive."
+"Default `[-2, 2, 2]`. Increment range for $\\beta=\\angle(\\mathbf a,\\mathbf c)$, in"
+" degrees."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:67
-#: 088c816a2e9a41c689d92cb91bacb7bf
-msgid "γ 角范围（gamma_range）"
-msgstr "gamma_range"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:68
+#: 7edb99b82009426d8109a46570a5c752
+msgid "γ 增量（gamma_range）"
+msgstr "γ Increment (gamma_range)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:69
-#: ed47284c9d894fa2bfccb294526cda6b
-msgid ""
-"`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。gamma 角增量扫描区间，"
-"同上。不扫时写 `[0, 0, 1]`。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:70
+#: a1fe4a766f3749699fda3067c9570499
+msgid "默认 `[-2, 2, 2]`。$\\gamma=\\angle(\\mathbf a,\\mathbf b)$ 的增量范围，单位为度。"
 msgstr ""
-"`tuple[float, float, float]`, default `(-2.0, 2.0, 1.0)`. Gamma offsets with "
-"the same syntax; use `[0,0,1]` when inactive."
+"Default `[-2, 2, 2]`. Increment range for $\\gamma=\\angle(\\mathbf a,\\mathbf b)$, "
+"in degrees."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:71
-#: fdcff23ec4024223bd29805d636d42e1
-msgid ""
-"输出总数 = Nalpha * Nbeta * Ngamma。三个通道同时按默认值跑 = 5^3 = 125 个结"
-"构。步长减半会 8 倍增长，建议从单通道开始逐次加。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:72
+#: fa01144724ad4c2fb80e60f573045830
+msgid "保持识别出的分子刚性（identify_organic）"
+msgstr "Preserve Detected Molecular Rigidity (identify_organic)"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:74
+#: b826d7e2a6974fa28734ec02f4a48fb9
+msgid "默认关闭。开启后，程序在晶胞仿射形变后恢复检测到的分子团内部几何，避免分子内键随晶胞一起拉伸。纯无机体系通常无需开启。"
 msgstr ""
-"Output count is Nalpha × Nbeta × Ngamma. Three default five-point channels "
-"produce 125 structures; halving every step multiplies that by eight. Begin "
-"with one channel."
+"Disabled by default. When enabled, the program restores the internal geometry of "
+"detected molecular groups after the affine cell deformation, preventing "
+"intramolecular bonds from stretching with the cell. It is normally unnecessary for "
+"purely inorganic systems."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:73
-#: dc66b697fe164ffa966ddc16bb2ee8e2
-msgid "识别有机分子（identify_organic）"
-msgstr "identify_organic"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:76
+#: cef5bc04fcfd4d84aac9b0a40141a75a
+msgid "配置示例"
+msgstr "Configuration Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:75
-#: 4e850001e41c49758d1de79b157f0736
-msgid ""
-"`bool`，默认 `false`。分子晶体必须打开——角度变化会改变分子间相对取向，如果分"
-"子内键也被跟着拉伸就不对了。纯无机体系关着即可。"
-msgstr ""
-"`bool`, default `false`. Enable molecular protection for molecular crystals "
-"so angular cell changes do not distort intramolecular bonds. Leave disabled "
-"for purely inorganic systems."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:77
-#: a5a3056d1b2242ab85fde322e471e028
-msgid "推荐预设"
-msgstr "Recommended presets"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:79
-#: b9b18493020c4c70b806aede8f83b133
-msgid "单角度探索（仅 beta，±4°，步长 1°）"
-msgstr "Single-angle scan (beta only, ±4 degrees, step 1)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:80
-#: 73ca1b9759d84cc79ef4dc4a52b6b179
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:78
+#: 9eabee7be8804373b3e595ef2d17a8ac
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"ShearAngleCard\",\n"
 "  \"check_state\": true,\n"
-"  \"alpha_range\": [0, 0, 1],\n"
-"  \"beta_range\": [-4, 4, 1],\n"
-"  \"gamma_range\": [0, 0, 1],\n"
-"  \"identify_organic\": false\n"
+"  \"params\": {\n"
+"    \"alpha_range\": [0, 0, 1],\n"
+"    \"beta_range\": [-4, 4, 2],\n"
+"    \"gamma_range\": [0, 0, 1],\n"
+"    \"identify_organic\": false\n"
+"  }\n"
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:91
-#: 474250415a434558bd8b283e30ab53da
-msgid "双角度覆盖（beta+gamma，±3°，步长 1°，~49 个输出）"
-msgstr "Two-angle coverage (beta and gamma, ±3 degrees, about 49 outputs)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:92
-#: 59888cb3353249b3a3f8eae941d0984a
-msgid ""
-"{\n"
-"  \"class\": \"ShearAngleCard\",\n"
-"  \"check_state\": true,\n"
-"  \"alpha_range\": [0, 0, 1],\n"
-"  \"beta_range\": [-3, 3, 1],\n"
-"  \"gamma_range\": [-3, 3, 1],\n"
-"  \"identify_organic\": false\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:103
-#: 37104347b921462f8150417675a1ea63
-msgid "三角度全扫描（alpha+beta+gamma，±5°，步长 2°，~216 个输出）"
-msgstr ""
-"Three-angle scan (alpha, beta, gamma, ±5 degrees, step 2, about 216 outputs)"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:104
-#: 08f967fccd254f4f8a87cb21c2b29b95
-msgid ""
-"{\n"
-"  \"class\": \"ShearAngleCard\",\n"
-"  \"check_state\": true,\n"
-"  \"alpha_range\": [-5, 5, 2],\n"
-"  \"beta_range\": [-5, 5, 2],\n"
-"  \"gamma_range\": [-5, 5, 2],\n"
-"  \"identify_organic\": false\n"
-"}\n"
-msgstr ""
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:115
-#: f1b895993f324232b81619f2f14a454e
-msgid "推荐组合"
-msgstr "Recommended combinations"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:117
-#: 3b09eac088e247c885014be1729674e8
-msgid "`Lattice Strain` → `Shear Angle Strain`：先做长度应变，再补角度剪切"
-msgstr ""
-"`Lattice Strain` -> `Shear Angle Strain`: add angular shear after length "
-"strains"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:118
-#: d05b827851674b81a3f2437d6b0f9a4a
-msgid "`Shear Angle Strain` → `Atomic Perturb`：角度畸变后加原子坐标噪声"
-msgstr ""
-"`Shear Angle Strain` -> `Atomic Perturb`: add coordinate fluctuations after "
-"angular distortion"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:119
-#: 6d7c21f15d1444deaf2f53643e9a18c9
-msgid ""
-"`Shear Angle Strain` + `Shear Matrix Strain`：两者走不同形变路径，互补覆盖"
-msgstr ""
-"Use angle and matrix shear as distinct, complementary deformation paths"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:121
-#: 1bac34e34f1040069cc3850ce9ba0dc6
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:91
+#: e431710c74f34e9ab1584b5999932f89
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:123
-#: f0e7b4ce81d042afa115197516722f5d
-msgid ""
-"**输出为空。** 检查每个 range 的步长是否 > 0。不扫的通道不能设 `[0, 0, 0]`，"
-"必须设 `[0, 0, 1]` 让 range 至少产生一个 0 点。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:93
+#: 7eb6e424f147495ab658a50eecf1f945
+msgid "**为什么角度改变后体积也变了？** 体积同时取决于晶格长度和夹角。长度固定不代表体积固定，这是正常的几何结果。"
 msgstr ""
-"**No output.** Every step must be positive. Use `[0,0,1]` for an inactive "
-"channel."
+"**Why does the volume change when only angles are changed?** Volume depends on both "
+"lattice-vector lengths and their angles. Fixed lengths do not imply fixed volume; "
+"this is the expected geometry."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:125
-#: 1db4eb33dd41402caf8fcaecef08290b
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:95
+#: d7433b683aab4344b5c7eb52143d64ae
 msgid ""
-"**输出数量爆炸。** 三通道联扫 = Na * Nb * Ng。默认 `[-2, 2, 1]` 三通道 = 5^3 "
-"= 125 个结构。步长减半会 8 倍增长。建议从单通道开始逐次加。"
+"**为什么输出数很快变大？** 三个角采用笛卡尔积组合。默认是 $3\\times3\\times3=27$ "
+"个结构/输入；增加点数前应先确认确实需要联合扫描，而不是单角有限差分。"
 msgstr ""
-"**Output explodes.** Three channels form a Cartesian product. Start with one "
-"channel and estimate the product before adding others."
+"**Why does the output count grow so quickly?** The three angle ranges form a "
+"Cartesian product, giving $3\\times3\\times3=27$ structures per input by default. "
+"Before adding points, confirm that a joint scan is needed rather than a one-angle "
+"finite difference."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:127
-#: ac092ea4049c4eb299c328377cacaac4
-msgid ""
-"**角度变化后体积也变了。** 晶格长度保持不变但角度变化会改变笛卡尔空间的矢量投"
-"影，体积会轻微变化。这是正常的几何效应，不是 bug。如果体积变化超过预期，可能"
-"是角度步长太大——减小 step。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:97
+#: 7f1869fadc8e4cc987cc060b7952fb07
+msgid "**为什么提示晶胞无效？** 某组最终角度无法组成非奇异右手晶胞。缩小增量范围，尤其要检查原始角度已经接近 $0^\\circ$ 或 $180^\\circ$ 的情况。"
 msgstr ""
-"**Volume changes with angle.** This follows from changed vector projections "
-"at fixed lengths. If the change exceeds the intended range, reduce angular "
-"offsets."
+"**Why is the cell reported as invalid?** A set of final angles cannot form a "
+"nonsingular, right-handed cell. Reduce the increment range, especially when an "
+"original angle is already close to $0^\\circ$ or $180^\\circ$."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:129
-#: bcfec113fcdf4980a77c313b33de5033
-msgid ""
-"**输出晶格接近奇异。** 如果角度偏离过大导致 cellpar_to_cell 产生的晶格矩阵接"
-"近退化，结构会不可用。典型症状是晶格行列式接近 0。把角度 range 回调到更保守的"
-"范围。"
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:99
+#: fc49c80ad48f470dac6c671e525992f9
+msgid "**磁矩会跟着晶胞转动吗？** 不会。这张卡只做角度应变并保留输入全局坐标系；`spin:R:3` 与 ASE `initial_magmoms` 的笛卡尔分量均保持不变。"
 msgstr ""
-"**The lattice approaches singularity.** Excessive angles can make the cell "
-"matrix degenerate. Check its determinant and narrow the range."
+"**Do magnetic moments rotate with the cell?** No. This card applies angle strain "
+"while preserving the input global coordinate system. Cartesian components of both "
+"`spin:R:3` and ASE `initial_magmoms` remain unchanged."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:131
-#: 5e2d17cd09c7421d8f7feeea08bc9587
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:101
+#: a49e118fed034c5eb822942a3d2ca594
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:133
-#: d73d5741ce41438c92b08f6f4afae12a
-msgid "`Ang(a={da}°,b={db}°,g={dg}°)` —— 只显示有非零变化的通道。"
-msgstr "`Ang(a={da}°,b={db}°,g={dg}°)`; only nonzero channels are included."
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:103
+#: a7106eb9e7f3482fa462cc4bab3d4333
+#, python-brace-format
+msgid "`Ang(alpha={Δα},beta={Δβ},gamma={Δγ})`"
+msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:135
-#: efe8bcccc6864ff1a00ca9e06c8ddcc1
-msgid "可复现性"
-msgstr "Reproducibility"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/shear-angle-card.md:137
-#: 1d1eec91162246fa9b3c8c9fe2906697
-msgid "无随机性。同参数同输入 → 严格一致输出。所有角度按固定网格扫描。"
-msgstr "Deterministic: all angles are scanned on a fixed grid."
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:105
+#: ef82c933b1b14ec19c9dd7d836640336
+msgid "标签记录三个角的增量，单位为度。该操作无随机性，相同输入和参数会生成相同结果。"
+msgstr ""
+"The label records the three angle increments in degrees. The operation has no "
+"randomness, so identical inputs and parameters produce identical results."
 
 #~ msgid "`alpha_range` = `[0, 0, 1]` （不扫 alpha）"
 #~ msgstr "`alpha_range` = `[0, 0, 1]` (one zero offset)"
 
 #~ msgid "`gamma_range` = `[0, 0, 1]` （不扫 gamma）"
 #~ msgstr "`gamma_range` = `[0, 0, 1]` (one zero offset)"
+
+#~ msgid ""
+#~ "在保持晶格长度不变的前提下扰动 alpha/beta/gamma 角，采样角度剪切自由度。每个角度通道独立控制 "
+#~ "min/max/step（单位：度），扫描的是相对原始角度的增量。"
+#~ msgstr ""
+#~ "Sample angular shear by changing alpha, beta,"
+#~ " and gamma while preserving lattice-vector "
+#~ "lengths. Each channel has an independent "
+#~ "minimum, maximum, and step in degrees, "
+#~ "interpreted as offsets from the input angle."
+
+#~ msgid ""
+#~ "\\alpha'=\\alpha+\\Delta\\alpha,\\quad \\beta'=\\beta+\\Delta\\beta,\\quad"
+#~ " \\gamma'=\\gamma+\\Delta\\gamma"
+#~ msgstr ""
+
+#~ msgid "\\mathbf{C}'=\\mathrm{cellpar\\_to\\_cell}(a,b,c,\\alpha',\\beta',\\gamma')"
+#~ msgstr ""
+
+#~ msgid "$a,b,c$ 保持原长度，三个 $\\Delta$ 值单位均为度。程序从新的六个晶格参数重建晶胞， 不是直接给某个矩阵元素加角度数值；原子分数坐标保持不变。"
+#~ msgstr ""
+#~ "$a,b,c$ keep their original lengths, and the"
+#~ " three $\\Delta$ values are in degrees. The"
+#~ " program rebuilds the cell from the six "
+#~ "new lattice parameters rather than adding "
+#~ "angle values directly to matrix elements; "
+#~ "atomic fractional coordinates remain unchanged."
+
+#~ msgid "场景：模型在单斜晶系上预测崩了，但正交晶系没问题"
+#~ msgstr "Scenario: The model fails on a monoclinic phase but not an orthogonal one"
+
+#~ msgid ""
+#~ "你在 HfO2 上训练了一个 NEP "
+#~ "模型。训练集里只有一个高温四方相（正交晶格），模型对四方相的能量和力预测很好。但一跑常温单斜相，能量误差跳了 3 倍——因为单斜相的 "
+#~ "beta 角偏离 90 度约 10 度，模型没见过非正交的晶胞角度。"
+#~ msgstr ""
+#~ "A HfO2 NEP trained only on a high-"
+#~ "temperature tetragonal phase performs well there "
+#~ "but triples its error on the monoclinic "
+#~ "phase, whose beta angle differs from 90 "
+#~ "degrees. Nonorthogonal cell geometry is out of"
+#~ " domain."
+
+#~ msgid ""
+#~ "**诊断思路：** 不同晶系的本质区别是晶胞角度。模型只在正交晶格上训练，隐式地学会了\"角度总是 90 度\"的先验。只要"
+#~ " beta 偏离 90 "
+#~ "度，晶格矢量在笛卡尔空间的投影关系就变了，原子间距分布也跟着变——模型全靠外推。解决办法是沿角度方向生成一组结构，让模型见过非 90 "
+#~ "度的晶胞。"
+#~ msgstr ""
+#~ "**Diagnosis:** Cell angles change the Cartesian "
+#~ "projection of lattice vectors and therefore "
+#~ "interatomic-distance distributions. Add controlled "
+#~ "nonorthogonal cells so target angles are "
+#~ "interpolated rather than extrapolated."
+
+#~ msgid "**输入：** 一个弛豫好的 HfO2 四方相结构（alpha=beta=gamma=90°）"
+#~ msgstr "alpha=beta=gamma=90°"
+
+#~ msgid "**目标：** 沿 beta 方向生成 -6° 到 +6° 的角度扫描，步长 2°，覆盖单斜相可能出现的 beta 偏离"
+#~ msgstr "**Objective:** Scan beta offsets from -6 to +6 degrees in 2-degree steps."
+
+#~ msgid "**参数设置：**"
+#~ msgstr "**Parameters:**"
+
+#~ msgid "`α 角范围`（`alpha_range`） = `[0, 0, 1]` （不扫 alpha）"
+#~ msgstr "`α angle range` (`alpha_range`) = `[0, 0, 1]` (do not scan alpha)"
+
+#~ msgid "`β 角范围`（`beta_range`） = `[-6, 6, 2]`"
+#~ msgstr "`β angle range` (`beta_range`) = `[-6, 6, 2]`"
+
+#~ msgid "`γ 角范围`（`gamma_range`） = `[0, 0, 1]` （不扫 gamma）"
+#~ msgstr "`γ angle range` (`gamma_range`) = `[0, 0, 1]` (do not scan gamma)"
+
+#~ msgid "**输出：** 7 个结构（-6°, -4°, -2°, 0°, +2°, +4°, +6°），晶格长度不变，只有 beta 角偏离 90 度"
+#~ msgstr ""
+#~ "**Output:** Seven structures with beta offsets "
+#~ "-6, -4, -2, 0, +2, +4, and +6 "
+#~ "degrees and unchanged lattice lengths."
+
+#~ msgid "**怎么验证训练集质量改善：**"
+#~ msgstr "**How to verify that training-set quality improved:**"
+
+#~ msgid "重训后用单斜相参考数据做推理，能量误差应显著下降"
+#~ msgstr ""
+#~ "After labeling and retraining, error on "
+#~ "held-out monoclinic references should decrease."
+
+#~ msgid "检查输出结构的体积：角度变化会轻微改变体积（晶格长度不变但矢量投影关系变了），确认体积变化 < 2%"
+#~ msgstr ""
+#~ "Check output volumes. Angles change vector "
+#~ "projections even at fixed lengths, so define"
+#~ " and verify an acceptable volume change for"
+#~ " the study."
+
+#~ msgid "如果模型对更多角度方向仍不准，同时放开 alpha 和 gamma 做多角度联合扫描"
+#~ msgstr ""
+#~ "If other angular directions remain inaccurate, "
+#~ "add alpha and gamma scans deliberately."
+
+#~ msgid "如果角度扫描范围 > ±10° 后结构明显非物理，可能是该体系不支持如此大的角度偏离"
+#~ msgstr ""
+#~ "If offsets beyond ±10 degrees produce "
+#~ "implausible geometry, narrow the range to the"
+#~ " material's intended phase space."
+
+#~ msgid "什么时候加这张卡、什么时候不加"
+#~ msgstr "When to add this card"
+
+#~ msgid "**加：**"
+#~ msgstr "**Add it when:**"
+
+#~ msgid "训练集仅覆盖高对称晶系（立方、四方），但目标体系存在低对称相（单斜、三斜）"
+#~ msgstr ""
+#~ "Training covers only high-symmetry cells while"
+#~ " target phases are monoclinic or triclinic"
+
+#~ msgid "模型在角度相关性质（如压电系数、角度依赖的弹性常数）上偏差大"
+#~ msgstr "Angle-dependent properties such as piezoelectric or elastic response are inaccurate"
+
+#~ msgid "需要区分\"角度变化\"和\"长度变化\"对模型的影响"
+#~ msgstr "Angle and length effects need to be isolated"
+
+#~ msgid "**不加：**"
+#~ msgstr "**Do not add it when:**"
+
+#~ msgid "体系始终维持高对称、角度不可能偏离 90 度 —— 加了产生无物理意义结构"
+#~ msgstr ""
+#~ "The intended system remains high symmetry and"
+#~ " angular deviations are not physically relevant"
+
+#~ msgid "需要同时控制长度和角度 → 用 `Lattice Perturb` 同时扰动两者更方便"
+#~ msgstr "Lengths and angles should vary stochastically together; use `Lattice Perturb`"
+
+#~ msgid "想用矩阵分量而非角度控制剪切 → `Shear Matrix Strain` 更适合"
+#~ msgstr "Shear should be parameterized by matrix components; use `Shear Matrix Strain`"
+
+#~ msgid ""
+#~ "`tuple[float, float, float]`，默认 `(-2.0, 2.0, "
+#~ "1.0)`。alpha 角相对于原始值的增量扫描区间，格式 `[min, max, "
+#~ "step]`，单位度。注意最终角度 = 原始角度 + 增量，不是直接用增量替换。不扫的通道不能设 "
+#~ "`[0, 0, 0]`，必须写 `[0, 0, 1]` 让 range "
+#~ "至少产生一个 0 点。"
+#~ msgstr ""
+#~ "`tuple[float, float, float]`, default `(-2.0, 2.0,"
+#~ " 1.0)`. Alpha-offset scan as `[min,max,step]` "
+#~ "in degrees. Final angle equals input plus "
+#~ "offset. Use `[0,0,1]`, not a zero step, "
+#~ "for an inactive channel."
+
+#~ msgid ""
+#~ "`tuple[float, float, float]`，默认 `(-2.0, 2.0, "
+#~ "1.0)`。beta 角增量扫描区间，单位和语法同上。不扫时写 `[0, 0, 1]`。"
+#~ msgstr ""
+#~ "`tuple[float, float, float]`, default `(-2.0, 2.0,"
+#~ " 1.0)`. Beta offsets with the same syntax;"
+#~ " use `[0,0,1]` when inactive."
+
+#~ msgid ""
+#~ "`tuple[float, float, float]`，默认 `(-2.0, 2.0, "
+#~ "1.0)`。gamma 角增量扫描区间，同上。不扫时写 `[0, 0, 1]`。"
+#~ msgstr ""
+#~ "`tuple[float, float, float]`, default `(-2.0, 2.0,"
+#~ " 1.0)`. Gamma offsets with the same syntax;"
+#~ " use `[0,0,1]` when inactive."
+
+#~ msgid "输出总数 = Nalpha * Nbeta * Ngamma。三个通道同时按默认值跑 = 5^3 = 125 个结构。步长减半会 8 倍增长，建议从单通道开始逐次加。"
+#~ msgstr ""
+#~ "Output count is Nalpha × Nbeta × Ngamma."
+#~ " Three default five-point channels produce "
+#~ "125 structures; halving every step multiplies "
+#~ "that by eight. Begin with one channel."
+
+#~ msgid "`bool`，默认 `false`。分子晶体必须打开——角度变化会改变分子间相对取向，如果分子内键也被跟着拉伸就不对了。纯无机体系关着即可。"
+#~ msgstr ""
+#~ "`bool`, default `false`. Enable molecular protection"
+#~ " for molecular crystals so angular cell "
+#~ "changes do not distort intramolecular bonds. "
+#~ "Leave disabled for purely inorganic systems."
+
+#~ msgid "推荐预设"
+#~ msgstr "Recommended presets"
+
+#~ msgid "单角度探索（仅 beta，±4°，步长 1°）"
+#~ msgstr "Single-angle scan (beta only, ±4 degrees, step 1)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"ShearAngleCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"alpha_range\": [0, 0, 1],\n"
+#~ "  \"beta_range\": [-4, 4, 1],\n"
+#~ "  \"gamma_range\": [0, 0, 1],\n"
+#~ "  \"identify_organic\": false\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "双角度覆盖（beta+gamma，±3°，步长 1°，~49 个输出）"
+#~ msgstr "Two-angle coverage (beta and gamma, ±3 degrees, about 49 outputs)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"ShearAngleCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"alpha_range\": [0, 0, 1],\n"
+#~ "  \"beta_range\": [-3, 3, 1],\n"
+#~ "  \"gamma_range\": [-3, 3, 1],\n"
+#~ "  \"identify_organic\": false\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "三角度全扫描（alpha+beta+gamma，±5°，步长 2°，~216 个输出）"
+#~ msgstr "Three-angle scan (alpha, beta, gamma, ±5 degrees, step 2, about 216 outputs)"
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"ShearAngleCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"alpha_range\": [-5, 5, 2],\n"
+#~ "  \"beta_range\": [-5, 5, 2],\n"
+#~ "  \"gamma_range\": [-5, 5, 2],\n"
+#~ "  \"identify_organic\": false\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid "推荐组合"
+#~ msgstr "Recommended combinations"
+
+#~ msgid "`Lattice Strain` → `Shear Angle Strain`：先做长度应变，再补角度剪切"
+#~ msgstr "`Lattice Strain` -> `Shear Angle Strain`: add angular shear after length strains"
+
+#~ msgid "`Shear Angle Strain` → `Atomic Perturb`：角度畸变后加原子坐标噪声"
+#~ msgstr ""
+#~ "`Shear Angle Strain` -> `Atomic Perturb`: add"
+#~ " coordinate fluctuations after angular distortion"
+
+#~ msgid "`Shear Angle Strain` + `Shear Matrix Strain`：两者走不同形变路径，互补覆盖"
+#~ msgstr "Use angle and matrix shear as distinct, complementary deformation paths"
+
+#~ msgid ""
+#~ "**输出为空。** 检查每个 range 的步长是否 > 0。不扫的通道不能设 `[0,"
+#~ " 0, 0]`，必须设 `[0, 0, 1]` 让 range "
+#~ "至少产生一个 0 点。"
+#~ msgstr "**No output.** Every step must be positive. Use `[0,0,1]` for an inactive channel."
+
+#~ msgid ""
+#~ "**输出数量爆炸。** 三通道联扫 = Na * Nb * Ng。默认 "
+#~ "`[-2, 2, 1]` 三通道 = 5^3 = 125 "
+#~ "个结构。步长减半会 8 倍增长。建议从单通道开始逐次加。"
+#~ msgstr ""
+#~ "**Output explodes.** Three channels form a "
+#~ "Cartesian product. Start with one channel and"
+#~ " estimate the product before adding others."
+
+#~ msgid ""
+#~ "**角度变化后体积也变了。** 晶格长度保持不变但角度变化会改变笛卡尔空间的矢量投影，体积会轻微变化。这是正常的几何效应，不是 "
+#~ "bug。如果体积变化超过预期，可能是角度步长太大——减小 step。"
+#~ msgstr ""
+#~ "**Volume changes with angle.** This follows "
+#~ "from changed vector projections at fixed "
+#~ "lengths. If the change exceeds the intended"
+#~ " range, reduce angular offsets."
+
+#~ msgid ""
+#~ "**输出晶格接近奇异。** 如果角度偏离过大导致 cellpar_to_cell "
+#~ "产生的晶格矩阵接近退化，结构会不可用。典型症状是晶格行列式接近 0。把角度 range 回调到更保守的范围。"
+#~ msgstr ""
+#~ "**The lattice approaches singularity.** Excessive "
+#~ "angles can make the cell matrix degenerate."
+#~ " Check its determinant and narrow the "
+#~ "range."
+
+#~ msgid "`Ang(a={da}°,b={db}°,g={dg}°)` —— 只显示有非零变化的通道。"
+#~ msgstr "`Ang(a={da}°,b={db}°,g={dg}°)`; only nonzero channels are included."
+
+#~ msgid "可复现性"
+#~ msgstr "Reproducibility"
+
+#~ msgid "无随机性。同参数同输入 → 严格一致输出。所有角度按固定网格扫描。"
+#~ msgstr "Deterministic: all angles are scanned on a fixed grid."

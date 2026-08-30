@@ -45,6 +45,31 @@ def _restore_application_language_after_test():
     if app is not None:
         i18n.install_translator(app, "en_US")
 
+
+def test_documentation_urls_follow_the_resolved_ui_language():
+    page = "module/make-dataset-cards/cards/super-cell-card.html"
+
+    assert i18n.localized_docs_url(page, "en_US") == (
+        "https://neptrainkit.readthedocs.io/en/latest/" + page
+    )
+    assert i18n.localized_docs_url(page, "zh_CN") == (
+        "https://neptrainkit.readthedocs.io/zh_CN/latest/" + page
+    )
+    assert i18n.localized_docs_url(
+        "https://neptrainkit.readthedocs.io/en/latest/" + page,
+        "zh_CN",
+    ) == "https://neptrainkit.readthedocs.io/zh_CN/latest/" + page
+    assert i18n.localized_docs_url("https://example.com/card.html", "zh_CN") == (
+        "https://example.com/card.html"
+    )
+
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    from NepTrainKit.ui.views._card.super_cell_card import SuperCellCard
+
+    assert SuperCellCard().get_online_doc_url() == (
+        "https://neptrainkit.readthedocs.io/zh_CN/latest/" + page
+    )
 _MAKE_DATA_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "pages" / "makedata.py"
 _SHOW_NEP_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "pages" / "show_nep.py"
 _UPDATE_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "update.py"

@@ -19,73 +19,59 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:1
-#: fc5326f16c4d455b9249c454fa2db2c3
+#: ../../source/module/nep-main-tool-sparse-samples.md:1 fc5326f16c4d455b9249c454fa2db2c3
 msgid "代表性采样（最远点采样）"
 msgstr "Representative sampling (Farthest Point Sampling)"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:3
-#: 542cb4f3a9214439811c394fe7a1e94e
+#: ../../source/module/nep-main-tool-sparse-samples.md:3 542cb4f3a9214439811c394fe7a1e94e
 msgid "界面按钮：`代表性采样`（`Sparse samples`）。"
 msgstr "Interface button: `Representative Sampling` (`Sparse samples`)."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:5
-#: f9a52e99ea59432d96cf3cc586631086
+#: ../../source/module/nep-main-tool-sparse-samples.md:5 f9a52e99ea59432d96cf3cc586631086
 msgid "这个工具解决什么问题"
 msgstr "What problem does this tool solve?"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:7
-#: bf316ab2146747e6911dd28db13e3b5c
+#: ../../source/module/nep-main-tool-sparse-samples.md:7 bf316ab2146747e6911dd28db13e3b5c
 msgid ""
 "候选池里经常有大量相似结构。最远点采样（Farthest Point Sampling，FPS）把每个结构表示成一个 "
 "描述符向量，并优先选择离已有样本最远的结构，从而用较少样本覆盖较大的描述符空间。"
 msgstr ""
-"Candidate pools often contain many similar structures. Farthest Point "
-"Sampling (FPS) represents each structure as a descriptor vector and "
-"repeatedly chooses the structure farthest from the samples already "
-"selected, covering a larger descriptor space with fewer structures."
+"Candidate pools often contain many similar structures. Farthest Point Sampling (FPS) "
+"represents each structure as a descriptor vector and repeatedly chooses the structure"
+" farthest from the samples already selected, covering a larger descriptor space with "
+"fewer structures."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:10
-#: a02512a34982474aa223c8d6d8d0b250
+#: ../../source/module/nep-main-tool-sparse-samples.md:10 a02512a34982474aa223c8d6d8d0b250
 msgid "它解决的是**冗余**，不是**数据质量**。短键、错误标签和不合理结构应先清洗，再做 FPS。"
 msgstr ""
-"It addresses **redundancy**, not **data quality**. Clean short bonds, "
-"incorrect labels, and unreasonable structures before running FPS."
+"It addresses **redundancy**, not **data quality**. Clean short bonds, incorrect "
+"labels, and unreasonable structures before running FPS."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:12
-#: d3c2f75ea140462cbf84a9dabcb908da
+#: ../../source/module/nep-main-tool-sparse-samples.md:12 d3c2f75ea140462cbf84a9dabcb908da
 msgid "最远点采样原理"
 msgstr "How Farthest Point Sampling works"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:14
-#: 014edea97f244aa78c692b4790b868e2
+#: ../../source/module/nep-main-tool-sparse-samples.md:14 014edea97f244aa78c692b4790b868e2
 #, python-brace-format
-msgid ""
-"设第 $i$ 个候选结构的描述符为 $\\mathbf{x}_i$，当前已经选出的描述符集合为 $S$。 每一轮计算候选点到集合 $S$ "
-"的最近距离："
+msgid "设第 $i$ 个候选结构的描述符为 $\\mathbf{x}_i$，当前已经选出的描述符集合为 $S$。 每一轮计算候选点到集合 $S$ 的最近距离："
 msgstr ""
-"Let $\\mathbf{x}_i$ be the descriptor of candidate structure $i$, and let"
-" $S$ be the set of descriptors selected so far. At each step, compute the"
-" nearest distance from each candidate to $S$:"
+"Let $\\mathbf{x}_i$ be the descriptor of candidate structure $i$, and let $S$ be the "
+"set of descriptors selected so far. At each step, compute the nearest distance from "
+"each candidate to $S$:"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:17
-#: cbab8d7d55d44d4e9be670aa4412a9c0
+#: ../../source/module/nep-main-tool-sparse-samples.md:17 cbab8d7d55d44d4e9be670aa4412a9c0
 msgid ""
 "\n"
-"d(i,S)=\\min_{\\mathbf{x}_j\\in "
-"S}\\left\\|\\mathbf{x}_i-\\mathbf{x}_j\\right\\|_2\n"
+"d(i,S)=\\min_{\\mathbf{x}_j\\in S}\\left\\|\\mathbf{x}_i-\\mathbf{x}_j\\right\\|_2\n"
 msgstr ""
 "\n"
-"d(i,S)=\\min_{\\mathbf{x}_j\\in "
-"S}\\left\\|\\mathbf{x}_i-\\mathbf{x}_j\\right\\|_2\n"
+"d(i,S)=\\min_{\\mathbf{x}_j\\in S}\\left\\|\\mathbf{x}_i-\\mathbf{x}_j\\right\\|_2\n"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:21
-#: b4a15ea5d22b4b548e719f6a639e978e
+#: ../../source/module/nep-main-tool-sparse-samples.md:21 b4a15ea5d22b4b548e719f6a639e978e
 msgid "然后选择最近距离最大的候选："
 msgstr "Then choose the candidate with the largest nearest distance:"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:23
-#: 89d6478d96b84ec18ef00cd13ec63a41
+#: ../../source/module/nep-main-tool-sparse-samples.md:23 89d6478d96b84ec18ef00cd13ec63a41
 msgid ""
 "\n"
 "i^\\*=\\arg\\max_{i\\notin S}d(i,S),\\qquad\n"
@@ -95,133 +81,105 @@ msgstr ""
 "i^\\*=\\arg\\max_{i\\notin S}d(i,S),\\qquad\n"
 "S\\leftarrow S\\cup\\{\\mathbf{x}_{i^\\*}\\}\n"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:28
-#: 9ca4dcc8aea846ccbd397dc66b7a94fb
+#: ../../source/module/nep-main-tool-sparse-samples.md:28 9ca4dcc8aea846ccbd397dc66b7a94fb
 #, python-brace-format
 msgid "$\\mathbf{x}_i$ 是结构级 NEP 描述符或其 PCA 坐标，没有 Å、eV 之类的物理单位。"
 msgstr ""
-"$\\mathbf{x}_i$ is a structure-level NEP descriptor or its PCA "
-"coordinates; it does not have physical units such as Å or eV."
+"$\\mathbf{x}_i$ is a structure-level NEP descriptor or its PCA coordinates; it does "
+"not have physical units such as Å or eV."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:29
-#: dd38f38f9ced45a9a2ed7da4e39018fe
+#: ../../source/module/nep-main-tool-sparse-samples.md:29 dd38f38f9ced45a9a2ed7da4e39018fe
 msgid "$\\|\\cdot\\|_2$ 是欧氏距离。"
 msgstr "$\\|\\cdot\\|_2$ is the Euclidean distance."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:30
-#: 025766ef17d34eaf811b91c220b110cc
+#: ../../source/module/nep-main-tool-sparse-samples.md:30 025766ef17d34eaf811b91c220b110cc
 msgid ""
 "`最小距离`（`Min distance`）记为 $\\delta$。当所有剩余候选都满足 $d(i,S)<\\delta$ "
 "时，采样会提前停止，所以实际数量可以小于“样本上限”。"
 msgstr ""
-"Let `Min distance` be $\\delta$. Sampling stops early when every "
-"remaining candidate satisfies $d(i,S)<\\delta$, so the actual count can "
-"be smaller than the sample limit."
+"Let `Min distance` be $\\delta$. Sampling stops early when every remaining candidate "
+"satisfies $d(i,S)<\\delta$, so the actual count can be smaller than the sample limit."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:32
-#: 9362262b782c4aa08e45c84023b03e44
+#: ../../source/module/nep-main-tool-sparse-samples.md:32 9362262b782c4aa08e45c84023b03e44
 msgid "提供“训练数据集”后，训练集描述符会作为初始集合 $S_0$。此时优先选择训练集尚未覆盖的候选， 而不是重新挑一批与训练集重复的结构。"
 msgstr ""
-"When a training dataset is provided, its descriptors form the initial set"
-" $S_0$. The sampler then prioritizes candidates not covered by the "
-"training set instead of selecting another batch that duplicates it."
+"When a training dataset is provided, its descriptors form the initial set $S_0$. The "
+"sampler then prioritizes candidates not covered by the training set instead of "
+"selecting another batch that duplicates it."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:36
-#: ed73f6f6f40d44988014039e35667201
-msgid ""
-"`最小距离`的数值依赖当前 NEP 模型以及“原始描述符/降维后描述符”的选择，不能跨模型直接复用。 更换 `nep.txt` "
-"或描述符来源后，应重新观察距离尺度。"
+#: ../../source/module/nep-main-tool-sparse-samples.md:36 ed73f6f6f40d44988014039e35667201
+msgid "`最小距离`的数值依赖当前 NEP 模型以及“原始描述符/降维后描述符”的选择，不能跨模型直接复用。 更换 `nep.txt` 或描述符来源后，应重新观察距离尺度。"
 msgstr ""
-"The value of `Min distance` depends on the current NEP model and on "
-"whether raw or reduced descriptors are used; it cannot be reused blindly "
-"across models. Recheck the distance scale after changing `nep.txt` or the"
-" descriptor source."
+"The value of `Min distance` depends on the current NEP model and on whether raw or "
+"reduced descriptors are used; it cannot be reused blindly across models. Recheck the "
+"distance scale after changing `nep.txt` or the descriptor source."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:40
-#: b674541b0bc84004b2461ce4b1d56ad1
+#: ../../source/module/nep-main-tool-sparse-samples.md:40 b674541b0bc84004b2461ce4b1d56ad1
 msgid "两种选择策略"
 msgstr "Two selection strategies"
 
 #: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 608a586a208142c8b1c272a2e37f67f8 dd59b98983b94982ba9131f22585cdee
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 608a586a208142c8b1c272a2e37f67f8
+#: dd59b98983b94982ba9131f22585cdee
 msgid "中文界面选项"
 msgstr "Chinese UI option"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: fcf0aa964cf7422fb3cea21aad36884f
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 fcf0aa964cf7422fb3cea21aad36884f
 msgid "算法"
 msgstr "Algorithm"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: ca1afb1b0b1147ba93ad3ae49df6590c
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 ca1afb1b0b1147ba93ad3ae49df6590c
 msgid "适用场景"
-msgstr "Use case"
+msgstr "Use Case"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: d165301231984f73b9ec56b90f4167bf
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 d165301231984f73b9ec56b90f4167bf
 msgid "主要限制"
 msgstr "Main limitation"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: 1f0e314289884316ad2fefe36af8aba1
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 1f0e314289884316ad2fefe36af8aba1
 msgid "`全局 FPS（兼容模式）`"
-msgstr "See the parameter description for details."
+msgstr "`Global FPS (compatibility mode)`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: 7f68e68d0b714a019d9cdbe6fc0dee34
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 7f68e68d0b714a019d9cdbe6fc0dee34
 msgid "所有候选共享一个 FPS 集合和总预算"
 msgstr "All candidates share one FPS set and one total budget"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: 0cee7627433a41a8b285ea47259e02a6
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 0cee7627433a41a8b285ea47259e02a6
 msgid "数据属于同一化学体系，或希望完全复现旧流程"
 msgstr ""
-"The data belong to one chemical system, or you need to reproduce the "
-"legacy workflow exactly"
+"The data belong to one chemical system, or you need to reproduce the legacy workflow "
+"exactly"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: a15f6d93e4b84226b036c541768064bd
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 a15f6d93e4b84226b036c541768064bd
 msgid "大数据组可能占满预算，小元素集合可能一个都选不到"
-msgstr ""
-"A large group can consume the budget, leaving a small element set with no"
-" samples"
+msgstr "A large group can consume the budget, leaving a small element set with no samples"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: 44da128a73d64e70abe7d58e6fcff661
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 44da128a73d64e70abe7d58e6fcff661
 msgid "`元素集合平衡 FPS`"
-msgstr "See the parameter description for details."
+msgstr "`Element-set-balanced FPS`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: ef946b1381854caa898f4e7687128d8c
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 ef946b1381854caa898f4e7687128d8c
 msgid "先按结构所含元素集合分组，再在每组内独立 FPS"
-msgstr ""
-"Group structures by their element set, then run FPS independently within "
-"each group"
+msgstr "Group structures by their element set, then run FPS independently within each group"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: 6ee3fea77276409ebc88bee9e99f7b4b
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 6ee3fea77276409ebc88bee9e99f7b4b
 msgid "一个候选池混有 Fe、Fe-O、Fe-Ni-O 等不同体系"
 msgstr "One candidate pool mixes systems such as Fe, Fe-O, and Fe-Ni-O"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:35
-#: 4542434248f745e1a6be255e18952827
+#: ../../source/module/nep-main-tool-sparse-samples.md:35 4542434248f745e1a6be255e18952827
 msgid "强制使用原始描述符和固定数量模式；样本上限不得小于元素集合组数"
 msgstr ""
-"Requires raw descriptors and fixed-count mode; the sample limit must be "
-"at least the number of element-set groups"
+"Requires raw descriptors and fixed-count mode; the sample limit must be at least the "
+"number of element-set groups"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:47
-#: 770df72b1c294b90b9eb42a2af6044ff
+#: ../../source/module/nep-main-tool-sparse-samples.md:47 770df72b1c294b90b9eb42a2af6044ff
 msgid "平衡策略先给每个非空元素集合一个名额。剩余预算按组大小的平方根分配。若第 $g$ 组有 $n_g$ 个候选，其额外名额近似满足："
 msgstr ""
-"The balanced strategy first gives one slot to each non-empty element set."
-" It distributes the remaining budget by the square root of the group "
-"size. If group $g$ has $n_g$ candidates, its additional allocation "
-"approximately satisfies:"
+"The balanced strategy first gives one slot to each non-empty element set. It "
+"distributes the remaining budget by the square root of the group size. If group $g$ "
+"has $n_g$ candidates, its additional allocation approximately satisfies:"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:50
-#: ffaa0ec17fb247e8b4a85abb87115f6e
+#: ../../source/module/nep-main-tool-sparse-samples.md:50 ffaa0ec17fb247e8b4a85abb87115f6e
 #, python-brace-format
 msgid ""
 "\n"
@@ -230,378 +188,302 @@ msgstr ""
 "\n"
 "q_g-1\\propto\\sqrt{n_g}\n"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:54
-#: 9831783d789e4e6e94d2422e58adbf45
+#: ../../source/module/nep-main-tool-sparse-samples.md:54 9831783d789e4e6e94d2422e58adbf45
 msgid ""
 "程序还会把名额限制在该组实际结构数以内，并按小数余量补齐整数预算。没有训练集时，每组从最靠近 "
 "该组描述符中心的结构开始；有训练集时，只使用**元素集合完全相同**的训练结构作为该组初始集合。"
 msgstr ""
-"The program also caps each allocation at the number of structures in that"
-" group and rounds the integer budget using the fractional remainders. "
-"Without a training set, each group starts from the structure closest to "
-"its descriptor center; with a training set, only training structures with"
-" exactly the same element set seed that group."
+"The program also caps each allocation at the number of structures in that group and "
+"rounds the integer budget using the fractional remainders. Without a training set, "
+"each group starts from the structure closest to its descriptor center; with a "
+"training set, only training structures with exactly the same element set seed that "
+"group."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:57
-#: b247e88b298844bcb6b8125c85eeb7b7
+#: ../../source/module/nep-main-tool-sparse-samples.md:57 b247e88b298844bcb6b8125c85eeb7b7
 msgid "平方根配额比按结构数线性分配更照顾小组，但它不表示各体系同等重要。训练目标本身有明确权重时， 仍应先拆分候选池或分别设定预算。"
 msgstr ""
-"A square-root allocation gives small groups more consideration than a "
-"linear allocation by group size, but it does not mean that all systems "
-"are equally important. If the training objective has explicit weights, "
-"split the candidate pool or set separate budgets first."
+"A square-root allocation gives small groups more consideration than a linear "
+"allocation by group size, but it does not mean that all systems are equally "
+"important. If the training objective has explicit weights, split the candidate pool "
+"or set separate budgets first."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:60
-#: 174ec00c06e74eefa020c8e26c8aeef1
+#: ../../source/module/nep-main-tool-sparse-samples.md:60 174ec00c06e74eefa020c8e26c8aeef1
 msgid "两种采样模式"
 msgstr "Two sampling modes"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:62
-#: cb532c880cab4c72a4dd7d961cf8a60d
+#: ../../source/module/nep-main-tool-sparse-samples.md:62 cb532c880cab4c72a4dd7d961cf8a60d
 msgid "固定数量（FPS）"
 msgstr "Fixed count (FPS)"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:64
-#: 8a389f77f3744abf8312014c2a442d3f
+#: ../../source/module/nep-main-tool-sparse-samples.md:64 8a389f77f3744abf8312014c2a442d3f
 msgid "最多选择“样本上限”个结构。以下任一条件满足时提前结束："
 msgstr ""
-"Select at most “Sample limit” structures. Stop early when any of the "
-"following is true:"
+"Select at most “Sample limit” structures. Stop early when any of the following is "
+"true:"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:66
-#: 3e051d8f0b5d46eb92548f4bd0abdc5e
+#: ../../source/module/nep-main-tool-sparse-samples.md:66 3e051d8f0b5d46eb92548f4bd0abdc5e
 msgid "已达到样本上限；"
 msgstr "The sample limit has been reached;"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:67
-#: 2f58c209dffc4fd78962cb2fbd077701
+#: ../../source/module/nep-main-tool-sparse-samples.md:67 2f58c209dffc4fd78962cb2fbd077701
 msgid "候选已用完；"
 msgstr "No candidates remain;"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:68
-#: fac223904fbf4806834645d690407f17
+#: ../../source/module/nep-main-tool-sparse-samples.md:68 fac223904fbf4806834645d690407f17
 msgid "最大最近距离小于“最小距离”。"
 msgstr "The largest nearest distance is below “Min distance”."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:70
-#: 8e34c32fee4d4a17bfe74f5cebce1dfa
+#: ../../source/module/nep-main-tool-sparse-samples.md:70 8e34c32fee4d4a17bfe74f5cebce1dfa
 msgid "因此“样本上限”是上限，不是保证数量。"
 msgstr "Therefore, “Sample limit” is a cap, not a guaranteed count."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:72
-#: dfe40b05e9654e31969292e0351ad851
+#: ../../source/module/nep-main-tool-sparse-samples.md:72 dfe40b05e9654e31969292e0351ad851
 msgid "$R^2$ 停止（FPS）"
 msgstr "$R^2$ stopping (FPS)"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:74
-#: 48734852eaea4c0ea64fac2325eb9e37
+#: ../../source/module/nep-main-tool-sparse-samples.md:74 48734852eaea4c0ea64fac2325eb9e37
 msgid "只在“全局 FPS”中可选。程序每轮仍按 FPS 选点，但会计算当前实现定义的描述符方差覆盖分数："
 msgstr ""
-"This option is available only for “Global FPS”. The program still selects"
-" points by FPS, but also computes the descriptor-variance coverage score "
-"defined by the current implementation:"
+"This option is available only for “Global FPS”. The program still selects points by "
+"FPS, but also computes the descriptor-variance coverage score defined by the current "
+"implementation:"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:76
-#: 8614b3f0cc514dd986838c128071dabd
+#: ../../source/module/nep-main-tool-sparse-samples.md:76 8614b3f0cc514dd986838c128071dabd
 msgid ""
 "\n"
 "R^2_{\\mathrm{cover}}\n"
 "=\n"
-"\\frac{\\sum_{i\\in "
-"S}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2}\n"
-"{\\sum_{i=1}^{N}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2},"
-"\n"
+"\\frac{\\sum_{i\\in S}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2}\n"
+"{\\sum_{i=1}^{N}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2},\n"
 "\\qquad\n"
 "\\bar{\\mathbf{x}}=\\frac{1}{N}\\sum_{i=1}^{N}\\mathbf{x}_i\n"
 msgstr ""
 "\n"
 "R^2_{\\mathrm{cover}}\n"
 "=\n"
-"\\frac{\\sum_{i\\in "
-"S}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2}\n"
-"{\\sum_{i=1}^{N}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2},"
-"\n"
+"\\frac{\\sum_{i\\in S}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2}\n"
+"{\\sum_{i=1}^{N}\\left\\|\\mathbf{x}_i-\\bar{\\mathbf{x}}\\right\\|_2^2},\n"
 "\\qquad\n"
 "\\bar{\\mathbf{x}}=\\frac{1}{N}\\sum_{i=1}^{N}\\mathbf{x}_i\n"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:85
-#: 7f34e42856844260bee55522ffd94d67
+#: ../../source/module/nep-main-tool-sparse-samples.md:85 7f34e42856844260bee55522ffd94d67
 msgid "当 $R^2_{\\mathrm{cover}}$ 达到“$R^2$ 阈值”时停止；“样本上限”和“最小距离”仍然同时生效。"
 msgstr ""
-"Stop when $R^2_{\\mathrm{cover}}$ reaches the “$R^2$ threshold”; “Sample "
-"limit” and “Min distance” remain active at the same time."
+"Stop when $R^2_{\\mathrm{cover}}$ reaches the “$R^2$ threshold”; “Sample limit” and "
+"“Min distance” remain active at the same time."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:88
-#: 61c7759966f24e4ab185c5ab25496e8d
+#: ../../source/module/nep-main-tool-sparse-samples.md:88 61c7759966f24e4ab185c5ab25496e8d
 msgid ""
 "这里的 $R^2_{\\mathrm{cover}}$ 是 NepTrainKit 的**描述符方差覆盖停止指标**，不是回归模型的决定系数， "
 "也不是重构误差。它偏重远离描述符均值的点，不能单独证明训练误差已经收敛。"
 msgstr ""
-"Here $R^2_{\\mathrm{cover}}$ is NepTrainKit's **descriptor-variance "
-"coverage stopping metric**. It is not the coefficient of determination of"
-" a regression model and not a reconstruction error. It emphasizes points "
-"far from the descriptor mean, so it cannot by itself show that training "
-"error has converged."
+"Here $R^2_{\\mathrm{cover}}$ is NepTrainKit's **descriptor-variance coverage stopping"
+" metric**. It is not the coefficient of determination of a regression model and not a"
+" reconstruction error. It emphasizes points far from the descriptor mean, so it "
+"cannot by itself show that training error has converged."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:92
-#: 4ec75003fcb4436f840ad83edb81ac18
+#: ../../source/module/nep-main-tool-sparse-samples.md:92 4ec75003fcb4436f840ad83edb81ac18
 msgid "描述符来源"
 msgstr "Descriptor source"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 990bf15a955241f0ba17304a1d736802
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 990bf15a955241f0ba17304a1d736802
 msgid "实际距离空间"
 msgstr "Actual distance space"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 6ea814b70caa4b939ea1917f717826ba
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 6ea814b70caa4b939ea1917f717826ba
 msgid "效果"
 msgstr "Effect"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: aa50c0751bbe47b7961cab6c70ee1786
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 aa50c0751bbe47b7961cab6c70ee1786
 msgid "`降维后（PCA）`"
-msgstr "See the parameter description for details."
+msgstr "`Reduced (PCA)`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 941a714397754c15ba1185858a3a58b6
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 941a714397754c15ba1185858a3a58b6
 msgid "当前数据的 PCA 坐标；合并训练集时会在候选与训练描述符上联合降到二维"
 msgstr ""
-"PCA coordinates of the current data; when a training set is included, "
-"candidates and training descriptors are reduced jointly to two dimensions"
+"PCA coordinates of the current data; when a training set is included, candidates and "
+"training descriptors are reduced jointly to two dimensions"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 7739b2d930be42e597e025688d2ca79f
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 7739b2d930be42e597e025688d2ca79f
 msgid "速度快、便于和叠加图对应，但降维可能丢失低方差方向"
 msgstr ""
-"Fast and easy to compare with the overlay plot, but dimensionality "
-"reduction can lose low-variance directions"
+"Fast and easy to compare with the overlay plot, but dimensionality reduction can lose"
+" low-variance directions"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 8bfdbd55b0434ee782a63294216eb140
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 8bfdbd55b0434ee782a63294216eb140
 msgid "`原始描述符`"
-msgstr "See the parameter description for details."
+msgstr "`Raw descriptors`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 81b06989d6044407bd4ccc9497ecf5dd
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 81b06989d6044407bd4ccc9497ecf5dd
 msgid "缓存的结构级原始描述符"
 msgstr "Cached structure-level raw descriptors"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 6dd465fb75e647a89c4d72a4050e03ec
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 6dd465fb75e647a89c4d72a4050e03ec
 msgid "保留完整描述符信息，但距离尺度随维度和模型变化"
 msgstr ""
-"Preserves the full descriptor information, but the distance scale changes"
-" with dimensionality and the model"
+"Preserves the full descriptor information, but the distance scale changes with "
+"dimensionality and the model"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:99
-#: 48f8fdca8ebd4bd6b50f19bbbc245861
+#: ../../source/module/nep-main-tool-sparse-samples.md:99 48f8fdca8ebd4bd6b50f19bbbc245861
 msgid "如果请求原始描述符但当前没有缓存，程序会提示并回退到降维空间。元素集合平衡 FPS 不允许这种回退； 缺少原始描述符时会停止并报错。"
 msgstr ""
-"If raw descriptors are requested but no cache is available, the program "
-"reports this and falls back to the reduced space. Element-set-balanced "
-"FPS does not allow this fallback; it stops with an error when raw "
-"descriptors are missing."
+"If raw descriptors are requested but no cache is available, the program reports this "
+"and falls back to the reduced space. Element-set-balanced FPS does not allow this "
+"fallback; it stops with an error when raw descriptors are missing."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:102
-#: c4295d97cba542db8d243386bf705127
+#: ../../source/module/nep-main-tool-sparse-samples.md:102 c4295d97cba542db8d243386bf705127
 msgid "“将当前选择作为区域”到底做什么"
 msgstr "What does “Use current selection as region” actually do?"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:104
-#: f7f45def5e75427999d6830172e71e26
+#: ../../source/module/nep-main-tool-sparse-samples.md:104 f7f45def5e75427999d6830172e71e26
 msgid "这个选项不是“把当前选择当作已经保留的训练集”，而是把当前选中的结构限制为**本次 FPS 的候选区域**："
 msgstr ""
-"This option does not treat the current selection as an already-retained "
-"training set. Instead, it restricts the current selection to the "
-"**candidate region for this FPS run**:"
+"This option does not treat the current selection as an already-retained training set."
+" Instead, it restricts the current selection to the **candidate region for this FPS "
+"run**:"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:106
-#: 7d9a136443354e6eb61a7b6686670caf
+#: ../../source/module/nep-main-tool-sparse-samples.md:106 7d9a136443354e6eb61a7b6686670caf
 msgid "先在主图上选中想清理的局部点群。"
-msgstr ""
-"First select the local cluster of points you want to clean on the main "
-"plot."
+msgstr "First select the local cluster of points you want to clean on the main plot."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:107
-#: ecb0e402267b4667a51e248e92ea6e63
+#: ../../source/module/nep-main-tool-sparse-samples.md:107 ecb0e402267b4667a51e248e92ea6e63
 msgid "勾选“将当前选择作为区域”并运行 FPS。"
 msgstr "Check “Use current selection as region” and run FPS."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:108
-#: 7c9a67005fc14915b0f35264b7e42ec4
+#: ../../source/module/nep-main-tool-sparse-samples.md:108 7c9a67005fc14915b0f35264b7e42ec4
 msgid "FPS 只在这批已选结构中找代表点。"
-msgstr ""
-"FPS searches for representative points only within the selected "
-"structures."
+msgstr "FPS searches for representative points only within the selected structures."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:109
-#: e97ef36a05a0452f9bafcbf46c0361df
+#: ../../source/module/nep-main-tool-sparse-samples.md:109 e97ef36a05a0452f9bafcbf46c0361df
 msgid "运行结束后，程序会把代表点从当前选择中**取消选择**。"
 msgstr ""
-"When the run ends, the program **deselects** the representative points "
-"from the current selection."
+"When the run ends, the program **deselects** the representative points from the "
+"current selection."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:110
-#: 03132050a77e4db7a6a88dbd3784a261
+#: ../../source/module/nep-main-tool-sparse-samples.md:110 03132050a77e4db7a6a88dbd3784a261
 msgid "仍保持选中的，是该区域内未被 FPS 保留的冗余结构，可直接点击“删除选中结构”。"
 msgstr ""
-"The structures that remain selected are redundant structures in that "
-"region that FPS did not retain; you can click “Delete selected "
-"structures” directly."
+"The structures that remain selected are redundant structures in that region that FPS "
+"did not retain; you can click “Delete selected structures” directly."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:112
-#: c105ea482ce64ea9bc5414511f55500a
+#: ../../source/module/nep-main-tool-sparse-samples.md:112 c105ea482ce64ea9bc5414511f55500a
 msgid ""
 "也就是说，它实现的是“在选定区域内保留代表点、留下冗余点供删除”。如果当前没有选择，或者当前子图 "
 "上找不到这些选择，程序会提示并退回到全数据采样；此时结果会按普通方式加入选择集。"
 msgstr ""
-"In other words, it keeps representative points within the selected region"
-" and leaves redundant points selected for deletion. If nothing is "
-"selected, or the current subplot cannot find those selections, the "
-"program reports the issue and falls back to sampling all data; the result"
-" is then added to the selection set normally."
+"In other words, it keeps representative points within the selected region and leaves "
+"redundant points selected for deletion. If nothing is selected, or the current "
+"subplot cannot find those selections, the program reports the issue and falls back to"
+" sampling all data; the result is then added to the selection set normally."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:115
-#: 08651fc2294644e791ea13c14bac9bfe
+#: ../../source/module/nep-main-tool-sparse-samples.md:115 08651fc2294644e791ea13c14bac9bfe
 msgid "其他参数"
-msgstr "Details for this option"
+msgstr "Other parameters"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 586e415dc1514100b2711a0f409a9c9d
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 586e415dc1514100b2711a0f409a9c9d
 msgid "中文界面字段"
-msgstr "Details for this option"
+msgstr "UI field"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 6a7058464ad747499a5ebe074c00f151
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 6a7058464ad747499a5ebe074c00f151
 msgid "怎么选"
-msgstr "Details for this option"
+msgstr "How to choose"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 3ff316c878cb4020919bb278bac0a9e4
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 3ff316c878cb4020919bb278bac0a9e4
 msgid "改变什么"
-msgstr "Details for this option"
+msgstr "What it changes"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 0f298bb1076848b8b8886a893d845c58
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 0f298bb1076848b8b8886a893d845c58
 msgid "`样本上限`"
-msgstr "See the parameter description for details."
+msgstr "`Sample limit`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 068d977645ce42b9942fdb2e0d5bf5a1
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 068d977645ce42b9942fdb2e0d5bf5a1
 msgid "固定数量模式填目标上限；$R^2$ 模式填安全上限"
-msgstr "Details for this option"
+msgstr "Enter the desired cap in fixed-count mode, or a safety cap in $R^2$ mode"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 452ec51b0255487fa23cd51741f01f1a
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 452ec51b0255487fa23cd51741f01f1a
 msgid "限制最多选择多少结构；`0` 在 $R^2$ 模式表示允许用到全部候选，在固定数量模式会得到空结果"
-msgstr "Details for this option"
+msgstr "Caps the number of selected structures; `0` allows all candidates in $R^2$ mode but produces an empty result in fixed-count mode"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 40e7618247494a63b6ea5e48578f6d50
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 40e7618247494a63b6ea5e48578f6d50
 msgid "`最小距离`"
-msgstr "See the parameter description for details."
+msgstr "`Minimum distance`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: b5893fadf55b4b00a5c1d60b19d306e9
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 b5893fadf55b4b00a5c1d60b19d306e9
 msgid "从较小值开始，根据实际选择数量和覆盖图调整"
-msgstr "Details for this option"
+msgstr "Start with a small value, then adjust it using the actual selection count and coverage plot"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: c5c7d352214342b68aaa05d9e3622640
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 c5c7d352214342b68aaa05d9e3622640
 msgid "调大通常减少结果并提高样本间隔；调小允许保留更相似的结构"
-msgstr "Details for this option"
+msgstr "A larger value usually selects fewer, more widely separated samples; a smaller value permits more similar structures"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 2e93ad261b5f488fb11478d35dfd64f6
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 2e93ad261b5f488fb11478d35dfd64f6
 msgid "`R^2 阈值`"
-msgstr "See the parameter description for details."
+msgstr "`R^2 threshold`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 00aee2536a344d3db8c5b374d1d4d757
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 00aee2536a344d3db8c5b374d1d4d757
 msgid "只在 $R^2$ 模式生效，范围 `[0, 1]`"
-msgstr "Details for this option"
+msgstr "Used only in $R^2$ mode; valid range: `[0, 1]`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 23bb2051711444c88293b9694be961c1
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 23bb2051711444c88293b9694be961c1
 msgid "调高通常选择更多结构；仍可能先被样本上限或最小距离截断"
-msgstr "Details for this option"
+msgstr "A higher value usually selects more structures, although the sample limit or minimum distance may stop sampling first"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: c95b2a71d9414eb09a45b6fcef74bdfb
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 c95b2a71d9414eb09a45b6fcef74bdfb
 msgid "`训练数据集`"
-msgstr "See the parameter description for details."
+msgstr "`Training dataset`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: dcd61c3b49004c708aa2284f0f491fe3
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 dcd61c3b49004c708aa2284f0f491fe3
 msgid "选择已有训练集的 `.xyz` 或目录"
-msgstr "Details for this option"
+msgstr "Select an existing training-set `.xyz` file or directory"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 5fa3917b31814554a258e72b2a95cc44
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 5fa3917b31814554a258e72b2a95cc44
 msgid "用已有训练描述符预热距离；全局模式读取失败时忽略预热，平衡模式读取或维度不匹配会报错"
-msgstr "Details for this option"
+msgstr "Seeds distances with existing training descriptors; global mode ignores the seed if loading fails, while balanced mode reports loading or dimension-mismatch errors"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 1c6bb671599341379337bc604986915d
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 1c6bb671599341379337bc604986915d
 msgid "`显示训练集叠加图`"
-msgstr "See the parameter description for details."
+msgstr "`Show training-set overlay`"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: b418e46567c34d0fbf32cb635bc424e8
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 b418e46567c34d0fbf32cb635bc424e8
 msgid "只有填写训练数据集路径时才有结果"
-msgstr "Details for this option"
+msgstr "Produces a result only when a training-dataset path is provided"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:87
-#: 220e603f21a24b378e7b4fa7528a6365
+#: ../../source/module/nep-main-tool-sparse-samples.md:87 220e603f21a24b378e7b4fa7528a6365
 msgid "采样后把训练集、当前数据和入选结构联合投影到 PCA 图中；只用于观察，不改变采样结果"
-msgstr "Details for this option"
+msgstr "After sampling, jointly projects the training set, current data, and selected structures onto a PCA plot; this visualization does not change the sampling result"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:125
-#: 8b5674acc8bf448ea876ddb0a61ddb27
+#: ../../source/module/nep-main-tool-sparse-samples.md:125 8b5674acc8bf448ea876ddb0a61ddb27
 msgid "![最远点采样设置](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)"
-msgstr "See the figure for the corresponding control and result."
+msgstr "![Farthest Point Sampling settings](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:125
-#: bec7589f493a4ddaa387c88008440617
+#: ../../source/module/nep-main-tool-sparse-samples.md:125 bec7589f493a4ddaa387c88008440617
 msgid "最远点采样设置"
-msgstr "Details for this option"
+msgstr "Farthest Point Sampling settings"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:125
-#: bec7589f493a4ddaa387c88008440617
-msgid ""
-".. image:: "
-"../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
-msgstr ""
-".. image:: "
-"../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
+#: ../../source/module/nep-main-tool-sparse-samples.md:125 bec7589f493a4ddaa387c88008440617
+msgid ".. image:: ../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
+msgstr ".. image:: ../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:127
-#: 6df8db5e5ae04db5b3abb7ba687b3188
+#: ../../source/module/nep-main-tool-sparse-samples.md:127 6df8db5e5ae04db5b3abb7ba687b3188
 msgid "跑完检查什么"
-msgstr "Details for this option"
+msgstr "What to check after sampling"
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:129
-#: 38146e5fbd0449648d383c7637ab5052
+#: ../../source/module/nep-main-tool-sparse-samples.md:129 38146e5fbd0449648d383c7637ab5052
 msgid "看实际选择数量是否因“最小距离”或 $R^2$ 阈值提前停止。"
-msgstr "Details for this option"
+msgstr "Check whether the actual selection count stopped early because of the minimum distance or $R^2$ threshold."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:130
-#: 6fe3f68b38f14005836c9db71e5a1f32
+#: ../../source/module/nep-main-tool-sparse-samples.md:130 6fe3f68b38f14005836c9db71e5a1f32
 msgid "看元素集合平衡模式是否覆盖了预期的每个元素集合。"
-msgstr "Details for this option"
+msgstr "Check whether element-set-balanced mode covered every expected element set."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:131
-#: 6dde39da15d64939955cfd4e7451b341
+#: ../../source/module/nep-main-tool-sparse-samples.md:131 6dde39da15d64939955cfd4e7451b341
 msgid "有训练集时，看叠加图中新样本是否落在训练集空白区域，而不是大量堆在已有训练点附近。"
-msgstr "Details for this option"
+msgstr "When a training set is provided, use the overlay plot to verify that new samples fill uncovered regions instead of clustering around existing training points."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:132
-#: 002abe8abd73409ea42115fbcf416caa
+#: ../../source/module/nep-main-tool-sparse-samples.md:132 002abe8abd73409ea42115fbcf416caa
 msgid "回到结构视图抽查代表点；描述符距离大可能来自真实新环境，也可能来自坏结构。"
-msgstr "Details for this option"
+msgstr "Return to the structure view and inspect representative samples; a large descriptor distance may indicate a genuinely new environment or a malformed structure."
 
-#: ../../source/module/nep-main-tool-sparse-samples.md:133
-#: 3831fd1a3fac45d0b9c878fe608c4d0b
+#: ../../source/module/nep-main-tool-sparse-samples.md:133 3831fd1a3fac45d0b9c878fe608c4d0b
 msgid "使用“当前选择作为区域”时，删除前确认：**仍被选中的才是准备删除的冗余点**。"
-msgstr "Details for this option"
+msgstr "When using “Use current selection as region”, confirm before deletion that **the points still selected are the redundant structures to remove**."

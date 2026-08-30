@@ -127,6 +127,9 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
   - 源码：`src/NepTrainKit/ui/views/_card/foo_bar_card.py`
   - 文档：`docs/source/module/make-dataset-cards/cards/foo-bar-card.md`
   - 在线链接：`https://neptrainkit.readthedocs.io/en/latest/module/make-dataset-cards/cards/foo-bar-card.html`
+- 软件内打开文档时必须通过 `NepTrainKit.i18n.localized_docs_url(...)` 选择语言；不要在 UI 层新增固定 `/en/latest/` 链接。中文界面打开 `/zh_CN/latest/`，英文界面打开 `/en/latest/`。
+- 修改卡片文档、目录或截图后必须更新 gettext 目录并构建中英文 HTML。不能只检查已有 `.po`：还要确认英文 HTML 没有中文正文、标题或导航残留。
+- 文档中的 UI 截图必须来自 `tools/docs/screenshots/` 的可重复场景。中英文各有一张时，英文文件使用 `_en` 后缀并加入 `docs/source/conf.py` 的双语截图映射；截图场景必须隔离用户工作流和配置数据。
 
 **文档写作核心原则：从训练集诊断出发。**
 
@@ -184,7 +187,7 @@ Make Dataset 是 UI 工作流的一部分。生成类、采样类、过滤类和
 
 ## 验证
 
-普通卡片从仓库根目录运行 `python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick`。涉及检查器、卡片头、目录、分组、分叉、工作流库或翻译时加 `--ui`。更多模式见 `references/validation-playbook.md`。
+普通卡片从仓库根目录运行 `python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick`。涉及检查器、卡片头、目录、分组、分叉、工作流库或翻译时加 `--ui`。文档或翻译变化还要运行 `python tools/docs/i18n.py all`；截图变化按 `tools/docs/screenshots/README.md` 更新并核对中英文场景。更多模式见 `references/validation-playbook.md`。
 
 ## 交付格式
 

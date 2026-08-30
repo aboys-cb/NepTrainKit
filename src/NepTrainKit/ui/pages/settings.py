@@ -13,7 +13,12 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
 
 from NepTrainKit.config import Config
 from NepTrainKit.core.runtime_health import RuntimeHealth, inspect_runtime_health
-from NepTrainKit.i18n import LANGUAGE_LABELS, SUPPORTED_LANGUAGES, normalize_language
+from NepTrainKit.i18n import (
+    LANGUAGE_LABELS,
+    SUPPORTED_LANGUAGES,
+    localized_docs_url,
+    normalize_language,
+)
 from NepTrainKit.logging_config import (
     DEFAULT_LOG_LEVEL,
     LOG_LEVELS,
@@ -39,7 +44,7 @@ from NepTrainKit.ui.update import (
     UpdateWoker,
     get_pending_update_version,
 )
-from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
+from NepTrainKit.version import FEEDBACK_URL, __version__, YEAR, AUTHOR
 
 
 class SettingsWidget(ScrollArea):
@@ -404,7 +409,7 @@ class SettingsWidget(ScrollArea):
 
         self.about_group = SettingCardGroup(self.tr("About"), self.scrollWidget)
         self.help_card = HyperlinkCard(
-            HELP_URL,
+            localized_docs_url("index.html"),
             self.tr('Open Help Page'),
             FluentIcon.HELP,
             self.tr('Help'),

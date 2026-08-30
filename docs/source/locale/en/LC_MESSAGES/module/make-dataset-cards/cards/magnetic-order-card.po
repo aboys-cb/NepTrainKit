@@ -8,618 +8,679 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-28 20:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:3
-#: 4e02ddc379f847428c3d17daf14080fd
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:3
+#: 51ccffae89484ddda6dd028a1bdc1c86
 msgid "磁序（Magnetic Order）"
 msgstr "Magnetic Order"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:5
-#: f2590774905a4686b0298eb224fa5d15
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:5
+#: f46b708f06b84a96b1ed659c98c8da9e
 msgid "**分类：** 磁性"
 msgstr "**Category:** Magnetism"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:7
-#: 99858c187dae48a78708a3011fb71777
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:7
+#: 7964749823f84189b7851b9eb52c9a5b
 msgid "功能说明"
-msgstr "What the card does"
+msgstr "Purpose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:9
-#: 9e5d3845c2814aa09d0860fc3d13a66d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:9
+#: 779e585bcc544989bbceeb3a93215464
 msgid ""
-"根据元素磁矩幅值，从每个输入结构生成 FM、AFM 和随机 PM 初始自旋构型。卡片不改"
-"变原子坐标、元素或晶胞；输出统一写入三分量 `spin:R:3`，并同步维护 ASE "
-"`initial_magmoms`。"
-msgstr "Use element magnetic-moment magnitudes to generate FM, AFM, and random PM initial spin configurations for each input. The card does not change coordinates, elements, or the cell; outputs consistently write three-component `spin:R:3` values and update ASE `initial_magmoms`."
+"根据元素磁矩幅值，从每个输入结构生成 FM、AFM 和随机 PM 初始自旋构型。卡片不改变原子坐标、元素或晶胞；输出统一写入三分量 `spin:R:3`，并同步维护 "
+"ASE `initial_magmoms`。"
+msgstr ""
+"Use element magnetic-moment magnitudes to generate FM, AFM, and random PM initial "
+"spin configurations for each input. The card does not change coordinates, elements, "
+"or the cell; outputs consistently write three-component `spin:R:3` values and update "
+"ASE `initial_magmoms`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:11
-#: f02ba18ab5974b00858a4bde8e9065c3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:11
+#: 82d50b27df7b4fef80be983cbc041aba
 msgid ""
-"这张卡生成的是用于 DFT/NEP 数据准备的**初始自旋端点**，不是磁基态判断器，也不"
-"能证明某个输出是真正的热力学 FM、AFM 或 PM 相。后续仍需通过电子结构计算、能量"
-"比较和收敛后磁矩验证。"
-msgstr "This card generates **initial spin endpoints** for DFT/NEP data preparation. It is not a magnetic-ground-state classifier and cannot prove that an output is a thermodynamic FM, AFM, or PM phase. Verify it later with electronic-structure calculations, energy comparisons, and converged magnetic moments."
+"这张卡生成的是用于 DFT/NEP 数据准备的**初始自旋端点**，不是磁基态判断器，也不能证明某个输出是真正的热力学 FM、AFM 或 PM "
+"相。后续仍需通过电子结构计算、能量比较和收敛后磁矩验证。"
+msgstr ""
+"This card generates **initial spin endpoints** for DFT/NEP data preparation. It is "
+"not a magnetic-ground-state classifier and cannot prove that an output is a "
+"thermodynamic FM, AFM, or PM phase. Verify it later with electronic-structure "
+"calculations, energy comparisons, and converged magnetic moments."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:13
-#: 6e4ffeca6df54cf29a23a4cae8e0dd48
-msgid "`Magnetic Order` 与 `Spin Disorder` 的职责不同："
-msgstr "`Magnetic Order` and `Spin Disorder` serve different roles:"
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:13
+#: 327d95db60b2499cafa336e79333dc73
+msgid "`Magnetic Order` 与 `Moment Disorder` 的职责不同："
+msgstr "`Magnetic Order` and `Moment Disorder` have different roles:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:15
-#: 2bf57e30e9944b4e8fa2b2a921ab1ab4
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:15
+#: 327d95db60b2499cafa336e79333dc73
 msgid "`Magnetic Order`：建立 FM、AFM 或完全随机 PM 端点。"
 msgstr "`Magnetic Order`: create FM, AFM, or fully random PM endpoints."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:16
-#: ca0a8048bcf644acbef76c4e3d61c15f
-msgid ""
-"`Spin Disorder`：从已有磁态出发，扫描局部翻转比例、随机化比例或锥角无序等中间"
-"状态。"
-msgstr "`Spin Disorder`: start from an existing magnetic state and scan intermediate states such as local flip fractions, randomization fractions, or cone-angle disorder."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:16
+#: 07e7bcd06015400fb33b1447b19b8b43
+msgid "`Moment Disorder`：从已有磁态出发，按比例翻转或重新定向一部分磁矩，生成不同无序程度的中间状态。"
+msgstr ""
+"`Moment Disorder`: start from an existing magnetic state and flip or reorient a "
+"fraction of its moments to generate intermediate states with different degrees of "
+"disorder."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:18
-#: 761b31b56dda4b8fb2c7ec5e1366bc09
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:18
+#: ddbed606eaa5456d9f65f5298eff1760
 msgid "原理与公式"
-msgstr "Principle and formulas"
+msgstr "Principles and Equations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:20
-#: 57abab947fc04254b63a50a54cf52057
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:20
+#: db586c1028484d0f8b6b5657c112071c
+#, python-brace-format
 msgid ""
-"程序先为每个原子得到磁矩模长 $m_i$。共线输出写入标量 $m_i s_i$，非共线输出沿"
-"参考轴 $\\hat{\\mathbf a}$ 写入 $\\mathbf m_i=m_i s_i\\hat{\\mathbf a}$。三类"
-"磁序的符号/方向规则为："
-msgstr "The program first obtains a moment magnitude $m_i$ for each atom. Collinear outputs use the scalar $m_i s_i$; non-collinear outputs use $\\mathbf m_i=m_i s_i\\hat{\\mathbf a}$ along the reference axis $\\hat{\\mathbf a}$. The sign and direction rules for the three orders are:"
+"程序先为每个原子得到磁矩模长 $m_i$。共线输出写入标量 $m_i s_i$，非共线输出沿参考轴 $\\hat{\\mathbf a}$ 写入 $\\mathbf "
+"m_i=m_i s_i\\hat{\\mathbf a}$。三类磁序的符号/方向规则为："
+msgstr ""
+"The program first obtains a moment magnitude $m_i$ for each atom. Collinear outputs "
+"use the scalar $m_i s_i$; non-collinear outputs use $\\mathbf m_i=m_i "
+"s_i\\hat{\\mathbf a}$ along the reference axis $\\hat{\\mathbf a}$. The sign and "
+"direction rules for the three orders are:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:24
-#: 6801f8bcf3cd4b83a952bb284a117885
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:24
+#: 45276532526943a08a9cd9ffdae40613
 msgid "铁磁（FM）：所有磁性原子 $s_i=+1$；"
 msgstr "Ferromagnetic (FM): every magnetic atom has $s_i=+1$;"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:25
-#: 8eb02d913ca64b8c9765efb575ea7bfc
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:25
+#: 10b0d053a57f45e8b96de31244c36266
 msgid "反铁磁（AFM）：按 k 向量层号或 A/B 分组交替给出 $s_i=\\pm1$；"
 msgstr "Antiferromagnetic (AFM): alternate $s_i=\\pm1$ by k-vector layer index or A/B groups;"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:26
-#: 1300482fd94e4fd883759156451a66a9
-msgid ""
-"顺磁近似（PM）：共线模式随机取正负号，非共线模式按球面、圆锥、平面或轴向规则"
-"抽方向。"
-msgstr "Paramagnetic approximation (PM): choose random signs in collinear mode, or sample directions on a sphere, cone, plane, or axis in non-collinear mode."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:26
+#: 60b44d648b834fc786fafa77ca8d1573
+msgid "顺磁近似（PM）：共线模式随机取正负号，非共线模式按球面、圆锥、平面或轴向规则抽方向。"
+msgstr ""
+"Paramagnetic approximation (PM): choose random signs in collinear mode, or sample "
+"directions on a sphere, cone, plane, or axis in non-collinear mode."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:28
-#: 640dcf0831a04bda89de7ab1539d443b
-msgid ""
-"`平衡正负磁矩`只约束有限样本中的正负数量尽量相等，不等价于热力学顺磁系综；这"
-"张卡生成 的是用于训练覆盖的磁构型快照，不是在求磁性基态。"
-msgstr "`Balance positive and negative moments` only makes the sign counts as equal as possible in a finite sample; it is not a thermodynamic paramagnetic ensemble. This card generates magnetic snapshots for training coverage, not a magnetic ground state."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:28
+#: 7fb61157ceba49929d306a729be87865
+msgid "`平衡正负磁矩`只约束有限样本中的正负数量尽量相等，不等价于热力学顺磁系综；这张卡生成 的是用于训练覆盖的磁构型快照，不是在求磁性基态。"
+msgstr ""
+"`Balance positive and negative moments` only makes the sign counts as equal as "
+"possible in a finite sample; it is not a thermodynamic paramagnetic ensemble. This "
+"card generates magnetic snapshots for training coverage, not a magnetic ground state."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:31
-#: db4e705743f7412c99351ad21760f4d3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:31
+#: b09833a9cd1149bca550c12bb949ba8e
 msgid "操作示例"
-msgstr "Example workflow"
+msgstr "Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:33
-#: 2d9849c20ba345829c25b68659943b9a
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:33
+#: dfc615351db649c88f54b6cd860fa320
 msgid "场景：BCC Fe 模型只见过 FM，AFM 测试误差明显更高"
 msgstr "Scenario: a BCC Fe model has seen only FM states and has much higher AFM test error"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:35
-#: fdaea18486dc421fb20b8254c9346ba0
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:35
+#: da1fec2d927644f0b56896aa3ab8eb07
 msgid ""
-"训练集中的 BCC Fe 全是 FM 初态，模型在分层 AFM 构型上的能量和磁力误差显著增"
-"大。需要对同一批几何结构补充 FM、AFM 和随机 PM 自旋端点，分离“几何覆盖不足”和"
-"“磁环境覆盖不足”。"
-msgstr "All BCC Fe structures in the training set are FM initial states, and energy and magnetic-force errors increase sharply for layered AFM configurations. Add FM, AFM, and random PM spin endpoints for the same geometries to separate insufficient geometric coverage from insufficient magnetic-environment coverage."
+"训练集中的 BCC Fe 全是 FM 初态，模型在分层 AFM 构型上的能量和磁力误差显著增大。需要对同一批几何结构补充 FM、AFM 和随机 PM "
+"自旋端点，分离“几何覆盖不足”和“磁环境覆盖不足”。"
+msgstr ""
+"All BCC Fe structures in the training set are FM initial states, and energy and "
+"magnetic-force errors increase sharply for layered AFM configurations. Add FM, AFM, "
+"and random PM spin endpoints for the same geometries to separate insufficient "
+"geometric coverage from insufficient magnetic-environment coverage."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:37
-#: 4cbd35b5abfb4099a513e33c49887d48
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:37
+#: 583ed484912146d8853e7d6629b3b058
 msgid "**输入：** 2×2×2 BCC Fe 周期超胞。"
 msgstr "**Input:** a 2×2×2 periodic BCC Fe supercell."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:39
-#: 8e0296279763490690fd185876972ea8
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:39
+#: 80fbc30f19574049b90c07588553db70
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:41
-#: 868e48a5d9974dfda1539378e14bc126
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:41
+#: 8c9838686cb64f848fbc4047c9329f4e
 msgid "`自旋模型`（`format`） = `collinear`"
 msgstr "`Spin model` (`format`) = `collinear`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:42
-#: 444c8f8a7a334fbbbf46d93d4b9ab2ca
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:42
+#: 0e9e5ee345d94be0b55be6baf5793b31
 msgid "`参考轴`（`axis`） = `[0, 0, 1]`"
 msgstr "`Reference axis` (`axis`) = `[0, 0, 1]`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:43
-#: 2e419264e7d74b64b4657fcac6753ae1
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:43
+#: a02fe6a401c94d33acf46b13e968a23e
 msgid "`Element moments` = `Fe:2.2`"
 msgstr "`Element moments` = `Fe:2.2`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:44
-#: 96e39f87ab22475f984fbdf6d5adef7f
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:44
+#: 8dc816432b1d4603854a19fbde429f7b
 msgid "开启 FM、AFM 和 PM"
 msgstr "Enable FM, AFM, and PM"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:45
-#: f8b626353a8a44bbb09a7788f30d614d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:45
+#: cddafdbdfa7e4c2c90accbb51ef52099
 msgid "`AFM 分配方式`（`afm_mode`） = `k_vector`"
 msgstr "`AFM assignment mode` (`afm_mode`) = `k_vector`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:46
-#: 586c36fc10d4407a9934cca5b1cbec7d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:46
+#: 4227cf09d9ed4a5e95aebd13d927390e
 msgid "`AFM 层向量`（`afm_kvec`） = `111`"
 msgstr "`AFM layer vector` (`afm_kvec`) = `111`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:47
-#: d6b5b7d9a3a645109679f2e8ad98f6af
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:47
+#: f83992fd679142ca89759ebaf8e95f16
 msgid "`PM structures per input` = `8`"
 msgstr "`PM structures per input` = `8`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:48
-#: c83ade506e0149acba319e8d4f3107e4
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:48
+#: c8826b3a5f9b4a6b8ce6fda362361a6a
 msgid "开启`使用随机种子`并把`随机种子`设为 `42`"
 msgstr "Enable `Use seed` and set `Seed` to `42`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:50
-#: dc6282110b794b718971910c9ab3d91c
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:50
+#: b556842ad4bb404fb4c72ebedf063a1f
 msgid ""
-"**运行前检查：** 首输入预览应显示 16 个磁性原子、AFM `+8/-8`，并给出每个输入"
-"及整个数据集的预计输出数量。如果 AFM 只有一个符号，先扩胞或更换 layer "
-"vector。"
-msgstr "**Before running:** the first-input preview should show 16 magnetic atoms, AFM `+8/-8`, and estimated output counts per input and for the dataset. If AFM has only one sign, expand the cell or change the layer vector."
+"**运行前检查：** 首输入预览应显示 16 个磁性原子、AFM `+8/-8`，并给出每个输入及整个数据集的预计输出数量。如果 AFM 只有一个符号，先扩胞或更换 "
+"layer vector。"
+msgstr ""
+"**Before running:** the first-input preview should show 16 magnetic atoms, AFM "
+"`+8/-8`, and estimated output counts per input and for the dataset. If AFM has only "
+"one sign, expand the cell or change the layer vector."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:52
-#: f2a4e9f456ad4f3eb7e0ac2f7b211a46
-msgid ""
-"**输出：** 每个输入生成 1 个 FM、1 个 AFM 和 8 个随机 PM，共 10 个结构。"
-msgstr "**Output:** each input produces one FM, one AFM, and eight random PM structures, for ten structures total."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:52
+#: 72da80c7c6e2414b9a237bd27d7c99f7
+msgid "**输出：** 每个输入生成 1 个 FM、1 个 AFM 和 8 个随机 PM，共 10 个结构。"
+msgstr ""
+"**Output:** each input produces one FM, one AFM, and eight random PM structures, for "
+"ten structures total."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:54
-#: bbe5783333c14933b7f60a0d2481aea0
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:54
+#: 50e6326d8d02450394df66e5345f14a4
 msgid "**验证改善：**"
 msgstr "**Validate the improvement:**"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:56
-#: 82db4ff483294fc399a242a64b502225
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:56
+#: d030efb4dd2b4bb785f5a877eb261fe7
 msgid "检查 FM 自旋沿参考轴同向，AFM 同时包含正负号。"
 msgstr "Check that FM spins align along the reference axis and AFM contains both signs."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:57
-#: eda0ae5346e442cba0701b7e38fbe365
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:57
+#: 18d95f4faa8e4fc78367773e3d2c29fc
 msgid "固定 seed 后重复运行，PM 自旋应逐帧一致。"
 msgstr "Repeat the run with a fixed seed; PM spins should match frame by frame."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:58
-#: bdd05406246146fb996365ee83e1daa8
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:58
+#: 209b501e89214f3a8c9fd652466bc0de
 msgid "重训后分别比较 FM、AFM 和随机 PM 测试切片，不能只看混合总 RMSE。"
-msgstr "After retraining, compare FM, AFM, and random-PM test slices separately; do not rely only on the mixed overall RMSE."
+msgstr ""
+"After retraining, compare FM, AFM, and random-PM test slices separately; do not rely "
+"only on the mixed overall RMSE."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:60
-#: 146aae0614304a2bb769ba095afcd435
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:60
+#: 0a5a4b01bb514ebab782629965796bb8
 msgid "参数说明"
 msgstr "Parameters"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:62
-#: 5570a50aa6d4425aa8cce32fd9d48e7f
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:62
+#: f058bf96084e47db9f861ae4803e224e
 msgid "自旋模型和磁矩幅值"
 msgstr "Spin model and moment magnitudes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:64
-#: f4c7894b43b8415d8a5dbf3309beed6b
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:64
+#: 890c3d33e40d4b589a4cb9c438761125
 msgid "自旋模型（format）"
 msgstr "format"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:66
-#: a1ac293a25104e2db05b1688d1d86d68
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:66
+#: 7825ca47927142288bc9bcd1e91badd0
 msgid "`str`，默认 `collinear`。"
 msgstr "`str`, default `collinear`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:68
-#: 4ff1aa1a798846dcbb204e0287db1bc2
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:68
+#: 68406085a00d45d296f58f292fd96112
 msgid "`collinear`：所有输出沿参考轴，只改变正负符号。"
 msgstr "`collinear`: all outputs lie along the reference axis; only the sign changes."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:69
-#: b82d8806d35c46c2bedbca9f05a613f6
-msgid ""
-"`noncollinear`：FM/AFM 可使用三维参考方向，PM 可在球面、锥面、平面或参考轴上"
-"取向。"
-msgstr "`noncollinear`: FM/AFM may use a three-dimensional reference direction; PM may orient on a sphere, cone, plane, or reference axis."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:69
+#: 929ca09a6279422498c5cbba7cfee432
+msgid "`noncollinear`：FM/AFM 可使用三维参考方向，PM 可在球面、锥面、平面或参考轴上取向。"
+msgstr ""
+"`noncollinear`: FM/AFM may use a three-dimensional reference direction; PM may orient"
+" on a sphere, cone, plane, or reference axis."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:71
-#: 778f6a2aaaba42e3bf83f7f49cb832b7
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:71
+#: 6c607eb2ca0b40a09eb1580d282be77b
 msgid ""
-"旧项目中的 `Collinear (scalar)` 和 `Non-collinear (vector)` 会继续读取。这里"
-"的“模型”描述允许的自旋方向，不是文件格式；导出的规范字段始终是 `spin:R:3`。"
-msgstr "Legacy `Collinear (scalar)` and `Non-collinear (vector)` values remain readable. Here `model` describes allowed spin directions, not the file format; the canonical exported field is always `spin:R:3`."
+"旧项目中的 `Collinear (scalar)` 和 `Non-collinear (vector)` "
+"会继续读取。这里的“模型”描述允许的自旋方向，不是文件格式；导出的规范字段始终是 `spin:R:3`。"
+msgstr ""
+"Legacy `Collinear (scalar)` and `Non-collinear (vector)` values remain readable. Here"
+" `model` describes allowed spin directions, not the file format; the canonical "
+"exported field is always `spin:R:3`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:73
-#: a94617210bc44292a2a7cb86d294d978
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:73
+#: 8d3c6184e01a4035a60cabb02ae20778
 msgid "参考轴（axis）"
 msgstr "axis"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:75
-#: 0ccae3c505d04aa4a80d25960df045e0
-msgid ""
-"`[x, y, z]`，默认 `[0, 0, 1]`。必须是有限的非零三分量向量。程序内部会归一化："
-msgstr "`[x, y, z]`, default `[0, 0, 1]`. It must be a finite, nonzero three-component vector. The program normalizes it internally:"
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:75
+#: 138639a0bf4642d0a286eff60d47babc
+msgid "`[x, y, z]`，默认 `[0, 0, 1]`。必须是有限的非零三分量向量。程序内部会归一化："
+msgstr ""
+"`[x, y, z]`, default `[0, 0, 1]`. It must be a finite, nonzero three-component "
+"vector. The program normalizes it internally:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:77
-#: cfa2a7a6066c46f6917974896a1ae007
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:77
+#: 83356c784dbd4629ab0a946cbbc2882c
+#, python-brace-format
 msgid "共线 FM/AFM/PM 使用 $\\pm\\hat{\\mathbf a}$。"
 msgstr "Collinear FM/AFM/PM use $\\pm\\hat{\\mathbf a}$."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:78
-#: 13655faeaec54ffbb598633f981c2e2b
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:78
+#: e226e9912a8a468fb7a436d51b37a9d8
 msgid "非共线 FM/AFM 默认以它为方向。"
 msgstr "Non-collinear FM/AFM use it as the default direction."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:79
-#: bb66ce477ac64ae2824a3fc74871108d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:79
+#: a5492b9e9e934a239540948fbe1f141d
 msgid "非共线 PM 的 cone、plane 和 axis 分布以它为参考。"
 msgstr "The cone, plane, and axis distributions for non-collinear PM use it as the reference."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:81
-#: bf103c89f98d44bdb8eafa30d90d2d6d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:81
+#: 97c1f2e56ed04a51b4476416b0676f55
 msgid "元素磁矩（magmom_map）"
 msgstr "magmom_map"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:83
-#: 5bcf696ae0cd4ddaa190e5150bda487b
-msgid "`str`，默认空。用于指定逐元素磁矩，单位为 $\\mu_\\mathrm{B}$："
-msgstr "`str`, default empty. Specify per-element magnetic moments in $\\mu_\\mathrm{B}$:"
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:83
+#: a6d2b68eea374ea28e4f1bc8249dafff
+#, python-brace-format
+msgid "`str`，默认空。界面使用“元素 / 磁矩模长”表格，单位为 $\\mu_\\mathrm{B}$；序列化仍使用逐元素映射："
+msgstr ""
+"`str`, empty by default. The interface uses an `Element / Moment magnitude` table in "
+"$\\mu_\\mathrm{B}$; serialization continues to use a per-element mapping:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:85
-#: 8dce8e6287144886915ddb3c84c7b5e3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:85
+#: 195456da92af493991dba27fba11ab0e
 msgid "Fe:2.2,Co:1.7,Ni:0.6\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:89
-#: 7adf01234d1f427ab13f87a3a32950fa
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:89
+#: c3933de38dd4407a99e7876b3ccce451
 msgid "非共线模式也接受向量值；向量的模长同时决定磁矩大小："
-msgstr "Non-collinear mode also accepts vector values; the vector norm determines the moment magnitude:"
+msgstr ""
+"Non-collinear mode also accepts vector values; the vector norm determines the moment "
+"magnitude:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:91
-#: 3cc434fcee1e4175b2f01535f3f2a15e
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:91
+#: 81fe46bb0a7546dba4da47b2fe62fd5f
 msgid "Fe:[0,0,2.2],Cr:[0,0,-1.5]\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:95
-#: 01c8262dea4f40d0afa9f20a822038ea
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:95
+#: 0419d38c074545499cc216dad7ce7276
 msgid "也可使用 JSON："
 msgstr "JSON is also accepted:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:97
-#: e6f6c475fe04426caffeb47ca988b63c
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:97
+#: 4451423dcd72455a9e7e57f6d7d3f885
+#, python-brace-format
 msgid "{\"Fe\": [0, 0, 2.2], \"Cr\": [0, 0, -1.5]}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:101
-#: 57653418362c4b2bb9cbe7416d22658e
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:101
+#: e310ffa284244c2fad33d9118531ee1b
 msgid "使用元素向量方向（use_element_dirs）"
 msgstr "use_element_dirs"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:103
-#: ab4d6c2dc633430cae8bbf1e0b15a49c
-msgid ""
-"`bool`，默认 false，仅非共线 FM/AFM 使用。开启后，向量形式的元素条目会成为该"
-"元素的参考方向，AFM 再在这些方向上施加正负号。"
-msgstr "`bool`, default false; used only by non-collinear FM/AFM. When enabled, vector-valued element entries become the reference direction for each element, and AFM applies positive or negative signs along those directions."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:103
+#: 8d9a671fc2cf46d4ab1d41d0196b6a56
+msgid "`bool`，默认 false，仅非共线 FM/AFM 使用。开启后，向量形式的元素条目会成为该元素的参考方向，AFM 再在这些方向上施加正负号。"
+msgstr ""
+"`bool`, default false; used only by non-collinear FM/AFM. When enabled, vector-valued"
+" element entries become the reference direction for each element, and AFM applies "
+"positive or negative signs along those directions."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:105
-#: 75db11f9caf540e8902bbd390e01b66d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:105
+#: d49a0480ce3d4f84bc5da5230196baad
 msgid ""
-"开启此项后，`MagFMnc` 表示所有原子使用 FM 正号分支，并不保证不同元素的向量彼"
-"此平行。普通 FM/AFM 数据准备建议保持关闭；需要自定义多元素方向时应仔细检查输"
-"出。"
-msgstr "When enabled, `MagFMnc` means that all atoms use the positive FM branch; it does not guarantee parallel vectors across different elements. Keep it disabled for ordinary FM/AFM data preparation and inspect outputs carefully when customizing multielement directions."
+"开启此项后，`MagFMnc` 表示所有原子使用 FM 正号分支，并不保证不同元素的向量彼此平行。普通 FM/AFM "
+"数据准备建议保持关闭；需要自定义多元素方向时应仔细检查输出。"
+msgstr ""
+"When enabled, `MagFMnc` means that all atoms use the positive FM branch; it does not "
+"guarantee parallel vectors across different elements. Keep it disabled for ordinary "
+"FM/AFM data preparation and inspect outputs carefully when customizing multielement "
+"directions."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:107
-#: 5e14979aa4b9441b9079d6a06cdf698d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:107
+#: 9983eb4c8375408ea3008445b00b74c4
 msgid "未列元素磁矩（default_moment）"
 msgstr "default_moment"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:109
-#: 5a2fe845e8784ee2aa9f77291194f869
-msgid ""
-"`float`，默认 `0.0`。对作用范围内、但未出现在 `元素磁矩`（`magmom_map`）中的"
-"元素使用该非负磁矩幅值。"
-msgstr "`float`, default `0.0`. Use this nonnegative moment magnitude for in-scope elements absent from `Element moments` (`magmom_map`)."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:109
+#: 41cac059cda74b44ac511b8a0c91fbb8
+msgid "`float`，默认 `0.0`。对作用范围内、但未出现在 `元素磁矩`（`magmom_map`）中的元素使用该非负磁矩幅值。"
+msgstr ""
+"`float`, default `0.0`. Use this nonnegative moment magnitude for in-scope elements "
+"absent from `Element moments` (`magmom_map`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:111
-#: dcd01c9275e142eb9c913c184fe02ecb
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:111
+#: 52b8d7372f544d638c2f45fcc2afaa1e
 msgid "仅作用于元素（apply_elements）"
 msgstr "apply_elements"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:113
-#: f560a613990443db8177229fbb3e760d
-msgid ""
-"`str`，默认空。逗号分隔，例如 `Fe,Co`。非空时，只有列出的元素参与磁矩映射；其"
-"他元素磁矩为 0。留空时考虑全部元素。"
-msgstr "`str`, default empty. Enter comma-separated elements such as `Fe,Co`. When nonempty, only listed elements participate in moment mapping and all others have zero moments. When empty, all elements are considered."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:113
+#: 095c1887322a4caa9d340545cbf1253f
+msgid "`str`，默认空。逗号分隔，例如 `Fe,Co`。非空时，只有列出的元素参与磁矩映射；其他元素磁矩为 0。留空时考虑全部元素。"
+msgstr ""
+"`str`, default empty. Enter comma-separated elements such as `Fe,Co`. When nonempty, "
+"only listed elements participate in moment mapping and all others have zero moments. "
+"When empty, all elements are considered."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:115
-#: 4e4d6f05638441d092eb87bcfc57cdcf
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:115
+#: 872adbb4177e4cc987e7ebb6c200e6c4
 msgid ""
-"执行顺序是：先按 `仅作用于元素`（`apply_elements`）选择元素，再从 `元素磁矩`"
-"（`magmom_map`）读取幅值，未命中时使用 `未列元素磁矩`（`default_moment`）。如"
-"果最终没有任何非零磁矩，卡片明确失败，不生成带错误磁序标签的全零结构。"
-msgstr "The order is: select elements with `Apply only to elements` (`apply_elements`), read magnitudes from `Element moments` (`magmom_map`), and use `Unlisted-element moment` (`default_moment`) for misses. If no nonzero moments remain, the card fails explicitly instead of generating an all-zero structure with a misleading magnetic-order label."
+"执行顺序是：先按 `仅作用于元素`（`apply_elements`）选择元素，再从 `元素磁矩`（`magmom_map`）读取幅值，未命中时使用 "
+"`未列元素磁矩`（`default_moment`）。如果最终没有任何非零磁矩，卡片明确失败，不生成带错误磁序标签的全零结构。"
+msgstr ""
+"The order is: select elements with `Apply only to elements` (`apply_elements`), read "
+"magnitudes from `Element moments` (`magmom_map`), and use `Unlisted-element moment` "
+"(`default_moment`) for misses. If no nonzero moments remain, the card fails "
+"explicitly instead of generating an all-zero structure with a misleading magnetic-"
+"order label."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:117
-#: dba9cf63d2384e7590b8aaa569274ae3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:117
+#: 6d6aa3c262f34b5ba0fa68eaec6073b1
 msgid "输出分支"
 msgstr "Output branches"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:119
-#: f88a5e43db4145579907321099be7ed9
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:119
+#: dfc7a30ddf144571adbc9d9e52a3979c
 msgid "生成 FM（gen_fm）"
 msgstr "gen_fm"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:121
-#: 4c981d42c6cf45d7a0f487fb58010d00
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:121
+#: 9ae9080ae1c94053861025f74d9a554c
 msgid "`bool`，默认 true。生成一个正号 FM 分支。"
 msgstr "`bool`, default true. Generate one positive-sign FM branch."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:123
-#: f392861cf2204737b30877d763febe2e
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:123
+#: ac070eace8e6452b948e64ab0e2d79ee
 msgid "生成 AFM（gen_afm）"
 msgstr "gen_afm"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:125
-#: 82c43ecf1a09463cbb917163ed93f1e9
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:125
+#: 9ae9080ae1c94053861025f74d9a554c
 msgid "`bool`，默认 false。开启后生成一个 AFM 分支，并显示 AFM 分配参数。"
-msgstr "`bool`, default false. When enabled, generate one AFM branch and show AFM assignment parameters."
+msgstr ""
+"`bool`, default false. When enabled, generate one AFM branch and show AFM assignment "
+"parameters."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:127
-#: e989ef199d984283ba8a53e98cd91fd0
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:127
+#: e505f09565d44809b9995cb2373f84b8
 msgid "生成随机 PM（gen_pm）"
 msgstr "gen_pm"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:129
-#: 3bdbf6a1d46f49a6a74d60d1735a5d9b
-msgid ""
-"`bool`，默认 false。开启后生成 `每个输入的 PM 数量`（`pm_count`）个随机 PM 初"
-"始态。"
-msgstr "`bool`, default false. When enabled, generate `PM structures per input` (`pm_count`) random PM initial states."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:129
+#: b19928e27578480a9f23f8f1e65a1283
+msgid "`bool`，默认 false。开启后生成 `每个输入的 PM 数量`（`pm_count`）个随机 PM 初始态。"
+msgstr ""
+"`bool`, default false. When enabled, generate `PM structures per input` (`pm_count`) "
+"random PM initial states."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:131
-#: 24aef07e448e4445a6659c059f153d59
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:131
+#: ad46910551d64ada851cac067ca4a3bf
 msgid "FM、AFM 和 PM 至少要开启一个；全部关闭会明确失败。"
 msgstr "At least one of FM, AFM, and PM must be enabled; disabling all three fails explicitly."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:133
-#: 86f4dce67d0d4282a4fcb8adaa2b95eb
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:133
+#: 5afebe75119a4dcf961c22b449abf910
 msgid "AFM 分配"
 msgstr "AFM assignment"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:135
-#: 268cfd3946524900aa7bd61b17f134c9
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:135
+#: 84ae9ecf2e3c43b18b9b481c57f715f9
 msgid "AFM 分配方式（afm_mode）"
 msgstr "afm_mode"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:137
-#: bc3b5690cc6f45e78e5ca373b064d2f9
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:137
+#: 55e7283df22e47cb9d69563156834896
 msgid "`str`，默认 `k_vector`。"
 msgstr "`str`, default `k_vector`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:139
-#: 2889a8fdbb8c4499a5f5aa2d21e15bf7
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:139
+#: 9fb22c32d3464112ad8983081fa226f7
 msgid "`k_vector`：按当前晶胞的分数坐标层交替分配正负号。"
 msgstr "`k_vector`: alternate signs by fractional-coordinate layers of the current cell."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:140
-#: b7f723c2bac9499a84deef29d008d889
-msgid ""
-"`group_ab`：读取已有的 `atoms.arrays[\"group\"]`，由两个标签指定正负号。"
-msgstr "`group_ab`: read the existing `atoms.arrays[\"group\"]` and assign signs from two labels."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:140
+#: d6954a07e0d743eda5438bea6f47d60f
+msgid "`group_ab`：读取已有的 `atoms.arrays[\"group\"]`，由两个标签指定正负号。"
+msgstr ""
+"`group_ab`: read the existing `atoms.arrays[\"group\"]` and assign signs from two "
+"labels."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:142
-#: 7ec7da71d336401094e8727e38df40e2
-msgid ""
-"旧值 `k-vector` 和 `group A/B` 会继续读取。group 模式缺少输入标签时不会再静默"
-"退回 k-vector。"
-msgstr "Legacy values `k-vector` and `group A/B` remain readable. If group mode lacks input labels, it no longer silently falls back to k-vector."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:142
+#: e3692cd093854c21841cda30a94d2179
+msgid "旧值 `k-vector` 和 `group A/B` 会继续读取。group 模式缺少输入标签时不会再静默退回 k-vector。"
+msgstr ""
+"Legacy values `k-vector` and `group A/B` remain readable. If group mode lacks input "
+"labels, it no longer silently falls back to k-vector."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:144
-#: 4ad82da1057d41ebbb76e3f428470964
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:144
+#: c8985f1fa857432684fa024c2cf0a2db
 msgid "AFM 层向量（afm_kvec）"
 msgstr "afm_kvec"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:146
-#: 43c5e61cc6d9450b8cd013a1c9551a1d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:146
+#: 3b149b4b30eb4383b2e47c1d7cd4309f
 msgid ""
-"`str`，默认 `111`，仅 `k_vector` 使用。可选 `100`、`010`、`001`、`110` 和 "
-"`111`，分别对应当前晶胞分数坐标中的 a、b、c、a+b 和 a+b+c 相位方向。"
-msgstr "`str`, default `111`, used only by `k_vector`. Choose `100`, `010`, `001`, `110`, or `111`, corresponding to phase directions a, b, c, a+b, and a+b+c in the current cell's fractional coordinates."
+"`str`，默认 `111`，仅 `k_vector` 使用。可选 `100`、`010`、`001`、`110` 和 `111`，分别对应当前晶胞分数坐标中的 "
+"a、b、c、a+b 和 a+b+c 相位方向。"
+msgstr ""
+"`str`, default `111`, used only by `k_vector`. Choose `100`, `010`, `001`, `110`, or "
+"`111`, corresponding to phase directions a, b, c, a+b, and a+b+c in the current "
+"cell's fractional coordinates."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:148
-#: c22daf6a8eb444058ab0606f4dfcd589
-msgid ""
-"该规则依赖当前晶胞和坐标原点。若磁性原子只产生一种符号，卡片会要求扩胞或更换"
-"向量，而不是把 FM-like 结果标成 AFM。"
-msgstr "This rule depends on the current cell and coordinate origin. If magnetic atoms produce only one sign, the card requires a larger cell or a different vector rather than labeling the FM-like result as AFM."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:148
+#: a09625c0c4244ca98a3d92a8f35f80e7
+msgid "该规则依赖当前晶胞和坐标原点。若磁性原子只产生一种符号，卡片会要求扩胞或更换向量，而不是把 FM-like 结果标成 AFM。"
+msgstr ""
+"This rule depends on the current cell and coordinate origin. If magnetic atoms "
+"produce only one sign, the card requires a larger cell or a different vector rather "
+"than labeling the FM-like result as AFM."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:150
-#: 6ba9830e546944bda3129a753cda73c5
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:150
+#: 40c8a4be09464dfc955edaefa5b2e49a
 msgid "AFM 正号组（afm_group_a）"
 msgstr "afm_group_a"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:152
-#: 66116fd5756a46668cb6450fb14f701b
-msgid ""
-"`str`，默认 `A`，仅 `group_ab` 使用。必须非空，并在磁性原子中至少匹配一个输"
-"入 `group`。"
-msgstr "`str`, default `A`, used only by `group_ab`. It must be nonempty and match at least one input `group` among magnetic atoms."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:152
+#: 32941694ad484736aabf2da0bafdbdb4
+msgid "`str`，默认 `A`，仅 `group_ab` 使用。必须非空，并在磁性原子中至少匹配一个输入 `group`。"
+msgstr ""
+"`str`, default `A`, used only by `group_ab`. It must be nonempty and match at least "
+"one input `group` among magnetic atoms."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:154
-#: fbbcc5be765244009ecccc38a8abab35
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:154
+#: e4d555c89890437980f91b62392d9351
 msgid "AFM 负号组（afm_group_b）"
 msgstr "afm_group_b"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:156
-#: f820cf4932bf405bbcdb74484a323ba1
-msgid ""
-"`str`，默认 `B`，仅 `group_ab` 使用。必须非空、与正号组不同，并在磁性原子中至"
-"少匹配一个输入 `group`。"
-msgstr "`str`, default `B`, used only by `group_ab`. It must be nonempty, differ from the positive-sign group, and match at least one input `group` among magnetic atoms."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:156
+#: bada899898d64e879bf5cb046616c979
+msgid "`str`，默认 `B`，仅 `group_ab` 使用。必须非空、与正号组不同，并在磁性原子中至少匹配一个输入 `group`。"
+msgstr ""
+"`str`, default `B`, used only by `group_ab`. It must be nonempty, differ from the "
+"positive-sign group, and match at least one input `group` among magnetic atoms."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:158
-#: bc43beb9067945c88a8c1aed3a51a518
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:158
+#: 52ec7ffe2dde40559c7fe8e0c34efe50
 msgid "其他分组置零（afm_zero_unknown）"
 msgstr "afm_zero_unknown"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:160
-#: d803a828007f4ea3be66029b842fa217
-msgid ""
-"`bool`，默认 true。开启时，不属于正号组或负号组的原子磁矩置零；关闭时，这些原"
-"子使用正号。该设置不会把 `group` 当成晶体学 `sublattice`。"
-msgstr "`bool`, default true. When enabled, atoms outside the positive- or negative-sign groups receive zero moments; when disabled, they use the positive sign. This setting does not interpret `group` as a crystallographic `sublattice`."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:160
+#: 342ae009c36441bab8a5bd8e5c9732a3
+msgid "`bool`，默认 true。开启时，不属于正号组或负号组的原子磁矩置零；关闭时，这些原子使用正号。该设置不会把 `group` 当成晶体学 `sublattice`。"
+msgstr ""
+"`bool`, default true. When enabled, atoms outside the positive- or negative-sign "
+"groups receive zero moments; when disabled, they use the positive sign. This setting "
+"does not interpret `group` as a crystallographic `sublattice`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:162
-#: 03a346ed9fa447e69fb92ee94562922d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:162
+#: 06bc15af128e4f6b8f21e6330d7da814
 msgid "随机 PM"
 msgstr "Random PM"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:164
-#: d541e3ac88a9479787ef591a21082416
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:164
+#: d9c0825aaf9a4a589e7071c07dddc660
 msgid "每个输入的 PM 数量（pm_count）"
 msgstr "pm_count"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:166
-#: b1395d1d2149425089619ed8697efa26
-msgid ""
-"`int`，默认 `10`，最小为 1。总输出数为已开启的 FM/AFM 分支数加 `每个输入的 "
-"PM 数量`（`pm_count`）。"
-msgstr "`int`, default `10`, minimum 1. Total outputs equal the enabled FM/AFM branches plus `PM structures per input` (`pm_count`)."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:166
+#: 4728766cb5fa4d5b81b5ae3f6e29b641
+msgid "`int`，默认 `10`，最小为 1。总输出数为已开启的 FM/AFM 分支数加 `每个输入的 PM 数量`（`pm_count`）。"
+msgstr ""
+"`int`, default `10`, minimum 1. Total outputs equal the enabled FM/AFM branches plus "
+"`PM structures per input` (`pm_count`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:168
-#: cf066d8f56a14909b4d8a1fdb9db8859
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:168
+#: 63546ec2c264477f9cbf642041f7eea3
 msgid "PM 方向分布（pm_direction）"
 msgstr "pm_direction"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:170
-#: ad6bd622d3e240afb93712130bc0cd3d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:170
+#: 33cff0ff74e64d7dbda5a9665faf65c9
 msgid "`str`，默认 `sphere`，仅非共线 PM 生效。"
 msgstr "`str`, default `sphere`, used only for non-collinear PM."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:172
-#: 334023f79708431daf56620ed2eb3570
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:172
+#: a30e918b67954e2696f7eb06a80aa8f0
 msgid "`sphere`：整个球面均匀随机。"
 msgstr "`sphere`: uniform random directions over the full sphere."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:173
-#: 3792a325f4a24e379fc6e9216e168563
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:173
+#: 234e1231188c4aa1a5e53631d459a243
 msgid "`cone`：参考轴周围的锥内随机。"
 msgstr "`cone`: random directions within a cone around the reference axis."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:174
-#: f31d5ebf140b40ee89e854035c8083fc
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:174
+#: b0e288dc68294ee8a59297fa1090262a
 msgid "`plane`：垂直于参考轴的平面内随机。"
 msgstr "`plane`: random directions in the plane perpendicular to the reference axis."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:175
-#: 59e3fc6b91764a8c9004ba14f30bd2eb
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:175
+#: a52499fd092d40a88da66b6533a6c8b5
 msgid "`参考轴`（`axis`）：沿参考轴随机取正负方向。"
-msgstr "`Reference axis` (`axis`): randomly choose the positive or negative reference-axis direction."
+msgstr ""
+"`Reference axis` (`axis`): randomly choose the positive or negative reference-axis "
+"direction."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:177
-#: c78344f5d0e245beb15625956e6a3f47
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:177
+#: f91c2a657a064327a182148618aeed96
 msgid "共线 PM 始终沿参考轴随机取正负号，不使用该参数。"
-msgstr "Collinear PM always chooses a random sign along the reference axis and does not use this parameter."
+msgstr ""
+"Collinear PM always chooses a random sign along the reference axis and does not use "
+"this parameter."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:179
-#: 98d0b88b0a9641428f9ba2229dba9b0f
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:179
+#: e464859d48934f8aa5d52eb987ae2924
 msgid "PM 锥半角（pm_cone_angle）"
 msgstr "pm_cone_angle"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:181
-#: 034e2d7c616f4bdfa628436edcbe2edc
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:181
+#: 5bd2239a50c44e6086eed0a4d613126a
 msgid "`float`，默认 `30.0`，范围 0–180°，仅非共线 `cone` 使用。"
 msgstr "`float`, default `30.0`, range 0–180°, used only by non-collinear `cone`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:183
-#: 86cbf661cc3840cdaabfc72c613c9ef8
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:183
+#: 9d87ac1b3463421ba1f90e5b4590a2b5
 msgid "按模长配对反向 PM（pm_balanced）"
 msgstr "pm_balanced"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:185
-#: 282939a3cebc4e91b6f7d058eda96aaa
-msgid ""
-"`bool`，默认 true。程序按相同磁矩模长分别生成反向方向对；完整配对会精确抵消，"
-"某一模长对应奇数个原子时可能留下一个残余磁矩。"
-msgstr "`bool`, default true. The program generates opposite-direction pairs for equal moment magnitudes; complete pairs cancel exactly, while an odd number of atoms at one magnitude may leave a residual moment."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:185
+#: 180230707dd54c7bb55254038adb465a
+msgid "`bool`，默认 true。程序按相同磁矩模长分别生成反向方向对；完整配对会精确抵消，某一模长对应奇数个原子时可能留下一个残余磁矩。"
+msgstr ""
+"`bool`, default true. The program generates opposite-direction pairs for equal moment"
+" magnitudes; complete pairs cancel exactly, while an odd number of atoms at one "
+"magnitude may leave a residual moment."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:187
-#: ca62ebc53bea4245ab1a0417b55c714b
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:187
+#: 170d493b3e234101b81a404e8b8c3ff5
+#, python-brace-format
 msgid ""
-"在 `cone` 模式下，开启配对意味着方向分布在 $+\\hat{\\mathbf a}$ 和 $-"
-"\\hat{\\mathbf a}$ 两个锥内，而不是通过减均值破坏锥角限制。"
-msgstr "In `cone` mode, pairing distributes directions within cones around both $+\\hat{\\mathbf a}$ and $-\\hat{\\mathbf a}$ rather than subtracting the mean and violating the cone-angle limit."
+"在 `cone` 模式下，开启配对意味着方向分布在 $+\\hat{\\mathbf a}$ 和 $-\\hat{\\mathbf a}$ "
+"两个锥内，而不是通过减均值破坏锥角限制。"
+msgstr ""
+"In `cone` mode, pairing distributes directions within cones around both "
+"$+\\hat{\\mathbf a}$ and $-\\hat{\\mathbf a}$ rather than subtracting the mean and "
+"violating the cone-angle limit."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:189
-#: 4f0ae36e39154cc89be2c4b073bf017b
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:189
+#: d37e6679838e4052b933ec7d31bfc405
 msgid "随机性和输出预算"
 msgstr "Randomness and output budget"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:191
-#: ea15c15339f44197af72885c3d6449af
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:191
+#: 06c7e86465a54a3ba1b847ff90a75c2a
 msgid "使用随机种子（use_seed）"
-msgstr "use_seed"
+msgstr "Use Random Seed (use_seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:193
-#: 991a3fe4f29b4dd996910d490723753c
-msgid ""
-"`bool`，默认 false，仅 PM 分支使用。开启后，seed、输入结构稳定标识和 PM 序号"
-"共同决定随机状态。"
-msgstr "`bool`, default false, used only for PM branches. When enabled, the seed, stable input-structure identifier, and PM index jointly determine the random state."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:193
+#: 06ff0f908fc648a7b5d20b359e934ccf
+msgid "`bool`，默认 false，仅 PM 分支使用。开启后，seed、输入结构稳定标识和 PM 序号共同决定随机状态。"
+msgstr ""
+"`bool`, default false, used only for PM branches. When enabled, the seed, stable "
+"input-structure identifier, and PM index jointly determine the random state."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:195
-#: 090d7f3623c24a6bb5c02e2e7a1d1173
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:195
+#: a0f219bdef314c03821ff73400d3919a
 msgid "随机种子（seed）"
-msgstr "seed"
+msgstr "Random Seed (seed)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:197
-#: 7726dd516e1b4a52b64a094ff4491fc4
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:197
+#: 33cff0ff74e64d7dbda5a9665faf65c9
 msgid "`int`，默认 `0`，必须非负。"
 msgstr "`int`, default `0`, must be non-negative."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:199
-#: 049e70832d104b779058b89e2c85b637
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:199
+#: 35f60af6f3384861be49d8d0cc896a6a
 msgid "每个输入最大输出（max_outputs）"
 msgstr "max_outputs"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:201
-#: 533c1f179a804f23af8e60b4f900c305
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:201
+#: baa6c0279abf4cd5b7b3e9fa52ce7187
 msgid ""
-"`int`，默认 `100`，最小为 1。如果 FM、AFM 和 PM 的预计输出总数超过该值，卡片"
-"明确失败，防止误设 `每个输入的 PM 数量`（`pm_count`）后生成过量结构。"
-msgstr "`int`, default `100`, minimum 1. If the estimated total FM, AFM, and PM outputs exceed this value, the card fails explicitly to prevent an accidental excessive output count from `PM structures per input` (`pm_count`)."
+"`int`，默认 `100`，最小为 1。如果 FM、AFM 和 PM 的预计输出总数超过该值，卡片明确失败，防止误设 `每个输入的 PM "
+"数量`（`pm_count`）后生成过量结构。"
+msgstr ""
+"`int`, default `100`, minimum 1. If the estimated total FM, AFM, and PM outputs "
+"exceed this value, the card fails explicitly to prevent an accidental excessive "
+"output count from `PM structures per input` (`pm_count`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:203
-#: 449c916b09f84f82b2215e7a2f0edf26
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:203
+#: 9912db69268e4a2f88d6124a14e26c70
 msgid "推荐预设"
 msgstr "Recommended presets"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:205
-#: 3ff583874c47405fa974d124c57655a3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:205
+#: e942a087b32049f28e1ced74de609922
 msgid "FM 单端点"
 msgstr "FM single endpoint"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:207
-#: 968c8d0b3a354010be00ddd74179b5b0
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:207
+#: 6d16dd4aca7747e398acf78d7e508d93
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"MagneticOrderCard\",\n"
@@ -650,13 +711,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:237
-#: 1d86d8d663c742ff8e9c0cccd06b14bb
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:237
+#: 35969292c9e84085aca3dd27e97d78ab
 msgid "FM + 分层 AFM + 共线 PM"
 msgstr "FM + layered AFM + collinear PM"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:239
-#: fb7f78ae1e1f4ed4b2c4b7074a074338
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:239
+#: 6d16dd4aca7747e398acf78d7e508d93
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"MagneticOrderCard\",\n"
@@ -687,13 +749,14 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:269
-#: 883be644754c49d2a2ab6370cc98a5e2
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:269
+#: 6d3a716737164a49ba051ff49efd59cd
 msgid "非共线球面 PM"
 msgstr "Non-collinear spherical PM"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:271
-#: fc53a6df45934a0083d91203104b72da
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:271
+#: 6d16dd4aca7747e398acf78d7e508d93
+#, python-brace-format
 msgid ""
 "{\n"
 "  \"class\": \"MagneticOrderCard\",\n"
@@ -724,189 +787,211 @@ msgid ""
 "}\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:301
-#: 3a3b81814b7c493d9c685eefdd3faa09
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:301
+#: 521c1ec1f5264d46bcac6b14fdda0849
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:303
-#: 923cbdf22dd34e66ba9e9363dc2546d4
-msgid ""
-"`Group Label` → `Magnetic Order`：已有 coordinate-based group 时，用 "
-"`group_ab` 生成对应 AFM 正负号。"
-msgstr "`Group Label` → `Magnetic Order`: when coordinate-based groups already exist, use `group_ab` to generate the corresponding AFM signs."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:303
+#: 1c6e1947c3644c539e3034f468ea79ba
+msgid "`Layer Groups` → `Magnetic Order`：先生成逐层交替的 A/B 标签，再用 `group_ab` 赋予 AFM 正负号。"
+msgstr ""
+"`Layer Groups` → `Magnetic Order`: first generate alternating A/B labels by layer, "
+"then use `group_ab` to assign AFM signs."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:304
-#: e041eef917f0489d9c11c1b4b2ff7bdb
-msgid ""
-"`Magnetic Order` → `Spin Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。"
-msgstr "`Magnetic Order` → `Spin Disorder`: first establish FM/AFM endpoints, then scan the local disorder fraction."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:304
+#: 327d95db60b2499cafa336e79333dc73
+msgid "`Magnetic Order` → `Moment Disorder`：先建立 FM/AFM 端点，再扫描局部无序比例。"
+msgstr ""
+"`Magnetic Order` → `Moment Disorder`: establish FM/AFM endpoints first, then scan the"
+" local disorder fraction."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:305
-#: 5546e09f44474dbc851d4f47b0ed7fba
-msgid ""
-"`Magnetic Order` → `Small-Angle Spin Tilt`：在端点附近补充确定性小角偏转。"
-msgstr "`Magnetic Order` → `Small-Angle Spin Tilt`: add deterministic small-angle tilts around the endpoints."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:305
+#: 327d95db60b2499cafa336e79333dc73
+msgid "`Magnetic Order` → `Local Magnetic Response`：在端点附近补充确定性小角响应。"
+msgstr ""
+"`Magnetic Order` → `Local Magnetic Response`: add deterministic small-angle responses"
+" around the endpoints."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:306
-#: 86adcc2abf614eaeab32f6f8cff96869
-msgid ""
-"`Magnetic Order` → `Spin Spiral`：复用元素磁矩幅值，生成位置连续的螺旋磁序。"
-msgstr "`Magnetic Order` → `Spin Spiral`: reuse element moment magnitudes to generate a position-continuous spiral order."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:306
+#: 327d95db60b2499cafa336e79333dc73
+msgid "`Magnetic Order` → `SOC / Texture Response`：先建立参考磁态，再生成位置连续的有限 q 磁纹理。"
+msgstr ""
+"`Magnetic Order` → `SOC / Texture Response`: establish a reference magnetic state "
+"before generating position-continuous finite-q textures."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:308
-#: 9045887dd88542e2812f508452f85abe
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:308
+#: 09d679c2d8c64489bb50ca62666fe6d1
 msgid "常见问题"
-msgstr "Common questions"
+msgstr "Troubleshooting"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:310
-#: aecce6f0dd5849679836fc6e3dc933f3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:310
+#: b2c9c051f58f422f9f45ca12408dd817
 msgid ""
-"**预览提示没有非零磁矩。** `元素磁矩`（`magmom_map`）为空、磁矩都是 0，或 `仅"
-"作用于元素`（`apply_elements`）排除了所有映射元素。卡片不会把全零自旋标成 FM/"
-"AFM/PM。"
-msgstr "**The preview reports no nonzero moments.** `Element moments` (`magmom_map`) is empty, all moments are zero, or `Apply only to elements` (`apply_elements`) excludes every mapped element. The card does not label an all-zero spin as FM/AFM/PM."
+"**预览提示没有非零磁矩。** `元素磁矩`（`magmom_map`）为空、磁矩都是 0，或 "
+"`仅作用于元素`（`apply_elements`）排除了所有映射元素。卡片不会把全零自旋标成 FM/AFM/PM。"
+msgstr ""
+"**The preview reports no nonzero moments.** `Element moments` (`magmom_map`) is "
+"empty, all moments are zero, or `Apply only to elements` (`apply_elements`) excludes "
+"every mapped element. The card does not label an all-zero spin as FM/AFM/PM."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:312
-#: 56840639f8f540b087f7da8283ab295d
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:312
+#: 17152324969c4da8b2eb49b17d5f043d
+msgid "**AFM 提示只有一个符号。** 当前晶胞在所选 k-vector 下没有足够的交替相位。先扩胞或更换 layer vector。"
+msgstr ""
+"**The AFM preview contains only one sign.** The current cell does not provide enough "
+"alternating phases for the selected k-vector. Enlarge the cell or choose another "
+"layer vector."
+
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:314
+#: 32672840e2924f45a18400a211249a8b
 msgid ""
-"**AFM 提示只有一个符号。** 当前晶胞在所选 k-vector 下没有足够的交替相位。先扩"
-"胞或更换 layer vector。"
-msgstr "**The AFM preview contains only one sign.** The current cell does not provide enough alternating phases for the selected k-vector. Enlarge the cell or choose another layer vector."
+"**group 模式提示缺少 A/B。** 输入必须已有 "
+"`atoms.arrays[\"group\"]`，且正负标签各自至少匹配一个非零磁矩原子。不会自动识别晶体学子晶格，也不会静默回退。"
+msgstr ""
+"**The group mode reports missing A/B groups.** The input must already contain "
+"`atoms.arrays[\"group\"]`, and each sign label must match at least one atom with a "
+"nonzero moment. The card does not infer crystallographic sublattices or silently fall"
+" back."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:314
-#: 40d321836fb245eb918af781c8f5ebd5
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:316
+#: 13c015df189f4f78aea475c7be6bbe11
+msgid "**配对后的 PM 净磁矩仍不完全为零。** 某种磁矩模长对应奇数个原子时会留下一个未配对方向；不同模长之间不会通过改变模长强行抵消。"
+msgstr ""
+"**The paired PM net moment is not exactly zero.** An odd number of atoms with a given"
+" moment magnitude leaves one unpaired direction; different magnitudes are not "
+"forcibly canceled by changing their sizes."
+
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:318
+#: e28c233ae42f4a7da8847f02c283c5fa
 msgid ""
-"**group 模式提示缺少 A/B。** 输入必须已有 `atoms.arrays[\"group\"]`，且正负标"
-"签各自至少匹配一个非零磁矩原子。不会自动识别晶体学子晶格，也不会静默回退。"
-msgstr "**The group mode reports missing A/B groups.** The input must already contain `atoms.arrays[\"group\"]`, and each sign label must match at least one atom with a nonzero moment. The card does not infer crystallographic sublattices or silently fall back."
+"**PM 和 Moment Disorder 是否重复。** PM 分支把全部磁性原子直接放到一个随机端点；`Moment Disorder` "
+"能按比例只改变部分已有磁矩并扫描中间无序度。"
+msgstr ""
+"**Are PM and Moment Disorder redundant?** A PM branch places all magnetic atoms "
+"directly in one random endpoint, whereas `Moment Disorder` can alter only a selected "
+"fraction of existing moments and scan intermediate disorder levels."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:316
-#: c6ae11a861f145909e1469b8d00b4307
-msgid ""
-"**配对后的 PM 净磁矩仍不完全为零。** 某种磁矩模长对应奇数个原子时会留下一个未"
-"配对方向；不同模长之间不会通过改变模长强行抵消。"
-msgstr "**The paired PM net moment is not exactly zero.** An odd number of atoms with a given moment magnitude leaves one unpaired direction; different magnitudes are not forcibly canceled by changing their sizes."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:318
-#: 83a78101c8b140a1b2bf2a3671bc7757
-msgid ""
-"**PM 和 Spin Disorder 是否重复。** PM 分支把全部磁性原子直接放到一个随机端"
-"点；`Spin Disorder` 能按比例只扰动部分已有自旋并扫描中间无序度。"
-msgstr "**Are PM and Spin Disorder redundant?** A PM branch places all magnetic atoms directly in a random endpoint; `Spin Disorder` can perturb only a fraction of existing spins and scan intermediate disorder levels."
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:320
-#: bd4be231ab844616904f20338d37a103
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:320
+#: 6d6aa3c262f34b5ba0fa68eaec6073b1
 msgid "输出标签"
 msgstr "Output labels"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:322
-#: 520df286a20740d9b4bbd136c4f090b3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:322
+#: 8f92b90cbad540a8af0410cd9bbfb7c7
 msgid "`MagFM` / `MagFMnc`：共线 / 非共线 FM 正号分支。"
 msgstr "`MagFM` / `MagFMnc`: collinear / non-collinear positive-sign FM branches."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:323
-#: 58dedafe98fa4a7cae98a3ed7894e992
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:323
+#: 8926761342aa466b9c173b42f8a7de46
 msgid "`MagAFM111` / `MagAFM111nc`：按 k-vector 生成的 AFM。"
 msgstr "`MagAFM111` / `MagAFM111nc`: AFM generated from a k-vector."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:324
-#: 3cd943277fce4d51970259b56ff12ba3
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:324
+#: 8926761342aa466b9c173b42f8a7de46
 msgid "`MagAFMg` / `MagAFMgnc`：按现有 group 标签生成的 AFM。"
 msgstr "`MagAFMg` / `MagAFMgnc`: AFM generated from existing group labels."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:325
-#: 2160a95423ea458f8769030024860e80
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:325
+#: 39c4b8a5d4e34414a00da8fa176554e2
 msgid "`MagPM` / `MagPMnc`：随机 PM；固定 seed 时标签带派生 seed。"
-msgstr "`MagPM` / `MagPMnc`: random PM; with a fixed seed, the label includes the derived seed."
+msgstr ""
+"`MagPM` / `MagPMnc`: random PM; with a fixed seed, the label includes the derived "
+"seed."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:327
-#: 1aff6330e22745d7b5a9119beb51c13c
-msgid ""
-"所有导出输出写入 `spin:R:3`。共线模式内部保留标量 `initial_magmoms`，导出时仍"
-"按参考轴转换为三分量 spin。"
-msgstr "All exported outputs write `spin:R:3`. Collinear mode keeps scalar `initial_magmoms` internally, then converts it along the reference axis to three-component spin on export."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:327
+#: d6486e490f56431981170a52a0c69034
+msgid "所有导出输出写入 `spin:R:3`。共线模式内部保留标量 `initial_magmoms`，导出时仍按参考轴转换为三分量 spin。"
+msgstr ""
+"All exported outputs write `spin:R:3`. Collinear mode keeps scalar `initial_magmoms` "
+"internally, then converts it along the reference axis to three-component spin on "
+"export."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:329
-#: 5b1d7d1ac74d403f88e66cf259e2444c
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:329
+#: 757b0012099d49c1a25b4621af5712b5
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/make-dataset-cards/cards/magnetic-order-card.md:331
-#: 81fbf7f4c108409e98677a6146748eaf
-msgid ""
-"FM 和 AFM 没有随机性。PM 开启 `使用随机种子`（`use_seed`）后，同一输入、参数"
-"和 seed 会得到相同输出。"
-msgstr "FM and AFM are deterministic. For PM, enabling `Use random seed` (`use_seed`) makes the same input, parameters, and seed produce the same outputs."
+#: ../../source/module/make-dataset-cards/cards/magnetic-order-card.md:331
+#: 305c4cd4e475404793d32c1cf129bbc8
+msgid "FM 和 AFM 没有随机性。PM 开启 `使用随机种子`（`use_seed`）后，同一输入、参数和 seed 会得到相同输出。"
+msgstr ""
+"FM and AFM are deterministic. For PM, enabling `Use random seed` (`use_seed`) makes "
+"the same input, parameters, and seed produce the same outputs."
 
 #~ msgid "磁有序初始化（Magnetic Order）"
 #~ msgstr "Magnetic-Order Initialization (Magnetic Order)"
 
 #~ msgid ""
-#~ "从一个磁性母相结构出发，一次性生成 FM（铁磁）、AFM（反铁磁）、PM（顺磁）多"
-#~ "种磁序分支。每个输出结构都写入对应的三分量 `spin` 数组和 `Config_type` 标"
-#~ "签；内部同时维护 ASE `initial_magmoms` 兼容别名。"
+#~ "从一个磁性母相结构出发，一次性生成 FM（铁磁）、AFM（反铁磁）、PM（顺磁）多种磁序分支。每个输出结构都写入对应的三分量 `spin`"
+#~ " 数组和 `Config_type` 标签；内部同时维护 ASE `initial_magmoms` "
+#~ "兼容别名。"
 #~ msgstr ""
-#~ "Branch one magnetic parent structure into ferromagnetic (FM), "
-#~ "antiferromagnetic (AFM), and paramagnetic-like (PM) initial states. Every "
-#~ "output receives a three-component `spin` array and a `Config_type` label; "
-#~ "the internal ASE `initial_magmoms` compatibility alias is kept in sync."
+#~ "Branch one magnetic parent structure into "
+#~ "ferromagnetic (FM), antiferromagnetic (AFM), and "
+#~ "paramagnetic-like (PM) initial states. Every "
+#~ "output receives a three-component `spin` array"
+#~ " and a `Config_type` label; the internal "
+#~ "ASE `initial_magmoms` compatibility alias is kept"
+#~ " in sync."
 
-#~ msgid ""
-#~ "**关键限制：** 这张卡只写入初始磁矩，不保证生成的就是磁基态。磁矩是否收敛"
-#~ "到合理值仍需要用 NEP/DFT 后续计算验证。"
+#~ msgid "**关键限制：** 这张卡只写入初始磁矩，不保证生成的就是磁基态。磁矩是否收敛到合理值仍需要用 NEP/DFT 后续计算验证。"
 #~ msgstr ""
-#~ "**Important limitation:** This card assigns initial moments; it does not "
-#~ "determine a magnetic ground state. Whether a state converges to a "
-#~ "physically meaningful solution must be established by the subsequent NEP "
-#~ "or DFT calculation."
+#~ "**Important limitation:** This card assigns initial"
+#~ " moments; it does not determine a magnetic"
+#~ " ground state. Whether a state converges to"
+#~ " a physically meaningful solution must be "
+#~ "established by the subsequent NEP or DFT "
+#~ "calculation."
 
 #~ msgid "场景：FM 模型在 AFM 相上预测崩了"
 #~ msgstr "Scenario: an FM-trained model fails on an AFM state"
 
 #~ msgid ""
-#~ "你在 bcc Fe 上训练了一个 NEP 模型，所有训练数据来自 FM 构型。模型对铁磁态"
-#~ "的能量和力预测很好，但一跑 AFM 构型，能量误差是 FM 的 5 倍。诊断结果是：训"
-#~ "练集里只有一种磁序，模型把\"所有磁矩同向\"当成了默认假设，碰到磁矩翻转的结"
-#~ "构只能瞎猜。"
+#~ "你在 bcc Fe 上训练了一个 NEP 模型，所有训练数据来自 FM "
+#~ "构型。模型对铁磁态的能量和力预测很好，但一跑 AFM 构型，能量误差是 FM 的 5 "
+#~ "倍。诊断结果是：训练集里只有一种磁序，模型把\"所有磁矩同向\"当成了默认假设，碰到磁矩翻转的结构只能瞎猜。"
 #~ msgstr ""
-#~ "You trained an NEP model for bcc Fe using only FM configurations. It "
-#~ "predicts FM energies and forces accurately, but its energy error on AFM "
-#~ "configurations is five times larger. The training set contains only one "
-#~ "order, so reversed local moments lie outside the magnetic environments "
-#~ "the model has learned."
+#~ "You trained an NEP model for bcc Fe "
+#~ "using only FM configurations. It predicts FM"
+#~ " energies and forces accurately, but its "
+#~ "energy error on AFM configurations is five "
+#~ "times larger. The training set contains only"
+#~ " one order, so reversed local moments lie"
+#~ " outside the magnetic environments the model "
+#~ "has learned."
 
 #~ msgid ""
-#~ "**诊断思路：** 磁性体系的训练集至少应该覆盖 FM 和 AFM 两种极端磁序，如果体"
-#~ "系可能有顺磁相，PM 也要加。不同磁序下，同一种原子的局域磁环境完全不同——模"
-#~ "型需要见过这些环境才能泛化。"
+#~ "**诊断思路：** 磁性体系的训练集至少应该覆盖 FM 和 AFM "
+#~ "两种极端磁序，如果体系可能有顺磁相，PM 也要加。不同磁序下，同一种原子的局域磁环境完全不同——模型需要见过这些环境才能泛化。"
 #~ msgstr ""
-#~ "**Diagnosis:** A magnetic training set should cover the ordered states "
-#~ "relevant to the material, commonly including FM and one or more AFM "
-#~ "patterns. If disordered local moments are relevant, add paramagnetic-like "
-#~ "samples as well. The same atom can have very different local magnetic "
-#~ "environments under these orders, and the model must see them before it "
-#~ "can interpolate between them."
+#~ "**Diagnosis:** A magnetic training set should "
+#~ "cover the ordered states relevant to the "
+#~ "material, commonly including FM and one or "
+#~ "more AFM patterns. If disordered local moments"
+#~ " are relevant, add paramagnetic-like samples "
+#~ "as well. The same atom can have very "
+#~ "different local magnetic environments under these"
+#~ " orders, and the model must see them "
+#~ "before it can interpolate between them."
 
-#~ msgid ""
-#~ "**输入：** 一个含 Fe 的 bcc 晶体，已知 Fe 的磁矩约 2.2 μB（来自 DFT 或文"
-#~ "献）"
+#~ msgid "**输入：** 一个含 Fe 的 bcc 晶体，已知 Fe 的磁矩约 2.2 μB（来自 DFT 或文献）"
 #~ msgstr ""
-#~ "**Input:** A bcc Fe crystal with an Fe reference moment of approximately "
-#~ "2.2 μB from DFT or literature."
+#~ "**Input:** A bcc Fe crystal with an Fe"
+#~ " reference moment of approximately 2.2 μB "
+#~ "from DFT or literature."
 
-#~ msgid ""
-#~ "**目标：** 从一个结构出发，生成 1 个 FM + 1 个 AFM（k-vector 111）+ 8 个 "
-#~ "PM，共 10 个不同磁序的训练样本"
+#~ msgid "**目标：** 从一个结构出发，生成 1 个 FM + 1 个 AFM（k-vector 111）+ 8 个 PM，共 10 个不同磁序的训练样本"
 #~ msgstr ""
-#~ "**Goal:** From one structure, generate one FM state, one AFM state with k-"
-#~ "vector 111, and eight PM-like states, for ten magnetic initializations in "
-#~ "total."
+#~ "**Goal:** From one structure, generate one FM"
+#~ " state, one AFM state with k-vector 111,"
+#~ " and eight PM-like states, for ten "
+#~ "magnetic initializations in total."
 
 #~ msgid "`Format` = `Collinear (scalar)` （先从不共线开始，复杂度低）"
 #~ msgstr ""
-#~ "`Format` = `Collinear (scalar)` (start with the lower-complexity "
-#~ "collinear representation)"
+#~ "`Format` = `Collinear (scalar)` (start with "
+#~ "the lower-complexity collinear representation)"
 
 #~ msgid "`Gen FM` = 勾选，`Gen AFM` = 勾选"
 #~ msgstr "Enable `Gen FM` and `Gen AFM`."
@@ -914,39 +999,41 @@ msgstr "FM and AFM are deterministic. For PM, enabling `Use random seed` (`use_s
 #~ msgid "`Gen PM` = 勾选，`PM Count` = `[8]`"
 #~ msgstr "Enable `Gen PM` and set `PM Count` to `[8]`."
 
-#~ msgid ""
-#~ "**输出：** 1 个 FM + 1 个 AFM + 8 个 PM，全部带 `spin:R:3` 和对应的 "
-#~ "`Config_type` 标签"
+#~ msgid "**输出：** 1 个 FM + 1 个 AFM + 8 个 PM，全部带 `spin:R:3` 和对应的 `Config_type` 标签"
 #~ msgstr ""
-#~ "**Output:** One FM, one AFM, and eight PM-like structures, all with "
-#~ "`spin:R:3` and matching `Config_type` labels."
+#~ "**Output:** One FM, one AFM, and eight "
+#~ "PM-like structures, all with `spin:R:3` and "
+#~ "matching `Config_type` labels."
 
 #~ msgid "**怎么验证训练集质量改善：**"
 #~ msgstr "**How to verify that training-set quality improved:**"
 
 #~ msgid "重训后用这组数据里的 FM 和 AFM 分别做推理，能量误差差异应该显著缩小"
 #~ msgstr ""
-#~ "After DFT labeling and retraining, compare held-out FM and AFM errors; "
-#~ "the large order-dependent gap should decrease."
+#~ "After DFT labeling and retraining, compare "
+#~ "held-out FM and AFM errors; the large "
+#~ "order-dependent gap should decrease."
 
-#~ msgid ""
-#~ "抽查 FM/AFM 的 `spin`：FM 沿 Axis 同向，AFM 在 111 方向上相邻层符号翻转"
+#~ msgid "抽查 FM/AFM 的 `spin`：FM 沿 Axis 同向，AFM 在 111 方向上相邻层符号翻转"
 #~ msgstr ""
-#~ "Inspect FM/AFM `spin`: FM moments should point in the same direction "
-#~ "along the Axis, while adjacent layers along 111 should alternate signs in "
-#~ "AFM."
+#~ "Inspect FM/AFM `spin`: FM moments should point"
+#~ " in the same direction along the Axis, "
+#~ "while adjacent layers along 111 should "
+#~ "alternate signs in AFM."
 
 #~ msgid "如果 AFM 效果仍差，换 `AFM Kvec` = `110` 或 `100`，覆盖不同翻转周期"
 #~ msgstr ""
-#~ "If AFM behavior remains poor, test physically relevant `AFM Kvec` values "
-#~ "such as `110` or `100` to cover different alternation patterns."
+#~ "If AFM behavior remains poor, test physically"
+#~ " relevant `AFM Kvec` values such as `110`"
+#~ " or `100` to cover different alternation "
+#~ "patterns."
 
-#~ msgid ""
-#~ "如果 PM 结构能量分布异常宽，可能是磁矩幅值设置不合理——检查 `magmom_map` "
-#~ "或 `default_moment`"
+#~ msgid "如果 PM 结构能量分布异常宽，可能是磁矩幅值设置不合理——检查 `magmom_map` 或 `default_moment`"
 #~ msgstr ""
-#~ "If PM-like energies span an implausibly wide range, verify the magnitudes "
-#~ "in `magmom_map` and `default_moment` before generating more samples."
+#~ "If PM-like energies span an implausibly "
+#~ "wide range, verify the magnitudes in "
+#~ "`magmom_map` and `default_moment` before generating "
+#~ "more samples."
 
 #~ msgid "什么时候加这张卡、什么时候不加"
 #~ msgstr "When to add this card"
@@ -956,13 +1043,15 @@ msgstr "FM and AFM are deterministic. For PM, enabling `Use random seed` (`use_s
 
 #~ msgid "模型在不同磁序之间泛化差（FM 推理好、AFM 崩）"
 #~ msgstr ""
-#~ "The model transfers poorly between magnetic orders, for example "
-#~ "succeeding on FM but failing on AFM."
+#~ "The model transfers poorly between magnetic "
+#~ "orders, for example succeeding on FM but "
+#~ "failing on AFM."
 
 #~ msgid "研究体系本身存在多种磁有序相（如 Fe、NiO、钙钛矿磁性材料）"
 #~ msgstr ""
-#~ "The material supports several relevant magnetic orders, as in Fe, NiO, or "
-#~ "magnetic perovskites."
+#~ "The material supports several relevant magnetic "
+#~ "orders, as in Fe, NiO, or magnetic "
+#~ "perovskites."
 
 #~ msgid "需要模型能区分磁基态和激发态"
 #~ msgstr "The model must distinguish magnetic ground and excited states."
@@ -972,228 +1061,231 @@ msgstr "FM and AFM are deterministic. For PM, enabling `Use random seed` (`use_s
 
 #~ msgid "体系是非磁的（纯 Si、Al 等），加了只会引入无意义的磁矩标签"
 #~ msgstr ""
-#~ "The system is nonmagnetic, such as elemental Si or Al; moment labels "
-#~ "would be meaningless."
+#~ "The system is nonmagnetic, such as elemental"
+#~ " Si or Al; moment labels would be "
+#~ "meaningless."
 
 #~ msgid "只需要静态磁矩初始化，不需要多磁序分支（用 `Set Magnetic Moments`）"
 #~ msgstr ""
-#~ "Only one moment initialization is needed, without magnetic-order branches "
-#~ "→ use `Set Magnetic Moments`."
+#~ "Only one moment initialization is needed, "
+#~ "without magnetic-order branches → use `Set "
+#~ "Magnetic Moments`."
 
 #~ msgid "磁矩格式和幅值"
 #~ msgstr "Moment representation and magnitude"
 
-#~ msgid ""
-#~ "先把\"磁矩写多大、什么格式\"定下来，后面 FM/AFM/PM 分支都在这个基础上操"
-#~ "作。"
+#~ msgid "先把\"磁矩写多大、什么格式\"定下来，后面 FM/AFM/PM 分支都在这个基础上操作。"
 #~ msgstr ""
-#~ "First define moment magnitudes and representation. All FM, AFM, and PM-"
-#~ "like branches are built from this common reference."
+#~ "First define moment magnitudes and representation."
+#~ " All FM, AFM, and PM-like branches "
+#~ "are built from this common reference."
 
 #~ msgid ""
-#~ "`str`，默认 `Collinear (scalar)`。`Collinear` = 每个原子只有一个标量 ± 磁"
-#~ "矩，沿 `Axis` 方向；`Non-collinear` = 每个原子一个 3D 矢量。"
+#~ "`str`，默认 `Collinear (scalar)`。`Collinear` = 每个原子只有一个标量 "
+#~ "± 磁矩，沿 `Axis` 方向；`Non-collinear` = 每个原子一个 "
+#~ "3D 矢量。"
 #~ msgstr ""
-#~ "`str`, default: `Collinear (scalar)`. `Collinear` stores one signed "
-#~ "scalar per atom along `Axis`; `Non-collinear` stores a three-component "
-#~ "vector per atom."
+#~ "`str`, default: `Collinear (scalar)`. `Collinear` "
+#~ "stores one signed scalar per atom along "
+#~ "`Axis`; `Non-collinear` stores a three-"
+#~ "component vector per atom."
+
+#~ msgid "大多数共线磁序用标量就够了，简单且训练数据量小。如果你后续要做非共线螺旋、canting 或 DMI 相关训练，这里必须先切成矢量模式。"
+#~ msgstr ""
+#~ "Scalar moments are sufficient for collinear "
+#~ "orders and keep the data representation "
+#~ "simple. Select vectors before downstream "
+#~ "noncollinear spirals, canting, or DMI-related "
+#~ "workflows."
+
+#~ msgid "`[x, y, z]`，默认 `[0, 0, 1]`（z 轴）。共线模式下磁矩沿这个方向；非共线模式下 FM/AFM 的默认方向也以它为参考。"
+#~ msgstr ""
+#~ "`[x, y, z]`, default: `[0, 0, 1]`. "
+#~ "Reference direction for collinear moments and "
+#~ "for the default FM/AFM direction in "
+#~ "noncollinear mode."
+
+#~ msgid "改它之前先确认结构的晶胞取向——如果你的 slab 法向是 z，通常保持默认；如果研究面内各向异性，可能要改到 x 或 y。"
+#~ msgstr ""
+#~ "Confirm the cell orientation before changing "
+#~ "it. For a slab normal to *z*, the "
+#~ "default may be appropriate; an in-plane "
+#~ "anisotropy study may require *x* or *y*."
+
+#~ msgid "`str`，默认空。`Fe:2.2, Ni:0.6` 这种格式，显式指定每个元素的磁矩大小。这是你最精确的控制方式——用已知的 DFT 或文献值填。"
+#~ msgstr ""
+#~ "`str`, default: empty. Explicit element magnitudes"
+#~ " such as `Fe:2.2, Ni:0.6`. Use defensible "
+#~ "values from DFT, experiment, or literature."
 
 #~ msgid ""
-#~ "大多数共线磁序用标量就够了，简单且训练数据量小。如果你后续要做非共线螺旋、"
-#~ "canting 或 DMI 相关训练，这里必须先切成矢量模式。"
+#~ "`bool`，默认 false。打开后不同元素可以有不同的磁矩方向（从 `magmom_map` 中读取方向信息），而不是全沿"
+#~ " `Axis`。非共线多元素体系（比如 Fe↑ Mn↓）才会用到。标量模式下不需要开。"
 #~ msgstr ""
-#~ "Scalar moments are sufficient for collinear orders and keep the data "
-#~ "representation simple. Select vectors before downstream noncollinear "
-#~ "spirals, canting, or DMI-related workflows."
+#~ "`bool`, default: `false`. Preserve element-specific"
+#~ " vector directions from `magmom_map` instead of"
+#~ " aligning every moment with `Axis`. This is"
+#~ " relevant to multielement noncollinear systems "
+#~ "and has no effect in scalar mode."
+
+#~ msgid "`float`，默认 0.0。没在 `magmom_map` 里列出的元素统一用这个值。设 0 意味着非磁性元素不写磁矩。"
+#~ msgstr ""
+#~ "`float`, default: `0.0`. Magnitude assigned to "
+#~ "elements absent from `magmom_map`. Zero leaves "
+#~ "unconfigured species without a moment."
+
+#~ msgid "`str`，默认空（全部生效）。逗号分隔如 `Fe, Co`。只给这些元素写磁矩，其他的写 0。"
+#~ msgstr ""
+#~ "`str`, default: empty, meaning all elements. A"
+#~ " comma-separated list such as `Fe, Co` "
+#~ "restricts moments to those species; all others"
+#~ " receive zero."
 
 #~ msgid ""
-#~ "`[x, y, z]`，默认 `[0, 0, 1]`（z 轴）。共线模式下磁矩沿这个方向；非共线模"
-#~ "式下 FM/AFM 的默认方向也以它为参考。"
+#~ "优先级：`magmom_map` 命中的 → 用映射值；没命中但被 `apply_elements` "
+#~ "包含的 → 用 `default_moment`；都不在的 → 写 0。"
 #~ msgstr ""
-#~ "`[x, y, z]`, default: `[0, 0, 1]`. Reference direction for collinear "
-#~ "moments and for the default FM/AFM direction in noncollinear mode."
-
-#~ msgid ""
-#~ "改它之前先确认结构的晶胞取向——如果你的 slab 法向是 z，通常保持默认；如果研"
-#~ "究面内各向异性，可能要改到 x 或 y。"
-#~ msgstr ""
-#~ "Confirm the cell orientation before changing it. For a slab normal to "
-#~ "*z*, the default may be appropriate; an in-plane anisotropy study may "
-#~ "require *x* or *y*."
-
-#~ msgid ""
-#~ "`str`，默认空。`Fe:2.2, Ni:0.6` 这种格式，显式指定每个元素的磁矩大小。这是"
-#~ "你最精确的控制方式——用已知的 DFT 或文献值填。"
-#~ msgstr ""
-#~ "`str`, default: empty. Explicit element magnitudes such as `Fe:2.2, "
-#~ "Ni:0.6`. Use defensible values from DFT, experiment, or literature."
-
-#~ msgid ""
-#~ "`bool`，默认 false。打开后不同元素可以有不同的磁矩方向（从 `magmom_map` 中"
-#~ "读取方向信息），而不是全沿 `Axis`。非共线多元素体系（比如 Fe↑ Mn↓）才会用"
-#~ "到。标量模式下不需要开。"
-#~ msgstr ""
-#~ "`bool`, default: `false`. Preserve element-specific vector directions "
-#~ "from `magmom_map` instead of aligning every moment with `Axis`. This is "
-#~ "relevant to multielement noncollinear systems and has no effect in scalar "
-#~ "mode."
-
-#~ msgid ""
-#~ "`float`，默认 0.0。没在 `magmom_map` 里列出的元素统一用这个值。设 0 意味着"
-#~ "非磁性元素不写磁矩。"
-#~ msgstr ""
-#~ "`float`, default: `0.0`. Magnitude assigned to elements absent from "
-#~ "`magmom_map`. Zero leaves unconfigured species without a moment."
-
-#~ msgid ""
-#~ "`str`，默认空（全部生效）。逗号分隔如 `Fe, Co`。只给这些元素写磁矩，其他的"
-#~ "写 0。"
-#~ msgstr ""
-#~ "`str`, default: empty, meaning all elements. A comma-separated list such "
-#~ "as `Fe, Co` restricts moments to those species; all others receive zero."
-
-#~ msgid ""
-#~ "优先级：`magmom_map` 命中的 → 用映射值；没命中但被 `apply_elements` 包含"
-#~ "的 → 用 `default_moment`；都不在的 → 写 0。"
-#~ msgstr ""
-#~ "Precedence: an element found in `magmom_map` uses the mapped value; an "
-#~ "unmatched element included by `apply_elements` uses `default_moment`; all "
-#~ "others receive zero."
+#~ "Precedence: an element found in `magmom_map` "
+#~ "uses the mapped value; an unmatched element"
+#~ " included by `apply_elements` uses `default_moment`;"
+#~ " all others receive zero."
 
 #~ msgid "FM / AFM 分支"
 #~ msgstr "FM and AFM branches"
 
-#~ msgid ""
-#~ "这两张复选框决定输出里有没有铁磁和反铁磁构型。通常至少保留 FM ——它是一个重"
-#~ "要的能量参考态。"
+#~ msgid "这两张复选框决定输出里有没有铁磁和反铁磁构型。通常至少保留 FM ——它是一个重要的能量参考态。"
 #~ msgstr ""
-#~ "These options control whether FM and AFM initializations are produced. "
-#~ "Retain FM when it is a relevant reference state for the material."
+#~ "These options control whether FM and AFM "
+#~ "initializations are produced. Retain FM when "
+#~ "it is a relevant reference state for the"
+#~ " material."
 
-#~ msgid ""
-#~ "`bool`，默认 true。打开 → 输出一个铁磁结构（所有磁矩同向）。关掉它意味着你"
-#~ "只要 AFM/PM，比较少见。"
-#~ msgstr ""
-#~ "`bool`, default: `true`. Produce one FM structure with all target moments "
-#~ "parallel."
+#~ msgid "`bool`，默认 true。打开 → 输出一个铁磁结构（所有磁矩同向）。关掉它意味着你只要 AFM/PM，比较少见。"
+#~ msgstr "`bool`, default: `true`. Produce one FM structure with all target moments parallel."
 
 #~ msgid "`bool`，默认 true。打开 → 输出反铁磁结构。需要选一种 AFM 构造方式："
 #~ msgstr ""
-#~ "`bool`, default: `true`. Produce an AFM structure using one of the "
-#~ "following construction methods."
+#~ "`bool`, default: `true`. Produce an AFM "
+#~ "structure using one of the following "
+#~ "construction methods."
 
 #~ msgid ""
-#~ "`str`，默认 `k-vector`。`k-vector` 用波矢自动翻转——简单、不需要上游准备。"
-#~ "`group A/B` 用手动标注的 group 标签决定正负——更灵活，但需要先用 `Group "
-#~ "Label` 卡打好标签。"
+#~ "`str`，默认 `k-vector`。`k-vector` 用波矢自动翻转——简单、不需要上游准备。`group A/B`"
+#~ " 用手动标注的 group 标签决定正负——更灵活，但需要先用 `Group Label` "
+#~ "卡打好标签。"
 #~ msgstr ""
-#~ "`str`, default: `k-vector`. `k-vector` assigns alternating signs from a "
-#~ "phase pattern without upstream labels. `group A/B` assigns signs from "
-#~ "explicit `group` labels and requires a preceding `Group Label` card."
+#~ "`str`, default: `k-vector`. `k-vector` assigns "
+#~ "alternating signs from a phase pattern without"
+#~ " upstream labels. `group A/B` assigns signs "
+#~ "from explicit `group` labels and requires a"
+#~ " preceding `Group Label` card."
 
 #~ msgid ""
-#~ "你很可能先从 k-vector 试起。只有当你发现 k-vector 的翻转面切到了不等价原子"
-#~ "（比如 NiO 里 Ni 和 O 两种子晶格被混在一起了），再切到 group A/B。"
+#~ "你很可能先从 k-vector 试起。只有当你发现 k-vector 的翻转面切到了不等价原子（比如 "
+#~ "NiO 里 Ni 和 O 两种子晶格被混在一起了），再切到 group A/B。"
 #~ msgstr ""
-#~ "Start with k-vector for a simple periodic pattern. Switch to group A/B "
-#~ "when the desired magnetic sublattices cannot be represented by a "
-#~ "geometric phase alone, such as when inequivalent species must be treated "
+#~ "Start with k-vector for a simple periodic "
+#~ "pattern. Switch to group A/B when the "
+#~ "desired magnetic sublattices cannot be represented"
+#~ " by a geometric phase alone, such as "
+#~ "when inequivalent species must be treated "
 #~ "separately."
 
 #~ msgid ""
-#~ "`str`，默认 `111`。仅 k-vector 模式。`100` / `010` / `001` / `110` / "
-#~ "`111`。沿这个方向相邻原子层磁矩正负交替。"
+#~ "`str`，默认 `111`。仅 k-vector 模式。`100` / `010` /"
+#~ " `001` / `110` / `111`。沿这个方向相邻原子层磁矩正负交替。"
 #~ msgstr ""
-#~ "`str`, default: `111`. Used only in k-vector mode. Choices are `100`, "
-#~ "`010`, `001`, `110`, and `111`; the sign alternates according to the "
-#~ "corresponding layer phase."
+#~ "`str`, default: `111`. Used only in k-vector"
+#~ " mode. Choices are `100`, `010`, `001`, "
+#~ "`110`, and `111`; the sign alternates "
+#~ "according to the corresponding layer phase."
 
 #~ msgid ""
-#~ "`str`，默认 `A`。仅 group A/B 模式。`atoms.arrays['group']` 中等于这个标签"
-#~ "的原子取正号磁矩。它必须和上游 `Group Label` 卡写入的标签完全一致，包括大"
-#~ "小写。"
+#~ "`str`，默认 `A`。仅 group A/B 模式。`atoms.arrays['group']` "
+#~ "中等于这个标签的原子取正号磁矩。它必须和上游 `Group Label` 卡写入的标签完全一致，包括大小写。"
 #~ msgstr ""
-#~ "`str`, default: `A`. Used only in group A/B mode. Atoms whose "
-#~ "`atoms.arrays['group']` equals this case-sensitive label receive positive "
+#~ "`str`, default: `A`. Used only in group "
+#~ "A/B mode. Atoms whose `atoms.arrays['group']` equals"
+#~ " this case-sensitive label receive positive "
 #~ "moments."
 
 #~ msgid ""
-#~ "`str`，默认 `B`。仅 group A/B 模式。`atoms.arrays['group']` 中等于这个标签"
-#~ "的原子取负号磁矩。通常和 `afm_group_a` 成对使用，用来显式指定两套反平行子"
-#~ "晶格。"
+#~ "`str`，默认 `B`。仅 group A/B 模式。`atoms.arrays['group']` "
+#~ "中等于这个标签的原子取负号磁矩。通常和 `afm_group_a` 成对使用，用来显式指定两套反平行子晶格。"
 #~ msgstr ""
-#~ "`str`, default: `B`. Used only in group A/B mode. Atoms with this case-"
-#~ "sensitive group label receive negative moments, defining the sublattice "
-#~ "antiparallel to `afm_group_a`."
+#~ "`str`, default: `B`. Used only in group "
+#~ "A/B mode. Atoms with this case-sensitive "
+#~ "group label receive negative moments, defining "
+#~ "the sublattice antiparallel to `afm_group_a`."
 
-#~ msgid ""
-#~ "`bool`，默认 true。仅 group A/B 模式。打开 → 不属于 A 也不属于 B 的原子磁"
-#~ "矩置零。关掉 → 这些原子默认为正。"
+#~ msgid "`bool`，默认 true。仅 group A/B 模式。打开 → 不属于 A 也不属于 B 的原子磁矩置零。关掉 → 这些原子默认为正。"
 #~ msgstr ""
-#~ "`bool`, default: `true`. In group A/B mode, set moments outside groups A "
-#~ "and B to zero. When disabled, unmatched target atoms default to the "
-#~ "positive sign."
+#~ "`bool`, default: `true`. In group A/B mode,"
+#~ " set moments outside groups A and B "
+#~ "to zero. When disabled, unmatched target atoms"
+#~ " default to the positive sign."
 
 #~ msgid "PM 分支"
 #~ msgstr "PM-like branch"
 
-#~ msgid ""
-#~ "PM 生成大量随机磁序样本。默认关闭的——因为开了输出数量会乘上 `pm_count + "
-#~ "2`。"
+#~ msgid "PM 生成大量随机磁序样本。默认关闭的——因为开了输出数量会乘上 `pm_count + 2`。"
 #~ msgstr ""
-#~ "The PM-like branch creates random moment directions and is disabled by "
-#~ "default because it can increase the output count by `pm_count` in "
-#~ "addition to the FM and AFM branches."
+#~ "The PM-like branch creates random moment "
+#~ "directions and is disabled by default because"
+#~ " it can increase the output count by "
+#~ "`pm_count` in addition to the FM and AFM"
+#~ " branches."
 
 #~ msgid "`bool`，默认 false。打开后才生成顺磁构型。"
-#~ msgstr ""
-#~ "`bool`, default: `false`. Enable to generate paramagnetic-like initial "
-#~ "states."
+#~ msgstr "`bool`, default: `false`. Enable to generate paramagnetic-like initial states."
 
 #~ msgid ""
-#~ "`int`，默认 10。生成几个 PM 样本。5-10 覆盖基本无序态，20+ 做统计训练。注"
-#~ "意每帧输出 = 1 FM（如果开了）+ 1 AFM（如果开了）+ `pm_count` 个 PM。"
+#~ "`int`，默认 10。生成几个 PM 样本。5-10 覆盖基本无序态，20+ 做统计训练。注意每帧输出"
+#~ " = 1 FM（如果开了）+ 1 AFM（如果开了）+ `pm_count` 个"
+#~ " PM。"
 #~ msgstr ""
-#~ "`int`, default: `10`. Number of PM-like samples. Use 5–10 for basic "
-#~ "disorder coverage and 20 or more for statistical sampling. Per-frame "
-#~ "output equals the enabled FM branch plus the enabled AFM branch plus "
+#~ "`int`, default: `10`. Number of PM-like "
+#~ "samples. Use 5–10 for basic disorder coverage"
+#~ " and 20 or more for statistical sampling."
+#~ " Per-frame output equals the enabled FM "
+#~ "branch plus the enabled AFM branch plus "
 #~ "`pm_count`."
 
 #~ msgid ""
-#~ "`str`，默认 `sphere`。`sphere` — 磁矩方向在球面上均匀撒。`cone` — 限制在"
-#~ "以 `Axis` 为中心的锥面内，锥角由下面的 `PM Cone Angle` 控制。如果你要模拟"
-#~ "有限温度下自旋偏离平衡方向不太远的情况，用 cone；要模拟完全无序的顺磁态，"
-#~ "用 sphere。"
+#~ "`str`，默认 `sphere`。`sphere` — 磁矩方向在球面上均匀撒。`cone` — "
+#~ "限制在以 `Axis` 为中心的锥面内，锥角由下面的 `PM Cone Angle` "
+#~ "控制。如果你要模拟有限温度下自旋偏离平衡方向不太远的情况，用 cone；要模拟完全无序的顺磁态，用 sphere。"
 #~ msgstr ""
-#~ "`str`, default: `sphere`. `sphere` samples directions uniformly over the "
-#~ "sphere. `cone` limits them to a cone around `Axis`, with the opening "
-#~ "controlled by `PM Cone Angle`. Use a cone for finite-temperature "
-#~ "fluctuations near a reference direction and a sphere for fully disordered "
-#~ "orientations."
+#~ "`str`, default: `sphere`. `sphere` samples "
+#~ "directions uniformly over the sphere. `cone` "
+#~ "limits them to a cone around `Axis`, "
+#~ "with the opening controlled by `PM Cone "
+#~ "Angle`. Use a cone for finite-temperature "
+#~ "fluctuations near a reference direction and a"
+#~ " sphere for fully disordered orientations."
 
-#~ msgid ""
-#~ "`float`，默认 30°。仅 cone 模式。偏离 `Axis` 的最大角度。30° 表示有限温近"
-#~ "平衡扰动，60° 接近强无序。"
+#~ msgid "`float`，默认 30°。仅 cone 模式。偏离 `Axis` 的最大角度。30° 表示有限温近平衡扰动，60° 接近强无序。"
 #~ msgstr ""
-#~ "`float`, default: `30`°. Maximum deviation from `Axis` in cone mode. "
-#~ "Around 30° represents moderate directional disorder; 60° is much broader."
+#~ "`float`, default: `30`°. Maximum deviation from "
+#~ "`Axis` in cone mode. Around 30° represents "
+#~ "moderate directional disorder; 60° is much "
+#~ "broader."
 
-#~ msgid ""
-#~ "`bool`，默认 true。打开后正负方向数量尽量平衡。一般建议保持——不勾的话可能"
-#~ "出现某一方向系统性偏多。"
+#~ msgid "`bool`，默认 true。打开后正负方向数量尽量平衡。一般建议保持——不勾的话可能出现某一方向系统性偏多。"
 #~ msgstr ""
-#~ "`bool`, default: `true`. Balance opposite directions as closely as "
-#~ "possible to reduce an accidental net orientation bias."
+#~ "`bool`, default: `true`. Balance opposite directions"
+#~ " as closely as possible to reduce an "
+#~ "accidental net orientation bias."
 
 #~ msgid "随机性"
 #~ msgstr "Randomness"
 
-#~ msgid ""
-#~ "`bool`，默认 false。打开后固定随机种子 → 同参数同输入可复现。对比实验时"
-#~ "开，纯探索可以关。"
+#~ msgid "`bool`，默认 false。打开后固定随机种子 → 同参数同输入可复现。对比实验时开，纯探索可以关。"
 #~ msgstr ""
-#~ "`bool`, default: `false`. Enable with a fixed seed for reproducibility. "
-#~ "Use it for comparisons; it can remain disabled during exploration."
+#~ "`bool`, default: `false`. Enable with a fixed"
+#~ " seed for reproducibility. Use it for "
+#~ "comparisons; it can remain disabled during "
+#~ "exploration."
 
 #~ msgid "`int`，默认 0。仅在 `use_seed` 打开时生效。"
 #~ msgstr "`int`, default: `0`. Used only when `use_seed` is enabled."
@@ -1207,83 +1299,93 @@ msgstr "FM and AFM are deterministic. For PM, enabling `Use random seed` (`use_s
 #~ msgid "非共线多磁序（~17 个输出，研究级）"
 #~ msgstr "Noncollinear multiple-order coverage (~17 outputs; research scale)"
 
-#~ msgid ""
-#~ "`Group Label` → `Magnetic Order`：先打 group 标签，再用 group A/B 模式生成"
-#~ "细粒度 AFM"
+#~ msgid "`Group Label` → `Magnetic Order`：先打 group 标签，再用 group A/B 模式生成细粒度 AFM"
 #~ msgstr ""
-#~ "`Group Label` → `Magnetic Order`: label magnetic sublattices, then "
-#~ "construct an explicit AFM pattern with group A/B mode."
+#~ "`Group Label` → `Magnetic Order`: label "
+#~ "magnetic sublattices, then construct an explicit "
+#~ "AFM pattern with group A/B mode."
 
 #~ msgid "`Magnetic Order` → `Magmom Rotation`：基础磁序 → 小角度旋转补样"
 #~ msgstr ""
-#~ "`Magnetic Order` → `Magmom Rotation`: generate reference orders, then "
-#~ "sample small-angle neighborhoods."
+#~ "`Magnetic Order` → `Magmom Rotation`: generate "
+#~ "reference orders, then sample small-angle "
+#~ "neighborhoods."
 
 #~ msgid "`Magnetic Order` → `Spin Spiral`：磁序初始化幅值 → 螺旋调制"
 #~ msgstr ""
-#~ "`Magnetic Order` → `Spin Spiral`: initialize moment magnitudes, then "
-#~ "impose a spiral modulation."
+#~ "`Magnetic Order` → `Spin Spiral`: initialize "
+#~ "moment magnitudes, then impose a spiral "
+#~ "modulation."
 
 #~ msgid ""
-#~ "**输出没有磁矩。** `magmom_map` 和 `default_moment` 是否都为空/0？"
-#~ "`apply_elements` 是否过滤掉了所有有磁矩的元素？"
+#~ "**输出没有磁矩。** `magmom_map` 和 `default_moment` "
+#~ "是否都为空/0？`apply_elements` 是否过滤掉了所有有磁矩的元素？"
 #~ msgstr ""
-#~ "**The output has no moments.** Check whether both `magmom_map` and "
-#~ "`default_moment` are empty or zero, and whether `apply_elements` excludes "
-#~ "every magnetic species."
+#~ "**The output has no moments.** Check whether"
+#~ " both `magmom_map` and `default_moment` are empty"
+#~ " or zero, and whether `apply_elements` excludes"
+#~ " every magnetic species."
 
 #~ msgid ""
 #~ "**AFM 没翻转。** 如果用 `group A/B` 模式，检查输入是否有 "
-#~ "`atoms.arrays['group']` 且包含 A/B 标签。没有的话换 `k-vector` 模式。"
+#~ "`atoms.arrays['group']` 且包含 A/B 标签。没有的话换 `k-vector` "
+#~ "模式。"
 #~ msgstr ""
-#~ "**AFM moments do not alternate.** In group A/B mode, confirm that "
-#~ "`atoms.arrays['group']` exists and contains the exact A and B labels. "
-#~ "Otherwise add upstream group labels or switch to k-vector mode."
+#~ "**AFM moments do not alternate.** In group "
+#~ "A/B mode, confirm that `atoms.arrays['group']` "
+#~ "exists and contains the exact A and B"
+#~ " labels. Otherwise add upstream group labels "
+#~ "or switch to k-vector mode."
 
 #~ msgid "**PM 没生成。** `gen_pm` 默认关闭，确认已勾选。"
 #~ msgstr ""
-#~ "**No PM-like structures are produced.** `gen_pm` is disabled by default; "
-#~ "enable it explicitly."
+#~ "**No PM-like structures are produced.** "
+#~ "`gen_pm` is disabled by default; enable it "
+#~ "explicitly."
 
-#~ msgid ""
-#~ "**非共线磁矩方向不符合预期。** 检查 `Axis` 是否正确。非共线 FM/AFM 模式"
-#~ "下，每个原子的磁矩方向沿 `Axis`，只有 PM 才会随机偏离。"
+#~ msgid "**非共线磁矩方向不符合预期。** 检查 `Axis` 是否正确。非共线 FM/AFM 模式下，每个原子的磁矩方向沿 `Axis`，只有 PM 才会随机偏离。"
 #~ msgstr ""
-#~ "**Noncollinear directions are not as expected.** Check `Axis`. In the "
-#~ "default noncollinear FM/AFM branches, target moments follow `Axis`; only "
-#~ "PM-like states are randomly deflected."
+#~ "**Noncollinear directions are not as expected.** "
+#~ "Check `Axis`. In the default noncollinear "
+#~ "FM/AFM branches, target moments follow `Axis`; "
+#~ "only PM-like states are randomly deflected."
 
 #~ msgid "`MagFM` / `MagFMnc`：铁磁（共线/非共线）"
 #~ msgstr "`MagFM` / `MagFMnc`: collinear / noncollinear ferromagnetic state"
 
 #~ msgid "`MagAFM111` / `MagAFM110`：反铁磁，后缀为 k-vector"
-#~ msgstr ""
-#~ "`MagAFM111` / `MagAFM110`: antiferromagnetic state with the k-vector "
-#~ "suffix"
+#~ msgstr "`MagAFM111` / `MagAFM110`: antiferromagnetic state with the k-vector suffix"
 
 #~ msgid "`MagAFMg`：group A/B 模式反铁磁"
 #~ msgstr "`MagAFMg`: group A/B antiferromagnetic state"
 
 #~ msgid "`MagPM` / `MagPMnc`：顺磁，可能带 seed 后缀"
-#~ msgstr ""
-#~ "`MagPM` / `MagPMnc`: paramagnetic-like state, possibly with a seed suffix"
+#~ msgstr "`MagPM` / `MagPMnc`: paramagnetic-like state, possibly with a seed suffix"
 
 #~ msgid ""
-#~ "所有导出输出写入 `spin:R:3`。即使选择 `Collinear (scalar)`，也会按非零 "
-#~ "`Axis` 转换成三分量 `spin`；内部的标量 `initial_magmoms` 只用于 ASE 兼容。"
+#~ "所有导出输出写入 `spin:R:3`。即使选择 `Collinear (scalar)`，也会按非零 `Axis`"
+#~ " 转换成三分量 `spin`；内部的标量 `initial_magmoms` 只用于 ASE "
+#~ "兼容。"
 #~ msgstr ""
-#~ "All exported outputs use `spin:R:3`. Even when `Collinear (scalar)` is "
-#~ "selected, a nonzero `Axis` is used to construct the three-component "
-#~ "`spin`; scalar `initial_magmoms` is retained internally only for ASE "
-#~ "compatibility."
+#~ "All exported outputs use `spin:R:3`. Even when"
+#~ " `Collinear (scalar)` is selected, a nonzero "
+#~ "`Axis` is used to construct the three-"
+#~ "component `spin`; scalar `initial_magmoms` is "
+#~ "retained internally only for ASE compatibility."
 
-#~ msgid ""
-#~ "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。PM 随机性受 seed + 结构稳"
-#~ "定 ID 联合控制。"
+#~ msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。PM 随机性受 seed + 结构稳定 ID 联合控制。"
 #~ msgstr ""
-#~ "Enable `use_seed` and fix `seed` to reproduce the same result for the "
-#~ "same input. PM-like randomness is determined jointly by the seed and the "
-#~ "structure's stable ID."
+#~ "Enable `use_seed` and fix `seed` to reproduce"
+#~ " the same result for the same input. "
+#~ "PM-like randomness is determined jointly by "
+#~ "the seed and the structure's stable ID."
 
 #~ msgid "所有输出写入 `initial_magmoms` 数组。"
 #~ msgstr "All outputs are written to the `initial_magmoms` array."
+
+#~ msgid "`Spin Disorder`：从已有磁态出发，扫描局部翻转比例、随机化比例或锥角无序等中间状态。"
+#~ msgstr ""
+#~ "`Spin Disorder`: start from an existing "
+#~ "magnetic state and scan intermediate states "
+#~ "such as local flip fractions, randomization "
+#~ "fractions, or cone-angle disorder."

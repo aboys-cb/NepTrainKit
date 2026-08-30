@@ -33,12 +33,12 @@ msgid ""
 "根据结构编号或切片表达式批量选择结构。适合复现实验记录中的结构编号、从外部异"
 "常清单回选结构， 或精确选择不连续的多个区间。这个工具只更新选择集，不会删除或"
 "修改结构。"
-msgstr "This section explains the option, its parameters, operation, and expected result."
+msgstr "Select structures in batches using indices or slice expressions. Use it to reproduce recorded structure indices, select entries from an external anomaly list, or target several disjoint ranges precisely. The tool only updates the selection; it does not delete or modify structures."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-select-index.md:8
 #: 4b7a406e154345d68eddaa2e473d35fa
 msgid "参数与示例"
-msgstr "Details for this option"
+msgstr "Parameters and Examples"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5219
 #: 0db2fd36eb184767af7215d58f678bc1
@@ -48,37 +48,37 @@ msgstr "Input controls:"
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5220
 #: 6a2621a91d9c42048c66d90dc83c7930
 msgid "`indexEdit`：索引表达式"
-msgstr "See the parameter description for details."
+msgstr "`indexEdit`: index expression"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5221
 #: d8bf650e9bdd4d00a96e0ec07c32778d
 msgid "`Use original indices`：默认勾选"
-msgstr "See the parameter description for details."
+msgstr "`Use original indices`: enabled by default"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5222
 #: 09dd9176b5444641821b9c2cf9628bec
 msgid "索引表达式支持："
-msgstr "Details for this option"
+msgstr "Supported index syntax:"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5223
 #: cb58db1894844a9ca6c4ea922b797411
 msgid "单值：`3`, `-1`"
-msgstr "Details for this option"
+msgstr "Single values: `3`, `-1`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5224
 #: 2d237586dfcb40f686bea59276c95c64
 msgid "切片：`1:10`, `:100`, `::3`, `10:0:-1`"
-msgstr "Details for this option"
+msgstr "Slices: `1:10`, `:100`, `::3`, `10:0:-1`"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5225
 #: 6c84b525277b4ea0a0542b13ef666e47
 msgid "多段：`1:10,20,30:40:2`（逗号或空白分隔）"
-msgstr "Details for this option"
+msgstr "Multiple segments: `1:10,20,30:40:2` (separated by commas or whitespace)"
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5226
 #: 3c38d8df69d44ec181ac8f4505895199
 msgid "执行结果：解析后选中结构；空表达式无效果。"
-msgstr "Details for this option"
+msgstr "Result: parse the expression and select the matching structures; an empty expression has no effect."
 
 #: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:5228
 #: 4c3fef6d7f9d4c61ab7dcb2b6eab3011
@@ -111,4 +111,4 @@ msgstr "Post-operation checks"
 msgid ""
 "查看底部 `Sel` 数量是否与表达式预期一致。勾选“使用原始索引”时，编号对应刚导入"
 "数据时的索引； 关闭后则对应当前活动数据的行号，删除结构后两者可能不同。"
-msgstr "Details for this option"
+msgstr "Check that the bottom `Sel` count matches the expression. With `Use original indices` enabled, indices refer to the newly imported dataset; when disabled, they refer to row numbers in the current active data. The two can differ after structures are removed."

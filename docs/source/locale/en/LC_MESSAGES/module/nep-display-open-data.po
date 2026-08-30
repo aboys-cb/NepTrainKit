@@ -1,286 +1,257 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-08-30 17:32+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:1
-#: af2991ed15f24295b78eb95d32aabe99
+#: ../../source/module/nep-display-open-data.md:1 e799af6178d14dc2b00d12eec7ac68a5
 msgid "页面总览、打开数据与切换模型"
 msgstr "Page overview, opening data, and switching models"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:3
-#: 7d2a6c96d6b04b35be05bac3326c57f5
+#: ../../source/module/nep-display-open-data.md:3 458532715cd8430ba36691c3b463d4fd
 msgid ""
-"这一页对应软件顶部区域。第一次进入 `NEP Dataset Display` 时，先从这里确认页面"
-"布局、 输入类型、`Open` / `Save` 菜单和 NEP 模型切换方式。"
-msgstr "This page covers the top area of the application. When you first open `NEP Dataset Display`, use it to understand the layout, input types, `Open` / `Save` menus, and how to switch NEP models."
+"这一页对应软件顶部区域。第一次进入 `NEP Dataset Display` 时，先从这里确认页面布局、 输入类型、`Open` / `Save` 菜单和 NEP "
+"模型切换方式。"
+msgstr ""
+"This page covers the top area of the application. When you first open `NEP Dataset "
+"Display`, use it to understand the layout, input types, `Open` / `Save` menus, and "
+"how to switch NEP models."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:5
-#: a8da5a87bd5d4858a2a9dbfb76bd7546
+#: ../../source/module/nep-display-open-data.md:5 d857900d0ed0466f8e2e9a44987ca2d3
 msgid "本页目录"
 msgstr "On this page"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:154
-#: b2ed16708abd4a0fb633c6e2b2752625
+#: ../../source/module/nep-dataset-display-content.md:154 a6542baf04b64bcdb3d58eff2fa04844
 msgid "1. 界面总览"
 msgstr "1. Interface overview"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:156
-#: 0f1b6b8535a34e8a81e5a2ce49cd4ae5
-msgid "![NEP Dataset Display Main](../_static/image/example/display/main.png)"
-msgstr "![NEP Dataset Display Main](../_static/image/example/display/main.png)"
+#: ../../source/module/nep-dataset-display-content.md:156 90591181a6f44317b5fa84dfd524cebd
+msgid "NEP Dataset Display 界面总览"
+msgstr "NEP Dataset Display overview"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:156
-#: 6c3dd9cde7644defa32c1e5adbf44d06
-msgid "NEP Dataset Display Main"
-msgstr "NEP Dataset Display Main"
+#: ../../source/module/nep-dataset-display-content.md:156 90591181a6f44317b5fa84dfd524cebd
+msgid ".. image:: ../_static/image/generated/show_nep_overview.png"
+msgstr ".. image:: ../_static/image/generated/show_nep_overview.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:156
-#: 6c3dd9cde7644defa32c1e5adbf44d06
-msgid ".. image:: ../_static/image/example/display/main.png"
-msgstr ".. image:: ../_static/image/example/display/main.png"
+#: ../../source/module/nep-dataset-display-content.md:161 ddec5a5af9394172852d1cbb1b0f0871
+msgid "左侧：误差散点主图区（descriptor / energy / force / pressure / potential energy 等子图）。"
+msgstr "Left: main error-scatter area, with descriptor, energy, force, pressure, potential-energy, and related plots."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:158
-#: 17641cfb3bb64f9ba19d822d3e2fb4b9
-msgid ""
-"左侧：误差散点主图区（descriptor / energy / force / pressure / potential "
-"energy 等子图）。"
-msgstr "Details for this option"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:159
-#: 0e6fc8fa04f54c61bb3ed9e554cc6fde
+#: ../../source/module/nep-dataset-display-content.md:162 0901b293f8244df09f58697c8491df1b
 msgid "右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。"
-msgstr "Details for this option"
+msgstr "Right: structure area with the 3D view, structure information, shortest bond length, net force, index controls, and playback."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:160
-#: 61e2069b54934373a3f480cf4f21bb20
+#: ../../source/module/nep-dataset-display-content.md:163 4699ab9ddbc04acfa892b2c795722951
 msgid "底部：数据状态行 `Orig / Now / Rm / Sel / Unsel / Rej`。"
-msgstr "Details for this option"
+msgstr "Bottom: dataset status row showing `Orig / Now / Rm / Sel / Unsel / Rej`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:161
-#: 2ad3b8d6cff54b35a610efa7b49f86d8
+#: ../../source/module/nep-dataset-display-content.md:164 321740f304304bc19b40f6f3a0eb22de
 msgid "顶部：`Open` / `Save` 分裂按钮（菜单动作会随页面显示动态注入）。"
-msgstr "Details for this option"
+msgstr "Top: `Open` and `Save` split buttons; their menu actions are populated dynamically when the page is shown."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:16
-#: 613e38bd2852461cac3e060f2d93b940
+#: ../../source/module/nep-display-open-data.md:16 009a30280b5448aeb4e6c13b4ec434f5
 msgid "顶部菜单"
 msgstr "Top menus"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:4200
-#: e06dd0eae26b4fe7adb7da9e32ff1980
+#: ../../source/module/nep-dataset-display-content.md:4248 918fc07c678945bfad7004610d63959a
 msgid "2.3 顶部菜单动作"
 msgstr "2.3 Top-menu actions"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:18
-#: 8684e5e10ac84489b592229ef4291418
+#: ../../source/module/nep-display-open-data.md:18 5498afbfbe764499b3ee6de914eb93a5
 msgid "图标"
 msgstr "Icon"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:18
-#: a2992b2619d147d7b87a4ffe13f8f0b1
+#: ../../source/module/nep-display-open-data.md:18 a4373a9c199942d5b7caa49782602c46
 msgid "菜单动作"
 msgstr "Menu action"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:18
-#: 87b39ac80cef416983b9273c675bc2d8
+#: ../../source/module/nep-display-open-data.md:18 4bf36bb0e5234a3da533e4c0dd932618
 msgid "是否打开设置"
 msgstr "Opens settings"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:18
-#: 2bceb7cf3e3041a996a610772e40bbb9
+#: ../../source/module/nep-display-open-data.md:18 1788338fba4f4ae99761d58c8b518b01
 msgid "说明"
 msgstr "Description"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:18
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4204
-#: aeb7dcfc729a4879bf406afbbbb4881e 4ce482c366f64cffb52ef80a0f23a2dd
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/open.svg\" "
-"width=\"20\" />"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/open.svg\" "
-"width=\"20\" />"
+#: ../../source/module/nep-display-open-data.md:18
+#: ../../source/module/nep-display-open-data.md:4252 6b6d3a92639b4e9b8871f1ef4f90192f
+msgid "<img src=\"../_static/image/generated/show_nep_icons/open.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/open.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: c3d08578b2514255b15f20d8f3f91f97 c069798eefa24eb7a51ca8d4516d5228
+#: ../../source/module/nep-dataset-display-content.md 2365d954f3064205903f39bd070f103d
+#: b2f3202e1c804803ac485b076388643c
 msgid ".. image:: ../_static/image/generated/show_nep_icons/open.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/open.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4204
-#: 5312769bb393459dae8d0e34a53e8fdd
+#: ../../source/module/nep-display-open-data.md:4252 fb371d88e07b422fb07069ddc794d52b
 msgid "`Open File...`"
 msgstr "`Open File...`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4204
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4205
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4206
-#: 86fc3539b3654b3396df69a42ba88d99 56cf1b83eace4584a98334940ab50440
-#: 2694957edb33412786572482742e6047
+#: ../../source/module/nep-display-open-data.md:4252
+#: ../../source/module/nep-display-open-data.md:4253
+#: ../../source/module/nep-display-open-data.md:4254 04db256fe50e4f7c9d6aa114fc5e2620
 msgid "是"
 msgstr "Yes"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4204
-#: c49cbaf8272146a7ac0823fdea07cb86
+#: ../../source/module/nep-display-open-data.md:4252 13d7d47038094ec2b81ca44fc1d38314
 msgid "选择 `*.xyz`"
-msgstr "Details for this option"
+msgstr "Choose an `*.xyz` file"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4205
-#: 7705b0c7655347fba825f0b582e2f1fa
+#: ../../source/module/nep-display-open-data.md:4253 fb9c2c82904646768c95c6cc291e6a5a
 msgid "`Open Folder...`"
 msgstr "`Open Folder...`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4205
-#: 0733035008d74cfc8ad2350c85016c9f
+#: ../../source/module/nep-display-open-data.md:4253 e694085081de4972a7377279ae6686a4
 msgid "选择目录（常用于 `deepmd/npy`）"
 msgstr "Choose a directory (commonly used for `deepmd/npy`)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4205
-#: c7d1a29a226a40aaa4f54e16690e436e
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/save.svg\" "
-"width=\"20\" />"
-msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/save.svg\" "
-"width=\"20\" />"
+#: ../../source/module/nep-display-open-data.md:4253 c4b6d51505a0435da039cec1f7d63f8d
+msgid "<img src=\"../_static/image/generated/show_nep_icons/save.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/save.svg\" width=\"20\" />"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: d2aa13d4a8934cac92368156ebac2969
+#: ../../source/module/nep-dataset-display-content.md 4f5016ec78e24d75b5755e3c3a0862b8
 msgid ".. image:: ../_static/image/generated/show_nep_icons/save.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/save.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4206
-#: 2b0d0755fcbd4772a9622fc13f739f2d
+#: ../../source/module/nep-display-open-data.md:4254 261da7d062cc4a2182af3ee2c7f88017
 msgid "`Export All...` 等导出菜单"
-msgstr "See the parameter description for details."
+msgstr "Use an export action such as `Export All...`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-open-data.md:4206
-#: 13f82d0e2e9a4490b8a818e5d0d84f79
+#: ../../source/module/nep-display-open-data.md:4254 7e7e47a0e00d4cc796cbc6fe715e5ed8
 msgid "先选 `ExportFormat`，再选保存路径"
 msgstr "Choose `ExportFormat` first, then choose the save path"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10457
-#: ba3fddfc01124c79a802420b96c747bf
+#: ../../source/module/nep-dataset-display-content.md:10668
+#: fd830aa685a74da0a76b60a1b2161b2d
 msgid "5. 导入导出与 NEP 模型切换"
 msgstr "5. Importing, exporting, and switching NEP models"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10459
-#: ccad75a97fa940e8bbf9c74089b7a9d0
+#: ../../source/module/nep-dataset-display-content.md:10670
+#: a03cd89322424703b75a3fe3e72b7f3f
 msgid "5.1 导入"
 msgstr "5.1 Import"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10461
-#: 8b5dccb947e54e198097636d5d8de10c
+#: ../../source/module/nep-dataset-display-content.md:10672
+#: 827f7183f1c64fdc8cce9166f499462c
 msgid "`Open File...`：选择 `*.xyz`。"
 msgstr "`Open File...`: choose `*.xyz`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10462
-#: fc6522c3984f4312bb1af5c09a55e2db
+#: ../../source/module/nep-dataset-display-content.md:10673
+#: 6777b819c6844a239582d38edaca30aa
 msgid "`Open Folder...`：选择目录（`deepmd/npy` 常见）。"
 msgstr "`Open Folder...`: choose a directory (commonly `deepmd/npy`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10463
-#: 5d4a78d50d2a432490846b9b46a85573
+#: ../../source/module/nep-dataset-display-content.md:10674
+#: 37cd9171fbf3440da60306a5b4b044d8
 msgid "拖拽：仅接受 `matches_result_loader()` 支持的路径。"
 msgstr "Drag and drop: only paths supported by `matches_result_loader()` are accepted."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10464
-#: 3d49ca892ec249a5a3bf64b2b8d763e7
+#: ../../source/module/nep-dataset-display-content.md:10675
+#: 66e462c8129545d09333cc15d8de25dc
 msgid "若已有工作路径，切换前会二次确认。"
-msgstr "If a working path is already loaded, the application asks for confirmation before switching."
+msgstr ""
+"If a working path is already loaded, the application asks for confirmation before "
+"switching."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10465
-#: 0e3fa871d5a243078e29b1a07b5dbb4c
+#: ../../source/module/nep-dataset-display-content.md:10676
+#: dbb97350b37745a7b40020c5c701b7c2
 msgid "加载过程在后台线程执行；`StateToolTip` 可触发取消。"
 msgstr "Loading runs in a background thread; `StateToolTip` can trigger cancellation."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10467
-#: 27cc33b0fefa430ea19225b506870847
+#: ../../source/module/nep-dataset-display-content.md:10678
+#: c9ebeab919624c18bc3e4852faeb4e1e
 msgid "5.2 导出菜单（顶栏 Save）"
 msgstr "5.2 Export menu (top-bar Save)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10469
-#: 0bf338596d7f4ea09e3539f443c6c323
+#: ../../source/module/nep-dataset-display-content.md:10680
+#: 15fcbd58ca80497195296a17c12e79c7
 msgid "动作：`Export All / Selected / Removed / Active`。"
 msgstr "Actions: `Export All / Selected / Removed / Active`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10470
-#: 288aecf1d7764c2281ec3700b24276eb
-msgid ""
-"启用条件：数据已加载且非 busy；其中 `Selected/Removed/Active` 要求计数大于 "
-"0。"
-msgstr "Enabled when data is loaded and the application is not busy; `Selected/Removed/Active` also require a count greater than 0."
+#: ../../source/module/nep-dataset-display-content.md:10681
+#: 0eab15276836432a8a996c40450c751e
+msgid "启用条件：数据已加载且非 busy；其中 `Selected/Removed/Active` 要求计数大于 0。"
+msgstr ""
+"Enabled when data is loaded and the application is not busy; "
+"`Selected/Removed/Active` also require a count greater than 0."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10471
-#: a071799cbaa24028b9a61b0e75e9b42d
+#: ../../source/module/nep-dataset-display-content.md:10682
+#: 91aec8cb1ac1409cb85993792ed1a6f8
 msgid "统一先选 `ExportFormat`，再选路径。"
 msgstr "Always choose `ExportFormat` first, then choose the path."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10473
-#: 475b0dec09714156b2d772f1baf992d0
+#: ../../source/module/nep-dataset-display-content.md:10684
+#: c985725cdf9c4b539a9450b9b35b7755
 msgid "![Export Menu](../_static/image/show_nep/m_export_menu.png)"
 msgstr "![Export Menu](../_static/image/show_nep/m_export_menu.png)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10473
-#: c7d921c65d494360a73db51240fa204f
+#: ../../source/module/nep-dataset-display-content.md:10684
+#: 20ea97392e974d819ac02d24b60f5bbb
 msgid "Export Menu"
 msgstr "Export Menu"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10473
-#: c7d921c65d494360a73db51240fa204f
+#: ../../source/module/nep-dataset-display-content.md:10684
+#: 20ea97392e974d819ac02d24b60f5bbb
 msgid ".. image:: ../_static/image/show_nep/m_export_menu.png"
 msgstr ".. image:: ../_static/image/show_nep/m_export_menu.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10475
-#: 72535f33c3bf4e75bb89b0969c845c21
+#: ../../source/module/nep-dataset-display-content.md:10686
+#: 2587f867b2044b53b2a55412ed74bfde
 msgid "5.3 NEP 模型切换（路径栏右侧下拉框）"
 msgstr "5.3 Switching NEP models (drop-down at the right of the path bar)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10477
-#: e4f3750784d74d7e9a31d3941ac4b102
+#: ../../source/module/nep-dataset-display-content.md:10688
+#: 6739294644d949b2b9be9d6733d88efe
 msgid "文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。"
-msgstr "Details for this option"
+msgstr "File discovery: scan the current directory for `*.txt` files whose names contain `nep`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10478
-#: b96d943a40d5436f88039469ab06db50
+#: ../../source/module/nep-dataset-display-content.md:10689
+#: a57917e700174ba0838535418195ccfb
 msgid "排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。"
-msgstr "Details for this option"
+msgstr "Ordering: list `nep.txt` first, sort the remaining files alphabetically, and optionally append the bundled `nep89` model."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10479
-#: 42730edc7f914e2db43940f3351d6c31
+#: ../../source/module/nep-dataset-display-content.md:10690
+#: 9850bd7d7a254cae86c43a641e856178
 msgid "切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。"
-msgstr "Details for this option"
+msgstr "Switching strategy: reuse `_nep_result_cache` when possible; otherwise reload asynchronously."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10480
-#: 2805ad739ae24561b4038d762525f763
+#: ../../source/module/nep-dataset-display-content.md:10691
+#: 39a71de38e7f48b7899c24e6c0cc8935
 msgid "状态保持：切换后恢复 `selected` 与 `reject`。"
-msgstr "Details for this option"
+msgstr "State preservation: restore `selected` and `reject` after switching models."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10482
-#: ac28b84035fe48378a5ec711cbb95a0b
+#: ../../source/module/nep-dataset-display-content.md:10693
+#: 33c9aef3d01a48aabf39500b55f1bd83
 msgid "![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)"
 msgstr "![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10482
-#: b05622c21f6c4ceda1bb8ddda7f4d16d
+#: ../../source/module/nep-dataset-display-content.md:10693
+#: a44a3dab7591420bb9d7df9c48258a72
 msgid "NEP Model Combo"
 msgstr "NEP Model Combo"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:10482
-#: b05622c21f6c4ceda1bb8ddda7f4d16d
+#: ../../source/module/nep-dataset-display-content.md:10693
+#: a44a3dab7591420bb9d7df9c48258a72
 msgid ".. image:: ../_static/image/show_nep/m_nep_combo.png"
 msgstr ".. image:: ../_static/image/show_nep/m_nep_combo.png"
+
+#~ msgid "![NEP Dataset Display Main](../_static/image/example/display/main.png)"
+#~ msgstr "![NEP Dataset Display Main](../_static/image/example/display/main.png)"
+
+#~ msgid ".. image:: ../_static/image/example/display/main.png"
+#~ msgstr ".. image:: ../_static/image/example/display/main.png"

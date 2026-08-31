@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtWidgets import QApplication
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -22,12 +23,19 @@ _TEST_QAPPLICATION: QApplication | None = None
 
 @pytest.fixture(scope="session", autouse=True)
 def _keep_qapplication_alive():
-    """Keep one process-wide QApplication alive for the full suite.
+    """Own one process-wide QApplication for the full pytest session.
 
-    A number of unittest-style Qt suites share this application. Destroying it
-    between classes can make the Windows offscreen plugin exit non-zero after
-    an otherwise successful test run.
+    PySide must release the native application before Python starts destroying
+    module globals. On Windows the offscreen plugin can otherwise return exit
+    code 1 after pytest has already printed a successful test summary.
     """
     global _TEST_QAPPLICATION
     _TEST_QAPPLICATION = QApplication.instance() or QApplication([])
-    yield _TEST_QAPPLICATION
+    try:
+        yield _TEST_QAPPLICATION
+    finally:
+        QApplication.closeAllWindows()
+        QCoreApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+        _TEST_QAPPLICATION.processEvents()
+        _TEST_QAPPLICATION.shutdown()
+        _TEST_QAPPLICATION = None

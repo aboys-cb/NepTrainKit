@@ -217,6 +217,25 @@ def create_arrow_mesh()->MeshData:
     return MeshData(vertices=verts, faces=faces)
 
 
+def _arrow_rotation_from_z(direction: np.ndarray) -> np.ndarray:
+    """Return a column-vector transform from +Z to ``direction``."""
+    direction = np.asarray(direction, dtype=float)
+    direction /= np.linalg.norm(direction)
+    z_axis = np.array([0.0, 0.0, 1.0], dtype=float)
+    axis = np.cross(z_axis, direction)
+    axis_norm = np.linalg.norm(axis)
+    if axis_norm > 1e-6:
+        angle = np.degrees(
+            np.arccos(np.clip(np.dot(z_axis, direction), -1.0, 1.0))
+        )
+        # vispy.util.transforms.rotate() follows the row-vector convention,
+        # while the arrow mesh below is transformed as column vectors.
+        return rotate(angle, axis).T
+    if direction[2] < 0:
+        return rotate(180, (1, 0, 0)).T
+    return np.eye(4)
+
+
 class ArrowAxes:
     """Manage 3D arrow-based coordinate axes attached to a parent node.
     """
@@ -1056,7 +1075,6 @@ class StructurePlotWidget(scene.SceneCanvas):
         base_vertices_h = self._arrow_base_vertices_h
         base_faces = self._arrow_base_faces
         base_vertices_size = self._arrow_base_vertex_count
-        z_axis = np.array([0, 0, 1], dtype=float)
 
         all_vertices = []
         all_faces = []
@@ -1070,16 +1088,7 @@ class StructurePlotWidget(scene.SceneCanvas):
                 continue
             length += radius
             direction = vec / np.linalg.norm(vec)
-
-            axis = np.cross(z_axis, direction)
-            axis_norm = np.linalg.norm(axis)
-            if axis_norm > 1e-6:
-                angle = np.degrees(np.arccos(np.clip(np.dot(z_axis, direction), -1.0, 1.0)))
-                rot = rotate(angle, axis)
-            elif direction[2] < 0:
-                rot = rotate(180, (1, 0, 0))
-            else:
-                rot = np.eye(4)
+            rot = _arrow_rotation_from_z(direction)
 
             scale_mat = np.diag([length, length, length, 1.0])
             transform = rot @ scale_mat

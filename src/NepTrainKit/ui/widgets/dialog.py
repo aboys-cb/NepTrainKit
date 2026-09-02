@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
 )
-from PySide6.QtCore import Signal, Qt, QUrl, QEvent, QPropertyAnimation, QEasingCurve, QTimer, QLocale
+from PySide6.QtCore import Signal, Qt, QUrl, QEvent, QPropertyAnimation, QEasingCurve, QTimer
 from qfluentwidgets import (
     MessageBoxBase,
     SimpleCardWidget,
@@ -40,7 +40,6 @@ from qfluentwidgets import (
     ColorDialog,
     TitleLabel,
     HyperlinkLabel,
-    PushButton,
     LineEdit,
     EditableComboBox,
     PrimaryPushButton,
@@ -51,7 +50,6 @@ from qfluentwidgets import (
     FluentIcon,
     ToolTipFilter,
     ToolTipPosition,
-    ScrollArea,
 )
 import json
 import html
@@ -240,8 +238,6 @@ class GetStrMessageBox(MessageBoxBase):
 class SparseMessageBox(MessageBoxBase):
     """Dialog for configuring sparsity-related parameters."""
 
-    recommendationRequested = Signal()
-
     def __init__(self, parent=None, tip=""):
         super().__init__(parent)
         self.titleLabel = StrongBodyLabel(tip, self)
@@ -250,9 +246,9 @@ class SparseMessageBox(MessageBoxBase):
         self._frame.setBorderRadius(8)
         self.frame_layout = QGridLayout(self._frame)
         self.frame_layout.setContentsMargins(14, 12, 14, 12)
-        self.frame_layout.setHorizontalSpacing(14)
-        self.frame_layout.setVerticalSpacing(8)
-        self.frame_layout.setColumnMinimumWidth(0, 132)
+        self.frame_layout.setHorizontalSpacing(16)
+        self.frame_layout.setVerticalSpacing(10)
+        self.frame_layout.setColumnMinimumWidth(0, 140)
         self.frame_layout.setColumnStretch(1, 1)
         self.intSpinBox = SpinBox(self)
 
@@ -326,64 +322,14 @@ class SparseMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.descriptorLabel, 6, 0, 1, 1)
         self.frame_layout.addWidget(self.descriptorCombo, 6, 1, 1, 2)
 
-        self.recommendationFrame = SimpleCardWidget(self)
-        self.recommendationFrame.setBorderRadius(8)
-        self.recommendationLayout = QVBoxLayout(self.recommendationFrame)
-        self.recommendationLayout.setContentsMargins(14, 12, 14, 12)
-        self.recommendationLayout.setSpacing(8)
-        self.recommendButton = PushButton(
-            self.tr("Analyze recommended count"),
-            self.recommendationFrame,
-        )
-        self.recommendButton.setIcon(FluentIcon.SEARCH)
-        self.recommendButton.setFixedHeight(32)
-        self.recommendButton.setSizePolicy(
-            QSizePolicy.Policy.Fixed,
-            QSizePolicy.Policy.Fixed,
-        )
-        self.recommendButton.setAccessibleName(
-            self.tr("Analyze recommended count")
-        )
-        self.recommendationSummary = CaptionLabel(
-            "",
-            self.recommendationFrame,
-        )
-        self.recommendationSummary.setWordWrap(True)
-        self.recommendationSummary.setVisible(False)
-        self.recommendationWarning = CaptionLabel("", self.recommendationFrame)
-        self.recommendationWarning.setWordWrap(True)
-        self.recommendationWarning.setVisible(False)
-        self.recommendationActions = QWidget(self.recommendationFrame)
-        recommendation_actions_layout = QHBoxLayout(self.recommendationActions)
-        recommendation_actions_layout.setContentsMargins(0, 0, 0, 0)
-        recommendation_actions_layout.setSpacing(8)
-        self.useRecommendationButton = PushButton(
-            self.tr("Use recommended count"),
-            self.recommendationActions,
-        )
-        self.recommendationDetailsButton = PushButton(
-            self.tr("Show breakdown"),
-            self.recommendationActions,
-        )
-        recommendation_actions_layout.addWidget(self.useRecommendationButton)
-        recommendation_actions_layout.addWidget(self.recommendationDetailsButton)
-        self.recommendationActions.setVisible(False)
-        self.recommendationLayout.addWidget(
-            self.recommendButton,
-            alignment=Qt.AlignmentFlag.AlignLeft,
-        )
-        self.recommendationLayout.addWidget(self.recommendationSummary)
-        self.recommendationLayout.addWidget(self.recommendationWarning)
-        self.recommendationLayout.addWidget(self.recommendationActions)
-
         self.advancedFrame = SimpleCardWidget(self)
         self.advancedFrame.setBorderRadius(8)
         self.advancedFrame.setVisible(False)
         self.advancedLayout = QGridLayout(self.advancedFrame)
         self.advancedLayout.setContentsMargins(14, 12, 14, 12)
-        self.advancedLayout.setHorizontalSpacing(10)
-        self.advancedLayout.setVerticalSpacing(8)
-        self.advancedLayout.setColumnMinimumWidth(0, 132)
+        self.advancedLayout.setHorizontalSpacing(12)
+        self.advancedLayout.setVerticalSpacing(10)
+        self.advancedLayout.setColumnMinimumWidth(0, 140)
         self.advancedLayout.setColumnStretch(1, 1)
 
         self.trainingPathEdit = LineEdit(self)
@@ -426,29 +372,19 @@ class SparseMessageBox(MessageBoxBase):
         self.contentWidget.setObjectName("sparseDialogContent")
         self.contentLayout = QVBoxLayout(self.contentWidget)
         self.contentLayout.setContentsMargins(0, 0, 0, 0)
-        self.contentLayout.setSpacing(10)
+        self.contentLayout.setSpacing(12)
         self.contentLayout.addWidget(self.titleLabel)
         self.contentLayout.addWidget(self._frame)
-        self.contentLayout.addWidget(self.recommendationFrame)
         self.contentLayout.addWidget(self.advancedFrame)
-        self.contentScrollArea = ScrollArea(self)
-        self.contentScrollArea.setWidgetResizable(True)
-        self.contentScrollArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.contentScrollArea.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
-        self.contentScrollArea.setWidget(self.contentWidget)
-        self.contentScrollArea.enableTransparentBackground()
-        self.contentScrollArea.viewport().setStyleSheet("background: transparent;")
         self.contentWidget.setStyleSheet(
             "QWidget#sparseDialogContent { background: transparent; }"
         )
-        self.viewLayout.addWidget(self.contentScrollArea)
+        self.viewLayout.addWidget(self.contentWidget)
 
         self.yesButton.setText(self.tr("OK"))
         self.cancelButton.setText(self.tr("Cancel"))
 
-        self.widget.setMinimumWidth(560)
+        self.widget.setMinimumWidth(600)
         self.advancedFrame.setVisible(True)
         self._structured_strategy_active = False
         self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
@@ -456,101 +392,7 @@ class SparseMessageBox(MessageBoxBase):
             self._update_mode_visibility
         )
         self.strategyCombo.currentIndexChanged.connect(self._update_strategy_visibility)
-        self.recommendButton.clicked.connect(self.recommendationRequested.emit)
-        self.useRecommendationButton.clicked.connect(self._use_recommended_count)
-        self.recommendationDetailsButton.clicked.connect(
-            self._show_recommendation_details
-        )
-        self._recommended_count = None
-        self._recommendation_details_text = ""
         self._update_strategy_visibility()
-
-    def set_recommendation_pending(self, pending: bool) -> None:
-        """Expose long-running recommendation work without blocking the dialog."""
-        self.recommendButton.setEnabled(not pending)
-        self.recommendButton.setText(
-            self.tr("Analyzing physical coverage...")
-            if pending
-            else self.tr("Analyze recommended count")
-        )
-
-    def set_sampling_recommendation(
-        self,
-        *,
-        recommended_count: int,
-        compact_count: int,
-        conservative_count: int,
-        is_lower_bound: bool,
-        phase_counts: tuple[tuple[str, int], ...],
-        magnetic_counts: tuple[tuple[str, int], ...],
-    ) -> None:
-        """Show one recommendation while leaving application to the user."""
-        locale = QLocale()
-        self._recommended_count = int(recommended_count)
-        recommended = locale.toString(int(recommended_count))
-        compact = locale.toString(int(compact_count))
-        conservative = locale.toString(int(conservative_count))
-        if is_lower_bound:
-            self.recommendationSummary.setText(
-                self.tr(
-                    "Suggested at least {recommended} structures; analyzed range {compact}-{conservative}."
-                ).format(
-                    recommended=recommended,
-                    compact=compact,
-                    conservative=conservative,
-                )
-            )
-            self.recommendationWarning.setText(
-                self.tr(
-                    "Some physical strata reached the analysis cap. This is a "
-                    "descriptor-coverage lower bound, not a converged scientific optimum."
-                )
-            )
-            self.recommendationWarning.setVisible(True)
-        else:
-            self.recommendationSummary.setText(
-                self.tr(
-                    "Suggested {recommended} structures; coverage range {compact}-{conservative}."
-                ).format(
-                    recommended=recommended,
-                    compact=compact,
-                    conservative=conservative,
-                )
-            )
-            self.recommendationWarning.setVisible(False)
-        self.recommendationSummary.setVisible(True)
-        phase_text = ", ".join(
-            f"{name}: {locale.toString(int(count))}"
-            for name, count in phase_counts
-        )
-        magnetic_text = ", ".join(
-            f"{name}: {locale.toString(int(count))}"
-            for name, count in magnetic_counts
-        )
-        details = [self.tr("Phase: {items}").format(items=phase_text)]
-        if magnetic_text:
-            details.append(
-                self.tr("Magnetic order: {items}").format(items=magnetic_text)
-            )
-        self._recommendation_details_text = "\n".join(details)
-        self.recommendationActions.setVisible(True)
-        self.set_recommendation_pending(False)
-
-    def _use_recommended_count(self) -> None:
-        if self._recommended_count is not None:
-            self.intSpinBox.setValue(int(self._recommended_count))
-
-    def _show_recommendation_details(self) -> None:
-        if not self._recommendation_details_text:
-            return
-        dialog = MessageBox(
-            self.tr("Recommended allocation"),
-            self._recommendation_details_text,
-            self,
-        )
-        dialog.yesButton.setText(self.tr("OK"))
-        dialog.cancelButton.hide()
-        dialog.exec()
 
     def _pick_training_path(self):
         """Prompt the user to choose a training dataset path."""
@@ -580,7 +422,6 @@ class SparseMessageBox(MessageBoxBase):
         self.doubleSpinBox.setVisible(not automatic)
         self.r2Label.setVisible(r2_mode)
         self.r2SpinBox.setVisible(r2_mode)
-        self.recommendationFrame.setVisible(physics and not automatic)
 
     def _update_strategy_visibility(self):
         """Keep structured FPS on the validated raw-descriptor workflow."""

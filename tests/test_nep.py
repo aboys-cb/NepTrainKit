@@ -876,7 +876,6 @@ class _SparseBox:
         physics_count_mode="limit",
     ):
         self._accepted = accepted
-        self.recommendationRequested = SimpleNamespace(connect=MagicMock())
         self.intSpinBox = _SparseBoxControl(5)
         self.doubleSpinBox = _SparseBoxControl(0.1)
         self.regionCheck = _SparseBoxControl(False)
@@ -924,34 +923,33 @@ class _OverlayDialogRecorder:
 
 
 class TestSparseMessageBoxStrategy(unittest.TestCase):
-    def test_dialog_uses_fluent_grouping_and_compact_scrollable_content(self):
-        from PySide6.QtCore import Qt
-        from PySide6.QtWidgets import QSizePolicy, QWidget
-        from qfluentwidgets import ScrollArea, SimpleCardWidget, StrongBodyLabel
+    def test_dialog_uses_fluent_grouping_without_a_scroll_area(self):
+        from PySide6.QtWidgets import QAbstractScrollArea, QWidget
+        from qfluentwidgets import SimpleCardWidget, StrongBodyLabel
 
         self._app = QApplication.instance() or QApplication([])
         parent = QWidget()
-        parent.resize(760, 620)
+        parent.resize(900, 760)
         box = dialog_module.SparseMessageBox(parent)
         box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("physics"))
+        box.show()
+        self._app.processEvents()
 
         self.assertIsInstance(box.titleLabel, StrongBodyLabel)
         self.assertIsInstance(box._frame, SimpleCardWidget)
-        self.assertIsInstance(box.recommendationFrame, SimpleCardWidget)
         self.assertIsInstance(box.advancedFrame, SimpleCardWidget)
-        self.assertIsInstance(box.contentScrollArea, ScrollArea)
+        self.assertEqual(box.findChildren(QAbstractScrollArea), [])
+        self.assertGreaterEqual(box.widget.width(), 600)
         self.assertEqual(box.frame_layout.contentsMargins().left(), 14)
-        self.assertEqual(box.frame_layout.verticalSpacing(), 8)
-        self.assertEqual(
-            box.recommendButton.sizePolicy().horizontalPolicy(),
-            QSizePolicy.Policy.Fixed,
-        )
+        self.assertEqual(box.frame_layout.verticalSpacing(), 10)
         self.assertTrue(box.advancedFrame.isAncestorOf(box.regionCheck))
         self.assertTrue(box.advancedFrame.isAncestorOf(box.trainingOverlayCheck))
-        self.assertEqual(
-            box.contentScrollArea.horizontalScrollBarPolicy(),
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff,
-        )
+
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("global"))
+        box.modeCombo.setCurrentIndex(box.modeCombo.findData("r2"))
+        self._app.processEvents()
+        self.assertLessEqual(box.widget.sizeHint().height(), parent.height())
+        self.assertFalse(box.r2SpinBox.isHidden())
 
     def test_structured_strategies_lock_validated_descriptor_and_mode(self):
         from PySide6.QtWidgets import QWidget
@@ -984,7 +982,6 @@ class TestSparseMessageBoxStrategy(unittest.TestCase):
         )
         self.assertTrue(box.intSpinBox.isHidden())
         self.assertTrue(box.doubleSpinBox.isHidden())
-        self.assertTrue(box.recommendationFrame.isHidden())
 
         box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("global"))
         self.assertEqual(box.modeCombo.currentData(), "r2")
@@ -992,35 +989,6 @@ class TestSparseMessageBoxStrategy(unittest.TestCase):
         self.assertTrue(box.modeCombo.isEnabled())
         self.assertTrue(box.descriptorCombo.isEnabled())
         self.assertFalse(box.r2SpinBox.isHidden())
-
-    def test_physics_recommendation_is_explicit_and_keeps_user_control(self):
-        from PySide6.QtWidgets import QWidget
-
-        self._app = QApplication.instance() or QApplication([])
-        parent = QWidget()
-        box = dialog_module.SparseMessageBox(parent)
-        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("physics"))
-
-        self.assertFalse(box.recommendationFrame.isHidden())
-        box.set_sampling_recommendation(
-            recommended_count=321,
-            compact_count=280,
-            conservative_count=400,
-            is_lower_bound=True,
-            phase_counts=(("bcc", 200), ("fcc", 121)),
-            magnetic_counts=(("afm", 81), ("noncollinear", 240)),
-        )
-
-        self.assertIn("321", box.recommendationSummary.text())
-        self.assertFalse(box.recommendationWarning.isHidden())
-        self.assertFalse(box.recommendationActions.isHidden())
-        self.assertIn("afm", box._recommendation_details_text)
-        with patch.object(dialog_module, "MessageBox") as details_dialog:
-            box.recommendationDetailsButton.click()
-        details_dialog.assert_called_once()
-        box.useRecommendationButton.click()
-        self.assertEqual(box.intSpinBox.value(), 321)
-
 
 class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
     def setUp(self):
@@ -1240,72 +1208,6 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         self.assertEqual(kwargs["sampling_mode"], "r2")
         widget.canvas.select_index.assert_called_once_with([2, 5], False)
         self.assertIn("final coverage R^2: 0.9346", send_info.call_args.args[0])
-
-    def test_physics_recommendation_aggregates_all_phase_and_magnetic_groups(self):
-        widget = nep_view_module.NepResultPlotWidget.__new__(
-            nep_view_module.NepResultPlotWidget
-        )
-        widget._parent = None
-        groups = (
-            SimpleNamespace(
-                stratum=SimpleNamespace(phase="bcc", magnetic_order="afm"),
-                recommended_count=7,
-            ),
-            SimpleNamespace(
-                stratum=SimpleNamespace(
-                    phase="fcc",
-                    magnetic_order="noncollinear",
-                ),
-                recommended_count=11,
-            ),
-            SimpleNamespace(
-                stratum=SimpleNamespace(phase="bcc", magnetic_order="afm"),
-                recommended_count=5,
-            ),
-        )
-        recommendation = SimpleNamespace(
-            recommended_count=23,
-            compact_count=18,
-            conservative_count=29,
-            is_lower_bound=False,
-            groups=groups,
-        )
-        data = SimpleNamespace(recommend_physics_sample_count=MagicMock())
-        box = MagicMock()
-        box.regionCheck.isChecked.return_value=True
-        box.trainingPathEdit.text.return_value="train.xyz"
-        task = MagicMock()
-        task.outcome = "succeeded"
-        task.result = recommendation
-        progress_dialog = MagicMock()
-
-        with patch.object(
-            nep_view_module,
-            "BackgroundTask",
-            return_value=task,
-        ), patch.object(
-            nep_view_module,
-            "QProgressDialog",
-            return_value=progress_dialog,
-        ):
-            nep_view_module.NepResultPlotWidget._analyze_physics_sampling_recommendation(
-                widget,
-                data,
-                box,
-            )
-
-        kwargs = box.set_sampling_recommendation.call_args.kwargs
-        self.assertEqual(kwargs["phase_counts"], (("bcc", 12), ("fcc", 11)))
-        self.assertEqual(
-            kwargs["magnetic_counts"],
-            (("afm", 12), ("noncollinear", 11)),
-        )
-        task.start_work.assert_called_once_with(
-            data.recommend_physics_sample_count,
-            restrict_to_selection=True,
-            training_path="train.xyz",
-            policy="balanced",
-        )
 
     def test_sparse_point_runs_large_show_nep_dataset_in_background_task(self):
         widget = nep_view_module.NepResultPlotWidget.__new__(

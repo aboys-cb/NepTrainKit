@@ -2,7 +2,6 @@
 
 import json
 import traceback
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -407,9 +406,6 @@ class NepResultPlotWidget(QWidget):
             return
 
         box = SparseMessageBox(self._parent, self.tr("Configure farthest point sampling"))
-        box.recommendationRequested.connect(
-            lambda: self._analyze_physics_sampling_recommendation(data, box)
-        )
         n_samples_default = Config.getint("widget", "sparse_num_value", 10)
         distance_default = Config.getfloat("widget", "sparse_distance_value", 0.01)
 
@@ -589,65 +585,6 @@ class NepResultPlotWidget(QWidget):
                             )
                         )
                     overlay_dialog.show()
-
-    def _analyze_physics_sampling_recommendation(self, data, box) -> None:
-        """Analyze physics-aware coverage and update the open FPS dialog."""
-        recommend = getattr(data, "recommend_physics_sample_count", None)
-        if not callable(recommend):
-            MessageManager.send_warning_message(
-                self.tr("Physics-aware count recommendation is unavailable.")
-            )
-            return
-        box.set_recommendation_pending(True)
-        progress_dialog = QProgressDialog(
-            self.tr("Analyzing descriptor coverage in physical strata..."),
-            "",
-            0,
-            0,
-            box,
-        )
-        progress_dialog.setCancelButton(None)
-        progress_dialog.setMinimumDuration(0)
-        progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
-        progress_dialog.setWindowTitle(self.tr("Recommend FPS sample count"))
-        task = BackgroundTask(self._parent, show_tip=False)
-        task.finished.connect(progress_dialog.accept)
-        task.start_work(
-            recommend,
-            restrict_to_selection=bool(box.regionCheck.isChecked()),
-            training_path=box.trainingPathEdit.text().strip() or None,
-            policy="balanced",
-        )
-        progress_dialog.exec()
-        if task.outcome == "failed":
-            box.set_recommendation_pending(False)
-            MessageManager.send_warning_message(
-                self.tr("Could not recommend an FPS count: {message}").format(
-                    message=task.error_message
-                )
-            )
-            return
-        if task.outcome != "succeeded" or task.result is None:
-            box.set_recommendation_pending(False)
-            return
-
-        recommendation = task.result
-        phase_counts: dict[str, int] = defaultdict(int)
-        magnetic_counts: dict[str, int] = defaultdict(int)
-        for group in recommendation.groups:
-            phase_counts[group.stratum.phase] += group.recommended_count
-            if group.stratum.magnetic_order != "not_applicable":
-                magnetic_counts[group.stratum.magnetic_order] += (
-                    group.recommended_count
-                )
-        box.set_sampling_recommendation(
-            recommended_count=recommendation.recommended_count,
-            compact_count=recommendation.compact_count,
-            conservative_count=recommendation.conservative_count,
-            is_lower_bound=recommendation.is_lower_bound,
-            phase_counts=tuple(sorted(phase_counts.items())),
-            magnetic_counts=tuple(sorted(magnetic_counts.items())),
-        )
 
     def edit_structure_info(self):
         """Open the metadata editor for the current selection and apply the changes."""

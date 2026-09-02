@@ -355,6 +355,46 @@ def adaptive_cna_labels(
     return _adaptive_cna_reference(vectors, valid)
 
 
+def phase_partition_primitives(
+    positions: np.ndarray,
+    cell: np.ndarray,
+    pbc: Sequence[bool],
+    *,
+    neighbors: int = 32,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Build one reusable neighbor field and adaptive-CNA label vector.
+
+    The native path performs the neighbor search and CNA classification behind
+    one interface.  The exact Python path remains available for source-only
+    development and unsupported native builds.
+    """
+    if (
+        _native_phase is not None
+        and hasattr(_native_phase, "phase_partition_primitives")
+    ):
+        vectors, indices, valid, labels = (
+            _native_phase.phase_partition_primitives(
+                positions,
+                cell,
+                pbc,
+                int(neighbors),
+            )
+        )
+        return (
+            np.asarray(vectors, dtype=np.float32),
+            np.asarray(indices, dtype=np.int32),
+            np.asarray(valid, dtype=bool),
+            np.asarray(labels, dtype=np.int8),
+        )
+    vectors, indices, valid = accelerated_periodic_knn_vectors(
+        positions,
+        cell,
+        pbc,
+        neighbors=neighbors,
+    )
+    return vectors, indices, valid, adaptive_cna_labels(vectors, indices, valid)
+
+
 def _bond_order_features(unit_vectors: np.ndarray, counts: Sequence[int]) -> list[float]:
     features: list[float] = []
     orders = (2, 4, 6, 8, 10, 12)

@@ -49,6 +49,134 @@ class TestFilterCards(BaseCardTest):
         self.assertEqual(restored.strategy_combo.currentData(), "element_set")
         self.assertTrue(restored.advanced_button.isChecked())
 
+    def test_fps_filter_card_roundtrip_supports_physics_aware_plan(self):
+        card = FPSFilterDataCard()
+        card.set_params(
+            FPSFilterParams(
+                nep_path="/tmp/nep.txt",
+                n_samples=25000,
+                strategy="physics",
+            )
+        )
+
+        restored = FPSFilterDataCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
+        self.assertEqual(restored.strategy_combo.currentData(), "physics")
+        self.assertIn("element set", restored.get_summary_text())
+
+    def test_physics_fps_rejects_missing_spin_before_descriptor_generation(self):
+        dataset = [
+            Atoms(
+                "Fe2",
+                positions=[[0.0, 0.0, 0.0], [1.43, 1.43, 1.43]],
+                cell=np.eye(3) * 2.86,
+                pbc=True,
+            )
+        ]
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=1,
+            strategy="physics",
+        )
+
+        with patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class:
+            calculator_class.return_value.is_spin_model = True
+            with self.assertRaises(CardOperationError) as caught:
+                FPSFilterOperation().run_dataset(dataset, params)
+
+        self.assertEqual(caught.exception.code, "fps.spin_input_missing")
+        calculator_class.return_value.descriptors.assert_not_called()
+
+    def test_physics_fps_preserves_bcc_and_fcc_spin_strata(self):
+        from ase.build import bulk
+
+        bcc = bulk("Fe", "bcc", a=2.86, cubic=True)
+        bcc.arrays["spin"] = np.tile([0.0, 0.0, 2.2], (len(bcc), 1))
+        fcc = bulk("Fe", "fcc", a=3.55, cubic=True)
+        fcc.arrays["spin"] = np.tile([0.0, 0.0, 2.0], (len(fcc), 1))
+        dataset = [bcc, bcc.copy(), fcc, fcc.copy()]
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=2,
+            strategy="physics",
+        )
+        operation = FPSFilterOperation()
+
+        with patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class:
+            calculator_class.return_value.is_spin_model = True
+            calculator_class.return_value.descriptors.return_value = np.concatenate(
+                [
+                    np.full((len(structure), 1), value)
+                    for structure, value in zip(dataset, (0.0, 0.1, 10.0, 10.1))
+                ],
+                axis=0,
+            )
+            selected = operation.run_dataset(dataset, params)
+
+        self.assertEqual(len(selected), 2)
+        self.assertEqual(operation.last_physics_plan_report.stratum_count, 2)
+        self.assertEqual(
+            {key.phase for key in operation.last_group_report},
+            {"bcc", "fcc"},
+        )
+        self.assertTrue(operation.last_physics_plan_report.spin_model)
+
+    def test_physics_fps_uses_local_descriptor_spread_with_equal_means(self):
+        from ase.build import bulk
+
+        dataset = [bulk("Fe", "bcc", a=2.86, cubic=True) for _ in range(3)]
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=2,
+            strategy="physics",
+        )
+        # All three structure means are zero.  Only local-environment spread
+        # distinguishes the middle and tail structures.
+        atomic_descriptors = np.asarray(
+            [[-1.0], [1.0], [0.0], [0.0], [-3.0], [3.0]],
+            dtype=float,
+        )
+
+        with patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class:
+            calculator_class.return_value.is_spin_model = False
+            calculator_class.return_value.descriptors.return_value = atomic_descriptors
+            selected = FPSFilterOperation().run_dataset(dataset, params)
+
+        self.assertEqual(len(selected), 2)
+        self.assertTrue(any(structure is dataset[2] for structure in selected))
+        self.assertFalse(any(structure is dataset[1] for structure in selected))
+        calculator_class.return_value.descriptors.assert_called_once_with(
+            dataset,
+            mean=False,
+        )
+
+    def test_physics_fps_rejects_budget_smaller_than_observed_strata_early(self):
+        from ase.build import bulk
+
+        dataset = [
+            bulk("Fe", "bcc", a=2.86, cubic=True),
+            bulk("Fe", "fcc", a=3.55, cubic=True),
+        ]
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=1,
+            strategy="physics",
+        )
+
+        with patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class:
+            calculator_class.return_value.is_spin_model = False
+            with self.assertRaises(CardOperationError) as caught:
+                FPSFilterOperation().run_dataset(dataset, params)
+
+        self.assertEqual(
+            caught.exception.code,
+            "fps_budget_smaller_than_physics_strata",
+        )
+        self.assertEqual(caught.exception.values, {"budget": 1, "strata": 2})
+        calculator_class.return_value.descriptors.assert_not_called()
+
     def test_fps_filter_legacy_roundtrip_keeps_global_strategy(self):
         restored = FPSFilterDataCard()
         restored.from_dict(

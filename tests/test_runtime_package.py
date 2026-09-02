@@ -18,6 +18,7 @@ from NepTrainKit.runtime_package import (
     NEP_ADAPTERS_SPEC,
     RuntimePackageError,
     RuntimePackageHealthError,
+    RuntimePackageIndexError,
     RuntimePackageSpec,
     activate_runtime_package,
     check_runtime_package_update,
@@ -48,6 +49,15 @@ def test_nep_adapters_runtime_constraint_allows_future_major_versions() -> None:
     assert Version("99.0.0") in constraint
 
 
+def test_nep_adapters_runtime_uses_domestic_index_with_official_fallback() -> None:
+    assert NEP_ADAPTERS_SPEC.index_url.startswith(
+        "https://mirrors.cloud.tencent.com/"
+    )
+    assert NEP_ADAPTERS_SPEC.fallback_index_urls == (
+        "https://pypi.org/pypi/{distribution}/json",
+    )
+
+
 def test_native_health_command_imports_all_helpers(monkeypatch) -> None:
     imported: list[str] = []
     monkeypatch.setattr(
@@ -61,6 +71,7 @@ def test_native_health_command_imports_all_helpers(monkeypatch) -> None:
         "NepTrainKit._native._audit",
         "NepTrainKit._native._phase",
         "NepTrainKit._native._magnetism",
+        "NepTrainKit._native._sampling",
     ]
 
 
@@ -277,6 +288,53 @@ def test_hash_mismatch_does_not_change_active_version(tmp_path: Path) -> None:
 
     state_path = tmp_path / spec.key / "state.json"
     assert json.loads(state_path.read_text(encoding="utf-8"))["active"] == "1.0.0"
+
+
+def test_update_check_falls_back_when_primary_index_times_out(tmp_path: Path) -> None:
+    spec = RuntimePackageSpec(
+        "runtime-probe-pkg",
+        "runtime_probe_pkg",
+        ">=1,<3",
+        index_url="https://mirror.invalid/json",
+        fallback_index_urls=("https://official.invalid/json",),
+    )
+    wheel = _wheel_bytes("2.0.0")
+    payload = _index_payload([wheel])
+    requested: list[tuple[str, tuple[float, float]]] = []
+
+    def get(url: str, **kwargs: Any) -> _Response:
+        requested.append((url, kwargs["timeout"]))
+        if "mirror.invalid" in url:
+            raise TimeoutError("TLS handshake timed out")
+        return _Response(payload=payload)
+
+    update = check_runtime_package_update(spec, tmp_path, get=get)
+
+    assert update.latest_version == "2.0.0"
+    assert requested == [
+        ("https://mirror.invalid/json", (5.0, 8.0)),
+        ("https://official.invalid/json", (5.0, 8.0)),
+    ]
+
+
+def test_update_check_reports_one_error_after_all_indexes_fail(tmp_path: Path) -> None:
+    spec = RuntimePackageSpec(
+        "runtime-probe-pkg",
+        "runtime_probe_pkg",
+        ">=1,<3",
+        index_url="https://mirror.invalid/json",
+        fallback_index_urls=("https://official.invalid/json",),
+    )
+
+    def get(url: str, **_kwargs: Any) -> _Response:
+        raise TimeoutError(f"timeout at {url}")
+
+    with pytest.raises(RuntimePackageIndexError) as error:
+        check_runtime_package_update(spec, tmp_path, get=get)
+
+    message = str(error.value)
+    assert "mirror.invalid" in message
+    assert "official.invalid" in message
 
 
 def test_update_check_rejects_wheel_for_another_python_version(

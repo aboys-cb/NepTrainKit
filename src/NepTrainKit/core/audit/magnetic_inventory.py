@@ -11,10 +11,14 @@ from collections import Counter
 from collections.abc import Callable, Sequence
 from typing import Any
 
-import numpy as np
 from ase.data import chemical_symbols
+import numpy as np
 
-from NepTrainKit.core.geometry_cache import GeometrySnapshot
+from NepTrainKit.core.geometry_cache import (
+    GeometrySnapshot,
+    structure_cell_array,
+    structure_pbc_flags,
+)
 
 from .result import (
     CompositionMagneticEvidence,
@@ -103,7 +107,10 @@ def _frame_geometry(
 
 
 def _spin_array(structure: Any, atom_count: int) -> np.ndarray | None:
-    properties = getattr(structure, "atomic_properties", {}) or {}
+    properties = getattr(structure, "atomic_properties", None)
+    if properties is None:
+        properties = getattr(structure, "arrays", {})
+    properties = properties or {}
     if "spin" not in properties:
         return None
     spins = np.asarray(properties["spin"])
@@ -113,6 +120,37 @@ def _spin_array(structure: Any, atom_count: int) -> np.ndarray | None:
     if not np.isfinite(spins).all():
         return None
     return spins
+
+
+def analyze_structure_magnetism(
+    structure: Any,
+    *,
+    source_index: int = 0,
+) -> StructureMagneticEvidence | None:
+    """Return conservative magnetic-order evidence for one structure frame.
+
+    Only a valid canonical per-atom ``spin`` vector is accepted.  ``mforce`` and
+    ``force_mag`` remain labels and are never substituted for magnetic state.
+    ``None`` therefore has one unambiguous meaning: usable spin input is absent.
+    """
+    positions = np.ascontiguousarray(structure.positions, dtype=np.float32)
+    cell = structure_cell_array(structure, dtype=np.float32)
+    pbc = np.ascontiguousarray(structure_pbc_flags(structure), dtype=bool)
+    atomic_numbers = np.ascontiguousarray(structure.numbers, dtype=np.int16)
+    if positions.shape != (len(atomic_numbers), 3) or cell.shape != (3, 3):
+        raise ValueError("A structure has invalid positions or cell data.")
+    spins = _spin_array(structure, len(atomic_numbers))
+    if spins is None:
+        return None
+    return _analyze_structure(
+        _native_module(),
+        int(source_index),
+        positions,
+        cell,
+        pbc,
+        spins,
+        atomic_numbers,
+    )
 
 
 def _periodic_layer_groups(

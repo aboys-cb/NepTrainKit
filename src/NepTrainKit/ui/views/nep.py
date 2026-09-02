@@ -44,6 +44,7 @@ AUTO_VISPY_POINT_THRESHOLD = 100000
 AUTO_VISPY_THRESHOLD_OPTION = "auto_vispy_total_point_threshold"
 LARGE_DATASET_CANVAS_PROMPTED_OPTION = "large_dataset_canvas_prompted"
 AUTO_VISPY_NOTICE_SHOWN_OPTION = "auto_vispy_notice_shown"
+SPARSE_BACKGROUND_THRESHOLD = 2000
 
 
 class NepResultPlotWidget(QWidget):
@@ -416,6 +417,11 @@ class NepResultPlotWidget(QWidget):
             "global",
         ).lower()
         r2_threshold_default = Config.getfloat("widget", "sparse_r2_threshold", 0.9)
+        physics_count_mode_default = Config.get(
+            "widget",
+            "sparse_physics_count_mode",
+            "limit",
+        ).lower()
 
         training_path_default = Config.get("widget", "sparse_training_path", "")
 
@@ -427,6 +433,12 @@ class NepResultPlotWidget(QWidget):
         box.r2SpinBox.setValue(r2_threshold_default if r2_threshold_default is not None else 0.9)
         strategy_index = box.strategyCombo.findData(selection_strategy_default)
         box.strategyCombo.setCurrentIndex(strategy_index if strategy_index >= 0 else 0)
+        physics_count_mode_index = box.physicsCountModeCombo.findData(
+            physics_count_mode_default
+        )
+        box.physicsCountModeCombo.setCurrentIndex(
+            physics_count_mode_index if physics_count_mode_index >= 0 else 0
+        )
 
         box.trainingPathEdit.setText(training_path_default)
 
@@ -440,7 +452,10 @@ class NepResultPlotWidget(QWidget):
         selection_strategy = str(box.strategyCombo.currentData() or "global")
         descriptor_source = str(box.descriptorCombo.currentData() or "reduced")
         sampling_mode = str(box.modeCombo.currentData() or "count")
-        if selection_strategy == "element_set":
+        physics_count_mode = str(
+            box.physicsCountModeCombo.currentData() or "limit"
+        )
+        if selection_strategy in {"element_set", "physics"}:
             descriptor_source = "raw"
             sampling_mode = "count"
         r2_threshold = box.r2SpinBox.value()
@@ -451,6 +466,7 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "sparse_distance_value", distance)
 
         Config.set("widget", "sparse_selection_strategy", selection_strategy)
+        Config.set("widget", "sparse_physics_count_mode", physics_count_mode)
         if selection_strategy == "global":
             Config.set("widget", "sparse_descriptor_source", descriptor_source)
             Config.set("widget", "sparse_sampling_mode", sampling_mode)
@@ -458,7 +474,7 @@ class NepResultPlotWidget(QWidget):
 
         Config.set("widget", "sparse_training_path", training_path)
 
-        structures, reverse = data.sparse_point_selection(
+        sampling_kwargs = dict(
             n_samples=n_samples,
             distance=distance,
             descriptor_source=descriptor_source,
@@ -467,7 +483,41 @@ class NepResultPlotWidget(QWidget):
             sampling_mode=sampling_mode,
             r2_threshold=r2_threshold,
             selection_strategy=selection_strategy,
+            physics_count_mode=physics_count_mode,
         )
+        candidate_count = int(
+            getattr(getattr(data, "structure", None), "num", 0) or 0
+        )
+        if candidate_count >= SPARSE_BACKGROUND_THRESHOLD:
+            progress_dialog = QProgressDialog(
+                self.tr("Analyzing descriptor and physical coverage..."),
+                "",
+                0,
+                0,
+                self._parent,
+            )
+            progress_dialog.setCancelButton(None)
+            progress_dialog.setMinimumDuration(0)
+            progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
+            progress_dialog.setWindowTitle(
+                self.tr("Sampling representative structures")
+            )
+            task = BackgroundTask(self._parent, show_tip=False)
+            task.finished.connect(progress_dialog.accept)
+            task.start_work(data.sparse_point_selection, **sampling_kwargs)
+            progress_dialog.exec()
+            if task.outcome == "failed":
+                MessageManager.send_warning_message(
+                    self.tr("FPS sampling failed: {message}").format(
+                        message=task.error_message
+                    )
+                )
+                return
+            if task.outcome != "succeeded" or task.result is None:
+                return
+            structures, reverse = task.result
+        else:
+            structures, reverse = data.sparse_point_selection(**sampling_kwargs)
         if structures:
             self.canvas.select_index(structures, reverse)
             if selection_strategy == "element_set":
@@ -477,6 +527,36 @@ class NepResultPlotWidget(QWidget):
                         "Balanced FPS selected {selected} structures across {groups} element sets."
                     ).format(selected=len(structures), groups=len(report))
                 )
+            elif selection_strategy == "physics":
+                report = getattr(data, "_last_sparse_group_report", {}) or {}
+                plan = getattr(data, "_last_sparse_physics_plan", None)
+                covered = sum(
+                    int(group.get("selected_count", 0)) > 0
+                    for group in report.values()
+                )
+                MessageManager.send_info_message(
+                    self.tr(
+                        "Physics-aware FPS selected {selected} structures; covered "
+                        "{covered}/{strata} element-set/phase/spin strata across "
+                        "{element_sets} element sets."
+                    ).format(
+                        selected=len(structures),
+                        covered=covered,
+                        strata=getattr(plan, "group_count", len(report)),
+                        element_sets=getattr(plan, "element_set_count", 0),
+                    )
+                )
+            elif sampling_mode == "r2":
+                coverage_r2 = getattr(data, "_last_sparse_coverage_r2", None)
+                if coverage_r2 is not None:
+                    MessageManager.send_info_message(
+                        self.tr(
+                            "Coverage-R^2 FPS selected {selected} structures; final coverage R^2: {score:.4f}."
+                        ).format(
+                            selected=len(structures),
+                            score=float(coverage_r2),
+                        )
+                    )
 
             # Show training overlay if requested - pre-compute PCA then show dialog
             show_overlay = bool(getattr(box, "trainingOverlayCheck", None) and box.trainingOverlayCheck.isChecked())

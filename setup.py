@@ -69,6 +69,7 @@ setup(
         native_extension("_audit", "src/native/audit/module.cpp", depends=(neighbor_header,)),
         native_extension("_phase", "src/native/phase/module.cpp", depends=(neighbor_header,)),
         native_extension("_magnetism", "src/native/magnetism/module.cpp", depends=(neighbor_header,)),
+        native_extension("_sampling", "src/native/sampling/module.cpp"),
     ],
     zip_safe=False,
 )

@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import numpy as np
 
+import NepTrainKit.core.audit.phase_sketch as phase_sketch_module
 from NepTrainKit.core.audit.phase_inventory import (
     analyze_structure_phase,
     build_phase_inventory,
@@ -170,6 +171,43 @@ def test_single_structure_phase_api_preserves_source_index_and_local_fractions()
         "bcc": 0.0,
         "unresolved": 0.25,
     }
+
+
+def test_phase_classification_reuses_one_native_neighbor_field():
+    structure = SimpleNamespace(
+        positions=np.zeros((4, 3), dtype=np.float32),
+        cell=_CellWithExplicitStorage(np.eye(3, dtype=np.float64)),
+        additional_fields={"pbc": "T T T"},
+        numbers=[28, 28, 28, 28],
+    )
+    vectors = np.zeros((4, 32, 3), dtype=np.float32)
+    indices = np.zeros((4, 32), dtype=np.int32)
+    valid = np.zeros((4, 32), dtype=bool)
+    labels = np.asarray((1, 1, 1, 1), dtype=np.int8)
+    with (
+        patch.object(
+            phase_sketch_module,
+            "phase_partition_primitives",
+            return_value=(vectors, indices, valid, labels),
+        ) as primitive_mock,
+        patch(
+            "NepTrainKit.core.audit.phase_inventory._local_phase_counts",
+            return_value={"fcc": 4},
+        ) as local_mock,
+        patch(
+            "NepTrainKit.core.audit.phase_inventory._confirmed_ordering",
+            return_value=None,
+        ) as ordering_mock,
+    ):
+        result = analyze_structure_phase(structure, source_index=3)
+
+    primitive_mock.assert_called_once()
+    assert local_mock.call_args.kwargs["cna_labels"] is labels
+    neighbor_data = ordering_mock.call_args.kwargs["neighbor_data"]
+    assert neighbor_data[0] is vectors
+    assert neighbor_data[1] is indices
+    assert neighbor_data[2] is valid
+    assert result.phase_label == "fcc"
 
 
 def test_phase_summary_weights_exact_compositions_by_analyzed_atoms():

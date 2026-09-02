@@ -55,7 +55,11 @@ def structure_cell_array(
 
 
 def structure_pbc_flags(structure: Any) -> np.ndarray:
-    value = getattr(structure, "additional_fields", {}).get("pbc", "T T T")
+    fields = getattr(structure, "additional_fields", {}) or {}
+    if "pbc" in fields:
+        value = fields["pbc"]
+    else:
+        value = getattr(structure, "pbc", "T T T")
     if isinstance(value, str):
         tokens = value.replace(",", " ").split()
         if len(tokens) == 1:

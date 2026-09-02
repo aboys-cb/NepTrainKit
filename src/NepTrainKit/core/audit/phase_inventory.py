@@ -84,21 +84,20 @@ def _local_phase_counts(
     positions: np.ndarray,
     cell: np.ndarray,
     pbc: np.ndarray,
+    *,
+    cna_labels: np.ndarray | None = None,
 ) -> Counter[str]:
-    phase_module = importlib.import_module("NepTrainKit.core.audit.phase_sketch")
-    native = phase_module._native_phase
-    if native is None or not hasattr(native, "adaptive_cna_labels"):
-        raise RuntimeError("The native phase-analysis module is unavailable.")
-    vectors, indices, valid = phase_module.accelerated_periodic_knn_vectors(
-        positions,
-        cell,
-        pbc,
-        neighbors=24,
-    )
-    codes = np.asarray(
-        native.adaptive_cna_labels(vectors, indices, valid),
-        dtype=np.int8,
-    )
+    if cna_labels is None:
+        phase_module = importlib.import_module("NepTrainKit.core.audit.phase_sketch")
+        vectors, indices, valid = phase_module.accelerated_periodic_knn_vectors(
+            positions,
+            cell,
+            pbc,
+            neighbors=24,
+        )
+        codes = phase_module.adaptive_cna_labels(vectors, indices, valid)
+    else:
+        codes = np.asarray(cna_labels, dtype=np.int8)
     return Counter(_CNA_CODES.get(int(code), "unresolved") for code in codes)
 
 
@@ -108,6 +107,8 @@ def _confirmed_ordering(
     pbc: np.ndarray,
     atom_types: np.ndarray,
     local_counts: Counter[str],
+    *,
+    neighbor_data: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
 ) -> str | None:
     if not np.all(pbc):
         return None
@@ -123,10 +124,22 @@ def _confirmed_ordering(
             >= 0.50
         )
         if not incompatible_l12_skeleton:
-            l12 = refine_l12(positions, cell, pbc, atom_types)
+            l12 = refine_l12(
+                positions,
+                cell,
+                pbc,
+                atom_types,
+                _neighbor_data=neighbor_data,
+            )
             if l12.confirmed:
                 return "l12"
-        laves = refine_laves(positions, cell, pbc, atom_types)
+        laves = refine_laves(
+            positions,
+            cell,
+            pbc,
+            atom_types,
+            _neighbor_data=neighbor_data,
+        )
         if laves.confirmed:
             return laves.label
     common = match_common_prototype(
@@ -135,6 +148,7 @@ def _confirmed_ordering(
         pbc,
         atom_types,
         candidate_labels=_common_prototype_candidates(atom_types, local_counts),
+        _neighbor_data=neighbor_data,
     )
     if common.confirmed:
         return common.label
@@ -221,8 +235,31 @@ def _classify_structure_arrays(
     source_index: int,
 ) -> tuple[StructurePhaseEvidence, Counter[str], str | None]:
     """Classify one structure while preserving local-topology evidence."""
+    neighbor_data = None
+    cna_labels = None
     try:
-        local_counts = _local_phase_counts(positions, cell, pbc)
+        phase_module = importlib.import_module(
+            "NepTrainKit.core.audit.phase_sketch"
+        )
+        vectors, indices, valid, cna_labels = (
+            phase_module.phase_partition_primitives(
+                positions,
+                cell,
+                pbc,
+                neighbors=32,
+            )
+        )
+        neighbor_data = (vectors, indices, valid)
+    except (RuntimeError, ValueError):
+        neighbor_data = None
+        cna_labels = None
+    try:
+        local_counts = _local_phase_counts(
+            positions,
+            cell,
+            pbc,
+            cna_labels=cna_labels,
+        )
     except ValueError:
         local_counts = Counter({"unresolved": len(atom_types)})
     try:
@@ -232,6 +269,7 @@ def _classify_structure_arrays(
             pbc,
             atom_types,
             local_counts,
+            neighbor_data=neighbor_data,
         )
     except ValueError:
         ordering = None

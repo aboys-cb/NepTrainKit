@@ -26,8 +26,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Signal, Qt, QUrl, QEvent, QPropertyAnimation, QEasingCurve, QTimer
 from qfluentwidgets import (
     MessageBoxBase,
+    SimpleCardWidget,
     SpinBox,
     CaptionLabel,
+    StrongBodyLabel,
     DoubleSpinBox,
     CheckBox,
     ProgressBar,
@@ -38,7 +40,6 @@ from qfluentwidgets import (
     ColorDialog,
     TitleLabel,
     HyperlinkLabel,
-    PushButton,
     LineEdit,
     EditableComboBox,
     PrimaryPushButton,
@@ -239,12 +240,16 @@ class SparseMessageBox(MessageBoxBase):
 
     def __init__(self, parent=None, tip=""):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel = StrongBodyLabel(tip, self)
         self.titleLabel.setWordWrap(True)
-        self._frame = QFrame(self)
+        self._frame = SimpleCardWidget(self)
+        self._frame.setBorderRadius(8)
         self.frame_layout = QGridLayout(self._frame)
-        self.frame_layout.setContentsMargins(0, 0, 0, 0)
-        self.frame_layout.setSpacing(4)
+        self.frame_layout.setContentsMargins(14, 12, 14, 12)
+        self.frame_layout.setHorizontalSpacing(16)
+        self.frame_layout.setVerticalSpacing(10)
+        self.frame_layout.setColumnMinimumWidth(0, 140)
+        self.frame_layout.setColumnStretch(1, 1)
         self.intSpinBox = SpinBox(self)
 
         self.intSpinBox.setMaximum(9999999)
@@ -260,27 +265,49 @@ class SparseMessageBox(MessageBoxBase):
             self.tr("Element-set balanced FPS"),
             userData="element_set",
         )
+        self.strategyCombo.addItem(
+            self.tr("Element set / phase / spin FPS"),
+            userData="physics",
+        )
         self.strategyHint = CaptionLabel("", self)
         self.strategyHint.setWordWrap(True)
-        self.frame_layout.addWidget(CaptionLabel(self.tr("Selection strategy"), self), 0, 0, 1, 1)
+        self.strategyLabel = CaptionLabel(self.tr("Selection strategy"), self)
+        self.frame_layout.addWidget(self.strategyLabel, 0, 0, 1, 1)
         self.frame_layout.addWidget(self.strategyCombo, 0, 1, 1, 2)
         self.frame_layout.addWidget(self.strategyHint, 1, 1, 1, 2)
 
         self.modeCombo = ComboBox(self)
         self.modeCombo.addItem(self.tr("Fixed count (FPS)"), userData="count")
-        self.modeCombo.addItem(self.tr("R^2 stop (FPS)"), userData="r2")
+        self.modeCombo.addItem(self.tr("Coverage R^2 stop (FPS)"), userData="r2")
         self.modeLabel = CaptionLabel(self.tr("Sampling mode"), self)
         self.frame_layout.addWidget(self.modeLabel, 2, 0, 1, 1)
         self.frame_layout.addWidget(self.modeCombo, 2, 1, 1, 2)
 
+        self.physicsCountModeCombo = ComboBox(self)
+        self.physicsCountModeCombo.addItem(
+            self.tr("User-defined total limit"),
+            userData="limit",
+        )
+        self.physicsCountModeCombo.addItem(
+            self.tr("Automatic descriptor coverage"),
+            userData="automatic",
+        )
+        self.physicsCountModeLabel = CaptionLabel(
+            self.tr("Physics sample count"),
+            self,
+        )
+        self.frame_layout.addWidget(self.physicsCountModeLabel, 2, 0, 1, 1)
+        self.frame_layout.addWidget(self.physicsCountModeCombo, 2, 1, 1, 2)
+
         self.maxNumLabel = CaptionLabel(self.tr("Sample limit"), self)
         self.frame_layout.addWidget(self.maxNumLabel, 3, 0, 1, 1)
         self.frame_layout.addWidget(self.intSpinBox, 3, 1, 1, 2)
-        self.frame_layout.addWidget(CaptionLabel(self.tr("Min distance"), self), 4, 0, 1, 1)
+        self.minDistanceLabel = CaptionLabel(self.tr("Min distance"), self)
+        self.frame_layout.addWidget(self.minDistanceLabel, 4, 0, 1, 1)
 
         self.frame_layout.addWidget(self.doubleSpinBox, 4, 1, 1, 2)
 
-        self.r2Label = CaptionLabel(self.tr("R^2 threshold"), self)
+        self.r2Label = CaptionLabel(self.tr("Coverage R^2 threshold"), self)
         self.r2SpinBox = DoubleSpinBox(self)
         self.r2SpinBox.setDecimals(4)
         self.r2SpinBox.setRange(0.0, 1.0)
@@ -295,11 +322,15 @@ class SparseMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.descriptorLabel, 6, 0, 1, 1)
         self.frame_layout.addWidget(self.descriptorCombo, 6, 1, 1, 2)
 
-        self.advancedFrame = QFrame(self)
+        self.advancedFrame = SimpleCardWidget(self)
+        self.advancedFrame.setBorderRadius(8)
         self.advancedFrame.setVisible(False)
         self.advancedLayout = QGridLayout(self.advancedFrame)
-        self.advancedLayout.setContentsMargins(0, 0, 0, 0)
-        self.advancedLayout.setSpacing(4)
+        self.advancedLayout.setContentsMargins(14, 12, 14, 12)
+        self.advancedLayout.setHorizontalSpacing(12)
+        self.advancedLayout.setVerticalSpacing(10)
+        self.advancedLayout.setColumnMinimumWidth(0, 140)
+        self.advancedLayout.setColumnStretch(1, 1)
 
         self.trainingPathEdit = LineEdit(self)
         self.trainingPathEdit.setPlaceholderText(self.tr("Optional training dataset path (.xyz or folder)"))
@@ -334,19 +365,32 @@ class SparseMessageBox(MessageBoxBase):
         )
         self.trainingOverlayCheck.installEventFilter(ToolTipFilter(self.trainingOverlayCheck, 300, ToolTipPosition.TOP))
 
-        self.viewLayout.addWidget(self.titleLabel)
-        self.viewLayout.addWidget(self._frame)
-        self.viewLayout.addWidget(self.advancedFrame)
-        self.viewLayout.addWidget(self.regionCheck)
-        self.viewLayout.addWidget(self.trainingOverlayCheck)
+        self.advancedLayout.addWidget(self.regionCheck, 2, 0, 1, 2)
+        self.advancedLayout.addWidget(self.trainingOverlayCheck, 3, 0, 1, 2)
+
+        self.contentWidget = QWidget(self)
+        self.contentWidget.setObjectName("sparseDialogContent")
+        self.contentLayout = QVBoxLayout(self.contentWidget)
+        self.contentLayout.setContentsMargins(0, 0, 0, 0)
+        self.contentLayout.setSpacing(12)
+        self.contentLayout.addWidget(self.titleLabel)
+        self.contentLayout.addWidget(self._frame)
+        self.contentLayout.addWidget(self.advancedFrame)
+        self.contentWidget.setStyleSheet(
+            "QWidget#sparseDialogContent { background: transparent; }"
+        )
+        self.viewLayout.addWidget(self.contentWidget)
 
         self.yesButton.setText(self.tr("OK"))
         self.cancelButton.setText(self.tr("Cancel"))
 
-        self.widget.setMinimumWidth(420)
+        self.widget.setMinimumWidth(600)
         self.advancedFrame.setVisible(True)
-        self._balanced_strategy_active = False
+        self._structured_strategy_active = False
         self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
+        self.physicsCountModeCombo.currentIndexChanged.connect(
+            self._update_mode_visibility
+        )
         self.strategyCombo.currentIndexChanged.connect(self._update_strategy_visibility)
         self._update_strategy_visibility()
 
@@ -365,40 +409,62 @@ class SparseMessageBox(MessageBoxBase):
 
     def _update_mode_visibility(self):
         """Toggle UI elements based on sampling mode selection."""
-        balanced = self.strategyCombo.currentData() == "element_set"
-        r2_mode = not balanced and self.modeCombo.currentData() == "r2"
-        self.maxNumLabel.setVisible(True)
-        self.intSpinBox.setVisible(True)
+        strategy = self.strategyCombo.currentData()
+        structured = strategy in {"element_set", "physics"}
+        physics = strategy == "physics"
+        automatic = physics and self.physicsCountModeCombo.currentData() == "automatic"
+        r2_mode = not structured and self.modeCombo.currentData() == "r2"
+        self.physicsCountModeLabel.setVisible(physics)
+        self.physicsCountModeCombo.setVisible(physics)
+        self.maxNumLabel.setVisible(not automatic)
+        self.intSpinBox.setVisible(not automatic)
+        self.minDistanceLabel.setVisible(not automatic)
+        self.doubleSpinBox.setVisible(not automatic)
         self.r2Label.setVisible(r2_mode)
         self.r2SpinBox.setVisible(r2_mode)
 
     def _update_strategy_visibility(self):
-        """Keep balanced FPS on the validated raw, fixed-count workflow."""
-        balanced = self.strategyCombo.currentData() == "element_set"
-        if balanced and not self._balanced_strategy_active:
+        """Keep structured FPS on the validated raw-descriptor workflow."""
+        strategy = self.strategyCombo.currentData()
+        structured = strategy in {"element_set", "physics"}
+        if structured and not self._structured_strategy_active:
             self._global_mode_index = self.modeCombo.currentIndex()
             self._global_descriptor_index = self.descriptorCombo.currentIndex()
-        elif not balanced and self._balanced_strategy_active:
+        elif not structured and self._structured_strategy_active:
             self.modeCombo.setCurrentIndex(getattr(self, "_global_mode_index", 0))
             self.descriptorCombo.setCurrentIndex(
                 getattr(self, "_global_descriptor_index", 0)
             )
 
-        self._balanced_strategy_active = balanced
-        if balanced:
+        self._structured_strategy_active = structured
+        if structured:
             self.modeCombo.setCurrentIndex(self.modeCombo.findData("count"))
             self.descriptorCombo.setCurrentIndex(self.descriptorCombo.findData("raw"))
+        if strategy == "element_set":
             self.strategyHint.setText(
                 self.tr(
                     "Groups by element set, assigns sqrt-size quotas, and uses raw descriptors."
                 )
             )
+        elif strategy == "physics":
+            self.strategyHint.setText(
+                self.tr(
+                    "Partitions by element set, phase, and magnetic order, then "
+                    "samples local environments with raw descriptors."
+                )
+            )
         else:
             self.strategyHint.setText(
-                self.tr("Uses the existing global FPS behavior and descriptor options.")
+                self.tr(
+                    "Uses one global FPS budget with descriptor and coverage-R^2 options."
+                )
             )
-        self.modeCombo.setEnabled(not balanced)
-        self.descriptorCombo.setEnabled(not balanced)
+        self.modeCombo.setEnabled(not structured)
+        self.descriptorCombo.setEnabled(not structured)
+        self.modeLabel.setVisible(not structured)
+        self.modeCombo.setVisible(not structured)
+        self.descriptorLabel.setVisible(not structured)
+        self.descriptorCombo.setVisible(not structured)
         self._update_mode_visibility()
 
 

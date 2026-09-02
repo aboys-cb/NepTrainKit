@@ -686,6 +686,45 @@ py::array_t<std::int8_t> adaptive_cna_labels(
     return labels;
 }
 
+py::tuple phase_partition_primitives(
+    py::array_t<float, py::array::c_style | py::array::forcecast> positions_array,
+    py::array_t<float, py::array::c_style | py::array::forcecast> cell_array,
+    py::array_t<bool, py::array::c_style | py::array::forcecast> pbc_array,
+    const int requested_neighbors
+) {
+    if (requested_neighbors < 24) {
+        throw py::value_error(
+            "phase partition primitives require at least 24 neighbors"
+        );
+    }
+    py::tuple neighbors = periodic_knn_vectors(
+        positions_array,
+        cell_array,
+        pbc_array,
+        requested_neighbors
+    );
+    auto vectors = neighbors[0].cast<
+        py::array_t<float, py::array::c_style | py::array::forcecast>
+    >();
+    auto indices = neighbors[1].cast<
+        py::array_t<std::int32_t, py::array::c_style | py::array::forcecast>
+    >();
+    auto valid = neighbors[2].cast<
+        py::array_t<bool, py::array::c_style | py::array::forcecast>
+    >();
+    py::array_t<std::int8_t> labels = adaptive_cna_labels(
+        vectors,
+        indices,
+        valid
+    );
+    return py::make_tuple(
+        std::move(vectors),
+        std::move(indices),
+        std::move(valid),
+        std::move(labels)
+    );
+}
+
 bool matches_shape_template(
     const std::vector<Neighbor>& neighbors,
     const int coordination,
@@ -738,6 +777,254 @@ bool matches_shape_template(
         if (squared_error <= squared_limit) return true;
     }
     return false;
+}
+
+double common_prototype_shape_rms(
+    const float* vectors,
+    const py::ssize_t neighbor_capacity,
+    const py::ssize_t atom,
+    const int coordination,
+    const double* reference
+) {
+    std::vector<float> radial(static_cast<std::size_t>(coordination));
+    std::vector<std::array<float, 3>> normalized(
+        static_cast<std::size_t>(coordination)
+    );
+    float scale = 0.0f;
+    for (int slot = 0; slot < coordination; ++slot) {
+        const py::ssize_t offset = (atom * neighbor_capacity + slot) * 3;
+        const float x = vectors[offset];
+        const float y = vectors[offset + 1];
+        const float z = vectors[offset + 2];
+        const float distance = std::sqrt(x * x + y * y + z * z);
+        radial[static_cast<std::size_t>(slot)] = distance;
+        scale += distance;
+    }
+    scale /= coordination;
+    if (scale <= kEps) return std::numeric_limits<double>::infinity();
+
+    for (int slot = 0; slot < coordination; ++slot) {
+        const py::ssize_t offset = (atom * neighbor_capacity + slot) * 3;
+        normalized[static_cast<std::size_t>(slot)] = {{
+            vectors[offset] / scale,
+            vectors[offset + 1] / scale,
+            vectors[offset + 2] / scale,
+        }};
+        radial[static_cast<std::size_t>(slot)] /= scale;
+    }
+    std::sort(radial.begin(), radial.end());
+    std::vector<float> pairwise;
+    pairwise.reserve(
+        static_cast<std::size_t>(coordination * (coordination - 1) / 2)
+    );
+    for (int left = 0; left < coordination; ++left) {
+        const auto& first = normalized[static_cast<std::size_t>(left)];
+        for (int right = left + 1; right < coordination; ++right) {
+            const auto& second = normalized[static_cast<std::size_t>(right)];
+            const float dx = first[0] - second[0];
+            const float dy = first[1] - second[1];
+            const float dz = first[2] - second[2];
+            pairwise.push_back(std::sqrt(dx * dx + dy * dy + dz * dz));
+        }
+    }
+    std::sort(pairwise.begin(), pairwise.end());
+
+    double squared_error = 0.0;
+    for (int slot = 0; slot < coordination; ++slot) {
+        const double delta = radial[static_cast<std::size_t>(slot)] - reference[slot];
+        squared_error += delta * delta;
+    }
+    for (py::ssize_t slot = 0; slot < static_cast<py::ssize_t>(pairwise.size()); ++slot) {
+        const double delta = pairwise[static_cast<std::size_t>(slot)]
+            - reference[coordination + slot];
+        squared_error += delta * delta;
+    }
+    const py::ssize_t width = coordination
+        + coordination * (coordination - 1) / 2;
+    return std::sqrt(squared_error / static_cast<double>(width));
+}
+
+py::tuple common_prototype_mapping_metrics(
+    py::array_t<float, py::array::c_style | py::array::forcecast> vectors_array,
+    py::array_t<std::int32_t, py::array::c_style | py::array::forcecast> indices_array,
+    py::array_t<bool, py::array::c_style | py::array::forcecast> valid_array,
+    py::array_t<std::int32_t, py::array::c_style | py::array::forcecast> mapped_roles_array,
+    py::array_t<std::int32_t, py::array::c_style | py::array::forcecast> template_roles_array,
+    py::array_t<std::int32_t, py::array::c_style | py::array::forcecast> neighbor_counts_array,
+    py::array_t<std::int32_t, py::array::c_style | py::array::forcecast> shell_sizes_array,
+    py::array_t<std::int32_t, py::array::c_style | py::array::forcecast> shell_role_counts_array,
+    py::array_t<double, py::array::c_style | py::array::forcecast> descriptors_array,
+    const double shape_threshold,
+    const double maximum_shell_error_fraction
+) {
+    if (vectors_array.ndim() != 3 || vectors_array.shape(2) != 3 ||
+        indices_array.ndim() != 2 || valid_array.ndim() != 2 ||
+        mapped_roles_array.ndim() != 1 || template_roles_array.ndim() != 1 ||
+        neighbor_counts_array.ndim() != 1 || shell_sizes_array.ndim() != 2 ||
+        shell_role_counts_array.ndim() != 3 || descriptors_array.ndim() != 2 ||
+        vectors_array.shape(0) != indices_array.shape(0) ||
+        vectors_array.shape(0) != valid_array.shape(0) ||
+        vectors_array.shape(0) != mapped_roles_array.shape(0) ||
+        vectors_array.shape(1) != indices_array.shape(1) ||
+        vectors_array.shape(1) != valid_array.shape(1)) {
+        throw py::value_error("invalid common-prototype mapping input shapes");
+    }
+    const py::ssize_t atom_count = vectors_array.shape(0);
+    const py::ssize_t neighbor_capacity = vectors_array.shape(1);
+    const py::ssize_t template_count = template_roles_array.shape(0);
+    const py::ssize_t shell_capacity = shell_sizes_array.shape(1);
+    const py::ssize_t role_count = shell_role_counts_array.shape(2);
+    if (atom_count <= 0 || template_count <= 0 || role_count <= 0 ||
+        neighbor_counts_array.shape(0) != template_count ||
+        shell_sizes_array.shape(0) != template_count ||
+        shell_role_counts_array.shape(0) != template_count ||
+        shell_role_counts_array.shape(1) != shell_capacity ||
+        descriptors_array.shape(0) != template_count ||
+        shape_threshold < 0.0 || maximum_shell_error_fraction < 0.0) {
+        throw py::value_error("invalid common-prototype template metadata");
+    }
+
+    const std::int32_t* mapped_roles = mapped_roles_array.data();
+    const std::int32_t* template_roles = template_roles_array.data();
+    const std::int32_t* neighbor_counts = neighbor_counts_array.data();
+    const std::int32_t* shell_sizes = shell_sizes_array.data();
+    const std::int32_t* shell_role_counts = shell_role_counts_array.data();
+    const std::int32_t* indices = indices_array.data();
+    const bool* valid = valid_array.data();
+    for (py::ssize_t atom = 0; atom < atom_count; ++atom) {
+        if (mapped_roles[atom] < 0 || mapped_roles[atom] >= role_count) {
+            throw py::value_error("mapped atom roles are outside the template role range");
+        }
+        for (py::ssize_t slot = 0; slot < neighbor_capacity; ++slot) {
+            const py::ssize_t offset = atom * neighbor_capacity + slot;
+            if (valid[offset] && (indices[offset] < 0 || indices[offset] >= atom_count)) {
+                throw py::value_error("common-prototype neighbor index is out of range");
+            }
+        }
+    }
+    for (py::ssize_t row = 0; row < template_count; ++row) {
+        const int coordination = neighbor_counts[row];
+        const py::ssize_t descriptor_width = coordination
+            + coordination * (coordination - 1) / 2;
+        if (template_roles[row] < 0 || template_roles[row] >= role_count ||
+            coordination <= 0 || coordination > neighbor_capacity ||
+            descriptor_width > descriptors_array.shape(1)) {
+            throw py::value_error("common-prototype template dimensions are inconsistent");
+        }
+        int shell_total = 0;
+        for (py::ssize_t shell = 0; shell < shell_capacity; ++shell) {
+            const int size = shell_sizes[row * shell_capacity + shell];
+            if (size < 0) {
+                throw py::value_error("common-prototype shell size must be non-negative");
+            }
+            shell_total += size;
+        }
+        if (shell_total != coordination) {
+            throw py::value_error("common-prototype shells do not cover the template");
+        }
+    }
+
+    const float* vectors = vectors_array.data();
+    const double* descriptors = descriptors_array.data();
+    const py::ssize_t descriptor_capacity = descriptors_array.shape(1);
+    std::int64_t geometry_count = 0;
+    std::int64_t chemistry_count = 0;
+    std::int64_t joint_count = 0;
+    std::int64_t finite_rms_count = 0;
+    double finite_rms_sum = 0.0;
+    {
+        py::gil_scoped_release release;
+        for (py::ssize_t atom = 0; atom < atom_count; ++atom) {
+            int best_score = -1;
+            bool best_geometry = false;
+            bool best_chemistry = false;
+            double best_rms = std::numeric_limits<double>::infinity();
+            for (py::ssize_t row = 0; row < template_count; ++row) {
+                if (template_roles[row] != mapped_roles[atom]) continue;
+                const int coordination = neighbor_counts[row];
+                bool eligible = true;
+                for (int slot = 0; slot < coordination; ++slot) {
+                    if (!valid[atom * neighbor_capacity + slot]) {
+                        eligible = false;
+                        break;
+                    }
+                }
+                bool chemistry = false;
+                bool geometry = false;
+                double rms = std::numeric_limits<double>::infinity();
+                if (eligible) {
+                    int shell_errors = 0;
+                    int start = 0;
+                    for (py::ssize_t shell = 0; shell < shell_capacity; ++shell) {
+                        const int size = shell_sizes[row * shell_capacity + shell];
+                        if (size == 0) continue;
+                        std::vector<int> observed(static_cast<std::size_t>(role_count), 0);
+                        for (int slot = start; slot < start + size; ++slot) {
+                            const std::int32_t source = indices[
+                                atom * neighbor_capacity + slot
+                            ];
+                            ++observed[static_cast<std::size_t>(mapped_roles[source])];
+                        }
+                        int current_error = 0;
+                        for (py::ssize_t role = 0; role < role_count; ++role) {
+                            const py::ssize_t expected_offset =
+                                (row * shell_capacity + shell) * role_count + role;
+                            current_error += std::abs(
+                                observed[static_cast<std::size_t>(role)]
+                                - shell_role_counts[expected_offset]
+                            );
+                        }
+                        shell_errors += current_error / 2;
+                        start += size;
+                    }
+                    const int allowed_errors = std::max(
+                        1,
+                        static_cast<int>(std::floor(
+                            coordination * maximum_shell_error_fraction
+                        ))
+                    );
+                    chemistry = shell_errors <= allowed_errors;
+                    if (chemistry) {
+                        rms = common_prototype_shape_rms(
+                            vectors,
+                            neighbor_capacity,
+                            atom,
+                            coordination,
+                            descriptors + row * descriptor_capacity
+                        );
+                        geometry = rms <= shape_threshold;
+                    }
+                }
+                const bool joint = geometry && chemistry;
+                const int score = 4 * static_cast<int>(joint)
+                    + 2 * static_cast<int>(chemistry)
+                    + static_cast<int>(geometry);
+                if (score > best_score || (score == best_score && rms < best_rms)) {
+                    best_score = score;
+                    best_geometry = geometry;
+                    best_chemistry = chemistry;
+                    best_rms = rms;
+                }
+            }
+            geometry_count += best_geometry;
+            chemistry_count += best_chemistry;
+            joint_count += best_geometry && best_chemistry;
+            if (std::isfinite(best_rms)) {
+                finite_rms_sum += best_rms;
+                ++finite_rms_count;
+            }
+        }
+    }
+    const double denominator = static_cast<double>(atom_count);
+    const py::object mean_rms = finite_rms_count
+        ? py::cast(finite_rms_sum / static_cast<double>(finite_rms_count))
+        : py::none();
+    return py::make_tuple(
+        geometry_count / denominator,
+        chemistry_count / denominator,
+        joint_count / denominator,
+        mean_rms
+    );
 }
 
 float minimum_pairing_cost(
@@ -975,6 +1262,31 @@ PYBIND11_MODULE(_phase, module) {
         py::arg("vectors"),
         py::arg("indices"),
         py::arg("valid")
+    );
+    module.def(
+        "phase_partition_primitives",
+        &phase_partition_primitives,
+        py::arg("positions"),
+        py::arg("cell"),
+        py::arg("pbc"),
+        py::arg("neighbors") = 32,
+        "Build one reusable neighbor field plus adaptive-CNA labels."
+    );
+    module.def(
+        "common_prototype_mapping_metrics",
+        &common_prototype_mapping_metrics,
+        py::arg("vectors"),
+        py::arg("indices"),
+        py::arg("valid"),
+        py::arg("mapped_roles"),
+        py::arg("template_roles"),
+        py::arg("neighbor_counts"),
+        py::arg("shell_sizes"),
+        py::arg("shell_role_counts"),
+        py::arg("descriptors"),
+        py::arg("shape_threshold"),
+        py::arg("maximum_shell_error_fraction"),
+        "Evaluate one common-prototype role mapping."
     );
     module.def(
         "l12_refinement_metrics",

@@ -53,7 +53,7 @@ jobs:
 
     - name: Verify packaged runtimes
       run: |
-        python -c "from NepTrainKit._native import _io, _audit, _phase, _magnetism"
+        python -c "from NepTrainKit._native import _io, _audit, _phase, _magnetism, _sampling"
         python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
 
     - name: Run tests with pytest

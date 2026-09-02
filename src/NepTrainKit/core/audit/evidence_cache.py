@@ -4,6 +4,7 @@ from __future__ import annotations
 import gzip
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Any
@@ -23,9 +24,9 @@ from .result import (
     StructurePhaseEvidence,
 )
 
-
 EVIDENCE_CACHE_FORMAT_VERSION = 1
 _LEGACY_CACHE_DIRECTORY = ".neptrainkit-cache"
+PHYSICS_SAMPLING_CACHE_KIND = "phase-sampling"
 
 
 def _jsonable(value: Any) -> Any:
@@ -210,6 +211,23 @@ class TrainingSetEvidenceCache:
         fingerprints = getattr(audit_result, "fingerprints", None)
         dataset_fingerprint = str(getattr(fingerprints, "dataset", "") or "")
         scope_fingerprint = str(getattr(fingerprints, "scope", "") or "")
+        return cls.from_fingerprints(
+            result_data,
+            dataset_fingerprint=dataset_fingerprint,
+            scope_fingerprint=scope_fingerprint,
+        )
+
+    @classmethod
+    def from_fingerprints(
+        cls,
+        result_data: Any,
+        *,
+        dataset_fingerprint: str,
+        scope_fingerprint: str,
+    ) -> TrainingSetEvidenceCache | None:
+        """Resolve the persistent evidence cache for an explicit data scope."""
+        dataset_fingerprint = str(dataset_fingerprint or "")
+        scope_fingerprint = str(scope_fingerprint or "")
         if not dataset_fingerprint or not scope_fingerprint:
             return None
         cache_enabled = getattr(result_data, "cache_outputs_enabled", None)
@@ -421,6 +439,51 @@ class TrainingSetEvidenceCache:
             logger.warning("Ignoring invalid magnetic evidence cache {}: {}", path, error)
             return None
 
+    def load_sampling_partitions(
+        self,
+        *,
+        identity: dict[str, Any],
+    ) -> tuple[dict[str, Any], ...] | None:
+        """Load optional per-structure physical partitions for FPS reuse."""
+        path = self._load_path(PHYSICS_SAMPLING_CACHE_KIND)
+        if not path.is_file():
+            return None
+        try:
+            with gzip.open(path, "rb") as handle:
+                header = self._read_line(handle)
+                if not self._matches(header, PHYSICS_SAMPLING_CACHE_KIND):
+                    return None
+                if any(header.get(key) != value for key, value in identity.items()):
+                    return None
+                records = tuple(
+                    self._read_line(handle)
+                    for _ in range(int(header["assignment_count"]))
+                )
+                if handle.readline().strip():
+                    raise ValueError(
+                        "The phase-sampling cache contains unexpected trailing records."
+                    )
+            self._promote_legacy_path(path, PHYSICS_SAMPLING_CACHE_KIND)
+            logger.info(
+                "Loaded phase-sampling cache: {}",
+                self._path(PHYSICS_SAMPLING_CACHE_KIND),
+            )
+            return records
+        except (
+            EOFError,
+            OSError,
+            TypeError,
+            ValueError,
+            KeyError,
+            json.JSONDecodeError,
+        ) as error:
+            logger.warning(
+                "Ignoring invalid phase-sampling cache {}: {}",
+                path,
+                error,
+            )
+            return None
+
     def _save(self, kind: str, inventory: Any) -> bool:
         path = self._path(kind)
         temporary = path.with_name(f"{path.name}.tmp")
@@ -456,8 +519,47 @@ class TrainingSetEvidenceCache:
     def save_magnetic(self, inventory: MagneticInventory) -> bool:
         return self._save("magnetic", inventory)
 
+    def save_sampling_partitions(
+        self,
+        records: Sequence[dict[str, Any]],
+        *,
+        identity: dict[str, Any],
+    ) -> bool:
+        """Atomically persist compact physical partitions beside phase evidence."""
+        path = self._path(PHYSICS_SAMPLING_CACHE_KIND)
+        temporary = path.with_name(f"{path.name}.tmp")
+        try:
+            self.directory.mkdir(parents=True, exist_ok=True)
+            header = {
+                "format_version": EVIDENCE_CACHE_FORMAT_VERSION,
+                "kind": PHYSICS_SAMPLING_CACHE_KIND,
+                "dataset_fingerprint": self.dataset_fingerprint,
+                "scope_fingerprint": self.scope_fingerprint,
+                "assignment_count": len(records),
+                **identity,
+            }
+            with gzip.open(temporary, "wb", compresslevel=6) as handle:
+                self._write_line(handle, header)
+                for record in records:
+                    self._write_line(handle, dict(record))
+            temporary.replace(path)
+            logger.info("Saved phase-sampling cache: {}", path)
+            return True
+        except (OSError, TypeError, ValueError) as error:
+            logger.warning(
+                "Could not write phase-sampling cache {}: {}",
+                path,
+                error,
+            )
+            return False
+        finally:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
+
     def path_for(self, kind: str) -> Path:
         """Expose the resolved path for diagnostics and focused tests."""
-        if kind not in {"phase", "magnetic"}:
+        if kind not in {"phase", "magnetic", PHYSICS_SAMPLING_CACHE_KIND}:
             raise ValueError(f"Unknown evidence cache kind: {kind}")
         return self._path(kind)

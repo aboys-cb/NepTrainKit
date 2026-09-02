@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from importlib import metadata
 from pathlib import Path, PurePosixPath
 from typing import Any
+from urllib.parse import urlparse
 
 from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.tags import sys_tags
@@ -29,6 +30,9 @@ from packaging.utils import canonicalize_name, parse_wheel_filename
 from packaging.version import InvalidVersion, Version
 
 PYPI_JSON_URL = "https://pypi.org/pypi/{distribution}/json"
+TENCENT_PYPI_JSON_URL = (
+    "https://mirrors.cloud.tencent.com/pypi/pypi/{distribution}/json"
+)
 HEALTH_CHECK_FLAG = "--neptrainkit-runtime-health-check"
 NATIVE_HEALTH_CHECK_FLAG = "--neptrainkit-native-health-check"
 NATIVE_HELPER_MODULES = ("_io", "_audit", "_phase", "_magnetism", "_sampling")
@@ -42,6 +46,10 @@ class RuntimePackageHealthError(RuntimePackageError):
     """Raised when a candidate package fails its isolated health check."""
 
 
+class RuntimePackageIndexError(RuntimePackageError):
+    """Raised when all configured package indexes are unavailable."""
+
+
 @dataclass(frozen=True)
 class RuntimePackageSpec:
     """Stable description of one updateable runtime package."""
@@ -51,6 +59,7 @@ class RuntimePackageSpec:
     version_constraint: str
     health_kind: str = "import"
     index_url: str = PYPI_JSON_URL
+    fallback_index_urls: tuple[str, ...] = ()
 
     @property
     def key(self) -> str:
@@ -63,6 +72,8 @@ NEP_ADAPTERS_SPEC = RuntimePackageSpec(
     import_name="nep_adapters",
     version_constraint=">=1.0.1",
     health_kind="nep_adapters_cpu",
+    index_url=TENCENT_PYPI_JSON_URL,
+    fallback_index_urls=(PYPI_JSON_URL,),
 )
 
 MANAGED_RUNTIME_SPEC = NEP_ADAPTERS_SPEC
@@ -300,7 +311,7 @@ def check_runtime_package_update(
     spec: RuntimePackageSpec,
     runtime_root: Path,
     *,
-    timeout: tuple[float, float] = (2.0, 8.0),
+    timeout: tuple[float, float] = (5.0, 8.0),
     get: Callable[..., Any] | None = None,
 ) -> RuntimePackageUpdate:
     """Check the package index and select the newest compatible wheel."""
@@ -309,17 +320,35 @@ def check_runtime_package_update(
 
         get = requests.get
 
-    index_url = spec.index_url.format(distribution=spec.distribution)
-    response = get(
-        index_url,
-        headers={"User-Agent": "NepTrainKit-Runtime-Updater"},
-        timeout=timeout,
-    )
-    response.raise_for_status()
-    payload = response.json()
-    releases = payload.get("releases") if isinstance(payload, dict) else None
-    if not isinstance(releases, dict):
-        raise RuntimePackageError("Unexpected package-index response.")
+    failures: list[str] = []
+    releases: dict[str, Any] | None = None
+    index_urls = (spec.index_url, *spec.fallback_index_urls)
+    for index_url_template in dict.fromkeys(index_urls):
+        index_url = index_url_template.format(distribution=spec.distribution)
+        try:
+            response = get(
+                index_url,
+                headers={"User-Agent": "NepTrainKit-Runtime-Updater"},
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            candidate_releases = (
+                payload.get("releases") if isinstance(payload, dict) else None
+            )
+            if not isinstance(candidate_releases, dict):
+                raise ValueError("unexpected response format")
+            releases = candidate_releases
+            break
+        except Exception as exc:  # noqa: BLE001 - try the next configured index
+            source = urlparse(index_url).netloc or index_url
+            message = " ".join(str(exc).splitlines())
+            failures.append(f"{source}: {type(exc).__name__}: {message}")
+    else:
+        detail = "; ".join(failures)
+        raise RuntimePackageIndexError(
+            f"Unable to query the {spec.distribution} package index ({detail})."
+        )
 
     constraint = SpecifierSet(spec.version_constraint)
     current_text = active_runtime_version(spec, runtime_root)
@@ -678,9 +707,11 @@ __all__ = [
     "MANAGED_RUNTIME_SPEC",
     "NEP_ADAPTERS_SPEC",
     "PYPI_JSON_URL",
+    "TENCENT_PYPI_JSON_URL",
     "RuntimeActivation",
     "RuntimePackageError",
     "RuntimePackageHealthError",
+    "RuntimePackageIndexError",
     "RuntimePackageInstall",
     "RuntimePackageSpec",
     "RuntimePackageUpdate",

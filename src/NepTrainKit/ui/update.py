@@ -21,6 +21,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.runtime_package import (
     MANAGED_RUNTIME_SPEC,
     NEP_ADAPTERS_SPEC,
+    RuntimePackageIndexError,
     RuntimePackageUpdate,
     check_runtime_package_update,
     install_runtime_package_update,
@@ -398,7 +399,14 @@ class RuntimePackageUpdateWorker(QObject):
                 managed_runtime_root,
             )
             self.check_result.emit({"ok": True, "update": update})
-        except Exception as exc:  # noqa: BLE001 - report index/network failures
+        except RuntimePackageIndexError as exc:
+            logger.warning(
+                "Runtime update check unavailable for {}: {}",
+                self._runtime_name,
+                exc,
+            )
+            self.check_result.emit({"ok": False, "error": str(exc)})
+        except Exception as exc:  # noqa: BLE001 - retain unexpected failure details
             logger.error(traceback.format_exc())
             self.check_result.emit({"ok": False, "error": str(exc)})
 

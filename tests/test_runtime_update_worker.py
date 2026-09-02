@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 import NepTrainKit.ui.update as update_module
 from NepTrainKit.runtime_package import (
+    RuntimePackageIndexError,
     RuntimePackageInstall,
     RuntimePackageSpec,
     RuntimePackageUpdate,
@@ -181,8 +182,10 @@ def test_startup_runtime_check_is_silent_when_network_is_unavailable() -> None:
         patch.object(
             update_module,
             "check_runtime_package_update",
-            side_effect=ConnectionError("network unavailable"),
+            side_effect=RuntimePackageIndexError("network unavailable"),
         ),
+        patch.object(update_module.logger, "warning") as log_warning,
+        patch.object(update_module.logger, "error") as log_error,
         patch.object(
             update_module.MessageManager,
             "send_info_message",
@@ -207,6 +210,8 @@ def test_startup_runtime_check_is_silent_when_network_is_unavailable() -> None:
     success.assert_not_called()
     warning.assert_not_called()
     error.assert_not_called()
+    log_warning.assert_called_once()
+    log_error.assert_not_called()
     assert finished == [{"ok": False, "error": "network unavailable"}]
 
 

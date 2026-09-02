@@ -1,6 +1,9 @@
 from types import SimpleNamespace
 
-from NepTrainKit.core.audit.evidence_cache import TrainingSetEvidenceCache
+from NepTrainKit.core.audit.evidence_cache import (
+    PHYSICS_SAMPLING_CACHE_KIND,
+    TrainingSetEvidenceCache,
+)
 from NepTrainKit.core.audit.result import (
     AuditFingerprints,
     AuditResult,
@@ -152,6 +155,41 @@ def test_evidence_cache_round_trips_phase_and_magnetic_inventories(tmp_path):
         method_id=magnetic.method_id,
         analysis_strategy=magnetic.analysis_strategy,
     ) == magnetic
+    assert not list(cache.directory.glob("*.tmp"))
+
+
+def test_evidence_cache_round_trips_optional_phase_sampling_partitions(tmp_path):
+    cache = TrainingSetEvidenceCache(tmp_path, "train.xyz", "dataset-fp", "scope-fp")
+    identity = {
+        "sampling_schema_version": "physics-sampling-v1",
+        "phase_method_id": "phase-v2",
+        "magnetic_method_id": "magnetic-v3",
+        "spin_model": True,
+        "source_structure_count": 2,
+    }
+    records = (
+        {
+            "source_index": 0,
+            "composition": [["Fe", 1]],
+            "phase": "bcc",
+            "magnetic_order": "fm",
+            "missing_spin": False,
+        },
+        {
+            "source_index": 1,
+            "composition": [["Fe", 1], ["Ni", 1]],
+            "phase": "fcc",
+            "magnetic_order": "no_spin",
+            "missing_spin": True,
+        },
+    )
+
+    assert cache.save_sampling_partitions(records, identity=identity)
+    assert cache.load_sampling_partitions(identity=identity) == records
+    assert cache.load_sampling_partitions(
+        identity={**identity, "phase_method_id": "changed"}
+    ) is None
+    assert cache.path_for(PHYSICS_SAMPLING_CACHE_KIND).is_file()
     assert not list(cache.directory.glob("*.tmp"))
 
 

@@ -54,7 +54,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Building NepTrainKit native helpers failed with exit code $LASTEXITCODE."
           }
-          python -c "import NepTrainKit._native._io, NepTrainKit._native._audit, NepTrainKit._native._phase, NepTrainKit._native._magnetism"
+          python -c "import NepTrainKit._native._io, NepTrainKit._native._audit, NepTrainKit._native._phase, NepTrainKit._native._magnetism, NepTrainKit._native._sampling"
           if ($LASTEXITCODE -ne 0) {
             throw "Importing NepTrainKit native helpers failed with exit code $LASTEXITCODE."
           }
@@ -66,7 +66,7 @@ jobs:
           nuitka-version: main
           script-name: NepTrainKit/main.py
           include-package: NepTrainKit
-          include-module: NepTrainKit._native._io,NepTrainKit._native._audit,NepTrainKit._native._phase,NepTrainKit._native._magnetism
+          include-module: NepTrainKit._native._io,NepTrainKit._native._audit,NepTrainKit._native._phase,NepTrainKit._native._magnetism,NepTrainKit._native._sampling
           output-file: NepTrainKit.exe
           mode: standalone
           windows-console-mode: disable

@@ -872,16 +872,29 @@ class _SparseBox:
         training_path="train.xyz",
         show_overlay=True,
         selection_strategy="global",
+        sampling_mode="count",
+        physics_count_mode="limit",
     ):
         self._accepted = accepted
+        self.recommendationRequested = SimpleNamespace(connect=MagicMock())
         self.intSpinBox = _SparseBoxControl(5)
         self.doubleSpinBox = _SparseBoxControl(0.1)
         self.regionCheck = _SparseBoxControl(False)
         self.descriptorCombo = _SparseBoxControl(0, ["reduced", "raw"])
-        self.modeCombo = _SparseBoxControl(0, ["count", "r2"])
+        self.modeCombo = _SparseBoxControl(
+            1 if sampling_mode == "r2" else 0,
+            ["count", "r2"],
+        )
         self.strategyCombo = _SparseBoxControl(
-            1 if selection_strategy == "element_set" else 0,
-            ["global", "element_set"],
+            {"global": 0, "element_set": 1, "physics": 2}.get(
+                selection_strategy,
+                0,
+            ),
+            ["global", "element_set", "physics"],
+        )
+        self.physicsCountModeCombo = _SparseBoxControl(
+            1 if physics_count_mode == "automatic" else 0,
+            ["limit", "automatic"],
         )
         self.r2SpinBox = _SparseBoxControl(0.9)
         self.trainingPathEdit = _SparseBoxControl(training_path)
@@ -911,7 +924,36 @@ class _OverlayDialogRecorder:
 
 
 class TestSparseMessageBoxStrategy(unittest.TestCase):
-    def test_balanced_strategy_locks_validated_descriptor_and_mode(self):
+    def test_dialog_uses_fluent_grouping_and_compact_scrollable_content(self):
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QSizePolicy, QWidget
+        from qfluentwidgets import ScrollArea, SimpleCardWidget, StrongBodyLabel
+
+        self._app = QApplication.instance() or QApplication([])
+        parent = QWidget()
+        parent.resize(760, 620)
+        box = dialog_module.SparseMessageBox(parent)
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("physics"))
+
+        self.assertIsInstance(box.titleLabel, StrongBodyLabel)
+        self.assertIsInstance(box._frame, SimpleCardWidget)
+        self.assertIsInstance(box.recommendationFrame, SimpleCardWidget)
+        self.assertIsInstance(box.advancedFrame, SimpleCardWidget)
+        self.assertIsInstance(box.contentScrollArea, ScrollArea)
+        self.assertEqual(box.frame_layout.contentsMargins().left(), 14)
+        self.assertEqual(box.frame_layout.verticalSpacing(), 8)
+        self.assertEqual(
+            box.recommendButton.sizePolicy().horizontalPolicy(),
+            QSizePolicy.Policy.Fixed,
+        )
+        self.assertTrue(box.advancedFrame.isAncestorOf(box.regionCheck))
+        self.assertTrue(box.advancedFrame.isAncestorOf(box.trainingOverlayCheck))
+        self.assertEqual(
+            box.contentScrollArea.horizontalScrollBarPolicy(),
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff,
+        )
+
+    def test_structured_strategies_lock_validated_descriptor_and_mode(self):
         from PySide6.QtWidgets import QWidget
 
         self._app = QApplication.instance() or QApplication([])
@@ -927,6 +969,22 @@ class TestSparseMessageBoxStrategy(unittest.TestCase):
         self.assertFalse(box.modeCombo.isEnabled())
         self.assertFalse(box.descriptorCombo.isEnabled())
         self.assertTrue(box.r2SpinBox.isHidden())
+        self.assertTrue(box.modeCombo.isHidden())
+        self.assertTrue(box.descriptorCombo.isHidden())
+
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("physics"))
+        self.assertEqual(box.modeCombo.currentData(), "count")
+        self.assertEqual(box.descriptorCombo.currentData(), "raw")
+        self.assertFalse(box.modeCombo.isEnabled())
+        self.assertFalse(box.descriptorCombo.isEnabled())
+        self.assertIn("magnetic order", box.strategyHint.text())
+        self.assertFalse(box.physicsCountModeCombo.isHidden())
+        box.physicsCountModeCombo.setCurrentIndex(
+            box.physicsCountModeCombo.findData("automatic")
+        )
+        self.assertTrue(box.intSpinBox.isHidden())
+        self.assertTrue(box.doubleSpinBox.isHidden())
+        self.assertTrue(box.recommendationFrame.isHidden())
 
         box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("global"))
         self.assertEqual(box.modeCombo.currentData(), "r2")
@@ -935,18 +993,62 @@ class TestSparseMessageBoxStrategy(unittest.TestCase):
         self.assertTrue(box.descriptorCombo.isEnabled())
         self.assertFalse(box.r2SpinBox.isHidden())
 
+    def test_physics_recommendation_is_explicit_and_keeps_user_control(self):
+        from PySide6.QtWidgets import QWidget
+
+        self._app = QApplication.instance() or QApplication([])
+        parent = QWidget()
+        box = dialog_module.SparseMessageBox(parent)
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("physics"))
+
+        self.assertFalse(box.recommendationFrame.isHidden())
+        box.set_sampling_recommendation(
+            recommended_count=321,
+            compact_count=280,
+            conservative_count=400,
+            is_lower_bound=True,
+            phase_counts=(("bcc", 200), ("fcc", 121)),
+            magnetic_counts=(("afm", 81), ("noncollinear", 240)),
+        )
+
+        self.assertIn("321", box.recommendationSummary.text())
+        self.assertFalse(box.recommendationWarning.isHidden())
+        self.assertFalse(box.recommendationActions.isHidden())
+        self.assertIn("afm", box._recommendation_details_text)
+        with patch.object(dialog_module, "MessageBox") as details_dialog:
+            box.recommendationDetailsButton.click()
+        details_dialog.assert_called_once()
+        box.useRecommendationButton.click()
+        self.assertEqual(box.intSpinBox.value(), 321)
+
 
 class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
     def setUp(self):
         self._prev_canvas = Config.get("widget", "canvas_type", "pyqtgraph")
         self._prev_training_path = Config.get("widget", "sparse_training_path", "")
         self._prev_strategy = Config.get("widget", "sparse_selection_strategy", "global")
+        self._prev_sampling_mode = Config.get(
+            "widget",
+            "sparse_sampling_mode",
+            "count",
+        )
+        self._prev_physics_count_mode = Config.get(
+            "widget",
+            "sparse_physics_count_mode",
+            "limit",
+        )
         Config.set("widget", "sparse_selection_strategy", "global")
 
     def tearDown(self):
         Config.set("widget", "canvas_type", self._prev_canvas)
         Config.set("widget", "sparse_training_path", self._prev_training_path)
         Config.set("widget", "sparse_selection_strategy", self._prev_strategy)
+        Config.set("widget", "sparse_sampling_mode", self._prev_sampling_mode)
+        Config.set(
+            "widget",
+            "sparse_physics_count_mode",
+            self._prev_physics_count_mode,
+        )
         _OverlayDialogRecorder.last_kwargs = None
         _OverlayDialogRecorder.shown = False
 
@@ -1029,6 +1131,225 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         self.assertEqual(kwargs["descriptor_source"], "raw")
         self.assertEqual(kwargs["sampling_mode"], "count")
         widget.canvas.select_index.assert_called_once_with([1, 4], False)
+
+    def test_sparse_point_passes_physics_strategy_and_reports_strata(self):
+        Config.set("widget", "sparse_selection_strategy", "physics")
+        widget = nep_view_module.NepResultPlotWidget.__new__(
+            nep_view_module.NepResultPlotWidget
+        )
+        widget._parent = None
+        plan = SimpleNamespace(group_count=3, element_set_count=2)
+        data = SimpleNamespace(
+            sparse_point_selection=MagicMock(return_value=([1, 4], False)),
+            _last_sparse_group_report={
+                "a": {"selected_count": 1},
+                "b": {"selected_count": 0},
+                "c": {"selected_count": 1},
+            },
+            _last_sparse_physics_plan=plan,
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+
+        with patch.object(
+            nep_view_module,
+            "SparseMessageBox",
+            return_value=_SparseBox(
+                training_path="",
+                show_overlay=False,
+                selection_strategy="physics",
+            ),
+        ), patch.object(
+            nep_view_module.MessageManager,
+            "send_info_message",
+        ) as send_info:
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        kwargs = data.sparse_point_selection.call_args.kwargs
+        self.assertEqual(kwargs["selection_strategy"], "physics")
+        self.assertEqual(kwargs["descriptor_source"], "raw")
+        self.assertEqual(kwargs["sampling_mode"], "count")
+        self.assertEqual(kwargs["physics_count_mode"], "limit")
+        widget.canvas.select_index.assert_called_once_with([1, 4], False)
+        self.assertIn("covered 2/3", send_info.call_args.args[0])
+
+    def test_sparse_point_passes_automatic_physics_count_mode(self):
+        Config.set("widget", "sparse_selection_strategy", "physics")
+        Config.set("widget", "sparse_physics_count_mode", "automatic")
+        widget = nep_view_module.NepResultPlotWidget.__new__(
+            nep_view_module.NepResultPlotWidget
+        )
+        widget._parent = None
+        data = SimpleNamespace(
+            sparse_point_selection=MagicMock(return_value=([], False)),
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+
+        with patch.object(
+            nep_view_module,
+            "SparseMessageBox",
+            return_value=_SparseBox(
+                training_path="",
+                show_overlay=False,
+                selection_strategy="physics",
+                physics_count_mode="automatic",
+            ),
+        ):
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        kwargs = data.sparse_point_selection.call_args.kwargs
+        self.assertEqual(kwargs["selection_strategy"], "physics")
+        self.assertEqual(kwargs["physics_count_mode"], "automatic")
+
+    def test_sparse_point_reports_final_coverage_r2(self):
+        Config.set("widget", "sparse_sampling_mode", "r2")
+        widget = nep_view_module.NepResultPlotWidget.__new__(
+            nep_view_module.NepResultPlotWidget
+        )
+        widget._parent = None
+        data = SimpleNamespace(
+            sparse_point_selection=MagicMock(return_value=([2, 5], False)),
+            _last_sparse_coverage_r2=0.93456,
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+
+        with patch.object(
+            nep_view_module,
+            "SparseMessageBox",
+            return_value=_SparseBox(
+                training_path="",
+                show_overlay=False,
+                sampling_mode="r2",
+            ),
+        ), patch.object(
+            nep_view_module.MessageManager,
+            "send_info_message",
+        ) as send_info:
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        kwargs = data.sparse_point_selection.call_args.kwargs
+        self.assertEqual(kwargs["selection_strategy"], "global")
+        self.assertEqual(kwargs["sampling_mode"], "r2")
+        widget.canvas.select_index.assert_called_once_with([2, 5], False)
+        self.assertIn("final coverage R^2: 0.9346", send_info.call_args.args[0])
+
+    def test_physics_recommendation_aggregates_all_phase_and_magnetic_groups(self):
+        widget = nep_view_module.NepResultPlotWidget.__new__(
+            nep_view_module.NepResultPlotWidget
+        )
+        widget._parent = None
+        groups = (
+            SimpleNamespace(
+                stratum=SimpleNamespace(phase="bcc", magnetic_order="afm"),
+                recommended_count=7,
+            ),
+            SimpleNamespace(
+                stratum=SimpleNamespace(
+                    phase="fcc",
+                    magnetic_order="noncollinear",
+                ),
+                recommended_count=11,
+            ),
+            SimpleNamespace(
+                stratum=SimpleNamespace(phase="bcc", magnetic_order="afm"),
+                recommended_count=5,
+            ),
+        )
+        recommendation = SimpleNamespace(
+            recommended_count=23,
+            compact_count=18,
+            conservative_count=29,
+            is_lower_bound=False,
+            groups=groups,
+        )
+        data = SimpleNamespace(recommend_physics_sample_count=MagicMock())
+        box = MagicMock()
+        box.regionCheck.isChecked.return_value=True
+        box.trainingPathEdit.text.return_value="train.xyz"
+        task = MagicMock()
+        task.outcome = "succeeded"
+        task.result = recommendation
+        progress_dialog = MagicMock()
+
+        with patch.object(
+            nep_view_module,
+            "BackgroundTask",
+            return_value=task,
+        ), patch.object(
+            nep_view_module,
+            "QProgressDialog",
+            return_value=progress_dialog,
+        ):
+            nep_view_module.NepResultPlotWidget._analyze_physics_sampling_recommendation(
+                widget,
+                data,
+                box,
+            )
+
+        kwargs = box.set_sampling_recommendation.call_args.kwargs
+        self.assertEqual(kwargs["phase_counts"], (("bcc", 12), ("fcc", 11)))
+        self.assertEqual(
+            kwargs["magnetic_counts"],
+            (("afm", 12), ("noncollinear", 11)),
+        )
+        task.start_work.assert_called_once_with(
+            data.recommend_physics_sample_count,
+            restrict_to_selection=True,
+            training_path="train.xyz",
+            policy="balanced",
+        )
+
+    def test_sparse_point_runs_large_show_nep_dataset_in_background_task(self):
+        widget = nep_view_module.NepResultPlotWidget.__new__(
+            nep_view_module.NepResultPlotWidget
+        )
+        widget._parent = None
+        data = SimpleNamespace(
+            structure=SimpleNamespace(
+                num=nep_view_module.SPARSE_BACKGROUND_THRESHOLD
+            ),
+            sparse_point_selection=MagicMock(),
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+        task = MagicMock()
+        task.outcome = "succeeded"
+        task.result = ([7, 9], False)
+        progress_dialog = MagicMock()
+
+        with patch.object(
+            nep_view_module,
+            "SparseMessageBox",
+            return_value=_SparseBox(training_path="", show_overlay=False),
+        ), patch.object(
+            nep_view_module,
+            "BackgroundTask",
+            return_value=task,
+        ), patch.object(
+            nep_view_module,
+            "QProgressDialog",
+            return_value=progress_dialog,
+        ):
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        data.sparse_point_selection.assert_not_called()
+        task.start_work.assert_called_once()
+        self.assertIs(
+            task.start_work.call_args.args[0],
+            data.sparse_point_selection,
+        )
+        progress_dialog.exec.assert_called_once_with()
+        widget.canvas.select_index.assert_called_once_with([7, 9], False)
 
 
 class TestShowNepWidgetArrowCapability(unittest.TestCase):

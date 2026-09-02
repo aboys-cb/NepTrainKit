@@ -305,6 +305,67 @@ def test_adaptive_cna_identifies_bcc_without_mislabeling_common_controls():
         np.testing.assert_array_equal(actual, np.full(len(atoms), expected))
 
 
+def test_native_phase_partition_primitives_match_separate_native_calls():
+    native = phase_sketch_module._native_phase
+    if native is None or not hasattr(native, "phase_partition_primitives"):
+        pytest.skip("native phase-partition primitive is not built")
+    atoms = bulk("Fe", "bcc", a=2.87, cubic=True).repeat((2, 2, 2))
+
+    vectors, indices, valid, labels = native.phase_partition_primitives(
+        atoms.positions,
+        atoms.cell.array,
+        atoms.pbc,
+        32,
+    )
+    expected_vectors, expected_indices, expected_valid = (
+        native.periodic_knn_vectors(
+            atoms.positions,
+            atoms.cell.array,
+            atoms.pbc,
+            32,
+        )
+    )
+    expected_labels = native.adaptive_cna_labels(
+        expected_vectors,
+        expected_indices,
+        expected_valid,
+    )
+
+    np.testing.assert_allclose(vectors, expected_vectors, rtol=0.0, atol=0.0)
+    np.testing.assert_array_equal(indices, expected_indices)
+    np.testing.assert_array_equal(valid, expected_valid)
+    np.testing.assert_array_equal(labels, expected_labels)
+
+
+def test_phase_partition_primitives_keeps_python_fallback(monkeypatch):
+    atoms = bulk("Fe", "bcc", a=2.87, cubic=True).repeat((2, 2, 2))
+    expected_vectors, expected_indices, expected_valid = periodic_knn_vectors(
+        atoms.positions,
+        atoms.cell.array,
+        atoms.pbc,
+        neighbors=32,
+    )
+    expected_labels = _adaptive_cna_reference(
+        expected_vectors,
+        expected_valid,
+    )
+    monkeypatch.setattr(phase_sketch_module, "_native_phase", None)
+
+    vectors, indices, valid, labels = (
+        phase_sketch_module.phase_partition_primitives(
+            atoms.positions,
+            atoms.cell.array,
+            atoms.pbc,
+            neighbors=32,
+        )
+    )
+
+    np.testing.assert_array_equal(vectors, expected_vectors)
+    np.testing.assert_array_equal(indices, expected_indices)
+    np.testing.assert_array_equal(valid, expected_valid)
+    np.testing.assert_array_equal(labels, expected_labels)
+
+
 def test_adaptive_cna_localizes_intrinsic_stacking_fault():
     sequence = "ABCABCABABCABC"
     atoms = _stacked_close_packed(sequence)

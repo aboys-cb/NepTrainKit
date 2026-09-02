@@ -89,6 +89,16 @@ class _SiteTemplate:
 class _PreparedPrototype:
     definition: _PrototypeDefinition
     templates_by_role: tuple[tuple[_SiteTemplate, ...], ...]
+    native_templates: _NativePrototypeTemplates
+
+
+@dataclass(frozen=True)
+class _NativePrototypeTemplates:
+    template_roles: np.ndarray
+    neighbor_counts: np.ndarray
+    shell_sizes: np.ndarray
+    shell_role_counts: np.ndarray
+    descriptors: np.ndarray
 
 
 _REFERENCE_CRYSTALLOGRAPHY = {
@@ -499,6 +509,47 @@ def _template_key(template: _SiteTemplate) -> tuple[object, ...]:
     )
 
 
+def _pack_native_templates(
+    templates_by_role: tuple[tuple[_SiteTemplate, ...], ...],
+) -> _NativePrototypeTemplates:
+    flattened = tuple(
+        (role, template)
+        for role, templates in enumerate(templates_by_role)
+        for template in templates
+    )
+    shell_capacity = max(len(template.shell_sizes) for _role, template in flattened)
+    descriptor_capacity = max(
+        len(template.descriptor) for _role, template in flattened
+    )
+    role_count = len(templates_by_role)
+    template_roles = np.empty(len(flattened), dtype=np.int32)
+    neighbor_counts = np.empty(len(flattened), dtype=np.int32)
+    shell_sizes = np.zeros((len(flattened), shell_capacity), dtype=np.int32)
+    shell_role_counts = np.zeros(
+        (len(flattened), shell_capacity, role_count),
+        dtype=np.int32,
+    )
+    descriptors = np.zeros(
+        (len(flattened), descriptor_capacity),
+        dtype=np.float64,
+    )
+    for row, (role, template) in enumerate(flattened):
+        template_roles[row] = role
+        neighbor_counts[row] = template.neighbor_count
+        shell_sizes[row, : len(template.shell_sizes)] = template.shell_sizes
+        shell_role_counts[row, : len(template.shell_role_counts)] = (
+            template.shell_role_counts
+        )
+        descriptors[row, : len(template.descriptor)] = template.descriptor
+    return _NativePrototypeTemplates(
+        template_roles=template_roles,
+        neighbor_counts=neighbor_counts,
+        shell_sizes=shell_sizes,
+        shell_role_counts=shell_role_counts,
+        descriptors=descriptors,
+    )
+
+
 @lru_cache(maxsize=1)
 def _prepared_prototypes() -> tuple[_PreparedPrototype, ...]:
     prepared: list[_PreparedPrototype] = []
@@ -524,10 +575,12 @@ def _prepared_prototypes() -> tuple[_PreparedPrototype, ...]:
             by_role[template.role].append(template)
         if any(not templates for templates in by_role):
             raise RuntimeError(f"prototype {definition.label} has an empty site role")
+        templates_by_role = tuple(tuple(values) for values in by_role)
         prepared.append(
             _PreparedPrototype(
                 definition=definition,
-                templates_by_role=tuple(tuple(values) for values in by_role),
+                templates_by_role=templates_by_role,
+                native_templates=_pack_native_templates(templates_by_role),
             )
         )
     return tuple(prepared)
@@ -556,7 +609,35 @@ def _candidate_mappings(
     return tuple(mappings)
 
 
-def _match_mapping(
+def _prototype_match_from_metrics(
+    prepared: _PreparedPrototype,
+    geometry_fraction: float,
+    chemistry_fraction: float,
+    joint_fraction: float,
+    mean_rms: float | None,
+) -> PrototypeMatch:
+    confirmed = (
+        geometry_fraction >= _MIN_GEOMETRY_FRACTION
+        and chemistry_fraction >= _MIN_CHEMISTRY_FRACTION
+        and joint_fraction >= _MIN_JOINT_FRACTION
+    )
+    reason = (
+        "local geometry and species-resolved shell occupancies passed"
+        if confirmed
+        else "geometry and chemistry gates did not both pass"
+    )
+    return PrototypeMatch(
+        label=prepared.definition.label,
+        confirmed=confirmed,
+        geometry_match_fraction=geometry_fraction,
+        chemistry_match_fraction=chemistry_fraction,
+        joint_match_fraction=joint_fraction,
+        mean_shape_rms=mean_rms,
+        reason=reason,
+    )
+
+
+def _match_mapping_python(
     prepared: _PreparedPrototype,
     sorted_vectors: np.ndarray,
     sorted_indices: np.ndarray,
@@ -658,24 +739,63 @@ def _match_mapping(
     joint_fraction = float(np.mean(joint))
     finite_rms = rms_values[np.isfinite(rms_values)]
     mean_rms = float(np.mean(finite_rms)) if len(finite_rms) else None
-    confirmed = (
-        geometry_fraction >= _MIN_GEOMETRY_FRACTION
-        and chemistry_fraction >= _MIN_CHEMISTRY_FRACTION
-        and joint_fraction >= _MIN_JOINT_FRACTION
+    return _prototype_match_from_metrics(
+        prepared,
+        geometry_fraction,
+        chemistry_fraction,
+        joint_fraction,
+        mean_rms,
     )
-    reason = (
-        "local geometry and species-resolved shell occupancies passed"
-        if confirmed
-        else "geometry and chemistry gates did not both pass"
+
+
+def _match_mapping(
+    prepared: _PreparedPrototype,
+    sorted_vectors: np.ndarray,
+    sorted_indices: np.ndarray,
+    sorted_valid: np.ndarray,
+    atom_types: np.ndarray,
+    mapping: dict[int, int],
+) -> PrototypeMatch:
+    native = _phase_sketch._native_phase
+    if native is None or not hasattr(
+        native,
+        "common_prototype_mapping_metrics",
+    ):
+        return _match_mapping_python(
+            prepared,
+            sorted_vectors,
+            sorted_indices,
+            sorted_valid,
+            atom_types,
+            mapping,
+        )
+
+    mapped_roles = np.asarray(
+        [mapping[int(value)] for value in atom_types],
+        dtype=np.int32,
     )
-    return PrototypeMatch(
-        label=prepared.definition.label,
-        confirmed=confirmed,
-        geometry_match_fraction=geometry_fraction,
-        chemistry_match_fraction=chemistry_fraction,
-        joint_match_fraction=joint_fraction,
-        mean_shape_rms=mean_rms,
-        reason=reason,
+    templates = prepared.native_templates
+    geometry_fraction, chemistry_fraction, joint_fraction, mean_rms = (
+        native.common_prototype_mapping_metrics(
+            sorted_vectors,
+            sorted_indices,
+            sorted_valid,
+            mapped_roles,
+            templates.template_roles,
+            templates.neighbor_counts,
+            templates.shell_sizes,
+            templates.shell_role_counts,
+            templates.descriptors,
+            float(prepared.definition.local_shape_max_rms),
+            float(_MAX_SHELL_ASSIGNMENT_ERROR_FRACTION),
+        )
+    )
+    return _prototype_match_from_metrics(
+        prepared,
+        float(geometry_fraction),
+        float(chemistry_fraction),
+        float(joint_fraction),
+        None if mean_rms is None else float(mean_rms),
     )
 
 
@@ -698,6 +818,7 @@ def match_common_prototype(
     atom_types: Sequence[int],
     *,
     candidate_labels: Sequence[str] | None = None,
+    _neighbor_data: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
 ) -> PrototypeMatch:
     """Match a fully periodic structure against common crystal prototypes.
 
@@ -744,12 +865,15 @@ def match_common_prototype(
     if not prepared_candidates:
         return unresolved
 
-    vectors, indices, valid = _phase_sketch.accelerated_periodic_knn_vectors(
-        pos,
-        box,
-        periodic,
-        neighbors=_MAX_NEIGHBORS,
-    )
+    if _neighbor_data is None:
+        vectors, indices, valid = _phase_sketch.accelerated_periodic_knn_vectors(
+            pos,
+            box,
+            periodic,
+            neighbors=_MAX_NEIGHBORS,
+        )
+    else:
+        vectors, indices, valid = _neighbor_data
     distances = np.where(valid, np.linalg.norm(vectors, axis=2), np.inf)
     order = np.argsort(distances, axis=1, kind="stable")
     sorted_vectors = np.take_along_axis(vectors, order[:, :, np.newaxis], axis=1)

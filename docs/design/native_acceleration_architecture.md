@@ -17,14 +17,17 @@ src/native/
 │   └── module.cpp              # Audit 批处理与聚合原语
 ├── magnetism/
 │   └── module.cpp              # 磁矩布局与统计原语
-└── phase/
-    └── module.cpp              # PhaseSketch 与候选相细化原语
+├── phase/
+│   └── module.cpp              # PhaseSketch 与候选相细化原语
+└── sampling/
+    └── module.cpp              # FPS 距离场更新原语
 
 src/NepTrainKit/_native/
 ├── _io.*
 ├── _audit.*
 ├── _magnetism.*
-└── _phase.*
+├── _phase.*
+└── _sampling.*
 
 src/NepTrainKit/core/
 └── geometry_cache.py            # 跟随 StructureData 生命周期的只读几何快照
@@ -61,9 +64,10 @@ NEP 模型计算由独立的 `nep-adapters` 运行时提供；它不属于应用
 - `_io`：只解析和索引 EXTXYZ，不理解训练集审查规则。
 - `_audit`：只做批量几何搜索、标签数组聚合和数值统计，不生成产品结论。
 - `_magnetism`：只做磁矩布局识别和批量统计，不决定磁性分类文案。
-- `_phase`：只做局域特征与候选相数值指标，不决定 UI 文案或下一步建议。
+- `_phase`：只做局域特征与候选相数值指标；`phase_partition_primitives` 一次生成可复用邻居场和 a-CNA 标签，`common_prototype_mapping_metrics` 批量计算单个原型映射的几何/化学门槛指标，均不决定物理分层、UI 文案或下一步建议。
+- `_sampling`：只做 FPS 距离场更新，不决定物理分层、配额或产品策略。
 - Python 层负责输入适配、审查阈值、finding、排序、报告和交互。
-- 已下沉且经过验证的热点不保留第二套 Python 算法；原生模块缺失或输入不受支持时明确报错。
+- 原生模块是可选加速层；模块未编译、加载失败或输入不受支持时，保留等价的 Python/NumPy 路径，避免功能整体失效。
 
 一个能力只应进入一个领域模块。只有出现第二个真实调用方的计算原语，才下沉到 `include/neptrainkit/native` 共享层。
 

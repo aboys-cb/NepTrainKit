@@ -18,6 +18,17 @@ from NepTrainKit.core.io import (
     structure_element_set_key,
 )
 from NepTrainKit.core.io.importers import import_structures
+from NepTrainKit.core.io.sampling_plan import (
+    PhysicsSamplingPlan,
+    allocate_physics_quotas,
+    build_physics_sampling_plan,
+    reduced_composition_key,
+)
+from NepTrainKit.core.io.sampling_features import (
+    build_sampling_feature_blocks,
+    representative_sampling_features,
+)
+from NepTrainKit.core.utils import aggregate_per_atom_to_structure
 from NepTrainKit.core.types import parse_nep_backend
 
 from .errors import CardOperationError
@@ -39,20 +50,34 @@ class FPSFilterParams:
 
 @dataclass(frozen=True)
 class FPSGroupReport:
-    """Candidate, warm-start, and selected counts for one element set."""
+    """Candidate, warm-start, and selected counts for one sampling group."""
 
     candidate_count: int
     existing_count: int
     selected_count: int
 
 
+@dataclass(frozen=True)
+class FPSPhysicsPlanReport:
+    """Physical coverage axes detected while planning one FPS run."""
+
+    spin_model: bool
+    candidate_count: int
+    element_set_count: int
+    stratum_count: int
+    phase_counts: tuple[tuple[str, int], ...]
+    magnetic_order_counts: tuple[tuple[str, int], ...]
+    selected_count: int = 0
+
+
 class FPSFilterOperation(DatasetOperation):
     """Select representative structures using NEP descriptors and FPS."""
 
-    VALID_STRATEGIES = {"global", "element_set"}
+    VALID_STRATEGIES = {"global", "element_set", "physics"}
 
     def __init__(self) -> None:
-        self.last_group_report: dict[tuple[str, ...], FPSGroupReport] = {}
+        self.last_group_report: dict[object, FPSGroupReport] = {}
+        self.last_physics_plan_report: FPSPhysicsPlanReport | None = None
 
     @staticmethod
     def _integer(value: object, name: str, *, minimum: int) -> int:
@@ -154,20 +179,35 @@ class FPSFilterOperation(DatasetOperation):
             params,
             require_model=False,
         )
-        groups = cls.group_indices_by_element_set(structures)
+        strategy = settings["strategy"]
+        element_groups = (
+            cls.group_indices_by_element_set(structures)
+            if strategy == "element_set"
+            else {}
+        )
+        physics_element_groups = (
+            cls.group_indices_by_element_set(structures)
+            if strategy == "physics"
+            else {}
+        )
         quotas = (
             cls.allocate_sqrt_quotas(
-                {key: len(indices) for key, indices in groups.items()},
+                {key: len(indices) for key, indices in element_groups.items()},
                 settings["n_samples"],
             )
-            if settings["strategy"] == "element_set" and structures
+            if element_groups
             else {}
         )
         return {
             "input_count": len(structures),
             "max_output": min(settings["n_samples"], len(structures)),
-            "strategy": settings["strategy"],
-            "group_count": len(groups),
+            "strategy": strategy,
+            "group_count": (
+                len(physics_element_groups)
+                if strategy == "physics"
+                else len(element_groups)
+            ),
+            "element_set_count": len(physics_element_groups),
             "quotas": quotas,
             "model_exists": settings["model_path"].is_file(),
             "model_name": settings["model_path"].name or str(settings["model_path"]),
@@ -188,6 +228,7 @@ class FPSFilterOperation(DatasetOperation):
 
     def run_dataset(self, dataset, params: FPSFilterParams) -> list:
         self.last_group_report = {}
+        self.last_physics_plan_report = None
         if not dataset:
             return []
         structures = list(dataset)
@@ -202,13 +243,21 @@ class FPSFilterOperation(DatasetOperation):
             backend=settings["backend"],
             chunk_max_atoms=settings["chunk_max_atoms"],
         )
-        desc_array = self._validate_descriptors(
-            nep_calc.descriptors(structures),
-            len(structures),
-            "candidate",
-        )
+        physics_plan = None
+        if settings["strategy"] == "physics":
+            physics_plan = self._build_physics_plan(
+                structures,
+                spin_model=bool(nep_calc.is_spin_model),
+                field="candidate set",
+            )
+            self._validate_physics_budget(
+                physics_plan,
+                n_samples=settings["n_samples"],
+                candidate_count=len(structures),
+            )
         existing_structures: list = []
         existing_descriptors = None
+        existing_physics_plan = None
         existing_path = settings["existing_path"]
         if existing_path is not None:
             if not existing_path.exists():
@@ -224,15 +273,94 @@ class FPSFilterOperation(DatasetOperation):
                 raise ValueError(
                     "FPS Filter: existing training dataset contains an empty structure."
                 )
-            existing_descriptors = self._validate_descriptors(
-                nep_calc.descriptors(existing_structures),
-                len(existing_structures),
-                "existing",
+            if settings["strategy"] == "physics":
+                existing_physics_plan = self._build_physics_plan(
+                    existing_structures,
+                    spin_model=bool(nep_calc.is_spin_model),
+                    field="existing training set",
+                )
+
+        candidate_atomic_descriptors = None
+        if settings["strategy"] == "physics":
+            candidate_atomic_descriptors = np.asarray(
+                nep_calc.descriptors(structures, mean=False),
+                dtype=float,
             )
+            desc_array = self._validate_descriptors(
+                aggregate_per_atom_to_structure(
+                    candidate_atomic_descriptors,
+                    [len(structure) for structure in structures],
+                    map_func=np.mean,
+                    axis=0,
+                ),
+                len(structures),
+                "candidate",
+            )
+        else:
+            desc_array = self._validate_descriptors(
+                nep_calc.descriptors(structures),
+                len(structures),
+                "candidate",
+            )
+        existing_atomic_descriptors = None
+        if existing_structures:
+            if settings["strategy"] == "physics":
+                existing_atomic_descriptors = np.asarray(
+                    nep_calc.descriptors(existing_structures, mean=False),
+                    dtype=float,
+                )
+                existing_descriptors = self._validate_descriptors(
+                    aggregate_per_atom_to_structure(
+                        existing_atomic_descriptors,
+                        [len(structure) for structure in existing_structures],
+                        map_func=np.mean,
+                        axis=0,
+                    ),
+                    len(existing_structures),
+                    "existing",
+                )
+            else:
+                existing_descriptors = self._validate_descriptors(
+                    nep_calc.descriptors(existing_structures),
+                    len(existing_structures),
+                    "existing",
+                )
             if existing_descriptors.shape[1] != desc_array.shape[1]:
                 raise ValueError(
                     "FPS Filter: candidate and existing descriptor dimensions differ."
                 )
+
+        if settings["strategy"] == "physics":
+            assert physics_plan is not None
+            candidate_blocks = build_sampling_feature_blocks(
+                structures,
+                desc_array,
+                per_atom_descriptors=candidate_atomic_descriptors,
+                spin_model=bool(nep_calc.is_spin_model),
+            )
+            existing_blocks = (
+                None
+                if existing_descriptors is None
+                else build_sampling_feature_blocks(
+                    existing_structures,
+                    existing_descriptors,
+                    per_atom_descriptors=existing_atomic_descriptors,
+                    spin_model=bool(nep_calc.is_spin_model),
+                )
+            )
+            desc_array, existing_descriptors = representative_sampling_features(
+                candidate_blocks,
+                existing_blocks,
+            )
+            return self._run_physics_fps(
+                structures,
+                desc_array,
+                settings["n_samples"],
+                settings["min_distance"],
+                physics_plan,
+                existing_descriptors,
+                existing_physics_plan,
+            )
 
         if settings["strategy"] == "element_set":
             return self._run_element_set_fps(
@@ -251,6 +379,126 @@ class FPSFilterOperation(DatasetOperation):
             selected_data=existing_descriptors,
         )
         return [structures[i] for i in remaining_indices]
+
+    @staticmethod
+    def _build_physics_plan(
+        structures,
+        *,
+        spin_model: bool,
+        field: str,
+    ) -> PhysicsSamplingPlan:
+        try:
+            plan = build_physics_sampling_plan(
+                structures,
+                spin_model=spin_model,
+            )
+        except (RuntimeError, ValueError) as exc:
+            raise CardOperationError(
+                "fps.physics_analysis_unavailable",
+                "Physics-aware FPS could not classify the {field}: {error}",
+                field=field,
+                error=str(exc),
+            ) from exc
+        if spin_model and plan.missing_spin_indices:
+            first = plan.missing_spin_indices[0] + 1
+            raise CardOperationError(
+                "fps.spin_input_missing",
+                "The detected spin model requires canonical spin:R:3 data, but "
+                "{count} structures in the {field} are missing valid spin vectors "
+                "(first structure: {first}).",
+                count=len(plan.missing_spin_indices),
+                field=field,
+                first=first,
+            )
+        return plan
+
+    @staticmethod
+    def _validate_physics_budget(
+        plan: PhysicsSamplingPlan,
+        *,
+        n_samples: int,
+        candidate_count: int,
+    ) -> None:
+        budget = min(int(n_samples), int(candidate_count))
+        if budget >= plan.group_count:
+            return
+        raise CardOperationError(
+            "fps_budget_smaller_than_physics_strata",
+            "Maximum output {budget} is smaller than the {strata} observed "
+            "element-set/phase/magnetic-order strata. Increase the output "
+            "limit to preserve every observed physical stratum.",
+            budget=budget,
+            strata=plan.group_count,
+        )
+
+    def _run_physics_fps(
+        self,
+        dataset,
+        descriptors,
+        n_samples: int,
+        min_distance: float,
+        plan: PhysicsSamplingPlan,
+        existing_descriptors,
+        existing_plan: PhysicsSamplingPlan | None,
+    ) -> list:
+        groups = plan.group_indices()
+        try:
+            quotas = allocate_physics_quotas(
+                {key: len(indices) for key, indices in groups.items()},
+                n_samples,
+            )
+        except ValueError as exc:
+            raise CardOperationError(
+                "fps_budget_smaller_than_physics_strata",
+                "Could not allocate the physics-aware FPS budget: {error}",
+                error=str(exc),
+            ) from exc
+
+        existing_groups = (
+            existing_plan.group_indices() if existing_plan is not None else {}
+        )
+        selected_global_indices: list[int] = []
+        for key in sorted(groups):
+            candidate_indices = groups[key]
+            candidate_descriptors = np.asarray(
+                descriptors[candidate_indices],
+                dtype=float,
+            )
+            warm_indices = existing_groups.get(key, [])
+            warm_descriptors = (
+                np.asarray(existing_descriptors[warm_indices], dtype=float)
+                if existing_descriptors is not None and warm_indices
+                else None
+            )
+            local_indices = self.centered_fps(
+                candidate_descriptors,
+                n_samples=quotas[key],
+                min_dist=min_distance,
+                selected_data=warm_descriptors,
+            )
+            chosen = [candidate_indices[index] for index in local_indices]
+            selected_global_indices.extend(chosen)
+            self.last_group_report[key] = FPSGroupReport(
+                candidate_count=len(candidate_indices),
+                existing_count=len(warm_indices),
+                selected_count=len(chosen),
+            )
+
+        self.last_physics_plan_report = FPSPhysicsPlanReport(
+            spin_model=plan.spin_model,
+            candidate_count=len(dataset),
+            element_set_count=plan.element_set_count,
+            stratum_count=plan.group_count,
+            phase_counts=plan.phase_counts,
+            magnetic_order_counts=plan.magnetic_order_counts,
+            selected_count=len(selected_global_indices),
+        )
+        selected_set = set(selected_global_indices)
+        return [
+            structure
+            for index, structure in enumerate(dataset)
+            if index in selected_set
+        ]
 
     def _run_element_set_fps(
         self,
@@ -308,6 +556,17 @@ class FPSFilterOperation(DatasetOperation):
         groups: dict[tuple[str, ...], list[int]] = {}
         for index, structure in enumerate(structures):
             groups.setdefault(cls.element_set_key(structure), []).append(index)
+        return groups
+
+    @classmethod
+    def group_indices_by_composition(
+        cls,
+        structures,
+    ) -> dict[tuple[tuple[str, int], ...], list[int]]:
+        """Group structure indices by exact normalized stoichiometry."""
+        groups: dict[tuple[tuple[str, int], ...], list[int]] = {}
+        for index, structure in enumerate(structures):
+            groups.setdefault(reduced_composition_key(structure), []).append(index)
         return groups
 
     @staticmethod

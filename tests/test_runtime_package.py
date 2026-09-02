@@ -61,6 +61,7 @@ def test_native_health_command_imports_all_helpers(monkeypatch) -> None:
         "NepTrainKit._native._audit",
         "NepTrainKit._native._phase",
         "NepTrainKit._native._magnetism",
+        "NepTrainKit._native._sampling",
     ]
 
 

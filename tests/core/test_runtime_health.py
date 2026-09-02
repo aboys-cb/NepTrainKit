@@ -31,7 +31,10 @@ def test_runtime_health_reports_native_and_adapter_capabilities():
     ):
         report = runtime_health.inspect_runtime_health()
 
-    assert report.native_available_count == 3
+    assert report.native_available_count == len(runtime_health.NATIVE_HELPER_MODULES) - 1
+    native_status = {capability.name: capability for capability in report.native}
+    assert native_status["_sampling"].available
+    assert not native_status["_phase"].available
     assert not report.native_complete
     assert report.adapters_version == "1.2.3"
     assert report.cpu.available

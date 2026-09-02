@@ -225,6 +225,76 @@ def test_phase_inventory_uses_the_same_confirmed_prototype_contract(label, facto
     assert result.confidence_state == "strong"
 
 
+@pytest.mark.skipif(
+    prototype_registry._phase_sketch._native_phase is None
+    or not hasattr(
+        prototype_registry._phase_sketch._native_phase,
+        "common_prototype_mapping_metrics",
+    ),
+    reason="native common-prototype primitive is not built",
+)
+@pytest.mark.parametrize(("label", "factory"), _FACTORIES.items())
+def test_native_common_prototype_mapping_matches_python_fallback(label, factory):
+    atoms = factory()
+    vectors, indices, valid = (
+        prototype_registry._phase_sketch.accelerated_periodic_knn_vectors(
+            atoms.positions,
+            atoms.cell.array,
+            atoms.pbc,
+            neighbors=prototype_registry._MAX_NEIGHBORS,
+        )
+    )
+    distances = np.where(valid, np.linalg.norm(vectors, axis=2), np.inf)
+    order = np.argsort(distances, axis=1, kind="stable")
+    sorted_vectors = np.take_along_axis(
+        vectors,
+        order[:, :, np.newaxis],
+        axis=1,
+    )
+    sorted_indices = np.take_along_axis(indices, order, axis=1)
+    sorted_valid = np.take_along_axis(valid, order, axis=1)
+    prepared = next(
+        item
+        for item in prototype_registry._prepared_prototypes()
+        if item.definition.label == label
+    )
+    atom_types = np.asarray(atoms.numbers, dtype=np.int32)
+    mappings = prototype_registry._candidate_mappings(
+        atom_types,
+        prepared.definition.role_counts,
+    )
+
+    for mapping in mappings:
+        native = prototype_registry._match_mapping(
+            prepared,
+            sorted_vectors,
+            sorted_indices,
+            sorted_valid,
+            atom_types,
+            mapping,
+        )
+        fallback = prototype_registry._match_mapping_python(
+            prepared,
+            sorted_vectors,
+            sorted_indices,
+            sorted_valid,
+            atom_types,
+            mapping,
+        )
+
+        assert native.confirmed == fallback.confirmed
+        assert native.geometry_match_fraction == fallback.geometry_match_fraction
+        assert native.chemistry_match_fraction == fallback.chemistry_match_fraction
+        assert native.joint_match_fraction == fallback.joint_match_fraction
+        if fallback.mean_shape_rms is None:
+            assert native.mean_shape_rms is None
+        else:
+            assert native.mean_shape_rms == pytest.approx(
+                fallback.mean_shape_rms,
+                abs=2.0e-7,
+            )
+
+
 @pytest.mark.parametrize(("label", "factory"), _FACTORIES.items())
 @pytest.mark.parametrize("seed", (17, 4312, 90817))
 def test_thermal_scale_distortion_keeps_the_correct_label(label, factory, seed):
@@ -568,6 +638,11 @@ def test_large_structure_shape_descriptors_are_evaluated_in_bounded_batches(
         prototype_registry,
         "_batch_shape_descriptors",
         record_batch,
+    )
+    monkeypatch.setattr(
+        prototype_registry,
+        "_match_mapping",
+        prototype_registry._match_mapping_python,
     )
 
     result = match_common_prototype(

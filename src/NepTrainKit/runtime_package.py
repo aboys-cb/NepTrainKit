@@ -31,7 +31,7 @@ from packaging.version import InvalidVersion, Version
 PYPI_JSON_URL = "https://pypi.org/pypi/{distribution}/json"
 HEALTH_CHECK_FLAG = "--neptrainkit-runtime-health-check"
 NATIVE_HEALTH_CHECK_FLAG = "--neptrainkit-native-health-check"
-NATIVE_HELPER_MODULES = ("_io", "_audit", "_phase", "_magnetism")
+NATIVE_HELPER_MODULES = ("_io", "_audit", "_phase", "_magnetism", "_sampling")
 
 
 class RuntimePackageError(RuntimeError):

@@ -132,7 +132,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "FPS Sampling"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Select a representative NEP-descriptor subset with global or element-set-balanced budgets and optional existing coverage.",
+                "Select a representative NEP-descriptor subset with global, element-set, or composition-phase-spin coverage plans.",
             ),
         ),
         "FoldedHelixCard": (

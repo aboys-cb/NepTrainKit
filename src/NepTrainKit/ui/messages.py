@@ -323,6 +323,22 @@ def _card_operation_error_catalog() -> None:
     """Literal catalog for structured card errors discovered by lupdate."""
     QCoreApplication.translate(
         "CardOperationError",
+        "Physics-aware FPS could not classify the {field}: {error}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "The detected spin model requires canonical spin:R:3 data, but {count} structures in the {field} are missing valid spin vectors (first structure: {first}).",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Maximum output {budget} is smaller than the {strata} observed composition/phase/magnetic-order strata. Increase the output limit to preserve every observed physical stratum.",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
+        "Could not allocate the physics-aware FPS budget: {error}",
+    )
+    QCoreApplication.translate(
+        "CardOperationError",
         "Could not build surface plane {hkl} with {repeats} normal repeats and {vacuum} Å vacuum per side: {reason}",
     )
     QCoreApplication.translate("CardOperationError", "Surface Slab Scan requires a non-empty bulk structure.")
@@ -1362,6 +1378,8 @@ def _card_operation_error_catalog() -> None:
 
 def _card_operation_field_catalog() -> None:
     """Literal field names interpolated into structured card errors."""
+    QCoreApplication.translate("CardOperationField", "candidate set")
+    QCoreApplication.translate("CardOperationField", "existing training set")
     QCoreApplication.translate("CardOperationField", "Maximum outputs per input")
     QCoreApplication.translate("CardOperationField", "Bonds rotated per output")
     QCoreApplication.translate("CardOperationField", "Large-molecule threshold")

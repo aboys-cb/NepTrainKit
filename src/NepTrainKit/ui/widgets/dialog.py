@@ -23,11 +23,13 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
 )
-from PySide6.QtCore import Signal, Qt, QUrl, QEvent, QPropertyAnimation, QEasingCurve, QTimer
+from PySide6.QtCore import Signal, Qt, QUrl, QEvent, QPropertyAnimation, QEasingCurve, QTimer, QLocale
 from qfluentwidgets import (
     MessageBoxBase,
+    SimpleCardWidget,
     SpinBox,
     CaptionLabel,
+    StrongBodyLabel,
     DoubleSpinBox,
     CheckBox,
     ProgressBar,
@@ -49,6 +51,7 @@ from qfluentwidgets import (
     FluentIcon,
     ToolTipFilter,
     ToolTipPosition,
+    ScrollArea,
 )
 import json
 import html
@@ -237,14 +240,20 @@ class GetStrMessageBox(MessageBoxBase):
 class SparseMessageBox(MessageBoxBase):
     """Dialog for configuring sparsity-related parameters."""
 
+    recommendationRequested = Signal()
+
     def __init__(self, parent=None, tip=""):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel = StrongBodyLabel(tip, self)
         self.titleLabel.setWordWrap(True)
-        self._frame = QFrame(self)
+        self._frame = SimpleCardWidget(self)
+        self._frame.setBorderRadius(8)
         self.frame_layout = QGridLayout(self._frame)
-        self.frame_layout.setContentsMargins(0, 0, 0, 0)
-        self.frame_layout.setSpacing(4)
+        self.frame_layout.setContentsMargins(14, 12, 14, 12)
+        self.frame_layout.setHorizontalSpacing(14)
+        self.frame_layout.setVerticalSpacing(8)
+        self.frame_layout.setColumnMinimumWidth(0, 132)
+        self.frame_layout.setColumnStretch(1, 1)
         self.intSpinBox = SpinBox(self)
 
         self.intSpinBox.setMaximum(9999999)
@@ -260,27 +269,49 @@ class SparseMessageBox(MessageBoxBase):
             self.tr("Element-set balanced FPS"),
             userData="element_set",
         )
+        self.strategyCombo.addItem(
+            self.tr("Element set / phase / spin FPS"),
+            userData="physics",
+        )
         self.strategyHint = CaptionLabel("", self)
         self.strategyHint.setWordWrap(True)
-        self.frame_layout.addWidget(CaptionLabel(self.tr("Selection strategy"), self), 0, 0, 1, 1)
+        self.strategyLabel = CaptionLabel(self.tr("Selection strategy"), self)
+        self.frame_layout.addWidget(self.strategyLabel, 0, 0, 1, 1)
         self.frame_layout.addWidget(self.strategyCombo, 0, 1, 1, 2)
         self.frame_layout.addWidget(self.strategyHint, 1, 1, 1, 2)
 
         self.modeCombo = ComboBox(self)
         self.modeCombo.addItem(self.tr("Fixed count (FPS)"), userData="count")
-        self.modeCombo.addItem(self.tr("R^2 stop (FPS)"), userData="r2")
+        self.modeCombo.addItem(self.tr("Coverage R^2 stop (FPS)"), userData="r2")
         self.modeLabel = CaptionLabel(self.tr("Sampling mode"), self)
         self.frame_layout.addWidget(self.modeLabel, 2, 0, 1, 1)
         self.frame_layout.addWidget(self.modeCombo, 2, 1, 1, 2)
 
+        self.physicsCountModeCombo = ComboBox(self)
+        self.physicsCountModeCombo.addItem(
+            self.tr("User-defined total limit"),
+            userData="limit",
+        )
+        self.physicsCountModeCombo.addItem(
+            self.tr("Automatic descriptor coverage"),
+            userData="automatic",
+        )
+        self.physicsCountModeLabel = CaptionLabel(
+            self.tr("Physics sample count"),
+            self,
+        )
+        self.frame_layout.addWidget(self.physicsCountModeLabel, 2, 0, 1, 1)
+        self.frame_layout.addWidget(self.physicsCountModeCombo, 2, 1, 1, 2)
+
         self.maxNumLabel = CaptionLabel(self.tr("Sample limit"), self)
         self.frame_layout.addWidget(self.maxNumLabel, 3, 0, 1, 1)
         self.frame_layout.addWidget(self.intSpinBox, 3, 1, 1, 2)
-        self.frame_layout.addWidget(CaptionLabel(self.tr("Min distance"), self), 4, 0, 1, 1)
+        self.minDistanceLabel = CaptionLabel(self.tr("Min distance"), self)
+        self.frame_layout.addWidget(self.minDistanceLabel, 4, 0, 1, 1)
 
         self.frame_layout.addWidget(self.doubleSpinBox, 4, 1, 1, 2)
 
-        self.r2Label = CaptionLabel(self.tr("R^2 threshold"), self)
+        self.r2Label = CaptionLabel(self.tr("Coverage R^2 threshold"), self)
         self.r2SpinBox = DoubleSpinBox(self)
         self.r2SpinBox.setDecimals(4)
         self.r2SpinBox.setRange(0.0, 1.0)
@@ -295,11 +326,65 @@ class SparseMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.descriptorLabel, 6, 0, 1, 1)
         self.frame_layout.addWidget(self.descriptorCombo, 6, 1, 1, 2)
 
-        self.advancedFrame = QFrame(self)
+        self.recommendationFrame = SimpleCardWidget(self)
+        self.recommendationFrame.setBorderRadius(8)
+        self.recommendationLayout = QVBoxLayout(self.recommendationFrame)
+        self.recommendationLayout.setContentsMargins(14, 12, 14, 12)
+        self.recommendationLayout.setSpacing(8)
+        self.recommendButton = PushButton(
+            self.tr("Analyze recommended count"),
+            self.recommendationFrame,
+        )
+        self.recommendButton.setIcon(FluentIcon.SEARCH)
+        self.recommendButton.setFixedHeight(32)
+        self.recommendButton.setSizePolicy(
+            QSizePolicy.Policy.Fixed,
+            QSizePolicy.Policy.Fixed,
+        )
+        self.recommendButton.setAccessibleName(
+            self.tr("Analyze recommended count")
+        )
+        self.recommendationSummary = CaptionLabel(
+            "",
+            self.recommendationFrame,
+        )
+        self.recommendationSummary.setWordWrap(True)
+        self.recommendationSummary.setVisible(False)
+        self.recommendationWarning = CaptionLabel("", self.recommendationFrame)
+        self.recommendationWarning.setWordWrap(True)
+        self.recommendationWarning.setVisible(False)
+        self.recommendationActions = QWidget(self.recommendationFrame)
+        recommendation_actions_layout = QHBoxLayout(self.recommendationActions)
+        recommendation_actions_layout.setContentsMargins(0, 0, 0, 0)
+        recommendation_actions_layout.setSpacing(8)
+        self.useRecommendationButton = PushButton(
+            self.tr("Use recommended count"),
+            self.recommendationActions,
+        )
+        self.recommendationDetailsButton = PushButton(
+            self.tr("Show breakdown"),
+            self.recommendationActions,
+        )
+        recommendation_actions_layout.addWidget(self.useRecommendationButton)
+        recommendation_actions_layout.addWidget(self.recommendationDetailsButton)
+        self.recommendationActions.setVisible(False)
+        self.recommendationLayout.addWidget(
+            self.recommendButton,
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        self.recommendationLayout.addWidget(self.recommendationSummary)
+        self.recommendationLayout.addWidget(self.recommendationWarning)
+        self.recommendationLayout.addWidget(self.recommendationActions)
+
+        self.advancedFrame = SimpleCardWidget(self)
+        self.advancedFrame.setBorderRadius(8)
         self.advancedFrame.setVisible(False)
         self.advancedLayout = QGridLayout(self.advancedFrame)
-        self.advancedLayout.setContentsMargins(0, 0, 0, 0)
-        self.advancedLayout.setSpacing(4)
+        self.advancedLayout.setContentsMargins(14, 12, 14, 12)
+        self.advancedLayout.setHorizontalSpacing(10)
+        self.advancedLayout.setVerticalSpacing(8)
+        self.advancedLayout.setColumnMinimumWidth(0, 132)
+        self.advancedLayout.setColumnStretch(1, 1)
 
         self.trainingPathEdit = LineEdit(self)
         self.trainingPathEdit.setPlaceholderText(self.tr("Optional training dataset path (.xyz or folder)"))
@@ -334,21 +419,138 @@ class SparseMessageBox(MessageBoxBase):
         )
         self.trainingOverlayCheck.installEventFilter(ToolTipFilter(self.trainingOverlayCheck, 300, ToolTipPosition.TOP))
 
-        self.viewLayout.addWidget(self.titleLabel)
-        self.viewLayout.addWidget(self._frame)
-        self.viewLayout.addWidget(self.advancedFrame)
-        self.viewLayout.addWidget(self.regionCheck)
-        self.viewLayout.addWidget(self.trainingOverlayCheck)
+        self.advancedLayout.addWidget(self.regionCheck, 2, 0, 1, 2)
+        self.advancedLayout.addWidget(self.trainingOverlayCheck, 3, 0, 1, 2)
+
+        self.contentWidget = QWidget(self)
+        self.contentWidget.setObjectName("sparseDialogContent")
+        self.contentLayout = QVBoxLayout(self.contentWidget)
+        self.contentLayout.setContentsMargins(0, 0, 0, 0)
+        self.contentLayout.setSpacing(10)
+        self.contentLayout.addWidget(self.titleLabel)
+        self.contentLayout.addWidget(self._frame)
+        self.contentLayout.addWidget(self.recommendationFrame)
+        self.contentLayout.addWidget(self.advancedFrame)
+        self.contentScrollArea = ScrollArea(self)
+        self.contentScrollArea.setWidgetResizable(True)
+        self.contentScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.contentScrollArea.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.contentScrollArea.setWidget(self.contentWidget)
+        self.contentScrollArea.enableTransparentBackground()
+        self.contentScrollArea.viewport().setStyleSheet("background: transparent;")
+        self.contentWidget.setStyleSheet(
+            "QWidget#sparseDialogContent { background: transparent; }"
+        )
+        self.viewLayout.addWidget(self.contentScrollArea)
 
         self.yesButton.setText(self.tr("OK"))
         self.cancelButton.setText(self.tr("Cancel"))
 
-        self.widget.setMinimumWidth(420)
+        self.widget.setMinimumWidth(560)
         self.advancedFrame.setVisible(True)
-        self._balanced_strategy_active = False
+        self._structured_strategy_active = False
         self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
+        self.physicsCountModeCombo.currentIndexChanged.connect(
+            self._update_mode_visibility
+        )
         self.strategyCombo.currentIndexChanged.connect(self._update_strategy_visibility)
+        self.recommendButton.clicked.connect(self.recommendationRequested.emit)
+        self.useRecommendationButton.clicked.connect(self._use_recommended_count)
+        self.recommendationDetailsButton.clicked.connect(
+            self._show_recommendation_details
+        )
+        self._recommended_count = None
+        self._recommendation_details_text = ""
         self._update_strategy_visibility()
+
+    def set_recommendation_pending(self, pending: bool) -> None:
+        """Expose long-running recommendation work without blocking the dialog."""
+        self.recommendButton.setEnabled(not pending)
+        self.recommendButton.setText(
+            self.tr("Analyzing physical coverage...")
+            if pending
+            else self.tr("Analyze recommended count")
+        )
+
+    def set_sampling_recommendation(
+        self,
+        *,
+        recommended_count: int,
+        compact_count: int,
+        conservative_count: int,
+        is_lower_bound: bool,
+        phase_counts: tuple[tuple[str, int], ...],
+        magnetic_counts: tuple[tuple[str, int], ...],
+    ) -> None:
+        """Show one recommendation while leaving application to the user."""
+        locale = QLocale()
+        self._recommended_count = int(recommended_count)
+        recommended = locale.toString(int(recommended_count))
+        compact = locale.toString(int(compact_count))
+        conservative = locale.toString(int(conservative_count))
+        if is_lower_bound:
+            self.recommendationSummary.setText(
+                self.tr(
+                    "Suggested at least {recommended} structures; analyzed range {compact}-{conservative}."
+                ).format(
+                    recommended=recommended,
+                    compact=compact,
+                    conservative=conservative,
+                )
+            )
+            self.recommendationWarning.setText(
+                self.tr(
+                    "Some physical strata reached the analysis cap. This is a "
+                    "descriptor-coverage lower bound, not a converged scientific optimum."
+                )
+            )
+            self.recommendationWarning.setVisible(True)
+        else:
+            self.recommendationSummary.setText(
+                self.tr(
+                    "Suggested {recommended} structures; coverage range {compact}-{conservative}."
+                ).format(
+                    recommended=recommended,
+                    compact=compact,
+                    conservative=conservative,
+                )
+            )
+            self.recommendationWarning.setVisible(False)
+        self.recommendationSummary.setVisible(True)
+        phase_text = ", ".join(
+            f"{name}: {locale.toString(int(count))}"
+            for name, count in phase_counts
+        )
+        magnetic_text = ", ".join(
+            f"{name}: {locale.toString(int(count))}"
+            for name, count in magnetic_counts
+        )
+        details = [self.tr("Phase: {items}").format(items=phase_text)]
+        if magnetic_text:
+            details.append(
+                self.tr("Magnetic order: {items}").format(items=magnetic_text)
+            )
+        self._recommendation_details_text = "\n".join(details)
+        self.recommendationActions.setVisible(True)
+        self.set_recommendation_pending(False)
+
+    def _use_recommended_count(self) -> None:
+        if self._recommended_count is not None:
+            self.intSpinBox.setValue(int(self._recommended_count))
+
+    def _show_recommendation_details(self) -> None:
+        if not self._recommendation_details_text:
+            return
+        dialog = MessageBox(
+            self.tr("Recommended allocation"),
+            self._recommendation_details_text,
+            self,
+        )
+        dialog.yesButton.setText(self.tr("OK"))
+        dialog.cancelButton.hide()
+        dialog.exec()
 
     def _pick_training_path(self):
         """Prompt the user to choose a training dataset path."""
@@ -365,40 +567,63 @@ class SparseMessageBox(MessageBoxBase):
 
     def _update_mode_visibility(self):
         """Toggle UI elements based on sampling mode selection."""
-        balanced = self.strategyCombo.currentData() == "element_set"
-        r2_mode = not balanced and self.modeCombo.currentData() == "r2"
-        self.maxNumLabel.setVisible(True)
-        self.intSpinBox.setVisible(True)
+        strategy = self.strategyCombo.currentData()
+        structured = strategy in {"element_set", "physics"}
+        physics = strategy == "physics"
+        automatic = physics and self.physicsCountModeCombo.currentData() == "automatic"
+        r2_mode = not structured and self.modeCombo.currentData() == "r2"
+        self.physicsCountModeLabel.setVisible(physics)
+        self.physicsCountModeCombo.setVisible(physics)
+        self.maxNumLabel.setVisible(not automatic)
+        self.intSpinBox.setVisible(not automatic)
+        self.minDistanceLabel.setVisible(not automatic)
+        self.doubleSpinBox.setVisible(not automatic)
         self.r2Label.setVisible(r2_mode)
         self.r2SpinBox.setVisible(r2_mode)
+        self.recommendationFrame.setVisible(physics and not automatic)
 
     def _update_strategy_visibility(self):
-        """Keep balanced FPS on the validated raw, fixed-count workflow."""
-        balanced = self.strategyCombo.currentData() == "element_set"
-        if balanced and not self._balanced_strategy_active:
+        """Keep structured FPS on the validated raw-descriptor workflow."""
+        strategy = self.strategyCombo.currentData()
+        structured = strategy in {"element_set", "physics"}
+        if structured and not self._structured_strategy_active:
             self._global_mode_index = self.modeCombo.currentIndex()
             self._global_descriptor_index = self.descriptorCombo.currentIndex()
-        elif not balanced and self._balanced_strategy_active:
+        elif not structured and self._structured_strategy_active:
             self.modeCombo.setCurrentIndex(getattr(self, "_global_mode_index", 0))
             self.descriptorCombo.setCurrentIndex(
                 getattr(self, "_global_descriptor_index", 0)
             )
 
-        self._balanced_strategy_active = balanced
-        if balanced:
+        self._structured_strategy_active = structured
+        if structured:
             self.modeCombo.setCurrentIndex(self.modeCombo.findData("count"))
             self.descriptorCombo.setCurrentIndex(self.descriptorCombo.findData("raw"))
+        if strategy == "element_set":
             self.strategyHint.setText(
                 self.tr(
                     "Groups by element set, assigns sqrt-size quotas, and uses raw descriptors."
                 )
             )
+        elif strategy == "physics":
+            self.strategyHint.setText(
+                self.tr(
+                    "Partitions by element set, phase, and magnetic order, then "
+                    "samples local environments with raw descriptors."
+                )
+            )
         else:
             self.strategyHint.setText(
-                self.tr("Uses the existing global FPS behavior and descriptor options.")
+                self.tr(
+                    "Uses one global FPS budget with descriptor and coverage-R^2 options."
+                )
             )
-        self.modeCombo.setEnabled(not balanced)
-        self.descriptorCombo.setEnabled(not balanced)
+        self.modeCombo.setEnabled(not structured)
+        self.descriptorCombo.setEnabled(not structured)
+        self.modeLabel.setVisible(not structured)
+        self.modeCombo.setVisible(not structured)
+        self.descriptorLabel.setVisible(not structured)
+        self.descriptorCombo.setVisible(not structured)
         self._update_mode_visibility()
 
 

@@ -2618,6 +2618,20 @@ class ResultData(DistributionAnalysisMixin, QObject):
             selection_strategy=selection_strategy,
         )
 
+    def recommend_physics_sample_count(
+        self,
+        *,
+        restrict_to_selection: bool = False,
+        training_path: str | None = None,
+        policy: str = "balanced",
+    ):
+        """Return a descriptor-coverage recommendation for physics-aware FPS."""
+        return self._sampler.recommend_physics_sample_count(
+            restrict_to_selection=restrict_to_selection,
+            training_path=training_path,
+            policy=policy,
+        )
+
     def export_descriptor_data(self, path: str | Path) -> None:
         """Write descriptor values for the current selection to ``path``."""
         if len(self.select_index) == 0:
@@ -2811,8 +2825,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
             except Exception:
                 desc_array = np.array([])
 
+        atomic_desc_array = np.array([], dtype=np.float32)
         if desc_array.size != 0:
             if desc_array.shape[0] == np.sum(self.atoms_num_list):
+                atomic_desc_array = np.asarray(desc_array, dtype=np.float32)
                 desc_array = aggregate_per_atom_to_structure(desc_array, self.atoms_num_list, map_func=np.mean, axis=0)
             elif desc_array.shape[0] == self.atoms_num_list.shape[0]:
                 pass
@@ -2840,8 +2856,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
         if desc_array.size != 0:
             # Ensure float32 and store an immutable copy for later masking
             self._descriptor_raw_all = np.asarray(desc_array, dtype=np.float32)
+            self._descriptor_atom_all = atomic_desc_array
         else:
             self._descriptor_raw_all = np.array([], dtype=np.float32)
+            self._descriptor_atom_all = np.array([], dtype=np.float32)
 
         # Prepare reduced (PCA) descriptors for plotting
         reduced = self._descriptor_raw_all

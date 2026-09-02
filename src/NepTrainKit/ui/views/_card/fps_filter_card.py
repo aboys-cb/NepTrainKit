@@ -58,6 +58,7 @@ class FPSFilterDataCard(FilterDataCard):
         self._backend = get_configured_nep_backend().value
         self._chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000)
         self._last_group_report = {}
+        self._last_physics_plan_report = None
         self._input_dataset = []
         self.setTitle(self.tr("FPS Sampling"))
         self.init_ui()
@@ -76,6 +77,10 @@ class FPSFilterDataCard(FilterDataCard):
         self.strategy_combo.addItem(
             self.tr("Balance by element set"),
             userData="element_set",
+        )
+        self.strategy_combo.addItem(
+            self.tr("Balance element set, phase, and spin"),
+            userData="physics",
         )
         self.strategy_combo.setAccessibleName(self.tr("Sampling plan"))
         self.strategy_field = CompactField(
@@ -259,12 +264,19 @@ class FPSFilterDataCard(FilterDataCard):
         self.advanced_frame.setVisible(bool(visible))
 
     def _update_strategy_ui(self) -> None:
-        balanced = self.strategy_combo.currentData() == "element_set"
-        if balanced:
+        strategy = self.strategy_combo.currentData()
+        if strategy == "element_set":
             self.strategy_hint.setText(
                 self.tr(
                     "Plans one slot per element set, then distributes the rest by sqrt(group size). "
                     "Existing coverage or the distance cutoff can reduce actual output."
+                )
+            )
+        elif strategy == "physics":
+            self.strategy_hint.setText(
+                self.tr(
+                    "Partitions by element set first, then structural phase. "
+                    "When the selected NEP is a spin model, magnetic order is an additional coverage axis."
                 )
             )
         else:
@@ -282,11 +294,12 @@ class FPSFilterDataCard(FilterDataCard):
 
     def get_summary_text(self) -> str:
         params = self.get_params()
-        strategy = (
-            self.tr("global budget")
-            if params.strategy == "global"
-            else self.tr("balanced by element set")
-        )
+        strategy_labels = {
+            "global": self.tr("global budget"),
+            "element_set": self.tr("balanced by element set"),
+            "physics": self.tr("balanced by element set, phase, and spin"),
+        }
+        strategy = strategy_labels.get(params.strategy, strategy_labels["global"])
         return self.tr("keep at most {count} · {strategy}").format(
             count=params.n_samples,
             strategy=strategy,
@@ -301,6 +314,11 @@ class FPSFilterDataCard(FilterDataCard):
                 value=f"{params.min_distance:.4g}"
             )
         )
+        if params.strategy == "physics":
+            return self.tr(
+                "The model type is detected at run time. Spin models require canonical spin:R:3 data; "
+                "{cutoff}. The structure count is an upper bound."
+            ).format(cutoff=cutoff)
         return self.tr(
             "Use a descriptor model relevant to the candidate chemistry; {cutoff}. "
             "The structure count is an upper bound."
@@ -335,6 +353,7 @@ class FPSFilterDataCard(FilterDataCard):
 
     def set_dataset(self, dataset):
         self._last_group_report = {}
+        self._last_physics_plan_report = None
         super().set_dataset(dataset)
         self._input_dataset = list(dataset) if dataset is not None else []
         self._refresh_preview()
@@ -345,7 +364,7 @@ class FPSFilterDataCard(FilterDataCard):
         if not self._input_dataset:
             self._set_preview_text(
                 self.tr(
-                    "Load upstream structures to preview the output cap and planned element-set quotas."
+                    "Load upstream structures to preview the output cap and sampling plan."
                 )
             )
             return
@@ -375,6 +394,10 @@ class FPSFilterDataCard(FilterDataCard):
                 strategy_text = self.tr(
                     "planned quotas for {count} element sets"
                 ).format(count=summary["group_count"])
+        elif summary["strategy"] == "physics":
+            strategy_text = self.tr(
+                "{count} element sets; phase and spin strata are detected during the run"
+            ).format(count=summary["element_set_count"])
         else:
             strategy_text = self.tr("one global FPS budget")
         model_text = (
@@ -424,11 +447,41 @@ class FPSFilterDataCard(FilterDataCard):
     def on_processing_finished(self):
         operation = getattr(getattr(self, "worker_thread", None), "operation", None)
         self._last_group_report = dict(getattr(operation, "last_group_report", {}) or {})
+        self._last_physics_plan_report = getattr(
+            operation,
+            "last_physics_plan_report",
+            None,
+        )
         super().on_processing_finished()
 
     def _format_dataset_info(self) -> str:
         text = super()._format_dataset_info()
-        if self._last_group_report:
+        if self._last_physics_plan_report is not None:
+            report = self._last_physics_plan_report
+            covered = sum(
+                item.selected_count > 0
+                for item in self._last_group_report.values()
+            )
+            phase_labels = ", ".join(label for label, _count in report.phase_counts)
+            if report.spin_model:
+                text = self.tr(
+                    "{summary} | Physical strata: {covered}/{total} | phases: {phases} | spin-aware"
+                ).format(
+                    summary=text,
+                    covered=covered,
+                    total=report.stratum_count,
+                    phases=phase_labels,
+                )
+            else:
+                text = self.tr(
+                    "{summary} | Physical strata: {covered}/{total} | phases: {phases}"
+                ).format(
+                    summary=text,
+                    covered=covered,
+                    total=report.stratum_count,
+                    phases=phase_labels,
+                )
+        elif self._last_group_report:
             covered = sum(
                 report.selected_count > 0
                 for report in self._last_group_report.values()
@@ -456,7 +509,12 @@ class FPSFilterDataCard(FilterDataCard):
         progress : float | int
             Latest progress value emitted by the worker thread.
         """
-        self.status_label.setText(self.tr("Generating descriptors..."))
+        if self.get_params().strategy == "physics":
+            self.status_label.setText(
+                self.tr("Analyzing physical coverage and generating descriptors...")
+            )
+        else:
+            self.status_label.setText(self.tr("Generating descriptors..."))
         self.status_label.set_progress(progress)
 
     def to_dict(self):

@@ -14,7 +14,7 @@ def _report(*, native_complete=True, cpu=True, cuda=False) -> RuntimeHealth:
             available=native_complete or name != "_phase",
             reason="available" if native_complete or name != "_phase" else "ImportError",
         )
-        for name in ("_io", "_audit", "_phase", "_magnetism")
+        for name in ("_io", "_audit", "_phase", "_magnetism", "_sampling")
     )
     return RuntimeHealth(
         native=native,
@@ -30,7 +30,7 @@ def test_settings_runtime_card_summarizes_capabilities():
         widget = SettingsWidget(None)
 
     text = widget.runtime_health_card.contentLabel.text()
-    assert "4/4" in text
+    assert "5/5" in text
     assert "1.2.3" in text
     assert "CPU: Available" in text
     assert "CUDA: Unavailable" in text

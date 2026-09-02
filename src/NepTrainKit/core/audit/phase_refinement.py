@@ -331,6 +331,7 @@ def refine_l12(
     *,
     a_types: Iterable[int] | None = None,
     b_types: Iterable[int] | None = None,
+    _neighbor_data: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
 ) -> PhaseRefinement:
     """Confirm L1_2 ordering only after an FCC and AB3 local-order gate."""
     pos, box, periodic, types = _as_inputs(positions, cell, pbc, atom_types)
@@ -345,9 +346,12 @@ def refine_l12(
         return PhaseRefinement(
             "l12", "unknown", False, 0.0, 0.0, 0.0, 1.0, (), (), role_error
         )
-    vectors, indices, valid = accelerated_periodic_knn_vectors(
-        pos, box, periodic, neighbors=20
-    )
+    if _neighbor_data is None:
+        vectors, indices, valid = accelerated_periodic_knn_vectors(
+            pos, box, periodic, neighbors=20
+        )
+    else:
+        vectors, indices, valid = _neighbor_data
     templates = _reference_templates()["fcc"]
     native = _phase_sketch._native_phase
     if native is not None and hasattr(native, "l12_refinement_metrics"):
@@ -425,6 +429,7 @@ def refine_laves(
     *,
     a_types: Iterable[int] | None = None,
     b_types: Iterable[int] | None = None,
+    _neighbor_data: tuple[np.ndarray, np.ndarray, np.ndarray] | None = None,
 ) -> PhaseRefinement:
     """Confirm an AB2 Laves candidate and conservatively refine C14/C15."""
     pos, box, periodic, types = _as_inputs(positions, cell, pbc, atom_types)
@@ -439,9 +444,12 @@ def refine_laves(
         return PhaseRefinement(
             "laves", "unknown", False, 0.0, 0.0, 0.0, 1.0, (), (), role_error
         )
-    vectors, indices, valid = accelerated_periodic_knn_vectors(
-        pos, box, periodic, neighbors=20
-    )
+    if _neighbor_data is None:
+        vectors, indices, valid = accelerated_periodic_knn_vectors(
+            pos, box, periodic, neighbors=20
+        )
+    else:
+        vectors, indices, valid = _neighbor_data
     templates = _reference_templates()
     native = _phase_sketch._native_phase
     if native is not None and hasattr(native, "laves_refinement_metrics"):

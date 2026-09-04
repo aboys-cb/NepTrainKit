@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-09-04 11:21+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -38,18 +38,19 @@ msgstr "What This Card Does"
 #: 6809da7ff32c40719e0ed3159b040ba2
 msgid "这张卡把一条晶格变形路径与一条局域自旋旋转路径组合成二维网格。每个晶格点都包含同一套完整的负角度、零角度和正角度结构，便于比较磁响应如何随体积或应变变化。"
 msgstr ""
-"Combine a lattice-deformation path with a local spin-rotation path to form a two-"
-"dimensional grid. Every lattice point contains the same complete set of negative-"
-"angle, zero-angle, and positive-angle structures, allowing magnetic response to be "
-"compared as volume or strain changes."
+"Combine a lattice-deformation path with a local spin-rotation path to "
+"form a two-dimensional grid. Every lattice point contains the same "
+"complete set of negative-angle, zero-angle, and positive-angle "
+"structures, allowing magnetic response to be compared as volume or strain"
+" changes."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:11
 #: df4e5ad2ca6f497ab2c4cbad1a904cb4
 msgid "输入结构必须已有有限、非零的三维磁矩。列出的目标原子在每一帧中一起旋转，不会按原子分别生成多套输出。"
 msgstr ""
-"The input structure must already have finite, nonzero three-dimensional moments. "
-"Listed target atoms rotate together in every frame; separate output sets are not "
-"generated for individual atoms."
+"The input structure must already have finite, nonzero three-dimensional "
+"moments. Listed target atoms rotate together in every frame; separate "
+"output sets are not generated for individual atoms."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:13
 #: b3ce96c03faa4470a2afcde84c5e695a
@@ -77,8 +78,9 @@ msgstr ""
 #: 3828acd9310f4aaf855f423ae5be9727
 msgid "因此磁矩模长保持不变；未列出的原子磁矩不变。若某个磁矩与旋转轴平行，它在该路径中不会改变。"
 msgstr ""
-"Moment magnitudes therefore remain unchanged, as do moments on unlisted atoms. A "
-"moment parallel to the rotation axis does not change along this path."
+"Moment magnitudes therefore remain unchanged, as do moments on unlisted "
+"atoms. A moment parallel to the rotation axis does not change along this "
+"path."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:25
 #: fd20b0b5f0e94da9999f1d58866ef9cc
@@ -101,8 +103,8 @@ msgstr ""
 #: f017bf8eef29434eae29aacf9477c277
 msgid "更新，原子的分数坐标保持不变。设界面输入的无量纲坐标为 $s$。"
 msgstr ""
-"while atomic fractional coordinates remain unchanged. Let the dimensionless "
-"coordinate entered in the interface be $s$."
+"while atomic fractional coordinates remain unchanged. Let the "
+"dimensionless coordinate entered in the interface be $s$."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:35
 #: 8cc754bb332146daa159c89c76d16133
@@ -113,8 +115,8 @@ msgstr "Isotropic Volume"
 #: 2870ec84adf04a39b2b15ebdfee7f709
 msgid "界面中的百分比表示真实体积变化，而不是三个晶格方向各自的线性变化："
 msgstr ""
-"The percentage in the interface represents the true volume change, not an independent"
-" linear change along each of the three lattice directions:"
+"The percentage in the interface represents the true volume change, not an"
+" independent linear change along each of the three lattice directions:"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:39
 #: 6fd6d5209e574f25980294f66accd4db
@@ -158,8 +160,8 @@ msgstr "Biaxial Strain"
 #: be1d8aa753104027b1526f904bfb1820
 msgid "此处的方向参数是未应变平面的法向。与它垂直的平面内施加等量应变："
 msgstr ""
-"Here the direction parameter is the normal of the unstrained plane. Equal strain is "
-"applied within the plane perpendicular to it:"
+"Here the direction parameter is the normal of the unstrained plane. Equal"
+" strain is applied within the plane perpendicular to it:"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:58
 #: dd7a69634ded4eccac8b93a8160f67e4
@@ -174,8 +176,8 @@ msgstr ""
 #: 34ba5104eb2c41ab9b64c63837a81fcc
 msgid "因此 $V'/V=(1+s)^2$；例如 $s=2\\%$ 时，体积约增加 $4.04\\%$。"
 msgstr ""
-"Therefore $V'/V=(1+s)^2$; for example, when $s=2\\%$, the volume increases by "
-"approximately $4.04\\%$."
+"Therefore $V'/V=(1+s)^2$; for example, when $s=2\\%$, the volume "
+"increases by approximately $4.04\\%$."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:64
 #: c4fd7c3d0b5c44a1b8eaabb4b7b42961
@@ -187,8 +189,8 @@ msgstr "Symmetric Shear"
 #, python-brace-format
 msgid "用户给出两个互相垂直的笛卡尔方向 $\\hat{\\mathbf u}$ 和 $\\hat{\\mathbf v}$："
 msgstr ""
-"The user supplies two mutually perpendicular Cartesian directions $\\hat{\\mathbf u}$"
-" and $\\hat{\\mathbf v}$:"
+"The user supplies two mutually perpendicular Cartesian directions "
+"$\\hat{\\mathbf u}$ and $\\hat{\\mathbf v}$:"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:68
 #: 3fa576e712374933b67c6a800a6205aa
@@ -204,8 +206,8 @@ msgstr ""
 #: c63363985de84e0dba9b8f1ba604f359
 msgid "两个方向不垂直时运行会明确失败，不会由程序暗中选择剪切平面。"
 msgstr ""
-"If the two directions are not perpendicular, the operation fails explicitly rather "
-"than silently choosing a shear plane."
+"If the two directions are not perpendicular, the operation fails "
+"explicitly rather than silently choosing a shear plane."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:76
 #: 5ba9c5a9d6dd471e93e12de27436e591
@@ -218,9 +220,10 @@ msgid ""
 "选择晶格矢量 `a`、`b` 或 `c` 作为四方轴。令 $r=1+s$，选中轴乘以 $r$，另外两根晶格矢量各乘以 $1/\\sqrt "
 "r$，因此体积保持不变。这里选择的是晶格矢量，不是笛卡尔方向。"
 msgstr ""
-"Select lattice vector `a`, `b`, or `c` as the tetragonal axis. Let $r=1+s$; multiply "
-"the selected axis by $r$ and each of the other two lattice vectors by $1/\\sqrt r$, "
-"preserving volume. This selects a lattice vector, not a Cartesian direction."
+"Select lattice vector `a`, `b`, or `c` as the tetragonal axis. Let "
+"$r=1+s$; multiply the selected axis by $r$ and each of the other two "
+"lattice vectors by $1/\\sqrt r$, preserving volume. This selects a "
+"lattice vector, not a Cartesian direction."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:80
 #: 65fbc9d55b2c4f0380e7d53e21438dc6
@@ -231,8 +234,8 @@ msgstr "Output Count"
 #: 7b4f73ff30d749aa83418eb3bf9e11cc
 msgid "若晶格扫描含 $N_s$ 个点，自旋扫描含 $N_\\theta$ 个角度，理论输出为"
 msgstr ""
-"If the lattice scan contains $N_s$ points and the spin scan contains $N_\\theta$ "
-"angles, the theoretical output count is"
+"If the lattice scan contains $N_s$ points and the spin scan contains "
+"$N_\\theta$ angles, the theoretical output count is"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:84
 #: 16bf17c1f2644a32816f1894ac62b4d4
@@ -243,8 +246,8 @@ msgstr ""
 #: 0fb84bee1fc44476a9580ab1c6e45d4e
 msgid "“最大结构数”只在完整的自旋组之间截断。实际保留的晶格点数为"
 msgstr ""
-"`Maximum structures` truncates only between complete spin groups. The actual number "
-"of retained lattice points is"
+"`Maximum structures` truncates only between complete spin groups. The "
+"actual number of retained lattice points is"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:88
 #: c5eb275e9265489eade841eec1789a2a
@@ -258,9 +261,9 @@ msgstr ""
 #: f1bc636ff2104bafa206ad65e31d09df
 msgid "若上限连一个完整自旋组都容纳不了，卡片会报错；界面预览会直接显示理论数量和实际保留数量。"
 msgstr ""
-"If the limit cannot accommodate even one complete spin group, the card reports an "
-"error. The interface preview shows both the theoretical and retained actual counts "
-"directly."
+"If the limit cannot accommodate even one complete spin group, the card "
+"reports an error. The interface preview shows both the theoretical and "
+"retained actual counts directly."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:95
 #: de983cfe6e2a4c0c86a131a8d4dffc4e
@@ -270,17 +273,18 @@ msgstr "Example"
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:97
 #: 8b2013968b304252bf5437fa91eea348
 msgid ""
-"若模型能拟合平衡结构，却不能复现受拉伸时局域磁响应的变化，可选择 `Uniaxial strain`，结构扫描设为 `-2,-1,0,1,2 %`，自旋扫描设为 "
-"`-2,0,2°`，并指定目标原子与真实笛卡尔旋转轴。输出包含 5 个晶格点、每点 3 帧，共 15 个结构。回填 DFT 标签后，应按 `response_group`"
-" 保留完整三帧，再比较不同结构坐标下的能量或磁力响应。"
+"若模型能拟合平衡结构，却不能复现受拉伸时局域磁响应的变化，可选择 `Uniaxial strain`，结构扫描设为 `-2,-1,0,1,2 "
+"%`，自旋扫描设为 `-2,0,2°`，并指定目标原子与真实笛卡尔旋转轴。输出包含 5 个晶格点、每点 3 帧，共 15 个结构。回填 DFT "
+"标签后，应按 `response_group` 保留完整三帧，再比较不同结构坐标下的能量或磁力响应。"
 msgstr ""
-"If a model fits equilibrium structures but cannot reproduce how local magnetic "
-"response changes under tension, select `Uniaxial strain`, set the structural scan to "
-"`-2,-1,0,1,2 %`, the spin scan to `-2,0,2°`, and specify target atoms and the "
-"physical Cartesian rotation axis. The output contains five lattice points with three "
-"frames each, for 15 structures. After filling DFT labels, retain each complete three-"
-"frame `response_group` and compare energy or magnetic-force responses at different "
-"structural coordinates."
+"If a model fits equilibrium structures but cannot reproduce how local "
+"magnetic response changes under tension, select `Uniaxial strain`, set "
+"the structural scan to `-2,-1,0,1,2 %`, the spin scan to `-2,0,2°`, and "
+"specify target atoms and the physical Cartesian rotation axis. The output"
+" contains five lattice points with three frames each, for 15 structures. "
+"After filling DFT labels, retain each complete three-frame "
+"`response_group` and compare energy or magnetic-force responses at "
+"different structural coordinates."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:99
 #: def28964ab61475c98467ab793b79005
@@ -298,8 +302,9 @@ msgid ""
 "默认 `Isotropic volume`。可选 `Isotropic volume`、`Uniaxial strain`、`Biaxial "
 "strain`、`Symmetric shear` 和 `Bain / tetragonal`。"
 msgstr ""
-"Default `Isotropic volume`. Available values are `Isotropic volume`, `Uniaxial "
-"strain`, `Biaxial strain`, `Symmetric shear`, and `Bain / tetragonal`."
+"Default `Isotropic volume`. Available values are `Isotropic volume`, "
+"`Uniaxial strain`, `Biaxial strain`, `Symmetric shear`, and `Bain / "
+"tetragonal`."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:105
 #: 9f13f61f7fc841cdbf0a556d15f546c8
@@ -308,11 +313,13 @@ msgstr "Structural Scan (structural_scan)"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:107
 #: c564778871b341e1bbe46445063199e4
-msgid "默认 `-0.02,-0.01,0,0.01,0.02`，序列化值为无量纲坐标。界面显示为 `-2,-1,0,1,2 %`，至少需要三个不同值并包含 0。"
+msgid ""
+"默认 `-0.02,-0.01,0,0.01,0.02`，序列化值为无量纲坐标。界面显示为 `-2,-1,0,1,2 "
+"%`，至少需要三个不同值并包含 0。"
 msgstr ""
-"Default `-0.02,-0.01,0,0.01,0.02`, serialized as dimensionless coordinates. The "
-"interface displays `-2,-1,0,1,2 %`. At least three distinct values are required and "
-"zero must be included."
+"Default `-0.02,-0.01,0,0.01,0.02`, serialized as dimensionless "
+"coordinates. The interface displays `-2,-1,0,1,2 %`. At least three "
+"distinct values are required and zero must be included."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:109
 #: 81bdac25e1c9471ead5e772ead849faa
@@ -323,8 +330,8 @@ msgstr "Spin-Rotation Scan (spin_scan_deg)"
 #: 5867c808d8854450b6332e706c955bd2
 msgid "默认 `-2,0,2` 度。每个晶格点都生成同一套扫描；至少需要三个不同角度并包含 0。"
 msgstr ""
-"Default `-2,0,2` degrees. Every lattice point generates the same scan. At least three"
-" distinct angles are required and zero must be included."
+"Default `-2,0,2` degrees. Every lattice point generates the same scan. At"
+" least three distinct angles are required and zero must be included."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:113
 #: 34a0502485b643b8b1dc411f46c719fd
@@ -335,8 +342,8 @@ msgstr "Spin-Rotation Axis (rotation_axis)"
 #: 0b166f6ccc0e4c2aacc36ea952f456c8
 msgid "默认 `[0,1,0]`，为实验室笛卡尔方向。所有目标磁矩绕该轴一起旋转。"
 msgstr ""
-"Default `[0,1,0]`, a laboratory Cartesian direction. All target moments rotate "
-"together around this axis."
+"Default `[0,1,0]`, a laboratory Cartesian direction. All target moments "
+"rotate together around this axis."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:117
 #: 18f875ce1f6246b78699ab920f1723c7
@@ -347,8 +354,9 @@ msgstr "Atoms Rotated Together (target_indices)"
 #: 6c97c41336de417e86cbff4f354ffa7b
 msgid "默认 `1`，使用从 1 开始的原子索引；支持 `1,3-5`。多个索引表示同一帧内共同旋转，不增加输出组数。"
 msgstr ""
-"Default `1`, using 1-based atom indices; `1,3-5` is supported. Multiple indices "
-"rotate together within one frame and do not increase the number of output groups."
+"Default `1`, using 1-based atom indices; `1,3-5` is supported. Multiple "
+"indices rotate together within one frame and do not increase the number "
+"of output groups."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:121
 #: 0a4a7457e6e94b0d938828bd304fd115
@@ -357,11 +365,14 @@ msgstr "Structural Direction (strain_axis)"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:123
 #: fb4a48c80f4f451199235005c7e8f980
-msgid "默认 `[0,0,1]`，为笛卡尔方向。单轴模式中表示加载方向；双轴模式中表示未应变平面的法向；对称剪切中表示第一方向。各向同性和 Bain 模式不使用它。"
+msgid ""
+"默认 `[0,0,1]`，为笛卡尔方向。单轴模式中表示加载方向；双轴模式中表示未应变平面的法向；对称剪切中表示第一方向。各向同性和 Bain "
+"模式不使用它。"
 msgstr ""
-"Default `[0,0,1]`, a Cartesian direction. It is the loading direction in uniaxial "
-"mode, the normal of the unstrained plane in biaxial mode, and the first direction in "
-"symmetric shear. Isotropic and Bain modes do not use it."
+"Default `[0,0,1]`, a Cartesian direction. It is the loading direction in "
+"uniaxial mode, the normal of the unstrained plane in biaxial mode, and "
+"the first direction in symmetric shear. Isotropic and Bain modes do not "
+"use it."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:125
 #: e5d3036e0c9b4650a73f517dd07193e2
@@ -372,8 +383,8 @@ msgstr "Second Shear Direction (shear_direction)"
 #: a58911ef91b14329a33a4be8015513bd
 msgid "默认 `[0,1,0]`，为笛卡尔方向，仅用于 `Symmetric shear`。它必须与 `strain_axis` 垂直。"
 msgstr ""
-"Default `[0,1,0]`, a Cartesian direction used only for `Symmetric shear`. It must be "
-"perpendicular to `strain_axis`."
+"Default `[0,1,0]`, a Cartesian direction used only for `Symmetric shear`."
+" It must be perpendicular to `strain_axis`."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:129
 #: 16b9e7b529704c3ab3bcbc7ea1530cb3
@@ -384,8 +395,8 @@ msgstr "Bain Lattice Axis (bain_axis)"
 #: 973362ee97c64d2ca248a39fbc9294d1
 msgid "默认 `c`，可选 `a`、`b`、`c`，仅用于 `Bain / tetragonal`。该路径保持体积不变。"
 msgstr ""
-"Default `c`; available values are `a`, `b`, and `c`. Used only for `Bain / "
-"tetragonal`. This path preserves volume."
+"Default `c`; available values are `a`, `b`, and `c`. Used only for `Bain "
+"/ tetragonal`. This path preserves volume."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:133
 #: 957ad785a3174d3694950af8f5880d00
@@ -396,8 +407,8 @@ msgstr "Maximum Structures (max_outputs)"
 #: d12e9c7f4ac54f6b8dfa99549f5642cd
 msgid "默认 `100`。只保留能够完整容纳的晶格点；不会截断某个晶格点内部的自旋扫描。"
 msgstr ""
-"Default `100`. Only lattice points that fit completely are retained; the spin scan "
-"within a lattice point is never truncated."
+"Default `100`. Only lattice points that fit completely are retained; the "
+"spin scan within a lattice point is never truncated."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:137
 #: 80600924d5d9472e8d2f3c7b7f4073c2
@@ -408,11 +419,11 @@ msgstr "Legacy Workflow Notice"
 #: da99d09c4f1a4d869aa9f735ea9385ba
 msgid "旧版本虽然保存了“自旋旋转轴”，实际生成时没有使用它。新版会真正绕保存的笛卡尔轴旋转，因此加载旧卡片时会显示提示。旧对称剪切工作流缺少第二方向时，会恢复旧版本曾隐式选择的方向；建议检查后重新保存。"
 msgstr ""
-"Earlier versions stored `Spin-rotation axis` but did not use it during generation. "
-"The current version rotates around the saved Cartesian axis, so loading a legacy card"
-" displays a notice. If an old symmetric-shear workflow lacks a second direction, the "
-"direction previously chosen implicitly is restored; inspect it and save the workflow "
-"again."
+"Earlier versions stored `Spin-rotation axis` but did not use it during "
+"generation. The current version rotates around the saved Cartesian axis, "
+"so loading a legacy card displays a notice. If an old symmetric-shear "
+"workflow lacks a second direction, the direction previously chosen "
+"implicitly is restored; inspect it and save the workflow again."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:141
 #: 39b436a33a47473492761013c0d50993
@@ -423,24 +434,24 @@ msgstr "Troubleshooting"
 #: 1f093af0ac2f491baf7ed12a02262f4c
 msgid "**双轴应变为什么体积变化不是输入百分比？** 输入值分别作用于平面内两个方向，因此体积比为 $(1+s)^2$。"
 msgstr ""
-"**Why does biaxial strain not change the volume by the input percentage?** The input "
-"value applies separately to two in-plane directions, so the volume ratio is "
-"$(1+s)^2$."
+"**Why does biaxial strain not change the volume by the input "
+"percentage?** The input value applies separately to two in-plane "
+"directions, so the volume ratio is $(1+s)^2$."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:144
 #: 971461e0e0e04c8abd137673976bb1fa
 msgid "**某个目标自旋为什么没有变化？** 若它与旋转轴平行，绕该轴旋转后方向不变。"
 msgstr ""
-"**Why does a target spin not change?** If it is parallel to the rotation axis, "
-"rotating around that axis leaves its direction unchanged."
+"**Why does a target spin not change?** If it is parallel to the rotation "
+"axis, rotating around that axis leaves its direction unchanged."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:145
 #: c83e6889f17f4291ad2b54973fb4ffc9
 msgid "**输出数为什么小于两个扫描长度的乘积？** “最大结构数”只保留能够完整容纳的晶格点，界面预览会显示实际数量。"
 msgstr ""
-"**Why is the output count smaller than the product of the two scan lengths?** "
-"`Maximum structures` retains only lattice points that fit completely, and the "
-"interface preview shows the actual count."
+"**Why is the output count smaller than the product of the two scan "
+"lengths?** `Maximum structures` retains only lattice points that fit "
+"completely, and the interface preview shows the actual count."
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:147
 #: f353093cbb4144f49f144026850a8f87
@@ -448,12 +459,20 @@ msgid "输出字段"
 msgstr "Output Fields"
 
 #: ../../source/module/make-dataset-cards/cards/magnetoelastic-response-card.md:149
-#: 57098c17b988426f8a9c494725e9456a
+#: 2346ec607a3f484b8dc84345e897fb0c
 msgid ""
-"输出磁矩写入 `spin:R:3`。每个晶格点对应一个完整 `response_group`；manifest "
-"记录结构坐标、变形梯度、应变张量、自旋旋转轴、目标原子以及当前模式实际使用的笛卡尔方向或 Bain 晶格轴。"
+"输出磁矩写入 `spin:R:3`，旋转坐标使用弧度并写明 "
+"`response_coordinate_unit=radian`。每个晶格点对应一个完整、名称含 `magnetoelastic-spin-"
+"probe` 的 `response_group`；manifest "
+"记录结构坐标、变形梯度、应变张量、自旋旋转轴、目标原子以及当前模式实际使用的笛卡尔方向或 Bain 晶格轴。DFT 标签回填后，组内 `spin`"
+" 必须来自各帧最终约束收敛磁矩，训练器据此派生真实响应路径。"
 msgstr ""
-"Output moments are written to `spin:R:3`. Every lattice point corresponds to one "
-"complete `response_group`; the manifest records the structural coordinate, "
-"deformation gradient, strain tensor, spin-rotation axis, target atoms, and the "
-"Cartesian directions or Bain lattice axis actually used by the current mode."
+"Output moments are written to `spin:R:3`; rotation coordinates use radians "
+"and explicitly record `response_coordinate_unit=radian`. Every lattice point "
+"corresponds to one complete `response_group` whose name includes "
+"`magnetoelastic-spin-probe`; the manifest records the structural coordinate, "
+"deformation gradient, strain tensor, spin-rotation axis, target atoms, and "
+"the Cartesian directions or Bain lattice axis actually used by the current "
+"mode. After DFT labels are reattached, each group's `spin` values must be the "
+"final converged constrained moments, from which the trainer derives the "
+"actual response path."

@@ -139,4 +139,4 @@ $$\frac{\mathbf q\cdot\mathbf a_i}{2\pi}\in\mathbb Z$$
 
 ## 输出字段
 
-输出磁矩写入 `spin:R:3`，并记录 `response_group`、有符号 `response_coordinate`、`response_branch` 和任务来源。有限 q manifest 还保存 Cartesian q、晶胞倒空间坐标、周期、手性、平面法向、相位和法向分量。
+输出磁矩写入 `spin:R:3`，并记录可辨认响应类型的 `response_group`、有符号 `response_coordinate`、`response_coordinate_unit`、`response_branch` 和任务来源。有限 q 的坐标单位明确记录为 `1/angstrom`；manifest 还保存 Cartesian q、晶胞倒空间坐标、周期、手性、平面法向、相位和法向分量。有限 q 使用 `response_probe=chirality`，目前用于响应分析或普通 E/MF 训练，不会激活只面向旋转路径的分组响应损失。

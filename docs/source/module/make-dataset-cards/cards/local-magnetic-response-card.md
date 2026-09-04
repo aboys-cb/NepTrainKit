@@ -140,4 +140,4 @@ $$N_{\mathrm{out}}=N_{\mathrm{group}}\times N_{\mathrm{coordinate}}.$$
 
 ## 输出字段
 
-输出保留结构的原子、坐标、晶胞和 PBC，磁矩统一写入 `spin:R:3`。每帧带有 `response_group`、`response_coordinate`、`response_branch`、`response_task_id` 和来源结构标识；相同输入与参数会得到确定性的响应内容和任务标识。
+输出保留结构的原子、坐标、晶胞和 PBC，磁矩统一写入 `spin:R:3`。每帧带有 `response_group`、`response_coordinate`、`response_coordinate_unit`、`response_branch`、`response_task_id` 和来源结构标识。组名采用 `mrg-pair-canting-<短哈希>` 这类“响应类型 + 稳定 ID”格式，既可直接辨认用途，也能安全交给训练器。卡片输出的是 DFT 约束任务磁矩；回填标签时必须用 DFT 最终收敛的三分量磁矩替换它。

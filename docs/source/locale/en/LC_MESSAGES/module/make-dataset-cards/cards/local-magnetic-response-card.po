@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-09-04 11:21+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -40,18 +40,20 @@ msgid ""
 "输入一帧带矢量磁矩的结构，围绕指定原子、原子对或 group 生成一条受控响应路径。每个目标对应一个完整 group，group "
 "内含零扰动参考帧，适合比较局域磁矩变化前后的能量和磁力响应。"
 msgstr ""
-"Given one structure with vector magnetic moments, generate a controlled response path"
-" around specified atoms, atom pairs, or groups. Every target forms one complete "
-"response group containing a zero-perturbation reference frame, suitable for comparing"
-" energy and magnetic-force responses before and after a local moment change."
+"Given one structure with vector magnetic moments, generate a controlled "
+"response path around specified atoms, atom pairs, or groups. Every target"
+" forms one complete response group containing a zero-perturbation "
+"reference frame, suitable for comparing energy and magnetic-force "
+"responses before and after a local moment change."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:11
 #: 6968e2322eb945c284de06bb7249e44a
 msgid "它与“自旋扰动”的区别是：这里的坐标有顺序、正负分支成对且每组自带参考帧；自旋扰动用于随机扩充构型。"
 msgstr ""
-"Unlike `Spin Perturb`, the response coordinates here are ordered, negative and "
-"positive branches are paired, and every group includes its own reference frame. Spin "
-"Perturb is intended for random configuration augmentation."
+"Unlike `Spin Perturb`, the response coordinates here are ordered, "
+"negative and positive branches are paired, and every group includes its "
+"own reference frame. Spin Perturb is intended for random configuration "
+"augmentation."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:13
 #: 681b5c4cf4d1459eb4f4403aa5837864
@@ -63,8 +65,8 @@ msgstr "Principles and Equations"
 #, python-brace-format
 msgid "设输入磁矩为 $\\mathbf S_i$，笛卡尔旋转轴的单位向量为 $\\hat{\\mathbf n}$。旋转使用 Rodrigues 公式："
 msgstr ""
-"Let the input moment be $\\mathbf S_i$ and the unit Cartesian rotation axis be "
-"$\\hat{\\mathbf n}$. Rotation uses Rodrigues' formula:"
+"Let the input moment be $\\mathbf S_i$ and the unit Cartesian rotation "
+"axis be $\\hat{\\mathbf n}$. Rotation uses Rodrigues' formula:"
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:17
 #: cb6369fc0808467f9f53f0379522a7e7
@@ -87,30 +89,33 @@ msgstr ""
 #: 83e10200070f466db1294b978dc35daa
 msgid "**原子对倾斜：** 左原子旋转 $+\\theta/2$，右原子旋转 $-\\theta/2$；$\\theta$ 是两侧的总相对转角。"
 msgstr ""
-"**Atom-pair canting:** the left atom rotates by $+\\theta/2$ and the right atom by "
-"$-\\theta/2$; $\\theta$ is their total relative rotation angle."
+"**Atom-pair canting:** the left atom rotates by $+\\theta/2$ and the "
+"right atom by $-\\theta/2$; $\\theta$ is their total relative rotation "
+"angle."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:26
 #: fb123b2a15f346a1bd0fa1cbeb9be1ae
 msgid "**分组对倾斜：** 对两个 `group` 中的全部非零磁矩执行相同的 $+\\theta/2$ 与 $-\\theta/2$ 旋转。"
 msgstr ""
-"**Group-pair canting:** apply the same $+\\theta/2$ and $-\\theta/2$ rotations to all"
-" nonzero moments in the two `group` labels."
+"**Group-pair canting:** apply the same $+\\theta/2$ and $-\\theta/2$ "
+"rotations to all nonzero moments in the two `group` labels."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:27
 #: 68a2fac0c03e4e96a5f81b895a0bd403
-msgid "**磁矩模长：** 方向不变，选中磁矩变为 $\\mathbf S_i(s)=s\\mathbf S_i$。元数据中的响应坐标记录为 $s-1$，因此参考帧仍位于 0。"
+msgid ""
+"**磁矩模长：** 方向不变，选中磁矩变为 $\\mathbf S_i(s)=s\\mathbf S_i$。元数据中的响应坐标记录为 "
+"$s-1$，因此参考帧仍位于 0。"
 msgstr ""
-"**Moment magnitude:** preserve direction and change the selected moment to $\\mathbf "
-"S_i(s)=s\\mathbf S_i$. Metadata stores the response coordinate as $s-1$, so the "
-"reference frame remains at zero."
+"**Moment magnitude:** preserve direction and change the selected moment "
+"to $\\mathbf S_i(s)=s\\mathbf S_i$. Metadata stores the response "
+"coordinate as $s-1$, so the reference frame remains at zero."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:29
 #: 86aeacf84a9644efa22f96599ffd3173
 msgid "旋转模式的界面角度单位为度，输出 `response_coordinate` 使用弧度。"
 msgstr ""
-"Rotation angles in the interface use degrees, while output `response_coordinate` uses"
-" radians."
+"Rotation angles in the interface use degrees, while output "
+"`response_coordinate` uses radians."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:31
 #: 211a0f49b3d041c4bf69639e4148b649
@@ -120,7 +125,9 @@ msgstr "How Output Count Is Calculated"
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:33
 #: b882fcdc85d44de49a78dec1f9ff79a1
 msgid "每个目标、原子对或分组对各生成一个完整 group："
-msgstr "Each target, atom pair, or group pair generates one complete response group:"
+msgstr ""
+"Each target, atom pair, or group pair generates one complete response "
+"group:"
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:35
 #: cae76247020a4c0d9b41a594019338bd
@@ -156,9 +163,9 @@ msgstr "groups A/B: $1\\times5=5$ frames."
 #: 253a72748ea14e04b56bcd03d542bcdc
 msgid "“最大结构数”只在 group 之间截断，不会留下不完整的扫描。如果上限小于一个 group 的坐标数，运行会报错。"
 msgstr ""
-"`Maximum structures` truncates only between response groups and never leaves an "
-"incomplete scan. If the limit is smaller than the coordinate count of one group, the "
-"operation reports an error."
+"`Maximum structures` truncates only between response groups and never "
+"leaves an incomplete scan. If the limit is smaller than the coordinate "
+"count of one group, the operation reports an error."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:46
 #: a490a96fcf9d4f44bda7685d0e9595e0
@@ -169,8 +176,8 @@ msgstr "Example"
 #: f9c3dad5bb1940e4987c4347162bd7b1
 msgid "确认输入含 `spin:R:3` 或可转换为三分量的初始磁矩。"
 msgstr ""
-"Confirm that the input contains `spin:R:3` or initial moments convertible to three "
-"components."
+"Confirm that the input contains `spin:R:3` or initial moments convertible"
+" to three components."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:49
 #: 4f98186d10d842edbf37977b02c5b911
@@ -181,15 +188,15 @@ msgstr "Select a response type, then choose target atoms, atom pairs, or groups.
 #: 44b226d2f067486bbdd45cd31e25e543
 msgid "旋转响应使用含 0 的对称角度扫描；模长响应使用含 1.0 的比例扫描。"
 msgstr ""
-"Use a symmetric angle scan containing 0 for rotation responses, and a scale scan "
-"containing 1.0 for magnitude responses."
+"Use a symmetric angle scan containing 0 for rotation responses, and a "
+"scale scan containing 1.0 for magnitude responses."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:51
 #: 4d6a16eb6e80474e93f20ebe67b2ff5a
 msgid "运行后按 `response_group` 检查每组是否同时含 minus、reference 和 plus 分支。"
 msgstr ""
-"After running, inspect each `response_group` to confirm that it contains minus, "
-"reference, and plus branches."
+"After running, inspect each `response_group` to confirm that it contains "
+"minus, reference, and plus branches."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:53
 #: e650127dec5c409a87aa6f3410e6704c
@@ -204,11 +211,11 @@ msgstr "Response Type (response_kind)"
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:57
 #: acbd4f9c34824971ae2b9fb5d1b91335
 msgid ""
-"默认 `Atom pair canting`。可选 `Single-spin tilt`、`Atom pair canting`、`Group pair "
-"canting`、`Moment magnitude`。"
+"默认 `Atom pair canting`。可选 `Single-spin tilt`、`Atom pair canting`、`Group "
+"pair canting`、`Moment magnitude`。"
 msgstr ""
-"Default `Atom pair canting`. Available values are `Single-spin tilt`, `Atom pair "
-"canting`, `Group pair canting`, and `Moment magnitude`."
+"Default `Atom pair canting`. Available values are `Single-spin tilt`, "
+"`Atom pair canting`, `Group pair canting`, and `Moment magnitude`."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:59
 #: e657cda3c4a243eab5f297475f94bdf3
@@ -219,9 +226,9 @@ msgstr "Rotation-Angle Scan (coordinate_scan_deg)"
 #: 9502e766d5f54d02b70be1ed4fbe22e5
 msgid "默认 `-2,-1,0,1,2` 度，仅用于三种旋转响应。至少三个不同坐标并包含 0；输出元数据换算为弧度。"
 msgstr ""
-"Default `-2,-1,0,1,2` degrees, used only by the three rotation responses. At least "
-"three distinct coordinates are required and zero must be included; output metadata "
-"converts them to radians."
+"Default `-2,-1,0,1,2` degrees, used only by the three rotation responses."
+" At least three distinct coordinates are required and zero must be "
+"included; output metadata converts them to radians."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:63
 #: 3b8263c055554739a05f02bf6f786bdc
@@ -232,8 +239,9 @@ msgstr "Target Selection (target_mode)"
 #: 230b045b5c2f4a22b00583a2f27f0817
 msgid "默认 `First eligible atom`。单原子倾斜和磁矩模长可选择首个合格原子、全部合格原子或显式索引。"
 msgstr ""
-"Default `First eligible atom`. Single-spin tilt and moment-magnitude responses may "
-"target the first eligible atom, all eligible atoms, or explicit indices."
+"Default `First eligible atom`. Single-spin tilt and moment-magnitude "
+"responses may target the first eligible atom, all eligible atoms, or "
+"explicit indices."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:67
 #: 0d8d987c26624632a844ff0921c992db
@@ -244,8 +252,8 @@ msgstr "Atom Indices (target_indices)"
 #: 0164c6b25c264a9f832442b02d39d6a9
 msgid "默认空，仅在 `Explicit indices` 下显示。使用 1-based 索引，例如 `1,3-5`。"
 msgstr ""
-"Empty by default and displayed only under `Explicit indices`. Use 1-based indices, "
-"for example `1,3-5`."
+"Empty by default and displayed only under `Explicit indices`. Use 1-based"
+" indices, for example `1,3-5`."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:71
 #: cf23426e885941e0be3cf78f5d38af0c
@@ -256,8 +264,8 @@ msgstr "Atom-Pair Source (pair_source)"
 #: 6cfebf9882f94f889c434e435d23874b
 msgid "默认 `Manual indices`。可手动配对，也可按近邻壳层自动选取无重复原子对。"
 msgstr ""
-"Default `Manual indices`. Pairs may be specified manually or selected automatically "
-"as unique atom pairs from a neighbor shell."
+"Default `Manual indices`. Pairs may be specified manually or selected "
+"automatically as unique atom pairs from a neighbor shell."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:75
 #: 162229af2b664b2591c9852baca7fbfa
@@ -267,7 +275,9 @@ msgstr "Left Atom Indices (pair_left_indices)"
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:77
 #: d2b9b7edb467486b922b2099e5e0d029
 msgid "默认 `1`。手动配对时使用 1-based 索引；数量必须与右侧一致。"
-msgstr "Default `1`. Manual pairing uses 1-based indices; the count must match the right side."
+msgstr ""
+"Default `1`. Manual pairing uses 1-based indices; the count must match "
+"the right side."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:79
 #: f1409a27835f48bf99aafb7ecf90953d
@@ -288,8 +298,8 @@ msgstr "Neighbor Shell (pair_shell)"
 #: 6c09b06e4816461eb5f96ab373ab5406
 msgid "默认 `1`，仅用于自动配对。`1` 表示最近邻壳层，`2` 表示第二近邻壳层。"
 msgstr ""
-"Default `1`, used only for automatic pairing. `1` denotes the nearest-neighbor shell "
-"and `2` the second-neighbor shell."
+"Default `1`, used only for automatic pairing. `1` denotes the nearest-"
+"neighbor shell and `2` the second-neighbor shell."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:87
 #: 9b6bfd2481fc4173af6f4ff1626be4ed
@@ -300,8 +310,8 @@ msgstr "Shell Tolerance (pair_shell_tolerance)"
 #: 9da58f99ca5e4c45bc3c09dc2d0969c0
 msgid "默认 `0.05` Å。距离差不超过此值的原子对归入同一近邻壳层。"
 msgstr ""
-"Default `0.05` Å. Atom pairs whose distances differ by no more than this value are "
-"assigned to the same neighbor shell."
+"Default `0.05` Å. Atom pairs whose distances differ by no more than this "
+"value are assigned to the same neighbor shell."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:91
 #: 5f278bfb71294eca8ce642f80fc8499a
@@ -334,9 +344,9 @@ msgstr "Bond-Direction Filter (bond_filter_mode)"
 #: 7406631e06de4902a68a8b92f59f8ffa
 msgid "默认 `Any`。可选 `Any`、`Near axis`、`Near plane`，分别表示不限方向、靠近参考轴、靠近以参考向量为法向的平面。"
 msgstr ""
-"Default `Any`. Available values are `Any`, `Near axis`, and `Near plane`, meaning "
-"unrestricted direction, close to a reference axis, or close to a plane whose normal "
-"is the reference vector."
+"Default `Any`. Available values are `Any`, `Near axis`, and `Near plane`,"
+" meaning unrestricted direction, close to a reference axis, or close to a"
+" plane whose normal is the reference vector."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:103
 #: 09a1701848b3492683a8db60d2577d42
@@ -347,8 +357,8 @@ msgstr "Bond-Direction Reference (bond_filter_axis)"
 #: 6b5fd5d8c8444f98a86d19abe2108856
 msgid "默认 `[0,0,1]`，为笛卡尔向量；在 `Near axis` 中表示轴，在 `Near plane` 中表示平面法向。"
 msgstr ""
-"Default `[0,0,1]`, a Cartesian vector. It denotes the axis in `Near axis` and the "
-"plane normal in `Near plane`."
+"Default `[0,0,1]`, a Cartesian vector. It denotes the axis in `Near axis`"
+" and the plane normal in `Near plane`."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:107
 #: cb7aca0572464d0198e3cd1ebdc9e0f0
@@ -389,8 +399,8 @@ msgstr "Rotation Axis (rotation_axis)"
 #: 77f043b5ac984d2f8fb22100fd224fd0
 msgid "默认 `[0,1,0]`，为笛卡尔向量，仅用于旋转响应。若磁矩平行于旋转轴，该磁矩不会改变。"
 msgstr ""
-"Default `[0,1,0]`, a Cartesian vector used only for rotation responses. A moment "
-"parallel to the rotation axis does not change."
+"Default `[0,1,0]`, a Cartesian vector used only for rotation responses. A"
+" moment parallel to the rotation axis does not change."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:123
 #: e703da721c274323ad3974442dda2dbd
@@ -401,8 +411,9 @@ msgstr "Eligible Elements (apply_elements)"
 #: f5ed4585463b4d21823c72fe0c96fca2
 msgid "默认空，表示所有元素。只允许所列元素中模长非零的磁矩成为单原子目标或自动原子对候选，例如 `Fe,Co`。"
 msgstr ""
-"Empty by default, meaning all elements. Only nonzero moments on listed elements may "
-"become single-atom targets or automatic pair candidates, for example `Fe,Co`."
+"Empty by default, meaning all elements. Only nonzero moments on listed "
+"elements may become single-atom targets or automatic pair candidates, for"
+" example `Fe,Co`."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:127
 #: fe55b2c7d3754e2c8e6f59ddbe5079b5
@@ -413,8 +424,8 @@ msgstr "Moment-Scale Scan (moment_scale_scan)"
 #: 7e6ad00d84a14bac8ac7fb7c6c48b902
 msgid "默认 `0.8,0.9,1.0,1.1,1.2`，仅用于磁矩模长响应。比例必须非负、互不重复并包含 1.0。"
 msgstr ""
-"Default `0.8,0.9,1.0,1.1,1.2`, used only for the moment-magnitude response. Scales "
-"must be nonnegative, distinct, and include 1.0."
+"Default `0.8,0.9,1.0,1.1,1.2`, used only for the moment-magnitude "
+"response. Scales must be nonnegative, distinct, and include 1.0."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:131
 #: bd4879eddd9e4d738fc917a805adddda
@@ -425,8 +436,8 @@ msgstr "Maximum Structures (max_outputs)"
 #: 06517510e9cf4836aa443f997c0d272f
 msgid "默认 `100`。只保留能完整放入预算的 group。"
 msgstr ""
-"Default `100`. Only response groups that fit completely within the budget are "
-"retained."
+"Default `100`. Only response groups that fit completely within the budget"
+" are retained."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:135
 #: b051f09e60cc426da05a22a094ab7b03
@@ -437,23 +448,23 @@ msgstr "Troubleshooting"
 #: 05903f802bba4cf3a540117acd2ea149
 msgid "**没有可用目标：** 检查输入磁矩是否为非零三分量向量，以及原子索引和合格元素是否匹配。"
 msgstr ""
-"**No usable targets:** check that input moments are nonzero three-component vectors "
-"and that atom indices and eligible elements match."
+"**No usable targets:** check that input moments are nonzero three-"
+"component vectors and that atom indices and eligible elements match."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:138
 #: c8698ef6e1ed45ab9e755cb75835b0b3
 msgid "**自动配对为空：** 先关闭可选筛选并确认近邻壳层，再逐项加入元素对、标签对或键方向限制。"
 msgstr ""
-"**Automatic pairing is empty:** disable optional filters and confirm the neighbor "
-"shell first, then add element-pair, group-pair, or bond-direction constraints one at "
-"a time."
+"**Automatic pairing is empty:** disable optional filters and confirm the "
+"neighbor shell first, then add element-pair, group-pair, or bond-"
+"direction constraints one at a time."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:139
 #: 6a262233ad244b78ad87166c79637025
 msgid "**分组对为空：** 先用“原子层分组”卡写入 `group`，并确认两个标签中都存在非零磁矩。"
 msgstr ""
-"**Group pair is empty:** use Layer Groups first to write `group`, and confirm that "
-"both labels contain nonzero moments."
+"**Group pair is empty:** use Layer Groups first to write `group`, and "
+"confirm that both labels contain nonzero moments."
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:141
 #: ad87e62ae24444cbbd611086f65cb846
@@ -461,13 +472,18 @@ msgid "输出字段"
 msgstr "Output Fields"
 
 #: ../../source/module/make-dataset-cards/cards/local-magnetic-response-card.md:143
-#: 31b9519cf16540f8adfee02eed51783a
+#: c894dce80972423ab33d81f160066a87
 msgid ""
 "输出保留结构的原子、坐标、晶胞和 PBC，磁矩统一写入 `spin:R:3`。每帧带有 "
-"`response_group`、`response_coordinate`、`response_branch`、`response_task_id` "
-"和来源结构标识；相同输入与参数会得到确定性的响应内容和任务标识。"
+"`response_group`、`response_coordinate`、`response_coordinate_unit`、`response_branch`、`response_task_id`"
+" 和来源结构标识。组名采用 `mrg-pair-canting-<短哈希>` 这类“响应类型 + 稳定 "
+"ID”格式，既可直接辨认用途，也能安全交给训练器。卡片输出的是 DFT 约束任务磁矩；回填标签时必须用 DFT 最终收敛的三分量磁矩替换它。"
 msgstr ""
-"Outputs preserve atoms, coordinates, cell, and PBC, while moments are standardized in"
-" `spin:R:3`. Every frame contains `response_group`, `response_coordinate`, "
-"`response_branch`, `response_task_id`, and source-structure identification. Identical"
-" inputs and parameters produce deterministic response content and task identifiers."
+"Outputs preserve atoms, coordinates, cell, and PBC, while moments are "
+"standardized in `spin:R:3`. Every frame contains `response_group`, "
+"`response_coordinate`, `response_coordinate_unit`, `response_branch`, "
+"`response_task_id`, and source-structure identification. Group names use a "
+"response-type plus stable-ID form such as `mrg-pair-canting-<short-hash>`, "
+"which is recognizable to users and safe for trainers. The card outputs the "
+"moments requested for constrained DFT; when labels are reattached, they must "
+"be replaced by the final converged three-component DFT moments."

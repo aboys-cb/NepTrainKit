@@ -50,9 +50,11 @@ def test_local_pair_response_is_complete_and_has_per_pair_reference():
     for frame in output:
         groups.setdefault(frame.info["response_group"], []).append(frame)
     assert len(groups) == 2
+    assert all(group.startswith("mrg-pair-canting-") for group in groups)
     for frames in groups.values():
         coordinates = [frame.info["response_coordinate"] for frame in frames]
         assert np.allclose(coordinates, np.deg2rad([-2, -1, 0, 1, 2]))
+        assert all(frame.info["response_coordinate_unit"] == "radian" for frame in frames)
         assert sum(frame.info["response_branch"] == "reference" for frame in frames) == 1
         reference = next(frame for frame in frames if frame.info["response_branch"] == "reference")
         assert np.array_equal(reference.positions, atoms.positions)
@@ -537,15 +539,24 @@ def test_manifest_round_trip_reattaches_only_matching_task(tmp_path):
     loaded = ResponseManifest.read(path)
     assert ResponseManifest.from_dataset(output).to_dict() == operation.last_manifest.to_dict()
     dft_output = output[0].copy()
+    final_spin = np.asarray(dft_output.arrays["spin"]).copy()
+    final_spin[:, 0] += [0.1, -0.2]
+    dft_output.set_array("spin", final_spin)
     for key in list(dft_output.info):
         if key.startswith("response_"):
             del dft_output.info[key]
     restored = loaded.reattach(dft_output, operation.last_manifest.records[0].task_id)
     assert restored.info["response_group"] == output[0].info["response_group"]
+    np.testing.assert_allclose(restored.arrays["spin"], final_spin)
+    assert restored.info["response_spin_provenance"] == "dft_final"
+    assert restored.info["response_coordinate_unit"] == "radian"
     with pytest.raises(ValueError, match="exactly one"):
         loaded.reattach(dft_output, "another-task")
     with pytest.raises(ValueError, match="atom identity/order"):
         loaded.reattach(Atoms("Co2"), operation.last_manifest.records[0].task_id)
+    spinless = Atoms("Fe2", positions=dft_output.positions, cell=dft_output.cell)
+    with pytest.raises(ValueError, match="final vector spin"):
+        loaded.reattach(spinless, operation.last_manifest.records[0].task_id)
     payload = json.loads(path.read_text())
     assert len(payload["manifest_hash"]) == 64
 

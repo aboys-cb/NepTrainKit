@@ -143,6 +143,85 @@ def _finalize_populated_translations(root: ET.Element) -> None:
             translation.attrib.pop("type", None)
 
 
+def _sync_python_templates(root: ET.Element) -> None:
+    """Extract core errors and translation calls that lupdate misses in f-strings."""
+    helpers = _helper_contexts()
+    for path in sorted(SRC.rglob("*.py")):
+        tree = ast.parse(_read_text(path), filename=str(path))
+        parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            name = getattr(node.func, "id", "")
+            method = getattr(node.func, "attr", "")
+            owner = getattr(getattr(node.func, "value", None), "id", "")
+            if name == "CardOperationError" and len(node.args) >= 2:
+                context_name, template = "CardOperationError", node.args[1]
+            elif name == "_tr" and node.args and path.relative_to(SRC).as_posix() in helpers:
+                context_name = helpers[path.relative_to(SRC).as_posix()]
+                template = node.args[0]
+            elif method == "tr" and owner in {"self", "cls"} and node.args:
+                parent = parents.get(node)
+                while parent is not None and not isinstance(parent, ast.ClassDef):
+                    parent = parents.get(parent)
+                if parent is None:
+                    continue
+                context_name, template = parent.name, node.args[0]
+            elif method == "translate" and owner in {"QCoreApplication", "QApplication"} and len(node.args) >= 2:
+                if not isinstance(node.args[0], ast.Constant) or not isinstance(node.args[0].value, str):
+                    continue
+                context_name, template = node.args[0].value, node.args[1]
+            else:
+                continue
+            if not isinstance(template, ast.Constant) or not isinstance(template.value, str):
+                continue
+            context = _find_or_create_context(root, context_name)
+            matches = [m for m in context.findall("message") if m.findtext("source") == template.value]
+            message = next((m for m in matches if m.find("translation") is not None
+                            and m.find("translation").get("type") not in OBSOLETE_TRANSLATION_TYPES),
+                           matches[0] if matches else None)
+            if message is None:
+                message = ET.SubElement(context, "message")
+                ET.SubElement(message, "source").text = template.value
+                ET.SubElement(message, "translation", type="unfinished")
+            translation = message.find("translation")
+            if translation is not None and not (translation.text or "").strip():
+                # lupdate may create an empty active helper entry alongside the
+                # populated entry it marked obsolete. Preserve the existing text.
+                previous = next((m.find("translation") for m in matches
+                                 if (m.findtext("translation") or "").strip()), None)
+                if previous is not None:
+                    translation.text = previous.text
+            if translation is not None and translation.get("type") in OBSOLETE_TRANSLATION_TYPES:
+                translation.set("type", "unfinished")
+            filename = "../" + path.relative_to(SRC).as_posix()
+            location = {"filename": filename, "line": str(node.lineno)}
+            if not any(item.attrib == location for item in message.findall("location")):
+                message.insert(0, ET.Element("location", location))
+
+
+def _sync_runtime_error_templates(root: ET.Element) -> None:
+    """Keep reviewed whole-message fallbacks active when lupdate runs."""
+    path = SRC / "ui/runtime_error_catalog.py"
+    if not path.exists():
+        return
+    module = ast.parse(_read_text(path))
+    entries = next(ast.literal_eval(node.value) for node in module.body
+                   if isinstance(node, ast.Assign)
+                   and any(isinstance(target, ast.Name) and target.id == "RUNTIME_ERROR_TEMPLATES"
+                           for target in node.targets))
+    for context_name, source in entries:
+        context = _find_or_create_context(root, context_name)
+        message = next((m for m in context.findall("message") if m.findtext("source") == source), None)
+        if message is None:
+            message = ET.SubElement(context, "message")
+            ET.SubElement(message, "source").text = source
+            ET.SubElement(message, "translation", type="unfinished")
+        translation = message.find("translation")
+        if translation is not None and translation.get("type") in OBSOLETE_TRANSLATION_TYPES:
+            translation.set("type", "unfinished")
+
+
 def _normalize_helper_contexts(ts_path: Path) -> None:
     tree = ET.parse(ts_path)
     root = tree.getroot()
@@ -174,6 +253,8 @@ def _normalize_helper_contexts(ts_path: Path) -> None:
         if not context.findall("message"):
             root.remove(context)
 
+    _sync_python_templates(root)
+    _sync_runtime_error_templates(root)
     _prune_obsolete_duplicates(root)
     _finalize_populated_translations(root)
     tree.write(ts_path, encoding="utf-8", xml_declaration=True)

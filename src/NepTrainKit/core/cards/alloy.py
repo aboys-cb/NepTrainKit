@@ -80,17 +80,17 @@ def _as_list(value: Any) -> list:
 def _range_pair(value: Any, *, label: str) -> tuple[float, float]:
     values = _as_list(value)
     if not values:
-        raise ValueError(f"{label} must not be empty.")
+        raise CardOperationError('alloy.range_pair', '{label} must not be empty.', label=label)
     if len(values) == 1:
         low = high = float(values[0])
     elif len(values) == 2:
         low, high = [float(item) for item in values]
     else:
-        raise ValueError(f"{label} must contain one or two values.")
+        raise CardOperationError('alloy.range_pair', '{label} must contain one or two values.', label=label)
     if not np.all(np.isfinite([low, high])):
-        raise ValueError(f"{label} values must be finite.")
+        raise CardOperationError('alloy.range_pair', '{label} values must be finite.', label=label)
     if low > high:
-        raise ValueError(f"{label} minimum must be <= maximum.")
+        raise CardOperationError('alloy.range_pair', '{label} minimum must be <= maximum.', label=label)
     return low, high
 
 
@@ -110,7 +110,10 @@ def _normalized_dopant_atom_ratios(
             "Dopant ratios must match dopant elements.",
         )
     if np.any(~np.isfinite(ratios)) or np.any(ratios < 0.0):
-        raise ValueError("Dopant ratios must be finite and non-negative.")
+        raise CardOperationError(
+            'alloy.normalized_dopant_atom_ratios',
+            'Dopant ratios must be finite and non-negative.',
+        )
     invalid_elements = [
         element for element in dopant_list if element not in atomic_numbers
     ]
@@ -119,7 +122,7 @@ def _normalized_dopant_atom_ratios(
             "Unknown dopant element symbol(s): " + ", ".join(invalid_elements) + "."
         )
     if ratio_type not in {"atom", "mass"}:
-        raise ValueError("Dopant ratio_type must be 'atom' or 'mass'.")
+        raise CardOperationError('alloy.normalized_dopant_atom_ratios', "Dopant ratio_type must be 'atom' or 'mass'.")
 
     if ratio_type == "mass":
         masses = np.array(
@@ -130,7 +133,7 @@ def _normalized_dopant_atom_ratios(
         atom_ratios = ratios
     total = float(atom_ratios.sum())
     if total <= 0.0:
-        raise ValueError("At least one dopant ratio must be positive.")
+        raise CardOperationError('alloy.normalized_dopant_atom_ratios', 'At least one dopant ratio must be positive.')
     return dopant_list, atom_ratios / total
 
 
@@ -708,8 +711,9 @@ class RandomDopingOperation(StructureOperation):
                 return maximum
             return int(rng.integers(minimum, maximum + 1))
 
-        raise ValueError(
-            "RandomDoping rule use must be atomic_percent, mass_percent, or count."
+        raise CardOperationError(
+            'alloy.doping_count',
+            'RandomDoping rule use must be atomic_percent, mass_percent, or count.',
         )
 
     def _doping_count_bounds(
@@ -728,7 +732,7 @@ class RandomDopingOperation(StructureOperation):
                 label="percent",
             )
             if percent_min < 0.0 or percent_max > 100.0:
-                raise ValueError("percent must be within [0, 100].")
+                raise CardOperationError('alloy.doping_count_bounds', 'percent must be within [0, 100].')
             if use_mode == "atomic_percent":
                 return (
                     int(len(candidate_indices) * percent_min / 100.0),
@@ -756,14 +760,14 @@ class RandomDopingOperation(StructureOperation):
                 label="count",
             )
             if not float(count_min_f).is_integer() or not float(count_max_f).is_integer():
-                raise ValueError("count values must be integers.")
+                raise CardOperationError('alloy.doping_count_bounds', 'count values must be integers.')
             count_min = int(count_min_f)
             count_max = int(count_max_f)
             if count_min < 0:
-                raise ValueError("count values must be >= 0.")
+                raise CardOperationError('alloy.doping_count_bounds', 'count values must be >= 0.')
             count_mode = str(rule.get("count_mode", "")).lower()
             if count_mode and count_mode not in {"fixed", "random"}:
-                raise ValueError("count_mode must be fixed or random.")
+                raise CardOperationError('alloy.validation', 'count_mode must be fixed or random.')
             if count_mode == "fixed":
                 if count_min != count_max:
                     raise CardOperationError(
@@ -772,8 +776,9 @@ class RandomDopingOperation(StructureOperation):
                     )
                 return count_min, count_min
             return count_min, count_max
-        raise ValueError(
-            "RandomDoping rule use must be atomic_percent, mass_percent, or count."
+        raise CardOperationError(
+            'alloy.doping_count_bounds',
+            'RandomDoping rule use must be atomic_percent, mass_percent, or count.',
         )
 
 
@@ -827,7 +832,10 @@ class CompositionSweepOperation(StructureOperation):
             )
         method = str(params.method or "").strip()
         if method not in {"Grid", "Sobol"}:
-            raise ValueError("Composition Space Sampling method must be Grid or Sobol.")
+            raise CardOperationError(
+                'alloy.sampling_summary',
+                'Composition Space Sampling method must be Grid or Sobol.',
+            )
         max_outputs = int(params.max_outputs)
         if max_outputs < 1:
             raise CardOperationError(
@@ -842,9 +850,9 @@ class CompositionSweepOperation(StructureOperation):
             )
         min_fraction = float(params.min_fraction)
         if not np.isfinite(min_fraction) or min_fraction < 0.0 or min_fraction > 1.0:
-            raise ValueError("Minimum element fraction must be between 0 and 1.")
+            raise CardOperationError('alloy.sampling_summary', 'Minimum element fraction must be between 0 and 1.')
         if params.use_seed and int(params.seed) < 0:
-            raise ValueError("Composition Space Sampling seed must be non-negative.")
+            raise CardOperationError('alloy.validation', 'Composition Space Sampling seed must be non-negative.')
 
         seed = int(params.seed) if params.use_seed else None
         combo_rng = np.random.default_rng(seed) if seed is not None else None
@@ -1139,8 +1147,9 @@ class CompositionSweepOperation(StructureOperation):
             return "weighted_reflow"
         if text in {"equal+reflow", "balance component counts"}:
             return "equal_reflow"
-        raise ValueError(
-            "Composition Space Sampling budget allocation must be Equal+Reflow, Capacity-weighted, or Equal (legacy)."
+        raise CardOperationError(
+            'alloy.budget_mode',
+            'Composition Space Sampling budget allocation must be Equal+Reflow, Capacity-weighted, or Equal (legacy).',
         )
 
     @staticmethod
@@ -1340,7 +1349,12 @@ def _canonical_prototype_name(text: str) -> str:
     }
     if normalized not in aliases:
         supported = ", ".join(_ORDERED_PROTOTYPES)
-        raise ValueError(f"Ordered Alloy Prototype: unsupported prototype {text!r}; choose one of {supported}.")
+        raise CardOperationError(
+            'alloy.canonical_prototype_name',
+            'Ordered Alloy Prototype: unsupported prototype {text}; choose one of {supported}.',
+            text=f'{text!r}',
+            supported=supported,
+        )
     return aliases[normalized]
 
 
@@ -1369,9 +1383,16 @@ def _parse_sublattice_elements(text: str, labels: tuple[str, ...]) -> dict[str, 
         try:
             loaded = json.loads(raw_text)
         except json.JSONDecodeError as exc:
-            raise ValueError(f"Ordered Alloy Prototype: invalid sublattice_elements JSON: {exc.msg}.") from exc
+            raise CardOperationError(
+                'alloy.validation',
+                'Ordered Alloy Prototype: invalid sublattice_elements JSON: {reason}.',
+                reason=exc.msg,
+            ) from exc
         if not isinstance(loaded, dict):
-            raise ValueError("Ordered Alloy Prototype: sublattice_elements JSON must be an object.")
+            raise CardOperationError(
+                'alloy.parse_sublattice_elements',
+                'Ordered Alloy Prototype: sublattice_elements JSON must be an object.',
+            )
         raw = loaded
     else:
         raw = {}
@@ -1402,7 +1423,10 @@ def _scan_lattice_values(values: tuple[float, float, float]) -> list[float]:
         )
     start, stop, step = (float(value) for value in values)
     if not np.all(np.isfinite([start, stop, step])) or start <= 0.0 or stop <= 0.0 or step <= 0.0:
-        raise ValueError("Ordered Alloy Prototype: a_range values must be finite and positive.")
+        raise CardOperationError(
+            'alloy.scan_lattice_values',
+            'Ordered Alloy Prototype: a_range values must be finite and positive.',
+        )
     if stop < start:
         start, stop = stop, start
     return [float(value) for value in np.arange(start, stop + 0.5 * step, step, dtype=float)]
@@ -1446,7 +1470,7 @@ class OrderedAlloyPrototypeOperation(GeneratorOperation):
         occupants = _parse_sublattice_elements(params.sublattice_elements, definition.labels)
         max_outputs = int(params.max_outputs)
         if max_outputs <= 0:
-            raise ValueError("Ordered Alloy Prototype: max_outputs must be >= 1.")
+            raise CardOperationError('alloy.validation', 'Ordered Alloy Prototype: max_outputs must be >= 1.')
         a_values = tuple(_scan_lattice_values(params.a_range))
         base = self._build_base(definition, occupants, a_values[0], float(params.covera))
         labels = np.asarray(base.arrays["sublattice"], dtype=str)
@@ -1468,7 +1492,10 @@ class OrderedAlloyPrototypeOperation(GeneratorOperation):
         if definition.cell_kind == "cubic":
             return 1.0
         if not np.isfinite(covera) or covera <= 0.0:
-            raise ValueError("Ordered Alloy Prototype: c/a must be finite and positive.")
+            raise CardOperationError(
+                'alloy.effective_covera',
+                'Ordered Alloy Prototype: c/a must be finite and positive.',
+            )
         return float(covera)
 
     @classmethod
@@ -1605,9 +1632,12 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
         per_composition = int(params.arrangements_per_composition)
         max_outputs = int(params.max_outputs)
         if per_composition <= 0:
-            raise ValueError("Finite-Cell Alloy Occupancy: arrangements_per_composition must be >= 1.")
+            raise CardOperationError(
+                'alloy.validation',
+                'Finite-Cell Alloy Occupancy: arrangements_per_composition must be >= 1.',
+            )
         if max_outputs <= 0:
-            raise ValueError("Finite-Cell Alloy Occupancy: max_outputs must be >= 1.")
+            raise CardOperationError('alloy.validation', 'Finite-Cell Alloy Occupancy: max_outputs must be >= 1.')
         return FiniteCellAlloyEstimate(
             composition_count=int(composition_count),
             arrangements_per_composition=per_composition,
@@ -1632,8 +1662,9 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
     def run_structure(self, structure, params: FiniteCellAlloyOccupancyParams) -> list:
         base_seed = int(params.seed) if params.use_seed else None
         if base_seed is not None and base_seed < 0:
-            raise ValueError(
-                "Finite-Cell Alloy Occupancy: seed must be >= 0 when use_seed is enabled."
+            raise CardOperationError(
+                'alloy.run_structure',
+                'Finite-Cell Alloy Occupancy: seed must be >= 0 when use_seed is enabled.',
             )
         site_indices = self._site_indices(structure)
         spaces = self._build_spaces(
@@ -1771,10 +1802,16 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             return {"all": np.arange(len(structure), dtype=int)}
         raw = np.asarray(structure.arrays["sublattice"], dtype=str)
         if raw.shape != (len(structure),):
-            raise ValueError("Finite-Cell Alloy Occupancy: atoms.arrays['sublattice'] must be one label per atom.")
+            raise CardOperationError(
+                'alloy.site_indices',
+                "Finite-Cell Alloy Occupancy: atoms.arrays['sublattice'] must be one label per atom.",
+            )
         labels = list(dict.fromkeys(str(value).strip() for value in raw))
         if any(not label for label in labels):
-            raise ValueError("Finite-Cell Alloy Occupancy: sublattice labels must be non-empty.")
+            raise CardOperationError(
+                'alloy.site_indices',
+                'Finite-Cell Alloy Occupancy: sublattice labels must be non-empty.',
+            )
         return {label: np.nonzero(raw == label)[0].astype(int) for label in labels}
 
     @staticmethod
@@ -1802,9 +1839,16 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
         try:
             rules = json.loads(str(rules_text or ""))
         except json.JSONDecodeError as exc:
-            raise ValueError(f"Finite-Cell Alloy Occupancy: invalid site_rules JSON: {exc.msg}.") from exc
+            raise CardOperationError(
+                'alloy.validation',
+                'Finite-Cell Alloy Occupancy: invalid site_rules JSON: {reason}.',
+                reason=exc.msg,
+            ) from exc
         if not isinstance(rules, dict) or not rules:
-            raise ValueError("Finite-Cell Alloy Occupancy: site_rules must be a non-empty JSON object.")
+            raise CardOperationError(
+                'alloy.build_spaces',
+                'Finite-Cell Alloy Occupancy: site_rules must be a non-empty JSON object.',
+            )
         expected = set(site_indices)
         provided = {str(label) for label in rules}
         missing = sorted(expected - provided)
@@ -1836,14 +1880,22 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
         require_normalized_fixed_fractions: bool = False,
     ) -> _CountSpace:
         if not isinstance(raw_rule, dict):
-            raise ValueError(f"Finite-Cell Alloy Occupancy: rule for {label!r} must be an object.")
+            raise CardOperationError(
+                'alloy.space_from_rule',
+                'Finite-Cell Alloy Occupancy: rule for {label} must be an object.',
+                label=f'{label!r}',
+            )
         raw_elements = raw_rule.get("elements", [])
         if isinstance(raw_elements, str):
             elements = tuple(parse_element_list(raw_elements))
         elif isinstance(raw_elements, list):
             elements = tuple(parse_element_list(",".join(str(value) for value in raw_elements)))
         else:
-            raise ValueError(f"Finite-Cell Alloy Occupancy: elements for {label!r} must be a list or string.")
+            raise CardOperationError(
+                'alloy.space_from_rule',
+                'Finite-Cell Alloy Occupancy: elements for {label} must be a list or string.',
+                label=f'{label!r}',
+            )
         if not elements:
             raise ValueError(f"Finite-Cell Alloy Occupancy: site set {label!r} has no allowed elements.")
         if "X" in elements:
@@ -1857,15 +1909,21 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             composition = cls._mapping_for_elements(raw_rule.get("composition"), elements, label, "composition")
             values = np.asarray([composition[element] for element in elements], dtype=float)
             if np.any(~np.isfinite(values)) or np.any(values < 0.0) or float(values.sum()) <= 0.0:
-                raise ValueError(f"Finite-Cell Alloy Occupancy: fixed composition for {label!r} is invalid.")
+                raise CardOperationError(
+                    'alloy.space_from_rule',
+                    'Finite-Cell Alloy Occupancy: fixed composition for {label} is invalid.',
+                    label=f'{label!r}',
+                )
             if require_normalized_fixed_fractions and not np.isclose(
                 float(values.sum()),
                 1.0,
                 atol=1e-6,
                 rtol=0.0,
             ):
-                raise ValueError(
-                    f"Finite-Cell Alloy Occupancy: fixed fractions for {label!r} must sum to 1."
+                raise CardOperationError(
+                    'alloy.space_from_rule',
+                    'Finite-Cell Alloy Occupancy: fixed fractions for {label} must sum to 1.',
+                    label=f'{label!r}',
                 )
             fractions = values / float(values.sum())
             counts = fractions_to_counts_exact(fractions, n_sites)
@@ -1897,9 +1955,11 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             requested = tuple((element, tuple(float(value) for value in ranges[element])) for element in elements)
             realization = "count_range"
         else:
-            raise ValueError(
-                f"Finite-Cell Alloy Occupancy: unsupported mode {mode!r} for {label!r}; "
-                "use fixed_fraction, fraction_range, or count_range."
+            raise CardOperationError(
+                'alloy.space_from_rule',
+                'Finite-Cell Alloy Occupancy: unsupported mode {mode} for {label}; use fixed_fraction, fraction_range, or count_range.',
+                mode=f'{mode!r}',
+                label=f'{label!r}',
             )
 
         space = _CountSpace(
@@ -1921,13 +1981,20 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
     @staticmethod
     def _mapping_for_elements(raw: Any, elements: tuple[str, ...], label: str, field_name: str) -> dict[str, float]:
         if not isinstance(raw, dict):
-            raise ValueError(f"Finite-Cell Alloy Occupancy: {field_name} for {label!r} must be an object.")
+            raise CardOperationError(
+                'alloy.mapping_for_elements',
+                'Finite-Cell Alloy Occupancy: {field_name} for {label} must be an object.',
+                field_name=field_name,
+                label=f'{label!r}',
+            )
         extra = sorted(set(str(key) for key in raw) - set(elements))
         missing = sorted(set(elements) - set(str(key) for key in raw))
         if extra or missing:
-            raise ValueError(
-                f"Finite-Cell Alloy Occupancy: {field_name} keys for {label!r} "
-                "must exactly match its allowed elements."
+            raise CardOperationError(
+                'alloy.mapping_for_elements',
+                'Finite-Cell Alloy Occupancy: {field_name} keys for {label} must exactly match its allowed elements.',
+                field_name=field_name,
+                label=f'{label!r}',
             )
         return {element: float(raw[element]) for element in elements}
 
@@ -1942,13 +2009,20 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
     ) -> dict[str, tuple[float, float]]:
         field_name = "fractions" if fraction else "counts"
         if not isinstance(raw, dict):
-            raise ValueError(f"Finite-Cell Alloy Occupancy: {field_name} for {label!r} must be an object.")
+            raise CardOperationError(
+                'alloy.range_mapping',
+                'Finite-Cell Alloy Occupancy: {field_name} for {label} must be an object.',
+                field_name=field_name,
+                label=f'{label!r}',
+            )
         extra = sorted(set(str(key) for key in raw) - set(elements))
         missing = sorted(set(elements) - set(str(key) for key in raw))
         if extra or missing:
-            raise ValueError(
-                f"Finite-Cell Alloy Occupancy: {field_name} keys for {label!r} "
-                "must exactly match its allowed elements."
+            raise CardOperationError(
+                'alloy.range_mapping',
+                'Finite-Cell Alloy Occupancy: {field_name} keys for {label} must exactly match its allowed elements.',
+                field_name=field_name,
+                label=f'{label!r}',
             )
         ranges: dict[str, tuple[float, float]] = {}
         for element in elements:
@@ -1960,11 +2034,21 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             else:
                 low = high = float(value)
             if not np.all(np.isfinite([low, high])) or low < 0.0 or high < low:
-                raise ValueError(f"Finite-Cell Alloy Occupancy: invalid range for {label}.{element}.")
+                raise CardOperationError(
+                    'alloy.range_mapping',
+                    'Finite-Cell Alloy Occupancy: invalid range for {label}.{element}.',
+                    label=label,
+                    element=element,
+                )
             if fraction and high > 1.0 + 1e-12:
                 raise ValueError(f"Finite-Cell Alloy Occupancy: fraction for {label}.{element} exceeds 1.")
             if not fraction and (not float(low).is_integer() or not float(high).is_integer()):
-                raise ValueError(f"Finite-Cell Alloy Occupancy: count bounds for {label}.{element} must be integers.")
+                raise CardOperationError(
+                    'alloy.range_mapping',
+                    'Finite-Cell Alloy Occupancy: count bounds for {label}.{element} must be integers.',
+                    label=label,
+                    element=element,
+                )
             ranges[element] = (low, high)
         return ranges
 
@@ -2120,13 +2204,14 @@ class CompositionGradientOperation(StructureOperation):
         start_comp = cls._normalized_composition(params.start_composition, elements)
         end_comp = cls._normalized_composition(params.end_composition, elements)
         if not start_comp or not end_comp:
-            raise ValueError(
-                "Composition Gradient requires valid start and end compositions."
+            raise CardOperationError(
+                'alloy.sampling_summary',
+                'Composition Gradient requires valid start and end compositions.',
             )
 
         axis_key = str(params.axis).strip().lower()
         if axis_key not in cls.AXIS_INDEX:
-            raise ValueError("Composition Gradient axis must be one of a, b, or c.")
+            raise CardOperationError('alloy.sampling_summary', 'Composition Gradient axis must be one of a, b, or c.')
         bins = int(params.bins)
         if bins < 2:
             raise CardOperationError(
@@ -2234,7 +2319,10 @@ class CompositionGradientOperation(StructureOperation):
     ) -> np.ndarray:
         mode = str(target_mode or "all").strip().lower()
         if mode not in {"all", "listed"}:
-            raise ValueError("Composition Gradient target mode must be all or listed.")
+            raise CardOperationError(
+                'alloy.candidate_indices',
+                'Composition Gradient target mode must be all or listed.',
+            )
         targets = set(parse_element_list(target_elements))
         # A nonempty legacy target list implied listed-site mode before the UI
         # gained an explicit scope selector.
@@ -2253,9 +2341,9 @@ class CompositionGradientOperation(StructureOperation):
     @staticmethod
     def _axis_coordinate(structure, axis_idx: int) -> np.ndarray:
         if int(getattr(structure.cell, "rank", 0)) < 3:
-            raise ValueError(
-                "Composition Gradient requires a non-singular 3D cell "
-                "to use lattice directions a, b, or c."
+            raise CardOperationError(
+                'alloy.axis_coordinate',
+                'Composition Gradient requires a non-singular 3D cell to use lattice directions a, b, or c.',
             )
         return scaled_positions(structure, wrap=True)[:, axis_idx]
 
@@ -2833,9 +2921,13 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
         try:
             data = json.loads(text)
         except json.JSONDecodeError as exc:
-            raise ValueError(f"Invalid replacement JSON: {exc.msg}") from exc
+            raise CardOperationError(
+                'alloy.parse_replacements',
+                'Invalid replacement JSON: {reason}',
+                reason=exc.msg,
+            ) from exc
         if not isinstance(data, dict):
-            raise ValueError("Replacement JSON must be an object.")
+            raise CardOperationError('alloy.parse_replacements', 'Replacement JSON must be an object.')
         for key, value in data.items():
             name = str(key).strip()
             ratio = float(value)
@@ -2845,8 +2937,9 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
                     "Replacement element names must not be empty.",
                 )
             if not np.isfinite(ratio) or ratio < 0.0:
-                raise ValueError(
-                    "Replacement ratios must be finite and non-negative."
+                raise CardOperationError(
+                    'alloy.parse_replacements',
+                    'Replacement ratios must be finite and non-negative.',
                 )
             names.append(name)
             ratios.append(ratio)
@@ -2866,7 +2959,7 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
                 "Replacement element names must not be empty.",
             )
         if not np.isfinite(ratio) or ratio < 0.0:
-            raise ValueError("Replacement ratios must be finite and non-negative.")
+            raise CardOperationError('alloy.parse_replacements', 'Replacement ratios must be finite and non-negative.')
         names.append(name)
         ratios.append(ratio)
     return names, ratios
@@ -3099,9 +3192,15 @@ def replace_atoms_with_conditions(
             "Replacement probabilities must match replacement atoms.",
         )
     if np.any(~np.isfinite(probs)) or np.any(probs < 0.0):
-        raise ValueError("Replacement probabilities must be finite and non-negative.")
+        raise CardOperationError(
+            'alloy.replace_atoms_with_conditions',
+            'Replacement probabilities must be finite and non-negative.',
+        )
     if np.all(probs <= 0):
-        raise ValueError("At least one replacement probability must be positive.")
+        raise CardOperationError(
+            'alloy.replace_atoms_with_conditions',
+            'At least one replacement probability must be positive.',
+        )
     probs = probs / probs.sum()
 
     rng = np.random.default_rng(seed)

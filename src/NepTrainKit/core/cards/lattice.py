@@ -25,12 +25,16 @@ from .sampling import derived_structure_seed
 
 def _scan_values(values, *, label: str) -> np.ndarray:
     if len(values) != 3:
-        raise ValueError(f"{label} must contain exactly three values: start, stop, step.")
+        raise CardOperationError(
+            'lattice.validation',
+            '{label} must contain exactly three values: start, stop, step.',
+            label=label,
+        )
     start, stop, step = [float(value) for value in values]
     if not np.all(np.isfinite([start, stop, step])):
-        raise ValueError(f"{label} values must be finite.")
+        raise CardOperationError('lattice.scan_values', '{label} values must be finite.', label=label)
     if step <= 0.0:
-        raise ValueError(f"{label} step must be positive.")
+        raise CardOperationError('lattice.scan_values', '{label} step must be positive.', label=label)
     if stop < start:
         start, stop = stop, start
     return np.arange(start, stop + step * 0.5, step, dtype=float)
@@ -118,7 +122,10 @@ class BainPathOperation(StructureOperation):
             axial_factor = value
             transverse_factor = 1.0 if params.mode == "free_c" else 1.0 / np.sqrt(value)
         else:
-            raise ValueError("BainPath coordinate_mode must be relative_ca or axis_scale.")
+            raise CardOperationError(
+                'lattice.validation',
+                'BainPath coordinate_mode must be relative_ca or axis_scale.',
+            )
         factors.fill(transverse_factor)
         factors[c_axis] = axial_factor
         return factors
@@ -128,16 +135,19 @@ class BainPathOperation(StructureOperation):
         """Return validated path values and exact outputs per input."""
         values = _scan_values(params.ca_range, label="ca_range")
         if np.any(values <= 0.0):
-            raise ValueError("BainPath ca_range values must be positive.")
+            raise CardOperationError('lattice.sampling_summary', 'BainPath ca_range values must be positive.')
         volume_values = (
             _scan_values(params.volume_scale_range, label="volume_scale_range")
             if params.mode == "scale_volume"
             else np.array([1.0], dtype=float)
         )
         if np.any(volume_values <= 0.0):
-            raise ValueError("BainPath volume_scale_range values must be positive.")
+            raise CardOperationError('lattice.sampling_summary', 'BainPath volume_scale_range values must be positive.')
         if params.coordinate_mode not in {"relative_ca", "axis_scale"}:
-            raise ValueError("BainPath coordinate_mode must be relative_ca or axis_scale.")
+            raise CardOperationError(
+                'lattice.validation',
+                'BainPath coordinate_mode must be relative_ca or axis_scale.',
+            )
         return {
             "path_values": values,
             "volume_values": volume_values,
@@ -156,7 +166,7 @@ class BainPathOperation(StructureOperation):
 
         cell = np.asarray(structure.cell.array, dtype=float)
         if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
-            raise ValueError("BainPath requires a nonsingular 3x3 cell.")
+            raise CardOperationError('lattice.validation', 'BainPath requires a nonsingular 3x3 cell.')
 
         summary = self.sampling_summary(params)
         ca_values = summary["path_values"]
@@ -298,7 +308,7 @@ class CellStrainOperation(StructureOperation):
         summary = self.sampling_summary(params)
         cell = np.asarray(structure.get_cell(), dtype=float)
         if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
-            raise ValueError("CellStrain requires a nonsingular 3x3 cell.")
+            raise CardOperationError('lattice.validation', 'CellStrain requires a nonsingular 3x3 cell.')
         identify_organic = params.identify_organic
         if identify_organic:
             clusters, is_organic_list = get_clusters(structure)
@@ -348,10 +358,13 @@ class CellScalingOperation(StructureOperation):
             raise ValueError("CellScaling: max_num must be >= 1.")
         engine_type = int(params.engine_type)
         if engine_type not in {0, 1}:
-            raise ValueError("CellScaling: engine_type must be 0 (Sobol) or 1 (Uniform).")
+            raise CardOperationError('lattice.validation', 'CellScaling: engine_type must be 0 (Sobol) or 1 (Uniform).')
         max_scaling = float(params.max_scaling)
         if not np.isfinite(max_scaling) or max_scaling < 0.0:
-            raise ValueError("CellScaling: max_scaling must be finite and non-negative.")
+            raise CardOperationError(
+                'lattice.run_structure',
+                'CellScaling: max_scaling must be finite and non-negative.',
+            )
         base_seed = (
             derived_structure_seed(int(params.seed), structure)
             if params.use_seed
@@ -489,7 +502,7 @@ class ShearMatrixOperation(StructureOperation):
             or np.any(~np.isfinite(cell))
             or float(np.linalg.det(cell)) <= 1e-12
         ):
-            raise ValueError("ShearMatrix requires a finite, right-handed 3x3 cell.")
+            raise CardOperationError('lattice.run_structure', 'ShearMatrix requires a finite, right-handed 3x3 cell.')
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
 
@@ -574,7 +587,7 @@ class ShearAngleOperation(StructureOperation):
             or np.any(~np.isfinite(reference_cell))
             or float(np.linalg.det(reference_cell)) <= 1e-12
         ):
-            raise ValueError("ShearAngle requires a finite, right-handed 3x3 cell.")
+            raise CardOperationError('lattice.run_structure', 'ShearAngle requires a finite, right-handed 3x3 cell.')
         cellpar = cell_to_cellpar(reference_cell)
         lengths = cellpar[:3]
         angles0 = cellpar[3:]
@@ -708,10 +721,13 @@ class PerturbOperation(StructureOperation):
             raise ValueError("Perturb: max_num must be >= 1.")
         engine_type = int(params.engine_type)
         if engine_type not in {0, 1}:
-            raise ValueError("Perturb: engine_type must be 0 (Sobol) or 1 (Uniform).")
+            raise CardOperationError('lattice.validation', 'Perturb: engine_type must be 0 (Sobol) or 1 (Uniform).')
         max_distance = float(params.max_distance)
         if not np.isfinite(max_distance) or max_distance < 0.0:
-            raise ValueError("Perturb: max_distance values must be finite and non-negative.")
+            raise CardOperationError(
+                'lattice.run_structure',
+                'Perturb: max_distance values must be finite and non-negative.',
+            )
         element_scalings = self.normalize_element_limits(params.element_scalings) if params.use_element_scaling else {}
         if n_atoms == 0:
             return [structure.copy()]
@@ -730,7 +746,10 @@ class PerturbOperation(StructureOperation):
             else np.full(n_atoms, max_distance)
         )
         if not np.all(np.isfinite(per_atom_scaling)) or np.any(per_atom_scaling < 0.0):
-            raise ValueError("Perturb: max_distance values must be finite and non-negative.")
+            raise CardOperationError(
+                'lattice.run_structure',
+                'Perturb: max_distance values must be finite and non-negative.',
+            )
 
         base_seed = (
             derived_structure_seed(int(params.seed), structure)
@@ -842,7 +861,7 @@ class SuperCellOperation(StructureOperation):
         elif params.mode == "max_atoms":
             expansion_factors = self._get_max_atoms_factors(structure, params)
         else:
-            raise ValueError("SuperCell: mode must be scale, cell, or max_atoms.")
+            raise CardOperationError('lattice.validation', 'SuperCell: mode must be scale, cell, or max_atoms.')
 
         expansion_factors = self._dedupe_factors(expansion_factors, params)
         if params.output_mode == "single":
@@ -859,11 +878,11 @@ class SuperCellOperation(StructureOperation):
 
     def _validate_params(self, structure, params: SuperCellParams) -> None:
         if params.mode not in {"scale", "cell", "max_atoms"}:
-            raise ValueError("SuperCell: mode must be scale, cell, or max_atoms.")
+            raise CardOperationError('lattice.validation', 'SuperCell: mode must be scale, cell, or max_atoms.')
         if params.output_mode not in {"single", "enumerate"}:
-            raise ValueError("SuperCell: output_mode must be single or enumerate.")
+            raise CardOperationError('lattice.validation', 'SuperCell: output_mode must be single or enumerate.')
         if params.target_policy not in {"at_least", "at_most"}:
-            raise ValueError("SuperCell: target_policy must be at_least or at_most.")
+            raise CardOperationError('lattice.validation', 'SuperCell: target_policy must be at_least or at_most.')
         if len(structure) <= 0:
             raise CardOperationError(
                 "supercell_empty_input",
@@ -876,13 +895,23 @@ class SuperCellOperation(StructureOperation):
             active_triplets.append(("target_cell", params.target_cell))
         for name, values in active_triplets:
             if len(values) != 3 or not np.all(np.isfinite(values)):
-                raise ValueError(f"SuperCell: {name} must contain three finite values.")
+                raise CardOperationError(
+                    'lattice.validate_params',
+                    'SuperCell: {name} must contain three finite values.',
+                    name=name,
+                )
         if params.mode == "scale" and any(int(value) < 1 for value in params.super_scale):
-            raise ValueError("SuperCell: super_scale values must be positive integers.")
+            raise CardOperationError(
+                'lattice.validate_params',
+                'SuperCell: super_scale values must be positive integers.',
+            )
         if params.mode == "cell" and any(float(value) <= 0.0 for value in params.target_cell):
-            raise ValueError("SuperCell: target_cell values must be positive.")
+            raise CardOperationError('lattice.validate_params', 'SuperCell: target_cell values must be positive.')
         if any(int(value) < 1 for value in params.fixed_axis_scale):
-            raise ValueError("SuperCell: fixed_axis_scale values must be positive integers.")
+            raise CardOperationError(
+                'lattice.validate_params',
+                'SuperCell: fixed_axis_scale values must be positive integers.',
+            )
         if len(params.fixed_axis_flags) != 3:
             raise CardOperationError(
                 "supercell.invalid_fixed_axis_flags",

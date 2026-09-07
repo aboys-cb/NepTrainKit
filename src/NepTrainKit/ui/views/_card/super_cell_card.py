@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+
 import math
 
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.lattice import SuperCellOperation, SuperCellParams
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -306,7 +308,7 @@ class SuperCellCard(MakeDataCard):
                 )
             )
         except ValueError as exc:
-            self.output_preview.setText(str(exc))
+            self.output_preview.setText(translate_runtime_error(exc))
 
     def set_dataset(self, dataset):
         super().set_dataset(dataset)

@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+
 import math
 
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.magnetic_response import MagneticResponseScanOperation, TextureMagneticResponseParams
@@ -301,7 +303,7 @@ class SOCTextureResponseCard(MakeDataCard):
                 self.tr("{total} structures in {detail}.").format(total=total, detail=detail)
             )
         except ValueError as exc:
-            self.output_preview.setText(str(exc))
+            self.output_preview.setText(translate_runtime_error(exc))
 
     def get_summary_text(self) -> str:
         return self.tr("{preset} · {count} per group").format(

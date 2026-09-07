@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
+
 import time
 import traceback
 from collections.abc import Iterable
@@ -12,6 +13,7 @@ from qfluentwidgets import StateToolTip
 from ase.build.tools import sort as ase_sort
 from loguru import logger
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 
 
@@ -114,7 +116,7 @@ class BackgroundTask(QThread):
 
     def __failed_work(self, message: str):
         if self.tip:
-            self.tip.setContent(self.tr("Failed: {message}").format(message=message))
+            self.tip.setContent(self.tr("Failed: {message}").format(message=translate_runtime_error(message)))
             self.tip.setState(True)
 
     def __canceled_work(self):

@@ -3,6 +3,7 @@
 """Scientific dashboard for inspecting Training Set Audit results."""
 from __future__ import annotations
 
+
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
@@ -49,6 +50,7 @@ from qfluentwidgets import (
     ToolButton,
 )
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.audit.report import write_audit_report_html
 from NepTrainKit.core.audit.findings import canonical_findings
@@ -2204,10 +2206,10 @@ class TrainingSetAuditWidget(QWidget):
         self.export_report_button.setEnabled(True)
         self.export_report_button.setToolTip("")
         self.analysis_status_label.setText(
-            self.tr("Structural or magnetic-order analysis failed: {message}").format(message=message)
+            self.tr("Structural or magnetic-order analysis failed: {message}").format(message=translate_runtime_error(message))
         )
         self.composition_phase_summary_label.setText(
-            self.tr("Structural or magnetic-order analysis failed: {message}").format(message=message)
+            self.tr("Structural or magnetic-order analysis failed: {message}").format(message=translate_runtime_error(message))
         )
         self.composition_phase_summary_label.show()
         self._requested_composition_view = ""
@@ -4213,7 +4215,7 @@ class TrainingSetAuditWidget(QWidget):
             return self.tr(
                 "Available on labeled subsets only: {labels}."
             ).format(labels=labels)
-        return reason
+        return translate_runtime_error(reason)
 
     def _localized_plot_text(self, text: str, plot_id: str) -> str:
         if plot_id.startswith("composition:"):

@@ -95,6 +95,14 @@ jobs:
       run: python -m ruff check src/NepTrainKit --select E9,F63,F7,F82
     - name: Audit Make Dataset card docs
       run: python tools/docs/audit_card_docs.py
+    - name: Audit UI translations
+      run: python tools/audit_translations.py --check --require-reviewed --json translation-audit.json
+    - name: Upload translation audit
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: translation-audit
+        path: translation-audit.json
     - name: Build bilingual docs (warnings as errors)
       run: python tools/docs/i18n.py build
 

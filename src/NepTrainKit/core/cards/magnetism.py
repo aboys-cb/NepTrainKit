@@ -99,10 +99,16 @@ def parse_pair_filter(text: str, *, normalize_case: bool = False) -> set[tuple[s
         if not token:
             continue
         if token.count("-") != 1:
-            raise ValueError(f"Invalid pair filter '{token}', expected A-B.")
+            raise CardOperationError(
+                "magnetism.invalid_pair_filter",
+                "Invalid pair filter '{token}', expected A-B.", token=token,
+            )
         left, right = [part.strip() for part in token.split("-", 1)]
         if not left or not right:
-            raise ValueError(f"Invalid pair filter '{token}', expected A-B.")
+            raise CardOperationError(
+                "magnetism.invalid_pair_filter",
+                "Invalid pair filter '{token}', expected A-B.", token=token,
+            )
         if normalize_case:
             left = left[0].upper() + left[1:].lower()
             right = right[0].upper() + right[1:].lower()
@@ -113,12 +119,15 @@ def parse_pair_filter(text: str, *, normalize_case: bool = False) -> set[tuple[s
 def range_values(values: list[float], *, minimum: float | None = None) -> list[float]:
     """Expand a [start, stop, step] scan triplet into stable float values."""
     if len(values) != 3:
-        raise ValueError("Scan range must contain exactly three values: start, stop, step.")
+        raise CardOperationError(
+            'magnetism.range_values',
+            'Scan range must contain exactly three values: start, stop, step.',
+        )
     start, stop, step = [float(v) for v in values]
     if not np.all(np.isfinite([start, stop, step])):
-        raise ValueError("Scan range values must be finite.")
+        raise CardOperationError('magnetism.range_values', 'Scan range values must be finite.')
     if step <= 0:
-        raise ValueError("Scan range step must be positive.")
+        raise CardOperationError('magnetism.range_values', 'Scan range step must be positive.')
     if minimum is not None:
         start = max(start, minimum)
         stop = max(stop, minimum)
@@ -140,10 +149,13 @@ def range_values(values: list[float], *, minimum: float | None = None) -> list[f
 def int_range_values(values: list[int], *, minimum: int = 1) -> list[int]:
     """Expand a [start, stop, step] integer scan triplet."""
     if len(values) != 3:
-        raise ValueError("Integer scan range must contain exactly three values: start, stop, step.")
+        raise CardOperationError(
+            'magnetism.int_range_values',
+            'Integer scan range must contain exactly three values: start, stop, step.',
+        )
     start, stop, step = [int(v) for v in values]
     if step <= 0:
-        raise ValueError("Integer scan range step must be positive.")
+        raise CardOperationError('magnetism.int_range_values', 'Integer scan range step must be positive.')
     start = max(start, minimum)
     stop = max(stop, minimum)
     if stop < start:
@@ -677,7 +689,10 @@ class MagneticOrderOperation(StructureOperation):
             or not np.isfinite(axis).all()
             or float(np.linalg.norm(axis)) <= 1.0e-12
         ):
-            raise ValueError("MagneticOrder: reference axis must be a finite nonzero 3-vector.")
+            raise CardOperationError(
+                'magnetism.prepare',
+                'MagneticOrder: reference axis must be a finite nonzero 3-vector.',
+            )
         axis = normalize_vector(axis)
 
         magnitudes, directions = self._per_atom_mags_and_dirs(structure, params)
@@ -694,8 +709,10 @@ class MagneticOrderOperation(StructureOperation):
             if spin_model == "noncollinear":
                 pm_direction = str(params.pm_direction or "").strip().lower()
                 if pm_direction not in self._PM_DIRECTIONS:
-                    raise ValueError(
-                        f"MagneticOrder: unsupported PM direction {params.pm_direction!r}."
+                    raise CardOperationError(
+                        'magnetism.prepare',
+                        'MagneticOrder: unsupported PM direction {value0}.',
+                        value0=f'{params.pm_direction!r}',
                     )
             pm_count = int(params.pm_count)
             if pm_count < 1:
@@ -711,9 +728,12 @@ class MagneticOrderOperation(StructureOperation):
                     or not 0.0 <= float(params.pm_cone_angle) <= 180.0
                 )
             ):
-                raise ValueError("MagneticOrder: PM cone angle must be between 0 and 180 degrees.")
+                raise CardOperationError(
+                    'magnetism.prepare',
+                    'MagneticOrder: PM cone angle must be between 0 and 180 degrees.',
+                )
             if params.use_seed and int(params.seed) < 0:
-                raise ValueError("MagneticOrder: seed must be nonnegative.")
+                raise CardOperationError('magnetism.prepare', 'MagneticOrder: seed must be nonnegative.')
             output_count += pm_count
 
         if params.gen_pm:
@@ -764,7 +784,12 @@ class MagneticOrderOperation(StructureOperation):
         text = str(value or "").strip()
         normalized = aliases.get(text)
         if normalized is None:
-            raise ValueError(f"MagneticOrder: unsupported {label} {text!r}.")
+            raise CardOperationError(
+                'magnetism.validation',
+                'MagneticOrder: unsupported {label} {text}.',
+                label=label,
+                text=f'{text!r}',
+            )
         return normalized
 
     @staticmethod
@@ -774,14 +799,14 @@ class MagneticOrderOperation(StructureOperation):
         magnetic_mask: np.ndarray,
     ) -> np.ndarray:
         if "group" not in structure.arrays:
-            raise ValueError(
-                "MagneticOrder: AFM group mode requires atoms.arrays['group']; "
-                "add Layer Groups upstream or choose k-vector mode."
+            raise CardOperationError(
+                'magnetism.group_signs',
+                "MagneticOrder: AFM group mode requires atoms.arrays['group']; add Layer Groups upstream or choose k-vector mode.",
             )
         group_a = str(params.afm_group_a or "").strip()
         group_b = str(params.afm_group_b or "").strip()
         if not group_a or not group_b:
-            raise ValueError("MagneticOrder: AFM group labels must be non-empty.")
+            raise CardOperationError('magnetism.group_signs', 'MagneticOrder: AFM group labels must be non-empty.')
         if group_a == group_b:
             raise CardOperationError(
                 "magnetic_order.same_afm_groups",
@@ -1210,23 +1235,24 @@ class SmallAngleSpinTiltOperation(StructureOperation):
             "Group pair canting",
         }
         if params.canting_mode not in supported_modes:
-            raise ValueError(
-                "SmallAngleSpinTilt: canting_mode must be Global tilt, "
-                "Single-spin tilt, Atom pair canting, or Group pair canting."
+            raise CardOperationError(
+                'magnetism.run_structure',
+                'SmallAngleSpinTilt: canting_mode must be Global tilt, Single-spin tilt, Atom pair canting, or Group pair canting.',
             )
         max_outputs = int(params.max_outputs)
         if max_outputs <= 0:
-            raise ValueError("SmallAngleSpinTilt: max_outputs must be >= 1.")
+            raise CardOperationError('magnetism.validation', 'SmallAngleSpinTilt: max_outputs must be >= 1.')
         if params.include_reference and max_outputs < 2:
-            raise ValueError(
-                "SmallAngleSpinTilt: max_outputs must be >= 2 when include_reference is enabled."
+            raise CardOperationError(
+                'magnetism.run_structure',
+                'SmallAngleSpinTilt: max_outputs must be >= 2 when include_reference is enabled.',
             )
 
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
-            raise ValueError(
-                "SmallAngleSpinTilt requires usable initial magnetic moments; "
-                "provide initial_magmoms or select Map/default magnitude."
+            raise CardOperationError(
+                'magnetism.run_structure',
+                'SmallAngleSpinTilt requires usable initial magnetic moments; provide initial_magmoms or select Map/default magnitude.',
             )
         if not np.any(np.linalg.norm(base_moments, axis=1) > 1e-10):
             raise CardOperationError(
@@ -1295,8 +1321,9 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 str(params.pair_group_filter).strip()
                 and "group" not in structure.arrays
             ):
-                raise ValueError(
-                    "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group']."
+                raise CardOperationError(
+                    'magnetism.validation',
+                    "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group'].",
                 )
             pairs = self.pair_targets(structure, base_moments, params)
             if not pairs:
@@ -1322,16 +1349,19 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                     break
         else:
             if "group" not in structure.arrays:
-                raise ValueError(
-                    "SmallAngleSpinTilt group-pair mode requires atoms.arrays['group']."
+                raise CardOperationError(
+                    'magnetism.run_structure',
+                    "SmallAngleSpinTilt group-pair mode requires atoms.arrays['group'].",
                 )
             left_group, right_group = self.group_targets(structure, base_moments, params)
             if not left_group or not right_group:
                 group_a = (params.group_a or "A").strip()
                 group_b = (params.group_b or "B").strip()
-                raise ValueError(
-                    "SmallAngleSpinTilt group-pair mode requires nonzero magnetic atoms "
-                    f"in both groups '{group_a}' and '{group_b}'."
+                raise CardOperationError(
+                    'magnetism.run_structure',
+                    "SmallAngleSpinTilt group-pair mode requires nonzero magnetic atoms in both groups '{group_a}' and '{group_b}'.",
+                    group_a=group_a,
+                    group_b=group_b,
                 )
             group_a = (params.group_a or "A").strip()
             group_b = (params.group_b or "B").strip()
@@ -1413,7 +1443,10 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         if not left or not right:
             return []
         if len(left) != len(right):
-            raise ValueError("Manual atom pair canting requires the same number of left and right indices.")
+            raise CardOperationError(
+                'magnetism.pair_targets',
+                'Manual atom pair canting requires the same number of left and right indices.',
+            )
         pairs: list[tuple[int, int]] = []
         seen: set[tuple[int, int]] = set()
         norms = np.linalg.norm(base_moments, axis=1)
@@ -1520,7 +1553,11 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         if params.bond_filter_mode == "Any":
             return True
         if params.bond_filter_mode not in {"Near axis", "Near plane"}:
-            raise ValueError(f"Unsupported bond_filter_mode: {params.bond_filter_mode}")
+            raise CardOperationError(
+                'magnetism.passes_pair_filters',
+                'Unsupported bond_filter_mode: {value0}',
+                value0=params.bond_filter_mode,
+            )
         reference = normalize_vector(np.array(params.bond_filter_axis, dtype=float))
         bond_hat = normalize_vector(np.asarray(bond_vector, dtype=float), default=reference)
         cos_angle = float(np.clip(abs(np.dot(bond_hat, reference)), 0.0, 1.0))
@@ -1609,33 +1646,34 @@ class SpinDisorderOperation(StructureOperation):
             "Randomize fraction",
         }
         if params.mode not in valid_modes:
-            raise ValueError(
-                "Spin Disorder mode must be Flip fraction, Cone disorder, "
-                "or Randomize fraction."
+            raise CardOperationError(
+                'magnetism.run_structure',
+                'Spin Disorder mode must be Flip fraction, Cone disorder, or Randomize fraction.',
             )
         samples_per_fraction = int(params.samples_per_fraction)
         if samples_per_fraction <= 0:
-            raise ValueError("Spin Disorder samples_per_fraction must be >= 1.")
+            raise CardOperationError('magnetism.validation', 'Spin Disorder samples_per_fraction must be >= 1.')
         max_outputs = int(params.max_outputs)
         if max_outputs <= 0:
-            raise ValueError("Spin Disorder max_outputs must be >= 1.")
+            raise CardOperationError('magnetism.validation', 'Spin Disorder max_outputs must be >= 1.')
         if params.magnitude_source not in {
             "Existing initial magmoms",
             "Map/default magnitude",
         }:
-            raise ValueError(
-                "Spin Disorder magnitude_source must be Existing initial magmoms "
-                "or Map/default magnitude."
+            raise CardOperationError(
+                'magnetism.run_structure',
+                'Spin Disorder magnitude_source must be Existing initial magmoms or Map/default magnitude.',
             )
         seed = int(params.seed)
         if params.use_seed and seed < 0:
-            raise ValueError("Spin Disorder seed must be >= 0.")
+            raise CardOperationError('magnetism.validation', 'Spin Disorder seed must be >= 0.')
         fractions = self.fraction_values(params.fractions)
         if params.mode == "Cone disorder":
             cone_angle = float(params.cone_angle)
             if not np.isfinite(cone_angle) or not 0.0 <= cone_angle <= 180.0:
-                raise ValueError(
-                    "Spin Disorder cone_angle must be within [0, 180] degrees."
+                raise CardOperationError(
+                    'magnetism.run_structure',
+                    'Spin Disorder cone_angle must be within [0, 180] degrees.',
                 )
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
@@ -1705,8 +1743,9 @@ class SpinDisorderOperation(StructureOperation):
                     f"Spin Disorder fraction '{token}' is not a number."
                 ) from exc
             if not np.isfinite(value) or not 0.0 < value <= 1.0:
-                raise ValueError(
-                    "Spin Disorder fractions must be finite values within (0, 1]."
+                raise CardOperationError(
+                    'magnetism.fraction_values',
+                    'Spin Disorder fractions must be finite values within (0, 1].',
                 )
             rounded = float(np.round(value, 12))
             if rounded in seen:
@@ -1804,43 +1843,51 @@ class CorrelatedRandomSpinOperation(StructureOperation):
             "Cone around reference",
             "Full random directions",
         }:
-            raise ValueError(
-                f"Correlated Random Spin: unsupported mode '{params.mode}'."
+            raise CardOperationError(
+                'magnetism.validation',
+                "Correlated Random Spin: unsupported mode '{value0}'.",
+                value0=params.mode,
             )
         samples = int(params.samples)
         if samples <= 0:
-            raise ValueError("Correlated Random Spin: samples must be >= 1.")
+            raise CardOperationError('magnetism.validation', 'Correlated Random Spin: samples must be >= 1.')
 
         xi = float(params.correlation_length)
         if xi <= 0.0:
-            raise ValueError("Correlated Random Spin: correlation_length must be positive.")
+            raise CardOperationError(
+                'magnetism.validation',
+                'Correlated Random Spin: correlation_length must be positive.',
+            )
 
         max_atoms = int(params.max_atoms_for_full)
         if max_atoms <= 0:
-            raise ValueError("Correlated Random Spin: max_atoms_for_full must be >= 1.")
+            raise CardOperationError('magnetism.validation', 'Correlated Random Spin: max_atoms_for_full must be >= 1.')
         if params.magnitude_source not in {
             "Existing initial magmoms",
             "Map/default magnitude",
         }:
-            raise ValueError(
-                "Correlated Random Spin: magnitude_source must be Existing "
-                "initial magmoms or Map/default magnitude."
+            raise CardOperationError(
+                'magnetism.run_structure',
+                'Correlated Random Spin: magnitude_source must be Existing initial magmoms or Map/default magnitude.',
             )
         seed = int(params.seed)
         if params.use_seed and seed < 0:
-            raise ValueError("Correlated Random Spin: seed must be >= 0.")
+            raise CardOperationError('magnetism.validation', 'Correlated Random Spin: seed must be >= 0.')
         kernel = self.kernel_name(params.correlation_kernel)
         if params.mode == "Cone around reference":
             cone_angle = float(params.cone_angle)
             if not np.isfinite(cone_angle) or not 0.0 <= cone_angle <= 180.0:
-                raise ValueError(
-                    "Correlated Random Spin: cone_angle must be within "
-                    "[0, 180] degrees."
+                raise CardOperationError(
+                    'magnetism.run_structure',
+                    'Correlated Random Spin: cone_angle must be within [0, 180] degrees.',
                 )
 
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
-            raise ValueError("Correlated Random Spin requires vector magnetic moments or liftable scalar magmoms.")
+            raise CardOperationError(
+                'magnetism.run_structure',
+                'Correlated Random Spin requires vector magnetic moments or liftable scalar magmoms.',
+            )
 
         selected = self.eligible_indices(structure, base_moments, params)
         if selected.size == 0:
@@ -1910,7 +1957,11 @@ class CorrelatedRandomSpinOperation(StructureOperation):
             return "exponential"
         if normalized in {"squared_exponential", "squared", "gaussian"}:
             return "squared_exponential"
-        raise ValueError(f"Correlated Random Spin: unsupported correlation_kernel '{value}'.")
+        raise CardOperationError(
+            'magnetism.validation',
+            "Correlated Random Spin: unsupported correlation_kernel '{value}'.",
+            value=value,
+        )
 
     @staticmethod
     def covariance_matrix(distances: np.ndarray, *, xi: float, kernel: str) -> np.ndarray:

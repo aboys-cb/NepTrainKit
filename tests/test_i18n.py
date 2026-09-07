@@ -425,7 +425,7 @@ def test_random_occupancy_structured_errors_are_fully_chinese():
         "随机占位：组成来源必须是“自动（Comp 标签）”或“手动”。"
     )
     assert translate_runtime_message(parse_error) == (
-        "随机占位无法解析手动组成：Composition ratio for Fe 必须为非负数。"
+        "随机占位无法解析手动组成：元素 Fe 的成分比例不能为负数。"
     )
 
 
@@ -880,3 +880,110 @@ def test_nep89_prompt_and_warehouse_warning_are_localized(tmp_path, monkeypatch)
     assert prompt["content"] == "检测到大模型有新版本：20250101"
     assert prompt["yes"] == "更新"
     assert prompt["cancel"] == "取消"
+
+
+@pytest.mark.parametrize("language", ["en_US", "zh_CN"])
+def test_nep_calculation_failure_translates_complete_message(language):
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, language)
+    message = (
+        "NEP calculation failed [model_load_error]: runtime error: "
+        "nep4_spin3 is an unsupported NEP model "
+        "Check the selected backend, model type, spin fields, and chunk size."
+    )
+    expected = (
+        "NEP 计算失败 [model_load_error]：当前后端不支持 NEP 模型 nep4_spin3。 "
+        "请检查所选后端、模型类型、自旋字段和分块大小。"
+    )
+    assert translate_runtime_message(message) == (expected if language == "zh_CN" else message)
+
+
+def test_nep_calculation_failure_preserves_unknown_diagnostic_values():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    reason = r"runtime error: unknown failure in D:\unsupported\failed model.txt"
+    message = (
+        f"NEP calculation failed [model_load_error]: {reason} "
+        "Check the selected backend, model type, spin fields, and chunk size."
+    )
+    assert reason in translate_runtime_message(message)
+
+
+@pytest.mark.parametrize("language", ["en_US", "zh_CN"])
+def test_cached_force_mismatch_reason_uses_selected_language(tmp_path, language):
+    import numpy as np
+    from NepTrainKit.core.io.nep import NepTrainResultData
+
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, language)
+    dataset = tmp_path / "train.xyz"
+    dataset.write_text(
+        '1\nLattice="5 0 0 0 5 0 0 0 5" Properties=species:S:1:pos:R:3:force:R:3 energy=1\n'
+        'H 0 0 0 1 2 3\n', encoding="utf-8"
+    )
+    result = NepTrainResultData(
+        *(tmp_path / name for name in (
+            "nep.txt", "train.xyz", "energy_train.out", "force_train.out",
+            "stress_train.out", "virial_train.out", "descriptor.out",
+        )), charge_model=False, spin_model=False,
+    )
+    result.load_structures()
+    reason = result._cached_output_alignment_error(
+        np.array([[1., 1.]]), np.array([[0., 0., 0., 3., 2., 1.]])
+    )
+    expected = (
+        "force_train.out 中的 DFT x 列与读取结构的逐原子受力不一致"
+        if language == "zh_CN" else
+        "the DFT x columns in force_train.out do not match the parsed per-atom structure forces"
+    )
+    assert reason == expected
+
+
+@pytest.mark.parametrize("language", ["en_US", "zh_CN"])
+def test_sampling_runtime_messages_keep_dynamic_values(language):
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, language)
+    value = "unsupported/failed 用户输入"
+    for source, translated in (
+        (f"Unsupported FPS selection strategy: {value}", f"不支持的 FPS 选择策略：{value}"),
+        (f"Unsupported physics count mode: {value}", f"不支持的物理分层数量模式：{value}"),
+        ("Raw structure descriptors are required for structured balanced FPS.", "结构化均衡 FPS 采样需要原始结构描述符。"),
+        ("Existing training descriptors do not match the loaded raw descriptor dimensions.", "已有训练集的描述符维数与加载的原始描述符不一致。"),
+    ):
+        assert translate_runtime_message(source) == (translated if language == "zh_CN" else source)
+
+
+@pytest.mark.parametrize("language", ["en_US", "zh_CN"])
+def test_dynamic_card_validation_errors_use_complete_templates(language):
+    import numpy as np
+    from NepTrainKit.core.cards.magnetism import parse_pair_filter
+    from NepTrainKit.core.cards.structure import parse_dz_params
+    from NepTrainKit.core.cards.filter import FPSFilterOperation
+
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, language)
+    cases = (
+        (lambda: parse_pair_filter("FeCo"), "原子对筛选条件“FeCo”无效，应采用 A-B 格式。"),
+        (lambda: parse_dz_params("a+1"), "参数“a+1”无效，应采用 name=value 格式。"),
+        (lambda: parse_dz_params("1a=2"), "参数名“1a”无效。"),
+        (lambda: FPSFilterOperation._validate_descriptors(np.zeros((2, 3)), 4, "candidate"),
+         "FPS 代表性采样：候选集的描述符形状必须为 (4, D)，且 D >= 1。"),
+        (lambda: FPSFilterOperation._validate_descriptors(np.full((2, 3), np.nan), 2, "existing"),
+         "FPS 代表性采样：已有训练集的描述符包含 NaN/Inf。"),
+    )
+    for operation, expected in cases:
+        with pytest.raises(CardOperationError) as raised:
+            operation()
+        assert translate_runtime_message(raised.value) == (expected if language == "zh_CN" else str(raised.value))
+
+
+def test_distribution_plot_labels_use_chinese_catalog():
+    from NepTrainKit.ui.canvas.pyqtgraph.distribution import _tr as pg_tr
+    from NepTrainKit.ui.canvas.vispy.distribution import _tr as vispy_tr
+
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    for translate in (pg_tr, vispy_tr):
+        assert translate("Count") == "数量"
+        assert translate("value") == "数值"
+        assert translate("Groups: {count}").format(count=3) == "组数：3"

@@ -2917,7 +2917,9 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 f"{np.asarray(dft_values).size}, expected {expected_values.size}"
             )
         if not self._reference_columns_match(dft_values, expected_values):
-            return f"the DFT x columns in {output_path.name} do not match parsed structures"
+            return self.tr(
+                "the DFT x columns in {file} do not match parsed structures"
+            ).format(file=output_path.name)
         return None
 
     def _cached_output_alignment_error(
@@ -2957,10 +2959,9 @@ class ResultData(DistributionAnalysisMixin, QObject):
             dtype=np.float64,
         )
         if not self._reference_columns_match(energy_data.x, expected_energy):
-            return (
-                f"the DFT x columns in {self.energy_out_path.name} do not match "
-                "the parsed per-atom structure energies"
-            )
+            return self.tr(
+                "the DFT x columns in {file} do not match the parsed per-atom structure energies"
+            ).format(file=self.energy_out_path.name)
 
         expected_forces = np.vstack(
             [
@@ -2971,10 +2972,9 @@ class ResultData(DistributionAnalysisMixin, QObject):
             ]
         )
         if not self._reference_columns_match(force_data.x, expected_forces):
-            return (
-                f"the DFT x columns in {self.force_out_path.name} do not match "
-                "the parsed per-atom structure forces"
-            )
+            return self.tr(
+                "the DFT x columns in {file} do not match the parsed per-atom structure forces"
+            ).format(file=self.force_out_path.name)
         return None
 
     def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:

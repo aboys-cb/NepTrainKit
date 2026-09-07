@@ -7,12 +7,16 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import QCoreApplication, Qt, QSize
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from qfluentwidgets import CaptionLabel
 
 from NepTrainKit.ui.canvas.base.distribution import DistributionPlotBase
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("DistributionPlot", text)
 
 
 class _RotatedLabel(QLabel):
@@ -215,15 +219,17 @@ class VispyDistributionPlot(DistributionPlotBase):
         total = int(series.get("total", 0) or 0)
         mean = float(series.get("mean", 0.0) or 0.0)
         std = float(series.get("std", 0.0) or 0.0)
-        self._title.text = f"{field} | {series_name} | N={total}, mean={mean:.4g}, std={std:.4g}"
+        self._title.text = _tr("{field} | {series} | N={total}, mean={mean:.4g}, std={std:.4g}").format(
+            field=field, series=series_name, total=total, mean=mean, std=std
+        )
 
         unit = str(metric.get("unit", "unknown") or "unknown")
         component = str(metric.get("component", "") or "")
-        xlabel = component if component else "value"
+        xlabel = component if component else _tr("value")
         if unit and unit != "unknown":
             xlabel = f"{xlabel} ({unit})"
         self._xlabel_label.setText(xlabel)
-        self._ylabel_label.setText("Count")
+        self._ylabel_label.setText(_tr("Count"))
 
         ymax = float(np.max(hist)) if hist.size else 1.0
         if curve_y.size:
@@ -272,15 +278,15 @@ class VispyDistributionPlot(DistributionPlotBase):
         title_parts = []
         if field:
             title_parts.append(field)
-        title_parts.append(f"{n_groups} group{'s' if n_groups > 1 else ''}")
+        title_parts.append(_tr("Groups: {count}").format(count=n_groups))
         title_parts.append(f"N={total_n}")
         self._title.text = "  |  ".join(title_parts)
         unit = str(metric.get("unit", "unknown") or "unknown")
-        xlabel = component if component else "value"
+        xlabel = component if component else _tr("value")
         if unit and unit != "unknown":
             xlabel = f"{xlabel} ({unit})"
         self._xlabel_label.setText(xlabel)
-        self._ylabel_label.setText("Count")
+        self._ylabel_label.setText(_tr("Count"))
 
         y_range = max(1.0, ymax * 1.12)
         self._view.camera.set_range(x=(lo, hi), y=(0.0, y_range), z=(0, 0))

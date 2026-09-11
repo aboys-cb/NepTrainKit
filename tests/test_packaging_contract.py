@@ -16,7 +16,7 @@ def test_pyproject_declares_nep_adapters_runtime_dependency():
 
     assert data["project"]["requires-python"] == ">=3.10,<3.14"
     assert "Programming Language :: Python :: 3.13" in data["project"]["classifiers"]
-    assert "nep-adapters>=1.0.1" in dependencies
+    assert "nep-adapters>=1.0.3" in dependencies
     assert not any(
         requirement.startswith("nep-adapters") and "<" in requirement
         for requirement in dependencies
@@ -44,7 +44,7 @@ def test_development_requirements_match_nep_adapters_contract():
         if line.strip() and not line.lstrip().startswith("#")
     }
 
-    assert "nep-adapters>=1.0.1" in requirements
+    assert "nep-adapters>=1.0.3" in requirements
     assert not any(
         requirement.startswith("nep-adapters") and "<" in requirement
         for requirement in requirements
@@ -140,7 +140,7 @@ def test_release_workflows_target_x86_64_windows_runtime():
     assert "- [windows-2022, win_amd64" in publish_workflow
     assert "win32" not in publish_workflow
     assert "ref: ${{ inputs.ref_name }}" in nuitka_workflow
-    assert '--constraint ">=1.0.1"' in nuitka_workflow
+    assert '--constraint ">=1.0.3"' in nuitka_workflow
 
 
 def test_nuitka_branch_build_always_uploads_archive_and_release_is_optional():

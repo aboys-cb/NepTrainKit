@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
 from ase import Atoms, Atom
 from qfluentwidgets import FluentIcon, HyperlinkLabel, BodyLabel, SubtitleLabel
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.core.workflow_library import WorkflowEntry, WorkflowLibrary
 from NepTrainKit.core.config_type import append_config_tag
@@ -1189,7 +1190,7 @@ class MakeDataWidget(QWidget):
             cards = self._normalise_card_config_payload(config)
         except Exception as exc:
             MessageManager.send_warning_message(
-                self.tr("Invalid card configuration file: {error}").format(error=exc)
+                self.tr("Invalid card configuration file: {error}").format(error=translate_runtime_error(exc))
             )
             return
         self.workspace_card_widget.clear_cards()
@@ -1236,7 +1237,7 @@ class MakeDataWidget(QWidget):
                 except Exception as exc:
                     card_widget.close()
                     MessageManager.send_error_message(
-                        self.tr("Failed to load {name}: {error}").format(name=name, error=exc)
+                        self.tr("Failed to load {name}: {error}").format(name=name, error=translate_runtime_error(exc))
                     )
                     continue
                 self._track_card_parameter_changes(card_widget)

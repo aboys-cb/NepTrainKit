@@ -146,4 +146,4 @@ $$
 
 ## 输出字段
 
-输出磁矩写入 `spin:R:3`。每个晶格点对应一个完整 `response_group`；manifest 记录结构坐标、变形梯度、应变张量、自旋旋转轴、目标原子以及当前模式实际使用的笛卡尔方向或 Bain 晶格轴。
+输出磁矩写入 `spin:R:3`，旋转坐标使用弧度并写明 `response_coordinate_unit=radian`。每个晶格点对应一个完整、名称含 `magnetoelastic-spin-probe` 的 `response_group`；manifest 记录结构坐标、变形梯度、应变张量、自旋旋转轴、目标原子以及当前模式实际使用的笛卡尔方向或 Bain 晶格轴。DFT 标签回填后，组内 `spin` 必须来自各帧最终约束收敛磁矩，训练器据此派生真实响应路径。

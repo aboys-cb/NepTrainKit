@@ -70,7 +70,7 @@ class RuntimePackageSpec:
 NEP_ADAPTERS_SPEC = RuntimePackageSpec(
     distribution="nep-adapters",
     import_name="nep_adapters",
-    version_constraint=">=1.0.1",
+    version_constraint=">=1.0.3",
     health_kind="nep_adapters_cpu",
     index_url=TENCENT_PYPI_JSON_URL,
     fallback_index_urls=(PYPI_JSON_URL,),

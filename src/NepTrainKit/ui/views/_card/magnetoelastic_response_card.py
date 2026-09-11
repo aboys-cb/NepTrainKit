@@ -1,5 +1,6 @@
 """Thin UI for linked structural and spin-response grids."""
 
+
 import math
 
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
@@ -7,7 +8,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.magnetic_response import MagneticResponseScanOperation, MagnetoelasticResponseParams
-from NepTrainKit.ui.messages import MessageManager
+from NepTrainKit.ui.messages import MessageManager, translate_runtime_error
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -288,7 +289,7 @@ class MagnetoelasticResponseCard(MakeDataCard):
                 )
             self.output_preview.setText(text)
         except ValueError as exc:
-            self.output_preview.setText(str(exc))
+            self.output_preview.setText(translate_runtime_error(exc))
 
     def get_summary_text(self) -> str:
         return self.tr("{mode} · {structural}×{spin} grid").format(

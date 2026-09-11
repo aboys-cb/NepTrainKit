@@ -52,6 +52,11 @@ def _stable_digest(payload: Any, *, length: int = 16) -> str:
     return hashlib.sha256(encoded).hexdigest()[:length]
 
 
+def _identifier_slug(value: str) -> str:
+    """Return a short lowercase token safe in unquoted EXTXYZ metadata."""
+    return re.sub(r"[^a-z0-9]+", "-", str(value).lower()).strip("-") or "response"
+
+
 def structure_fingerprint(atoms: Atoms) -> str:
     """Return a stable fingerprint of geometry, species, PBC, and input spins."""
     spins = existing_moment_vectors(atoms, lift_scalar=True)
@@ -183,6 +188,14 @@ class ResponseManifest:
                 f"task_id {task_id!r} atom identity/order does not match its manifest record"
             )
         output = atoms.copy()
+        final_spins = existing_moment_vectors(output, lift_scalar=False)
+        if final_spins is None or final_spins.shape != (len(output), 3):
+            raise ValueError(
+                f"task_id {task_id!r} DFT result must contain final vector spin moments"
+            )
+        if not np.isfinite(final_spins).all():
+            raise ValueError(f"task_id {task_id!r} DFT final spin contains NaN or Inf")
+        set_initial_magmoms_safe(output, final_spins)
         _attach_minimal_metadata(output, matches[0])
         output.info["response_spin_provenance"] = str(spin_source)
         output.info["response_manifest_hash"] = self.to_dict()["manifest_hash"]
@@ -203,6 +216,9 @@ def _attach_minimal_metadata(atoms: Atoms, record: ResponseManifestRecord) -> No
         response_spin_provenance=record.output_spin_source,
         response_mforce_convention=record.mforce_convention,
     )
+    coordinate_unit = record.metadata.get("response_coordinate_unit")
+    if coordinate_unit:
+        atoms.info["response_coordinate_unit"] = str(coordinate_unit)
 
 
 @dataclass(frozen=True)
@@ -317,10 +333,14 @@ class MagneticResponseScanOperation(StructureOperation):
         plane_normal: Sequence[float] | None = None,
         pair_shell: int | None = None,
         metadata: dict[str, Any] | None = None,
+        coordinate_unit: str = "radian",
     ) -> bool:
         if len(outputs) + len(frames) > int(max_outputs):
             return False
-        group = f"mrg-{_stable_digest([parent, kind, group_key], length=20)}"
+        group = (
+            f"mrg-{_identifier_slug(kind)[:28]}-"
+            f"{_stable_digest([parent, kind, group_key], length=12)}"
+        )
         for coordinate, spins, geometry in frames:
             atoms = geometry.copy()
             set_initial_magmoms_safe(atoms, spins)
@@ -340,7 +360,11 @@ class MagneticResponseScanOperation(StructureOperation):
                 rotation_axis=None if rotation_axis is None else tuple(float(v) for v in normalize_vector(np.asarray(rotation_axis))),
                 rotation_plane_normal=None if plane_normal is None else tuple(float(v) for v in normalize_vector(np.asarray(plane_normal))),
                 pair_shell=pair_shell,
-                metadata=_jsonable({"atomic_numbers": structure.numbers.tolist(), **(metadata or {})}),
+                metadata=_jsonable({
+                    "atomic_numbers": structure.numbers.tolist(),
+                    "response_coordinate_unit": coordinate_unit,
+                    **(metadata or {}),
+                }),
                 structure_hash=structure_fingerprint(atoms),
             )
             _attach_minimal_metadata(atoms, record)
@@ -415,6 +439,7 @@ class MagneticResponseScanOperation(StructureOperation):
                 probe="moment_scale", kind="moment_magnitude", frames=frames,
                 max_outputs=params.max_outputs, records=records, outputs=outputs,
                 target_indices=targets, metadata={"scale_factors": scales},
+                coordinate_unit="relative_scale",
             )
             return self._finish(outputs, records)
 
@@ -635,6 +660,7 @@ class MagneticResponseScanOperation(StructureOperation):
                 "supercell": [1, 1, 1],
                 "commensurate": bool(params.require_commensurate),
             },
+            coordinate_unit="1/angstrom",
         )
         return self._finish(outputs, records)
 

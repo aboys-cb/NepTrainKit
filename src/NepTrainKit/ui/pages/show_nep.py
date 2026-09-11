@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2024/10/17 13:38
 # @email    : 1747193328@qq.com
@@ -30,7 +30,7 @@ from NepTrainKit.ui.widgets import (
     ArrowMessageBox,
     ExportFormatMessageBox,
 )
-from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.messages import translate_runtime_message, translate_runtime_error
 from NepTrainKit.ui.controllers import StructureFilterController
 from NepTrainKit.core.io import (
     NepTrainResultData,
@@ -1575,7 +1575,7 @@ class ShowNepWidget(QWidget):
         def _on_err(msg: str) -> None:
             try:
                 MessageManager.send_warning_message(
-                    self.tr("Failed to build search completer cache: {msg}").format(msg=msg)
+                    self.tr("Failed to build search completer cache: {msg}").format(msg=translate_runtime_error(msg))
                 )
             finally:
                 self._end_index()
@@ -1614,7 +1614,7 @@ class ShowNepWidget(QWidget):
         def _on_err(msg: str) -> None:
             try:
                 MessageManager.send_warning_message(
-                    self.tr("Search failed: {msg}").format(msg=msg)
+                    self.tr("Search failed: {msg}").format(msg=translate_runtime_error(msg))
                 )
             finally:
                 self._end_search()
@@ -2253,7 +2253,7 @@ class ShowNepWidget(QWidget):
         self.structure_filter_bar.set_error(error)
         if not self.structure_filter_bar.editor_is_open:
             MessageManager.send_warning_message(
-                self.tr("Filter failed: {message}").format(message=error.message)
+                self.tr("Filter failed: {message}").format(message=translate_runtime_error(error.message))
             )
 
     def _apply_structure_filter_result(self, mode: str) -> None:
@@ -2351,7 +2351,7 @@ class ShowNepWidget(QWidget):
         def _on_err(msg: str) -> None:
             try:
                 MessageManager.send_warning_message(
-                    self.tr("Search failed: {msg}").format(msg=msg)
+                    self.tr("Search failed: {msg}").format(msg=translate_runtime_error(msg))
                 )
             finally:
                 self._end_search()

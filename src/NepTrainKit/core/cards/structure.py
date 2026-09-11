@@ -65,7 +65,7 @@ def validate_dz_expr(expr: str, allowed_names: set[str]) -> ast.Expression:
     """Validate a dz expression and return its AST."""
     expr = expr.strip()
     if not expr:
-        raise ValueError("dz expression is empty")
+        raise CardOperationError('structure.validate_dz_expr', 'dz expression is empty')
     tree = ast.parse(expr, mode="eval")
     allowed_nodes = (
         ast.Expression,
@@ -87,13 +87,29 @@ def validate_dz_expr(expr: str, allowed_names: set[str]) -> ast.Expression:
         if isinstance(node, (ast.operator, ast.unaryop, ast.boolop, ast.cmpop)):
             continue
         if not isinstance(node, allowed_nodes):
-            raise ValueError(f"Unsupported syntax: {type(node).__name__}")
+            raise CardOperationError(
+                'structure.validate_dz_expr',
+                'Unsupported syntax: {value0}',
+                value0=type(node).__name__,
+            )
         if isinstance(node, ast.BinOp) and not isinstance(node.op, allowed_binops):
-            raise ValueError(f"Unsupported operator: {type(node.op).__name__}")
+            raise CardOperationError(
+                'structure.validate_dz_expr',
+                'Unsupported operator: {value0}',
+                value0=type(node.op).__name__,
+            )
         if isinstance(node, ast.UnaryOp) and not isinstance(node.op, allowed_unaryops):
-            raise ValueError(f"Unsupported unary operator: {type(node.op).__name__}")
+            raise CardOperationError(
+                'structure.validate_dz_expr',
+                'Unsupported unary operator: {value0}',
+                value0=type(node.op).__name__,
+            )
         if isinstance(node, ast.BoolOp) and not isinstance(node.op, allowed_boolops):
-            raise ValueError(f"Unsupported boolean operator: {type(node.op).__name__}")
+            raise CardOperationError(
+                'structure.validate_dz_expr',
+                'Unsupported boolean operator: {value0}',
+                value0=type(node.op).__name__,
+            )
         if isinstance(node, ast.Compare) and not all(isinstance(op, allowed_cmpops) for op in node.ops):
             raise CardOperationError(
                 "layer_copy.unsupported_comparison",
@@ -124,12 +140,18 @@ def parse_dz_params(text: str) -> dict[str, float]:
     chunks = [chunk.strip() for chunk in re.split(r"[,\n;]+", text or "") if chunk.strip()]
     for chunk in chunks:
         if "=" not in chunk:
-            raise ValueError(f"Invalid param '{chunk}', expected name=value")
+            raise CardOperationError(
+                "layer_copy.invalid_parameter",
+                "Invalid param '{chunk}', expected name=value", chunk=chunk,
+            )
         name, value_expr = chunk.split("=", 1)
         name = name.strip()
         value_expr = value_expr.strip()
         if not _NAME_RE.match(name):
-            raise ValueError(f"Invalid parameter name '{name}'")
+            raise CardOperationError(
+                "layer_copy.invalid_parameter_name",
+                "Invalid parameter name '{name}'", name=name,
+            )
         allowed_names = set(_ALLOWED_FUNCS) | {"pi", "e"} | set(params)
         tree = validate_dz_expr(value_expr, allowed_names=allowed_names)
         code = compile(tree, "<param>", "eval")
@@ -162,7 +184,12 @@ def evaluate_dz_expression(expr: str, x: np.ndarray, y: np.ndarray, z: np.ndarra
     if out_arr.ndim == 0:
         out_arr = np.full_like(x, float(out_arr))
     if out_arr.shape != x.shape:
-        raise ValueError(f"dz expression returned shape {out_arr.shape}, expected {x.shape}")
+        raise CardOperationError(
+            'structure.evaluate_dz_expression',
+            'dz expression returned shape {value0}, expected {value1}',
+            value0=out_arr.shape,
+            value1=x.shape,
+        )
     if not np.all(np.isfinite(out_arr)):
         raise CardOperationError(
             "layer_copy.nonfinite_expression_result",
@@ -271,7 +298,7 @@ class LayerCopyOperation(StructureOperation):
 
         expr = str(params.dz_expr).strip()
         if not expr:
-            raise ValueError("LayerCopy: dz expression is empty.")
+            raise CardOperationError('structure.validated_settings', 'LayerCopy: dz expression is empty.')
         layers = cls._integer(params.layers, "layers", minimum=1)
         distance_mode = str(params.distance_mode or "").strip()
         if distance_mode not in {"surface_gap", "translation"}:

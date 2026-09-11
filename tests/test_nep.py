@@ -7,7 +7,7 @@ import os
 import shutil
 import tempfile
 import uuid
-from types import SimpleNamespace
+from types import MethodType, SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 
@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdata")
 
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
-from NepTrainKit.core.io.base import DPPlotData, NepPlotData
+from NepTrainKit.core.io.base import DPPlotData, NepPlotData, ResultData
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset
 from NepTrainKit.core.precision import get_storage_float_dtype
@@ -1020,6 +1020,47 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         _OverlayDialogRecorder.last_kwargs = None
         _OverlayDialogRecorder.shown = False
 
+    def test_sparse_point_calls_real_result_data_interface(self):
+        for strategy, count_mode in (
+            ("global", "limit"),
+            ("element_set", "limit"),
+            ("physics", "limit"),
+            ("physics", "automatic"),
+        ):
+            with self.subTest(strategy=strategy, count_mode=count_mode):
+                Config.set("widget", "sparse_selection_strategy", strategy)
+                Config.set("widget", "sparse_physics_count_mode", count_mode)
+                widget = nep_view_module.NepResultPlotWidget.__new__(
+                    nep_view_module.NepResultPlotWidget
+                )
+                widget._parent = None
+                data = SimpleNamespace(
+                    _sampler=SimpleNamespace(
+                        sparse_point_selection=MagicMock(return_value=([1, 4], False))
+                    ),
+                )
+                # Keep the production UI -> ResultData boundary intact.
+                data.sparse_point_selection = MethodType(
+                    ResultData.sparse_point_selection, data
+                )
+                widget.canvas = SimpleNamespace(
+                    nep_result_data=data, select_index=MagicMock()
+                )
+                with patch.object(
+                    nep_view_module,
+                    "SparseMessageBox",
+                    return_value=_SparseBox(
+                        training_path="", show_overlay=False,
+                        selection_strategy=strategy, physics_count_mode=count_mode,
+                    ),
+                ), patch.object(nep_view_module.MessageManager, "send_info_message"):
+                    nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+                kwargs = data._sampler.sparse_point_selection.call_args.kwargs
+                self.assertEqual(kwargs["selection_strategy"], strategy)
+                self.assertEqual(kwargs["physics_count_mode"], count_mode)
+                widget.canvas.select_index.assert_called_once_with([1, 4], False)
+
     def test_sparse_point_passes_canvas_type_to_overlay_dialog(self):
         Config.set("widget", "canvas_type", "vispy")
         Config.set("widget", "sparse_training_path", "train.xyz")
@@ -1209,49 +1250,117 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         widget.canvas.select_index.assert_called_once_with([2, 5], False)
         self.assertIn("final coverage R^2: 0.9346", send_info.call_args.args[0])
 
-    def test_sparse_point_runs_large_show_nep_dataset_in_background_task(self):
+    def _run_sparse_background(self, strategy, count_mode, *, fail=False):
+        from ase import Atoms
+        from NepTrainKit.ui.threads import BackgroundTask
+
+        # Use real ResultData and SparseSampler; only file-backed arrays are fixtures.
+        workdir = tempfile.TemporaryDirectory(prefix="neptrainkit-fps-")
+        self.addCleanup(workdir.cleanup)
+        root = Path(workdir.name)
+        data = ResultData(root / "model.nep", root / "data.xyz", root / "descriptor.out")
+        indices = np.arange(4, dtype=np.int64)
+        raw = np.asarray([[0.0], [1.0], [3.0], [5.0]], dtype=np.float32)
+        data._descriptor_raw_all = raw
+        data._descriptor_dataset = SimpleNamespace(
+            now_data=np.column_stack((raw[:, 0], np.zeros(4))),
+            group_array=SimpleNamespace(now_data=indices),
+            data=SimpleNamespace(now_indices=indices),
+        )
+        data._atoms_dataset = SimpleNamespace(
+            num=4,
+            all_data=[Atoms("H", cell=[10, 10, 10]) for _ in indices],
+        )
         widget = nep_view_module.NepResultPlotWidget.__new__(
             nep_view_module.NepResultPlotWidget
         )
         widget._parent = None
-        data = SimpleNamespace(
-            structure=SimpleNamespace(
-                num=nep_view_module.SPARSE_BACKGROUND_THRESHOLD
-            ),
-            sparse_point_selection=MagicMock(),
-        )
-        widget.canvas = SimpleNamespace(
-            nep_result_data=data,
-            select_index=MagicMock(),
-        )
-        task = MagicMock()
-        task.outcome = "succeeded"
-        task.result = ([7, 9], False)
+        widget.canvas = SimpleNamespace(nep_result_data=data, select_index=MagicMock())
+        task = BackgroundTask(show_tip=False)
         progress_dialog = MagicMock()
 
-        with patch.object(
-            nep_view_module,
-            "SparseMessageBox",
-            return_value=_SparseBox(training_path="", show_overlay=False),
-        ), patch.object(
-            nep_view_module,
-            "BackgroundTask",
-            return_value=task,
-        ), patch.object(
-            nep_view_module,
-            "QProgressDialog",
-            return_value=progress_dialog,
-        ):
-            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+        def wait_for_worker():
+            # Bound the wait so a broken worker cannot hang the suite.
+            self.assertTrue(task.wait(10000), "FPS worker did not finish")
 
-        data.sparse_point_selection.assert_not_called()
-        task.start_work.assert_called_once()
-        self.assertIs(
-            task.start_work.call_args.args[0],
-            data.sparse_point_selection,
-        )
-        progress_dialog.exec.assert_called_once_with()
-        widget.canvas.select_index.assert_called_once_with([7, 9], False)
+        progress_dialog.exec.side_effect = wait_for_worker
+        values = {
+            "sparse_selection_strategy": strategy,
+            "sparse_physics_count_mode": count_mode,
+            "sparse_sampling_mode": "count",
+            "sparse_descriptor_source": "raw",
+            "sparse_training_path": "",
+        }
+        original_get = Config.get
+
+        def get_config(section, option, default=None):
+            return values.get(option, original_get(section, option, default))
+
+        try:
+            with patch.object(Config, "get", side_effect=get_config), patch.object(
+                Config, "getint", return_value=2,
+            ), patch.object(Config, "getfloat", return_value=0.0), patch.object(
+                Config, "set",
+            ), patch.object(
+                nep_view_module, "SPARSE_BACKGROUND_THRESHOLD", 4,
+            ), patch.object(
+                nep_view_module, "SparseMessageBox",
+                return_value=_SparseBox(training_path="", show_overlay=False),
+            ), patch.object(
+                nep_view_module, "BackgroundTask", return_value=task,
+            ) as task_factory, patch.object(
+                nep_view_module, "QProgressDialog", return_value=progress_dialog,
+            ), patch.object(
+                nep_view_module.MessageManager, "send_info_message",
+            ), patch.object(
+                nep_view_module.MessageManager, "send_warning_message",
+            ) as warning, patch.object(
+                data._sampler, "sparse_point_selection",
+                wraps=data._sampler.sparse_point_selection,
+            ) as sample:
+                if fail:
+                    sample.side_effect = RuntimeError("sampling regression sentinel")
+                nep_view_module.NepResultPlotWidget.sparse_point(widget)
+                task_factory.assert_called_once_with(None, show_tip=False)
+                progress_dialog.exec.assert_called_once_with()
+                sample.assert_called_once()
+                self.assertEqual(sample.call_args.kwargs["physics_count_mode"], count_mode)
+                self.assertEqual(sample.call_args.kwargs["selection_strategy"], strategy)
+                if fail:
+                    self.assertEqual(task.outcome, "failed")
+                    self.assertIsNone(task.result)
+                    warning.assert_called_once()
+                    self.assertIn("sampling regression sentinel", warning.call_args.args[0])
+                    widget.canvas.select_index.assert_not_called()
+                else:
+                    self.assertEqual(task.outcome, "succeeded", task.error_message)
+                    warning.assert_not_called()
+                    selected, reverse = task.result
+                    expected = {
+                        ("global", "limit"): [0, 3],
+                        ("element_set", "limit"): [0, 2],
+                        ("physics", "limit"): [0, 2],
+                        ("physics", "automatic"): [0, 1, 2, 3],
+                    }[(strategy, count_mode)]
+                    self.assertEqual(selected, expected)
+                    self.assertFalse(reverse)
+                    widget.canvas.select_index.assert_called_once_with(expected, False)
+        finally:
+            task.requestInterruption()
+            task.wait()
+
+    def test_sparse_point_runs_real_sampler_in_background_task(self):
+        for strategy, count_mode in (
+            ("global", "limit"),
+            ("element_set", "limit"),
+            ("physics", "limit"),
+            ("physics", "automatic"),
+        ):
+            with self.subTest(strategy=strategy, count_mode=count_mode):
+                self._run_sparse_background(strategy, count_mode)
+
+    def test_sparse_point_reports_background_failure_without_selecting(self):
+        self._run_sparse_background("physics", "automatic", fail=True)
 
 
 class TestShowNepWidgetArrowCapability(unittest.TestCase):

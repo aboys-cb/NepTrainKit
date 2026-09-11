@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 from qfluentwidgets import (
@@ -14,6 +15,7 @@ from qfluentwidgets import (
     ToolTipPosition,
 )
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import MagneticOrderOperation, MagneticOrderParams
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -415,7 +417,7 @@ class MagneticOrderCard(MakeDataCard):
             )
         except (TypeError, ValueError) as exc:
             self.preview_label.setText(
-                "⚠ " + self.tr("Preview unavailable: {error}").format(error=str(exc))
+                "⚠ " + self.tr("Preview unavailable: {error}").format(error=translate_runtime_error(exc))
             )
             self.refresh_compact_presentation()
             return

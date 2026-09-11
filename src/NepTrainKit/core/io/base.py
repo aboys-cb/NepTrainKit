@@ -299,7 +299,7 @@ class NepData:
         elif self.title == "spin":
             unit, scale = "meV/μB", 1000
         elif self.title == "bec":
-            unit, scale = "e", 1000
+            unit, scale = "e", 1
 
         return f"{rmse * scale:.2f} {unit}"
     def get_max_error_index(self, nmax: int) -> list[int]:
@@ -2605,6 +2605,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         sampling_mode: str = "count",
         r2_threshold: float = 0.9,
         selection_strategy: str = "global",
+        physics_count_mode: str = "limit",
     ) -> tuple[list[int], bool]:
         """Delegate sparse sampling to the sampler helper."""
         return self._sampler.sparse_point_selection(
@@ -2616,6 +2617,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
             sampling_mode=sampling_mode,
             r2_threshold=r2_threshold,
             selection_strategy=selection_strategy,
+            physics_count_mode=physics_count_mode,
         )
 
     def recommend_physics_sample_count(
@@ -2917,7 +2919,9 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 f"{np.asarray(dft_values).size}, expected {expected_values.size}"
             )
         if not self._reference_columns_match(dft_values, expected_values):
-            return f"the DFT x columns in {output_path.name} do not match parsed structures"
+            return self.tr(
+                "the DFT x columns in {file} do not match parsed structures"
+            ).format(file=output_path.name)
         return None
 
     def _cached_output_alignment_error(
@@ -2957,10 +2961,9 @@ class ResultData(DistributionAnalysisMixin, QObject):
             dtype=np.float64,
         )
         if not self._reference_columns_match(energy_data.x, expected_energy):
-            return (
-                f"the DFT x columns in {self.energy_out_path.name} do not match "
-                "the parsed per-atom structure energies"
-            )
+            return self.tr(
+                "the DFT x columns in {file} do not match the parsed per-atom structure energies"
+            ).format(file=self.energy_out_path.name)
 
         expected_forces = np.vstack(
             [
@@ -2971,10 +2974,9 @@ class ResultData(DistributionAnalysisMixin, QObject):
             ]
         )
         if not self._reference_columns_match(force_data.x, expected_forces):
-            return (
-                f"the DFT x columns in {self.force_out_path.name} do not match "
-                "the parsed per-atom structure forces"
-            )
+            return self.tr(
+                "the DFT x columns in {file} do not match the parsed per-atom structure forces"
+            ).format(file=self.force_out_path.name)
         return None
 
     def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:

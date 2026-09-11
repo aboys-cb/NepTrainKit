@@ -82,16 +82,21 @@ class FPSFilterOperation(DatasetOperation):
     @staticmethod
     def _integer(value: object, name: str, *, minimum: int) -> int:
         if isinstance(value, bool):
-            raise ValueError(f"FPS Filter: {name} must be an integer.")
+            raise CardOperationError('filter.validation', 'FPS Filter: {name} must be an integer.', name=name)
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"FPS Filter: {name} must be an integer.") from exc
+            raise CardOperationError('filter.validation', 'FPS Filter: {name} must be an integer.', name=name) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"FPS Filter: {name} must be an integer.")
+            raise CardOperationError('filter.validation', 'FPS Filter: {name} must be an integer.', name=name)
         result = int(numeric)
         if result < minimum:
-            raise ValueError(f"FPS Filter: {name} must be >= {minimum}.")
+            raise CardOperationError(
+                'filter.validation',
+                'FPS Filter: {name} must be >= {minimum}.',
+                name=name,
+                minimum=minimum,
+            )
         return result
 
     @staticmethod
@@ -99,11 +104,20 @@ class FPSFilterOperation(DatasetOperation):
         try:
             result = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"FPS Filter: {name} must be a finite number.") from exc
+            raise CardOperationError(
+                'filter.validation',
+                'FPS Filter: {name} must be a finite number.',
+                name=name,
+            ) from exc
         if not np.isfinite(result):
-            raise ValueError(f"FPS Filter: {name} must be a finite number.")
+            raise CardOperationError('filter.validation', 'FPS Filter: {name} must be a finite number.', name=name)
         if result < minimum:
-            raise ValueError(f"FPS Filter: {name} must be >= {minimum:g}.")
+            raise CardOperationError(
+                'filter.validation',
+                'FPS Filter: {name} must be >= {minimum}.',
+                name=name,
+                minimum=f'{minimum:g}',
+            )
         return result
 
     @classmethod
@@ -127,16 +141,16 @@ class FPSFilterOperation(DatasetOperation):
         )
         strategy = str(params.strategy).strip().lower()
         if strategy not in cls.VALID_STRATEGIES:
-            raise ValueError(
-                f"Unsupported FPS strategy '{params.strategy}'. "
-                f"Expected one of {sorted(cls.VALID_STRATEGIES)}."
+            raise CardOperationError(
+                'filter.validated_settings',
+                "Unsupported FPS strategy '{value0}'. Expected one of {value1}.",
+                value0=params.strategy,
+                value1=sorted(cls.VALID_STRATEGIES),
             )
         try:
             backend = parse_nep_backend(params.backend)
         except ValueError as exc:
-            raise ValueError(
-                "FPS Filter: backend must be auto, cpu, or cuda."
-            ) from exc
+            raise CardOperationError('filter.validation', 'FPS Filter: backend must be auto, cpu, or cuda.') from exc
         empty_indices = [index for index, structure in enumerate(dataset) if len(structure) < 1]
         if empty_indices:
             raise ValueError(
@@ -162,12 +176,16 @@ class FPSFilterOperation(DatasetOperation):
     def _validate_descriptors(descriptors, expected_rows: int, label: str) -> np.ndarray:
         array = np.asarray(descriptors, dtype=float)
         if array.ndim != 2 or array.shape[0] != expected_rows or array.shape[1] < 1:
-            raise ValueError(
-                f"FPS Filter: {label} descriptors must have shape "
-                f"({expected_rows}, D) with D >= 1."
+            raise CardOperationError(
+                "fps_filter.descriptor_shape",
+                "FPS Filter: {field} descriptors must have shape ({rows}, D) with D >= 1.",
+                field=label, rows=expected_rows,
             )
         if not np.all(np.isfinite(array)):
-            raise ValueError(f"FPS Filter: {label} descriptors contain NaN/Inf.")
+            raise CardOperationError(
+                "fps_filter.nonfinite_descriptors",
+                "FPS Filter: {field} descriptors contain NaN/Inf.", field=label,
+            )
         return array
 
     @classmethod
@@ -620,12 +638,16 @@ class GeometryFilterOperation(DatasetOperation):
         try:
             result = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(
-                f"Geometry Filter: {name} must be a finite non-negative number."
+            raise CardOperationError(
+                'filter.finite_threshold',
+                'Geometry Filter: {name} must be a finite non-negative number.',
+                name=name,
             ) from exc
         if not np.isfinite(result) or result < 0.0:
-            raise ValueError(
-                f"Geometry Filter: {name} must be a finite non-negative number."
+            raise CardOperationError(
+                'filter.finite_threshold',
+                'Geometry Filter: {name} must be a finite non-negative number.',
+                name=name,
             )
         return result
 

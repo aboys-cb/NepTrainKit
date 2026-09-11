@@ -27,7 +27,7 @@ from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperatio
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.i18n import localized_docs_url
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.messages import translate_runtime_error, translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask, DataProcessingThread, FilterProcessingThread
 
 from .card_metadata import CardMetadataDialog, localized_card_description
@@ -1141,7 +1141,7 @@ class MakeDataCard(MakeDataCardWidget):
         del self.worker_thread
         self.run_outcome = "failed"
         self.set_output_available(False)
-        translated_error = translate_runtime_message(error)
+        translated_error = translate_runtime_error(error)
         failure_text = self.tr("Failed: {error}").format(error=translated_error)
         self.status_label.setText(failure_text)
         self.status_label.setToolTip(failure_text)

@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 # Global UI message center (Qt-based)
 
+import re
+from string import Formatter
+
+from NepTrainKit.ui.runtime_error_catalog import RUNTIME_ERROR_TEMPLATES, DIAGNOSTIC_TEMPLATES
+
 from PySide6.QtCore import QObject, Signal, Qt, QCoreApplication
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, MessageBox
 from loguru import logger
@@ -261,48 +266,144 @@ _RUNTIME_EXCEPTION_REPLACEMENTS = (
 )
 
 
+def _translate_nep_calculation_message(text: str) -> str | None:
+    """Translate the complete adapter failure without rewriting diagnostic values."""
+    match = re.fullmatch(
+        r"NEP calculation failed \[(?P<code>[^\]]+)\]: (?P<reason>.*) "
+        r"Check the selected backend, model type, spin fields, and chunk size\.",
+        text,
+        re.DOTALL,
+    )
+    if match is None:
+        return None
+    reason = match["reason"]
+    unsupported = re.fullmatch(r"(?:runtime error: )?(\S+) is an unsupported NEP model", reason)
+    if unsupported is not None:
+        reason = QCoreApplication.translate(
+            "RuntimeMessage", "The current backend does not support NEP model {model}."
+        ).format(model=unsupported[1])
+    return QCoreApplication.translate(
+        "RuntimeMessage",
+        "NEP calculation failed [{code}]: {reason} Check the selected backend, model type, spin fields, and chunk size.",
+    ).format(code=match["code"], reason=reason)
+
+
+def _compile_message_template(template):
+    parts, names = [], []
+    for literal, field, _spec, _conversion in Formatter().parse(template):
+        parts.append(re.escape(literal))
+        if field is not None:
+            parts.append("(.*?)")
+            names.append(field)
+    return re.compile("".join(parts), re.DOTALL), names
+
+
+# More specific templates precede generic parameter-validation messages.
+_COMPLETE_MESSAGES = tuple(
+    (context, template, *_compile_message_template(template))
+    for context, template in sorted(
+        RUNTIME_ERROR_TEMPLATES, key=lambda item: len(re.sub(r"\{[^{}]*\}", "", item[1])), reverse=True
+    )
+)
+_DIAGNOSTIC_MESSAGES = tuple(_compile_message_template(t)[0] for t in DIAGNOSTIC_TEMPLATES)
+
+
+def _translate_error_values(values, template=""):
+    values = dict(values)
+    for key in ("field", "label", "context", "name", "prefix", "key"):
+        if isinstance(values.get(key), str):
+            values[key] = QCoreApplication.translate("CardOperationField", values[key])
+    for key in ("error", "reason"):
+        if key in values:
+            values[key] = translate_runtime_error(values[key])
+            if _zh_runtime_messages_enabled() and "{" + key + "}." in template:
+                values[key] = values[key].rstrip("。.")
+    return values
+
+
+def _translate_complete_message(text):
+    for context, template, pattern, names in _COMPLETE_MESSAGES:
+        match = pattern.fullmatch(text)
+        if match is None:
+            continue
+        values = dict(zip(names, match.groups()))
+        # This importer aggregates several backend diagnostics in one slot.
+        if template.startswith("Failed to import structures from "):
+            values["value1"] = translate_runtime_error(values["value1"])
+        translated = QCoreApplication.translate(context, template)
+        if translated == template:
+            continue
+        return translated.format(**_translate_error_values(values, template))
+    if any(pattern.fullmatch(text) for pattern in _DIAGNOSTIC_MESSAGES):
+        logger.warning("Runtime diagnostic: {}", text)
+        return _tr("Internal data validation failed. Details were written to the log.")
+    return None
+
+
+def translate_runtime_error(error) -> str:
+    """Localize a failure reason, retaining unrecognized diagnostics in the log."""
+    raw = str(error)
+    translated = translate_runtime_message(error)
+    if _zh_runtime_messages_enabled() and translated == raw and not re.search(r"[\u4e00-\u9fff]", raw):
+        logger.warning("Runtime diagnostic: {}", raw)
+        return _tr("The operation failed. Details were written to the log.")
+    return translated
+
+
 def translate_runtime_message(message) -> str:
     """Translate late-bound UI messages and common runtime errors."""
     if isinstance(message, CardOperationError):
         template = QCoreApplication.translate("CardOperationError", message.template)
-        values = dict(message.values)
-        if isinstance(values.get("field"), str):
-            values["field"] = QCoreApplication.translate(
-                "CardOperationField", values["field"]
-            )
-        for key in ("error", "reason"):
-            if isinstance(values.get(key), str):
-                raw_value = values[key]
-                translated_value = translate_runtime_message(raw_value)
-                if (
-                    translated_value != raw_value
-                    and _zh_runtime_messages_enabled()
-                    and translated_value.endswith(".")
-                ):
-                    translated_value = translated_value[:-1] + "。"
-                values[key] = translated_value
+        values = _translate_error_values(message.values, message.template)
         return template.format(**values)
     text = str(message)
+    if _zh_runtime_messages_enabled():
+        complete = _translate_complete_message(text)
+        if complete is not None:
+            return complete
     translated = QCoreApplication.translate("RuntimeMessage", text)
     if translated != text:
         return translated
     if not _zh_runtime_messages_enabled():
         return text
 
+    # Translate complete legacy templates before interpolating user values.
+    # Prefix values can include file paths and must not undergo word replacement.
+    if text.startswith("Unsupported FPS selection strategy: "):
+        return QCoreApplication.translate(
+            "RuntimeMessage", "Unsupported FPS selection strategy: {strategy}"
+        ).format(strategy=text.removeprefix("Unsupported FPS selection strategy: "))
+    if text.startswith("Unsupported physics count mode: "):
+        return QCoreApplication.translate(
+            "RuntimeMessage", "Unsupported physics count mode: {mode}"
+        ).format(mode=text.removeprefix("Unsupported physics count mode: "))
+
+    nep_message = _translate_nep_calculation_message(text)
+    if nep_message is not None:
+        return nep_message
+
+    for source, replacement in (*_RUNTIME_TEXT_REPLACEMENTS, *_RUNTIME_EXCEPTION_REPLACEMENTS):
+        if text == source:
+            return replacement
     for prefix, replacement in _RUNTIME_PREFIX_REPLACEMENTS:
         if text.startswith(prefix):
-            text = replacement + text[len(prefix):]
-            break
-    for source, replacement in _RUNTIME_TEXT_REPLACEMENTS:
-        text = text.replace(source, replacement)
-    for source, replacement in _RUNTIME_EXCEPTION_REPLACEMENTS:
-        text = text.replace(source, replacement)
+            return replacement + translate_runtime_message(text[len(prefix):])
     return text
 
 
 def _runtime_message_catalog() -> None:
     """Literal catalog for lupdate; runtime translations are applied centrally."""
     QCoreApplication.translate("RuntimeMessage", "__language_probe__")
+    QCoreApplication.translate(
+        "RuntimeMessage", "Raw structure descriptors are required for structured balanced FPS."
+    )
+    QCoreApplication.translate(
+        "RuntimeMessage", "Existing training descriptors do not match the loaded raw descriptor dimensions."
+    )
+    QCoreApplication.translate(
+        "RuntimeMessage",
+        "Current canvas backend is vispy, but vispy structure canvas failed to initialize; fallback to pyqtgraph.",
+    )
     for text, _replacement in (
         *_RUNTIME_PREFIX_REPLACEMENTS,
         *_RUNTIME_TEXT_REPLACEMENTS,
@@ -1379,6 +1480,8 @@ def _card_operation_error_catalog() -> None:
 def _card_operation_field_catalog() -> None:
     """Literal field names interpolated into structured card errors."""
     QCoreApplication.translate("CardOperationField", "candidate set")
+    QCoreApplication.translate("CardOperationField", "candidate")
+    QCoreApplication.translate("CardOperationField", "existing")
     QCoreApplication.translate("CardOperationField", "existing training set")
     QCoreApplication.translate("CardOperationField", "Maximum outputs per input")
     QCoreApplication.translate("CardOperationField", "Bonds rotated per output")
@@ -1515,3 +1618,69 @@ class MessageManager(QObject):
             duration=duration,
             parent=self._parent,
         )
+
+
+def _reviewed_error_field_catalog():
+    """Parameter labels used by complete error templates."""
+    QCoreApplication.translate("CardOperationField", 'candidate set')
+    QCoreApplication.translate("CardOperationField", 'candidate')
+    QCoreApplication.translate("CardOperationField", 'existing')
+    QCoreApplication.translate("CardOperationField", 'existing training set')
+    QCoreApplication.translate("CardOperationField", 'Maximum outputs per input')
+    QCoreApplication.translate("CardOperationField", 'Bonds rotated per output')
+    QCoreApplication.translate("CardOperationField", 'Large-molecule threshold')
+    QCoreApplication.translate("CardOperationField", 'Local subtree cap')
+    QCoreApplication.translate("CardOperationField", 'Retries per output')
+    QCoreApplication.translate("CardOperationField", 'Coordinate noise')
+    QCoreApplication.translate("CardOperationField", 'Torsion increment range')
+    QCoreApplication.translate("CardOperationField", 'Bond detection radius')
+    QCoreApplication.translate("CardOperationField", 'Minimum bond length')
+    QCoreApplication.translate("CardOperationField", 'Maximum bond length')
+    QCoreApplication.translate("CardOperationField", 'Minimum nonbonded distance')
+    QCoreApplication.translate("CardOperationField", 'Short-bond rotation cutoff')
+    QCoreApplication.translate("CardOperationField", 'Nonperiodic display box')
+    QCoreApplication.translate("CardOperationField", 'Pauling decay length')
+    QCoreApplication.translate("CardOperationField", 'Bond-order threshold')
+    QCoreApplication.translate("CardOperationField", 'Random seed')
+    QCoreApplication.translate("CardOperationField", 'Independent outputs per input')
+    QCoreApplication.translate("CardOperationField", 'Total solvent molecules per output')
+    QCoreApplication.translate("CardOperationField", 'Placement attempts per output')
+    QCoreApplication.translate("CardOperationField", 'Cartesian z range')
+    QCoreApplication.translate("CardOperationField", 'Fallback center-to-COM shell')
+    QCoreApplication.translate("CardOperationField", 'Uniform minimum distance')
+    QCoreApplication.translate("CardOperationField", 'Element-radius collision scale')
+    QCoreApplication.translate("CardOperationField", 'Fixed box size')
+    QCoreApplication.translate("CardOperationField", 'Auto-box padding')
+    QCoreApplication.translate("CardOperationField", 'Minimum auto-box edge')
+    QCoreApplication.translate("CardOperationField", 'Flexible conformer pool')
+    QCoreApplication.translate("CardOperationField", 'Flexible torsions per conformer')
+    QCoreApplication.translate("CardOperationField", 'Flexible conformer noise')
+    QCoreApplication.translate("CardOperationField", 'Flexible torsion range')
+    QCoreApplication.translate("CardOperationField", 'percent')
+    QCoreApplication.translate("CardOperationField", 'count')
+    QCoreApplication.translate("CardOperationField", 'a_range')
+    QCoreApplication.translate("CardOperationField", 'ca_range')
+    QCoreApplication.translate("CardOperationField", 'volume_scale_range')
+    QCoreApplication.translate("CardOperationField", 'super_scale')
+    QCoreApplication.translate("CardOperationField", 'target_cell')
+    QCoreApplication.translate("CardOperationField", 'fixed_axis_scale')
+    QCoreApplication.translate("CardOperationField", 'min_distance')
+    QCoreApplication.translate("CardOperationField", 'max_distance')
+    QCoreApplication.translate("CardOperationField", 'min_volume_per_atom')
+    QCoreApplication.translate("CardOperationField", 'max_volume_per_atom')
+    QCoreApplication.translate("CardOperationField", 'min_density')
+    QCoreApplication.translate("CardOperationField", 'max_density')
+    QCoreApplication.translate("CardOperationField", 'Solvation')
+    QCoreApplication.translate("CardOperationField", 'Local Solvation')
+    QCoreApplication.translate("CardOperationField", 'Solvent Box Fill')
+    QCoreApplication.translate("CardOperationField", 'OrganicMolConfig')
+    QCoreApplication.translate("CardOperationField", 'structure_count')
+    QCoreApplication.translate("CardOperationField", 'insert_count')
+    QCoreApplication.translate("CardOperationField", 'max_attempts')
+    QCoreApplication.translate("CardOperationField", 'max_num')
+    QCoreApplication.translate("CardOperationField", 'min_num')
+    QCoreApplication.translate("CardOperationField", 'seed')
+    QCoreApplication.translate("CardOperationField", 'structures')
+    QCoreApplication.translate("CardOperationField", 'solvent_count')
+    QCoreApplication.translate("CardOperationField", 'flex_pool')
+    QCoreApplication.translate("CardOperationField", 'PM direction')

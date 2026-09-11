@@ -7,12 +7,16 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from qfluentwidgets import CaptionLabel
 
 from NepTrainKit.ui.canvas.base.distribution import DistributionPlotBase
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("DistributionPlot", text)
 
 
 class _RotatedLabel(QLabel):
@@ -195,15 +199,17 @@ class PyqtgraphDistributionPlot(DistributionPlotBase):
         total = int(series.get("total", 0) or 0)
         mean = float(series.get("mean", 0.0) or 0.0)
         std = float(series.get("std", 0.0) or 0.0)
-        title = f"{series_name} | N={total}, mean={mean:.4g}, std={std:.4g}"
+        title = _tr("{series} | N={total}, mean={mean:.4g}, std={std:.4g}").format(
+            series=series_name, total=total, mean=mean, std=std
+        )
         self._plot.setTitle(title)
 
         unit = str(metric.get("unit", "unknown") or "unknown")
-        xlabel = component if component else "value"
+        xlabel = component if component else _tr("value")
         if unit and unit != "unknown":
             xlabel = f"{xlabel} ({unit})"
         self._xlabel_label.setText(xlabel)
-        self._ylabel_label.setText("Count")
+        self._ylabel_label.setText(_tr("Count"))
         self._plot.getPlotItem().setXRange(lo, hi, padding=0.02)
         self._plot.getPlotItem().enableAutoRange(axis="y", enable=True)
 
@@ -256,16 +262,16 @@ class PyqtgraphDistributionPlot(DistributionPlotBase):
         title_parts = []
         if field:
             title_parts.append(field)
-        title_parts.append(f"{n_groups} group{'s' if n_groups > 1 else ''}")
+        title_parts.append(_tr("Groups: {count}").format(count=n_groups))
         title_parts.append(f"N={total_n}")
         self._plot.setTitle("  |  ".join(title_parts), size="10pt")
 
         unit = str(metric.get("unit", "unknown") or "unknown")
-        xlabel = component if component else "value"
+        xlabel = component if component else _tr("value")
         if unit and unit != "unknown":
             xlabel = f"{xlabel} ({unit})"
         self._xlabel_label.setText(xlabel)
-        self._ylabel_label.setText("Count")
+        self._ylabel_label.setText(_tr("Count"))
         plot_item.setXRange(lo, hi, padding=0.02)
         plot_item.enableAutoRange(axis="y", enable=True)
 

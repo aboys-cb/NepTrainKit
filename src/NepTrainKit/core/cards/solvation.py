@@ -201,12 +201,28 @@ class LocalSolvationOperation(StructureOperation):
             try:
                 numeric = float(value)
             except (TypeError, ValueError) as exc:
-                raise ValueError(f"{prefix}: {key} must be an integer.") from exc
+                raise CardOperationError(
+                    'solvation.validation',
+                    '{prefix}: {key} must be an integer.',
+                    prefix=prefix,
+                    key=key,
+                ) from exc
             if not np.isfinite(numeric) or not numeric.is_integer():
-                raise ValueError(f"{prefix}: {key} must be an integer.")
+                raise CardOperationError(
+                    'solvation.validation',
+                    '{prefix}: {key} must be an integer.',
+                    prefix=prefix,
+                    key=key,
+                )
             integer = int(numeric)
             if integer < minimum:
-                raise ValueError(f"{prefix}: {key} must be >= {minimum}.")
+                raise CardOperationError(
+                    'solvation.validation',
+                    '{prefix}: {key} must be >= {minimum}.',
+                    prefix=prefix,
+                    key=key,
+                    minimum=minimum,
+                )
             return integer
         assert field is not None
         try:
@@ -246,11 +262,27 @@ class LocalSolvationOperation(StructureOperation):
             try:
                 numeric = float(value)
             except (TypeError, ValueError) as exc:
-                raise ValueError(f"{prefix}: {key} must be a finite number.") from exc
+                raise CardOperationError(
+                    'solvation.validation',
+                    '{prefix}: {key} must be a finite number.',
+                    prefix=prefix,
+                    key=key,
+                ) from exc
             if not np.isfinite(numeric):
-                raise ValueError(f"{prefix}: {key} must be a finite number.")
+                raise CardOperationError(
+                    'solvation.validation',
+                    '{prefix}: {key} must be a finite number.',
+                    prefix=prefix,
+                    key=key,
+                )
             if minimum is not None and numeric < minimum:
-                raise ValueError(f"{prefix}: {key} must be >= {minimum:g}.")
+                raise CardOperationError(
+                    'solvation.validation',
+                    '{prefix}: {key} must be >= {minimum}.',
+                    prefix=prefix,
+                    key=key,
+                    minimum=f'{minimum:g}',
+                )
             return numeric
         assert field is not None
         try:
@@ -583,7 +615,7 @@ class LocalSolvationOperation(StructureOperation):
         if int(structures) <= 0:
             raise ValueError("Solvation: structures must be >= 1.")
         if int(solvent_count) <= 0:
-            raise ValueError("Solvation: solvent_count must be >= 1.")
+            raise CardOperationError('solvation.validation', 'Solvation: solvent_count must be >= 1.')
 
     def _solvate_one(
         self,
@@ -746,7 +778,10 @@ class SolventBoxFillOperation(StructureOperation):
         )
         count_mode = str(params.count_mode).strip().lower()
         if count_mode not in {"fixed", "density"}:
-            raise ValueError("Solvent Box Fill: count_mode must be 'fixed' or 'density'.")
+            raise CardOperationError(
+                'solvation.validation',
+                "Solvent Box Fill: count_mode must be 'fixed' or 'density'.",
+            )
         density = LocalSolvationOperation._finite(
             params.density,
             "density",
@@ -754,7 +789,7 @@ class SolventBoxFillOperation(StructureOperation):
             prefix="Solvent Box Fill",
         )
         if density <= 0.0:
-            raise ValueError("Solvent Box Fill: density must be positive.")
+            raise CardOperationError('solvation.validation', 'Solvent Box Fill: density must be positive.')
         fill_packing = LocalSolvationOperation._finite(
             params.fill_packing,
             "fill_packing",
@@ -762,8 +797,9 @@ class SolventBoxFillOperation(StructureOperation):
             prefix="Solvent Box Fill",
         )
         if not 0.0 < fill_packing <= 1.0:
-            raise ValueError(
-                "Solvent Box Fill: fill_packing must be greater than 0 and at most 1."
+            raise CardOperationError(
+                'solvation.validated_settings',
+                'Solvent Box Fill: fill_packing must be greater than 0 and at most 1.',
             )
         max_attempts = LocalSolvationOperation._integer(
             params.max_attempts_per_solvent,
@@ -773,7 +809,10 @@ class SolventBoxFillOperation(StructureOperation):
         )
         sampling_mode = str(params.sampling_mode).strip().lower()
         if sampling_mode not in {"auto", "general", "water", "loose", "dense"}:
-            raise ValueError("Solvent Box Fill: sampling_mode must be one of auto, general, water, loose, dense.")
+            raise CardOperationError(
+                'solvation.validated_settings',
+                'Solvent Box Fill: sampling_mode must be one of auto, general, water, loose, dense.',
+            )
 
         cell = np.asarray(structure.cell.array, dtype=float)
         if (
@@ -1038,11 +1077,15 @@ def parse_solvent_xyz(text: str) -> Atoms:
     """Parse a single solvent molecule from XYZ/extxyz text."""
     stripped = text.strip()
     if not stripped:
-        raise ValueError("Solvation: solvent_xyz is empty.")
+        raise CardOperationError('solvation.parse_solvent_xyz', 'Solvation: solvent_xyz is empty.')
     try:
         atoms = ase_read(StringIO(stripped), index=0, format="extxyz")
     except Exception as exc:
-        raise ValueError(f"Solvation: cannot parse solvent_xyz: {exc}") from exc
+        raise CardOperationError(
+            'solvation.parse_solvent_xyz',
+            'Solvation: cannot parse solvent_xyz: {reason}',
+            reason=exc,
+        ) from exc
     if len(atoms) == 0:
         raise CardOperationError(
             "solvation.empty_solvent_molecule",
@@ -1065,7 +1108,7 @@ def solvent_conformer_pool(solvent: Atoms, params: LocalSolvationParams | Solven
         return [solvent]
     pool_size = int(params.flex_pool)
     if pool_size <= 0:
-        raise ValueError("Solvation: flex_pool must be >= 1.")
+        raise CardOperationError('solvation.validation', 'Solvation: flex_pool must be >= 1.')
     op = OrganicMolConfigPBCOperation()
     flex_params = OrganicMolConfigPBCParams(
         perturb_per_frame=pool_size,
@@ -1648,11 +1691,14 @@ def wrap_positions(
 
 def estimate_solvent_count_from_density(solvent: Atoms, density: float, cell: np.ndarray, packing: float) -> int:
     if density <= 0:
-        raise ValueError("Solvent Box Fill: density must be positive.")
+        raise CardOperationError('solvation.validation', 'Solvent Box Fill: density must be positive.')
     volume_a3 = abs(float(np.linalg.det(cell)))
     mass_g_per_mol = molecule_mass(solvent.get_chemical_symbols())
     if mass_g_per_mol <= 0:
-        raise ValueError("Solvent Box Fill: solvent mass must be positive.")
+        raise CardOperationError(
+            'solvation.estimate_solvent_count_from_density',
+            'Solvent Box Fill: solvent mass must be positive.',
+        )
     volume_cm3 = volume_a3 * 1e-24
     molecule_mass_g = mass_g_per_mol / AVOGADRO
     packing = max(0.0, min(float(packing), 1.0))

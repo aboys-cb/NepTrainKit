@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.defect import InsertDefectOperation, InsertDefectParams
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -312,7 +314,7 @@ class InsertDefectCard(MakeDataCard):
                 self.get_params(),
             )
         except ValueError as exc:
-            self.preview_label.setText("⚠ " + self.tr("Preview unavailable: {error}").format(error=str(exc)))
+            self.preview_label.setText("⚠ " + self.tr("Preview unavailable: {error}").format(error=translate_runtime_error(exc)))
             return
 
         species_text = self._species_summary(

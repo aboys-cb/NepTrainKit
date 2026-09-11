@@ -1,7 +1,9 @@
 """Thin UI for controlled local magnetic-response groups."""
 
+
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.magnetic_response import LocalMagneticResponseParams, MagneticResponseScanOperation
@@ -325,7 +327,7 @@ class LocalMagneticResponseCard(MakeDataCard):
                 ).format(count=count, groups=groups)
             )
         except ValueError as exc:
-            self.output_preview.setText(str(exc))
+            self.output_preview.setText(translate_runtime_error(exc))
 
     def get_summary_text(self) -> str:
         return self.tr("{probe} · {count} per group").format(

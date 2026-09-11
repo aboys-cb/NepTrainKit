@@ -35,27 +35,27 @@ def _as_list(value: Any) -> list:
 def _count_range(value: Any, *, label: str) -> tuple[int, int]:
     values = _as_list(value)
     if not values:
-        raise ValueError(f"{label} must not be empty.")
+        raise CardOperationError('defect.count_range', '{label} must not be empty.', label=label)
     if len(values) == 1:
         low = high = int(values[0])
     elif len(values) == 2:
         low, high = [int(item) for item in values]
     else:
-        raise ValueError(f"{label} must contain one or two values.")
+        raise CardOperationError('defect.count_range', '{label} must contain one or two values.', label=label)
     if low > high:
-        raise ValueError(f"{label} minimum must be <= maximum.")
+        raise CardOperationError('defect.count_range', '{label} minimum must be <= maximum.', label=label)
     return low, high
 
 
 def _range_values(values: Sequence[float], *, include_step: bool = False) -> np.ndarray:
     if len(values) != 3:
-        raise ValueError("Range must contain exactly three values: start, stop, step.")
+        raise CardOperationError('defect.validation', 'Range must contain exactly three values: start, stop, step.')
     start, end, step = values
     start, end, step = float(start), float(end), float(step)
     if not np.all(np.isfinite([start, end, step])):
-        raise ValueError("Range values must be finite.")
+        raise CardOperationError('defect.range_values', 'Range values must be finite.')
     if step <= 0.0:
-        raise ValueError("Range step must be positive.")
+        raise CardOperationError('defect.range_values', 'Range step must be positive.')
     if end < start:
         start, end = end, start
     if include_step:
@@ -80,8 +80,10 @@ def _parse_insert_species(tokens: str) -> tuple[list[str], list[float]]:
             try:
                 weight = float(weight_text.strip())
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    f"InsertDefect: invalid weight for element {symbol or item}."
+                raise CardOperationError(
+                    'defect.parse_insert_species',
+                    'InsertDefect: invalid weight for element {value0}.',
+                    value0=symbol or item,
                 ) from exc
         else:
             symbol = item.strip()
@@ -92,8 +94,10 @@ def _parse_insert_species(tokens: str) -> tuple[list[str], list[float]]:
                 f"InsertDefect: unknown chemical element '{symbol}'."
             )
         if not np.isfinite(weight) or weight <= 0.0:
-            raise ValueError(
-                f"InsertDefect: weight for {symbol} must be finite and positive."
+            raise CardOperationError(
+                'defect.parse_insert_species',
+                'InsertDefect: weight for {symbol} must be finite and positive.',
+                symbol=symbol,
             )
         combined[symbol] = combined.get(symbol, 0.0) + weight
 
@@ -686,16 +690,19 @@ class StackingFaultOperation(StructureOperation):
                 "Stacking Fault hkl must contain exactly three integers.",
             )
         if len(params.step) != 3:
-            raise ValueError("StackingFault step must contain exactly three values: start, stop, step.")
+            raise CardOperationError(
+                'defect.validation',
+                'StackingFault step must contain exactly three values: start, stop, step.',
+            )
         h, k, l = [int(value) for value in params.hkl]
         step_start, step_end, step_step = [float(value) for value in params.step]
         num_layers = int(params.layers)
         if num_layers <= 0:
-            raise ValueError("StackingFault layers must be >= 1.")
+            raise CardOperationError('defect.validation', 'StackingFault layers must be >= 1.')
 
         cell = structure.cell.array
         if len(structure) == 0:
-            raise ValueError("StackingFault requires at least one atom.")
+            raise CardOperationError('defect.validation', 'StackingFault requires at least one atom.')
         recip = np.linalg.inv(cell).T
         normal = h * recip[0] + k * recip[1] + l * recip[2]
         if np.linalg.norm(normal) < 1e-8:
@@ -1311,16 +1318,20 @@ class InsertDefectOperation(StructureOperation):
         try:
             numeric = float(value)
         except (TypeError, ValueError) as exc:
-            raise ValueError(f"InsertDefect: {label} must be an integer.") from exc
+            raise CardOperationError(
+                'defect.validation',
+                'InsertDefect: {label} must be an integer.',
+                label=label,
+            ) from exc
         if not np.isfinite(numeric) or not numeric.is_integer():
-            raise ValueError(f"InsertDefect: {label} must be an integer.")
+            raise CardOperationError('defect.validation', 'InsertDefect: {label} must be an integer.', label=label)
         return int(numeric)
 
     @classmethod
     def _positive_integer(cls, value: Any, *, label: str) -> int:
         integer = cls._integer(value, label=label)
         if integer <= 0:
-            raise ValueError(f"InsertDefect: {label} must be >= 1.")
+            raise CardOperationError('defect.validation', 'InsertDefect: {label} must be >= 1.', label=label)
         return integer
 
     @classmethod
@@ -1507,11 +1518,14 @@ class InsertDefectOperation(StructureOperation):
 
                 if not success:
                     mode_name = "adsorption" if mode == 1 else "interstitial"
-                    raise ValueError(
-                        "InsertDefect: could not place "
-                        f"atom {insert_index + 1} of {count} for output "
-                        f"{output_index + 1} after {max_attempts} attempts "
-                        f"({mode_name}); reduce the minimum distance or insertion count."
+                    raise CardOperationError(
+                        'defect.run_structure',
+                        'InsertDefect: could not place atom {value0} of {count} for output {value2} after {max_attempts} attempts ({mode_name}); reduce the minimum distance or insertion count.',
+                        value0=insert_index + 1,
+                        count=count,
+                        value2=output_index + 1,
+                        max_attempts=max_attempts,
+                        mode_name=mode_name,
                     )
 
             mode_tag = "ad" if mode == 1 else "int"

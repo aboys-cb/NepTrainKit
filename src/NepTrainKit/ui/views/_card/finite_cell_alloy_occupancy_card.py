@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+
 import json
 import re
 from collections.abc import Mapping
@@ -19,6 +20,7 @@ from qfluentwidgets import (
     PushButton,
 )
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import FiniteCellAlloyOccupancyOperation, FiniteCellAlloyOccupancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -276,7 +278,7 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             except ValueError:  # pragma: no cover - previous rules came from the editor
                 pass
             self.json_error_label.setText(
-                "⚠ " + self.tr("JSON was not applied: {error}").format(error=str(exc))
+                "⚠ " + self.tr("JSON was not applied: {error}").format(error=translate_runtime_error(exc))
             )
             self.json_error_label.show()
             self.advanced_json_edit.setPlainText(attempted_text)

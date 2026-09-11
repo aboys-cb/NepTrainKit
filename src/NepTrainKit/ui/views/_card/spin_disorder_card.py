@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import SpinDisorderOperation, SpinDisorderParams
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -309,7 +311,7 @@ class SpinDisorderCard(MakeDataCard):
                 )
             )
         except ValueError as exc:
-            self.output_preview.setText(str(exc))
+            self.output_preview.setText(translate_runtime_error(exc))
 
     def get_summary_text(self) -> str:
         try:

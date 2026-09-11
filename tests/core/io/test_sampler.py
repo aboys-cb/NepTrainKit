@@ -235,7 +235,8 @@ def test_sparse_sampler_physics_strategy_preserves_phase_and_spin_strata(
     )
 
 
-def test_sparse_sampler_recommends_physics_count_without_selecting(monkeypatch):
+@pytest.mark.parametrize("entrypoint", ["sampler", "result_data"])
+def test_sparse_sampler_recommends_physics_count_without_selecting(monkeypatch, entrypoint):
     from ase.build import bulk
 
     bcc = bulk("Fe", "bcc", a=2.86, cubic=True)
@@ -263,8 +264,16 @@ def test_sparse_sampler_recommends_physics_count_without_selecting(monkeypatch):
     )
     sampler = SparseSampler(result)
 
+    sample = sampler.sparse_point_selection
+    if entrypoint == "result_data":
+        from functools import partial
+        from NepTrainKit.core.io.base import ResultData
+
+        result._sampler = sampler
+        sample = partial(ResultData.sparse_point_selection, result)
+
     recommendation = sampler.recommend_physics_sample_count()
-    selected, reverse = sampler.sparse_point_selection(
+    selected, reverse = sample(
         n_samples=0,
         distance=0.0,
         selection_strategy="physics",

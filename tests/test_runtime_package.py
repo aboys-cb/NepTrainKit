@@ -44,7 +44,9 @@ def test_nep_adapters_runtime_constraint_allows_future_major_versions() -> None:
     constraint = SpecifierSet(NEP_ADAPTERS_SPEC.version_constraint)
 
     assert Version("1.0.0") not in constraint
-    assert Version("1.0.1") in constraint
+    assert Version("1.0.1") not in constraint
+    assert Version("1.0.2") not in constraint
+    assert Version("1.0.3") in constraint
     assert Version("2.0.0") in constraint
     assert Version("99.0.0") in constraint
 

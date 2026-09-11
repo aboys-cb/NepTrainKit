@@ -125,7 +125,7 @@ jobs:
             --runtime-root "$dist/runtime" `
             --distribution "nep-adapters" `
             --import-name "nep_adapters" `
-            --constraint ">=1.0.1" `
+            --constraint ">=1.0.3" `
             --health-kind "nep_adapters_cpu" `
             --version "$adapterVersion"
 

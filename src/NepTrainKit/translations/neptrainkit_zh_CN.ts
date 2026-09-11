@@ -18679,8 +18679,8 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/pages/settings.py" line="629" /><location filename="../ui/pages/settings.py" line="630" />
-        <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0 and refresh.</source>
-        <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0 后刷新。</translation>
+        <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0.3 and refresh.</source>
+        <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0.3 后刷新。</translation>
     </message>
     <message>
         <location filename="../ui/pages/settings.py" line="652" /><location filename="../ui/pages/settings.py" line="653" />

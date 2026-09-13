@@ -2,9 +2,9 @@ import sys
 
 import pytest
 import shiboken6
-from PySide6.QtCore import QCoreApplication, QEvent, Qt
+from PySide6.QtCore import QCoreApplication, QEvent, QPoint, QRectF, Qt
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QPushButton
+from PySide6.QtWidgets import QApplication, QPushButton, QWidget
 
 from NepTrainKit.core.search import StructureFilterValidationError
 from NepTrainKit.core.types import (
@@ -522,12 +522,11 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
 
     assert popup.width() == popup.minimumWidth() == 620
     assert popup.graphicsEffect() is None
+    assert popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     if sys.platform == "win32":
-        # Windows uses an opaque popup window without the layered drop shadow.
-        assert not popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # Windows keeps the rounded surface but drops the overflowing shadow.
         assert popup.card.graphicsEffect() is None
     else:
-        assert popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         assert popup.card.graphicsEffect() is not None
     assert not popup.preset_button.geometry().intersects(popup.logic_combo.geometry())
     assert popup.preset_button.width() >= (
@@ -567,3 +566,63 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     assert bar.apply_button.width() >= bar.apply_button.sizeHint().width()
     popup._debounce.stop()
     popup.close()
+
+
+def test_windows_popup_keeps_every_effect_inside_its_window(qapp, monkeypatch):
+    """Windows drops layered updates whose dirty region leaves the popup window."""
+    monkeypatch.setattr(filter_bar_module, "_IS_WINDOWS", True)
+    popup = filter_bar_module.StructureFilterEditorPopup()
+    try:
+        popup.set_spec(
+            _spec(
+                _condition(
+                    "tag",
+                    FilterField.CONFIG_TYPE,
+                    "surface",
+                    "bulk",
+                    mode=TextMatchMode.CONTAINS,
+                )
+            )
+        )
+        popup.resize(687, popup.sizeHint().height())
+        popup.show()
+        qapp.processEvents()
+        window = popup.rect()
+        for widget in [popup, *popup.findChildren(QWidget)]:
+            effect = widget.graphicsEffect()
+            # Menus and tooltips are top-level windows of their own; qfluentwidgets
+            # clips their shadows with a mask, so only the popup window matters here.
+            if effect is None or widget.window() is not popup:
+                continue
+            offset = widget.mapTo(popup, QPoint(0, 0))
+            bounds = effect.boundingRectFor(QRectF(widget.rect())).translated(
+                float(offset.x()), float(offset.y())
+            )
+            assert window.contains(bounds.toAlignedRect()), widget.objectName()
+    finally:
+        popup._debounce.stop()
+        popup.close()
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_fluent_tooltips_drop_the_shadow_windows_cannot_composite(qapp, monkeypatch):
+    parent = QWidget()
+    parent.setToolTip("hint")
+    tooltip_filter = filter_bar_module._FilterToolTipFilter(parent, 300)
+    try:
+        monkeypatch.setattr(filter_bar_module, "_IS_WINDOWS", True)
+        assert tooltip_filter._createToolTip().container.graphicsEffect() is None
+        monkeypatch.setattr(filter_bar_module, "_IS_WINDOWS", False)
+        assert tooltip_filter._createToolTip().container.graphicsEffect() is not None
+    finally:
+        parent.deleteLater()
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_match_result_details_use_the_fluent_tooltip(bar, qapp):
+    bar.set_result(12, 100, 4.5)
+    bar.match_button.click()
+    qapp.processEvents()
+    tooltip = bar._result_tip
+    assert isinstance(tooltip, filter_bar_module.ToolTip)
+    assert "Matched structures: 12" in tooltip.text()

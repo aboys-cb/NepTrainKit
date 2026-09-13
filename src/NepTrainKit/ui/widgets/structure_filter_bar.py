@@ -15,7 +15,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QScrollArea,
     QSizePolicy,
-    QToolTip,
     QVBoxLayout,
     QWidget,
 )
@@ -35,6 +34,9 @@ from qfluentwidgets import (
     StrongBodyLabel,
     SwitchButton,
     ToolButton,
+    ToolTip,
+    ToolTipFilter,
+    ToolTipPosition,
     TogglePushButton,
     TransparentToolButton,
     isDarkTheme,
@@ -63,22 +65,39 @@ from NepTrainKit.core.types import (
 )
 from NepTrainKit.ui.widgets.completer import CompleterModel, JoinDelegate
 
-
-# Windows presents translucent top-level popups through UpdateLayeredWindowIndirect.
-# A drop shadow on such a popup paints outside the window, so that call fails with
-# ERROR_INVALID_PARAMETER ("参数错误") on every repaint.  Windows therefore gets the
-# condition editor as a plain opaque window and no popup drop shadows.
+# Windows presents translucent top-level popups through UpdateLayeredWindowIndirect,
+# which rejects a dirty region reaching outside the window.  A drop shadow paints
+# outside its popup, so that call fails with ERROR_INVALID_PARAMETER ("参数错误") on
+# every repaint: the popup stays black and eventually crashes the app.  Popups keep
+# their translucent surfaces on Windows, but they lose the overflowing shadows.
 _IS_WINDOWS = sys.platform == "win32"
 
 
 def _drop_completer_menu_shadow(menu: CompleterMenu) -> None:
-    """Remove the shadow of a fluent completion menu on Windows.
-
-    The shadow paints outside the popup, so Qt's layered window update keeps
-    failing with ``ERROR_INVALID_PARAMETER`` (see ``_IS_WINDOWS``).  The menu
-    itself stays translucent, like every other fluent popup in this app.
-    """
+    """Remove the shadow of a fluent completion menu (see ``_IS_WINDOWS``)."""
     menu.view.setGraphicsEffect(None)
+
+
+def _create_fluent_tooltip(text: str, parent: QWidget | None) -> ToolTip:
+    """Create a fluent tooltip, without the shadow that outgrows its window."""
+    tooltip = ToolTip(text, parent)
+    if _IS_WINDOWS:
+        tooltip.container.setGraphicsEffect(None)
+    return tooltip
+
+
+class _FilterToolTipFilter(ToolTipFilter):
+    """Show a widget's tooltip with the fluent tooltip widget used by this app."""
+
+    def _createToolTip(self) -> ToolTip:
+        """Build the tooltip for the filtered widget."""
+        parent = self.parent()
+        return _create_fluent_tooltip(parent.toolTip(), parent.window())
+
+
+def _install_fluent_tooltip(widget: QWidget) -> None:
+    """Show ``widget``'s tooltip in the fluent style used by the rest of the app."""
+    widget.installEventFilter(_FilterToolTipFilter(widget, 300, ToolTipPosition.TOP))
 
 
 _TEXT_FIELDS = {FilterField.CONFIG_TYPE, FilterField.FORMULA}
@@ -182,12 +201,14 @@ class FilterChip(QFrame):
         self.value_label.setMaximumWidth(92)
         tooltip = self.full_text if enabled else self.tr("Disabled: {text}").format(text=self.full_text)
         self.setToolTip(tooltip)
+        _install_fluent_tooltip(self)
         layout.addWidget(self.kind_label)
         layout.addWidget(self.value_label)
         close = TransparentToolButton(FluentIcon.CLOSE, self)
         close.setIconSize(QSize(10, 10))
         close.setFixedSize(18, 24)
         close.setToolTip(self.tr("Remove condition"))
+        _install_fluent_tooltip(close)
         close.setAccessibleName(self.tr("Remove condition"))
         close.clicked.connect(lambda: self.removeRequested.emit(self.condition_id))
         layout.addWidget(close)
@@ -330,12 +351,14 @@ class _ConditionRow(QFrame):
         self.case_button.setCheckable(True)
         self.case_button.setFixedSize(max(44, self.case_button.sizeHint().width()), 28)
         self.case_button.setAccessibleName(self.tr("Match case"))
+        _install_fluent_tooltip(self.case_button)
 
         self.value_edit = _SuggestionLineEdit(self)
         self.value_edit.setClearButtonEnabled(True)
         self.value_edit.setFixedHeight(30)
         self.value_edit.setMinimumWidth(120)
         self.value_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        _install_fluent_tooltip(self.value_edit)
 
         self.unit_label = CaptionLabel("", self)
         self.unit_label.setFixedHeight(30)
@@ -349,6 +372,7 @@ class _ConditionRow(QFrame):
         self.remove_button.setIconSize(QSize(10, 10))
         self.remove_button.setFixedSize(24, 28)
         self.remove_button.setToolTip(self.tr("Remove condition"))
+        _install_fluent_tooltip(self.remove_button)
         self.remove_button.setAccessibleName(self.tr("Remove condition"))
         self.remove_button.clicked.connect(lambda: self.removeRequested.emit(self))
 
@@ -641,10 +665,8 @@ class StructureFilterEditorPopup(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self.setObjectName("structureFilterEditorPopup")
-        self._opaque_window = _IS_WINDOWS
-        if not self._opaque_window:
-            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-            self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
         self.setMinimumWidth(620)
         self.setMaximumWidth(704)
         self._rows: list[_ConditionRow] = []
@@ -664,7 +686,7 @@ class StructureFilterEditorPopup(QFrame):
         self.card = QFrame(self)
         self.card.setObjectName("structureFilterEditorCard")
         shell.addWidget(self.card)
-        if not self._opaque_window:
+        if not _IS_WINDOWS:
             shadow = QGraphicsDropShadowEffect(self.card)
             shadow.setBlurRadius(28)
             shadow.setOffset(0, 5)
@@ -683,6 +705,7 @@ class StructureFilterEditorPopup(QFrame):
         )
         self.preset_button.setFixedWidth(preset_text_width + 64)
         self.preset_button.setToolTip(self.tr("Load or save frequently used filter conditions"))
+        _install_fluent_tooltip(self.preset_button)
         self.preset_button.setAccessibleName(self.tr("Saved filters"))
         self.preset_menu = None
         self.logic_combo = ComboBox(self)
@@ -756,6 +779,7 @@ class StructureFilterEditorPopup(QFrame):
         self.add_button.setFixedSize(30, 30)
         self.add_button.setToolTip(self.tr("Add condition"))
         self.add_button.setAccessibleName(self.tr("Add condition"))
+        _install_fluent_tooltip(self.add_button)
         self.add_button.clicked.connect(self.add_condition)
         footer.addWidget(self.add_button)
         self.estimate_label = CaptionLabel(self.tr("Set conditions to preview matches"), self)
@@ -765,6 +789,7 @@ class StructureFilterEditorPopup(QFrame):
         self.clear_button.setFixedSize(30, 30)
         self.clear_button.setToolTip(self.tr("Clear"))
         self.clear_button.setAccessibleName(self.tr("Clear"))
+        _install_fluent_tooltip(self.clear_button)
         self.clear_button.clicked.connect(self.clear_rows)
         footer.addWidget(self.clear_button)
         self.done_button = PrimaryPushButton(self.tr("Done and preview"), self)
@@ -777,20 +802,11 @@ class StructureFilterEditorPopup(QFrame):
 
     def _refresh_style(self) -> None:
         surface, border, text, muted = _surface_colors()
-        if self._opaque_window:
-            # Opaque square window: one border around the popup, flat card inside.
-            popup_style = (
-                f"QFrame#structureFilterEditorPopup {{ background: {surface};"
-                f" border: 1px solid {border}; }}"
-                f"QFrame#structureFilterEditorCard {{ background: {surface}; color: {text}; }}"
-            )
-        else:
-            popup_style = (
-                "QFrame#structureFilterEditorPopup { background: transparent; border: none; }"
-                "QFrame#structureFilterEditorCard {"
-                f" background: {surface}; border: 1px solid {border}; border-radius: 10px; color: {text}; }}"
-            )
-        self.setStyleSheet(popup_style)
+        self.setStyleSheet(
+            "QFrame#structureFilterEditorPopup { background: transparent; border: none; }"
+            "QFrame#structureFilterEditorCard {"
+            f" background: {surface}; border: 1px solid {border}; border-radius: 10px; color: {text}; }}"
+        )
         self.scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
         self.scroll.viewport().setStyleSheet("background: transparent;")
         self.rows_widget.setStyleSheet("QWidget#structureFilterRows { background: transparent; }")
@@ -1158,6 +1174,7 @@ class StructureFilterBar(QFrame):
         self._elapsed_ms: float | None = None
         self._selection_count = 0
         self._result_current = False
+        self._result_tip: ToolTip | None = None
         self._popup = StructureFilterEditorPopup(self)
         self._popup.specChanged.connect(self._on_popup_spec_changed)
         self._popup.previewRequested.connect(self.previewRequested.emit)
@@ -1189,6 +1206,7 @@ class StructureFilterBar(QFrame):
         self.match_button.setFixedHeight(32)
         self.match_button.setMinimumWidth(54)
         self.match_button.clicked.connect(self._show_result_details)
+        _install_fluent_tooltip(self.match_button)
         layout.addWidget(self.match_button)
 
         self.apply_button = PushButton(self.tr("Apply result ▾"), self)
@@ -1401,7 +1419,13 @@ class StructureFilterBar(QFrame):
             ratio=ratio,
             elapsed=self._elapsed_ms or 0.0,
         )
-        QToolTip.showText(self.match_button.mapToGlobal(QPoint(0, self.match_button.height())), text, self.match_button)
+        tip = self._result_tip
+        if tip is None:
+            tip = self._result_tip = _create_fluent_tooltip("", self.window())
+            tip.setDuration(4000)
+        tip.setText(text)
+        tip.adjustPos(self.match_button, ToolTipPosition.TOP)
+        tip.show()
 
     def _show_apply_menu(self) -> None:
         menu = RoundMenu(parent=self)

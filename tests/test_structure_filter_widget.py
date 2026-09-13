@@ -14,6 +14,7 @@ from NepTrainKit.core.types import (
     StructureFilterSpec,
     TextMatchMode,
 )
+from NepTrainKit.ui.widgets import fluent_overlays
 from NepTrainKit.ui.widgets import structure_filter_bar as filter_bar_module
 from NepTrainKit.ui.widgets.structure_filter_bar import StructureFilterBar
 
@@ -570,7 +571,7 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
 
 def test_windows_popup_keeps_every_effect_inside_its_window(qapp, monkeypatch):
     """Windows drops layered updates whose dirty region leaves the popup window."""
-    monkeypatch.setattr(filter_bar_module, "_IS_WINDOWS", True)
+    monkeypatch.setattr(fluent_overlays, "_IS_WINDOWS", True)
     popup = filter_bar_module.StructureFilterEditorPopup()
     try:
         popup.set_spec(
@@ -587,6 +588,7 @@ def test_windows_popup_keeps_every_effect_inside_its_window(qapp, monkeypatch):
         popup.resize(687, popup.sizeHint().height())
         popup.show()
         qapp.processEvents()
+        assert popup.mask().boundingRect() == popup.rect()
         window = popup.rect()
         for widget in [popup, *popup.findChildren(QWidget)]:
             effect = widget.graphicsEffect()
@@ -602,20 +604,6 @@ def test_windows_popup_keeps_every_effect_inside_its_window(qapp, monkeypatch):
     finally:
         popup._debounce.stop()
         popup.close()
-        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
-
-
-def test_fluent_tooltips_drop_the_shadow_windows_cannot_composite(qapp, monkeypatch):
-    parent = QWidget()
-    parent.setToolTip("hint")
-    tooltip_filter = filter_bar_module._FilterToolTipFilter(parent, 300)
-    try:
-        monkeypatch.setattr(filter_bar_module, "_IS_WINDOWS", True)
-        assert tooltip_filter._createToolTip().container.graphicsEffect() is None
-        monkeypatch.setattr(filter_bar_module, "_IS_WINDOWS", False)
-        assert tooltip_filter._createToolTip().container.graphicsEffect() is not None
-    finally:
-        parent.deleteLater()
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 

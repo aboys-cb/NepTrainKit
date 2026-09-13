@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 import uuid
 
 from PySide6.QtCore import QEvent, QPoint, QSize, Qt, QTimer, Signal
@@ -61,6 +62,23 @@ from NepTrainKit.core.types import (
     TextMatchMode,
 )
 from NepTrainKit.ui.widgets.completer import CompleterModel, JoinDelegate
+
+
+# Windows presents translucent top-level popups through UpdateLayeredWindowIndirect.
+# A drop shadow on such a popup paints outside the window, so that call fails with
+# ERROR_INVALID_PARAMETER ("参数错误") on every repaint.  Windows therefore gets the
+# condition editor as a plain opaque window and no popup drop shadows.
+_IS_WINDOWS = sys.platform == "win32"
+
+
+def _drop_completer_menu_shadow(menu: CompleterMenu) -> None:
+    """Remove the shadow of a fluent completion menu on Windows.
+
+    The shadow paints outside the popup, so Qt's layered window update keeps
+    failing with ``ERROR_INVALID_PARAMETER`` (see ``_IS_WINDOWS``).  The menu
+    itself stays translucent, like every other fluent popup in this app.
+    """
+    menu.view.setGraphicsEffect(None)
 
 
 _TEXT_FIELDS = {FilterField.CONFIG_TYPE, FilterField.FORMULA}
@@ -212,6 +230,8 @@ class _SuggestionLineEdit(LineEdit):
         completer.setMaxVisibleItems(8)
         self.setCompleter(completer)
         menu = CompleterMenu(self)
+        if _IS_WINDOWS:
+            _drop_completer_menu_shadow(menu)
         self.setCompleterMenu(menu)
         self._suggestion_delegate = JoinDelegate(self, {})
         menu.view.setItemDelegate(self._suggestion_delegate)
@@ -621,8 +641,10 @@ class StructureFilterEditorPopup(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent, Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self.setObjectName("structureFilterEditorPopup")
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
+        self._opaque_window = _IS_WINDOWS
+        if not self._opaque_window:
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+            self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
         self.setMinimumWidth(620)
         self.setMaximumWidth(704)
         self._rows: list[_ConditionRow] = []
@@ -642,11 +664,12 @@ class StructureFilterEditorPopup(QFrame):
         self.card = QFrame(self)
         self.card.setObjectName("structureFilterEditorCard")
         shell.addWidget(self.card)
-        shadow = QGraphicsDropShadowEffect(self.card)
-        shadow.setBlurRadius(28)
-        shadow.setOffset(0, 5)
-        shadow.setColor(QColor(32, 45, 65, 64))
-        self.card.setGraphicsEffect(shadow)
+        if not self._opaque_window:
+            shadow = QGraphicsDropShadowEffect(self.card)
+            shadow.setBlurRadius(28)
+            shadow.setOffset(0, 5)
+            shadow.setColor(QColor(32, 45, 65, 64))
+            self.card.setGraphicsEffect(shadow)
 
         outer = QVBoxLayout(self.card)
         outer.setContentsMargins(10, 8, 10, 8)
@@ -754,11 +777,20 @@ class StructureFilterEditorPopup(QFrame):
 
     def _refresh_style(self) -> None:
         surface, border, text, muted = _surface_colors()
-        self.setStyleSheet(
-            "QFrame#structureFilterEditorPopup { background: transparent; border: none; }"
-            "QFrame#structureFilterEditorCard {"
-            f" background: {surface}; border: 1px solid {border}; border-radius: 10px; color: {text}; }}"
-        )
+        if self._opaque_window:
+            # Opaque square window: one border around the popup, flat card inside.
+            popup_style = (
+                f"QFrame#structureFilterEditorPopup {{ background: {surface};"
+                f" border: 1px solid {border}; }}"
+                f"QFrame#structureFilterEditorCard {{ background: {surface}; color: {text}; }}"
+            )
+        else:
+            popup_style = (
+                "QFrame#structureFilterEditorPopup { background: transparent; border: none; }"
+                "QFrame#structureFilterEditorCard {"
+                f" background: {surface}; border: 1px solid {border}; border-radius: 10px; color: {text}; }}"
+            )
+        self.setStyleSheet(popup_style)
         self.scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
         self.scroll.viewport().setStyleSheet("background: transparent;")
         self.rows_widget.setStyleSheet("QWidget#structureFilterRows { background: transparent; }")

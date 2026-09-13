@@ -311,6 +311,9 @@ def test_dataset_suggestions_follow_field_and_replace_only_the_active_token(bar,
     qapp.processEvents()
     row = bar._popup._rows[0]
     edit = row.value_edit
+    if sys.platform == "win32":
+        # The Windows completion popup must stay out of the layered-window path.
+        assert edit._completerMenu.view.graphicsEffect() is None
 
     edit.setText("bulk; sur")
     edit.setCursorPosition(len(edit.text()))
@@ -518,9 +521,14 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     qapp.processEvents()
 
     assert popup.width() == popup.minimumWidth() == 620
-    assert popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     assert popup.graphicsEffect() is None
-    assert popup.card.graphicsEffect() is not None
+    if sys.platform == "win32":
+        # Windows uses an opaque popup window without the layered drop shadow.
+        assert not popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        assert popup.card.graphicsEffect() is None
+    else:
+        assert popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        assert popup.card.graphicsEffect() is not None
     assert not popup.preset_button.geometry().intersects(popup.logic_combo.geometry())
     assert popup.preset_button.width() >= (
         popup.preset_button.fontMetrics().horizontalAdvance(

@@ -14,7 +14,6 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QScrollArea,
     QSizePolicy,
-    QToolTip,
     QVBoxLayout,
     QWidget,
 )
@@ -34,6 +33,8 @@ from qfluentwidgets import (
     StrongBodyLabel,
     SwitchButton,
     ToolButton,
+    ToolTip,
+    ToolTipPosition,
     TogglePushButton,
     TransparentToolButton,
     isDarkTheme,
@@ -61,7 +62,13 @@ from NepTrainKit.core.types import (
     TextMatchMode,
 )
 from NepTrainKit.ui.widgets.completer import CompleterModel, JoinDelegate
-
+from NepTrainKit.ui.widgets.fluent_overlays import (
+    clip_popup_to_window,
+    create_fluent_tooltip,
+    drop_popup_shadow,
+    install_fluent_tooltip,
+    popup_shadows_allowed,
+)
 
 _TEXT_FIELDS = {FilterField.CONFIG_TYPE, FilterField.FORMULA}
 _ELEMENT_FIELDS = {
@@ -164,12 +171,14 @@ class FilterChip(QFrame):
         self.value_label.setMaximumWidth(92)
         tooltip = self.full_text if enabled else self.tr("Disabled: {text}").format(text=self.full_text)
         self.setToolTip(tooltip)
+        install_fluent_tooltip(self)
         layout.addWidget(self.kind_label)
         layout.addWidget(self.value_label)
         close = TransparentToolButton(FluentIcon.CLOSE, self)
         close.setIconSize(QSize(10, 10))
         close.setFixedSize(18, 24)
         close.setToolTip(self.tr("Remove condition"))
+        install_fluent_tooltip(close)
         close.setAccessibleName(self.tr("Remove condition"))
         close.clicked.connect(lambda: self.removeRequested.emit(self.condition_id))
         layout.addWidget(close)
@@ -212,6 +221,8 @@ class _SuggestionLineEdit(LineEdit):
         completer.setMaxVisibleItems(8)
         self.setCompleter(completer)
         menu = CompleterMenu(self)
+        if not popup_shadows_allowed():
+            drop_popup_shadow(menu.view)
         self.setCompleterMenu(menu)
         self._suggestion_delegate = JoinDelegate(self, {})
         menu.view.setItemDelegate(self._suggestion_delegate)
@@ -310,12 +321,14 @@ class _ConditionRow(QFrame):
         self.case_button.setCheckable(True)
         self.case_button.setFixedSize(max(44, self.case_button.sizeHint().width()), 28)
         self.case_button.setAccessibleName(self.tr("Match case"))
+        install_fluent_tooltip(self.case_button)
 
         self.value_edit = _SuggestionLineEdit(self)
         self.value_edit.setClearButtonEnabled(True)
         self.value_edit.setFixedHeight(30)
         self.value_edit.setMinimumWidth(120)
         self.value_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        install_fluent_tooltip(self.value_edit)
 
         self.unit_label = CaptionLabel("", self)
         self.unit_label.setFixedHeight(30)
@@ -329,6 +342,7 @@ class _ConditionRow(QFrame):
         self.remove_button.setIconSize(QSize(10, 10))
         self.remove_button.setFixedSize(24, 28)
         self.remove_button.setToolTip(self.tr("Remove condition"))
+        install_fluent_tooltip(self.remove_button)
         self.remove_button.setAccessibleName(self.tr("Remove condition"))
         self.remove_button.clicked.connect(lambda: self.removeRequested.emit(self))
 
@@ -642,11 +656,12 @@ class StructureFilterEditorPopup(QFrame):
         self.card = QFrame(self)
         self.card.setObjectName("structureFilterEditorCard")
         shell.addWidget(self.card)
-        shadow = QGraphicsDropShadowEffect(self.card)
-        shadow.setBlurRadius(28)
-        shadow.setOffset(0, 5)
-        shadow.setColor(QColor(32, 45, 65, 64))
-        self.card.setGraphicsEffect(shadow)
+        if popup_shadows_allowed():
+            shadow = QGraphicsDropShadowEffect(self.card)
+            shadow.setBlurRadius(28)
+            shadow.setOffset(0, 5)
+            shadow.setColor(QColor(32, 45, 65, 64))
+            self.card.setGraphicsEffect(shadow)
 
         outer = QVBoxLayout(self.card)
         outer.setContentsMargins(10, 8, 10, 8)
@@ -660,6 +675,7 @@ class StructureFilterEditorPopup(QFrame):
         )
         self.preset_button.setFixedWidth(preset_text_width + 64)
         self.preset_button.setToolTip(self.tr("Load or save frequently used filter conditions"))
+        install_fluent_tooltip(self.preset_button)
         self.preset_button.setAccessibleName(self.tr("Saved filters"))
         self.preset_menu = None
         self.logic_combo = ComboBox(self)
@@ -733,6 +749,7 @@ class StructureFilterEditorPopup(QFrame):
         self.add_button.setFixedSize(30, 30)
         self.add_button.setToolTip(self.tr("Add condition"))
         self.add_button.setAccessibleName(self.tr("Add condition"))
+        install_fluent_tooltip(self.add_button)
         self.add_button.clicked.connect(self.add_condition)
         footer.addWidget(self.add_button)
         self.estimate_label = CaptionLabel(self.tr("Set conditions to preview matches"), self)
@@ -742,6 +759,7 @@ class StructureFilterEditorPopup(QFrame):
         self.clear_button.setFixedSize(30, 30)
         self.clear_button.setToolTip(self.tr("Clear"))
         self.clear_button.setAccessibleName(self.tr("Clear"))
+        install_fluent_tooltip(self.clear_button)
         self.clear_button.clicked.connect(self.clear_rows)
         footer.addWidget(self.clear_button)
         self.done_button = PrimaryPushButton(self.tr("Done and preview"), self)
@@ -751,6 +769,11 @@ class StructureFilterEditorPopup(QFrame):
         outer.addLayout(footer)
         self._refresh_preset_menu()
         self._refresh_style()
+
+    def resizeEvent(self, event):
+        """Keep the Windows paint region inside the popup rect."""
+        super().resizeEvent(event)
+        clip_popup_to_window(self)
 
     def _refresh_style(self) -> None:
         surface, border, text, muted = _surface_colors()
@@ -1126,6 +1149,7 @@ class StructureFilterBar(QFrame):
         self._elapsed_ms: float | None = None
         self._selection_count = 0
         self._result_current = False
+        self._result_tip: ToolTip | None = None
         self._popup = StructureFilterEditorPopup(self)
         self._popup.specChanged.connect(self._on_popup_spec_changed)
         self._popup.previewRequested.connect(self.previewRequested.emit)
@@ -1157,6 +1181,7 @@ class StructureFilterBar(QFrame):
         self.match_button.setFixedHeight(32)
         self.match_button.setMinimumWidth(54)
         self.match_button.clicked.connect(self._show_result_details)
+        install_fluent_tooltip(self.match_button)
         layout.addWidget(self.match_button)
 
         self.apply_button = PushButton(self.tr("Apply result ▾"), self)
@@ -1369,7 +1394,13 @@ class StructureFilterBar(QFrame):
             ratio=ratio,
             elapsed=self._elapsed_ms or 0.0,
         )
-        QToolTip.showText(self.match_button.mapToGlobal(QPoint(0, self.match_button.height())), text, self.match_button)
+        tip = self._result_tip
+        if tip is None:
+            tip = self._result_tip = create_fluent_tooltip("", self.window())
+            tip.setDuration(4000)
+        tip.setText(text)
+        tip.adjustPos(self.match_button, ToolTipPosition.TOP)
+        tip.show()
 
     def _show_apply_menu(self) -> None:
         menu = RoundMenu(parent=self)

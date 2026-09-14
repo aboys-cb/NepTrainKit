@@ -67,6 +67,8 @@ from NepTrainKit.core.audit.phase_inventory import (
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import run_in_thread
+from NepTrainKit.ui.widgets.fluent_overlays import ensure_fluent_tooltips
+from NepTrainKit.ui.widgets.style_lifetime import keep_created_styles_alive
 from NepTrainKit.ui.widgets.training_set_audit_window import (
     TrainingSetAuditHost,
     TrainingSetAuditWindow,
@@ -768,6 +770,8 @@ def set_light_theme(app: QApplication) -> None:
     palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)
     palette.setColor(QPalette.ColorRole.Highlight, QColor(0, 120, 215))
     palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.black)
     app.setPalette(palette)
     app.setStyle("Fusion")
 
@@ -782,6 +786,8 @@ def configure_app(app: QApplication) -> None:
     _set_macos_dock_icon(app, icon)
     font = QFont("Arial", 12)
     app.setFont(font)
+    keep_created_styles_alive()
+    ensure_fluent_tooltips(app)
 
     theme_file = QFile(":/theme/src/qss/theme.qss")
     if theme_file.open(QFile.OpenModeFlag.ReadOnly):

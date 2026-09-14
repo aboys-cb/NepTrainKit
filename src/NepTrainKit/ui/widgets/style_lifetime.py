@@ -1,4 +1,4 @@
-"""Keep the ``QStyle`` objects that Python creates alive for the whole process.
+"""Keep the ``QStyle`` objects that Python creates alive for their widget.
 
 qfluentwidgets styles every menu with ``self.setStyle(QStyleFactory.create("fusion"))``
 (``RoundMenu.__initWidgets``) and does the same with the window-vista style in
@@ -11,17 +11,21 @@ down with an access violation on Windows, where the freed block is reused at onc
 crashed only intermittently on macOS.
 
 ``keep_created_styles_alive`` retains every style a Python caller creates, so no widget
-can hold a style that no longer exists.  The callers above create a handful of these
-objects (one per menu, one per dynamic style update); they stay small and are released
-when the process exits.
+can hold a style that no longer exists.  One instance per call is deliberate: Qt destroys
+a widget's style together with the widget, so a style shared between widgets would be
+released while its other users are still painting.  Retaining is also what keeps the
+workaround small in practice -- Qt frees the styles of the widgets that are gone, and
+``_drop_destroyed_styles`` forgets them on the way.
 """
 
 from __future__ import annotations
 
+import shiboken6
 from PySide6.QtWidgets import QStyle, QStyleFactory
 
 _retained_styles: list[QStyle] = []
-_create_style = QStyleFactory.create
+_factory_create = QStyleFactory.create
+_PRUNE_AT = 256
 
 
 def keep_created_styles_alive() -> None:
@@ -36,8 +40,15 @@ def keep_created_styles_alive() -> None:
 
 
 def _keep_alive(name: str) -> QStyle:
-    """Create a style and keep a reference to it for the rest of the process."""
-    style = _create_style(name)
+    """Create a style and retain it until Qt destroys it with the widget using it."""
+    style = _factory_create(name)
     if style is not None:
         _retained_styles.append(style)
+        if len(_retained_styles) >= _PRUNE_AT:
+            _drop_destroyed_styles()
     return style
+
+
+def _drop_destroyed_styles() -> None:
+    """Forget the styles Qt already destroyed, so they do not pile up."""
+    _retained_styles[:] = [style for style in _retained_styles if shiboken6.isValid(style)]

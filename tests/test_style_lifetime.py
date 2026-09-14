@@ -9,6 +9,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
+import shiboken6
 from PySide6.QtWidgets import QApplication, QStyleFactory
 from qfluentwidgets import LineEdit
 from qfluentwidgets.components.widgets.line_edit import CompleterMenu
@@ -55,6 +56,16 @@ def test_created_styles_are_retained(qapp):
     assert any(retained is style for retained in style_lifetime._retained_styles)
 
 
+def test_each_call_answers_with_its_own_style(qapp):
+    """Qt frees a style with the widget that uses it, so instances are never shared."""
+    keep_created_styles_alive()
+
+    first = QStyleFactory.create("fusion")
+    second = QStyleFactory.create("fusion")
+
+    assert first is not second
+
+
 def test_installing_twice_keeps_the_same_factory(qapp):
     keep_created_styles_alive()
     installed = QStyleFactory.create
@@ -64,10 +75,18 @@ def test_installing_twice_keeps_the_same_factory(qapp):
     assert QStyleFactory.create is installed
 
 
-def test_menu_retains_the_style_it_sets(qapp):
-    """A menu is styled with a factory-made style that nobody holds on to."""
+def test_menu_style_is_retained_by_the_workaround(qapp, monkeypatch):
+    """The style a menu sets is retained, so it outlives the statement that set it."""
     keep_created_styles_alive()
+    asked = []
     retained_before = len(style_lifetime._retained_styles)
+    create = QStyleFactory.create
+
+    def record(name):
+        asked.append(name)
+        return create(name)
+
+    monkeypatch.setattr(QStyleFactory, "create", staticmethod(record))
 
     menu = CompleterMenu(LineEdit())
     try:
@@ -76,7 +95,21 @@ def test_menu_retains_the_style_it_sets(qapp):
         menu.close()
         menu.deleteLater()
 
-    assert created, "building a completer menu should create a style through the factory"
+    assert "fusion" in asked, "building a completer menu should ask the factory for its style"
+    assert created, "the style the menu set should be retained"
+
+
+def test_destroyed_styles_are_forgotten(qapp):
+    """Styles Qt freed with their widget stop counting towards the retained set."""
+    keep_created_styles_alive()
+    doomed = QStyleFactory.create("fusion")
+    alive = QStyleFactory.create("fusion")
+    shiboken6.delete(doomed)
+
+    style_lifetime._drop_destroyed_styles()
+
+    assert all(retained is not doomed for retained in style_lifetime._retained_styles)
+    assert any(retained is alive for retained in style_lifetime._retained_styles)
 
 
 def test_dropped_style_survives_a_repaint(qapp):

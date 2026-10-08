@@ -5,7 +5,6 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 
 import numpy as np
-from OpenGL.GL import GL_PROJECTION, glLoadMatrixf, glMatrixMode
 from NepTrainKit.config import Config
 from NepTrainKit.ui.canvas.structure_view import structure_view_state
 
@@ -109,7 +108,7 @@ class StructurePlotWidget(gl.GLViewWidget):
             Enable orthographic projection when ``True``.
         """
         self.ortho=ortho
-        self.setProjection()
+        # The backend applies the matrix during painting with a current context.
         self.update()
 
     def set_show_bonds(self,show_bonds=True):
@@ -130,25 +129,16 @@ class StructurePlotWidget(gl.GLViewWidget):
 
                 self.show_structure(self.structure)
 
-    def setProjection(self, region=None ):
-        """Apply the current projection matrix to the OpenGL context.
-        
-        Parameters
-        ----------
-        region : tuple[int, int, int, int], optional
-            Viewport rectangle used to recompute the projection.
-        """
-        m = self.projectionMatrix(region)
-        glMatrixMode(GL_PROJECTION)
-        glLoadMatrixf(np.array(m.data(), dtype=np.float32))
-
-    def projectionMatrix(self, region=None ):
+    def projectionMatrix(self, region=None, viewport=None):
         """Compute the projection matrix with optional orthographic override.
         
         Parameters
         ----------
         region : tuple[int, int, int, int], optional
-            Viewport rectangle passed by the underlying widget.
+            Sub-region to render.
+        viewport : tuple[int, int, int, int], optional
+            Explicit viewport passed by pyqtgraph 0.14 and newer. Older versions
+            use the widget's viewport.
         
         Returns
         -------
@@ -156,8 +146,7 @@ class StructurePlotWidget(gl.GLViewWidget):
             Projection matrix used for subsequent draws.
         """
         if self.ortho:
-            x0, y0, w, h = self.getViewport()
-            aspect = w / h if h != 0 else 1.0
+            x0, y0, w, h = self.getViewport() if viewport is None else viewport
             dist = max(self.opts['distance'], 1e-6)
             fov = self.opts['fov']
             nearClip = dist * 0.001
@@ -176,6 +165,8 @@ class StructurePlotWidget(gl.GLViewWidget):
 
             return mat
         else:
+            if viewport is not None:
+                return super().projectionMatrix(region, viewport)
             return super().projectionMatrix(region)
 
     def mousePressEvent(self, event):

@@ -539,6 +539,61 @@ H 0 0 0
         self.assertAlmostEqual(restored.energy, -1.25)
         self.assertNotIn("energy", restored.atomic_properties)
 
+    def test_deepmd_vector_layouts_preserve_frame_atom_and_component_order(self):
+        vectors = np.array([
+            [[1000 * frame + 10 * atom + component for component in range(3)]
+             for atom in range(16)]
+            for frame in range(4)
+        ], dtype=np.float64)
+        atom_types = np.arange(16) % 2
+        real_types = np.tile(atom_types, (4, 1))
+        real_types[0, 1] = -1
+        real_types[1, 14] = -1
+        real_types[2, 3] = -1
+        real_types[3, 12] = -1
+        fields = {"coord": vectors, "force": -vectors,
+                  "spin": vectors + 100, "force_mag": -vectors - 100}
+
+        for layout in ("flat", "C", "F"):
+            for mixed in (False, True):
+                with self.subTest(layout=layout, mixed=mixed), tempfile.TemporaryDirectory() as tmp_dir:
+                    root = Path(tmp_dir)
+                    np.savetxt(root / "type.raw", atom_types, fmt="%d")
+                    (root / "type_map.raw").write_text("Fe\nRh\n", encoding="utf8")
+                    for set_index in range(2):
+                        set_dir = root / f"set.{set_index:03d}"
+                        set_dir.mkdir()
+                        frames = slice(2 * set_index, 2 * set_index + 2)
+                        np.save(set_dir / "box.npy", np.tile(np.eye(3).reshape(1, 9), (2, 1)))
+                        np.save(set_dir / "energy.npy", np.arange(4, dtype=float)[frames])
+                        if mixed:
+                            np.save(set_dir / "real_atom_types.npy", real_types[frames])
+                        for key, values in fields.items():
+                            data = values[frames]
+                            # Also exercise concatenation of flat and 3D sets.
+                            if layout == "flat" or set_index == 1:
+                                data = data.reshape(2, 48)
+                            else:
+                                data = np.array(data, order=layout)
+                            np.save(set_dir / f"{key}.npy", data)
+
+                    loaded = load_npy_structure(root)
+
+                    self.assertEqual(len(loaded), 4)
+                    for frame, structure in enumerate(loaded):
+                        mask = real_types[frame] >= 0 if mixed else np.ones(16, dtype=bool)
+                        np.testing.assert_array_equal(
+                            structure.elements, np.array(["Fe", "Rh"])[atom_types[mask]]
+                        )
+                        for key, values in fields.items():
+                            name = "pos" if key == "coord" else key
+                            np.testing.assert_array_equal(
+                                structure.atomic_properties[name], values[frame][mask]
+                            )
+                            prop = next(p for p in structure.properties if p["name"] == name)
+                            self.assertEqual(prop["count"], 3)
+                        self.assertEqual(structure.energy, float(frame))
+
     def test_standard_deepmd_grouping_handles_mixed_formula_config_type_explicitly(self):
         properties = [
             {"name": "species", "type": "S", "count": 1},

@@ -1906,9 +1906,13 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
             data = np.load(data_path)
             if isinstance(data, np.ndarray) and data.dtype.kind == "f":
                 data = data.astype(get_storage_float_dtype(), copy=False)
-            # Ensure 2D [nframes, -1]
+            # Normalise each set before concatenation. C order keeps each atom's
+            # components together: [atom0_x, atom0_y, atom0_z, atom1_x, ...],
+            # including when the source .npy uses Fortran-contiguous storage.
             if data.ndim == 1:
                 data = data.reshape(data.shape[0], -1)
+            elif data.ndim > 2:
+                data = data.reshape(data.shape[0], int(np.prod(data.shape[1:])), order="C")
             dataset_dict.setdefault(key, []).append(data)
 
     config_type = folder_path.name

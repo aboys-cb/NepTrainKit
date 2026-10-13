@@ -24,6 +24,34 @@ def test_farthest_point_sampling_is_deterministic_and_unique():
     assert farthest_point_sampling(points, 10, min_dist=0.0) == [0, 3, 2, 1]
 
 
+def test_result_data_forwards_custom_coverage_radius_to_real_sampler():
+    from functools import partial
+
+    from NepTrainKit.core.io.base import ResultData
+
+    indices = np.arange(100)
+    raw = indices.astype(np.float32)[:, None]
+    result = SimpleNamespace(
+        descriptor=SimpleNamespace(now_data=np.column_stack((raw[:, 0], raw[:, 0] * 0)),
+                                   group_array=SimpleNamespace(now_data=indices),
+                                   data=SimpleNamespace(now_indices=indices)),
+        _descriptor_raw_all=raw,
+        structure=SimpleNamespace(all_data=[Atoms("H", cell=[10, 10, 10]) for _ in indices]),
+        select_index=set(), is_spin_model=False,
+    )
+    result._sampler = SparseSampler(result)
+    sample = partial(ResultData.sparse_point_selection, result)
+    counts = []
+    for radius in (.5, .1):
+        selected, reverse = sample(n_samples=0, distance=0., selection_strategy="physics",
+                                   physics_count_mode="automatic", coverage_radius=radius)
+        assert not reverse
+        assert result._last_sparse_coverage_evidence.resolution == radius
+        assert not result._last_sparse_coverage_evidence.uncovered_indices
+        counts.append(len(selected))
+    assert counts[1] > counts[0] > 0
+
+
 def test_farthest_point_sampling_min_dist_stops_on_identical_points():
     points = np.zeros((4, 3), dtype=np.float32)
 
@@ -267,6 +295,7 @@ def test_sparse_sampler_recommends_physics_count_without_selecting(monkeypatch, 
     sample = sampler.sparse_point_selection
     if entrypoint == "result_data":
         from functools import partial
+
         from NepTrainKit.core.io.base import ResultData
 
         result._sampler = sampler

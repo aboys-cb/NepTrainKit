@@ -878,6 +878,7 @@ class _SparseBox:
         self._accepted = accepted
         self.intSpinBox = _SparseBoxControl(5)
         self.doubleSpinBox = _SparseBoxControl(0.1)
+        self.coverageRadiusSpinBox = _SparseBoxControl(0.25)
         self.regionCheck = _SparseBoxControl(False)
         self.descriptorCombo = _SparseBoxControl(0, ["reduced", "raw"])
         self.modeCombo = _SparseBoxControl(
@@ -975,13 +976,16 @@ class TestSparseMessageBoxStrategy(unittest.TestCase):
         self.assertEqual(box.descriptorCombo.currentData(), "raw")
         self.assertFalse(box.modeCombo.isEnabled())
         self.assertFalse(box.descriptorCombo.isEnabled())
-        self.assertIn("magnetic order", box.strategyHint.text())
+        self.assertIn("atomic environments", box.strategyHint.text())
+        self.assertIn("only for spin models", box.strategyHint.text())
         self.assertFalse(box.physicsCountModeCombo.isHidden())
         box.physicsCountModeCombo.setCurrentIndex(
             box.physicsCountModeCombo.findData("automatic")
         )
         self.assertTrue(box.intSpinBox.isHidden())
         self.assertTrue(box.doubleSpinBox.isHidden())
+        self.assertFalse(box.coverageRadiusSpinBox.isHidden())
+        self.assertEqual(box.coverageRadiusSpinBox.value(), 0.25)
 
         box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("global"))
         self.assertEqual(box.modeCombo.currentData(), "r2")
@@ -989,10 +993,12 @@ class TestSparseMessageBoxStrategy(unittest.TestCase):
         self.assertTrue(box.modeCombo.isEnabled())
         self.assertTrue(box.descriptorCombo.isEnabled())
         self.assertFalse(box.r2SpinBox.isHidden())
+        self.assertTrue(box.coverageRadiusSpinBox.isHidden())
 
 class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
     def setUp(self):
         self._prev_canvas = Config.get("widget", "canvas_type", "pyqtgraph")
+        self._prev_coverage_radius = Config.getfloat("widget", "sparse_coverage_radius", 0.25)
         self._prev_training_path = Config.get("widget", "sparse_training_path", "")
         self._prev_strategy = Config.get("widget", "sparse_selection_strategy", "global")
         self._prev_sampling_mode = Config.get(
@@ -1009,6 +1015,7 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
 
     def tearDown(self):
         Config.set("widget", "canvas_type", self._prev_canvas)
+        Config.set("widget", "sparse_coverage_radius", self._prev_coverage_radius)
         Config.set("widget", "sparse_training_path", self._prev_training_path)
         Config.set("widget", "sparse_selection_strategy", self._prev_strategy)
         Config.set("widget", "sparse_sampling_mode", self._prev_sampling_mode)
@@ -1185,6 +1192,7 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         self.assertIn("covered 2/3", send_info.call_args.args[0])
 
     def test_sparse_point_passes_automatic_physics_count_mode(self):
+        Config.set("widget", "sparse_coverage_radius", 0.12)
         Config.set("widget", "sparse_selection_strategy", "physics")
         Config.set("widget", "sparse_physics_count_mode", "automatic")
         widget = nep_view_module.NepResultPlotWidget.__new__(
@@ -1214,6 +1222,7 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         kwargs = data.sparse_point_selection.call_args.kwargs
         self.assertEqual(kwargs["selection_strategy"], "physics")
         self.assertEqual(kwargs["physics_count_mode"], "automatic")
+        self.assertEqual(kwargs["coverage_radius"], 0.12)
 
     def test_sparse_point_reports_final_coverage_r2(self):
         Config.set("widget", "sparse_sampling_mode", "r2")
@@ -1299,7 +1308,8 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         try:
             with patch.object(Config, "get", side_effect=get_config), patch.object(
                 Config, "getint", return_value=2,
-            ), patch.object(Config, "getfloat", return_value=0.0), patch.object(
+            ), patch.object(Config, "getfloat", side_effect=lambda _section, option, _default:
+                            0.25 if option == "sparse_coverage_radius" else 0.0), patch.object(
                 Config, "set",
             ), patch.object(
                 nep_view_module, "SPARSE_BACKGROUND_THRESHOLD", 4,

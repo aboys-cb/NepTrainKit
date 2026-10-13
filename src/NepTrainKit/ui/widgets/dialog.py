@@ -266,7 +266,7 @@ class SparseMessageBox(MessageBoxBase):
             userData="element_set",
         )
         self.strategyCombo.addItem(
-            self.tr("Element set / phase / spin FPS"),
+            self.tr("Structure and local-environment coverage"),
             userData="physics",
         )
         self.strategyHint = CaptionLabel("", self)
@@ -289,38 +289,55 @@ class SparseMessageBox(MessageBoxBase):
             userData="limit",
         )
         self.physicsCountModeCombo.addItem(
-            self.tr("Automatic descriptor coverage"),
+            self.tr("Automatic local-environment coverage"),
             userData="automatic",
         )
         self.physicsCountModeLabel = CaptionLabel(
-            self.tr("Physics sample count"),
+            self.tr("Sampling count"),
             self,
         )
-        self.frame_layout.addWidget(self.physicsCountModeLabel, 2, 0, 1, 1)
-        self.frame_layout.addWidget(self.physicsCountModeCombo, 2, 1, 1, 2)
+        # Keep conditional controls in separate rows: hidden widgets sharing a
+        # grid cell can suppress the spacing around the visible control.
+        self.frame_layout.addWidget(self.physicsCountModeLabel, 3, 0, 1, 1)
+        self.frame_layout.addWidget(self.physicsCountModeCombo, 3, 1, 1, 2)
+
+        self.coverageRadiusLabel = CaptionLabel(self.tr("Coverage distance threshold"), self)
+        self.coverageRadiusSpinBox = DoubleSpinBox(self)
+        self.coverageRadiusSpinBox.setDecimals(3)
+        self.coverageRadiusSpinBox.setRange(0.001, 10.0)
+        self.coverageRadiusSpinBox.setSingleStep(0.05)
+        self.coverageRadiusSpinBox.setValue(0.25)
+        self.coverageRadiusHint = CaptionLabel(
+            self.tr("Normalized distance, not an error percentage. Smaller values select more structures; larger values select fewer."),
+            self,
+        )
+        self.coverageRadiusHint.setWordWrap(True)
+        self.frame_layout.addWidget(self.coverageRadiusLabel, 4, 0, 1, 1)
+        self.frame_layout.addWidget(self.coverageRadiusSpinBox, 4, 1, 1, 2)
+        self.frame_layout.addWidget(self.coverageRadiusHint, 5, 1, 1, 2)
 
         self.maxNumLabel = CaptionLabel(self.tr("Sample limit"), self)
-        self.frame_layout.addWidget(self.maxNumLabel, 3, 0, 1, 1)
-        self.frame_layout.addWidget(self.intSpinBox, 3, 1, 1, 2)
+        self.frame_layout.addWidget(self.maxNumLabel, 6, 0, 1, 1)
+        self.frame_layout.addWidget(self.intSpinBox, 6, 1, 1, 2)
         self.minDistanceLabel = CaptionLabel(self.tr("Min distance"), self)
-        self.frame_layout.addWidget(self.minDistanceLabel, 4, 0, 1, 1)
+        self.frame_layout.addWidget(self.minDistanceLabel, 7, 0, 1, 1)
 
-        self.frame_layout.addWidget(self.doubleSpinBox, 4, 1, 1, 2)
+        self.frame_layout.addWidget(self.doubleSpinBox, 7, 1, 1, 2)
 
         self.r2Label = CaptionLabel(self.tr("Coverage R^2 threshold"), self)
         self.r2SpinBox = DoubleSpinBox(self)
         self.r2SpinBox.setDecimals(4)
         self.r2SpinBox.setRange(0.0, 1.0)
         self.r2SpinBox.setSingleStep(0.01)
-        self.frame_layout.addWidget(self.r2Label, 5, 0, 1, 1)
-        self.frame_layout.addWidget(self.r2SpinBox, 5, 1, 1, 2)
+        self.frame_layout.addWidget(self.r2Label, 8, 0, 1, 1)
+        self.frame_layout.addWidget(self.r2SpinBox, 8, 1, 1, 2)
 
         self.descriptorCombo = ComboBox(self)
         self.descriptorCombo.addItem(self.tr("Reduced (PCA)"), userData="reduced")
         self.descriptorCombo.addItem(self.tr("Raw descriptor"), userData="raw")
         self.descriptorLabel = CaptionLabel(self.tr("Descriptor source"), self)
-        self.frame_layout.addWidget(self.descriptorLabel, 6, 0, 1, 1)
-        self.frame_layout.addWidget(self.descriptorCombo, 6, 1, 1, 2)
+        self.frame_layout.addWidget(self.descriptorLabel, 9, 0, 1, 1)
+        self.frame_layout.addWidget(self.descriptorCombo, 9, 1, 1, 2)
 
         self.advancedFrame = SimpleCardWidget(self)
         self.advancedFrame.setBorderRadius(8)
@@ -416,6 +433,9 @@ class SparseMessageBox(MessageBoxBase):
         r2_mode = not structured and self.modeCombo.currentData() == "r2"
         self.physicsCountModeLabel.setVisible(physics)
         self.physicsCountModeCombo.setVisible(physics)
+        self.coverageRadiusLabel.setVisible(automatic)
+        self.coverageRadiusSpinBox.setVisible(automatic)
+        self.coverageRadiusHint.setVisible(automatic)
         self.maxNumLabel.setVisible(not automatic)
         self.intSpinBox.setVisible(not automatic)
         self.minDistanceLabel.setVisible(not automatic)
@@ -449,8 +469,8 @@ class SparseMessageBox(MessageBoxBase):
         elif strategy == "physics":
             self.strategyHint.setText(
                 self.tr(
-                    "Partitions by element set, phase, and magnetic order, then "
-                    "samples local environments with raw descriptors."
+                    "Covers structures and atomic environments while preserving element-set and phase representatives. "
+                    "Magnetic features are used only for spin models."
                 )
             )
         else:

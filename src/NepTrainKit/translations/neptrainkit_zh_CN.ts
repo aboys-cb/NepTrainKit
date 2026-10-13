@@ -17200,6 +17200,30 @@ All child items will also be deleted.</source>
 <context>
     <name>RuntimeMessage</name>
     <message>
+        <source>coverage radius must be finite and positive</source>
+        <translation>覆盖距离阈值必须是有限正数。</translation>
+    </message>
+    <message>
+        <source>min_distance must be finite and non-negative</source>
+        <translation>最小距离必须是有限的非负数。</translation>
+    </message>
+    <message>
+        <source>resource_limit must be positive</source>
+        <translation>资源上限必须为正数。</translation>
+    </message>
+    <message>
+        <source>sampling features must be finite and align with structures</source>
+        <translation>采样特征必须是有限数值，并与结构逐一对应。</translation>
+    </message>
+    <message>
+        <source>atomic descriptors, species and counts must align with structures</source>
+        <translation>原子描述符、元素种类和原子数量必须与结构对应。</translation>
+    </message>
+    <message>
+        <source>atomic descriptors must align with structures and model dimensions</source>
+        <translation>原子描述符必须与结构的原子数和模型描述符维度一致。</translation>
+    </message>
+    <message>
         <location filename="../ui/messages.py" line="282" />
         <source>The current backend does not support NEP model {model}.</source>
         <translation>当前后端不支持 NEP 模型 {model}。</translation>

@@ -9377,6 +9377,18 @@
         <source>Generating descriptors...</source>
         <translation>正在生成描述符……</translation>
     </message>
+    <message>
+        <source>Structure and local-environment coverage</source>
+        <translation>结构与局域环境覆盖</translation>
+    </message>
+    <message>
+        <source>Covers structures and atomic environments while preserving element-set and phase representatives. Magnetic features are used only for spin models.</source>
+        <translation>保留元素集合与晶相代表，同时覆盖结构和原子环境。仅 spin 模型使用磁性特征。</translation>
+    </message>
+    <message>
+        <source>structure and local-environment coverage</source>
+        <translation>结构与局域环境覆盖</translation>
+    </message>
 </context>
 <context>
     <name>FilterChip</name>
@@ -14005,7 +14017,47 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <source>Error</source>
         <translation>错误</translation>
     </message>
-    </context>
+        <message>
+        <source>Coverage resolution reached</source>
+        <translation>已达到覆盖分辨率</translation>
+    </message>
+    <message>
+        <source>Sample budget reached</source>
+        <translation>已达到样本上限</translation>
+    </message>
+    <message>
+        <source>Resource limit reached; coverage is incomplete</source>
+        <translation>已达到资源限制，覆盖尚未完成</translation>
+    </message>
+    <message>
+        <source>Minimum distance reached</source>
+        <translation>已达到最小距离</translation>
+    </message>
+    <message>
+        <source>No distinct candidates remain</source>
+        <translation>没有剩余的不同候选结构</translation>
+    </message>
+    <message>
+        <source>{reason}. Uncovered structures: {count}; resolution: {radius:.2f}.</source>
+        <translation>{reason}。未覆盖结构：{count}；分辨率：{radius:.2f}。</translation>
+    </message>
+    <message>
+        <source>Atomic descriptors unavailable; only structure coverage was checked.</source>
+        <translation>缺少逐原子描述符，本次仅检查结构覆盖。</translation>
+    </message>
+    <message>
+        <source>Structure distance: P95 {p95:.3f}, max {maximum:.3f}.</source>
+        <translation>结构距离：P95 {p95:.3f}，最大 {maximum:.3f}。</translation>
+    </message>
+    <message>
+        <source>Local-environment distance upper bound: P95 {p95:.3f}, max {maximum:.3f}.</source>
+        <translation>局域环境距离上界：P95 {p95:.3f}，最大 {maximum:.3f}。</translation>
+    </message>
+    <message>
+        <source>{reason}. Uncovered structures: {count}; resolution: {radius:.3g}.</source>
+        <translation>{reason}。未覆盖结构：{count}；分辨率：{radius:.3g}。</translation>
+    </message>
+</context>
 <context>
     <name>MillerIndexTableInput</name>
     <message>
@@ -20740,6 +20792,34 @@ Do you want to continue?</source>
         <location filename="../ui/widgets/dialog.py" line="458" /><location filename="../ui/widgets/dialog.py" line="459" />
         <source>Uses one global FPS budget with descriptor and coverage-R^2 options.</source>
         <translation>所有候选共用一个 FPS 预算，并可选择描述符来源和覆盖 R^2 停止。</translation>
+    </message>
+    <message>
+        <source>Automatic local-environment coverage</source>
+        <translation>自动局域环境覆盖</translation>
+    </message>
+    <message>
+        <source>Protects element sets, phases and magnetic order, then covers local environments and structure features together.</source>
+        <translation>保留元素集合、晶相与磁序代表，同时覆盖局域原子环境和结构特征。</translation>
+    </message>
+    <message>
+        <source>Structure and local-environment coverage</source>
+        <translation>结构与局域环境覆盖</translation>
+    </message>
+    <message>
+        <source>Covers structures and atomic environments while preserving element-set and phase representatives. Magnetic features are used only for spin models.</source>
+        <translation>保留元素集合与晶相代表，同时覆盖结构和原子环境。仅 spin 模型使用磁性特征。</translation>
+    </message>
+    <message>
+        <source>Sampling count</source>
+        <translation>采样数量</translation>
+    </message>
+    <message>
+        <source>Coverage distance threshold</source>
+        <translation>覆盖距离阈值</translation>
+    </message>
+    <message>
+        <source>Normalized distance, not an error percentage. Smaller values select more structures; larger values select fewer.</source>
+        <translation>归一化距离，不是误差百分比。越小越严格、选得越多；越大选得越少。</translation>
     </message>
 </context>
 <context>

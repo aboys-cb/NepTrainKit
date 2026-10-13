@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import NepTrainKit.core.io.sampling_recommendation as recommendation_module
+import NepTrainKit.core.io.sampling_coverage as recommendation_module
 from NepTrainKit.core.io.sampling_features import SamplingFeatureBlocks
 from NepTrainKit.core.io.sampling_plan import (
     PhysicsSamplingPlan,
@@ -208,7 +208,7 @@ def test_fixed_budget_protects_balanced_coverage_floor_when_budget_allows():
     assert min(group.achieved_coverage for group in result.groups) >= 0.99
 
 
-def test_layer_local_scaling_makes_equivalent_manifolds_compete_equally():
+def test_shared_scaling_does_not_amplify_a_narrow_physical_layer():
     fm = _stratum("fm")
     noncollinear = _stratum("noncollinear")
     base = np.asarray([[0.0], [1.0], [3.0], [8.0]], dtype=np.float32)
@@ -226,7 +226,7 @@ def test_layer_local_scaling_makes_equivalent_manifolds_compete_equally():
         n_samples=4,
     )
 
-    assert [group.selected_count for group in result.groups] == [2, 2]
+    assert [group.selected_count for group in result.groups] == [1, 3]
 
 
 def test_block_recommendation_uses_same_layer_local_geometry_as_budget_selection():

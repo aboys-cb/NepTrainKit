@@ -18,6 +18,33 @@ def _tr(text: str) -> str:
     return QCoreApplication.translate("MessageManager", text)
 
 
+def format_sampling_coverage(evidence) -> str:
+    """Use the same geometric coverage wording in the main page and card."""
+    reasons = {
+        "resolution": _tr("Coverage resolution reached"),
+        "budget": _tr("Sample budget reached"),
+        "resource_limit": _tr("Resource limit reached; coverage is incomplete"),
+        "min_distance": _tr("Minimum distance reached"),
+        "exhausted": _tr("No distinct candidates remain"),
+    }
+    text = _tr("{reason}. Uncovered structures: {count}; resolution: {radius:.3g}.").format(
+        reason=reasons[evidence.stop_reason], count=len(evidence.uncovered_indices),
+        radius=evidence.resolution,
+    )
+    if not evidence.atomic_available:
+        text += " " + _tr("Atomic descriptors unavailable; only structure coverage was checked.")
+    joint = evidence.view_names.index("joint_structure")
+    text += " " + _tr("Structure distance: P95 {p95:.3f}, max {maximum:.3f}.").format(
+        p95=evidence.p95_distances[joint], maximum=evidence.max_distances[joint],
+    )
+    if evidence.atomic_available:
+        atom = evidence.view_names.index("atomic_environment")
+        text += " " + _tr("Local-environment distance upper bound: P95 {p95:.3f}, max {maximum:.3f}.").format(
+            p95=evidence.p95_distances[atom], maximum=evidence.max_distances[atom],
+        )
+    return text
+
+
 def _zh_runtime_messages_enabled() -> bool:
     return QCoreApplication.translate("RuntimeMessage", "__language_probe__") == "zh_CN"
 

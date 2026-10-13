@@ -20,14 +20,13 @@ from NepTrainKit.core.io import (
 from NepTrainKit.core.io.importers import import_structures
 from NepTrainKit.core.io.sampling_plan import (
     PhysicsSamplingPlan,
-    allocate_physics_quotas,
     build_physics_sampling_plan,
     reduced_composition_key,
 )
 from NepTrainKit.core.io.sampling_features import (
     build_sampling_feature_blocks,
-    representative_sampling_features,
 )
+from NepTrainKit.core.io.sampling_recommendation import select_physics_budget
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure
 from NepTrainKit.core.types import parse_nep_backend
 
@@ -78,6 +77,7 @@ class FPSFilterOperation(DatasetOperation):
     def __init__(self) -> None:
         self.last_group_report: dict[object, FPSGroupReport] = {}
         self.last_physics_plan_report: FPSPhysicsPlanReport | None = None
+        self.last_coverage_evidence = None
 
     @staticmethod
     def _integer(value: object, name: str, *, minimum: int) -> int:
@@ -246,6 +246,7 @@ class FPSFilterOperation(DatasetOperation):
 
     def run_dataset(self, dataset, params: FPSFilterParams) -> list:
         self.last_group_report = {}
+        self.last_coverage_evidence = None
         self.last_physics_plan_report = None
         if not dataset:
             return []
@@ -268,11 +269,11 @@ class FPSFilterOperation(DatasetOperation):
                 spin_model=bool(nep_calc.is_spin_model),
                 field="candidate set",
             )
-            self._validate_physics_budget(
-                physics_plan,
-                n_samples=settings["n_samples"],
-                candidate_count=len(structures),
-            )
+            if settings["existing_path"] is None:
+                self._validate_physics_budget(
+                    physics_plan, n_samples=settings["n_samples"],
+                    candidate_count=len(structures),
+                )
         existing_structures: list = []
         existing_descriptors = None
         existing_physics_plan = None
@@ -366,19 +367,24 @@ class FPSFilterOperation(DatasetOperation):
                     spin_model=bool(nep_calc.is_spin_model),
                 )
             )
-            desc_array, existing_descriptors = representative_sampling_features(
-                candidate_blocks,
-                existing_blocks,
+            selection = select_physics_budget(
+                candidate_blocks, physics_plan, n_samples=settings["n_samples"],
+                min_distance=settings["min_distance"], existing=existing_blocks,
+                existing_plan=existing_physics_plan,
             )
-            return self._run_physics_fps(
-                structures,
-                desc_array,
-                settings["n_samples"],
-                settings["min_distance"],
-                physics_plan,
-                existing_descriptors,
-                existing_physics_plan,
+            self.last_coverage_evidence = selection.evidence
+            self.last_group_report = {
+                g.stratum: FPSGroupReport(g.candidate_count, g.existing_count, g.selected_count)
+                for g in selection.groups
+            }
+            self.last_physics_plan_report = FPSPhysicsPlanReport(
+                spin_model=physics_plan.spin_model, candidate_count=len(structures),
+                element_set_count=physics_plan.element_set_count,
+                stratum_count=physics_plan.group_count, phase_counts=physics_plan.phase_counts,
+                magnetic_order_counts=physics_plan.magnetic_order_counts,
+                selected_count=len(selection.selected_indices),
             )
+            return [structures[i] for i in selection.selected_indices]
 
         if settings["strategy"] == "element_set":
             return self._run_element_set_fps(
@@ -448,75 +454,6 @@ class FPSFilterOperation(DatasetOperation):
             budget=budget,
             strata=plan.group_count,
         )
-
-    def _run_physics_fps(
-        self,
-        dataset,
-        descriptors,
-        n_samples: int,
-        min_distance: float,
-        plan: PhysicsSamplingPlan,
-        existing_descriptors,
-        existing_plan: PhysicsSamplingPlan | None,
-    ) -> list:
-        groups = plan.group_indices()
-        try:
-            quotas = allocate_physics_quotas(
-                {key: len(indices) for key, indices in groups.items()},
-                n_samples,
-            )
-        except ValueError as exc:
-            raise CardOperationError(
-                "fps_budget_smaller_than_physics_strata",
-                "Could not allocate the physics-aware FPS budget: {error}",
-                error=str(exc),
-            ) from exc
-
-        existing_groups = (
-            existing_plan.group_indices() if existing_plan is not None else {}
-        )
-        selected_global_indices: list[int] = []
-        for key in sorted(groups):
-            candidate_indices = groups[key]
-            candidate_descriptors = np.asarray(
-                descriptors[candidate_indices],
-                dtype=float,
-            )
-            warm_indices = existing_groups.get(key, [])
-            warm_descriptors = (
-                np.asarray(existing_descriptors[warm_indices], dtype=float)
-                if existing_descriptors is not None and warm_indices
-                else None
-            )
-            local_indices = self.centered_fps(
-                candidate_descriptors,
-                n_samples=quotas[key],
-                min_dist=min_distance,
-                selected_data=warm_descriptors,
-            )
-            chosen = [candidate_indices[index] for index in local_indices]
-            selected_global_indices.extend(chosen)
-            self.last_group_report[key] = FPSGroupReport(
-                candidate_count=len(candidate_indices),
-                existing_count=len(warm_indices),
-                selected_count=len(chosen),
-            )
-
-        self.last_physics_plan_report = FPSPhysicsPlanReport(
-            spin_model=plan.spin_model,
-            candidate_count=len(dataset),
-            element_set_count=plan.element_set_count,
-            stratum_count=plan.group_count,
-            phase_counts=plan.phase_counts,
-            magnetic_order_counts=plan.magnetic_order_counts,
-            selected_count=len(selected_global_indices),
-        )
-        selected_set = set(selected_global_indices)
-        return [
-            structure
-            for index, structure in enumerate(dataset)
-            if index in selected_set
-        ]
 
     def _run_element_set_fps(
         self,

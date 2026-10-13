@@ -11,6 +11,7 @@ from loguru import logger
 from qfluentwidgets import MessageBox
 
 from NepTrainKit.ui.threads import BackgroundTask
+from NepTrainKit.ui.messages import format_sampling_coverage
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.core import MessageManager
 from NepTrainKit.config import Config
@@ -408,6 +409,7 @@ class NepResultPlotWidget(QWidget):
         box = SparseMessageBox(self._parent, self.tr("Configure farthest point sampling"))
         n_samples_default = Config.getint("widget", "sparse_num_value", 10)
         distance_default = Config.getfloat("widget", "sparse_distance_value", 0.01)
+        coverage_radius_default = Config.getfloat("widget", "sparse_coverage_radius", 0.25)
 
         descriptor_source_default = Config.get("widget", "sparse_descriptor_source", "reduced").lower()
         sampling_mode_default = Config.get("widget", "sparse_sampling_mode", "count").lower()
@@ -427,6 +429,7 @@ class NepResultPlotWidget(QWidget):
 
         box.intSpinBox.setValue(n_samples_default)
         box.doubleSpinBox.setValue(distance_default)
+        box.coverageRadiusSpinBox.setValue(coverage_radius_default)
 
         box.descriptorCombo.setCurrentIndex(1 if descriptor_source_default == "raw" else 0)
         box.modeCombo.setCurrentIndex(1 if sampling_mode_default == "r2" else 0)
@@ -447,6 +450,7 @@ class NepResultPlotWidget(QWidget):
 
         n_samples = box.intSpinBox.value()
         distance = box.doubleSpinBox.value()
+        coverage_radius = box.coverageRadiusSpinBox.value()
         use_selection_region = bool(getattr(box, "regionCheck", None) and box.regionCheck.isChecked())
 
         selection_strategy = str(box.strategyCombo.currentData() or "global")
@@ -464,6 +468,7 @@ class NepResultPlotWidget(QWidget):
 
         Config.set("widget", "sparse_num_value", n_samples)
         Config.set("widget", "sparse_distance_value", distance)
+        Config.set("widget", "sparse_coverage_radius", coverage_radius)
 
         Config.set("widget", "sparse_selection_strategy", selection_strategy)
         Config.set("widget", "sparse_physics_count_mode", physics_count_mode)
@@ -484,6 +489,7 @@ class NepResultPlotWidget(QWidget):
             r2_threshold=r2_threshold,
             selection_strategy=selection_strategy,
             physics_count_mode=physics_count_mode,
+            coverage_radius=coverage_radius,
         )
         candidate_count = int(
             getattr(getattr(data, "structure", None), "num", 0) or 0
@@ -518,6 +524,10 @@ class NepResultPlotWidget(QWidget):
             structures, reverse = task.result
         else:
             structures, reverse = data.sparse_point_selection(**sampling_kwargs)
+        if not structures and selection_strategy == "physics":
+            evidence = getattr(data, "_last_sparse_coverage_evidence", None)
+            if evidence is not None:
+                MessageManager.send_info_message(format_sampling_coverage(evidence))
         if structures:
             self.canvas.select_index(structures, reverse)
             if selection_strategy == "element_set":
@@ -531,7 +541,8 @@ class NepResultPlotWidget(QWidget):
                 report = getattr(data, "_last_sparse_group_report", {}) or {}
                 plan = getattr(data, "_last_sparse_physics_plan", None)
                 covered = sum(
-                    int(group.get("selected_count", 0)) > 0
+                    (int(group.get("selected_count", 0)) > 0 or
+                     int(group.get("existing_count", 0)) > 0)
                     for group in report.values()
                 )
                 MessageManager.send_info_message(
@@ -557,6 +568,11 @@ class NepResultPlotWidget(QWidget):
                             score=float(coverage_r2),
                         )
                     )
+
+            if selection_strategy == "physics":
+                evidence = getattr(data, "_last_sparse_coverage_evidence", None)
+                if evidence is not None:
+                    MessageManager.send_info_message(format_sampling_coverage(evidence))
 
             # Show training overlay if requested - pre-compute PCA then show dialog
             show_overlay = bool(getattr(box, "trainingOverlayCheck", None) and box.trainingOverlayCheck.isChecked())

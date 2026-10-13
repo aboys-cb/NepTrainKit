@@ -18,7 +18,7 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.types import get_configured_nep_backend
-from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.messages import translate_runtime_message, format_sampling_coverage
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -59,6 +59,7 @@ class FPSFilterDataCard(FilterDataCard):
         self._chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000)
         self._last_group_report = {}
         self._last_physics_plan_report = None
+        self._last_coverage_evidence = None
         self._input_dataset = []
         self.setTitle(self.tr("FPS Sampling"))
         self.init_ui()
@@ -79,7 +80,7 @@ class FPSFilterDataCard(FilterDataCard):
             userData="element_set",
         )
         self.strategy_combo.addItem(
-            self.tr("Balance element set, phase, and spin"),
+            self.tr("Structure and local-environment coverage"),
             userData="physics",
         )
         self.strategy_combo.setAccessibleName(self.tr("Sampling plan"))
@@ -275,8 +276,8 @@ class FPSFilterDataCard(FilterDataCard):
         elif strategy == "physics":
             self.strategy_hint.setText(
                 self.tr(
-                    "Partitions by element set first, then structural phase. "
-                    "When the selected NEP is a spin model, magnetic order is an additional coverage axis."
+                    "Covers structures and atomic environments while preserving element-set and phase representatives. "
+                    "Magnetic features are used only for spin models."
                 )
             )
         else:
@@ -297,7 +298,7 @@ class FPSFilterDataCard(FilterDataCard):
         strategy_labels = {
             "global": self.tr("global budget"),
             "element_set": self.tr("balanced by element set"),
-            "physics": self.tr("balanced by element set, phase, and spin"),
+            "physics": self.tr("structure and local-environment coverage"),
         }
         strategy = strategy_labels.get(params.strategy, strategy_labels["global"])
         return self.tr("keep at most {count} · {strategy}").format(
@@ -354,6 +355,7 @@ class FPSFilterDataCard(FilterDataCard):
     def set_dataset(self, dataset):
         self._last_group_report = {}
         self._last_physics_plan_report = None
+        self._last_coverage_evidence = None
         super().set_dataset(dataset)
         self._input_dataset = list(dataset) if dataset is not None else []
         self._refresh_preview()
@@ -452,6 +454,7 @@ class FPSFilterDataCard(FilterDataCard):
             "last_physics_plan_report",
             None,
         )
+        self._last_coverage_evidence = getattr(operation, "last_coverage_evidence", None)
         super().on_processing_finished()
 
     def _format_dataset_info(self) -> str:
@@ -459,7 +462,7 @@ class FPSFilterDataCard(FilterDataCard):
         if self._last_physics_plan_report is not None:
             report = self._last_physics_plan_report
             covered = sum(
-                item.selected_count > 0
+                item.selected_count > 0 or item.existing_count > 0
                 for item in self._last_group_report.values()
             )
             phase_labels = ", ".join(label for label, _count in report.phase_counts)
@@ -491,6 +494,8 @@ class FPSFilterDataCard(FilterDataCard):
                 covered=covered,
                 total=len(self._last_group_report),
             )
+        if self._last_coverage_evidence is not None:
+            text += " | " + format_sampling_coverage(self._last_coverage_evidence)
         return text
 
     def stop(self):

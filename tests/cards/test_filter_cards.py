@@ -64,7 +64,7 @@ class TestFilterCards(BaseCardTest):
 
         self.assertEqual(restored.get_params(), card.get_params())
         self.assertEqual(restored.strategy_combo.currentData(), "physics")
-        self.assertIn("element set", restored.get_summary_text())
+        self.assertIn("structure and local-environment coverage", restored.get_summary_text())
 
     def test_physics_fps_rejects_missing_spin_before_descriptor_generation(self):
         dataset = [
@@ -146,7 +146,10 @@ class TestFilterCards(BaseCardTest):
 
         self.assertEqual(len(selected), 2)
         self.assertTrue(any(structure is dataset[2] for structure in selected))
-        self.assertFalse(any(structure is dataset[1] for structure in selected))
+        # The zero local environment is distinct from both +/- 3, even though
+        # every structure mean is zero. Its coverage cannot be inferred from
+        # a standard-deviation summary.
+        self.assertTrue(any(structure is dataset[1] for structure in selected))
         calculator_class.return_value.descriptors.assert_called_once_with(
             dataset,
             mean=False,

@@ -2606,6 +2606,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         r2_threshold: float = 0.9,
         selection_strategy: str = "global",
         physics_count_mode: str = "limit",
+        coverage_radius: float = 0.25,
     ) -> tuple[list[int], bool]:
         """Delegate sparse sampling to the sampler helper."""
         return self._sampler.sparse_point_selection(
@@ -2618,6 +2619,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
             r2_threshold=r2_threshold,
             selection_strategy=selection_strategy,
             physics_count_mode=physics_count_mode,
+            coverage_radius=coverage_radius,
         )
 
     def recommend_physics_sample_count(

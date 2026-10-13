@@ -4,8 +4,9 @@ import numpy as np
 from ase.build import bulk
 
 from NepTrainKit.core.io.sampling_features import (
+    _normalize_block_sets,
+    _normalize_descriptor_sets,
     build_sampling_feature_blocks,
-    representative_sampling_features,
 )
 
 
@@ -33,8 +34,9 @@ def test_atomic_descriptor_spread_preserves_local_environment_novelty():
     by_name = dict(zip(blocks.names, blocks.values))
 
     assert np.allclose(by_name["descriptor_mean"], 0.0)
-    assert by_name["descriptor_std"][1, 0] > by_name["descriptor_std"][0, 0]
-    assert by_name["descriptor_tail"][1, 0] > by_name["descriptor_tail"][0, 0]
+    np.testing.assert_array_equal(blocks.atomic_values, per_atom)
+    assert blocks.atom_counts == (2, 2)
+    assert blocks.atom_species == ("Fe",) * 4
 
 
 def test_lattice_and_descriptor_blocks_are_normalized_and_balanced():
@@ -50,11 +52,11 @@ def test_lattice_and_descriptor_blocks_are_normalized_and_balanced():
         spin_model=False,
     )
 
-    values, existing = representative_sampling_features(blocks)
+    values, existing = _normalize_block_sets(np.hstack(blocks.values), None)
 
     assert existing is None
-    assert values.shape == (3, descriptors.shape[1] + 10)
-    assert values.dtype == np.float32
+    assert values.shape == (3, descriptors.shape[1] + 4)
+    assert values.dtype == np.float64
     assert np.isfinite(values).all()
     assert not np.allclose(values[0], values[-1])
 
@@ -73,11 +75,23 @@ def test_existing_and_candidates_share_one_feature_scaling():
         spin_model=False,
     )
 
-    candidate_values, existing_values = representative_sampling_features(
-        candidate,
-        existing,
+    candidate_values, existing_values = _normalize_block_sets(
+        np.hstack(candidate.values),
+        np.hstack(existing.values),
     )
 
     assert existing_values is not None
     assert candidate_values.shape[1] == existing_values.shape[1]
     assert existing_values[0, 0] == 0.0
+
+
+def test_descriptor_normalization_preserves_distance_ratios_and_basis():
+    rng = np.random.default_rng(83)
+    values = rng.normal(size=(30, 4)) * [10, 1, .1, .001]
+    normalized, _ = _normalize_descriptor_sets(values, None)
+    raw_distances = np.linalg.norm(values[1:] - values[0], axis=1)
+    distances = np.linalg.norm(normalized[1:] - normalized[0], axis=1)
+    np.testing.assert_allclose(distances / raw_distances, distances[0] / raw_distances[0])
+    rotation, _ = np.linalg.qr(rng.normal(size=(4, 4)))
+    rotated, _ = _normalize_descriptor_sets(values @ rotation, None)
+    np.testing.assert_allclose(np.linalg.norm(rotated[1:] - rotated[0], axis=1), distances)

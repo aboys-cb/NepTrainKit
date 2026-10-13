@@ -694,6 +694,7 @@ class SparseSampler:
         r2_threshold: float = 0.9,
         selection_strategy: str = "global",
         physics_count_mode: str = "limit",
+        coverage_radius: float = 0.25,
     ) -> tuple[list[int], bool]:
         """Return structure indices selected by sparse sampling strategies.
 
@@ -717,20 +718,23 @@ class SparseSampler:
             Target R² used when ``sampling_mode`` is ``"r2"``.
         selection_strategy : {"global", "element_set", "physics"}, optional
             ``"element_set"`` applies sqrt-size quotas and centered FPS within
-            each chemical element set. ``"physics"`` balances exact
-            composition, structural phase, and magnetic order for detected spin
-            models. Both structured strategies require raw descriptors. Physics
+            each chemical element set. ``"physics"`` protects physical-category
+            representatives and jointly covers structures and atomic environments.
+            Both structured strategies require raw descriptors. Physics
             sampling supports either a user total limit or an automatic
             descriptor-coverage count.
         physics_count_mode : {"limit", "automatic"}, optional
             ``"limit"`` distributes ``n_samples`` as one global upper limit.
-            ``"automatic"`` derives and selects the count independently within
-            each physical stratum before summing the result.
+            ``"automatic"`` follows the same global selection trajectory until
+            the structure and atomic-environment resolution is reached.
+        coverage_radius : float, optional
+            Positive normalized distance threshold for automatic coverage.
         """
         self._result._last_sparse_group_report = {}
         self._result._last_sparse_physics_plan = None
         self._result._last_sparse_physics_recommendation = None
         self._result._last_sparse_coverage_r2 = None
+        self._result._last_sparse_coverage_evidence = None
 
         # Validate descriptor availability
         dataset = getattr(self._result, "descriptor", None)
@@ -984,9 +988,11 @@ class SparseSampler:
                             existing=existing_blocks,
                             existing_plan=training_physics_plan,
                             policy="balanced",
+                            resolution=coverage_radius,
                         )
                         selected_local_rows = list(recommendation.selected_indices)
                         group_results = recommendation.groups
+                        self._result._last_sparse_coverage_evidence = recommendation.evidence
                         self._result._last_sparse_physics_recommendation = recommendation
                     else:
                         budget_selection = select_physics_budget(
@@ -999,6 +1005,7 @@ class SparseSampler:
                         )
                         selected_local_rows = list(budget_selection.selected_indices)
                         group_results = budget_selection.groups
+                        self._result._last_sparse_coverage_evidence = budget_selection.evidence
                 except ValueError as exc:
                     MessageManager.send_message_box(str(exc), "Error")
                     return [], reverse

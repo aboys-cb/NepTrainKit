@@ -62,6 +62,11 @@ from NepTrainKit.core.types import (
     TextMatchMode,
 )
 from NepTrainKit.ui.widgets.completer import CompleterModel, JoinDelegate
+from NepTrainKit.ui.widgets.atomic_filter_editor import (
+    AtomicFilterEditor,
+    atomic_condition_summary,
+    parse_atomic_condition,
+)
 from NepTrainKit.ui.widgets.fluent_overlays import (
     clip_popup_to_window,
     create_fluent_tooltip,
@@ -98,6 +103,8 @@ _EXPRESSION_FIELD_UNITS: dict[str, str] = {
 
 _EXPRESSION_UNIT_PREFIXES: tuple[tuple[str, str], ...] = (
     ("force", "eV/Å"),
+    ("mforce", "μB/Å"),
+    ("bec", "e"),
     ("stress", "GPa"),
     ("virial", "eV"),
     ("count.", "count"),
@@ -313,6 +320,7 @@ class _ConditionRow(QFrame):
         self.field_combo.addItem(self.tr("Formula"), userData=FilterField.FORMULA)
         self.field_combo.addItem(self.tr("Elements"), userData=FilterField.ELEMENT_REQUIRED)
         self.field_combo.addItem(self.tr("Custom expression"), userData=FilterField.EXPRESSION)
+        self.field_combo.addItem(self.tr("Atomic condition"), userData="atomic")
 
         self.mode_combo = ComboBox(self)
         self.mode_combo.setFixedWidth(124)
@@ -353,8 +361,13 @@ class _ConditionRow(QFrame):
         )
         self._wrapped_layout = widest_field + 46 > 176
         self.setFixedHeight(68 if self._wrapped_layout else 34)
+        root_layout = QVBoxLayout(self)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(4)
+        self.controls = QWidget(self)
+        root_layout.addWidget(self.controls)
         if self._wrapped_layout:
-            layout = QVBoxLayout(self)
+            layout = QVBoxLayout(self.controls)
             layout.setContentsMargins(2, 1, 2, 1)
             layout.setSpacing(2)
             selector_row = QHBoxLayout()
@@ -372,7 +385,7 @@ class _ConditionRow(QFrame):
             value_row.addWidget(self.unit_label)
             layout.addLayout(value_row)
         else:
-            layout = QHBoxLayout(self)
+            layout = QHBoxLayout(self.controls)
             layout.setContentsMargins(2, 1, 2, 1)
             layout.setSpacing(4)
             layout.addWidget(self.enabled_switch)
@@ -381,9 +394,16 @@ class _ConditionRow(QFrame):
             layout.addWidget(self.case_button)
             layout.addWidget(self.value_edit, 1)
             layout.addWidget(self.unit_label)
+            self.atomic_header_spacer = QWidget(self.controls)
+            self.atomic_header_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            layout.addWidget(self.atomic_header_spacer)
             layout.addWidget(self.remove_button)
 
-        initial_field = condition.field
+        atomic_values = parse_atomic_condition(self._display_values(condition)) if condition.field == FilterField.EXPRESSION else None
+        self.atomic_editor = AtomicFilterEditor(self._suggestions, atomic_values, self)
+        root_layout.addWidget(self.atomic_editor)
+        self._atomic_active = bool(atomic_values)
+        initial_field = "atomic" if atomic_values else condition.field
         if initial_field in _ELEMENT_FIELDS:
             initial_field = FilterField.ELEMENT_REQUIRED
         for index in range(self.field_combo.count()):
@@ -402,8 +422,10 @@ class _ConditionRow(QFrame):
         self.mode_combo.currentIndexChanged.connect(lambda _index: self.changed.emit())
         self.case_button.toggled.connect(self._on_case_toggled)
         self.value_edit.textChanged.connect(self._on_value_changed)
+        self.atomic_editor.changed.connect(self._on_atomic_changed)
         self._refresh_style()
         self._update_unit_label()
+        self._update_atomic_visibility()
 
     @staticmethod
     def _display_values(condition: StructureFilterCondition) -> str:
@@ -415,13 +437,42 @@ class _ConditionRow(QFrame):
 
     def _on_field_changed(self, _index=None):
         field = self.field_combo.currentData()
+        if field == "atomic":
+            values = parse_atomic_condition(self.value_edit.text())
+            if values:
+                self.atomic_editor.set_values(values)
+        elif self._atomic_active and field == FilterField.EXPRESSION:
+            self.value_edit.setText(self.atomic_editor.expression())
         self._fit_current_combo_width(self.field_combo, 112, padding=46)
         self._rebuild_modes(field, None)
         self._update_case_button(field == FilterField.FORMULA)
         self._update_placeholder()
         self._update_suggestions()
         self._update_unit_label()
+        self._update_atomic_visibility()
         self.clear_error()
+        self.changed.emit()
+
+    def _update_atomic_visibility(self):
+        self._atomic_active = self.field_combo.currentData() == "atomic"
+        self.atomic_editor.setVisible(self._atomic_active)
+        self.value_edit.setVisible(not self._atomic_active)
+        self.mode_combo.setVisible(not self._atomic_active)
+        if hasattr(self, 'atomic_header_spacer'):
+            self.atomic_header_spacer.setVisible(self._atomic_active)
+        if self._atomic_active:
+            self.unit_label.hide()
+            self.atomic_editor.unit_label.setText(_detect_expression_unit(self.atomic_editor.values()['field']))
+            self.setFixedHeight(self.controls.sizeHint().height() + self.atomic_editor.sizeHint().height() + 4)
+        else:
+            self.setFixedHeight(68 if self._wrapped_layout else 34)
+
+    def _on_atomic_changed(self):
+        self.atomic_editor.unit_label.setText(_detect_expression_unit(self.atomic_editor.values()['field']))
+        self.value_edit.blockSignals(True)
+        self.value_edit.setText(self.atomic_editor.expression())
+        self.value_edit.blockSignals(False)
+        self._update_atomic_visibility()
         self.changed.emit()
 
     def _update_unit_label(self) -> None:
@@ -549,13 +600,20 @@ class _ConditionRow(QFrame):
         self.value_edit.set_suggestions(self._suggestions.get(search_type), token_separators=separators)
 
     def set_suggestions(self, suggestions: dict[SearchType, dict[str, int]]) -> None:
+        previous_expression = self.atomic_editor.expression()
         self._suggestions = suggestions
         self._update_suggestions()
+        self.atomic_editor.set_suggestions(suggestions)
+        self._update_atomic_visibility()
+        if self._atomic_active and self.atomic_editor.expression() != previous_expression:
+            self._on_atomic_changed()
 
     def to_condition(self) -> StructureFilterCondition:
         selected_field = self.field_combo.currentData()
         mode_data = self.mode_combo.currentData()
         raw = self.value_edit.text().strip()
+        if selected_field == "atomic":
+            raw = self.atomic_editor.expression()
         if selected_field in _ELEMENT_FIELDS:
             field = mode_data
             values = tuple(value for value in re.split(r"[,\s]+", raw) if value)
@@ -580,11 +638,13 @@ class _ConditionRow(QFrame):
     def set_error(self, message: str) -> None:
         self._error = True
         self.value_edit.setToolTip(message)
+        self.atomic_editor.setToolTip(message)
         self._refresh_style()
 
     def clear_error(self) -> None:
         self._error = False
         self.value_edit.setToolTip(self._input_hint)
+        self.atomic_editor.setToolTip("")
         self._refresh_style()
 
     def _refresh_style(self) -> None:
@@ -1094,7 +1154,8 @@ class StructureFilterEditorPopup(QFrame):
         for row in self._rows:
             if row.condition_id == condition_id:
                 self.scroll.ensureWidgetVisible(row)
-                row.value_edit.setFocus(Qt.FocusReason.OtherFocusReason)
+                target = row.atomic_editor.element_combo if row._atomic_active else row.value_edit
+                target.setFocus(Qt.FocusReason.OtherFocusReason)
                 return
 
     def set_estimate(self, matched: int | None, active: int | None, status: str = "") -> None:
@@ -1301,6 +1362,9 @@ class StructureFilterBar(QFrame):
             label = self.tr("Allowed")
         else:
             label = self.tr("Expression")
+            parsed = parse_atomic_condition(values)
+            if parsed:
+                return self.tr("Atomic condition"), atomic_condition_summary(parsed)
         return label, values
 
     def _rebuild_chips(self) -> None:

@@ -42,9 +42,9 @@ msgstr "6. Structure filter bar"
 
 #: ../../source/module/nep-dataset-display-content.md:11200
 #: 48740c407c40448ca5a55c776ef5c137
-msgid "结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。"
+msgid "结构筛选栏可以同时使用配置类型、化学式、元素、原子条件和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。"
 msgstr ""
-"The filter bar can combine configuration type, formula, element, and custom-"
+"The filter bar can combine configuration type, formula, element, atomic condition, and custom-"
 "expression filters. Conditions are intersected by default; combinations used often "
 "can be saved as “saved filters”."
 
@@ -1271,3 +1271,35 @@ msgstr "`has.Fe && any(atomic.spin.norm < 1)` remains two separate structure con
 #: ../../source/module/nep-dataset-display-content.md
 msgid "合法但数据中不存在的元素比较不会报错，例如 `any(atomic.element == \"Ti\")` 在不含 Ti 的结构上为假。缺失字段、NaN/Inf 和原子行对齐仍遵循上面的规则；即使使用元素条件，`all` 也不会忽略其他原子上的无效数值。仅含部分磁性原子行、无法与完整元素数组对齐的结果，不能与 `atomic.element` 放在同一个 `any/all` 内。"
 msgstr "Valid elements absent from the data do not cause errors: `any(atomic.element == \"Ti\")` is false for structures without Ti. Missing fields, NaN/Inf values, and atom-row alignment follow the rules above. Even with an element condition, `all` does not ignore invalid numeric values on other atoms. Results with only some magnetic-atom rows that cannot be aligned with the full element array cannot be combined with `atomic.element` inside the same `any/all`."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "原子条件"
+msgstr "Atomic condition"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "选择目标元素、任一/所有原子、性质、比较符和阈值"
+msgstr "Choose an element, any/all atoms, property, comparison, and threshold"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "任一 Fe 原子的磁矩模长小于 1"
+msgstr "Any Fe atom has a magnetic moment magnitude below 1"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "不写表达式，筛选某种元素的磁矩"
+msgstr "Filter element-specific magnetic moments without typing an expression"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "在条件类型中选择“原子条件”，将“目标元素”设为 `Fe`，“满足方式”设为“任一目标原子满足”，“原子性质”选“磁矩 · 模长”，比较选“小于”，阈值输入 `1`。此时只要一个 Fe 原子的磁矩模长小于 1，结构就会匹配；其他元素的小磁矩不会造成误匹配。"
+msgstr "Choose Atomic condition, set Target element to Fe, Match to At least one atom, Property to Magnetic moment · Magnitude, Comparison to Less than, and Threshold to 1. A structure matches if at least one Fe atom has a moment magnitude below 1; small moments on other elements do not produce a match."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "若要求所有 Fe 原子都满足，直接把“满足方式”切换为“所有目标原子满足”。两种方式均排除不含 Fe 的结构。选择“全部元素”时，对结构中的全部原子判断。"
+msgstr "To require every Fe atom to satisfy the condition, choose All target atoms. Both modes exclude structures without Fe. All elements evaluates the condition across every atom in the structure."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "元素与数值属性选项来自当前数据集。常见磁矩、力、磁力和电荷显示易读名称，分量、模长以及参考值/预测值/误差可直接在性质列表选择。阈值支持负数和科学计数法。修改后会自动预览，仍需通过“应用结果”改变选择集。"
+msgstr "Element and numeric property choices come from the current dataset. Common moments, forces, magnetic forces, and charges have readable labels. Components, magnitudes, and reference/prediction/error views can be selected directly from the property list. Thresholds support negative values and scientific notation. Changes automatically preview matches; Apply results is still required to change the selection."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "原子条件继续使用已有表达式引擎和常用筛选格式，保存后重新打开仍可用控件编辑。切换到“自定义表达式”可以查看和修改生成的条件；包含复杂算术或多字段组合的表达式保留文本编辑方式。缺失字段、无效数值与稀疏原子行的处理仍遵循下文 `any/all` 的规则。"
+msgstr "Atomic conditions use the existing expression engine and saved-filter format, and reopen as visual controls. Switch to Custom expression to inspect or edit the generated condition. Complex arithmetic and multi-field expressions remain in the text editor. Missing fields, invalid values, and sparse atom rows follow the any/all rules below."

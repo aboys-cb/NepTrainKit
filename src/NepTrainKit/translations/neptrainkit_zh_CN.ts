@@ -21856,6 +21856,10 @@ Do you want to continue?</source>
 <context>
     <name>StructureFilterBar</name>
     <message>
+        <source>Atomic condition</source>
+        <translation>原子条件</translation>
+    </message>
+    <message>
         <source>Add filter condition</source>
         <translation type="vanished">添加筛选条件</translation>
     </message>
@@ -27415,6 +27419,10 @@ Magnetic: {magnetic}</source>
 <context>
     <name>_ConditionRow</name>
     <message>
+        <source>Atomic condition</source>
+        <translation>原子条件</translation>
+    </message>
+    <message>
         <source>Enabled</source>
         <translation type="vanished">启用</translation>
     </message>
@@ -27663,6 +27671,125 @@ Magnetic: {magnetic}</source>
         <location filename="../ui/widgets/filter_bar.py" line="567" />
         <source>Remove condition</source>
         <translation>删除条件</translation>
+    </message>
+</context>
+<context>
+    <name>AtomicFilterEditor</name>
+    <message>
+        <source>Magnetic moment</source>
+        <translation>磁矩</translation>
+    </message>
+    <message>
+        <source>Force</source>
+        <translation>力</translation>
+    </message>
+    <message>
+        <source>Magnetic force</source>
+        <translation>磁力</translation>
+    </message>
+    <message>
+        <source>Charge</source>
+        <translation>电荷</translation>
+    </message>
+    <message>
+        <source>Born effective charge</source>
+        <translation>玻恩有效电荷</translation>
+    </message>
+    <message>
+        <source>Reference</source>
+        <translation>参考值</translation>
+    </message>
+    <message>
+        <source>Prediction</source>
+        <translation>预测值</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>误差</translation>
+    </message>
+    <message>
+        <source>Magnitude</source>
+        <translation>模长</translation>
+    </message>
+    <message>
+        <source>Any</source>
+        <translation>任一</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>所有</translation>
+    </message>
+    <message>
+        <source>atoms</source>
+        <translation>原子</translation>
+    </message>
+    <message>
+        <source>At least one atom</source>
+        <translation>任一目标原子满足</translation>
+    </message>
+    <message>
+        <source>All target atoms</source>
+        <translation>所有目标原子满足</translation>
+    </message>
+    <message>
+        <source>Less than</source>
+        <translation>小于</translation>
+    </message>
+    <message>
+        <source>At most</source>
+        <translation>小于等于</translation>
+    </message>
+    <message>
+        <source>Greater than</source>
+        <translation>大于</translation>
+    </message>
+    <message>
+        <source>At least</source>
+        <translation>大于等于</translation>
+    </message>
+    <message>
+        <source>Equal to</source>
+        <translation>等于</translation>
+    </message>
+    <message>
+        <source>Not equal to</source>
+        <translation>不等于</translation>
+    </message>
+    <message>
+        <source>Threshold</source>
+        <translation>阈值</translation>
+    </message>
+    <message>
+        <source>Target element</source>
+        <translation>目标元素</translation>
+    </message>
+    <message>
+        <source>Match</source>
+        <translation>满足方式</translation>
+    </message>
+    <message>
+        <source>Property</source>
+        <translation>原子性质</translation>
+    </message>
+    <message>
+        <source>Comparison</source>
+        <translation>比较</translation>
+    </message>
+    <message>
+        <source>All elements</source>
+        <translation>全部元素</translation>
+    </message>
+    <message>
+        <source>Load a dataset with atomic properties to choose a field.</source>
+        <translation>加载包含原子属性的数据集后，可选择性质。</translation>
+    </message>
+    <message>
+        <source>Only {element} atoms are checked. Structures without {element} do not match.</source>
+        <translation>仅检查 {element} 原子，不含 {element} 的结构不匹配。</translation>
+    </message>
+    <message>
+        <source>The condition is checked for each atom in the structure.</source>
+        <translation>对结构中的每个原子判断条件。</translation>
     </message>
 </context>
 </TS>

@@ -617,3 +617,146 @@ def test_match_result_details_use_the_fluent_tooltip(bar, qapp):
     tooltip = bar._result_tip
     assert isinstance(tooltip, filter_bar_module.ToolTip)
     assert "Matched structures: 12" in tooltip.text()
+
+
+def _atomic_suggestions():
+    return {
+        SearchType.ELEMENTS: {'Fe': 5, 'O': 5},
+        SearchType.EXPRESSION: {
+            'atomic.element': 6, 'atomic.spin': 6, 'atomic.spin.norm': 6, 'atomic.spin.z': 6,
+            'atomic.charge': 6, 'force.norm': 6, 'force.ref.norm': 6, 'force.err.norm': 6,
+            'natoms': 6, 'energy': 6, 'stress.norm': 6,
+        },
+    }
+
+
+def _choose(combo, data):
+    for index in range(combo.count()):
+        if combo.itemData(index) == data:
+            combo.setCurrentIndex(index)
+            return
+    raise AssertionError(f'Missing choice {data}')
+
+
+def test_atomic_controls_generate_element_scoped_any_all_and_round_trip(bar, qapp):
+    bar.set_suggestions(_atomic_suggestions())
+    bar._popup.add_condition()
+    row = bar._popup._rows[0]
+    _choose(row.field_combo, 'atomic')
+    editor = row.atomic_editor
+    _choose(editor.element_combo, 'Fe')
+    _choose(editor.field_combo, 'atomic.spin.norm')
+    editor.value_edit.setText('1')
+    assert row.to_condition().text_values == ('any(atomic.element == "Fe" && atomic.spin.norm < 1)',)
+    assert row.value_edit.isHidden()
+    assert row.mode_combo.isHidden()
+    assert not editor.isHidden()
+    assert editor.unit_label.text() == 'μB'
+    assert 'Only Fe' in editor.hint_label.text()
+    _choose(editor.quantifier_combo, 'all')
+    expected = 'has.Fe && all(atomic.element != "Fe" || atomic.spin.norm < 1)'
+    assert row.to_condition().text_values == (expected,)
+    saved = StructureFilterSpec.from_dict(bar._popup.spec().to_dict())
+    bar.set_spec(saved)
+    restored = bar._popup._rows[0]
+    assert restored.field_combo.currentData() == 'atomic'
+    assert restored.atomic_editor.quantifier_combo.currentData() == 'all'
+    assert restored.to_condition() == saved.conditions[0]
+    assert 'All Fe' in bar._condition_summary(saved.conditions[0])[1]
+    # Switching to the advanced entry preserves the exact generated condition.
+    _choose(restored.field_combo, FilterField.EXPRESSION)
+    assert restored.value_edit.text() == expected
+    assert restored.atomic_editor.isHidden()
+    _choose(restored.field_combo, 'atomic')
+    assert restored.to_condition().text_values == (expected,)
+
+
+def test_atomic_controls_limit_available_fields_and_keep_custom_expressions(bar):
+    bar.set_suggestions(_atomic_suggestions())
+    expression = 'any(atomic.spin.norm < 1 && force.norm > 10)'
+    bar.set_spec(_spec(_condition('complex', FilterField.EXPRESSION, expression)))
+    row = bar._popup._rows[0]
+    assert row.field_combo.currentData() == FilterField.EXPRESSION
+    assert row.to_condition().text_values == (expression,)
+    fields = [row.atomic_editor.field_combo.itemData(i) for i in range(row.atomic_editor.field_combo.count())]
+    assert 'atomic.spin.norm' in fields and 'force.err.norm' in fields
+    assert 'atomic.spin' not in fields and 'atomic.element' not in fields
+    assert 'natoms' not in fields and 'stress.norm' not in fields
+    assert 'force.ref.norm' not in fields  # No duplicate of the default reference view.
+
+
+def test_atomic_controls_keep_negative_scientific_thresholds_and_reject_incomplete_input(bar):
+    bar.set_suggestions(_atomic_suggestions())
+    expression = 'any(atomic.element == "Fe" && atomic.spin.z < -1e-3)'
+    bar.set_spec(_spec(_condition('signed', FilterField.EXPRESSION, expression)))
+    row = bar._popup._rows[0]
+    assert row.to_condition().text_values == (expression,)
+    for text in ('', '-', '1e', 'nan', 'inf', '1e999'):
+        row.atomic_editor.value_edit.setText(text)
+        assert row.to_condition().text_values == ()
+    row.atomic_editor.value_edit.setText('0.25')
+    _choose(row.atomic_editor.element_combo, '')
+    assert row.to_condition().text_values == ('any(atomic.spin.z < 0.25)',)
+    row.enabled_switch.setChecked(False)
+    assert not row.to_condition().enabled
+
+
+def test_atomic_popup_grows_on_mode_switch_and_remains_within_width(bar, qapp):
+    bar.set_suggestions(_atomic_suggestions())
+    bar.open_editor(add_if_empty=True)
+    row = bar._popup._rows[0]
+    original_height = row.height()
+    _choose(row.field_combo, 'atomic')
+    qapp.processEvents()
+    assert row.height() > original_height
+    assert bar._popup.scroll.height() >= row.height()
+    editor = row.atomic_editor
+    for control in (editor.element_combo, editor.quantifier_combo, editor.field_combo,
+                    editor.operator_combo, editor.value_edit, editor.unit_label):
+        assert control.geometry().right() < editor.width()
+        assert control.geometry().bottom() < editor.height()
+    assert editor.value_edit.width() >= 70
+    assert bar._popup.scroll.horizontalScrollBar().maximum() == 0
+    _choose(row.field_combo, FilterField.EXPRESSION)
+    qapp.processEvents()
+    assert row.height() == original_height
+
+
+def test_atomic_visual_condition_uses_existing_backend_for_mixed_elements(bar):
+    from test_base import _build_element_quantifier_result
+
+    data = _build_element_quantifier_result()
+    bar.set_suggestions({kind: data.get_completer_cache(kind) for kind in (
+        SearchType.ELEMENTS, SearchType.EXPRESSION,
+    )})
+    bar._popup.add_condition()
+    row = bar._popup._rows[0]
+    _choose(row.field_combo, 'atomic')
+    _choose(row.atomic_editor.element_combo, 'Fe')
+    _choose(row.atomic_editor.field_combo, 'atomic.spin.norm')
+    assert data.search_structures(bar._popup.spec()).indices == (1, 2, 3, 5)
+    _choose(row.atomic_editor.quantifier_combo, 'all')
+    assert data.search_structures(bar._popup.spec()).indices == (1, 3, 5)
+    assert not data.select_index
+
+
+def test_atomic_editor_handles_no_data_and_structure_norm_force_suggestions(bar):
+    bar._popup.add_condition()
+    row = bar._popup._rows[0]
+    _choose(row.field_combo, 'atomic')
+    assert row.to_condition().text_values == ()
+    assert 'Load a dataset' in row.atomic_editor.hint_label.text()
+    bar.set_suggestions({SearchType.EXPRESSION: {'force': 3, 'force.ref': 3, 'force.err': 3}})
+    fields = [row.atomic_editor.field_combo.itemData(i) for i in range(row.atomic_editor.field_combo.count())]
+    assert fields == ['force.norm', 'force.err.norm']
+    assert row.to_condition().text_values == ('any(force.norm < 1)',)
+    assert bar.spec.conditions[0].text_values == ('any(force.norm < 1)',)
+
+
+def test_atomic_editor_distinguishes_properties_with_the_same_friendly_label(bar):
+    bar.set_suggestions({SearchType.EXPRESSION: {'atomic.spin.norm': 2, 'atomic.spin_vec.norm': 2}})
+    bar._popup.add_condition()
+    combo = bar._popup._rows[0].atomic_editor.field_combo
+    assert combo.itemText(0) != combo.itemText(1)
+    assert '(spin)' in combo.itemText(0)
+    assert '(spin_vec)' in combo.itemText(1)

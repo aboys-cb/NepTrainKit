@@ -59,6 +59,9 @@ def _condition(condition_id, field, *values, mode=None, enabled=True):
 def test_expression_unit_uses_magnetic_force_unit():
     assert filter_bar_module._detect_expression_unit("atomic.force_mag.norm > 0") == "μB/Å"
     assert filter_bar_module._detect_expression_unit("atomic.mforce.x < 1") == "μB/Å"
+    assert filter_bar_module._detect_expression_unit("any(atomic.spin.norm < 1)") == "μB"
+    assert filter_bar_module._detect_expression_unit("all(force.err.norm < 0.2)") == "eV/Å"
+    assert filter_bar_module._detect_expression_unit("not any(atomic.charge < 0)") == "e"
 
 
 def test_empty_state_disables_preview_and_apply_without_redundant_clear_action(bar):

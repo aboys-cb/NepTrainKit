@@ -445,9 +445,6 @@ msgstr "6.4.2 Unsupported syntax"
 
 #: ../../source/module/nep-dataset-display-content.md:11295
 #: 4bdac154b8864deb8649570ec355a84d
-msgid "不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`"
-msgstr "Function calls are unsupported, for example `len(structure)`, `mean(force)`, or `any(...)`"
-
 #: ../../source/module/nep-dataset-display-content.md:11296
 #: 14748ec8173c4f769f812556c91bcdf9
 msgid "不支持固定原子索引：例如 `atom[3].force.x > 1`"
@@ -1174,3 +1171,103 @@ msgstr "Custom expression: `natoms >= 64 && force.err.norm < 0.2`"
 #: f6d94e91ed574021b64b8c7ef4d70d71
 msgid "三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，因此不会丢失 `!=`、晶格角、布尔字段或动态字段。"
 msgstr "With `Match all conditions`, the three conditions are intersected. The filter does not convert the expression to a separate simplified syntax, so operators such as `!=`, lattice angles, Boolean fields, and dynamic fields are preserved."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "原子条件聚合：`any(条件)`、`all(条件)`"
+msgstr "Atomic predicate reduction: `any(condition)`, `all(condition)`"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "除 `any(条件)`、`all(条件)` 外，不支持其他函数调用，例如 `len(structure)`、`mean(force)`、`min(...)`"
+msgstr "Only `any(condition)` and `all(condition)` calls are supported; other calls such as `len(structure)`, `mean(force)`, and `min(...)` are unsupported"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any/all` 只接受一个条件参数，不支持嵌套调用或关键字参数"
+msgstr "`any/all` accepts exactly one predicate argument; nested calls and keyword arguments are unsupported"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "不写 `any/all` 时，以上默认规则保持不变。例如 `atomic.spin.norm < 1` 要求结构内所有原子的磁矩模长都小于 1；磁矩模长为 `[0.5, 2.0]` 的结构不会命中。"
+msgstr "Without `any/all`, the default rule is unchanged. For example, `atomic.spin.norm < 1` requires every atom in the structure to have a moment magnitude below 1; a structure with magnitudes `[0.5, 2.0]` does not match."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "用 `any/all` 显式判断原子条件"
+msgstr "Explicit atom predicates with `any/all`"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any(atomic.spin.norm < 1)`：至少一个原子的磁矩模长小于 1 即命中。"
+msgstr "`any(atomic.spin.norm < 1)`: match if at least one atom has a moment magnitude below 1."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`all(atomic.spin.norm < 1)`：所有原子的磁矩模长都小于 1 才命中。"
+msgstr "`all(atomic.spin.norm < 1)`: match only if every atom has a moment magnitude below 1."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any(atomic.charge < 0)`：至少一个原子的电荷为负。"
+msgstr "`any(atomic.charge < 0)`: match if at least one atom has a negative charge."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any(force.ref.norm > 10)`：至少一个原子的参考力模长大于 10。"
+msgstr "`any(force.ref.norm > 10)`: match if at least one atom has a reference force magnitude above 10."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`all(force.err.norm < 0.2)`：每个原子的力误差向量模长都小于 0.2。"
+msgstr "`all(force.err.norm < 0.2)`: require every atom to have a force error vector magnitude below 0.2."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any(mforce.pred.z < -0.1)`：至少一个原子的预测磁力 z 分量小于 -0.1。"
+msgstr "`any(mforce.pred.z < -0.1)`: match if at least one atom has a predicted magnetic force z component below -0.1."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "适用于当前数据中可用的所有数值型 `atomic.<name>` 属性，以及逐原子的结果字段（如 `force`、`mforce`、`bec`）。支持标量、向量/张量分量和 `.norm`；结果字段继续支持 `.ref/.pred/.err`，`atomic.<name>` 仍不支持这三种视图。力与磁力优先使用保留的逐原子数据，不受绘图是否使用结构汇总模式影响。"
+msgstr "Supported for all available numeric `atomic.<name>` properties and per-atom result fields such as `force`, `mforce`, and `bec`. Scalars, vector/tensor components, and `.norm` are supported. Result fields retain `.ref/.pred/.err` views; these views remain unsupported for `atomic.<name>`. Force and magnetic force use retained per-atom data when available, independently of structure-summary plotting modes."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "括号内先逐原子取值、运算和比较，再汇总布尔结果；分量和标量保留正负号，不会隐式取绝对值。例如 `any(atomic.spin.z < -1)` 可以筛出含负 z 分量的结构，而默认表达式仍按最大绝对值比较。"
+msgstr "Inside the parentheses, values, arithmetic, and comparisons are evaluated per atom before reducing the boolean results. Components and scalars retain their signs without an implicit absolute value. For example, `any(atomic.spin.z < -1)` finds structures containing a negative z component, while unquantified expressions still compare the maximum absolute value."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "括号内支持现有比较、算术和逻辑运算。`any(atomic.spin.norm < 1 && force.norm > 10)` 要求同一个原子同时满足两个条件；`any(atomic.spin.norm < 1) && any(force.norm > 10)` 则允许两个不同原子分别满足。也可以与结构条件组合，例如 `natoms > 100 && any(atomic.spin.norm < 1)`。"
+msgstr "Existing comparison, arithmetic, and logical operators are supported inside the parentheses. `any(atomic.spin.norm < 1 && force.norm > 10)` requires the same atom to satisfy both conditions; `any(atomic.spin.norm < 1) && any(force.norm > 10)` allows different atoms to satisfy the two conditions. Structure conditions can also be combined, for example `natoms > 100 && any(atomic.spin.norm < 1)`."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any/all` 内至少需要一个原子级字段。结构级字段可作为共同条件或阈值参与运算，但 `any(natoms > 100)` 不受支持，直接写 `natoms > 100` 即可。"
+msgstr "`any/all` requires at least one atomic field. Structure fields can provide shared conditions or thresholds, but `any(natoms > 100)` is unsupported; write `natoms > 100` directly."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "缺少括号内引用字段或该字段没有原子行的结构，`any` 和 `all` 均不命中。引用值为 NaN/Inf 的原子按不满足条件处理：`any` 仍可由其他有效原子命中，`all` 不会通过。只含部分原子行的结果（如部分磁性原子的磁力）按实际提供的行判断；不能与无法对齐的其他原子字段放在同一个 `any/all` 内，遇到这种组合会报错。"
+msgstr "Neither `any` nor `all` matches structures with missing referenced fields or no atom rows. Atoms with NaN/Inf reference values are treated as failing the predicate: other valid atoms may still satisfy `any`, but `all` fails. Results containing only some atoms, such as magnetic forces for a subset of magnetic atoms, are evaluated over the supplied rows. Combining them with other atomic fields that cannot be aligned in the same `any/all` raises an error."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "限定某种元素的原子"
+msgstr "Filter atoms of a specific element"
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`atomic.element` 表示当前原子的元素符号，来自结构的原子种类。它只用于 `any/all` 内的 `==`、`!=` 比较，元素符号需要加单引号或双引号，并使用标准大小写（例如 `\"Fe\"`、`\"O\"`）。不支持 `.norm`、分量、`.ref/.pred/.err` 或算术运算；自动补全中可以找到 `atomic.element`。"
+msgstr "`atomic.element` is the chemical symbol of the current atom, taken from the structure species. Use it only with `==` or `!=` inside `any/all`. Quote symbols with single or double quotes and use standard capitalization, for example `\"Fe\"` or `\"O\"`. Suffixes such as `.norm`, components, `.ref/.pred/.err`, and arithmetic are unsupported. `atomic.element` is included in autocomplete."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any(atomic.element == \"Fe\" && atomic.spin.norm < 1)`：存在至少一个磁矩模长小于 1 的 Fe 原子。"
+msgstr "`any(atomic.element == \"Fe\" && atomic.spin.norm < 1)`: at least one Fe atom has a moment magnitude below 1."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`has.Fe && all(atomic.element != \"Fe\" || atomic.spin.norm < 1)`：结构含 Fe，且所有 Fe 原子的磁矩模长都小于 1。"
+msgstr "`has.Fe && all(atomic.element != \"Fe\" || atomic.spin.norm < 1)`: the structure contains Fe, and every Fe atom has a moment magnitude below 1."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`any(atomic.element == \"O\" && force.ref.norm > 10)`：存在至少一个参考力模长大于 10 的 O 原子。"
+msgstr "`any(atomic.element == \"O\" && force.ref.norm > 10)`: at least one O atom has a reference force magnitude above 10."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`all(atomic.element == \"Fe\")`：结构内每个原子都是 Fe。"
+msgstr "`all(atomic.element == \"Fe\")`: every atom in the structure is Fe."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`all` 仍然判断所有原子，不会把 `atomic.element == \"Fe\"` 自动当作元素范围。因此 `all(atomic.element == \"Fe\" && atomic.spin.norm < 1)` 要求结构全部由 Fe 组成，并且每个原子的磁矩模长小于 1。只约束 Fe 时，应使用上面的 `!= \"Fe\" || ...` 写法；加上 `has.Fe` 可排除不含 Fe 的结构。"
+msgstr "`all` still evaluates every atom; it does not automatically treat `atomic.element == \"Fe\"` as a subset selector. Thus `all(atomic.element == \"Fe\" && atomic.spin.norm < 1)` requires an entirely Fe structure with every moment magnitude below 1. To constrain only Fe atoms, use the `!= \"Fe\" || ...` form above; adding `has.Fe` excludes structures without Fe."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "`has.Fe && any(atomic.spin.norm < 1)` 仍是两个独立的结构条件，小磁矩可能来自 O 等其他元素。要保证同一个 Fe 原子满足 spin 条件，请将元素比较和 spin 比较放在同一个 `any` 内。"
+msgstr "`has.Fe && any(atomic.spin.norm < 1)` remains two separate structure conditions: the small moment could belong to O or another element. Put the element and spin comparisons inside the same `any` to require the same Fe atom to satisfy the spin condition."
+
+#: ../../source/module/nep-dataset-display-content.md
+msgid "合法但数据中不存在的元素比较不会报错，例如 `any(atomic.element == \"Ti\")` 在不含 Ti 的结构上为假。缺失字段、NaN/Inf 和原子行对齐仍遵循上面的规则；即使使用元素条件，`all` 也不会忽略其他原子上的无效数值。仅含部分磁性原子行、无法与完整元素数组对齐的结果，不能与 `atomic.element` 放在同一个 `any/all` 内。"
+msgstr "Valid elements absent from the data do not cause errors: `any(atomic.element == \"Ti\")` is false for structures without Ti. Missing fields, NaN/Inf values, and atom-row alignment follow the rules above. Even with an element condition, `all` does not ignore invalid numeric values on other atoms. Results with only some magnetic-atom rows that cannot be aligned with the full element array cannot be combined with `atomic.element` inside the same `any/all`."

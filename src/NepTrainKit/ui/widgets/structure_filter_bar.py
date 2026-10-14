@@ -111,6 +111,7 @@ _ATOMIC_PROPERTY_UNITS: dict[str, str] = {
     "forces": "eV/Å",
     "pos": "Å",
     "spin_vec": "μB",
+    "spin": "μB",
     "spin_scalar": "μB",
     "force_mag": "μB/Å",
     "mforce": "μB/Å",
@@ -124,7 +125,7 @@ _ATOMIC_PROPERTY_UNITS: dict[str, str] = {
 
 def _detect_expression_unit(text: str) -> str:
     """Return the unit for the first field found in an expression string."""
-    match = re.search(r"([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)", text)
+    match = re.search(r"\b(?!(?:any|all|and|or|not)\b)([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)", text)
     if not match:
         return ""
     field = match.group(1)

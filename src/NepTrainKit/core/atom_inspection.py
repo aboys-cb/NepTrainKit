@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from itertools import product
 
 import numpy as np
+from ase.geometry import find_mic, minkowski_reduce
 
 from NepTrainKit.core.geometry_cache import structure_cell_array, structure_pbc_flags
 
@@ -15,8 +15,9 @@ DFT_MFORCE_KEY = "__ntk_dft_mforce"
 ML_MFORCE_KEY = "__ntk_ml_mforce"
 # Raw extxyz fields shown under a named row instead of "other".  ``force_mag``
 # and ``mforce`` are the DFT magnetic-force labels read by the NEP/TACE loaders.
+_DFT_FORCE_FIELDS = ("force", "forces")
 _DFT_MFORCE_FIELDS = ("force_mag", "mforce")
-_HANDLED_KEYS = {"species", "species_id", "pos", "force", "forces", "spin", *_DFT_MFORCE_FIELDS}
+_HANDLED_KEYS = {"species", "species_id", "pos", "spin", *_DFT_FORCE_FIELDS, *_DFT_MFORCE_FIELDS}
 _INTERNAL_PREFIX = "__ntk_"
 
 
@@ -68,18 +69,17 @@ def _nearest_neighbor(structure, index: int) -> tuple[float | None, int | None]:
     delta = positions - positions[index]
     cell = structure_cell_array(structure, dtype=np.float64).reshape(3, 3)
     pbc = np.asarray(structure_pbc_flags(structure), dtype=bool).reshape(3)
-    best_distance = np.inf
-    best_index = None
-    for image in product(*[(-1, 0, 1) if periodic else (0,) for periodic in pbc]):
-        shift = np.asarray(image, dtype=np.float64) @ cell
-        distances = np.linalg.norm(delta + shift, axis=1)
-        if not any(image):
-            distances[index] = np.inf
-        candidate = int(np.argmin(distances))
-        if distances[candidate] < best_distance:
-            best_distance = float(distances[candidate])
-            best_index = candidate
-    if best_index is None or not np.isfinite(best_distance) or best_distance <= 0.0:
+    pbc &= np.any(cell != 0, axis=1)
+    _, distances = find_mic(delta, cell, pbc=pbc)
+    distances[index] = np.inf
+    if pbc.any():
+        # MIC removes the zero self image. A reduced basis also gives the
+        # shortest nonzero self image, including highly skew periodic cells.
+        reduced, _ = minkowski_reduce(cell, pbc=pbc)
+        distances[index] = np.linalg.norm(reduced[pbc], axis=1).min()
+    best_index = int(np.argmin(distances))
+    best_distance = float(distances[best_index])
+    if not np.isfinite(best_distance):
         return None, None
     return best_distance, best_index
 
@@ -94,13 +94,7 @@ def _fractional(structure, position: np.ndarray) -> np.ndarray | None:
         return None
 
 
-def _duplicates_shown_vector(row: np.ndarray, shown: list[np.ndarray]) -> bool:
-    if row.shape != (3,) or not np.issubdtype(row.dtype, np.number):
-        return False
-    return any(np.allclose(row, vector, rtol=1e-4, atol=1e-6) for vector in shown)
-
-
-def _extra_fields(properties: dict, index: int, atom_count: int, shown: list[np.ndarray]):
+def _extra_fields(properties: dict, index: int, atom_count: int):
     extra = []
     for key, values in properties.items():
         if key in _HANDLED_KEYS or str(key).startswith(_INTERNAL_PREFIX):
@@ -109,9 +103,8 @@ def _extra_fields(properties: dict, index: int, atom_count: int, shown: list[np.
         if array.ndim == 0 or array.shape[0] != atom_count:
             continue
         row = np.atleast_1d(array[index])
-        # Another label for a vector already on the card (e.g. a renamed force).
-        if _duplicates_shown_vector(row, shown):
-            continue
+        # Equal values do not imply equal physical meaning (e.g. zero force
+        # and velocity); only the known field aliases above are consolidated.
         extra.append((str(key), tuple(row.tolist())))
     return tuple(extra)
 
@@ -128,8 +121,9 @@ def inspect_atom(structure, index: int) -> AtomInspection | None:
     elements = [] if raw_elements is None else [str(item) for item in raw_elements]
     element = str(elements[index]) if index < len(elements) else ""
     dft_force = _vector(properties, DFT_FORCE_KEY, index, atom_count)
-    if dft_force is None:
-        dft_force = _vector(properties, "force", index, atom_count)
+    for key in _DFT_FORCE_FIELDS:
+        if dft_force is None:
+            dft_force = _vector(properties, key, index, atom_count)
     dft_mforce = _vector(properties, DFT_MFORCE_KEY, index, atom_count)
     for key in _DFT_MFORCE_FIELDS:
         if dft_mforce is None:
@@ -137,11 +131,6 @@ def inspect_atom(structure, index: int) -> AtomInspection | None:
     ml_force = _vector(properties, ML_FORCE_KEY, index, atom_count)
     spin = _vector(properties, "spin", index, atom_count)
     ml_mforce = _vector(properties, ML_MFORCE_KEY, index, atom_count)
-    shown = [
-        vector
-        for vector in (dft_force, ml_force, spin, dft_mforce, ml_mforce)
-        if vector is not None
-    ]
     nearest_distance, nearest_index = _nearest_neighbor(structure, index)
     return AtomInspection(
         index=index,
@@ -160,7 +149,7 @@ def inspect_atom(structure, index: int) -> AtomInspection | None:
             if nearest_index is not None and nearest_index < len(elements)
             else None
         ),
-        extra=_extra_fields(properties, index, atom_count, shown),
+        extra=_extra_fields(properties, index, atom_count),
     )
 
 

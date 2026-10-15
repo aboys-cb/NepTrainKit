@@ -877,8 +877,8 @@ class _WitnessRequirements:
 def _select_state_coverage(candidate, plan, *, budget, policy="balanced", _prepared=None):
     """Witness cover first, then shared FPS; returns the selection and stats.
 
-    If the witnesses cannot be covered within the budget, FPS is restricted to
-    frames that satisfy pending witnesses and unmet witnesses are reported.
+    If witness solving fails, FPS first reserves one frame per physical stratum,
+    then targets pending witnesses. Unmet witnesses are reported.
     """
     if isinstance(budget, bool) or int(budget) != budget or budget <= 0:
         raise ValueError("sample budget must be a positive integer")
@@ -894,7 +894,6 @@ def _select_state_coverage(candidate, plan, *, budget, policy="balanced", _prepa
                             total_seconds=time.perf_counter()-started)
     prepared = list(_prepare(candidate, plan, None, None) if _prepared is None else _prepared)
     _, inputs, supports, groups = _region_targets(candidate, plan, prepared, budget)
-    prepared[2] = groups
     n = candidate.row_count
     columns = [] if inputs is None else [inputs]
     if inputs is None:
@@ -911,6 +910,10 @@ def _select_state_coverage(candidate, plan, *, budget, policy="balanced", _prepa
     order = prepared[4]
     chosen, cover = _solve_cover(incidence.T.tocsr()[:, order], budget)
     initial = () if chosen is None else tuple(int(i) for i in order[np.sort(chosen)])
+    if chosen is not None:
+        # The certified seeds already cover every physical stratum. Without
+        # them, retain the original groups so FPS enforces that same floor.
+        prepared[2] = groups
     result = _select_coverage(candidate, plan, budget=budget, policy=policy, _prepared=tuple(prepared),
                               _initial_indices=initial, _requirements=requirements)
     stats = dict(regions=len(supports), witnesses=incidence.shape[1],

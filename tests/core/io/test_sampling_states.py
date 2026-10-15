@@ -396,6 +396,30 @@ def test_every_physical_stratum_keeps_a_frame_and_too_small_budget_is_rejected()
         select_state_coverage(blocks, p, budget=1)
 
 
+@pytest.mark.parametrize("failure", [None, "solver_time_limit", "component_resource_limit",
+                                    "no_certified_solution"])
+@pytest.mark.parametrize("rare", [0, 1, 3, 5])
+def test_infeasible_or_limited_cover_still_reserves_every_physical_stratum(monkeypatch, failure, rare):
+    from NepTrainKit.core.io import sampling_states
+
+    x = np.arange(9.)[:, None]
+    blocks = SamplingFeatureBlocks(("descriptor_mean", "input_geometry:C"), (x, x))
+    groups = ((PhysicsSamplingStratum(("C",), "common"), tuple(i for i in range(9) if i != rare)),
+              (PhysicsSamplingStratum(("C",), "rare"), (rare,)))
+    p = PhysicsSamplingPlan(groups, False, (), (), ())
+    if failure is not None:
+        monkeypatch.setattr(sampling_states, "_solve_cover",
+                            lambda *args: (None, {"status": failure}))
+    selected, stats = _select_state_coverage(blocks, p, budget=2)
+    assert len(selected.indices) == len(set(selected.indices)) == 2
+    assert all(set(rows).intersection(selected.indices) for _, rows in groups)
+    assert stats["cover"]["status"] == (failure or "certificate_budget_exceeded")
+    # Range/continuity deficits remain explicit, rather than being reported
+    # as fully covered merely because the categorical floor was met.
+    assert stats["unmet_witnesses"] > 0
+    assert selected.evidence.uncovered_indices
+
+
 def test_frame_density_and_duplicates_do_not_buy_path_seats():
     rng = np.random.default_rng(3)
     cloud = rng.normal(size=(300, 3))

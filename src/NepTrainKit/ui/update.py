@@ -593,6 +593,8 @@ class AutoUpdateNotifier(QObject):
 
     def start_if_due(self) -> None:
         """Check the runtime every app launch and the app on its daily cadence."""
+        if getattr(getattr(self._parent, "_thread_shutdown", None), "closing", False):
+            return
         self.runtime_update_worker.check(manual=False)
         self._show_startup_pending_notice()
         now = int(time.time())

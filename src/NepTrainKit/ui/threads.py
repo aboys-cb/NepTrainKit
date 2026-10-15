@@ -5,10 +5,11 @@ from __future__ import annotations
 
 import time
 import traceback
+import weakref
 from collections.abc import Iterable
 from typing import Any
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
+from PySide6.QtCore import QCoreApplication, QObject, QThread, QTimer, Signal, Slot
 from qfluentwidgets import StateToolTip
 from ase.build.tools import sort as ase_sort
 from loguru import logger
@@ -18,6 +19,62 @@ from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperatio
 
 
 _NUMPY_WORKER_STACK_SIZE = 8 * 1024 * 1024
+_task_threads = weakref.WeakSet()
+
+
+class ThreadShutdownGuard(QObject):
+    """Keep the window/event loop alive until application workers stop.
+
+    The registry includes unparented processing tasks. Plain loader QThreads
+    are found through the window's QObject tree. Never terminate native work.
+    """
+
+    def __init__(self, window):
+        super().__init__(window)
+        self.window = window
+        self.closing = False
+        self.timer = QTimer(self)
+        self.timer.setInterval(25)
+        self.timer.timeout.connect(self._retry_close)
+        QCoreApplication.instance().aboutToQuit.connect(self.wait_for_workers)
+
+    def _workers(self):
+        threads = set(self.window.findChildren(QThread)) | set(_task_threads)
+        active = []
+        for thread in threads:
+            try:
+                # wait(0) also checks thread-local teardown after finished.
+                if not thread.wait(0):
+                    thread._shutdown_requested = True
+                    thread.requestInterruption()
+                    thread.quit()
+                    active.append(thread)
+            except RuntimeError:
+                pass  # A finished job's deferred deletion has already run.
+        return active
+
+    def request_close(self):
+        self.closing = True
+        if not self._workers():
+            self.timer.stop()
+            return True
+        self.window.setEnabled(False)
+        self.timer.start()
+        return False
+
+    @Slot()
+    def _retry_close(self):
+        if not self._workers():
+            self.timer.stop()
+            self.window.close()
+
+    @Slot()
+    def wait_for_workers(self):
+        """Cover app.quit()/OS quit, where another close event is not assured."""
+        self.closing = True
+        self.timer.stop()
+        for thread in self._workers():
+            thread.wait()
 
 
 class BackgroundTask(QThread):
@@ -36,6 +93,7 @@ class BackgroundTask(QThread):
 
     def __init__(self, parent=None, show_tip=True, title='running'):
         super().__init__(parent)
+        _task_threads.add(self)
         self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
         self.show_tip = show_tip
         self.title = self.tr("Running") if title == "running" else title
@@ -144,6 +202,7 @@ class DataProcessingThread(QThread):
 
     def __init__(self, dataset, process_func, params=None):
         super().__init__()
+        _task_threads.add(self)
         self.dataset = dataset
         self.process_func = process_func
         self.params = params
@@ -194,6 +253,7 @@ class FilterProcessingThread(QThread):
 
     def __init__(self, process_func=None, dataset=None, operation=None, params=None):
         super().__init__()
+        _task_threads.add(self)
         self.process_func = process_func
         self.dataset = dataset
         self.operation = operation
@@ -320,6 +380,8 @@ class CallbackRelay(QObject):
             # complete.  Synchronize here before any owner can release QThread.
             if thread is not None:
                 thread.wait()
+                if getattr(thread, "_shutdown_requested", False):
+                    return
             if outcome == "finished":
                 if self._on_finished is not None:
                     self._on_finished(payload)
@@ -345,6 +407,7 @@ def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs
         Started thread. Caller should keep a reference until finished.
     """
     thread = QThread(parent)
+    _task_threads.add(thread)
     # Qt's default macOS worker stack can be as small as 544 KiB.  NumPy/SciPy
     # routines used by background dataset analysis can exceed that limit.
     thread.setStackSize(_NUMPY_WORKER_STACK_SIZE)

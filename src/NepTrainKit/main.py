@@ -31,10 +31,11 @@ from pathlib import Path
 import warnings
 
 from PySide6.QtCore import Qt, QFile, QTimer
-from PySide6.QtGui import QIcon, QFont, QPalette, QColor
+from PySide6.QtGui import QIcon, QFontDatabase, QPalette, QColor
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 from qfluentwidgets import (
     setTheme,
+    setFontFamilies,
     Theme,
     FluentWindow,
     NavigationItemPosition,
@@ -66,7 +67,7 @@ from NepTrainKit.core.audit.phase_inventory import (
 )
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
-from NepTrainKit.ui.threads import run_in_thread
+from NepTrainKit.ui.threads import ThreadShutdownGuard, run_in_thread
 from NepTrainKit.ui.widgets.fluent_overlays import ensure_fluent_tooltips
 from NepTrainKit.ui.widgets.style_lifetime import keep_created_styles_alive
 from NepTrainKit.ui.widgets.training_set_audit_window import (
@@ -115,6 +116,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def __init__(self) -> None:
         super().__init__()
+        self._thread_shutdown = ThreadShutdownGuard(self)
         self.setMicaEffectEnabled(False)
         self._update_badge = None
         self.init_ui()
@@ -296,6 +298,8 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def _request_training_set_structure_evidence(self) -> None:
         """Run optional structure and magnetic evidence for the active audit."""
+        if getattr(getattr(self, "_thread_shutdown", None), "closing", False):
+            return
         data = getattr(self, "_audited_result_data", None)
         result = getattr(self, "_audited_result", None)
         if data is None or result is None:
@@ -321,7 +325,10 @@ class NepTrainKitMainWindow(FluentWindow):
         self.move(width // 2 - self.width() // 2, height // 2 - self.height() // 2)
 
     def closeEvent(self, event) -> None:
-        """Close the owned audit window together with the application."""
+        """Drain workers before destroying their Qt owners."""
+        if not self._thread_shutdown.request_close():
+            event.ignore()
+            return
         floating = getattr(self, "training_set_audit_window", None)
         if floating is not None:
             floating.shutdown()
@@ -347,6 +354,8 @@ class NepTrainKitMainWindow(FluentWindow):
         Uses the same path as the Dataset Display toolbar button, so an
         unchanged dataset reuses its cached result instead of re-running.
         """
+        if getattr(getattr(self, "_thread_shutdown", None), "closing", False):
+            return
         if self.stackedWidget.currentWidget() is not self.training_set_audit_host:
             return
         if self.training_set_audit_window.is_detached:
@@ -477,6 +486,8 @@ class NepTrainKitMainWindow(FluentWindow):
         force: bool = False,
     ) -> None:
         """Build and show Training Set Audit for ``result_data`` or the current dataset."""
+        if getattr(getattr(self, "_thread_shutdown", None), "closing", False):
+            return
         data = result_data if result_data is not None else getattr(self.show_nep_interface, "nep_result_data", None)
         if data is None:
             MessageManager.send_info_message(
@@ -802,20 +813,20 @@ def configure_app(app: QApplication) -> None:
     icon = _application_icon()
     app.setWindowIcon(icon)
     _set_macos_dock_icon(app, icon)
-    font = QFont()
+    font = QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont)
     # Arial has no CJK glyphs; prefer native UI fonts so Latin and Chinese
     # text render with matching metrics on every platform.
-    font.setFamilies(
-        [
-            "Segoe UI",
-            "Microsoft YaHei UI",
-            ".AppleSystemUIFont",
-            "PingFang SC",
-            "Noto Sans CJK SC",
-            "Noto Sans",
-            "Arial",
-        ]
+    available_fonts = set(QFontDatabase.families())
+    fallback_fonts = (
+        "Segoe UI", "Microsoft YaHei UI", "PingFang SC",
+        "Noto Sans CJK SC", "Noto Sans", "Arial",
     )
+    families = list(dict.fromkeys([
+        font.family(), *[name for name in fallback_fonts if name in available_fonts],
+    ]))
+    font.setFamilies(families)
+    # Fluent controls set their own font, independently of QApplication.
+    setFontFamilies(families, save=False)
     font.setPointSize(12)
     app.setFont(font)
     keep_created_styles_alive()

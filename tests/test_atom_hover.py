@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import product
 from types import SimpleNamespace
 
 import numpy as np
@@ -70,6 +71,62 @@ def test_inspect_atom_uses_periodic_images_for_nearest_neighbor():
     assert info.nearest_distance == pytest.approx(1.0)
 
 
+def test_nearest_neighbor_handles_unwrapped_coordinates():
+    info = inspect_atom(_structure([[0, 0, 0], [30.1, 0, 0]]), 0)
+    assert info.nearest_index == 1
+    assert info.nearest_distance == pytest.approx(.1, abs=2e-6)
+
+
+@pytest.mark.parametrize("pbc", ["T T T", "T T F"])
+def test_nearest_periodic_self_image_uses_a_reduced_skew_cell(pbc):
+    structure = _structure([[0, 0, 0]])
+    structure.lattice = np.array([[10., 0, 0], [31., 1, 0], [0, 0, 20.]])
+    structure.additional_fields['pbc'] = pbc
+    info = inspect_atom(structure, 0)
+    # The shortest lattice vector is b - 3*a, absent from the original 27 images.
+    assert info.nearest_index == 0
+    assert info.nearest_distance == pytest.approx(np.sqrt(2))
+
+
+def test_partial_periodicity_does_not_wrap_nonperiodic_displacements():
+    structure = _structure([[0, 0, 0], [30.1, 0, 7]])
+    structure.additional_fields['pbc'] = 'T F F'
+    info = inspect_atom(structure, 0)
+    assert info.nearest_index == 1
+    assert info.nearest_distance == pytest.approx(np.hypot(.1, 7), abs=2e-6)
+
+
+def test_nonperiodic_single_atom_has_no_neighbor_and_overlap_is_zero_distance():
+    structure = _structure([[0, 0, 0]])
+    structure.additional_fields['pbc'] = 'F F F'
+    assert inspect_atom(structure, 0).nearest_distance is None
+    overlap = inspect_atom(_structure([[0, 0, 0], [0, 0, 0]]), 0)
+    assert overlap.nearest_index == 1
+    assert overlap.nearest_distance == 0
+
+
+@pytest.mark.parametrize("pbc", [(True, True, True), (True, True, False), (False, False, False)])
+def test_skew_unwrapped_neighbors_match_independent_image_enumeration(pbc):
+    rng = np.random.default_rng(71)
+    cell = np.array([[4., 0, 0], [12.4, 2.1, 0], [.3, .4, 6.]])
+    positions = (rng.random((4, 3)) + rng.integers(-2, 3, size=(4, 3))) @ cell
+    structure = _structure(positions)
+    structure.lattice = cell
+    structure.additional_fields['pbc'] = pbc
+    # Deliberately enumerate a generous finite image cube in the original
+    # basis, independently of the production minimum-image/reduction helpers.
+    images = np.array(list(product(*[range(-12, 13) if v else (0,) for v in pbc])))
+    positions = np.asarray(structure.positions, dtype=float)
+    for atom in range(4):
+        distances = np.linalg.norm(positions[None, :, :] - positions[atom] +
+                                   (images @ cell)[:, None, :], axis=2)
+        distances[np.all(images == 0, axis=1), atom] = np.inf
+        expected = float(distances.min())
+        info = inspect_atom(structure, atom)
+        assert info.nearest_distance == pytest.approx(expected, abs=1e-6)
+        assert distances[:, info.nearest_index].min() == pytest.approx(expected, abs=1e-6)
+
+
 def test_format_atom_info_only_lists_available_values():
     plain = format_atom_info(inspect_atom(_structure([[1.0, 1.0, 1.0], [3.0, 1.0, 1.0]]), 0))
     magnetic = format_atom_info(
@@ -87,12 +144,26 @@ def test_force_mag_is_the_dft_magnetic_force_not_an_extra_field():
     structure = _structure(
         [[1.0, 1.0, 1.0], [3.0, 1.0, 1.0]],
         force_mag=[[0.1, 0.2, 0.3], [0.0, 0.0, 0.0]],
-        renamed_force=[[0.1, 0.2, 0.3], [0.0, 0.0, 0.0]],
+        mforce=[[0.1, 0.2, 0.3], [0.0, 0.0, 0.0]],
     )
 
     info = inspect_atom(structure, 0)
 
     np.testing.assert_allclose(info.dft_mforce, [0.1, 0.2, 0.3])
+    assert info.extra == ()
+
+
+@pytest.mark.parametrize("vector", [[0., 0., 0.], [1., 2., 3.]])
+def test_equal_values_do_not_hide_unrelated_or_unknown_fields(vector):
+    structure = _structure([[0, 0, 0]], force=[vector], velocity=[vector], renamed_force=[vector])
+    info = inspect_atom(structure, 0)
+    assert dict(info.extra) == {'velocity': tuple(vector), 'renamed_force': tuple(vector)}
+
+
+def test_known_forces_alias_is_displayed_in_the_force_row_only():
+    structure = _structure([[0, 0, 0]], forces=[[1., 2., 3.]])
+    info = inspect_atom(structure, 0)
+    np.testing.assert_allclose(info.dft_force, [1., 2., 3.])
     assert info.extra == ()
 
 

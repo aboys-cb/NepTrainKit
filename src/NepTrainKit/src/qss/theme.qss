@@ -1,9 +1,10 @@
 
 
 
+/* Colours mirror NepTrainKit/palette.py (ACCENT, ACCENT_SOFT, BORDER, TEXT_PRIMARY). */
 QMenuBar {
     background-color: #f3f3f3;  /* 原样保留 */
-    color: #000000;  /* 设置字体颜色 */
+    color: #1B1F23;  /* 设置字体颜色 */
     font-size: 14px;  /* 设置字体大小 */
     margin: 0px;
     min-height: 20px;
@@ -12,7 +13,7 @@ QMenuBar {
 
 QMenuBar::item {
     background-color: #f3f3f3;  /* 保留白色背景 */
-    color: #000000;  /* 字体颜色 */
+    color: #1B1F23;  /* 字体颜色 */
     border-radius: 5px;
     font-weight: normal;
     padding: 3px 10px;  /* 菜单项的内边距 */
@@ -20,19 +21,19 @@ QMenuBar::item {
 }
 
 QMenuBar::item:selected {
-    background-color: #e0f0ff;  /* 选中时背景颜色 */
-    border: 1px solid #00BB9E;  /* 选中时边框颜色 */
+    background-color: #E0F4F5;  /* 选中时背景颜色 */
+    border: 1px solid #009FAA;  /* 选中时边框颜色 */
 }
 
 QMenuBar::item:pressed {
-    background-color: #e0f0ff;  /* 按下时背景颜色 */
-    border: 1px solid #00BB9E;  /* 按下时边框颜色 */
+    background-color: #E0F4F5;  /* 按下时背景颜色 */
+    border: 1px solid #009FAA;  /* 按下时边框颜色 */
 }
 
 QMenu {
     background-color: #ffffff;  /* 菜单背景颜色 */
-    color: #000000;  /* 菜单字体颜色 */
-    border: 1px solid #ffffff;  /* 菜单边框颜色 */
+    color: #1B1F23;  /* 菜单字体颜色 */
+    border: 1px solid #D9E1E3;  /* 菜单边框颜色 */
     margin: 0px;
 }
 
@@ -52,19 +53,19 @@ QMenu::icon {
 
 
 QMenu::item:selected,QToolButton:checked {
-    color: #000000;  /* 选中项的字体颜色 */
-    background-color: #e0f0ff;  /* 选中项的背景颜色 */
-    border: 1px solid #0078d4;  /* 选中项的边框颜色 */
+    color: #1B1F23;  /* 选中项的字体颜色 */
+    background-color: #E0F4F5;  /* 选中项的背景颜色 */
+    border: 1px solid #009FAA;  /* 选中项的边框颜色 */
 
 }
 
 QMenu::item:pressed {
-    color: #000000;  /* 按下项的字体颜色 */
-    background-color: #e0f0ff;  /* 按下项的背景颜色 */
-    border: 1px solid #0078d4;  /* 按下项的边框颜色 */
+    color: #1B1F23;  /* 按下项的字体颜色 */
+    background-color: #E0F4F5;  /* 按下项的背景颜色 */
+    border: 1px solid #009FAA;  /* 按下项的边框颜色 */
 }
 
 QMenu::separator {  /* 分隔符 */
     height: 1px;
-    background-color: #191047;
+    background-color: #D9E1E3;
 }

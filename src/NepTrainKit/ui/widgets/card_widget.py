@@ -28,6 +28,7 @@ from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.i18n import localized_docs_url
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_error, translate_runtime_message
+from NepTrainKit import palette
 from NepTrainKit.ui.threads import BackgroundTask, DataProcessingThread, FilterProcessingThread
 
 from .card_metadata import CardMetadataDialog, localized_card_description
@@ -822,7 +823,7 @@ class MakeDataCard(MakeDataCardWidget):
             QSizePolicy.Policy.Ignored,
             QSizePolicy.Policy.Preferred,
         )
-        self.summary_label.setStyleSheet("color:#7b8990; padding: 0 6px;")
+        self.summary_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY}; padding: 0 6px;")
         self.summary_label.setVisible(False)
         self.viewLayout.addWidget(self.summary_label)
         self.status_label = ProcessLabel(self)

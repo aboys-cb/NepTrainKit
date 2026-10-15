@@ -56,6 +56,7 @@ from NepTrainKit.ui.views import (
     StructureInfoWidget,
     StructureToolBar,
 )
+from NepTrainKit import palette
 
 
 _ARROW_DFT_FORCE = "__ntk_dft_force"
@@ -589,7 +590,7 @@ class ShowNepWidget(QWidget):
             ),
             hint,
         )
-        detail.setStyleSheet("color:#7b8990;")
+        detail.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         open_button = PrimaryPushButton(FluentIcon.FOLDER, self.tr("Open data"), hint)
         open_button.clicked.connect(self.open_file)
         for widget in (title, detail):

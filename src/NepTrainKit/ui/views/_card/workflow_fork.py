@@ -28,6 +28,7 @@ from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets.card_widget import MakeDataCardWidget
+from NepTrainKit import palette
 
 
 @dataclass
@@ -631,7 +632,7 @@ class WorkflowFork(MakeDataCardWidget):
         self.viewLayout.addWidget(self.body_widget)
         self.collapsed_summary = CaptionLabel("", self)
         self.collapsed_summary.setWordWrap(True)
-        self.collapsed_summary.setStyleSheet("color:#8a95a0; padding: 4px 8px;")
+        self.collapsed_summary.setStyleSheet(f"color:{palette.TEXT_SECONDARY}; padding: 4px 8px;")
         self.collapsed_summary.hide()
         self.vBoxLayout.addWidget(self.collapsed_summary)
         self.windowStateChangedSignal.connect(self._show_body)

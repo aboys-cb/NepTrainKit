@@ -27922,4 +27922,43 @@ Magnetic: {magnetic}</source>
         <translation>对结构中的每个原子判断条件。</translation>
     </message>
 </context>
+<context>
+    <name>AtomInfoCard</name>
+    <message>
+        <source>Position (Å)</source>
+        <translation>坐标 (Å)</translation>
+    </message>
+    <message>
+        <source>Fractional</source>
+        <translation>分数坐标</translation>
+    </message>
+    <message>
+        <source>DFT force</source>
+        <translation>DFT 力</translation>
+    </message>
+    <message>
+        <source>Predicted force</source>
+        <translation>预测力</translation>
+    </message>
+    <message>
+        <source>Spin</source>
+        <translation>自旋</translation>
+    </message>
+    <message>
+        <source>DFT magnetic force</source>
+        <translation>DFT 磁力</translation>
+    </message>
+    <message>
+        <source>Predicted magnetic force</source>
+        <translation>预测磁力</translation>
+    </message>
+    <message>
+        <source>Nearest</source>
+        <translation>最近邻</translation>
+    </message>
+    <message>
+        <source>(periodic image)</source>
+        <translation>（周期像）</translation>
+    </message>
+</context>
 </TS>

@@ -7,6 +7,8 @@ import pyqtgraph.opengl as gl
 import numpy as np
 from NepTrainKit.config import Config
 from NepTrainKit.ui.canvas.structure_view import structure_view_state
+from NepTrainKit.core.atom_inspection import pick_front_atom
+from NepTrainKit.ui.canvas.atom_hover import AtomHoverController, projected_atom_discs
 
 
 from PySide6.QtCore import Qt
@@ -16,6 +18,10 @@ from NepTrainKit.core.structure import table_info
 
 
 AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS = 500
+
+
+# Theme accent, translucent: distinct from the yellow short-contact halos.
+_HOVER_HALO_COLOR = (0.0, 0.624, 0.667, 0.45)
 
 
 class StructurePlotWidget(gl.GLViewWidget):
@@ -45,6 +51,8 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.structure = None
         self.show_bond_flag = None
         self.scale_factor = 1
+        self._hover_halo = None
+        self._atom_hover = AtomHoverController(self, self)
 
     @staticmethod
     def _rgba_from_config(value: str, fallback=(0.0, 0.0, 0.0, 1.0)):
@@ -476,6 +484,57 @@ class StructurePlotWidget(gl.GLViewWidget):
             # self.atom_items[atom_index]["halo"] = None
             self.update()
 
+    def atom_index_at(self, pos):
+        """Return the front-most atom whose rendered sphere covers ``pos``."""
+        if self.structure is None or not self.atom_items:
+            return None
+        positions = np.asarray(
+            [atom["position"] for atom in self.atom_items], dtype=np.float64
+        ).reshape(-1, 3)
+        sizes = np.asarray([atom["size"] for atom in self.atom_items], dtype=np.float64)
+        matrix = self.projectionMatrix() * self.viewMatrix()
+        # QMatrix4x4.data() is column-major.
+        transform = np.asarray(matrix.data(), dtype=np.float64).reshape(4, 4, order="F")
+
+        def to_clip(points):
+            homogeneous = np.column_stack((points, np.ones(len(points))))
+            return homogeneous @ transform.T
+
+        width = max(1, self.width())
+        height = max(1, self.height())
+
+        def to_screen(ndc):
+            return np.column_stack(
+                ((ndc[:, 0] + 1.0) * 0.5 * width, (1.0 - ndc[:, 1]) * 0.5 * height)
+            )
+
+        offsets = [to_clip(positions + sizes[:, None] * axis) for axis in np.eye(3)]
+        screen, depth, radius = projected_atom_discs(
+            to_clip(positions), offsets, to_screen
+        )
+        return pick_front_atom(screen, depth, radius, pos)
+
+    def set_hover_atom(self, atom_index):
+        """Show a translucent halo around the hovered atom, or remove it."""
+        if self._hover_halo is not None:
+            if self._hover_halo in self.items:
+                self.removeItem(self._hover_halo)
+            self._hover_halo = None
+        if atom_index is not None and 0 <= atom_index < len(self.atom_items):
+            atom = self.atom_items[atom_index]
+            sphere = gl.MeshData.sphere(rows=10, cols=10, radius=atom["size"] * 1.3)
+            halo = gl.GLMeshItem(
+                meshdata=sphere,
+                smooth=True,
+                shader="balloon",
+                color=_HOVER_HALO_COLOR,
+                glOptions="additive",
+            )
+            halo.translate(*atom["position"])
+            self.addItem(halo)
+            self._hover_halo = halo
+        self.update()
+
     def show_structure(self, structure):
         """Render lattice, atoms, and bonds for the provided structure.
         
@@ -484,6 +543,7 @@ class StructurePlotWidget(gl.GLViewWidget):
         structure : Any
             Structure object with ``cell`` and ``positions`` attributes.
         """
+        self._atom_hover.clear()
         self.atom_items.clear()
         self.clear()
         self.lattice_item = None

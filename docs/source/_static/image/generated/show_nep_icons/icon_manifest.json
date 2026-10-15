@@ -108,7 +108,7 @@
       "name": "open.svg",
       "source": "src/NepTrainKit/src/images/open.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/open.svg",
-      "sha256": "8da61c49b6d1a22fd2117b3ca91c38535375f100eb252352a7e67a5102c88e44"
+      "sha256": "deb822990460d407478a9404e71d77f970d8df79692e7f8fc5a2abbf75fb7af8"
     },
     {
       "name": "pan.svg",
@@ -138,7 +138,7 @@
       "name": "save.svg",
       "source": "src/NepTrainKit/src/images/save.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/save.svg",
-      "sha256": "4783a12a5be5ca9d0f5da8b1f5bfc1122aa2f39495c4015c953a29a2f17d49cb"
+      "sha256": "0c78ef3732240b71698d91a2784ca1eb37e5a97b05ba39380ed978c44637dd13"
     },
     {
       "name": "show_bond.svg",

@@ -83,18 +83,18 @@ class MyPlotItem(PlotItem):
         y : array-like
             Y coordinates of the marker.
         """
-        current_size = Config.getint("plot", "current_marker_size", 20) or 20
-        pen = Pens.Current
         if np.size(x) > 1:
-            # Per-atom plots (force) mark every atom of the structure; full
-            # size rings would merge into one solid band.
-            current_size = max(6, int(current_size * 0.5))
-            color = Pens.Current.color()
-            color.setAlpha(90)
-            pen = mkPen(color=color, width=1.2)
-        # Hollow ring: keeps the points underneath visible.
-        self.current_point.setData(x, y, brush=QBrush(Qt.BrushStyle.NoBrush),
-                                   pen=pen, symbol='o', size=current_size)
+            # Per-atom plots (force) mark every atom of the structure: solid
+            # dots at data-point size stay readable where rings would pile up
+            # into a dark band.
+            marker_size = Config.getint("widget", "pg_marker_size", 7) or 7
+            self.current_point.setData(x, y, brush=QBrush(Pens.Current.color()),
+                                       pen=mkPen(None), symbol='o', size=marker_size + 1)
+        else:
+            current_size = Config.getint("plot", "current_marker_size", 20) or 20
+            # Hollow ring: keeps the point underneath visible.
+            self.current_point.setData(x, y, brush=QBrush(Qt.BrushStyle.NoBrush),
+                                       pen=Pens.Current, symbol='o', size=current_size)
         if self.current_point not in self.items:
             self.addItem(self.current_point)
 
@@ -117,9 +117,13 @@ class MyPlotItem(PlotItem):
 
     def set_compact_axes(self, compact: bool) -> None:
         """Show only major tick labels when this plot is a small preview."""
+        self._compact_axes = bool(compact)
         max_text_level = 0 if compact else 2
         for name in ("bottom", "left"):
-            self.getAxis(name).setStyle(maxTextLevel=max_text_level)
+            axis = self.getAxis(name)
+            axis.setStyle(maxTextLevel=max_text_level)
+            # Axis titles belong to the large plot only, as in the VisPy view.
+            axis.showLabel(not compact and bool(axis.labelText))
 
     def item_clicked(self, scatter_item, items, event):
         """Emit the selected structure index when a scatter point is clicked.
@@ -364,6 +368,8 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
                 plot.setLabel("bottom", str(x_label))
             if y_label:
                 plot.setLabel("left", str(y_label))
+            if x_label or y_label:
+                plot.set_compact_axes(getattr(plot, "_compact_axes", False))
 
         # Restore reject highlights after a full replot.
         reject = getattr(self.nep_result_data, "reject_index", None)

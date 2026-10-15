@@ -508,18 +508,18 @@ def _get_color(section: str, option: str, default_hex: str) -> QColor:
     except Exception:
         return QColor(default_hex)
 
-# Plot colours shipped before the shared palette.  ``Config.get`` persists its
+# Plot colours shipped as earlier defaults.  ``Config.get`` persists its
 # fallback on first read, so every existing profile stores these values even
-# when the user never touched them.
+# when the user never touched them.  Version 2 used a near-black current ring.
 _LEGACY_PLOT_DEFAULTS = {
-    "marker_edge_color": ("#07519C", palette.PLOT_MARKER_EDGE),
-    "current_color": ("#FF0000", palette.PLOT_CURRENT),
-    "line_color": ("#FF0000", palette.PLOT_LINE),
-    "show_color": ("#00FF00", palette.PLOT_SHOW),
-    "selected_color": ("#FF0000", palette.PLOT_SELECTED),
-    "reject_color": ("#FF8C00", palette.PLOT_REJECT),
+    "marker_edge_color": (("#07519C",), palette.PLOT_MARKER_EDGE),
+    "current_color": (("#FF0000", "#1B1F23"), palette.PLOT_CURRENT),
+    "line_color": (("#FF0000",), palette.PLOT_LINE),
+    "show_color": (("#00FF00",), palette.PLOT_SHOW),
+    "selected_color": (("#FF0000",), palette.PLOT_SELECTED),
+    "reject_color": (("#FF8C00",), palette.PLOT_REJECT),
 }
-_PLOT_PALETTE_VERSION = "2"
+_PLOT_PALETTE_VERSION = "3"
 
 
 def migrate_plot_palette() -> None:
@@ -530,9 +530,9 @@ def migrate_plot_palette() -> None:
     """
     if str(Config.get("plot", "palette_version") or "") == _PLOT_PALETTE_VERSION:
         return
-    for option, (legacy, current) in _LEGACY_PLOT_DEFAULTS.items():
+    for option, (legacy_values, current) in _LEGACY_PLOT_DEFAULTS.items():
         stored = Config.get("plot", option)
-        if stored is not None and str(stored).strip().upper() == legacy:
+        if stored is not None and str(stored).strip().upper() in legacy_values:
             Config.set("plot", option, current)
     Config.set("plot", "palette_version", _PLOT_PALETTE_VERSION)
 

@@ -18670,8 +18670,8 @@ All child items will also be deleted.</source>
         <translation>构建数据集</translation>
     </message>
     <message>
-        <source>Color for the current-structure ring</source>
-        <translation>当前结构圆环的颜色</translation>
+        <source>Color for the current-structure marker</source>
+        <translation>当前结构标记的颜色</translation>
     </message>
     <message>
         <source>Size of the current-structure ring</source>

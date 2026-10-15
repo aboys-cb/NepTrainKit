@@ -6,7 +6,7 @@ from NepTrainKit import palette
 from NepTrainKit.config import Config
 from NepTrainKit.core import types
 
-_OPTIONS = ("palette_version", "selected_color", "line_color", "reject_color")
+_OPTIONS = ("palette_version", "selected_color", "line_color", "reject_color", "current_color")
 
 
 @pytest.fixture
@@ -48,3 +48,12 @@ def test_migration_runs_only_once(restore_plot_config):
     types.migrate_plot_palette()
 
     assert Config.get("plot", "selected_color") == "#FF0000"
+
+
+def test_migration_moves_the_previous_dark_current_ring(restore_plot_config):
+    Config.set("plot", "palette_version", "2")
+    Config.set("plot", "current_color", "#1B1F23")
+
+    types.migrate_plot_palette()
+
+    assert Config.get("plot", "current_color") == palette.PLOT_CURRENT

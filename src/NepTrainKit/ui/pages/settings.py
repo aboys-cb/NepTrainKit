@@ -399,7 +399,7 @@ class SettingsWidget(ScrollArea):
         self.current_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
             self.tr('Current marker color'),
-            self.tr('Color for the current-structure ring'),
+            self.tr('Color for the current-structure marker'),
             self.plot_group
         )
         self.current_color_card.setValue(current_color)

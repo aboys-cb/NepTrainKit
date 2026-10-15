@@ -671,23 +671,30 @@ class ViewBoxWidget(scene.Widget):
             self._view.add(self.current_point)
 
         z=np.full(x.shape,2)
+        current_color = self.convert_color(Pens.Current)
+        if np.array(x).size > 1:
+            # Per-atom plots (force) mark every atom of the structure: solid
+            # dots at data-point size stay readable where rings would pile up
+            # into a dark band.
+            marker_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+            self.current_point.set_data(
+                np.vstack([x, y, z]).T,
+                face_color=current_color,
+                edge_width=0,
+                symbol='disc',
+                size=marker_size + 1,
+            )
+            return
         current_size = Config.getint("plot", "current_marker_size", 20) or 20
         edge_width = 2.5
-        edge_color = self.convert_color(Pens.Current)
-        if np.array(x).size > 1:
-            # Per-atom plots (force) mark every atom of the structure; full
-            # size rings would merge into one solid band.
-            current_size = max(6, int(current_size * 0.5))
-            edge_width = 1.2
-            edge_color = (*tuple(edge_color)[:3], 0.35)
         if not self._full_detail:
             current_size = max(6, int(current_size * 0.45))
-            edge_width = min(edge_width, 1.2)
+            edge_width = 1.5
         self.current_point.set_data(
             np.vstack([x, y, z]).T,
-            # Hollow ring: keeps the points underneath visible.
+            # Hollow ring: keeps the point underneath visible.
             face_color=(0.0, 0.0, 0.0, 0.0),
-            edge_color=edge_color,
+            edge_color=current_color,
             edge_width=edge_width,
             symbol='disc',
             size=current_size,

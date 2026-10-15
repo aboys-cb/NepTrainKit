@@ -1742,10 +1742,15 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         Called after data mutations to keep the canvas in sync with the dataset.
         """
         if not preserve_selection:
-            self.nep_result_data.select_index.clear()
-            clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
-            if clear_selection_history is not None:
-                clear_selection_history()
+            # Go through the data API so selection-count listeners are notified.
+            clear_selection = getattr(self.nep_result_data, "clear_selection", None)
+            if clear_selection is not None:
+                clear_selection()
+            else:
+                self.nep_result_data.select_index.clear()
+                clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+                if clear_selection_history is not None:
+                    clear_selection_history()
         self._ensure_plot_dataset_indices()
         # Clear all overlays so deleted selections do not persist visually
         for plot in self.axes_list:

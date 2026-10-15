@@ -306,6 +306,21 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertNotIn(1, result.select_index)
         self.assertNotIn(3, result.select_index)
 
+    def test_clear_selection_notifies_listeners_and_drops_history(self):
+        tmp_dir = self._make_nep_workdir()
+        result = NepTrainResultData.from_path(os.path.join(tmp_dir, "train.xyz"))
+        result.load()
+        result.select([0, 1])
+        notified = []
+        result.updateInfoSignal.connect(lambda: notified.append(len(result.select_index)))
+
+        self.assertTrue(result.clear_selection())
+        self.assertEqual(result.select_index, set())
+        self.assertEqual(notified, [0])
+        self.assertFalse(result.undo_selection())
+        self.assertFalse(result.clear_selection())
+        self.assertEqual(notified, [0])
+
     def test_undo_selection_history(self):
         tmp_dir = self._make_nep_workdir()
         local_train = os.path.join(tmp_dir, "train.xyz")

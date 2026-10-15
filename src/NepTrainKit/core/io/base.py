@@ -2201,6 +2201,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
     def clear_selection_history(self) -> None:
         """Drop stored selection undo states."""
         self._selection_history.clear()
+    def clear_selection(self) -> bool:
+        """Empty the selection and its undo history, notifying listeners."""
+        changed = self._set_selection(set(), record=False)
+        self.clear_selection_history()
+        return changed
     def undo_selection(self) -> bool:
         """Restore the previous selection state."""
         while self._selection_history:

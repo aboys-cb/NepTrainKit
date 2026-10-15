@@ -163,6 +163,30 @@ class TestCanvasFactory(unittest.TestCase):
         brushes = canvas.axes_list[0]._scatter.data["brush"]
         self.assertEqual(brushes[1].color().rgba(), Brushes.Selected.color().rgba())
 
+    def test_full_replot_clears_selection_through_notifying_data_api(self):
+        for make in (lambda: canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)[0],
+                     lambda: canvas_factory._create_vispy_result_canvas(None)):
+            canvas = make()
+            dataset = NepPlotData(
+                np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]], dtype=np.float32),
+                index_list=np.array([0, 1, 2], dtype=np.int32),
+                title="descriptor",
+            )
+            dataset.show_rmse = False
+            result_data = SimpleNamespace(
+                datasets=[dataset],
+                select_index={1},
+                reject_index=set(),
+                clear_selection=MagicMock(),
+                clear_selection_history=MagicMock(),
+            )
+            canvas.init_axes(1)
+            canvas.set_nep_result_data(result_data)
+            canvas.plot_nep_result()
+            # The status bar listens to the data API; a raw set.clear() skips it.
+            result_data.clear_selection.assert_called_once_with()
+            result_data.clear_selection_history.assert_not_called()
+
     def test_pyqtgraph_inverse_select_from_empty_refreshes_all_points(self):
         canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)
         self.assertFalse(fallback)

@@ -1164,7 +1164,13 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         widget.canvas.select_index.assert_called_once_with([1, 4], False)
 
     def test_sparse_point_passes_physics_strategy_and_reports_strata(self):
-        Config.set("widget", "sparse_selection_strategy", "physics")
+        # The dialog restores the persisted count mode; other tests (and the
+        # GUI) may have saved "automatic", so pin the mode this test asserts.
+        for option, value in (("sparse_selection_strategy", "physics"),
+                              ("sparse_physics_count_mode", "limit")):
+            previous = Config.get("widget", option, None)
+            self.addCleanup(lambda o=option, p=previous: p is not None and Config.set("widget", o, p))
+            Config.set("widget", option, value)
         widget = nep_view_module.NepResultPlotWidget.__new__(
             nep_view_module.NepResultPlotWidget
         )

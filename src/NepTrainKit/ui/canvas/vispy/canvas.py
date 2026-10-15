@@ -1561,7 +1561,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
     def _apply_plot_annotations(self, plot, dataset, full_detail):
         rmse_func = getattr(dataset, "get_formart_rmse", None)
         show_rmse = bool(full_detail) and bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])) and callable(rmse_func)
-        rmse_text = f"rmse: {rmse_func()}" if show_rmse else ""
+        rmse_text = f"RMSE: {rmse_func()}" if show_rmse else ""
         plot.set_rmse_text(rmse_text if full_detail else "")
         if show_rmse and full_detail:
             pos = self.convert_pos(plot, (0.1, 0.8))
@@ -1785,7 +1785,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             is_current_plot = plot is self.current_axes
             show_rmse = is_current_plot and bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"]))
-            rmse_text = f"rmse: {_dataset.get_formart_rmse()}" if show_rmse else ""
+            rmse_text = f"RMSE: {_dataset.get_formart_rmse()}" if show_rmse else ""
             plot.set_rmse_text(rmse_text if is_current_plot else "")
             if show_rmse and is_current_plot:
                 pos=self.convert_pos(plot,(0.1 ,0.8))
@@ -1818,7 +1818,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
         if bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])):
-            plot.set_rmse_text(f"rmse: {dataset.get_formart_rmse()}")
+            plot.set_rmse_text(f"RMSE: {dataset.get_formart_rmse()}")
             if plot.text is not None:
                 plot.text.pos = self.convert_pos(plot, (0.1, 0.8))
         else:

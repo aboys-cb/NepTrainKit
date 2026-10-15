@@ -890,6 +890,7 @@ class MakeDataWidget(QWidget):
             first_card.set_dataset(self.dataset or [])
 
             first_card.runFinishedSignal.connect(self._run_next_card)
+            self.setting_group.set_running(True)
             first_card.run()
         else:
             MessageManager.send_info_message(
@@ -959,6 +960,7 @@ class MakeDataWidget(QWidget):
         current_card=cards[current_card_index]
         current_card.runFinishedSignal.disconnect(self._run_next_card)
         if getattr(current_card, "run_outcome", "succeeded") != "succeeded":
+            self.setting_group.set_running(False)
             self._last_completed_card_index = None
             self.setting_group.set_output_available(
                 bool(self._cards_for_export(include_all=True))
@@ -974,6 +976,7 @@ class MakeDataWidget(QWidget):
             next_card.runFinishedSignal.connect(self._run_next_card)
             next_card.run()
         else:
+            self.setting_group.set_running(False)
             self.setting_group.set_output_available(
                 bool(self._cards_for_export(include_all=True))
             )
@@ -1055,6 +1058,7 @@ class MakeDataWidget(QWidget):
         """
         import warnings
 
+        self.setting_group.set_running(False)
         for card in self.workspace_card_widget.cards:
             try:
                 with warnings.catch_warnings():

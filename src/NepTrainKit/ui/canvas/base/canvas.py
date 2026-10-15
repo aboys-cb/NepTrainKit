@@ -37,6 +37,11 @@ def _parity_axis_labels(title: str) -> tuple[str, str] | None:
             _tr("Reference stress (GPa)"),
             _tr("Predicted stress (GPa)"),
         ),
+        # Magnetic force -dE/dm of NEP spin models.
+        "mforce": (
+            _tr("Reference magnetic force (eV/μB)"),
+            _tr("Predicted magnetic force (eV/μB)"),
+        ),
     }
     return labels.get(title)
 

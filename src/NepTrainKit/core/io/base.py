@@ -297,7 +297,7 @@ class NepData:
             unit, scale = "(m.a.u./atom)", 1000
         elif self.title == "dipole":
             unit, scale = "(m.a.u./atom)", 1000
-        elif self.title == "spin":
+        elif self.title in ("spin", "mforce"):
             unit, scale = "meV/μB", 1000
         elif self.title == "bec":
             unit, scale = "e", 1

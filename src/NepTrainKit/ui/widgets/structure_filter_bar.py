@@ -103,7 +103,7 @@ _EXPRESSION_FIELD_UNITS: dict[str, str] = {
 
 _EXPRESSION_UNIT_PREFIXES: tuple[tuple[str, str], ...] = (
     ("force", "eV/Å"),
-    ("mforce", "μB/Å"),
+    ("mforce", "eV/μB"),
     ("bec", "e"),
     ("stress", "GPa"),
     ("virial", "eV"),
@@ -120,8 +120,8 @@ _ATOMIC_PROPERTY_UNITS: dict[str, str] = {
     "spin_vec": "μB",
     "spin": "μB",
     "spin_scalar": "μB",
-    "force_mag": "μB/Å",
-    "mforce": "μB/Å",
+    "force_mag": "eV/μB",
+    "mforce": "eV/μB",
     "magmom": "μB",
     "charge": "e",
     "bec": "e",

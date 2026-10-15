@@ -921,6 +921,14 @@
 <context>
     <name>CanvasBase</name>
     <message>
+        <source>Reference magnetic force (eV/μB)</source>
+        <translation>参考磁力 (eV/μB)</translation>
+    </message>
+    <message>
+        <source>Predicted magnetic force (eV/μB)</source>
+        <translation>预测磁力 (eV/μB)</translation>
+    </message>
+    <message>
         <source>Reference energy (eV/atom)</source>
         <translation>参考能量 (eV/atom)</translation>
     </message>

@@ -2518,10 +2518,7 @@ class ShowNepWidget(QWidget):
             rej = 0
         now = self.nep_result_data.structure.now_data.shape[0]
         selected = len(self.nep_result_data.select_index)
-        info = self.tr(
-            "Original {orig} · Current {now} · Removed {removed} · "
-            "Selected {selected} · Unselected {unselected} · Rejected {rejected}"
-        ).format(
+        counts = dict(
             orig=self.nep_result_data.atoms_num_list.shape[0],
             now=now,
             removed=self.nep_result_data.structure.remove_data.shape[0],
@@ -2529,7 +2526,19 @@ class ShowNepWidget(QWidget):
             unselected=now - selected,
             rejected=rej,
         )
+        # Short labels keep large counts on one line; the tooltip spells
+        # everything out, including the derived unselected count.
+        info = self.tr(
+            "Orig {orig} | Now {now} | Rm {removed} | Sel {selected} | Rej {rejected}"
+        ).format(**counts)
         self.dataset_info_label.setText(info)
+        self.dataset_info_label.setToolTip(
+            self.tr(
+                "Original structures: {orig}\nCurrently shown: {now}\n"
+                "Removed: {removed}\nSelected: {selected}\n"
+                "Unselected: {unselected}\nMarked bad: {rejected}"
+            ).format(**counts)
+        )
         self.empty_hint.hide()
         if hasattr(self, "structure_filter_bar"):
             self.structure_filter_bar.set_selection_count(len(self.nep_result_data.select_index))

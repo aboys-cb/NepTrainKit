@@ -19559,8 +19559,22 @@ All child items will also be deleted.</source>
         <translation>打开数据</translation>
     </message>
     <message>
-        <source>Original {orig} · Current {now} · Removed {removed} · Selected {selected} · Unselected {unselected} · Rejected {rejected}</source>
-        <translation>原始 {orig} · 当前 {now} · 已删除 {removed} · 已选 {selected} · 未选 {unselected} · 坏点 {rejected}</translation>
+        <source>Orig {orig} | Now {now} | Rm {removed} | Sel {selected} | Rej {rejected}</source>
+        <translation>原始 {orig} | 当前 {now} | 删 {removed} | 选 {selected} | 坏 {rejected}</translation>
+    </message>
+    <message>
+        <source>Original structures: {orig}
+Currently shown: {now}
+Removed: {removed}
+Selected: {selected}
+Unselected: {unselected}
+Marked bad: {rejected}</source>
+        <translation>原始结构：{orig}
+当前显示：{now}
+已删除：{removed}
+已选中：{selected}
+未选中：{unselected}
+标记为坏点：{rejected}</translation>
     </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="305" /><location filename="../ui/pages/show_nep.py" line="304" />

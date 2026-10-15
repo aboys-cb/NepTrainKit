@@ -5,7 +5,7 @@
 
 
 from PySide6.QtCore import QUrl, Qt, Signal
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
  
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, OptionsConfigItem, \
@@ -118,7 +118,7 @@ class SettingsWidget(ScrollArea):
 
         language_config = normalize_language(Config.get("ui", "language", "auto"))
         self.language_card = SettingCard(
-            FluentIcon.LANGUAGE,
+            FluentIcon.SETTING,
             self.tr("Language"),
             self.tr("Restart NepTrainKit to apply language changes"),
             self.personal_group,
@@ -158,7 +158,7 @@ class SettingsWidget(ScrollArea):
         use_group_menu_config = Config.getboolean("widget", "use_group_menu", False)
 
         self.auto_load_card = SwitchSettingCard(
-            FluentIcon.FOLDER,
+            QIcon(":/images/src/images/auto_load.svg"),
             self.tr('Auto loading'),
             self.tr('Detect startup path data and load'),
 
@@ -167,7 +167,7 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.setValue(auto_load_config)
 
         self.sort_atoms_card = SwitchSettingCard(
-            FluentIcon.ALIGNMENT,
+            QIcon(":/images/src/images/sort.svg"),
             self.tr('Sort atoms'),
             self.tr('Sort atoms in structures when processing cards'),
             parent=self.personal_group
@@ -175,7 +175,7 @@ class SettingsWidget(ScrollArea):
         self.sort_atoms_card.setValue(sort_atoms_config)
 
         self.use_group_menu_card = SwitchSettingCard(
-            FluentIcon.TILES,
+            QIcon(":/images/src/images/group.svg"),
             self.tr('Use card group menu'),
             self.tr('Group cards by "group" in console menu'),
             parent=self.personal_group
@@ -241,7 +241,7 @@ class SettingsWidget(ScrollArea):
         self.nep_backend_card = MyComboBoxSettingCard(
             OptionsConfigItem("nep", "backend", nep_backend_enum, OptionsValidator(NepBackend),
                               EnumSerializer(NepBackend)),
-            FluentIcon.DEVELOPER_TOOLS,
+            QIcon(":/images/src/images/gpu.svg"),
             self.tr('NEP Backend'),
             self.tr('Select CPU/CUDA or let Auto use CUDA when available'),
             texts=[mode.value for mode in NepBackend],

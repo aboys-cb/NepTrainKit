@@ -124,7 +124,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         )
         self.addButton(
             self.tr("Select by Lattice"),
-            QIcon(":/images/src/images/lattice_select.svg"),
+            QIcon(":/images/src/images/supercell.svg"),
             self.latticeRangeSignal,
         )
         self.addButton(
@@ -205,7 +205,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         )
         self.addButton(
             "DFT D3",
-            QIcon(":/images/src/images/dft_d3.svg"),
+            QIcon(":/images/src/images/dft_d3.png"),
             self.dftd3Signal,
             action_key="dft_d3",
         )
@@ -291,7 +291,7 @@ class StructureToolBar(KitToolBarBase):
         self.addSeparator()
         self.addButton(
             self.tr("Mark bad (reject)"),
-            QIcon(":/images/src/images/mark_bad.svg"),
+            QIcon(":/images/src/images/defect.svg"),
             self._reject_changed,
             True,
             action_key="mark_bad",

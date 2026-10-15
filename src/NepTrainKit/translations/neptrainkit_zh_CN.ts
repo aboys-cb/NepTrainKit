@@ -14252,6 +14252,14 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>ModelItemWidget</name>
     <message>
+        <source>Select a project on the left to list its models, or drag a model folder here.</source>
+        <translation>在左侧选择项目以查看其中的模型，也可以把模型文件夹拖到这里。</translation>
+    </message>
+    <message>
+        <source>No models in this project yet. Use New model, or drag a model folder here.</source>
+        <translation>这个项目还没有模型。点击“新建模型”，或把模型文件夹拖到这里。</translation>
+    </message>
+    <message>
         <location filename="../ui/views/dataset_widget.py" line="59" />
         <source>Name</source>
         <translation>名称</translation>
@@ -16020,6 +16028,10 @@ All child items will also be deleted.</source>
 </context>
 <context>
     <name>ProjectWidget</name>
+    <message>
+        <source>Models</source>
+        <translation>模型数</translation>
+    </message>
     <message>
         <location filename="../ui/views/project_view.py" line="52" />
         <source>(ID) Project name</source>

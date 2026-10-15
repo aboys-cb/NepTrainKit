@@ -8,13 +8,16 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QHeaderView
 from qfluentwidgets import (
     Action,
     BodyLabel,
+    CaptionLabel,
     MessageBox,
+    PrimaryPushButton,
     PushButton,
     RoundMenu,
     TreeItemDelegate,
     TreeView,
 )
 
+from NepTrainKit import palette
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
 from NepTrainKit.core.dataset.services import ProjectItem, ModelItem
@@ -68,10 +71,17 @@ class ModelItemWidget(QWidget, DatasetManager):
         header = self._view.header()
         header.setStretchLastSection(False)
         header.setMinimumSectionSize(48)
-        for column in (0, 2, 3, 4, 5, 7):
+        for column in (0, 2, 7):
             header.setSectionResizeMode(
                 column, QHeaderView.ResizeMode.ResizeToContents
             )
+        # Unit headers such as ``E(meV/atom)`` were clipped by the Fluent
+        # header padding; size the RMSE columns from their titles instead.
+        header_metrics = header.fontMetrics()
+        for column in (3, 4, 5):
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Interactive)
+            title = str(self._model.headerData(column, Qt.Orientation.Horizontal) or "")
+            header.resizeSection(column, header_metrics.horizontalAdvance(title) + 36)
         for column in (1, 6):
             header.setSectionResizeMode(column, QHeaderView.ResizeMode.Stretch)
 
@@ -84,7 +94,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         toolbar.setSpacing(6)
         toolbar.addWidget(BodyLabel(self.tr("Models"), self))
         toolbar.addStretch(1)
-        self.new_model_button = PushButton(self.tr("New model"), self)
+        self.new_model_button = PrimaryPushButton(self.tr("New model"), self)
         self.modify_model_button = PushButton(self.tr("Modify"), self)
         self.open_folder_button = PushButton(self.tr("Open folder"), self)
         self.delete_model_button = PushButton(self.tr("Delete"), self)
@@ -101,6 +111,19 @@ class ModelItemWidget(QWidget, DatasetManager):
             toolbar.addWidget(button)
         self._layout.addLayout(toolbar)
         self._layout.addWidget(self._view)
+        self.empty_hint = CaptionLabel(
+            self.tr(
+                "Select a project on the left to list its models, "
+                "or drag a model folder here."
+            ),
+            self._view.viewport(),
+        )
+        self.empty_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.empty_hint.setWordWrap(True)
+        self.empty_hint.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
+        hint_layout = QVBoxLayout(self._view.viewport())
+        hint_layout.addWidget(self.empty_hint, 0, Qt.AlignmentFlag.AlignCenter)
+        self._model.modelReset.connect(self._refresh_empty_hint)
         self.new_model_button.clicked.connect(
             lambda: self.create_model(modify=False)
         )
@@ -246,6 +269,20 @@ class ModelItemWidget(QWidget, DatasetManager):
         models = self.model_service.get_models_by_project_id(project.project_id)
         self.add_models_to_table(models)
 
+    def _refresh_empty_hint(self) -> None:
+        """Show guidance while the model list is empty."""
+        if self._model.rowCount() > 0:
+            self.empty_hint.hide()
+            return
+        if getattr(self, "project", None) is not None:
+            self.empty_hint.setText(
+                self.tr(
+                    "No models in this project yet. Use New model, "
+                    "or drag a model folder here."
+                )
+            )
+        self.empty_hint.show()
+
     def add_models_to_table(self, models: list[ModelItem]) -> None:
         """Populate the tree model with the supplied dataset entries.
 
@@ -258,6 +295,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         for model in models:
             self._build_tree(model, self._model.rootItem)
         self._model.endResetModel()
+        self._refresh_empty_hint()
 
     def create_model(self, modify: bool = False, initial_path: str = "") -> None:
         """Create a new model or update the currently selected one.

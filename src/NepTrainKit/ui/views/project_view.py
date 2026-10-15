@@ -7,6 +7,7 @@ from qfluentwidgets import (
     Action,
     FluentIcon,
     MessageBox,
+    PrimaryPushButton,
     PushButton,
     RoundMenu,
     TreeView,
@@ -49,7 +50,7 @@ class ProjectWidget(QWidget, DatasetManager):
 
         self._model = TreeModel()
         self._view.setModel(self._model)
-        self._model.setHeader([self.tr("(ID) Project name"), "ID", ""])
+        self._model.setHeader([self.tr("(ID) Project name"), "ID", self.tr("Models")])
         self._view.setColumnHidden(1, True)
         self._view.setColumnWidth(0, 150)
 
@@ -59,7 +60,7 @@ class ProjectWidget(QWidget, DatasetManager):
         toolbar = QHBoxLayout()
         toolbar.setContentsMargins(10, 8, 8, 8)
         toolbar.setSpacing(6)
-        self.new_project_button = PushButton(self.tr("New project"), self)
+        self.new_project_button = PrimaryPushButton(self.tr("New project"), self)
         self.modify_project_button = PushButton(self.tr("Modify"), self)
         self.delete_project_button = PushButton(self.tr("Delete"), self)
         toolbar.addWidget(self.new_project_button)

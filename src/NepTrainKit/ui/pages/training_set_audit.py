@@ -81,15 +81,21 @@ from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets.audit_chart import AuditChartWidget
 from NepTrainKit.ui.widgets.dialog import DistributionExplorerWidget
 from NepTrainKit.ui.pages.training_set_audit_overview import (
-    OVERVIEW_JET_COLORS as _OVERVIEW_JET_COLORS,
+    OVERVIEW_HEAT_COLORS as _OVERVIEW_HEAT_COLORS,
     ElementSetSummary as _ElementSetSummary,
     MatrixItemDelegate as _MatrixItemDelegate,
     element_set_summaries,
+    overview_count_text,
     overview_heat_color,
+    overview_text_color,
 )
 
 
 _OVERVIEW = "__audit_overview__"
+_OVERVIEW_COUNT_TEXT_ROLE = Qt.ItemDataRole.UserRole + 1
+# Cells narrower than this keep colour only; numbers would be elided.
+_OVERVIEW_COUNT_MIN_CELL = 30
+_OVERVIEW_MAX_CELL = 64
 _DIMENSION_COLUMN_MIN_WIDTH = 840
 _TOPIC_CATEGORY_COLORS = {
     "blocker": (QColor("#a61b1b"), QColor("#fdecec")),
@@ -392,7 +398,7 @@ class TrainingSetAuditWidget(QWidget):
         heat_legend_bar_layout = QHBoxLayout(self.heat_legend_bar)
         heat_legend_bar_layout.setContentsMargins(0, 0, 0, 0)
         heat_legend_bar_layout.setSpacing(0)
-        for color in _OVERVIEW_JET_COLORS:
+        for color in _OVERVIEW_HEAT_COLORS:
             swatch = QFrame(self.heat_legend_bar)
             swatch.setFixedSize(20, 9)
             swatch.setStyleSheet(f"background: {color}; border: 0;")
@@ -3372,9 +3378,25 @@ class TrainingSetAuditWidget(QWidget):
 
         column_base, column_extra = divmod(available_width, count)
         row_base, row_extra = divmod(available_height, count)
-        column_base = max(minimum_cell, column_base)
-        row_base = max(minimum_cell, row_base)
+        # Few elements would otherwise stretch into huge blocks; keep cells
+        # square and bounded so the colour reads as a matrix, not a banner.
+        column_base = max(minimum_cell, min(column_base, _OVERVIEW_MAX_CELL))
+        row_base = max(minimum_cell, min(row_base, _OVERVIEW_MAX_CELL))
+        if column_base == _OVERVIEW_MAX_CELL or row_base == _OVERVIEW_MAX_CELL:
+            column_base = row_base = min(column_base, row_base)
+            column_extra = row_extra = 0
+        show_counts = min(column_base, row_base) >= _OVERVIEW_COUNT_MIN_CELL
         table.setUpdatesEnabled(False)
+        for row in range(count):
+            for column in range(count):
+                item = table.item(row, column)
+                label = (
+                    item.data(_OVERVIEW_COUNT_TEXT_ROLE)
+                    if item is not None
+                    else None
+                )
+                if label:
+                    item.setText(label if show_counts else "")
         for index in range(count):
             table.setColumnWidth(
                 index,
@@ -3724,11 +3746,19 @@ class TrainingSetAuditWidget(QWidget):
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 item.setData(Qt.ItemDataRole.UserRole, cell_elements)
                 item.setToolTip(tooltip)
-                item.setBackground(
+                background = (
                     self._overview_heat_color(value, maximum)
                     if cell_elements
                     else QColor(Qt.GlobalColor.transparent)
                 )
+                item.setBackground(background)
+                if cell_elements and value > 0:
+                    # Shown by _resize_overview_matrix once cells are large
+                    # enough to hold the number.
+                    item.setData(
+                        _OVERVIEW_COUNT_TEXT_ROLE, overview_count_text(value)
+                    )
+                    item.setForeground(overview_text_color(background))
                 item.setFlags(
                     Qt.ItemFlag.ItemIsEnabled
                     | (
@@ -3742,8 +3772,9 @@ class TrainingSetAuditWidget(QWidget):
                     and not basis
                     and self._overview_pure_counts.get(first, 0) <= 0
                 ):
+                    item.setData(_OVERVIEW_COUNT_TEXT_ROLE, None)
                     item.setText("—")
-                    item.setForeground(QColor("#64748b"))
+                    item.setForeground(overview_text_color(background))
                 table.setItem(row, column, item)
 
         for index in range(len(elements)):
@@ -3759,14 +3790,9 @@ class TrainingSetAuditWidget(QWidget):
                 selected_item = table.item(selected_row, selected_column)
                 if selected_item is not None:
                     selected_item.setText("✓")
-                    background = selected_item.background().color()
-                    luminance = (
-                        0.2126 * background.red()
-                        + 0.7152 * background.green()
-                        + 0.0722 * background.blue()
-                    )
+                    selected_item.setData(_OVERVIEW_COUNT_TEXT_ROLE, None)
                     selected_item.setForeground(
-                        QColor("#ffffff" if luminance < 145 else "#111827")
+                        overview_text_color(selected_item.background().color())
                     )
                     font = selected_item.font()
                     font.setBold(True)

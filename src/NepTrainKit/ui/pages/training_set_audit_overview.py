@@ -12,16 +12,18 @@ from qfluentwidgets import TableItemDelegate
 from NepTrainKit.core.audit.result import DatasetInventory
 
 
-OVERVIEW_JET_COLORS = (
-    "#000080",
-    "#0000ff",
-    "#007fff",
-    "#00dfff",
-    "#40ff80",
-    "#dfff20",
-    "#ffbf00",
-    "#ff4000",
-    "#800000",
+# Single-hue sequential scale (light → dark teal, the app accent).  A rainbow
+# scale exaggerates arbitrary hue steps and makes small counts look alarming.
+OVERVIEW_HEAT_COLORS = (
+    "#e6f5f6",
+    "#c7e9eb",
+    "#a3dade",
+    "#7cc9cf",
+    "#52b5bd",
+    "#2c9ea8",
+    "#12848f",
+    "#0b6a74",
+    "#08525a",
 )
 
 
@@ -48,10 +50,29 @@ def overview_heat_color(value: int, maximum: int) -> QColor:
         return QColor("#f8fafc")
     strength = log1p(value) / log1p(maximum)
     palette_index = min(
-        len(OVERVIEW_JET_COLORS) - 1,
-        round(strength * (len(OVERVIEW_JET_COLORS) - 1)),
+        len(OVERVIEW_HEAT_COLORS) - 1,
+        round(strength * (len(OVERVIEW_HEAT_COLORS) - 1)),
     )
-    return QColor(OVERVIEW_JET_COLORS[palette_index])
+    return QColor(OVERVIEW_HEAT_COLORS[palette_index])
+
+
+def overview_count_text(value: int) -> str:
+    """Return a compact cell label such as ``87``, ``1.2k`` or ``35k``."""
+    if value < 1000:
+        return str(value)
+    if value < 10000:
+        return f"{value / 1000:.1f}k"
+    return f"{round(value / 1000)}k"
+
+
+def overview_text_color(background: QColor) -> QColor:
+    """Pick dark or light text that stays readable on ``background``."""
+    luminance = (
+        0.2126 * background.red()
+        + 0.7152 * background.green()
+        + 0.0722 * background.blue()
+    )
+    return QColor("#ffffff" if luminance < 145 else "#111827")
 
 
 def element_set_summaries(

@@ -1492,16 +1492,30 @@ class StructureFilterBar(QFrame):
     def _refresh(self) -> None:
         empty = self._spec.is_empty()
         self.preview_button.setEnabled(not empty)
+        self.preview_button.setToolTip(
+            self.tr("Add a filter condition to preview matches") if empty else ""
+        )
         if self._match_count is None:
-            self.match_button.setText("—")
+            self.match_button.setText(self.tr("Matches —"))
+            self.match_button.setToolTip(
+                self.tr("The number of matching structures appears here after Preview")
+            )
             self._refresh_match_style("idle")
         elif self._result_current:
-            self.match_button.setText(f"{self._match_count:,}")
+            self.match_button.setText(
+                self.tr("Matches {count:,}").format(count=self._match_count)
+            )
             self._refresh_match_style("current")
         self._refresh_actions()
 
     def _refresh_actions(self) -> None:
-        self.apply_button.setEnabled(self._result_current or self._selection_count > 0)
+        enabled = self._result_current or self._selection_count > 0
+        self.apply_button.setEnabled(enabled)
+        self.apply_button.setToolTip(
+            ""
+            if enabled
+            else self.tr("Preview a filter or select structures to apply a result")
+        )
 
     def _refresh_match_style(self, state: str) -> None:
         dark = isDarkTheme()

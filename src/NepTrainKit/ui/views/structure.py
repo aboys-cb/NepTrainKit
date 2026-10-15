@@ -108,7 +108,7 @@ class StructureInfoWidget(QWidget):
         config_layout.setContentsMargins(0, 1, 0, 1)
         config_layout.setSpacing(8)
         self.config_label = CaptionLabel(self.tr("Config type"), self.card)
-        self.config_text = BodyLabel("—", self.card)
+        self.config_text = StrongBodyLabel("—", self.card)
         self.config_text.setWordWrap(True)
         self.config_text.setTextInteractionFlags(Qt.TextSelectableByMouse)
         config_layout.addWidget(self.config_label, 0, Qt.AlignTop)

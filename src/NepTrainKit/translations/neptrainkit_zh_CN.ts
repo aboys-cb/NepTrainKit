@@ -21940,6 +21940,26 @@ Do you want to continue?</source>
 <context>
     <name>StructureFilterBar</name>
     <message>
+        <source>Add a filter condition to preview matches</source>
+        <translation>先添加筛选条件，再预览匹配结果</translation>
+    </message>
+    <message>
+        <source>Matches —</source>
+        <translation>匹配 —</translation>
+    </message>
+    <message>
+        <source>The number of matching structures appears here after Preview</source>
+        <translation>点击“预览”后，这里显示匹配的结构数</translation>
+    </message>
+    <message>
+        <source>Matches {count:,}</source>
+        <translation>匹配 {count:,}</translation>
+    </message>
+    <message>
+        <source>Preview a filter or select structures to apply a result</source>
+        <translation>先预览筛选结果或选中结构，才能应用结果</translation>
+    </message>
+    <message>
         <source>Atomic condition</source>
         <translation>原子条件</translation>
     </message>

@@ -17252,6 +17252,42 @@ All child items will also be deleted.</source>
 <context>
     <name>RuntimeMessage</name>
     <message>
+        <source>any/all requires at least one atomic field.</source>
+        <translation>any/all 条件中必须包含至少一个原子字段。</translation>
+    </message>
+    <message>
+        <source>atomic.element requires == or != with a quoted element symbol inside any/all.</source>
+        <translation>atomic.element 只能在 any/all 条件内使用 == 或 != 与带引号的元素符号比较。</translation>
+    </message>
+    <message>
+        <source>Atomic fields in any/all must refer to the same atoms; row counts do not align.</source>
+        <translation>any/all 中的原子字段必须对应相同的原子；当前字段行数不一致。</translation>
+    </message>
+    <message>
+        <source>atomic.element is only available inside any/all and does not support suffixes.</source>
+        <translation>atomic.element 只能在 any/all 条件内使用，且不支持后缀。</translation>
+    </message>
+    <message>
+        <source>atomic.element must be compared with a quoted element symbol, for example 'Fe'.</source>
+        <translation>atomic.element 必须与带引号的元素符号比较，例如 'Fe'。</translation>
+    </message>
+    <message>
+        <source>invalid initial coverage representatives</source>
+        <translation>初始覆盖代表帧无效。</translation>
+    </message>
+    <message>
+        <source>reduced cover failed the original constraints</source>
+        <translation>简化后的覆盖方案未满足原始约束。</translation>
+    </message>
+    <message>
+        <source>sample budget must be a positive integer</source>
+        <translation>采样数量必须是正整数。</translation>
+    </message>
+    <message>
+        <source>Unknown element symbol: {value}. Use standard capitalization, for example 'Fe'.</source>
+        <translation>未知元素符号：{value}。请使用标准大小写，例如 'Fe'。</translation>
+    </message>
+    <message>
         <source>coverage radius must be finite and positive</source>
         <translation>覆盖距离阈值必须是有限正数。</translation>
     </message>

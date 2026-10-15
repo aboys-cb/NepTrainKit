@@ -61,6 +61,26 @@ def test_paths_and_user_values_are_opaque(chinese_app):
     assert translate_runtime_message(path) == path
 
 
+@pytest.mark.parametrize('expression,expected', [
+    ('atomic.element == "Fe"',
+     'atomic.element 只能在 any/all 条件内使用 == 或 != 与带引号的元素符号比较。'),
+    ('any(atomic.element == 26)',
+     "atomic.element 必须与带引号的元素符号比较，例如 'Fe'。"),
+    ('any(atomic.element == "fe")',
+     "未知元素符号：fe。请使用标准大小写，例如 'Fe'。"),
+])
+def test_atomic_element_validation_errors_are_translated(chinese_app, expression, expected):
+    import ast
+
+    from NepTrainKit.core.io.base import ResultData
+
+    with pytest.raises(ValueError) as caught:
+        ResultData._validate_expression_element_usage(ast.parse(expression, mode='eval').body)
+    assert translate_runtime_error(caught.value) == expected
+    i18n.install_translator(chinese_app, 'en_US')
+    assert translate_runtime_error(caught.value) == str(caught.value)
+
+
 @pytest.mark.parametrize('case,expected', [
     ('percent', '百分比 不能为空。'),
     ('weight-negative', '插隙与表面吸附：元素 Fe 的权重必须是有限正数。'),

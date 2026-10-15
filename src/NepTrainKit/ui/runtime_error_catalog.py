@@ -348,6 +348,15 @@ RUNTIME_ERROR_TEMPLATES = (
     ('RuntimeMessage', 'Loading existing official NEP .out files without opening the model. descriptor.out is missing, so descriptor plots and FPS are unavailable. Install a nep-adapters version that supports this model to generate descriptors.'),
     ('RuntimeMessage', 'NEP Auto selected CPU because CUDA is unavailable ({reason}). The calculation will continue on CPU. To enable CUDA, install a Linux CPU+CUDA nep-adapters wheel with a compatible NVIDIA driver.'),
     ('RuntimeMessage', 'Spin Disorder requires vector magnetic moments or liftable scalar magmoms.'),
+    ('RuntimeMessage', 'any/all requires at least one atomic field.'),
+    ('RuntimeMessage', 'atomic.element requires == or != with a quoted element symbol inside any/all.'),
+    ('RuntimeMessage', 'Atomic fields in any/all must refer to the same atoms; row counts do not align.'),
+    ('RuntimeMessage', 'atomic.element is only available inside any/all and does not support suffixes.'),
+    ('RuntimeMessage', "atomic.element must be compared with a quoted element symbol, for example 'Fe'."),
+    ('RuntimeMessage', 'invalid initial coverage representatives'),
+    ('RuntimeMessage', 'reduced cover failed the original constraints'),
+    ('RuntimeMessage', 'sample budget must be a positive integer'),
+    ('RuntimeMessage', "Unknown element symbol: {value}. Use standard capitalization, for example 'Fe'."),
 )
 
 DIAGNOSTIC_TEMPLATES = (

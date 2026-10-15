@@ -26,6 +26,10 @@ class StructureInspection:
     shortest_distance: float | None
     shortest_pair: tuple[str, str] | None
     short_contacts: tuple[tuple[tuple[str, str], float], ...] = ()
+    # Mean local moment, mean |m_i|, and net moment per atom, |sum m_i| / N,
+    # in Bohr magnetons; ``None`` when the frame carries no ``spin`` vectors.
+    mean_magnetic_moment: float | None = None
+    net_magnetic_moment: float | None = None
 
 
 def _mass_density(structure, volume: float | None) -> float | None:
@@ -45,6 +49,23 @@ def _short_contact_threshold(pair: tuple[str, str], coefficient: float) -> float
     first = table_info[str(atomic_numbers[pair[0]])]["radii"] / 100.0
     second = table_info[str(atomic_numbers[pair[1]])]["radii"] / 100.0
     return float(first + second) * coefficient
+
+
+def _magnetic_moments(structure) -> tuple[float | None, float | None]:
+    """Return mean |m_i| and |sum m_i| / N from canonical per-atom spins."""
+    properties = getattr(structure, "atomic_properties", None) or {}
+    if "spin" not in properties:
+        return None, None
+    try:
+        spins = np.asarray(properties["spin"], dtype=np.float64)
+    except (TypeError, ValueError):
+        return None, None
+    atom_count = len(structure)
+    if atom_count == 0 or spins.shape != (atom_count, 3) or not np.isfinite(spins).all():
+        return None, None
+    mean_moment = float(np.mean(np.linalg.norm(spins, axis=1)))
+    net_moment = float(np.linalg.norm(np.sum(spins, axis=0)) / atom_count)
+    return mean_moment, net_moment
 
 
 def inspect_structure(
@@ -111,6 +132,7 @@ def inspect_structure(
         except (KeyError, TypeError, ValueError):
             continue
     short_contacts.sort(key=lambda item: item[1])
+    mean_magnetic_moment, net_magnetic_moment = _magnetic_moments(structure)
 
     return StructureInspection(
         volume=volume,
@@ -123,6 +145,8 @@ def inspect_structure(
         shortest_distance=shortest_distance,
         shortest_pair=shortest_pair,
         short_contacts=tuple(short_contacts),
+        mean_magnetic_moment=mean_magnetic_moment,
+        net_magnetic_moment=net_magnetic_moment,
     )
 
 

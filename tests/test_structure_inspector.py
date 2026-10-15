@@ -85,6 +85,37 @@ def test_inspect_structure_preserves_short_contact_warning():
     assert result.short_contacts == ((('H', 'H'), pytest.approx(0.2)),)
 
 
+def test_inspect_structure_reports_mean_and_net_magnetic_moment():
+    structure = _structure()
+    structure.atomic_properties["spin"] = np.asarray([[0.0, 0.0, 2.0], [0.0, 0.0, -2.0]])
+
+    inspection = inspect_structure(structure)
+
+    assert inspection.mean_magnetic_moment == pytest.approx(2.0)
+    assert inspection.net_magnetic_moment == pytest.approx(0.0)
+
+
+def test_inspect_structure_leaves_magnetic_moment_empty_without_spin():
+    inspection = inspect_structure(_structure())
+
+    assert inspection.mean_magnetic_moment is None
+    assert inspection.net_magnetic_moment is None
+
+
+def test_structure_info_widget_shows_magnetic_moment_only_when_present(app):
+    widget = StructureInfoWidget()
+    widget.show_structure_info(_structure())
+    widget.show_analysis(_inspection(), _phase())
+    assert widget.magnetic_moment_text.isHidden()
+    assert widget.magnetic_moment_caption.isHidden()
+
+    magnetic = StructureInspection(**{**_inspection().__dict__, "mean_magnetic_moment": 2.2, "net_magnetic_moment": 2.2})
+    widget.show_analysis(magnetic, _phase())
+
+    assert not widget.magnetic_moment_text.isHidden()
+    assert widget.magnetic_moment_text.text() == "2.200 μB/atom"
+
+
 def test_structure_info_widget_starts_idle_until_structure_is_loaded(app):
     widget = StructureInfoWidget()
 

@@ -144,9 +144,14 @@ class StructureInfoWidget(QWidget):
         signal_grid.setContentsMargins(0, 0, 0, 0)
         signal_grid.setHorizontalSpacing(8)
         signal_grid.setVerticalSpacing(1)
-        self.shortest_text = self._add_wide_metric(
-            signal_grid, 0, self.tr("Shortest contact"), "shortest"
+        self.shortest_text = self._add_metric(
+            signal_grid, 0, 0, self.tr("Shortest contact"), "shortest"
         )
+        self.magnetic_moment_text = self._add_metric(
+            signal_grid, 0, 1, self.tr("Mean moment"), "magnetic_moment"
+        )
+        self.magnetic_moment_caption = signal_grid.itemAtPosition(0, 2).widget()
+        self._set_magnetic_moment_visible(False)
         self.per_atom_energy_text = self._add_metric(
             signal_grid, 1, 0, self.tr("Energy / atom"), "per_atom_energy"
         )
@@ -197,6 +202,13 @@ class StructureInfoWidget(QWidget):
         self._metric_values[key] = value
         return value
 
+    def _set_magnetic_moment_visible(self, visible: bool) -> None:
+        self.magnetic_moment_caption.setVisible(visible)
+        self.magnetic_moment_text.setVisible(visible)
+        if not visible:
+            self.magnetic_moment_text.setText("—")
+            self.magnetic_moment_text.setToolTip("")
+
     @staticmethod
     def _number(value: float | None, unit: str, *, digits: int = 3) -> str:
         if value is None or not np.isfinite(value):
@@ -241,6 +253,8 @@ class StructureInfoWidget(QWidget):
             "net_force",
         ):
             self._metric_values[key].setText("—")
+        # Hidden, not "—", so non-magnetic datasets show no dangling field.
+        self._set_magnetic_moment_visible(False)
 
     def show_analysis(
         self,
@@ -262,6 +276,19 @@ class StructureInfoWidget(QWidget):
         )
         self.rms_force_text.setText(self._number(inspection.rms_force, "eV/Å"))
         self.net_force_text.setText(self._number(inspection.net_force, "eV/Å"))
+        self._set_magnetic_moment_visible(inspection.mean_magnetic_moment is not None)
+        if inspection.mean_magnetic_moment is not None:
+            self.magnetic_moment_text.setText(
+                self._number(inspection.mean_magnetic_moment, "μB/atom")
+            )
+            self.magnetic_moment_text.setToolTip(
+                self.tr(
+                    "Mean local moment, mean |mᵢ|, from per-atom spin vectors. "
+                    "Net moment |Σmᵢ|/N: {net}"
+                ).format(
+                    net=self._number(inspection.net_magnetic_moment, "μB/atom")
+                )
+            )
 
         if inspection.shortest_distance is None or inspection.shortest_pair is None:
             self.shortest_text.setText("—")

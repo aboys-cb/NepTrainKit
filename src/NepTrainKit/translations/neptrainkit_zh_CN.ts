@@ -22322,6 +22322,14 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>StructureInfoWidget</name>
     <message>
+        <source>Mean moment</source>
+        <translation>平均磁矩</translation>
+    </message>
+    <message>
+        <source>Mean local moment, mean |mᵢ|, from per-atom spin vectors. Net moment |Σmᵢ|/N: {net}</source>
+        <translation>平均局域磁矩：按每个原子 spin 向量求 |mᵢ| 的平均值。净磁矩 |Σmᵢ|/N：{net}</translation>
+    </message>
+    <message>
         <location filename="../ui/views/structure.py" line="69" />
         <source>Structure information</source>
         <translation>结构信息</translation>

@@ -187,6 +187,7 @@ class StructureFilterCondition:
     text_values: tuple[str, ...] = ()
     match_mode: TextMatchMode | None = None
     case_sensitive: bool = False
+    negated: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -196,6 +197,7 @@ class StructureFilterCondition:
             "text_values": list(self.text_values),
             "match_mode": self.match_mode.value if self.match_mode is not None else None,
             "case_sensitive": self.case_sensitive,
+            "negated": self.negated,
         }
 
     @classmethod
@@ -208,6 +210,7 @@ class StructureFilterCondition:
             text_values=tuple(str(value) for value in data.get("text_values", ())),
             match_mode=TextMatchMode(mode) if mode else None,
             case_sensitive=bool(data.get("case_sensitive", False)),
+            negated=bool(data.get("negated", False)),
         )
 
 

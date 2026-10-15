@@ -12,7 +12,7 @@ from loguru import logger
 
 import numpy as np
 from PySide6.QtCore import QObject, QUrl, QTimer, Qt, QThread, Slot
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
@@ -203,6 +203,7 @@ class ShowNepWidget(QWidget):
         self._phase_evidence_dataset_id: int | None = None
         self._phase_evidence_lookup: dict[int, object] = {}
         self.structure_filter_controller = StructureFilterController(self)
+        self._pending_structure_filter_apply: str | None = None
         self.init_action()
         self.init_ui()
         self.load_thread:QThread
@@ -441,23 +442,6 @@ class ShowNepWidget(QWidget):
         # Keep open actions usable but avoid re-entrant loads while busy.
         self.open_file_action.setEnabled(not busy)
         self.open_folder_action.setEnabled(not busy)
-
-    def _on_search_mode_changed(self, index):
-        """Sync the search mode combo-box with the search line-edit."""
-        if not hasattr(self, "search_lineEdit"):
-            return
-        try:
-            idx = int(index)
-        except Exception:
-            idx = int(getattr(self.search_mode_combo, "currentIndex", lambda: 0)())
-
-        combo = getattr(self, "search_mode_combo", None)
-        search_type = combo.itemData(idx) if combo is not None and idx >= 0 else None
-        search_type = search_type or SearchType.TAG
-        use_filter = search_type in (SearchType.TAG, SearchType.FORMULA, SearchType.ELEMENTS, SearchType.EXPRESSION)
-        if hasattr(self, "filter_edit_btn"):
-            self.filter_edit_btn.setVisible(use_filter)
-        self.search_lineEdit.set_search_type(search_type or SearchType.TAG)
 
     def _on_nep_model_changed(self, index):
         """Handle NEP model file switch in the combo box."""
@@ -885,6 +869,13 @@ class ShowNepWidget(QWidget):
         self.structure_filter_controller.previewReady.connect(self._on_structure_filter_preview_ready)
         self.structure_filter_controller.previewFailed.connect(self._on_structure_filter_preview_failed)
         frame_layout.addWidget(self.structure_filter_bar, 1)
+        # Scoped to this page so the dataset page can keep its own Ctrl+F.
+        self.structure_filter_shortcut = QShortcut(
+            QKeySequence(QKeySequence.StandardKey.Find),
+            self,
+            context=Qt.ShortcutContext.WidgetWithChildrenShortcut,
+        )
+        self.structure_filter_shortcut.activated.connect(self._on_filter_edit_clicked)
         self.path_label = HyperlinkLabel(self.plot_widget)
         self.path_label.setFixedHeight(30)
 
@@ -2243,6 +2234,7 @@ class ShowNepWidget(QWidget):
 
     def _on_structure_filter_spec_changed(self, spec) -> None:
         """Invalidate the old preview whenever the typed query changes."""
+        self._pending_structure_filter_apply = None
         canvas = getattr(getattr(self, "graph_widget", None), "canvas", None)
         if canvas is not None:
             canvas.clear_search_highlight()
@@ -2278,8 +2270,13 @@ class ShowNepWidget(QWidget):
             result.active_count,
             result.elapsed_ms,
         )
+        mode = getattr(self, "_pending_structure_filter_apply", None)
+        if mode is not None:
+            self._pending_structure_filter_apply = None
+            self._apply_structure_filter_result(mode)
 
     def _on_structure_filter_preview_failed(self, error) -> None:
+        self._pending_structure_filter_apply = None
         self.structure_filter_bar.set_error(error)
         if not self.structure_filter_bar.editor_is_open:
             MessageManager.send_warning_message(
@@ -2297,8 +2294,12 @@ class ShowNepWidget(QWidget):
             self.structure_filter_bar.set_selection_count(len(data.select_index))
             return
         if not self.structure_filter_controller.result_is_current():
+            if self.structure_filter_bar.spec.is_empty():
+                return
+            # Recompute the stale preview once, then apply it from previewReady.
+            self._pending_structure_filter_apply = mode
             self.structure_filter_bar.set_stale()
-            MessageManager.send_info_message(self.tr("The filter result has expired. Preview it again before applying."))
+            self.structure_filter_controller.preview()
             return
         result = self.structure_filter_controller.state.result
         if result is None:
@@ -2307,7 +2308,7 @@ class ShowNepWidget(QWidget):
         self.structure_filter_bar.set_selection_count(len(data.select_index))
 
     def _on_filter_edit_clicked(self):
-        """Open the composite filter editor (legacy action compatibility)."""
+        """Open the composite filter editor (Ctrl+F)."""
         self.structure_filter_bar.open_editor(None, add_if_empty=True)
 
     def _on_clear_all_selections(self):

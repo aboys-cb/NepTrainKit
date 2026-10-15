@@ -164,6 +164,8 @@ class FilterChip(QFrame):
     editRequested = Signal(str)
     removeRequested = Signal(str)
 
+    _MAX_VALUE_WIDTH = 140
+
     def __init__(self, condition_id: str, kind: str, value: str, enabled: bool, parent=None):
         super().__init__(parent)
         self.condition_id = condition_id
@@ -176,8 +178,15 @@ class FilterChip(QFrame):
         layout.setContentsMargins(9, 0, 3, 0)
         layout.setSpacing(5)
         self.kind_label = CaptionLabel(self.tr("{kind}:").format(kind=kind), self)
-        self.value_label = BodyLabel(value, self)
-        self.value_label.setMaximumWidth(92)
+        self.value_label = BodyLabel(self)
+        metrics = self.value_label.fontMetrics()
+        self.value_label.setText(
+            metrics.elidedText(value, Qt.TextElideMode.ElideRight, self._MAX_VALUE_WIDTH)
+        )
+        if not enabled:
+            font = self.value_label.font()
+            font.setStrikeOut(True)
+            self.value_label.setFont(font)
         tooltip = self.full_text if enabled else self.tr("Disabled: {text}").format(text=self.full_text)
         self.setToolTip(tooltip)
         install_fluent_tooltip(self)
@@ -293,6 +302,7 @@ class _ConditionRow(QFrame):
 
     changed = Signal()
     removeRequested = Signal(object)
+    submitRequested = Signal()
 
     def __init__(
         self,
@@ -314,6 +324,14 @@ class _ConditionRow(QFrame):
         self.enabled_switch.setFixedWidth(self.enabled_switch.sizeHint().width())
         self.enabled_switch.setChecked(condition.enabled)
         self.enabled_switch.setAccessibleName(self.tr("Enable condition"))
+
+        self.not_button = TogglePushButton(self.tr("NOT"), self)
+        self.not_button.setCheckable(True)
+        self.not_button.setChecked(condition.negated)
+        self.not_button.setFixedSize(max(48, self.not_button.sizeHint().width()), 28)
+        self.not_button.setAccessibleName(self.tr("Invert condition"))
+        self.not_button.setToolTip(self.tr("Invert: match structures that do not meet this condition"))
+        install_fluent_tooltip(self.not_button)
 
         self.field_combo = ComboBox(self)
         self.field_combo.setFixedWidth(112)
@@ -349,6 +367,14 @@ class _ConditionRow(QFrame):
         self.unit_label.setStyleSheet("color: #888; font-size: 11px;")
         self.unit_label.setVisible(False)
 
+        self.field_picker = TransparentToolButton(FluentIcon.CODE, self)
+        self.field_picker.setFixedSize(28, 28)
+        self.field_picker.setToolTip(self.tr("Insert a field from the current dataset"))
+        self.field_picker.setAccessibleName(self.tr("Insert field"))
+        install_fluent_tooltip(self.field_picker)
+        self.field_picker.clicked.connect(self._show_field_menu)
+        self.field_picker.setVisible(False)
+
         self.remove_button = TransparentToolButton(FluentIcon.CLOSE, self)
         self.remove_button.setIconSize(QSize(10, 10))
         self.remove_button.setFixedSize(24, 28)
@@ -375,6 +401,7 @@ class _ConditionRow(QFrame):
             selector_row = QHBoxLayout()
             selector_row.setSpacing(4)
             selector_row.addWidget(self.enabled_switch)
+            selector_row.addWidget(self.not_button)
             selector_row.addWidget(self.field_combo)
             selector_row.addWidget(self.mode_combo)
             selector_row.addWidget(self.case_button)
@@ -385,17 +412,20 @@ class _ConditionRow(QFrame):
             value_row.setSpacing(4)
             value_row.addWidget(self.value_edit, 1)
             value_row.addWidget(self.unit_label)
+            value_row.addWidget(self.field_picker)
             layout.addLayout(value_row)
         else:
             layout = QHBoxLayout(self.controls)
             layout.setContentsMargins(2, 1, 2, 1)
             layout.setSpacing(4)
             layout.addWidget(self.enabled_switch)
+            layout.addWidget(self.not_button)
             layout.addWidget(self.field_combo)
             layout.addWidget(self.mode_combo)
             layout.addWidget(self.case_button)
             layout.addWidget(self.value_edit, 1)
             layout.addWidget(self.unit_label)
+            layout.addWidget(self.field_picker)
             self.atomic_header_spacer = QWidget(self.controls)
             self.atomic_header_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             layout.addWidget(self.atomic_header_spacer)
@@ -426,6 +456,9 @@ class _ConditionRow(QFrame):
         self._update_suggestions()
 
         self.enabled_switch.checkedChanged.connect(lambda _checked: self.changed.emit())
+        self.not_button.toggled.connect(lambda _checked: self.changed.emit())
+        self.value_edit.returnPressed.connect(self.submitRequested.emit)
+        self.atomic_editor.value_edit.returnPressed.connect(self.submitRequested.emit)
         self.field_combo.currentIndexChanged.connect(self._on_field_changed)
         self.mode_combo.currentIndexChanged.connect(lambda _index: self.changed.emit())
         self.case_button.toggled.connect(self._on_case_toggled)
@@ -487,7 +520,10 @@ class _ConditionRow(QFrame):
         self._atomic_active = self.field_combo.currentData() == "atomic"
         self.atomic_editor.setVisible(self._atomic_active)
         self.value_edit.setVisible(not self._atomic_active)
-        self.mode_combo.setVisible(not self._atomic_active)
+        # Expressions have a single mode; give its width to the input instead.
+        self.mode_combo.setVisible(
+            not self._atomic_active and self.field_combo.currentData() != FilterField.EXPRESSION
+        )
         if hasattr(self, 'atomic_header_spacer'):
             self.atomic_header_spacer.setVisible(self._atomic_active)
         if self._atomic_active:
@@ -517,7 +553,30 @@ class _ConditionRow(QFrame):
         self._update_atomic_visibility()
         self.changed.emit()
 
+    def _expression_fields(self) -> list[str]:
+        tokens = self._suggestions.get(SearchType.EXPRESSION) or {}
+        return sorted(tokens, key=lambda token: (-int(tokens[token] or 0), token))
+
+    def _update_field_picker(self) -> None:
+        self.field_picker.setVisible(
+            self.field_combo.currentData() == FilterField.EXPRESSION and bool(self._expression_fields())
+        )
+
+    def _show_field_menu(self) -> None:
+        menu = RoundMenu(parent=self)
+        menu.view.setMaxVisibleItems(12)
+        for token in self._expression_fields():
+            unit = _detect_expression_unit(token)
+            text = f"{token}  ({unit})" if unit else token
+            menu.addAction(Action(text, triggered=lambda _checked=False, value=token: self._insert_field(value)))
+        menu.exec(self.field_picker.mapToGlobal(QPoint(0, self.field_picker.height())))
+
+    def _insert_field(self, token: str) -> None:
+        self.value_edit.insert(token)
+        self.value_edit.setFocus(Qt.FocusReason.OtherFocusReason)
+
     def _update_unit_label(self) -> None:
+        self._update_field_picker()
         field = self.field_combo.currentData()
         if field != FilterField.EXPRESSION:
             self.unit_label.setVisible(False)
@@ -645,6 +704,7 @@ class _ConditionRow(QFrame):
         previous_expression = self.atomic_editor.expression()
         self._suggestions = suggestions
         self._update_suggestions()
+        self._update_field_picker()
         self.atomic_editor.set_suggestions(suggestions)
         self._update_atomic_visibility()
         if self._atomic_active and self.atomic_editor.expression() != previous_expression:
@@ -675,6 +735,7 @@ class _ConditionRow(QFrame):
             text_values=values,
             match_mode=match_mode,
             case_sensitive=self.case_button.isChecked() if field in _TEXT_FIELDS else False,
+            negated=self.not_button.isChecked(),
         )
 
     def set_error(self, message: str) -> None:
@@ -745,10 +806,13 @@ class StructureFilterEditorPopup(QFrame):
         self._rows: list[_ConditionRow] = []
         self._suggestions: dict[SearchType, dict[str, int]] = {}
         self._syncing = False
+        # Errors from previews started while typing are shown quietly; only an
+        # explicit Done/Enter/Preview highlights the offending row.
+        self._auto_preview = False
         self._debounce = QTimer(self)
         self._debounce.setSingleShot(True)
         self._debounce.setInterval(280)
-        self._debounce.timeout.connect(self.previewRequested.emit)
+        self._debounce.timeout.connect(self._auto_preview_requested)
         self._build_ui()
         qconfig.themeChangedFinished.connect(self._refresh_style)
 
@@ -856,14 +920,16 @@ class StructureFilterEditorPopup(QFrame):
         self.add_button.clicked.connect(self.add_condition)
         footer.addWidget(self.add_button)
         self.estimate_label = CaptionLabel(self.tr("Set conditions to preview matches"), self)
-        footer.addWidget(self.estimate_label)
-        footer.addStretch()
+        # Long status text must elide-by-clipping instead of widening the popup.
+        self.estimate_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        install_fluent_tooltip(self.estimate_label)
+        footer.addWidget(self.estimate_label, 1)
         self.clear_button = TransparentToolButton(FluentIcon.DELETE, self)
         self.clear_button.setFixedSize(30, 30)
         self.clear_button.setToolTip(self.tr("Clear"))
         self.clear_button.setAccessibleName(self.tr("Clear"))
         install_fluent_tooltip(self.clear_button)
-        self.clear_button.clicked.connect(self.clear_rows)
+        self.clear_button.clicked.connect(self._request_clear)
         footer.addWidget(self.clear_button)
         self.done_button = PrimaryPushButton(self.tr("Done and preview"), self)
         self.done_button.setFixedHeight(30)
@@ -901,6 +967,7 @@ class StructureFilterEditorPopup(QFrame):
         self.preset_menu = RoundMenu(parent=self)
         self.preset_menu.view.setMaxVisibleItems(10)
         self.preset_button.setMenu(self.preset_menu)
+        self._append_preset_menu = None
         self._manage_preset_menu = None
         self._rename_preset_menu = None
         self._delete_preset_menu = None
@@ -927,6 +994,19 @@ class StructureFilterEditorPopup(QFrame):
         self.preset_menu.addAction(self._save_preset_action)
 
         if names:
+            append_menu = RoundMenu(self.tr("Add to current conditions"), self.preset_menu)
+            self._append_preset_menu = append_menu
+            for name in names:
+                append_menu.addAction(
+                    Action(
+                        FluentIcon.ADD,
+                        name,
+                        triggered=lambda _checked=False, preset_name=name: self._load_preset(
+                            preset_name, append=True
+                        ),
+                    )
+                )
+            self.preset_menu.addMenu(append_menu)
             manage_menu = RoundMenu(self.tr("Manage saved filters"), self.preset_menu)
             rename_menu = RoundMenu(self.tr("Rename"), manage_menu)
             delete_menu = RoundMenu(self.tr("Delete"), manage_menu)
@@ -987,7 +1067,7 @@ class StructureFilterEditorPopup(QFrame):
         if owner is not None and hasattr(owner, "open_editor"):
             QTimer.singleShot(0, owner.open_editor)
 
-    def _load_preset(self, name: str) -> None:
+    def _load_preset(self, name: str, *, append: bool = False) -> None:
         spec = load_structure_filter_preset(name)
         if spec is None:
             MessageManager.send_warning_message(
@@ -995,11 +1075,21 @@ class StructureFilterEditorPopup(QFrame):
             )
             self._refresh_preset_menu()
             return
+        if append:
+            # Appended rows join the current AND/OR relation; drop blank drafts.
+            current = self.spec()
+            kept = tuple(
+                condition
+                for condition in current.conditions
+                if any(str(value).strip() for value in condition.text_values)
+            )
+            spec = StructureFilterSpec(conditions=kept + spec.conditions, logic=current.logic)
         self.set_spec(spec)
         self._emit_spec()
-        MessageManager.send_success_message(
-            self.tr("Loaded saved filter: {name}").format(name=name)
+        message = (
+            self.tr("Added saved filter: {name}") if append else self.tr("Loaded saved filter: {name}")
         )
+        MessageManager.send_success_message(message.format(name=name))
 
     def _save_current_preset(self) -> None:
         spec = self.spec()
@@ -1094,6 +1184,7 @@ class StructureFilterEditorPopup(QFrame):
     def _append_row(self, condition: StructureFilterCondition) -> _ConditionRow:
         row = _ConditionRow(condition, self._suggestions, self.rows_widget)
         row.changed.connect(self._emit_spec)
+        row.submitRequested.connect(self._done)
         row.removeRequested.connect(self._remove_row)
         self.rows_layout.insertWidget(len(self._rows), row)
         self._rows.append(row)
@@ -1134,6 +1225,21 @@ class StructureFilterEditorPopup(QFrame):
         row.deleteLater()
         self._update_content_height()
         self._emit_spec()
+
+    def _request_clear(self) -> None:
+        """Ask before discarding filled-in conditions; blank drafts clear at once."""
+        if self.spec().is_empty():
+            self.clear_rows()
+            return
+        try:
+            if self._confirm(
+                self.tr("Clear all conditions?"),
+                self.tr("This removes every filter condition and the match highlight. The current selection is not changed."),
+                self.tr("Clear"),
+            ):
+                self.clear_rows()
+        finally:
+            self._restore_after_dialog()
 
     def clear_rows(self) -> None:
         for row in list(self._rows):
@@ -1181,11 +1287,24 @@ class StructureFilterEditorPopup(QFrame):
         if hasattr(self, "_save_preset_action"):
             self._save_preset_action.setEnabled(not spec.is_empty())
         self.specChanged.emit(spec)
-        if not spec.is_empty():
+        if spec.is_empty():
+            self._debounce.stop()
+            self.set_estimate(None, None)
+        else:
+            self.set_estimate(None, None, self.tr("Updating estimate…"))
             self._debounce.start()
+
+    def _auto_preview_requested(self) -> None:
+        self._auto_preview = True
+        self.previewRequested.emit()
+
+    def mark_explicit_preview(self) -> None:
+        """The next error belongs to a preview the user asked for."""
+        self._auto_preview = False
 
     def _done(self) -> None:
         self._debounce.stop()
+        self.mark_explicit_preview()
         self.specChanged.emit(self.spec())
         self.previewRequested.emit()
         self.close()
@@ -1201,6 +1320,10 @@ class StructureFilterEditorPopup(QFrame):
                 return
 
     def set_estimate(self, matched: int | None, active: int | None, status: str = "") -> None:
+        self._set_estimate_text(matched, active, status)
+        self.estimate_label.setToolTip(self.estimate_label.text())
+
+    def _set_estimate_text(self, matched: int | None, active: int | None, status: str) -> None:
         if status:
             self.estimate_label.setText(status)
         elif matched is None or active is None:
@@ -1216,6 +1339,10 @@ class StructureFilterEditorPopup(QFrame):
     def set_error(self, error: StructureFilterValidationError) -> None:
         self.clear_error()
         message = translate_runtime_error(error.message)
+        if self._auto_preview and self.isVisible():
+            # The user may still be typing: report quietly without flagging rows.
+            self.set_estimate(None, None, self.tr("Not evaluated yet: {message}").format(message=message))
+            return
         self.error_label.setText(message)
         self.error_label.setVisible(True)
         if error.condition_id:
@@ -1275,11 +1402,12 @@ class StructureFilterBar(QFrame):
         self.chip_layout.setContentsMargins(0, 0, 0, 0)
         self.chip_layout.setSpacing(5)
         layout.addWidget(self.chip_view, 1)
+        self.logic_label = None
 
         self.preview_button = PrimaryPushButton(self.tr("Preview"), self)
         self.preview_button.setFixedHeight(32)
         self.preview_button.setMinimumWidth(self.preview_button.sizeHint().width())
-        self.preview_button.clicked.connect(lambda _checked=False: self.previewRequested.emit())
+        self.preview_button.clicked.connect(self._request_preview)
         layout.addWidget(self.preview_button)
 
         self.match_button = PushButton(self.tr("No preview"), self)
@@ -1289,7 +1417,7 @@ class StructureFilterBar(QFrame):
         install_fluent_tooltip(self.match_button)
         layout.addWidget(self.match_button)
 
-        self.apply_button = PushButton(self.tr("Apply result ▾"), self)
+        self.apply_button = DropDownPushButton(self.tr("Apply result"), self)
         self.apply_button.setFixedHeight(32)
         self.apply_button.setMinimumWidth(self.apply_button.sizeHint().width())
         self.apply_button.clicked.connect(self._show_apply_menu)
@@ -1298,6 +1426,10 @@ class StructureFilterBar(QFrame):
     @property
     def spec(self) -> StructureFilterSpec:
         return self._spec
+
+    def _request_preview(self) -> None:
+        self._popup.mark_explicit_preview()
+        self.previewRequested.emit()
 
     @property
     def editor_is_open(self) -> bool:
@@ -1392,22 +1524,38 @@ class StructureFilterBar(QFrame):
         self._popup.focus_condition(condition_id)
 
     def _condition_summary(self, condition: StructureFilterCondition) -> tuple[str, str]:
-        values = ",".join(condition.text_values)
-        if condition.field == FilterField.CONFIG_TYPE:
-            label = self.tr("Config type")
-        elif condition.field == FilterField.FORMULA:
-            label = self.tr("Formula")
-        elif condition.field == FilterField.ELEMENT_REQUIRED:
-            label = self.tr("Required")
-        elif condition.field == FilterField.ELEMENT_EXCLUDED:
-            label = self.tr("Excluded")
-        elif condition.field == FilterField.ELEMENT_ALLOWED:
-            label = self.tr("Allowed")
+        """Return the chip label and value, using the editor's wording."""
+        if condition.field in _TEXT_FIELDS:
+            values = "; ".join(condition.text_values)
+            modes = {
+                TextMatchMode.CONTAINS: self.tr("contains"),
+                TextMatchMode.EXACT: self.tr("equals"),
+                TextMatchMode.PREFIX: self.tr("starts with"),
+                TextMatchMode.SUFFIX: self.tr("ends with"),
+                TextMatchMode.REGEX: self.tr("regex"),
+            }
+            default = TextMatchMode.CONTAINS if condition.field == FilterField.CONFIG_TYPE else TextMatchMode.EXACT
+            name = self.tr("Config type") if condition.field == FilterField.CONFIG_TYPE else self.tr("Formula")
+            label = self.tr("{field} {mode}").format(
+                field=name, mode=modes.get(condition.match_mode or default, "")
+            )
+            if condition.case_sensitive:
+                label = self.tr("{label} (Aa)").format(label=label)
+        elif condition.field in _ELEMENT_FIELDS:
+            values = ", ".join(condition.text_values)
+            label = {
+                FilterField.ELEMENT_REQUIRED: self.tr("Must contain"),
+                FilterField.ELEMENT_EXCLUDED: self.tr("Must not contain"),
+                FilterField.ELEMENT_ALLOWED: self.tr("Allow only"),
+            }[condition.field]
         else:
+            values = condition.text_values[0] if condition.text_values else ""
             label = self.tr("Expression")
             parsed = parse_atomic_condition(values)
             if parsed:
-                return self.tr("Atomic condition"), atomic_condition_summary(parsed)
+                label, values = self.tr("Atomic condition"), atomic_condition_summary(parsed)
+        if condition.negated:
+            label = self.tr("NOT {label}").format(label=label)
         return label, values or self.tr("Incomplete")
 
     def _rebuild_chips(self) -> None:
@@ -1424,6 +1572,7 @@ class StructureFilterBar(QFrame):
                 widget.hide()
                 widget.deleteLater()
         self._chips.clear()
+        self.logic_label = None
         if not self._spec.conditions:
             filter_entry = PushButton(FluentIcon.SEARCH, self.tr("Filter conditions"), self.chip_view)
             filter_entry.setFixedHeight(32)
@@ -1434,6 +1583,16 @@ class StructureFilterBar(QFrame):
             self._refresh_theme()
             return
         self._empty_hint = None
+        if len(self._spec.conditions) > 1:
+            text = self.tr("All of:") if self._spec.logic == FilterLogic.ALL else self.tr("Any of:")
+            self.logic_label = CaptionLabel(text, self.chip_view)
+            self.logic_label.setToolTip(
+                self.tr("Structures must match every enabled condition")
+                if self._spec.logic == FilterLogic.ALL
+                else self.tr("Structures may match any enabled condition")
+            )
+            install_fluent_tooltip(self.logic_label)
+            self.chip_layout.addWidget(self.logic_label)
         for condition in self._spec.conditions:
             kind, value = self._condition_summary(condition)
             chip = FilterChip(
@@ -1466,6 +1625,8 @@ class StructureFilterBar(QFrame):
         if not self._chips:
             return
         available = max(0, self.chip_view.width())
+        if self.logic_label is not None:
+            available = max(0, available - self.logic_label.sizeHint().width() - self.chip_layout.spacing())
         widths = [chip.sizeHint().width() + self.chip_layout.spacing() for chip in self._chips]
         budget = available if sum(widths) <= available else max(0, available - 70)
         used = 0
@@ -1487,7 +1648,8 @@ class StructureFilterBar(QFrame):
             overflow = PushButton(self.tr("+{count} conditions").format(count=hidden), self.chip_view)
             overflow.setFixedHeight(30)
             overflow.clicked.connect(lambda: self.open_editor(None))
-            self.chip_layout.insertWidget(max(0, len(self._chips) - hidden), overflow)
+            offset = 1 if self.logic_label is not None else 0
+            self.chip_layout.insertWidget(offset + max(0, len(self._chips) - hidden), overflow)
             self._overflow_button = overflow
 
     def _show_result_details(self) -> None:
@@ -1513,14 +1675,23 @@ class StructureFilterBar(QFrame):
     def _show_apply_menu(self) -> None:
         menu = RoundMenu(parent=self)
         count = self._match_count or 0
-        actions = (
-            (FluentIcon.SYNC, self.tr("Replace current selection ({count:,})").format(count=count), "replace"),
-            (FluentIcon.ADD, self.tr("Add to current selection ({count:,})").format(count=count), "add"),
-            (FluentIcon.REMOVE, self.tr("Remove from current selection ({count:,})").format(count=count), "remove"),
-        )
+        if self._result_current:
+            actions = (
+                (FluentIcon.SYNC, self.tr("Replace current selection ({count:,})").format(count=count), "replace"),
+                (FluentIcon.ADD, self.tr("Add to current selection ({count:,})").format(count=count), "add"),
+                (FluentIcon.REMOVE, self.tr("Remove from current selection ({count:,})").format(count=count), "remove"),
+            )
+        else:
+            # A stale or missing preview is recomputed first, then applied once.
+            actions = (
+                (FluentIcon.SYNC, self.tr("Preview, then replace current selection"), "replace"),
+                (FluentIcon.ADD, self.tr("Preview, then add to current selection"), "add"),
+                (FluentIcon.REMOVE, self.tr("Preview, then remove from current selection"), "remove"),
+            )
+        can_apply = self._result_current or not self._spec.is_empty()
         for icon, text, mode in actions:
             action = Action(icon, text, triggered=lambda checked=False, mode=mode: self.applyRequested.emit(mode))
-            action.setEnabled(self._result_current)
+            action.setEnabled(can_apply)
             menu.addAction(action)
         menu.addSeparator()
         clear = Action(
@@ -1556,12 +1727,12 @@ class StructureFilterBar(QFrame):
         self._refresh_actions()
 
     def _refresh_actions(self) -> None:
-        enabled = self._result_current or self._selection_count > 0
+        enabled = self._result_current or not self._spec.is_empty() or self._selection_count > 0
         self.apply_button.setEnabled(enabled)
         self.apply_button.setToolTip(
             ""
             if enabled
-            else self.tr("Preview a filter or select structures to apply a result")
+            else self.tr("Add a filter condition or select structures to apply a result")
         )
 
     def _refresh_match_style(self, state: str) -> None:

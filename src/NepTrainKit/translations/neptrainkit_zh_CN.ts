@@ -22202,6 +22202,106 @@ Elapsed: {elapsed:.1f} ms</source>
         <source>Fill in the filter conditions to preview matches</source>
         <translation>请先填写筛选条件，再预览匹配结果</translation>
     </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1420" />
+        <source>Apply result</source>
+        <translation>应用结果</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1531" />
+        <source>contains</source>
+        <translation>包含</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1532" />
+        <source>equals</source>
+        <translation>完全等于</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1533" />
+        <source>starts with</source>
+        <translation>开头为</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1534" />
+        <source>ends with</source>
+        <translation>结尾为</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1535" />
+        <source>regex</source>
+        <translation>正则匹配</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1539" />
+        <source>{field} {mode}</source>
+        <translation>{field}{mode}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1543" />
+        <source>{label} (Aa)</source>
+        <translation>{label}（Aa）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1558" />
+        <source>NOT {label}</source>
+        <translation>取反 {label}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1547" />
+        <source>Must contain</source>
+        <translation>必须包含</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1548" />
+        <source>Must not contain</source>
+        <translation>不得包含</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1549" />
+        <source>Allow only</source>
+        <translation>只允许</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1587" />
+        <source>All of:</source>
+        <translation>满足全部：</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1587" />
+        <source>Any of:</source>
+        <translation>满足任一：</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1590" />
+        <source>Structures must match every enabled condition</source>
+        <translation>结构需满足每个已启用的条件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1592" />
+        <source>Structures may match any enabled condition</source>
+        <translation>结构满足任一已启用的条件即可</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1687" />
+        <source>Preview, then replace current selection</source>
+        <translation>先预览，再替换当前选择</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1688" />
+        <source>Preview, then add to current selection</source>
+        <translation>先预览，再加入当前选择</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1689" />
+        <source>Preview, then remove from current selection</source>
+        <translation>先预览，再从当前选择中移除</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1735" />
+        <source>Add a filter condition or select structures to apply a result</source>
+        <translation>添加筛选条件或选中结构后，才能应用结果</translation>
+    </message>
 </context>
 <context>
     <name>StructureFilterEditorPopup</name>
@@ -22395,6 +22495,36 @@ Elapsed: {elapsed:.1f} ms</source>
         <location filename="../ui/widgets/structure_filter_bar.py" line="1083" />
         <source>Estimated matches: {matched:,} / {active:,} structures</source>
         <translation>预计匹配：{matched:,} / {active:,} 个结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="997" />
+        <source>Add to current conditions</source>
+        <translation>追加到当前条件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1090" />
+        <source>Added saved filter: {name}</source>
+        <translation>已追加常用筛选：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1236" />
+        <source>Clear all conditions?</source>
+        <translation>清空全部条件？</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1237" />
+        <source>This removes every filter condition and the match highlight. The current selection is not changed.</source>
+        <translation>这会删除全部筛选条件和匹配高亮，不会改变当前选择。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1294" />
+        <source>Updating estimate…</source>
+        <translation>正在更新预计匹配…</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1344" />
+        <source>Not evaluated yet: {message}</source>
+        <translation>暂未计算：{message}</translation>
     </message>
 </context>
 <context>
@@ -27797,6 +27927,31 @@ Magnetic: {magnetic}</source>
     <message>
         <source>natoms &gt; 100</source>
         <translation type="vanished">natoms &gt; 100</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="328" />
+        <source>NOT</source>
+        <translation>取反</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="332" />
+        <source>Invert condition</source>
+        <translation>取反条件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="333" />
+        <source>Invert: match structures that do not meet this condition</source>
+        <translation>取反：匹配不满足此条件的结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="372" />
+        <source>Insert a field from the current dataset</source>
+        <translation>插入当前数据集中的字段</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="373" />
+        <source>Insert field</source>
+        <translation>插入字段</translation>
     </message>
 </context>
 <context>

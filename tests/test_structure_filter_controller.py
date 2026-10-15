@@ -295,3 +295,55 @@ def test_clearing_the_query_cancels_a_queued_rerun(monkeypatch):
     assert len(pending) == 1
     assert controller.state.result is None
     assert not controller.state.running
+
+
+def _apply_page(current, empty=False):
+    data = SimpleNamespace(select_index=[])
+    canvas = SimpleNamespace(apply_selection_result=MagicMock(), set_search_highlight=MagicMock())
+    result = SimpleNamespace(indices=(1, 2), active_count=3, elapsed_ms=1.0)
+    page = SimpleNamespace(
+        nep_result_data=data,
+        graph_widget=SimpleNamespace(canvas=canvas),
+        _pending_structure_filter_apply=None,
+        structure_filter_controller=SimpleNamespace(
+            result_is_current=MagicMock(side_effect=current),
+            preview=MagicMock(),
+            state=SimpleNamespace(result=result),
+        ),
+        structure_filter_bar=SimpleNamespace(
+            spec=SimpleNamespace(is_empty=lambda: empty),
+            set_stale=MagicMock(),
+            set_result=MagicMock(),
+            set_selection_count=MagicMock(),
+        ),
+    )
+    page._apply_structure_filter_result = lambda mode: ShowNepWidget._apply_structure_filter_result(page, mode)
+    return page, canvas, result
+
+
+def test_applying_a_stale_result_previews_once_then_applies_the_fresh_matches():
+    page, canvas, result = _apply_page([False, True])
+
+    ShowNepWidget._apply_structure_filter_result(page, "add")
+    page.structure_filter_controller.preview.assert_called_once_with()
+    canvas.apply_selection_result.assert_not_called()
+    assert page._pending_structure_filter_apply == "add"
+
+    ShowNepWidget._on_structure_filter_preview_ready(page, result)
+    canvas.apply_selection_result.assert_called_once_with((1, 2), "add")
+    assert page._pending_structure_filter_apply is None
+
+
+def test_failed_preview_drops_the_pending_apply_and_empty_specs_do_nothing():
+    page, canvas, _result = _apply_page([False])
+    page.structure_filter_bar.set_error = MagicMock()
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    error = StructureFilterValidationError("invalid_regex", "Invalid regular expression: x", "tag")
+    page.structure_filter_bar.editor_is_open = True
+    ShowNepWidget._on_structure_filter_preview_failed(page, error)
+    assert page._pending_structure_filter_apply is None
+    canvas.apply_selection_result.assert_not_called()
+
+    page, canvas, _result = _apply_page([False], empty=True)
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    page.structure_filter_controller.preview.assert_not_called()

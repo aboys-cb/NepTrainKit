@@ -75,10 +75,10 @@ msgstr "6.1 Basic workflow"
 
 #: ../../source/module/nep-dataset-display-content.md:10692
 #: 22b689fa93ef41d792b4f1426cc02ece
-msgid "点击“筛选条件”打开编辑器。空筛选会自动出现第一行。"
+msgid "点击“筛选条件”或按 `Ctrl+F` 打开编辑器。空筛选会自动出现第一行。"
 msgstr ""
-"Click `Filter conditions` to open the editor. An empty filter "
-"automatically starts with the first row."
+"Click `Filter conditions` or press `Ctrl+F` to open the editor. An empty "
+"filter automatically starts with the first row."
 
 #: ../../source/module/nep-dataset-display-content.md:10693
 #: ade75cb160094e7cbcfcbfbf90ea0767
@@ -97,10 +97,10 @@ msgstr ""
 
 #: ../../source/module/nep-dataset-display-content.md:10695
 #: 1579eab9b09d4c489660f49cd0315145
-msgid "点击“完成并预览”。图中的匹配高亮只用于预览，不会改变当前选择。"
+msgid "点击“完成并预览”，或在输入框中按回车。图中的匹配高亮只用于预览，不会改变当前选择。"
 msgstr ""
-"Click `Finish and preview`. Highlighted matches are for preview only and "
-"do not change the current selection."
+"Click `Finish and preview`, or press Enter in an input box. Highlighted "
+"matches are for preview only and do not change the current selection."
 
 #: ../../source/module/nep-dataset-display-content.md:10696
 #: 72241146d8ea441f81c5ced8ba66dc95
@@ -111,18 +111,37 @@ msgstr ""
 
 #: ../../source/module/nep-dataset-display-content.md:10698
 #: 9237c8cefef2445e99dcfe86d5112114
-msgid "修改条件后，旧匹配结果会显示为“结果已过期”。重新预览前不能继续应用旧结果。"
+msgid "修改条件后，旧匹配结果会显示为“结果已过期”。此时“应用结果”菜单显示“先预览，再……”：选择后会先按当前条件重新预览，再应用新的匹配结果，不会使用旧结果。"
 msgstr ""
 "After a condition changes, the previous matches are marked `Result out of"
-" date`. You cannot apply the stale result until you preview again."
+" date`. The `Apply result` menu then shows `Preview, then …` actions: "
+"choosing one previews the current conditions again and applies the new "
+"matches, never the stale result."
 
 #: ../../source/module/nep-dataset-display-content.md:10700
 #: 10ff096a10b243e5b0da7b665e124110
-msgid "编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**。清空选择位于“应用结果”菜单中。"
+msgid "编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**；已有填写内容时会先确认。清空选择位于“应用结果”菜单中。"
 msgstr ""
 "The trash button in the lower-right corner clears only the filter "
 "conditions and match highlights; it **does not clear the current "
-"selection**. To clear the selection, use the `Apply result` menu."
+"selection**, and it asks for confirmation when conditions are filled in. "
+"To clear the selection, use the `Apply result` menu."
+
+msgid "编辑时会自动预览。输入尚未完成时，错误只在编辑器底部提示，不会标红；点击“完成并预览”或按回车后，才会标出出错的条件。"
+msgstr ""
+"The editor previews automatically while you type. While input is still "
+"incomplete, errors appear only at the bottom of the editor and the row is"
+" not highlighted; click `Finish and preview` or press Enter to mark the "
+"condition that failed."
+
+msgid ""
+"筛选栏中的条件标签会显示条件类型、匹配方式和 `Aa` "
+"状态；有多个条件时，左侧显示“满足全部：”或“满足任一：”。已关闭的条件以删除线显示，过长的值以省略号显示，悬停可查看完整内容。"
+msgstr ""
+"Each condition chip in the filter bar shows the condition type, match "
+"mode, and `Aa` state. With several conditions, the bar starts with `All "
+"of:` or `Any of:`. Disabled conditions are struck through, and long "
+"values end with an ellipsis; hover to see the full text."
 
 #: ../../source/module/nep-dataset-display-content.md:10702
 #: f4aa304a67ab4dbe928ec9713922a10f
@@ -275,6 +294,24 @@ msgstr ""
 "sensitivity: highlighted means case-sensitive; otherwise matching ignores"
 " case."
 
+msgid ""
+"开关右侧的“取反”按钮把该条件反过来使用，例如“取反 + 配置类型包含 `surface`”会匹配配置类型不含 `surface` "
+"的结构。取反只作用于这一行，之后再按 AND/OR 与其他条件组合。"
+msgstr ""
+"The `NOT` button next to the switch inverts that condition. For example, "
+"`NOT` with configuration type contains `surface` matches structures whose"
+" configuration type does not contain `surface`. Inversion applies only to"
+" that row, before it is combined with other conditions by AND/OR."
+
+msgid ""
+"选择“自定义表达式”时，输入框右侧的 `{}` "
+"按钮会列出当前数据集中可用的字段及单位，点击即可插入到光标处。切换条件类型时，每种类型分别保留自己的输入内容。"
+msgstr ""
+"When `Custom expression` is selected, the `{}` button to the right of the"
+" input lists the fields available in the current dataset with their "
+"units; click one to insert it at the cursor. When you switch the "
+"condition type, each type keeps its own input."
+
 #: ../../source/module/nep-dataset-display-content.md:10718
 #: ea6339c32cc944f5addc5620d151b1df
 msgid "非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不会意外匹配全部结构。"
@@ -312,14 +349,16 @@ msgstr ""
 
 #: ../../source/module/nep-dataset-display-content.md:10726
 #: 5be9064d5471486f86cb98608a4a7544
-msgid "元素与数值属性选项来自当前数据集。常见磁矩、力、磁力和电荷显示易读名称，分量、模长以及参考值/预测值/误差可直接在性质列表选择。阈值支持负数和科学计数法。修改后会自动预览，仍需通过“应用结果”改变选择集。"
+msgid "元素与数值属性选项来自当前数据集。常见磁矩、力、磁力和电荷显示易读名称，分量、模长以及参考值/预测值/误差可直接在性质列表选择。阈值支持负数和科学计数法；阈值为空或无效时，该行会标红并说明原因，不会被悄悄忽略。修改后会自动预览，仍需通过“应用结果”改变选择集。"
 msgstr ""
 "Element and numeric property choices come from the current dataset. "
 "Common moments, forces, magnetic forces, and charges have readable "
 "labels. Components, magnitudes, and reference/prediction/error views can "
 "be selected directly from the property list. Thresholds support negative "
-"values and scientific notation. Changes automatically preview matches; "
-"Apply results is still required to change the selection."
+"values and scientific notation; an empty or invalid threshold highlights "
+"the row and explains why instead of being silently ignored. Changes "
+"automatically preview matches; Apply results is still required to change "
+"the selection."
 
 #: ../../source/module/nep-dataset-display-content.md:10728
 #: 353692524a65425cb16d1f5de8b1a4a1
@@ -417,11 +456,15 @@ msgstr ""
 
 #: ../../source/module/nep-dataset-display-content.md:10748
 #: 6dbe60dc120c4326aa8cc2fe0f349619
-msgid "加载常用筛选会**替换编辑器里的当前条件**，随后更新预览；它不会自动执行“应用结果”，也不会改变当前选择。"
+msgid ""
+"直接点击名称会**替换编辑器里的当前条件**。若要保留当前条件，使用“常用筛选 → 追加到当前条件”，追加的条件沿用当前的 AND/OR "
+"关系。两种方式都会随后更新预览，不会自动执行“应用结果”，也不会改变当前选择。"
 msgstr ""
-"Loading a saved filter **replaces the conditions currently in the "
-"editor** and then updates the preview. It does not run `Apply result` "
-"automatically or change the current selection."
+"Clicking a name directly **replaces the conditions currently in the "
+"editor**. To keep the current conditions, use `Saved filters → Add to "
+"current conditions`; appended conditions follow the current AND/OR "
+"relation. Both then update the preview; neither runs `Apply result` "
+"automatically nor changes the current selection."
 
 #: ../../source/module/nep-dataset-display-content.md:10750
 #: 75633449e6fb45dcb0c6fffee5c399bd
@@ -430,8 +473,10 @@ msgstr "A saved filter includes:"
 
 #: ../../source/module/nep-dataset-display-content.md:10752
 #: 562d7f2ec24e466e89f13cae29591311
-msgid "每条条件的类型、输入值和启用状态"
-msgstr "The type, input value, and enabled state of each condition"
+msgid "每条条件的类型、输入值、启用状态和取反状态"
+msgstr ""
+"The type, input value, enabled state, and inversion state of each "
+"condition"
 
 #: ../../source/module/nep-dataset-display-content.md:10753
 #: 00c6c17662a94accadff2619bef00c25

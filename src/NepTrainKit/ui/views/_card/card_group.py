@@ -229,6 +229,7 @@ class CardGroup(MakeDataCardWidget):
         self.vBoxLayout.addWidget(self.filter_widget)
         self.summary_label = CaptionLabel("", self)
         self.summary_label.setWordWrap(True)
+        self.summary_label.setStyleSheet("color:#7b8990; padding: 0 20px 8px 20px;")
         self.vBoxLayout.addWidget(self.summary_label)
         self.run_card_num:int
         self.filter_card=None

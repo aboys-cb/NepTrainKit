@@ -28,6 +28,7 @@ LANGUAGE_LABELS: Final[dict[str, str]] = {
 TRANSLATION_BASENAME: Final[str] = "neptrainkit"
 
 _translator: QTranslator | None = None
+_fluent_translator: QTranslator | None = None
 _installed_language = "en_US"
 _APPLE_LANGUAGE_RE: Final[re.Pattern[str]] = re.compile(r'"([^"]+)"|([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]+)*)')
 
@@ -145,7 +146,7 @@ def translation_path(language: str) -> Path | None:
 
 def install_translator(app: QApplication, language: object | None = None) -> str:
     """Install the configured Qt translator and return the resolved language."""
-    global _translator, _installed_language
+    global _translator, _fluent_translator, _installed_language
 
     configured = normalize_language(language if language is not None else Config.get("ui", "language", "auto"))
     resolved = resolve_language(configured)
@@ -154,10 +155,19 @@ def install_translator(app: QApplication, language: object | None = None) -> str
     if _translator is not None:
         app.removeTranslator(_translator)
         _translator = None
+    if _fluent_translator is not None:
+        app.removeTranslator(_fluent_translator)
+        _fluent_translator = None
 
     path = translation_path(resolved)
     if path is None:
         return resolved
+
+    # Built-in qfluentwidgets strings (switch On/Off, dialog buttons, ...).
+    fluent_translator = QTranslator(app)
+    if fluent_translator.load(f":/qfluentwidgets/i18n/qfluentwidgets.{resolved}.qm"):
+        app.installTranslator(fluent_translator)
+        _fluent_translator = fluent_translator
 
     translator = QTranslator(app)
     if not path.exists():

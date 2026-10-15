@@ -124,6 +124,7 @@ class ConsoleWidget(QWidget):
             ToolTipFilter(self.stop_button, 300, ToolTipPosition.TOP)
         )
         self.stop_button.clicked.connect(self.stop)
+        self.stop_button.setEnabled(False)
 
         self.gridLayout.addWidget(self.new_card_button, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.setting_command, 0, 1, 1, 1)
@@ -153,3 +154,7 @@ class ConsoleWidget(QWidget):
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""
         self.stopSignal.emit()
+
+    def set_running(self, running: bool) -> None:
+        """Enable Stop only while the workflow chain is executing."""
+        self.stop_button.setEnabled(bool(running))

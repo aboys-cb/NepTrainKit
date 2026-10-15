@@ -102,7 +102,9 @@ class AdaptiveInlineDoubleSpinBox(DoubleSpinBox):
 class AdaptiveCompactDoubleSpinBox(CompactDoubleSpinBox):
     """Keep numeric text and its step control visible at the normal hint."""
 
-    _TEXT_PADDING = 8
+    # Covers the line edit's own horizontal text padding; 8 px clipped the
+    # last digit of values such as ``1.5000``.
+    _TEXT_PADDING = 20
 
     def __init__(self, parent=None):
         super().__init__(parent)

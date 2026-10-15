@@ -784,7 +784,21 @@ def configure_app(app: QApplication) -> None:
     icon = _application_icon()
     app.setWindowIcon(icon)
     _set_macos_dock_icon(app, icon)
-    font = QFont("Arial", 12)
+    font = QFont()
+    # Arial has no CJK glyphs; prefer native UI fonts so Latin and Chinese
+    # text render with matching metrics on every platform.
+    font.setFamilies(
+        [
+            "Segoe UI",
+            "Microsoft YaHei UI",
+            ".AppleSystemUIFont",
+            "PingFang SC",
+            "Noto Sans CJK SC",
+            "Noto Sans",
+            "Arial",
+        ]
+    )
+    font.setPointSize(12)
     app.setFont(font)
     keep_created_styles_alive()
     ensure_fluent_tooltips(app)

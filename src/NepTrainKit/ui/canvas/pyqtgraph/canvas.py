@@ -324,7 +324,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             if bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"])):
                 # Update RMSE overlays for non-descriptor plots.
                 pos = self.convert_pos(plot, (0, 1))
-                text = f"rmse: {_dataset.get_formart_rmse()}"
+                text = f"RMSE: {_dataset.get_formart_rmse()}"
                 plot.text.setText(text)
                 plot.text.setPos(*pos)
             else:

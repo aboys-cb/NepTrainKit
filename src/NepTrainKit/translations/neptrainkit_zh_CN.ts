@@ -19479,6 +19479,22 @@ All child items will also be deleted.</source>
 <context>
     <name>ShowNepWidget</name>
     <message>
+        <source>No dataset loaded</source>
+        <translation>尚未加载数据</translation>
+    </message>
+    <message>
+        <source>Open a train.xyz / NEP result directory, or drag files here.</source>
+        <translation>打开 train.xyz 或 NEP 结果目录，也可以直接把文件拖到这里。</translation>
+    </message>
+    <message>
+        <source>Open data</source>
+        <translation>打开数据</translation>
+    </message>
+    <message>
+        <source>Original {orig} · Current {now} · Removed {removed} · Selected {selected} · Unselected {unselected} · Rejected {rejected}</source>
+        <translation>原始 {orig} · 当前 {now} · 已删除 {removed} · 已选 {selected} · 未选 {unselected} · 坏点 {rejected}</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/show_nep.py" line="305" /><location filename="../ui/pages/show_nep.py" line="304" />
         <source>Open File…</source>
         <translation>打开文件…</translation>

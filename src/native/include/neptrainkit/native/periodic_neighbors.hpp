@@ -95,7 +95,7 @@ public:
         }
     }
 
-    NeighborRows query_knn(int requested_neighbors) const {
+    NeighborRows query_knn(int requested_neighbors, bool complete_shell = false) const {
         if (requested_neighbors <= 0) {
             throw std::invalid_argument("requested_neighbors must be positive");
         }
@@ -130,7 +130,19 @@ public:
                     candidates.begin(), candidates.begin() + keep, candidates.end(),
                     neighbor_less<Scalar>
                 );
-                candidates.resize(keep);
+                if (complete_shell && keep > 0) {
+                    // Keep distance ties at the outer shell. Arbitrarily cutting
+                    // a symmetric shell creates orientation-dependent features.
+                    const Scalar boundary = candidates[keep - 1].distance;
+                    const Scalar tolerance = std::max(Scalar(1), boundary) * Scalar(1e-7);
+                    candidates.erase(std::remove_if(candidates.begin() + keep,
+                        candidates.end(), [boundary, tolerance](const NeighborType& item) {
+                            return item.distance > boundary + tolerance;
+                        }), candidates.end());
+                    std::sort(candidates.begin(), candidates.end(), neighbor_less<Scalar>);
+                } else {
+                    candidates.resize(keep);
+                }
                 selected[static_cast<std::size_t>(center)] = std::move(candidates);
             }
 

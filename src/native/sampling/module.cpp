@@ -6,12 +6,42 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <limits>
+#include <thread>
 #include <vector>
+#include "neptrainkit/native/periodic_neighbors.hpp"
 
 namespace py = pybind11;
 
 namespace {
+
+// NEPKIT_SAMPLING_THREADS, then OMP_NUM_THREADS, then the hardware count.
+int sampling_threads() {
+    for (const char* name : {"NEPKIT_SAMPLING_THREADS", "OMP_NUM_THREADS"}) {
+        const char* value = std::getenv(name);
+        if (value && *value) {
+            const long parsed = std::strtol(value, nullptr, 10);
+            if (parsed > 0) return static_cast<int>(std::min<long>(parsed, 256));
+        }
+    }
+    const unsigned hardware = std::thread::hardware_concurrency();
+    return hardware ? static_cast<int>(hardware) : 1;
+}
+
+// Static partition of independent iterations; work(begin, end, worker).
+// Results never depend on the thread count. Runs inline for small ranges.
+template <class Work>
+void parallel_ranges(py::ssize_t count, py::ssize_t grain, int threads, Work work) {
+    const py::ssize_t parts = std::max<py::ssize_t>(1, std::min<py::ssize_t>(threads, count/std::max<py::ssize_t>(grain, 1)));
+    if (parts <= 1) { work(0, count, 0); return; }
+    std::vector<std::thread> pool;
+    pool.reserve(parts-1);
+    for (py::ssize_t part=1; part<parts; ++part)
+        pool.emplace_back(work, count*part/parts, count*(part+1)/parts, static_cast<int>(part));
+    work(0, count/parts, 0);
+    for (auto& worker : pool) worker.join();
+}
 
 template <typename Scalar>
 using ContiguousArray = py::array_t<
@@ -444,12 +474,9 @@ class CoverageState {
         if (!dirty_[row]) { dirty_[row]=1; dirty_rows_.push_back(row); }
     }
 
-    void update_atom_node(int index, const std::vector<py::ssize_t>& centers) {
-        AtomNode& node=atom_nodes_[index];
-        if (node.radius<=atom_resolution_squared) return;
+    bool node_intersects(const AtomNode& node, const std::vector<py::ssize_t>& centers) const {
         const double* atoms=atoms_.data();
         const int dims=std::min<py::ssize_t>(bound_dimensions,atom_dimensions_);
-        bool intersects=false;
         for (auto center:centers) {
             double lower=0;
             for (int col=0; col<dims; ++col) {
@@ -458,14 +485,31 @@ class CoverageState {
                 lower+=delta*delta;
             }
             // Roundoff margin keeps this an exact pruning bound.
-            if (lower<=node.radius*(1.0+1e-14)) { intersects=true; break; }
+            if (lower<=node.radius*(1.0+1e-14)) return true;
         }
-        if (!intersects) return;
+        return false;
+    }
+
+    // Same pruning as a depth-first update: leaves to refresh, and visited
+    // internal nodes in post-order so radii can be rebuilt bottom-up.
+    void collect_atom_nodes(int index, int group, std::vector<std::pair<int,int>>& leaves,
+                            std::vector<int>& internal, const std::vector<py::ssize_t>& centers) const {
+        const AtomNode& node=atom_nodes_[index];
+        if (node.radius<=atom_resolution_squared || !node_intersects(node,centers)) return;
         if (node.left>=0) {
-            update_atom_node(node.left,centers); update_atom_node(node.right,centers);
-            node.radius=std::max(atom_nodes_[node.left].radius,atom_nodes_[node.right].radius);
+            collect_atom_nodes(node.left,group,leaves,internal,centers);
+            collect_atom_nodes(node.right,group,leaves,internal,centers);
+            internal.push_back(index);
             return;
         }
+        leaves.emplace_back(index,group);
+    }
+
+    // Each atom belongs to exactly one leaf, so leaves update independently.
+    void update_atom_leaf(int index, const std::vector<py::ssize_t>& centers,
+                          std::vector<py::ssize_t>& changed) {
+        AtomNode& node=atom_nodes_[index];
+        const double* atoms=atoms_.data();
         const double retirement=atom_resolution_squared;
         double radius=0;
         for (auto at=node.begin; at<node.end; ++at) {
@@ -478,10 +522,10 @@ class CoverageState {
                     double delta=atoms[row*atom_dimensions_+col]-atoms[center*atom_dimensions_+col];
                     squared+=delta*delta;
                 }
-                best=std::min(best,squared);
+                if (squared<best) best=squared;
                 if (best<=retirement) break;
             }
-            if (best<atomic_[row]) { atomic_[row]=best; mark_dirty(owners_[row]); }
+            if (best<atomic_[row]) { atomic_[row]=best; changed.push_back(owners_[row]); }
             if (best>retirement) radius=std::max(radius,best);
         }
         node.radius=radius;
@@ -558,7 +602,9 @@ public:
         const auto* ends = ends_.data(); const auto* elements = elements_.data();
         const auto* offsets = offsets_.data(); const auto* species = species_.data();
         py::gil_scoped_release release;
-        for (py::ssize_t row=0; row<count_; ++row) {
+        const int threads = sampling_threads();
+        parallel_ranges(count_, 2048, threads, [&](py::ssize_t first, py::ssize_t last, int) {
+        for (py::ssize_t row=first; row<last; ++row) {
             if (chosen_[row] || elements[row] != elements[center]) continue;
             double joint = 0.0;
             py::ssize_t start = 0;
@@ -571,25 +617,43 @@ public:
                     squared += delta*delta;
                 }
                 double& best = nearest_[row*(blocks_+1)+block];
-                best = std::min(best, squared);
+                if (squared<best) best=squared;
                 joint = std::max(joint, squared);
                 start = ends[block];
             }
             double& best = nearest_[row*(blocks_+1)+blocks_];
-            best = std::min(best, joint);
+            if (joint<best) best=joint;
         }
+        });
         if (center < count_) {
             chosen_[center] = 1;
             std::fill(nearest_.begin()+center*(blocks_+1), nearest_.begin()+(center+1)*(blocks_+1), 0.0);
             std::fill(atomic_.begin()+offsets[center], atomic_.begin()+offsets[center+1], 0.0);
             mark_dirty(center);
         }
+        std::vector<std::vector<py::ssize_t>> centers;
+        std::vector<std::pair<int,int>> leaves;
+        std::vector<int> internal;
         for (const auto& root:atom_roots_) {
-            std::vector<py::ssize_t> centers;
+            std::vector<py::ssize_t> local;
             for (auto atom=offsets[center]; atom<offsets[center+1]; ++atom)
-                if (species[atom]==root.first) centers.push_back(atom);
-            if (!centers.empty()) update_atom_node(root.second,centers);
+                if (species[atom]==root.first) local.push_back(atom);
+            if (local.empty()) continue;
+            centers.push_back(std::move(local));
+            collect_atom_nodes(root.second,static_cast<int>(centers.size())-1,leaves,internal,centers.back());
         }
+        std::vector<std::vector<py::ssize_t>> changed(threads);
+        parallel_ranges(static_cast<py::ssize_t>(leaves.size()), 8, threads,
+            [&](py::ssize_t first, py::ssize_t last, int worker) {
+                for (auto k=first; k<last; ++k)
+                    update_atom_leaf(leaves[k].first,centers[leaves[k].second],changed[worker]);
+            });
+        for (auto index:internal) {
+            AtomNode& node=atom_nodes_[index];
+            node.radius=std::max(atom_nodes_[node.left].radius,atom_nodes_[node.right].radius);
+        }
+        for (const auto& rows:changed)
+            for (auto row:rows) mark_dirty(row);
         for (auto row:dirty_rows_) {
             double best=0;
             for (auto atom=offsets[row]; atom<offsets[row+1]; ++atom)
@@ -625,10 +689,75 @@ public:
     }
 };
 
+// Model-independent local inputs. No energies, forces, labels, or source names.
+py::array_t<double> input_environment_features(
+    ContiguousArray<double> positions, ContiguousArray<double> cell,
+    ContiguousArray<bool> pbc, py::object spin_object) {
+    if (positions.ndim()!=2 || positions.shape(1)!=3 || cell.ndim()!=2 ||
+        cell.shape(0)!=3 || cell.shape(1)!=3 || pbc.ndim()!=1 || pbc.shape(0)!=3)
+        throw py::value_error("invalid input geometry shapes");
+    const auto n = positions.shape(0);
+    const bool magnetic = !spin_object.is_none();
+    ContiguousArray<double> spins;
+    if (magnetic) {
+        spins = ContiguousArray<double>::ensure(spin_object);
+        if (!spins || spins.ndim()!=2 || spins.shape(0)!=n || spins.shape(1)!=3)
+            throw py::value_error("invalid spin input shape");
+    }
+    for (auto array : {positions, cell})
+        for (py::ssize_t i=0; i<array.size(); ++i)
+            if (!std::isfinite(array.data()[i])) throw py::value_error("nonfinite geometry input");
+    if (magnetic)
+        for (py::ssize_t i=0; i<spins.size(); ++i)
+            if (!std::isfinite(spins.data()[i])) throw py::value_error("nonfinite spin input");
+    py::array_t<double> output({n, py::ssize_t(magnetic ? 17 : 12)});
+    auto out = output.mutable_unchecked<2>();
+    py::gil_scoped_release release;
+    const neptrainkit::native::PeriodicNeighborSearch<double> search(
+        positions.data(), n, cell.data(), pbc.data());
+    const auto rows = search.query_knn(12, true);
+    std::vector<double> magnitude(n, 0.0);
+    if (magnetic)
+        for (py::ssize_t i=0; i<n; ++i) {
+            const double* s=spins.data()+3*i;
+            magnitude[i]=std::sqrt(s[0]*s[0]+s[1]*s[1]+s[2]*s[2]);
+        }
+    for (py::ssize_t i=0; i<n; ++i) {
+        const auto& row = rows[i];
+        for (int k=0; k<12; ++k)
+            out(i,k) = row.empty() ? 0.0 : row[std::min<std::size_t>(k,row.size()-1)].distance;
+        if (!magnetic) continue;
+        out(i,12)=magnitude[i];
+        double correlation=0.0, second=0.0, fourth=0.0, sixth=0.0;
+        if (magnitude[i] > 1e-8) {
+            const double* s=spins.data()+3*i;
+            for (const auto& neighbor : row) {
+                if (neighbor.distance <= 1e-12) continue;
+                const double projection=(s[0]*neighbor.x+s[1]*neighbor.y+s[2]*neighbor.z)
+                    / (magnitude[i]*neighbor.distance);
+                const double square=projection*projection;
+                second+=square; fourth+=square*square; sixth+=square*square*square;
+                if (magnitude[neighbor.source]>1e-8) {
+                    const double* other=spins.data()+3*neighbor.source;
+                    correlation+=(s[0]*other[0]+s[1]*other[1]+s[2]*other[2])
+                        /(magnitude[i]*magnitude[neighbor.source]);
+                }
+            }
+        }
+        const double count=std::max<std::size_t>(1,row.size());
+        out(i,13)=correlation/count; out(i,14)=second/count;
+        out(i,15)=fourth/count; out(i,16)=sixth/count;
+    }
+    return output;
+}
+
 }  // namespace
 
 PYBIND11_MODULE(_sampling, module) {
-    module.attr("coverage_api_version") = 2;
+    module.def("input_environment_features", &input_environment_features,
+               py::arg("positions"), py::arg("cell"), py::arg("pbc"),
+               py::arg("spins")=py::none());
+    module.attr("coverage_api_version") = 8;
     py::class_<CoverageState>(module, "CoverageState")
         .def(py::init<ContiguousArray<double>, ContiguousArray<long long>,
                       ContiguousArray<long long>, ContiguousArray<double>,

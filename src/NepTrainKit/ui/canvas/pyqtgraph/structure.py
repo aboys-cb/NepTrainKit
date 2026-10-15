@@ -1,6 +1,8 @@
 """OpenGL-based structure plotting widgets using PyQtGraph.
 """
 
+import inspect
+
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 
@@ -18,6 +20,7 @@ from NepTrainKit.core.structure import table_info
 
 
 AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS = 500
+_PROJECTION_HAS_VIEWPORT = "viewport" in inspect.signature(gl.GLViewWidget.projectionMatrix).parameters
 
 
 # Theme accent, translucent: distinct from the yellow short-contact halos.
@@ -173,8 +176,9 @@ class StructurePlotWidget(gl.GLViewWidget):
 
             return mat
         else:
-            if viewport is not None:
-                return super().projectionMatrix(region, viewport)
+            if _PROJECTION_HAS_VIEWPORT:
+                viewport = self.getViewport() if viewport is None else viewport
+                return super().projectionMatrix(viewport if region is None else region, viewport)
             return super().projectionMatrix(region)
 
     def mousePressEvent(self, event):

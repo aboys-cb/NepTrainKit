@@ -119,6 +119,12 @@ class AtomicFilterEditor(QWidget):
         for widget in (self.element_combo, self.quantifier_combo, self.field_combo, self.operator_combo, self.value_edit):
             widget.setMinimumHeight(32)
             widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        # QPushButton's text-based minimum size (inherited by Fluent ComboBox)
+        # can force the entire popup beyond its viewport on Windows or with
+        # long custom property names. Let the grid allocate the available width.
+        for combo in (self.element_combo, self.quantifier_combo, self.field_combo, self.operator_combo):
+            combo.setMinimumWidth(80)
+            combo.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 2, 4, 4)
@@ -235,6 +241,8 @@ class AtomicFilterEditor(QWidget):
             self.changed.emit()
 
     def _update_hint(self):
+        for combo in (self.element_combo, self.quantifier_combo, self.field_combo, self.operator_combo):
+            combo.setToolTip(combo.currentText())
         if not self.field_combo.currentData():
             hint = self.tr('Load a dataset with atomic properties to choose a field.')
         elif self.element_combo.currentData():

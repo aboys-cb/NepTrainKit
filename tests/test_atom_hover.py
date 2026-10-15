@@ -207,6 +207,16 @@ def test_hover_controller_shows_card_and_clears_on_drag(app):
     host.close()
 
 
+def test_hover_filter_ignores_events_during_python_teardown(app):
+    host = QWidget()
+    controller = AtomHoverController(host, SimpleNamespace(structure=None))
+    # Cyclic GC can clear Python state before Qt destroys the host and removes
+    # its event filters. A late Hide/Leave event must not access cleared state.
+    controller.__dict__.clear()
+    app.sendEvent(host, QEvent(QEvent.Type.Leave))
+    host.close()
+
+
 @pytest.mark.parametrize("backend", ["vispy", "pyqtgraph"])
 def test_structure_views_pick_the_front_atom(app, backend):
     try:

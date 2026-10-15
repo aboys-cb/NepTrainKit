@@ -13,12 +13,17 @@ try:
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
 except ImportError:
     pass
-from PySide6.QtCore import QObject, QThread, QTimer, Slot
+from PySide6.QtCore import QObject, QThread, QTimer, Slot, qInstallMessageHandler
 from PySide6.QtWidgets import QApplication, QWidget
 from shiboken6 import delete
 from NepTrainKit.ui.threads import BackgroundTask, FilterProcessingThread, ThreadShutdownGuard, run_in_thread
 
 kind, quit_mode, protected = sys.argv[1:]
+# Windows Qt can send fatal diagnostics to the debugger instead of stderr.
+# Capture the actual Qt message explicitly, before abort can discard buffers.
+def qt_message(kind, context, message):
+    print(message, file=sys.stderr, flush=True)
+qInstallMessageHandler(qt_message)
 app = QApplication([])
 entered, completed = threading.Event(), threading.Event()
 callbacks = []

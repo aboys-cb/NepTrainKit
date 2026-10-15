@@ -701,12 +701,19 @@ def test_atomic_controls_keep_negative_scientific_thresholds_and_reject_incomple
     assert not row.to_condition().enabled
 
 
-def test_atomic_popup_grows_on_mode_switch_and_remains_within_width(bar, qapp):
+@pytest.mark.parametrize('long_field', [False, True])
+def test_atomic_popup_grows_on_mode_switch_and_remains_within_width(bar, qapp, long_field):
     bar.set_suggestions(_atomic_suggestions())
     bar.open_editor(add_if_empty=True)
     row = bar._popup._rows[0]
     original_height = row.height()
     _choose(row.field_combo, 'atomic')
+    if long_field:
+        # Custom property names and wider platform fonts must not force a
+        # hidden horizontal scrollbar or clip the threshold input.
+        field = 'atomic.custom_long_property_name_for_local_environment.norm'
+        row.atomic_editor.field_combo.addItem(field, userData=field)
+        _choose(row.atomic_editor.field_combo, field)
     qapp.processEvents()
     assert row.height() > original_height
     assert bar._popup.scroll.height() >= row.height()

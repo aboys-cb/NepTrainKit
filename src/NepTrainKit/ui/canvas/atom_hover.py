@@ -230,7 +230,7 @@ class AtomHoverController(QObject):
         self._view = view
         self._index: int | None = None
         self._pos: tuple[float, float] | None = None
-        self.card = AtomInfoCard()
+        self.card = AtomInfoCard(host)
         self._timer = QTimer(self)
         self._timer.setSingleShot(True)
         self._timer.timeout.connect(self._pick)
@@ -238,6 +238,10 @@ class AtomHoverController(QObject):
         host.installEventFilter(self)
 
     def eventFilter(self, watched, event):  # noqa: N802 - Qt override
+        # Qt may deliver Hide/Leave while cyclic GC has already cleared the
+        # Python attributes, before removing this filter with its host.
+        if watched is not getattr(self, "_host", None):
+            return False
         kind = event.type()
         if kind == QEvent.Type.MouseMove:
             if event.buttons() != Qt.MouseButton.NoButton:

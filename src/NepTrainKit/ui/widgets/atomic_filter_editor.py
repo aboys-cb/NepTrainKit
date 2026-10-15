@@ -235,6 +235,14 @@ class AtomicFilterEditor(QWidget):
     def expression(self):
         return atomic_condition_expression(self.values())
 
+    def validation_message(self) -> str:
+        """Explain why the controls do not form a condition yet."""
+        if not self.field_combo.currentData():
+            return self.tr('Load a dataset with atomic properties to choose a field.')
+        if not self.expression():
+            return self.tr('Enter a finite numeric threshold.')
+        return ''
+
     def _changed(self, *_args):
         if not self._syncing:
             self._update_hint()
@@ -243,10 +251,9 @@ class AtomicFilterEditor(QWidget):
     def _update_hint(self):
         for combo in (self.element_combo, self.quantifier_combo, self.field_combo, self.operator_combo):
             combo.setToolTip(combo.currentText())
-        if not self.field_combo.currentData():
-            hint = self.tr('Load a dataset with atomic properties to choose a field.')
-        elif self.element_combo.currentData():
+        hint = self.validation_message()
+        if not hint and self.element_combo.currentData():
             hint = self.tr('Only {element} atoms are checked. Structures without {element} do not match.').format(element=self.element_combo.currentData())
-        else:
+        elif not hint:
             hint = self.tr('The condition is checked for each atom in the structure.')
         self.hint_label.setText(hint)

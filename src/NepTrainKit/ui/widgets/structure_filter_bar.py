@@ -61,6 +61,7 @@ from NepTrainKit.core.types import (
     StructureFilterSpec,
     TextMatchMode,
 )
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.ui.widgets.completer import CompleterModel, JoinDelegate
 from NepTrainKit.ui.widgets.atomic_filter_editor import (
     AtomicFilterEditor,
@@ -303,6 +304,7 @@ class _ConditionRow(QFrame):
         self.condition_id = condition.condition_id
         self._suggestions = suggestions or {}
         self._error = False
+        self._local_error = ""
         self._input_hint = ""
         self.setObjectName("structureFilterConditionRow")
 
@@ -403,9 +405,15 @@ class _ConditionRow(QFrame):
         self.atomic_editor = AtomicFilterEditor(self._suggestions, atomic_values, self)
         root_layout.addWidget(self.atomic_editor)
         self._atomic_active = bool(atomic_values)
+        self._atomic_touched = False
         initial_field = "atomic" if atomic_values else condition.field
         if initial_field in _ELEMENT_FIELDS:
             initial_field = FilterField.ELEMENT_REQUIRED
+        # Each field keeps its own draft so switching never leaks or drops values.
+        self._current_field = initial_field
+        self._drafts: dict[object, str] = {}
+        if condition.field == FilterField.EXPRESSION:
+            self._drafts[FilterField.EXPRESSION] = self._display_values(condition)
         for index in range(self.field_combo.count()):
             if self.field_combo.itemData(index) == initial_field:
                 self.field_combo.setCurrentIndex(index)
@@ -422,7 +430,7 @@ class _ConditionRow(QFrame):
         self.mode_combo.currentIndexChanged.connect(lambda _index: self.changed.emit())
         self.case_button.toggled.connect(self._on_case_toggled)
         self.value_edit.textChanged.connect(self._on_value_changed)
-        self.atomic_editor.changed.connect(self._on_atomic_changed)
+        self.atomic_editor.changed.connect(self._on_atomic_edited)
         self._refresh_style()
         self._update_unit_label()
         self._update_atomic_visibility()
@@ -436,13 +444,35 @@ class _ConditionRow(QFrame):
         return "; ".join(condition.text_values)
 
     def _on_field_changed(self, _index=None):
+        previous = self._current_field
         field = self.field_combo.currentData()
+        self._current_field = field
+        if previous != "atomic":
+            # In atomic mode the hidden line edit only mirrors the generated expression.
+            self._drafts[previous] = self.value_edit.text()
+        expression_draft = self._drafts.get(FilterField.EXPRESSION, "")
+        atomic_expression = self.atomic_editor.expression()
         if field == "atomic":
-            values = parse_atomic_condition(self.value_edit.text())
+            values = parse_atomic_condition(expression_draft)
             if values:
                 self.atomic_editor.set_values(values)
-        elif self._atomic_active and field == FilterField.EXPRESSION:
-            self.value_edit.setText(self.atomic_editor.expression())
+                atomic_expression = self.atomic_editor.expression()
+            self._atomic_touched = False
+            text = atomic_expression
+        elif (
+            field == FilterField.EXPRESSION
+            and previous == "atomic"
+            and atomic_expression
+            and (self._atomic_touched or not expression_draft)
+        ):
+            # Edited visual conditions continue as raw expressions; an untouched
+            # detour through the atomic editor restores the original expression.
+            text = atomic_expression
+        else:
+            text = self._drafts.get(field, "")
+        self.value_edit.blockSignals(True)
+        self.value_edit.setText(text)
+        self.value_edit.blockSignals(False)
         self._fit_current_combo_width(self.field_combo, 112, padding=46)
         self._rebuild_modes(field, None)
         self._update_case_button(field == FilterField.FORMULA)
@@ -466,6 +496,18 @@ class _ConditionRow(QFrame):
             self.setFixedHeight(self.controls.sizeHint().height() + self.atomic_editor.sizeHint().height() + 4)
         else:
             self.setFixedHeight(68 if self._wrapped_layout else 34)
+        self._update_local_error()
+
+    def _update_local_error(self) -> None:
+        """Flag atomic controls that cannot produce a condition yet."""
+        self._local_error = self.atomic_editor.validation_message() if self._atomic_active else ""
+        if not self._error:
+            self.atomic_editor.setToolTip(self._local_error)
+        self._refresh_style()
+
+    def _on_atomic_edited(self):
+        self._atomic_touched = True
+        self._on_atomic_changed()
 
     def _on_atomic_changed(self):
         self.atomic_editor.unit_label.setText(_detect_expression_unit(self.atomic_editor.values()['field']))
@@ -644,12 +686,12 @@ class _ConditionRow(QFrame):
     def clear_error(self) -> None:
         self._error = False
         self.value_edit.setToolTip(self._input_hint)
-        self.atomic_editor.setToolTip("")
+        self.atomic_editor.setToolTip(self._local_error)
         self._refresh_style()
 
     def _refresh_style(self) -> None:
         dark = isDarkTheme()
-        if self._error:
+        if self._error or self._local_error:
             border = "#a7545b" if dark else "#d95763"
             background = "#40292c" if dark else "#fff6f6"
         else:
@@ -1173,12 +1215,13 @@ class StructureFilterEditorPopup(QFrame):
 
     def set_error(self, error: StructureFilterValidationError) -> None:
         self.clear_error()
-        self.error_label.setText(error.message)
+        message = translate_runtime_error(error.message)
+        self.error_label.setText(message)
         self.error_label.setVisible(True)
         if error.condition_id:
             for row in self._rows:
                 if row.condition_id == error.condition_id:
-                    row.set_error(error.message)
+                    row.set_error(message)
                     self.scroll.ensureWidgetVisible(row)
                     break
         self._update_content_height()
@@ -1314,7 +1357,7 @@ class StructureFilterBar(QFrame):
     def set_error(self, error: StructureFilterValidationError) -> None:
         self._result_current = False
         self.match_button.setText(self.tr("Error"))
-        self.match_button.setToolTip(error.message)
+        self.match_button.setToolTip(translate_runtime_error(error.message))
         self._popup.set_error(error)
         self._refresh_match_style("error")
         self._refresh_actions()
@@ -1365,7 +1408,7 @@ class StructureFilterBar(QFrame):
             parsed = parse_atomic_condition(values)
             if parsed:
                 return self.tr("Atomic condition"), atomic_condition_summary(parsed)
-        return label, values
+        return label, values or self.tr("Incomplete")
 
     def _rebuild_chips(self) -> None:
         self._chip_revision += 1
@@ -1492,9 +1535,13 @@ class StructureFilterBar(QFrame):
     def _refresh(self) -> None:
         empty = self._spec.is_empty()
         self.preview_button.setEnabled(not empty)
-        self.preview_button.setToolTip(
-            self.tr("Add a filter condition to preview matches") if empty else ""
-        )
+        if not empty:
+            preview_tip = ""
+        elif self._spec.enabled_conditions():
+            preview_tip = self.tr("Fill in the filter conditions to preview matches")
+        else:
+            preview_tip = self.tr("Add a filter condition to preview matches")
+        self.preview_button.setToolTip(preview_tip)
         if self._match_count is None:
             self.match_button.setText(self.tr("Matches —"))
             self.match_button.setToolTip(

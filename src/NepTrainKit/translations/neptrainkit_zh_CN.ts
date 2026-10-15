@@ -18150,6 +18150,30 @@ All child items will also be deleted.</source>
         <source>Spin Disorder requires vector magnetic moments or liftable scalar magmoms.</source>
         <translation>自旋无序需要矢量磁矩或可转换为矢量的标量磁矩。</translation>
     </message>
+    <message>
+        <source>Add at least one enabled filter condition.</source>
+        <translation>请至少添加一个已启用的筛选条件。</translation>
+    </message>
+    <message>
+        <source>Filter result does not align with active structures.</source>
+        <translation>筛选结果与当前活动结构不一致。</translation>
+    </message>
+    <message>
+        <source>Invalid regular expression: {detail}</source>
+        <translation>正则表达式无效：{detail}</translation>
+    </message>
+    <message>
+        <source>No active structure dataset is available.</source>
+        <translation>没有可用的活动结构数据集。</translation>
+    </message>
+    <message>
+        <source>No dataset is loaded.</source>
+        <translation>尚未加载数据集。</translation>
+    </message>
+    <message>
+        <source>The filter condition has no value.</source>
+        <translation>该筛选条件尚未填写值。</translation>
+    </message>
 </context>
 <context>
     <name>SOCTextureResponseCard</name>
@@ -22167,6 +22191,16 @@ Elapsed: {elapsed:.1f} ms</source>
     <message>
         <source>{count:,} matches</source>
         <translation type="vanished">{count:,} 个匹配</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1411" />
+        <source>Incomplete</source>
+        <translation>未完成</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1541" />
+        <source>Fill in the filter conditions to preview matches</source>
+        <translation>请先填写筛选条件，再预览匹配结果</translation>
     </message>
 </context>
 <context>
@@ -27964,6 +27998,11 @@ Magnetic: {magnetic}</source>
     <message>
         <source>The condition is checked for each atom in the structure.</source>
         <translation>对结构中的每个原子判断条件。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/atomic_filter_editor.py" line="243" />
+        <source>Enter a finite numeric threshold.</source>
+        <translation>请输入有限的数值阈值。</translation>
     </message>
 </context>
 <context>

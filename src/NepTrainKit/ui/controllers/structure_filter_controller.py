@@ -32,6 +32,10 @@ class StructureFilterController(QObject):
         self.state = StructureFilterState()
         self._dataset = None
         self._job_id = 0
+        # Only one evaluation runs at a time; newer requests rerun it once.
+        self._busy = False
+        self._running_job_id = 0
+        self._rerun = False
 
     @property
     def dataset(self):
@@ -39,6 +43,7 @@ class StructureFilterController(QObject):
 
     def set_dataset(self, dataset) -> None:
         self._job_id += 1
+        self._rerun = False
         self._dataset = dataset
         self.state.result = None
         self.state.error = None
@@ -65,6 +70,7 @@ class StructureFilterController(QObject):
 
     def clear(self) -> None:
         self._job_id += 1
+        self._rerun = False
         self.state = StructureFilterState()
         self.stateChanged.emit(self.state)
 
@@ -87,8 +93,20 @@ class StructureFilterController(QObject):
             self.stateChanged.emit(self.state)
             return
 
+        if self._busy:
+            # Do not stack threads that share the dataset caches.  The running
+            # job is still useful if nothing changed since it started.
+            if self._job_id != self._running_job_id:
+                self._rerun = True
+            self.state.running = True
+            self.state.error = None
+            self.stateChanged.emit(self.state)
+            return
+
         self._job_id += 1
         job_id = self._job_id
+        self._running_job_id = job_id
+        self._busy = True
         dataset_id = id(dataset)
         self.state.running = True
         self.state.error = None
@@ -101,6 +119,8 @@ class StructureFilterController(QObject):
                 return exc
 
         def _done(value) -> None:
+            if self._finish_job():
+                return
             if job_id != self._job_id or self._dataset is None or id(self._dataset) != dataset_id:
                 return
             self.state.running = False
@@ -116,6 +136,8 @@ class StructureFilterController(QObject):
             self.stateChanged.emit(self.state)
 
         def _failed(message: str) -> None:
+            if self._finish_job():
+                return
             if job_id != self._job_id:
                 return
             error = StructureFilterValidationError("search_failed", message)
@@ -126,3 +148,12 @@ class StructureFilterController(QObject):
             self.stateChanged.emit(self.state)
 
         run_in_thread(self, _compute, on_finished=_done, on_error=_failed)
+
+    def _finish_job(self) -> bool:
+        """Release the worker slot; return True when a newer preview took over."""
+        self._busy = False
+        if not self._rerun:
+            return False
+        self._rerun = False
+        self.preview()
+        return True

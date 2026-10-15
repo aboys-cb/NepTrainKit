@@ -767,3 +767,85 @@ def test_atomic_editor_distinguishes_properties_with_the_same_friendly_label(bar
     assert combo.itemText(0) != combo.itemText(1)
     assert '(spin)' in combo.itemText(0)
     assert '(spin_vec)' in combo.itemText(1)
+
+
+def test_switching_fields_keeps_each_draft_without_leaking_values(bar):
+    bar.set_suggestions(_atomic_suggestions())
+    custom = 'natoms > 100 && energy < 0'
+    bar.set_spec(_spec(_condition('expr', FilterField.EXPRESSION, custom)))
+    row = bar._popup._rows[0]
+
+    # An untouched detour through the visual editor restores the custom expression.
+    _choose(row.field_combo, 'atomic')
+    assert row.to_condition().text_values == ('any(atomic.spin.norm < 1)',)
+    _choose(row.field_combo, FilterField.EXPRESSION)
+    assert row.value_edit.text() == custom
+    assert row.to_condition().text_values == (custom,)
+
+    # Generated atomic expressions never become text values of other fields.
+    _choose(row.field_combo, 'atomic')
+    row.atomic_editor.value_edit.setText('3')
+    _choose(row.field_combo, FilterField.CONFIG_TYPE)
+    assert row.value_edit.text() == ''
+    row.value_edit.setText('surface')
+    _choose(row.field_combo, FilterField.FORMULA)
+    assert row.value_edit.text() == ''
+    _choose(row.field_combo, FilterField.CONFIG_TYPE)
+    assert row.to_condition().text_values == ('surface',)
+
+    # Edited visual conditions continue as raw expressions.
+    _choose(row.field_combo, 'atomic')
+    row.atomic_editor.value_edit.setText('2')
+    _choose(row.field_combo, FilterField.EXPRESSION)
+    assert row.to_condition().text_values == ('any(atomic.spin.norm < 2)',)
+
+
+def test_incomplete_atomic_threshold_is_flagged_instead_of_silently_ignored(bar):
+    bar.set_suggestions(_atomic_suggestions())
+    bar._popup.add_condition()
+    row = bar._popup._rows[0]
+    _choose(row.field_combo, 'atomic')
+    assert not row._local_error
+
+    row.atomic_editor.value_edit.setText('')
+    assert row.to_condition().text_values == ()
+    message = row.atomic_editor.tr('Enter a finite numeric threshold.')
+    assert row._local_error == message
+    assert row.atomic_editor.hint_label.text() == message
+    assert row.atomic_editor.toolTip() == message
+    assert 'border: 1px solid transparent' not in row.styleSheet()
+    # Re-emitting the spec clears engine errors but keeps the local hint.
+    bar._popup._emit_spec()
+    assert row._local_error == message
+    assert bar._condition_summary(bar.spec.conditions[0])[1] == bar.tr('Incomplete')
+    assert not bar.preview_button.isEnabled()
+    assert bar.preview_button.toolTip() == bar.tr('Fill in the filter conditions to preview matches')
+
+    row.atomic_editor.value_edit.setText('0.5')
+    assert not row._local_error
+    assert 'border: 1px solid transparent' in row.styleSheet()
+
+
+def test_popup_validation_errors_are_translated(bar, qapp):
+    from NepTrainKit import i18n
+
+    bar.set_spec(_spec(_condition('tag', FilterField.CONFIG_TYPE, '(')))
+    row = bar._popup._rows[0]
+    i18n.install_translator(qapp, 'zh_CN')
+    try:
+        bar.set_error(
+            StructureFilterValidationError(
+                'invalid_regex',
+                'Invalid regular expression: missing ), unterminated subpattern at position 0',
+                'tag',
+            )
+        )
+        expected = '正则表达式无效：missing ), unterminated subpattern at position 0'
+        assert bar._popup.error_label.text() == expected
+        assert row.value_edit.toolTip() == expected
+        assert bar.match_button.toolTip() == expected
+
+        bar.set_error(StructureFilterValidationError('empty_condition', 'The filter condition has no value.', 'tag'))
+        assert bar._popup.error_label.text() == '该筛选条件尚未填写值。'
+    finally:
+        i18n.install_translator(qapp, 'en_US')

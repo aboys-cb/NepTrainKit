@@ -222,3 +222,76 @@ def test_real_filter_bar_can_add_blank_rows_when_connected_to_show_nep_page():
     app.processEvents()
     assert len(bar._popup._rows) == 2
     bar.close()
+
+
+def test_previews_run_one_at_a_time_and_rerun_once_with_the_latest_spec(monkeypatch):
+    pending = []
+
+    def fake_run_in_thread(parent, func, *, on_finished, on_error):
+        pending.append((func, on_finished, on_error))
+        return object()
+
+    monkeypatch.setattr(controller_module, "run_in_thread", fake_run_in_thread)
+    monkeypatch.setattr(
+        controller_module.StructureFilterEngine,
+        "evaluate",
+        lambda dataset, spec: _result(spec),
+    )
+    controller = StructureFilterController()
+    controller.set_dataset(_dataset())
+    ready = []
+    controller.previewReady.connect(ready.append)
+
+    controller.set_spec(_spec("a"))
+    controller.preview()
+    # Repeating an unchanged request reuses the running job.
+    controller.preview()
+    assert len(pending) == 1
+    pending[0][1](pending[0][0]())
+    assert [result.spec for result in ready] == [_spec("a")]
+    assert len(pending) == 1
+
+    controller.set_spec(_spec("b"))
+    controller.preview()
+    controller.set_spec(_spec("c"))
+    controller.preview()
+    controller.set_spec(_spec("d"))
+    controller.preview()
+    assert len(pending) == 2
+    assert controller.state.running
+
+    # The superseded job is discarded and exactly one rerun uses the newest spec.
+    pending[1][2]("worker crashed")
+    assert len(pending) == 3
+    assert controller.state.error is None
+    pending[2][1](pending[2][0]())
+    assert [result.spec for result in ready] == [_spec("a"), _spec("d")]
+    assert not controller.state.running
+    assert len(pending) == 3
+
+
+def test_clearing_the_query_cancels_a_queued_rerun(monkeypatch):
+    pending = []
+
+    def fake_run_in_thread(parent, func, *, on_finished, on_error):
+        pending.append((func, on_finished, on_error))
+        return object()
+
+    monkeypatch.setattr(controller_module, "run_in_thread", fake_run_in_thread)
+    monkeypatch.setattr(
+        controller_module.StructureFilterEngine,
+        "evaluate",
+        lambda dataset, spec: _result(spec),
+    )
+    controller = StructureFilterController()
+    controller.set_dataset(_dataset())
+    controller.set_spec(_spec("a"))
+    controller.preview()
+    controller.set_spec(_spec("b"))
+    controller.preview()
+    controller.clear()
+
+    pending[0][1](pending[0][0]())
+    assert len(pending) == 1
+    assert controller.state.result is None
+    assert not controller.state.running

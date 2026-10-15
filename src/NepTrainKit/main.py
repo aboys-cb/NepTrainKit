@@ -128,6 +128,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.init_navigation()
         self.initWindow()
         self.stackedWidget.currentChanged.connect(self._refresh_page_actions)
+        self.stackedWidget.currentChanged.connect(self._audit_on_page_entry)
         self._refresh_page_actions()
 
     def init_menu(self) -> None:
@@ -339,6 +340,22 @@ class NepTrainKitMainWindow(FluentWindow):
         handler = getattr(widget, "export_file", None)
         if callable(handler):
             handler()
+
+    def _audit_on_page_entry(self, *_args) -> None:
+        """Treat opening the audit page as a request to audit the loaded data.
+
+        Uses the same path as the Dataset Display toolbar button, so an
+        unchanged dataset reuses its cached result instead of re-running.
+        """
+        if self.stackedWidget.currentWidget() is not self.training_set_audit_host:
+            return
+        if self.training_set_audit_window.is_detached:
+            return
+        if getattr(self.show_nep_interface, "nep_result_data", None) is None:
+            return
+        if getattr(self, "_training_set_audit_thread", None) is not None:
+            return
+        QTimer.singleShot(0, self.open_training_set_audit)
 
     def _refresh_page_actions(self, *_args) -> None:
         """Enable global actions only when the active page implements them."""

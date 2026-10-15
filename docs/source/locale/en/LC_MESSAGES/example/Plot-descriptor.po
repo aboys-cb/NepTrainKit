@@ -145,16 +145,16 @@ msgid "3. 怎么读这张图"
 msgstr "3. How to read the plot"
 
 #: ../../source/example/Plot-descriptor.md:40 e722714e1af3461499bb3e2696a47d62
-msgid "不同类别的点云明显分开，说明描述符能区分这些结构；大面积重叠时，模型可能难以区分它们。"
-msgstr "Clearly separated point clouds mean the descriptor distinguishes the groups; large overlaps suggest the model may struggle to tell them apart."
+msgid "原始描述符超过两维时，图中展示的是 PCA 二维投影。点云分开说明这些结构在该投影上有差异；重叠不能证明原始描述符相近，也不能据此判断模型难以区分它们。"
+msgstr "When the original descriptors have more than two dimensions, the plot shows a two-dimensional PCA projection. Separated point clouds indicate differences in this projection; overlap does not establish similarity in the original descriptor space or imply that the model cannot distinguish the structures."
 
 #: ../../source/example/Plot-descriptor.md:41 05aa4f69b57e4d78a96587c8a308c009
-msgid "某一类只覆盖很小的区域，说明这类结构的采样还不够多样，可以回到 `构建数据集` 补充扰动或应变。"
-msgstr "A group that covers only a small region is not sampled diversely enough; return to `Make Dataset` to add perturbations or strains."
+msgid "某一类只覆盖很小的区域，不一定缺少多样性：结构差异可能位于未显示的维度。是否补充结构，需要结合原始描述符空间的覆盖和实际结构变化判断。"
+msgstr "A group occupying a small region does not necessarily lack diversity: structural differences may lie in dimensions that are not shown. Decide whether to add structures by checking coverage in the original descriptor space together with actual structural variation."
 
 #: ../../source/example/Plot-descriptor.md:42 0c51a3fb94a940a89dc4614c84c19080
-msgid "同一位置颜色差别很大，表示描述符相近但能量不同，值得在 `NEP 数据集查看` 中抽查这些结构。"
-msgstr "Very different colors at the same position mean similar descriptors with different energies; spot-check those structures in `NEP Dataset Display`."
+msgid "同一位置颜色差别很大，只说明投影位置相近但每原子能量不同。可以在 `NEP 数据集查看` 中抽查这些结构，再核对原始描述符和模型误差；这张图本身不能证明采样充分或模型可靠。"
+msgstr "Very different colors at the same position only indicate similar projected coordinates with different energies per atom. Inspect these structures in `NEP Dataset Display`, then check their original descriptors and model errors; the plot alone cannot establish sufficient sampling or model reliability."
 
 #~ msgid "Descriptor 绘图示例"
 #~ msgstr "Descriptor Plotting Example"

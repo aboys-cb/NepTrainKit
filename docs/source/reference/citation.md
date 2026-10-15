@@ -22,4 +22,3 @@ url = {https://www.sciencedirect.com/science/article/pii/S0010465525003613},
 author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong Fan and Gang Tang and Zhiyong Wang},
 }
 ```
-

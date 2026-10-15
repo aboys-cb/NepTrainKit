@@ -324,10 +324,11 @@ msgstr ""
 "Selected`."
 
 #: ../../source/quickstart.md:102 5bfda11b83c74c3caaefdffa2745a15a
-msgid "清洗完成后再决定是否做 FPS 代表性采样，最后用 `保存` → `导出全部…` 保存干净的候选池。"
+msgid "清洗完成后，用 `保存` → `导出当前保留结构（N）…` 保存干净的候选池。若随后做 FPS 代表性采样，用 `导出已选择结构（N）…` 保存选中的子集。"
 msgstr ""
-"After cleaning, decide whether to run FPS representative sampling, then "
-"save the clean candidate pool with `Save` → `Export All…`."
+"After cleaning, save the clean candidate pool with `Save` → `Export Active (N)…`. "
+"If you then run FPS representative sampling, save the selected subset with "
+"`Export Selected (N)…`."
 
 #: ../../source/quickstart.md:104 3ced385a78a6403aab1d9abb0ad33571
 msgid "5. 进入 DFT 和训练"

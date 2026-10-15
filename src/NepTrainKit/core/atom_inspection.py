@@ -13,7 +13,10 @@ DFT_FORCE_KEY = "__ntk_dft_force"
 ML_FORCE_KEY = "__ntk_ml_force"
 DFT_MFORCE_KEY = "__ntk_dft_mforce"
 ML_MFORCE_KEY = "__ntk_ml_mforce"
-_HANDLED_KEYS = {"species", "species_id", "pos", "force", "forces", "spin"}
+# Raw extxyz fields shown under a named row instead of "other".  ``force_mag``
+# and ``mforce`` are the DFT magnetic-force labels read by the NEP/TACE loaders.
+_DFT_MFORCE_FIELDS = ("force_mag", "mforce")
+_HANDLED_KEYS = {"species", "species_id", "pos", "force", "forces", "spin", *_DFT_MFORCE_FIELDS}
 _INTERNAL_PREFIX = "__ntk_"
 
 
@@ -91,7 +94,13 @@ def _fractional(structure, position: np.ndarray) -> np.ndarray | None:
         return None
 
 
-def _extra_fields(properties: dict, index: int, atom_count: int):
+def _duplicates_shown_vector(row: np.ndarray, shown: list[np.ndarray]) -> bool:
+    if row.shape != (3,) or not np.issubdtype(row.dtype, np.number):
+        return False
+    return any(np.allclose(row, vector, rtol=1e-4, atol=1e-6) for vector in shown)
+
+
+def _extra_fields(properties: dict, index: int, atom_count: int, shown: list[np.ndarray]):
     extra = []
     for key, values in properties.items():
         if key in _HANDLED_KEYS or str(key).startswith(_INTERNAL_PREFIX):
@@ -100,6 +109,9 @@ def _extra_fields(properties: dict, index: int, atom_count: int):
         if array.ndim == 0 or array.shape[0] != atom_count:
             continue
         row = np.atleast_1d(array[index])
+        # Another label for a vector already on the card (e.g. a renamed force).
+        if _duplicates_shown_vector(row, shown):
+            continue
         extra.append((str(key), tuple(row.tolist())))
     return tuple(extra)
 
@@ -118,6 +130,18 @@ def inspect_atom(structure, index: int) -> AtomInspection | None:
     dft_force = _vector(properties, DFT_FORCE_KEY, index, atom_count)
     if dft_force is None:
         dft_force = _vector(properties, "force", index, atom_count)
+    dft_mforce = _vector(properties, DFT_MFORCE_KEY, index, atom_count)
+    for key in _DFT_MFORCE_FIELDS:
+        if dft_mforce is None:
+            dft_mforce = _vector(properties, key, index, atom_count)
+    ml_force = _vector(properties, ML_FORCE_KEY, index, atom_count)
+    spin = _vector(properties, "spin", index, atom_count)
+    ml_mforce = _vector(properties, ML_MFORCE_KEY, index, atom_count)
+    shown = [
+        vector
+        for vector in (dft_force, ml_force, spin, dft_mforce, ml_mforce)
+        if vector is not None
+    ]
     nearest_distance, nearest_index = _nearest_neighbor(structure, index)
     return AtomInspection(
         index=index,
@@ -125,10 +149,10 @@ def inspect_atom(structure, index: int) -> AtomInspection | None:
         position=position,
         fractional=_fractional(structure, position),
         dft_force=dft_force,
-        ml_force=_vector(properties, ML_FORCE_KEY, index, atom_count),
-        spin=_vector(properties, "spin", index, atom_count),
-        dft_mforce=_vector(properties, DFT_MFORCE_KEY, index, atom_count),
-        ml_mforce=_vector(properties, ML_MFORCE_KEY, index, atom_count),
+        ml_force=ml_force,
+        spin=spin,
+        dft_mforce=dft_mforce,
+        ml_mforce=ml_mforce,
         nearest_distance=nearest_distance,
         nearest_index=nearest_index,
         nearest_element=(
@@ -136,7 +160,7 @@ def inspect_atom(structure, index: int) -> AtomInspection | None:
             if nearest_index is not None and nearest_index < len(elements)
             else None
         ),
-        extra=_extra_fields(properties, index, atom_count),
+        extra=_extra_fields(properties, index, atom_count, shown),
     )
 
 

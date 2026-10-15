@@ -4,27 +4,72 @@ from __future__ import annotations
 from html import escape
 
 import numpy as np
+from ase.data import atomic_numbers
 from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPoint, Qt, QTimer
-from PySide6.QtGui import QCursor, QGuiApplication
-from PySide6.QtWidgets import QFrame, QLabel, QVBoxLayout, QWidget
+from PySide6.QtGui import QColor, QCursor, QGuiApplication
+from PySide6.QtWidgets import QFrame, QGraphicsDropShadowEffect, QLabel, QVBoxLayout, QWidget
 
 from NepTrainKit import palette
 from NepTrainKit.core.atom_inspection import AtomInspection, inspect_atom
+from NepTrainKit.core.structure import table_info
 
 
 def _tr(text: str) -> str:
     return QCoreApplication.translate("AtomInfoCard", text)
 
 
-def _vector_cells(vector: np.ndarray) -> str:
-    return "".join(f"<td align='right'>{float(value):.3f}</td>" for value in vector)
+_NUMBER_FONT = "'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace"
 
 
-def _row(label: str, cells: str, note: str = "") -> str:
+def _element_color(element: str) -> str:
+    try:
+        return str(table_info[str(atomic_numbers[element])]["color"])
+    except (KeyError, TypeError):
+        return palette.TEXT_SECONDARY
+
+
+def _number(value: float) -> str:
+    value = float(value)
+    magnitude = abs(value)
+    if magnitude != 0.0 and (magnitude < 1e-3 or magnitude >= 1e4):
+        return f"{value:.2e}"
+    return f"{value:.3f}"
+
+
+def _numeric_cell(text: str, *, bold: bool = False, color: str | None = None) -> str:
+    style = f"font-family:{_NUMBER_FONT}; padding-left:12px;"
+    if bold:
+        style += " font-weight:600;"
+    if color:
+        style += f" color:{color};"
+    return f"<td align='right' style=\"{style}\">{text}</td>"
+
+
+def _label_cell(text: str) -> str:
     return (
-        f"<tr><td style='color:{palette.TEXT_SECONDARY}; padding-right:10px'>"
-        f"{escape(label)}</td>{cells}"
-        f"<td style='padding-left:10px'>{note}</td></tr>"
+        f"<td style='color:{palette.TEXT_SECONDARY}; padding-right:6px;'>"
+        f"{escape(text)}</td>"
+    )
+
+
+def _vector_row(label: str, vector, magnitude: str = "", *, emphasize: bool = False) -> str:
+    cells = "".join(_numeric_cell(_number(value)) for value in vector)
+    magnitude_cell = _numeric_cell(
+        magnitude,
+        bold=emphasize,
+        color=palette.PLOT_SELECTED if emphasize else palette.TEXT_SECONDARY,
+    )
+    return f"<tr>{_label_cell(label)}{cells}{magnitude_cell}</tr>"
+
+
+def _text_row(label: str, text: str) -> str:
+    return f"<tr>{_label_cell(label)}<td colspan='4' style='padding-left:12px;'>{text}</td></tr>"
+
+
+def _section(title: str) -> str:
+    return (
+        "<tr><td colspan='5' style='padding-top:7px; padding-bottom:1px; "
+        f"color:{palette.ACCENT}; font-size:11px; font-weight:600;'>{escape(title)}</td></tr>"
     )
 
 
@@ -42,74 +87,109 @@ def _extra_value(values: tuple[object, ...]) -> str:
 
 def format_atom_info(info: AtomInspection) -> str:
     """Return the rich-text body of the hover card."""
-    rows = [
-        _row(_tr("Position (Å)"), _vector_cells(info.position)),
-    ]
+    axis_header = "".join(
+        f"<td align='right' style='color:{palette.TEXT_SECONDARY}; font-size:11px; "
+        f"padding-left:12px;'>{axis}</td>"
+        for axis in ("x", "y", "z")
+    )
+    rows = [f"<tr><td></td>{axis_header}<td></td></tr>", _section(_tr("Position"))]
+    rows.append(_vector_row(_tr("Cartesian (Å)"), info.position))
     if info.fractional is not None:
-        rows.append(_row(_tr("Fractional"), _vector_cells(info.fractional)))
-    if info.dft_force is not None:
-        rows.append(
-            _row(
-                _tr("DFT force"),
-                _vector_cells(info.dft_force),
-                f"|F| {np.linalg.norm(info.dft_force):.3f} eV/Å",
+        rows.append(_vector_row(_tr("Fractional"), info.fractional))
+
+    if info.dft_force is not None or info.ml_force is not None:
+        rows.append(_section(_tr("Force · eV/Å")))
+        for label, vector in ((_tr("DFT"), info.dft_force), (_tr("Predicted"), info.ml_force)):
+            if vector is not None:
+                rows.append(
+                    _vector_row(label, vector, f"|F| {_number(np.linalg.norm(vector))}")
+                )
+        if info.force_error is not None:
+            rows.append(
+                _vector_row(
+                    _tr("Error"),
+                    info.ml_force - info.dft_force,
+                    f"|ΔF| {_number(info.force_error)}",
+                    emphasize=True,
+                )
             )
-        )
-    if info.ml_force is not None:
-        error = info.force_error
-        rows.append(
-            _row(
-                _tr("Predicted force"),
-                _vector_cells(info.ml_force),
-                "" if error is None else f"|ΔF| {error:.3f} eV/Å",
+
+    if info.spin is not None or info.dft_mforce is not None or info.ml_mforce is not None:
+        rows.append(_section(_tr("Magnetism")))
+        if info.spin is not None:
+            rows.append(
+                _vector_row(
+                    _tr("Spin (μB)"), info.spin, f"|m| {_number(np.linalg.norm(info.spin))}"
+                )
             )
-        )
-    if info.spin is not None:
-        rows.append(
-            _row(
-                _tr("Spin"),
-                _vector_cells(info.spin),
-                f"|m| {np.linalg.norm(info.spin):.3f} μB",
+        for label, vector in (
+            (_tr("DFT mag. force"), info.dft_mforce),
+            (_tr("Predicted mag. force"), info.ml_mforce),
+        ):
+            if vector is not None:
+                rows.append(_vector_row(label, vector))
+
+    if info.nearest_distance is not None or info.extra:
+        rows.append(_section(_tr("Environment")))
+        if info.nearest_distance is not None:
+            neighbor = f"{escape(info.nearest_element or '')} #{info.nearest_index}"
+            if info.nearest_index == info.index:
+                neighbor += " " + escape(_tr("(periodic image)"))
+            rows.append(
+                _text_row(
+                    _tr("Nearest"),
+                    f"<span style=\"font-family:{_NUMBER_FONT}\">"
+                    f"{info.nearest_distance:.3f} Å</span>"
+                    f"&nbsp;&nbsp;→&nbsp;&nbsp;{neighbor}",
+                )
             )
-        )
-    if info.dft_mforce is not None:
-        rows.append(_row(_tr("DFT magnetic force"), _vector_cells(info.dft_mforce)))
-    if info.ml_mforce is not None:
-        rows.append(
-            _row(_tr("Predicted magnetic force"), _vector_cells(info.ml_mforce))
-        )
-    if info.nearest_distance is not None:
-        neighbor = f"{escape(info.nearest_element or '')} #{info.nearest_index}"
-        if info.nearest_index == info.index:
-            neighbor += " " + escape(_tr("(periodic image)"))
-        rows.append(
-            _row(
-                _tr("Nearest"),
-                f"<td colspan='3'>{info.nearest_distance:.3f} Å → {neighbor}</td>",
+        for key, values in info.extra:
+            rows.append(
+                _text_row(
+                    key,
+                    f"<span style=\"font-family:{_NUMBER_FONT}\">{_extra_value(values)}</span>",
+                )
             )
-        )
-    for key, values in info.extra:
-        rows.append(_row(key, f"<td colspan='3'>{_extra_value(values)}</td>"))
-    title = f"<b>#{info.index}&nbsp;&nbsp;{escape(info.element)}</b>"
-    return f"{title}<table cellspacing='0' cellpadding='1'>{''.join(rows)}</table>"
+
+    color = _element_color(info.element)
+    title = (
+        f"<span style='color:{color}; font-size:15px;'>●</span>&nbsp;"
+        f"<span style='font-size:14px; font-weight:600;'>{escape(info.element)}</span>"
+        f"&nbsp;&nbsp;<span style='color:{palette.TEXT_SECONDARY};'>#{info.index}</span>"
+    )
+    return (
+        f"<div>{title}</div>"
+        f"<table cellspacing='0' cellpadding='1'>{''.join(rows)}</table>"
+    )
 
 
-class AtomInfoCard(QFrame):
+class AtomInfoCard(QWidget):
     """Tooltip-style window that floats above either OpenGL backend."""
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent, Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-        self.setObjectName("atomInfoCard")
-        self.setStyleSheet(
+        # Transparent window so the rounded panel can cast a soft shadow.
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(10, 8, 10, 12)
+        self.panel = QFrame(self)
+        self.panel.setObjectName("atomInfoCard")
+        self.panel.setStyleSheet(
             f"QFrame#atomInfoCard {{ background: {palette.SURFACE}; "
-            f"border: 1px solid {palette.BORDER}; }}"
-            f"QLabel {{ color: {palette.TEXT_PRIMARY}; }}"
+            f"border: 1px solid {palette.BORDER}; border-radius: 10px; }}"
+            f"QLabel {{ color: {palette.TEXT_PRIMARY}; background: transparent; }}"
         )
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
-        self.label = QLabel(self)
+        shadow = QGraphicsDropShadowEffect(self.panel)
+        shadow.setBlurRadius(18)
+        shadow.setOffset(0, 3)
+        shadow.setColor(QColor(15, 23, 42, 45))
+        self.panel.setGraphicsEffect(shadow)
+        outer.addWidget(self.panel)
+        layout = QVBoxLayout(self.panel)
+        layout.setContentsMargins(12, 9, 12, 10)
+        self.label = QLabel(self.panel)
         self.label.setTextFormat(Qt.TextFormat.RichText)
         layout.addWidget(self.label)
 
@@ -121,15 +201,15 @@ class AtomInfoCard(QFrame):
 
     def move_near(self, global_pos: QPoint) -> None:
         """Place the card beside the cursor while keeping it on screen."""
-        x = global_pos.x() + 16
-        y = global_pos.y() + 16
+        x = global_pos.x() + 12
+        y = global_pos.y() + 12
         screen = QGuiApplication.screenAt(global_pos) or QGuiApplication.primaryScreen()
         if screen is not None:
             area = screen.availableGeometry()
             if x + self.width() > area.right():
-                x = global_pos.x() - self.width() - 16
+                x = global_pos.x() - self.width() - 12
             if y + self.height() > area.bottom():
-                y = global_pos.y() - self.height() - 16
+                y = global_pos.y() - self.height() - 12
             x = max(area.left(), x)
             y = max(area.top(), y)
         self.move(x, y)

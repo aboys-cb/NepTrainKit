@@ -79,8 +79,21 @@ def test_format_atom_info_only_lists_available_values():
         )
     )
 
-    assert "Spin" not in plain and "force" not in plain
-    assert "Spin" in magnetic and "|m| 2.200 μB" in magnetic
+    assert "Spin" not in plain and "Force" not in plain
+    assert "Spin" in magnetic and "|m| 2.200" in magnetic
+
+
+def test_force_mag_is_the_dft_magnetic_force_not_an_extra_field():
+    structure = _structure(
+        [[1.0, 1.0, 1.0], [3.0, 1.0, 1.0]],
+        force_mag=[[0.1, 0.2, 0.3], [0.0, 0.0, 0.0]],
+        renamed_force=[[0.1, 0.2, 0.3], [0.0, 0.0, 0.0]],
+    )
+
+    info = inspect_atom(structure, 0)
+
+    np.testing.assert_allclose(info.dft_mforce, [0.1, 0.2, 0.3])
+    assert info.extra == ()
 
 
 def test_pick_front_atom_prefers_the_atom_closest_to_the_camera():

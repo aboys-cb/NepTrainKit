@@ -27925,32 +27925,52 @@ Magnetic: {magnetic}</source>
 <context>
     <name>AtomInfoCard</name>
     <message>
-        <source>Position (Å)</source>
-        <translation>坐标 (Å)</translation>
+        <source>Position</source>
+        <translation>位置</translation>
+    </message>
+    <message>
+        <source>Cartesian (Å)</source>
+        <translation>笛卡尔 (Å)</translation>
     </message>
     <message>
         <source>Fractional</source>
         <translation>分数坐标</translation>
     </message>
     <message>
-        <source>DFT force</source>
-        <translation>DFT 力</translation>
+        <source>Force · eV/Å</source>
+        <translation>力 · eV/Å</translation>
     </message>
     <message>
-        <source>Predicted force</source>
-        <translation>预测力</translation>
+        <source>DFT</source>
+        <translation>DFT</translation>
     </message>
     <message>
-        <source>Spin</source>
-        <translation>自旋</translation>
+        <source>Predicted</source>
+        <translation>预测</translation>
     </message>
     <message>
-        <source>DFT magnetic force</source>
+        <source>Error</source>
+        <translation>误差</translation>
+    </message>
+    <message>
+        <source>Magnetism</source>
+        <translation>磁性</translation>
+    </message>
+    <message>
+        <source>Spin (μB)</source>
+        <translation>自旋 (μB)</translation>
+    </message>
+    <message>
+        <source>DFT mag. force</source>
         <translation>DFT 磁力</translation>
     </message>
     <message>
-        <source>Predicted magnetic force</source>
+        <source>Predicted mag. force</source>
         <translation>预测磁力</translation>
+    </message>
+    <message>
+        <source>Environment</source>
+        <translation>环境</translation>
     </message>
     <message>
         <source>Nearest</source>

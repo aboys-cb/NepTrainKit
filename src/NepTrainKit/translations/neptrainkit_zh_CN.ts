@@ -23122,6 +23122,10 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TrainingSetAuditWidget</name>
     <message>
+        <source>Select an element set or a matrix cell first</source>
+        <translation>请先选择一个元素集合或矩阵单元格</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/training_set_audit.py" line="232" />
         <source>Training Set Audit</source>
         <translation>训练集评估</translation>

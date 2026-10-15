@@ -480,7 +480,26 @@ class TrainingSetAuditWidget(QWidget):
             self._clear_overview_element_filter
         )
         self.clear_element_filter_button.hide()
-        element_sets_layout.addWidget(element_sets_title)
+        self.view_element_set_button = PrimaryPushButton(
+            self.tr("View selected structures"), self.element_sets_panel
+        )
+        self.view_element_set_button.setEnabled(False)
+        self.view_element_set_button.setToolTip(
+            self.tr("Select an element set or a matrix cell first")
+        )
+        self.view_element_set_button.clicked.connect(
+            lambda: self.selectStructuresSignal.emit(
+                list(self._selected_overview_indices)
+            )
+        )
+        # Keep the action beside the list title instead of floating below a
+        # mostly empty table.
+        element_sets_header_row = QHBoxLayout()
+        element_sets_header_row.setContentsMargins(0, 0, 0, 0)
+        element_sets_header_row.addWidget(element_sets_title)
+        element_sets_header_row.addStretch(1)
+        element_sets_header_row.addWidget(self.view_element_set_button)
+        element_sets_layout.addLayout(element_sets_header_row)
         element_sets_layout.addWidget(self.element_sets_summary_label)
         element_sets_layout.addWidget(
             self.clear_element_filter_button,
@@ -523,19 +542,6 @@ class TrainingSetAuditWidget(QWidget):
             self._on_overview_element_set_selected
         )
         element_sets_layout.addWidget(self.element_sets_table, stretch=1)
-        self.view_element_set_button = PrimaryPushButton(
-            self.tr("View selected structures"), self.element_sets_panel
-        )
-        self.view_element_set_button.setEnabled(False)
-        self.view_element_set_button.clicked.connect(
-            lambda: self.selectStructuresSignal.emit(
-                list(self._selected_overview_indices)
-            )
-        )
-        element_sets_layout.addWidget(
-            self.view_element_set_button,
-            alignment=Qt.AlignmentFlag.AlignRight,
-        )
         self.overview_columns.addWidget(self.element_sets_panel, stretch=2)
         summary_layout.addLayout(self.overview_columns, stretch=1)
 
@@ -3996,6 +4002,11 @@ class TrainingSetAuditWidget(QWidget):
         )
         count = len(self._selected_overview_indices)
         self.view_element_set_button.setEnabled(count > 0)
+        self.view_element_set_button.setToolTip(
+            ""
+            if count
+            else self.tr("Select an element set or a matrix cell first")
+        )
         self._set_fitted_button_text(
             self.view_element_set_button,
             self.tr("View {count:,} structures").format(count=count)

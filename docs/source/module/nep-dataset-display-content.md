@@ -32,7 +32,7 @@
 | <img src="../_static/image/generated/show_nep_icons/pan.svg" width="20" /> | `Pan View` | 否（开关） | 切换平移交互 |
 | <img src="../_static/image/generated/show_nep_icons/index.svg" width="20" /> | `Select by Index` | 是 | 按编号或切片选择结构 |
 | <img src="../_static/image/generated/show_nep_icons/data_range.svg" width="20" /> | `Select by Range` | 是 | 按当前图的 x/y 范围选择结构 |
-| <img src="../_static/image/generated/show_nep_icons/supercell.svg" width="20" /> | `Select by Lattice` | 是 | 按晶格参数范围选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/lattice_select.svg" width="20" /> | `Select by Lattice` | 是 | 按晶格参数范围选择结构 |
 | <img src="../_static/image/generated/show_nep_icons/find_max.svg" width="20" /> | `Find Max Error Point` | 是 | 选择当前轴上误差最大的前 N 个结构 |
 | <img src="../_static/image/generated/show_nep_icons/sparse.svg" width="20" /> | `Sparse samples` | 是 | 用 FPS 做代表性采样 |
 | <img src="../_static/image/generated/show_nep_icons/pen.svg" width="20" /> | `Mouse Selection` | 否（开关） | 切换鼠标圈选/点选 |
@@ -45,7 +45,7 @@
 | <img src="../_static/image/generated/show_nep_icons/edit_info.svg" width="20" /> | `Edit Info` | 是 | 批量编辑结构 metadata |
 | <img src="../_static/image/generated/show_nep_icons/export.svg" width="20" /> | `Export structure descriptor` | 是（文件路径） | 导出当前结构描述符 |
 | <img src="../_static/image/generated/show_nep_icons/alignment.svg" width="20" /> | `Energy Baseline Shift` | 是 | 对能量基线做平移校正 |
-| <img src="../_static/image/generated/show_nep_icons/dft_d3.png" width="20" /> | `DFT D3` | 是 | 配置并应用 DFT-D3 校正 |
+| <img src="../_static/image/generated/show_nep_icons/dft_d3.svg" width="20" /> | `DFT D3` | 是 | 配置并应用 DFT-D3 校正 |
 | <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `Training Set Audit` | 否（打开评估页） | 查看整体组成、数据质量、标签、结构相和磁类型 |
 | <img src="../_static/image/generated/show_nep_icons/distribution_inspector.svg" width="20" /> | `Explore distributions` | 否（打开训练集评估页面） | 查看数值字段分布并反向选择结构 |
 <!-- display-main-tools-table-end -->
@@ -60,7 +60,7 @@
 | <img src="../_static/image/generated/show_nep_icons/show_bond.svg" width="20" /> | `Show Bonds` | 否（开关） | 显示或隐藏键连线 |
 | <img src="../_static/image/generated/show_nep_icons/xyz.svg" width="20" /> | `Show Arrows` | 是 | 显示力、磁矩或其他向量箭头 |
 | <img src="../_static/image/generated/show_nep_icons/export1.svg" width="20" /> | `Export current structure` | 是 | 导出当前结构 |
-| <img src="../_static/image/generated/show_nep_icons/defect.svg" width="20" /> | `Mark Bad (Reject)` | 否（开关） | 标记当前结构为 reject |
+| <img src="../_static/image/generated/show_nep_icons/mark_bad.svg" width="20" /> | `Mark Bad (Reject)` | 否（开关） | 标记当前结构为 reject |
 | <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `Drop All Bad` | 是（确认） | 删除所有 reject 结构 |
 <!-- display-structure-tools-table-end -->
 

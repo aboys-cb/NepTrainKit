@@ -6,49 +6,37 @@
       "name": "alignment.svg",
       "source": "src/NepTrainKit/src/images/alignment.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/alignment.svg",
-      "sha256": "c4a7d528942a3000bcadc7471962e60f0d7bb3c1c876da1b43e42c9ffc0db1e2"
+      "sha256": "66603336fdd3dd958fb890c5e3e4dd56f0f4ba273bd9ef667682ebb7c0a0d866"
     },
     {
       "name": "auto_distance.svg",
       "source": "src/NepTrainKit/src/images/auto_distance.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/auto_distance.svg",
-      "sha256": "7b260db9a98c6f2783e99ce097cb1b8b374c99af6df4382d53a6daeb99297472"
-    },
-    {
-      "name": "check.svg",
-      "source": "src/NepTrainKit/src/images/check.svg",
-      "target": "docs/source/_static/image/generated/show_nep_icons/check.svg",
-      "sha256": "59186bfaf5be1491da9cdcb1f4ef31c0cda4142079c1d265ac27af56cdd9f8bd"
+      "sha256": "0ea593e7d9a6a3988365d628874b2147fd66d1d98d61e64b6de3ac6657cfa95b"
     },
     {
       "name": "data_range.svg",
       "source": "src/NepTrainKit/src/images/data_range.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/data_range.svg",
-      "sha256": "8cb137cd967f13acd6414412f07c0e1322684526727354b7d61ecf6708a36769"
-    },
-    {
-      "name": "defect.svg",
-      "source": "src/NepTrainKit/src/images/defect.svg",
-      "target": "docs/source/_static/image/generated/show_nep_icons/defect.svg",
-      "sha256": "4bcb833802c23871d02857f88969d55fc81c4fa0d4d886bfc58fb5e0c47695f5"
+      "sha256": "83ab7646e319ae144df9570386a5ef2662f3e44f7c4fdd479ea63b6080bc5f1c"
     },
     {
       "name": "delete.svg",
       "source": "src/NepTrainKit/src/images/delete.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/delete.svg",
-      "sha256": "89f5dd86d12700b0ffbf3c5961a6451ce303e37104df02b0ecafca5075e06e43"
+      "sha256": "f4488aaddbcb9db6e133185bdddc7ea4af8ad5856a132ecae4a8d1c828038a0f"
     },
     {
-      "name": "dft_d3.png",
-      "source": "src/NepTrainKit/src/images/dft_d3.png",
-      "target": "docs/source/_static/image/generated/show_nep_icons/dft_d3.png",
-      "sha256": "0ebf161ccc8a44c886ab8a02827fcfc10b7a1413c533a10d759a1f322a2d11a9"
+      "name": "dft_d3.svg",
+      "source": "src/NepTrainKit/src/images/dft_d3.svg",
+      "target": "docs/source/_static/image/generated/show_nep_icons/dft_d3.svg",
+      "sha256": "80bbad5cfff73a654b8a9e674073056e9fa294171036ee540a207aac65c8744f"
     },
     {
       "name": "discovery.svg",
       "source": "src/NepTrainKit/src/images/discovery.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/discovery.svg",
-      "sha256": "656473a9853f46b995d29793fd89050aee07580fb80f09919f4165f61825df59"
+      "sha256": "4861557bbe1a5ce584c158c659e89ccb3058887f706cb7dad465139ff549f901"
     },
     {
       "name": "distribution_inspector.svg",
@@ -60,49 +48,61 @@
       "name": "edit_info.svg",
       "source": "src/NepTrainKit/src/images/edit_info.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/edit_info.svg",
-      "sha256": "2de45a66698047637ae841b835a87dc8dd1f0f0762cdf5403843457ea44e9bc0"
+      "sha256": "c5f30ff032e0827e1884ecbbe12b658c374e0c20d75c4d596693213ecae8f875"
     },
     {
       "name": "export.svg",
       "source": "src/NepTrainKit/src/images/export.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/export.svg",
-      "sha256": "d1bdf93ff28c5c7f2cb8089e111cd223b34e2974088b98b82da5eab62943598e"
+      "sha256": "11cbb2a32ed68d1a384e78e2ae539a6acb01f1be76d856799c2c2a42e8fffc97"
     },
     {
       "name": "export1.svg",
       "source": "src/NepTrainKit/src/images/export1.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/export1.svg",
-      "sha256": "1cccdc356d0fd7b4213de0217a48cac32d18217ba2e9bb651ec6d514804063dd"
+      "sha256": "30e7649969a879454f4d9b2c5863f0961d38250ea0c5759fb555a24a3ffe5e51"
     },
     {
       "name": "find_max.svg",
       "source": "src/NepTrainKit/src/images/find_max.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/find_max.svg",
-      "sha256": "4c9157e3ffc6f288eb8afbdefed499832a7867e480ccd68c297790ecdc44edf4"
+      "sha256": "b2aba2000a4bbd00e21c607ace8395b1ba2aa8908b9335e175f6ca1c4faefb12"
     },
     {
       "name": "index.svg",
       "source": "src/NepTrainKit/src/images/index.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/index.svg",
-      "sha256": "05c8f7dd0c7021dd0a280d766bede3c872b801aac4cb1d2d457583e2d67eb73e"
+      "sha256": "316d407cfc5282f2ddc4039df922e7dcaf5aedd601fda96077092d0369475e42"
     },
     {
       "name": "init.svg",
       "source": "src/NepTrainKit/src/images/init.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/init.svg",
-      "sha256": "a4bdf4b0f03a65761d97a09b4f32c479c4d48cb14338524ad24fa3e9393a06df"
+      "sha256": "fa694d332cc17eae8aa11b0ed84f2323879a29ff1c5b1fe88b3e492bcdb58d44"
     },
     {
       "name": "inspect.svg",
       "source": "src/NepTrainKit/src/images/inspect.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/inspect.svg",
-      "sha256": "d3435cec36499dbe2916603ca87528cf2dcfd672d57a38e7e7906df3e35bfd0b"
+      "sha256": "6d1c6470862758af4a1511527d9c978671fd960c8f80ae1442ef1ffa0a28f940"
     },
     {
       "name": "inverse.svg",
       "source": "src/NepTrainKit/src/images/inverse.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/inverse.svg",
-      "sha256": "db213c7e4fb9224061c417ec22b5d23a6fce1b229a2ec175092291486859f6d8"
+      "sha256": "d3d00a6609f2649d050e5826b77a93a95235197a5646005468122836d21aaaea"
+    },
+    {
+      "name": "lattice_select.svg",
+      "source": "src/NepTrainKit/src/images/lattice_select.svg",
+      "target": "docs/source/_static/image/generated/show_nep_icons/lattice_select.svg",
+      "sha256": "f30f83bafb10e3ec6bc5eff542393413c056293b37f216d6e913f5c597621b71"
+    },
+    {
+      "name": "mark_bad.svg",
+      "source": "src/NepTrainKit/src/images/mark_bad.svg",
+      "target": "docs/source/_static/image/generated/show_nep_icons/mark_bad.svg",
+      "sha256": "f7ae11e9bf5f9aacf3b29bbb1a97979f9b6fc7797d4337434e9416f9f7539d9c"
     },
     {
       "name": "open.svg",
@@ -114,7 +114,7 @@
       "name": "pan.svg",
       "source": "src/NepTrainKit/src/images/pan.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/pan.svg",
-      "sha256": "b41c166f066f7b662f1af5ab7aa30d67d6cffb4b8c455369d09266046cc1d1d4"
+      "sha256": "84587a4fe10874a5147eeb38af7b6991821526f4327edd0184143867fc2c4b7b"
     },
     {
       "name": "pause.svg",
@@ -126,7 +126,7 @@
       "name": "pen.svg",
       "source": "src/NepTrainKit/src/images/pen.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/pen.svg",
-      "sha256": "7a3fa213ac2c610ec4217084ae35935a64f52e66311b9c0491e1579a69161493"
+      "sha256": "31d537a3dd66d3c0e4405e9f9bf86903b5280c2fa76f3b331ba6cda80e8a7107"
     },
     {
       "name": "play.svg",
@@ -141,64 +141,46 @@
       "sha256": "4783a12a5be5ca9d0f5da8b1f5bfc1122aa2f39495c4015c953a29a2f17d49cb"
     },
     {
-      "name": "search.svg",
-      "source": "src/NepTrainKit/src/images/search.svg",
-      "target": "docs/source/_static/image/generated/show_nep_icons/search.svg",
-      "sha256": "b57f7fa196d73ea12d4c646aee3eae100670165797fa6589cf9cb206196bbb7d"
-    },
-    {
       "name": "show_bond.svg",
       "source": "src/NepTrainKit/src/images/show_bond.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/show_bond.svg",
-      "sha256": "84cd0706d9aa2be01924b6674583607522f8923d63addd4741e05815e60fc6c9"
+      "sha256": "6d5e59e4dfbaa3cb0aeffa114c2ce201dfe53f54ebe4f0c18a7098ca1f2fc157"
     },
     {
       "name": "sparse.svg",
       "source": "src/NepTrainKit/src/images/sparse.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/sparse.svg",
-      "sha256": "306b87da8ef9f0686686384ba8773fcd03c166342b99791627335f2f65136a40"
+      "sha256": "3f151d39cceec847eb887bf5b831910e627e74eedbba6da486610066593d89df"
     },
     {
       "name": "summary.svg",
       "source": "src/NepTrainKit/src/images/summary.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/summary.svg",
-      "sha256": "7de80a62a6eb898d192ca701ca9c9d589b1a1bc1962a4c5c976b4da42eeb83ab"
-    },
-    {
-      "name": "supercell.svg",
-      "source": "src/NepTrainKit/src/images/supercell.svg",
-      "target": "docs/source/_static/image/generated/show_nep_icons/supercell.svg",
-      "sha256": "5e78a30af21ba83e98f31765dccbc322961bc630f24795602b7a81086ecf4380"
-    },
-    {
-      "name": "uncheck.svg",
-      "source": "src/NepTrainKit/src/images/uncheck.svg",
-      "target": "docs/source/_static/image/generated/show_nep_icons/uncheck.svg",
-      "sha256": "75e348e4c45d744d85e3000094df1a8e609eab330523fbfeb02d8b28c83dcb46"
+      "sha256": "f47da15495728d357ff9522dcaa0bf0acb36129914534d92a3a314ba83338362"
     },
     {
       "name": "undo_delete.svg",
       "source": "src/NepTrainKit/src/images/undo_delete.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/undo_delete.svg",
-      "sha256": "250b3e6b1a6d424500a059c43163f490062ff82d0e0b0015607ca1b1a5df2354"
+      "sha256": "71220efcf5f4f96bf580c06134bb307793f867c4e19160f9059e9f602c1d3ec1"
     },
     {
       "name": "undo_selection.svg",
       "source": "src/NepTrainKit/src/images/undo_selection.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/undo_selection.svg",
-      "sha256": "1b02294aec8c4c3bf57436ab7f99d338120a1f214fc466c3c9eec9350fa28f78"
+      "sha256": "d0b3de00f5ba5fe351ef319214f52cff64c30c088a3c822f504c46519a97c814"
     },
     {
       "name": "view_change.svg",
       "source": "src/NepTrainKit/src/images/view_change.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/view_change.svg",
-      "sha256": "d869810365bce199ff4e16494de36303fa6d9178095351af9bb16befc89921be"
+      "sha256": "42db169c57fe27114f5944e5d5a4b6ff2f659b1a832c3fd7ade75f7aa06a094a"
     },
     {
       "name": "xyz.svg",
       "source": "src/NepTrainKit/src/images/xyz.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/xyz.svg",
-      "sha256": "5c97844fa244e23f05a820577dde700e618865aad07d812483941007ddcc7fbb"
+      "sha256": "b7c996560e2ddf6f700405bd357bb6c48edbc77ebdfd18b684d67746d015fd54"
     }
   ]
 }

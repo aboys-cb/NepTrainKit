@@ -166,12 +166,12 @@ msgid "导出当前结构"
 msgstr "Export the current structure"
 
 #: ../../source/module/nep-display-structure-tools.md:3206 2c3257acdd13459ba77d61302ee0a899
-msgid "<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" width=\"20\" />"
+msgid "<img src=\"../_static/image/generated/show_nep_icons/mark_bad.svg\" width=\"20\" />"
+msgstr "<img src=\"../_static/image/generated/show_nep_icons/mark_bad.svg\" width=\"20\" />"
 
 #: ../../source/module/nep-dataset-display-content.md 63b98f2383584a30b788a58f522336d3
-msgid ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
-msgstr ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
+msgid ".. image:: ../_static/image/generated/show_nep_icons/mark_bad.svg"
+msgstr ".. image:: ../_static/image/generated/show_nep_icons/mark_bad.svg"
 
 #: ../../source/module/nep-display-structure-tools.md:3207 9011c6b53d984a8c81554776fe41f330
 msgid "`Mark Bad (Reject)`"

@@ -18642,6 +18642,30 @@ All child items will also be deleted.</source>
 <context>
     <name>SettingsWidget</name>
     <message>
+        <source>General</source>
+        <translation>常规</translation>
+    </message>
+    <message>
+        <source>Structure Viewer</source>
+        <translation>结构查看器</translation>
+    </message>
+    <message>
+        <source>Data and Export</source>
+        <translation>数据与导出</translation>
+    </message>
+    <message>
+        <source>Make Dataset</source>
+        <translation>构建数据集</translation>
+    </message>
+    <message>
+        <source>Color for the current-structure ring</source>
+        <translation>当前结构圆环的颜色</translation>
+    </message>
+    <message>
+        <source>Size of the current-structure ring</source>
+        <translation>当前结构圆环的大小</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/settings.py" line="77" />
         <source>Personalization</source>
         <translation>个性化</translation>

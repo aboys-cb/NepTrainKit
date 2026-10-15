@@ -75,7 +75,13 @@ class SettingsWidget(ScrollArea):
         self.expand_layout = ExpandLayout(self.scrollWidget)
 
         self.personal_group = SettingCardGroup(
-            self.tr('Personalization'), self.scrollWidget)
+            self.tr('General'), self.scrollWidget)
+        self.structure_group = SettingCardGroup(
+            self.tr('Structure Viewer'), self.scrollWidget)
+        self.data_group = SettingCardGroup(
+            self.tr('Data and Export'), self.scrollWidget)
+        self.make_dataset_group = SettingCardGroup(
+            self.tr('Make Dataset'), self.scrollWidget)
         self.nep_group = SettingCardGroup(
             self.tr('NEP Settings'), self.scrollWidget)
         self.plot_group = SettingCardGroup(
@@ -112,7 +118,7 @@ class SettingsWidget(ScrollArea):
 
         language_config = normalize_language(Config.get("ui", "language", "auto"))
         self.language_card = SettingCard(
-            FluentIcon.SETTING,
+            FluentIcon.LANGUAGE,
             self.tr("Language"),
             self.tr("Restart NepTrainKit to apply language changes"),
             self.personal_group,
@@ -152,7 +158,7 @@ class SettingsWidget(ScrollArea):
         use_group_menu_config = Config.getboolean("widget", "use_group_menu", False)
 
         self.auto_load_card = SwitchSettingCard(
-            QIcon(":/images/src/images/auto_load.svg"),
+            FluentIcon.FOLDER,
             self.tr('Auto loading'),
             self.tr('Detect startup path data and load'),
 
@@ -161,7 +167,7 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.setValue(auto_load_config)
 
         self.sort_atoms_card = SwitchSettingCard(
-            QIcon(":/images/src/images/sort.svg"),
+            FluentIcon.ALIGNMENT,
             self.tr('Sort atoms'),
             self.tr('Sort atoms in structures when processing cards'),
             parent=self.personal_group
@@ -169,7 +175,7 @@ class SettingsWidget(ScrollArea):
         self.sort_atoms_card.setValue(sort_atoms_config)
 
         self.use_group_menu_card = SwitchSettingCard(
-            QIcon(":/images/src/images/group.svg"),
+            FluentIcon.TILES,
             self.tr('Use card group menu'),
             self.tr('Group cards by "group" in console menu'),
             parent=self.personal_group
@@ -235,7 +241,7 @@ class SettingsWidget(ScrollArea):
         self.nep_backend_card = MyComboBoxSettingCard(
             OptionsConfigItem("nep", "backend", nep_backend_enum, OptionsValidator(NepBackend),
                               EnumSerializer(NepBackend)),
-            QIcon(":/images/src/images/gpu.svg"),
+            FluentIcon.DEVELOPER_TOOLS,
             self.tr('NEP Backend'),
             self.tr('Select CPU/CUDA or let Auto use CUDA when available'),
             texts=[mode.value for mode in NepBackend],
@@ -393,7 +399,7 @@ class SettingsWidget(ScrollArea):
         self.current_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
             self.tr('Current marker color'),
-            self.tr('Color for current star marker'),
+            self.tr('Color for the current-structure ring'),
             self.plot_group
         )
         self.current_color_card.setValue(current_color)
@@ -401,7 +407,7 @@ class SettingsWidget(ScrollArea):
         self.current_size_card = DoubleSpinBoxSettingCard(
             FluentIcon.ALBUM,
             self.tr('Current marker size'),
-            self.tr('Size of current star marker'),
+            self.tr('Size of the current-structure ring'),
             self.plot_group
         )
         self.current_size_card.setRange(5, 100)
@@ -459,18 +465,19 @@ class SettingsWidget(ScrollArea):
 
 
 
-        self.personal_group.addSettingCard(self.optimization_forces_card)
-        self.personal_group.addSettingCard(self.canvas_card)
         self.personal_group.addSettingCard(self.language_card)
         self.personal_group.addSettingCard(self.log_level_card)
         self.personal_group.addSettingCard(self.auto_load_card)
-        self.personal_group.addSettingCard(self.radius_coefficient_Card)
-        self.personal_group.addSettingCard(self.sort_atoms_card)
-        self.personal_group.addSettingCard(self.use_group_menu_card)
-        self.personal_group.addSettingCard(self.cache_outputs_card)
-        self.personal_group.addSettingCard(self.auto_structure_evidence_card)
-        self.personal_group.addSettingCard(self.export_digits_card)
-        self.personal_group.addSettingCard(self.default_cfg_type_card)
+
+        self.structure_group.addSettingCard(self.radius_coefficient_Card)
+
+        self.data_group.addSettingCard(self.cache_outputs_card)
+        self.data_group.addSettingCard(self.auto_structure_evidence_card)
+        self.data_group.addSettingCard(self.export_digits_card)
+        self.data_group.addSettingCard(self.default_cfg_type_card)
+
+        self.make_dataset_group.addSettingCard(self.sort_atoms_card)
+        self.make_dataset_group.addSettingCard(self.use_group_menu_card)
 
         self.nep_group.addSettingCard(self.nep_backend_card)
         self.nep_group.addSettingCard(self.data_precision_card)
@@ -489,19 +496,24 @@ class SettingsWidget(ScrollArea):
 
         self.expand_layout.addWidget(self.personal_group)
         # add plot setting cards into group before adding to layout
+        self.plot_group.addSettingCard(self.canvas_card)
+        self.plot_group.addSettingCard(self.optimization_forces_card)
         self.plot_group.addSettingCard(self.edge_color_card)
         self.plot_group.addSettingCard(self.face_color_card)
         self.plot_group.addSettingCard(self.face_alpha_card)
         self.plot_group.addSettingCard(self.pg_size_card)
         self.plot_group.addSettingCard(self.vispy_size_card)
         self.plot_group.addSettingCard(self.vispy_aa_card)
-        self.plot_group.addSettingCard(self.structure_bg_color_card)
-        self.plot_group.addSettingCard(self.structure_lattice_color_card)
         self.plot_group.addSettingCard(self.selected_color_card)
         self.plot_group.addSettingCard(self.show_color_card)
         self.plot_group.addSettingCard(self.current_color_card)
         self.plot_group.addSettingCard(self.current_size_card)
+        self.structure_group.addSettingCard(self.structure_bg_color_card)
+        self.structure_group.addSettingCard(self.structure_lattice_color_card)
         self.expand_layout.addWidget(self.plot_group)
+        self.expand_layout.addWidget(self.structure_group)
+        self.expand_layout.addWidget(self.data_group)
+        self.expand_layout.addWidget(self.make_dataset_group)
         self.expand_layout.addWidget(self.nep_group)
 
         self.expand_layout.addWidget(self.about_group)

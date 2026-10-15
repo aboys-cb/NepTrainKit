@@ -13,7 +13,7 @@ from NepTrainKit.utils import timeit
 from NepTrainKit.core.types import Brushes, Pens, mkPen
 from NepTrainKit.config import Config
 from NepTrainKit import palette
-from ..base.canvas import CanvasLayoutBase
+from ..base.canvas import CanvasLayoutBase, dataset_axis_labels
 from NepTrainKit.core.io import NepTrainResultData
 
 
@@ -359,8 +359,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             else:
                 plot.text.setText("")
 
-            x_label = getattr(_dataset, "x_label", None)
-            y_label = getattr(_dataset, "y_label", None)
+            x_label, y_label = dataset_axis_labels(_dataset)
             if x_label:
                 plot.setLabel("bottom", str(x_label))
             if y_label:

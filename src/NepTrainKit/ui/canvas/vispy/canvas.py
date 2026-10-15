@@ -2,6 +2,7 @@
 """
 
 import os
+import sys
 os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 
 # os.environ["VISPY_PYQT5_SHARE_CONTEXT"] = "true"
@@ -21,7 +22,7 @@ from vispy.visuals.transforms import STTransform
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
 from NepTrainKit import palette
-from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase
+from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase, dataset_axis_labels
 from NepTrainKit.ui.canvas.vispy.fast_scatter import FastScatter
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
@@ -29,6 +30,12 @@ from NepTrainKit.core.types import Brushes, Pens
 
 VISPY_PREVIEW_WIDTH = 640
 VISPY_PREVIEW_HEIGHT = 240
+if sys.platform == "darwin":
+    _CJK_FONT_FACE = "PingFang SC"
+elif sys.platform.startswith("win"):
+    _CJK_FONT_FACE = "Microsoft YaHei"
+else:
+    _CJK_FONT_FACE = "Noto Sans CJK SC"
 VISPY_PREVIEW_RASTER_OVERLAY_MIN_RATIO = 0.9
 
 
@@ -471,12 +478,11 @@ class ViewBoxWidget(scene.Widget):
         self._full_detail = bool(enabled)
         if self.xaxis is not None:
             self.xaxis.visible = True
-            self.xaxis.height_max = 30 if enabled else 22
             _set_compact_axis_ticks(self.xaxis, not enabled)
         if self.yaxis is not None:
             self.yaxis.visible = True
-            self.yaxis.width_max = 50 if enabled else 38
             _set_compact_axis_ticks(self.yaxis, not enabled)
+        self._apply_axis_labels()
         if self.text is not None:
             self.text.visible = bool(enabled)
         if enabled and self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
@@ -531,10 +537,33 @@ class ViewBoxWidget(scene.Widget):
         """Store and apply axis labels when full controls exist."""
         self._x_label = str(x_label or "")
         self._y_label = str(y_label or "")
-        if self.xaxis is not None:
-            self.xaxis.axis.axis_label = self._x_label
-        if self.yaxis is not None:
-            self.yaxis.axis.axis_label = self._y_label
+        self._apply_axis_labels()
+
+    def _apply_axis_labels(self):
+        """Show axis titles on the large plot only and reserve room for them."""
+        if self.xaxis is None or self.yaxis is None:
+            return
+        full = self._full_detail
+        x_label = self._x_label if full else ""
+        y_label = self._y_label if full else ""
+        for axis, label in ((self.xaxis.axis, x_label), (self.yaxis.axis, y_label)):
+            # VisPy's bundled OpenSans has no CJK glyphs.
+            if not label.isascii():
+                axis._axis_label_vis.face = _CJK_FONT_FACE
+            axis.axis_label = label
+        # Below/left of the tick labels instead of on top of them.
+        self.xaxis.axis.axis_label_margin = 30
+        self.yaxis.axis.axis_label_margin = 52
+        x_height = (46 if x_label else 30) if full else 22
+        y_width = (68 if y_label else 50) if full else 38
+        self.xaxis.height_max = x_height
+        self.xaxis.height_min = x_height if x_label else 0
+        self.yaxis.width_max = y_width
+        self.yaxis.width_min = y_width if y_label else 0
+        self.xaxis.axis._need_update = True
+        self.yaxis.axis._need_update = True
+        self.xaxis.axis.update()
+        self.yaxis.axis.update()
 
     def set_rmse_text(self, text: str):
         """Store and apply the RMSE annotation."""
@@ -1602,7 +1631,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 plot.text.pos = pos
         else:
             plot.set_rmse_text("")
-        plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
+        plot.set_axis_labels(*dataset_axis_labels(dataset))
 
     def _render_plot(self, plot, dataset, full_detail):
         plot.parity_mode = bool(getattr(dataset, "parity_mode", dataset.title != "descriptor"))
@@ -1827,9 +1856,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             else:
                 plot.set_rmse_text("")
 
-            x_label = getattr(_dataset, "x_label", None)
-            y_label = getattr(_dataset, "y_label", None)
-            plot.set_axis_labels(x_label, y_label)
+            plot.set_axis_labels(*dataset_axis_labels(_dataset))
 
         # Restore reject highlights after a full replot.
         reject = getattr(self.nep_result_data, "reject_index", None)
@@ -1849,7 +1876,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if plot is None or dataset is None:
             return
 
-        plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
+        plot.set_axis_labels(*dataset_axis_labels(dataset))
         if bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])):
             plot.set_rmse_text(f"RMSE: {dataset.get_formart_rmse()}")
             if plot.text is not None:

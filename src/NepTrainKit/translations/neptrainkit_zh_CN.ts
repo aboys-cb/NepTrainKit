@@ -921,6 +921,38 @@
 <context>
     <name>CanvasBase</name>
     <message>
+        <source>Reference energy (eV/atom)</source>
+        <translation>参考能量 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Predicted energy (eV/atom)</source>
+        <translation>预测能量 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Reference force (eV/Å)</source>
+        <translation>参考力 (eV/Å)</translation>
+    </message>
+    <message>
+        <source>Predicted force (eV/Å)</source>
+        <translation>预测力 (eV/Å)</translation>
+    </message>
+    <message>
+        <source>Reference virial (eV/atom)</source>
+        <translation>参考维里 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Predicted virial (eV/atom)</source>
+        <translation>预测维里 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Reference stress (GPa)</source>
+        <translation>参考应力 (GPa)</translation>
+    </message>
+    <message>
+        <source>Predicted stress (GPa)</source>
+        <translation>预测应力 (GPa)</translation>
+    </message>
+    <message>
         <location filename="../ui/canvas/base/canvas.py" line="230" />
         <source>No undoable deletion!</source>
         <translation>没有可撤销的删除操作！</translation>

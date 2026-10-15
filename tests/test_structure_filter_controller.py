@@ -347,3 +347,27 @@ def test_failed_preview_drops_the_pending_apply_and_empty_specs_do_nothing():
     page, canvas, _result = _apply_page([False], empty=True)
     ShowNepWidget._apply_structure_filter_result(page, "replace")
     page.structure_filter_controller.preview.assert_not_called()
+
+
+def test_clearing_selection_cancels_pending_apply_before_preview_finishes():
+    page, canvas, result = _apply_page([False, True])
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    ShowNepWidget._apply_structure_filter_result(page, "clear")
+    ShowNepWidget._on_structure_filter_preview_ready(page, result)
+
+    canvas.apply_selection_result.assert_called_once_with((), "clear")
+    assert page._pending_structure_filter_apply is None
+
+
+def test_invalidating_dataset_jobs_cancels_pending_filter_apply():
+    page, canvas, result = _apply_page([False, True])
+    page._search_job_id = page._completer_job_id = 0
+    page._update_search_status_label = MagicMock()
+    page.structure_filter_controller.invalidate_result = MagicMock()
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    ShowNepWidget._invalidate_background_jobs(page)
+    # A later preview, including one for the new dataset, must not apply the old action.
+    ShowNepWidget._on_structure_filter_preview_ready(page, result)
+
+    canvas.apply_selection_result.assert_not_called()
+    assert page._pending_structure_filter_apply is None

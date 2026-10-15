@@ -444,6 +444,8 @@ class _ConditionRow(QFrame):
         self._drafts: dict[object, str] = {}
         if condition.field == FilterField.EXPRESSION:
             self._drafts[FilterField.EXPRESSION] = self._display_values(condition)
+        # Only a changed raw expression may replace the visual editor's draft.
+        self._atomic_source_expression = self._drafts.get(FilterField.EXPRESSION, "")
         for index in range(self.field_combo.count()):
             if self.field_combo.itemData(index) == initial_field:
                 self.field_combo.setCurrentIndex(index)
@@ -486,11 +488,13 @@ class _ConditionRow(QFrame):
         expression_draft = self._drafts.get(FilterField.EXPRESSION, "")
         atomic_expression = self.atomic_editor.expression()
         if field == "atomic":
-            values = parse_atomic_condition(expression_draft)
-            if values:
-                self.atomic_editor.set_values(values)
-                atomic_expression = self.atomic_editor.expression()
-            self._atomic_touched = False
+            if expression_draft != self._atomic_source_expression:
+                self._atomic_source_expression = expression_draft
+                values = parse_atomic_condition(expression_draft)
+                if values:
+                    self.atomic_editor.set_values(values)
+                    atomic_expression = self.atomic_editor.expression()
+                    self._atomic_touched = False
             text = atomic_expression
         elif (
             field == FilterField.EXPRESSION

@@ -997,6 +997,7 @@ class ShowNepWidget(QWidget):
 
     def _invalidate_background_jobs(self) -> None:
         """Invalidate in-flight background jobs and clear lightweight UI state."""
+        self._pending_structure_filter_apply = None
         self._search_job_id += 1
         self._completer_job_id += 1
         self._search_running = 0
@@ -2290,6 +2291,7 @@ class ShowNepWidget(QWidget):
         if data is None or canvas is None:
             return
         if mode == "clear":
+            self._pending_structure_filter_apply = None
             canvas.apply_selection_result((), "clear")
             self.structure_filter_bar.set_selection_count(len(data.select_index))
             return

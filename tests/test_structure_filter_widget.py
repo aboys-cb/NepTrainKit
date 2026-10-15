@@ -804,6 +804,33 @@ def test_switching_fields_keeps_each_draft_without_leaking_values(bar):
     assert row.to_condition().text_values == ('any(atomic.spin.norm < 2)',)
 
 
+@pytest.mark.parametrize('threshold', ['2', ''])
+def test_atomic_draft_survives_field_detours_until_expression_is_edited(bar, threshold):
+    bar.set_suggestions(_atomic_suggestions())
+    original = 'any(atomic.spin.norm < 1)'
+    bar.set_spec(_spec(_condition('expr', FilterField.EXPRESSION, original)))
+    row = bar._popup._rows[0]
+    row.atomic_editor.value_edit.setText(threshold)
+
+    _choose(row.field_combo, FilterField.CONFIG_TYPE)
+    row.value_edit.setText('surface')
+    _choose(row.field_combo, 'atomic')
+    assert row.atomic_editor.value_edit.text() == threshold
+
+    # Visiting the unchanged raw-expression draft must not overwrite atomic edits.
+    _choose(row.field_combo, FilterField.CONFIG_TYPE)
+    _choose(row.field_combo, FilterField.EXPRESSION)
+    assert row.value_edit.text() == original
+    _choose(row.field_combo, 'atomic')
+    assert row.atomic_editor.value_edit.text() == threshold
+
+    # An explicit raw-expression edit should still update the visual controls.
+    _choose(row.field_combo, FilterField.EXPRESSION)
+    row.value_edit.setText('any(atomic.spin.norm < 4)')
+    _choose(row.field_combo, 'atomic')
+    assert row.to_condition().text_values == ('any(atomic.spin.norm < 4)',)
+
+
 def test_incomplete_atomic_threshold_is_flagged_instead_of_silently_ignored(bar):
     bar.set_suggestions(_atomic_suggestions())
     bar._popup.add_condition()

@@ -56,6 +56,7 @@ class StructureFilterEngine:
         source: list[str],
         condition: StructureFilterCondition,
         default_mode: TextMatchMode,
+        folded: list[str] | None = None,
     ) -> np.ndarray:
         values = StructureFilterEngine._values(condition)
         mode = condition.match_mode or default_mode
@@ -66,7 +67,10 @@ class StructureFilterEngine:
                 condition.condition_id,
             )
 
-        haystacks = source if condition.case_sensitive else [value.casefold() for value in source]
+        if condition.case_sensitive:
+            haystacks = source
+        else:
+            haystacks = folded if folded is not None else [value.casefold() for value in source]
         needles = values if condition.case_sensitive else tuple(value.casefold() for value in values)
         mask = np.zeros(len(source), dtype=bool)
 
@@ -146,21 +150,35 @@ class StructureFilterEngine:
         )
 
     @staticmethod
+    def _text_source(
+        result_data: Any,
+        attribute: str,
+        cache: dict[str, tuple[list[str], list[str]]],
+    ) -> tuple[list[str], list[str]]:
+        """Collect one text attribute (raw and casefolded) once per evaluation."""
+        values = cache.get(attribute)
+        if values is None:
+            raw = [str(getattr(structure, attribute, "") or "") for structure in result_data.structure.now_data]
+            values = cache[attribute] = (raw, [value.casefold() for value in raw])
+        return values
+
+    @staticmethod
     def _condition_mask(
         result_data: Any,
         condition: StructureFilterCondition,
         active_indices: np.ndarray,
+        text_cache: dict[str, tuple[list[str], list[str]]] | None = None,
     ) -> np.ndarray:
-        structures = result_data.structure.now_data
         active_count = int(active_indices.size)
+        text_cache = {} if text_cache is None else text_cache
 
         if condition.field == FilterField.CONFIG_TYPE:
-            values = [str(getattr(structure, "tag", "") or "") for structure in structures]
-            return StructureFilterEngine._text_mask(values, condition, TextMatchMode.CONTAINS)
+            values, folded = StructureFilterEngine._text_source(result_data, "tag", text_cache)
+            return StructureFilterEngine._text_mask(values, condition, TextMatchMode.CONTAINS, folded)
 
         if condition.field == FilterField.FORMULA:
-            values = [str(getattr(structure, "formula", "") or "") for structure in structures]
-            return StructureFilterEngine._text_mask(values, condition, TextMatchMode.EXACT)
+            values, folded = StructureFilterEngine._text_source(result_data, "formula", text_cache)
+            return StructureFilterEngine._text_mask(values, condition, TextMatchMode.EXACT, folded)
 
         if condition.field in {
             FilterField.ELEMENT_REQUIRED,
@@ -172,18 +190,17 @@ class StructureFilterEngine:
         if condition.field == FilterField.EXPRESSION:
             expression = StructureFilterEngine._values(condition)[0]
             try:
-                matched = {int(index) for index in result_data.search_config(expression, SearchType.EXPRESSION)}
+                matched = np.asarray(
+                    result_data.search_config(expression, SearchType.EXPRESSION),
+                    dtype=np.int64,
+                ).reshape(-1)
             except Exception as exc:
                 raise StructureFilterValidationError(
                     "invalid_expression",
                     str(exc) or "Invalid expression.",
                     condition.condition_id,
                 ) from exc
-            return np.fromiter(
-                (int(index) in matched for index in active_indices),
-                dtype=bool,
-                count=active_count,
-            )
+            return np.isin(active_indices, matched)
 
         raise StructureFilterValidationError(
             "unsupported_operator",
@@ -211,14 +228,17 @@ class StructureFilterEngine:
         else:
             raise StructureFilterValidationError("unsupported_operator", f"Unsupported filter logic: {spec.logic}")
 
+        text_cache: dict[str, tuple[list[str], list[str]]] = {}
         for condition in enabled:
-            current = StructureFilterEngine._condition_mask(result_data, condition, active_indices)
+            current = StructureFilterEngine._condition_mask(result_data, condition, active_indices, text_cache)
             if current.shape != combined.shape:
                 raise StructureFilterValidationError(
                     "invalid_dataset",
                     "Filter result does not align with active structures.",
                     condition.condition_id,
                 )
+            if condition.negated:
+                current = ~current
             if spec.logic == FilterLogic.ALL:
                 combined &= current
             else:

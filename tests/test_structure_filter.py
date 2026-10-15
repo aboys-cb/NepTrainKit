@@ -338,3 +338,30 @@ def test_bulk_selection_rejects_stale_removed_indices(tmp_path):
     data.structure.remove(1)
     data.apply_selection([0, 1, 2], "replace")
     assert data.select_index == {0, 2}
+
+
+def test_negated_condition_inverts_its_own_mask_before_combining():
+    data = _result_data()
+    no_surface = StructureFilterCondition(
+        condition_id="not-surface",
+        field=FilterField.CONFIG_TYPE,
+        text_values=("surface",),
+        match_mode=TextMatchMode.CONTAINS,
+        negated=True,
+    )
+    has_iron = _condition(FilterField.ELEMENT_REQUIRED, "Fe", condition_id="fe")
+    assert StructureFilterEngine.evaluate(data, StructureFilterSpec(conditions=(no_surface,))).indices == (1, 3, 4)
+    both = StructureFilterSpec(conditions=(no_surface, has_iron))
+    assert StructureFilterEngine.evaluate(data, both).indices == (1, 4)
+    either = StructureFilterSpec(conditions=(no_surface, has_iron), logic=FilterLogic.ANY)
+    assert StructureFilterEngine.evaluate(data, either).indices == (0, 1, 2, 3, 4)
+
+    not_large = StructureFilterCondition(
+        condition_id="small",
+        field=FilterField.EXPRESSION,
+        text_values=("natoms > 2",),
+        negated=True,
+    )
+    assert StructureFilterEngine.evaluate(data, StructureFilterSpec(conditions=(not_large,))).indices == (1,)
+    assert StructureFilterCondition.from_dict(not_large.to_dict()) == not_large
+    assert not StructureFilterCondition.from_dict({"field": "config_type"}).negated

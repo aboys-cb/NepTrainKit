@@ -153,3 +153,35 @@ def test_preset_store_fails_closed_for_corrupt_or_future_records(preset_config, 
     preset_config[(filter_presets.STRUCTURE_FILTER_PRESET_SECTION, "broken")] = raw
 
     assert filter_presets.load_structure_filter_preset("broken") is None
+
+
+def test_preset_keeps_negation_and_reads_older_records_without_the_flag(preset_config):
+    spec = StructureFilterSpec(
+        conditions=(
+            StructureFilterCondition(
+                condition_id="row",
+                field=FilterField.CONFIG_TYPE,
+                text_values=("surface",),
+                match_mode=TextMatchMode.CONTAINS,
+                negated=True,
+            ),
+        )
+    )
+    filter_presets.save_structure_filter_preset("not surface", spec)
+    loaded = filter_presets.load_structure_filter_preset("not surface")
+    assert loaded is not None and loaded.conditions[0].negated
+
+    preset_config[(filter_presets.STRUCTURE_FILTER_PRESET_SECTION, "legacy")] = (
+        '{"version":1,"logic":"all","conditions":['
+        '{"field":"config_type","enabled":true,"text_values":["surface"],'
+        '"match_mode":"contains","case_sensitive":false}]}'
+    )
+    legacy = filter_presets.load_structure_filter_preset("legacy")
+    assert legacy is not None and not legacy.conditions[0].negated
+
+    preset_config[(filter_presets.STRUCTURE_FILTER_PRESET_SECTION, "bad")] = (
+        '{"version":1,"logic":"all","conditions":['
+        '{"field":"config_type","enabled":true,"text_values":["surface"],'
+        '"match_mode":"contains","case_sensitive":false,"negated":"yes"}]}'
+    )
+    assert filter_presets.load_structure_filter_preset("bad") is None

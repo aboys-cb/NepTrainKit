@@ -222,3 +222,152 @@ def test_real_filter_bar_can_add_blank_rows_when_connected_to_show_nep_page():
     app.processEvents()
     assert len(bar._popup._rows) == 2
     bar.close()
+
+
+def test_previews_run_one_at_a_time_and_rerun_once_with_the_latest_spec(monkeypatch):
+    pending = []
+
+    def fake_run_in_thread(parent, func, *, on_finished, on_error):
+        pending.append((func, on_finished, on_error))
+        return object()
+
+    monkeypatch.setattr(controller_module, "run_in_thread", fake_run_in_thread)
+    monkeypatch.setattr(
+        controller_module.StructureFilterEngine,
+        "evaluate",
+        lambda dataset, spec: _result(spec),
+    )
+    controller = StructureFilterController()
+    controller.set_dataset(_dataset())
+    ready = []
+    controller.previewReady.connect(ready.append)
+
+    controller.set_spec(_spec("a"))
+    controller.preview()
+    # Repeating an unchanged request reuses the running job.
+    controller.preview()
+    assert len(pending) == 1
+    pending[0][1](pending[0][0]())
+    assert [result.spec for result in ready] == [_spec("a")]
+    assert len(pending) == 1
+
+    controller.set_spec(_spec("b"))
+    controller.preview()
+    controller.set_spec(_spec("c"))
+    controller.preview()
+    controller.set_spec(_spec("d"))
+    controller.preview()
+    assert len(pending) == 2
+    assert controller.state.running
+
+    # The superseded job is discarded and exactly one rerun uses the newest spec.
+    pending[1][2]("worker crashed")
+    assert len(pending) == 3
+    assert controller.state.error is None
+    pending[2][1](pending[2][0]())
+    assert [result.spec for result in ready] == [_spec("a"), _spec("d")]
+    assert not controller.state.running
+    assert len(pending) == 3
+
+
+def test_clearing_the_query_cancels_a_queued_rerun(monkeypatch):
+    pending = []
+
+    def fake_run_in_thread(parent, func, *, on_finished, on_error):
+        pending.append((func, on_finished, on_error))
+        return object()
+
+    monkeypatch.setattr(controller_module, "run_in_thread", fake_run_in_thread)
+    monkeypatch.setattr(
+        controller_module.StructureFilterEngine,
+        "evaluate",
+        lambda dataset, spec: _result(spec),
+    )
+    controller = StructureFilterController()
+    controller.set_dataset(_dataset())
+    controller.set_spec(_spec("a"))
+    controller.preview()
+    controller.set_spec(_spec("b"))
+    controller.preview()
+    controller.clear()
+
+    pending[0][1](pending[0][0]())
+    assert len(pending) == 1
+    assert controller.state.result is None
+    assert not controller.state.running
+
+
+def _apply_page(current, empty=False):
+    data = SimpleNamespace(select_index=[])
+    canvas = SimpleNamespace(apply_selection_result=MagicMock(), set_search_highlight=MagicMock())
+    result = SimpleNamespace(indices=(1, 2), active_count=3, elapsed_ms=1.0)
+    page = SimpleNamespace(
+        nep_result_data=data,
+        graph_widget=SimpleNamespace(canvas=canvas),
+        _pending_structure_filter_apply=None,
+        structure_filter_controller=SimpleNamespace(
+            result_is_current=MagicMock(side_effect=current),
+            preview=MagicMock(),
+            state=SimpleNamespace(result=result),
+        ),
+        structure_filter_bar=SimpleNamespace(
+            spec=SimpleNamespace(is_empty=lambda: empty),
+            set_stale=MagicMock(),
+            set_result=MagicMock(),
+            set_selection_count=MagicMock(),
+        ),
+    )
+    page._apply_structure_filter_result = lambda mode: ShowNepWidget._apply_structure_filter_result(page, mode)
+    return page, canvas, result
+
+
+def test_applying_a_stale_result_previews_once_then_applies_the_fresh_matches():
+    page, canvas, result = _apply_page([False, True])
+
+    ShowNepWidget._apply_structure_filter_result(page, "add")
+    page.structure_filter_controller.preview.assert_called_once_with()
+    canvas.apply_selection_result.assert_not_called()
+    assert page._pending_structure_filter_apply == "add"
+
+    ShowNepWidget._on_structure_filter_preview_ready(page, result)
+    canvas.apply_selection_result.assert_called_once_with((1, 2), "add")
+    assert page._pending_structure_filter_apply is None
+
+
+def test_failed_preview_drops_the_pending_apply_and_empty_specs_do_nothing():
+    page, canvas, _result = _apply_page([False])
+    page.structure_filter_bar.set_error = MagicMock()
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    error = StructureFilterValidationError("invalid_regex", "Invalid regular expression: x", "tag")
+    page.structure_filter_bar.editor_is_open = True
+    ShowNepWidget._on_structure_filter_preview_failed(page, error)
+    assert page._pending_structure_filter_apply is None
+    canvas.apply_selection_result.assert_not_called()
+
+    page, canvas, _result = _apply_page([False], empty=True)
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    page.structure_filter_controller.preview.assert_not_called()
+
+
+def test_clearing_selection_cancels_pending_apply_before_preview_finishes():
+    page, canvas, result = _apply_page([False, True])
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    ShowNepWidget._apply_structure_filter_result(page, "clear")
+    ShowNepWidget._on_structure_filter_preview_ready(page, result)
+
+    canvas.apply_selection_result.assert_called_once_with((), "clear")
+    assert page._pending_structure_filter_apply is None
+
+
+def test_invalidating_dataset_jobs_cancels_pending_filter_apply():
+    page, canvas, result = _apply_page([False, True])
+    page._search_job_id = page._completer_job_id = 0
+    page._update_search_status_label = MagicMock()
+    page.structure_filter_controller.invalidate_result = MagicMock()
+    ShowNepWidget._apply_structure_filter_result(page, "replace")
+    ShowNepWidget._invalidate_background_jobs(page)
+    # A later preview, including one for the new dataset, must not apply the old action.
+    ShowNepWidget._on_structure_filter_preview_ready(page, result)
+
+    canvas.apply_selection_result.assert_not_called()
+    assert page._pending_structure_filter_apply is None

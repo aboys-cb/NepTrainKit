@@ -44,6 +44,7 @@ def _spec_payload(spec: StructureFilterSpec) -> dict:
                 "text_values": values,
                 "match_mode": condition.match_mode.value if condition.match_mode is not None else None,
                 "case_sensitive": bool(condition.case_sensitive),
+                "negated": bool(condition.negated),
             }
         )
     return {
@@ -68,7 +69,9 @@ def _spec_from_payload(data: dict) -> StructureFilterSpec:
         enabled = raw.get("enabled")
         values = raw.get("text_values")
         case_sensitive = raw.get("case_sensitive")
-        if not isinstance(enabled, bool) or not isinstance(case_sensitive, bool):
+        # Presets saved before NOT existed have no flag and keep their meaning.
+        negated = raw.get("negated", False)
+        if not all(isinstance(flag, bool) for flag in (enabled, case_sensitive, negated)):
             raise ValueError("Invalid structure-filter preset flags.")
         if not isinstance(values, list) or not values or not all(
             isinstance(value, str) and value.strip() for value in values
@@ -85,6 +88,7 @@ def _spec_from_payload(data: dict) -> StructureFilterSpec:
                 text_values=tuple(value.strip() for value in values),
                 match_mode=TextMatchMode(mode) if mode else None,
                 case_sensitive=case_sensitive,
+                negated=negated,
             )
         )
     spec = StructureFilterSpec(

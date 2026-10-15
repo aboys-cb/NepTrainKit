@@ -1,4 +1,4 @@
-# NEP Dataset Display 内容源
+# NEP 数据集查看内容源
 
 ```{contents} 本页目录
 :local:
@@ -11,14 +11,14 @@
 ## 1. 界面总览
 
 ```{image} ../_static/image/generated/show_nep_overview.png
-:alt: NEP Dataset Display 界面总览
+:alt: NEP 数据集查看界面总览
 :class: docs-screenshot
 ```
 
 - 左侧：误差散点主图区（descriptor / energy / force / pressure / potential energy 等子图）。
 - 右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。
-- 底部：数据状态行 `Orig / Now / Rm / Sel / Unsel / Rej`。
-- 顶部：`Open` / `Save` 分裂按钮（菜单动作会随页面显示动态注入）。
+- 底部：数据状态行 `原始 / 当前 / 删 / 选 / 坏`。
+- 顶部：`打开` / `保存` 分裂按钮（菜单动作会随页面显示动态注入）。
 <!-- display-overview-end -->
 
 ## 2. 按钮与弹窗绑定总表
@@ -28,26 +28,25 @@
 
 | 图标 | 按钮 | 是否打开设置 | 作用 |
 |---|---|---|---|
-| <img src="../_static/image/generated/show_nep_icons/init.svg" width="20" /> | `Reset View` | 否 | 当前子图自动缩放回数据范围 |
-| <img src="../_static/image/generated/show_nep_icons/pan.svg" width="20" /> | `Pan View` | 否（开关） | 切换平移交互 |
-| <img src="../_static/image/generated/show_nep_icons/index.svg" width="20" /> | `Select by Index` | 是 | 按编号或切片选择结构 |
-| <img src="../_static/image/generated/show_nep_icons/data_range.svg" width="20" /> | `Select by Range` | 是 | 按当前图的 x/y 范围选择结构 |
-| <img src="../_static/image/generated/show_nep_icons/supercell.svg" width="20" /> | `Select by Lattice` | 是 | 按晶格参数范围选择结构 |
-| <img src="../_static/image/generated/show_nep_icons/find_max.svg" width="20" /> | `Find Max Error Point` | 是 | 选择当前轴上误差最大的前 N 个结构 |
-| <img src="../_static/image/generated/show_nep_icons/sparse.svg" width="20" /> | `Sparse samples` | 是 | 用 FPS 做代表性采样 |
-| <img src="../_static/image/generated/show_nep_icons/pen.svg" width="20" /> | `Mouse Selection` | 否（开关） | 切换鼠标圈选/点选 |
-| <img src="../_static/image/generated/show_nep_icons/discovery.svg" width="20" /> | `Finding non-physical structures` | 否（仅进度） | 按近邻距离找疑似坏构型 |
-| <img src="../_static/image/generated/show_nep_icons/inspect.svg" width="20" /> | `Check Net Force` | 是 | 按净力阈值选择结构 |
-| <img src="../_static/image/generated/show_nep_icons/inverse.svg" width="20" /> | `Inverse Selection` | 否 | 对当前活动结构反选 |
-| <img src="../_static/image/generated/show_nep_icons/undo_selection.svg" width="20" /> | `Undo Selection` | 否 | 撤销最近一次选择变化 |
-| <img src="../_static/image/generated/show_nep_icons/undo_delete.svg" width="20" /> | `Undo Delete` | 否 | 恢复最近一次删除 |
-| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `Delete Selected Items` | 否 | 删除当前选中结构 |
-| <img src="../_static/image/generated/show_nep_icons/edit_info.svg" width="20" /> | `Edit Info` | 是 | 批量编辑结构 metadata |
-| <img src="../_static/image/generated/show_nep_icons/export.svg" width="20" /> | `Export structure descriptor` | 是（文件路径） | 导出当前结构描述符 |
-| <img src="../_static/image/generated/show_nep_icons/alignment.svg" width="20" /> | `Energy Baseline Shift` | 是 | 对能量基线做平移校正 |
+| <img src="../_static/image/generated/show_nep_icons/init.svg" width="20" /> | `重置视图` | 否 | 当前子图自动缩放回数据范围 |
+| <img src="../_static/image/generated/show_nep_icons/pan.svg" width="20" /> | `平移视图` | 否（开关） | 切换平移交互 |
+| <img src="../_static/image/generated/show_nep_icons/index.svg" width="20" /> | `按索引选择` | 是 | 按编号或切片选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/data_range.svg" width="20" /> | `按范围选择` | 是 | 按当前图的 x/y 范围选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/supercell.svg" width="20" /> | `按晶格选择` | 是 | 按晶格参数范围选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/find_max.svg" width="20" /> | `查找最大误差点` | 是 | 选择当前轴上误差最大的前 N 个结构 |
+| <img src="../_static/image/generated/show_nep_icons/sparse.svg" width="20" /> | `稀疏采样` | 是 | 用 FPS 做代表性采样 |
+| <img src="../_static/image/generated/show_nep_icons/pen.svg" width="20" /> | `鼠标选择` | 否（开关） | 切换鼠标圈选/点选 |
+| <img src="../_static/image/generated/show_nep_icons/discovery.svg" width="20" /> | `查找非物理结构` | 否（仅进度） | 按近邻距离找疑似坏构型 |
+| <img src="../_static/image/generated/show_nep_icons/inspect.svg" width="20" /> | `检查净力` | 是 | 按净力阈值选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/inverse.svg" width="20" /> | `反选` | 否 | 对当前活动结构反选 |
+| <img src="../_static/image/generated/show_nep_icons/undo_selection.svg" width="20" /> | `撤销选择` | 否 | 撤销最近一次选择变化 |
+| <img src="../_static/image/generated/show_nep_icons/undo_delete.svg" width="20" /> | `撤销删除` | 否 | 恢复最近一次删除 |
+| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `删除选中项` | 否 | 删除当前选中结构 |
+| <img src="../_static/image/generated/show_nep_icons/edit_info.svg" width="20" /> | `编辑信息` | 是 | 批量编辑结构 metadata |
+| <img src="../_static/image/generated/show_nep_icons/export.svg" width="20" /> | `导出结构描述符` | 是（文件路径） | 导出当前结构描述符 |
+| <img src="../_static/image/generated/show_nep_icons/alignment.svg" width="20" /> | `能量基线平移` | 是 | 对能量基线做平移校正 |
 | <img src="../_static/image/generated/show_nep_icons/dft_d3.png" width="20" /> | `DFT D3` | 是 | 配置并应用 DFT-D3 校正 |
-| <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `Training Set Audit` | 否（打开评估页） | 查看整体组成、数据质量、标签、结构相和磁类型 |
-| <img src="../_static/image/generated/show_nep_icons/distribution_inspector.svg" width="20" /> | `Explore distributions` | 否（打开训练集评估页面） | 查看数值字段分布并反向选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `训练集评估` | 否（打开评估页） | 查看整体组成、数据质量、标签、结构相和磁类型 |
 <!-- display-main-tools-table-end -->
 
 <!-- display-structure-tools-table-start -->
@@ -55,13 +54,13 @@
 
 | 图标 | 按钮 | 是否打开设置 | 作用 |
 |---|---|---|---|
-| <img src="../_static/image/generated/show_nep_icons/view_change.svg" width="20" /> | `Ortho View` | 否（开关） | 切换正交视图 |
-| <img src="../_static/image/generated/show_nep_icons/auto_distance.svg" width="20" /> | `Automatic View` | 否（开关） | 自动调整结构观察距离 |
-| <img src="../_static/image/generated/show_nep_icons/show_bond.svg" width="20" /> | `Show Bonds` | 否（开关） | 显示或隐藏键连线 |
-| <img src="../_static/image/generated/show_nep_icons/xyz.svg" width="20" /> | `Show Arrows` | 是 | 显示力、磁矩或其他向量箭头 |
-| <img src="../_static/image/generated/show_nep_icons/export1.svg" width="20" /> | `Export current structure` | 是 | 导出当前结构 |
-| <img src="../_static/image/generated/show_nep_icons/defect.svg" width="20" /> | `Mark Bad (Reject)` | 否（开关） | 标记当前结构为 reject |
-| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `Drop All Bad` | 是（确认） | 删除所有 reject 结构 |
+| <img src="../_static/image/generated/show_nep_icons/view_change.svg" width="20" /> | `正交视图` | 否（开关） | 切换正交视图 |
+| <img src="../_static/image/generated/show_nep_icons/auto_distance.svg" width="20" /> | `自动视图` | 否（开关） | 自动调整结构观察距离 |
+| <img src="../_static/image/generated/show_nep_icons/show_bond.svg" width="20" /> | `显示键` | 否（开关） | 显示或隐藏键连线 |
+| <img src="../_static/image/generated/show_nep_icons/xyz.svg" width="20" /> | `显示箭头` | 是 | 显示力、磁矩或其他向量箭头 |
+| <img src="../_static/image/generated/show_nep_icons/export1.svg" width="20" /> | `导出当前结构` | 是 | 导出当前结构 |
+| <img src="../_static/image/generated/show_nep_icons/defect.svg" width="20" /> | `标记为坏点（reject）` | 否（开关） | 标记当前结构为 reject |
+| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `删除所有坏点` | 是（确认） | 删除所有 reject 结构 |
 <!-- display-structure-tools-table-end -->
 
 <!-- display-top-actions-start -->
@@ -69,9 +68,9 @@
 
 | 图标 | 菜单动作 | 是否打开设置 | 说明 |
 |---|---|---|---|
-| <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `Open File...` | 是 | 选择 `*.xyz` |
-| <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `Open Folder...` | 是 | 选择目录（常用于 `deepmd/npy`） |
-| <img src="../_static/image/generated/show_nep_icons/save.svg" width="20" /> | `Export All...` 等导出菜单 | 是 | 先选 `ExportFormat`，再选保存路径 |
+| <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `打开文件…` | 是 | 选择 `xyz` / `extxyz` 等结构文件 |
+| <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `打开文件夹…` | 是 | 选择目录（常用于训练输出目录或 `deepmd/npy`） |
+| <img src="../_static/image/generated/show_nep_icons/save.svg" width="20" /> | `导出全部…` 等导出菜单 | 是 | 先选导出格式，再选保存路径 |
 <!-- display-top-actions-end -->
 
 <!-- display-main-tools-start -->
@@ -82,33 +81,33 @@
 <!-- display-basic-tools-start -->
 | 按钮 | 行为 |
 |---|---|
-| `Reset View` | 当前子图自动缩放回数据范围 |
-| `Pan View` | 切换平移交互 |
-| `Mouse Selection` | 切换多边形/点选交互 |
-| `Inverse Selection` | 对当前活动结构集合执行反选 |
-| `Delete Selected Items` | 删除选中结构并重绘 |
-| `Undo Selection` | 撤销最近一次选择变化；无可撤销时提示 `No undoable selection!` |
-| `Undo Delete` | 撤销最近删除；无可撤销时提示 `No undoable deletion!` |
+| `重置视图` | 当前子图自动缩放回数据范围 |
+| `平移视图` | 切换平移交互 |
+| `鼠标选择` | 切换多边形/点选交互 |
+| `反选` | 对当前活动结构集合执行反选 |
+| `删除选中项` | 删除选中结构并重绘 |
+| `撤销选择` | 撤销最近一次选择变化；无可撤销时提示 `没有可撤销的选择操作！` |
+| `撤销删除` | 撤销最近删除；无可撤销时提示 `没有可撤销的删除操作！` |
 <!-- display-basic-tools-end -->
 
 ### 3.2 有弹窗按钮（参数与绑定写在一起）
 
-#### A. `Select by Index`
+#### A. `按索引选择`
 
 <!-- display-select-index-start -->
 - 输入控件：
-  - `indexEdit`：索引表达式
-  - `Use original indices`：默认勾选
+  - 索引输入框：填写索引表达式
+  - `使用原始索引`：默认勾选，按导入时的原始编号解释索引
 - 索引表达式支持：
   - 单值：`3`, `-1`
   - 切片：`1:10`, `:100`, `::3`, `10:0:-1`
   - 多段：`1:10,20,30:40:2`（逗号或空白分隔）
 - 执行结果：解析后选中结构；空表达式无效果。
 
-![Select by Index Dialog](../_static/image/generated/show_nep_reference/g_index_dialog.png)
+![按索引选择对话框](../_static/image/generated/show_nep_reference/g_index_dialog.png)
 <!-- display-select-index-end -->
 
-#### B. `按图上范围选择`
+#### B. `按范围选择`
 
 <!-- display-select-range-start -->
 - 输入控件：
@@ -117,31 +116,31 @@
 - 默认值：打开时自动填充为当前子图数据极值。
 - 执行结果：按坐标窗口筛选并选中结构。
 
-![按图上范围选择对话框](../_static/image/generated/show_nep_reference/g_range_dialog.png)
+![按范围选择对话框](../_static/image/generated/show_nep_reference/g_range_dialog.png)
 <!-- display-select-range-end -->
 
-#### C. `按晶格参数选择`
+#### C. `按晶格选择`
 
 <!-- display-select-lattice-start -->
 - 输入控件：晶格长度 `a / b / c` 与晶格角 `α / β / γ` 各自的最小值和最大值。
 - 范围：`[0, 1e6]`，4 位小数。
 - 默认值：当前活动结构的晶格参数范围。
-- 细节：内部比较带固定容差 `1e-4`。
+- 边界：比较时带 `1e-4` 的容差，恰好落在边界上的结构也会被选中。
 
-![按晶格参数选择对话框](../_static/image/generated/show_nep_reference/g_lattice_dialog.png)
+![按晶格选择对话框](../_static/image/generated/show_nep_reference/g_lattice_dialog.png)
 <!-- display-select-lattice-end -->
 
-#### D. `查找最大误差结构`
+#### D. `查找最大误差点`
 
 <!-- display-max-error-start -->
 - 输入控件：`结构数`（整数 `N`）。
-- 默认值：`widget.max_error_value`（缺省 `10`）。
+- 默认值：`10`；修改后会记住上次输入的数量。
 - 执行结果：选中当前轴上误差最大的前 `N` 个结构。
 
-![查找最大误差结构对话框](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)
+![查找最大误差点对话框](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)
 <!-- display-max-error-end -->
 
-#### E. `Sparse samples`
+#### E. `稀疏采样`
 
 <!-- display-sparse-samples-start -->
 - `选择策略`：
@@ -158,13 +157,13 @@
 - 元素集合平衡模式固定使用原始描述符和固定数量采样，因此会锁定“采样模式”和“描述符来源”。
 - 执行结果：更新选择集；平衡模式还会提示实际选择数量和覆盖的元素集合数。
 
-![Sparse Samples Dialog](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)
+![稀疏采样对话框](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)
 <!-- display-sparse-samples-end -->
 
-#### F. `查找疑似非物理结构`（无参数弹窗，显示进度）
+#### F. `查找非物理结构`（无参数弹窗，显示进度）
 
 <!-- display-nonphysical-start -->
-- 参数来源：`widget.radius_coefficient`（默认 `0.7`）。
+- 判定阈值：使用 `设置` 中的半径系数（默认 `0.7`）。两原子距离小于其共价半径之和乘以该系数时视为过近。
 - 执行结果：扫描后选中疑似非物理结构。
 <!-- display-nonphysical-end -->
 
@@ -173,13 +172,13 @@
 <!-- display-net-force-start -->
 - 输入控件：`净力阈值`，即 `|ΣF|`。
 - 范围：`[0, 1e6]`，10 位小数。
-- 默认值：`widget.force_balance_threshold`（缺省 `1e-3`）。
+- 默认值：`1e-3`。
 - 执行结果：选中超阈值结构，并显示统计消息。
 
 ![检查净力对话框](../_static/image/generated/show_nep_reference/g_force_dialog.png)
 <!-- display-net-force-end -->
 
-#### H. `Edit Info`
+#### H. `编辑信息`
 
 <!-- display-edit-info-start -->
 - 输入能力：
@@ -187,16 +186,17 @@
   - 删除标签
   - 右键重命名标签
 - 应用前确认：列出 `removed / renamed / added` 摘要。
-- 执行结果：批量更新当前选中结构 metadata。
+- 执行结果：批量更新当前选中结构的结构信息（metadata）。
 
-![Edit Info Dialog](../_static/image/generated/show_nep_reference/g_editinfo_dialog.png)
+![编辑信息对话框](../_static/image/generated/show_nep_reference/g_editinfo_dialog.png)
 <!-- display-edit-info-end -->
 
-#### I. `Export structure descriptor`（路径选择）
+#### I. `导出结构描述符`（路径选择）
 
 <!-- display-export-descriptor-start -->
-- 路径对话框默认文件名：`export_descriptor_data.out`。
-- 执行结果：后台导出描述符。
+- 导出范围：只导出当前选中的结构；没有选中时提示后不生成文件。
+- 默认文件名：`export_descriptor_data.out`。
+- 文件格式：制表符分隔的文本，每行一个结构；前两列是描述符图上的坐标，数据中有能量时第三列是每原子能量。
 <!-- display-export-descriptor-end -->
 
 #### J. `能量基线平移`
@@ -219,29 +219,27 @@
 ![DFT-D3 修正对话框](../_static/image/generated/show_nep_reference/g_dftd3_dialog.png)
 <!-- display-dft-d3-end -->
 
-#### L. `Training Set Audit`
+#### L. `训练集评估`
 
 <!-- display-training-audit-start -->
-- 位置：删除按钮后的分隔栏右侧。
+- 位置：主图工具栏中 `删除选中项` 后面的分隔线右侧。
 - 评估范围：当前活动结构；已经删除的结构不参与。
 - 概览：结构/原子统计、标签可用性、元素共现矩阵与精确元素集合。
 - 证据：数据质量、局域化学、结构相和磁类型；耗时证据在后台计算。
-- 结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset Display`。
+- 结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP 数据集查看`。
 - 报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。
 
 完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。
 <!-- display-training-audit-end -->
 
-#### M. `Explore distributions`
+#### M. `数据分布`
 
 <!-- display-distributions-start -->
-- 点击后打开 `训练集评估 → 数据分布`，不再弹出独立的 Distribution Inspector 窗口。
+- 入口：点击工具栏 `训练集评估`，再切到「数据地图 → 数据分布」。工具栏不再单独提供分布按钮。
 - 默认只需要选择 `字段 / 数值类型 / 分组方式 / 数据范围`。
 - `选择方式 / 分箱数 / 辅助曲线 / 向量模长` 收入“高级选项”。
-- `Metric / Series` 与分布图联动；点击分箱会把对应结构选择回写到 Dataset Display。
-- Reference / Prediction / Error 只在底层数据支持时产生有效结果。
-
-原有独立窗口暂时作为兼容实现保留，但工具栏入口已经切换到统一页面。
+- `指标 / 数据系列` 与分布图联动；点击分箱会把对应结构选回 `NEP 数据集查看`。
+- `参考值 / 预测值 / 误差` 只有在数据中确实存在对应标签或预测时才有结果。
 <!-- display-distributions-end -->
 <!-- display-main-tools-end -->
 
@@ -252,22 +250,22 @@
 
 | 按钮 | 行为 |
 |---|---|
-| `Ortho View` | 切换正交投影 |
-| `Automatic View` | 自动视角/距离对齐 |
-| `Show Bonds` | 显示/隐藏键；图标在 `show_bond/hide_bond` 间切换 |
+| `正交视图` | 在透视投影和正交投影之间切换 |
+| `自动视图` | 切换结构时自动调整视角和观察距离 |
+| `显示键` | 显示或隐藏原子之间的键 |
 
-### 4.2 `Show Arrows`
+### 4.2 `显示箭头`
 
-- 前提：当前结构画布必须支持箭头 API（通常 vispy）。
+- 前提：结构绘图后端需要支持箭头。若提示 `当前结构绘图后端不支持箭头叠加。`，在 `设置` 中把绘图后端切换到 `VisPy`。
 - 输入控件：
-  - `Property`：仅 `N x 3` 原子向量属性
-  - `Scale`：`[0, 1000]`，默认 `1.0`
-  - `Colormap`：`viridis/magma/plasma/inferno/jet`
-  - `Show arrows`：勾选显示，取消则清除
+  - `属性`：只列出每个原子都有三维向量的属性（`N × 3`），例如力或磁矩
+  - `缩放`：箭头长度系数，范围 `[0, 1000]`，默认 `1.0`
+  - `颜色映射`：`viridis/magma/plasma/inferno/jet`
+  - `显示箭头`：勾选显示，取消则清除
 
-![Show Arrows Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)
+![显示箭头对话框](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)
 
-### 4.3 `Export current structure`
+### 4.3 `导出当前结构`
 
 - 第一步：选格式
   - `XYZ (.xyz / extxyz)`
@@ -278,14 +276,14 @@
   - `xyz`：文件保存路径（默认 `structure_{index}.xyz`）
   - 两种 DeepMD NPY：目录保存路径
 
-![Export Format Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)
+![导出格式对话框](../_static/image/generated/show_nep_reference/s_export_format.png)
 
-### 4.4 `Mark Bad (Reject)` 与 `Drop All Bad`
+### 4.4 `标记为坏点（reject）` 与 `删除所有坏点`
 
-- `Mark Bad (Reject)`：只标记，不删除；主图显示 reject 高亮。
-- `Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。
+- `标记为坏点（reject）`：只标记，不删除；主图上会高亮显示这些坏点。
+- `删除所有坏点`：弹出确认框后，删除当前所有标记为坏点的结构，并清空坏点标记。
 
-![Drop All Bad Confirm](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)
+![删除所有坏点确认框](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)
 <!-- display-structure-tools-end -->
 
 <!-- display-data-actions-start -->
@@ -293,34 +291,40 @@
 
 ### 5.1 导入
 
-- `Open File...`：选择 `*.xyz`。
-- `Open Folder...`：选择目录（`deepmd/npy` 常见）。
-- 拖拽：仅接受 `matches_result_loader()` 支持的路径。
-- 若已有工作路径，切换前会二次确认。
-- 加载过程在后台线程执行；`StateToolTip` 可触发取消。
+- `打开文件…`：选择 `xyz` / `extxyz` 等结构文件。
+- `打开文件夹…`：选择训练输出目录或 `deepmd/npy` 目录。
+- 拖拽：把文件或目录直接拖进窗口；不支持的格式会提示 `不支持的文件格式`。
+- 已经打开数据时再导入新数据，软件会先确认是否替换。
+- 加载在后台进行，加载时显示的进度提示可以取消加载。
 
-### 5.2 导出菜单（顶栏 Save）
+### 5.2 导出菜单（顶部 `保存`）
 
-- 动作：`Export All / Selected / Removed / Active`。
-- 启用条件：数据已加载且非 busy；其中 `Selected/Removed/Active` 要求计数大于 0。
-- 统一先选 `ExportFormat`，再选路径。
+| 菜单项 | 导出内容 |
+| --- | --- |
+| `导出全部…` | 当前打开的全部结构 |
+| `导出已选择结构（N）…` | 当前选中的结构 |
+| `导出已移除结构（N）…` | 已经删除的结构，便于留档 |
+| `导出当前保留结构（N）…` | 删除后仍保留的结构，通常就是清洗后的数据集 |
 
-![Export Menu](../_static/image/show_nep/m_export_menu.png)
+- 括号里的 N 是当前数量；数量为 0 或数据仍在加载时，对应菜单项不可用。
+- 点击后先选择导出格式，再选择保存路径。
+
+![导出菜单](../_static/image/show_nep/m_export_menu.png)
 
 ### 5.3 NEP 模型切换（路径栏右侧下拉框）
 
-- 文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。
-- 排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。
-- 切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。
-- 状态保持：切换后恢复 `selected` 与 `reject`。
+- 可选模型：当前数据目录下文件名包含 `nep` 的 `*.txt` 文件，`nep.txt` 排在最前，
+  其余按字母顺序；列表末尾还可以选择内置的 `nep89` 模型。
+- 切换速度：切回已经计算过的模型时直接使用缓存结果；第一次切换到某个模型时会在后台重新计算。
+- 切换后保留当前的选中结构和坏点标记。
 
-![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)
+![NEP 模型下拉框](../_static/image/show_nep/m_nep_combo.png)
 <!-- display-data-actions-end -->
 
 <!-- display-filter-start -->
 ## 6. 结构筛选栏
 
-结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。
+结构筛选栏可以同时使用配置类型、化学式、元素、原子条件和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。
 
 ![结构筛选栏与条件编辑器](../_static/image/generated/show_nep_reference/g_structure_filter.png)
 
@@ -346,12 +350,23 @@
 | 不得包含元素 | 所列元素必须全部不存在 | `H` 排除含 H 结构 |
 | 只允许这些元素 | 结构中不能出现列表外元素 | `Fe,O` 可匹配 Fe、O 和 FeO |
 | 自定义表达式 | 使用现有结构表达式引擎 | `natoms > 100` |
+| 原子条件 | 选择目标元素、任一/所有原子、性质、比较符和阈值 | 任一 Fe 原子的磁矩模长小于 1 |
 
 同一条配置类型或化学式条件可以用分号输入多个值，多个值之间取“任一匹配”。元素之间使用逗号或空格分隔，例如 `Fe, O`。
 
 每行左侧的开关控制该条件是否参与筛选。关闭条件不会删除输入内容。配置类型和化学式右侧的 `Aa` 控制是否区分大小写；高亮时区分，未高亮时不区分。
 
 非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不会意外匹配全部结构。
+
+#### 不写表达式，筛选某种元素的磁矩
+
+在条件类型中选择“原子条件”，将“目标元素”设为 `Fe`，“满足方式”设为“任一目标原子满足”，“原子性质”选“磁矩 · 模长”，比较选“小于”，阈值输入 `1`。此时只要一个 Fe 原子的磁矩模长小于 1，结构就会匹配；其他元素的小磁矩不会造成误匹配。
+
+若要求所有 Fe 原子都满足，直接把“满足方式”切换为“所有目标原子满足”。两种方式均排除不含 Fe 的结构。选择“全部元素”时，对结构中的全部原子判断。
+
+元素与数值属性选项来自当前数据集。常见磁矩、力、磁力和电荷显示易读名称，分量、模长以及参考值/预测值/误差可直接在性质列表选择。阈值支持负数和科学计数法。修改后会自动预览，仍需通过“应用结果”改变选择集。
+
+原子条件继续使用已有表达式引擎和常用筛选格式，保存后重新打开仍可用控件编辑。切换到“自定义表达式”可以查看和修改生成的条件；包含复杂算术或多字段组合的表达式保留文本编辑方式。缺失字段、无效数值与稀疏原子行的处理仍遵循下文 `any/all` 的规则。
 
 ### 6.3 保存和复用常用筛选
 
@@ -390,7 +405,7 @@
 如果条件中仍有空白行，软件不会保存。请补全该行，或用行尾的“×”先删除它。
 
 (show-nep-expression)=
-### 6.4 `expression` 用法总览
+### 6.4 `表达式` 用法总览
 
 - 目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结果。
 - 作用对象：仅当前 active structures；已经删除的结构不会参与表达式计算。
@@ -406,6 +421,7 @@
 - 比较运算：`>`、`>=`、`<`、`<=`、`==`、`!=`
 - 算术运算：`+`、`-`、`*`、`/`
 - 括号：`(`、`)`
+- 原子条件聚合：`any(条件)`、`all(条件)`
 
 示例：
 
@@ -415,7 +431,8 @@
 
 #### 6.4.2 不支持的语法
 
-- 不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`
+- 除 `any(条件)`、`all(条件)` 外，不支持其他函数调用，例如 `len(structure)`、`mean(force)`、`min(...)`
+- `any/all` 只接受一个条件参数，不支持嵌套调用或关键字参数
 - 不支持固定原子索引：例如 `atom[3].force.x > 1`
 - 不支持数字分量后缀：例如 `force.1`、`stress.3`
 - 不支持字符串函数或正则函数
@@ -530,6 +547,8 @@
 1. 先按你写的后缀取出分量或范数
 2. 再在该结构内部做 `max(abs(values))`
 
+不写 `any/all` 时，以上默认规则保持不变。例如 `atomic.spin.norm < 1` 要求结构内所有原子的磁矩模长都小于 1；磁矩模长为 `[0.5, 2.0]` 的结构不会命中。
+
 因此：
 
 - `force.x > 10` 的含义是“这个结构里是否存在原子满足 `max(abs(force_x)) > 10`”
@@ -537,6 +556,40 @@
 - `atomic.spin_vec.y > 0.5` 的含义也是同样的结构级最大绝对值判断
 
 结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。
+
+##### 用 `any/all` 显式判断原子条件
+
+- `any(atomic.spin.norm < 1)`：至少一个原子的磁矩模长小于 1 即命中。
+- `all(atomic.spin.norm < 1)`：所有原子的磁矩模长都小于 1 才命中。
+- `any(atomic.charge < 0)`：至少一个原子的电荷为负。
+- `any(force.ref.norm > 10)`：至少一个原子的参考力模长大于 10。
+- `all(force.err.norm < 0.2)`：每个原子的力误差向量模长都小于 0.2。
+- `any(mforce.pred.z < -0.1)`：至少一个原子的预测磁力 z 分量小于 -0.1。
+
+适用于当前数据中可用的所有数值型 `atomic.<name>` 属性，以及逐原子的结果字段（如 `force`、`mforce`、`bec`）。支持标量、向量/张量分量和 `.norm`；结果字段继续支持 `.ref/.pred/.err`，`atomic.<name>` 仍不支持这三种视图。力与磁力优先使用保留的逐原子数据，不受绘图是否使用结构汇总模式影响。
+
+括号内先逐原子取值、运算和比较，再汇总布尔结果；分量和标量保留正负号，不会隐式取绝对值。例如 `any(atomic.spin.z < -1)` 可以筛出含负 z 分量的结构，而默认表达式仍按最大绝对值比较。
+
+括号内支持现有比较、算术和逻辑运算。`any(atomic.spin.norm < 1 && force.norm > 10)` 要求同一个原子同时满足两个条件；`any(atomic.spin.norm < 1) && any(force.norm > 10)` 则允许两个不同原子分别满足。也可以与结构条件组合，例如 `natoms > 100 && any(atomic.spin.norm < 1)`。
+
+`any/all` 内至少需要一个原子级字段。结构级字段可作为共同条件或阈值参与运算，但 `any(natoms > 100)` 不受支持，直接写 `natoms > 100` 即可。
+
+缺少括号内引用字段或该字段没有原子行的结构，`any` 和 `all` 均不命中。引用值为 NaN/Inf 的原子按不满足条件处理：`any` 仍可由其他有效原子命中，`all` 不会通过。只含部分原子行的结果（如部分磁性原子的磁力）按实际提供的行判断；不能与无法对齐的其他原子字段放在同一个 `any/all` 内，遇到这种组合会报错。
+
+##### 限定某种元素的原子
+
+`atomic.element` 表示当前原子的元素符号，来自结构的原子种类。它只用于 `any/all` 内的 `==`、`!=` 比较，元素符号需要加单引号或双引号，并使用标准大小写（例如 `"Fe"`、`"O"`）。不支持 `.norm`、分量、`.ref/.pred/.err` 或算术运算；自动补全中可以找到 `atomic.element`。
+
+- `any(atomic.element == "Fe" && atomic.spin.norm < 1)`：存在至少一个磁矩模长小于 1 的 Fe 原子。
+- `has.Fe && all(atomic.element != "Fe" || atomic.spin.norm < 1)`：结构含 Fe，且所有 Fe 原子的磁矩模长都小于 1。
+- `any(atomic.element == "O" && force.ref.norm > 10)`：存在至少一个参考力模长大于 10 的 O 原子。
+- `all(atomic.element == "Fe")`：结构内每个原子都是 Fe。
+
+`all` 仍然判断所有原子，不会把 `atomic.element == "Fe"` 自动当作元素范围。因此 `all(atomic.element == "Fe" && atomic.spin.norm < 1)` 要求结构全部由 Fe 组成，并且每个原子的磁矩模长小于 1。只约束 Fe 时，应使用上面的 `!= "Fe" || ...` 写法；加上 `has.Fe` 可排除不含 Fe 的结构。
+
+`has.Fe && any(atomic.spin.norm < 1)` 仍是两个独立的结构条件，小磁矩可能来自 O 等其他元素。要保证同一个 Fe 原子满足 spin 条件，请将元素比较和 spin 比较放在同一个 `any` 内。
+
+合法但数据中不存在的元素比较不会报错，例如 `any(atomic.element == "Ti")` 在不含 Ti 的结构上为假。缺失字段、NaN/Inf 和原子行对齐仍遵循上面的规则；即使使用元素条件，`all` 也不会忽略其他原子上的无效数值。仅含部分磁性原子行、无法与完整元素数组对齐的结果，不能与 `atomic.element` 放在同一个 `any/all` 内。
 
 #### 6.4.8 常用表达式示例
 
@@ -634,26 +687,26 @@ expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共
 <!-- display-status-start -->
 ## 7. 状态与常见提示
 
-- 数据状态：`Orig / Now / Rm / Sel / Unsel / Rej`。
+- 数据状态：`原始 / 当前 / 删 / 选 / 坏`，分别是原始结构数、当前显示数、已删除数、已选中数和标记为坏点的数量；鼠标悬停时还会显示未选中数量。
 - 结构状态：最短键长异常会红字提示；净力显示 `|ΣF|`。
 - 播放按钮：<img src="../_static/image/generated/show_nep_icons/play.svg" width="18" /> / <img src="../_static/image/generated/show_nep_icons/pause.svg" width="18" />。
 
 | 提示文本 | 触发条件 |
 |---|---|
-| `unsupported file format` | 导入路径不支持 |
-| `NEP data has not been loaded yet!` | 未加载数据即执行分析/导出 |
-| `Please select some structures first!` | 导出 selected 时无选择 |
-| `No active structures to export.` | 导出 active 时为空 |
-| `No removed structures to export.` | 导出 removed 时为空 |
-| `No undoable deletion!` | 无可撤销删除 |
-| `No vector data available` | 箭头所需向量属性不存在 |
-| `Arrow overlay is unavailable...` | 当前结构画布不支持箭头 API |
-| `Invalid regex pattern.` | `tag/formula` 输入非法正则 |
-| `Unknown element symbol: Xx` | `elements` 输入未知元素 |
-| `Unknown field in expression: xxx` | `expression` 使用了不存在的字段 |
-| `Numeric component suffixes are not supported in expressions.` | `expression` 使用了 `.1/.2/.3` 这类数字分量 |
-| `Expression contains unsupported syntax.` | `expression` 含有不支持的语法 |
-| `Invalid expression syntax.` | `expression` 语法不完整或无法解析 |
+| `不支持的文件格式` | 导入路径不支持 |
+| `尚未加载 NEP 数据！` | 未加载数据即执行分析/导出 |
+| `请先选择一些结构！` | 导出已选择结构时没有选中任何结构 |
+| `没有可导出的保留结构。` | 导出当前保留结构时数量为 0 |
+| `没有可导出的已移除结构。` | 导出已移除结构时数量为 0 |
+| `没有可撤销的删除操作！` | 无可撤销删除 |
+| `没有可用的矢量数据` | 箭头所需向量属性不存在 |
+| `当前结构绘图后端不支持箭头叠加。` | 当前结构绘图后端不支持箭头，可在 `设置` 中切换到 `VisPy` |
+| `Invalid regex pattern.` | `Config_type` 或 `化学式` 模式输入了非法正则 |
+| `未知元素符号：Xx。请使用标准大小写，例如 'Fe'。` | `元素` 模式输入了未知元素 |
+| `Unknown field in expression: xxx` | `表达式` 使用了不存在的字段 |
+| `Numeric component suffixes are not supported in expressions.` | `表达式` 使用了 `.1/.2/.3` 这类数字分量 |
+| `表达式包含不支持的语法。` | `表达式` 含有不支持的语法 |
+| `表达式语法无效。` | `表达式` 语法不完整或无法解析 |
 <!-- display-status-end -->
 
 ## 相关入口

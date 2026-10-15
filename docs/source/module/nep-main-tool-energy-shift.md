@@ -1,4 +1,4 @@
-# 能量基线平移（Energy Baseline Shift）
+# 能量基线平移（Energy baseline shift）
 
 ## 作用与适用场景
 

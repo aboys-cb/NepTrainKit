@@ -8,123 +8,124 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:1
-#: 45bf05ac43d148dbac6032b1d722dc82
+#: ../../source/example/clean-suspicious-structures.md:1
+#: 8c5a5a7220fb4c449ff66af5f1690523
 msgid "快速找出短键和净力异常结构"
 msgstr "Quickly Find Short Bonds and Net-Force Outliers"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:3
-#: 8ebf64c0290244f78f2a4bd868b62aa1
-msgid ""
-"训练前先做一次结构体检，通常能提前发现原子重叠、周期边界错误或未收敛的力。这"
-"里用两个互补入口建立“待复核列表”，程序不会自动删除任何结构。"
+#: ../../source/example/clean-suspicious-structures.md:3
+#: 724cd5d9423b4b2bbf4594070d5004c0
+msgid "训练前先做一次结构体检，通常能提前发现原子重叠、周期边界错误或未收敛的力。这里用两个互补入口建立“待复核列表”，程序不会自动删除任何结构。"
 msgstr ""
 "A quick structural check before training can expose overlapping atoms, "
-"periodic-boundary mistakes, and unconverged forces. The two complementary "
-"checks below build a review list; neither check removes structures "
+"periodic-boundary mistakes, and unconverged forces. The two complementary"
+" checks below build a review list; neither check removes structures "
 "automatically."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:5
-#: 35f8243fedb04a558ab9ba1e5e44815a
+#: ../../source/example/clean-suspicious-structures.md:5
+#: 5e9460688bf841839450494687b7ac32
 msgid "运行两项检查"
 msgstr "Run Both Checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:7
-#: 25a9d88aab004a79bc0ace9de67b9ce8
-msgid ""
-"在工具栏中依次使用 `Find non-physical structures` 和 `Check net force`："
-msgstr ""
-"Use `Find non-physical structures` and then `Check net force` on the toolbar:"
+#: ../../source/example/clean-suspicious-structures.md:7
+#: 337a654f02734ae3a4025cdf57bf8607
+msgid "在工具栏中依次使用 `查找非物理结构` 和 `检查净力`："
+msgstr "Use `Find non-physical structures` and then `Check net force` on the toolbar:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:9
-#: cb3c1a3d990745b4a68da41c2bb77b16
+#: ../../source/example/clean-suspicious-structures.md:9
+#: 622656eb4f5a4abd957d53e77a9497cc
 msgid "非物理距离和净力检查入口"
 msgstr "Entry points for nonphysical-distance and net-force checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:9
-#: cb3c1a3d990745b4a68da41c2bb77b16
+#: ../../source/example/clean-suspicious-structures.md:9
+#: 622656eb4f5a4abd957d53e77a9497cc
 msgid ""
-".. image:: ../_static/image/generated/tutorials/structure_quality_checks.png"
+".. image:: "
+"../_static/image/generated/tutorials/structure_quality_checks.png"
 msgstr ""
-".. image:: ../_static/image/generated/tutorials/structure_quality_checks.png"
+".. image:: "
+"../_static/image/generated/tutorials/structure_quality_checks.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:14
-#: 36a4539b82f34ebbaae191c5c9917ce8
+#: ../../source/example/clean-suspicious-structures.md:14
+#: 63bf558664c34680bf0a9b5fbe4624fd
+#
 msgid ""
-"短键检查使用 `Settings` 中的半径系数。默认 `0.7` 表示：两原子距离小于其共价半"
-"径之和的 `0.7` 倍时，结构会被选中。它适合发现明显碰撞，不是材料通用的成键判"
-"据。"
+"短键检查使用 `设置` 中的半径系数。默认 `0.7` 表示：两原子距离小于其共价半径之和的 `0.7` "
+"倍时，结构会被选中。它适合发现明显碰撞，不是材料通用的成键判据。"
 msgstr ""
-"The short-distance check uses the radius coefficient in `Settings`. With the "
-"default value `0.7`, a structure is selected when an interatomic distance is "
-"below `0.7` times the sum of the two covalent radii. This is useful for "
-"obvious collisions, not as a universal bonding criterion."
+"The short-distance check uses the radius coefficient in `Settings`. With "
+"the default value `0.7`, a structure is selected when an interatomic "
+"distance is below `0.7` times the sum of the two covalent radii. This is "
+"useful for obvious collisions, not as a universal bonding criterion."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:16
-#: 826c45832ce6400b9e739d616b263d89
+#: ../../source/example/clean-suspicious-structures.md:16
+#: 90e13944f3134ff2b7defe96e47d15d8
 msgid "净力检查在弹窗中填写阈值，单位是 `eV/Å`："
 msgstr "Enter the net-force threshold in the dialog, in `eV/Å`:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:18
-#: 75d38fec46ad4a7c8f53de00c68a060e
+#: ../../source/example/clean-suspicious-structures.md:18
+#: 33c54879db3646aea6f91aab3f03333e
 msgid "净力阈值设置窗口"
 msgstr "Net-force threshold dialog"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:18
-#: 75d38fec46ad4a7c8f53de00c68a060e
+#: ../../source/example/clean-suspicious-structures.md:18
+#: 33c54879db3646aea6f91aab3f03333e
 msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/g_force_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_force_dialog.png"
 msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/g_force_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_force_dialog.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:23
-#: 9bed9893221f451abae13a201fd512e0
-msgid ""
-"程序计算每个结构的 $|\\sum_i \\mathbf{F}_i|$。本例用 `0.1 eV/Å` 做演示；真实"
-"阈值应结合计算精度和体系大小决定。"
+#: ../../source/example/clean-suspicious-structures.md:23
+#: 002e25968d634cd6a5d4055bcd2c88cc
+#, python-brace-format
+msgid "程序计算每个结构的 $|\\sum_i \\mathbf{F}_i|$。本例用 `0.1 eV/Å` 做演示；真实阈值应结合计算精度和体系大小决定。"
 msgstr ""
 "The program evaluates $|\\sum_i \\mathbf{F}_i|$ for each structure. This "
 "example uses `0.1 eV/Å`; choose a production threshold based on the "
 "calculation accuracy and system size."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:25
-#: 805ea603e3da4af8b169aed735e94e81
+#: ../../source/example/clean-suspicious-structures.md:25
+#: 790932803bf54474a7d6bceab710c7fe
 msgid "把选中结果当作复核清单"
 msgstr "Treat the Selection as a Review List"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:27
-#: ae16728de0b2484fb67ee6e87679e16b
+#: ../../source/example/clean-suspicious-structures.md:27
+#: 42e4d6cc4ab04fe3ab11ba8cdf4ae2e7
 msgid "两项检查选出的可疑结构"
 msgstr "Suspicious structures selected by both checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:27
-#: ae16728de0b2484fb67ee6e87679e16b
+#: ../../source/example/clean-suspicious-structures.md:27
+#: 42e4d6cc4ab04fe3ab11ba8cdf4ae2e7
 msgid ""
-".. image:: ../_static/image/generated/tutorials/structure_quality_result.png"
+".. image:: "
+"../_static/image/generated/tutorials/structure_quality_result.png"
 msgstr ""
-".. image:: ../_static/image/generated/tutorials/structure_quality_result.png"
+".. image:: "
+"../_static/image/generated/tutorials/structure_quality_result.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/clean-suspicious-structures.md:32
-#: 431427df26764575930fb0f5c15dd28e
+#: ../../source/example/clean-suspicious-structures.md:32
+#: 21523bbbc7474c0e9acac8885e8fea64
 msgid ""
-"演示数据中人为加入了一个原子重叠和一个净力异常，真实检查后共选中 2 个结构。请"
-"逐个查看几何、周期边界和对应 DFT 输出，确认是计算失败还是合理的高能构型。建议"
-"先导出选中结构留档，再删除确认无效的数据；如果误删，可以立即使用撤销删除。"
+"演示数据中人为加入了一个原子重叠和一个净力异常，真实检查后共选中 2 个结构。请逐个查看几何、周期边界和对应 DFT "
+"输出，确认是计算失败还是合理的高能构型。建议先导出选中结构留档，再删除确认无效的数据；如果误删，可以立即使用撤销删除。"
 msgstr ""
-"The demo data contain one deliberately introduced atomic overlap and one net-"
-"force outlier; the real checks select two structures in total. Inspect their "
-"geometry, periodic boundaries, and original DFT output to distinguish "
-"calculation failures from legitimate high-energy configurations. Export the "
-"selection for reference before removing confirmed invalid data. If you "
-"remove the wrong structure, use undo immediately."
+"The demo data contain one deliberately introduced atomic overlap and one "
+"net-force outlier; the real checks select two structures in total. "
+"Inspect their geometry, periodic boundaries, and original DFT output to "
+"distinguish calculation failures from legitimate high-energy "
+"configurations. Export the selection for reference before removing "
+"confirmed invalid data. If you remove the wrong structure, use undo "
+"immediately."

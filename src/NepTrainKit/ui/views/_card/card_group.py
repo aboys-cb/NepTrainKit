@@ -18,6 +18,7 @@ from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import FilterDataCard, MakeDataCard, MakeDataCardWidget
+from NepTrainKit import palette
 
 
 class FanOutCardsHost(QWidget):
@@ -229,6 +230,7 @@ class CardGroup(MakeDataCardWidget):
         self.vBoxLayout.addWidget(self.filter_widget)
         self.summary_label = CaptionLabel("", self)
         self.summary_label.setWordWrap(True)
+        self.summary_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY}; padding: 0 20px 8px 20px;")
         self.vBoxLayout.addWidget(self.summary_label)
         self.run_card_num:int
         self.filter_card=None

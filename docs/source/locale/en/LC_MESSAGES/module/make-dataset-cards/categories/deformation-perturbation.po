@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -20,60 +20,51 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md:1
-#: 6d20a07711574d2fa5c6f34daf1a01ab
+#: c5a83ef013294620a59bcc820d417aa2
 msgid "扰动"
 msgstr "Perturbations"
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md:3
-#: fc8263111c18429a9ea82786a46df5d0
+#: 52191af58f694a56a5f51bdb5cb267a4
 msgid "与卡片 UI 的“扰动”分组一致。这两张卡片只改变原子坐标：一种加入无模型随机位移， 另一种沿输入中已有的振动模态位移；它们不会扫描晶胞应变。"
 msgstr ""
-"This section matches the `Perturbations` group in the card picker. Both cards change "
-"atomic coordinates only: one adds model-free random displacements, while the other "
-"displaces atoms along vibrational modes already stored in the input. Neither card "
-"scans cell strain."
+"This section matches the `Perturbations` group in the card picker. Both "
+"cards change atomic coordinates only: one adds model-free random "
+"displacements, while the other displaces atoms along vibrational modes "
+"already stored in the input. Neither card scans cell strain."
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md
-#: 7bf9182012294d4fb1482d73a3d9250c
+#: d5f2c643a69343d7b6a6e6a123278153
 msgid "目标"
 msgstr "Goal"
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md
-#: 60d1810d659148d0a519952fe2dcb658
+#: 276e447e0e04492e8afff74e40c76251
 msgid "使用卡片"
 msgstr "Card to use"
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md
-#: 496368a44ea149fe8354b6f4c991618d
+#: 377f112ebd214a73b72a1e272ba5ceac
 msgid "添加随机原子位移"
 msgstr "Add random atomic displacements"
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md
-#: 5b125a8dfebd43ab91ac18f149543c62
-msgid "`Atomic Perturb`"
+#: 60e86d284d324afebb940e5c0beb7140
+msgid "`原子扰动`"
 msgstr "`Atomic Perturb`"
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md
-#: 6af53eade25749beb1d8b4daac808bd0
+#: ea841b79d5ee4055b57bc80604530eb1
 msgid "沿已有振动模态生成位移"
 msgstr "Generate displacements along existing vibrational modes"
 
 #: ../../source/module/make-dataset-cards/categories/deformation-perturbation.md
-#: 3d355c29005743f3808ad3213da51159
-msgid "`Vib Mode Perturb`"
+#: 39e7e5ecc3524c448292673f8a62f505
+msgid "`振动模式扰动`"
 msgstr "`Vib Mode Perturb`"
 
 #~ msgid "应变、路径与扰动"
 #~ msgstr "Strain, paths, and perturbations"
-
-#~ msgid "这组卡片补充晶格响应、相变路径和近平衡位移。先判断需要改变的是晶胞、原子坐标， 还是已有振动模态；三者不要混用。"
-#~ msgstr ""
-#~ "These cards add lattice responses, phase-"
-#~ "transition paths, and near-equilibrium "
-#~ "displacements. First decide whether you need "
-#~ "to change the cell, atomic coordinates, or "
-#~ "an existing vibrational mode; do not conflate"
-#~ " these operations."
 
 #~ msgid "扫描轴向晶格应变"
 #~ msgstr "Scan axial lattice strain"

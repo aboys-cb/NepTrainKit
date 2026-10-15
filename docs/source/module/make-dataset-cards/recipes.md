@@ -1,4 +1,4 @@
-# 生成数据集配方示例（Recipes）
+# 构建数据集配方示例（Recipes）
 
 ```{contents} 本页目录
 :local:
@@ -14,8 +14,8 @@
 下面的 JSON 采用“卡片配置片段”的写法，字段名与当前 `to_dict()` 保持一致，可直接对照卡片页里的推荐预设填写。第一版 recipes 不依赖截图，也不绑定固定示例文件。
 :::
 
-每条配方的卡片链只负责生成候选池。链条末尾写的 `NEP Dataset Display 清洗 → FPS`
-表示后处理方向：先在 `NEP Dataset Display` 里删掉明显异常结构，再做代表性采样。
+每条配方的卡片链只负责生成候选池。链条末尾写的 `NEP 数据集查看中清洗 → FPS`
+表示后处理方向：先在 `NEP 数据集查看` 里删掉明显异常结构，再做代表性采样。
 如果你有当前体系的 NEP 模型，可以用它做预筛；没有时可以先做几何检查和人工抽查。
 
 ## 高熵合金
@@ -26,17 +26,17 @@
 
 ### 输入假设
 
-- 已有一个体相母相结构，或者先用 `Crystal Prototype Builder` 生成基础结构。
+- 已有一个体相母相结构，或者先用 `晶体原型构建` 生成基础结构。
 - 目标元素集合为 `Co,Cr,Ni,Al,Fe`。
 - 希望最终拿到“多配比 + 多随机占位”的 HEA 训练集。
 
 ### 卡片顺序
 
-`Crystal Prototype Builder → Composition Space Sampling → Random Occupancy → Random Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`晶体原型构建 → 成分空间采样 → 随机占位 → 随机掺杂 → 导出 xyz → NEP 数据集查看中清洗 → FPS`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Crystal Prototype Builder`
+#### Step 1. `晶体原型构建`
 
 ```json
 {
@@ -56,7 +56,7 @@
 
 **每步预期输出：** 1 个基础 fcc 结构；原子数受 `max_atoms` 控制，适合作为后续配比扫描母体。
 
-#### Step 2. `Composition Space Sampling`
+#### Step 2. `成分空间采样`
 
 ```json
 {
@@ -79,7 +79,7 @@
 
 **每步预期输出：** 24 个带 `Comp(...)` 标签的目标配比结构副本；此时还没有真正替换原子位点。
 
-#### Step 3. `Random Occupancy`
+#### Step 3. `随机占位`
 
 ```json
 {
@@ -98,7 +98,7 @@
 
 **每步预期输出：** 每个目标配比落点成 2 个离散占位结构；如果 Step 2 输出 24 个配比点，这一步通常得到约 48 个随机合金候选。
 
-#### Step 4. `Random Doping`
+#### Step 4. `随机掺杂`
 
 ```json
 {
@@ -132,9 +132,9 @@
 
 ### 常见失败点
 
-- 只做 `Composition Space Sampling` 就停止：这只定义目标配比，不代表已经得到真实随机合金。
-- `Random Occupancy` 的 `source` 没有读取 `Comp(...)`：会导致输出与目标配比不一致。
-- `Random Doping` 规则写得过重：容易把原本的目标配比拉偏。
+- 只做 `成分空间采样` 就停止：这只定义目标配比，不代表已经得到真实随机合金。
+- `随机占位` 的 `source` 没有读取 `Comp(...)`：会导致输出与目标配比不一致。
+- `随机掺杂` 规则写得过重：容易把原本的目标配比拉偏。
 
 ## 富缺陷表面
 
@@ -149,11 +149,11 @@
 
 ### 卡片顺序
 
-`Super Cell → Random Slab → Insert Defect → Global Vacancy → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`扩胞 → 表面薄层扫描 → 插隙与吸附 → 全局空位 → 导出 xyz → NEP 数据集查看中清洗 → FPS`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Super Cell`
+#### Step 1. `扩胞`
 
 ```json
 {
@@ -172,7 +172,7 @@
 
 **每步预期输出：** 1 个横向扩展、法向保持 1 倍的母相结构；适合作为表面切片前的体相输入。
 
-#### Step 2. `Random Slab`
+#### Step 2. `表面薄层扫描`
 
 ```json
 {
@@ -189,7 +189,7 @@
 
 **每步预期输出：** 多个低指数到中低指数 slab；真空层足够隔离上下表面，输出通常已经明显多于 Step 1。
 
-#### Step 3. `Insert Defect`
+#### Step 3. `插隙与吸附`
 
 ```json
 {
@@ -211,7 +211,7 @@
 
 **每步预期输出：** 每个 slab 再生成 2 个上表面随机吸附候选；这里只做连续横向采样和最小距离约束，不识别顶位、桥位或空位。
 
-#### Step 4. `Global Vacancy`
+#### Step 4. `全局空位`
 
 ```json
 {
@@ -257,11 +257,11 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder(fcc111) → GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
+`晶体原型构建(fcc111) → 层错路径 → 导出 xyz → NEP 数据集查看中清洗 → DFT`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Crystal Prototype Builder`
+#### Step 1. `晶体原型构建`
 
 ```json
 {
@@ -281,7 +281,7 @@
 
 **每步预期输出：** 1 个 slab-oriented 周期 cell。当前 cell 的 `(001)` 面对应原始 fcc 的 `(111)` 面，第三晶胞方向已经垂直于层错面。
 
-#### Step 2. `GSFE Path`
+#### Step 2. `层错路径`
 
 ```json
 {
@@ -309,8 +309,8 @@
 
 ### 常见失败点
 
-- 直接把普通 `fcc` cubic cell 送进 `GSFE Path`：第三晶胞方向没有按目标 `(111)` 面定向，程序会报错。
-- 把这里的 `fcc111` 当成真空表面：它是周期 cell，不含真空层；如果要自由表面，用 `Random Slab`。
+- 直接把普通 `fcc` cubic cell 送进 `层错路径`：第三晶胞方向没有按目标 `(111)` 面定向，程序会报错。
+- 把这里的 `fcc111` 当成真空表面：它是周期 cell，不含真空层；如果要自由表面，用 `表面薄层扫描`。
 - 位移步长太粗：0.1 适合第一轮覆盖；如果峰值附近曲线不平滑，把步长缩到 0.05。
 
 ## 磁性数据
@@ -326,11 +326,11 @@
 
 ### 卡片顺序
 
-`Layer Groups → Magnetic Order → Spin Perturb`
+`原子层分组 → 磁序 → 磁矩扰动`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Layer Groups`
+#### Step 1. `原子层分组`
 
 ```json
 {
@@ -345,9 +345,9 @@
 }
 ```
 
-**每步预期输出：** 1 个带 `group` 数组的结构；后续 `Magnetic Order` 若走 `group A/B` 模式会直接使用这些标签。
+**每步预期输出：** 1 个带 `group` 数组的结构；后续 `磁序` 若走 `group A/B` 模式会直接使用这些标签。
 
-#### Step 2. `Magnetic Order`
+#### Step 2. `磁序`
 
 ```json
 {
@@ -380,7 +380,7 @@
 
 **每步预期输出：** 得到 1 个 FM、1 个 AFM 和 8 个 PM 候选；`afm_mode=group_ab` 时，真正起作用的是 `afm_group_a/b`，不是 `afm_kvec`。
 
-#### Step 3. `Spin Perturb`
+#### Step 3. `磁矩扰动`
 
 ```json
 {
@@ -411,7 +411,7 @@
 
 - 没有先提供 `magmom_map` 或合理 `default_moment`：生成的磁矩幅值会退化。
 - `afm_mode` 设成 `group A/B` 却没有 `group` 数组：AFM 分支会失去预期分组信息。
-- 直接用 `Spin Perturb` 处理没有初始磁矩的结构：扰动对象本身就不存在。
+- 直接用 `磁矩扰动` 处理没有初始磁矩的结构：扰动对象本身就不存在。
 
 ## 有机构象
 
@@ -426,11 +426,11 @@
 
 ### 卡片顺序
 
-`Molecular Conformers → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`分子构象 → 导出 xyz → NEP 数据集查看中清洗 → FPS`
 
 ### 每步 JSON 配置
 
-#### Step 1. `Molecular Conformers`
+#### Step 1. `分子构象`
 
 ```json
 {

@@ -1,13 +1,14 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:17+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -18,49 +19,67 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-export-descriptor.md:1
-#: ea88db72371946cc9211438cd1402b15
-msgid "导出结构描述符"
-msgstr "Export Structure Descriptors"
+#: ../../source/module/nep-main-tool-export-descriptor.md:1
+#: 2363c9489d4f44f9ae133ef20f7ebb2e
+msgid "导出结构描述符（Export structure descriptor）"
+msgstr "Export structure descriptor"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-export-descriptor.md:3
-#: 7d841e8d22524cd18edf84159db09f17
-msgid "界面按钮：`Export structure descriptor`。"
+#: ../../source/module/nep-main-tool-export-descriptor.md:3
+#: 8c9472b2c3b1428982a9f7cafc1597a3
+msgid "界面按钮：`导出结构描述符`。"
 msgstr "Toolbar action: `Export structure descriptor`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-export-descriptor.md:5
-#: 875c16252cff42d5a3323a2de1683860
+#: ../../source/module/nep-main-tool-export-descriptor.md:5
+#: c2276f9323d9480ea42a79477d060dd8
 msgid "作用与适用场景"
 msgstr "Purpose and use cases"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-export-descriptor.md:7
-#: c18177d1b0e14cd9aa43acfdffd58746
-msgid "把当前数据对应的结构描述符导出为文本文件，供外部降维、聚类或覆盖分析使用。 这个操作不会改变当前数据、选择集或模型。"
-msgstr "Export the structure descriptors for the current data to a text file for external dimensionality reduction, clustering, or coverage analysis. This operation does not modify the data, selection, or model."
+#: ../../source/module/nep-main-tool-export-descriptor.md:7
+#: 9e30639b409e4845aad685bc4d608c02
+#
+msgid ""
+"把**当前选中结构**的描述符导出为文本文件，供外部降维、聚类或覆盖分析使用。先选中结构再点击； "
+"没有选中任何结构时只会提示，不会生成文件。这个操作不会改变当前数据、选择集或模型。"
+msgstr "Exports the descriptors of the **currently selected structures** to a text file for external dimensionality reduction, clustering, or coverage analysis. Select structures first; with nothing selected, NepTrainKit only shows a message and writes no file. This does not change the data, selection, or model."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-export-descriptor.md:10
-#: 4ed5a821f1194837a70895637382b84e
+#: ../../source/module/nep-main-tool-export-descriptor.md:10
+#: ad8ed343fcc24831a80a65826eb90971
+msgid "完整的分类导出和绘图流程见[描述符分布绘图示例](../example/Plot-descriptor.md)。"
+msgstr "See the [descriptor distribution plot example](../example/Plot-descriptor.md) for a complete export-and-plot workflow."
+
+#: ../../source/module/nep-main-tool-export-descriptor.md:12
+#: de2bb0927d4f4fa19432f38b61eb0948
 msgid "输出"
 msgstr "Output"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7951
-#: a87b4c16c57441ea8a17174257dffc7f
-msgid "路径对话框默认文件名：`export_descriptor_data.out`。"
-msgstr "Default filename in the save dialog: `export_descriptor_data.out`."
+#: ../../source/module/nep-dataset-display-content.md:7327
+#: 17513335f6eb4672a2e5640fe0c1ead0
+msgid "导出范围：只导出当前选中的结构；没有选中时提示后不生成文件。"
+msgstr "Scope: only the selected structures are exported; with nothing selected, a message is shown and no file is written."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:7952
-#: d99eae5de45e482fa0cd799aeacb6dca
-msgid "执行结果：后台导出描述符。"
-msgstr "Result: export descriptors in the background."
+#: ../../source/module/nep-dataset-display-content.md:7328
+#: e00748a84acd401ba5dd2df618d82324
+#
+msgid "默认文件名：`export_descriptor_data.out`。"
+msgstr "Default filename: `export_descriptor_data.out`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-export-descriptor.md:17
-#: e174f75dbe444fff853e34fc1c948996
+#: ../../source/module/nep-dataset-display-content.md:7329
+#: e6bc1e0fe4e945b7b7b2a757e2f33441
+msgid "文件格式：制表符分隔的文本，每行一个结构；前两列是描述符图上的坐标，数据中有能量时第三列是每原子能量。"
+msgstr "Format: tab-separated text with one structure per row; the first two columns are descriptor-plot coordinates, and the third column is energy per atom when energies are available."
+
+#: ../../source/module/nep-main-tool-export-descriptor.md:19
+#: dfebc37eea3b476fadc79b330eced729
 msgid "操作后检查"
 msgstr "Post-operation checks"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-main-tool-export-descriptor.md:19
-#: e68ed1eb5dac49499b4ed0820ea8d2fe
+#: ../../source/module/nep-main-tool-export-descriptor.md:21
+#: 57f7f4870f1746dba0f8270357e34697
+#
 msgid ""
-"等待后台任务结束，再确认目标文件存在且行数与当前导出范围一致。描述符来自当前活动模型； 切换 `nep.txt` "
+"等待后台任务结束，再确认目标文件存在且行数等于选中的结构数。描述符来自当前活动模型； 切换 `nep.txt` "
 "后重新导出，不能把不同模型产生的描述符直接当作同一坐标空间。"
-msgstr "Wait for the background task to finish, then confirm that the file exists and its row count matches the exported range. Descriptors come from the active model; export again after switching `nep.txt`, and do not treat descriptors from different models as coordinates in the same space."
+msgstr "Wait for the background task to finish, then confirm that the file exists and its row count equals the number of selected structures. Descriptors come from the active model; re-export after switching `nep.txt`, because descriptors from different models do not share a coordinate space."
+
+#~ msgid "执行结果：后台导出描述符。"
+#~ msgstr "Result: export descriptors in the background."

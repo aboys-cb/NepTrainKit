@@ -29,7 +29,7 @@ $F(\mathcal D_{\mathrm{merge}})$。
 
 以一份弛豫后的 Ni 超胞为输入：
 
-1. 选中“分支合并”，加入 `Random Slab` 和 `Targeted Vacancy`。
+1. 选中“分支合并”，加入 `表面薄层扫描` 和 `定向空位`。
 2. 两张子卡分别配置表面和空位参数，并保持启用。
 3. 如需统一筛选，在后置过滤槽加入一张过滤卡。
 4. 运行后，输出按子卡顺序合并；卡片底部显示合并前后的实际数量。
@@ -54,8 +54,8 @@ $F(\mathcal D_{\mathrm{merge}})$。
 
 ## 推荐组合
 
-- `Branch Merge(Random Slab, Insert Defect)`：从同一输入生成表面与缺陷结构并合并。
-- `Branch Merge(Atomic Perturb, Lattice Perturb) + FPS Filter`：合并两类扰动，再统一补选代表性结构。
+- `分支合并(表面薄层扫描, 插隙与吸附)`：从同一输入生成表面与缺陷结构并合并。
+- `分支合并(原子扰动, 晶格随机扰动) + FPS 代表性采样`：合并两类扰动，再统一补选代表性结构。
 
 ## 常见问题
 

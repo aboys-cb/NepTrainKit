@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,20 +20,21 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/custom-card-development.md:1
-#: 08be5b960cde48f69fad1660cbccd882
+#: 47ef1b5c54ab4e628baa81ebc9ac2ccc
 msgid "自定义卡片开发"
 msgstr "Develop Custom Cards"
 
 #: ../../source/module/custom-card-development.md:3
-#: 6ec1b1486151426288776dd39baa24c9
-msgid "本页教你为 生成数据集 模块开发一张新卡片，按当前的 Operation/Params 架构拆分 UI 和业务逻辑。"
+#: fd4427cf1cd14275b856f1b1caffb722
+#
+msgid "本页教你为构建数据集模块开发一张新卡片，按当前的 Operation/Params 架构拆分 UI 和业务逻辑。"
 msgstr ""
-"This page explains how to develop a new card for the Make Dataset "
-"module using the current Operation/Params architecture to separate UI and"
-" business logic."
+"This page explains how to develop a new card for the Make Dataset module "
+"using the current Operation/Params architecture to separate UI and "
+"business logic."
 
 #: ../../source/module/custom-card-development.md:5
-#: 63e304795fe14898b86e93f4cbac5aff
+#: 5e43a649915d419a9dcbda62b54de378
 msgid ""
 "如果你要新增内置卡片，仓库内的 `make-dataset-card-dev` skill "
 "会引导你走完整流程（规格→实现→文档→验证）。本页更适合作快速参考。"
@@ -43,17 +44,17 @@ msgstr ""
 "validation workflow. Use this page as a quick reference."
 
 #: ../../source/module/custom-card-development.md:7
-#: 5ecbc995ef3f4e7bae8ddedb69670461
+#: d101ccc21b054f8c9d1c1e2c5d588e92
 msgid "架构概览"
 msgstr "Architecture overview"
 
 #: ../../source/module/custom-card-development.md:9
-#: fa987de50929453e906fa5f2aba80a22
+#: ff2e061157594fdfb7f8b6abc573a5db
 msgid "每张卡片由三层组成："
 msgstr "Each card has three layers:"
 
 #: ../../source/module/custom-card-development.md:11
-#: d3c8c74060cd43f69b6bee946138236b
+#: 8efb138d644d482f8aa4672afc9cf2e5
 msgid ""
 "CardWidget (UI)\n"
 "  ├── get_params() → Params dataclass\n"
@@ -80,14 +81,14 @@ msgstr ""
 "  └── types, defaults, and ranges for every parameter\n"
 
 #: ../../source/module/custom-card-development.md:24
-#: 07851afa5bc34c7995e8ddf565b3989d
+#: 1a3d14eed15f49a69f222bf289cebffa
 msgid "**UI 层**不写算法，只读控件、构造 params、调 operation。"
 msgstr ""
 "The **UI layer** contains no algorithms. It reads widgets, constructs the"
 " params object, and invokes the operation."
 
 #: ../../source/module/custom-card-development.md:25
-#: fb834be7afd0401294b981f6a2985632
+#: 2ae0a2da79ed43e5b51ebf749f96e419
 msgid ""
 "**Operation 层**不 import "
 "`PySide6`、`qfluentwidgets`、`MessageManager`。错误直接抛异常。"
@@ -96,99 +97,99 @@ msgstr ""
 "`MessageManager`. Report errors by raising exceptions."
 
 #: ../../source/module/custom-card-development.md:27
-#: 22d35d4fd53c4f3593ad2c915b8e199d
+#: 93fcba6219dc4174a417e744f250584d
 msgid "第一步：选 Operation 类型"
 msgstr "Step 1: Choose the operation type"
 
 #: ../../source/module/custom-card-development.md
-#: 7aae5defe348431884231953ef09c9f9
+#: 94412201b6c24363914d679ca7df2a19
 msgid "类型"
 msgstr "Type"
 
 #: ../../source/module/custom-card-development.md
-#: 92ec0a8c471c4b7e8ab505c1ff32e590
+#: a079b0817087434e8022843fab40f007
 msgid "基类"
 msgstr "Base class"
 
 #: ../../source/module/custom-card-development.md
-#: ba42b5aac9d946f3ba01948b543f7c81
+#: c73bbaeb8ada418bba8fa2a44fc11db1
 msgid "签名"
 msgstr "Method signature"
 
 #: ../../source/module/custom-card-development.md
-#: 56d38609bbd04e0ea64177ab3f593814
+#: 23e4ceb747744aaeae9d1f334613a85c
 msgid "什么时候用"
 msgstr "Use it for"
 
 #: ../../source/module/custom-card-development.md
-#: aeed84a5cf3f492e8894cfd31865930b
+#: 8c6eed652f434b3a97bab5d9169772b5
 msgid "`StructureOperation`"
 msgstr "`StructureOperation`"
 
 #: ../../source/module/custom-card-development.md
-#: 7468c7d73984413aaff1d5a454de2664
+#: c36f9c6ec07d47f4bf3a9bebda930517
 msgid "`core.cards.operation.StructureOperation`"
 msgstr "`core.cards.operation.StructureOperation`"
 
 #: ../../source/module/custom-card-development.md
-#: 1468aaf916b24888adbba52c28ecd9db
+#: b4ff79db8e8f4504b98b736735fbb57e
 msgid "`run_structure(structure, params) → list[Atoms]`"
 msgstr "`run_structure(structure, params) → list[Atoms]`"
 
 #: ../../source/module/custom-card-development.md
-#: 352193be21454465b48eafd899ba450a
+#: e789f97af69640dca4fc0bbf72bca3aa
 msgid "单结构变换：应变、扰动、扩胞、掺杂"
 msgstr ""
 "Per-structure transformations such as strain, perturbation, supercells, "
 "and doping"
 
 #: ../../source/module/custom-card-development.md
-#: fbd091711e5e42ba9ebb053a7ea71691
+#: cc36cd8599394cf1aeeb7009d650c7bf
 msgid "`DatasetOperation`"
 msgstr "`DatasetOperation`"
 
 #: ../../source/module/custom-card-development.md
-#: 15555bb18ec148ada709b77631ddc6f8
+#: 2722c898ad0b449b951291f56f819bc4
 msgid "`core.cards.operation.DatasetOperation`"
 msgstr "`core.cards.operation.DatasetOperation`"
 
 #: ../../source/module/custom-card-development.md
-#: 9140538c30c04d608b12215679be3471
+#: c41862965959469c8711d46090b5360a
 msgid "`run_dataset(dataset, params) → list[Atoms]`"
 msgstr "`run_dataset(dataset, params) → list[Atoms]`"
 
 #: ../../source/module/custom-card-development.md
-#: a63dc9545cae44ff894934188b57252f
+#: 83ca0c0012d247b0afc42b0b7eb1610e
 msgid "全数据集过滤/排序：FPS"
 msgstr "Whole-dataset filtering or ordering, such as FPS"
 
 #: ../../source/module/custom-card-development.md
-#: 0d290fd029e6488ab9bb80fb27495051
+#: 89948b6abae94be09b0d4a7e2bc1ae0d
 msgid "`GeneratorOperation`"
 msgstr "`GeneratorOperation`"
 
 #: ../../source/module/custom-card-development.md
-#: c0a2eb4368a74d138856e7a475c02048
+#: 7e14de4fd5fa4b388a49a6cd2b9ed3c0
 msgid "`core.cards.operation.GeneratorOperation`"
 msgstr "`core.cards.operation.GeneratorOperation`"
 
 #: ../../source/module/custom-card-development.md
-#: 5283995f8c4a4b87b81bffaff30f1c7d
+#: 2d4efaaa8a0749a6b4ab05123a70f125
 msgid "`generate(params) → list[Atoms]`"
 msgstr "`generate(params) → list[Atoms]`"
 
 #: ../../source/module/custom-card-development.md
-#: 402e3408572144eab6260bcf37b71b4b
+#: 2542f35482ac491f9933468a88e84a34
 msgid "无输入生成：晶体原型构建"
 msgstr "Generation without an input structure, such as crystal prototypes"
 
 #: ../../source/module/custom-card-development.md:35
-#: 12d1e9023be64372bca4738397648c83
+#: 532ee1c0be4e44e6bdacf9bf3a0a6be3
 msgid "第二步：写 Params dataclass"
 msgstr "Step 2: Define the Params dataclass"
 
 #: ../../source/module/custom-card-development.md:37
-#: ab7bec9f700a4256a0bd09835e4d2471
+#: 14d3107c76db4ad89be4b3919f005ce3
 msgid ""
 "在 `src/NepTrainKit/core/cards/` 对应模块（`lattice.py` / `alloy.py` / "
 "`defect.py` / `magnetism.py` / `structure.py` / `filter.py`）中定义："
@@ -198,7 +199,7 @@ msgstr ""
 "or `filter.py`):"
 
 #: ../../source/module/custom-card-development.md:39
-#: 14243f39f96f40b6b3fe89a016383177
+#: 76f522d9092d4107b756672cc1e5dcfd
 msgid ""
 "from dataclasses import dataclass\n"
 "\n"
@@ -221,34 +222,34 @@ msgstr ""
 "    seed: int = 0\n"
 
 #: ../../source/module/custom-card-development.md:51
-#: 5202a46ca6474bae92db02bfbc524858
+#: 8011327467c54672924a082b363d815e
 msgid "必须是 frozen dataclass"
 msgstr "Use a frozen dataclass."
 
 #: ../../source/module/custom-card-development.md:52
-#: 43076ebc432f48878e7d390cc125d68c
+#: 9badfe40a9824f62aa262d8a9116f490
 msgid "每个字段给默认值"
 msgstr "Give every field a default value."
 
 #: ../../source/module/custom-card-development.md:53
-#: 6bc0589933574c49957f8d671a64694b
+#: b8db9c15087a473badcd97b44fc27275
 msgid "命名用下划线，和 UI 控件的 `get_params()` key 一致"
 msgstr ""
 "Use snake_case names that match the keys returned by the UI's "
 "`get_params()` method."
 
 #: ../../source/module/custom-card-development.md:55
-#: 5457fad5f9f445e28e51dcb3c4dd0fda
+#: f89e7b1a3a1649cf936e8c8b73de6fbb
 msgid "第三步：写 Operation"
 msgstr "Step 3: Implement the operation"
 
 #: ../../source/module/custom-card-development.md:57
-#: 722d7bdde23d408292ea5f7dd2ed7b48
+#: 76b10ee7140542fbacd72b9827f74a17
 msgid "同文件内："
 msgstr "In the same module:"
 
 #: ../../source/module/custom-card-development.md:59
-#: bb9d19f6fd2b40bfbf7c35df48f286cb
+#: 08e9083f62eb47489a846072c23d192e
 msgid ""
 "from .operation import StructureOperation  # 或 DatasetOperation / "
 "GeneratorOperation\n"
@@ -285,44 +286,44 @@ msgstr ""
 "        return [new_structure]\n"
 
 #: ../../source/module/custom-card-development.md:77
-#: 605e949be31a4d91b29fb7c6bdaa653b
+#: a63eef04e7e84eb9acb15ac673f17243
 msgid "规则："
 msgstr "Rules:"
 
 #: ../../source/module/custom-card-development.md:78
-#: 79db7630368b48488ee34b7337079db5
+#: d787a9e5879b49c4be154f8127af7353
 msgid "不 import UI 库"
 msgstr "Do not import UI libraries."
 
 #: ../../source/module/custom-card-development.md:79
-#: ae55e69ae9d24ef982af05827c9c012c
+#: 2ff1bfe4765f466692a09da9df849231
 msgid "参数校验失败抛异常"
 msgstr "Raise an exception when parameter validation fails."
 
 #: ../../source/module/custom-card-development.md:80
-#: 7deadd86f37e450a99739b20b537d05f
+#: b8949d968c0a4278920889d10bd03d44
 msgid "用 `append_config_tag` 写可追溯标签"
 msgstr "Use `append_config_tag` to add a traceable label."
 
 #: ../../source/module/custom-card-development.md:81
-#: 9a662a78c77f446082d2321b7be5bdcc
+#: 9c1aa522457848f2b85e8d008d6be84b
 msgid "不做静默回退"
 msgstr "Do not silently fall back to another behavior."
 
 #: ../../source/module/custom-card-development.md:83
-#: 50cb77a657c743d2b66b79cb31e4b5eb
+#: 9583f1eec6e44d4789c605d21e399b7a
 msgid "第四步：写 UI 卡片"
 msgstr "Step 4: Implement the UI card"
 
 #: ../../source/module/custom-card-development.md:85
-#: 7ed6619d630f47d39c67781400a0fbf0
+#: 5796821aecb44c298e809c3aa67e56b3
 msgid "在 `src/NepTrainKit/ui/views/_card/` 新建文件，继承 `MakeDataCard`："
 msgstr ""
 "Create a module under `src/NepTrainKit/ui/views/_card/` and inherit from "
 "`MakeDataCard`:"
 
 #: ../../source/module/custom-card-development.md:87
-#: ed4ee9b8b8a64c369f4d3e12ada91c49
+#: e3be26c6c763408fbb422996d41141db
 msgid ""
 "from PySide6.QtWidgets import QFrame\n"
 "from qfluentwidgets import BodyLabel, ComboBox, CheckBox\n"
@@ -433,7 +434,7 @@ msgstr ""
 "        self.set_params(params)\n"
 
 #: ../../source/module/custom-card-development.md:143
-#: 5a9292dbf341405b8dfa902a9d907851
+#: ade5cb7a639d4cb3964afa519682942e
 msgid ""
 "**只在迁移旧卡片时才从旧 key 恢复**。上面的模板是新卡写法，`from_dict` 只读 "
 "`params`。如果你在迁移一张已有用户的旧卡片，可以在 `else` 分支里从 `data[\"old_key\"]` 等旧字段构造 "
@@ -446,26 +447,26 @@ msgstr ""
 "`data[\"old_key\"]` to preserve backward compatibility."
 
 #: ../../source/module/custom-card-development.md:145
-#: a91b941fcf98494abc982f2c49d8b8d1
+#: e21aee5b559b4bc0acac5769ab986614
 msgid "关键规则"
 msgstr "Key rules"
 
 #: ../../source/module/custom-card-development.md:147
-#: 66756023329f40849009caaf98ea778e
+#: c031a982f3934ea0b0a38b14e0e30aba
 msgid "**禁止覆盖 `run()`**：基类已根据 `create_operation()` 返回的类型自动分发到正确线程。"
 msgstr ""
 "**Do not override `run()`.** The base class dispatches work to the "
 "correct thread from the type returned by `create_operation()`."
 
 #: ../../source/module/custom-card-development.md:148
-#: c581c375898d4a83879fa879e1154d20
+#: 269853ae0c0c4d5cb53017e9032c3dc8
 msgid "**禁止在 UI 里写算法**：`init_ui()` 只建控件，`get_params()` 只读值，算法全在 Operation 里。"
 msgstr ""
 "**Do not put algorithms in the UI.** `init_ui()` constructs widgets, "
 "`get_params()` reads values, and the Operation owns all computation."
 
 #: ../../source/module/custom-card-development.md:149
-#: fa09ccc012e246f5a876d2104d2c0f8d
+#: aa599dc4e593490283201bccc0d8d5e7
 msgid ""
 "**`process_structure()` 不新增**：如果要保留旧兼容层，只做一行委托 `return "
 "self.create_operation().run_structure(structure, self.get_params())`。"
@@ -476,7 +477,7 @@ msgstr ""
 "self.get_params())`."
 
 #: ../../source/module/custom-card-development.md:150
-#: f866b4dd5bb04f409765ede276c1cba1
+#: f6767d8a733a41e0858f468a8a8c93b2
 msgid ""
 "数值参数用 `SpinBoxUnitInputFrame`，枚举用 `ComboBox`，开关用 `CheckBox`，字符串用 "
 "`LineEdit`。"
@@ -485,24 +486,24 @@ msgstr ""
 "enumerations, `CheckBox` for switches, and `LineEdit` for strings."
 
 #: ../../source/module/custom-card-development.md:152
-#: fd23e01e10b14de885f4a09064146b90
+#: 4d6abd764e91409b8454ce7a791931cb
 msgid "第五步：注册、文档、测试"
 msgstr "Step 5: Register, document, and test the card"
 
 #: ../../source/module/custom-card-development.md:154
-#: 1016eca88d8845e7a94e3a56fe27556e
+#: f49fd02019c142ccb4039d2485e77b61
 msgid "`@CardManager.register_card` 装饰 UI 类。"
 msgstr "Decorate the UI class with `@CardManager.register_card`."
 
 #: ../../source/module/custom-card-development.md:155
-#: cad826a0629849a1ba09a4ee3a9e2880
+#: dadcf0bc2f324eb2a2953539cfa2c1d9
 msgid "在 `src/NepTrainKit/ui/views/_card/__init__.py` 导入并加入 `__all__`。"
 msgstr ""
 "Import the class in `src/NepTrainKit/ui/views/_card/__init__.py` and add "
 "it to `__all__`."
 
 #: ../../source/module/custom-card-development.md:156
-#: bece9532e979447aa9fa7031c52519f8
+#: d384576a5cc34beca9af01c31d980c39
 msgid ""
 "写文档页 `docs/source/module/make-dataset-cards/cards/my-"
 "card.md`，操作示例必须从训练集诊断场景出发：先说用户遇到什么训练集问题，再说明这张卡如何补结构。参见 [卡片文档编写规范](make-"
@@ -514,12 +515,12 @@ msgstr ""
 "dataset-cards/writing-guide.md)."
 
 #: ../../source/module/custom-card-development.md:157
-#: 1f8f0cf0e2df44e3a0c55db70f5bed3f
+#: b5b7f017a5cf4a2bac3f3b5d6e9487d8
 msgid "写 operation 测试（不需要 Qt）："
 msgstr "Write operation tests that do not require Qt:"
 
 #: ../../source/module/custom-card-development.md:158
-#: 206b1c969abd4bd7bb65e6eb864edfdc
+#: 169759b67cc346b3afd07c30451d7045
 msgid ""
 "def test_my_card_operation():\n"
 "    op = MyCardOperation()\n"
@@ -532,12 +533,12 @@ msgstr ""
 "    assert len(result) > 0\n"
 
 #: ../../source/module/custom-card-development.md:165
-#: 5ba750aa84b148b587af397cbceb79c3
+#: 4d27929979fb4dfb9528a32f565206ac
 msgid "验证"
 msgstr "Validate"
 
 #: ../../source/module/custom-card-development.md:167
-#: a79a6adf252f47cea0473502992d641d
+#: baff1b34397b4517810bf484f97d6056
 msgid ""
 "python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick\n"
 "python tools/docs/audit_card_docs.py\n"
@@ -546,12 +547,12 @@ msgstr ""
 "python tools/docs/audit_card_docs.py\n"
 
 #: ../../source/module/custom-card-development.md:172
-#: 80ecfcde4c724bb1aa1a0f074aed343b
+#: 2170c0b47fd9439c95aa33adf286e535
 msgid "放置自定义卡片"
 msgstr "Install an external card"
 
 #: ../../source/module/custom-card-development.md:174
-#: 76a3b3df2d964584992988ad109d91db
+#: c763829fbcf54bc5b234d72cf6becad4
 msgid ""
 "内置卡片放在 `src/NepTrainKit/ui/views/_card/`。外部自定义卡片放在用户配置目录的 `cards/` "
 "子目录下，程序启动时会自动加载。"

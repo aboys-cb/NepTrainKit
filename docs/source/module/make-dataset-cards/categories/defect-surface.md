@@ -12,5 +12,5 @@
 ../cards/strict-gsfe-path-card
 ```
 
-旧版 `Stacking Fault` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用
-`GSFE Path`。
+旧版 `旧版层错位移` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用
+`层错路径`。

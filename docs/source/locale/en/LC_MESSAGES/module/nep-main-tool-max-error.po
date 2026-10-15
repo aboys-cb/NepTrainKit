@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"POT-Creation-Date: 2026-10-15 16:29+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -20,34 +20,39 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/nep-main-tool-max-error.md:1
-#: a211363fbcd742efb3564b6c8413f66c
-msgid "查找最大误差结构（Find Max Error Point）"
-msgstr "Find Structures with the Largest Errors"
+#: 5830c4d2176d4b9e8393e66af1654ab6
+msgid "查找最大误差点（Find Max Error Point）"
+msgstr "Find Max Error Point"
 
 #: ../../source/module/nep-main-tool-max-error.md:3
-#: f76f54a1261248c599914d0626e508f5
+#: c63f350fc6b1410394bd948e2792f00c
 msgid "作用与适用场景"
 msgstr "Purpose and use cases"
 
 #: ../../source/module/nep-main-tool-max-error.md:5
-#: 89ba9b294e9c4e008dc178c847255edb
+#: 2f6707a69fa74a978482f039bb976004
 msgid ""
 "从当前图对应的误差指标中选出最大的前 `N` 个结构，用于快速定位最需要复核的标签、 异常构型或训练集缺口。结果依赖当前子图，切换 "
 "energy、force 或 virial 后含义不同。"
-msgstr "Select the top `N` structures by the error metric represented in the current plot. Use this to locate labels, anomalous configurations, or training-set gaps that most need review. The meaning depends on the active subplot and changes between energy, force, and virial views."
+msgstr ""
+"Select the top `N` structures by the error metric represented in the "
+"current plot. Use this to locate labels, anomalous configurations, or "
+"training-set gaps that most need review. The meaning depends on the "
+"active subplot and changes between energy, force, and virial views."
 
 #: ../../source/module/nep-main-tool-max-error.md:8
-#: aca12fd065454c81933368c8874ad0af
+#: 0f09203ef6154e57999be504881bda1e
 msgid "排名原理"
 msgstr "Ranking Method"
 
 #: ../../source/module/nep-main-tool-max-error.md:10
-#: 95ada07fd22d4958a22b37d2cd5a709b
-msgid "当前图中 x 轴是 NEP 预测值，y 轴是参考值（通常为 DFT）。对图中第 $i$ 行数据， 程序按当前子图包含的分量计算绝对误差和："
-msgstr "In the current plot, x is the NEP prediction and y is the reference value, usually from DFT. For row $i$, the program sums the absolute errors over the components shown by the active subplot:"
+#: c338c30676714cd483c081928dd410f0
+#
+msgid "当前图中 x 轴是参考值（通常为 DFT），y 轴是 NEP 预测值。对图中第 $i$ 行数据， 程序按当前子图包含的分量计算绝对误差和："
+msgstr "In the current plot, x is the reference value (usually from DFT) and y is the NEP prediction. For row $i$, the program sums the absolute errors over the components shown by the active subplot:"
 
 #: ../../source/module/nep-main-tool-max-error.md:13
-#: 0bc935f67924403fbddedd79f414ff35
+#: fd62e2ce6302452ba4aeebc1e085214a
 #, python-brace-format
 msgid ""
 "\n"
@@ -57,45 +62,56 @@ msgstr ""
 "e_i=\\sum_{k\\in C}\\left|y_{ik}-x_{ik}\\right|,\n"
 
 #: ../../source/module/nep-main-tool-max-error.md:17
-#: f2c75d5df8b34f6998ed2131a6bf7342
+#: 1187b59565b34b4e9867a5a789dbc76e
 msgid ""
 "其中 $C$ 是当前图实际参与比较的列。例如能量图通常每个结构只有一行；力图中一个结构 会有多个原子行。程序先按 $e_i$ "
 "从大到小排序，再把行映射回结构编号并去重，直到得到 前 $N$ 个不同结构。因此在力图中，它回答的是“至少有一个原子分量误差很大的结构”， "
 "不是按结构平均 RMSE 排名。"
-msgstr "Here $C$ is the set of columns actually compared in the current plot. An energy plot usually has one row per structure, whereas a force plot has several atomic rows for one structure. Rows are sorted by decreasing $e_i$, mapped back to structure indices, and deduplicated until `N` distinct structures remain. In a force plot, this therefore finds structures with at least one large atomic-component error; it is not a ranking by per-structure mean RMSE."
+msgstr ""
+"Here $C$ is the set of columns actually compared in the current plot. An "
+"energy plot usually has one row per structure, whereas a force plot has "
+"several atomic rows for one structure. Rows are sorted by decreasing "
+"$e_i$, mapped back to structure indices, and deduplicated until `N` "
+"distinct structures remain. In a force plot, this therefore finds "
+"structures with at least one large atomic-component error; it is not a "
+"ranking by per-structure mean RMSE."
 
 #: ../../source/module/nep-main-tool-max-error.md:22
-#: 99b42d24a9af4189ae6ef0af2e1f9ed1
+#: 9cfced49cfba442fada6227c32709896
 msgid "参数与执行结果"
 msgstr "Parameters and execution result"
 
-#: ../../source/module/nep-dataset-display-content.md:6213
-#: 5f754809735f43feb39ab3bb04953b5c
+#: ../../source/module/nep-dataset-display-content.md:5668
+#: 29d0cff279434ac8a54de07cf841abf1
 msgid "输入控件：`结构数`（整数 `N`）。"
 msgstr "Control: `Number of structures` (integer `N`)."
 
-#: ../../source/module/nep-dataset-display-content.md:6214
-#: 40738c2bba8346f18610ccd2d40405d2
-msgid "默认值：`widget.max_error_value`（缺省 `10`）。"
-msgstr "Default: `widget.max_error_value` (fallback `10`)."
+#: ../../source/module/nep-dataset-display-content.md:5669
+#: 670ae15b9cda4b77a8754dff5f026287
+msgid "默认值：`10`；修改后会记住上次输入的数量。"
+msgstr "Default: `10`; the last value you entered is remembered."
 
-#: ../../source/module/nep-dataset-display-content.md:6215
-#: 6959b176193f49029b5f670bab2b0dbb
+#: ../../source/module/nep-dataset-display-content.md:5670
+#: 7f505617ef7a48bbb845e27d391f6b78
 msgid "执行结果：选中当前轴上误差最大的前 `N` 个结构。"
-msgstr "Result: select the top `N` structures with the largest errors on the current axes."
+msgstr ""
+"Result: select the top `N` structures with the largest errors on the "
+"current axes."
 
-#: ../../source/module/nep-dataset-display-content.md:6217
-#: 613aa8e59c4b402baba458032b435a20
-msgid "![查找最大误差结构对话框](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)"
-msgstr "![Find Max Error Point dialog](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)"
+#: ../../source/module/nep-dataset-display-content.md:5672
+#: b876ec3d0e684302be3417e7c3af8d31
+msgid "![查找最大误差点对话框](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)"
+msgstr ""
+"![Find Max Error Point "
+"dialog](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)"
 
-#: ../../source/module/nep-dataset-display-content.md:6217
-#: 0982781265604cc49132f6ec676aa919
-msgid "查找最大误差结构对话框"
-msgstr "Find-largest-error-structures dialog"
+#: ../../source/module/nep-dataset-display-content.md:5672
+#: f56146a6328b414aac731d4f1d53c610
+msgid "查找最大误差点对话框"
+msgstr "Find Max Error Point dialog"
 
-#: ../../source/module/nep-dataset-display-content.md:6217
-#: 0982781265604cc49132f6ec676aa919
+#: ../../source/module/nep-dataset-display-content.md:5672
+#: f56146a6328b414aac731d4f1d53c610
 msgid ""
 ".. image:: "
 "../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
@@ -104,13 +120,20 @@ msgstr ""
 "../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
 
 #: ../../source/module/nep-main-tool-max-error.md:29
-#: b38ac63720be4bac930f14f72126dc46
+#: 9cd08cc1d0f842e388a2c96924240a37
 msgid "操作后检查"
 msgstr "Post-operation checks"
 
 #: ../../source/module/nep-main-tool-max-error.md:31
-#: 7f4c94a449c94481a66c2086ac5abf5c
+#: c630cbe997344906a013c32624d7ed3c
 msgid ""
 "不要仅凭误差排名删除结构。点开选中的结构，结合 `Config_type`、几何和 DFT 来源判断： "
 "它可能是坏标签，也可能是训练集中真正缺少的重要边界构型。"
-msgstr "Do not delete structures solely from their error ranking. Inspect each selected structure together with its `Config_type`, geometry, and DFT provenance: it may contain a bad label, or it may be an important boundary configuration missing from the training set."
+msgstr ""
+"Do not delete structures solely from their error ranking. Inspect each "
+"selected structure together with its `Config_type`, geometry, and DFT "
+"provenance: it may contain a bad label, or it may be an important "
+"boundary configuration missing from the training set."
+
+#~ msgid "默认值：`widget.max_error_value`（缺省 `10`）。"
+#~ msgstr "Default: `widget.max_error_value` (fallback `10`)."

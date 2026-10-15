@@ -38,7 +38,9 @@ else:
     if use_openmp:
         extra_compile_args.append("-fopenmp")
         extra_link_args.append("-fopenmp")
-    extra_compile_args.extend(["-O3", "-std=c++11"])
+    # std::thread (sampling) needs pthread when OpenMP is disabled.
+    extra_compile_args.extend(["-O3", "-std=c++11", "-pthread"])
+    extra_link_args.append("-pthread")
     extra_link_args.extend(["-O3", "-std=c++11"])
 
 
@@ -69,7 +71,7 @@ setup(
         native_extension("_audit", "src/native/audit/module.cpp", depends=(neighbor_header,)),
         native_extension("_phase", "src/native/phase/module.cpp", depends=(neighbor_header,)),
         native_extension("_magnetism", "src/native/magnetism/module.cpp", depends=(neighbor_header,)),
-        native_extension("_sampling", "src/native/sampling/module.cpp"),
+        native_extension("_sampling", "src/native/sampling/module.cpp", depends=(neighbor_header,)),
     ],
     zip_safe=False,
 )

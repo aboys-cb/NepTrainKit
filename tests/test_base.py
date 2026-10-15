@@ -841,3 +841,261 @@ def test_expression_completer_cache_refreshes_after_structure_removal():
     refreshed = data.get_completer_cache(SearchType.EXPRESSION, max_items=50000)
     assert "count.Fe" not in refreshed
     assert "has.H" in refreshed
+
+
+def _build_quantifier_result():
+    structures = []
+    for index, moments in enumerate(([0.5, -2.0], [0.2, 0.8], [1.2, 2.0], [1.0, -1.0])):
+        structure = _make_structure_with_numeric_props(["Fe", "Fe"], str(index), base=0)
+        vector = np.zeros((2, 3))
+        vector[:, 2] = moments
+        structure.atomic_properties.update(
+            spin=vector, charge=np.asarray(moments), forces=vector,
+            tensor=np.stack([vector, vector], axis=1),
+        )
+        structures.append(structure)
+    return _DummyResultData(structures)
+
+
+@pytest.mark.parametrize(("expression", "expected"), [
+    ("atomic.spin.norm < 1", [1]),
+    ("any(atomic.spin.norm < 1)", [0, 1]),
+    ("all(atomic.spin.norm < 1)", [1]),
+    ("any(atomic.spin.norm == 1)", [3]),
+    ("all(atomic.spin.norm >= 1)", [2, 3]),
+    ("any(atomic.spin.z < -1)", [0]),
+    ("atomic.spin.z < -1", []),
+    ("any(atomic.charge < 0)", [0, 3]),
+    ("all(atomic.charge > 0)", [1, 2]),
+    ("any(atomic.tensor.zz < -1)", [0]),
+    ("any(atomic.tensor.norm < 1)", [0, 1]),
+    ("any(0 < atomic.spin.norm < 1)", [0, 1]),
+    ("all(atomic.spin.norm + 1 <= 2)", [1, 3]),
+    ("any(atomic.spin.norm < 1 && atomic.charge < 0)", []),
+    ("any(atomic.spin.norm < 1) && any(atomic.charge < 0)", [0]),
+    ("any(atomic.spin.norm < 1 || atomic.charge < 0)", [0, 1, 3]),
+    ("all(!(atomic.spin.norm < 1))", [2, 3]),
+    ("!any(atomic.spin.norm < 1)", [2, 3]),
+    ("natoms == 2 && any(atomic.spin.norm < 1)", [0, 1]),
+    ("any(atomic.spin.norm < energy_per_atom && has.Fe)", [0, 1]),
+    ("any(force.ref.norm < 1)", [0, 1]),
+    ("all(force.norm < 1)", [1]),
+    ("any(force.pred.z < -1)", [0]),
+    ("all(force.err.norm < 0.02)", [0, 1, 2, 3]),
+    ("any(force.err.z < 0)", []),
+    ("all(force.pred.z > force.ref.z)", [0, 1, 2, 3]),
+    ("any(force.z < 0 && atomic.spin.norm < 1)", []),
+])
+def test_expression_quantifiers_preserve_atom_identity_and_default_reduction(expression, expected):
+    data = _build_quantifier_result()
+    assert data.search_config(expression, SearchType.EXPRESSION) == expected
+
+
+def test_expression_quantifiers_follow_active_structure_ids():
+    data = _build_quantifier_result()
+    data.remove(0)
+    assert data.search_config("any(force.norm < 1)", SearchType.EXPRESSION) == [1]
+    assert data.search_config("all(atomic.spin.norm >= 1)", SearchType.EXPRESSION) == [2, 3]
+    data.remove([1, 2, 3])
+    assert data.search_config("any(atomic.spin.norm < 1)", SearchType.EXPRESSION) == []
+
+
+@pytest.mark.parametrize("quantifier", ["any", "all"])
+def test_expression_quantifiers_missing_empty_and_nonfinite_fields(quantifier):
+    data = _build_quantifier_result()
+    del data.structure.all_data[0].atomic_properties['spin']
+    data.structure.all_data[1].atomic_properties['spin'] = np.empty((0, 3))
+    data.structure.all_data[2].atomic_properties['spin'][:] = np.nan
+    data.structure.all_data[3].atomic_properties['spin'][:] = np.inf
+    for predicate in ('atomic.spin.norm != 0', '!(atomic.spin.norm < 1)'):
+        assert data.search_config(f'{quantifier}({predicate})', SearchType.EXPRESSION) == []
+
+
+def test_expression_quantifiers_invalid_atom_does_not_hide_valid_match():
+    data = _build_quantifier_result()
+    data.structure.all_data[0].atomic_properties['spin'][1] = np.nan
+    assert data.search_config('any(atomic.spin.norm < 1)', SearchType.EXPRESSION) == [0, 1]
+    assert data.search_config('all(atomic.spin.norm < 1)', SearchType.EXPRESSION) == [1]
+
+
+@pytest.mark.parametrize("title", ["force", "mforce", "bec", "custom_scalar"])
+def test_expression_quantifiers_cover_grouped_results_including_single_atom_structures(title):
+    structures = [_make_structure_with_numeric_props(['Fe'], str(i), base=0) for i in range(2)]
+    data = _DummyResultData(structures)
+    # Deliberately no repeated structure ids: grouping metadata still identifies atomic data.
+    data._force_dataset = NepPlotData(np.array([[0.6, 0.5], [2.1, 2.0]]), group_list=[1, 1], title=title)
+    assert data.search_config(f'any({title} < 1)', SearchType.EXPRESSION) == [0]
+    assert data.search_config(f'all({title}.pred < 1)', SearchType.EXPRESSION) == [0]
+
+
+@pytest.mark.parametrize(("title", "raw_attr"), [
+    ('force', '_force_vector_dataset'), ('mforce', '_mforce_vector_dataset'),
+    ('mforce', '_spin_force_vector_dataset'),
+])
+def test_expression_quantifiers_use_raw_vectors_in_structure_norm_plot_mode(title, raw_attr):
+    data = _build_quantifier_result()
+    raw = data.force
+    raw.title = title
+    setattr(data, raw_attr, raw)
+    data._force_dataset = NepPlotData(np.full((4, 2), 10.0), title=title)
+    assert data.search_config(f'{title} > 5', SearchType.EXPRESSION) == [0, 1, 2, 3]
+    assert data.search_config(f'any({title}.norm < 1)', SearchType.EXPRESSION) == [0, 1]
+    assert data.search_config(f'all({title}.err.norm < 0.02)', SearchType.EXPRESSION) == [0, 1, 2, 3]
+
+
+def test_expression_quantifiers_sparse_atomic_results_reject_unaligned_cross_field_predicates():
+    data = _build_quantifier_result()
+    data._force_dataset = NepPlotData(np.array([[0.6, 0.5], [2.1, 2.0]]), group_list=[1, 0, 1, 0], title='mforce')
+    assert data.search_config('any(mforce < 1)', SearchType.EXPRESSION) == [0]
+    assert data.search_config('all(mforce > 1)', SearchType.EXPRESSION) == [2]
+    assert data.search_config('all(mforce.pred > mforce.ref)', SearchType.EXPRESSION) == [0, 2]
+    with pytest.raises(ValueError, match='same atoms'):
+        data.search_config('any(mforce < 1 && atomic.spin.norm < 1)', SearchType.EXPRESSION)
+
+
+@pytest.mark.parametrize('expression', [
+    'any()', 'all()', 'any(atomic.spin.norm < 1, atomic.charge < 0)',
+    'any(value=atomic.spin.norm < 1)', 'any(atomic.spin.norm)',
+    'all(any(atomic.spin.norm < 1))', 'min(atomic.spin.norm) < 1',
+    '__import__("os")', 'atomic.spin.any()',
+])
+def test_expression_quantifiers_reject_invalid_calls_even_on_empty_data(expression):
+    data = _build_quantifier_result()
+    for empty in (False, True):
+        if empty:
+            data.remove([0, 1, 2, 3])
+        with pytest.raises(ValueError, match='unsupported syntax'):
+            data.search_config(expression, SearchType.EXPRESSION)
+
+
+@pytest.mark.parametrize('expression', ['any(natoms < 3)', 'all(energy > 0)', 'any(has.Fe)'])
+def test_expression_quantifiers_require_an_atomic_reference(expression):
+    with pytest.raises(ValueError, match='at least one atomic field'):
+        _build_quantifier_result().search_config(expression, SearchType.EXPRESSION)
+
+
+def test_structure_filter_evaluates_real_quantifiers_and_keeps_other_conditions():
+    from NepTrainKit.core.types import FilterField, StructureFilterCondition, StructureFilterSpec
+
+    data = _build_quantifier_result()
+    spec = StructureFilterSpec(conditions=(
+        StructureFilterCondition(
+            condition_id='small-spin', field=FilterField.EXPRESSION,
+            text_values=('any(atomic.spin.norm < 1)',),
+        ),
+        StructureFilterCondition(
+            condition_id='positive-charge', field=FilterField.EXPRESSION,
+            text_values=('all(atomic.charge > 0)',),
+        ),
+    ))
+    assert data.search_structures(spec).indices == (1,)
+    assert not data.select_index  # Preview must not change the current selection.
+
+
+@pytest.mark.parametrize('expression', [
+    'any(atomic.unknown.norm < 1)', 'all(atomic.spin.pred.z > 0)',
+    'any(force.unknown.norm < 1)',
+])
+def test_expression_quantifiers_keep_existing_field_validation(expression):
+    with pytest.raises(ValueError):
+        _build_quantifier_result().search_config(expression, SearchType.EXPRESSION)
+
+
+def _build_element_quantifier_result():
+    structures = []
+    for index, (species, moments) in enumerate([
+        (["Fe", "O"], [2.0, 0.2]),
+        (["Fe", "O"], [0.5, 2.0]),
+        (["Fe", "Fe", "O"], [0.4, 1.5, 0.1]),
+        (["Fe", "Fe", "O"], [0.4, 0.8, 2.0]),
+        (["O", "O"], [0.2, 0.3]),
+        (["Fe", "Fe"], [0.2, 0.3]),
+    ]):
+        structure = _make_structure_with_numeric_props(species, str(index), base=0)
+        vector = np.zeros((len(species), 3))
+        vector[:, 2] = moments
+        structure.atomic_properties.update(spin=vector, forces=vector, charge=np.asarray(moments))
+        structures.append(structure)
+    return _DummyResultData(structures)
+
+
+@pytest.mark.parametrize(("expression", "expected"), [
+    ('any(atomic.element == "Fe" && atomic.spin.norm < 1)', [1, 2, 3, 5]),
+    ("any('Fe' == atomic.element && atomic.spin.norm < 1)", [1, 2, 3, 5]),
+    ('any(atomic.element == "O" && atomic.spin.norm < 1)', [0, 2, 4]),
+    ('any(atomic.element != "O" && atomic.spin.norm < 1)', [1, 2, 3, 5]),
+    ('any(!(atomic.element == "O") && atomic.spin.norm < 1)', [1, 2, 3, 5]),
+    ('has.Fe && all(atomic.element != "Fe" || atomic.spin.norm < 1)', [1, 3, 5]),
+    ('all(atomic.element != "Fe" || atomic.spin.norm < 1)', [1, 3, 4, 5]),
+    ('all(atomic.element == "Fe" && atomic.spin.norm < 1)', [5]),
+    ('all(atomic.element == "Fe")', [5]),
+    ('any(atomic.element == "Ti")', []),
+    ('all(atomic.element != "Ti")', [0, 1, 2, 3, 4, 5]),
+    ('any(atomic.element == "Fe" && force.ref.norm < 1)', [1, 2, 3, 5]),
+    ('has.Fe && all(atomic.element != "Fe" || force.pred.norm < 1)', [1, 3, 5]),
+    ('any(atomic.element == "O" && force.err.norm < 0.02)', [0, 1, 2, 3, 4]),
+    ('any(atomic.element == "Fe" && atomic.charge < 1)', [1, 2, 3, 5]),
+    ('any((atomic.element == "Fe" || atomic.element == "O") && atomic.spin.norm < 1)', [0, 1, 2, 3, 4, 5]),
+    # The existing structure-level condition intentionally has different semantics.
+    ('has.Fe && any(atomic.spin.norm < 1)', [0, 1, 2, 3, 5]),
+    ('atomic.spin.norm < 1', [4, 5]),
+])
+def test_expression_atomic_element_filters_the_same_atom(expression, expected):
+    assert _build_element_quantifier_result().search_config(expression, SearchType.EXPRESSION) == expected
+
+
+@pytest.mark.parametrize('expression', [
+    'atomic.element == "Fe"',
+    'any(atomic.element < "Fe")',
+    'any(atomic.element == 26)',
+    'any(atomic.element == Fe)',
+    'any(atomic.element == "fe")',
+    'any(atomic.element == "Unknown")',
+    'any(atomic.element.norm == "Fe")',
+    'all(atomic.element.pred == "Fe")',
+    'any(atomic.element + "Fe" == "FeFe")',
+    'any(atomic.element == atomic.spin.norm)',
+])
+def test_expression_atomic_element_rejects_invalid_usage_even_on_empty_data(expression):
+    data = _build_element_quantifier_result()
+    for empty in (False, True):
+        if empty:
+            data.remove(list(range(6)))
+        with pytest.raises(ValueError, match='atomic.element|Unknown element symbol'):
+            data.search_config(expression, SearchType.EXPRESSION)
+
+
+def test_expression_atomic_element_completes_and_follows_active_structure_ids():
+    data = _build_element_quantifier_result()
+    assert data.get_completer_cache(SearchType.EXPRESSION)['atomic.element'] == 6
+    data.remove([1, 3])
+    assert data.get_completer_cache(SearchType.EXPRESSION)['atomic.element'] == 4
+    assert data.search_config('any(atomic.element == "Fe" && atomic.spin.norm < 1)', SearchType.EXPRESSION) == [2, 5]
+
+
+def test_expression_atomic_element_missing_spin_and_invalid_values_still_fail():
+    data = _build_element_quantifier_result()
+    del data.structure.all_data[1].atomic_properties['spin']
+    data.structure.all_data[3].atomic_properties['spin'][:] = np.nan
+    assert data.search_config('any(atomic.element == "Fe" && atomic.spin.norm < 1)', SearchType.EXPRESSION) == [2, 5]
+    assert data.search_config('has.Fe && all(atomic.element != "Fe" || atomic.spin.norm < 1)', SearchType.EXPRESSION) == [5]
+
+
+@pytest.mark.parametrize('quantifier', ['any', 'all'])
+def test_expression_atomic_element_rejects_unaligned_sparse_results(quantifier):
+    data = _build_element_quantifier_result()
+    data._force_dataset = NepPlotData(np.array([[0.6, 0.5]]), group_list=[1, 0, 0, 0, 0, 0], title='mforce')
+    with pytest.raises(ValueError, match='same atoms'):
+        data.search_config(f'{quantifier}(atomic.element == "Fe" && mforce < 1)', SearchType.EXPRESSION)
+
+
+def test_structure_filter_evaluates_atomic_element_and_all_fe_condition():
+    from NepTrainKit.core.types import FilterField, StructureFilterCondition, StructureFilterSpec
+
+    data = _build_element_quantifier_result()
+    spec = StructureFilterSpec(conditions=(StructureFilterCondition(
+        condition_id='all-fe-small-spin', field=FilterField.EXPRESSION,
+        text_values=('has.Fe && all(atomic.element != "Fe" || atomic.spin.norm < 1)',),
+    ),))
+    assert data.search_structures(spec).indices == (1, 3, 5)
+    assert not data.select_index

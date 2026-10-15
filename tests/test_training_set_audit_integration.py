@@ -68,6 +68,38 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
 
         assert widget.graph_widget.canvas.calls == [([4, 5], True), ([1, 2, 3], False)]
 
+    def test_entering_audit_page_audits_the_loaded_dataset(self):
+        host = object()
+
+        def window(**overrides):
+            values = dict(
+                stackedWidget=SimpleNamespace(currentWidget=lambda: host),
+                training_set_audit_host=host,
+                training_set_audit_window=SimpleNamespace(is_detached=False),
+                show_nep_interface=SimpleNamespace(nep_result_data=object()),
+                _training_set_audit_thread=None,
+                open_training_set_audit=MagicMock(),
+            )
+            values.update(overrides)
+            return SimpleNamespace(**values)
+
+        audit_page = main_module.NepTrainKitMainWindow._audit_on_page_entry
+        with patch.object(
+            main_module.QTimer, "singleShot", side_effect=lambda _ms, slot: slot()
+        ):
+            loaded = window()
+            audit_page(loaded)
+            loaded.open_training_set_audit.assert_called_once_with()
+
+            for skipped in (
+                window(show_nep_interface=SimpleNamespace(nep_result_data=None)),
+                window(_training_set_audit_thread=object()),
+                window(training_set_audit_window=SimpleNamespace(is_detached=True)),
+                window(stackedWidget=SimpleNamespace(currentWidget=lambda: object())),
+            ):
+                audit_page(skipped)
+                skipped.open_training_set_audit.assert_not_called()
+
     def test_show_nep_open_training_set_audit_delegates_to_parent(self):
         parent = SimpleNamespace(open_training_set_audit=MagicMock())
         widget = ShowNepWidget.__new__(ShowNepWidget)

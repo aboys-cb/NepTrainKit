@@ -1,6 +1,6 @@
 # 数据管理（Data Management）
 
-`Data Management` 用来记录项目、模型版本、数据路径和备注。它不负责生成结构，也不负责训练；
+`数据管理` 用来记录项目、模型版本、数据路径和备注。它不负责生成结构，也不负责训练；
 它解决的是另一个问题：当你有很多轮 DFT、很多个 `nep.txt`、很多个候选池和训练结果时，
 还能知道每个文件属于哪一次实验。
 
@@ -38,14 +38,14 @@ Project: TiH2 surface defects
 
 ## 和主流程的关系
 
-`Data Management` 更适合放在每轮流程结束后使用：
+`数据管理` 更适合放在每轮流程结束后使用：
 
 ```text
-生成数据集 生成候选结构
--> NEP Dataset Display 清洗
+构建数据集：生成候选结构
+-> NEP 数据集查看：清洗
 -> DFT
 -> GPUMD 训练
--> NEP Dataset Display 回看
+-> NEP 数据集查看：回看
 -> Data Management 记录这一轮
 ```
 

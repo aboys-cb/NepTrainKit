@@ -4,6 +4,7 @@ Kept checks (catch real bugs):
   * every card source has a doc page, and every doc page has a card source
   * serialized_keys in the card-schema comment match what to_dict() writes
   * every Params dataclass field has a dedicated parameter heading
+  * every discoverable card page title is the catalog name, as ``中文名（English name）``
   * every card explains its operation principle and contains inspectable math
   * every discoverable card appears exactly once in the user-facing category tree
   * compatibility-only cards stay out of the user-facing category tree
@@ -15,6 +16,7 @@ import ast
 import json
 import os
 import re
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -25,6 +27,8 @@ DOC_SOURCE_DIR = ROOT / "docs" / "source"
 CARD_DIR = ROOT / "src" / "NepTrainKit" / "ui" / "views" / "_card"
 DOC_DIR = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "cards"
 CATEGORY_DIR = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "categories"
+CARD_METADATA = ROOT / "src" / "NepTrainKit" / "ui" / "widgets" / "card_metadata.py"
+ZH_TRANSLATIONS = ROOT / "src" / "NepTrainKit" / "translations" / "neptrainkit_zh_CN.ts"
 CORE_CARDS_DIR = ROOT / "src" / "NepTrainKit" / "core" / "cards"
 INDEX_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "index.md"
 RECIPES_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "recipes.md"
@@ -127,6 +131,36 @@ def parse_code_cards() -> dict[str, CardCode]:
         rel = path.relative_to(ROOT).as_posix()
         cards[rel] = CardCode(rel, card_name, class_name, keys, discoverable)
     return cards
+
+
+def parse_catalog_titles() -> dict[str, str]:
+    """Map card class names to the page title users should see: ``中文名（English name）``."""
+    zh: dict[str, str] = {}
+    for context in ET.parse(ZH_TRANSLATIONS).getroot().iter("context"):
+        if context.findtext("name") != "CardCatalog":
+            continue
+        for message in context.iter("message"):
+            translation = message.find("translation")
+            if translation is not None and translation.text:
+                zh[message.findtext("source") or ""] = translation.text
+
+    titles: dict[str, str] = {}
+    for node in ast.walk(ast.parse(CARD_METADATA.read_text(encoding="utf-8"))):
+        if not isinstance(node, ast.Dict):
+            continue
+        for key, value in zip(node.keys, node.values):
+            if not (isinstance(key, ast.Constant) and isinstance(value, ast.Tuple) and value.elts):
+                continue
+            call = value.elts[0]
+            if (
+                isinstance(call, ast.Call)
+                and len(call.args) == 2
+                and all(isinstance(arg, ast.Constant) for arg in call.args)
+                and call.args[0].value == "CardCatalog"
+            ):
+                english = str(call.args[1].value)
+                titles[str(key.value)] = f"{zh.get(english, english)}（{english}）"
+    return titles
 
 
 def _collect_todict_keys(node: ast.ClassDef) -> list[str]:
@@ -291,6 +325,7 @@ def audit() -> list[str]:
     errors: list[str] = []
     code_cards = parse_code_cards()
     doc_pages = parse_doc_pages()
+    catalog_titles = parse_catalog_titles()
 
     doc_by_source: dict[str, CardDoc] = {}
     for doc in doc_pages:
@@ -313,6 +348,9 @@ def audit() -> list[str]:
         title_match = re.search(r"^#\s+(.+)$", doc.text, re.MULTILINE)
         if not title_match or not re.search(r"[\u4e00-\u9fff]", title_match.group(1)):
             errors.append(f"{doc.path}: page title must use the Chinese UI card name")
+        expected_title = catalog_titles.get(code.class_name)
+        if code.discoverable and title_match and expected_title and title_match.group(1).strip() != expected_title:
+            errors.append(f"{doc.path}: page title must match the card catalog name `{expected_title}`")
         if re.search(r"^`Group`:\s*`", doc.text, re.MULTILINE):
             errors.append(f"{doc.path}: developer Group/Class metadata is visible to users")
         if not PRINCIPLE_HEADING_RE.search(doc.text):
@@ -427,7 +465,7 @@ def audit() -> list[str]:
         ":caption: 开始使用",
         ":caption: 端到端工作流",
         ":caption: 功能指南",
-        ":caption: 操作指南",
+        ":caption: 单步操作示例",
         ":caption: 参考资料",
         ":caption: 开发者",
     ]

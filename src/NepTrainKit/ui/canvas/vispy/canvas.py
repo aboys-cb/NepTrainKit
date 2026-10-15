@@ -2,6 +2,7 @@
 """
 
 import os
+import sys
 os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 
 # os.environ["VISPY_PYQT5_SHARE_CONTEXT"] = "true"
@@ -20,7 +21,8 @@ from vispy.visuals.axis import Ticker
 from vispy.visuals.transforms import STTransform
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
-from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase
+from NepTrainKit import palette
+from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase, dataset_axis_labels
 from NepTrainKit.ui.canvas.vispy.fast_scatter import FastScatter
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
@@ -28,6 +30,12 @@ from NepTrainKit.core.types import Brushes, Pens
 
 VISPY_PREVIEW_WIDTH = 640
 VISPY_PREVIEW_HEIGHT = 240
+if sys.platform == "darwin":
+    _CJK_FONT_FACE = "PingFang SC"
+elif sys.platform.startswith("win"):
+    _CJK_FONT_FACE = "Microsoft YaHei"
+else:
+    _CJK_FONT_FACE = "Noto Sans CJK SC"
 VISPY_PREVIEW_RASTER_OVERLAY_MIN_RATIO = 0.9
 
 
@@ -61,18 +69,39 @@ class _CompactAxisTicker(Ticker):
         return major[keep], minor, [labels[int(index)] for index in keep]
 
 
+class _ReadableAxisTicker(Ticker):
+    """Keep full-size axis labels from running into each other.
+
+    Drops labels with a regular stride so the remaining ones stay evenly
+    spaced; vertical axes need less room than horizontal ones.
+    """
+
+    _MIN_HORIZONTAL_SPACING = 64.0
+    _MIN_VERTICAL_SPACING = 28.0
+
+    def _get_tick_frac_labels(self):
+        major, minor, labels = super()._get_tick_frac_labels()
+        if len(labels) <= 2:
+            return major, minor, labels
+        vertical = getattr(self.axis, "orientation", "bottom") in ("left", "right")
+        spacing = self._MIN_VERTICAL_SPACING if vertical else self._MIN_HORIZONTAL_SPACING
+        axis_length = float(np.linalg.norm(self.axis.pos[1] - self.axis.pos[0]))
+        max_labels = max(2, int(axis_length // spacing) + 1)
+        if len(labels) <= max_labels:
+            return major, minor, labels
+        stride = int(np.ceil(len(labels) / max_labels))
+        keep = np.arange(0, len(labels), stride, dtype=np.int64)
+        return major[keep], minor, [labels[int(index)] for index in keep]
+
+
 def _set_compact_axis_ticks(axis_widget, compact: bool) -> None:
     """Switch an AxisWidget between normal and preview label density."""
     axis = axis_widget.axis
-    is_compact = isinstance(axis.ticker, _CompactAxisTicker)
-    if bool(compact) == is_compact:
+    wanted = _CompactAxisTicker if compact else _ReadableAxisTicker
+    if type(axis.ticker) is wanted:
         return
     anchors = getattr(axis.ticker, "_anchors", None)
-    axis.ticker = (
-        _CompactAxisTicker(axis, anchors=anchors)
-        if compact
-        else Ticker(axis, anchors=anchors)
-    )
+    axis.ticker = wanted(axis, anchors=anchors)
     axis._need_update = True
     axis.update()
 
@@ -357,7 +386,7 @@ class ViewBoxWidget(scene.Widget):
         self.grid = self.add_grid(margin=0)
 
         self.grid.spacing = 0
-        self.title_label = scene.Label(title, color='black',font_size=8)
+        self.title_label = scene.Label(title, color=palette.PLOT_TITLE, font_size=10, bold=True)
         self.title_label.height_max = 30
         self.grid.add_widget(self.title_label, row=0, col=0, col_span=3)
 
@@ -422,8 +451,8 @@ class ViewBoxWidget(scene.Widget):
                 orientation='bottom',
                 axis_width=1,
                 tick_label_margin=10,
-                axis_color="black",
-                text_color="black",
+                axis_color=palette.PLOT_AXIS,
+                text_color=palette.PLOT_AXIS,
             )
             self.xaxis.height_max = 30
             self.grid.add_widget(self.xaxis, row=2, col=1)
@@ -432,8 +461,8 @@ class ViewBoxWidget(scene.Widget):
                 orientation='left',
                 axis_width=1,
                 tick_label_margin=5,
-                axis_color="black",
-                text_color="black",
+                axis_color=palette.PLOT_AXIS,
+                text_color=palette.PLOT_AXIS,
             )
             self.yaxis.width_max = 50
             self.grid.add_widget(self.yaxis, row=1, col=0)
@@ -441,7 +470,7 @@ class ViewBoxWidget(scene.Widget):
             self.xaxis.link_view(self._view)
             self.yaxis.link_view(self._view)
 
-            self.text = scene.Text('', parent=self._view.scene, color='red', anchor_x="left", anchor_y="top")
+            self.text = scene.Text('', parent=self._view.scene, color=palette.PLOT_TITLE, anchor_x="left", anchor_y="top")
             self.text.font_size = 8
             self.set_axis_labels(self._x_label, self._y_label)
             self.set_rmse_text(self._rmse_text)
@@ -449,16 +478,15 @@ class ViewBoxWidget(scene.Widget):
         self._full_detail = bool(enabled)
         if self.xaxis is not None:
             self.xaxis.visible = True
-            self.xaxis.height_max = 30 if enabled else 22
             _set_compact_axis_ticks(self.xaxis, not enabled)
         if self.yaxis is not None:
             self.yaxis.visible = True
-            self.yaxis.width_max = 50 if enabled else 38
             _set_compact_axis_ticks(self.yaxis, not enabled)
+        self._apply_axis_labels()
         if self.text is not None:
             self.text.visible = bool(enabled)
         if enabled and self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
 
     def set_preview_visible(self, visible: bool):
         if self._preview_image is not None:
@@ -502,17 +530,44 @@ class ViewBoxWidget(scene.Widget):
         self._active_scatter_layer = None
         self._apply_data_range(x_range, y_range)
         if self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
         self.update_diagonal()
 
     def set_axis_labels(self, x_label=None, y_label=None):
         """Store and apply axis labels when full controls exist."""
         self._x_label = str(x_label or "")
         self._y_label = str(y_label or "")
-        if self.xaxis is not None:
-            self.xaxis.axis.axis_label = self._x_label
-        if self.yaxis is not None:
-            self.yaxis.axis.axis_label = self._y_label
+        self._apply_axis_labels()
+
+    def _apply_axis_labels(self):
+        """Show axis titles on the large plot only and reserve room for them."""
+        if self.xaxis is None or self.yaxis is None:
+            return
+        full = self._full_detail
+        x_label = self._x_label if full else ""
+        y_label = self._y_label if full else ""
+        for axis, label in ((self.xaxis.axis, x_label), (self.yaxis.axis, y_label)):
+            # VisPy's bundled OpenSans has no CJK glyphs.
+            if not label.isascii():
+                axis._axis_label_vis.face = _CJK_FONT_FACE
+            axis.axis_label = label
+        # Below/left of the tick labels instead of on top of them.
+        self.xaxis.axis.axis_label_margin = 30
+        self.yaxis.axis.axis_label_margin = 52
+        x_height = (46 if x_label else 30) if full else 22
+        y_width = (68 if y_label else 50) if full else 38
+        # VisPy asserts min <= max on every assignment: drop the minimum
+        # first so switching from a labelled to an unlabelled plot works.
+        self.xaxis.height_min = 0
+        self.yaxis.width_min = 0
+        self.xaxis.height_max = x_height
+        self.xaxis.height_min = x_height if x_label else 0
+        self.yaxis.width_max = y_width
+        self.yaxis.width_min = y_width if y_label else 0
+        self.xaxis.axis._need_update = True
+        self.yaxis.axis._need_update = True
+        self.xaxis.axis.update()
+        self.yaxis.axis.update()
 
     def set_rmse_text(self, text: str):
         """Store and apply the RMSE annotation."""
@@ -616,14 +671,32 @@ class ViewBoxWidget(scene.Widget):
             self._view.add(self.current_point)
 
         z=np.full(x.shape,2)
+        current_color = self.convert_color(Pens.Current)
+        if np.array(x).size > 1:
+            # Per-atom plots (force) mark every atom of the structure: solid
+            # dots at data-point size stay readable where rings would pile up
+            # into a dark band.
+            marker_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+            self.current_point.set_data(
+                np.vstack([x, y, z]).T,
+                face_color=current_color,
+                edge_width=0,
+                symbol='disc',
+                size=marker_size + 1,
+            )
+            return
         current_size = Config.getint("plot", "current_marker_size", 20) or 20
+        edge_width = 2.5
         if not self._full_detail:
             current_size = max(6, int(current_size * 0.45))
+            edge_width = 1.5
         self.current_point.set_data(
             np.vstack([x, y, z]).T,
-            face_color=self.convert_color(Brushes.Current),
-            edge_color=self.convert_color(Pens.Current),
-            symbol='star',
+            # Hollow ring: keeps the point underneath visible.
+            face_color=(0.0, 0.0, 0.0, 0.0),
+            edge_color=current_color,
+            edge_width=edge_width,
+            symbol='disc',
             size=current_size,
         )
 
@@ -771,7 +844,7 @@ class ViewBoxWidget(scene.Widget):
             self._apply_scatter_range(layer_key)
             self._scatter_active_signature = (signature, index_signature)
         if self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
         self.update_diagonal()
         return self._scatter
 
@@ -1022,7 +1095,7 @@ class ViewBoxWidget(scene.Widget):
             return
         self.title_label._text_visual.text = t
         if self.xaxis is not None and self.parity_mode and t != "descriptor" and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
 class CombinedMeta(type(VispyCanvasLayoutBase), type(scene.SceneCanvas) ):
     """Metaclass bridging ``VispyCanvasLayoutBase`` with ``SceneCanvas`` inheritance.
     """
@@ -1561,7 +1634,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
     def _apply_plot_annotations(self, plot, dataset, full_detail):
         rmse_func = getattr(dataset, "get_formart_rmse", None)
         show_rmse = bool(full_detail) and bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])) and callable(rmse_func)
-        rmse_text = f"rmse: {rmse_func()}" if show_rmse else ""
+        rmse_text = f"RMSE: {rmse_func()}" if show_rmse else ""
         plot.set_rmse_text(rmse_text if full_detail else "")
         if show_rmse and full_detail:
             pos = self.convert_pos(plot, (0.1, 0.8))
@@ -1569,7 +1642,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 plot.text.pos = pos
         else:
             plot.set_rmse_text("")
-        plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
+        plot.set_axis_labels(*dataset_axis_labels(dataset))
 
     def _render_plot(self, plot, dataset, full_detail):
         plot.parity_mode = bool(getattr(dataset, "parity_mode", dataset.title != "descriptor"))
@@ -1742,10 +1815,15 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         Called after data mutations to keep the canvas in sync with the dataset.
         """
         if not preserve_selection:
-            self.nep_result_data.select_index.clear()
-            clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
-            if clear_selection_history is not None:
-                clear_selection_history()
+            # Go through the data API so selection-count listeners are notified.
+            clear_selection = getattr(self.nep_result_data, "clear_selection", None)
+            if clear_selection is not None:
+                clear_selection()
+            else:
+                self.nep_result_data.select_index.clear()
+                clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+                if clear_selection_history is not None:
+                    clear_selection_history()
         self._ensure_plot_dataset_indices()
         # Clear all overlays so deleted selections do not persist visually
         for plot in self.axes_list:
@@ -1780,7 +1858,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             is_current_plot = plot is self.current_axes
             show_rmse = is_current_plot and bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"]))
-            rmse_text = f"rmse: {_dataset.get_formart_rmse()}" if show_rmse else ""
+            rmse_text = f"RMSE: {_dataset.get_formart_rmse()}" if show_rmse else ""
             plot.set_rmse_text(rmse_text if is_current_plot else "")
             if show_rmse and is_current_plot:
                 pos=self.convert_pos(plot,(0.1 ,0.8))
@@ -1789,9 +1867,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             else:
                 plot.set_rmse_text("")
 
-            x_label = getattr(_dataset, "x_label", None)
-            y_label = getattr(_dataset, "y_label", None)
-            plot.set_axis_labels(x_label, y_label)
+            plot.set_axis_labels(*dataset_axis_labels(_dataset))
 
         # Restore reject highlights after a full replot.
         reject = getattr(self.nep_result_data, "reject_index", None)
@@ -1811,9 +1887,9 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if plot is None or dataset is None:
             return
 
-        plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
+        plot.set_axis_labels(*dataset_axis_labels(dataset))
         if bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])):
-            plot.set_rmse_text(f"rmse: {dataset.get_formart_rmse()}")
+            plot.set_rmse_text(f"RMSE: {dataset.get_formart_rmse()}")
             if plot.text is not None:
                 plot.text.pos = self.convert_pos(plot, (0.1, 0.8))
         else:

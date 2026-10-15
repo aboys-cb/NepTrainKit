@@ -19,6 +19,7 @@ from enum import Enum
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QPen, QIcon
 from NepTrainKit.config import Config
+from NepTrainKit import palette
 
 if sys.version_info >= (3, 11):
     from enum import StrEnum          # 3.11+
@@ -507,15 +508,44 @@ def _get_color(section: str, option: str, default_hex: str) -> QColor:
     except Exception:
         return QColor(default_hex)
 
+# Plot colours shipped as earlier defaults.  ``Config.get`` persists its
+# fallback on first read, so every existing profile stores these values even
+# when the user never touched them.  Version 2 used a near-black current ring.
+_LEGACY_PLOT_DEFAULTS = {
+    "marker_edge_color": (("#07519C",), palette.PLOT_MARKER_EDGE),
+    "current_color": (("#FF0000", "#1B1F23"), palette.PLOT_CURRENT),
+    "line_color": (("#FF0000",), palette.PLOT_LINE),
+    "show_color": (("#00FF00",), palette.PLOT_SHOW),
+    "selected_color": (("#FF0000",), palette.PLOT_SELECTED),
+    "reject_color": (("#FF8C00",), palette.PLOT_REJECT),
+}
+_PLOT_PALETTE_VERSION = "3"
+
+
+def migrate_plot_palette() -> None:
+    """Move untouched legacy plot colours to the shared palette once.
+
+    Values that still equal the old shipped default are replaced; any colour
+    the user picked in Settings is left alone.
+    """
+    if str(Config.get("plot", "palette_version") or "") == _PLOT_PALETTE_VERSION:
+        return
+    for option, (legacy_values, current) in _LEGACY_PLOT_DEFAULTS.items():
+        stored = Config.get("plot", option)
+        if stored is not None and str(stored).strip().upper() in legacy_values:
+            Config.set("plot", option, current)
+    Config.set("plot", "palette_version", _PLOT_PALETTE_VERSION)
+
+
 class Pens(Base):
     """Convenience accessors for pens configured via the config file."""
     @classmethod
     def update_from_config(cls):
-        edge = _get_color("plot", "marker_edge_color", "#07519C")
-        current = _get_color("plot", "current_color", "#FF0000")
-        line = _get_color("plot", "line_color", "#FF0000")
-        training_overlay = _get_color("plot", "training_overlay_edge_color", "#505050")
-        loaded_overlay = _get_color("plot", "loaded_overlay_edge_color", "#1450B4")
+        edge = _get_color("plot", "marker_edge_color", palette.PLOT_MARKER_EDGE)
+        current = _get_color("plot", "current_color", palette.PLOT_CURRENT)
+        line = _get_color("plot", "line_color", palette.PLOT_LINE)
+        training_overlay = _get_color("plot", "training_overlay_edge_color", palette.PLOT_TRAINING_OVERLAY_EDGE)
+        loaded_overlay = _get_color("plot", "loaded_overlay_edge_color", palette.PLOT_LOADED_OVERLAY_EDGE)
 
         cls.Default = mkPen(color=edge, width=0.8)
         cls.Energy = cls.Default
@@ -525,8 +555,8 @@ class Pens(Base):
         cls.Descriptor = cls.Default
         cls.TrainingOverlay = mkPen(color=training_overlay, width=0.8)
         cls.LoadedOverlay = mkPen(color=loaded_overlay, width=0.8)
-        cls.Current = mkPen(color=current, width=1)
-        cls.Line = mkPen(color=line, width=2)
+        cls.Current = mkPen(color=current, width=2.5)
+        cls.Line = mkPen(color=line, width=1.5)
 
     def __getattr__(self, item):
         return getattr(self.Default, item)
@@ -535,16 +565,16 @@ class Brushes(Base):
     """Convenience accessors for brushes configured via the config file."""
     @classmethod
     def update_from_config(cls):
-        face = _get_color("plot", "marker_face_color", "#FFFFFF")
+        face = _get_color("plot", "marker_face_color", palette.PLOT_MARKER_FACE)
         alpha = Config.getint("plot", "marker_face_alpha", 0) or 0
         face.setAlpha(int(max(0, min(255, alpha))))
 
-        show = _get_color("plot", "show_color", "#00FF00")
-        selected = _get_color("plot", "selected_color", "#FF0000")
-        current = _get_color("plot", "current_color", "#FF0000")
-        reject = _get_color("plot", "reject_color", "#FF8C00")
-        training_overlay = _get_color("plot", "training_overlay_color", "#A0A0A0")
-        loaded_overlay = _get_color("plot", "loaded_overlay_color", "#1E78D7")
+        show = _get_color("plot", "show_color", palette.PLOT_SHOW)
+        selected = _get_color("plot", "selected_color", palette.PLOT_SELECTED)
+        current = _get_color("plot", "current_color", palette.PLOT_CURRENT)
+        reject = _get_color("plot", "reject_color", palette.PLOT_REJECT)
+        training_overlay = _get_color("plot", "training_overlay_color", palette.PLOT_TRAINING_OVERLAY)
+        loaded_overlay = _get_color("plot", "loaded_overlay_color", palette.PLOT_LOADED_OVERLAY)
 
         cls.BlueBrush = QBrush(QColor(0, 0, 255))
         cls.YellowBrush = QBrush(QColor(255, 255, 0))
@@ -569,5 +599,6 @@ class ModelTypeIcon(Base):
     NEP=':/images/src/images/gpumd_new.png'
 
 # Initialize pens/brushes on import
+migrate_plot_palette()
 Pens.update_from_config()
 Brushes.update_from_config()

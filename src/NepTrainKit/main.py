@@ -31,10 +31,11 @@ from pathlib import Path
 import warnings
 
 from PySide6.QtCore import Qt, QFile, QTimer
-from PySide6.QtGui import QIcon, QFont, QPalette, QColor
+from PySide6.QtGui import QIcon, QFontDatabase, QPalette, QColor
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 from qfluentwidgets import (
     setTheme,
+    setFontFamilies,
     Theme,
     FluentWindow,
     NavigationItemPosition,
@@ -66,7 +67,7 @@ from NepTrainKit.core.audit.phase_inventory import (
 )
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
-from NepTrainKit.ui.threads import run_in_thread
+from NepTrainKit.ui.threads import ThreadShutdownGuard, run_in_thread
 from NepTrainKit.ui.widgets.fluent_overlays import ensure_fluent_tooltips
 from NepTrainKit.ui.widgets.style_lifetime import keep_created_styles_alive
 from NepTrainKit.ui.widgets.training_set_audit_window import (
@@ -78,6 +79,7 @@ from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip
 from NepTrainKit.paths import as_path
 from NepTrainKit.i18n import install_translator
+from NepTrainKit import palette as colors
 
 warnings.filterwarnings("ignore")
 
@@ -114,6 +116,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def __init__(self) -> None:
         super().__init__()
+        self._thread_shutdown = ThreadShutdownGuard(self)
         self.setMicaEffectEnabled(False)
         self._update_badge = None
         self.init_ui()
@@ -127,6 +130,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.init_navigation()
         self.initWindow()
         self.stackedWidget.currentChanged.connect(self._refresh_page_actions)
+        self.stackedWidget.currentChanged.connect(self._audit_on_page_entry)
         self._refresh_page_actions()
 
     def init_menu(self) -> None:
@@ -294,6 +298,8 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def _request_training_set_structure_evidence(self) -> None:
         """Run optional structure and magnetic evidence for the active audit."""
+        if getattr(getattr(self, "_thread_shutdown", None), "closing", False):
+            return
         data = getattr(self, "_audited_result_data", None)
         result = getattr(self, "_audited_result", None)
         if data is None or result is None:
@@ -319,7 +325,10 @@ class NepTrainKitMainWindow(FluentWindow):
         self.move(width // 2 - self.width() // 2, height // 2 - self.height() // 2)
 
     def closeEvent(self, event) -> None:
-        """Close the owned audit window together with the application."""
+        """Drain workers before destroying their Qt owners."""
+        if not self._thread_shutdown.request_close():
+            event.ignore()
+            return
         floating = getattr(self, "training_set_audit_window", None)
         if floating is not None:
             floating.shutdown()
@@ -338,6 +347,24 @@ class NepTrainKitMainWindow(FluentWindow):
         handler = getattr(widget, "export_file", None)
         if callable(handler):
             handler()
+
+    def _audit_on_page_entry(self, *_args) -> None:
+        """Treat opening the audit page as a request to audit the loaded data.
+
+        Uses the same path as the Dataset Display toolbar button, so an
+        unchanged dataset reuses its cached result instead of re-running.
+        """
+        if getattr(getattr(self, "_thread_shutdown", None), "closing", False):
+            return
+        if self.stackedWidget.currentWidget() is not self.training_set_audit_host:
+            return
+        if self.training_set_audit_window.is_detached:
+            return
+        if getattr(self.show_nep_interface, "nep_result_data", None) is None:
+            return
+        if getattr(self, "_training_set_audit_thread", None) is not None:
+            return
+        QTimer.singleShot(0, self.open_training_set_audit)
 
     def _refresh_page_actions(self, *_args) -> None:
         """Enable global actions only when the active page implements them."""
@@ -459,6 +486,8 @@ class NepTrainKitMainWindow(FluentWindow):
         force: bool = False,
     ) -> None:
         """Build and show Training Set Audit for ``result_data`` or the current dataset."""
+        if getattr(getattr(self, "_thread_shutdown", None), "closing", False):
+            return
         data = result_data if result_data is not None else getattr(self.show_nep_interface, "nep_result_data", None)
         if data is None:
             MessageManager.send_info_message(
@@ -768,7 +797,7 @@ def set_light_theme(app: QApplication) -> None:
     palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)
     palette.setColor(QPalette.ColorRole.Button, QColor(230, 230, 230))
     palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)
-    palette.setColor(QPalette.ColorRole.Highlight, QColor(0, 120, 215))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(colors.ACCENT))
     palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
     palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
     palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.black)
@@ -784,7 +813,21 @@ def configure_app(app: QApplication) -> None:
     icon = _application_icon()
     app.setWindowIcon(icon)
     _set_macos_dock_icon(app, icon)
-    font = QFont("Arial", 12)
+    font = QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont)
+    # Arial has no CJK glyphs; prefer native UI fonts so Latin and Chinese
+    # text render with matching metrics on every platform.
+    available_fonts = set(QFontDatabase.families())
+    fallback_fonts = (
+        "Segoe UI", "Microsoft YaHei UI", "PingFang SC",
+        "Noto Sans CJK SC", "Noto Sans", "Arial",
+    )
+    families = list(dict.fromkeys([
+        font.family(), *[name for name in fallback_fonts if name in available_fonts],
+    ]))
+    font.setFamilies(families)
+    # Fluent controls set their own font, independently of QApplication.
+    setFontFamilies(families, save=False)
+    font.setPointSize(12)
     app.setFont(font)
     keep_created_styles_alive()
     ensure_fluent_tooltips(app)

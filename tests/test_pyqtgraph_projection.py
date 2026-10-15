@@ -48,6 +48,13 @@ def test_perspective_uses_backend_projection(viewer, cropped):
     np.testing.assert_allclose(actual.data(), expected.data())
 
 
+def test_perspective_without_arguments_uses_full_viewport(viewer):
+    viewport = viewer.getViewport()
+    args = (viewport, viewport) if _EXPLICIT_VIEWPORT else (viewport,)
+    expected = GLViewWidget.projectionMatrix(viewer, *args)
+    np.testing.assert_allclose(viewer.projectionMatrix().data(), expected.data())
+
+
 @pytest.mark.parametrize("cropped", [False, True])
 def test_orthographic_projection_respects_viewport_and_crop(viewer, monkeypatch, cropped):
     viewer.ortho = True

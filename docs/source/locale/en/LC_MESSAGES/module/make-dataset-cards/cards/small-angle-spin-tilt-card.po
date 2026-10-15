@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,768 +20,832 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:5
-#: bbeb01646d584cc689549c60544db7ef
+#: ab5b540d37224bb98f69909dfd32e2a5
 msgid "倾斜扫描（Canting Scan）"
 msgstr "Canting Scan"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:7
-#: b00c5df143594d4181315c2d415e3e30
+#: 139a7680f27f4d329555fc3200fcbe17
 msgid "**分类：** 磁性"
 msgstr "**Category:** Magnetism"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:9
-#: 958e3449183e4e728bd58587a3a77f7b
+#: e6653d4b28d144f7a8b0524b7e55d57a
 msgid ""
-"[!WARNING] 这是一张仅用于加载旧工作流的兼容卡片，已从“新建卡片”目录隐藏。单自旋、原子对和分组对扫描请迁移到“局域磁响应”；全局倾斜请迁移到“SOC / "
+"[!WARNING] "
+"这是一张仅用于加载旧工作流的兼容卡片，已从“新建卡片”目录隐藏。单自旋、原子对和分组对扫描请迁移到“局域磁响应”；全局倾斜请迁移到“SOC / "
 "纹理响应”；随机方向采样请使用“磁矩扰动”。"
 msgstr ""
-"[!WARNING] This compatibility card is retained only for loading legacy workflows and "
-"is hidden from `Add New Card`. Migrate single-spin, atom-pair, and group-pair scans "
-"to `Local Magnetic Response`; migrate global tilt to `SOC / Texture Response`; use "
-"`Spin Perturb` for random directional sampling."
+"[!WARNING] This compatibility card is retained only for loading legacy "
+"workflows and is hidden from `Add New Card`. Migrate single-spin, atom-"
+"pair, and group-pair scans to `Local Magnetic Response`; migrate global "
+"tilt to `SOC / Texture Response`; use `Spin Perturb` for random "
+"directional sampling."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:12
-#: 9e5f3a521b49487f89273f025a0cdc3c
+#: 52517deb093f4384bae3b7291b5c9bc7
 msgid "功能说明"
 msgstr "Purpose"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:14
-#: f5d9d8e3f17d4c46b21d2b7e26ebee34
+#: e07b97be6a044c9dbd2d659cc08b6e59
 msgid ""
-"对选定目标原子、全局磁序或原子对做确定性小角度磁矩偏转（canting）。支持四种模式：单自旋偏转、Global tilt、显式原子对 canting、两组原子的 "
-"group-pair canting。pair 模式显式构造 S_i x S_j 的正/负手性对，可用于研究或验证手性响应；是否学到 DMI "
-"类响应仍需独立验证。Global tilt 用于集体偏转角扫描。"
+"对选定目标原子、全局磁序或原子对做确定性小角度磁矩偏转（canting）。支持四种模式：单自旋偏转、Global tilt、显式原子对 "
+"canting、两组原子的 group-pair canting。pair 模式显式构造 S_i x S_j "
+"的正/负手性对，可用于研究或验证手性响应；是否学到 DMI 类响应仍需独立验证。Global tilt 用于集体偏转角扫描。"
 msgstr ""
-"Apply deterministic small-angle moment canting to selected target atoms, the global "
-"magnetic order, explicit atom pairs, or two atom groups. Four modes are supported: "
-"single-spin tilt, global tilt, explicit atom-pair canting, and group-pair canting. "
-"Pair modes explicitly construct positive- and negative-chirality partners of S_i x "
-"S_j for studying or validating chiral response; whether a DMI-like response has been "
-"learned still requires independent validation. Global tilt scans collective canting "
-"angles."
+"Apply deterministic small-angle moment canting to selected target atoms, "
+"the global magnetic order, explicit atom pairs, or two atom groups. Four "
+"modes are supported: single-spin tilt, global tilt, explicit atom-pair "
+"canting, and group-pair canting. Pair modes explicitly construct "
+"positive- and negative-chirality partners of S_i x S_j for studying or "
+"validating chiral response; whether a DMI-like response has been learned "
+"still requires independent validation. Global tilt scans collective "
+"canting angles."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:16
-#: 212b869d857d4286a470c1f7c9bf4783
+#: d2aba5dc32224828802eb938f5f18cf6
 msgid "原理与公式"
 msgstr "Principles and Equations"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:18
-#: 2ddf74f13b204f63971432e728e17a33
+#: 89a5d667eb9e42aaaf17e42089481c6b
 msgid "\\hat{\\mathbf{m}}(\\theta)=\\cos\\theta\\,\\hat{\\mathbf{m}}_0+\\sin\\theta\\,\\hat{\\mathbf{t}}"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:20
-#: ea753dfeaeda4ce493dce61b464f3bf7
+#: 0eec51476c4547f5ab171849d3b6c89e
 msgid "\\theta_L=+\\theta/2,\\qquad \\theta_R=-\\theta/2"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:22
-#: bb2d5cf17a6d4ac08788088b66441e29
+#: 9ec536967e3d4855b92bc69d854cd88f
 #, python-brace-format
 msgid ""
-"$\\hat{\\mathbf t}$ 是与参考磁矩 $\\hat{\\mathbf m}_0$ 正交的单位倾斜方向。成对 canting 把总夹角 $\\theta$ "
-"平分到左右自旋，使两者相对角度可控；正负手性通过翻转 $\\hat{\\mathbf t}$ 或角度符号构造。磁矩模长保持不变。"
+"$\\hat{\\mathbf t}$ 是与参考磁矩 $\\hat{\\mathbf m}_0$ 正交的单位倾斜方向。成对 canting "
+"把总夹角 $\\theta$ 平分到左右自旋，使两者相对角度可控；正负手性通过翻转 $\\hat{\\mathbf t}$ "
+"或角度符号构造。磁矩模长保持不变。"
 msgstr ""
-"$\\hat{\\mathbf t}$ is a unit tilt direction orthogonal to the reference moment "
-"$\\hat{\\mathbf m}_0$. Pair canting splits the total angle $\\theta$ equally between "
-"the two spins, giving a controlled relative angle. Opposite chiralities are obtained "
-"by reversing $\\hat{\\mathbf t}$ or the angle sign. Moment magnitudes remain unchanged."
+"$\\hat{\\mathbf t}$ is a unit tilt direction orthogonal to the reference "
+"moment $\\hat{\\mathbf m}_0$. Pair canting splits the total angle "
+"$\\theta$ equally between the two spins, giving a controlled relative "
+"angle. Opposite chiralities are obtained by reversing $\\hat{\\mathbf t}$"
+" or the angle sign. Moment magnitudes remain unchanged."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:26
-#: 9c01230fe171475f910f12f651394d4c
+#: e3cd954fc5c646a3aa3d058c8f79f767
+#
 msgid ""
-"**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Spin "
-"Perturb`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。"
+"**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 "
+"`磁矩扰动`。缺少磁矩、目标原子、有效 pair 或 group 时会明确报错，不会返回原结构或只返回 reference 冒充完成。"
 msgstr ""
-"**Key limitation:** This is a deterministic card with no random sampling. Every angle"
-" and target produces a deterministic output. Use `Spin Perturb` for random "
-"directional perturbations. Missing moments, target atoms, valid pairs, or groups "
-"produce an explicit error; the card does not return the original structure or a "
-"reference-only result as if generation had succeeded."
+"**Key limitation:** This is a deterministic card with no random sampling."
+" Every angle and target produces a deterministic output. Use `Spin "
+"Perturb` for random directional perturbations. Missing moments, target "
+"atoms, valid pairs, or groups produce an explicit error; the card does "
+"not return the original structure or a reference-only result as if "
+"generation had succeeded."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:28
-#: 1ebd048d49b74883af7682bb3b359f4e
+#: 8cec5d2701be4defa709d96cc72ef477
 msgid "操作示例"
 msgstr "Example"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:30
-#: 8df1f888941f4b91844d9f3fb7ba9335
+#: 7f299f7076e744f2bada5250af4366a5
 msgid "场景：模型在 DMI 体系上手性相关的能量差完全预测反了"
 msgstr ""
-"Scenario: a model predicts the wrong sign for chirality-dependent energy differences "
-"in a DMI system"
+"Scenario: a model predicts the wrong sign for chirality-dependent energy "
+"differences in a DMI system"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:32
-#: 309fd364f28a4576add116ebb8cdd111
+#: eec3d1c1ea4b4e049267bbb98a2054be
 msgid ""
 "你在一个非中心对称磁性体系上训练了 NEP 模型，所有训练数据来自 FM 和 AFM "
 "共线构型。模型拟合的交换作用还不错，但计算左手螺旋和右手螺旋的能量差时，符号反了——它根本不知道 DMI 的方向偏好。"
 msgstr ""
-"You trained an NEP model for a noncentrosymmetric magnet using only collinear FM and "
-"AFM configurations. Its symmetric exchange behavior is reasonable, but it predicts "
-"the wrong sign for the energy difference between left- and right-handed spirals "
-"because the training data contain no information about DMI chirality."
+"You trained an NEP model for a noncentrosymmetric magnet using only "
+"collinear FM and AFM configurations. Its symmetric exchange behavior is "
+"reasonable, but it predicts the wrong sign for the energy difference "
+"between left- and right-handed spirals because the training data contain "
+"no information about DMI chirality."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:34
-#: 8cca21b6938a467b972eed42b77c8888
+#: 20d96bb4a96f46aea78378fcf747aeca
 msgid ""
 "**诊断思路：** DMI 的微观来源是 S_i x S_j 项。如果训练集里所有构型的 S_i 和 S_j 都是完美共线（夹角 0 或 180 "
 "度），交叉积恒为零，模型无法学到 DMI。需要显式加入相邻自旋有小角度偏差的构型，并且正负手性成对出现，让模型看到不同的 S_i x S_j 值。"
 msgstr ""
-"**Diagnosis:** DMI depends on `S_i × S_j`. When every training pair is exactly "
-"parallel or antiparallel, that cross product is zero and its handedness cannot be "
-"learned. Add neighboring-spin pairs with small relative angles and include both signs"
-" as matched partners so the data expose the antisymmetric response."
+"**Diagnosis:** DMI depends on `S_i × S_j`. When every training pair is "
+"exactly parallel or antiparallel, that cross product is zero and its "
+"handedness cannot be learned. Add neighboring-spin pairs with small "
+"relative angles and include both signs as matched partners so the data "
+"expose the antisymmetric response."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:36
-#: c6a12be960ae456f8a1dc31e5958897e
+#: a61af62ad2124ead9c6b9185b2a66a14
 msgid ""
-"**输入：** 一个已有 `initial_magmoms` 的 bcc Fe 结构，或通过 `magnitude_source = Map/default "
-"magnitude` 生成 FM 参考态"
+"**输入：** 一个已有 `initial_magmoms` 的 bcc Fe 结构，或通过 `magnitude_source = "
+"Map/default magnitude` 生成 FM 参考态"
 msgstr ""
-"**Input:** A bcc Fe structure with `initial_magmoms`, or an FM reference initialized "
-"with `magnitude_source = Map/default magnitude`."
+"**Input:** A bcc Fe structure with `initial_magmoms`, or an FM reference "
+"initialized with `magnitude_source = Map/default magnitude`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:38
-#: 26af06ec9fd24164a092abda55352f1a
-msgid "**目标：** 对所有第一近邻 Fe-Fe 原子对做 ±1°/2°/5°/10° 的成对 canting，正负手性成对输出，覆盖常见的 DMI 强度区间"
+#: 0e5deec5c8c54d6985dd8d22831f072a
+msgid ""
+"**目标：** 对所有第一近邻 Fe-Fe 原子对做 ±1°/2°/5°/10° 的成对 canting，正负手性成对输出，覆盖常见的 DMI "
+"强度区间"
 msgstr ""
-"**Goal:** For every first-neighbor Fe–Fe pair, generate paired chiralities at ±1°, "
-"2°, 5°, and 10° to probe the small-angle DMI response."
+"**Goal:** For every first-neighbor Fe–Fe pair, generate paired "
+"chiralities at ±1°, 2°, 5°, and 10° to probe the small-angle DMI "
+"response."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:40
-#: f8f3bd57c7a54198bb8ede6655ca694f
+#: f01225bffaaf44a0901cdb37f714f702
 msgid "**参数设置：**"
 msgstr "**Parameters:**"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:41
-#: 09bc983f43ad4c7c9fe30fbd60773445
+#: 0a19aa0433d641feb38a876ea807396f
 msgid "`Canting Mode` = `Atom pair canting`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:42
-#: cb22faeca07444be958b4b92bf282101
+#: 0a744c63678f415ebe641faade429502
 msgid "`Pair Source` = `Auto by neighbor shell`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:43
-#: c6d1c233d03c4d36b30b30522247512b
+#: 4472c824268340d9a6f3d0647a17bb14
 msgid "`近邻壳层`（`pair_shell`） = `[1]`"
 msgstr "`Neighbor shells` (`pair_shell`) = `[1]`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:44
-#: 67bd40f5e2e8476f84d4c183ecfd1fa7
+#: b1cba356de18498a8239239c6543609d
 msgid "`倾斜角列表`（`angle_list`） = `1,2,5,10`"
 msgstr "`Tilt angles` (`angle_list`) = `1,2,5,10`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:45
-#: 4cc3a30d5bfe4774994c32b967de8607
+#: a025d30faa354a37ada37f9e3277b453
 msgid "`Tilt Signs` = `Both (+/- pair)`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:46
-#: 02d0f6f00e534b438d51c8cd03e68c48
-msgid "`Magnitude Source` = `Map/default magnitude`，`元素磁矩表`（`magmom_map`） = `Fe:2.2`"
-msgstr "`Magnitude Source` = `Map/default magnitude`; `Element moment map` (`magmom_map`) = `Fe:2.2`"
+#: 07a881bca0b14c54b6a6c74971ef4753
+msgid ""
+"`Magnitude Source` = `Map/default magnitude`，`元素磁矩表`（`magmom_map`） = "
+"`Fe:2.2`"
+msgstr ""
+"`Magnitude Source` = `Map/default magnitude`; `Element moment map` "
+"(`magmom_map`) = `Fe:2.2`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:48
-#: e6a0b13582df4eafb24d0e9fcf21c765
+#: 7aa99e27b7464fe8952b3e1b21441742
 msgid ""
-"**输出：** 对每个第一近邻 Fe-Fe 对，4 个角度 x 2 种手性 = 8 个 canting 构型。如果自动找到 4 个近邻对，共 ~32 个输出（含 "
-"reference 则为 33）。"
+"**输出：** 对每个第一近邻 Fe-Fe 对，4 个角度 x 2 种手性 = 8 个 canting 构型。如果自动找到 4 个近邻对，共 "
+"~32 个输出（含 reference 则为 33）。"
 msgstr ""
-"**Output:** Eight canted configurations per first-neighbor Fe–Fe pair: four angles "
-"times two chiralities. If four pairs are selected automatically, this gives about 32 "
-"outputs, or 33 with the reference state."
+"**Output:** Eight canted configurations per first-neighbor Fe–Fe pair: "
+"four angles times two chiralities. If four pairs are selected "
+"automatically, this gives about 32 outputs, or 33 with the reference "
+"state."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:50
-#: b923990981d241f3b26c29e770df6b08
+#: 91d14069e7c54f2e8eec9b2fbab56969
 msgid "**怎么验证训练集质量改善：**"
 msgstr "**How to verify that training-set quality improved:**"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:51
-#: b1e922ab1cac42328f6347857d23812e
+#: f062668585ba4e93beea9cf7213dc7f4
 msgid "重训后计算左手和右手螺旋构型的能量差，符号和趋势应该接近 DFT 参考"
 msgstr ""
-"After DFT labeling and retraining, compare left- and right-handed spiral energy "
-"differences with DFT; both sign and trend should agree."
+"After DFT labeling and retraining, compare left- and right-handed spiral "
+"energy differences with DFT; both sign and trend should agree."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:52
-#: 7715b2b0b6ea4f05a98057bfab417ed3
+#: e4226e539b0a4b9593677214dd6d18fa
 msgid "抽查一对 canting 输出：左侧原子磁矩偏 +theta/2，右侧偏 -theta/2"
 msgstr ""
-"Inspect a paired output: the left moment should rotate by `+theta/2` and the right by"
-" `-theta/2`, with the opposite sample reversing the chirality."
+"Inspect a paired output: the left moment should rotate by `+theta/2` and "
+"the right by `-theta/2`, with the opposite sample reversing the "
+"chirality."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:53
-#: 072463ac2f394de79674131b0144f6d6
-msgid "如果 DMI 仍不准，扩大 `倾斜角列表`（`angle_list`）到 `1,2,3,5,7,10,15`，增加第二近邻 `Pair Shell = [2]`"
-msgstr "If the DMI remains inaccurate, expand `angle_list` to `1,2,3,5,7,10,15` and include second-neighbor pairs with `Pair Shell = [2]`."
+#: 5a4eaeb85dc44dca996bcd4e84243213
+msgid ""
+"如果 DMI 仍不准，扩大 `倾斜角列表`（`angle_list`）到 `1,2,3,5,7,10,15`，增加第二近邻 `Pair Shell"
+" = [2]`"
+msgstr ""
+"If the DMI remains inaccurate, expand `angle_list` to `1,2,3,5,7,10,15` "
+"and include second-neighbor pairs with `Pair Shell = [2]`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:54
-#: 2145380351744470820cfbc3539828b6
+#: a25b78a9637540d79e1a52cb59c4343e
 msgid "如果只想研究特定键，切到 `Manual indices` 精确指定"
-msgstr "To study a particular bond, use `Manual indices` and specify the pair explicitly."
+msgstr ""
+"To study a particular bond, use `Manual indices` and specify the pair "
+"explicitly."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:56
-#: 2042422cb0124b2d91609cc99b074511
+#: e9f8888f1e974bd9a5145ffa760c6b00
 msgid "什么时候加这张卡、什么时候不加"
 msgstr "When to add this card"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:58
-#: 7f700f4babc94e879c4899418bee06d1
+#: 6d6825ef8a37452199892cdb7bdac55d
 msgid "**加：**"
 msgstr "**Add it when:**"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:59
-#: 9ec7504036694e08b339629c6b7aecfd
+#: f7c59ab0d1b94399bf73cff1fa461528
 msgid "训练 DMI 或手性相关的磁性模型"
-msgstr "You are training a model for DMI or other chirality-dependent magnetic behavior."
+msgstr ""
+"You are training a model for DMI or other chirality-dependent magnetic "
+"behavior."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:60
-#: 529cf68b6f144556a9e1992546b42a13
+#: eb3927473ac84e739a5bfd76d2c8c18a
 msgid "需要确定性、可对比的小角度偏转样本（不是随机方向扰动）"
 msgstr ""
-"You need deterministic, directly comparable small-angle samples rather than random "
-"rotations."
+"You need deterministic, directly comparable small-angle samples rather "
+"than random rotations."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:61
-#: dad87a33b5324b469587f84b1757635c
+#: 20133c1c37a24f98bdf9e65fbb873906
 msgid "需要外场或 metamagnetic 路径附近的整体磁序偏转"
-msgstr "You need collective tilt states near a field-driven or metamagnetic pathway."
+msgstr ""
+"You need collective tilt states near a field-driven or metamagnetic "
+"pathway."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:62
-#: fa89a3b1fbda4bbbbc7859a7b2e5ed43
+#: 854a09bf2f16482fbec95f81848a924a
 msgid "分子动力学显示特定原子对的磁矩夹角出现非物理振荡"
-msgstr "A simulation shows unphysical relative-angle oscillations for specific moment pairs."
+msgstr ""
+"A simulation shows unphysical relative-angle oscillations for specific "
+"moment pairs."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:64
-#: 369e778ee64744e88deb0b3f829fb5af
+#: a8f1f709346249ad813642b7b8bf5785
 msgid "**不加：**"
 msgstr "**Do not add it when:**"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:65
-#: 19469de024504e6aafa16165513b1cc5
-msgid "只需要随机方向扰动覆盖 → 用 `Spin Perturb`"
-msgstr "Only random directional perturbation coverage is needed → use `Spin Perturb`"
+#: 387c9dd2c897481183928a01bd352f4a
+#
+msgid "只需要随机方向扰动覆盖 → 用 `磁矩扰动`"
+msgstr ""
+"Only random directional perturbation coverage is needed → use `Spin "
+"Perturb`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:66
-#: f9dd5a725ae240d5904ad2fc3f7d1643
-msgid "需要按比例翻转磁矩或生成从有序到无序的梯度 → 用 `Moment Disorder`"
+#: 580dadb55cb6492da557adeb5fa76270
+#
+msgid "需要按比例翻转磁矩或生成从有序到无序的梯度 → 用 `磁矩无序采样`"
 msgstr ""
-"Fractional moment flips or an ordered-to-disordered gradient are needed → use `Moment"
-" Disorder`"
+"Fractional moment flips or an ordered-to-disordered gradient are needed →"
+" use `Moment Disorder`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:67
-#: 75fc27e1df824648a9fa57dbcca6bc51
-msgid "需要整体磁序翻转（不是局部 canting）→ 用 `Magnetic Order` 的 AFM 分支"
+#: 08351ed0434642cc99d0b63285875c69
+#
+msgid "需要整体磁序翻转（不是局部 canting）→ 用 `磁序` 的 AFM 分支"
 msgstr ""
-"You need a full magnetic-order reversal rather than local canting → use the AFM "
-"branch of `Magnetic Order`."
+"You need a full magnetic-order reversal rather than local canting → use "
+"the AFM branch of `Magnetic Order`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:68
-#: f8142b084aa24623a4dc6ef9637ec277
-msgid "需要连续有限 q 螺旋调制 → 用 `SOC / Texture Response`"
-msgstr "A continuous finite-q spiral modulation is needed → use `SOC / Texture Response`"
+#: a2d5b143e575496a9d6511cd7e189597
+#
+msgid "需要连续有限 q 螺旋调制 → 用 `SOC / 纹理响应`"
+msgstr ""
+"A continuous finite-q spiral modulation is needed → use `SOC / Texture "
+"Response`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:70
-#: d61075c69f1a47fcaf5b05c97d83ae0e
+#: a44b77bc3ef447a3b8586ce96eb1840f
 msgid "参数说明"
 msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:72
-#: 84298b9dd93b45fabee4862feccf9d43
+#: 0ba1c2fb013643379ea46659945400f0
 msgid "倾斜目标"
 msgstr "Tilt target"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:74
-#: bbeb01646d584cc689549c60544db7ef
+#: b41a6359600343dea433d48fb9c60067
 msgid "倾斜模式（canting_mode）"
 msgstr "canting_mode"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:76
-#: dcd3c542026d49fe9521064ecc229f22
+#: 63da64f8556441b4b2612faa0802819f
 msgid "`str`，默认 `'Single-spin tilt'`。"
 msgstr "`str`, default: `'Single-spin tilt'`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 314e149a06b7446f81a9e6b294ea7954
+#: 7ee206a7afe44cc5ab4dc8ea154c1c2e
 msgid "模式"
 msgstr "Mode"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 606c0406c35142e3a8b0582df4b30549
+#: ac69305538db4acfb1acba0128b601fc
 msgid "含义"
 msgstr "Meaning"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 608b042fe8704516a84c056fff763c4a
+#: e883c71cd2e64eb2ba793e508a3f1452
 msgid "适用"
 msgstr "Best used for"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 3fe6ec5126b4437485cc2e845144bd8d
+#: 803b6e41176e4f23b5b0ea9c7a21a316
 msgid "`Single-spin tilt`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 9a39fefb0e214a579aae9c26f6078e33
+#: 617259680f3d4e49b1a7689fc64117a8
 msgid "单独偏转选定原子的磁矩"
 msgstr "Tilt one selected atomic moment"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 2743d0ec864143e0b053102464f697af
+#: 23bf538d053e4fa0a2cc3d588bb72bb2
 msgid "验证流程、研究特定位点"
 msgstr "Workflow validation or a specific site"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: c8c61b76540a4620a27996932c40bd06
+#: 7e61b2940ff74dbe81cba50aa56f2ca7
 msgid "`Global tilt`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 81078be6295e494486845769f9772800
+#: 3f5d5b0f9cb94e0b81ffe3e1d25d6992
 msgid "所有 eligible 磁矩按同一角度偏转"
 msgstr "Tilt all eligible moments by the same angle"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: c0229c70b96b4171ab5b16092b173dbc
+#: fb2c8d1c20074bc5824ce122db221e18
 msgid "外场下整体偏转、spin-flop 近似路径"
 msgstr "Collective field-driven rotation or an approximate spin-flop path"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: d6876b2606fb400f8814618e05d3b1ae
+#: 0b1e2a4522f6472aacb90651338d8a2e
 msgid "`Atom pair canting`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: d9fad768a4c042f3ad6e012aeb06e97a
+#: 2d9a618b2248462abf2cda34144156b9
 msgid "左右两侧原子分别偏转 ±θ/2"
 msgstr "Tilt the two atoms by `+θ/2` and `−θ/2`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 0770690e376f4a2b847da08132f0ce8e
+#: 476ee8ffd6d64e8c83a353810fc3ca25
 msgid "DMI 训练集首选"
 msgstr "Preferred for DMI training pairs"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 224373e9048847bdaf34b8514f7cfca1
+#: 8b549d2e6ffa4914b7a3e197a4e94e5a
 msgid "`Group pair canting`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 9a7256251d554acd8c5ac6fc3648eeab
+#: 1ea41bcf85ee48bb81d97b11fa5f3b19
 msgid "两组原子整体分别偏转 ±θ/2"
 msgstr "Tilt two entire groups by `+θ/2` and `−θ/2`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md
-#: 44579f02201745df9a60f7c89068dfc1
+#: dcb286b34d42400f9914f00e4dcf8b78
 msgid "子晶格级别 canting"
 msgstr "Sublattice-level canting"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:85
-#: 405cf06e0c5240f2ae0160f76824f6bd
+#: 97af8fd4a7234336bae7ad4cc6f5b618
 msgid "目标选择方式（target_mode）"
 msgstr "target_mode"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:87
-#: 545a1f4cb07a4bb1aa1432ca3ca0b82c
+#: 90625761e842476ead9cbb7ce1593352
 msgid ""
 "`str`，默认 `'First eligible atom'`。单原子验证用 `First` 或手动索引；需要系统性覆盖局部环境时用 `All "
 "eligible`——注意全量目标会显著放大输出数量。"
 msgstr ""
-"`str`, default: `'First eligible atom'`. Use the first eligible atom or a manual "
-"index for a focused check. Use `All eligible` for systematic site coverage, noting "
-"that it multiplies the output count by the number of targets."
+"`str`, default: `'First eligible atom'`. Use the first eligible atom or a"
+" manual index for a focused check. Use `All eligible` for systematic site"
+" coverage, noting that it multiplies the output count by the number of "
+"targets."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:89
-#: 9957f8484b2a495ea9d82eb5a5fb695e
+#: 17ae65de88404bb398a95ca493156cb0
 msgid "目标原子索引（target_indices）"
 msgstr "target_indices"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:91
-#: 82075d318fbe493599c388d9318d82b5
+#: 451de239e5c44c26bb9978ce942cc6cd
 msgid "`str`，默认 `''`。手动指定要倾斜的原子索引，格式如 `1,3-5`。"
-msgstr "`str`, default: `''`. One-based atom indices to tilt, with ranges such as `1,3-5`."
+msgstr ""
+"`str`, default: `''`. One-based atom indices to tilt, with ranges such as"
+" `1,3-5`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:93
-#: d262f69820e54e06a0d603882a171bc3
+#: b109c7fbbcc342efbc4c4bb13341035d
 msgid "生效条件：`目标选择方式`（`target_mode`）使用手动索引时。"
 msgstr "Active when `Target selection` (`target_mode`) uses manual indices."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:95
-#: b921ae4ae0cc4c9e92a7f384272ddfe3
+#: 5f290e03eadf4f0f86688aed97524ab2
 msgid "原子对目标"
 msgstr "Atom-pair targets"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:97
-#: 5697e8caabab46c09cb97d6559daff9f
+#: ae9eb7921c70431b80c3de506c25fba5
 msgid "左侧原子对索引（pair_left_indices）"
 msgstr "pair_left_indices"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:99
-#: b17278afbd934a4a8dbf5d9a5a3801cf
+#: 85afb9fa90a8420a92731284736cd951
 msgid "`str`，默认 `''`。手动模式时，左侧原子 1-based 索引列表，与右侧一一配对。"
 msgstr ""
-"`str`, default: `''`. In manual mode, one-based indices for the left atoms, paired "
-"position by position with the right list."
+"`str`, default: `''`. In manual mode, one-based indices for the left "
+"atoms, paired position by position with the right list."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:101
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:107
-#: d0b5d9db967b44baa82f493164ff4534
+#: 760394df20224a1084742a083039279d ec856112a51b4e73a6447490686c552f
 msgid "生效条件：`原子对来源`（`pair_source`）选择手动索引时。"
 msgstr "Active when `Pair source` (`pair_source`) uses manual indices."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:103
-#: 1ceeeba572274a75b5dad8dca550ddfa
+#: 69492d81f17348bdb539795a7065f8f5
 msgid "右侧原子对索引（pair_right_indices）"
 msgstr "pair_right_indices"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:105
-#: 8d492ebe882f4183a51d80ece5c0fd0f
+#: bc3eace4e39644128a8c24d1a507e182
 msgid "`str`，默认 `''`。手动模式时，右侧原子 1-based 索引列表，与左侧一一配对。"
 msgstr ""
-"`str`, default: `''`. In manual mode, one-based indices for the right atoms, paired "
-"position by position with the left list."
+"`str`, default: `''`. In manual mode, one-based indices for the right "
+"atoms, paired position by position with the left list."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:109
-#: 73641976e183406eb85d594365e41ed5
+#: 74c450f225f34329b3dae3cf4515eee2
 msgid "原子对来源（pair_source）"
 msgstr "Atom-Pair Source (pair_source)"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:111
-#: 271d3d78071a4224b36577aeb3ae7ced
-msgid "`str`，默认 `'Manual indices'`。手动索引适合可控验证；自动近邻壳层适合批量生成 DMI/交换路径样本，但需要检查元素对和键方向筛选。"
+#: 2ea954478c0b448fb8bff8b77cb83242
+msgid ""
+"`str`，默认 `'Manual indices'`。手动索引适合可控验证；自动近邻壳层适合批量生成 "
+"DMI/交换路径样本，但需要检查元素对和键方向筛选。"
 msgstr ""
-"`str`, default: `'Manual indices'`. Manual indices give controlled, auditable pairs. "
-"Automatic neighbor shells generate DMI or exchange-path samples in bulk, but their "
-"element and bond-direction filters must be checked."
+"`str`, default: `'Manual indices'`. Manual indices give controlled, "
+"auditable pairs. Automatic neighbor shells generate DMI or exchange-path "
+"samples in bulk, but their element and bond-direction filters must be "
+"checked."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:113
-#: 858e76e98b5f4fd19216b3c298f702f1
+#: 5d25bd03a43a46c0baa6ce2233f874cc
 msgid "近邻壳层（pair_shell）"
 msgstr "Neighbor Shell (pair_shell)"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:115
-#: c606f1ed8279451dbc8b7fbf738ff651
+#: fa40ccfeb58545dfa13ffc329a1a8df9
 msgid "`int`，默认 `1`。自动模式时取第几近邻壳层。1 为第一近邻，2 为第二近邻。"
 msgstr ""
-"`int`, default: `1`. Neighbor shell in automatic mode: 1 for first neighbors, 2 for "
-"second neighbors."
+"`int`, default: `1`. Neighbor shell in automatic mode: 1 for first "
+"neighbors, 2 for second neighbors."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:117
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:123
-#: 0cb09dee589e421889e4efba32de3739
+#: 0c8ae23c76b249b3a89b8326784b6b97 18b9dace0c1d4922b4c2bb4330597bf2
 msgid "生效条件：`原子对来源`（`pair_source`）选择近邻自动搜索时。"
 msgstr "Active when `Pair source` (`pair_source`) uses automatic neighbor search."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:119
-#: d9bd52e60e904f01bf19e1b38fc38cb1
+#: 6e9c9ab198514ebb96b99b2d06d37cb0
 msgid "近邻壳层容差（pair_shell_tolerance）"
 msgstr "pair_shell_tolerance"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:121
-#: d643faf58ccb440b814e09cd88afc9fe
+#: d0595d3973cf4ac4b86d883c49929991
 msgid "`float`，默认 `0.05`。自动分壳层的距离容差，单位 Å。"
 msgstr ""
-"`float`, default: `0.05`. Distance tolerance in Å used to cluster automatically "
-"detected neighbor shells."
+"`float`, default: `0.05`. Distance tolerance in Å used to cluster "
+"automatically detected neighbor shells."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:125
-#: 36f855161e024c07b10ffa43e44e1ea0
+#: 2ba1261bef4c45c0972e43f570c20f9e
 msgid "原子对元素筛选（pair_element_filter）"
 msgstr "pair_element_filter"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:127
-#: 2b1b5a2f1d844ec99e52de5dbadf3d44
-msgid "`str`，默认 `''`。按元素对限制自动近邻 pair，例如 `Fe-Fe` 或 `Fe-Co`。DMI/交换路径分析时务必匹配目标相互作用元素对。"
+#: 8e9cb6899c85462c82434c46194c1594
+msgid ""
+"`str`，默认 `''`。按元素对限制自动近邻 pair，例如 `Fe-Fe` 或 `Fe-"
+"Co`。DMI/交换路径分析时务必匹配目标相互作用元素对。"
 msgstr ""
-"`str`, default: `''`. Element-pair filter for automatic neighbors, such as `Fe-Fe` or"
-" `Fe-Co`. Match it to the interaction channel being studied."
+"`str`, default: `''`. Element-pair filter for automatic neighbors, such "
+"as `Fe-Fe` or `Fe-Co`. Match it to the interaction channel being studied."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:129
-#: 25a0b9df7da9447aaa8abf78625ef1bc
+#: 51b5d11baa1943dc9dbdfe0d42ba55ca
 msgid "生效条件：自动生成原子对后需要按元素筛选时。"
 msgstr "Use when automatically generated pairs must be filtered by element."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:131
-#: d3bc793edfd64ebea729170dd653b9be
+#: ea3ba10ae504419887651e06fa0c50d0
 msgid "原子对分组筛选（pair_group_filter）"
 msgstr "pair_group_filter"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:133
-#: d87b642c715c4f1bbe1b82295171cd5d
+#: 82a9af139c304b3a87f93ddbabde44d3
 msgid "`str`，默认 `''`。按 group 对限制自动近邻 pair，适合层状 AFM、界面或已标记子晶格。没有上游 group 标签时不要使用。"
 msgstr ""
-"`str`, default: `''`. Group-pair filter for automatic neighbors, useful for layered "
-"AFM states, interfaces, or labeled sublattices. Do not use it without upstream "
-"`group` labels."
+"`str`, default: `''`. Group-pair filter for automatic neighbors, useful "
+"for layered AFM states, interfaces, or labeled sublattices. Do not use it"
+" without upstream `group` labels."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:135
-#: cc0367d53b48414ba472eef443f07437
+#: fbb6123ed0ae4b27bcf38a31dc9dbab3
 msgid "生效条件：自动生成原子对后需要按 group 筛选时。"
 msgstr "Use when automatically generated pairs must be filtered by group."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:137
-#: a02215c880444186a3da20d899f511fa
+#: d68f489bbd1a4e709c063da4d92a954b
 msgid "键筛选方式（bond_filter_mode）"
 msgstr "bond_filter_mode"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:139
-#: bbc8c8daa267419e80938f180303abef
+#: 501818637db84f87aed6a31b1f2849a1
 msgid ""
 "`str`，默认 `'Any'`。`Any` 保留所有候选键；`Near axis` 选接近某方向的键；`Near plane` "
 "选接近某晶面的键，用于区分面内/面外相互作用。"
 msgstr ""
-"`str`, default: `'Any'`. `Any` retains all candidate bonds. `Near axis` selects bonds"
-" close to a direction; `Near plane` selects bonds close to a plane, enabling in-plane"
-" and out-of-plane interaction channels to be separated."
+"`str`, default: `'Any'`. `Any` retains all candidate bonds. `Near axis` "
+"selects bonds close to a direction; `Near plane` selects bonds close to a"
+" plane, enabling in-plane and out-of-plane interaction channels to be "
+"separated."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:141
-#: 0cb43a0e75c6470683dcb493ff517555
+#: abc1d618480f4f8a9e795be4c12d6462
 msgid "键筛选轴（bond_filter_axis）"
 msgstr "bond_filter_axis"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:143
-#: cd994b31ae6c4a6d8d22b8b624376c1e
+#: 57a715fe8b064c57a911f0523ab95ff5
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。研究面内/面外 DMI "
-"时必须和晶体取向一致。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。研究面内/面外 "
+"DMI 时必须和晶体取向一致。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. Reference "
-"axis or plane normal for bond filtering. It must match the actual crystal orientation"
-" in an in-plane/out-of-plane DMI study."
+"`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. "
+"Reference axis or plane normal for bond filtering. It must match the "
+"actual crystal orientation in an in-plane/out-of-plane DMI study."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:145
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:151
-#: e326fadaa68441598f12f91e15dda8a3
+#: 1836252e89064c17a2166eb09c283835 4e5df0dd790442b98a554464227136cc
 msgid "生效条件：`键筛选方式`（`bond_filter_mode`）不是关闭状态时。"
 msgstr "Active when `Bond filter mode` (`bond_filter_mode`) is not disabled."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:147
-#: d2c7b04d1d8840b6a79ada38ddf48849
+#: 8532ab758f6f4964a5dfd15c19c0f9da
 msgid "键筛选容差（bond_filter_tolerance）"
 msgstr "bond_filter_tolerance"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:149
-#: ab107b07631a4ec696673795f6fdfdab
+#: 3dbfec594471405194c80460b3c9abc9
 msgid "`float`，默认 `20.0`。方向筛选容差——设太小可能找不到 pair，设太大会混入不该比较的交换路径。"
 msgstr ""
-"`float`, default: `20.0`. Angular tolerance for bond-direction filtering. Too small "
-"may select no pairs; too large may mix distinct exchange paths."
+"`float`, default: `20.0`. Angular tolerance for bond-direction filtering."
+" Too small may select no pairs; too large may mix distinct exchange "
+"paths."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:153
-#: 000f2515f2954481af3c0166e1fc38c7
+#: a53d394417744ab0a016fe53d2b69e99
 msgid "Group Pair 模式"
 msgstr "Group-pair mode"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:155
-#: 6ec06e488f0c44d7bb7f9eb329842ddc
+#: 2929f0f829454aba82fbab7422b5d1fa
 msgid "A 组（group_a）"
 msgstr "group_a"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:157
-#: 516d8ccb70aa45bba53314d363a684a5
+#: 00ebd449cd7046e5b0a81aafb63d8ad5
 msgid "`str`，默认 `'A'`。`arrays['group']` 中的标签名。需要输入已有 group 标签。"
 msgstr ""
-"`str`, default: `'A'`. Label in `arrays['group']` for the first group. The input must"
-" already contain group labels."
+"`str`, default: `'A'`. Label in `arrays['group']` for the first group. "
+"The input must already contain group labels."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:159
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:165
-#: 862d108b1b9d4df4a827e6190db36d94
+#: 3c8b98d093654508a0700c1843368cd1 e205d90ece7c4439802f3cd026a5b329
 msgid "生效条件：需要 group pair、手动 group 或 AFM group 模式时。"
 msgstr "Used by group-pair, manual-group, or AFM-group modes."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:161
-#: 5611263250ca49d9a9738c63f31e2ac9
+#: dc418842447a446a87b9d25311c8b179
 msgid "B 组（group_b）"
 msgstr "group_b"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:163
-#: d5f4b8a8e9f2459885f8b2baa9f1e122
+#: f52b585600054e5d8634d80df5e115e7
 msgid "`str`，默认 `'B'`。`arrays['group']` 中的标签名。需要输入已有 group 标签。"
 msgstr ""
-"`str`, default: `'B'`. Label in `arrays['group']` for the second group. The input "
-"must already contain group labels."
+"`str`, default: `'B'`. Label in `arrays['group']` for the second group. "
+"The input must already contain group labels."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:167
-#: b05bd1c5d34a498683ef1d8f9760f350
+#: 5664c42a60ff417ba6f497b8d3329bb5
 msgid "角度和手性"
 msgstr "Angles and chirality"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:169
-#: 5dc76acb961748c78ba6993239423473
+#: f91c1c81dc994e0e857f125319e5b068
 msgid "倾斜角列表（angle_list）"
 msgstr "angle_list"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:171
-#: a30b7a02436d41a0b245eecbbde08459
+#: 073b36012e67497c9de2f43511212777
 msgid "`str`，默认 `'1,2,5,10'`。逗号分隔的偏转角列表，单位度。推荐从这个默认列表起步。"
 msgstr ""
-"`str`, default: `'1,2,5,10'`. Comma-separated tilt angles in degrees. The default is "
-"a practical small-angle starting set."
+"`str`, default: `'1,2,5,10'`. Comma-separated tilt angles in degrees. The"
+" default is a practical small-angle starting set."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:173
-#: 85d94e791bfe4962845a5ddd133eb6ea
+#: 44310758869f46518f965ca2051a36f4
 msgid "倾斜符号（tilt_signs）"
 msgstr "tilt_signs"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:175
-#: 8eafed1a5cc04897b9150f1fa126cc5e
+#: 47db824a07254938baac079c09c7be72
 msgid "`str`，默认 `'Positive only'`。只做 +θ 可以验证局部响应；同时做 ±θ 才能提取手性不对称项，DMI 数据建议用成对输出。"
 msgstr ""
-"`str`, default: `'Positive only'`. A `+θ` sample is enough for a local-response "
-"check. Matched `±θ` samples are required to isolate chirality-odd contributions and "
-"are recommended for DMI data."
+"`str`, default: `'Positive only'`. A `+θ` sample is enough for a local-"
+"response check. Matched `±θ` samples are required to isolate chirality-"
+"odd contributions and are recommended for DMI data."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:177
-#: decdd84e9cf04994be57c40dc4f8b6a1
+#: ab0f250579ba4c5e927b938871c92000
 msgid "包含参考构型（include_reference）"
 msgstr "include_reference"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:179
-#: 31f091d821494a5baece3c978499b5ca
+#: 124bbd014ad846089e69d5b81a30e418
 msgid ""
 "`bool`，默认 `True`。额外输出一帧未偏转的参考磁态，方便做 energy difference 对比。打开后 "
 "`最大输出数`（`max_outputs`）至少为 2，确保预算中还留有一帧真正的 canting 输出。"
 msgstr ""
-"`bool`, default `True`. Also output one untilted reference magnetic state for energy-difference "
-"comparisons. When enabled, set `max_outputs` to at least 2 so the budget still includes one actual canting output."
+"`bool`, default `True`. Also output one untilted reference magnetic state"
+" for energy-difference comparisons. When enabled, set `max_outputs` to at"
+" least 2 so the budget still includes one actual canting output."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:181
-#: d1af529717894829b88fb226ffcd973e
+#: dc2fdec0724e47998a4460081d0ae54c
 msgid "磁矩与参考态"
 msgstr "Moments and reference state"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:183
-#: 59d9e08248734c14bf5926c368c95195
+#: 093c7c02776343cf92a834653afaafaa
 msgid "磁矩大小来源（magnitude_source）"
 msgstr "magnitude_source"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:185
-#: 8c169c3754444ac8931325f64af2fe2b
+#: 6ff23d3c1c9d4c07bdefb4e5de6e66ed
 msgid ""
-"`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms` 时复用它最安全；没有磁矩输入时用 "
+"`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms` "
+"时复用它最安全；没有磁矩输入时用 "
 "`元素磁矩表`（`magmom_map`）/`默认磁矩`（`default_moment`）构造幅值。不要用默认幅值替代已知元素磁矩。"
 msgstr ""
-"`str`, default `'Existing initial magmoms'`. Reusing existing `initial_magmoms` is safest when available. "
-"When the input has no moments, construct magnitudes from `magmom_map` and `default_moment`. Do not replace known element moments with a generic default."
+"`str`, default `'Existing initial magmoms'`. Reusing existing "
+"`initial_magmoms` is safest when available. When the input has no "
+"moments, construct magnitudes from `magmom_map` and `default_moment`. Do "
+"not replace known element moments with a generic default."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:187
-#: fc3f6da380fa43e5b53d365f1135c037
+#: 0309e9a3e146408fbef680ab75bc4727
 msgid "元素磁矩表（magmom_map）"
 msgstr "magmom_map"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:189
-#: c57780cc0acc4b9880fe16c89a8bc290
+#: ea4a1a8488d34055b13112d53ef2fcd8
 msgid "`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。"
 msgstr ""
-"`str`, default `''`. Provide known element-resolved local moments explicitly, for "
-"example `Fe:2.2,Ni:0.6`. Do not invent a prior for an unknown element through a "
-"default value."
+"`str`, default `''`. Provide known element-resolved local moments "
+"explicitly, for example `Fe:2.2,Ni:0.6`. Do not invent a prior for an "
+"unknown element through a default value."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:191
-#: 253f5fa79b0b45a4b27540ea12e70101
+#: 1a4e55027e914eb69e83423f8043a228
 msgid "默认磁矩（default_moment）"
 msgstr "default_moment"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:193
-#: 88e14dea1e4a489ba79f2e8b3230c6a0
-msgid "`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。"
-msgstr "`float`, default `0.0`. Used only as a fallback magnitude for elements absent from `magmom_map`. List important magnetic elements explicitly; nonmagnetic elements should normally remain 0."
+#: 141fe4b5cb984e258ee916e81da1010e
+msgid ""
+"`float`，默认 `0.0`。只作为 `元素磁矩表`（`magmom_map`）未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持"
+" 0。"
+msgstr ""
+"`float`, default `0.0`. Used only as a fallback magnitude for elements "
+"absent from `magmom_map`. List important magnetic elements explicitly; "
+"nonmagnetic elements should normally remain 0."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:195
-#: 09b20bf6b7e241c4890edbdf73248181
+#: 7458055d75cd40c1b299b0244ff5b0d0
 msgid "标量磁矩转为矢量（lift_scalar）"
 msgstr "lift_scalar"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:197
-#: ab9f9d4d4edc464f9e8796d7afec58cb
+#: df24a97e8dc545e59ac22abd85872901
 msgid "`bool`，默认 `True`。输入是标量磁矩但下游需要非共线向量时打开；如果原始数据已有方向信息，不要重新提升覆盖它。"
 msgstr ""
-"`bool`, default `True`. Enable when scalar moments must be promoted to noncollinear "
-"vectors. Do not promote again when the input already contains directional "
-"information."
+"`bool`, default `True`. Enable when scalar moments must be promoted to "
+"noncollinear vectors. Do not promote again when the input already "
+"contains directional information."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:199
-#: 9a546354f39a4aaf825a3b784aabe36f
+#: 8b17f370ac154cf7a2c89e789156a08a
 msgid "轴（axis）"
 msgstr "axis"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:201
-#: 50d8358d3dd3458198cb66835e387a04
+#: 105874e8b95543a78ad70ded1cbd45c0
 msgid ""
 "`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
 "1.0)`。这是方向参考，不是普通数值——改它会改变分层、表面法向或磁矩方向。使用前先确认 cell 取向和目标物理方向。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. This is a "
-"directional reference, not an ordinary scalar setting: changing it changes a layering"
-" direction, surface normal, or moment direction. Confirm the cell orientation and "
-"intended physical direction first."
+"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. "
+"This is a directional reference, not an ordinary scalar setting: changing"
+" it changes a layering direction, surface normal, or moment direction. "
+"Confirm the cell orientation and intended physical direction first."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:203
-#: f72dcb6c701e45f7be5130ccded73623
+#: f49612beb6a342088ed38865886fa438
 msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
 msgstr ""
 "Used by modes that depend on a direction, layering, a surface, or vector "
 "initialization."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:205
-#: 8b24afe468f847c0abc03e1321e29c37
+#: da7d9acbfb6f4dbeafe314bd09e99b43
 msgid "参考方向（reference_direction）"
 msgstr "reference_direction"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:207
-#: fb9dbef451f24a2ab93ad80f24d4a0d8
-msgid "`list[float] | tuple[float, float, float]`，默认 `(1.0, 0.0, 0.0)`。canting 平面的首选侧向参考方向。"
+#: 26458760e3554831b6564022c18ca2dd
+msgid ""
+"`list[float] | tuple[float, float, float]`，默认 `(1.0, 0.0, 0.0)`。canting "
+"平面的首选侧向参考方向。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default: `(1.0, 0.0, 0.0)`. Preferred "
-"transverse reference direction used to define the canting plane."
+"`list[float] | tuple[float, float, float]`, default: `(1.0, 0.0, 0.0)`. "
+"Preferred transverse reference direction used to define the canting "
+"plane."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:209
-#: 9d58d1e0456e425b8231ec7d5e5354f3
+#: 8d32a7d5140c4d9c8a7b6f422d8ea79f
 msgid "应用元素（apply_elements）"
 msgstr "apply_elements"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:211
-#: a27569582bde4e38b90af0f54598d8a9
+#: 8bfc08ba76f44693a4aa289a07123c24
 msgid "`str`，默认 `''`。限制哪些元素参与目标筛选，留空则全部参与。"
 msgstr ""
-"`str`, default: `''`. Restricts target selection to specified elements. Leave empty "
-"to include all."
+"`str`, default: `''`. Restricts target selection to specified elements. "
+"Leave empty to include all."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:213
-#: 32eee7574f9748058b5f4371cc5e8de4
+#: 3b29eafd33084d52ac8ef75457138cd4
 msgid "输出预算"
 msgstr "Output Budget"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:215
-#: 783edcb63fd948258a89d47d8f1db074
+#: 71e26ee88c2043998867906bb0190f03
 msgid "最大输出数（max_outputs）"
 msgstr "max_outputs"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:217
-#: 25f06ef37de647a786d385a30d5fd29f
+#: ec9556ba4ea948e5ab01f80c84947f32
 msgid ""
 "`int`，默认 `100`。自动 pair、角度列表和正负手性会相乘放大输出数量。这个上限包含 reference；开启 "
-"`包含参考构型`（`include_reference`）时至少设为 2。先用 20-100 检查 pair 选择是否合理，确认后再扩大到完整 DMI 扫描。"
+"`包含参考构型`（`include_reference`）时至少设为 2。先用 20-100 检查 pair 选择是否合理，确认后再扩大到完整 "
+"DMI 扫描。"
 msgstr ""
-"`int`, default `100`. Automatic pairs, the angle list, and both chiralities multiply the output count. "
-"The limit includes the reference; when `include_reference` is enabled, set it to at least 2. Start with 20–100 outputs to verify pair selection, then expand to the full DMI scan."
+"`int`, default `100`. Automatic pairs, the angle list, and both "
+"chiralities multiply the output count. The limit includes the reference; "
+"when `include_reference` is enabled, set it to at least 2. Start with "
+"20–100 outputs to verify pair selection, then expand to the full DMI "
+"scan."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:219
-#: ba159b3fb3e1444fa603bd1b85da447a
+#: 090a58fa5d514b64b4ba5654a991aefc
 msgid "推荐预设"
 msgstr "Recommended presets"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:221
-#: 23c8e192e2ba472d8e7962c791d72a65
+#: 31e2c3a9783440438189a874e631c27d
 msgid "单自旋验证（~5 个输出，先确认流程正确）"
 msgstr "Single-spin check (~5 outputs; validate the convention first)"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:222
-#: c5d73e362885419387c2134b58585abf
+#: 4b277fdbf4db4e12bc3275cee9d62b08
 #, python-brace-format
 msgid ""
 "{\n"
@@ -817,12 +881,12 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:255
-#: eafd7b1ff74b4f4bb75495d590fc540d
+#: 4bdb3ce2ff1a4299a2f9a8075e01c26a
 msgid "近邻对 DMI 训练集（~100 个输出，常规用途）"
 msgstr "Neighbor-pair DMI set (~100 outputs; routine use)"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:256
-#: ea8b6c2dce234286b6471374010e0d7d
+#: 5b87fff3f4ff4b95abe59d837b25de96
 #, python-brace-format
 msgid ""
 "{\n"
@@ -858,12 +922,14 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:289
-#: a1112b81cefe41baa4d557444ab670dd
+#: 6e22547a8ce64aea8b3801e2319a543c
 msgid "筛选键方向 + 元素对的深度 DMI（~500 个输出，研究级）"
-msgstr "Bond-direction and element-pair-resolved DMI scan (~500 outputs; research scale)"
+msgstr ""
+"Bond-direction and element-pair-resolved DMI scan (~500 outputs; research"
+" scale)"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:290
-#: d7405e3c46b442f7a866d8987b111883
+#: 7c78ea32c0aa4fcc986f37af354ff19c
 #, python-brace-format
 msgid ""
 "{\n"
@@ -899,121 +965,129 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:323
-#: 8d3b9f703a0744d2be780d3243ec19be
+#: cbb0d9db605742bdb0a04e0179a97e91
 msgid "旧工作流迁移"
 msgstr "Migrating Old Workflows"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:325
-#: 092b45719ac641329f848ed95c3a7f7b
-msgid "单自旋、原子对和分组对扫描：迁移到 `Local Magnetic Response`。"
-msgstr "Single-spin, atom-pair, and group-pair scans: migrate to `Local Magnetic Response`."
+#: 3c4c3654b26241b9bc9429734fc83813
+#
+msgid "单自旋、原子对和分组对扫描：迁移到 `局域磁响应`。"
+msgstr ""
+"Single-spin, atom-pair, and group-pair scans: migrate to `Local Magnetic "
+"Response`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:326
-#: e7a84e8d6d2c429fb3c172abb72aeb8b
-msgid "全局倾斜：迁移到 `SOC / Texture Response`。"
+#: 850be7a662c04f85b9ce1f977338c7e2
+#
+msgid "全局倾斜：迁移到 `SOC / 纹理响应`。"
 msgstr "Global tilt: migrate to `SOC / Texture Response`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:327
-#: 241782f097504c91b2191fa2cde9047d
-msgid "随机方向采样：迁移到 `Spin Perturb`。"
+#: d25f34156f4e46e989dbb227c2e7c5c2
+#
+msgid "随机方向采样：迁移到 `磁矩扰动`。"
 msgstr "Random directional sampling: migrate to `Spin Perturb`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:329
-#: ccc77436ff8b45c08ce05dd90f48bad8
+#: 0e6d1352754841999d32b7e4c280455d
 msgid "常见问题"
 msgstr "Troubleshooting"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:331
-#: c82cf9ffda7046be8f3fe412e98e29a3
+#: f8091b8343fd43bdbbc74ce500bd6d69
 msgid ""
-"**提示没有可倾斜磁矩或目标原子。** `Existing initial magmoms` 要求输入已有非零磁矩；否则切换到 `Map/default "
-"magnitude` 并填写真实幅值。再检查 `应用元素`（`apply_elements`）、手动索引和目标模式是否把所有原子过滤掉了。卡片不会再用原结构代替 "
-"canting 输出。"
+"**提示没有可倾斜磁矩或目标原子。** `Existing initial magmoms` 要求输入已有非零磁矩；否则切换到 "
+"`Map/default magnitude` 并填写真实幅值。再检查 "
+"`应用元素`（`apply_elements`）、手动索引和目标模式是否把所有原子过滤掉了。卡片不会再用原结构代替 canting 输出。"
 msgstr ""
-"**No tiltable moments or target atoms were found.** `Existing initial magmoms` requires nonzero moments in the input; otherwise switch to `Map/default magnitude` and enter physical magnitudes. Also check whether `apply_elements`, manual indices, or the target mode filtered out every atom. The card does not substitute the unchanged input for a canting output."
+"**No tiltable moments or target atoms were found.** `Existing initial "
+"magmoms` requires nonzero moments in the input; otherwise switch to "
+"`Map/default magnitude` and enter physical magnitudes. Also check whether"
+" `apply_elements`, manual indices, or the target mode filtered out every "
+"atom. The card does not substitute the unchanged input for a canting "
+"output."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:333
-#: 9c74daf718a04ad19b50bfea05fd668d
+#: 9f8b15cf7ffd47b28a8c5d408a32f9b1
 msgid ""
 "**提示没有有效 pair。** 手动模式检查左右索引数量和磁矩是否非零；自动模式调整 "
 "`近邻壳层容差`（`pair_shell_tolerance`）——太大把不同壳层并到一起，太小把同一壳层拆开。再检查 "
 "`原子对元素筛选`（`pair_element_filter`）、`原子对分组筛选`（`pair_group_filter`）和键方向筛选是否过紧。"
 msgstr ""
-"**No valid pair was found.** In manual mode, check the two index lists and confirm both moments are nonzero. In automatic mode, adjust `pair_shell_tolerance`: a value that is too large merges distinct shells, while one that is too small splits a single shell. Also check whether `pair_element_filter`, `pair_group_filter`, or the bond-direction filter is too restrictive."
+"**No valid pair was found.** In manual mode, check the two index lists "
+"and confirm both moments are nonzero. In automatic mode, adjust "
+"`pair_shell_tolerance`: a value that is too large merges distinct shells,"
+" while one that is too small splits a single shell. Also check whether "
+"`pair_element_filter`, `pair_group_filter`, or the bond-direction filter "
+"is too restrictive."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:335
-#: 0ab48d262ed84cb58fb4aac41b51a087
+#: 17d5ea4f9770470c8ac9d7f8740d30c9
+#
 msgid ""
-"**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `A 组`（`group_a`）和 `B "
-"组`（`group_b`）中都要有至少一个非零磁矩原子。可以用 `Layer Groups` 先生成逐层交替分组。"
+"**group pair canting 报错。** 输入需要 `arrays['group']`，而且 `A 组`（`group_a`）和 `B"
+" 组`（`group_b`）中都要有至少一个非零磁矩原子。可以用 `原子层分组` 先生成逐层交替分组。"
 msgstr ""
-"**Group-pair canting reports an error.** The input must contain `arrays['group']`, "
-"and both `Group A` (`group_a`) and `Group B` (`group_b`) must contain at least one "
-"atom with a nonzero moment. Use `Layer Groups` first to create alternating layer "
-"groups."
+"**Group-pair canting reports an error.** The input must contain "
+"`arrays['group']`, and both `Group A` (`group_a`) and `Group B` "
+"(`group_b`) must contain at least one atom with a nonzero moment. Use "
+"`Layer Groups` first to create alternating layer groups."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:337
-#: f1c802602d8f443b9118156cb1fd245b
+#: 1146bb07253f432b88f00138cf378b5e
 msgid ""
-"**输出数量多于预期。** `Target Mode = All eligible atoms` + `Both (+/- pair)` 会快速膨胀。设 "
-"`最大输出数`（`max_outputs`）上限或改用 `First eligible atom`。"
-msgstr "**The output count is larger than expected.** `Target Mode = All eligible atoms` combined with `Both (+/- pair)` grows quickly. Set a `max_outputs` limit or use `First eligible atom`."
+"**输出数量多于预期。** `Target Mode = All eligible atoms` + `Both (+/- pair)` "
+"会快速膨胀。设 `最大输出数`（`max_outputs`）上限或改用 `First eligible atom`。"
+msgstr ""
+"**The output count is larger than expected.** `Target Mode = All eligible"
+" atoms` combined with `Both (+/- pair)` grows quickly. Set a "
+"`max_outputs` limit or use `First eligible atom`."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:339
-#: bacdf1ab89ca4ccd929f546853f3572f
+#: 45751397f8784045b00c9f225af6a407
 msgid "输出标签"
 msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:341
-#: 00333ba565014ec1906a1eefcca87979
+#: 860b05dccb114fc9b3921853f3223f1c
 msgid "`SpinTiltRef`：参考态（`include_reference=true` 时）"
 msgstr "`SpinTiltRef`: reference state when `include_reference=true`"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:342
-#: ab2fac7a63604f55b6c8a0eec2dced4c
+#: 35d56e3ef1c84245ac3b2f0e5bbe67cf
 msgid "`SpinTilt(i=...,a=...,sg=...)`：单自旋偏转"
 msgstr "`SpinTilt(i=...,a=...,sg=...)`: single-spin tilt"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:343
-#: 26b08c825f9845df804b978df3c2e4d0
+#: bb2949e9c29c4cf78bd1c92a571d533e
 msgid "`SpinPair(i=...,j=...,a=...,sg=...)`：原子对 canting"
 msgstr "`SpinPair(i=...,j=...,a=...,sg=...)`: atom-pair canting"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:344
-#: 833bffb721954e43a354806b97cdbf53
+#: 3b0af2c8b8b14ef891f82d81b0fec03f
 msgid "`SpinPairG(A=...,B=...,a=...,sg=...)`：group pair canting"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:346
-#: dc2e6082f7d743fc85509540b35f22ef
+#: c5a1bc6477964dce8dc72f12639e1b0c
 msgid "所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。"
 msgstr ""
-"All exported outputs use `spin:R:3`; an ASE vector-valued `initial_magmoms` alias is "
-"kept in sync internally."
+"All exported outputs use `spin:R:3`; an ASE vector-valued "
+"`initial_magmoms` alias is kept in sync internally."
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:348
-#: 8449f1c3fc1343bab09ef48fa0110c7b
+#: 3806ea1d30be4a2c8ed8829b6be7c1dd
 msgid "可复现性"
 msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/small-angle-spin-tilt-card.md:350
-#: c4a1874f3a6748b69e3f0bdbf8283d37
+#: 145e363a00e749a78135da3937e01c11
 msgid "无随机性。相同输入、相同参数 → 严格一致输出。`参考方向`（`reference_direction`）会先对基准磁矩方向正交化，结果是确定性的。"
-msgstr "There is no randomness. Identical input and parameters produce identical output. `reference_direction` is first orthogonalized against the baseline moment direction, so the result is deterministic."
-
-#~ msgid "**关键限制：** 这是一张确定性卡片——没有随机采样。每个角度和每个目标都会生成确定性的输出。需要随机方向扰动时用 `Magmom Rotation`。"
-#~ msgstr ""
-#~ "**Important limitation:** This card is "
-#~ "deterministic. Every selected target and angle "
-#~ "produces a fixed output. Use `Magmom Rotation`"
-#~ " for random directional perturbations."
-
-#~ msgid "如果 DMI 仍不准，扩大 `Angle List` 到 `1,2,3,5,7,10,15`，增加第二近邻 `Pair Shell = [2]`"
-#~ msgstr ""
-#~ "If DMI remains inaccurate, expand `Angle List`"
-#~ " to `1,2,3,5,7,10,15` and evaluate a separate "
-#~ "second-neighbor branch with `Pair Shell = "
-#~ "2`."
+msgstr ""
+"There is no randomness. Identical input and parameters produce identical "
+"output. `reference_direction` is first orthogonalized against the "
+"baseline moment direction, so the result is deterministic."
 
 #~ msgid "生效条件：`target_mode` 使用手动索引时。"
 #~ msgstr "Used when `target_mode` selects manual indices."
@@ -1027,90 +1101,6 @@ msgstr "There is no randomness. Identical input and parameters produce identical
 #~ msgid "生效条件：`bond_filter_mode` 不是关闭状态时。"
 #~ msgstr "Used when `bond_filter_mode` is not `Any`."
 
-#~ msgid "`bool`，默认 `True`。额外输出一帧未偏转的参考磁态，方便做 energy difference 对比。"
-#~ msgstr ""
-#~ "`bool`, default: `True`. Include one untilted "
-#~ "reference state for direct energy-difference "
-#~ "comparisons."
-
-#~ msgid ""
-#~ "`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms`"
-#~ " 时复用它最安全；没有磁矩输入时用 `magmom_map`/`default_moment` "
-#~ "构造幅值。不要用默认幅值替代已知元素磁矩。"
-#~ msgstr ""
-#~ "`str`, default `'Existing initial magmoms'`. Reusing"
-#~ " existing `initial_magmoms` is safest. Without "
-#~ "moment input, construct magnitudes from `magmom_map`"
-#~ " and `default_moment`; never replace known "
-#~ "element moments with a generic default."
-
-#~ msgid "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。"
-#~ msgstr ""
-#~ "`float`, default `0.0`. Used only when an "
-#~ "element is absent from `magmom_map`. List "
-#~ "important magnetic elements explicitly; nonmagnetic "
-#~ "elements should normally remain at 0."
-
-#~ msgid ""
-#~ "`int`，默认 `100`。自动 pair、角度列表和正负手性会相乘放大输出数量。先用 20-100 检查 "
-#~ "pair 选择是否合理，确认后再扩大到完整 DMI 扫描。"
-#~ msgstr ""
-#~ "`int`, default: `100`. Automatic pairs, angles, "
-#~ "and chirality signs multiply the output count."
-#~ " Start with 20–100 outputs to validate pair"
-#~ " selection before expanding to a full DMI"
-#~ " scan."
-
-#~ msgid ""
-#~ "**输出只有参考态没有 canting 帧。** 检查是否有符合条件的磁性原子（有非零磁矩的 eligible"
-#~ " 元素）。`apply_elements` 是否过滤掉了所有目标？pair 模式下找到的对是否为空？"
-#~ msgstr ""
-#~ "**Only the reference state is produced.** "
-#~ "Confirm that eligible atoms have nonzero "
-#~ "moments, that `apply_elements` does not exclude "
-#~ "all targets, and, in a pair mode, that"
-#~ " at least one pair passes the filters."
-
-#~ msgid ""
-#~ "**pair 自动找对结果不对。** 调整 "
-#~ "`pair_shell_tolerance`——太大把不同壳层并到一起，太小把同一壳层拆开。检查 `pair_element_filter` "
-#~ "和 `pair_group_filter` 是否过紧。"
-#~ msgstr ""
-#~ "**Automatic pair selection is incorrect.** Tune "
-#~ "`pair_shell_tolerance`: too large merges distinct "
-#~ "shells, while too small splits one shell. "
-#~ "Also check whether `pair_element_filter` or "
-#~ "`pair_group_filter` is overly restrictive."
-
-#~ msgid ""
-#~ "**group pair canting 没生效。** 输入需要 `arrays['group']`"
-#~ " 且包含 `group_a` 和 `group_b` 指定的标签。用 `Group "
-#~ "Label` 先生成。"
-#~ msgstr ""
-#~ "**Group-pair canting has no effect.** The "
-#~ "input must contain `arrays['group']` with the "
-#~ "exact labels in `group_a` and `group_b`. Add"
-#~ " them with `Group Label` first."
-
-#~ msgid ""
-#~ "**输出数量多于预期。** `Target Mode = All eligible "
-#~ "atoms` + `Both (+/- pair)` 会快速膨胀。设 "
-#~ "`max_outputs` 上限或改用 `First eligible atom`。"
-#~ msgstr ""
-#~ "**The output count is larger than expected.**"
-#~ " `Target Mode = All eligible atoms` "
-#~ "combined with `Both (+/- pair)` multiplies "
-#~ "targets and signs. Set `max_outputs` or use"
-#~ " `First eligible atom` for an initial "
-#~ "check."
-
-#~ msgid "无随机性。相同输入、相同参数 → 严格一致输出。`reference_direction` 会先对基准磁矩方向正交化，结果是确定性的。"
-#~ msgstr ""
-#~ "Deterministic. Identical inputs and parameters "
-#~ "produce identical output. `reference_direction` is "
-#~ "orthogonalized against the baseline moment direction"
-#~ " in a deterministic way."
-
 #~ msgid "小角度自旋倾斜（Small-Angle Spin Tilt）"
 #~ msgstr "Small-Angle Spin Tilt"
 
@@ -1119,23 +1109,3 @@ msgstr "There is no randomness. Identical input and parameters produce identical
 
 #~ msgid "推荐组合"
 #~ msgstr "Recommended combinations"
-
-#~ msgid "`Set Magnetic Moments` → `Small-Angle Spin Tilt`：先统一向量磁矩，再批量生成成对 canting"
-#~ msgstr ""
-#~ "`Set Magnetic Moments` → `Small-Angle Spin "
-#~ "Tilt`: standardize vector moments, then generate "
-#~ "paired canting samples."
-
-#~ msgid "`Magnetic Order` → `Small-Angle Spin Tilt`：先生成稳定参考磁态，再做局部 canting"
-#~ msgstr ""
-#~ "`Magnetic Order` → `Small-Angle Spin Tilt`:"
-#~ " construct a reference magnetic order, then "
-#~ "apply local canting."
-
-#~ msgid ""
-#~ "`Group Label` → `Magnetic Order` → `Small-"
-#~ "Angle Spin Tilt`：先分组再切到 `Group pair canting`"
-#~ msgstr ""
-#~ "`Group Label` → `Magnetic Order` → `Small-"
-#~ "Angle Spin Tilt`: label sublattices, initialize "
-#~ "their order, then use `Group pair canting`."

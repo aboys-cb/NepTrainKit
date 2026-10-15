@@ -1,4 +1,4 @@
-# 按图上范围选择（Select by Range）
+# 按范围选择（Select by Range）
 
 ## 作用与适用场景
 

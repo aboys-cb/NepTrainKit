@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,354 +20,261 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:3
-#: 756956d58d1a46e5a7f41da61e4692f8
+#: 1b02b47a81f5432495fd9a23a5507c52
 msgid "分支合并（Branch Merge）"
 msgstr "Branch Merge"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:5
-#: 84d0365f8299442c8d6dcbb285d6df0f
+#: eb89f90f56ee4e6e8012dafbd07aff6b
 msgid "**分类：** 容器"
 msgstr "**Category:** Containers"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:7
-#: 8376bc65f1084cf8bcfabd036503fa79
+#: 9a3fbb45453247708f3f2d6ab541f349
 msgid "功能说明"
 msgstr "Purpose"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:9
-#: ae228a5af9024b89ab568f8ad978265f
+#: 277eaa7996174dd1bba8e90482c106af
 msgid "让多张卡片读取同一份输入，并把结果合并为一个数据集。适合从同一批结构分别生成表面、空位或扰动结构。"
 msgstr ""
-"Let multiple cards read the same input and merge their results into one dataset. This"
-" is useful for generating surfaces, vacancies, or perturbed structures independently "
-"from the same input batch."
+"Let multiple cards read the same input and merge their results into one "
+"dataset. This is useful for generating surfaces, vacancies, or perturbed "
+"structures independently from the same input batch."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:11
-#: fbe80fe9738442a1ab8c82cdd4055a01
+#: 0f3e990c10f24ac28c1119a8108bd7bc
 msgid "这里的“分支”表示数据关系，不表示并行计算。启用的子卡按界面顺序运行，但每张子卡都读取原始组输入，不读取上一张子卡的输出。"
 msgstr ""
-"Here, a branch describes the data relationship rather than parallel execution. "
-"Enabled child cards run in interface order, but every child reads the original group "
-"input instead of the previous child's output."
+"Here, a branch describes the data relationship rather than parallel "
+"execution. Enabled child cards run in interface order, but every child "
+"reads the original group input instead of the previous child's output."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:13
-#: 06b1eeb3d15342408e8bbcfbb1f9ebc1
+#: 750ae416477e459d8fcb0739d12f1eca
 msgid "工作原理"
 msgstr "How It Works"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:15
-#: 6347269474d24729811699c26f1f071f
+#: cfef7d519c3e4e30a95c571f2fa0cbe3
 msgid "设组输入为数据集 $\\mathcal D$，启用的子卡操作为 $O_1,\\ldots,O_m$。分支合并的结果是"
-msgstr "Let the group input be dataset $\\mathcal D$, and let the enabled child-card operations be $O_1,\\ldots,O_m$. Branch Merge returns"
+msgstr ""
+"Let the group input be dataset $\\mathcal D$, and let the enabled child-"
+"card operations be $O_1,\\ldots,O_m$. Branch Merge returns"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:18
-#: 2fa6ca5358d3439ab53811a79426d0af
+#: 8ecf6588be78441182a4d36b6874ab89
 msgid ""
 "\n"
 "\\mathcal D_{\\mathrm{merge}}=\n"
-"O_1(\\mathcal D)\\mathbin{\\Vert}\\cdots\\mathbin{\\Vert}O_m(\\mathcal D),\n"
+"O_1(\\mathcal D)\\mathbin{\\Vert}\\cdots\\mathbin{\\Vert}O_m(\\mathcal "
+"D),\n"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:23
-#: 13046cf90a3749d99ac31cac92c5cd89
-msgid "其中 $\\Vert$ 表示按子卡顺序拼接。若配置后置过滤卡 $F$，最终输出为 $F(\\mathcal D_{\\mathrm{merge}})$。"
+#: 0ef8982d4eea41a3b75aab9ca7cf0776
+msgid ""
+"其中 $\\Vert$ 表示按子卡顺序拼接。若配置后置过滤卡 $F$，最终输出为 $F(\\mathcal "
+"D_{\\mathrm{merge}})$。"
 msgstr ""
-"Here $\\Vert$ denotes concatenation in child-card order. If a post-filter card $F$ is"
-" configured, the final output is $F(\\mathcal D_{\\mathrm{merge}})$."
+"Here $\\Vert$ denotes concatenation in child-card order. If a post-filter"
+" card $F$ is configured, the final output is $F(\\mathcal "
+"D_{\\mathrm{merge}})$."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:26
-#: 3916d6874bca4c4997ca5bb8ab3d8c8e
+#: 63f932f8d1594a558093b55f441124d9
 msgid "例如输入 2 个结构，两张子卡分别输出 6 个和 8 个结构，则合并后为 14 个；后置过滤保留 5 个时，卡片会显示“合并 14 → 保留 5”。"
 msgstr ""
-"For example, if two input structures are processed by child cards that produce 6 and "
-"8 structures, the merged result contains 14. If a post-filter retains 5, the card "
-"displays `merged 14 → retained 5`."
+"For example, if two input structures are processed by child cards that "
+"produce 6 and 8 structures, the merged result contains 14. If a post-"
+"filter retains 5, the card displays `merged 14 → retained 5`."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:28
-#: 42ea8d731b8040a5a57662af55066e1a
+#: b65ec8914c9b4665bbd26c272ded4954
 msgid "操作示例"
 msgstr "Example"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:30
-#: bb776b8fe18b4288af4845d15ce6e587
+#: b669540f28294df9b75f894f8311d3d8
 msgid "以一份弛豫后的 Ni 超胞为输入："
 msgstr "Start from a relaxed Ni supercell:"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:32
-#: 4f54a400270543d6a528cb528a482204
-msgid "选中“分支合并”，加入 `Random Slab` 和 `Targeted Vacancy`。"
-msgstr "Select `Branch Merge`, then add `Random Slab` and `Targeted Vacancy`."
+#: f5ec5a0ee32e4c0099a26d2d63f29fd5
+msgid "选中“分支合并”，加入 `表面薄层扫描` 和 `定向空位`。"
+msgstr "Select `Branch Merge`, then add `Surface Slab Scan` and `Targeted Vacancy`."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:33
-#: c5a50e57298940709c135dac5b94e5a4
+#: 90dd54b1632a4c65b57307df32a7e6e7
 msgid "两张子卡分别配置表面和空位参数，并保持启用。"
 msgstr ""
-"Configure the surface and vacancy parameters in the two child cards and keep both "
-"enabled."
+"Configure the surface and vacancy parameters in the two child cards and "
+"keep both enabled."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:34
-#: 50af9a3ad1d946b99a779e3cd18334a1
+#: a3fc724faced4f5ca4415f79e3b5986c
 msgid "如需统一筛选，在后置过滤槽加入一张过滤卡。"
-msgstr "To filter the combined results, add one filter card to the post-filter slot."
+msgstr ""
+"To filter the combined results, add one filter card to the post-filter "
+"slot."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:35
-#: 7163f3fc5c684c0588edfe6427140fbd
+#: 206ae2918e754ffaa81043d898b16797
 msgid "运行后，输出按子卡顺序合并；卡片底部显示合并前后的实际数量。"
 msgstr ""
-"After the run, outputs are merged in child-card order. The bottom of the card shows "
-"the actual counts before and after merging."
+"After the run, outputs are merged in child-card order. The bottom of the "
+"card shows the actual counts before and after merging."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:37
-#: dbb33a147f144c9894b9c48fee881799
+#: e8dc42f77aca41d2803b73b5969cb633
 msgid "什么时候用、什么时候不用"
 msgstr "When to use a Card Group"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:39
-#: 39aa8ec014ca44ce9b0a4fcf1f0a5faf
+#: eaa969c368594374a60c5533530ef137
 msgid "子卡彼此独立、结果需要立即合并：使用“分支合并”。"
 msgstr ""
-"Use `Branch Merge` when child cards are independent and their results should be "
-"merged immediately."
+"Use `Branch Merge` when child cards are independent and their results "
+"should be merged immediately."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:40
-#: 05d84e2a73f4459f98a9e3dbd680701d
+#: b9cd4752d0fd4938b6dc75f35d179bbb
 msgid "每条分支还要继续连接多张卡，或暂时保持独立输出：使用“永久分叉”。"
 msgstr ""
-"Use `Branch Fork` when each branch needs its own downstream card chain or its output "
-"must remain separate for now."
+"Use `Branch Fork` when each branch needs its own downstream card chain or"
+" its output must remain separate for now."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:41
-#: 8a292d03dd33489c944491c48491086b
+#: 874b68d6fbac4b04a1e736e1fa1c13ce
 msgid "A 的输出要成为 B 的输入：把 A、B 放在工作流中顺序连接。"
 msgstr ""
-"If the output of A must become the input of B, connect A and B sequentially in the "
-"workflow."
+"If the output of A must become the input of B, connect A and B "
+"sequentially in the workflow."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:43
-#: 9e35235d9e8844f98e301e2cb223b43d
+#: 4cd9841b2b214bb485d24661cd2ceade
 msgid "参数说明"
 msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:45
-#: b7125c3889eb42c391ef9bc43836e3b8
+#: 5c760569f9074385b93b27e2aed8b7c7
 msgid "`card_list`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:47
-#: bd8d063e758b45a780610a2adec00136
+#: bfe24298a28749629dd1b62d3db31055
 msgid "组内子卡列表，由界面自动维护。界面顺序决定运行和合并顺序，但不构成前后数据依赖。"
 msgstr ""
-"List of child cards in the group, maintained automatically by the interface. "
-"Interface order determines execution and merge order, but it does not create a "
-"sequential data dependency."
+"List of child cards in the group, maintained automatically by the "
+"interface. Interface order determines execution and merge order, but it "
+"does not create a sequential data dependency."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:49
-#: 5b362742a9c7494e85b8bccb721da2f0
+#: 9e12e6e9ef4447ada85907213d0be281
 msgid "关闭整个组时，输入直接传给下游，子卡的启用状态会保留。组处于启用状态时，至少要启用一张子卡；否则运行会明确失败，不会把输入误当作结果。"
 msgstr ""
-"When the entire group is disabled, its input passes directly downstream and the "
-"enabled states of its child cards are preserved. When the group is enabled, at least "
-"one child card must also be enabled. Otherwise, the run fails explicitly rather than "
-"treating the input as a generated result."
+"When the entire group is disabled, its input passes directly downstream "
+"and the enabled states of its child cards are preserved. When the group "
+"is enabled, at least one child card must also be enabled. Otherwise, the "
+"run fails explicitly rather than treating the input as a generated "
+"result."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:51
-#: daa01b7dceda4eb1ac08a69e2d251d5d
+#: ddded97a53064d3797841a06af1ed3a9
 msgid "`filter_card`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:53
-#: d7cae6b4b14b4733bae254410e76e124
+#: ca30c387552b451aba65b2ab1f907e93
 msgid "可选的后置过滤卡，默认 `null`。它接收完整的合并结果，一个组最多放一张。禁用过滤卡时只合并，不筛选。"
 msgstr ""
-"Optional post-filter card, default `null`. It receives the complete merged result, "
-"and a group can contain at most one. When the filter card is disabled, outputs are "
-"merged without filtering."
+"Optional post-filter card, default `null`. It receives the complete "
+"merged result, and a group can contain at most one. When the filter card "
+"is disabled, outputs are merged without filtering."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:55
-#: 170638c8ffcb4a1c93057cbe4ba6607a
+#: 69a3960f7a364430b661c3713ac2ec68
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:57
-#: 46cc440e02834452a28cf98a0f3ef98e
-msgid "`Branch Merge(Random Slab, Insert Defect)`：从同一输入生成表面与缺陷结构并合并。"
-msgstr ""
-"`Branch Merge(Random Slab, Insert Defect)`: Generate surface and defect structures "
-"from the same input and merge them."
+#: e0ae5be2d6a04f5cac36b3473c624932
+msgid "`分支合并(表面薄层扫描, 插隙与吸附)`：从同一输入生成表面与缺陷结构并合并。"
+msgstr "`Branch Merge(Surface Slab Scan, Interstitial & Adsorbate)`: Generate surface and defect structures from the same input and merge them."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:58
-#: e00edd9b3b24466486db0b05fa5998fa
-msgid "`Branch Merge(Atomic Perturb, Lattice Perturb) + FPS Filter`：合并两类扰动，再统一补选代表性结构。"
-msgstr ""
-"`Branch Merge(Atomic Perturb, Lattice Perturb) + FPS Filter`: Merge two perturbation "
-"families and then select representative structures from the combined set."
+#: ce9b2821759b45718ab7c7bc5e016b58
+msgid "`分支合并(原子扰动, 晶格随机扰动) + FPS 代表性采样`：合并两类扰动，再统一补选代表性结构。"
+msgstr "`Branch Merge(Atomic Perturb, Lattice Perturb) + FPS Sampling`: Merge two perturbation families and then select representative structures from the combined set."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:60
-#: 7e95a98d38954865b9d5e7967609303e
+#: 221b560b163f4576888336bf77e2a132
 msgid "常见问题"
 msgstr "Troubleshooting"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:62
-#: 58e4c490dfab4995b5182c5082cceddc
+#: 25c681c911754d46b7dfba9c03091260
 msgid "**组输出为空。** 先检查是否至少启用一张子卡，再检查各子卡参数。任一子卡失败时，组会清空已经收集的结果并停止后续分支。"
 msgstr ""
-"**The group output is empty.** First confirm that at least one child card is enabled,"
-" then inspect the child-card parameters. If any child card fails, the group clears "
-"already collected results and stops the remaining branches."
+"**The group output is empty.** First confirm that at least one child card"
+" is enabled, then inspect the child-card parameters. If any child card "
+"fails, the group clears already collected results and stops the remaining"
+" branches."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:64
-#: 5696cc1c8a8f4b35997b81ff59302f79
+#: ebf3c1b1e2f74d3a8c3cfd8fb3f6e256
 msgid ""
 "**组内过滤卡把结果全筛掉了。** `filter_card` 的过滤阈值可能过严，例如几何阈值不适合当前体系，或 FPS "
 "描述符距离阈值导致提前停止。先看过滤卡自己的预览和错误信息，再调整参数。"
-msgstr "**The in-group filter removed every result.** The `filter_card` thresholds may be too strict—for example, the geometry limits may not suit this system, or the FPS descriptor-distance threshold may stop selection too early. Inspect the filter card's preview and error message before adjusting its parameters."
+msgstr ""
+"**The in-group filter removed every result.** The `filter_card` "
+"thresholds may be too strict—for example, the geometry limits may not "
+"suit this system, or the FPS descriptor-distance threshold may stop "
+"selection too early. Inspect the filter card's preview and error message "
+"before adjusting its parameters."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:66
-#: 40cd853cbf054a2b8447e8cea20fe644
+#: d4fc41e3905e4738be78067f22ce9f40
 msgid "**后置过滤后为 0。** 过滤执行成功，但当前条件没有保留任何结构。查看过滤卡的预览，再调整阈值。"
 msgstr ""
-"**The post-filter retained zero structures.** Filtering completed successfully, but "
-"no structure satisfied the current conditions. Inspect the filter card's preview and "
-"adjust its thresholds."
+"**The post-filter retained zero structures.** Filtering completed "
+"successfully, but no structure satisfied the current conditions. Inspect "
+"the filter card's preview and adjust its thresholds."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:68
-#: 068cfa058d8446fb9ac6f42672422520
+#: e86db5fd950442faa12df096947a6d50
 msgid "保存字段"
 msgstr "Saved Fields"
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:70
-#: 0fd736d81cf44008ab37a6192b39a971
+#: 1084e1f032da4ab08d4fca6b6de2e93d
 msgid "`card_list`：按界面顺序保存的子卡配置。"
 msgstr "`card_list`: Child-card configurations saved in interface order."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:71
-#: f0366f60399341378a9a9ee972faf908
+#: 529cc4ec4bba4d2da52f637648ded506
 msgid "`filter_card`：后置过滤卡配置；未设置时为 `null`。"
 msgstr "`filter_card`: Post-filter card configuration, or `null` when none is set."
 
 #: ../../source/module/make-dataset-cards/cards/card-group.md:73
-#: cbb1414a30374ff9ada0359ab2408576
+#: 5783f5101098403d8e4d57e568e0a317
 msgid "旧工作流中的类名 `CardGroup` 保持可加载，但启用的空组不再直通输入，会提示至少启用一张子卡。"
 msgstr ""
-"The legacy class name `CardGroup` in existing workflows remains loadable. An enabled "
-"empty group no longer passes its input through; it reports that at least one child "
-"card must be enabled."
+"The legacy class name `CardGroup` in existing workflows remains loadable."
+" An enabled empty group no longer passes its input through; it reports "
+"that at least one child card must be enabled."
 
 #~ msgid "卡片组（Card Group）"
 #~ msgstr "Card Group"
 
-#~ msgid "把共享同一输入的多张卡片装进一个容器里，并行执行后汇总输出。适合\"同一个母相结构既要走表面链又要走缺陷链\"这种分支场景。组内卡片互不依赖、各自独立读取组输入。"
-#~ msgstr ""
-#~ "Place several independent cards that share one"
-#~ " input in a container, run them as "
-#~ "parallel branches, and merge their outputs. "
-#~ "This is useful when the same parent "
-#~ "structure must feed both a surface branch "
-#~ "and a defect branch. Every card in the"
-#~ " group reads the group input independently."
-
-#~ msgid "**目标：** 把 `Random Slab` 和 `Random Vacancy` 放入同一组，共享输入，并行生成两个分支，统一导出"
-#~ msgstr ""
-#~ "**Objective:** Put `Random Slab` and `Random "
-#~ "Vacancy` in one group, share the input, "
-#~ "run both branches, and export their combined"
-#~ " outputs."
-
 #~ msgid "同一输入需要同时喂给多张彼此无依赖的卡片"
 #~ msgstr "One input must feed several independent cards."
-
-#~ msgid ""
-#~ "组内的子卡片列表，由界面拖入操作自动维护，不需要你手动编辑。每项是一个完整的卡片配置 dict（含 "
-#~ "class、check_state、params 等字段），子卡片共享组输入、各自独立运行。"
-#~ msgstr ""
-#~ "The interface maintains the child-card list"
-#~ " as cards are dragged into the group. "
-#~ "Do not edit it manually. Each item is"
-#~ " a complete card configuration dictionary "
-#~ "containing fields such as class, check_state, "
-#~ "and params. Child cards share the group "
-#~ "input and run independently."
-
-#~ msgid ""
-#~ "dict 或 null，默认 null。选填：在组内末尾挂一张过滤卡（如 `FPS "
-#~ "Filter`），对并行生成的汇总结果做统一筛选。留 null 表示不启用组内过滤。"
-#~ msgstr ""
-#~ "`dict` or `null`, default `null`. Optionally "
-#~ "attach a filter such as `FPS Filter` to"
-#~ " the end of the group to filter the"
-#~ " merged branch outputs. Leave it `null` to"
-#~ " disable in-group filtering."
-
-#~ msgid "组内过滤只作用于组输出，不进入下游卡片的输入流。如果你需要在组外继续处理，把过滤卡串在组后。"
-#~ msgstr ""
-#~ "An in-group filter acts only on group"
-#~ " output. To continue processing in the "
-#~ "top-level dataflow, place the filter after "
-#~ "the group instead."
 
 #~ msgid "带组内过滤（先并行生成，再 FPS 筛）"
 #~ msgstr "Parallel generation followed by an in-group FPS filter"
 
-#~ msgid "`Card Group(Random Slab, Insert Defect)` → `FPS Filter`：并行生成表面+缺陷 → 组外统一筛选"
-#~ msgstr ""
-#~ "`Card Group(Random Slab, Insert Defect)` -> "
-#~ "`FPS Filter`: generate surfaces and defects in"
-#~ " parallel, then filter the merged output "
-#~ "outside the group"
-
-#~ msgid "**组输出为空。** 检查组内每张子卡片是否勾选了 `check_state`、各自配置是否合法。"
-#~ msgstr ""
-#~ "**The group output is empty.** Confirm that"
-#~ " `check_state` is enabled on every child "
-#~ "and that each child configuration is valid."
-
-#~ msgid ""
-#~ "**组内过滤卡把结果全筛掉了。** `filter_card` 的过滤参数可能过严（如 `n_samples` "
-#~ "设太大但输入很少）。先调松过滤参数，或去掉组内过滤改为组外过滤。"
-#~ msgstr ""
-#~ "**The in-group filter removed everything.** "
-#~ "Its parameters may be too restrictive. Relax"
-#~ " them, or remove `filter_card` and apply a"
-#~ " top-level filter where the intermediate "
-#~ "output can be inspected."
-
-#~ msgid "**想在组内串行。** 不支持。组内所有卡片共享同一输入、并行执行。串行依赖请拆到组外。"
-#~ msgstr ""
-#~ "**A serial chain is needed inside the "
-#~ "group.** This is unsupported. All child cards"
-#~ " share one input and run as parallel "
-#~ "branches; move serial dependencies outside."
-
-#~ msgid "把共享同一输入的多张卡片装进一个容器里，依次运行后汇总输出。适合“同一个母相结构既要生成表面，又要生成体相空位”这类独立分支场景。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "这里的“分支”是**数据语义**，不是同时占用多个线程：每张启用的子卡都读取同一份组输入，子卡按界面顺序逐张运行，前一张子卡的输出不会成为下一张子卡的输入。全部成功后，组把各分支输出合并为一个数据集。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "**不是做什么的：** 不是过滤器、不是生成卡、不支持组内卡片之间的串行依赖。串行依赖请放在组外顺序连接。"
-#~ msgstr ""
-#~ "**What it is not:** A Card Group is "
-#~ "neither a filter nor a generator, and it"
-#~ " does not support serial dependencies between "
-#~ "child cards. Put dependent cards in sequence"
-#~ " outside the group."
-
-#~ msgid "场景：一份母相结构要同时生成表面 slab 和体相空位"
-#~ msgstr "Scenario: Generate surface slabs and bulk vacancies from one parent structure"
-
-#~ msgid "你已经弛豫好一个 Ni 超胞，想同时做两件事：① 切不同取向的表面 slab；② 在体相内随机挖空位。两条路径互不依赖，但你不想分两次导数据。"
-#~ msgstr ""
-#~ "A relaxed Ni supercell must follow two "
-#~ "independent paths: cut surface slabs with "
-#~ "several orientations and create random bulk "
-#~ "vacancies. A Card Group avoids importing the"
-#~ " same data twice."
-
 #~ msgid "**输入：** 一个弛豫好的 Ni 4×4×4 超胞"
 #~ msgstr "**Input:** A relaxed 4×4×4 Ni supercell."
-
-#~ msgid "**目标：** 把 `Random Slab` 和 `Random Vacancy` 放入同一组，共享输入，生成两个独立分支并统一导出"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "**参数设置：**"
 #~ msgstr "**Parameters:**"
@@ -383,28 +290,8 @@ msgstr ""
 #~ "`card_list` is maintained automatically as "
 #~ "`[{RandomSlabCard...}, {RandomVacancyCard...}]`."
 
-#~ msgid "**输出：** 两个分支的并集——一批不同取向表面 slab + 一批不同空位结构，各自带独立标签"
-#~ msgstr ""
-#~ "**Output:** The union of both branches: "
-#~ "surface slabs with several orientations and a"
-#~ " set of vacancy structures, each carrying "
-#~ "its own provenance label."
-
-#~ msgid ""
-#~ "**怎么验证：** 抽查输出，确认有明确不同标签来源（`Slab(...)` vs "
-#~ "`Vac(...)`）。如果只有一种标签，检查组内卡片是否都勾选了 `check_state`。"
-#~ msgstr ""
-#~ "**How to verify it:** Inspect a sample "
-#~ "and confirm distinct labels such as "
-#~ "`Slab(...)` and `Vac(...)`. If only one label"
-#~ " appears, confirm that `check_state` is enabled"
-#~ " for every child card."
-
 #~ msgid "**用：**"
 #~ msgstr "**Use it when:**"
-
-#~ msgid "同一输入需要分别喂给多张彼此无依赖的卡片"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "多条分支需要统一启停和导出"
 #~ msgstr "Several branches should be enabled, disabled, and exported together."
@@ -412,30 +299,8 @@ msgstr ""
 #~ msgid "**不用：**"
 #~ msgstr "**Do not use it when:**"
 
-#~ msgid "卡片之间有前后依赖（A 的输出是 B 的输入）→ 放在组外串行连接"
-#~ msgstr ""
-#~ "Cards have a dependency (B consumes A's "
-#~ "output); connect them serially outside the "
-#~ "group."
-
 #~ msgid "只需要单张卡 → 不需要组"
 #~ msgstr "Only one card is needed."
-
-#~ msgid ""
-#~ "组内的子卡片列表，由界面拖入操作自动维护，不需要你手动编辑。每项是一个完整的卡片配置 dict（含 "
-#~ "`class`、`check_state`、`params` 等字段）。界面中的顺序决定实际运行顺序，但不构成数据依赖。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "关闭整个组时，组会直接把输入传给下游，不会改动各子卡原本的启用状态；重新开启组后，之前选择的分支仍会保留。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "dict 或 null，默认 null。选填：在组内末尾挂一张过滤卡（如 `FPS "
-#~ "Filter`），对所有分支合并后的结果做统一筛选。一个组只允许一张后置过滤卡；若已有过滤卡，应先关闭或移走，再拖入另一张。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "后置过滤结果就是最终组输出，也会成为下游卡片的输入。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "推荐预设"
 #~ msgstr "Recommended presets"
@@ -452,77 +317,8 @@ msgstr ""
 #~ "}\n"
 #~ msgstr ""
 
-#~ msgid "带组内过滤（先生成独立分支，再 FPS 筛）"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "{\n"
-#~ "  \"class\": \"CardGroup\",\n"
-#~ "  \"check_state\": true,\n"
-#~ "  \"card_list\": [\n"
-#~ "    {\"class\": \"RandomSlabCard\", \"check_state\": true, \"params\": {}},\n"
-#~ "    {\"class\": \"RandomVacancyCard\", \"check_state\": true, \"params\": {}}\n"
-#~ "  ],\n"
-#~ "  \"filter_card\": {\n"
-#~ "    \"class\": \"FPSFilterDataCard\",\n"
-#~ "    \"check_state\": true,\n"
-#~ "    \"params\": {\n"
-#~ "      \"nep_path\": \"path/to/nep.txt\",\n"
-#~ "      \"n_samples\": 50,\n"
-#~ "      \"min_distance\": 0.0,\n"
-#~ "      \"backend\": \"auto\",\n"
-#~ "      \"chunk_max_atoms\": 100000,\n"
-#~ "      \"strategy\": \"global\",\n"
-#~ "      \"existing_dataset_path\": \"\"\n"
-#~ "    }\n"
-#~ "  }\n"
-#~ "}\n"
-#~ msgstr ""
-
-#~ msgid "`Card Group(Atomic Perturb, Lattice Perturb)` → export：同一输入同时补充坐标噪声+晶格噪声"
-#~ msgstr ""
-#~ "`Card Group(Atomic Perturb, Lattice Perturb)` -> "
-#~ "export: add coordinate noise and lattice noise"
-#~ " as separate branches from the same input"
-
-#~ msgid "如果两条分支有严格依赖，拆回顶层串行：`Super Cell → Random Slab → Insert Defect`"
-#~ msgstr ""
-#~ "When branches have a strict dependency, use"
-#~ " a top-level serial chain: `Super Cell "
-#~ "-> Random Slab -> Insert Defect`."
-
-#~ msgid ""
-#~ "**组输出为空。** 检查组内每张子卡片是否勾选了 "
-#~ "`check_state`、各自配置是否合法。任一启用子卡失败时，组会清空已收集的部分结果，停止后续分支并把失败传给工作流。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "**分支结果混在一起分不清。** 检查每张子卡片是否产出了不同的 `Config_type` 标签。组本身不区分来源——区分靠子卡片的标签。"
-#~ msgstr ""
-#~ "**Branch results cannot be distinguished.** Confirm"
-#~ " that each child produces a distinct "
-#~ "`Config_type`. The group does not add "
-#~ "provenance; it relies on child-card labels."
-
-#~ msgid "**想在组内串行。** 不支持。组内所有卡片共享同一输入，是彼此独立的分支。串行依赖请拆到组外。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "这里的“串行依赖”是指 A 的输出作为 B 的输入。分支合并组虽然为了资源安全逐张执行子卡，但数据上仍是独立分支。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
 #~ msgid "输出标签"
 #~ msgstr "Output labels"
 
-#~ msgid "该卡片本身不写入 `Config_type` 标签。标签由组内子卡片各自产生。"
-#~ msgstr ""
-#~ "Card Group itself does not write a "
-#~ "`Config_type`; each child card supplies its "
-#~ "own label."
-
 #~ msgid "可复现性"
 #~ msgstr "Reproducibility"
-
-#~ msgid "无自身随机性。可复现性取决于组内子卡片的 seed 配置。"
-#~ msgstr ""
-#~ "Card Group has no randomness of its own."
-#~ " Reproducibility depends on the seed settings "
-#~ "of its child cards."

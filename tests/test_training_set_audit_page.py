@@ -36,6 +36,7 @@ from NepTrainKit.core.audit.result import (
     StructurePhaseEvidence,
 )
 from NepTrainKit.ui import pages as ui_pages
+from NepTrainKit.ui.pages import training_set_audit
 from NepTrainKit.ui.pages.training_set_audit import TrainingSetAuditWidget
 from NepTrainKit.ui.widgets.audit_chart import AuditChartWidget
 
@@ -839,7 +840,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             for value in (1, 5, 20, 50, 100)
         }
         self.assertGreaterEqual(len(jet_colors), 4)
-        self.assertEqual(widget._overview_heat_color(100, 100).name(), "#800000")
+        self.assertEqual(widget._overview_heat_color(100, 100).name(), "#08525a")
         self.assertEqual(widget.order_summary_values["1"].text(), "6.7% · 1")
         self.assertEqual(widget.order_summary_values["2"].text(), "46.7% · 7")
         self.assertEqual(widget.order_summary_values["3"].text(), "20.0% · 3")
@@ -1489,14 +1490,25 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             widget.cooccurrence_table.rowHeight(row)
             for row in range(widget.cooccurrence_table.rowCount())
         )
-        self.assertLessEqual(
-            abs(matrix_width - widget.cooccurrence_table.viewport().width()),
-            widget.cooccurrence_table.columnCount(),
-        )
-        self.assertLessEqual(
-            abs(matrix_height - widget.cooccurrence_table.viewport().height()),
-            widget.cooccurrence_table.rowCount(),
-        )
+        table = widget.cooccurrence_table
+        cell_sizes = {
+            *(table.columnWidth(column) for column in range(table.columnCount())),
+            *(table.rowHeight(row) for row in range(table.rowCount())),
+        }
+        if len(cell_sizes) == 1 and max(cell_sizes) <= training_set_audit._OVERVIEW_MAX_CELL:
+            # Few elements: square cells stop at the cap instead of
+            # stretching into banner-sized blocks.
+            self.assertLessEqual(matrix_width, table.viewport().width())
+            self.assertLessEqual(matrix_height, table.viewport().height())
+        else:
+            self.assertLessEqual(
+                abs(matrix_width - table.viewport().width()),
+                table.columnCount(),
+            )
+            self.assertLessEqual(
+                abs(matrix_height - table.viewport().height()),
+                table.rowCount(),
+            )
 
         widget.page_tabs.setCurrentIndex(1)
         widget.data_map_tabs.setCurrentIndex(1)

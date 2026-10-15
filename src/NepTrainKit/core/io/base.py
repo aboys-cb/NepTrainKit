@@ -20,7 +20,7 @@ import traceback
 from collections import Counter
 from functools import cached_property
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import numpy as np
 from PySide6.QtCore import QObject, QThread, Signal, Slot
 from loguru import logger
@@ -214,6 +214,7 @@ class NepData:
             if not isinstance(group_list, int):
                 group = group.repeat(group_list)
         self.group_array = DataBase(group)
+        self._has_atom_groups = not isinstance(group_list, int)
         for key, value in kwargs.items():
             setattr(self, key, value)
     @property
@@ -296,7 +297,7 @@ class NepData:
             unit, scale = "(m.a.u./atom)", 1000
         elif self.title == "dipole":
             unit, scale = "(m.a.u./atom)", 1000
-        elif self.title == "spin":
+        elif self.title in ("spin", "mforce"):
             unit, scale = "meV/μB", 1000
         elif self.title == "bec":
             unit, scale = "e", 1
@@ -1153,14 +1154,60 @@ class ResultData(DistributionAnalysisMixin, QObject):
         if chain is not None:
             return {chain}
         refs: set[tuple[str, ...]] = set()
-        for child in ast.iter_child_nodes(node):
+        children = node.args if isinstance(node, ast.Call) else ast.iter_child_nodes(node)
+        for child in children:
             refs.update(ResultData._expression_reference_chains(child))
         return refs
+    @staticmethod
+    def _validate_expression_element_usage(node: ast.AST, in_quantifier: bool = False) -> None:
+        """Keep the element field categorical and scoped to atom predicates."""
+        chain = ResultData._expression_ast_chain(node)
+        if chain is not None:
+            if tuple(part.lower() for part in chain[:2]) == ("atomic", "element"):
+                raise ValueError("atomic.element requires == or != with a quoted element symbol inside any/all.")
+            return
+        if isinstance(node, ast.Compare):
+            operands = [node.left, *node.comparators]
+            is_element = [
+                tuple(part.lower() for part in (ResultData._expression_ast_chain(value) or ()))
+                == ("atomic", "element")
+                for value in operands
+            ]
+            for index, op in enumerate(node.ops):
+                if not (is_element[index] or is_element[index + 1]):
+                    continue
+                if not in_quantifier or not isinstance(op, (ast.Eq, ast.NotEq)):
+                    raise ValueError("atomic.element requires == or != with a quoted element symbol inside any/all.")
+                for position in (index, index + 1):
+                    if is_element[position]:
+                        continue
+                    value = operands[position]
+                    if not isinstance(value, ast.Constant) or not isinstance(value.value, str):
+                        raise ValueError("atomic.element must be compared with a quoted element symbol, for example 'Fe'.")
+                    if value.value not in atomic_numbers:
+                        raise ValueError(f"Unknown element symbol: {value.value}. Use standard capitalization, for example 'Fe'.")
+            for value, categorical in zip(operands, is_element):
+                if not categorical:
+                    ResultData._validate_expression_element_usage(value, in_quantifier)
+            return
+        children = node.args if isinstance(node, ast.Call) else ast.iter_child_nodes(node)
+        for child in children:
+            ResultData._validate_expression_element_usage(child, in_quantifier or isinstance(node, ast.Call))
     @staticmethod
     def _is_allowed_expression_node(node: ast.AST) -> bool:
         chain = ResultData._expression_ast_chain(node)
         if chain is not None:
             return True
+        if isinstance(node, ast.Call):
+            return (
+                isinstance(node.func, ast.Name)
+                and node.func.id in {"any", "all"}
+                and len(node.args) == 1
+                and not node.keywords
+                and not any(isinstance(child, ast.Call) for child in ast.walk(node.args[0]))
+                and ResultData._is_expression_predicate(node.args[0])
+                and ResultData._is_allowed_expression_node(node.args[0])
+            )
         allowed_nodes = (
             ast.Expression,
             ast.BoolOp,
@@ -1206,6 +1253,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
             return root in {"has_energy", "has_forces", "has_virial", "has_bec"} or (
                 root == "has" and len(chain) == 2
             )
+        if isinstance(node, ast.Call):
+            return ResultData._is_allowed_expression_node(node)
         if isinstance(node, ast.Compare):
             return True
         if isinstance(node, ast.BoolOp):
@@ -1329,6 +1378,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 add_candidate(f"atomic.{alias}.{comp}", value_count)
             add_candidate(f"atomic.{alias}.norm", value_count)
 
+        add_candidate("atomic.element", active_count)
         return dict(StructureData._truncate_counter(cache, max_items)[0])
     def _build_expression_builtin_values(
         self,
@@ -1491,6 +1541,16 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 return "component", idx
         raise ValueError(f"Unknown component '{token}' for field '{label}'.")
     @staticmethod
+    def _expression_component_values(
+        matrix: npt.NDArray[np.float64],
+        selector: tuple[str, int | None],
+    ) -> npt.NDArray[np.float64]:
+        mode, comp_index = selector
+        if mode == "norm":
+            return np.linalg.norm(matrix, axis=1)
+        assert comp_index is not None
+        return matrix[:, comp_index]
+    @staticmethod
     def _apply_expression_reduction(
         matrix: npt.NDArray[np.float64],
         selector: tuple[str, int | None],
@@ -1498,12 +1558,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
     ) -> float:
         if matrix.size == 0:
             return float("nan")
-        mode, comp_index = selector
-        if mode == "norm":
-            values = np.linalg.norm(matrix, axis=1)
-        else:
-            assert comp_index is not None
-            values = matrix[:, comp_index]
+        values = ResultData._expression_component_values(matrix, selector)
         if values.size == 0:
             return float("nan")
         if aggregate_atomwise:
@@ -1516,14 +1571,15 @@ class ResultData(DistributionAnalysisMixin, QObject):
         component_token: str | None,
         view: str,
         active_indices: npt.NDArray[np.int64],
-    ) -> npt.NDArray[np.float64]:
+        atomwise: bool = False,
+    ) -> npt.NDArray[np.float64] | dict[int, npt.NDArray[np.float64]]:
         try:
             rows = np.asarray(dataset.now_data)
             row_sids = np.asarray(dataset.group_array.now_data, dtype=np.int64).reshape(-1)
         except Exception as exc:
             raise ValueError(f"Failed to read dataset '{spec.label or spec.key}'.") from exc
         if rows.size == 0 or row_sids.size == 0:
-            return np.full(active_indices.shape[0], np.nan, dtype=np.float64)
+            return {} if atomwise and spec.domain == FieldDomain.ATOM else np.full(active_indices.shape[0], np.nan, dtype=np.float64)
         if rows.ndim == 1:
             rows = rows.reshape(-1, 1)
         limit = min(rows.shape[0], row_sids.shape[0])
@@ -1531,7 +1587,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         row_sids = row_sids[:limit]
         scope_mask = np.isin(row_sids, active_indices)
         if not np.any(scope_mask):
-            return np.full(active_indices.shape[0], np.nan, dtype=np.float64)
+            return {} if atomwise and spec.domain == FieldDomain.ATOM else np.full(active_indices.shape[0], np.nan, dtype=np.float64)
         rows = rows[scope_mask]
         row_sids = row_sids[scope_mask]
         cols = int(getattr(dataset, "cols", 0) or 0)
@@ -1560,6 +1616,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
             sid = int(sid_raw)
             if sid in sid_to_pos:
                 grouped.setdefault(sid, []).append(ridx)
+        if atomwise and spec.domain == FieldDomain.ATOM:
+            return {
+                sid: self._expression_component_values(values[indices], selector)
+                for sid, indices in grouped.items()
+            }
         out = np.full(active_indices.shape[0], np.nan, dtype=np.float64)
         aggregate_atomwise = spec.domain == FieldDomain.ATOM
         for sid, indices in grouped.items():
@@ -1571,10 +1632,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
         spec: FieldSpec,
         component_token: str | None,
         active_indices: npt.NDArray[np.int64],
-    ) -> npt.NDArray[np.float64]:
+        atomwise: bool = False,
+    ) -> npt.NDArray[np.float64] | dict[int, npt.NDArray[np.float64]]:
         components = list(spec.components)
         selector = self._resolve_expression_component(component_token, components, f"atomic.{prop_name}")
-        out = np.full(active_indices.shape[0], np.nan, dtype=np.float64)
+        out = {} if atomwise else np.full(active_indices.shape[0], np.nan, dtype=np.float64)
         for pos, sid in enumerate(active_indices.tolist()):
             structure = self.structure.all_data[int(sid)]
             props = getattr(structure, "atomic_properties", {}) or {}
@@ -1586,7 +1648,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 continue
             if arr.size == 0:
                 continue
-            out[pos] = self._apply_expression_reduction(arr.reshape(arr.shape[0], -1), selector, True)
+            matrix = arr.reshape(arr.shape[0], -1)
+            if atomwise:
+                out[int(sid)] = self._expression_component_values(matrix, selector)
+            else:
+                out[pos] = self._apply_expression_reduction(matrix, selector, True)
         return out
     def _resolve_expression_reference(
         self,
@@ -1596,7 +1662,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
         dataset_fields: Mapping[str, tuple[FieldSpec, Any]],
         atomic_fields: Mapping[str, tuple[FieldSpec, str]],
         active_indices: npt.NDArray[np.int64],
-    ) -> npt.NDArray[Any]:
+        atomwise: bool = False,
+    ) -> npt.NDArray[Any] | dict[int, npt.NDArray[Any]]:
         if not chain:
             raise ValueError("Empty expression reference.")
         parts = [str(raw) for raw in chain]
@@ -1613,6 +1680,13 @@ class ResultData(DistributionAnalysisMixin, QObject):
             if len(parts) < 2:
                 raise ValueError("Atomic expression fields must use 'atomic.<name>'.")
             alias = self._expression_alias(parts[1])
+            if alias == "element":
+                if not atomwise or len(parts) != 2:
+                    raise ValueError("atomic.element is only available inside any/all and does not support suffixes.")
+                return {
+                    int(sid): np.asarray(self.structure.all_data[int(sid)].elements, dtype=str).reshape(-1)
+                    for sid in active_indices
+                }
             entry = atomic_fields.get(alias)
             if entry is None:
                 raise ValueError(f"Unknown atomic field: {parts[1]}")
@@ -1623,7 +1697,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
             component_token = tail[0] if tail else None
             if len(tail) > 1:
                 raise ValueError(f"Unsupported suffix for atomic field 'atomic.{alias}'.")
-            return self._atomic_expression_values(prop_name, spec, component_token, active_indices)
+            return self._atomic_expression_values(prop_name, spec, component_token, active_indices, atomwise)
         if base in builtin_values:
             if len(parts) == 1:
                 return builtin_values[base]
@@ -1633,7 +1707,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 component_token = tail[0] if tail else None
                 if len(tail) > 1:
                     raise ValueError(f"Unsupported suffix for field '{base}'.")
-                return self._dataset_expression_values(dataset, spec, component_token, parts[1].lower(), active_indices)
+                return self._dataset_expression_values(dataset, spec, component_token, parts[1].lower(), active_indices, atomwise)
             raise ValueError(f"Builtin field '{base}' does not support attribute '{parts[1]}'.")
         entry = dataset_fields.get(base)
         if entry is not None:
@@ -1648,8 +1722,77 @@ class ResultData(DistributionAnalysisMixin, QObject):
             component_token = tail[0] if tail else None
             if len(tail) > 1:
                 raise ValueError(f"Unsupported suffix for field '{base}'.")
-            return self._dataset_expression_values(dataset, spec, component_token, view, active_indices)
+            return self._dataset_expression_values(dataset, spec, component_token, view, active_indices, atomwise)
         raise ValueError(f"Unknown field in expression: {parts[0]}")
+    def _eval_expression_quantifier(
+        self,
+        node: ast.Call,
+        builtin_values: Mapping[str, npt.NDArray[Any]],
+        element_values: Mapping[str, Mapping[str, npt.NDArray[Any]]],
+        dataset_fields: Mapping[str, tuple[FieldSpec, Any]],
+        atomic_fields: Mapping[str, tuple[FieldSpec, str]],
+        active_indices: npt.NDArray[np.int64],
+    ) -> npt.NDArray[np.bool_]:
+        """Evaluate a predicate per atom before reducing it to a structure mask."""
+        fields = dict(dataset_fields)
+        # Plotting can replace vectors with structure summaries. Quantifiers
+        # must use the original rows, without changing unquantified expressions.
+        raw_attributes = {
+            "force": ("_force_vector_dataset",),
+            "mforce": ("_mforce_vector_dataset", "_spin_force_vector_dataset"),
+        }
+        for alias, (spec, dataset) in fields.items():
+            for attr in raw_attributes.get(alias, ()):
+                raw = getattr(self, attr, None)
+                if raw is not None:
+                    dataset = raw
+                    spec = replace(spec, components=self._component_names(dataset.cols))
+                    break
+            if getattr(dataset, "_has_atom_groups", False):
+                spec = replace(spec, domain=FieldDomain.ATOM)
+            fields[alias] = (spec, dataset)
+
+        references = self._expression_reference_chains(node.args[0])
+        resolved = {
+            chain: self._resolve_expression_reference(
+                chain, builtin_values, element_values, fields, atomic_fields, active_indices, atomwise=True
+            )
+            for chain in references
+        }
+        atomic_refs = {chain for chain, values in resolved.items() if isinstance(values, dict)}
+        if not atomic_refs:
+            raise ValueError("any/all requires at least one atomic field.")
+        sources = {
+            ("atomic", self._expression_alias(chain[1]))
+            if chain[0].lower() == "atomic" else ("dataset", id(fields[chain[0].lower()][1]))
+            for chain in atomic_refs
+        }
+        result = np.zeros(active_indices.size, dtype=bool)
+        for pos, sid in enumerate(active_indices.tolist()):
+            values = {
+                chain: field.get(sid, np.empty(0)) if isinstance(field, dict) else field[pos]
+                for chain, field in resolved.items()
+            }
+            lengths = {values[chain].size for chain in atomic_refs}
+            # Missing fields and empty atom sets never satisfy either quantifier.
+            if 0 in lengths:
+                continue
+            if len(lengths) != 1 or (
+                len(sources) > 1 and next(iter(lengths)) != len(self.structure.all_data[sid])
+            ):
+                raise ValueError("Atomic fields in any/all must refer to the same atoms; row counts do not align.")
+            valid = np.ones(next(iter(lengths)), dtype=bool)
+            for chain, value in values.items():
+                if tuple(part.lower() for part in chain) != ("atomic", "element"):
+                    valid &= np.isfinite(value)
+            with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
+                predicate = self._eval_expression_ast(
+                    node.args[0], builtin_values, element_values, fields, atomic_fields, active_indices, values
+                )
+            matches = np.asarray(predicate, dtype=bool) & valid
+            result[pos] = bool(np.any(matches) if node.func.id == "any" else np.all(matches))
+        return result
+
     def _eval_expression_ast(
         self,
         node: ast.AST,
@@ -1658,15 +1801,22 @@ class ResultData(DistributionAnalysisMixin, QObject):
         dataset_fields: Mapping[str, tuple[FieldSpec, Any]],
         atomic_fields: Mapping[str, tuple[FieldSpec, str]],
         active_indices: npt.NDArray[np.int64],
+        reference_values: Mapping[tuple[str, ...], Any] | None = None,
     ) -> Any:
         chain = self._expression_ast_chain(node)
         if chain is not None:
+            if reference_values is not None:
+                return reference_values[chain]
             return self._resolve_expression_reference(chain, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+        if isinstance(node, ast.Call):
+            return self._eval_expression_quantifier(
+                node, builtin_values, element_values, dataset_fields, atomic_fields, active_indices
+            )
         if isinstance(node, ast.Constant):
             return node.value
         if isinstance(node, ast.BoolOp):
             values = [
-                self._eval_expression_ast(v, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+                self._eval_expression_ast(v, builtin_values, element_values, dataset_fields, atomic_fields, active_indices, reference_values)
                 for v in node.values
             ]
             if isinstance(node.op, ast.And):
@@ -1679,7 +1829,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 result = np.logical_or(result, np.asarray(value, dtype=bool))
             return result
         if isinstance(node, ast.UnaryOp):
-            operand = self._eval_expression_ast(node.operand, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+            operand = self._eval_expression_ast(node.operand, builtin_values, element_values, dataset_fields, atomic_fields, active_indices, reference_values)
             if isinstance(node.op, ast.Not):
                 return np.logical_not(np.asarray(operand, dtype=bool))
             if isinstance(node.op, ast.UAdd):
@@ -1687,8 +1837,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
             if isinstance(node.op, ast.USub):
                 return -operand
         if isinstance(node, ast.BinOp):
-            left = self._eval_expression_ast(node.left, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
-            right = self._eval_expression_ast(node.right, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+            left = self._eval_expression_ast(node.left, builtin_values, element_values, dataset_fields, atomic_fields, active_indices, reference_values)
+            right = self._eval_expression_ast(node.right, builtin_values, element_values, dataset_fields, atomic_fields, active_indices, reference_values)
             if isinstance(node.op, ast.Add):
                 return left + right
             if isinstance(node.op, ast.Sub):
@@ -1698,10 +1848,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
             if isinstance(node.op, ast.Div):
                 return left / right
         if isinstance(node, ast.Compare):
-            left = self._eval_expression_ast(node.left, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+            left = self._eval_expression_ast(node.left, builtin_values, element_values, dataset_fields, atomic_fields, active_indices, reference_values)
             result = None
             for op, comparator in zip(node.ops, node.comparators):
-                right = self._eval_expression_ast(comparator, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+                right = self._eval_expression_ast(comparator, builtin_values, element_values, dataset_fields, atomic_fields, active_indices, reference_values)
                 if isinstance(op, ast.Eq):
                     current = left == right
                 elif isinstance(op, ast.NotEq):
@@ -1730,6 +1880,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
             raise ValueError("Invalid expression syntax.") from exc
         if not self._is_allowed_expression_node(parsed):
             raise ValueError("Expression contains unsupported syntax.")
+        self._validate_expression_element_usage(parsed.body)
         references = self._expression_reference_chains(parsed.body)
         if not references:
             raise ValueError("Expression must reference at least one structure field.")
@@ -2050,6 +2201,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
     def clear_selection_history(self) -> None:
         """Drop stored selection undo states."""
         self._selection_history.clear()
+    def clear_selection(self) -> bool:
+        """Empty the selection and its undo history, notifying listeners."""
+        changed = self._set_selection(set(), record=False)
+        self.clear_selection_history()
+        return changed
     def undo_selection(self) -> bool:
         """Restore the previous selection state."""
         while self._selection_history:

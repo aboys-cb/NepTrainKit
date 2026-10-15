@@ -89,6 +89,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
 
     def init_actions(self):
         """Populate toolbar actions for interacting with NEP plots."""
+        # View and pointer modes.
         self.addButton(self.tr("Reset View"), QIcon(":/images/src/images/init.svg"), self.resetSignal)
         pan_action = self.addButton(
             self.tr("Pan View"),
@@ -96,6 +97,20 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.pan,
             True,
         )
+        pen_action = self.addButton(
+            self.tr("Mouse Selection"),
+            QIcon(":/images/src/images/pen.svg"),
+            self.pen,
+            True,
+        )
+        self.action_group = QActionGroup(self)
+        self.action_group.setExclusive(True)
+        self.action_group.addAction(pan_action)
+        self.action_group.addAction(pen_action)
+        self.action_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
+
+        # Rule-based selection.
+        self.addSeparator()
         self.addButton(
             self.tr("Select by Index"),
             QIcon(":/images/src/images/index.svg"),
@@ -112,32 +127,19 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             QIcon(":/images/src/images/supercell.svg"),
             self.latticeRangeSignal,
         )
-        find_max_action = self.addButton(
+        self.addButton(
             self.tr("Find Max Error Point"),
             QIcon(":/images/src/images/find_max.svg"),
             self.findMaxSignal,
             action_key="find_max_error",
         )
-        sparse_action = self.addButton(
+        self.addButton(
             self.tr("Sparse samples"),
             QIcon(":/images/src/images/sparse.svg"),
             self.sparseSignal,
             action_key="sparse_samples",
         )
-
-        pen_action = self.addButton(
-            self.tr("Mouse Selection"),
-            QIcon(":/images/src/images/pen.svg"),
-            self.pen,
-            True,
-        )
-        self.action_group = QActionGroup(self)
-        self.action_group.setExclusive(True)
-        self.action_group.addAction(pan_action)
-        self.action_group.addAction(pen_action)
-        self.action_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
-
-        discovery_action = self.addButton(
+        self.addButton(
             self.tr("Find non-physical structures"),
             QIcon(":/images/src/images/discovery.svg"),
             self.discoverySignal,
@@ -149,27 +151,31 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.forceBalanceSignal,
             action_key="check_net_force",
         )
-        inverse_action = self.addButton(
+
+        # Selection and deletion edits.
+        self.addSeparator()
+        self.addButton(
             self.tr("Invert selection"),
             QIcon(":/images/src/images/inverse.svg"),
             self.inverseSignal,
         )
-        undo_selection_action = self.addButton(
+        self.addButton(
             self.tr("Undo selection"),
             QIcon(":/images/src/images/undo_selection.svg"),
             self.undoSelectionSignal,
         )
-        revoke_action = self.addButton(
+        self.addButton(
             self.tr("Undo delete"),
             QIcon(":/images/src/images/undo_delete.svg"),
             self.revokeSignal,
         )
-        delete_action = self.addButton(
+        self.addButton(
             self.tr("Delete selected items"),
             QIcon(":/images/src/images/delete.svg"),
             self.deleteSignal,
         )
 
+        # Dataset-level analysis and export.
         self.addSeparator()
         self.addButton(
             self.tr("Training Set Audit"),
@@ -183,11 +189,13 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.editInfoSignal,
             action_key="edit_info",
         )
-        export_action = self.addButton(
+        self.addButton(
             self.tr("Export structure descriptor"),
             QIcon(":/images/src/images/export.svg"),
             self.exportSignal,
         )
+
+        # Energy corrections.
         self.addSeparator()
         self.addButton(
             self.tr("Energy baseline shift"),

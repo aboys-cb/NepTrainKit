@@ -12,6 +12,8 @@ from vispy.util import keys
 from NepTrainKit.config import Config
 from NepTrainKit.core.structure import table_info
 from NepTrainKit.ui.canvas.structure_view import structure_view_state
+from NepTrainKit.core.atom_inspection import pick_front_atom
+from NepTrainKit.ui.canvas.atom_hover import AtomHoverController, projected_atom_discs
 import numpy as np
 from vispy.util.transforms import rotate
 from vispy import app, scene, visuals
@@ -23,6 +25,8 @@ from vispy.color import Color, get_colormap
 AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS = 500
 
 _MAX_TABLE_ATOMIC_NUMBER = max(int(number) for number in table_info)
+# Theme accent, translucent: distinct from the yellow short-contact halos.
+_HOVER_HALO_COLOR = (0.0, 0.624, 0.667, 0.45)
 _ATOM_RADIUS_LOOKUP = np.full(
     _MAX_TABLE_ATOMIC_NUMBER + 1,
     70.0 / 150.0,
@@ -491,6 +495,8 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.events.mouse_move.connect(self._on_mouse_move)
         self.events.resize.connect(self._on_resize)
         self.events.mouse_double_click.connect(self._on_mouse_double_click)
+        self._hover_halo = None
+        self._atom_hover = AtomHoverController(self.native, self)
 
     def _install_camera_callbacks(self):
         setter = getattr(self.view.camera, "set_rotation_center_changed_callback", None)
@@ -553,6 +559,45 @@ class StructurePlotWidget(scene.SceneCanvas):
         if dist2[atom_index] > float(max_distance) ** 2:
             return None
         return atom_index
+
+    def atom_index_at(self, pos):
+        """Return the front-most atom whose rendered sphere covers ``pos``."""
+        structure = getattr(self, "structure", None)
+        sizes = self._atom_sizes
+        if structure is None or sizes is None:
+            return None
+        positions = np.asarray(structure.positions, dtype=np.float64).reshape(-1, 3)
+        sizes = np.asarray(sizes, dtype=np.float64).reshape(-1)
+        if positions.shape[0] == 0 or sizes.shape[0] != positions.shape[0]:
+            return None
+        transform = self.view.scene.node_transform(self.scene)
+        clip = np.asarray(transform.map(positions), dtype=np.float64)
+        offsets = [
+            np.asarray(
+                transform.map(positions + sizes[:, None] * axis), dtype=np.float64
+            )
+            for axis in np.eye(3)
+        ]
+        screen, depth, radius = projected_atom_discs(
+            clip, offsets, lambda points: points[:, :2]
+        )
+        return pick_front_atom(screen, depth, radius, pos)
+
+    def set_hover_atom(self, atom_index):
+        """Show a translucent halo around the hovered atom, or remove it."""
+        if self._hover_halo is not None:
+            self._hover_halo.parent = None
+            self._hover_halo = None
+        if atom_index is not None and 0 <= atom_index < len(self.atom_items):
+            atom = self.atom_items[atom_index]
+            vertices = self.sphere_meshdata.get_vertices() * atom['size'] * 1.3 + atom['position']
+            self._hover_halo = Mesh(
+                meshdata=MeshData(vertices=vertices, faces=self.sphere_meshdata.get_faces()),
+                color=_HOVER_HALO_COLOR,
+                shading='smooth',
+                parent=self.view.scene,
+            )
+        self.update()
 
     def _rotation_center_marker_size(self):
         structure = getattr(self, "structure", None)
@@ -1195,6 +1240,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         structure : Any
             Structure object with ``cell`` and ``positions`` attributes.
         """
+        self._atom_hover.clear()
         if structure is not self.structure:
             clear_center = getattr(self.view.camera, "clear_rotation_center", None)
             if clear_center is not None:

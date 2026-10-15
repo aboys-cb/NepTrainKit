@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 16:56+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,50 +20,55 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:3
-#: c5f8a812013b47e2bff4f4237324b4eb
+#: c25a1eeb181f4cdb8606286f8781ff89
 msgid "周期溶剂盒（Solvent Box Fill）"
 msgstr "Solvent Box Fill"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:5
-#: d3c79b024859461cadf93cec59a8a91e
+#: e0b5dd0a8026486e884a506634eabfc0
 msgid "**分类：** 分子与溶剂"
 msgstr "**Category:** Molecules and Solvation"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:7
-#: bc1cf293479749b884eefe46f7dce940
+#: 94d3696e2b7d4ed098079ce04e699499
 msgid "功能说明"
 msgstr "Purpose"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:9
-#: f660c4e25ca64235bdeed13c74a3eef7
+#: 8c4d4e898d9a42b6b6e61d6fa008f083
+#
 msgid ""
-"`Solvent Box Fill` 保留宿主结构，并在已有 cell 的整个体积内随机插入同一种溶剂分子。输入可以没有原子，但必须有有限、非奇异的 "
+"`周期溶剂盒` 保留宿主结构，并在已有 cell 的整个体积内随机插入同一种溶剂分子。输入可以没有原子，但必须有有限、非奇异的 "
 "cell，并且至少开启一个周期方向。"
 msgstr ""
-"`Solvent Box Fill` preserves the host structure and randomly inserts molecules of one"
-" solvent species throughout the volume of its existing cell. The input may contain no"
-" atoms, but it must have a finite, nonsingular cell with at least one periodic "
-"direction enabled."
+"`Solvent Box Fill` preserves the host structure and randomly inserts "
+"molecules of one solvent species throughout the volume of its existing "
+"cell. The input may contain no atoms, but it must have a finite, "
+"nonsingular cell with at least one periodic direction enabled."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:11
-#: 6979657d657640e6a9ef060d26ba8444
-msgid "它用于补充整盒溶剂环境；若目标是围绕离子或指定原子构造第一溶剂壳，应使用 `Local Solvation`。"
-msgstr ""
-"Use it to add full-box solvent environments. To construct a first solvent shell "
-"around ions or specified atoms, use `Local Solvation` instead."
+#: dc5cad91882b4086bc87ae453eb2459f
+#
+msgid "它用于补充整盒溶剂环境；若目标是围绕离子或指定原子构造第一溶剂壳，应使用 `局部溶剂壳`。"
+msgstr "Use it to add full-box solvent environments. To construct a first solvent shell around ions or specified atoms, use `Solvent Shell` instead."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:13
-#: e988872ee743449698b43cc712205678
+#: 56394820e726484fa187bc975e2bb848
 msgid "原理与公式"
 msgstr "Principles and Equations"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:15
-#: be76364992ee41de9f16971d0443616a
-msgid "`固定分子数`直接使用用户给定数量。`按密度估算`根据晶胞体积 $V$、目标密度 $\\rho$、 填充比例 $p$ 和单个溶剂分子摩尔质量 $M$ 计算"
-msgstr "`Fixed molecule count` uses the requested count directly. `Estimate from density` computes it from cell volume $V$, target density $\\rho$, fill fraction $p$, and the molar mass $M$ of one solvent molecule:"
+#: c02672a25c2f47ce9b84ab8b415fc5a8
+msgid ""
+"`固定分子数`直接使用用户给定数量。`按密度估算`根据晶胞体积 $V$、目标密度 $\\rho$、 填充比例 $p$ 和单个溶剂分子摩尔质量 "
+"$M$ 计算"
+msgstr ""
+"`Fixed molecule count` uses the requested count directly. `Estimate from "
+"density` computes it from cell volume $V$, target density $\\rho$, fill "
+"fraction $p$, and the molar mass $M$ of one solvent molecule:"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:18
-#: d91f5e1a04394c9480f589a5a23b0700
+#: f618efdf175943f287a646637b156ac3
 msgid ""
 "\n"
 "N_{\\mathrm{solv}}=\n"
@@ -72,22 +77,24 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:24
-#: d73304d64f374e1d82fee240595bc496
-msgid "其中 $V$ 用 Å³、$\\rho$ 用 g/cm³、$M$ 用 g/mol。这里使用完整 cell 体积，不扣除宿主、已有溶剂或真空层占据的体积。"
+#: 5d708f06c8a94b40be27ad8de3f1de8a
+msgid ""
+"其中 $V$ 用 Å³、$\\rho$ 用 g/cm³、$M$ 用 g/mol。这里使用完整 cell "
+"体积，不扣除宿主、已有溶剂或真空层占据的体积。"
 msgstr ""
-"Here, $V$ is in Å³, $\\rho$ in g/cm³, and $M$ in g/mol. The calculation uses the full"
-" cell volume without subtracting the volume occupied by the host, existing solvent, "
-"or vacuum regions."
+"Here, $V$ is in Å³, $\\rho$ in g/cm³, and $M$ in g/mol. The calculation "
+"uses the full cell volume without subtracting the volume occupied by the "
+"host, existing solvent, or vacuum regions."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:26
-#: 8538de00d2234b27818c2ac37ec5c089
+#: 52bdec1c19d04b839687959cce562d84
 msgid "每次试放会随机选择分子中心和整体取向。原子对 $i,j$ 的接受条件是"
 msgstr ""
-"Each placement attempt samples a random molecular center and overall orientation. An "
-"atom pair $i,j$ is accepted when"
+"Each placement attempt samples a random molecular center and overall "
+"orientation. An atom pair $i,j$ is accepted when"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:28
-#: 6dfdbf35f5b442b6893b93efbeb15988
+#: 86acbcbf1bb344bd8b9959891783b483
 msgid ""
 "\n"
 "d_{ij}^{\\mathrm{MIC}} \\ge\n"
@@ -98,416 +105,445 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:36
-#: f27f20e1e0f2455cae2849e0de9d7fa3
+#: 47654ebffa144c819c4748e21d0950fe
 msgid ""
 "其中 $d_{ij}^{\\mathrm{MIC}}$ 是只沿已开启周期方向计算的最小镜像距离，$R_i$、$R_j$ 是元素碰撞半径，$s$ "
 "是间距倍率。统一最小距离和元素半径规则是**二选一**，不会叠加。"
 msgstr ""
-"Here, $d_{ij}^{\\mathrm{MIC}}$ is the minimum-image distance evaluated only along "
-"enabled periodic directions, $R_i$ and $R_j$ are element collision radii, and $s$ is "
-"the spacing factor. The global minimum-distance rule and the element-radius rule are "
-"**mutually exclusive**; they are not combined."
+"Here, $d_{ij}^{\\mathrm{MIC}}$ is the minimum-image distance evaluated "
+"only along enabled periodic directions, $R_i$ and $R_j$ are element "
+"collision radii, and $s$ is the spacing factor. The global minimum-"
+"distance rule and the element-radius rule are **mutually exclusive**; "
+"they are not combined."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:38
-#: 0c8befa28eff4e19b323712a7fec6fa3
+#: 05bf65dfdb794028bdc97012ed9456e0
 msgid "卡片只生成未经平衡的初始结构；密度模式中的 $\\rho$ 是数量估算输入，不代表输出已达到液体平衡密度。"
 msgstr ""
-"The card produces un-equilibrated starting structures only. In density mode, $\\rho$ "
-"is an input for estimating molecule count; it does not mean the output has reached "
-"the equilibrium liquid density."
+"The card produces un-equilibrated starting structures only. In density "
+"mode, $\\rho$ is an input for estimating molecule count; it does not mean"
+" the output has reached the equilibrium liquid density."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:40
-#: 0ca17b35f7bd4361ab778e1fc6c0910e
+#: 5ccead903b5645f9bad8fcd6a4374a83
 msgid "操作示例"
 msgstr "Example"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:42
-#: 80d1e1e6ad8e40df917e7e40f515e22d
+#: 6c29e443be0b4748ac55d49c9cd11c47
 msgid "场景：模型只见过真空表面，没有见过周期溶剂盒"
 msgstr "Scenario: The model has seen vacuum surfaces but no periodic solvent box"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:44
-#: dd1b5ae9ee1d4af4957aac3af1c1dd3d
+#: 93404f2c5da4462e87f02bf9b35a7bfd
+#
 msgid ""
-"你要训练一个界面或溶液体系的 NEP，但已有训练集主要是干表面和单分子吸附构型。先准备带 cell 的周期输入结构，用 `Solvent Box Fill` "
+"你要训练一个界面或溶液体系的 NEP，但已有训练集主要是干表面和单分子吸附构型。先准备带 cell 的周期输入结构，用 `周期溶剂盒` "
 "插入固定数量或按密度估算的水分子，生成一批整盒初态。"
 msgstr ""
-"For an interface or solution NEP whose data are mostly dry surfaces and single "
-"adsorbates, begin from a periodic cell and insert a fixed or density-estimated "
-"solvent count to propose full-box initial states."
+"For an interface or solution NEP whose data are mostly dry surfaces and "
+"single adsorbates, begin from a periodic cell and insert a fixed or "
+"density-estimated solvent count to propose full-box initial states."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:46
-#: dd8579c719264332843818f6e5a5277e
+#: 498dccbaece04399aa954f9151e05cbd
 msgid ""
 "参数设置：`count_mode=\"fixed\"`，`solvent_count=200`，`sampling_mode=\"general\"`，`min_distance=0.8`，`max_attempts_per_solvent=500`，打开"
 " `使用随机种子`（`use_seed`）。"
 msgstr ""
-"Settings: `count_mode=\"fixed\"`, `solvent_count=200`, `sampling_mode=\"general\"`, "
-"`min_distance=0.8`, and `max_attempts_per_solvent=500`; enable `Use random seed` "
-"(`use_seed`)."
+"Settings: `count_mode=\"fixed\"`, `solvent_count=200`, "
+"`sampling_mode=\"general\"`, `min_distance=0.8`, and "
+"`max_attempts_per_solvent=500`; enable `Use random seed` (`use_seed`)."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:48
-#: c6922ea6ef90426c91e5654f2d432bb5
+#: 3b6a1e411c974c5ea05d67738c5eb6f6
 msgid "检查输出时重点看是否插满、是否存在明显短接触、溶剂是否都包回 cell 内，以及后续预松弛是否大面积崩坏。"
 msgstr ""
-"Check whether the target count was reached, short contacts exist, molecules lie "
-"within the periodic cell, and pre-relaxation remains stable."
+"Check whether the target count was reached, short contacts exist, "
+"molecules lie within the periodic cell, and pre-relaxation remains "
+"stable."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:50
-#: d566d867b6654c7eb947530655544f77
+#: f6a6290364484a5185ed277dd25719d0
 msgid "参数说明"
 msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:52
-#: da50acb171674170a1fd63bc84586702
+#: 3b773780439d4d728e3bccc0bfa85a55
 msgid "溶剂输入"
 msgstr "Solvent input"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:54
-#: b7350068561347e1ba31a6ca734081e6
+#: 760983b5ebc143c6baf9397a00d413d3
 msgid "溶剂 XYZ（solvent_xyz）"
 msgstr "solvent_xyz"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:56
-#: 1391adb51bbe476aa7dfab841a9920b7
+#: 6bcf1c5d352647ed9acd2e45e8b8d95b
 msgid "`str`，默认是一个三原子水分子 XYZ。这里保存溶剂分子文本，而不是文件路径。"
-msgstr "`str`, default a three-atom water XYZ block. Stores molecule text, not a path."
+msgstr ""
+"`str`, default a three-atom water XYZ block. Stores molecule text, not a "
+"path."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:58
-#: fe74f1e5a4804c3582bccbfa110f6728
+#: 67eb216ba96b40fa841215a401330264
 msgid "每个输入的独立输出数（structures）"
 msgstr "structures"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:60
-#: 2dd3f2ba75a44353925040761843ec0e
+#: 261440620ce34b1bb6d372d76417c036
 msgid "`int`，默认 1。每个输入结构生成多少个独立填充版本。"
 msgstr "`int`, default `1`. Independent box-fill variants per input."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:62
-#: e82b3eb9ee564604924c4a546347ae80
+#: 8aa30724adb04cf58999cb271671eb33
 msgid "数量控制"
 msgstr "Count control"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:64
-#: d7a29174fddf40a68050370283d45d56
+#: d875bf378d1a4213a887a77ddff21e9d
 msgid "目标用量（count_mode）"
 msgstr "count_mode"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:66
-#: cc9c2bf4560a4c8a876e4c6338afa50a
+#: e421777f77f1475dbef5f4939fc0667d
 msgid ""
 "`str`，默认 `density`。可选 `fixed`、`按密度`（`density`）。`fixed` "
 "直接使用目标分子数；`按密度`（`density`）根据**完整 cell 体积**、溶剂分子质量、目标密度和数量乘数估算一个名义分子数。"
 msgstr ""
-"`str`, default `density`. Available values are `fixed` and `By density` (`density`). "
-"`fixed` uses the target molecule count directly. `By density` estimates a nominal "
-"molecule count from the **full cell volume**, solvent molecular mass, target density,"
-" and count multiplier."
+"`str`, default `density`. Available values are `fixed` and `By density` "
+"(`density`). `fixed` uses the target molecule count directly. `By "
+"density` estimates a nominal molecule count from the **full cell "
+"volume**, solvent molecular mass, target density, and count multiplier."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:68
-#: 87b2b77e62144b66b555d37db81a710b
+#: 9d6bd8aa9e094ede94422dd6f2183687
 msgid "目标溶剂分子数（solvent_count）"
 msgstr "solvent_count"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:70
-#: e518dff3f8ff44739b44c1e00cc33baa
+#: 8e010cce1b514df39ba788fbd5ce4d54
 msgid "`int`，默认 100，仅在主动切换到 `count_mode=\"fixed\"` 后生效。"
-msgstr "`int`, default 100. Used only after explicitly switching to `count_mode=\"fixed\"`."
+msgstr ""
+"`int`, default 100. Used only after explicitly switching to "
+"`count_mode=\"fixed\"`."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:72
-#: 78274b2460d04b47bf196f271ba5343b
+#: 2c23479a8ad24455b6b49666bae38080
 msgid "按密度（density）"
 msgstr "density"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:74
-#: c1e169ca092d46d0a0ba7f91252571a5
+#: 493666ea4ee242ea9da812fcf4d611e0
 msgid "`float`，默认 1.0，单位 g/cm³。`count_mode=\"density\"` 时用于估算溶剂分子数量。"
 msgstr "`float`, default `1.0` g/cm³; density mode only."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:76
-#: 63473bb3b1d2480087a3dda9c382c6fe
+#: 7e89818057764499b4c6bfa30bd40071
 msgid "完整 cell 计数系数（fill_packing）"
 msgstr "Full-Cell Count Factor (fill_packing)"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:78
-#: aab6af2225854c3cb7cbbe7b0ce0673b
+#: 2a78e69898ab40e6b36b4baf581e914c
 msgid ""
-"`float`，默认 1.0，范围 `(0, 1]`。`count_mode=\"density\"` 时乘到完整 cell 的名义纯溶剂分子数上；小于 1 "
-"会降低目标数量。"
+"`float`，默认 1.0，范围 `(0, 1]`。`count_mode=\"density\"` 时乘到完整 cell "
+"的名义纯溶剂分子数上；小于 1 会降低目标数量。"
 msgstr ""
-"`float`, default 1.0, range `(0, 1]`. With `count_mode=\"density\"`, this multiplies "
-"the nominal pure-solvent molecule count for the full cell. Values below 1 reduce the "
-"target count."
+"`float`, default 1.0, range `(0, 1]`. With `count_mode=\"density\"`, this"
+" multiplies the nominal pure-solvent molecule count for the full cell. "
+"Values below 1 reduce the target count."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:81
-#: c0cc54c5707e40a3b1bab8d246ed553f
+#: 10b04806625a4fd8aed42e21d1fb5b6a
 msgid ""
-"密度模式不会扣除宿主原子、已有溶剂或真空层占据的体积，也不会根据溶质质量反算最终溶液密度。对含表面、溶质或大块固体的 cell，它只是按完整 cell "
-"体积给出的初始数量估计；请看卡片预览中的解析数量，再用 `完整 cell 计数系数`（`fill_packing`）或固定数量修正。"
+"密度模式不会扣除宿主原子、已有溶剂或真空层占据的体积，也不会根据溶质质量反算最终溶液密度。对含表面、溶质或大块固体的 cell，它只是按完整 "
+"cell 体积给出的初始数量估计；请看卡片预览中的解析数量，再用 `完整 cell 计数系数`（`fill_packing`）或固定数量修正。"
 msgstr ""
-"Density mode does not subtract the volume occupied by host atoms, existing solvent, "
-"or vacuum regions, and it does not infer the final solution density from solute mass."
-" For a cell containing a surface, solute, or bulk solid, it is only an initial count "
-"estimate based on the full cell volume. Check the resolved count in the card preview,"
-" then correct it with `Full-cell count factor` (`fill_packing`) or a fixed count."
+"Density mode does not subtract the volume occupied by host atoms, "
+"existing solvent, or vacuum regions, and it does not infer the final "
+"solution density from solute mass. For a cell containing a surface, "
+"solute, or bulk solid, it is only an initial count estimate based on the "
+"full cell volume. Check the resolved count in the card preview, then "
+"correct it with `Full-cell count factor` (`fill_packing`) or a fixed "
+"count."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:84
-#: 4f4c950e76654cf6a4a3fe63bc263144
+#: 0a45a87292614cd3af855db034a09163
 msgid "采样和几何约束"
 msgstr "Sampling and geometry constraints"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:86
-#: dc81c26789de40dba214ab722bf557e1
+#: 381eef2fba3d4bb09c57c4dde49a44a7
 msgid "碰撞配置（sampling_mode）"
 msgstr "sampling_mode"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:88
-#: d6ee24637a674c4d928d2698d88b08e9
+#: 06c6196a016c4bb285a5b73e63e2fb56
 msgid "`str`，默认 `general`。界面提供三档真实有差异的间距倍率："
 msgstr ""
-"`str`, default `general`. The interface provides three spacing-factor presets with "
-"distinct behavior:"
+"`str`, default `general`. The interface provides three spacing-factor "
+"presets with distinct behavior:"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 92af632c5c544446842358c1ef01fc6b
+#: c15c19eb5f8241f7a85fd5984ba3b8b4
 msgid "界面选项"
 msgstr "Interface option"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: fa055f390d894486ab33049853833498
+#: 7446d04732564501b09b37e6ede82662
 msgid "序列化值"
 msgstr "Serialized value"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: dd15178761c146f6ad9590eb4a150b7a
+#: 6cd08efb763546d2ab4968143cbbdb5b
 msgid "$s$"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: b04487c949c64e6aa57557310db713c8
+#: 3375b39373c94359b4aa5ff3a095565e
 msgid "效果"
 msgstr "Effect"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 5768723b8b124839be81e1f1bd452dc2
+#: 1f0b638f1380493ab63b3c0d3e376eb5
 msgid "紧凑间距"
 msgstr "Compact spacing"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: d48d316362be488cb05b398d95260218
+#: 1212ca8a8c284e179ee8fc8c4d2fd02a
 msgid "`loose`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 1e631ca5f2774d27a34d294ee631c402
+#: c8d75a4f810845b2a2d99ebdd2b51ac8
 msgid "0.62"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 6737a9c2c2c24a9fa67f5909d037ab24
+#: efde2428c39b4d06a31e86a2241e9a11
 msgid "允许分子靠得更近，更容易插满"
-msgstr "Allows molecules to approach more closely, making the target count easier to reach"
+msgstr ""
+"Allows molecules to approach more closely, making the target count easier"
+" to reach"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 16675c15b455477487b64cac79000fdc
+#: ccf1637e3b4a42ddb77060b420f3a528
 msgid "标准间距"
 msgstr "Standard spacing"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: f9ac0d60c32b484eb3bb4d89e767ed89
+#: 45e35ec01fed4c62bdfab0335a3898ff
 msgid "`general`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 981ceb94e9e84e32a170b98a87ed0b23
+#: d66edfad19244d7b9d4bdfc18a2a306e
 msgid "0.70"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: aeab7a3e865a4926922e5edcfa7aadae
+#: 0f16b5d4d0f94cdf9c0bf1bf6c40a9bb
 msgid "默认选择"
 msgstr "Default choice"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 26cff18041724dfab8215b0ec1f06922
+#: 5c0e81d7315f4720ac46c90b4fa049b5
 msgid "保守间距"
 msgstr "Conservative spacing"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: efa8bf3e3492429b9d3483538d3f4e70
+#: f42b45e5bb964ff7ac3f3e6a5842e807
 msgid "`dense`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: 94852584b9cd4f99aeb7a222c9921e60
+#: 71069c3f88ec45ecaf0285cc9e2ba295
 msgid "0.78"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:80
-#: a410a57f52b542d1b042249f1907c128
+#: 0c85259a769f4f18acad5db459538a25
 msgid "留出更大原子间距，更可能提前耗尽尝试"
 msgstr ""
-"Leaves larger interatomic distances and is more likely to exhaust the attempt budget "
-"early"
+"Leaves larger interatomic distances and is more likely to exhaust the "
+"attempt budget early"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:96
-#: 89d4b4ebb47642d09c571f290758390d
+#: e27f9b3916f7448bb223bfce42a05299
 msgid ""
 "旧工作流中的 `auto` 和 `water` 仍可加载，并按标准倍率 0.70 运行；重新在界面保存后会归一为 "
 "`general`。三档都只改变碰撞间距，分子中心和整体取向始终随机。"
 msgstr ""
-"Legacy workflows using `auto` or `water` can still be loaded and run with the "
-"standard factor of 0.70. Saving them again in the interface normalizes the value to "
-"`general`. All three presets change collision spacing only; molecular centers and "
-"overall orientations remain random."
+"Legacy workflows using `auto` or `water` can still be loaded and run with"
+" the standard factor of 0.70. Saving them again in the interface "
+"normalizes the value to `general`. All three presets change collision "
+"spacing only; molecular centers and overall orientations remain random."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:98
-#: 30a1ef0c78674abf82d1b2b194a87fcb
+#: 8f2dd8d0779f4dd2a49531c441097e71
 msgid "统一最小距离覆盖值（min_distance）"
 msgstr "min_distance"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:100
-#: c9eb3e1b97134c0d9273b769f85d0f58
+#: e0062d14ef464d17b37baa186e721587
 msgid "`float`，默认 0，单位 Å。大于 0 时，所有原子对都使用该统一距离，并禁用间距预设和元素半径倍率；等于 0 时使用元素半径规则。"
 msgstr ""
-"`float`, default 0, in Å. When greater than 0, all atom pairs use this uniform "
-"distance and both spacing presets and element-radius factors are disabled. A value of"
-" 0 uses the element-radius rule."
+"`float`, default 0, in Å. When greater than 0, all atom pairs use this "
+"uniform distance and both spacing presets and element-radius factors are "
+"disabled. A value of 0 uses the element-radius rule."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:102
-#: f5a13cfe4f104d539a7222ab30ace8bc
+#: 8b988b7a062e48a1b9acfb5c9d5e1d31
 msgid "元素半径碰撞缩放（collision_scale）"
 msgstr "collision_scale"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:104
-#: c9eb3e1b97134c0d9273b769f85d0f58
+#: 01cd798268af415c8427b13cd831c855
 msgid "`float`，默认 0。等于 0 时使用间距预设；大于 0 时覆盖预设。仅在 `min_distance=0` 时生效。"
 msgstr ""
-"`float`, default 0. A value of 0 uses the spacing preset; a positive value overrides "
-"the preset. It applies only when `min_distance=0`."
+"`float`, default 0. A value of 0 uses the spacing preset; a positive "
+"value overrides the preset. It applies only when `min_distance=0`."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:106
-#: 1df5d078c7e14da6a0b2c191591c84f2
+#: 09ae7ea1315f48fba4e5df53adec3b04
 msgid "每个溶剂分子最大尝试次数（max_attempts_per_solvent）"
 msgstr "max_attempts_per_solvent"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:108
-#: c62d89b189cc4cd891aa8b3c9391f6d2
-msgid "`int`，默认 500。总尝试上限是“该值 × 目标分子数”；若连续拒绝次数达到内部停滞阈值，也会提前停止。高密度盒子触顶时，优先检查目标数量和碰撞规则，再考虑增加它。"
-msgstr "`int`, default 500. The total attempt limit is this value multiplied by the target molecule count; the run also stops early after the internal consecutive-rejection threshold. If a dense box reaches the limit, check the target count and collision rules before increasing it."
+#: ce58b1f26b154b3fb05c2e8c5866c633
+msgid ""
+"`int`，默认 500。总尝试上限是“该值 × "
+"目标分子数”；若连续拒绝次数达到内部停滞阈值，也会提前停止。高密度盒子触顶时，优先检查目标数量和碰撞规则，再考虑增加它。"
+msgstr ""
+"`int`, default 500. The total attempt limit is this value multiplied by "
+"the target molecule count; the run also stops early after the internal "
+"consecutive-rejection threshold. If a dense box reaches the limit, check "
+"the target count and collision rules before increasing it."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:110
-#: a6451a2e7561462b94acbb1d7c2492ee
+#: c00105f02af342b598e1d993bed3bd55
 msgid "严格数量（strict_count）"
 msgstr "strict_count"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:112
-#: 76a92b8b1a0f4ae7af468acff6b797ff
-msgid "`bool`，默认 true。打开后，未插满目标数量就失败；关闭后允许输出至少放入 1 个分子的部分结果。若一个分子都放不进去，仍会报错，避免把未变化的输入标成“已填盒”。"
-msgstr "`bool`, default true. When enabled, failure to insert the full target count is an error. When disabled, a partial result is allowed if at least one molecule was inserted. Inserting none still raises an error so an unchanged input is never labeled as a filled box."
+#: f77d56012482431cb4cc0bf9981386bf
+msgid ""
+"`bool`，默认 true。打开后，未插满目标数量就失败；关闭后允许输出至少放入 1 "
+"个分子的部分结果。若一个分子都放不进去，仍会报错，避免把未变化的输入标成“已填盒”。"
+msgstr ""
+"`bool`, default true. When enabled, failure to insert the full target "
+"count is an error. When disabled, a partial result is allowed if at least"
+" one molecule was inserted. Inserting none still raises an error so an "
+"unchanged input is never labeled as a filled box."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:114
-#: 7b87230cd61c483ca92d9ec0817b7e4d
+#: 1a6a2099cb574ba495a68f41584dddc9
 msgid "柔性溶剂"
 msgstr "Flexible solvent molecules"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:116
-#: 8281dc63e56942d3bdc3e46250cb3d33
+#: daabbbf904194e79a717159b46af919d
 msgid "启用柔性溶剂（flex_solvent）"
 msgstr "flex_solvent"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:118
-#: d28f80d2be8c42dea4164a6937713295
-msgid "`bool`，默认 false。打开后复用“分子构象”的几何启发式拓扑生成溶剂构象池，再用于填盒。水没有可旋转单键，因此普通水盒不需要打开；打开后主要只增加高斯坐标噪声。"
+#: e6db7df247e14816861d2ad5b01f2f30
+msgid ""
+"`bool`，默认 "
+"false。打开后复用“分子构象”的几何启发式拓扑生成溶剂构象池，再用于填盒。水没有可旋转单键，因此普通水盒不需要打开；打开后主要只增加高斯坐标噪声。"
 msgstr ""
-"`bool`, default false. When enabled, the geometric-topology heuristic from `Molecular"
-" Conformers` generates a solvent conformer pool for box filling. Water has no "
-"rotatable single bond, so an ordinary water box does not need this option; enabling "
-"it mainly adds Gaussian coordinate noise."
+"`bool`, default false. When enabled, the geometric-topology heuristic "
+"from `Molecular Conformers` generates a solvent conformer pool for box "
+"filling. Water has no rotatable single bond, so an ordinary water box "
+"does not need this option; enabling it mainly adds Gaussian coordinate "
+"noise."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:120
-#: da291e38d14a470d92b0a72e3571f26c
+#: 0d51ae52b98647478777fcc6ff7ddd95
 msgid "柔性构象池（flex_pool）"
 msgstr "flex_pool"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:122
-#: bdc099cd3c644ec0bc2bd87a69d01d1d
+#: f0eb6a1be85940f9aa7cedfea3439ccc
 msgid "`int`，默认 32。柔性溶剂构象池大小。"
 msgstr "`int`, default `32`. Size of the conformer pool for a flexible solvent."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:124
-#: 6377b4e559b546b2b75a2e546df75bcf
+#: 63b74af8097a429da305c5b68f0750ba
 msgid "柔性扭转角范围（flex_torsion_range）"
 msgstr "flex_torsion_range"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:126
-#: 726ae1ab99aa4f25ab4e3f6f44fe1212
+#: 55c3648993ff4c0bb3fc0607d37816ec
 msgid "`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时附加的扭转角增量范围。"
-msgstr "`tuple[float, float]`, default `(-180.0, 180.0)`, in degrees. Range of additional torsion-angle increments used when generating flexible conformers."
+msgstr ""
+"`tuple[float, float]`, default `(-180.0, 180.0)`, in degrees. Range of "
+"additional torsion-angle increments used when generating flexible "
+"conformers."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:128
-#: 37b82cdb521f4b86bbc8f2a0a787e966
+#: 51741bf206cb4e568983e157a0fe2cb1
 msgid "柔性采样最大扭转键数（flex_max_torsions）"
 msgstr "flex_max_torsions"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:130
-#: c9da4eaa618c4458bb76902b472d5947
+#: 1c0b965919e64e5f95f869afbcc7c72f
 msgid "`int`，默认 5。每个柔性构象最多扰动多少个可旋转键。"
 msgstr ""
-"`int`, default `5`. Maximum number of rotatable bonds perturbed in each flexible "
-"conformer."
+"`int`, default `5`. Maximum number of rotatable bonds perturbed in each "
+"flexible conformer."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:132
-#: 6c64dc2a83ce4369b4b409618549e455
+#: 23b3755f3331461e8c84954d99ac68ee
 msgid "柔性采样高斯宽度（flex_gaussian_sigma）"
 msgstr "flex_gaussian_sigma"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:134
-#: 94f7f9771f0c4d2981d26bcf6ebb8ec0
+#: f189c64008534a8195e6726c9b1271fc
 msgid "`float`，默认 0.03，单位 Å。柔性构象生成时叠加的坐标噪声。"
 msgstr ""
-"`float`, default `0.03` Å. Coordinate noise added while generating flexible "
-"conformers."
+"`float`, default `0.03` Å. Coordinate noise added while generating "
+"flexible conformers."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:136
-#: 6481343cefa24e9784129e38f6568224
+#: e46bab11f979402e86da428ea2329813
 msgid "随机性"
 msgstr "Randomness"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:138
-#: b04fca2410974ff195b456ccd5234bb0
+#: 75c9680e88e1474ead15967bdcedd7c7
 msgid "使用随机种子（use_seed）"
 msgstr "Use Random Seed (use_seed)"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:140
-#: e54a0d9ccf7b4fbf853e80be4198a09d
+#: b69198985dbd4e57b936595919884d2a
 msgid "`bool`，默认 false。打开后，同一输入结构、参数和 seed 会生成相同输出。"
 msgstr ""
-"`bool`, default `false`. When enabled, identical input, parameters, and seed produce "
-"identical output."
+"`bool`, default `false`. When enabled, identical input, parameters, and "
+"seed produce identical output."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:142
-#: 9243c528da6d4afba9dba2241eb8b831
+#: 6dfa17552c294d2d9bfcb8acbcdb81ee
 msgid "随机种子（seed）"
 msgstr "Random Seed (seed)"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:144
-#: 4235ef35ea244a468271b91d59b0fa7f
+#: 1cb6e728294d461f803b548d5f8a5963
 msgid "`int`，默认 0。`use_seed=True` 时生效。"
 msgstr "`int`, default `0`. Used when `use_seed=True`."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:146
-#: be9193e70e2c4779bb30d2f8c2e4f101
+#: ecfb47f773464526ba5581b2a7f9e880
 msgid "推荐预设"
 msgstr "Recommended presets"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:148
-#: 2ca0af3fbf7b45929d9ed7f17277def3
+#: a76de684ba5b4500900e12c4aba78363
 msgid "固定数量水盒（200 个水，固定 seed）"
 msgstr "Fixed-count water box (200 waters, fixed seed)"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:150
-#: ba2467fa545d4e1594b9f7766b3a2bd1
+#: 47c1a6a01053425d8fbeb9c782633e69
 #, python-brace-format
 msgid ""
 "{\n"
@@ -528,12 +564,12 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:168
-#: f979e648387f4f11a2f7c936896d8fc6
+#: 6e15810e8e2c4812877e620da50997d0
 msgid "按密度填充水盒（允许部分输出）"
 msgstr "Density-based water box (partial output allowed)"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:170
-#: 0c1562dc35e840849df3dc95254e98de
+#: 253fac391bbc4bbc927cf1ef02c0efd5
 #, python-brace-format
 msgid ""
 "{\n"
@@ -555,218 +591,87 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:189
-#: 29eea05daf4d410a8ada57819187e94b
+#: ead834f4c45a489eb825e32021c08179
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:191
-#: a8374cd94da742b28d4573c1bc9e1800
-msgid "`Solvent Box Fill → Geometry Filter`：先剔除短接触和明显异常盒子。"
-msgstr "`Solvent Box Fill` -> `Geometry Filter`: reject short contacts and abnormal boxes."
+#: 608966fe75984978bddc17c38382d016
+msgid "`周期溶剂盒 → 几何健全性过滤`：先剔除短接触和明显异常盒子。"
+msgstr "`Solvent Box Fill` -> `Geometry Sanity Filter`: reject short contacts and abnormal boxes."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:192
-#: c54497ccfcba4048a7998265110a24c5
-msgid "`Solvent Box Fill → FPS Filter`：整盒初态很多时，用代表性采样降低 DFT 数量。"
-msgstr ""
-"`Solvent Box Fill` -> `FPS Filter`: reduce many initial boxes to representative DFT "
-"candidates."
+#: 395574227c3847a3862f8c4ce017a860
+#
+msgid "`周期溶剂盒 → FPS 代表性采样`：整盒初态很多时，用代表性采样降低 DFT 数量。"
+msgstr "`Solvent Box Fill` -> `FPS Sampling`: reduce many initial boxes to representative DFT candidates."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:194
-#: 6e72c8c167d84602b689132b0961fb76
+#: dd9e3f817eb8404cb009315f8c854580
 msgid "常见问题"
 msgstr "Troubleshooting"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:196
-#: 3f778311b0ca4257b927c2c2cd176758
-msgid "输入没有有效周期 cell：这张卡需要非奇异 cell 和至少一个周期方向；非周期局部溶剂环境请用 `Local Solvation`。"
-msgstr ""
-"No valid periodic cell: use a nonsingular cell with periodicity, or choose `Local "
-"Solvation` for a nonperiodic local environment."
+#: 42e023ce4005489188cc8a90c739ffd7
+#
+msgid "输入没有有效周期 cell：这张卡需要非奇异 cell 和至少一个周期方向；非周期局部溶剂环境请用 `局部溶剂壳`。"
+msgstr "No valid periodic cell: use a nonsingular cell with periodicity, or choose `Solvent Shell` for a nonperiodic local environment."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:197
-#: 016a2e8a99bd47659eacfeb441c31042
-msgid "无法插满目标数量：先看预览中的目标分子数和名义纯溶剂密度；再降低数量或完整 cell 计数系数、减小碰撞距离，或者增大 cell。关闭严格数量后可保留非零的部分结果。"
+#: 146970a2f31d49c5b2a335a4f81e25fd
+msgid ""
+"无法插满目标数量：先看预览中的目标分子数和名义纯溶剂密度；再降低数量或完整 cell 计数系数、减小碰撞距离，或者增大 "
+"cell。关闭严格数量后可保留非零的部分结果。"
 msgstr ""
-"Cannot reach the target count: first inspect the target molecule count and nominal "
-"pure-solvent density in the preview. Then reduce the count or full-cell count factor,"
-" reduce the collision distance, or enlarge the cell. Disabling strict count retains a"
-" nonzero partial result."
+"Cannot reach the target count: first inspect the target molecule count "
+"and nominal pure-solvent density in the preview. Then reduce the count or"
+" full-cell count factor, reduce the collision distance, or enlarge the "
+"cell. Disabling strict count retains a nonzero partial result."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:198
-#: 2834ba483d544277aeb6f572fc39a683
+#: 02788b06b78a48998a39b62a0ac6c67c
 msgid ""
-"按密度估算的数量不符合预期：数量由完整 cell 体积、溶剂分子质量、目标密度和数量乘数共同决定，不会扣除宿主占据体积。先检查 cell 单位、真空层、已有原子和 `溶剂"
-" XYZ`（`solvent_xyz`）。"
+"按密度估算的数量不符合预期：数量由完整 cell 体积、溶剂分子质量、目标密度和数量乘数共同决定，不会扣除宿主占据体积。先检查 cell "
+"单位、真空层、已有原子和 `溶剂 XYZ`（`solvent_xyz`）。"
 msgstr ""
-"The density-derived count is unexpected: it uses the full cell volume, solvent molecular mass, target density, and count multiplier, without subtracting the host's occupied volume. Check the cell units, vacuum region, existing atoms, and `Solvent XYZ` (`solvent_xyz`)."
+"The density-derived count is unexpected: it uses the full cell volume, "
+"solvent molecular mass, target density, and count multiplier, without "
+"subtracting the host's occupied volume. Check the cell units, vacuum "
+"region, existing atoms, and `Solvent XYZ` (`solvent_xyz`)."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:199
-#: a5699e9dc40346a18cbee796a67a1e94
-msgid "想生成离子第一水合壳：改用 `Local Solvation`。整盒卡不会按离子元素选择 ion–O 距离或水分子取向。"
-msgstr "To generate an ion's first hydration shell, use `Local Solvation`. Whole-box filling does not choose ion–O distances or water orientations according to the ion element."
+#: 13e8755b96314a86b953db722e562009
+#
+msgid "想生成离子第一水合壳：改用 `局部溶剂壳`。整盒卡不会按离子元素选择 ion–O 距离或水分子取向。"
+msgstr "To generate an ion's first hydration shell, use `Solvent Shell`. Whole-box filling does not choose ion–O distances or water orientations according to the ion element."
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:201
-#: 5b756fb51d3441f6b7a412409db2dbd1
+#: d106fb40ee4440e196e1acbd951d8913
 msgid "输出标签"
 msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:203
-#: 0f5f42080ae747708d9e4af2ee1d32d6
+#: 8b27d565d4604864b87fc115aed3fe03
 #, python-brace-format
 msgid "`SolvBox(mode={mode},req={target},ok={placed})`"
 msgstr "`SolvBox(mode={mode},req={target},ok={placed})`"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:205
-#: fc746205db1a4ce18f7b426f5836673a
+#: 4294de6de740423ba168e76f186ee03f
 msgid "可复现性"
 msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/solvent-box-fill-card.md:207
-#: b5258263fba34a39927dbdb16ea29d21
+#: bb3f3e729b2043dd87ef34d0e0faec8f
 msgid ""
 "打开 `使用随机种子`（`use_seed`）后，相同输入结构、结构顺序、参数和 "
 "`随机种子`（`seed`）会生成相同填盒结果。`count_mode=\"density\"` 时，cell 体积或 `溶剂 "
 "XYZ`（`solvent_xyz`）改变会改变目标分子数，因此输出也会改变。"
 msgstr ""
-"With `Use random seed` (`use_seed`) enabled, the same input structures, structure order, parameters, and `seed` produce the same packing result. When `count_mode=\"density\"`, changing the cell volume or `solvent_xyz` changes the target molecule count and therefore the output."
-
-#~ msgid ""
-#~ "`Solvent Box Fill` "
-#~ "在已有周期性晶胞中插入溶剂分子，适合从干结构或稀疏溶剂结构生成整盒溶剂候选初态。输入结构必须有非奇异 cell，并且至少一个周期方向开启。"
-#~ msgstr ""
-#~ "`Solvent Box Fill` inserts solvent molecules "
-#~ "into an existing periodic cell to create "
-#~ "a full-box candidate from a dry or "
-#~ "sparsely solvated structure. Input needs a "
-#~ "nonsingular cell and at least one periodic "
-#~ "direction."
-
-#~ msgid "它解决的是“训练集缺少周期溶剂环境”的覆盖问题，不替代分子动力学平衡或量化优化。输出仍需要做几何筛查和后续 DFT/MD 处理。"
-#~ msgstr ""
-#~ "It addresses missing periodic solvent environments;"
-#~ " it does not replace MD equilibration or"
-#~ " quantum optimization. Output still requires "
-#~ "geometry checks and downstream DFT/MD treatment."
-
-#~ msgid ""
-#~ "参数设置：`count_mode=\"fixed\"`，`solvent_count=200`，`sampling_mode=\"auto\"`，`min_distance=0.8`，`max_attempts_per_solvent=500`，打开"
-#~ " `use_seed`。"
-#~ msgstr ""
-#~ "Parameters: `count_mode=\"fixed\"`, `solvent_count=200`, "
-#~ "`sampling_mode=\"auto\"`, `min_distance=0.8`, "
-#~ "`max_attempts_per_solvent=500`, and `use_seed` enabled."
-
-#~ msgid ""
-#~ "`str`，默认 `fixed`。可选 `fixed`、`density`。`fixed` 直接使用 "
-#~ "`solvent_count`；`density` 根据 cell 体积、溶剂分子质量、`density` 和"
-#~ " `fill_packing` 估算数量。"
-#~ msgstr ""
-#~ "`str`, default `fixed`. `fixed` uses "
-#~ "`solvent_count`; `density` estimates count from cell"
-#~ " volume, molecule mass, `density`, and "
-#~ "`fill_packing`."
-
-#~ msgid "`float`，默认 1.0。`count_mode=\"density\"` 时作为密度缩放因子；小于 1 会降低目标分子数。"
-#~ msgstr ""
-#~ "`float`, default `1.0`. Packing multiplier for "
-#~ "density-based count; values below 1 reduce "
-#~ "the target."
-
-#~ msgid ""
-#~ "`str`，默认 `auto`。可选 "
-#~ "`auto`、`general`、`water`、`loose`、`dense`。整盒填充不会因为盒子里有离子就自动切到 `ion-"
-#~ "water`，因为它没有局部中心原子。"
-#~ msgstr ""
-#~ "`str`, default `auto`. Options are `auto`, "
-#~ "`general`, `water`, `loose`, and `dense`. Full-"
-#~ "box filling has no local center and "
-#~ "therefore does not automatically select `ion-"
-#~ "water`."
-
-#~ msgid "`float`，默认 0。大于 0 时作为全局原子-原子最小距离；等于 0 时使用元素碰撞半径和 `collision_scale`。"
-#~ msgstr ""
-#~ "`float`, default `0`. A positive value is "
-#~ "the global minimum atom-atom distance. At "
-#~ "`0`, element-specific collision radii scaled "
-#~ "by `collision_scale` are used."
-
-#~ msgid "`float`，默认 0。等于 0 时使用 `sampling_mode` 的内置半径缩放；大于 0 时覆盖模式默认值。"
-#~ msgstr ""
-#~ "`float`, default `0`. Zero uses the mode's "
-#~ "collision scaling; a positive value overrides "
-#~ "it as minimum distance."
-
-#~ msgid "`int`，默认 500。每个目标溶剂分子的最大随机放置尝试次数。高密度盒子触顶时，优先检查目标数量和 `min_distance`，再考虑增加它。"
-#~ msgstr ""
-#~ "`int`, default `500`. Placement attempts per "
-#~ "requested molecule. At high density, check "
-#~ "count and collision distances before increasing "
-#~ "it."
-
-#~ msgid "`bool`，默认 true。打开后，未插满目标数量就失败；关闭后允许输出部分填充结果。"
-#~ msgstr ""
-#~ "`bool`, default `true`. Fail unless the target"
-#~ " count is reached; disabled permits partial "
-#~ "fill."
-
-#~ msgid "`bool`，默认 false。打开后复用仓库已有 torsion-guard core 生成溶剂构象池，再用于填盒。"
-#~ msgstr ""
-#~ "`bool`, default `false`. Generate a solvent "
-#~ "conformer pool with torsion-guard before "
-#~ "filling."
-
-#~ msgid "`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时的扭转角范围。"
-#~ msgstr ""
-#~ "`tuple[float, float]`, default `(-180.0, 180.0)` "
-#~ "degrees. Torsion-angle range used to generate"
-#~ " flexible conformers."
-
-#~ msgid ""
-#~ "无法插满目标数量：降低 `solvent_count` 或 `fill_packing`，减小 "
-#~ "`min_distance` 或 `collision_scale`，增大 cell；也可以关闭 "
-#~ "`strict_count` 先保留部分可用候选。"
-#~ msgstr ""
-#~ "Cannot reach the target: reduce count/packing, "
-#~ "revise collision limits, enlarge the cell, or"
-#~ " disable `strict_count` to retain partial "
-#~ "candidates."
-
-#~ msgid ""
-#~ "按密度估算的数量不符合预期：数量由 cell 体积、溶剂分子质量、`density` 和 "
-#~ "`fill_packing` 共同决定，先检查 cell 单位、真空层和 `solvent_xyz` "
-#~ "是否正确。"
-#~ msgstr ""
-#~ "Unexpected density-based count: verify cell "
-#~ "units, vacuum volume, solvent mass/text, density,"
-#~ " and packing factor."
-
-#~ msgid ""
-#~ "打开 `use_seed` 后，相同输入结构、结构顺序、参数和 `seed` "
-#~ "会生成相同填盒结果。`count_mode=\"density\"` 时，cell 体积或 `solvent_xyz` "
-#~ "改变会改变目标分子数，因此输出也会改变。"
-#~ msgstr ""
-#~ "With `use_seed`, identical input, order, parameters,"
-#~ " and seed reproduce filling. In density "
-#~ "mode, changing cell volume or solvent text "
-#~ "changes the target count and output."
-
-#~ msgid ""
-#~ "它解决的是“训练集缺少周期溶剂环境”的覆盖问题，不替代分子动力学平衡或量化优化。各模式下分子位置和整体取向都采用随机采样；`water`、`loose`、`dense`"
-#~ " 主要改变默认碰撞半径缩放，并不会生成局部离子水合取向。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "其中 $V$ 用 Å³、$\\rho$ 用 g/cm³、$M$ 用 "
-#~ "g/mol。随后随机平移和旋转每个溶剂分子， 并用周期最小镜像距离执行碰撞拒绝；显式最小距离与元素共价半径缩放共同决定是否接受。 "
-#~ "因此密度模式给出的是目标装填数，不代表未经弛豫的瞬时结构已经达到真实液体平衡密度。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "`str`，默认 `auto`。可选 `auto`、`general`、`water`、`loose`、`dense`。`auto` "
-#~ "只根据溶剂分子是否恰好为 H₂O 解析成 `water` 或 "
-#~ "`general`；整盒填充没有局部中心，因此不会进入 `ion-water`。这些配置主要控制 "
-#~ "`min_distance=0` 时的默认元素半径缩放，分子整体取向始终是随机的。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
+"With `Use random seed` (`use_seed`) enabled, the same input structures, "
+"structure order, parameters, and `seed` produce the same packing result. "
+"When `count_mode=\"density\"`, changing the cell volume or `solvent_xyz` "
+"changes the target molecule count and therefore the output."
 
 #~ msgid ""
 #~ "{\n"
@@ -804,6 +709,3 @@ msgstr ""
 #~ "  }\n"
 #~ "}\n"
 #~ msgstr ""
-
-#~ msgid "无法插满目标数量：降低固定数量或密度数量乘数，减小统一最小距离或元素半径缩放，增大 cell；也可以关闭严格数量先保留非零的部分结果。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."

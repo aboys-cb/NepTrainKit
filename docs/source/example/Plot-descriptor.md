@@ -1,20 +1,42 @@
-﻿# Descriptor 绘图示例
+# 描述符分布绘图示例
 
-以 CsPbI3 为例，导出 descriptor 后绘制结构分布。
+想比较几类结构（例如 CsPbI3 的立方、四方和正交相）在描述符空间里的覆盖范围时，可以分别导出它们的描述符，
+再用仓库提供的脚本画在同一张图上。本例最终得到一张带边界线的描述符散点图，颜色表示每原子能量。
 
-![Image](../_static/image/example/plot_descriptor/main_ui.png)
+![NEP 数据集查看中的描述符图](../_static/image/example/plot_descriptor/main_ui.png)
 
-## 导出步骤
+## 1. 分别导出每类结构的描述符
 
-1. 选择结构：<img src="../_static/image/generated/show_nep_icons/pen.svg" alt="pen" width='30' height='30' />
-2. 点击导出：<img src="../_static/image/generated/show_nep_icons/export.svg" alt="export" width='30' height='30' />
-3. 选择文件路径
+在 `NEP 数据集查看` 中打开包含这些结构的数据，然后对每一类结构重复：
 
-## 绘图
+1. 选中这一类结构：可以用工具栏 <img src="../_static/image/generated/show_nep_icons/pen.svg" alt="鼠标选择" width="24" height="24" /> `鼠标选择` 在描述符图上圈选，也可以用筛选栏按 `Config_type` 选中。
+2. 点击工具栏 <img src="../_static/image/generated/show_nep_icons/export.svg" alt="导出结构描述符" width="24" height="24" /> `导出结构描述符`。
+3. 选择保存路径，例如 `cubic_descriptor.out`。
 
-使用 [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/master/tools/plot_descriptor.py)，
-配置 `config` 和 `method` 后执行：
+导出文件只包含**当前选中**的结构。每行对应一个结构：前两列是描述符图上的两个坐标；
+数据中有能量时，第三列是每原子能量。没有选中任何结构时不会生成文件。
 
-`python plot_descriptor.py`
+## 2. 配置并运行绘图脚本
 
-![Image](../_static/image/example/plot_descriptor/descriptor_scatter_plot.png)
+下载 [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/master/tools/plot_descriptor.py)，
+放在导出文件所在的目录，然后修改脚本开头的两项：
+
+- `config`：每类结构一行，依次写描述符文件路径、图例名称和标记符号，例如
+  `("./cubic_descriptor.out", "cubic", "*")`。
+- `method`：边界线的画法。`alphashape` 需要先安装 `alphashape` 包；`dbscan` 需要先安装 `scikit-learn`。
+
+脚本使用第三列给散点上色，所以导出的数据需要带能量。运行：
+
+```bash
+python plot_descriptor.py
+```
+
+结果保存为当前目录下的 `descriptor_scatter_plot.png`：
+
+![描述符散点图](../_static/image/example/plot_descriptor/descriptor_scatter_plot.png)
+
+## 3. 怎么读这张图
+
+- 原始描述符超过两维时，图中展示的是 PCA 二维投影。点云分开说明这些结构在该投影上有差异；重叠不能证明原始描述符相近，也不能据此判断模型难以区分它们。
+- 某一类只覆盖很小的区域，不一定缺少多样性：结构差异可能位于未显示的维度。是否补充结构，需要结合原始描述符空间的覆盖和实际结构变化判断。
+- 同一位置颜色差别很大，只说明投影位置相近但每原子能量不同。可以在 `NEP 数据集查看` 中抽查这些结构，再核对原始描述符和模型误差；这张图本身不能证明采样充分或模型可靠。

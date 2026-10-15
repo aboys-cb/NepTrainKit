@@ -7,51 +7,51 @@
 
 | 你手里的内容 | 能否直接打开 | 从哪里打开 | 打开后通常做什么 |
 | --- | --- | --- | --- |
-| `.xyz` / `.extxyz` | 可以 | `生成数据集` 或 `NEP Dataset Display` | 继续生成，或检查、筛选和导出 |
-| `POSCAR` / `CONTCAR` / `.cif` | 可以 | `生成数据集` | 作为基础晶体生成候选结构 |
-| `OUTCAR` / `XDATCAR` | 可以 | `NEP Dataset Display` | 检查或转换 VASP 结果 |
-| `dump` / `lammpstrj` | 通常可以 | `NEP Dataset Display` | 查看 LAMMPS 轨迹；数值 `type` 需要元素映射 |
-| DeepMD `deepmd/npy` 目录 | 可以，但必须是完整目录 | `NEP Dataset Display` | 查看或转换 DeepMD 数据 |
+| `.xyz` / `.extxyz` | 可以 | `构建数据集` 或 `NEP 数据集查看` | 继续生成，或检查、筛选和导出 |
+| `POSCAR` / `CONTCAR` / `.cif` | 可以 | `构建数据集` | 作为基础晶体生成候选结构 |
+| `OUTCAR` / `XDATCAR` | 可以 | `NEP 数据集查看` | 检查或转换 VASP 结果 |
+| `dump` / `lammpstrj` | 通常可以 | `NEP 数据集查看` | 查看 LAMMPS 轨迹；数值 `type` 需要元素映射 |
+| DeepMD `deepmd/npy` 目录 | 可以，但必须是完整目录 | `NEP 数据集查看` | 查看或转换 DeepMD 数据 |
 | `energy_*.out` / `force_*.out` / `virial_*.out` | 不能单独使用 | 与对应结构文件一起打开 | 回看预测值与参考值 |
 | CP2K 优化或 MD 的多步主输出 | 不建议直接打开 | 先转换成 EXTXYZ | 保留逐步晶胞、坐标和标签 |
-| 不在表中的结构或轨迹 | 不要只改扩展名 | 先转换成 EXTXYZ | 用 `Lattice`、`Properties` 和 `pbc` 明确数据契约 |
+| 不在表中的结构或轨迹 | 不要只改扩展名 | 先转换成 EXTXYZ | 用 `Lattice`、`Properties` 和 `pbc` 明确的数据格式 |
 
 只想确认“我的 `.xyz` 能不能打开”时，先看文件首帧：原子数要与原子行一致；周期结构应有
 有效 `Lattice`；逐原子列必须与 `Properties` 声明一致。满足这些条件的普通 XYZ/EXTXYZ
 可以直接尝试导入。失败时根据错误信息检查具体字段，不要用补零或伪元素绕过。
 
 :::{tip}
-要继续生成新结构，进入 `生成数据集`；要看图、删结构、筛选或导出子集，进入
-`NEP Dataset Display`。同一种文件在两个入口中的用途不同，但底层结构数据不会因为入口不同
+要继续生成新结构，进入 `构建数据集`；要看图、删结构、筛选或导出子集，进入
+`NEP 数据集查看`。同一种文件在两个入口中的用途不同，但底层结构数据不会因为入口不同
 自动增加 DFT 标签。
 :::
 
 对应操作入口：
 
-- [在“生成数据集”中打开基础结构](module/make-dataset.md)
-- [在“NEP Dataset Display”中打开结构、模型和训练输出](module/nep-display-open-data.md)
+- [在“构建数据集”中打开基础结构](module/make-dataset.md)
+- [在“NEP 数据集查看”中打开结构、模型和训练输出](module/nep-display-open-data.md)
 - [导入失败时按症状排查](reference/troubleshooting.md)
 
 ## 结构文件
 
 | 文件 | 推荐入口 | 常见用途 |
 | --- | --- | --- |
-| `.xyz` / `.extxyz` | `生成数据集` 或 `NEP Dataset Display` | 作为初始结构、候选池或训练集 |
-| `POSCAR` / `CONTCAR` | `生成数据集` | 作为初始晶体结构生成候选池 |
-| `CIF` | `生成数据集` | 从晶体结构开始构建候选集 |
-| ASE `.traj` | `NEP Dataset Display` | 查看已有轨迹或转换结构 |
-| DeepMD `deepmd/npy` 目录 | `NEP Dataset Display` | 查看或导出 DeepMD 风格结构数据 |
+| `.xyz` / `.extxyz` | `构建数据集` 或 `NEP 数据集查看` | 作为初始结构、候选池或训练集 |
+| `POSCAR` / `CONTCAR` | `构建数据集` | 作为初始晶体结构生成候选池 |
+| `CIF` | `构建数据集` | 从晶体结构开始构建候选集 |
+| ASE `.traj` | `NEP 数据集查看` | 查看已有轨迹或转换结构 |
+| DeepMD `deepmd/npy` 目录 | `NEP 数据集查看` | 查看或导出 DeepMD 风格结构数据 |
 
-如果你要继续生成新结构，优先导入 `生成数据集`。如果你要检查、删除、筛选或导出子集，
-优先导入 `NEP Dataset Display`。
+如果你要继续生成新结构，优先导入 `构建数据集`。如果你要检查、删除、筛选或导出子集，
+优先导入 `NEP 数据集查看`。
 
 DeepMD 目录导入要求存在 `type.raw`、`type_map.raw`、`set.* / box.npy` 和
-`set.* / coord.npy`，并且帧数、原子数、元素映射、晶胞和坐标必须一致。缺少这些契约时
+`set.* / coord.npy`，并且帧数、原子数、元素映射、晶胞和坐标必须一致。缺少这些信息时
 会明确失败，不会用伪元素、单位晶胞或不完整帧继续加载。
 
-### EXTXYZ 数据契约
+### EXTXYZ 格式要求
 
-`NEP Dataset Display` 会按扩展 XYZ 契约校验原子数、`Lattice`、`Properties`、元素符号、
+`NEP 数据集查看` 会按扩展 XYZ 格式要求校验原子数、`Lattice`、`Properties`、元素符号、
 逐原子列数和逻辑字段。文件声明的原子数与实际行数不一致、列缺失、非法元素、非法 PBC
 或周期晶胞退化时会明确失败，不会用零值补齐。与 GPUMD/NEP 的 EXTXYZ 约定一致，
 没有写 `pbc` 的帧默认按全周期 `T T T` 处理；非周期或部分周期数据必须在文件头明确写出。
@@ -67,7 +67,7 @@ DeepMD 目录导入要求存在 `type.raw`、`type_map.raw`、`set.* / box.npy` 
 | `stress_*.out` | stress 预测/标签结果 |
 | `descriptor*.out` | 描述符输出，用于可视化或采样分析 |
 
-训练结束后，把训练结构和这些输出一起导入 `NEP Dataset Display`，可以查看散点图、
+训练结束后，把训练结构和这些输出一起导入 `NEP 数据集查看`，可以查看散点图、
 定位误差最大的结构，并导出下一轮要处理的子集。
 
 ## VASP
@@ -75,11 +75,11 @@ DeepMD 目录导入要求存在 `type.raw`、`type_map.raw`、`set.* / box.npy` 
 - `OUTCAR`：读取晶胞、坐标、力、应力和 virial。
 - `XDATCAR`：读取逐帧晶胞和坐标。
 
-VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP Dataset Display` 中检查标签质量。
+VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP 数据集查看` 中检查标签质量。
 
 ## 高级结构格式
 
-`NEP Dataset Display → Open File…` 的 `Advanced / experimental structure files` 筛选器
+`NEP 数据集查看 → 打开文件…` 的 `Advanced / experimental structure files` 筛选器
 还会显示 CP2K 输出与 n2p2 `input.data`。这两个入口按文件内容识别格式，不会只因为扩展名
 匹配就把损坏文件当成有效数据。
 
@@ -103,7 +103,7 @@ CP2K 的几何优化文档也建议使用轨迹或最终结构文件承载多步
 - 结构块必须由 `begin` / `end` 完整包围；每个 atom 行严格包含位置、元素、电荷、逐原子能量
   和三维力。
 - n2p2 CFG 数值按 Bohr / Hartree 读取，并转换为 Å、eV 和 eV/Å。
-- 0 或 3 行 lattice 都是合法契约；只有 1–2 行 lattice、损坏数值、非法元素或缺少 `end`
+- 0 或 3 行 lattice 都是合法格式；只有 1–2 行 lattice、损坏数值、非法元素或缺少 `end`
   会使整次导入失败。
 
 ## LAMMPS
@@ -137,9 +137,9 @@ $$
 
 ## 导出
 
-`NEP Dataset Display` 可以把当前数据导出为两类结果：
+`NEP 数据集查看` 可以把当前数据导出为两类结果：
 
-- `xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 生成数据集 流程。
+- `xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或构建数据集流程。
 - `DeepMD NPY`：标准 `deepmd/npy`。在导出弹窗中选择按 `Config_type` 或按化学式建立子目录。
 - `DeepMD NPY (Mixed)`：把化学式可以不同的帧写入逐帧 `real_atom_types.npy`。弹窗中的“虚拟原子填充”与 dpdata 的 `atom_numb_pad` 一致：`0` 按精确原子数分目录；正整数会把原子数向上补到该数的倍数，使不同原子数的体系能够合并。补位类型为 `-1`，重新读取时会自动移除。
 

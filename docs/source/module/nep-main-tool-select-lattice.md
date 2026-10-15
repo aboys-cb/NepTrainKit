@@ -1,4 +1,4 @@
-# 按晶格参数选择（Select by Lattice）
+# 按晶格选择（Select by Lattice）
 
 ## 作用与适用场景
 

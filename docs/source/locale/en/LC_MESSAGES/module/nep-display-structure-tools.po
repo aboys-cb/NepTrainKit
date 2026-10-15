@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 16:56+0800\n"
+"POT-Creation-Date: 2026-10-15 16:17+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -19,340 +19,487 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/nep-display-structure-tools.md:1 5801719e8bd2441a8a2ba2b4f9814f5b
+#: ../../source/module/nep-display-structure-tools.md:1
+#: 8d85805873594dc7bd364417b4db6f74
 msgid "结构区：查看、标记与导出结构"
 msgstr "Structure view: inspect, tag, and export structures"
 
-#: ../../source/module/nep-display-structure-tools.md:3 5697f2a8226946359e9ba9b48cb4f5ea
+#: ../../source/module/nep-display-structure-tools.md:3
+#: 0ef8bf6ddb2942409b16e140dd61252f
 msgid "这一页对应软件右侧结构区及其工具栏。先用相机和键显示检查当前结构，再按需要显示向量、 标记异常结构或导出当前结构。"
 msgstr ""
-"This page covers the structure view and toolbar on the right. Use the camera and bond"
-" display to inspect the current structure, then show vectors, tag anomalies, or "
-"export the current structure as needed."
+"This page covers the structure view and toolbar on the right. Use the "
+"camera and bond display to inspect the current structure, then show "
+"vectors, tag anomalies, or export the current structure as needed."
 
-#: ../../source/module/nep-display-structure-tools.md:5 e86fb90ad7fb416ca1fd52817c554a02
+#: ../../source/module/nep-display-structure-tools.md:5
+#: 1605130514f345bda955459fc56366dc
 msgid "本页目录"
 msgstr "On this page"
 
-#: ../../source/module/nep-display-structure-tools.md:11 8ae16ac936a8494cb29aac6b365b1123
+#: ../../source/module/nep-display-structure-tools.md:11
+#: b144f4d8a2db4e21ab8d048dd4125e78
 msgid "工具栏总表"
 msgstr "Toolbar overview"
 
-#: ../../source/module/nep-dataset-display-content.md:3198 bc2e110446b84133bdb00752ff7f1ee9
+#: ../../source/module/nep-dataset-display-content.md:2851
+#: 6f19f500fb1840aebdcc36be6c45d145
 msgid "2.2 结构工具栏（右侧）"
 msgstr "2.2 Structure toolbar (right)"
 
-#: ../../source/module/nep-display-structure-tools.md:13 0577c7dbda474ae08ba8111449918903
+#: ../../source/module/nep-display-structure-tools.md:13
+#: fb29669cceb04636bcfb051ece764e46
 msgid "图标"
 msgstr "Icon"
 
 #: ../../source/module/nep-display-structure-tools.md:13
-#: ../../source/module/nep-display-structure-tools.md:18 3a0c90e2d0884d66b026e368d4fc3fb6
-#: bdab9fdf33084dba9e65083772617200
+#: ../../source/module/nep-display-structure-tools.md:18
+#: ed5f3568dd9041098b73c22fa3971239 f5a6688ac9bf4007ba15eb1eef0332e0
 msgid "按钮"
 msgstr "Buttons"
 
-#: ../../source/module/nep-display-structure-tools.md:13 0e9fd928b7b54de99cfa2593b2ca806b
+#: ../../source/module/nep-display-structure-tools.md:13
+#: 3d2b1f6df1f2429f84e13ccf3b350435
 msgid "是否打开设置"
 msgstr "Opens settings"
 
-#: ../../source/module/nep-display-structure-tools.md:13 65d5fdaa5eaa46a2934735a250400106
+#: ../../source/module/nep-display-structure-tools.md:13
+#: 278e948dea264c9cbecda5f3949b8e53
 msgid "作用"
 msgstr "Purpose"
 
-#: ../../source/module/nep-display-structure-tools.md:13 e403b580a0934f49985c52d51941a877
-msgid "<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:13
+#: 03794aa12b514ae884b6a07e200e5491
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 74fe6891ef2242e7a05d3cdd06f14d2f
+#: ../../source/module/nep-dataset-display-content.md
+#: 81ef610df8614e36b0fe2f0e6a2482ac
 msgid ".. image:: ../_static/image/generated/show_nep_icons/view_change.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/view_change.svg"
 
 #: ../../source/module/nep-display-structure-tools.md:18
-#: ../../source/module/nep-display-structure-tools.md:3202 1b2822d3e7af4bd4a711bfd8e2a27789
-#: a6e921c24a744dbc9972b64b70a3ab16
-msgid "`Ortho View`"
-msgstr "`Ortho View`"
+#: ../../source/module/nep-display-structure-tools.md:2855
+#: 32a867e5ed244535af7ef97a1bb7e3bb a44d18e8904b42e48342a405b41303a0
+msgid "`正交视图`"
+msgstr "`Orthographic view`"
 
-#: ../../source/module/nep-display-structure-tools.md:3202
-#: ../../source/module/nep-display-structure-tools.md:3203
-#: ../../source/module/nep-display-structure-tools.md:3204
-#: ../../source/module/nep-display-structure-tools.md:3207 43cd1a87500047ad9fe2bd2221ef671e
-#: 8dbe7a73cecd4f13a1d5a777bd669df3 b6934466f22e434699b375d42d65b035
-#: fe386cc9a93a4eaf881b9ef0a80d0e26
+#: ../../source/module/nep-display-structure-tools.md:2855
+#: ../../source/module/nep-display-structure-tools.md:2856
+#: ../../source/module/nep-display-structure-tools.md:2857
+#: ../../source/module/nep-display-structure-tools.md:2860
+#: 29aca008b66b460a817ca57cac41f915 4705c8f3e8794b8b9e8a6410b8833b83
+#: 7092871179324526a5ace65370b8d574 d66e1dc1e84c490bad62a70070b0c32c
 msgid "否（开关）"
 msgstr "No (toggle)"
 
-#: ../../source/module/nep-display-structure-tools.md:3202 9f4cdc4f13f749b9b5d6b3cf424ba1ba
+#: ../../source/module/nep-display-structure-tools.md:2855
+#: e11f10d4c4b54c138e3b65f7ad9c373d
 msgid "切换正交视图"
 msgstr "Toggle orthographic projection"
 
-#: ../../source/module/nep-display-structure-tools.md:3202 b73cb6caa8c4427a8af486c5bc1867d1
+#: ../../source/module/nep-display-structure-tools.md:2855
+#: e24181586d2b47c39d6ab9de70124086
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" width=\"20\""
-" />"
+"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" "
+"width=\"20\" />"
 msgstr ""
-"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" width=\"20\""
-" />"
+"<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 3b3b88c27fcd4e37af133bf4058726e3
+#: ../../source/module/nep-dataset-display-content.md
+#: 02a2f25638bf448bacf37990a9b0fbda
 msgid ".. image:: ../_static/image/generated/show_nep_icons/auto_distance.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/auto_distance.svg"
 
 #: ../../source/module/nep-display-structure-tools.md:18
-#: ../../source/module/nep-display-structure-tools.md:3203 842157b647d94357a7869adbd7114400
-#: db64feacd52a47d69b4bfe5b878e499b
-msgid "`Automatic View`"
-msgstr "`Automatic View`"
+#: ../../source/module/nep-display-structure-tools.md:2856
+#: 6cf4b6a612b0462c8cd34b581649dee5 9973c5b854ad4dffb44f37f325173838
+msgid "`自动视图`"
+msgstr "`Auto view`"
 
-#: ../../source/module/nep-display-structure-tools.md:3203 c802fd8fffad453db735943102fff007
+#: ../../source/module/nep-display-structure-tools.md:2856
+#: 774959e35ed94e1889254b3a8f1b32f9
 msgid "自动调整结构观察距离"
 msgstr "Automatically fit the structure viewing distance"
 
-#: ../../source/module/nep-display-structure-tools.md:3203 9108e807c0ce43468ceeef04e93d28dc
-msgid "<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:2856
+#: 01190b6b719647fca1a709f272317d87
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 837d00c278cd491d98edc6ca11bb4415
+#: ../../source/module/nep-dataset-display-content.md
+#: e9fd34fd82d34d16b7e02b094ed2c7dc
 msgid ".. image:: ../_static/image/generated/show_nep_icons/show_bond.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/show_bond.svg"
 
 #: ../../source/module/nep-display-structure-tools.md:18
-#: ../../source/module/nep-display-structure-tools.md:3204 51e34d095a504c8cb6ff3daba1dfc5bb
-#: 8cbe77e2061e4687941930a7b1555c59
-msgid "`Show Bonds`"
-msgstr "`Show Bonds`"
+#: ../../source/module/nep-display-structure-tools.md:2857
+#: 3e6dd8480884465c85937811f5fa932e 658c7abcb7e243f095b9186655ec32f6
+msgid "`显示键`"
+msgstr "`Show bonds`"
 
-#: ../../source/module/nep-display-structure-tools.md:3204 d427523befdb4de5b0251944f0fa4e34
+#: ../../source/module/nep-display-structure-tools.md:2857
+#: e68962feaac54129a2d9736b2243956b
 msgid "显示或隐藏键连线"
 msgstr "Show or hide bond lines"
 
-#: ../../source/module/nep-display-structure-tools.md:3204 ee8132c92e354a6db593acb55cbc8d83
-msgid "<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:2857
+#: 5d594078def441d7a730335f5d693a3a
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 29731567e0514c3a91f642aa6517455a
+#: ../../source/module/nep-dataset-display-content.md
+#: 8b6459d5851744508e6cb6585fe091a6
 msgid ".. image:: ../_static/image/generated/show_nep_icons/xyz.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/xyz.svg"
 
-#: ../../source/module/nep-display-structure-tools.md:3205 186fe3ce99254573b055bffbfb15dea8
-msgid "`Show Arrows`"
-msgstr "`Show Arrows`"
+#: ../../source/module/nep-display-structure-tools.md:2858
+#: e7a793feb6b34b319d5410e07c70aa8a
+msgid "`显示箭头`"
+msgstr "`Show arrows`"
 
-#: ../../source/module/nep-display-structure-tools.md:3205
-#: ../../source/module/nep-display-structure-tools.md:3206 9cd7f77864c5495183365f6ee9bb4dab
-#: d08222539c284ab39992d622f85b8661
+#: ../../source/module/nep-display-structure-tools.md:2858
+#: ../../source/module/nep-display-structure-tools.md:2859
+#: 7041fa62bed54aa9ad2ee6cf93ad9b4b f3b6596116de4c1da035411ebcbae500
 msgid "是"
 msgstr "Yes"
 
-#: ../../source/module/nep-display-structure-tools.md:3205 7d8e75eb59724f7ebb11377d48a95719
+#: ../../source/module/nep-display-structure-tools.md:2858
+#: 301d4a17928f467db6b54580dc0232f6
 msgid "显示力、磁矩或其他向量箭头"
 msgstr "Show force, magnetic-moment, or other vector arrows"
 
-#: ../../source/module/nep-display-structure-tools.md:3205 db8f3f4607ff453ab16793f81d10c58b
-msgid "<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:2858
+#: e263cf8d355443d8a577810810ea2ca3
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 18c1042b9c25478b90f5e8d8d20255eb
+#: ../../source/module/nep-dataset-display-content.md
+#: 9d6097a012944657a7285bd68b22b4c5
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export1.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/export1.svg"
 
-#: ../../source/module/nep-display-structure-tools.md:3206 505e84c0a6db4cffa809e097842aa692
-msgid "`Export current structure`"
+#: ../../source/module/nep-display-structure-tools.md:2859
+#: 989d2481d63a409a929d8cabbb99d976
+msgid "`导出当前结构`"
 msgstr "`Export current structure`"
 
-#: ../../source/module/nep-display-structure-tools.md:3206 9aaaec0f34b94894bc77f49e33979c7c
+#: ../../source/module/nep-display-structure-tools.md:2859
+#: dc067bef32924f0f9b217830b5fb7c3d
 msgid "导出当前结构"
 msgstr "Export the current structure"
 
-#: ../../source/module/nep-display-structure-tools.md:3206 2c3257acdd13459ba77d61302ee0a899
-msgid "<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:2859
+#: 33678706f2634759b99e9bd246c9c6c0
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 63b98f2383584a30b788a58f522336d3
+#: ../../source/module/nep-dataset-display-content.md
+#: e8174a4d1c4f4740aae19dcb5de15058
 msgid ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
 
-#: ../../source/module/nep-display-structure-tools.md:3207 9011c6b53d984a8c81554776fe41f330
-msgid "`Mark Bad (Reject)`"
-msgstr "`Mark Bad (Reject)`"
+#: ../../source/module/nep-display-structure-tools.md:2860
+#: 19b8d69b8dd4449191d1af0d345b7a33
+msgid "`标记为坏点（reject）`"
+msgstr "`Mark bad (reject)`"
 
-#: ../../source/module/nep-display-structure-tools.md:3207 04160afd01d64900bd5b00b76d4155cb
+#: ../../source/module/nep-display-structure-tools.md:2860
+#: cf70cc2e24154242bda5a3e3b6b91dce
 msgid "标记当前结构为 reject"
 msgstr "Mark the current structure as rejected"
 
-#: ../../source/module/nep-display-structure-tools.md:3207 2eacd055961248cbafcb532452b91a91
-msgid "<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-structure-tools.md:2860
+#: 2accca426cf449ac8065b8d19fdd5d72
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 19d92014f59544089d49e1e53075c28e
+#: ../../source/module/nep-dataset-display-content.md
+#: 37b460f6f76943969802963c53116414
 msgid ".. image:: ../_static/image/generated/show_nep_icons/delete.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/delete.svg"
 
-#: ../../source/module/nep-display-structure-tools.md:3208 9971a67580c1496a9b34ede45320811e
-msgid "`Drop All Bad`"
-msgstr "`Drop All Bad`"
+#: ../../source/module/nep-display-structure-tools.md:2861
+#: 845345ba7035444c89ef8f18c2e0541b
+msgid "`删除所有坏点`"
+msgstr "`Drop all bad`"
 
-#: ../../source/module/nep-display-structure-tools.md:3208 a35040cada55483c8af78b7865ae144c
+#: ../../source/module/nep-display-structure-tools.md:2861
+#: ccabb5ca773549e6a0bb7d0189404988
 msgid "是（确认）"
 msgstr "Yes (confirmation)"
 
-#: ../../source/module/nep-display-structure-tools.md:3208 c0a698208f20494a87429b55ac5a271f
+#: ../../source/module/nep-display-structure-tools.md:2861
+#: eb43b28e138a4b52b2d254648fb6d4e1
 msgid "删除所有 reject 结构"
 msgstr "Delete all rejected structures"
 
-#: ../../source/module/nep-dataset-display-content.md:9393 cb863b4f18ff4c3b9d682224f96e3300
+#: ../../source/module/nep-dataset-display-content.md:8745
+#: 0f92d86eb7a942e9a7dad8d299c0bc90
 msgid "4. 结构工具栏（按按钮查）"
 msgstr "4. Structure toolbar (by button)"
 
-#: ../../source/module/nep-dataset-display-content.md:9395 0da23112edf54b5494092bd7fa98ca62
+#: ../../source/module/nep-dataset-display-content.md:8747
+#: a2634886b38244b7b8415e8871a5cbeb
 msgid "4.1 相机与显示控制"
 msgstr "4.1 Camera and display controls"
 
-#: ../../source/module/nep-display-structure-tools.md:18 a26b5e89cc724cdeaf01c3440c161da3
+#: ../../source/module/nep-display-structure-tools.md:18
+#: 3cf825e4b7c74092864867be6f971377
 msgid "行为"
 msgstr "Behavior"
 
-#: ../../source/module/nep-display-structure-tools.md:18 0709dd0712b540238812b21d3a3beabe
-msgid "切换正交投影"
-msgstr "Toggle orthographic projection"
+#: ../../source/module/nep-display-structure-tools.md:18
+#: bc90251aefc24977b08c95d6b2e2789f
+msgid "在透视投影和正交投影之间切换"
+msgstr "Switch between perspective and orthographic projection"
 
-#: ../../source/module/nep-display-structure-tools.md:18 e84dc1d868d642688be738b3dcb437dc
-msgid "自动视角/距离对齐"
-msgstr "Automatically fit the camera angle and distance"
+#: ../../source/module/nep-display-structure-tools.md:18
+#: 20c86d8b7a7c4a9a841f80708efe5d69
+#
+msgid "切换结构时自动调整视角和观察距离"
+msgstr "Automatically adjust the view and distance when switching structures"
 
-#: ../../source/module/nep-display-structure-tools.md:18 c0b82172275c44f484bfa45043acf02b
-msgid "显示/隐藏键；图标在 `show_bond/hide_bond` 间切换"
-msgstr "Show or hide bonds; the icon switches between `show_bond` and `hide_bond`"
+#: ../../source/module/nep-display-structure-tools.md:18
+#: 229f140ad048448284f41bd0048c52f2
+#
+msgid "显示或隐藏原子之间的键"
+msgstr "Show or hide bonds between atoms"
 
-#: ../../source/module/nep-dataset-display-content.md:9403 2d0b3a70397e436381a0633ad17921d7
-msgid "4.2 `Show Arrows`"
-msgstr "4.2 `Show Arrows`"
+#: ../../source/module/nep-dataset-display-content.md:8755
+#: 15de92ac04104586b5c0341630504dd0
+msgid "4.2 `显示箭头`"
+msgstr "4.2 `Show arrows`"
 
-#: ../../source/module/nep-dataset-display-content.md:9405 436b163952f342bc8fdbe5fa70a731ec
-msgid "前提：当前结构画布必须支持箭头 API（通常 vispy）。"
-msgstr "Requirement: the current structure canvas must support the arrow API (normally vispy)."
+#: ../../source/module/nep-dataset-display-content.md:8757
+#: cab856f633f94a08b079194074493660
+msgid "前提：结构绘图后端需要支持箭头。若提示 `当前结构绘图后端不支持箭头叠加。`，在 `设置` 中把绘图后端切换到 `VisPy`。"
+msgstr "Requirement: the structure canvas backend must support arrows. If you see `Arrow overlay is unavailable for current structure canvas backend.`, switch `Canvas Engine` to `VisPy` in `Settings`."
 
-#: ../../source/module/nep-dataset-display-content.md:9406 1f2b4234a59f4c529931cc87e665a6d3
+#: ../../source/module/nep-dataset-display-content.md:8758
+#: 6567acc923e44aa38bdac3cf6c185c0e
 msgid "输入控件："
 msgstr "Input controls:"
 
-#: ../../source/module/nep-dataset-display-content.md:9407 14439bc5e0fc4ce69cea382917603039
-msgid "`Property`：仅 `N x 3` 原子向量属性"
-msgstr "`Property`: atom-vector properties with shape `N x 3` only"
+#: ../../source/module/nep-dataset-display-content.md:8759
+#: 90a1b015642b4d56b26644fdb370df12
+msgid "`属性`：只列出每个原子都有三维向量的属性（`N × 3`），例如力或磁矩"
+msgstr "`Property`: lists only per-atom 3D vector properties (`N × 3`), such as forces or magnetic moments"
 
-#: ../../source/module/nep-dataset-display-content.md:9408 c49ca42ad9744748ab7920856340338b
-msgid "`Scale`：`[0, 1000]`，默认 `1.0`"
-msgstr "`Scale`: `[0, 1000]`; default: `1.0`"
+#: ../../source/module/nep-dataset-display-content.md:8760
+#: 5be11aa2f94a40798050096a231ef349
+#
+msgid "`缩放`：箭头长度系数，范围 `[0, 1000]`，默认 `1.0`"
+msgstr "`Scale`: arrow length factor, range `[0, 1000]`, default `1.0`"
 
-#: ../../source/module/nep-dataset-display-content.md:9409 b4c86c42f907412cb3d232147d0916aa
-msgid "`Colormap`：`viridis/magma/plasma/inferno/jet`"
-msgstr "`Colormap`：`viridis/magma/plasma/inferno/jet`"
+#: ../../source/module/nep-dataset-display-content.md:8761
+#: 040219e364d247fbae2d7a1c3bd7260a
+#
+msgid "`颜色映射`：`viridis/magma/plasma/inferno/jet`"
+msgstr "`Colormap`: `viridis/magma/plasma/inferno/jet`"
 
-#: ../../source/module/nep-dataset-display-content.md:9410 10ff1f3d996b452a9b0cc659c0ecaf89
-msgid "`Show arrows`：勾选显示，取消则清除"
+#: ../../source/module/nep-dataset-display-content.md:8762
+#: 37e7bebc9d3b4cd79a6a35c0b0f8fa0d
+msgid "`显示箭头`：勾选显示，取消则清除"
 msgstr "`Show arrows`: check to display arrows; uncheck to clear them"
 
-#: ../../source/module/nep-dataset-display-content.md:9412 71f5fd09fe824a92a9c32509753592fd
+#: ../../source/module/nep-dataset-display-content.md:8764
+#: 3371b989ee7348b48b7bebb0e98a70b2
+#
+msgid "![显示箭头对话框](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
+msgstr "![Show arrows dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
+
+#: ../../source/module/nep-dataset-display-content.md:8764
+#: 317686de06bc462992afbf05ccaef1e7
+#
+msgid "显示箭头对话框"
+msgstr "Show arrows dialog"
+
+#: ../../source/module/nep-dataset-display-content.md:8764
+#: 317686de06bc462992afbf05ccaef1e7
 msgid ""
-"![Show Arrows "
-"Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
 msgstr ""
-"![Show Arrows "
-"Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
 
-#: ../../source/module/nep-dataset-display-content.md:9412 53fd7fc8b0e541eaa78d2231a5c6d754
-msgid "Show Arrows Dialog"
-msgstr "Show Arrows Dialog"
-
-#: ../../source/module/nep-dataset-display-content.md:9412 53fd7fc8b0e541eaa78d2231a5c6d754
-msgid ".. image:: ../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
-msgstr ".. image:: ../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
-
-#: ../../source/module/nep-dataset-display-content.md:9414 db583b5f86774f3bb7b381657b8abf73
-msgid "4.3 `Export current structure`"
+#: ../../source/module/nep-dataset-display-content.md:8766
+#: 9c7e33578053402db98f5fb34ea55af1
+msgid "4.3 `导出当前结构`"
 msgstr "4.3 `Export current structure`"
 
-#: ../../source/module/nep-dataset-display-content.md:9416 14772ef2df4c424b91e0ef880de5c77c
+#: ../../source/module/nep-dataset-display-content.md:8768
+#: 35ae6ec0753348e6a6030bc895b2a93d
 msgid "第一步：选格式"
 msgstr "Step 1: choose a format"
 
-#: ../../source/module/nep-dataset-display-content.md:9417 55ac178b8d82471f98fb082a42cdc770
+#: ../../source/module/nep-dataset-display-content.md:8769
+#: 8f5791808db94de88b254f69588a58a8
 msgid "`XYZ (.xyz / extxyz)`"
 msgstr "`XYZ (.xyz / extxyz)`"
 
-#: ../../source/module/nep-dataset-display-content.md:9418 6298c6cdc5584dfdb2d85d0163e19ad7
+#: ../../source/module/nep-dataset-display-content.md:8770
+#: bbda6d9010524f44bfe5312f796ce953
 msgid "`DeepMD NPY`"
 msgstr "`DeepMD NPY`"
 
-#: ../../source/module/nep-dataset-display-content.md:9419 6298c6cdc5584dfdb2d85d0163e19ad7
+#: ../../source/module/nep-dataset-display-content.md:8771
+#: a168eab8fd404797ac1989acaa6f1d99
 msgid "`DeepMD NPY (Mixed)`"
 msgstr "`DeepMD NPY (Mixed)`"
 
-#: ../../source/module/nep-dataset-display-content.md:9420 8ef112d70a5845dea4faaf19347b658b
+#: ../../source/module/nep-dataset-display-content.md:8772
+#: ccbbdce9f42d4cfda3986d114ad3eb00
 msgid ""
-"选择 `DeepMD NPY` 时，再选择子目录按 `Config_type` 还是按化学式分组。选择 Mixed 时显示“虚拟原子填充”：`0` "
-"按精确原子数分组，正整数按 dpdata 的 `atom_numb_pad` 规则向上补齐，使不同原子数可进入同一目录。XYZ 不显示这两个选项。"
+"选择 `DeepMD NPY` 时，再选择子目录按 `Config_type` 还是按化学式分组。选择 Mixed 时显示“虚拟原子填充”：`0`"
+" 按精确原子数分组，正整数按 dpdata 的 `atom_numb_pad` 规则向上补齐，使不同原子数可进入同一目录。XYZ "
+"不显示这两个选项。"
 msgstr ""
-"When `DeepMD NPY` is selected, choose whether subdirectories are grouped by "
-"`Config_type` or by chemical formula. With Mixed, `Virtual-atom padding` is shown: "
-"`0` groups by exact atom count, while a positive integer rounds counts up according "
-"to dpdata's `atom_numb_pad` rule so systems with different atom counts can share a "
-"directory. These two options are not shown for XYZ."
+"When `DeepMD NPY` is selected, choose whether subdirectories are grouped "
+"by `Config_type` or by chemical formula. With Mixed, `Virtual-atom "
+"padding` is shown: `0` groups by exact atom count, while a positive "
+"integer rounds counts up according to dpdata's `atom_numb_pad` rule so "
+"systems with different atom counts can share a directory. These two "
+"options are not shown for XYZ."
 
-#: ../../source/module/nep-dataset-display-content.md:9421 dfd7d8dd5f6d410b929d5f13287b9156
+#: ../../source/module/nep-dataset-display-content.md:8773
+#: 2492f31f8d874f4e8f5d2e8b563253ff
 msgid "第二步：选路径"
 msgstr "Step 2: choose a path"
 
-#: ../../source/module/nep-dataset-display-content.md:9422 e4f540d444604bfcab50da3f7c7d259e
+#: ../../source/module/nep-dataset-display-content.md:8774
+#: 67430f73d663451aa57b0e9a65580b14
 #, python-brace-format
 msgid "`xyz`：文件保存路径（默认 `structure_{index}.xyz`）"
 msgstr "`xyz`: output file path (default: `structure_{index}.xyz`)"
 
-#: ../../source/module/nep-dataset-display-content.md:9423 41343924d3f842b3bf56e5ba6fc9b8fa
+#: ../../source/module/nep-dataset-display-content.md:8775
+#: 10c1c076d8b342ff927ead1b5ed03ff4
 msgid "两种 DeepMD NPY：目录保存路径"
 msgstr "Both DeepMD NPY formats: directory output path"
 
-#: ../../source/module/nep-dataset-display-content.md:9425 a05b8e5298ea481a832ceb5c88c26482
+#: ../../source/module/nep-dataset-display-content.md:8777
+#: 362ec338bfe2439ba253b46efcf42a23
+#
+msgid "![导出格式对话框](../_static/image/generated/show_nep_reference/s_export_format.png)"
+msgstr "![Export format dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
+
+#: ../../source/module/nep-dataset-display-content.md:8777
+#: 0438be98281348cd95547225810bb74e
+msgid "导出格式对话框"
+msgstr "Export format dialog"
+
+#: ../../source/module/nep-dataset-display-content.md:8777
+#: 0438be98281348cd95547225810bb74e
 msgid ""
-"![Export Format "
-"Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_export_format.png"
 msgstr ""
-"![Export Format "
-"Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_export_format.png"
 
-#: ../../source/module/nep-dataset-display-content.md:9425 bb68fb54cbaa4adb8014667c04ba9945
-msgid "Export Format Dialog"
-msgstr "Export Format Dialog"
+#: ../../source/module/nep-dataset-display-content.md:8779
+#: 53688d22aecc44b6b40fed9af383b504
+msgid "4.4 `标记为坏点（reject）` 与 `删除所有坏点`"
+msgstr "4.4 `Mark bad (reject)` and `Drop all bad`"
 
-#: ../../source/module/nep-dataset-display-content.md:9425 bb68fb54cbaa4adb8014667c04ba9945
-msgid ".. image:: ../_static/image/generated/show_nep_reference/s_export_format.png"
-msgstr ".. image:: ../_static/image/generated/show_nep_reference/s_export_format.png"
+#: ../../source/module/nep-dataset-display-content.md:8781
+#: 0b76353b47d140e99d02d53c9b47cc56
+#
+msgid "`标记为坏点（reject）`：只标记，不删除；主图上会高亮显示这些坏点。"
+msgstr "`Mark bad (reject)`: marks without deleting; the main plot highlights the marked structures."
 
-#: ../../source/module/nep-dataset-display-content.md:9427 ef970b2ea5534b9fb4159145e09f2de2
-msgid "4.4 `Mark Bad (Reject)` 与 `Drop All Bad`"
-msgstr "4.4 `Mark Bad (Reject)` and `Drop All Bad`"
+#: ../../source/module/nep-dataset-display-content.md:8782
+#: 1d16d4bcee594e28981399cc66030d72
+msgid "`删除所有坏点`：弹出确认框后，删除当前所有标记为坏点的结构，并清空坏点标记。"
+msgstr "`Drop all bad`: after confirmation, deletes every structure marked as bad and clears the marks."
 
-#: ../../source/module/nep-dataset-display-content.md:9429 f192dea6bc80482e9be69f47b5e64461
-msgid "`Mark Bad (Reject)`：只标记，不删除；主图显示 reject 高亮。"
-msgstr "`Mark Bad (Reject)`: mark without deleting; the main plot highlights rejected structures."
+#: ../../source/module/nep-dataset-display-content.md:8784
+#: 2cb96df8e6884746af4687a730550b5b
+#
+msgid "![删除所有坏点确认框](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
+msgstr "![Drop all bad confirmation](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
 
-#: ../../source/module/nep-dataset-display-content.md:9430 a8e720a81ef74007a4d791d9b00d6cf3
-msgid "`Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
-msgstr "`Drop All Bad`: after confirmation, delete every active rejected structure; then clear the rejected set and redraw the plot."
+#: ../../source/module/nep-dataset-display-content.md:8784
+#: e3756cc800a4476ab33e3ba3c5a7388b
+#
+msgid "删除所有坏点确认框"
+msgstr "Drop all bad confirmation"
 
-#: ../../source/module/nep-dataset-display-content.md:9432 995fc7b07dbb4d78bbab82739caf9b5a
+#: ../../source/module/nep-dataset-display-content.md:8784
+#: e3756cc800a4476ab33e3ba3c5a7388b
 msgid ""
-"![Drop All Bad "
-"Confirm](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"
 msgstr ""
-"![Drop All Bad "
-"Confirm](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"
 
-#: ../../source/module/nep-dataset-display-content.md:9432 124e2e2475d440de9a5162e607ad8f5d
-msgid "Drop All Bad Confirm"
-msgstr "Drop All Bad Confirm"
+#~ msgid "切换正交投影"
+#~ msgstr "Toggle orthographic projection"
 
-#: ../../source/module/nep-dataset-display-content.md:9432 124e2e2475d440de9a5162e607ad8f5d
-msgid ".. image:: ../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"
-msgstr ".. image:: ../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"
+#~ msgid "自动视角/距离对齐"
+#~ msgstr "Automatically fit the camera angle and distance"
+
+#~ msgid "显示/隐藏键；图标在 `show_bond/hide_bond` 间切换"
+#~ msgstr ""
+#~ "Show or hide bonds; the icon "
+#~ "switches between `show_bond` and `hide_bond`"
+
+#~ msgid "前提：当前结构画布必须支持箭头 API（通常 vispy）。"
+#~ msgstr ""
+#~ "Requirement: the current structure canvas "
+#~ "must support the arrow API (normally "
+#~ "vispy)."
+
+#~ msgid "`Property`：仅 `N x 3` 原子向量属性"
+#~ msgstr "`Property`: atom-vector properties with shape `N x 3` only"
+
+#~ msgid "显示箭头 Dialog"
+#~ msgstr "Show arrows Dialog"
+
+#~ msgid ""
+#~ "![Export Format "
+#~ "Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
+#~ msgstr ""
+#~ "![Export Format "
+#~ "Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
+
+#~ msgid "Export Format Dialog"
+#~ msgstr "Export Format Dialog"
+
+#~ msgid "`删除所有坏点`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
+#~ msgstr ""
+#~ "`Drop all bad`: after confirmation, "
+#~ "delete every active rejected structure; "
+#~ "then clear the rejected set and "
+#~ "redraw the plot."
+
+#~ msgid "删除所有坏点 Confirm"
+#~ msgstr "Drop all bad Confirm"

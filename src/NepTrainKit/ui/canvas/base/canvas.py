@@ -14,6 +14,48 @@ def _tr(text: str) -> str:
     return QCoreApplication.translate("CanvasBase", text)
 
 
+def _parity_axis_labels(title: str) -> tuple[str, str] | None:
+    """Return (x, y) labels for reference-vs-prediction parity plots.
+
+    Every parity dataset stores the reference value on x and the model
+    prediction on y; units follow the per-atom NEP/DeepMD output files.
+    """
+    labels = {
+        "energy": (
+            _tr("Reference energy (eV/atom)"),
+            _tr("Predicted energy (eV/atom)"),
+        ),
+        "force": (
+            _tr("Reference force (eV/Å)"),
+            _tr("Predicted force (eV/Å)"),
+        ),
+        "virial": (
+            _tr("Reference virial (eV/atom)"),
+            _tr("Predicted virial (eV/atom)"),
+        ),
+        "stress": (
+            _tr("Reference stress (GPa)"),
+            _tr("Predicted stress (GPa)"),
+        ),
+        # Magnetic force -dE/dm of NEP spin models.
+        "mforce": (
+            _tr("Reference magnetic force (eV/μB)"),
+            _tr("Predicted magnetic force (eV/μB)"),
+        ),
+    }
+    return labels.get(title)
+
+
+def dataset_axis_labels(dataset) -> tuple[str | None, str | None]:
+    """Return a dataset's explicit axis labels, else known parity labels."""
+    x_label = getattr(dataset, "x_label", None)
+    y_label = getattr(dataset, "y_label", None)
+    if x_label or y_label:
+        return x_label, y_label
+    labels = _parity_axis_labels(str(getattr(dataset, "title", "") or ""))
+    return labels if labels is not None else (None, None)
+
+
 class CanvasBase(ABC):
     """Abstract base class for canvas backends.
 

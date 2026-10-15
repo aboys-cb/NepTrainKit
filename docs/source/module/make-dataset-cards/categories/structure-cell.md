@@ -5,11 +5,11 @@
 
 | 目标 | 使用卡片 |
 | --- | --- |
-| 从标准晶体原型开始 | `Crystal Prototype Builder` |
-| 扩大已有晶胞 | `Super Cell` |
-| 扫描轴向应变或随机晶格变化 | `Lattice Strain` / `Lattice Perturb` |
-| 扫描 Bain 四方畸变 | `Bain Path` |
-| 施加矩阵或角度剪切 | `Shear Matrix Strain` / `Shear Angle Strain` |
+| 从标准晶体原型开始 | `晶体原型构建` |
+| 扩大已有晶胞 | `扩胞` |
+| 扫描轴向应变或随机晶格变化 | `晶格应变` / `晶格随机扰动` |
+| 扫描 Bain 四方畸变 | `Bain 路径` |
+| 施加矩阵或角度剪切 | `剪切矩阵应变` / `剪切角应变` |
 
 ```{toctree}
 :maxdepth: 1

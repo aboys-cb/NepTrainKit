@@ -72,7 +72,8 @@ class _NumpyCoverageState:
             active = np.flatnonzero((self.species[:len(self.atomic)] == self.species[atom])
                                     & (self.atomic > self.atom_resolution ** 2))
             delta = self.atoms[active] - self.atoms[atom]
-            self.atomic[active] = np.minimum(self.atomic[active], np.sum(delta * delta, axis=1))
+            d2 = np.sum(delta * delta, axis=1)
+            self.atomic[active] = np.minimum(self.atomic[active], d2)
         if center < self.count:
             self.chosen[center] = True
             self.nearest[center] = 0.0
@@ -107,7 +108,11 @@ def _prepare(candidate, plan, existing, existing_plan):
         raise ValueError("existing feature blocks and existing plan must be supplied together")
     if not n or not candidate.values:
         raise ValueError("candidate sampling feature blocks must not be empty")
-    if existing is not None and existing.names != candidate.names:
+    if existing is not None and tuple(k for k in existing.names if not k.startswith("input_")) != tuple(
+            k for k in candidate.names if not k.startswith("input_")):
+        raise ValueError("candidate and existing sampling feature blocks differ")
+    if existing is not None and any(k.startswith("input_") for k in existing.names) != any(
+            k.startswith("input_") for k in candidate.names):
         raise ValueError("candidate and existing sampling feature blocks differ")
     warm_groups = {} if existing is None else _groups(existing_plan, existing.row_count)
     both = [candidate] if existing is None else [candidate, existing]
@@ -118,11 +123,13 @@ def _prepare(candidate, plan, existing, existing_plan):
     for key, rows in warm_groups.items():
         elements[n + np.asarray(rows)] = keys.index(key.element_set)
 
-    names = candidate.names
+    names = tuple(k for k in candidate.names if not k.startswith("input_")) + tuple(sorted(
+        {k for b in both for k in b.names if k.startswith("input_")}))
     normalized = []
     for name in names:
-        index = candidate.names.index(name)
-        raw = np.vstack([b.values[index] for b in both]).astype(np.float64)
+        width = next(b.values[b.names.index(name)].shape[1] for b in both if name in b.names)
+        raw = np.vstack([b.values[b.names.index(name)] if name in b.names else
+                         np.zeros((b.row_count, width)) for b in both]).astype(np.float64)
         if raw.ndim != 2 or raw.shape[1] < 1 or len(raw) != len(elements) or not np.isfinite(raw).all():
             raise ValueError("sampling features must be finite and align with structures")
         block = np.empty_like(raw)
@@ -130,9 +137,13 @@ def _prepare(candidate, plan, existing, existing_plan):
             rows = np.flatnonzero(elements == element)
             normalize = _normalize_descriptor_sets if name == "descriptor_mean" else _normalize_block_sets
             local, _ = normalize(raw[rows], None)
-            unique = np.unique(local, axis=0)
-            _, rotation = np.linalg.eigh(unique.T @ unique)
-            block[rows] = local @ rotation[:, ::-1]
+            if name.startswith("input_"):
+                # Keep the physical input coordinate axes.
+                block[rows] = local
+            else:
+                unique = np.unique(local, axis=0)
+                _, rotation = np.linalg.eigh(unique.T @ unique)
+                block[rows] = local @ rotation[:, ::-1]
         normalized.append(block)
     if all(b.atom_counts and b.atom_species for b in both):
         symbols = sorted({s for b in both for s in b.atom_species})
@@ -182,17 +193,23 @@ def _prepare(candidate, plan, existing, existing_plan):
     digests = []
     for i in range(n):
         digest = hashlib.blake2b(points[i].tobytes(), digest_size=16)
+        spread = 0.0
         if available:
             rows = fingerprint_atoms[offsets[i]:offsets[i + 1]]
             local_species = species[offsets[i]:offsets[i + 1]]
             local = np.column_stack((local_species, rows))
             local = np.unique(local, axis=0)
             digest.update(local.tobytes())
-        digests.append(digest.digest())
+            centered = atoms[offsets[i]:offsets[i + 1]]
+            spread = round(float(np.mean(np.sum(centered * centered, axis=1))), 12)
+        # Equal structure centroids need a meaningful atomic tie-break: start
+        # with the more central local environments, then use content identity.
+        # Appending a constant input view must not displace that representative.
+        digests.append((spread, digest.digest()))
     tie_order = np.asarray(sorted(range(n), key=digests.__getitem__), dtype=np.int64)
     state_type = _NumpyCoverageState
     if (_native_sampling is not None and hasattr(_native_sampling, "CoverageState")
-            and getattr(_native_sampling, "coverage_api_version", 0) >= 2):
+            and getattr(_native_sampling, "coverage_api_version", 0) >= 3):
         state_type = _native_sampling.CoverageState
     state = state_type(points, ends, elements, atoms, offsets, species, n)
     return state, points, groups, warm_groups, tie_order, names, available
@@ -207,9 +224,10 @@ class CoverageSelection:
     trajectory: tuple[int, ...]
 
 
-def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan, *,
+def _select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan, *,
                     existing=None, existing_plan=None, budget=None, policy="balanced",
-                    min_distance=0.0, resource_limit=None, resolution=None) -> CoverageSelection:
+                    min_distance=0.0, resource_limit=None, resolution=None,
+                    _prepared=None, _initial_indices=(), _requirements=None) -> CoverageSelection:
     """One deterministic trajectory for fixed budgets and radius stopping.
 
     Atomic environments within the conservative resolution are retired from
@@ -228,8 +246,8 @@ def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan,
         raise ValueError("min_distance must be finite and non-negative")
     if resource_limit is not None and int(resource_limit) <= 0:
         raise ValueError("resource_limit must be positive")
-    state, points, groups, warm_groups, tie_order, names, available = _prepare(
-        candidate, plan, existing, existing_plan)
+    prepared = _prepare(candidate, plan, existing, existing_plan) if _prepared is None else _prepared
+    state, points, groups, warm_groups, tie_order, names, available = prepared
     if tolerance < _ATOM_RESOLUTION:
         state.refine_atoms(tolerance)
     n = candidate.row_count
@@ -241,18 +259,29 @@ def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan,
                          f"({maximum} < {len(required)})")
     for i in range(n, len(points)):
         state.add(i)
-    chosen = []
+    chosen = [int(i) for i in _initial_indices]
+    if (len(chosen) > maximum or len(set(chosen)) != len(chosen)
+            or any(i < 0 or i >= n for i in chosen)):
+        raise ValueError("invalid initial coverage representatives")
+    for row in chosen:
+        state.add(row)
+        if _requirements is not None:
+            _requirements.add(row)
     # One representative per previously unrepresented label, chosen near the
     # unique-data centroid, then shared global geometry drives all remaining slots.
     for key in required:
         if len(chosen) == maximum:
             break
+        if set(chosen).intersection(groups[key]):
+            continue
         rows = tie_order[np.isin(tie_order, groups[key])]
         local = points[rows]
         center = np.mean(np.unique(local, axis=0), axis=0)
         row = int(rows[np.argmin(np.sum((local - center) ** 2, axis=1))])
         chosen.append(row)
         state.add(row)
+        if _requirements is not None:
+            _requirements.add(row)
     counts = {}
     snapshots = {}
     refined_atoms = False
@@ -260,7 +289,8 @@ def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan,
     while True:
         scores = np.asarray(state.scores())
         radius = float(np.max(scores, initial=0.0))
-        protected = len(chosen) >= len(required)
+        pending = np.zeros(n, dtype=bool) if _requirements is None else _requirements.pending()
+        protected = len(chosen) >= len(required) and not np.any(pending)
         for name, preset_radius in RESOLUTIONS.items():
             if protected and radius <= preset_radius and name not in counts:
                 counts[name] = len(chosen)
@@ -281,15 +311,18 @@ def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan,
                 state.add(center)
             refined_atoms = True
             continue
-        if radius <= 1e-12:
+        if radius <= 1e-12 and not np.any(pending):
             stop_reason = "exhausted"
             break
         if budget is not None and radius < min_distance:
             stop_reason = "min_distance"
             break
-        row = int(tie_order[np.argmax(scores[tie_order])])
+        eligible = tie_order[pending[tie_order]] if np.any(pending) else tie_order
+        row = int(eligible[np.argmax(scores[eligible])])
         chosen.append(row)
         state.add(row)
+        if _requirements is not None:
+            _requirements.add(row)
     trajectory = tuple(chosen)
     distances = np.asarray(state.distances())
     if budget is None and resolution is None and policy in snapshots:
@@ -297,6 +330,8 @@ def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan,
         distances = snapshots[policy]
         stop_reason = "resolution"
     uncovered = np.flatnonzero(np.maximum(distances[:, -2], distances[:, -1]) > tolerance)
+    pending = np.zeros(n, dtype=bool) if _requirements is None else _requirements.pending()
+    uncovered = np.union1d(uncovered, np.flatnonzero(pending))
     # Missing category representatives cannot be certified merely by geometry.
     selected_set = set(chosen)
     for key in required:
@@ -308,3 +343,45 @@ def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan,
         tuple(int(i) for i in uncovered), available,
     )
     return CoverageSelection(tuple(chosen), distances, evidence, counts, trajectory)
+
+
+def _without_inputs(blocks):
+    """Drop model-independent input views; descriptors and atoms are kept."""
+    if blocks is None:
+        return None
+    pairs = [(k, v) for k, v in zip(blocks.names, blocks.values) if not k.startswith("input_")]
+    if not pairs:
+        return blocks
+    return SamplingFeatureBlocks(tuple(k for k, _ in pairs), tuple(v for _, v in pairs),
+                                 blocks.atomic_values, blocks.atom_counts, blocks.atom_species)
+
+
+def select_coverage(candidate: SamplingFeatureBlocks, plan: PhysicsSamplingPlan, *,
+                    existing=None, existing_plan=None, budget=None, policy="balanced",
+                    min_distance=0.0, resource_limit=None, resolution=None) -> CoverageSelection:
+    """Select coverage using the established GUI/card sampling path.
+
+    A fixed count with input views, without a training set or distance
+    threshold, uses the input-state witness cover (``sampling_states``).
+    Radius stopping and thresholds use the shared FPS trajectory. Its radius
+    is measured on descriptors, structure features and atomic environments
+    only: per-frame input fingerprints separate nearly every thermal frame, so
+    they keep each element set's input extent as witnesses (unless a training
+    set is supplied) instead of entering the stopping distance.
+    """
+    from .sampling_states import _RangeRequirements, select_state_coverage
+    inputs = any(name.startswith("input_") for name in candidate.names)
+    if (inputs and budget is not None and existing is None and existing_plan is None
+            and min_distance == 0 and resource_limit is None and resolution is None):
+        return select_state_coverage(candidate, plan, budget=budget, policy=policy)
+    requirements = None
+    if inputs and existing is None:
+        # Keep each element set's input extent; any frame at an extreme counts.
+        pools = {}
+        for key, rows in plan.groups:
+            pools.setdefault(key.element_set, []).extend(rows)
+        requirements = _RangeRequirements(candidate, pools, np.zeros(candidate.row_count, dtype=bool))
+    kwargs = dict(existing=_without_inputs(existing), existing_plan=existing_plan, budget=budget,
+                  policy=policy, min_distance=min_distance, resource_limit=resource_limit,
+                  resolution=resolution)
+    return _select_coverage(_without_inputs(candidate), plan, _requirements=requirements, **kwargs)

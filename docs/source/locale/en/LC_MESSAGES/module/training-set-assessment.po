@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: NepTrainKit documentation team\n"
 "Language: en\n"
@@ -20,15 +20,16 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/training-set-assessment.md:1
-#: 8f16c78409f34000b774b0bc764b09c0
+#: c6f60b9a803f4aa782fa9a860ff5d2f7
 msgid "训练集评估（Training Set Audit）"
-msgstr "Training-set audit (Training Set Audit)"
+msgstr "Training Set Audit"
 
 #: ../../source/module/training-set-assessment.md:3
-#: 6699bedd19ba4fbe95b17c97b4e01057
+#: d20a96d026ba440e9b79229d5e5a1471
+#
 msgid ""
 "训练集评估用于检查当前训练数据：先找会阻止训练的技术问题，再查看组分、标签、 局域环境、结构相和磁类型如何分布。每一项结果都能回到 `NEP "
-"Dataset Display` 中的原始结构。"
+"数据集查看` 中的原始结构。"
 msgstr ""
 "Training Set Audit checks the current training data. It first finds "
 "technical issues that would block training, then examines the "
@@ -37,64 +38,68 @@ msgstr ""
 "original structure in `NEP Dataset Display`."
 
 #: ../../source/module/training-set-assessment.md:21
-#: dcfd399bd4d74369aa717953894d68d7
-msgid "从数据集查看进入"
-msgstr "Open it from Dataset Display"
+#: af2ef015b0194a94a19aa472f19e905e
+#
+msgid "从 NEP 数据集查看进入"
+msgstr "Open it from NEP Dataset Display"
 
 #: ../../source/module/training-set-assessment.md:23
-#: 08bd3645102a4cd1809c6981fbbfab3c
-msgid "先在 `NEP Dataset Display` 中打开训练数据，再使用以下任一入口："
+#: 00009f789eb54213afbcc5c833a6298e
+#
+msgid "先在 `NEP 数据集查看` 中打开训练数据，再使用以下任一入口："
 msgstr ""
 "Load the training data in `NEP Dataset Display`, then use either entry "
 "point:"
 
 #: ../../source/module/training-set-assessment.md:7
-#: b5b0e16e6e5544fe93ad6cdaecbade8b
+#: 57152c4c9dea41da989d01efdc990a91
 msgid "入口"
 msgstr "Entry point"
 
 #: ../../source/module/training-set-assessment.md:7
-#: a66e604d54b34c95adb49d063bdb09ef
+#: 0dee197953254071b150e01ee92ebe1e
 msgid "打开位置"
 msgstr "Opens"
 
 #: ../../source/module/training-set-assessment.md:7
-#: e9c698fc627c4f2286cd80b11b74e9c8
+#: 3f753d469c44406a9a1e95deaa45c1ca
 msgid "适合做什么"
 msgstr "Use it for"
 
 #: ../../source/module/training-set-assessment.md:7
-#: 2301673faa294843a3637d89f1fb1232
-msgid "顶部 `Save` 分裂菜单 → `评估当前数据集`"
-msgstr "Title-bar `Save` split menu → `Check current dataset`"
+#: 077d8fffe0bb4579b299643076b119a7
+#
+msgid "左侧图表工具栏 → `训练集评估`"
+msgstr "Plot toolbar → `Training Set Audit`"
 
 #: ../../source/module/training-set-assessment.md:7
-#: d566b3e44b2a4e4eabf735242c685b81
+#: fd7261796c7a488983ca8549f80d41e1
 msgid "「概览」"
 msgstr "Overview"
 
 #: ../../source/module/training-set-assessment.md:7
-#: 3521d2ccdd0e4997b0c8490ad2817e98
+#: fa82246abf194e6a954f55976f5278e9
 msgid "完整检查当前活动结构"
 msgstr "Run the complete audit on the active structures"
 
 #: ../../source/module/training-set-assessment.md:7
-#: 3471d396a4c34b0db5814449a2e685fb
-msgid "左侧图表工具栏 → `查看数据分布`"
-msgstr "Plot toolbar → `Explore distributions`"
+#: 7ce16e2ca0994c37bc2908574a1a8099
+#
+msgid "进入训练集评估后切到「数据地图」→「数据分布」"
+msgstr "In Training Set Audit, switch to `Data map` → `Explore distributions`"
 
 #: ../../source/module/training-set-assessment.md:7
-#: 6df085e7882940b29852ad79d47d166d
+#: 342b58d08df345b79143647882e07bbd
 msgid "「数据地图」→「数据分布」"
 msgstr "`Data map` → `Data distribution`"
 
 #: ../../source/module/training-set-assessment.md:7
-#: 9086731d725e4f679e91f37d830d421d
+#: 9213ea1ac0db4f05b83cebecf2759c66
 msgid "查看能量、力、virial、预测值或误差分布"
 msgstr "Inspect energy, force, virial, predictions, or error distributions"
 
 #: ../../source/module/training-set-assessment.md:30
-#: 5244a192130849d298340a37c56686ff
+#: 699dee00661b410aa86eefdc2c02ba9a
 msgid ""
 "评估默认只读取当前活动结构；已删除结构不在本次范围内。删除结构、修改标签或切换 `nep.txt` "
 "后，应点击「重新检查」，旧结果不能继续代表变化后的数据。"
@@ -105,47 +110,47 @@ msgstr ""
 "the changed data."
 
 #: ../../source/module/training-set-assessment.md:33
-#: 6291ebb304c84cb1b438d23a09b64253
+#: e1c025dd5be044b1933722d8273d75de
 msgid "按页面标签阅读"
 msgstr "Read by page tab"
 
 #: ../../source/module/training-set-assessment.md:35
-#: 6c1638c6eb634594b6ac924ed159ad27
+#: 150198ba1d9445829ce4b0bb34bf0844
 msgid "[概览与快速体检](training-audit-overview.md)：先处理阻塞项，再看建议复核项。"
 msgstr ""
 "[Overview and quick health check](training-audit-overview.md): handle "
 "blocking issues first, then review recommended checks."
 
 #: ../../source/module/training-set-assessment.md:36
-#: 3e039662804441e0944f34836485afb7
+#: 4d3a6340fa724208817c683534057000
 msgid "[数据地图](training-audit-data-map.md)：查看精确组分、结构相和磁类型分布。"
 msgstr ""
 "[Data map](training-audit-data-map.md): inspect exact-composition, "
 "structural-phase, and magnetic-type distributions."
 
 #: ../../source/module/training-set-assessment.md:37
-#: 2234f3cf5d85429e98fbb65ca36edd6b
+#: 678e5429d5774226b987aec13b7d9a0b
 msgid "[进阶证据](training-audit-advanced.md)：结合活动模型的 cutoff 检查局域环境。"
 msgstr ""
 "[Advanced evidence](training-audit-advanced.md): inspect local "
 "environments with the active model's cutoff."
 
 #: ../../source/module/training-set-assessment.md:38
-#: 9a88000bec814f1b80f77aa3fdd0fe68
+#: 3e838cbf9f524e9883c423ea091cde97
 msgid "[复核队列](training-audit-review-queue.md)：记录每类问题的人工判断。"
 msgstr ""
 "[Review queue](training-audit-review-queue.md): record human judgments "
 "for each issue type."
 
 #: ../../source/module/training-set-assessment.md:39
-#: 94f3172a94094116814f49dd0e2ff85a
+#: e93d6a59d87244239857e474532ce627
 msgid "[目标与模型](training-audit-target-model.md)：有明确目标空间时再比较覆盖规则。"
 msgstr ""
 "[Targets and model](training-audit-target-model.md): compare coverage "
 "rules only when a target space is defined."
 
 #: ../../source/module/training-set-assessment.md:40
-#: 8db772c25ce1465db58217764631bfa4
+#: 8ca9886855d2421eb2ab415016acc02a
 msgid ""
 "[结构相识别](training-audit-phase.md)和[磁类型识别](training-audit-"
 "magnetism.md)：核对判据与能力边界。"
@@ -155,7 +160,7 @@ msgstr ""
 "capability boundaries."
 
 #: ../../source/module/training-set-assessment.md:41
-#: b84fcfaad86b4153bf9e224f706a264d
+#: b93ea65588f5446ba583715a4e975d09
 msgid "[导出报告与当前限制](training-audit-report.md)：留档、协作以及判断本页面不能回答的问题。"
 msgstr ""
 "[Export reports and current limitations](training-audit-report.md): "
@@ -163,7 +168,7 @@ msgstr ""
 "answer."
 
 #: ../../source/module/training-set-assessment.md:43
-#: cdfe8de8ee3f4eecb2299ddc67ffdd35
+#: 9dbb879be83845faa67df103dbdafcaa
 msgid "这个页面给出的是**当前数据快照的证据**，不会仅凭一份训练集宣称物理空间已经完整覆盖， 也不会在缺少独立测试数据时判断势函数是否可靠。"
 msgstr ""
 "This page provides **evidence from the current data snapshot**. It does "

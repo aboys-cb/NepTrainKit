@@ -7259,6 +7259,91 @@
       "rendered": null,
       "review": "technical",
       "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "any/all requires at least one atomic field.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "any/all 条件中必须包含至少一个原子字段。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "atomic.element requires == or != with a quoted element symbol inside any/all.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "atomic.element 只能在 any/all 条件内使用 == 或 != 与带引号的元素符号比较。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Atomic fields in any/all must refer to the same atoms; row counts do not align.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "any/all 中的原子字段必须对应相同的原子；当前字段行数不一致。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "atomic.element is only available inside any/all and does not support suffixes.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "atomic.element 只能在 any/all 条件内使用，且不支持后缀。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "atomic.element must be compared with a quoted element symbol, for example 'Fe'.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "atomic.element 必须与带引号的元素符号比较，例如 'Fe'。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "any/all requires at least one atomic field.",
+      "rendered": "any/all 条件中必须包含至少一个原子字段。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "atomic.element requires == or != with a quoted element symbol inside any/all.",
+      "rendered": "atomic.element 只能在 any/all 条件内使用 == 或 != 与带引号的元素符号比较。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Atomic fields in any/all must refer to the same atoms; row counts do not align.",
+      "rendered": "any/all 中的原子字段必须对应相同的原子；当前字段行数不一致。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "atomic.element is only available inside any/all and does not support suffixes.",
+      "rendered": "atomic.element 只能在 any/all 条件内使用，且不支持后缀。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "atomic.element must be compared with a quoted element symbol, for example 'Fe'.",
+      "rendered": "atomic.element 必须与带引号的元素符号比较，例如 'Fe'。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
     }
   ],
   "followup_fixes": [

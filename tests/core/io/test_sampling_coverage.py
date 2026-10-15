@@ -222,6 +222,83 @@ def test_nonperiodic_vacuum_is_not_a_density_coverage_axis():
     assert result.recommended_count == 1
 
 
+def test_element_resolved_moment_scans_survive_identical_model_descriptors():
+    structures = []
+    for moment in np.linspace(.1, 3.0, 41):
+        s = Atoms("MnO", positions=[[0, 0, 0], [1.5, 1.5, 1.5]], cell=np.eye(3)*3, pbc=True)
+        s.arrays["spin"] = np.array([[0, 0, moment], [0, 0, 3.1-moment]])
+        structures.append(s)
+    blocks = build_sampling_feature_blocks(structures, np.zeros((41, 2)), spin_model=True)
+    result = select_physics_budget(blocks, plan(41), n_samples=12)
+    picked = np.asarray(result.selected_indices)
+    assert len(picked) == 12
+    assert picked.min() <= 1 and picked.max() >= 39
+    assert np.max(np.diff(np.sort(picked))) <= 6
+
+
+def test_input_element_blocks_align_with_a_training_pool_of_different_elements():
+    candidate = build_sampling_feature_blocks([bulk("Cu", "fcc", a=3.6)],
+                                               np.zeros((1, 1)), spin_model=False)
+    existing = build_sampling_feature_blocks([bulk("Ni", "fcc", a=3.5)],
+                                              np.zeros((1, 1)), spin_model=False)
+    candidate_plan = PhysicsSamplingPlan(((PhysicsSamplingStratum(("Cu",), "fcc"), (0,)),),
+                                         False, (), (), (), (0,))
+    existing_plan = PhysicsSamplingPlan(((PhysicsSamplingStratum(("Ni",), "fcc"), (0,)),),
+                                        False, (), (), (), (0,))
+    result = select_physics_budget(candidate, candidate_plan, n_samples=1,
+                                   existing=existing, existing_plan=existing_plan)
+    assert result.selected_indices == (0,)
+
+
+def test_rigid_rotation_roundoff_does_not_create_a_new_state():
+    s = bulk("Co", "fcc", a=3.5, cubic=True)
+    s.arrays["spin"] = np.tile([.3, .7, 1.1], (len(s), 1))
+    rotated = s.copy()
+    rotation, _ = np.linalg.qr(np.random.default_rng(9).normal(size=(3, 3)))
+    rotated.positions[:] = s.positions @ rotation
+    rotated.set_cell(s.cell.array @ rotation)
+    rotated.arrays["spin"] = s.arrays["spin"] @ rotation
+    blocks = build_sampling_feature_blocks([s, rotated], np.zeros((2, 1)), spin_model=True)
+    result = recommend_physics_sampling_from_blocks(blocks, plan(2))
+    assert result.recommended_count == 1
+
+
+def test_fixed_and_automatic_both_preserve_input_boundaries():
+    x = np.column_stack((np.linspace(0, 1, 25), np.linspace(0, 1, 25)**2))
+    blocks = SamplingFeatureBlocks(("descriptor_mean", "input_geometry:C"),
+                                    (np.zeros((25, 1)), x))
+    auto = recommend_physics_sampling_from_blocks(blocks, plan(25), resolution=.5)
+    manual = select_physics_budget(blocks, plan(25), n_samples=auto.recommended_count)
+    assert len(manual.selected_indices) == auto.recommended_count
+    assert {0, 24}.issubset(manual.selected_indices)
+    assert {0, 24}.issubset(auto.selected_indices)
+    # A loose distance threshold cannot certify omitted boundary witnesses.
+    capped = recommend_physics_sampling_from_blocks(blocks, plan(25), resolution=100,
+                                                     sample_cap_per_stratum=1)
+    assert capped.is_lower_bound
+    assert capped.evidence.uncovered_indices
+
+
+@pytest.mark.parametrize("seed", range(20))
+def test_adaptive_input_coverage_native_matches_numpy_with_warm_start(monkeypatch, seed):
+    rng = np.random.default_rng(seed)
+    n = 36
+    points = rng.normal(size=(n, 3)) * np.where(np.arange(n)[:, None] < 15, .03, 1)
+    atoms = rng.normal(size=(n*2, 4))
+    blocks = SamplingFeatureBlocks(("descriptor_mean", "input_geometry:C"),
+                                    (atoms.reshape(n, 2, 4).mean(1), points),
+                                    atoms, (2,)*n, ("C",)*(n*2))
+    warm = SamplingFeatureBlocks(blocks.names, tuple(v[:2] for v in blocks.values),
+                                  atoms[:4], (2, 2), ("C",)*4)
+    native = coverage.select_coverage(blocks, plan(n), existing=warm,
+                                      existing_plan=plan(2), budget=20)
+    monkeypatch.setattr(coverage, "_native_sampling", None)
+    reference = coverage.select_coverage(blocks, plan(n), existing=warm,
+                                         existing_plan=plan(2), budget=20)
+    assert native.indices == reference.indices
+    np.testing.assert_allclose(native.distances, reference.distances, atol=1e-10)
+
+
 def test_report_distinguishes_incomplete_budget_from_completed_coverage(monkeypatch):
     from NepTrainKit.ui.messages import format_sampling_coverage
 
@@ -366,3 +443,33 @@ def test_native_tree_matches_independent_reference_through_warm_start_and_refine
         actual.add(int(center))
         expected.add(int(center))
     np.testing.assert_allclose(actual.distances(), expected.distances(), atol=1e-12)
+
+
+def test_automatic_radius_ignores_noisy_input_fingerprints_but_keeps_their_extent():
+    rng = np.random.default_rng(12)
+    descriptors = np.repeat(np.eye(3), 40, axis=0)
+    noisy = rng.normal(size=(120, 6))
+    blocks = SamplingFeatureBlocks(("descriptor_mean", "input_geometry:C"), (descriptors, noisy))
+    auto = recommend_physics_sampling_from_blocks(blocks, plan(120))
+    extremes = set(np.argmin(noisy, axis=0)) | set(np.argmax(noisy, axis=0))
+    # Three descriptor states plus at most one frame per input extreme.
+    assert auto.recommended_count <= 3 + len(extremes)
+    for j in range(noisy.shape[1]):
+        chosen = noisy[list(auto.selected_indices), j]
+        assert chosen.min() == noisy[:, j].min() and chosen.max() == noisy[:, j].max()
+
+
+@pytest.mark.skipif(coverage._native_sampling is None, reason="native sampling backend unavailable")
+def test_threaded_native_updates_are_identical_to_single_thread(monkeypatch):
+    rng = np.random.default_rng(31)
+    n = 5000
+    points = rng.normal(size=(n, 4))
+    atoms = rng.normal(size=(2*n, 6))
+    blocks = SamplingFeatureBlocks(("descriptor_mean", "lattice"), (points[:, :3], points[:, 3:]),
+                                   atoms, (2,)*n, ("C", "O")*n)
+    results = []
+    for threads in ("1", "8"):
+        monkeypatch.setenv("NEPKIT_SAMPLING_THREADS", threads)
+        results.append(coverage._select_coverage(blocks, plan(n), budget=300))
+    assert results[0].indices == results[1].indices
+    np.testing.assert_array_equal(results[0].distances, results[1].distances)

@@ -70,7 +70,8 @@ class PhysicsBudgetSelection:
 def _group_measure(selection, rows, resolution):
     values = np.maximum(selection.distances[list(rows), -2],
                         selection.distances[list(rows), -1])
-    return float(np.mean(values <= resolution)), float(np.max(values, initial=0.0))
+    covered = (values <= resolution) & ~np.isin(rows, selection.evidence.uncovered_indices)
+    return float(np.mean(covered)), float(np.max(values, initial=0.0))
 
 
 def recommend_physics_sampling_from_blocks(

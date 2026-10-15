@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,59 +20,64 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:3
-#: f363463e9e3a45af805929b03e734b4f
+#: d931f0d642e44d048deaa4daa0930c03
 msgid "全局空位（Global Vacancy）"
 msgstr "Global Vacancy"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:5
-#: 39ff4b99ba984858b7dbd4ac74cbbe3b
+#: 7f41cffe80154286941a1dfb2ee0afa7
 msgid "**分类：** 缺陷"
 msgstr "**Category:** Defects"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:7
-#: 1b7b360a4f5b4c9c9568125a30363ea3
+#: 681bd22f2dec4f48ba790dfad14a1938
 msgid "功能说明"
 msgstr "Purpose"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:9
-#: 2ae29ad76bd64ce9866fbacd1b54cb90
+#: b9aebbc32e7a41849243171f24ef514f
 msgid "从输入结构的全部原子位点中随机删除原子，按整体数量或比例生成不同的空位构型。所有元素具有同等的位点采样资格；输出保留剩余原子的坐标、晶胞、PBC、逐原子数组和结构信息。"
 msgstr ""
-"Randomly remove atoms from all sites in the input structure to generate different "
-"vacancy configurations using an overall count or fraction. Sites of every element are"
-" equally eligible for sampling. The output preserves the coordinates, cell, PBC, per-"
-"atom arrays, and structure metadata of the remaining atoms."
+"Randomly remove atoms from all sites in the input structure to generate "
+"different vacancy configurations using an overall count or fraction. "
+"Sites of every element are equally eligible for sampling. The output "
+"preserves the coordinates, cell, PBC, per-atom arrays, and structure "
+"metadata of the remaining atoms."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:11
-#: d27e392d737f4ba28247b56c2c86bf54
+#: e2c1e246f42c4f95af4e4dec48012b80
 msgid "**全局空位：** 从所有位点共同采样。"
 msgstr "**Global Vacancy:** sample from all sites together."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:12
-#: 03afd289649843d1870866ef1d37f6ff
+#: 11556e6ea067410389306c7059e86846
 msgid "**定向空位：** 按元素和可选 `group` 限定候选位点。"
-msgstr "**Targeted Vacancy:** restrict candidate sites by element and an optional `group`."
+msgstr ""
+"**Targeted Vacancy:** restrict candidate sites by element and an optional"
+" `group`."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:13
-#: 0704591a0faf4b56b1e304faa3c04c1a
+#: 0d57f87a4aa64434ba53b7ca77962b03
 msgid "**随机占位：** 改变位点元素，不减少原子数。"
-msgstr "**Random Occupancy:** change the element at a site without reducing the atom count."
+msgstr ""
+"**Random Occupancy:** change the element at a site without reducing the "
+"atom count."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:15
-#: daf85923ff904717a5c1f786088517cb
+#: e425b4caaecf460194ff69dde2a6a081
 msgid "原理与公式"
 msgstr "Principles and Equations"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:17
-#: cd1ed3dcfb524c72a4b98badf8ce8962
+#: c76ae42976f040a086bfd2b627431900
 #, python-brace-format
 msgid "设输入结构有 $N$ 个原子。按数量设置时，解析值就是 $n_{\\max}$；按比例 $f$ 设置时，程序向下取整："
 msgstr ""
-"Let the input contain $N$ atoms. When using a count, the resolved value is "
-"$n_{\\max}$. When using a fraction $f$, the program rounds down:"
+"Let the input contain $N$ atoms. When using a count, the resolved value "
+"is $n_{\\max}$. When using a fraction $f$, the program rounds down:"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:19
-#: 4b89fe5c38af43e9ae6728dbe36e0de8
+#: 96d2ed47a77142a3a2817e834079fee6
 #, python-brace-format
 msgid ""
 "\n"
@@ -80,16 +85,18 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:23
-#: 715162765e5d47adb251062b3cd78de7
+#: b7e431511d3f4b05a85b0f2c5a8c00a4
 #, python-brace-format
-msgid "“固定”模式的每个输出都删除 $n_{\\max}$ 个原子；“变化”模式则为每个输出从整数闭区间 $[1,n_{\\max}]$ 抽取删除数。给定删除数 $n$ 时，共有"
+msgid ""
+"“固定”模式的每个输出都删除 $n_{\\max}$ 个原子；“变化”模式则为每个输出从整数闭区间 $[1,n_{\\max}]$ "
+"抽取删除数。给定删除数 $n$ 时，共有"
 msgstr ""
-"In `Fixed` mode, every output removes $n_{\\max}$ atoms. In `Variable` mode, each "
-"output draws its removal count from the closed integer interval $[1,n_{\\max}]$. For "
-"a given removal count $n$, there are"
+"In `Fixed` mode, every output removes $n_{\\max}$ atoms. In `Variable` "
+"mode, each output draws its removal count from the closed integer "
+"interval $[1,n_{\\max}]$. For a given removal count $n$, there are"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:25
-#: c352537489054c85b232e784c4561543
+#: daaacbb55b614ea9add90e624b023ba1
 #, python-brace-format
 msgid ""
 "\n"
@@ -97,300 +104,309 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:29
-#: 730a6e5c0328451caa5bacd585bb8fdb
+#: e13822e3dddc4fc0957aa021f1867eb7
 msgid "种不同的位点组合。结果按删除位点集合去重，并受“每个输入最大输出数”限制，因此实际输出数可能低于请求值。程序始终保留至少一个原子。"
 msgstr ""
-"distinct site combinations. Results are deduplicated by their sets of removed sites "
-"and limited by `Maximum outputs per input`, so the actual output count may be lower "
-"than requested. The program always retains at least one atom."
+"distinct site combinations. Results are deduplicated by their sets of "
+"removed sites and limited by `Maximum outputs per input`, so the actual "
+"output count may be lower than requested. The program always retains at "
+"least one atom."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:31
-#: d90f87e675af4cc7913e012b86fa5ea4
+#: 15b73a966a944e9281d44ec2a5069d98
 msgid "操作示例"
 msgstr "Example"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:33
-#: 04528a4a791547d7b03bc8258eb05c6a
+#: af3376d6b7e0406e9e162d1b1094a6cf
 msgid "一个 100 原子的超胞需要生成最多 50 个、每个含 5 个空位的构型："
 msgstr ""
-"Suppose a 100-atom supercell should produce at most 50 configurations, each "
-"containing five vacancies:"
+"Suppose a 100-atom supercell should produce at most 50 configurations, "
+"each containing five vacancies:"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:35
-#: 42579785906e4f61893e10b843887722
+#: f932622bc18c4150a765aca94a920929
 msgid "“数量依据”选择“比例”，填写 `0.05`。"
 msgstr "For `Quantity basis`, select `Fraction` and enter `0.05`."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:36
-#: 5e0fda18750140949b055489059f2ded
+#: 263b1d5f28ea4e248031130e6c65928a
 msgid "“每个输出的空位数”选择“固定”。"
 msgstr "For `Vacancies per output`, select `Fixed`."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:37
-#: aede47e7b66045e9bb23580d7aad2c0e
+#: d7693d6ea04648e19704d2ee4c9eda33
 msgid "“每个输入最大输出数”填写 `50`。"
 msgstr "Set `Maximum outputs per input` to `50`."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:38
-#: 436176e07d4a4826bbd494c7a5d2213d
+#: 2ac77293e76e44ecb177b2b0239cd7ca
 msgid "位点采样保持“均匀随机”。"
 msgstr "Leave `Site sampling` set to `Uniform random`."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:40
-#: def40a173ada4ca9aaf736e62393e151
+#: 04c990113c8a4d529cba31f3c108a248
 msgid "首帧预览会显示“删除 5 个原子”和唯一输出上限。若选择“变化”，每个输出会删除 1–5 个原子。"
 msgstr ""
-"The first-frame preview shows `Remove 5 atoms` and the upper bound on unique outputs."
-" If `Variable` is selected, each output removes 1–5 atoms."
+"The first-frame preview shows `Remove 5 atoms` and the upper bound on "
+"unique outputs. If `Variable` is selected, each output removes 1–5 atoms."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:42
-#: e585c160dec9462ebbf5dcdf8fa86500
+#: d8f8b380a8b14953a8c52c1658d37bf1
 msgid "参数说明"
 msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:44
-#: c4f831069a8e41c594efaadb88b6aaf7
+#: 1b258c23904542e297e82317d8e01984
 msgid "空位数量（num_condition）"
 msgstr "Vacancy count (`num_condition`)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:46
-#: 3f22ecafb7f84064bd03c91ccbe15d5c
+#: 9eaae1b846d04848bfe9e8aedd8069c3
 msgid "`int`，默认 `1`。数量依据为“数量”时使用；至少为 1，并且必须小于输入原子数。在“变化”模式下，它表示最大删除数。"
 msgstr ""
-"`int`, default `1`. Used when the quantity basis is `Count`; it must be at least 1 "
-"and smaller than the input atom count. In `Variable` mode, it is the maximum removal "
-"count."
+"`int`, default `1`. Used when the quantity basis is `Count`; it must be "
+"at least 1 and smaller than the input atom count. In `Variable` mode, it "
+"is the maximum removal count."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:48
-#: 535ce26a787f43d195f033032299580d
+#: 3edc7a8aa5474c8a82a9d7257f6579fb
 msgid "空位比例（concentration_condition）"
 msgstr "Vacancy Fraction (concentration_condition)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:50
-#: 3d01b71950c9453abd4c46f1d24acf1c
+#: e55453acd95a46299c1aa0bb3f07db28
 msgid ""
-"`float`，默认 `0.01`，范围 `(0,1)`。数量依据为“比例”时使用。程序计算 `floor(N × fraction)`；结果为 0 "
-"时会提示当前输入至少需要的比例。在“变化”模式下，换算结果是最大删除数。"
+"`float`，默认 `0.01`，范围 `(0,1)`。数量依据为“比例”时使用。程序计算 `floor(N × fraction)`；结果为 "
+"0 时会提示当前输入至少需要的比例。在“变化”模式下，换算结果是最大删除数。"
 msgstr ""
-"`float`, default `0.01`, in the range `(0,1)`. Used when the quantity basis is "
-"`Fraction`. The program computes `floor(N × fraction)`; if the result is zero, it "
-"reports the minimum fraction required for the current input. In `Variable` mode, the "
-"converted value is the maximum removal count."
+"`float`, default `0.01`, in the range `(0,1)`. Used when the quantity "
+"basis is `Fraction`. The program computes `floor(N × fraction)`; if the "
+"result is zero, it reports the minimum fraction required for the current "
+"input. In `Variable` mode, the converted value is the maximum removal "
+"count."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:52
-#: 862bb7d046d0464ebbc900886cf220b0
+#: bdf70afb23cb4e82a343e7a20b68678a
 msgid "数量依据（use_num）"
 msgstr "Quantity Basis (use_num)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:54
-#: d79173510fa84ad7a64a2d612e9f2aa9
-msgid "`bool`，默认 `true`。界面中的“数量 / 比例”选择：`true` 使用绝对数量，`false` 使用整体比例。界面只显示当前生效的输入框。"
+#: f2400545e7b540deb2c3a01bb3880e09
+msgid ""
+"`bool`，默认 `true`。界面中的“数量 / 比例”选择：`true` 使用绝对数量，`false` "
+"使用整体比例。界面只显示当前生效的输入框。"
 msgstr ""
-"`bool`, default `true`. This corresponds to the `Count / Fraction` choice in the "
-"interface: `true` uses an absolute count and `false` uses an overall fraction. The "
-"interface displays only the currently active input."
+"`bool`, default `true`. This corresponds to the `Count / Fraction` choice"
+" in the interface: `true` uses an absolute count and `false` uses an "
+"overall fraction. The interface displays only the currently active input."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:56
-#: 8e5dd10cf9454e2a8109b5118cc6c0b6
+#: c3095f048f3149d1833b40a444c41456
 msgid "每个输出的空位数（count_mode）"
 msgstr "Vacancies per output (`count_mode`)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:58
-#: 31708afd7bb34a16bd06e7c36e23c0ce
+#: b7f0dad3aa0c494da448b80f0a288db8
 msgid "`str`，默认 `fixed`。"
 msgstr "`str`, default `fixed`."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 66f4c5e506484197b47d85a5218f071e
+#: 6db806302be544bebb0ef6401f982dd3
 msgid "选项"
 msgstr "Option"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 2823e2315f7e451d90f5a750b1f8c6e0
+#: b8d54df81b384c57b496585a1073ec34
 msgid "每个输出删除数"
 msgstr "Atoms Removed per Output"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 31708afd7bb34a16bd06e7c36e23c0ce
+#: c61455aadb1e4201b9e37a5fc01f38af
 msgid "`fixed`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 23dedf40043b491a95b1e0a41dd1ab36
+#: 5dfb3d59975847b4bbd062f2d1f5b0b4
 msgid "固定为解析出的数量"
 msgstr "Fixed at the resolved count"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 3b302dade7f14cd6acfdbfc4e552a1f5
+#: b1f54b6928b34c0693d3d4397bb1b58b
 msgid "`random`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 1fdb9c027b05462687c37dad413c52be
+#: c34a14e3f7a54b21959b69f1051cd9e1
 msgid "从 1 到解析值之间随机抽取"
 msgstr "Randomly drawn from 1 through the resolved value"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:65
-#: 722fe70a69714617a14328d2c447a2b1
+#: 2398d300ac9746cd9b39fe4fd0bafebf
 msgid "每个输入最大输出数（max_structures）"
 msgstr "Maximum outputs per input (`max_structures`)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:67
-#: 7f71ff44a15541ba803e7c9b641cc6bf
+#: 0fca02960b3844e0a6431c4a8ce94a71
 msgid "`int`，默认 `1`，至少为 1。限制每个输入保留的唯一空位构型数；可用组合不足或随机抽样重复时，实际输出更少。"
 msgstr ""
-"`int`, default `1`, with a minimum of 1. Limits the number of unique vacancy "
-"configurations retained for each input. The actual count is smaller when too few "
-"combinations exist or random sampling produces duplicates."
+"`int`, default `1`, with a minimum of 1. Limits the number of unique "
+"vacancy configurations retained for each input. The actual count is "
+"smaller when too few combinations exist or random sampling produces "
+"duplicates."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:69
-#: 6ce18ccd34944def9e28a737eff25b2d
+#: 61d48074fc27489f95572ae9662bea89
 msgid "位点采样（engine_type）"
 msgstr "Site Sampling (engine_type)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:71
-#: 31708afd7bb34a16bd06e7c36e23c0ce
+#: e0770262b8c94194bb6689cf3327994f
 msgid "`int`，默认 `1`。"
 msgstr "`int`, default `1`."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: c19e7e3e9b324e9b808c64e43cc505e6
+#: 7150ef00378b41458499dc1e70e2464b
 msgid "值"
 msgstr "Value"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: b5ef6c53f21a4fd0804d7e69b3695c51
+#: e68f9efde72a48af92c4e419b494c260
 msgid "方法"
 msgstr "Method"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 6f66abf7d14a40bfb21f849c721d738d
+#: 723de21dc6b94012b17450729d289162
 msgid "适用情况"
 msgstr "Suitable For"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 29ceb45ae0934887ac10d8719223942a
+#: 42f372a349c043aba26a273e0df87667
 msgid "`1`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 2b16c26c3294471587beca599ded9b3d
+#: 7d23efec2fc2446aa7416257a20a69e7
 msgid "Uniform"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 9455d665c4cd4e0f99f1ddcbb14ec8c7
+#: f718e72d0aa845e2a25719d8c12e4f88
 msgid "通用默认，伪随机均匀采样"
 msgstr "General default; uniform pseudorandom sampling"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 13c8d368f32549c58bf701e7e7caddb5
+#: 89f0e554af704bb18de8dc2955b8739f
 msgid "`0`"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 12a3691b65464c9791c6458655b8a2b6
+#: 06badb1c4b4e48b39e5dfa6e028904ca
 msgid "Sobol"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md
-#: 8900714f85d74685902e582cd6f08326
+#: 050334848a5b487b9c6429190d8ec340
 msgid "准随机覆盖；输入最多 21,200 个原子"
 msgstr "Quasirandom coverage; inputs are limited to 21,200 atoms"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:78
-#: d60014d4c19742edb48978500f7687bc
+#: 0b9a731e9bd440a2802ec50184ceb922
 msgid "两种方法只改变位点组合的抽样顺序，不改变候选范围。"
 msgstr ""
-"The two methods change only the order in which site combinations are sampled, not the"
-" candidate set."
+"The two methods change only the order in which site combinations are "
+"sampled, not the candidate set."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:80
-#: e16375ee6f87483599e187cb9a1c7a42
+#: d7e87271e38d42bb8e13a3e54f118a0d
 msgid "使用随机种子（use_seed）"
 msgstr "Use Random Seed (use_seed)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:82
-#: ca76e79fb2b942319c7fb2af33ef3229
+#: 2ee54709ff664fc38c70904788b6c9b9
 msgid "`bool`，默认 `false`。开启后显示种子输入，并使相同输入与参数可复现。"
 msgstr ""
-"`bool`, default `false`. Enabling it reveals the seed input and makes identical "
-"inputs and parameters reproducible."
+"`bool`, default `false`. Enabling it reveals the seed input and makes "
+"identical inputs and parameters reproducible."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:84
-#: 630c3081e63b459f8d7914da4ed0feba
+#: 38b9775cb26f4245ab960cef94784a4b
 msgid "随机种子（seed）"
 msgstr "Random Seed (seed)"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:86
-#: 77f9698755534fdabe1b529911d98caf
+#: bb5f23b5aae04529ae4b620b912161a1
 msgid "`int`，默认 `0`，仅在 `use_seed=true` 时使用。种子会结合结构内容派生，因此数据集中的不同输入帧不会机械删除相同原子序号。"
 msgstr ""
-"`int`, default `0`, used only when `use_seed=true`. The seed is combined with the "
-"structure content, so different input frames in a dataset do not mechanically remove "
-"atoms with the same indices."
+"`int`, default `0`, used only when `use_seed=true`. The seed is combined "
+"with the structure content, so different input frames in a dataset do not"
+" mechanically remove atoms with the same indices."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:88
-#: b7d897d35d7048e590637281f31cdbf7
+#: e4150602ee2142f48b06e7c35d984353
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:90
-#: 109f04f3cf0f4f1da6f686b029e58208
-msgid "`Super Cell → Global Vacancy`：先扩大晶胞，再生成空位。"
+#: 6b317baaff1041429b2a6f653337d2e8
+msgid "`扩胞 → 全局空位`：先扩大晶胞，再生成空位。"
 msgstr "`Super Cell → Global Vacancy`: enlarge the cell first, then generate vacancies."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:91
-#: 907ad4877ab34800a65f649ad8e9f460
-msgid "`Global Vacancy → FPS Filter`：从大量空位落点中筛选代表性构型。"
-msgstr ""
-"`Global Vacancy → FPS Filter`: select representative configurations from a large "
-"collection of vacancy placements."
+#: e65566e53c9a4d3bbc93ceabd771048e
+#
+msgid "`全局空位 → FPS 代表性采样`：从大量空位落点中筛选代表性构型。"
+msgstr "`Global Vacancy → FPS Sampling`: select representative configurations from a large collection of vacancy placements."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:92
-#: d30b662e4d2e4336858cd6deab0b82bd
-msgid "只删除特定元素或原子层时，使用 `Targeted Vacancy`。"
-msgstr "Use `Targeted Vacancy` when removing only a particular element or atomic layer."
+#: bdb200f1ab8344ad81f4003618bfb989
+#
+msgid "只删除特定元素或原子层时，使用 `定向空位`。"
+msgstr ""
+"Use `Targeted Vacancy` when removing only a particular element or atomic "
+"layer."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:94
-#: a4658bd6a5fc42859962a4d3e83610fd
+#: b644094ca84b4e22bdea6da26401780a
 msgid "常见问题"
 msgstr "Troubleshooting"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:96
-#: 222430f7cf8042a18a5c38c7943d246e
+#: f3afce4a7faa434b8c23b88d87a906cb
 msgid "**为什么比例 0.01 没有删除原子？** 对 $N$ 个原子的结构，至少需要 $f\\ge 1/N$，否则向下取整为 0。"
 msgstr ""
-"**Why does a fraction of 0.01 remove no atoms?** For a structure with $N$ atoms, at "
-"least $f\\ge 1/N$ is required; otherwise rounding down gives zero."
+"**Why does a fraction of 0.01 remove no atoms?** For a structure with $N$"
+" atoms, at least $f\\ge 1/N$ is required; otherwise rounding down gives "
+"zero."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:98
-#: 4f4fa7519b7e424a92275dc8f34d24aa
+#: 798c7136c63c42d599c85b9ee71dff32
 msgid "**为什么多元素结构的组分会变化？** 所有位点都参与抽样，某种元素被删除的概率与它在输入中的位点数有关。"
 msgstr ""
-"**Why does the composition of a multielement structure change?** Every site "
-"participates in sampling, so the probability of removing a given element is "
-"proportional to its number of sites in the input."
+"**Why does the composition of a multielement structure change?** Every "
+"site participates in sampling, so the probability of removing a given "
+"element is proportional to its number of sites in the input."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:100
-#: 09e355ac5e8d47119f6c151e438be954
+#: 4f46571bffe94168b710f93735e62443
 msgid "**为什么实际输出少于设置值？** 删除位点相同的结果会去重，小结构的唯一组合数也可能不足。"
 msgstr ""
-"**Why are there fewer outputs than requested?** Results with the same removed sites "
-"are deduplicated, and a small structure may not have enough unique combinations."
+"**Why are there fewer outputs than requested?** Results with the same "
+"removed sites are deduplicated, and a small structure may not have enough"
+" unique combinations."
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:102
-#: f3b6076d4d2441ef8e0cf0eda28f362c
+#: 924b7a9041994900aedfc36e0297b8a2
 msgid "输出标签"
 msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:104
-#: 5964120c434d4c6b9ebde1cac87d6e07
+#: 42ae304629e74d88ab040d487ee880eb
 msgid "每个结果的 `Config_type` 追加："
 msgstr "The following is appended to `Config_type` for each result:"
 
 #: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:106
-#: d328bc79a1234118ab849290d3ec789c
+#: 935622f59299453bb92da480e6d59f3d
 #, python-brace-format
 msgid "Vac(n={实际删除原子数})\n"
 msgstr "Vac(n={actual number of removed atoms})\n"
@@ -398,54 +414,11 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgid "空位缺陷生成（Vacancy Defect Generation）"
 #~ msgstr "Vacancy Defect Generation"
 
-#~ msgid ""
-#~ "按数量或比例删除原子，快速生成低到高缺陷强度的空位结构分布。支持 Sobol / Uniform 两种随机引擎，可选"
-#~ " count 或 fraction 两种主模式，并可选择固定空位数或随机空位数。"
-#~ msgstr ""
-#~ "Remove atoms by count or fraction to "
-#~ "generate vacancy configurations over a range "
-#~ "of defect concentrations. Choose Sobol or "
-#~ "uniform sampling, count or fraction mode, and"
-#~ " fixed or randomized vacancy counts."
-
-#~ msgid "`Vacancy Defect Generation`：统计驱动，按整体比例/数量生成空位，适合快速覆盖空位密度分布"
-#~ msgstr ""
-#~ "`Vacancy Defect Generation` is statistical: it "
-#~ "samples global counts or fractions to cover"
-#~ " a vacancy-density distribution."
-
-#~ msgid "`Random Vacancy`：规则驱动，按元素+group 精确删除位点，适合定向研究"
-#~ msgstr ""
-#~ "`Random Vacancy` is rule driven: it removes"
-#~ " sites by element and group for targeted"
-#~ " studies."
-
 #~ msgid "操作示例"
 #~ msgstr "Example workflow"
 
 #~ msgid "场景：模型把空位构型全部预测成接近完美晶体"
 #~ msgstr "Scenario: Vacancy configurations are predicted like a perfect crystal"
-
-#~ msgid ""
-#~ "你在 100 原子的 Fe 超胞上训练了一个 NEP，训练集里只有弛豫好的完美晶体。模型推理一个含"
-#~ " 1 个空位的构型时，能量几乎和完美晶体一样——模型没学过\"少了一个原子\"是什么后果。"
-#~ msgstr ""
-#~ "A NEP trained only on relaxed perfect "
-#~ "100-atom Fe cells assigns nearly the same "
-#~ "energy to a single-vacancy configuration "
-#~ "because no vacancy-centered environments were "
-#~ "labeled."
-
-#~ msgid ""
-#~ "**诊断思路：** 模型在完美晶体上收敛是因为训练集只有完美晶体。空位附近原子的力场完全不同：键断了一半，局域电子密度变化大。需要往训练集里加入从"
-#~ " 1 个空位到 ~5% 浓度的分布，让模型覆盖低/中/高缺陷密度段。"
-#~ msgstr ""
-#~ "**Diagnosis:** Atoms adjacent to a vacancy "
-#~ "have different coordination and forces. Add "
-#~ "relaxed and labeled structures spanning single "
-#~ "vacancies through the intended concentration range,"
-#~ " rather than relying on perfect-crystal "
-#~ "data."
 
 #~ msgid "**输入：** 一个 100 原子的 Fe 超胞"
 #~ msgstr "**Input:** A 100-atom Fe supercell."
@@ -459,31 +432,8 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgid "`Vacancy Fraction`：勾选"
 #~ msgstr "Enable `Vacancy Fraction`."
 
-#~ msgid "`Vacancy Fraction`：`[0.05]`（100 原子里精确删除 5 个空位）"
-#~ msgstr "Set `Vacancy Fraction` to `[0.05]`, corresponding to five removed atoms here."
-
-#~ msgid "**输出：** 50 个空位结构，每个都删除 5 个原子，但空位落点不同，带 `Vac(n=5)` 标签"
-#~ msgstr ""
-#~ "**Output:** Fifty structures with five vacancies "
-#~ "at different sites, labeled `Vac(n=5)`."
-
 #~ msgid "**怎么验证训练集质量改善：**"
 #~ msgstr "**How to verify that training-set quality improved:**"
-
-#~ msgid "重训后用含空位的测试集推理，力 MAE 应对空位近邻原子也有合理精度"
-#~ msgstr ""
-#~ "After DFT labeling and retraining, evaluate "
-#~ "force errors specifically on vacancy-neighbor "
-#~ "atoms."
-
-#~ msgid "如果低浓度 OK 但高浓度崩，说明训练集高浓度样本不够——增加 `concentration_condition`"
-#~ msgstr ""
-#~ "If low concentrations pass but higher "
-#~ "concentrations fail, extend the labeled "
-#~ "concentration range deliberately."
-
-#~ msgid "如果样本覆盖感觉不均匀，换 Sobol 引擎再跑一批对比"
-#~ msgstr "If a small sample has uneven count/site coverage, compare with Sobol sampling."
 
 #~ msgid "什么时候加这张卡、什么时候不加"
 #~ msgstr "When to add this card"
@@ -494,9 +444,6 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgid "需要快速覆盖\"少了一个原子\"对力/能量的影响"
 #~ msgstr "Vacancy-induced energy and force changes need broad initial coverage"
 
-#~ msgid "训练集只有完美晶体，需要低/中/高缺陷密度梯度"
-#~ msgstr "The dataset has only perfect crystals and needs a vacancy-density progression"
-
 #~ msgid "不需要按元素类型区分空位来源"
 #~ msgstr "Vacancy sites need not be distinguished by element or group"
 
@@ -506,75 +453,11 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgid "需要精确控制删哪种元素 → 用 `Random Vacancy`"
 #~ msgstr "Removal must target an element or group; use `Random Vacancy`"
 
-#~ msgid "缺陷浓度 >20%——此时结构通常已剧烈变形，需先确认是否物理上有意义"
-#~ msgstr ""
-#~ "The requested concentration exceeds 20%, where "
-#~ "the intended physical meaning should be "
-#~ "reassessed"
-
 #~ msgid "空位数量"
 #~ msgstr "Vacancy amount"
 
-#~ msgid "`int`，默认 1。count 模式下的空位数量，范围 1-8。直接指定每个结构删几个原子——适合你已经想好确切数字的场景。"
-#~ msgstr ""
-#~ "`int`, default `1`, range 1-8. Number removed"
-#~ " in count mode. Use when the exact "
-#~ "vacancy count is the controlled variable."
-
-#~ msgid "`bool`，默认 true。打开时按绝对空位数删除，不同输入的缺陷数始终保持一致；关掉后切到浓度模式，不同超胞尺寸下自动保持相同缺陷比例。"
-#~ msgstr ""
-#~ "`bool`, default `true`. Enabled uses an "
-#~ "absolute count across inputs; disabled uses a"
-#~ " fraction so different cell sizes retain "
-#~ "approximately the same concentration."
-
-#~ msgid ""
-#~ "`float`，默认 0.0。fraction 模式下的空位比例，如 0.02 约等于删掉 2% "
-#~ "的原子。推荐范围 0.005-0.08。比例太小可能一个原子都删不到，比例太大结构容易崩。"
-#~ msgstr ""
-#~ "`float`, default `0.0`. Vacancy fraction, for "
-#~ "example 0.02 for about 2%. Values around "
-#~ "0.005-0.08 are a typical starting band; very"
-#~ " small cells may round to zero, while "
-#~ "large fractions can destroy the framework."
-
-#~ msgid ""
-#~ "`str`，默认 `fixed`。`fixed` 精确按住上面设置的数量删；`random` 在 1 "
-#~ "到设定值之间随机。你需要固定空位数量做对照实验就选 fixed，想覆盖更多空位分布的多样性就选 random。"
-#~ msgstr ""
-#~ "`str`, default `fixed`. `fixed` removes the "
-#~ "configured amount; `random` samples an amount "
-#~ "from 1 through that maximum. Use fixed "
-#~ "for controlled comparisons and random for "
-#~ "count diversity."
-
 #~ msgid "采样和预算"
 #~ msgstr "Sampling and budget"
-
-#~ msgid "`int`，默认 1。`0` = Sobol 准随机序列，`1` = Uniform 均匀随机。"
-#~ msgstr ""
-#~ "`int`, default `1`. `0` selects a Sobol "
-#~ "low-discrepancy sequence; `1` selects uniform "
-#~ "random sampling."
-
-#~ msgid "样本少时 Sobol 对空位数量和位置的覆盖更均衡；大批量（100+）时两者差异很小，Uniform 更快。"
-#~ msgstr ""
-#~ "Sobol can distribute counts and positions more"
-#~ " evenly in a small design. At 100 or"
-#~ " more samples, the difference from uniform "
-#~ "sampling is usually smaller."
-
-#~ msgid "`int`，默认 1。每输入帧生成多少个空位版本。"
-#~ msgstr "`int`, default `1`. Number of vacancy variants generated per input frame."
-
-#~ msgid "10~50 够轻量补样，50~100 做常规覆盖，上了 100 建议接一张 `FPS Filter`。"
-#~ msgstr ""
-#~ "Use roughly 10-50 for a light addition "
-#~ "and 50-100 for broader coverage; above that,"
-#~ " consider `FPS Filter` to control redundancy."
-
-#~ msgid "`bool`，默认 false。打开后固定 seed → 同参同输入可复现。需要对比实验时开着，纯探索可以关。"
-#~ msgstr "`bool`, default `false`. Enable with a fixed seed for reproducible comparisons."
 
 #~ msgid "`int`，默认 0。随机种子值。"
 #~ msgstr "`int`, default `0`. Random seed value."
@@ -591,96 +474,11 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgid "探索（Exploration，Sobol，10% 浓度，100 个输出）"
 #~ msgstr "Exploration (Sobol, 10% fraction, 100 outputs)"
 
-#~ msgid "`Super Cell` → `Vacancy Defect Generation`：先扩胞再删，避免小胞里空位相互作用太强"
-#~ msgstr ""
-#~ "`Super Cell` -> `Vacancy Defect Generation`: "
-#~ "enlarge first to reduce vacancy-image "
-#~ "interactions"
-
-#~ msgid "`Vacancy Defect Generation` → `Insert Defect`：空位 + 插隙，互补缺陷族"
-#~ msgstr ""
-#~ "`Vacancy Defect Generation` -> `Insert Defect`: "
-#~ "combine vacancy and interstitial families"
-
-#~ msgid "`Vacancy Defect Generation` → `Random Vacancy`：先覆盖密度分布，再补定向规则删除"
-#~ msgstr ""
-#~ "`Vacancy Defect Generation` -> `Random Vacancy`: "
-#~ "cover global density, then add targeted "
-#~ "removals"
-
-#~ msgid "**输出结构数远少于预期。** 空位数为 0 时不会生成。检查浓度模式下 `concentration * n_atoms` 是否≥1。"
-#~ msgstr ""
-#~ "**Far fewer outputs than expected.** No "
-#~ "structure is emitted for zero removals. Ensure"
-#~ " fraction times atom count rounds to at "
-#~ "least one."
-
-#~ msgid "**空位太多导致骨架崩坏。** 浓度模式 `0.10` 以上已到强缺陷区。先检查是否有孤立原子或明显断裂，再决定是否回调。"
-#~ msgstr ""
-#~ "**The framework collapses at high vacancy "
-#~ "count.** Fractions above 0.10 are strongly "
-#~ "defective. Inspect connectivity and isolated atoms"
-#~ " before retaining such configurations."
-
-#~ msgid ""
-#~ "**count 和 fraction 怎么选。** 二者只选一个：想精确删几个原子用 `Vacancy"
-#~ " Count`；想按体系大小等比例删用 `Vacancy Fraction`。"
-#~ msgstr ""
-#~ "**Count or fraction?** Use `Vacancy Count` for"
-#~ " an absolute number and `Vacancy Fraction` "
-#~ "for size-scaled concentration."
-
 #~ msgid "可复现性"
 #~ msgstr "Reproducibility"
 
-#~ msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入结构顺序变化也会影响结果。"
-#~ msgstr ""
-#~ "Enable `use_seed` and fix `seed` to reproduce"
-#~ " an input. Input order can also affect "
-#~ "derived samples."
-
-#~ msgid "在每个输入结构的**全部原子位点**中随机删除若干原子，生成一组空位落点不同的结构。可以按绝对数量或整体比例决定删除量；不区分元素，也不读取 `group`。"
-#~ msgstr ""
-#~ "Randomly delete atoms from **all atomic "
-#~ "sites** in each input structure to generate"
-#~ " configurations with different vacancy locations. "
-#~ "The deletion amount can be specified as "
-#~ "an absolute count or an overall fraction; "
-#~ "elements are not distinguished and `group` "
-#~ "labels are ignored."
-
-#~ msgid "这张卡只删除原子。保留下来的原子坐标、晶胞和周期性边界不变，因此输出是**未弛豫空位构型**。删除不同元素的概率由输入结构中的元素数量自然决定，多元素结构的实际组分可能随样本变化。"
-#~ msgstr ""
-#~ "This card only deletes atoms. The coordinates,"
-#~ " cell, and periodic boundaries of retained "
-#~ "atoms are unchanged, so the outputs are "
-#~ "**unrelaxed vacancy configurations**. Deletion "
-#~ "probabilities follow the element counts in the"
-#~ " input; the actual composition may vary "
-#~ "between samples for multicomponent structures."
-
 #~ msgid "**和 `Random Vacancy` 的区别：**"
 #~ msgstr "**How it differs from `Random Vacancy`:**"
-
-#~ msgid "`Global Random Vacancy`：所有元素都可被删除，适合快速覆盖整体空位数量或比例。"
-#~ msgstr ""
-#~ "`Global Random Vacancy`: atoms of every "
-#~ "element may be deleted; use it to cover"
-#~ " an overall vacancy count or fraction "
-#~ "quickly."
-
-#~ msgid "`Random Vacancy`：按元素和可选 `group` 规则选择候选位点，适合子晶格或特定元素空位。"
-#~ msgstr ""
-#~ "`Random Vacancy`: candidate sites are selected "
-#~ "by element and optional `group` rules; use "
-#~ "it for sublattice- or element-specific "
-#~ "vacancies."
-
-#~ msgid "设输入有 $N$ 个原子。按浓度输入时，最大空位数为"
-#~ msgstr ""
-#~ "For an input with $N$ atoms, the maximum"
-#~ " vacancy count when a concentration is "
-#~ "specified is"
 
 #~ msgid ""
 #~ "\n"
@@ -688,40 +486,12 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgstr ""
 
 #~ msgid ""
-#~ "按数量输入时直接使用指定整数。`固定数量`只采样 $n=n_{\\max}$，`随机数量`覆盖 "
-#~ "$n=1,\\ldots,n_{\\max}$。每个 $n$ 的不同空位图样数是"
-#~ msgstr ""
-#~ "When a count is specified, the given "
-#~ "integer is used directly. `Fixed count` "
-#~ "samples only $n=n_{\\max}$, while `Random count` "
-#~ "covers $n=1,\\ldots,n_{\\max}$. The number of "
-#~ "distinct vacancy patterns for each $n$ is"
-
-#~ msgid ""
 #~ "\n"
 #~ "\\Omega_n=\\binom{N}{n}.\n"
 #~ msgstr ""
 
-#~ msgid ""
-#~ "`Sobol`引擎用低差异序列在位点选择空间中取样，`均匀随机`使用伪随机数；两者都会去重， "
-#~ "并受最大输出数限制。程序保证至少保留一个原子。这里是全局位点采样；若要按元素或 group 限定候选位点，应使用`按规则生成空位`。"
-#~ msgstr ""
-#~ "The `Sobol` engine samples the site-selection"
-#~ " space with a low-discrepancy sequence, "
-#~ "while `Uniform random` uses pseudorandom numbers."
-#~ " Both remove duplicates and obey the "
-#~ "maximum-output limit. At least one atom is"
-#~ " always retained. This is global site "
-#~ "sampling; to restrict candidate sites by "
-#~ "element or group, use `Rule-based Vacancy`."
-
 #~ msgid "快速使用"
 #~ msgstr "Quick start"
-
-#~ msgid "选择 `空位比例（0–1）`（`concentration_condition`），设为 `0.05`。"
-#~ msgstr ""
-#~ "Select `Vacancy concentration (0–1)` "
-#~ "(`concentration_condition`) and set it to `0.05`."
 
 #~ msgid "`每个输出的空位数`（`count_mode`）选择 `Fixed at the set value`。"
 #~ msgstr "Set `Vacancies per output` (`count_mode`) to `Fixed at the set value`."
@@ -729,29 +499,8 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgid "`每个输入最大输出数`（`max_structures`）设为 `50`。"
 #~ msgstr "Set `Maximum outputs per input` (`max_structures`) to `50`."
 
-#~ msgid "`位点采样方式`（`engine_type`）保持 `Uniform random (recommended)`。"
-#~ msgstr "Keep `Site sampling method` (`engine_type`) as `Uniform random (recommended)`."
-
-#~ msgid "做对照实验时勾选 `Use seed` 并填写固定种子。"
-#~ msgstr "For a reproducible comparison, enable `Use seed` and enter a fixed seed."
-
-#~ msgid "首帧预览会显示实际删除的原子数和最多可生成的唯一输出数。输出带有 `Vac(n=5)` 标签。"
-#~ msgstr ""
-#~ "The first-frame preview shows the actual "
-#~ "deletion count and the maximum number of "
-#~ "unique outputs. Outputs carry a `Vac(n=5)` "
-#~ "label."
-
 #~ msgid "删除量"
 #~ msgstr "Deletion amount"
-
-#~ msgid "`int`，默认 `1`。每个输出最多删除的原子数。必须至少为 1，且必须小于输入结构的原子数，程序不会再静默缩小过大的数值。"
-#~ msgstr ""
-#~ "`int`, default `1`. The maximum number of "
-#~ "atoms deleted per output. It must be at"
-#~ " least 1 and less than the input atom"
-#~ " count; oversized values are not silently "
-#~ "reduced."
 
 #~ msgid "`float`，默认 `0.01`。按"
 #~ msgstr "`float`, default `0.01`. The vacancy count is converted from"
@@ -759,67 +508,17 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ msgid "空位数 = floor(输入原子数 × 空位比例)\n"
 #~ msgstr "Vacancy count = floor(input atom count × vacancy concentration)\n"
 
-#~ msgid "换算删除量。例如 100 个原子、比例 `0.05` 会删除 5 个原子。比例必须在 `(0, 1)` 内；若向下取整后为 0，卡片会提示当前结构至少需要的比例。"
-#~ msgstr ""
-#~ "For example, 100 atoms with concentration "
-#~ "`0.05` deletes 5 atoms. The concentration must"
-#~ " lie in `(0, 1)`; if flooring gives "
-#~ "zero, the card reports the minimum "
-#~ "concentration for the current structure."
-
 #~ msgid "`fixed`：每个输出都按上面解析出的数量删除。"
 #~ msgstr "`fixed`: delete the parsed count in every output."
-
-#~ msgid "`random`：每个输出在 1 到解析值之间随机选择删除量。"
-#~ msgstr ""
-#~ "`random`: choose the deletion count randomly "
-#~ "between 1 and the parsed value for each"
-#~ " output."
-
-#~ msgid "`random` 改变的是**每个输出的空位数**，不是仅改变空位落点。"
-#~ msgstr ""
-#~ "`random` changes the **vacancy count in each"
-#~ " output**, not only the vacancy locations."
 
 #~ msgid "采样和输出"
 #~ msgstr "Sampling and outputs"
 
-#~ msgid "`int`，默认 `1`。每个输入结构请求的最大输出数。相同的删除位点组合会去重；当所有可能组合少于请求值时，实际输出会更少。"
-#~ msgstr ""
-#~ "`int`, default `1`. The requested maximum "
-#~ "outputs per input structure. Duplicate deletion-"
-#~ "site combinations are removed; the actual "
-#~ "output count is lower when fewer unique "
-#~ "combinations exist."
-
 #~ msgid "`1`：Uniform，均匀随机，推荐作为通用默认。"
 #~ msgstr "`1`: Uniform random; recommended as the general default."
 
-#~ msgid "`0`：Sobol，准随机序列，适合希望更均匀扫描落点的情况。"
-#~ msgstr ""
-#~ "`0`: Sobol quasi-random sequence; useful when"
-#~ " vacancy locations should be scanned more "
-#~ "evenly."
-
-#~ msgid "Sobol 受 SciPy 维数上限约束，最多支持 21,200 个原子的输入；更大的结构请使用 Uniform。两种方式都只控制如何选择被删除的位点，不会移动原子。"
-#~ msgstr ""
-#~ "Sobol is limited by SciPy's dimensionality "
-#~ "bound and supports at most 21,200 input "
-#~ "atoms; use Uniform for larger structures. Both"
-#~ " methods control only how deleted sites are"
-#~ " selected and never move atoms."
-
 #~ msgid "Use Seed / Seed（use_seed / seed）"
 #~ msgstr "use_seed / seed"
-
-#~ msgid "默认 `false` / `0`。启用后，相同参数和相同输入结构可复现。种子会与结构内容共同派生，因此数据集中几何不同的帧不会机械地删除相同原子序号。"
-#~ msgstr ""
-#~ "Default `false` / `0`. When enabled, identical"
-#~ " parameters and input structures are "
-#~ "reproducible. The seed is derived together "
-#~ "with the structure content, so geometrically "
-#~ "different frames do not mechanically delete "
-#~ "the same atom indices."
 
 #~ msgid "推荐预设"
 #~ msgstr "Recommended presets"
@@ -864,65 +563,14 @@ msgstr "Vac(n={actual number of removed atoms})\n"
 #~ "}\n"
 #~ msgstr ""
 
-#~ msgid "`Global Random Vacancy` → 几何优化或 DFT：本卡输出未弛豫，需要后续计算得到真实缺陷响应。"
-#~ msgstr ""
-#~ "`Global Random Vacancy` → geometry optimization "
-#~ "or DFT: this card produces unrelaxed "
-#~ "structures, so a later calculation is needed"
-#~ " for the physical defect response."
-
-#~ msgid "需要按元素或子晶格删位时，改用 `Random Vacancy`，不要把两张卡串联来模拟一条规则。"
-#~ msgstr ""
-#~ "When deletion must be restricted by element"
-#~ " or sublattice, use `Random Vacancy` instead "
-#~ "of chaining the two cards to emulate one"
-#~ " rule."
-
 #~ msgid "**为什么多元素结构的组分会变化？**"
 #~ msgstr "**Why does the composition vary for multicomponent structures?**"
-
-#~ msgid "所有原子都是候选位点。若需要只删除 O、某种金属或某个 `group`，使用 `Random Vacancy`。"
-#~ msgstr ""
-#~ "Every atom is a candidate site. To "
-#~ "delete only O, a particular metal, or a"
-#~ " `group`, use `Random Vacancy`."
 
 #~ msgid "**为什么实际输出少于设置值？**"
 #~ msgstr "**Why are there fewer outputs than requested?**"
 
-#~ msgid "卡片会删除重复的空位组合。当结构很小或空位数接近原子数时，唯一组合数可能不足。"
-#~ msgstr ""
-#~ "The card removes duplicate vacancy combinations. "
-#~ "When the structure is small or the "
-#~ "vacancy count approaches the atom count, there"
-#~ " may not be enough unique combinations."
-
-#~ msgid "**为什么比例设置后提示删不到一个原子？**"
-#~ msgstr "**Why does a concentration setting report that no atom can be deleted?**"
-
-#~ msgid "比例采用向下取整。对 `N` 个原子的结构，至少需要 `1/N` 才能删除一个原子。"
-#~ msgstr ""
-#~ "The concentration is floored. For a structure"
-#~ " with `N` atoms, it must be at least"
-#~ " `1/N` to delete one atom."
-
 #~ msgid "**Sobol 和 Uniform 控制什么？**"
 #~ msgstr "**What do Sobol and Uniform control?**"
 
-#~ msgid "它们只控制空位落点的抽样顺序。通常使用 Uniform；需要准随机覆盖且原子数不超过 21,200 时再选 Sobol。"
-#~ msgstr ""
-#~ "They control only the sampling order of "
-#~ "vacancy locations. Use Uniform normally; choose "
-#~ "Sobol when quasi-random coverage is desired"
-#~ " and the atom count is no more than"
-#~ " 21,200."
-
 #~ msgid "兼容性"
 #~ msgstr "Compatibility"
-
-#~ msgid "旧工作流中的 `card_name`、`class` 和参数键保持不变；旧版顶层参数与当前 `params` 对象都可读取。"
-#~ msgstr ""
-#~ "The `card_name`, `class`, and parameter keys "
-#~ "of older workflows remain unchanged; both "
-#~ "legacy top-level parameters and the current"
-#~ " `params` object can be read."

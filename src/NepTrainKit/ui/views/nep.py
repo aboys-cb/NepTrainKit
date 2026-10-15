@@ -849,7 +849,8 @@ class NepResultPlotWidget(QWidget):
         if baseline_store is None:
             return
         self._post_shift_energy_messages(data, selected_preset, baseline_store, values)
-        self.canvas.plot_nep_result()
+        # Energies change, the structure set does not: keep the selection.
+        self.canvas.plot_nep_result(preserve_selection=True)
 
     def calc_dft_d3(self):
         """Collect DFT-D3 parameters from the user and start the calculation asynchronously."""
@@ -880,7 +881,7 @@ class NepResultPlotWidget(QWidget):
 
         thread = BackgroundTask(self._parent, show_tip=True, title=self.tr("Calculating DFT-D3"))
         thread.start_work(data.apply_dft_d3_correction, mode, functional, d3_cutoff, d3_cutoff_cn)
-        thread.succeeded.connect(lambda _result: self.canvas.plot_nep_result())
+        thread.succeeded.connect(lambda _result: self.canvas.plot_nep_result(preserve_selection=True))
 
     def _run_distribution_analysis_task(self, data, request) -> dict:
         """Run distribution analysis in a worker thread and return the payload."""

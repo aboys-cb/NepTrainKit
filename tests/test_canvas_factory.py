@@ -163,6 +163,30 @@ class TestCanvasFactory(unittest.TestCase):
         brushes = canvas.axes_list[0]._scatter.data["brush"]
         self.assertEqual(brushes[1].color().rgba(), Brushes.Selected.color().rgba())
 
+    def test_full_replot_clears_selection_through_notifying_data_api(self):
+        for make in (lambda: canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)[0],
+                     lambda: canvas_factory._create_vispy_result_canvas(None)):
+            canvas = make()
+            dataset = NepPlotData(
+                np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]], dtype=np.float32),
+                index_list=np.array([0, 1, 2], dtype=np.int32),
+                title="descriptor",
+            )
+            dataset.show_rmse = False
+            result_data = SimpleNamespace(
+                datasets=[dataset],
+                select_index={1},
+                reject_index=set(),
+                clear_selection=MagicMock(),
+                clear_selection_history=MagicMock(),
+            )
+            canvas.init_axes(1)
+            canvas.set_nep_result_data(result_data)
+            canvas.plot_nep_result()
+            # The status bar listens to the data API; a raw set.clear() skips it.
+            result_data.clear_selection.assert_called_once_with()
+            result_data.clear_selection_history.assert_not_called()
+
     def test_pyqtgraph_inverse_select_from_empty_refreshes_all_points(self):
         canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)
         self.assertFalse(fallback)
@@ -230,6 +254,19 @@ class TestCanvasFactory(unittest.TestCase):
         canvas.set_view_layout()
 
         canvas.grid.add_widget.assert_called_once_with(plot, row=0, col=0, row_span=6, col_span=1)
+
+    def test_vispy_axis_labels_can_be_cleared_after_being_shown(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        plot.set_full_detail(True)
+
+        plot.set_axis_labels("Reference energy (eV/atom)", "Predicted energy (eV/atom)")
+        self.assertGreater(plot.xaxis.height_min, 0)
+        plot.set_axis_labels(None, None)
+
+        self.assertEqual(plot.xaxis.height_min, 0)
+        self.assertEqual(plot.yaxis.width_min, 0)
 
     def test_vispy_init_axes_keeps_thumbnails_compact_until_selected(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)

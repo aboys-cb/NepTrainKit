@@ -1,13 +1,13 @@
 # 浏览与基础选择
 
-对应 `Reset View`、`Pan View`、`Mouse Selection`、`Inverse Selection`、
-`Delete Selected Items`、`Undo Selection` 和 `Undo Delete`。
+对应 `重置视图`、`平移视图`、`鼠标选择`、`反选`、
+`删除选中项`、`撤销选择` 和 `撤销删除`。
 
 ## 这些工具会改变什么
 
-- `Reset View` 和 `Pan View` 只改变当前图的观察范围，不改结构和选择。
-- `Mouse Selection`、`Inverse Selection` 和 `Undo Selection` 改变选择集，适合在图上逐步圈出目标结构。
-- `Delete Selected Items` 把选中结构移出活动数据集；`Undo Delete` 可以恢复最近一次删除。
+- `重置视图` 和 `平移视图` 只改变当前图的观察范围，不改结构和选择。
+- `鼠标选择`、`反选` 和 `撤销选择` 改变选择集，适合在图上逐步圈出目标结构。
+- `删除选中项` 把选中结构移出活动数据集；`撤销删除` 可以恢复最近一次删除。
 
 选择、标记和删除是三种不同状态。操作后看底部 `Sel / Rej / Rm / Now`，确认变化落在预期状态。
 
@@ -20,4 +20,4 @@
 
 ## 操作后检查
 
-先确认选中点数量，再执行删除或导出。误选时优先用 `Undo Selection`，不要通过删除再恢复来代替选择撤销。
+先确认选中点数量，再执行删除或导出。误选时优先用 `撤销选择`，不要通过删除再恢复来代替选择撤销。

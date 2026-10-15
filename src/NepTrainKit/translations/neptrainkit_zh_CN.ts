@@ -921,6 +921,46 @@
 <context>
     <name>CanvasBase</name>
     <message>
+        <source>Reference magnetic force (eV/μB)</source>
+        <translation>参考磁力 (eV/μB)</translation>
+    </message>
+    <message>
+        <source>Predicted magnetic force (eV/μB)</source>
+        <translation>预测磁力 (eV/μB)</translation>
+    </message>
+    <message>
+        <source>Reference energy (eV/atom)</source>
+        <translation>参考能量 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Predicted energy (eV/atom)</source>
+        <translation>预测能量 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Reference force (eV/Å)</source>
+        <translation>参考力 (eV/Å)</translation>
+    </message>
+    <message>
+        <source>Predicted force (eV/Å)</source>
+        <translation>预测力 (eV/Å)</translation>
+    </message>
+    <message>
+        <source>Reference virial (eV/atom)</source>
+        <translation>参考维里 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Predicted virial (eV/atom)</source>
+        <translation>预测维里 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Reference stress (GPa)</source>
+        <translation>参考应力 (GPa)</translation>
+    </message>
+    <message>
+        <source>Predicted stress (GPa)</source>
+        <translation>预测应力 (GPa)</translation>
+    </message>
+    <message>
         <location filename="../ui/canvas/base/canvas.py" line="230" />
         <source>No undoable deletion!</source>
         <translation>没有可撤销的删除操作！</translation>
@@ -14220,6 +14260,14 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>ModelItemWidget</name>
     <message>
+        <source>Select a project on the left to list its models, or drag a model folder here.</source>
+        <translation>在左侧选择项目以查看其中的模型，也可以把模型文件夹拖到这里。</translation>
+    </message>
+    <message>
+        <source>No models in this project yet. Use New model, or drag a model folder here.</source>
+        <translation>这个项目还没有模型。点击“新建模型”，或把模型文件夹拖到这里。</translation>
+    </message>
+    <message>
         <location filename="../ui/views/dataset_widget.py" line="59" />
         <source>Name</source>
         <translation>名称</translation>
@@ -15989,6 +16037,10 @@ All child items will also be deleted.</source>
 <context>
     <name>ProjectWidget</name>
     <message>
+        <source>Models</source>
+        <translation>模型数</translation>
+    </message>
+    <message>
         <location filename="../ui/views/project_view.py" line="52" />
         <source>(ID) Project name</source>
         <translation>(ID) 项目名称</translation>
@@ -17199,6 +17251,42 @@ All child items will also be deleted.</source>
 </context>
 <context>
     <name>RuntimeMessage</name>
+    <message>
+        <source>any/all requires at least one atomic field.</source>
+        <translation>any/all 条件中必须包含至少一个原子字段。</translation>
+    </message>
+    <message>
+        <source>atomic.element requires == or != with a quoted element symbol inside any/all.</source>
+        <translation>atomic.element 只能在 any/all 条件内使用 == 或 != 与带引号的元素符号比较。</translation>
+    </message>
+    <message>
+        <source>Atomic fields in any/all must refer to the same atoms; row counts do not align.</source>
+        <translation>any/all 中的原子字段必须对应相同的原子；当前字段行数不一致。</translation>
+    </message>
+    <message>
+        <source>atomic.element is only available inside any/all and does not support suffixes.</source>
+        <translation>atomic.element 只能在 any/all 条件内使用，且不支持后缀。</translation>
+    </message>
+    <message>
+        <source>atomic.element must be compared with a quoted element symbol, for example 'Fe'.</source>
+        <translation>atomic.element 必须与带引号的元素符号比较，例如 'Fe'。</translation>
+    </message>
+    <message>
+        <source>invalid initial coverage representatives</source>
+        <translation>初始覆盖代表帧无效。</translation>
+    </message>
+    <message>
+        <source>reduced cover failed the original constraints</source>
+        <translation>简化后的覆盖方案未满足原始约束。</translation>
+    </message>
+    <message>
+        <source>sample budget must be a positive integer</source>
+        <translation>采样数量必须是正整数。</translation>
+    </message>
+    <message>
+        <source>Unknown element symbol: {value}. Use standard capitalization, for example 'Fe'.</source>
+        <translation>未知元素符号：{value}。请使用标准大小写，例如 'Fe'。</translation>
+    </message>
     <message>
         <source>coverage radius must be finite and positive</source>
         <translation>覆盖距离阈值必须是有限正数。</translation>
@@ -18610,6 +18698,30 @@ All child items will also be deleted.</source>
 <context>
     <name>SettingsWidget</name>
     <message>
+        <source>General</source>
+        <translation>常规</translation>
+    </message>
+    <message>
+        <source>Structure Viewer</source>
+        <translation>结构查看器</translation>
+    </message>
+    <message>
+        <source>Data and Export</source>
+        <translation>数据与导出</translation>
+    </message>
+    <message>
+        <source>Make Dataset</source>
+        <translation>构建数据集</translation>
+    </message>
+    <message>
+        <source>Color for the current-structure marker</source>
+        <translation>当前结构标记的颜色</translation>
+    </message>
+    <message>
+        <source>Size of the current-structure ring</source>
+        <translation>当前结构圆环的大小</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/settings.py" line="77" />
         <source>Personalization</source>
         <translation>个性化</translation>
@@ -19478,6 +19590,36 @@ All child items will also be deleted.</source>
 </context>
 <context>
     <name>ShowNepWidget</name>
+    <message>
+        <source>No dataset loaded</source>
+        <translation>尚未加载数据</translation>
+    </message>
+    <message>
+        <source>Open a train.xyz / NEP result directory, or drag files here.</source>
+        <translation>打开 train.xyz 或 NEP 结果目录，也可以直接把文件拖到这里。</translation>
+    </message>
+    <message>
+        <source>Open data</source>
+        <translation>打开数据</translation>
+    </message>
+    <message>
+        <source>Orig {orig} | Now {now} | Rm {removed} | Sel {selected} | Rej {rejected}</source>
+        <translation>原始 {orig} | 当前 {now} | 删 {removed} | 选 {selected} | 坏 {rejected}</translation>
+    </message>
+    <message>
+        <source>Original structures: {orig}
+Currently shown: {now}
+Removed: {removed}
+Selected: {selected}
+Unselected: {unselected}
+Marked bad: {rejected}</source>
+        <translation>原始结构：{orig}
+当前显示：{now}
+已删除：{removed}
+已选中：{selected}
+未选中：{unselected}
+标记为坏点：{rejected}</translation>
+    </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="305" /><location filename="../ui/pages/show_nep.py" line="304" />
         <source>Open File…</source>
@@ -21856,6 +21998,30 @@ Do you want to continue?</source>
 <context>
     <name>StructureFilterBar</name>
     <message>
+        <source>Add a filter condition to preview matches</source>
+        <translation>先添加筛选条件，再预览匹配结果</translation>
+    </message>
+    <message>
+        <source>Matches —</source>
+        <translation>匹配 —</translation>
+    </message>
+    <message>
+        <source>The number of matching structures appears here after Preview</source>
+        <translation>点击“预览”后，这里显示匹配的结构数</translation>
+    </message>
+    <message>
+        <source>Matches {count:,}</source>
+        <translation>匹配 {count:,}</translation>
+    </message>
+    <message>
+        <source>Preview a filter or select structures to apply a result</source>
+        <translation>先预览筛选结果或选中结构，才能应用结果</translation>
+    </message>
+    <message>
+        <source>Atomic condition</source>
+        <translation>原子条件</translation>
+    </message>
+    <message>
         <source>Add filter condition</source>
         <translation type="vanished">添加筛选条件</translation>
     </message>
@@ -22199,6 +22365,14 @@ Elapsed: {elapsed:.1f} ms</source>
 </context>
 <context>
     <name>StructureInfoWidget</name>
+    <message>
+        <source>Mean moment</source>
+        <translation>平均磁矩</translation>
+    </message>
+    <message>
+        <source>Mean local moment, mean |mᵢ|, from per-atom spin vectors. Net moment |Σmᵢ|/N: {net}</source>
+        <translation>平均局域磁矩：按每个原子 spin 向量求 |mᵢ| 的平均值。净磁矩 |Σmᵢ|/N：{net}</translation>
+    </message>
     <message>
         <location filename="../ui/views/structure.py" line="69" />
         <source>Structure information</source>
@@ -23013,6 +23187,10 @@ Elapsed: {elapsed:.1f} ms</source>
 </context>
 <context>
     <name>TrainingSetAuditWidget</name>
+    <message>
+        <source>Select an element set or a matrix cell first</source>
+        <translation>请先选择一个元素集合或矩阵单元格</translation>
+    </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="232" />
         <source>Training Set Audit</source>
@@ -27415,6 +27593,10 @@ Magnetic: {magnetic}</source>
 <context>
     <name>_ConditionRow</name>
     <message>
+        <source>Atomic condition</source>
+        <translation>原子条件</translation>
+    </message>
+    <message>
         <source>Enabled</source>
         <translation type="vanished">启用</translation>
     </message>
@@ -27663,6 +27845,184 @@ Magnetic: {magnetic}</source>
         <location filename="../ui/widgets/filter_bar.py" line="567" />
         <source>Remove condition</source>
         <translation>删除条件</translation>
+    </message>
+</context>
+<context>
+    <name>AtomicFilterEditor</name>
+    <message>
+        <source>Magnetic moment</source>
+        <translation>磁矩</translation>
+    </message>
+    <message>
+        <source>Force</source>
+        <translation>力</translation>
+    </message>
+    <message>
+        <source>Magnetic force</source>
+        <translation>磁力</translation>
+    </message>
+    <message>
+        <source>Charge</source>
+        <translation>电荷</translation>
+    </message>
+    <message>
+        <source>Born effective charge</source>
+        <translation>玻恩有效电荷</translation>
+    </message>
+    <message>
+        <source>Reference</source>
+        <translation>参考值</translation>
+    </message>
+    <message>
+        <source>Prediction</source>
+        <translation>预测值</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>误差</translation>
+    </message>
+    <message>
+        <source>Magnitude</source>
+        <translation>模长</translation>
+    </message>
+    <message>
+        <source>Any</source>
+        <translation>任一</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>所有</translation>
+    </message>
+    <message>
+        <source>atoms</source>
+        <translation>原子</translation>
+    </message>
+    <message>
+        <source>At least one atom</source>
+        <translation>任一目标原子满足</translation>
+    </message>
+    <message>
+        <source>All target atoms</source>
+        <translation>所有目标原子满足</translation>
+    </message>
+    <message>
+        <source>Less than</source>
+        <translation>小于</translation>
+    </message>
+    <message>
+        <source>At most</source>
+        <translation>小于等于</translation>
+    </message>
+    <message>
+        <source>Greater than</source>
+        <translation>大于</translation>
+    </message>
+    <message>
+        <source>At least</source>
+        <translation>大于等于</translation>
+    </message>
+    <message>
+        <source>Equal to</source>
+        <translation>等于</translation>
+    </message>
+    <message>
+        <source>Not equal to</source>
+        <translation>不等于</translation>
+    </message>
+    <message>
+        <source>Threshold</source>
+        <translation>阈值</translation>
+    </message>
+    <message>
+        <source>Target element</source>
+        <translation>目标元素</translation>
+    </message>
+    <message>
+        <source>Match</source>
+        <translation>满足方式</translation>
+    </message>
+    <message>
+        <source>Property</source>
+        <translation>原子性质</translation>
+    </message>
+    <message>
+        <source>Comparison</source>
+        <translation>比较</translation>
+    </message>
+    <message>
+        <source>All elements</source>
+        <translation>全部元素</translation>
+    </message>
+    <message>
+        <source>Load a dataset with atomic properties to choose a field.</source>
+        <translation>加载包含原子属性的数据集后，可选择性质。</translation>
+    </message>
+    <message>
+        <source>Only {element} atoms are checked. Structures without {element} do not match.</source>
+        <translation>仅检查 {element} 原子，不含 {element} 的结构不匹配。</translation>
+    </message>
+    <message>
+        <source>The condition is checked for each atom in the structure.</source>
+        <translation>对结构中的每个原子判断条件。</translation>
+    </message>
+</context>
+<context>
+    <name>AtomInfoCard</name>
+    <message>
+        <source>Position</source>
+        <translation>位置</translation>
+    </message>
+    <message>
+        <source>Cartesian (Å)</source>
+        <translation>笛卡尔 (Å)</translation>
+    </message>
+    <message>
+        <source>Fractional</source>
+        <translation>分数坐标</translation>
+    </message>
+    <message>
+        <source>Force · eV/Å</source>
+        <translation>力 · eV/Å</translation>
+    </message>
+    <message>
+        <source>DFT</source>
+        <translation>DFT</translation>
+    </message>
+    <message>
+        <source>Predicted</source>
+        <translation>预测</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>误差</translation>
+    </message>
+    <message>
+        <source>Magnetism</source>
+        <translation>磁性</translation>
+    </message>
+    <message>
+        <source>Spin (μB)</source>
+        <translation>自旋 (μB)</translation>
+    </message>
+    <message>
+        <source>DFT mag. force</source>
+        <translation>DFT 磁力</translation>
+    </message>
+    <message>
+        <source>Predicted mag. force</source>
+        <translation>预测磁力</translation>
+    </message>
+    <message>
+        <source>Environment</source>
+        <translation>环境</translation>
+    </message>
+    <message>
+        <source>Nearest</source>
+        <translation>最近邻</translation>
+    </message>
+    <message>
+        <source>(periodic image)</source>
+        <translation>（周期像）</translation>
     </message>
 </context>
 </TS>

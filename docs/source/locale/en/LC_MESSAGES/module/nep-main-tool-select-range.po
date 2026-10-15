@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -20,37 +20,45 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/nep-main-tool-select-range.md:1
-#: 554cef56b5b94bc99fe5b12954dd393c
-msgid "按图上范围选择（Select by Range）"
+#: 7525154f64dd402abc081b32ce33c47c
+#
+msgid "按范围选择（Select by Range）"
 msgstr "Select by range"
 
 #: ../../source/module/nep-main-tool-select-range.md:3
-#: 3f1774aaff8e403a8f0e71b67b104724
+#: 8fec85946313405cb10e93e3ab0619dd
 msgid "作用与适用场景"
 msgstr "Purpose and use cases"
 
 #: ../../source/module/nep-main-tool-select-range.md:5
-#: c1cc9232658d4fffb74a7377e9044c4e
+#: 62f93e93ad8d4f5f86cf0f91a18d85cb
 msgid ""
 "按照当前散点图的 x/y 数值范围选中结构。适合截取误差长尾、能量区间或描述符图中的局部点群。 切换到另一张图后，x/y "
 "的物理含义也会随当前坐标轴改变。"
-msgstr "Select structures by x/y ranges on the current scatter plot. This is useful for isolating an error tail, an energy interval, or a local cluster in descriptor space. After switching plots, the physical meaning of x and y changes with the displayed axes."
+msgstr ""
+"Select structures by x/y ranges on the current scatter plot. This is "
+"useful for isolating an error tail, an energy interval, or a local "
+"cluster in descriptor space. After switching plots, the physical meaning "
+"of x and y changes with the displayed axes."
 
 #: ../../source/module/nep-main-tool-select-range.md:8
-#: 999867b9bf8e426087d78902566c006e
+#: b5da3d21fd464035bcfcc1154bfb6a30
 msgid "判定原理"
 msgstr "Decision principle"
 
 #: ../../source/module/nep-main-tool-select-range.md:10
-#: debfc895027846f99199589a2ac23de5
+#: 5f90abd5df864807b8ff700b166dbf08
 #, python-brace-format
 msgid ""
 "设当前点的横、纵坐标为 $x_i,y_i$，输入范围为 $[x_{\\min},x_{\\max}]$ 和 "
 "$[y_{\\min},y_{\\max}]$。程序先自动交换写反的上下限，再计算"
-msgstr "Let the current point coordinates be $x_i,y_i$, with entered ranges $[x_{\\min},x_{\\max}]$ and $[y_{\\min},y_{\\max}]$. The program first swaps any reversed limits, then evaluates"
+msgstr ""
+"Let the current point coordinates be $x_i,y_i$, with entered ranges "
+"$[x_{\\min},x_{\\max}]$ and $[y_{\\min},y_{\\max}]$. The program first "
+"swaps any reversed limits, then evaluates"
 
 #: ../../source/module/nep-main-tool-select-range.md:13
-#: e8ec494460c4473298615a3c2232c22b
+#: d7f394925ce64cae99212a3c2f63e082
 #, python-brace-format
 msgid ""
 "\n"
@@ -62,54 +70,70 @@ msgstr ""
 "M_y(i)=(y_{\\min}\\le y_i\\le y_{\\max}).\n"
 
 #: ../../source/module/nep-main-tool-select-range.md:18
-#: bfc5672c99da44eeb08d9f357cb87d00
+#: fc7fba8916e34abb8c2019959279d2c2
 msgid ""
 "`同时满足（AND）`使用 $M(i)=M_x(i)\\land M_y(i)$；`任一满足（OR）`使用 $M(i)=M_x(i)\\lor "
 "M_y(i)$。边界点会被选中。这里比较的是**当前子图实际显示的数据**， 不是固定的能量或力字段，因此运行前先看清坐标轴名称。"
-msgstr "`Match both (AND)` uses $M(i)=M_x(i)\\land M_y(i)$; `Match either (OR)` uses $M(i)=M_x(i)\\lor M_y(i)$. Boundary points are included. The comparison uses the data actually displayed on the current subplot—not fixed energy or force fields—so check the axis labels before running."
+msgstr ""
+"`Match both (AND)` uses $M(i)=M_x(i)\\land M_y(i)$; `Match either (OR)` "
+"uses $M(i)=M_x(i)\\lor M_y(i)$. Boundary points are included. The "
+"comparison uses the data actually displayed on the current subplot—not "
+"fixed energy or force fields—so check the axis labels before running."
 
 #: ../../source/module/nep-main-tool-select-range.md:22
-#: b3ab6d8f24114482ba2ae86f6d13f047
+#: 3780c7e008eb45d4be28fcce8882cedc
 msgid "参数与执行结果"
 msgstr "Parameters and execution result"
 
-#: ../../source/module/nep-dataset-display-content.md:5590
-#: d5c8aa8756644b83be57ef039c4b9619
+#: ../../source/module/nep-dataset-display-content.md:5073
+#: c2301e06838f456c962fc3f4858608b5
 msgid "输入控件："
 msgstr "Input controls:"
 
-#: ../../source/module/nep-dataset-display-content.md:5591
-#: dea89f6e880f4356bce77c9a9025796a
+#: ../../source/module/nep-dataset-display-content.md:5074
+#: ddf3970f5b8d457cb828ae57351b5a17
 msgid "`x 最小值 / x 最大值 / y 最小值 / y 最大值`：范围 `[-1e8, 1e8]`，6 位小数；"
-msgstr "`x minimum / x maximum / y minimum / y maximum`: range `[-1e8, 1e8]`, six decimal places;"
+msgstr ""
+"`x minimum / x maximum / y minimum / y maximum`: range `[-1e8, 1e8]`, six"
+" decimal places;"
 
-#: ../../source/module/nep-dataset-display-content.md:5592
-#: 6ee47158e6454bbfaa21aec1ae800643
+#: ../../source/module/nep-dataset-display-content.md:5075
+#: 4dcca213b5354d63a1ba79e25669f3eb
 msgid "`逻辑关系`：`同时满足（AND）` / `任一满足（OR）`，默认同时满足。"
-msgstr "`Logical relation`: `Match both (AND)` or `Match either (OR)`; default is AND."
+msgstr ""
+"`Logical relation`: `Match both (AND)` or `Match either (OR)`; default is"
+" AND."
 
-#: ../../source/module/nep-dataset-display-content.md:5593
-#: f732cad7345c4948b85e4a1f46b6f09e
+#: ../../source/module/nep-dataset-display-content.md:5076
+#: b6d9713e55894bccb8772985f4884790
 msgid "默认值：打开时自动填充为当前子图数据极值。"
-msgstr "Defaults: populated from the current subplot's data limits when the dialog opens."
+msgstr ""
+"Defaults: populated from the current subplot's data limits when the "
+"dialog opens."
 
-#: ../../source/module/nep-dataset-display-content.md:5594
-#: b86e52211f5d4450b2ef4bac760fc967
+#: ../../source/module/nep-dataset-display-content.md:5077
+#: 927e83b411064896bfa46a82c25a8298
 msgid "执行结果：按坐标窗口筛选并选中结构。"
-msgstr "Result: select structures whose plotted coordinates satisfy the chosen window."
+msgstr ""
+"Result: select structures whose plotted coordinates satisfy the chosen "
+"window."
 
-#: ../../source/module/nep-dataset-display-content.md:5596
-#: da8a56b200ce4cbc8da1d3c6cb7e3ef6
-msgid "![按图上范围选择对话框](../_static/image/generated/show_nep_reference/g_range_dialog.png)"
-msgstr "![Select by Range dialog](../_static/image/generated/show_nep_reference/g_range_dialog.png)"
+#: ../../source/module/nep-dataset-display-content.md:5079
+#: 01daa5c17505473aba61589c479bcc8e
+#
+msgid "![按范围选择对话框](../_static/image/generated/show_nep_reference/g_range_dialog.png)"
+msgstr ""
+"![Select by Range "
+"dialog](../_static/image/generated/show_nep_reference/g_range_dialog.png)"
 
-#: ../../source/module/nep-dataset-display-content.md:5596
-#: 7a1b1c9be52e479eb66126b29fd30782
-msgid "按图上范围选择对话框"
+#: ../../source/module/nep-dataset-display-content.md:5079
+#: 20a43bebf9854ae3afc2aceb7ac46c28
+#
+msgid "按范围选择对话框"
 msgstr "Select-by-plot-range dialog"
 
-#: ../../source/module/nep-dataset-display-content.md:5596
-#: 7a1b1c9be52e479eb66126b29fd30782
+#: ../../source/module/nep-dataset-display-content.md:5079
+#: 20a43bebf9854ae3afc2aceb7ac46c28
 msgid ""
 ".. image:: "
 "../_static/image/generated/show_nep_reference/g_range_dialog.png"
@@ -118,13 +142,17 @@ msgstr ""
 "../_static/image/generated/show_nep_reference/g_range_dialog.png"
 
 #: ../../source/module/nep-main-tool-select-range.md:29
-#: 599756adb3894598af852df846cd9d53
+#: 9bc0d363e2784092a9e1c01e6a2b9e99
 msgid "操作后检查"
 msgstr "Post-operation checks"
 
 #: ../../source/module/nep-main-tool-select-range.md:31
-#: 4adfe29a43324980b4f3e4a6fd0ae22c
+#: bf246ba909b04d58829f8795b816e7d9
 msgid ""
 "范围框默认填入当前图的数据极值。缩小范围后先核对高亮点位置和 `Sel` 数量； `同时满足（AND）`要求 x、y "
 "同时落入范围，`任一满足（OR）`只要求其中一项满足。"
-msgstr "The range fields initially use the current plot limits. After narrowing them, verify the highlighted points and the `Sel` count. `Match both (AND)` requires both x and y to lie in range, whereas `Match either (OR)` requires only one."
+msgstr ""
+"The range fields initially use the current plot limits. After narrowing "
+"them, verify the highlighted points and the `Sel` count. `Match both "
+"(AND)` requires both x and y to lie in range, whereas `Match either (OR)`"
+" requires only one."

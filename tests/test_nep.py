@@ -306,6 +306,21 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertNotIn(1, result.select_index)
         self.assertNotIn(3, result.select_index)
 
+    def test_clear_selection_notifies_listeners_and_drops_history(self):
+        tmp_dir = self._make_nep_workdir()
+        result = NepTrainResultData.from_path(os.path.join(tmp_dir, "train.xyz"))
+        result.load()
+        result.select([0, 1])
+        notified = []
+        result.updateInfoSignal.connect(lambda: notified.append(len(result.select_index)))
+
+        self.assertTrue(result.clear_selection())
+        self.assertEqual(result.select_index, set())
+        self.assertEqual(notified, [0])
+        self.assertFalse(result.undo_selection())
+        self.assertFalse(result.clear_selection())
+        self.assertEqual(notified, [0])
+
     def test_undo_selection_history(self):
         tmp_dir = self._make_nep_workdir()
         local_train = os.path.join(tmp_dir, "train.xyz")
@@ -1149,7 +1164,13 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         widget.canvas.select_index.assert_called_once_with([1, 4], False)
 
     def test_sparse_point_passes_physics_strategy_and_reports_strata(self):
-        Config.set("widget", "sparse_selection_strategy", "physics")
+        # The dialog restores the persisted count mode; other tests (and the
+        # GUI) may have saved "automatic", so pin the mode this test asserts.
+        for option, value in (("sparse_selection_strategy", "physics"),
+                              ("sparse_physics_count_mode", "limit")):
+            previous = Config.get("widget", option, None)
+            self.addCleanup(lambda o=option, p=previous: p is not None and Config.set("widget", o, p))
+            Config.set("widget", option, value)
         widget = nep_view_module.NepResultPlotWidget.__new__(
             nep_view_module.NepResultPlotWidget
         )

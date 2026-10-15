@@ -13,10 +13,11 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QObject, QUrl, QTimer, Qt, QThread, Slot
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
-    Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget
+    Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget, \
+    PrimaryPushButton, SubtitleLabel
 
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask, run_in_thread
@@ -55,6 +56,7 @@ from NepTrainKit.ui.views import (
     StructureInfoWidget,
     StructureToolBar,
 )
+from NepTrainKit import palette
 
 
 _ARROW_DFT_FORCE = "__ntk_dft_force"
@@ -573,6 +575,30 @@ class ShowNepWidget(QWidget):
 
         return nep_files
 
+    def _create_empty_hint(self, parent) -> QWidget:
+        """Build the placeholder shown over the plot area before any data loads."""
+        hint = QWidget(parent)
+        hint.setObjectName("showNepEmptyHint")
+        hint.setStyleSheet("QWidget#showNepEmptyHint { background: white; }")
+        layout = QVBoxLayout(hint)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setSpacing(10)
+        title = SubtitleLabel(self.tr("No dataset loaded"), hint)
+        detail = CaptionLabel(
+            self.tr(
+                "Open a train.xyz / NEP result directory, or drag files here."
+            ),
+            hint,
+        )
+        detail.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
+        open_button = PrimaryPushButton(FluentIcon.FOLDER, self.tr("Open data"), hint)
+        open_button.clicked.connect(self.open_file)
+        for widget in (title, detail):
+            layout.addWidget(widget, 0, Qt.AlignmentFlag.AlignHCenter)
+        layout.addSpacing(6)
+        layout.addWidget(open_button, 0, Qt.AlignmentFlag.AlignHCenter)
+        return hint
+
     def _update_nep_model_combo(self, directory):
         """Update the NEP model combo box with available model files.
         
@@ -876,6 +902,8 @@ class ShowNepWidget(QWidget):
         self.nep_model_combo.setFixedWidth(120)
         self.nep_model_combo.installEventFilter(ToolTipFilter(self.nep_model_combo, 300, ToolTipPosition.TOP))
         self.nep_model_combo.currentIndexChanged.connect(self._on_nep_model_changed)
+        # Shown again once a dataset reports its available models.
+        self.nep_model_combo.hide()
         
         self.path_container_layout.addWidget(self.path_label)
         self.path_container_layout.addWidget(self.nep_model_combo)
@@ -885,6 +913,8 @@ class ShowNepWidget(QWidget):
 
         self.plot_widget_layout.addWidget(frame, 1, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.graph_widget, 2, 0, 1, 2)
+        self.empty_hint = self._create_empty_hint(self.plot_widget)
+        self.plot_widget_layout.addWidget(self.empty_hint, 2, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.path_container, 3, 0, 1, 1)
         self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
@@ -2486,9 +2516,30 @@ class ShowNepWidget(QWidget):
             rej = len(self._active_reject_indices())
         except Exception:
             rej = 0
-        info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\
-        f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)} Rej: {rej}"
+        now = self.nep_result_data.structure.now_data.shape[0]
+        selected = len(self.nep_result_data.select_index)
+        counts = dict(
+            orig=self.nep_result_data.atoms_num_list.shape[0],
+            now=now,
+            removed=self.nep_result_data.structure.remove_data.shape[0],
+            selected=selected,
+            unselected=now - selected,
+            rejected=rej,
+        )
+        # Short labels keep large counts on one line; the tooltip spells
+        # everything out, including the derived unselected count.
+        info = self.tr(
+            "Orig {orig} | Now {now} | Rm {removed} | Sel {selected} | Rej {rejected}"
+        ).format(**counts)
         self.dataset_info_label.setText(info)
+        self.dataset_info_label.setToolTip(
+            self.tr(
+                "Original structures: {orig}\nCurrently shown: {now}\n"
+                "Removed: {removed}\nSelected: {selected}\n"
+                "Unselected: {unselected}\nMarked bad: {rejected}"
+            ).format(**counts)
+        )
+        self.empty_hint.hide()
         if hasattr(self, "structure_filter_bar"):
             self.structure_filter_bar.set_selection_count(len(self.nep_result_data.select_index))
         self._refresh_export_actions()

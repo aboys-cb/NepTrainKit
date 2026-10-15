@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -20,34 +20,30 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/categories/defect-surface.md:1
-#: 88135efec4084a3f8b584b15855e6c8e
+#: 2055748ebea0433ea911f51d3a51a2f3
 msgid "缺陷"
 msgstr "Defects"
 
 #: ../../source/module/make-dataset-cards/categories/defect-surface.md:3
-#: 54573a55a1f94f09a09b19fd642fb60a
-msgid "与卡片 UI 的“缺陷”分组一致。这些卡片负责删位、插入原子、加入吸附原子或生成层错路径。 自由表面的构造单独放在“表面”分组；表面缺陷通常先建表面，再接这里的局部操作。"
+#: 1c9e3a9f41b34cc6a6ea7abfdd5173ce
+msgid ""
+"与卡片 UI 的“缺陷”分组一致。这些卡片负责删位、插入原子、加入吸附原子或生成层错路径。 "
+"自由表面的构造单独放在“表面”分组；表面缺陷通常先建表面，再接这里的局部操作。"
 msgstr ""
-"This section matches the `Defects` group in the card picker. These cards remove "
-"sites, insert atoms, add adsorbates, or generate stacking-fault paths. Free surfaces "
-"are created separately in the `Surfaces` group; to create a surface defect, usually "
-"build the surface first and then apply one of the local operations listed here."
+"This section matches the `Defects` group in the card picker. These cards "
+"remove sites, insert atoms, add adsorbates, or generate stacking-fault "
+"paths. Free surfaces are created separately in the `Surfaces` group; to "
+"create a surface defect, usually build the surface first and then apply "
+"one of the local operations listed here."
 
 #: ../../source/module/make-dataset-cards/categories/defect-surface.md:15
-#: 55f28a1ec51f461e9abd7791d20eb595
-msgid "旧版 `Stacking Fault` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用 `GSFE Path`。"
+#: f63efebe6dfb46448261c3b687207a2c
+#
+msgid "旧版 `旧版层错位移` 已从添加菜单隐藏，只用于历史 JSON 兼容。新任务统一使用 `层错路径`。"
 msgstr ""
-"The legacy `Stacking Fault` card is hidden from the Add menu and retained only for "
-"historical JSON compatibility. Use `GSFE Path` for new workflows."
+"The legacy `Stacking Fault` card is hidden from the Add menu and retained"
+" only for historical JSON compatibility. Use `GSFE Path` for new "
+"workflows."
 
 #~ msgid "缺陷与表面"
 #~ msgstr "Defects and surfaces"
-
-#~ msgid "这组卡片改变表面边界或原子数，也包含显式层错路径。表面生成、删位、插入原子和层间滑移 是不同操作；需要组合时，按“先构造边界，再引入局部缺陷”的顺序执行。"
-#~ msgstr ""
-#~ "These cards change surface boundaries or atom"
-#~ " counts and include explicit stacking-fault "
-#~ "paths. Slab construction, vacancy creation, atom "
-#~ "insertion, and interlayer sliding are different "
-#~ "operations; when combining them, build the "
-#~ "boundary first and then add local defects."

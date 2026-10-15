@@ -8,208 +8,194 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:1
-#: 0252341d72924ec68213fcd64075d048
+#: ../../source/example/dft-d3-correction.md:1 e07354418f964dbbba61b07cc664b40b
 msgid "DFT-D3：统一数据中的色散校正口径"
 msgstr "DFT-D3: Make the Dispersion-Correction Convention Consistent"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:3
-#: 1b220ac759434dd9b29699b81ac68ebf
+#: ../../source/example/dft-d3-correction.md:3 9463108adb03496fbdfefd331209a970
 msgid ""
-"这个功能直接修改当前数据集的 DFT 参考标签，用于加上或减去 DFT-D3 色散校正。只"
-"有明确知道原始数据是否包含 D3、使用了什么交换关联泛函时才运行；不确定时不要靠"
-"散点图位置猜。"
+"这个功能直接修改当前数据集的 DFT 参考标签，用于加上或减去 DFT-D3 色散校正。只有明确知道原始数据是否包含 "
+"D3、使用了什么交换关联泛函时才运行；不确定时不要靠散点图位置猜。"
 msgstr ""
 "This operation directly modifies the DFT reference labels in the current "
-"dataset by adding or subtracting a DFT-D3 dispersion correction. Run it only "
-"when you know whether the source data already include D3 and which exchange-"
-"correlation functional was used. Do not infer this from the scatter plot."
+"dataset by adding or subtracting a DFT-D3 dispersion correction. Run it "
+"only when you know whether the source data already include D3 and which "
+"exchange-correlation functional was used. Do not infer this from the "
+"scatter plot."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: bc7e3a88963046eda91abf35dd280900
+#: ../../source/example/dft-d3-correction.md 3fdd3d35853f4775bbddaea36b75cd6b
 msgid "当前数据"
 msgstr "Current data"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: 2e14683835d84ee4a2ccc536d29d1109
+#: ../../source/example/dft-d3-correction.md ac9a0b6f5fcb4dde8f832416454ad923
 msgid "目标口径"
 msgstr "Target convention"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: b83e78d6c457451eace653892be10b11
+#: ../../source/example/dft-d3-correction.md e7224fd1f137467fa3a2d9d1907de9cc
 msgid "选择"
 msgstr "Choose"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: 9da3b718b9f54abeaa5819d1f4a18632
+#: ../../source/example/dft-d3-correction.md de9dcf9bf5544174b39b005ce1dfe658
 msgid "不含 D3"
 msgstr "Without D3"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: bab04021a44c4515b05b6d8dc804a50a
+#: ../../source/example/dft-d3-correction.md e60e97bff42d4082ab2f1501451dcaa3
 msgid "改成包含 D3"
 msgstr "Include D3"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: 639f0d7bd7d84b0ea163a17036cda2e5
-msgid "`Add DFT-D3`"
+#: ../../source/example/dft-d3-correction.md ac8f0ac1fd214a4e8de6415267bf6742
+#
+msgid "`加上 DFT-D3`"
 msgstr "`Add DFT-D3`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: b5354a51471f4895a93a7e6f6e53aa24
+#: ../../source/example/dft-d3-correction.md 1c59362cef8342eb943680facd878813
 msgid "已含 D3"
 msgstr "With D3"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: fe1e2f367ea44c48b1ac809308fd5bba
+#: ../../source/example/dft-d3-correction.md 1c8536cff7fd4b4c969d9ca5f507c1f9
 msgid "改成不含 D3"
 msgstr "Remove D3"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:0
-#: 6b310906348b459cb360a4ad33dd7f25
-msgid "`Subtract DFT-D3`"
+#: ../../source/example/dft-d3-correction.md ac8f0ac1fd214a4e8de6415267bf6742
+#
+msgid "`减去 DFT-D3`"
 msgstr "`Subtract DFT-D3`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:10
-#: 83db2ab1b3a1420c98de5085c289fc5a
+#: ../../source/example/dft-d3-correction.md:10
+#: cb6c2271279446868b3492f152cd84ed
 msgid "1. 先保存原始数据"
 msgstr "1. Save the original data first"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:12
-#: 313243e2509645049b6ee5a69377ec30
+#: ../../source/example/dft-d3-correction.md:12
+#: 2f6fac6591ca4bdfb3ccd32cf0d1d6e0
 msgid ""
-"在 `NEP Dataset Display` 中打开数据和对应的 `nep.txt`，确认当前标签来源与泛"
-"函，然后先导出一份原始数据。DFT-D3 会修改 energy、force 以及已有的 virial/"
-"stress 标签，而且重复运行会继续累加，没有单独的撤销按钮。"
+"在 `NEP 数据集查看` 中打开数据和对应的 `nep.txt`，确认当前标签来源与泛函，然后先导出一份原始数据。DFT-D3 会修改 "
+"energy、force 以及已有的 virial/stress 标签，而且重复运行会继续累加，没有单独的撤销按钮。"
 msgstr ""
-"Open the dataset and its corresponding `nep.txt` in `NEP Dataset Display`, "
-"confirm the source and functional of the current labels, and export a copy "
-"of the original data. DFT-D3 modifies energy, force, and any existing virial/"
-"stress labels. Repeating the operation accumulates the correction, and there "
-"is no dedicated undo button."
+"Open the dataset and its corresponding `nep.txt` in `NEP Dataset "
+"Display`, confirm the source and functional of the current labels, and "
+"export a copy of the original data. DFT-D3 modifies energy, force, and "
+"any existing virial/stress labels. Repeating the operation accumulates "
+"the correction, and there is no dedicated undo button."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:14
-#: 02d39a4cb592468e94d93eb883cf26e0
+#: ../../source/example/dft-d3-correction.md:14
+#: 28f5853dd688494680b54243607f0dda
 msgid "能量图和 DFT-D3 校正入口"
 msgstr "Energy plot and the DFT-D3 correction action"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:14
-#: 02d39a4cb592468e94d93eb883cf26e0
+#: ../../source/example/dft-d3-correction.md:14
+#: 28f5853dd688494680b54243607f0dda
 msgid ".. image:: ../_static/image/generated/tutorials/dft_d3_entry.png"
 msgstr ".. image:: ../_static/image/generated/tutorials/dft_d3_entry.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:19
-#: f936927bfc2b455997a0939f93bf8b64
-msgid ""
-"点击工具栏中的 `DFT D3`。该计算固定使用 CPU，与当前选择的 NEP 后端无关。"
+#: ../../source/example/dft-d3-correction.md:19
+#: ffdc46739bff45109b09a273deced41a
+msgid "点击工具栏中的 `DFT D3`。该计算固定使用 CPU，与当前选择的 NEP 后端无关。"
 msgstr ""
 "Click `DFT D3` on the toolbar. This calculation always runs on the CPU, "
 "regardless of the selected NEP backend."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:21
-#: 42eaa1b6e0624516bdca1ad68b4bffa0
+#: ../../source/example/dft-d3-correction.md:21
+#: c3bca13e5c994f268e1f3a1da2aae67c
 msgid "2. 泛函必须与原计算一致"
 msgstr "2. Match the functional used by the original calculation"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:23
-#: a6f4bec097534fda9746fda460faba64
+#: ../../source/example/dft-d3-correction.md:23
+#: e6b3f8ec9c1e4bc7b063665e6af3dad1
 msgid "DFT-D3 校正设置窗口"
 msgstr "DFT-D3 correction settings"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:23
-#: a6f4bec097534fda9746fda460faba64
+#: ../../source/example/dft-d3-correction.md:23
+#: e6b3f8ec9c1e4bc7b063665e6af3dad1
 msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
 msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:28
-#: 5aecde8fe2e14729a7e94a19e877358a
+#: ../../source/example/dft-d3-correction.md:28
+#: bc295a2663cb4a55a8ef3fa087b9afdd
 msgid "图中 `pbe` 只对应 PBE 数据："
 msgstr "The `pbe` setting shown here applies only to PBE data:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:30
-#: 2b7cc69f50b84b5ea6638d0dc37dc06a
+#: ../../source/example/dft-d3-correction.md:30
+#: 2972489e6f8346f2a814b46d2a2ca737
 msgid "第一项填写原始 DFT 计算使用的泛函，例如 `pbe`、`scan` 或 `pbesol`。"
 msgstr ""
 "In the first field, enter the functional used by the original DFT "
 "calculation, such as `pbe`, `scan`, or `pbesol`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:31
-#: 4a540994e69e46d39cf82ebc746a5c19
-msgid ""
-"`D3 cutoff` 和 `D3 cutoff_cn` 第一次先保留当前默认值；只有已有计算规范明确要"
-"求时才修改。"
-msgstr ""
-"Keep the current defaults for `D3 cutoff` and `D3 cutoff_cn` on your first "
-"run. Change them only when an established calculation protocol explicitly "
-"requires different values."
+#: ../../source/example/dft-d3-correction.md:31
+#: 9fe90b315f0e4f8c920c5084b4020bb1
+#
+msgid "`D3 截断半径` 和 `D3 cutoff_cn` 第一次先保留当前默认值；只有已有计算规范明确要求时才修改。"
+msgstr "Keep the current defaults for `D3 cutoff` and `D3 cutoff_cn` on your first run. Change them only when an established calculation protocol explicitly requires different values."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:32
-#: 2f3ebdd637124102aaa27799ede316eb
-msgid "按目标选择 `Add DFT-D3` 或 `Subtract DFT-D3`。"
-msgstr ""
-"Choose `Add DFT-D3` or `Subtract DFT-D3` according to the target convention."
+#: ../../source/example/dft-d3-correction.md:32
+#: 6e49f0838cb54199a862aab0f977a91d
+#
+msgid "按目标选择 `加上 DFT-D3` 或 `减去 DFT-D3`。"
+msgstr "Choose `Add DFT-D3` or `Subtract DFT-D3` according to the target convention."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:33
-#: fa259a9edf1948cea187d65e32ffa91e
+#: ../../source/example/dft-d3-correction.md:33
+#: 524fdb01e65f4a72824b52cb8679ec5e
 msgid "点击 `OK`，等待全部结构处理完成。"
 msgstr "Click `OK` and wait for all structures to be processed."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:35
-#: a477c724ea3248d9ab5b04084d928c77
-msgid ""
-"不要因为模型使用了某种泛函就填写那个名称；这里应与当前 DFT 标签的原始计算口径"
-"一致。"
+#: ../../source/example/dft-d3-correction.md:35
+#: f7adc55b71264a2f8bba5cbccff5788d
+msgid "不要因为模型使用了某种泛函就填写那个名称；这里应与当前 DFT 标签的原始计算口径一致。"
 msgstr ""
-"Do not enter a functional merely because the model uses it. This field must "
-"match the convention of the original DFT labels in the current dataset."
+"Do not enter a functional merely because the model uses it. This field "
+"must match the convention of the original DFT labels in the current "
+"dataset."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:37
-#: a5bd9ecb53bb416ebeb662a731f8b4b6
+#: ../../source/example/dft-d3-correction.md:37
+#: e1627bdfdd0c45559c82ccd89e0419b3
 msgid "3. 看标签是否按预期改变"
 msgstr "3. Check that the labels changed as intended"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:39
-#: 419ed4396d5b4e219b95db31dcc9717d
+#: ../../source/example/dft-d3-correction.md:39
+#: b4fc8786c59845d7b079a7080dc68865
 msgid "加上 PBE DFT-D3 后的能量图"
 msgstr "Energy plot after adding PBE DFT-D3"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:39
-#: 419ed4396d5b4e219b95db31dcc9717d
+#: ../../source/example/dft-d3-correction.md:39
+#: b4fc8786c59845d7b079a7080dc68865
 msgid ".. image:: ../_static/image/generated/tutorials/dft_d3_result.png"
 msgstr ".. image:: ../_static/image/generated/tutorials/dft_d3_result.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:44
-#: 7c8a810b9c53435a9a35ba5e20e58c46
+#: ../../source/example/dft-d3-correction.md:44
+#: c6de10315b214252a03be0fa815f3050
 msgid ""
-"本例真实加上了 PBE DFT-D3，因此参考能量、力和 virial 发生变化，NEP 预测本身没"
-"有改变。散点更靠近或更远离对角线都不能单独证明操作正确；关键是模式、泛函和原"
-"数据口径是否匹配。"
+"本例真实加上了 PBE DFT-D3，因此参考能量、力和 virial 发生变化，NEP "
+"预测本身没有改变。散点更靠近或更远离对角线都不能单独证明操作正确；关键是模式、泛函和原数据口径是否匹配。"
 msgstr ""
-"This example applies a real PBE DFT-D3 correction, so the reference energy, "
-"force, and virial change while the NEP predictions remain unchanged. Points "
-"moving closer to or farther from the diagonal does not by itself prove that "
-"the operation is correct. What matters is whether the mode, functional, and "
-"source-data convention match."
+"This example applies a real PBE DFT-D3 correction, so the reference "
+"energy, force, and virial change while the NEP predictions remain "
+"unchanged. Points moving closer to or farther from the diagonal does not "
+"by itself prove that the operation is correct. What matters is whether "
+"the mode, functional, and source-data convention match."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/dft-d3-correction.md:46
-#: ec421fbacf254cd387db9a2bbfc95f0f
-msgid ""
-"检查完成后用新文件名导出，例如 `train_pbe_d3.xyz`。不要覆盖无法重新获得的原始"
-"标签。"
+#: ../../source/example/dft-d3-correction.md:46
+#: bcbcea763d8d47c999b23cc9da03be39
+msgid "检查完成后用新文件名导出，例如 `train_pbe_d3.xyz`。不要覆盖无法重新获得的原始标签。"
 msgstr ""
 "After checking the result, export it under a new name such as "
 "`train_pbe_d3.xyz`. Do not overwrite original labels that cannot be "
 "reproduced."
+
+#~ msgid "`Subtract DFT-D3`"
+#~ msgstr "`Subtract DFT-D3`"

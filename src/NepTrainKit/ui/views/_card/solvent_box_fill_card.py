@@ -12,6 +12,7 @@ from NepTrainKit.core.cards.solvation import DEFAULT_WATER_XYZ, SolventBoxFillOp
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import CompactField, InspectorSection, MakeDataCard, ResponsiveFormGrid, SpinBoxUnitInputFrame
+from NepTrainKit import palette
 
 
 @CardManager.register_card
@@ -51,7 +52,7 @@ class SolventBoxFillCard(MakeDataCard):
             self.setting_widget,
         )
         self.input_note.setWordWrap(True)
-        self.input_note.setStyleSheet("color:#8a95a0;")
+        self.input_note.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
 
         self.structures_frame, self.structures_field = self._spin_field(
             self.tr("Independent boxes per input"), "", 1, "int", [1], 1, 100000,

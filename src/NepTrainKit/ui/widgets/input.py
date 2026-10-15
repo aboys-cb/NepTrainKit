@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSpinBox,
 )
+from NepTrainKit import palette
 from qfluentwidgets import (
     CaptionLabel,
     CompactDoubleSpinBox,
@@ -238,7 +239,7 @@ class SpinBoxUnitInputFrame(QFrame):
                 QSizePolicy.Policy.Fixed,
             )
             unit_label = CaptionLabel(unit_str[i % len(unit_str)], self)
-            unit_label.setStyleSheet("color:#8a95a0;")
+            unit_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
             unit_label.setSizePolicy(
                 QSizePolicy.Policy.Fixed,
                 QSizePolicy.Policy.Fixed,
@@ -385,7 +386,7 @@ class RangeTripletInputFrame(QFrame):
         )
         for column, title in enumerate(titles):
             label = CaptionLabel(title, self)
-            label.setStyleSheet("color:#8a95a0;")
+            label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
             # The ordinary Fluent double spin box reserves two 31 px buttons.
             # A range triplet cannot afford that; the compact variant keeps a
             # single 26 px step affordance and leaves the value readable.

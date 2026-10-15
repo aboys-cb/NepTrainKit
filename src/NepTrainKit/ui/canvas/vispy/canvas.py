@@ -20,6 +20,7 @@ from vispy.visuals.axis import Ticker
 from vispy.visuals.transforms import STTransform
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
+from NepTrainKit import palette
 from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase
 from NepTrainKit.ui.canvas.vispy.fast_scatter import FastScatter
 from NepTrainKit.core.io import NepTrainResultData
@@ -61,18 +62,39 @@ class _CompactAxisTicker(Ticker):
         return major[keep], minor, [labels[int(index)] for index in keep]
 
 
+class _ReadableAxisTicker(Ticker):
+    """Keep full-size axis labels from running into each other.
+
+    Drops labels with a regular stride so the remaining ones stay evenly
+    spaced; vertical axes need less room than horizontal ones.
+    """
+
+    _MIN_HORIZONTAL_SPACING = 64.0
+    _MIN_VERTICAL_SPACING = 28.0
+
+    def _get_tick_frac_labels(self):
+        major, minor, labels = super()._get_tick_frac_labels()
+        if len(labels) <= 2:
+            return major, minor, labels
+        vertical = getattr(self.axis, "orientation", "bottom") in ("left", "right")
+        spacing = self._MIN_VERTICAL_SPACING if vertical else self._MIN_HORIZONTAL_SPACING
+        axis_length = float(np.linalg.norm(self.axis.pos[1] - self.axis.pos[0]))
+        max_labels = max(2, int(axis_length // spacing) + 1)
+        if len(labels) <= max_labels:
+            return major, minor, labels
+        stride = int(np.ceil(len(labels) / max_labels))
+        keep = np.arange(0, len(labels), stride, dtype=np.int64)
+        return major[keep], minor, [labels[int(index)] for index in keep]
+
+
 def _set_compact_axis_ticks(axis_widget, compact: bool) -> None:
     """Switch an AxisWidget between normal and preview label density."""
     axis = axis_widget.axis
-    is_compact = isinstance(axis.ticker, _CompactAxisTicker)
-    if bool(compact) == is_compact:
+    wanted = _CompactAxisTicker if compact else _ReadableAxisTicker
+    if type(axis.ticker) is wanted:
         return
     anchors = getattr(axis.ticker, "_anchors", None)
-    axis.ticker = (
-        _CompactAxisTicker(axis, anchors=anchors)
-        if compact
-        else Ticker(axis, anchors=anchors)
-    )
+    axis.ticker = wanted(axis, anchors=anchors)
     axis._need_update = True
     axis.update()
 
@@ -357,7 +379,7 @@ class ViewBoxWidget(scene.Widget):
         self.grid = self.add_grid(margin=0)
 
         self.grid.spacing = 0
-        self.title_label = scene.Label(title, color='black',font_size=8)
+        self.title_label = scene.Label(title, color=palette.PLOT_TITLE, font_size=10, bold=True)
         self.title_label.height_max = 30
         self.grid.add_widget(self.title_label, row=0, col=0, col_span=3)
 
@@ -422,8 +444,8 @@ class ViewBoxWidget(scene.Widget):
                 orientation='bottom',
                 axis_width=1,
                 tick_label_margin=10,
-                axis_color="black",
-                text_color="black",
+                axis_color=palette.PLOT_AXIS,
+                text_color=palette.PLOT_AXIS,
             )
             self.xaxis.height_max = 30
             self.grid.add_widget(self.xaxis, row=2, col=1)
@@ -432,8 +454,8 @@ class ViewBoxWidget(scene.Widget):
                 orientation='left',
                 axis_width=1,
                 tick_label_margin=5,
-                axis_color="black",
-                text_color="black",
+                axis_color=palette.PLOT_AXIS,
+                text_color=palette.PLOT_AXIS,
             )
             self.yaxis.width_max = 50
             self.grid.add_widget(self.yaxis, row=1, col=0)
@@ -441,7 +463,7 @@ class ViewBoxWidget(scene.Widget):
             self.xaxis.link_view(self._view)
             self.yaxis.link_view(self._view)
 
-            self.text = scene.Text('', parent=self._view.scene, color='red', anchor_x="left", anchor_y="top")
+            self.text = scene.Text('', parent=self._view.scene, color=palette.PLOT_TITLE, anchor_x="left", anchor_y="top")
             self.text.font_size = 8
             self.set_axis_labels(self._x_label, self._y_label)
             self.set_rmse_text(self._rmse_text)
@@ -458,7 +480,7 @@ class ViewBoxWidget(scene.Widget):
         if self.text is not None:
             self.text.visible = bool(enabled)
         if enabled and self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
 
     def set_preview_visible(self, visible: bool):
         if self._preview_image is not None:
@@ -502,7 +524,7 @@ class ViewBoxWidget(scene.Widget):
         self._active_scatter_layer = None
         self._apply_data_range(x_range, y_range)
         if self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
         self.update_diagonal()
 
     def set_axis_labels(self, x_label=None, y_label=None):
@@ -617,13 +639,24 @@ class ViewBoxWidget(scene.Widget):
 
         z=np.full(x.shape,2)
         current_size = Config.getint("plot", "current_marker_size", 20) or 20
+        edge_width = 2.5
+        edge_color = self.convert_color(Pens.Current)
+        if np.array(x).size > 1:
+            # Per-atom plots (force) mark every atom of the structure; full
+            # size rings would merge into one solid band.
+            current_size = max(6, int(current_size * 0.5))
+            edge_width = 1.2
+            edge_color = (*tuple(edge_color)[:3], 0.35)
         if not self._full_detail:
             current_size = max(6, int(current_size * 0.45))
+            edge_width = min(edge_width, 1.2)
         self.current_point.set_data(
             np.vstack([x, y, z]).T,
-            face_color=self.convert_color(Brushes.Current),
-            edge_color=self.convert_color(Pens.Current),
-            symbol='star',
+            # Hollow ring: keeps the points underneath visible.
+            face_color=(0.0, 0.0, 0.0, 0.0),
+            edge_color=edge_color,
+            edge_width=edge_width,
+            symbol='disc',
             size=current_size,
         )
 
@@ -771,7 +804,7 @@ class ViewBoxWidget(scene.Widget):
             self._apply_scatter_range(layer_key)
             self._scatter_active_signature = (signature, index_signature)
         if self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
         self.update_diagonal()
         return self._scatter
 
@@ -1022,7 +1055,7 @@ class ViewBoxWidget(scene.Widget):
             return
         self.title_label._text_visual.text = t
         if self.xaxis is not None and self.parity_mode and t != "descriptor" and self._diagonal is None:
-            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+            self.add_diagonal(color=self.convert_color(Pens.Line), width=1.5, antialias=True, method='gl')
 class CombinedMeta(type(VispyCanvasLayoutBase), type(scene.SceneCanvas) ):
     """Metaclass bridging ``VispyCanvasLayoutBase`` with ``SceneCanvas`` inheritance.
     """

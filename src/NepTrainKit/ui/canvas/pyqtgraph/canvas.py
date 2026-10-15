@@ -12,6 +12,7 @@ from pyqtgraph import GraphicsLayoutWidget, ScatterPlotItem, PlotItem, ViewBox, 
 from NepTrainKit.utils import timeit
 from NepTrainKit.core.types import Brushes, Pens, mkPen
 from NepTrainKit.config import Config
+from NepTrainKit import palette
 from ..base.canvas import CanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
 
@@ -34,7 +35,11 @@ class MyPlotItem(PlotItem):
         self._scatter = ScatterPlotItem()
         self.addItem(self._scatter)
 
-        self.text = TextItem(color=(231, 63, 50))
+        self.text = TextItem(color=palette.PLOT_TITLE)
+        for name in ("bottom", "left"):
+            axis = self.getAxis(name)
+            axis.setPen(palette.PLOT_AXIS)
+            axis.setTextPen(palette.PLOT_AXIS)
 
         self.addItem(self.text)
 
@@ -47,6 +52,14 @@ class MyPlotItem(PlotItem):
         self._overlay_base_brush = None
         if "title" in kwargs:
             self.setTitle(kwargs["title"])
+
+    def setTitle(self, title=None, **args):  # noqa: N802 - pyqtgraph API
+        """Render titles with the shared plot palette unless overridden."""
+        if title is not None:
+            args.setdefault("color", palette.PLOT_TITLE)
+            args.setdefault("size", "10pt")
+            args.setdefault("bold", True)
+        super().setTitle(title, **args)
 
     def scatter(self, *args, **kargs):
         """Update the underlying scatter plot data.
@@ -71,8 +84,17 @@ class MyPlotItem(PlotItem):
             Y coordinates of the marker.
         """
         current_size = Config.getint("plot", "current_marker_size", 20) or 20
-        self.current_point.setData(x, y, brush=Brushes.Current, pen=Pens.Current,
-                                   symbol='star', size=current_size)
+        pen = Pens.Current
+        if np.size(x) > 1:
+            # Per-atom plots (force) mark every atom of the structure; full
+            # size rings would merge into one solid band.
+            current_size = max(6, int(current_size * 0.5))
+            color = Pens.Current.color()
+            color.setAlpha(90)
+            pen = mkPen(color=color, width=1.2)
+        # Hollow ring: keeps the points underneath visible.
+        self.current_point.setData(x, y, brush=QBrush(Qt.BrushStyle.NoBrush),
+                                   pen=pen, symbol='o', size=current_size)
         if self.current_point not in self.items:
             self.addItem(self.current_point)
 
@@ -161,7 +183,9 @@ class MyPlotItem(PlotItem):
         size : int
             Point size applied to the RMSE label.
         """
-        self.text.setFont(QFont("Arial",size))
+        font = QFont()
+        font.setPointSize(size)
+        self.text.setFont(font)
 class CombinedMeta(type(CanvasLayoutBase), type(GraphicsLayoutWidget)):
     """Metaclass bridging ``CanvasLayoutBase`` with ``GraphicsLayoutWidget``.
     """

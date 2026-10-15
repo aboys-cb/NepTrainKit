@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from NepTrainKit import palette
 from qfluentwidgets import CaptionLabel, StrongBodyLabel, isDarkTheme, themeColor
 
 # Mirrors the colors `MakeDataCard` already uses for `status_label.set_colors(...)`
@@ -225,7 +226,7 @@ class CompactField(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(2)
         self.caption = CaptionLabel(label, self)
-        self.caption.setStyleSheet("color:#8a95a0;")
+        self.caption.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         if inline:
             row = QWidget(self)
             row_layout = QHBoxLayout(row)
@@ -247,7 +248,7 @@ class CompactField(QWidget):
         input_widget.setMinimumWidth(0)
         self.helper_label = CaptionLabel(helper_text, self)
         self.helper_label.setWordWrap(True)
-        self.helper_label.setStyleSheet("color:#8a95a0;")
+        self.helper_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.helper_label.setVisible(bool(helper_text))
         layout.addWidget(self.helper_label)
 
@@ -278,7 +279,7 @@ class InspectorSection(QWidget):
         root.addWidget(self.title_label)
         self.description_label = CaptionLabel(description, self)
         self.description_label.setWordWrap(True)
-        self.description_label.setStyleSheet("color:#8a95a0;")
+        self.description_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.description_label.setVisible(bool(description))
         root.addWidget(self.description_label)
         self.content_widget = QWidget(self)
@@ -387,7 +388,7 @@ class _LegacyCompactField(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(3)
         label.setParent(self)
-        label.setStyleSheet("color:#8a95a0;")
+        label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         label.setWordWrap(True)
         root.addWidget(label)
 

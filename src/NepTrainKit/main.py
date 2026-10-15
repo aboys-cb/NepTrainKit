@@ -78,6 +78,7 @@ from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip
 from NepTrainKit.paths import as_path
 from NepTrainKit.i18n import install_translator
+from NepTrainKit import palette as colors
 
 warnings.filterwarnings("ignore")
 
@@ -768,7 +769,7 @@ def set_light_theme(app: QApplication) -> None:
     palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)
     palette.setColor(QPalette.ColorRole.Button, QColor(230, 230, 230))
     palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)
-    palette.setColor(QPalette.ColorRole.Highlight, QColor(0, 120, 215))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(colors.ACCENT))
     palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
     palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
     palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.black)

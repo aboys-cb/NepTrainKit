@@ -21,6 +21,7 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit.core.alloy import fractions_to_counts_exact
+from NepTrainKit import palette
 
 from .compact_form import SegmentedControl
 from .input import AdaptiveCompactSpinBox, AdaptiveInlineDoubleSpinBox
@@ -233,8 +234,8 @@ class AlloySiteSetRuleEditor(CardWidget):
         metadata.setVerticalSpacing(3)
         label_caption = CaptionLabel(self.tr("Label"), self)
         mode_caption = CaptionLabel(self.tr("Composition mode"), self)
-        label_caption.setStyleSheet("color:#8a95a0;")
-        mode_caption.setStyleSheet("color:#8a95a0;")
+        label_caption.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
+        mode_caption.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         metadata.addWidget(label_caption, 0, 0)
         metadata.addWidget(mode_caption, 0, 1)
         metadata.addWidget(self.label_edit, 1, 0)

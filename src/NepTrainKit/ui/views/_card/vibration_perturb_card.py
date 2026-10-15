@@ -16,6 +16,7 @@ from NepTrainKit.ui.widgets import (
     SegmentedControl,
     SpinBoxUnitInputFrame,
 )
+from NepTrainKit import palette
 
 
 @CardManager.register_card
@@ -103,7 +104,7 @@ class VibrationModePerturbCard(MakeDataCard):
             self.setting_widget,
         )
         scale_helper.setWordWrap(True)
-        scale_helper.setStyleSheet("color:#8a95a0;")
+        scale_helper.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
 
         self.exclude_checkbox = CheckBox(self.tr("Apply cutoff"), self.setting_widget)
         self.exclude_checkbox.setChecked(True)

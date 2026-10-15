@@ -12,6 +12,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
     OptionsValidator, EnumSerializer, SwitchSettingCard, FluentIcon, ScrollArea, SettingCard, ComboBox
 
 from NepTrainKit.config import Config
+from NepTrainKit import palette
 from NepTrainKit.core.runtime_health import RuntimeHealth, inspect_runtime_health
 from NepTrainKit.i18n import (
     LANGUAGE_LABELS,
@@ -292,12 +293,12 @@ class SettingsWidget(ScrollArea):
         self._refresh_runtime_health_content()
 
         # Plot settings defaults
-        edge_color = Config.get("plot", "marker_edge_color", "#07519C")
-        face_color = Config.get("plot", "marker_face_color", "#FFFFFF")
+        edge_color = Config.get("plot", "marker_edge_color", palette.PLOT_MARKER_EDGE)
+        face_color = Config.get("plot", "marker_face_color", palette.PLOT_MARKER_FACE)
         face_alpha = Config.getint("plot", "marker_face_alpha", 0) or 0
-        selected_color = Config.get("plot", "selected_color", "#FF0000")
-        show_color = Config.get("plot", "show_color", "#00FF00")
-        current_color = Config.get("plot", "current_color", "#FF0000")
+        selected_color = Config.get("plot", "selected_color", palette.PLOT_SELECTED)
+        show_color = Config.get("plot", "show_color", palette.PLOT_SHOW)
+        current_color = Config.get("plot", "current_color", palette.PLOT_CURRENT)
         structure_bg_color = Config.get("widget", "structure_bg_color", "#FFFFFF")
         structure_lattice_color = Config.get("widget", "structure_lattice_color", "#000000")
         pg_size = Config.getint("widget", "pg_marker_size", 7) or 7

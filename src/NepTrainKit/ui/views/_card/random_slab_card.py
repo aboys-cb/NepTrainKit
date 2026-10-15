@@ -21,6 +21,7 @@ from NepTrainKit.ui.widgets import (
     SpinBoxUnitInputFrame,
     fit_table_to_rows,
 )
+from NepTrainKit import palette
 
 
 class MillerIndexTableInput(QWidget):
@@ -192,7 +193,7 @@ class RandomSlabCard(MakeDataCard):
             plane_section,
         )
         self.plane_note.setWordWrap(True)
-        self.plane_note.setStyleSheet("color:#8a95a0;")
+        self.plane_note.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         plane_section.addWidget(self.plane_note)
         self.legacy_notice = CaptionLabel("", plane_section)
         self.legacy_notice.setWordWrap(True)

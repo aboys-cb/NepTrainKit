@@ -19,6 +19,7 @@ from NepTrainKit.ui.widgets import (
     ResponsiveFormGrid,
     SpinBoxUnitInputFrame,
 )
+from NepTrainKit import palette
 
 
 @CardManager.register_card
@@ -122,7 +123,7 @@ class LocalSolvationCard(MakeDataCard):
         self.shell_label = self.shell_field.caption
         self.placement_note = CaptionLabel("", self.setting_widget)
         self.placement_note.setWordWrap(True)
-        self.placement_note.setStyleSheet("color:#8a95a0;")
+        self.placement_note.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         placement_section = InspectorSection(self.tr("Centers and placement"), self.setting_widget)
         placement_grid = ResponsiveFormGrid(placement_section)
         for field in (self.mode_field, self.center_mode_field, self.elements_field, self.indices_field, self.z_field, self.shell_field):

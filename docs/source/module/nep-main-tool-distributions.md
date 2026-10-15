@@ -1,4 +1,4 @@
-# 查看数据分布（Explore distributions）
+# 数据分布（Explore distributions）
 
 ## 作用与适用场景
 

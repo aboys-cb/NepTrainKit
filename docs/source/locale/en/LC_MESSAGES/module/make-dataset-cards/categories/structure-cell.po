@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -20,89 +20,81 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md:1
-#: a8f8c6a6b80f44caab54280cadfbf9a1
+#: 4565294d71ec49aeaae1344e472eb73e
 msgid "晶格"
 msgstr "Lattice"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md:3
-#: 96f4649a81614ff6a1e2c902a2f7bde6
+#: 16dd469bc0864801b62951a9252c8746
 msgid "与卡片 UI 的“晶格”分组一致。这些卡片负责生成晶体原型、扩胞，或者系统改变晶胞的 长度、角度与形状。它们与只移动原子坐标的“扰动”卡片分开。"
 msgstr ""
-"This section matches the `Lattice` group in the card picker. These cards generate "
-"crystal prototypes, expand cells, or systematically change cell lengths, angles, and "
-"shapes. They are separate from `Perturbations` cards, which move atomic coordinates "
-"without scanning the cell."
+"This section matches the `Lattice` group in the card picker. These cards "
+"generate crystal prototypes, expand cells, or systematically change cell "
+"lengths, angles, and shapes. They are separate from `Perturbations` "
+"cards, which move atomic coordinates without scanning the cell."
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: e47657e8ad7847ac886e76b317df2f83
+#: a60e4182e1d44bd292ce2704a35231d8
 msgid "目标"
 msgstr "Goal"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: b5a6835e56b04428aff12cd8ca5fc8dc
+#: 93a7b232ed7e494bbe61f94fa31afde2
 msgid "使用卡片"
 msgstr "Card to use"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: 8c1b3b8896cb4949a673d26f85fa8142
+#: fc87661316974980a89e1aeb2b9e7a85
 msgid "从标准晶体原型开始"
 msgstr "Start from a standard crystal prototype"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: 5a730a7ed28c4ab0b0ab9ae021b597e1
-msgid "`Crystal Prototype Builder`"
+#: 5ece1321429447248125f306abb5a813
+msgid "`晶体原型构建`"
 msgstr "`Crystal Prototype Builder`"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: 43ac3c9fc68149e886594d9a56318e93
+#: de801618922f41dca112e57a51944d6b
 msgid "扩大已有晶胞"
 msgstr "Expand an existing cell"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: 38d07f08e48a4e6c9da7c9445f529f25
-msgid "`Super Cell`"
+#: 7943b9ddb66c421a8e3ae7d5041bbcdd
+msgid "`扩胞`"
 msgstr "`Super Cell`"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: 23af7aeb122d49eaadd33ac1efc3e3a9
+#: b6758c19f2c34becb6195c9ac559509d
 msgid "扫描轴向应变或随机晶格变化"
 msgstr "Scan axial strain or random lattice variations"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: d25d5810a5c842cb80b4858c75708a23
-msgid "`Lattice Strain` / `Lattice Perturb`"
-msgstr ""
+#: 9a27ef1118d846d382bc09745447af87
+msgid "`晶格应变` / `晶格随机扰动`"
+msgstr "`Lattice Strain` / `Lattice Perturb`"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: e91a77bda370422faa24afa537e055e0
+#: 058521c91057449782b80fd5500e1745
 msgid "扫描 Bain 四方畸变"
 msgstr "Scan a tetragonal Bain deformation"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: 50c917b2c0564425b24e065eb372e3a7
-msgid "`Bain Path`"
-msgstr ""
+#: 1043ef5f9bf14ce29d09a5fd9cbade2c
+msgid "`Bain 路径`"
+msgstr "`Bain Path`"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: 199653e4105e463a82dc9154a052ba99
+#: dc01c2e477254ad59cd0122a11b3ce5b
 msgid "施加矩阵或角度剪切"
 msgstr "Apply matrix or angular shear"
 
 #: ../../source/module/make-dataset-cards/categories/structure-cell.md
-#: b178d866707f44469ed515f0f1c9b9ab
-msgid "`Shear Matrix Strain` / `Shear Angle Strain`"
-msgstr ""
+#: bf7596fa1c6e4c0481a8741f76006279
+msgid "`剪切矩阵应变` / `剪切角应变`"
+msgstr "`Shear Matrix Strain` / `Shear Angle Strain`"
 
 #~ msgid "结构来源与晶胞"
 #~ msgstr "Structure sources and cells"
-
-#~ msgid "这组卡片决定“从什么结构开始”和“晶胞怎样承载后续操作”。通常先完成这里的操作， 再进入应变、缺陷、表面、合金或磁性卡片。"
-#~ msgstr ""
-#~ "These cards determine the starting structure "
-#~ "and how the cell carries subsequent "
-#~ "operations. Normally complete these steps before "
-#~ "applying strain, defects, surfaces, alloying, or "
-#~ "magnetism cards."
 
 #~ msgid "在给定周期晶胞中生成随机坐标初态"
 #~ msgstr "Generate random-coordinate initial states in a specified periodic cell"

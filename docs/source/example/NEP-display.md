@@ -1,4 +1,4 @@
-# NEP Dataset Display 操作演示
+# NEP 数据集查看操作演示
 
 本页带你完成一次最短的“打开数据 → 看图 → 选结构 → 导出”流程。界面图由当前版本自动生成；
 参数含义和算法原理请进入对应的[功能指南](../module/NEP-dataset-display.md)。
@@ -15,11 +15,11 @@
 
 ## 1. 打开结构和模型
 
-把 `train.xyz` 拖入窗口，或从顶部 `Open` 菜单选择结构文件。需要现场计算预测值时，
+把 `train.xyz` 拖入窗口，或从顶部 `打开` 菜单选择结构文件。需要现场计算预测值时，
 再打开 `nep.txt`；只查看已有标签时不必加载模型。
 
 ```{image} ../_static/image/generated/show_nep_overview.png
-:alt: 打开数据后的 NEP Dataset Display 总览
+:alt: 打开数据后的 NEP 数据集查看总览
 :class: docs-screenshot
 ```
 
@@ -62,7 +62,7 @@ FPS 根据描述符距离从候选池中选择分散的代表结构。它适合�
 ```
 
 运行前先确认候选池已清除明显坏结构；运行后检查实际选择数是否因最小距离或
-$R^2$ 阈值提前停止。算法和多种模式见[代表性采样](../module/nep-main-tool-sparse-samples.md)。
+$R^2$ 阈值提前停止。算法和多种模式见[稀疏采样](../module/nep-main-tool-sparse-samples.md)。
 
 ## 5. 在图上直接框选或反选
 
@@ -87,7 +87,7 @@ $R^2$ 阈值提前停止。算法和多种模式见[代表性采样](../module/n
 
 ## 7. 只导出确认过的子集
 
-完成标记后，从 `Save` 菜单选择导出当前活动结构或所选结构。导出前最后确认状态栏中的
+完成标记后，从 `保存` 菜单选择导出当前活动结构或所选结构。导出前最后确认状态栏中的
 活动数、选中数和删除数，避免把已排除结构重新写回文件。
 
 ```{image} ../_static/image/generated/show_nep_reference/s_export_format.png

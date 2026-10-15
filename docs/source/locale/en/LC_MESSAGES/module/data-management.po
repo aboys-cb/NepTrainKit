@@ -8,98 +8,85 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:1
-#: 120af0f93cc44f9b8605037d98669d4f
+#: ../../source/module/data-management.md:1 f3097b3b23f74ebe8407e6db30dd60f1
 msgid "数据管理（Data Management）"
 msgstr "Data Management"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:3
-#: b320312714754e1aa6b20aaf7c8a63dd
+#: ../../source/module/data-management.md:3 74e25b7b8cad4165a39da67c82ec2140
+#
 msgid ""
-"`Data Management` 用来记录项目、模型版本、数据路径和备注。它不负责生成结构，"
-"也不负责训练； 它解决的是另一个问题：当你有很多轮 DFT、很多个 `nep.txt`、很多"
-"个候选池和训练结果时， 还能知道每个文件属于哪一次实验。"
+"`数据管理` 用来记录项目、模型版本、数据路径和备注。它不负责生成结构，也不负责训练； 它解决的是另一个问题：当你有很多轮 DFT、很多个 "
+"`nep.txt`、很多个候选池和训练结果时， 还能知道每个文件属于哪一次实验。"
 msgstr ""
-"Use `Data Management` to record projects, model versions, data paths, and "
-"notes. It neither generates structures nor trains models. Its purpose is to "
-"preserve provenance when several DFT rounds, `nep.txt` files, candidate "
-"pools, and training results accumulate."
+"Use `Data Management` to record projects, model versions, data paths, and"
+" notes. It neither generates structures nor trains models. Its purpose is"
+" to preserve provenance when several DFT rounds, `nep.txt` files, "
+"candidate pools, and training results accumulate."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:7
-#: 94c8729112cd4ac8b0e52c76ee63cea4
+#: ../../source/module/data-management.md:7 8e6d49146b1e47039d9ce3ab72bdfc67
 msgid "什么时候值得用"
 msgstr "When to use it"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:9
-#: f3072b62386447faadab733f3f2d2823
+#: ../../source/module/data-management.md:9 cce993b29f9745ecaa020cbe22aaafd4
 msgid "下面这些情况建议开始记录："
 msgstr "Start recording versions when any of the following applies:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:11
-#: 74beff60769d41eda3711ca4e437b3a6
+#: ../../source/module/data-management.md:11 22a7de6e01f54049ac21e1d8b3ab229b
 msgid "同一个材料体系已经做了多轮主动学习。"
 msgstr ""
-"The same material system has gone through several active-learning iterations."
+"The same material system has gone through several active-learning "
+"iterations."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:12
-#: 4cddc0d9d3b24142888ec2d1a1baabac
+#: ../../source/module/data-management.md:12 fe62bb52a520470d9cabd3b907c0d582
 msgid "每一轮都有候选结构、清洗结构、DFT 结果、训练模型和测试结果。"
 msgstr ""
 "Each iteration has its own candidate structures, cleaned structures, DFT "
 "results, trained model, and test results."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:13
-#: 00f157cf07b04897a7ce5d8086412793
+#: ../../source/module/data-management.md:13 19216ab61ea9457fa59ade1c07559276
 msgid "你需要对比不同 `nep.txt` 的误差、备注和适用范围。"
 msgstr ""
 "You need to compare the errors, notes, and applicability of different "
 "`nep.txt` files."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:14
-#: 5f92466d68d64a4d8aa5550af3717040
+#: ../../source/module/data-management.md:14 3ab61a13585c4067bb41b5d2a858d2fb
 msgid "你经常回头找“上次那个效果好的模型在哪个目录”。"
 msgstr ""
 "You often have to rediscover which directory contains a previously "
 "successful model."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:16
-#: 61f7648e83db4fd28e487128df854d56
+#: ../../source/module/data-management.md:16 60d133f60962405791145d3903eab969
 msgid "如果只是临时试一张卡片，不一定需要马上建项目。"
 msgstr ""
-"A quick one-off card experiment does not necessarily need a project record."
+"A quick one-off card experiment does not necessarily need a project "
+"record."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:18
-#: 3e2416a1e56f426c9de799449188e8f6
+#: ../../source/module/data-management.md:18 77abe6475a974d509c34af0adc847db0
 msgid "推荐记录方式"
 msgstr "Recommended record structure"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:20
-#: e9fb2a88a85643aabaad917ba96d414a
-msgid ""
-"可以按材料体系或研究主题建立 `Project`，再把每一轮模型作为 `Model(version)` "
-"记录进去。"
+#: ../../source/module/data-management.md:20 51345bf0f616432c8d61e7e17c52fbb8
+msgid "可以按材料体系或研究主题建立 `Project`，再把每一轮模型作为 `Model(version)` 记录进去。"
 msgstr ""
-"Create a `Project` for a material system or research topic, then record each "
-"model iteration as a `Model(version)`."
+"Create a `Project` for a material system or research topic, then record "
+"each model iteration as a `Model(version)`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:22
-#: 0773692cbb6e41c7bc1e3462ca3e8dd9
+#: ../../source/module/data-management.md:22 f8f86b589a6b4969b229f23b98077aa7
 msgid "一个常见结构是："
 msgstr "A typical record looks like this:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:24
-#: 6ef9b3da812b4477a207d10aeefb13be
+#: ../../source/module/data-management.md:24 5261a3c562da42cdaacfc06ae9565018
 msgid ""
 "Project: TiH2 surface defects\n"
 "  v001: 初始 bulk + surface 数据\n"
@@ -113,125 +100,112 @@ msgstr ""
 "  v003: clean, sample with FPS, and complete DFT labels\n"
 "  v004: inspect training errors and add high-force structures\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:32
-#: c81180b545974dbe967e54c3655a2988
+#: ../../source/module/data-management.md:32 482e8e1dfddd4d41b1eb98c5fa4d5588
 msgid "每个版本建议至少记录："
 msgstr "Record at least the following for each version:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:34
-#: 31a1fa257ffb4bc7b80f5b753f95a516
+#: ../../source/module/data-management.md:34 dc709e4e9acb48b6bfee100e2bc5ca55
 msgid "模型或结果目录路径。"
 msgstr "The model or results directory."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:35
-#: 069fc558de3949a7b7714ad00ac31df7
+#: ../../source/module/data-management.md:35 82300674fbf840758ee8075b3b03c190
 msgid "对应的训练集来源。"
 msgstr "The source of the associated training set."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:36
-#: a4d6c3f1c3ad43b6bdc23ceb381a0415
+#: ../../source/module/data-management.md:36 244307dc778744058db01e5d76cb3f42
 msgid "简短备注：这一轮补了什么结构、删了什么异常、模型适合什么范围。"
 msgstr ""
-"A short note describing which structures were added, which anomalies were "
-"removed, and where the model is intended to be used."
+"A short note describing which structures were added, which anomalies were"
+" removed, and where the model is intended to be used."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:37
-#: 37f8a7ba660843e7b8a9d270dbd965f3
+#: ../../source/module/data-management.md:37 520d5f36eaf5406a9cc0edbd4b5e85db
 msgid "标签：例如 `surface`、`defect`、`magnetic`、`failed`、`baseline`。"
 msgstr "Tags such as `surface`, `defect`, `magnetic`, `failed`, or `baseline`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:39
-#: ec588e5aa00d4c60b84a233566fd7572
+#: ../../source/module/data-management.md:39 fa99f0dc8e814c8084735f6f29704c28
 msgid "和主流程的关系"
 msgstr "Place in the main workflow"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:41
-#: d2e9e5c114404a199e64017dd6adc0b6
-msgid "`Data Management` 更适合放在每轮流程结束后使用："
+#: ../../source/module/data-management.md:41 096ad5e87ccd42f3993694dc6d4a2428
+#
+msgid "`数据管理` 更适合放在每轮流程结束后使用："
 msgstr "Use `Data Management` at the end of a meaningful iteration:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:43
-#: c61c3d2b9b4b4ed69f2517a86675353f
+#: ../../source/module/data-management.md:43 a24f5618d6674a7f96dcd0826e176384
+#
 msgid ""
-"生成数据集 生成候选结构\n"
-"-> NEP Dataset Display 清洗\n"
+"构建数据集：生成候选结构\n"
+"-> NEP 数据集查看：清洗\n"
 "-> DFT\n"
 "-> GPUMD 训练\n"
-"-> NEP Dataset Display 回看\n"
+"-> NEP 数据集查看：回看\n"
 "-> Data Management 记录这一轮\n"
-msgstr "Generate a dataset and candidate structures\n-> clean them in NEP Dataset Display\n-> DFT\n-> train with GPUMD\n-> review in NEP Dataset Display\n-> record the iteration in Data Management\n"
+msgstr ""
+"Generate a dataset and candidate structures\n"
+"-> clean them in NEP Dataset Display\n"
+"-> DFT\n"
+"-> train with GPUMD\n"
+"-> review in NEP Dataset Display\n"
+"-> record the iteration in Data Management\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:52
-#: 4356c896487d44718d78433de086aad9
+#: ../../source/module/data-management.md:52 a3f81611f0eb4bfb8e36082a6e04de73
 msgid "这样记录的是已经有明确意义的版本，而不是每个临时文件。"
 msgstr ""
-"This keeps records at meaningful version boundaries instead of creating an "
-"entry for every temporary file."
+"This keeps records at meaningful version boundaries instead of creating "
+"an entry for every temporary file."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:54
-#: deef561b00dc44dba2acf67c32abc590
+#: ../../source/module/data-management.md:54 959ccaa9293944dd8cf04f8af92c6035
 msgid "常用操作"
 msgstr "Common operations"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:56
-#: 3b6901d8ead947b681dcdd494e5e76c0
+#: ../../source/module/data-management.md:56 05c1ab62689f4cb198d8c3614cc1a2a6
 msgid "新建、修改、删除 `Project`。"
 msgstr "Create, edit, or delete a `Project`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:57
-#: 94956082dc274c0bb285b9cfc9028d93
+#: ../../source/module/data-management.md:57 76f4e88d83db4dac9bd556c5fdf6dec1
 msgid "新建、修改、删除 `Model(version)`。"
 msgstr "Create, edit, or delete a `Model(version)`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:58
-#: 28901fd6c69c40e1b10a6d58cb315e3c
+#: ../../source/module/data-management.md:58 0c4d278735a74691bf902f416c3aef8a
 msgid "打开本地目录或 URL。"
 msgstr "Open a local directory or URL."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:59
-#: 2b480d34dc1f4a3c9b3fb9f7e1b1a020
+#: ../../source/module/data-management.md:59 8680f2eac0e0465c8bbd6df7a7fabe80
 msgid "用 `Ctrl+F` 搜索项目、标签、备注或路径。"
 msgstr "Press `Ctrl+F` to search projects, tags, notes, or paths."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:61
-#: 03be7031b9714ccda3b69945999cf05f
+#: ../../source/module/data-management.md:61 fff0e70d6ac04b7283dc105317e48796
 msgid ""
 "选择 NEP 结果目录后，软件会尝试从 `energy_train.out`、`force_train.out` 和 "
-"`virial_train.out` 计算训练 RMSE。某个输出缺失或列格式不完整时，会指出具体文"
-"件并保留 当前手动输入值，不会把缺失结果当作零误差。"
+"`virial_train.out` 计算训练 RMSE。某个输出缺失或列格式不完整时，会指出具体文件并保留 "
+"当前手动输入值，不会把缺失结果当作零误差。"
 msgstr ""
 "After you select a NEP results directory, the application attempts to "
 "calculate training RMSE from `energy_train.out`, `force_train.out`, and "
-"`virial_train.out`. If an output is missing or its columns are incomplete, "
-"the dialog identifies that file and preserves the current manual value "
-"instead of treating the missing result as zero error."
+"`virial_train.out`. If an output is missing or its columns are "
+"incomplete, the dialog identifies that file and preserves the current "
+"manual value instead of treating the missing result as zero error."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:65
-#: 95aa7241776348179fde25bb919fdc5d
+#: ../../source/module/data-management.md:65 d2701a9318b243c7ad3de01d9269c78d
 msgid "存储位置"
 msgstr "Storage location"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:67
-#: 853fb5192cf840cfb03d40501fcb99a4
+#: ../../source/module/data-management.md:67 7179a461ad814ab6a1cf9f8ddeeac875
 msgid "本地数据库默认放在用户配置目录："
 msgstr ""
-"The local database is stored in the user configuration directory by default:"
+"The local database is stored in the user configuration directory by "
+"default:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:69
-#: efb6aab5ceeb4edaac90d1585c8a2ab0
+#: ../../source/module/data-management.md:69 5fc5276097314938888ea18f93a55d89
 msgid "Windows：`C:\\Users\\<You>\\AppData\\Local\\NepTrainKit\\mlpman.db`"
 msgstr "Windows：`C:\\Users\\<You>\\AppData\\Local\\NepTrainKit\\mlpman.db`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:70
-#: 4c36db0aab37460688a420ddd0e6265f
+#: ../../source/module/data-management.md:70 26cc8e0b73644069953d83751f75838f
 msgid "Linux：`~/.config/NepTrainKit/mlpman.db`"
 msgstr "Linux：`~/.config/NepTrainKit/mlpman.db`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/data-management.md:72
-#: 7b8513dc21774f959ba3930155a40312
-msgid ""
-"这个数据库只记录管理信息，不会自动复制你的大体积训练数据。移动训练目录后，记"
-"得更新记录里的路径。"
+#: ../../source/module/data-management.md:72 f5c599959b164cf586a5308d225b24e6
+msgid "这个数据库只记录管理信息，不会自动复制你的大体积训练数据。移动训练目录后，记得更新记录里的路径。"
 msgstr ""
 "The database stores management metadata only; it does not copy large "
 "training datasets. If a training directory moves, update its path in the "

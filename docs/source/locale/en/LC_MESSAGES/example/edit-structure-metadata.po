@@ -8,123 +8,111 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:1
-#: 7e45a9835d984c418b018390e1e3e418
+#: ../../source/example/edit-structure-metadata.md:1
+#: 033b21f1acc0422ca725a046c7653148
 msgid "批量整理结构元数据"
 msgstr "Edit Structure Metadata in Batches"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:3
-#: 14f0335b4832463ea871ba706cc531f4
+#: ../../source/example/edit-structure-metadata.md:3
+#: e05e0b498c3049499672b26d06e77b00
+#
 msgid ""
-"`Config_type` 和自定义标签常用于记录数据来源、计算阶段或复核状态。需要批量修"
-"正时，先选中目标结构，再使用 `Edit info`，不要为了改几个标签重新拆分和合并文"
-"件。"
-msgstr ""
-"`Config_type` and custom tags commonly record data provenance, calculation "
-"stage, or review status. To change them in bulk, select the target "
-"structures and use `Edit info`; there is no need to split and merge files "
-"just to change a few tags."
+"`Config_type` 和自定义标签常用于记录数据来源、计算阶段或复核状态。需要批量修正时，先选中目标结构，再使用 "
+"`编辑信息`，不要为了改几个标签重新拆分和合并文件。"
+msgstr "`Config_type` and custom tags commonly record data provenance, calculation stage, or review status. To change them in bulk, select the target structures and use `Edit info`; there is no need to split and merge files just to change a few tags."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:5
-#: a9564c7ef83e41dabfe8224178461438
+#: ../../source/example/edit-structure-metadata.md:5
+#: 6890306b88be46c0a0ba0be80935c065
 msgid "先限定修改范围"
 msgstr "Limit the Edit Scope First"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:7
-#: b67264040a8f425685b0ba7433ef4234
-msgid "本例先选中前 3 个结构，然后点击工具栏中的 `Edit info`："
-msgstr ""
-"This example selects the first three structures and then clicks `Edit info` "
-"on the toolbar:"
+#: ../../source/example/edit-structure-metadata.md:7
+#: ff653b69db554f238deba2b0366acfa7
+#
+msgid "本例先选中前 3 个结构，然后点击工具栏中的 `编辑信息`："
+msgstr "This example selects the first three structures and then clicks `Edit info` on the toolbar:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:9
-#: 9510e5bf9d014c5f85e78aea36709a10
+#: ../../source/example/edit-structure-metadata.md:9
+#: bd3b90e612704619a3e78b39024cbab6
 msgid "编辑选中结构元数据的入口"
 msgstr "Entry point for editing metadata on selected structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:9
-#: 9510e5bf9d014c5f85e78aea36709a10
+#: ../../source/example/edit-structure-metadata.md:9
+#: bd3b90e612704619a3e78b39024cbab6
 msgid ".. image:: ../_static/image/generated/tutorials/edit_metadata_entry.png"
-msgstr ""
-".. image:: ../_static/image/generated/tutorials/edit_metadata_entry.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/edit_metadata_entry.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:14
-#: e95f461743674c17940f0a9b90c4cdd7
+#: ../../source/example/edit-structure-metadata.md:14
+#: 0e183a0a473e4d14a39ae67d1ad20179
 msgid "弹窗顶部列出选中结构共有的标签："
 msgstr "The top of the dialog lists tags shared by the selected structures:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:16
-#: 4463defa3d0347d9ab3edb82da18e6b0
+#: ../../source/example/edit-structure-metadata.md:16
+#: d72fc74cca584030b54b796602545546
 msgid "编辑结构元数据窗口"
 msgstr "Structure metadata editor"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:16
-#: 4463defa3d0347d9ab3edb82da18e6b0
+#: ../../source/example/edit-structure-metadata.md:16
+#: d72fc74cca584030b54b796602545546
 msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"g_editinfo_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_editinfo_dialog.png"
 msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/"
-"g_editinfo_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_editinfo_dialog.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:21
-#: 87ad893622bc4038949425d7c89b3a89
+#: ../../source/example/edit-structure-metadata.md:21
+#: fbce6739c9d243699783a6c468a9f47f
 msgid ""
-"可以直接增加 `review_status=checked` 这类追踪标签。若要替换 `Config_type`，先"
-"删除旧的 `Config_type`，再增加新的值，例如 `Config_type=reviewed_bulk`。确认"
-"后，同一组修改会应用到所有选中结构。"
+"可以直接增加 `review_status=checked` 这类追踪标签。若要替换 `Config_type`，先删除旧的 "
+"`Config_type`，再增加新的值，例如 `Config_type=reviewed_bulk`。确认后，同一组修改会应用到所有选中结构。"
 msgstr ""
 "You can directly add a tracking tag such as `review_status=checked`. To "
-"replace `Config_type`, remove the old `Config_type` first and then add the "
-"new value, for example `Config_type=reviewed_bulk`. The same edits are "
-"applied to every selected structure when you confirm."
+"replace `Config_type`, remove the old `Config_type` first and then add "
+"the new value, for example `Config_type=reviewed_bulk`. The same edits "
+"are applied to every selected structure when you confirm."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:23
-#: 42ced4a62ab441a89ecedf69a0cc9bb8
+#: ../../source/example/edit-structure-metadata.md:23
+#: 46244ff64d9e4ba19e17cb9f8b218ae0
 msgid "立即核对结果"
 msgstr "Verify the Result Immediately"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:25
-#: 3fb4514a771b40c98668c62722231c89
+#: ../../source/example/edit-structure-metadata.md:25
+#: f1e12e6ee6a849a9b08ee8df81b0b082
 msgid "三个结构的 Config_type 已批量更新"
 msgstr "Config_type updated on three structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:25
-#: 3fb4514a771b40c98668c62722231c89
-msgid ""
-".. image:: ../_static/image/generated/tutorials/edit_metadata_result.png"
-msgstr ""
-".. image:: ../_static/image/generated/tutorials/edit_metadata_result.png"
+#: ../../source/example/edit-structure-metadata.md:25
+#: f1e12e6ee6a849a9b08ee8df81b0b082
+msgid ".. image:: ../_static/image/generated/tutorials/edit_metadata_result.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/edit_metadata_result.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:30
-#: 69d4d8f8f54a4e71a601f1d0cd559697
-msgid ""
-"右侧信息栏应显示新值，底部仍应是 `Sel: 3`。元数据编辑没有独立撤销操作，批量修"
-"改前最好保留原文件。"
+#: ../../source/example/edit-structure-metadata.md:30
+#: 0a2e70e2e2864ab6b57889937e54a45c
+msgid "右侧信息栏应显示新值，底部仍应是 `Sel: 3`。元数据编辑没有独立撤销操作，批量修改前最好保留原文件。"
 msgstr ""
 "The information panel on the right should show the new value, while the "
 "status bar should still show `Sel: 3`. Metadata editing has no dedicated "
 "undo action, so keep the original file before making bulk changes."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/edit-structure-metadata.md:32
-#: 59015a55d6be480b8f734aa6dd507f46
+#: ../../source/example/edit-structure-metadata.md:32
+#: 0f87b14e035d41558029eb8450187842
 msgid ""
-"`Config_type` 应表示真正有意义的分组，例如不同计算软件或明确的数据阶段。不要"
-"给每个结构随意创建一个新组；在能量基线平移等操作中，过细分组反而会引入不稳定"
-"的独立基线。"
+"`Config_type` "
+"应表示真正有意义的分组，例如不同计算软件或明确的数据阶段。不要给每个结构随意创建一个新组；在能量基线平移等操作中，过细分组反而会引入不稳定的独立基线。"
 msgstr ""
 "`Config_type` should represent a meaningful group, such as a calculation "
-"code or a clearly defined data stage. Do not create an arbitrary group for "
-"every structure. In operations such as energy baseline shifting, overly fine "
-"groups can introduce unstable independent baselines."
+"code or a clearly defined data stage. Do not create an arbitrary group "
+"for every structure. In operations such as energy baseline shifting, "
+"overly fine groups can introduce unstable independent baselines."

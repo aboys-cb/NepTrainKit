@@ -10,6 +10,7 @@ from pathlib import Path
 from importlib.metadata import PackageNotFoundError, version as package_version
 import gettext
 import os
+import re
 import runpy
 import sys
 
@@ -256,7 +257,7 @@ def _use_english_screenshots(app, docname, source):
     # English while leaving the Chinese source and build unchanged.
     heading_translations = {
         '1. 安装': '1. Install NepTrainKit',
-        '2. 打开 生成数据集': '2. Open Make Dataset',
+        '2. 打开「构建数据集」页面': '2. Open Make Dataset',
         '3. 生成一组候选结构': '3. Generate a candidate set',
         '4. 检查候选结构': '4. Inspect the candidates',
         '5. 进入 DFT 和训练': '5. Continue to DFT and training',
@@ -271,6 +272,9 @@ def _use_english_screenshots(app, docname, source):
         '1. 先激活要检查的图': '1. Activate the plot to review',
         '2. 输入要复核的结构数': '2. Enter the number of structures',
         '3. 逐个判断误差来源': '3. Determine the error source',
+        '1. 分别导出每类结构的描述符': '1. Export descriptors for each group',
+        '2. 配置并运行绘图脚本': '2. Configure and run the plotting script',
+        '3. 怎么读这张图': '3. How to read the plot',
         '1. 打开描述符图': '1. Open the descriptor plot',
         '2. 第一次这样设置': '2. Use this initial setup',
         '3. 导出选中的代表结构': '3. Export the selected representatives',
@@ -361,7 +365,46 @@ def _replace_english_fallback_text(app, exception):
             path.write_text(updated, encoding='utf-8')
 
 
+_CJK_CHAR = re.compile('[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]')
+_CJK_LINE_BREAK = re.compile(r'(?<=[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef])[ \t]*\n[ \t]*(?=[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef])')
+
+
+def _join_cjk_line_breaks(app, doctree, docname):
+    """Drop the space HTML renders where a Chinese paragraph wraps in the source.
+
+    MyST keeps each soft line break as its own whitespace text node.  This runs on
+    the resolved doctree, after translation, so gettext message ids keep the
+    original line breaks.
+    """
+    if app.config.language == 'en' or app.builder.format != 'html':
+        return
+    from docutils import nodes
+
+    skipped = (nodes.literal_block, nodes.literal, nodes.math, nodes.math_block, nodes.raw, nodes.comment)
+    for text in list(doctree.findall(nodes.Text)):
+        value = text.astext()
+        if '\n' not in value or isinstance(text.parent, skipped):
+            continue
+        if value.strip():
+            joined = _CJK_LINE_BREAK.sub('', value)
+            if joined != value:
+                text.parent.replace(text, nodes.Text(joined))
+            continue
+        parent = text.parent
+        index = parent.index(text)
+        before = parent[index - 1] if index > 0 else None
+        after = parent[index + 1] if index + 1 < len(parent) else None
+        if (
+            isinstance(before, nodes.Text)
+            and isinstance(after, nodes.Text)
+            and _CJK_CHAR.match(before.astext()[-1:])
+            and _CJK_CHAR.match(after.astext()[:1])
+        ):
+            parent.remove(text)
+
+
 def setup(app):
+    app.connect('doctree-resolved', _join_cjk_line_breaks)
     app.connect('source-read', _use_english_screenshots)
     app.connect('include-read', _use_english_included_content)
     app.connect('build-finished', _replace_english_fallback_text)

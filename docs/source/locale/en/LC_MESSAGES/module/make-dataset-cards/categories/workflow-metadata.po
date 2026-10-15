@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -20,59 +20,53 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md:1
-#: ea796a9171dc467ba9f6eeb4525ac03d
+#: c527173284254aa9ba0a921479f229e5
 msgid "容器"
 msgstr "Containers"
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md:3
-#: 9c075a99933a440dacf108dff5e5f591
+#: 4477866b830e4d00b4504ac865917f0c
 msgid "与卡片 UI 的“容器”分组一致。这些卡片不改变材料结构，而是控制同一输入如何分支、 如何保持独立流程，以及何时合并输出。"
 msgstr ""
-"This section matches the `Containers` group in the card picker. These cards do not "
-"change the material structure. They control how one input branches, whether branch "
-"workflows remain independent, and when outputs are merged."
+"This section matches the `Containers` group in the card picker. These "
+"cards do not change the material structure. They control how one input "
+"branches, whether branch workflows remain independent, and when outputs "
+"are merged."
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md
-#: f4494146f9554f8b82d183ae454b0070
+#: 91fad7bfa58a4d7fa6df935dec25a1d8
 msgid "目标"
 msgstr "Goal"
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md
-#: b925679e4fbd4185a4f27f33870a4df6
+#: 9298d5c159eb430e9d4baf70681dc582
 msgid "使用卡片"
 msgstr "Card to use"
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md
-#: 9fa322c0173f45d5ba357b227260038b
+#: f996bdf3f98843b1b32869e800a2c12b
 msgid "让同一输入进入多个分支并汇总结果"
 msgstr "Send the same input through multiple branches and combine the results"
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md
-#: 452dbdca8ef2447a8c6d23cba3f1339b
-msgid "`Branch Merge`（分支合并）"
+#: 0fdb5d3792504420a9da66acc47a00c7
+msgid "`分支合并`（分支合并）"
 msgstr "`Branch Merge`"
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md
-#: 297086d120f64dd1a6da793d65ada5b7
+#: 9b877e2cbda5450489fa2a90c83a77be
 msgid "让多个分支继续独立处理并分别输出或显式合并"
 msgstr ""
-"Keep multiple branches independent so they can produce separate outputs or be merged "
-"explicitly"
+"Keep multiple branches independent so they can produce separate outputs "
+"or be merged explicitly"
 
 #: ../../source/module/make-dataset-cards/categories/workflow-metadata.md
-#: 15b758cd68594c7abb6bdfed63696abd
-msgid "`Branch Fork`（永久分叉）"
+#: 7260369fab1a4643ab354b97509ef1f3
+msgid "`永久分叉`（永久分叉）"
 msgstr "`Branch Fork`"
 
 #~ msgid "工作流与元数据"
 #~ msgstr "Workflows and metadata"
-
-#~ msgid "这组卡片不表达某一种材料结构操作，而是控制后续卡片如何识别原子集合、如何分支以及如何合并输出。"
-#~ msgstr ""
-#~ "These cards do not represent a particular "
-#~ "structural operation. Instead, they control how "
-#~ "later cards identify atom groups, branch the"
-#~ " workflow, and merge outputs."
 
 #~ msgid "给原子写入可复用的 `group` 标签"
 #~ msgstr "Write reusable `group` labels to atoms"

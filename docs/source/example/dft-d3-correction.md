@@ -4,12 +4,12 @@
 
 | 当前数据 | 目标口径 | 选择 |
 | --- | --- | --- |
-| 不含 D3 | 改成包含 D3 | `Add DFT-D3` |
-| 已含 D3 | 改成不含 D3 | `Subtract DFT-D3` |
+| 不含 D3 | 改成包含 D3 | `加上 DFT-D3` |
+| 已含 D3 | 改成不含 D3 | `减去 DFT-D3` |
 
 ## 1. 先保存原始数据
 
-在 `NEP Dataset Display` 中打开数据和对应的 `nep.txt`，确认当前标签来源与泛函，然后先导出一份原始数据。DFT-D3 会修改 energy、force 以及已有的 virial/stress 标签，而且重复运行会继续累加，没有单独的撤销按钮。
+在 `NEP 数据集查看` 中打开数据和对应的 `nep.txt`，确认当前标签来源与泛函，然后先导出一份原始数据。DFT-D3 会修改 energy、force 以及已有的 virial/stress 标签，而且重复运行会继续累加，没有单独的撤销按钮。
 
 ```{image} ../_static/image/generated/tutorials/dft_d3_entry.png
 :alt: 能量图和 DFT-D3 校正入口
@@ -28,8 +28,8 @@
 图中 `pbe` 只对应 PBE 数据：
 
 1. 第一项填写原始 DFT 计算使用的泛函，例如 `pbe`、`scan` 或 `pbesol`。
-2. `D3 cutoff` 和 `D3 cutoff_cn` 第一次先保留当前默认值；只有已有计算规范明确要求时才修改。
-3. 按目标选择 `Add DFT-D3` 或 `Subtract DFT-D3`。
+2. `D3 截断半径` 和 `D3 cutoff_cn` 第一次先保留当前默认值；只有已有计算规范明确要求时才修改。
+3. 按目标选择 `加上 DFT-D3` 或 `减去 DFT-D3`。
 4. 点击 `OK`，等待全部结构处理完成。
 
 不要因为模型使用了某种泛函就填写那个名称；这里应与当前 DFT 标签的原始计算口径一致。

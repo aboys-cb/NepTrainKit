@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,72 +20,77 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:3
-#: 49d1ea1d5d85408484e57d18059400f0
+#: b0cd320c5efc4d1cb028e48e7786da74
 msgid "有限晶胞合金占位（Finite-Cell Alloy Occupancy）"
 msgstr "Finite-Cell Alloy Occupancy"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:5
-#: 694a2778858e43f88a7f262036cab80e
+#: 6fbd701bfceb4afa96222b68f033c7bb
 msgid "**分类：** 合金与组分"
 msgstr "**Category:** Alloys and Composition"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:7
-#: b830ea2b55314219ba586bde54ec8c64
+#: e5fff39d1b8d428ea8a5f6c5a790f8ab
 msgid "功能说明"
 msgstr "Purpose"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:9
-#: 09759522d10c4740970c096a1d50c8ac
+#: 8d47626f108a4365a31b059a64da176b
 msgid ""
-"这张卡把合金比例落实为有限晶胞中真正可实现的整数原子数，再为每种整数组成生成不重复的占位排布。输入含 `atoms.arrays[\"sublattice\"]` "
-"时，各子晶格分别约束；没有该数组时，全部位点属于名为 `all` 的单一位点集合。"
+"这张卡把合金比例落实为有限晶胞中真正可实现的整数原子数，再为每种整数组成生成不重复的占位排布。输入含 "
+"`atoms.arrays[\"sublattice\"]` 时，各子晶格分别约束；没有该数组时，全部位点属于名为 `all` 的单一位点集合。"
 msgstr ""
-"Convert alloy fractions into integer atom counts that are physically realizable in a "
-"finite cell, then generate unique site arrangements for every integer composition. If"
-" the input contains `atoms.arrays[\"sublattice\"]`, each sublattice is constrained "
+"Convert alloy fractions into integer atom counts that are physically "
+"realizable in a finite cell, then generate unique site arrangements for "
+"every integer composition. If the input contains "
+"`atoms.arrays[\"sublattice\"]`, each sublattice is constrained "
 "separately. Otherwise, all sites belong to one site set named `all`."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:11
-#: 07d6362e09324f1c8cb159378fc52aa8
+#: ff283dff06164242b02525e5469315d9
 msgid "组成模式有三种："
 msgstr "Three composition modes are available:"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:13
-#: 10a815a756354d87a147dcbf19adedfc
-msgid "`fixed_fraction`：指定固定目标比例；可整除时记为 `exact`，否则用最大余数法得到最近整数计划，并记为 `nearest_integer`。"
+#: 46eba17933824f94864a88d41f865434
+msgid ""
+"`fixed_fraction`：指定固定目标比例；可整除时记为 `exact`，否则用最大余数法得到最近整数计划，并记为 "
+"`nearest_integer`。"
 msgstr ""
-"`fixed_fraction`: specify fixed target fractions. A target that maps exactly to "
-"integer counts is marked `exact`; otherwise, the largest-remainder method produces "
-"the nearest integer plan, marked `nearest_integer`."
+"`fixed_fraction`: specify fixed target fractions. A target that maps "
+"exactly to integer counts is marked `exact`; otherwise, the largest-"
+"remainder method produces the nearest integer plan, marked "
+"`nearest_integer`."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:14
-#: 05b52c1fcfaa4f2daf10316b83306720
+#: 6cda9af0d59844c39573095906c48fee
 msgid "`fraction_range`：枚举实际整数占比落在各元素范围内的计划。"
 msgstr ""
-"`fraction_range`: enumerate plans whose realized integer fractions fall within the "
-"specified range for every element."
+"`fraction_range`: enumerate plans whose realized integer fractions fall "
+"within the specified range for every element."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:15
-#: 0e21a1996bad495c8cef78cb2d962b41
+#: fb5d46dae71f4103a22f61a8b73e4f7a
 msgid "`count_range`：枚举各元素整数计数落在范围内、且总和等于位点数的计划。"
 msgstr ""
-"`count_range`: enumerate plans whose integer count for every element falls within its"
-" range and whose total equals the number of sites."
+"`count_range`: enumerate plans whose integer count for every element "
+"falls within its range and whose total equals the number of sites."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:17
-#: 62b95c1ff2dc4bc3af8f08d12e2f5aa0
+#: 6f17b6e0a84d496a98e53d4fd351a39a
 msgid "原理与公式"
 msgstr "Principles and Equations"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:19
-#: cea55cfca361421b82c5eb0ea9f2ef60
+#: be13f26a554040d699ef732b1c6e4c11
 msgid "有限晶胞不能实现任意连续比例。一个位点集合含 $N$ 个位点时，程序寻找满足"
 msgstr ""
-"A finite cell cannot realize arbitrary continuous fractions. For a site set "
-"containing $N$ sites, the program searches for integer counts satisfying"
+"A finite cell cannot realize arbitrary continuous fractions. For a site "
+"set containing $N$ sites, the program searches for integer counts "
+"satisfying"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:21
-#: 8ae1a04551504758a2465cc4ace62442
+#: 73e57c4fb2594db387f8fd10efeb27f5
 #, python-brace-format
 msgid ""
 "\n"
@@ -93,12 +98,12 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:25
-#: 76000da3486f4b1db28a19685049ec9c
+#: 931a25540cf24c639927cb67b65e4c99
 msgid "的整数计数。无量纲占比范围 $f_e\\in[0,1]$ 会转换为"
 msgstr "A dimensionless fraction range $f_e\\in[0,1]$ is converted to"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:27
-#: da41d39038c04767b9f29649f0300ca2
+#: 4de815eaf5cf40ca8409fe87230c5764
 #, python-brace-format
 msgid ""
 "\n"
@@ -108,29 +113,32 @@ msgstr ""
 "\\lceil f_{e,\\min}N\\rceil\\le n_e\\le\\lfloor f_{e,\\max}N\\rfloor.\n"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:31
-#: 1a4bc6d014e94b71b377c3eb25ea5f04
+#: 450b794a89ce40049b19f38721abf3f9
 msgid "给定一组计数后，该位点集合的不同排布总数为"
 msgstr ""
-"For a given set of counts, the total number of distinct arrangements on that site set"
-" is"
+"For a given set of counts, the total number of distinct arrangements on "
+"that site set is"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:33
-#: 59607fe0f1c947c7a8137e27bfa7d2bd
+#: 6d0c2678248849eaa9b3d9570330bbad
 msgid ""
 "\n"
 "\\Omega=\\frac{N!}{\\prod_e n_e!}.\n"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:37
-#: a1804c4c35e447b1bf54a577708cfc2b
-msgid "多个子晶格的排布数是各自 $\\Omega$ 的乘积。设选中的整数组成集合为 $P$，每种组成请求 $A$ 个排布，总输出上限为 $M$，则实际输出数为"
+#: 5529ce8ef1374677899702fa209b8d14
+msgid ""
+"多个子晶格的排布数是各自 $\\Omega$ 的乘积。设选中的整数组成集合为 $P$，每种组成请求 $A$ 个排布，总输出上限为 "
+"$M$，则实际输出数为"
 msgstr ""
-"For multiple sublattices, their arrangement counts multiply. Let $P$ be the selected "
-"set of integer compositions, $A$ the requested arrangements per composition, and $M$ "
-"the overall output limit. The actual output count is"
+"For multiple sublattices, their arrangement counts multiply. Let $P$ be "
+"the selected set of integer compositions, $A$ the requested arrangements "
+"per composition, and $M$ the overall output limit. The actual output "
+"count is"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:39
-#: 7e310e682f554cbea195448f9f079fa1
+#: 1641718372b141cd809447101372aa83
 #, python-brace-format
 msgid ""
 "\n"
@@ -138,98 +146,104 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:43
-#: c938db10596441cca968d1ccd1060efc
+#: 051ac75c57644b23a333122792d65178
 msgid "当预算不足时，卡片先覆盖不同组成，再轮流增加每种组成的第 2、第 3 个排布。它不会复制排布凑数，也不会把超出预算的结果称为已穷举。"
 msgstr ""
-"When the budget is insufficient, the card covers distinct compositions first, then "
-"adds a second, third, and further arrangement to each composition in rounds. It "
-"neither duplicates arrangements to fill the quota nor describes results beyond the "
-"budget as exhaustively enumerated."
+"When the budget is insufficient, the card covers distinct compositions "
+"first, then adds a second, third, and further arrangement to each "
+"composition in rounds. It neither duplicates arrangements to fill the "
+"quota nor describes results beyond the budget as exhaustively enumerated."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:45
-#: bc9bfbe93d904e18ad3fe3b94ca01604
+#: 80492fb09c944e51be887c8b2e677ec6
 msgid "操作示例"
 msgstr "Example"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:47
-#: 30ecd1aed4914581b6ced717eaa9ff3b
+#: cc5d1a75b72040a8b661d2d62bdd0948
 msgid "小晶胞 HEA 的多个目标比例落到同一实际组成"
-msgstr "Multiple Target Fractions Collapse to the Same Composition in a Small-Cell HEA"
+msgstr ""
+"Multiple Target Fractions Collapse to the Same Composition in a Small-"
+"Cell HEA"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:49
-#: 45e6812a8767469aa6bfc9b50eb30d72
+#: 18c6614df40f469d84ee5d80a5d18bc1
 msgid ""
-"32 位点随机固溶体若先采连续比例再取整，多个目标点可能变成同一整数计数组合。此时应直接使用“计数范围”枚举 Fe/Co/Ni 的可行计数，设置“每种组成的排布数”为 "
-"4，并用“每个输入的最大输出数”控制规模。"
+"32 位点随机固溶体若先采连续比例再取整，多个目标点可能变成同一整数计数组合。此时应直接使用“计数范围”枚举 Fe/Co/Ni "
+"的可行计数，设置“每种组成的排布数”为 4，并用“每个输入的最大输出数”控制规模。"
 msgstr ""
-"If continuous fractions are sampled and rounded for a 32-site random solid solution, "
-"several target points may collapse to the same integer-count combination. Instead, "
-"use `Count range` to enumerate feasible Fe/Co/Ni counts directly, set `Arrangements "
-"per composition` to 4, and control the scale with `Maximum outputs per input`."
+"If continuous fractions are sampled and rounded for a 32-site random "
+"solid solution, several target points may collapse to the same integer-"
+"count combination. Instead, use `Count range` to enumerate feasible "
+"Fe/Co/Ni counts directly, set `Arrangements per composition` to 4, and "
+"control the scale with `Maximum outputs per input`."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:51
-#: e8ca0d05f6914c34ac1f123a92a550a9
+#: 7369530cf5344012ae5153e31ec6bb91
 msgid ""
-"输出中，相同实际计数组合具有相同的 composition ID；同一 composition 下的 arrangement ID 不重复。验证时应检查每帧 "
-"`counts` 之和为 32、`(composition_id, arrangement_id)` 二元组唯一，并按 metadata 中的实际占比切片比较模型误差。"
+"输出中，相同实际计数组合具有相同的 composition ID；同一 composition 下的 arrangement ID "
+"不重复。验证时应检查每帧 `counts` 之和为 32、`(composition_id, arrangement_id)` 二元组唯一，并按 "
+"metadata 中的实际占比切片比较模型误差。"
 msgstr ""
-"Outputs with the same realized count combination share a composition ID, while "
-"arrangement IDs are unique within a composition. During validation, check that "
-"`counts` sum to 32 in every frame, that each `(composition_id, arrangement_id)` pair "
-"is unique, and compare model errors in slices defined by the realized fractions "
-"stored in metadata."
+"Outputs with the same realized count combination share a composition ID, "
+"while arrangement IDs are unique within a composition. During validation,"
+" check that `counts` sum to 32 in every frame, that each "
+"`(composition_id, arrangement_id)` pair is unique, and compare model "
+"errors in slices defined by the realized fractions stored in metadata."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:53
-#: fbb8fbad775e4631896f1da9b909f42e
+#: 1c59a979a647477393eb8804dd1f2db5
 msgid "参数说明"
 msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:55
-#: 2dd267dfd35d4643a2ccd1594a4d0707
+#: 1584a7b3b1254982b68165a0b705ae80
 msgid "位点划分规则（site_rules）"
 msgstr "site_rules"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:57
-#: 20cb16b4c0b54b32b2ff27bf65a11feb
+#: 619dd41a3fae4eabb4ac7c6352308b91
 msgid ""
-"可视化编辑器用于选择“全部位点”或“按子晶格”，并为每个位点集合设置元素和组成模式。JSON 顶层 key 必须与输入的 `sublattice` "
-"标签完全一致；无标签结构只使用 `all`。`group` 不会代替 `sublattice`。"
+"可视化编辑器用于选择“全部位点”或“按子晶格”，并为每个位点集合设置元素和组成模式。JSON 顶层 key 必须与输入的 `sublattice`"
+" 标签完全一致；无标签结构只使用 `all`。`group` 不会代替 `sublattice`。"
 msgstr ""
-"The visual editor selects either `All sites` or `By sublattice` and assigns elements "
-"and a composition mode to each site set. Top-level JSON keys must exactly match the "
-"input `sublattice` labels. An unlabeled structure uses only `all`; `group` does not "
-"substitute for `sublattice`."
+"The visual editor selects either `All sites` or `By sublattice` and "
+"assigns elements and a composition mode to each site set. Top-level JSON "
+"keys must exactly match the input `sublattice` labels. An unlabeled "
+"structure uses only `all`; `group` does not substitute for `sublattice`."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:59
-#: 764312b6647b4c1996fa6e70752a22af
+#: d245d2d391154dfc8f8892dd3e6f9b52
 msgid ""
-"未手动编辑规则时，接入上游结构会按**首个输入结构**的标签、元素和当前占比自动匹配规则。默认模板中的 `X` 只是占位符，不能输出；手动编辑、选择模板、粘贴 JSON "
-"或恢复持久化参数后，规则不再被自动覆盖。"
+"未手动编辑规则时，接入上游结构会按**首个输入结构**的标签、元素和当前占比自动匹配规则。默认模板中的 `X` "
+"只是占位符，不能输出；手动编辑、选择模板、粘贴 JSON 或恢复持久化参数后，规则不再被自动覆盖。"
 msgstr ""
-"Before rules are edited manually, connecting an upstream structure automatically "
-"matches rules to the labels, elements, and current fractions of the **first input "
-"structure**. `X` in the default template is only a placeholder and cannot appear in "
-"output. After manual editing, template selection, JSON pasting, or restoration of "
-"persisted parameters, the rules are no longer overwritten automatically."
+"Before rules are edited manually, connecting an upstream structure "
+"automatically matches rules to the labels, elements, and current "
+"fractions of the **first input structure**. `X` in the default template "
+"is only a placeholder and cannot appear in output. After manual editing, "
+"template selection, JSON pasting, or restoration of persisted parameters,"
+" the rules are no longer overwritten automatically."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:61
-#: f63ae61e1c8d4d20b5b811a9560fe069
+#: 4904ef5edda04cfab036f07d96a2e82f
 msgid ""
-"固定比例为无量纲数，范围是 $[0,1]$，且可视化编辑器要求同一位点集合内的比例和为 1。计数范围的单位是“个位点”，上下限必须是非负整数。旧 JSON 中 `1 + "
-"1` 这类相对权重仍可由底层归一化，但新规则应直接填写 `0.5 + 0.5`。"
+"固定比例为无量纲数，范围是 $[0,1]$，且可视化编辑器要求同一位点集合内的比例和为 1。计数范围的单位是“个位点”，上下限必须是非负整数。旧 "
+"JSON 中 `1 + 1` 这类相对权重仍可由底层归一化，但新规则应直接填写 `0.5 + 0.5`。"
 msgstr ""
-"Fixed fractions are dimensionless values in $[0,1]$, and the visual editor requires "
-"them to sum to 1 within each site set. Count ranges are measured in sites and require"
-" nonnegative integer bounds. The backend can still normalize legacy JSON containing "
-"relative weights such as `1 + 1`, but new rules should enter `0.5 + 0.5` directly."
+"Fixed fractions are dimensionless values in $[0,1]$, and the visual "
+"editor requires them to sum to 1 within each site set. Count ranges are "
+"measured in sites and require nonnegative integer bounds. The backend can"
+" still normalize legacy JSON containing relative weights such as `1 + 1`,"
+" but new rules should enter `0.5 + 0.5` directly."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:63
-#: 6fa2a42891794c37a559f309c3948e28
+#: daa09bea54cc4b0fb55c80d91f5f86f2
 msgid "规则示例："
 msgstr "Example rule:"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:65
-#: 443b9c379e4944658ea715d88bab60e5
+#: dce89a90d6ea4c47abee2e1b8247ffa9
 #, python-brace-format
 msgid ""
 "{\"A\":{\"elements\":[\"Fe\",\"Co\"],\"mode\":\"count_range\",\"counts\":{\"Fe\":[8,16],\"Co\":[8,16]}}}"
@@ -239,114 +253,121 @@ msgstr ""
 "\n"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:69
-#: fb104253f5b54358957d748c2f3105a9
-msgid "“高级：查看或粘贴 JSON”可复制或载入旧规则；非法 JSON 不会覆盖当前有效规则。切换位点划分或应用模板会替换整组规则，已有手动编辑时界面会先确认。"
+#: 5b0744484d414152bb91285e1c97e7d0
+msgid ""
+"“高级：查看或粘贴 JSON”可复制或载入旧规则；非法 JSON "
+"不会覆盖当前有效规则。切换位点划分或应用模板会替换整组规则，已有手动编辑时界面会先确认。"
 msgstr ""
-"`Advanced: View or paste JSON` can copy or load legacy rules. Invalid JSON does not "
-"overwrite the current valid rules. Changing the site partition or applying a template"
-" replaces the entire rule set, and the interface asks for confirmation if manual "
-"edits already exist."
+"`Advanced: View or paste JSON` can copy or load legacy rules. Invalid "
+"JSON does not overwrite the current valid rules. Changing the site "
+"partition or applying a template replaces the entire rule set, and the "
+"interface asks for confirmation if manual edits already exist."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:71
-#: 7e166d26f86445b1b26bccafd74141fa
+#: 5330354a705c479aa164898b738fcda1
 msgid "每种组成的排布数（arrangements_per_composition）"
 msgstr "arrangements_per_composition"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:73
-#: e83e7fb6105a4594a9265aa2100b300e
+#: ce0fde445f9a43988a666e9894accf21
 msgid "`int`，默认 1，单位为“个结构”。它表示每种实际整数组成请求多少个不同排布；若理论排布数 $\\Omega$ 更少，则只返回实际存在的数量。"
 msgstr ""
-"`int`, default 1, measured in structures. This is the requested number of distinct "
-"arrangements for each realized integer composition. If the theoretical count "
-"$\\Omega$ is smaller, only the arrangements that actually exist are returned."
+"`int`, default 1, measured in structures. This is the requested number of"
+" distinct arrangements for each realized integer composition. If the "
+"theoretical count $\\Omega$ is smaller, only the arrangements that "
+"actually exist are returned."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:75
-#: bf678dda325147f38a72d8a7e1e693f4
+#: 15a153ba0c884d35a743686b9d5ad5f9
 msgid "使用固定种子（use_seed）"
 msgstr "use_seed"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:77
-#: a9c053cab44141e6b198bee0f1fa08c5
+#: f607ca7b9f5b430fa3f1eea9804cd13b
 msgid "`bool`，默认 true。开启后，组成预算抽样和具体位点排布均由固定 seed 派生。"
 msgstr ""
-"`bool`, default true. When enabled, both composition-budget sampling and concrete "
-"site arrangements are derived from a fixed seed."
+"`bool`, default true. When enabled, both composition-budget sampling and "
+"concrete site arrangements are derived from a fixed seed."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:79
-#: 9eb7ef28e49541fc8fe1cdefb999dc2f
+#: eff725d8fc0d48578ee7cda4eee3f397
 msgid "随机种子（seed）"
 msgstr "Random Seed (seed)"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:81
-#: fc75c09ddb324802b729ba99bdb875f6
+#: aeb3770293a64579819937f1265a15d1
 msgid ""
-"`int`，默认 0，无单位，仅在 `use_seed=true` 时生效。相同输入、规则和 seed 会得到相同结果。若所有可行组成都在预算内，改变 seed "
-"不改变可行计数集合，只改变排布；若 `max_outputs` 截断了组成集合，seed 也会改变被选中的整数组成。"
+"`int`，默认 0，无单位，仅在 `use_seed=true` 时生效。相同输入、规则和 seed "
+"会得到相同结果。若所有可行组成都在预算内，改变 seed 不改变可行计数集合，只改变排布；若 `max_outputs` 截断了组成集合，seed"
+" 也会改变被选中的整数组成。"
 msgstr ""
-"`int`, default 0, dimensionless and used only when `use_seed=true`. The same input, "
-"rules, and seed produce the same results. If every feasible composition fits within "
-"the budget, changing the seed alters arrangements but not the feasible count set. If "
-"`max_outputs` truncates the composition set, the seed also affects which integer "
-"compositions are selected."
+"`int`, default 0, dimensionless and used only when `use_seed=true`. The "
+"same input, rules, and seed produce the same results. If every feasible "
+"composition fits within the budget, changing the seed alters arrangements"
+" but not the feasible count set. If `max_outputs` truncates the "
+"composition set, the seed also affects which integer compositions are "
+"selected."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:83
-#: 013b7b15b7e647c9a66b42292f6e43b9
+#: 672d4d1d9ba84408b3a33856e7b14a3d
 msgid "每个输入的最大输出数（max_outputs）"
 msgstr "Maximum Outputs per Input (max_outputs)"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:85
-#: d6dd32deef5148d686155abcf46735e8
+#: 3cc8db50f67d4f2588c297e7eff8dd97
 msgid "`int`，默认 200，单位为“个结构”。它限制每个输入结构返回的总结构数，并采用“先覆盖组成、再增加排布”的分配顺序。"
 msgstr ""
-"`int`, default 200, measured in structures. It limits the total structures returned "
-"for each input and allocates them in the order `cover compositions first, then add "
-"arrangements`."
+"`int`, default 200, measured in structures. It limits the total "
+"structures returned for each input and allocates them in the order `cover"
+" compositions first, then add arrangements`."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:87
-#: 5057fd70db314da1ab3a31bba0213d49
+#: 0d2fc2c31dfa4dd6896cb2eeb97c30c7
 msgid "输出预览与失败条件"
 msgstr "Output Preview and Failure Conditions"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:89
-#: 718b979972434e3e8c548e81e422aaa6
+#: ce40eb4708e04591b9cace37302fe961
 msgid ""
 "UI 只用数据集的**首个输入结构**计算位点数、可行整数组成数和输出上界。若同一数据集中的结构具有不同原子数、`sublattice` "
 "标签或位点数，后续结构会按各自真实位点重新计算，输出数可能不同，也可能因规则不匹配而失败；这类数据最好分组处理。"
 msgstr ""
-"The UI uses only the **first input structure** in the dataset to calculate site "
-"counts, feasible integer-composition counts, and the output upper bound. If "
-"structures in the same dataset differ in atom count, `sublattice` labels, or site "
-"counts, later structures are recalculated using their actual sites. Their output "
-"counts may differ, or they may fail because the rules do not match. Such data are "
-"best processed in separate groups."
+"The UI uses only the **first input structure** in the dataset to "
+"calculate site counts, feasible integer-composition counts, and the "
+"output upper bound. If structures in the same dataset differ in atom "
+"count, `sublattice` labels, or site counts, later structures are "
+"recalculated using their actual sites. Their output counts may differ, or"
+" they may fail because the rules do not match. Such data are best "
+"processed in separate groups."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:91
-#: 9d86109e6dc549c79622556700915441
+#: fb7cf3332c1049989027451b487c07dc
 msgid ""
 "以下情况会显式失败，不会返回伪成功的空结果：规则与位点集合不匹配、仍含 "
 "`X`、比例或计数范围非法，以及没有可行整数解。对于排布空间很大的组成，程序采用有上限的去重随机尝试；若尝试耗尽而未达到本应存在的目标数量，也会显式报告已生成数量与请求数量。"
 msgstr ""
-"The following conditions fail explicitly instead of returning a falsely successful "
-"empty result: rules that do not match site sets, remaining `X` placeholders, invalid "
-"fraction or count ranges, and no feasible integer solution. For compositions with "
-"very large arrangement spaces, the program makes a bounded number of deduplicated "
-"random attempts. If attempts are exhausted before reaching a target count that should"
-" exist, it explicitly reports both the generated and requested counts."
+"The following conditions fail explicitly instead of returning a falsely "
+"successful empty result: rules that do not match site sets, remaining `X`"
+" placeholders, invalid fraction or count ranges, and no feasible integer "
+"solution. For compositions with very large arrangement spaces, the "
+"program makes a bounded number of deduplicated random attempts. If "
+"attempts are exhausted before reaching a target count that should exist, "
+"it explicitly reports both the generated and requested counts."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:93
-#: eaa1190f5f7f4135bc0dfe79877ea8d3
+#: dfb08b227b0f4e37a093dbbc6d25bf6a
 msgid "推荐配置"
 msgstr "Recommended Configuration"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:95
-#: 82f778b2d6ff426dbeac06b7cd4d82b7
+#: e1d1bdcab4e34b30b0e57381841d366a
 msgid "32 位点二元合金可从以下规则开始，再按训练集缺口收紧计数范围："
 msgstr ""
-"For a 32-site binary alloy, begin with the following rule and then narrow the count "
-"ranges according to gaps in the training set:"
+"For a 32-site binary alloy, begin with the following rule and then narrow"
+" the count ranges according to gaps in the training set:"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:97
-#: ebcc9befbe5a4e309c397e99289fbdb6
+#: 112950010a1444219f9393839530a149
 #, python-brace-format
 msgid ""
 "{\n"
@@ -376,191 +397,90 @@ msgstr ""
 "}\n"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:110
-#: 5eabb2c93b164f53a61fbc5c7382f02c
+#: 696c9391eff04012be0cb6cff6b909ee
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:112
-#: 700bb18d4e734d63947e7b3b2f22ac9b
-msgid ""
-"`Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`：保留 L1₂、B2、L1₀ "
-"等原型的子晶格划分，并在各子晶格内生成受约束的无序占位。"
+#: 1534549e69b94518a242e0d8f26d1ef6
+#
+msgid "`有序合金原型 → 有限晶胞合金占位`：保留 L1₂、B2、L1₀ 等原型的子晶格划分，并在各子晶格内生成受约束的无序占位。"
 msgstr ""
-"`Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`: preserve the sublattice "
-"partition of prototypes such as L1₂, B2, and L1₀ while generating constrained "
-"disordered occupancy within each sublattice."
+"`Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`: preserve the "
+"sublattice partition of prototypes such as L1₂, B2, and L1₀ while "
+"generating constrained disordered occupancy within each sublattice."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:113
-#: e72aa87531a847f3945841f9e52e9db8
-msgid ""
-"`Crystal Prototype Builder → Super Cell → Finite-Cell Alloy "
-"Occupancy`：先得到足够位点，再生成可实现的随机固溶体组成。"
-msgstr ""
-"`Crystal Prototype Builder → Super Cell → Finite-Cell Alloy Occupancy`: create enough"
-" sites first, then generate realizable random-solid-solution compositions."
+#: 88fcd3c1ac2246cb8126e47bbc423b49
+msgid "`晶体原型构建 → 扩胞 → 有限晶胞合金占位`：先得到足够位点，再生成可实现的随机固溶体组成。"
+msgstr "`Crystal Prototype Builder → Super Cell → Finite-Cell Alloy Occupancy`: create enough sites first, then generate realizable random-solid-solution compositions."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:114
-#: e1c4f754ca1b4db8999267df85ec2105
-msgid "`Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`：先确定占位，再补充坐标和晶格扰动。"
-msgstr ""
-"`Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`: determine occupancy "
-"first, then add coordinate and lattice perturbations."
+#: 2e6cc9915cc041cab656ec00883c5ef7
+msgid "`有限晶胞合金占位 → 原子扰动 → 晶格应变`：先确定占位，再补充坐标和晶格扰动。"
+msgstr "`Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`: determine occupancy first, then add coordinate and lattice perturbations."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:116
-#: 7bf9c0cc76a44a66ad22a5778c772c09
+#: fc0ce36b4ccc477d94e835a6ceb2daa7
 msgid "常见问题"
 msgstr "Troubleshooting"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:118
-#: eac7f26ddf49444ebaa87067461ed0ca
+#: 3b3634fc54194c099aea1767cd8e543c
 msgid "**为什么输出少于请求值？** 某种组成的理论排布数可能不足，或总输出已达到 `max_outputs`；卡片不会复制结构凑数。"
 msgstr ""
-"**Why are there fewer outputs than requested?** A composition may have too few "
-"theoretical arrangements, or the total output may have reached `max_outputs`. The "
-"card does not duplicate structures to fill the quota."
+"**Why are there fewer outputs than requested?** A composition may have "
+"too few theoretical arrangements, or the total output may have reached "
+"`max_outputs`. The card does not duplicate structures to fill the quota."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:120
-#: c50f5041db4441b48bd6c441bf2aca15
+#: 629c697bf0ee47ffa47af43fa18f252d
 msgid "**为什么提示规则不匹配？** 顶层 key 必须逐一匹配输入的 `sublattice` 标签；无标签结构只能使用 `all`。"
 msgstr ""
-"**Why are the rules reported as mismatched?** Each top-level key must match an input "
-"`sublattice` label exactly. An unlabeled structure can use only `all`."
+"**Why are the rules reported as mismatched?** Each top-level key must "
+"match an input `sublattice` label exactly. An unlabeled structure can use"
+" only `all`."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:122
-#: be7c5ad4efa34f8bbfad12b982a8f84c
+#: acfd2bebb7084af5b2159cf95771799d
 msgid "**为什么没有整数解？** 各元素下限之和可能大于位点数，或上限之和小于位点数；占比范围也会先换算为当前晶胞可实现的整数边界。"
 msgstr ""
-"**Why is there no integer solution?** The sum of element lower bounds may exceed the "
-"number of sites, or the upper bounds may sum to less than the number of sites. "
-"Fraction ranges are also converted first to integer bounds realizable in the current "
-"cell."
+"**Why is there no integer solution?** The sum of element lower bounds may"
+" exceed the number of sites, or the upper bounds may sum to less than the"
+" number of sites. Fraction ranges are also converted first to integer "
+"bounds realizable in the current cell."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:124
-#: e8c2ddb8728e4501b25994870ca280c7
+#: d618fbf8f5b842498ad9aa54a366e2f4
 msgid "输出标签与可复现性"
 msgstr "Output Labels and Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:126
-#: b07def3bb79f41f4866e07ffe788cdba
+#: ef4d7afe767140adba25f954d91e08a2
 msgid ""
 "`Config_type` 追加 "
-"`FiniteAlloy(comp=<composition_id>,arr=<arrangement_id>)`。`finite_cell_alloy` "
-"metadata 保存实际 `counts`、`fractions`、请求规则、实现状态、composition ID、arrangement ID 和派生 seed。"
+"`FiniteAlloy(comp=<composition_id>,arr=<arrangement_id>)`。`finite_cell_alloy`"
+" metadata 保存实际 `counts`、`fractions`、请求规则、实现状态、composition ID、arrangement "
+"ID 和派生 seed。"
 msgstr ""
 "`FiniteAlloy(comp=<composition_id>,arr=<arrangement_id>)` is appended to "
-"`Config_type`. The `finite_cell_alloy` metadata stores realized `counts` and "
-"`fractions`, requested rules, realization status, composition ID, arrangement ID, and"
-" derived seed."
+"`Config_type`. The `finite_cell_alloy` metadata stores realized `counts` "
+"and `fractions`, requested rules, realization status, composition ID, "
+"arrangement ID, and derived seed."
 
 #: ../../source/module/make-dataset-cards/cards/finite-cell-alloy-occupancy-card.md:128
-#: 7c568fdc96b1417e85ec2efe64f523c6
+#: 7382ba5f37be41eea5f79bc8046253c3
 msgid "固定 `use_seed=true` 和 `seed` 后结果可复现；关闭固定种子后不保证重复运行得到相同组成抽样或排布。"
 msgstr ""
-"Results are reproducible with fixed `use_seed=true` and `seed`. With fixed seeding "
-"disabled, repeated runs are not guaranteed to produce the same composition sample or "
-"arrangements."
+"Results are reproducible with fixed `use_seed=true` and `seed`. With "
+"fixed seeding disabled, repeated runs are not guaranteed to produce the "
+"same composition sample or arrangements."
 
 #~ msgid "`Group`: `Alloy` | `Class`: `FiniteCellAlloyOccupancyCard`"
 #~ msgstr "`Group`: `Alloy` | `Class`: `FiniteCellAlloyOccupancyCard`"
 
-#~ msgid "32 位点随机固溶体经过连续 Composition Sweep 后再取整，多个目标点可能都变成同一整数计数组合，训练集看似有很多组成，实际却重复。"
-#~ msgstr ""
-#~ "When continuous Composition Sweep targets are "
-#~ "rounded on a 32-site random solid solution,"
-#~ " several target points can collapse to the"
-#~ " same integer-count combination. The training "
-#~ "set appears compositionally diverse but actually "
-#~ "contains duplicates."
-
-#~ msgid ""
-#~ "**输入：** 32 原子 A1/fcc 周期超胞。 **目标：** 直接枚举 "
-#~ "Fe/Co/Ni 的可实现整数计数，并为每个组成生成 4 个不同排布。 **参数设置：** "
-#~ "`site_rules` 使用 `all`（若输入含 A 单子晶格则用 `A`）和 "
-#~ "`count_range`，给三种元素明确整数范围；`arrangements_per_composition=4`，固定 seed，设置 "
-#~ "`max_outputs`。 **输出：** 每个 composition ID "
-#~ "对应唯一整数计数组合；同一 composition 下的 arrangement ID 不重复。 "
-#~ "**怎么验证训练集质量改善：** 统计 metadata 中的 `counts`，确认每帧总和为 "
-#~ "32、composition ID 无重复；重训时再按实际分数切片比较误差，而不是按原连续目标比例分组。"
-#~ msgstr ""
-#~ "**Input:** a periodic 32-atom A1/fcc supercell. "
-#~ "**Goal:** enumerate realizable Fe/Co/Ni integer "
-#~ "counts directly and generate four distinct "
-#~ "arrangements for each composition. **Parameters:** "
-#~ "use `all` in `site_rules` (or `A` for an"
-#~ " input with a single A sublattice), select"
-#~ " `count_range`, and give all three elements "
-#~ "explicit integer ranges; set "
-#~ "`arrangements_per_composition=4`, a fixed seed, and "
-#~ "`max_outputs`. **Output:** each composition ID maps"
-#~ " to a unique integer-count combination, and"
-#~ " arrangement IDs are unique within a "
-#~ "composition. **How to verify improved training-"
-#~ "set quality:** aggregate the metadata `counts`, "
-#~ "confirm every frame sums to 32 and "
-#~ "composition IDs are unique, then compare "
-#~ "retrained errors in slices based on realized"
-#~ " fractions rather than the original continuous"
-#~ " targets."
-
 #~ msgid "位点划分与 Site Rules（site_rules）"
 #~ msgstr "Site partitioning and Site Rules (`site_rules`)"
-
-#~ msgid "默认界面使用“A/B 有序合金”模板，与默认的 Ordered Alloy Prototype 可直接连接："
-#~ msgstr ""
-#~ "The default UI uses the A/B Ordered "
-#~ "Alloy template, which connects directly to the"
-#~ " default Ordered Alloy Prototype:"
-
-#~ msgid ""
-#~ "“普通单晶格合金”按钮会建立 `all` 规则；“A/B 有序合金”按钮会建立彼此独立的 A、B "
-#~ "规则。JSON 顶层 key 必须与输入的 site set 完全一致。有 "
-#~ "`sublattice` 时逐个编辑 A、B 等标签；没有时使用 `all`。卡片不会把 `all`"
-#~ " 静默套到每个子晶格。"
-#~ msgstr ""
-#~ "The Single-Sublattice Alloy button creates an"
-#~ " `all` rule; the A/B Ordered Alloy button"
-#~ " creates independent A and B rules. Top-"
-#~ "level JSON keys must match the input "
-#~ "site sets exactly. Edit labels such as A"
-#~ " and B individually when `sublattice` is "
-#~ "present; use `all` when it is not. The"
-#~ " card never applies `all` silently to every"
-#~ " sublattice."
-
-#~ msgid ""
-#~ "规则仍处于初始占位状态时，载入上游结构会按实际标签自动匹配：普通无标签结构使用 `all`，A1/A2/A3 等单子晶格原型使用单独的"
-#~ " `A` 规则，L1₂/B2/L1₀ 保持 A/B。界面会明确提示自动匹配结果。只要用户编辑过规则、主动选择过模板、粘贴过"
-#~ " JSON 或载入过持久化参数，卡片就不再自动覆盖，标签不匹配时改为显示错误。"
-#~ msgstr ""
-#~ "While the rules are still in their "
-#~ "initial placeholder state, loading an upstream "
-#~ "structure matches them to the actual labels"
-#~ " automatically: an unlabeled structure uses "
-#~ "`all`, a single-sublattice A1/A2/A3 prototype "
-#~ "uses an `A` rule, and L1₂/B2/L1₀ keeps "
-#~ "A/B. The UI reports the automatic match "
-#~ "explicitly. Once the user edits a rule, "
-#~ "chooses a template, pastes JSON, or loads "
-#~ "persisted parameters, the card stops overwriting "
-#~ "rules automatically and reports label mismatches "
-#~ "as errors."
-
-#~ msgid ""
-#~ "输入结构可用后，界面会在对应规则旁显示实际位点数，并即时提示缺少标签、多余标签、非法/重复元素、范围错误和无整数解。底层持久化仍是 "
-#~ "`site_rules` 字符串；“高级：查看/粘贴 JSON”默认收起，可用于复制现有格式或粘贴旧配置。非法 JSON "
-#~ "不会覆盖当前有效的可视化规则。"
-#~ msgstr ""
-#~ "When an input structure is available, the "
-#~ "UI shows the actual site count beside "
-#~ "each rule and immediately reports missing or"
-#~ " extra labels, invalid or duplicate elements, "
-#~ "range errors, and infeasible integer plans. "
-#~ "Persistence still uses the `site_rules` string. "
-#~ "Advanced: View/Paste JSON is collapsed by "
-#~ "default and can copy the current format "
-#~ "or accept an older configuration. Invalid JSON"
-#~ " never overwrites the current valid visual "
-#~ "rules."
 
 #~ msgid "Arrangements per Composition（arrangements_per_composition）"
 #~ msgstr "Arrangements per Composition（arrangements_per_composition）"
@@ -574,124 +494,15 @@ msgstr ""
 #~ msgid "Max Outputs（max_outputs）"
 #~ msgstr "Max Outputs（max_outputs）"
 
-#~ msgid ""
-#~ "预算不足以覆盖全部组成时，operation 在整数计划索引空间中按固定步长确定性抽样，不依赖 Python "
-#~ "集合、目录或文件系统顺序。输入结构与规则都可用时，UI 直接调用 "
-#~ "`operation.estimate(...)`，显示各标签位点数、可行整数组成数、每组成请求排布数、截断前理论输出、`max_outputs`、预计实际输出和是否截断。没有输入时只提示先运行或载入上游结构，不显示伪精确数字。"
-#~ msgstr ""
-#~ "If the budget cannot cover every composition,"
-#~ " the operation samples the integer-plan "
-#~ "index space deterministically at a fixed "
-#~ "stride; it does not depend on Python "
-#~ "set, directory, or filesystem order. When both"
-#~ " input structure and rules are available, "
-#~ "the UI calls `operation.estimate(...)` directly and"
-#~ " reports site counts by label, feasible "
-#~ "integer compositions, requested arrangements per "
-#~ "composition, theoretical output before truncation, "
-#~ "`max_outputs`, estimated actual output, and whether"
-#~ " truncation occurs. Without input, it only "
-#~ "asks the user to run or load an "
-#~ "upstream structure and never presents a "
-#~ "spurious exact estimate."
-
 #~ msgid "L1₂ 分子晶格部分无序"
 #~ msgstr "Partially disordered L1₂ sublattices"
 
 #~ msgid ""
-#~ "**输出少于 `arrangements_per_composition`。** 该组成的理论排布数已耗尽，或触发了 "
-#~ "`max_outputs`。这不是随机失败，卡片不会用重复排布伪造样本数。"
-#~ msgstr ""
-#~ "**Output is smaller than `arrangements_per_composition`.**"
-#~ " The composition's theoretically unique arrangements"
-#~ " have been exhausted, or `max_outputs` was "
-#~ "reached. This is not a random failure; "
-#~ "the card does not fabricate the requested "
-#~ "sample count with duplicate arrangements."
-
-#~ msgid "固定 `use_seed=true` 与 `seed` 后严格可复现。超预算组成抽样使用确定索引顺序；排布去重以逐位元素序列为准，不依赖集合迭代顺序。"
-#~ msgstr ""
-#~ "Runs are strictly reproducible with fixed "
-#~ "`use_seed=true` and `seed`. Over-budget composition"
-#~ " sampling uses deterministic index order, and "
-#~ "arrangements are deduplicated by per-site "
-#~ "element sequence without depending on set "
-#~ "iteration order."
-
-#~ msgid ""
-#~ "组成计划先确定每种元素的整数个数，再生成不重复的随机排布。卡片不会先采任意连续比例再静默取整，也不会把不可整除的目标写成 Exact。metadata"
-#~ " 同时保存请求、实际计数、实际分数、composition ID 和 arrangement ID。"
-#~ msgstr ""
-#~ "A composition plan first fixes an integer "
-#~ "count for every element, then generates unique"
-#~ " randomized arrangements. The card never samples"
-#~ " an arbitrary continuous fraction and rounds "
-#~ "it silently, nor labels an indivisible target"
-#~ " as Exact. Metadata records the request, "
-#~ "actual counts and fractions, composition ID, "
-#~ "and arrangement ID."
-
-#~ msgid "卡片主界面是可视化规则编辑器。先选择“全部位点”或“按子晶格”，再为每个位点集合添加元素，并选择一种组成模式。模式切换后只显示当前需要的比例或计数字段："
-#~ msgstr ""
-#~ "The main card UI is a visual rule "
-#~ "editor. Choose All Sites or By Sublattice, "
-#~ "add elements to each site set, and "
-#~ "select a composition mode. Changing modes "
-#~ "shows only the fraction or count fields "
-#~ "that apply:"
-
-#~ msgid "多个独立子晶格的组合数是各自 $\\Omega$ 的乘积。卡片在可行组合中去重采样，并受每组和 总输出上限约束；它不会声称已穷举超出预算的全部排列。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "32 位点随机固溶体经过连续 Composition Space Sampling 后再取整，多个目标点可能都变成同一整数计数组合，训练集看似有很多组成，实际却重复。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "**输入：** 32 原子 A1/fcc 周期超胞。 **目标：** 直接枚举 "
-#~ "Fe/Co/Ni 的可实现整数计数，并为每个组成生成 4 个不同排布。 **参数设置：** "
-#~ "`位点划分规则`使用“全部位点”（若输入含 A 单子晶格则用 `A`）和“计数范围”， "
-#~ "给三种元素明确整数范围；`每种成分的排列数`填 `4`，固定`随机种子`，并设置 `每个输入的最大输出数`。 **输出：**"
-#~ " 每个 composition ID 对应唯一整数计数组合；同一 composition 下的"
-#~ " arrangement ID 不重复。 **怎么验证训练集质量改善：** 统计 metadata"
-#~ " 中的 `counts`，确认每帧总和为 32、composition ID "
-#~ "无重复；重训时再按实际分数切片比较误差，而不是按原连续目标比例分组。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "默认界面先显示 A/B 规则模板中的 `X` 占位符，但 `X` "
-#~ "不是可输出的元素。接入上游结构且规则尚未被手动编辑时，卡片会立即按首个输入结构的实际 site set、元素和当前比例生成安全规则。例如"
-#~ " Ni/Al 的 A/B 结构会自动得到真实的 Ni、Al 规则，而不会生成 `X`"
-#~ " 原子。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
 #~ "{\"A\":{\"composition\":{\"X\":1.0},\"elements\":[\"X\"],\"mode\":\"fixed_fraction\"},\"B\":{\"composition\":{\"X\":1.0},\"elements\":[\"X\"],\"mode\":\"fixed_fraction\"}}"
 #~ "\n"
 #~ msgstr ""
 #~ "{\"A\":{\"composition\":{\"X\":1.0},\"elements\":[\"X\"],\"mode\":\"fixed_fraction\"},\"B\":{\"composition\":{\"X\":1.0},\"elements\":[\"X\"],\"mode\":\"fixed_fraction\"}}"
 #~ "\n"
-
-#~ msgid ""
-#~ "“无子晶格标签（all）”模板会建立 `all` 规则；“A/B 子晶格”模板会建立彼此独立的 A、B "
-#~ "规则。JSON 顶层 key 必须与输入的 site set 完全一致。有 "
-#~ "`sublattice` 时逐个编辑 A、B 等标签；没有时使用 `all`。卡片不会把 `all`"
-#~ " 静默套到每个子晶格，也不会使用 `group` 代替 `sublattice`。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "规则仍由卡片自动管理时，载入上游结构会按实际标签和元素自动匹配：普通无标签结构使用 `all`，A1/A2/A3 等单子晶格原型使用单独的"
-#~ " `A` 规则，L1₂/B2/L1₀ 保持 A/B。界面会明确提示自动匹配结果。只要用户编辑过规则、主动选择过模板、粘贴过"
-#~ " JSON 或载入过持久化参数，卡片就不再自动覆盖，标签不匹配或仍含 `X` 时改为显示错误。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid "切换位点划分或应用模板会整体替换当前规则。已有手动编辑时，界面会先确认，避免误删元素、范围和 site set。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "输入结构可用后，界面会在对应规则旁显示实际位点数，并即时提示缺少标签、多余标签、非法/重复元素、范围错误和无整数解。底层持久化仍是 "
-#~ "`位点划分规则`（`site_rules`）字符串；“高级：查看/粘贴 JSON”默认收起，可用于复制现有格式或粘贴旧配置。非法 JSON"
-#~ " 不会覆盖当前有效的可视化规则。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "固定组成示例："
 #~ msgstr "Fixed-composition example:"
@@ -702,12 +513,6 @@ msgstr ""
 #~ msgstr ""
 #~ "{\"A\":{\"elements\":[\"Fe\",\"Co\"],\"mode\":\"fixed_fraction\",\"composition\":{\"Fe\":0.5,\"Co\":0.5}}}"
 #~ "\n"
-
-#~ msgid ""
-#~ "可视化编辑器要求固定比例之和为 1，例如 `0.5 + 0.5`。旧项目或直接调用 operation"
-#~ " 的 JSON 若使用 `1 + 1` "
-#~ "这类相对权重，底层仍会归一化以保持兼容；界面新建和修改规则时不再依赖这种隐式归一化。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "分数范围示例："
 #~ msgstr "Fraction-range example:"
@@ -722,59 +527,8 @@ msgstr ""
 #~ msgid "整数范围示例："
 #~ msgstr "Integer-count-range example:"
 
-#~ msgid "`int`，默认 1。每个实际整数计数组合请求多少个不同的原子排布。"
-#~ msgstr ""
-#~ "`int`, default 1. The number of distinct "
-#~ "atomic arrangements requested for each realized "
-#~ "integer-count combination."
-
-#~ msgid "如果某个组成的理论唯一排布数小于请求值，只返回理论上存在的数量。例如两个位点各放一个 Fe/Co 只有 2 种排布，请求 10 也不会复制结果凑数。"
-#~ msgstr ""
-#~ "If a composition has fewer theoretically "
-#~ "unique arrangements than requested, only the "
-#~ "realizable number is returned. For example, "
-#~ "two sites occupied by one Fe and one "
-#~ "Co have only two arrangements; requesting ten"
-#~ " does not duplicate results to reach the"
-#~ " requested count."
-
-#~ msgid "组成可行域本身不随 seed 改变；seed 只决定超预算时选哪些计划以及元素落到哪些具体位点。"
-#~ msgstr ""
-#~ "The feasible composition domain itself does "
-#~ "not depend on the seed. The seed only"
-#~ " determines which plans are selected when "
-#~ "over budget and which specific sites receive"
-#~ " each element."
-
 #~ msgid "`int`，默认 0。固定随机路径的基础种子。"
 #~ msgstr "`int`, default 0. Base seed for the deterministic random path."
-
-#~ msgid ""
-#~ "生效条件：`use_seed=true`。相同输入、规则和 seed 会得到相同 composition/arrangement"
-#~ " 顺序与占位；更换 seed 时实际计数不变，但排布通常会改变。"
-#~ msgstr ""
-#~ "Applies when `use_seed=true`. Identical inputs, "
-#~ "rules, and seed produce the same "
-#~ "composition/arrangement order and occupancy. Changing "
-#~ "the seed does not alter realized counts, "
-#~ "but usually changes arrangements."
-
-#~ msgid "`int`，默认 200。单个输入结构最多返回的总结构数。"
-#~ msgstr ""
-#~ "`int`, default 200. Hard limit on the "
-#~ "number of structures returned for one input"
-#~ " structure."
-
-#~ msgid ""
-#~ "预算不足以覆盖全部组成时，operation "
-#~ "先在整数计划索引空间中按固定步长确定性选择可覆盖的组成，再采用“组成优先”的轮转调度：先为每个选中组成生成第 1 个排布，再生成各组成的第"
-#~ " 2 个排布，以此类推。因此，小预算不会先被单一组成的多个排布耗尽。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "输入结构与规则都可用时，UI 用数据集中的**首个输入结构**计算位点数和可行整数组成数，并显示输出上限估计。这个数字是 `可行组成数"
-#~ " × 每组成请求排布数` 的上界；某些组成的唯一排布数不足时，实际输出会更少。没有输入时只提示先载入上游结构，不显示伪精确数字。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "推荐预设"
 #~ msgstr "Recommended presets"
@@ -782,9 +536,6 @@ msgstr ""
 #~ msgid "32 位点二元随机固溶体"
 #~ msgstr "32-site binary random solid solution"
 
-#~ msgid "L1₂ 子晶格部分无序"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
 #~ msgid ""
 #~ "{\n"
 #~ "  \"class\": \"FiniteCellAlloyOccupancyCard\",\n"
@@ -811,32 +562,6 @@ msgstr ""
 #~ "    \"max_outputs\": 120\n"
 #~ "  }\n"
 #~ "}\n"
-
-#~ msgid ""
-#~ "**提示 missing rules 或 unknown site sets。** "
-#~ "顶层 key 必须逐一匹配输入 `sublattice` 的实际标签；普通结构只能使用 "
-#~ "`all`。operation 不会回退到 `group`。"
-#~ msgstr ""
-#~ "**The card reports missing rules or unknown"
-#~ " site sets.** Every top-level key must "
-#~ "match an actual input `sublattice` label. An"
-#~ " ordinary unlabeled structure can use only "
-#~ "`all`; the operation does not fall back "
-#~ "to `group`."
-
-#~ msgid ""
-#~ "**输出少于 `每种组成的排布数`（`arrangements_per_composition`）。** 该组成的理论排布数已耗尽，或触发了"
-#~ " "
-#~ "`每个输入的最大输出数`（`max_outputs`）。这不是随机失败，卡片不会用重复排布伪造样本数。触发总输出上限时，卡片优先覆盖不同组成，再为同一组成增加排布。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
-
-#~ msgid ""
-#~ "**提示仍含占位元素 X。** `X` 只用于没有输入时展示规则结构，operation 会拒绝生成含 "
-#~ "`X` 的结果。接入真实结构后可让未编辑的规则自动匹配，也可以手动把 `X` 替换为实际元素。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."
 
 #~ msgid "可复现性"
 #~ msgstr "Reproducibility"
-
-#~ msgid "固定 `use_seed=true` 与 `随机种子`（`seed`）后严格可复现。超预算组成抽样使用确定索引顺序；排布去重以逐位元素序列为准，不依赖集合迭代顺序。"
-#~ msgstr "This section explains the option, its parameters, operation, and expected result."

@@ -8,122 +8,186 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:1
-#: 81cb4c770a504b5581a866b9b942c616
-msgid "Descriptor 绘图示例"
-msgstr "Descriptor Plotting Example"
+#: ../../source/example/Plot-descriptor.md:1 eca6fbf9358a402d8b06b92c2e958b91
+msgid "描述符分布绘图示例"
+msgstr "Descriptor Distribution Plot Example"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:3
-#: 2f2da52d406c4506bf81813d9b8e002e
-msgid "以 CsPbI3 为例，导出 descriptor 后绘制结构分布。"
-msgstr ""
-"This example exports descriptors for CsPbI3 and plots the resulting "
-"distribution of structures."
+#: ../../source/example/Plot-descriptor.md:3 f84626322bbb4a2f931dfc52433b74ca
+msgid ""
+"想比较几类结构（例如 CsPbI3 的立方、四方和正交相）在描述符空间里的覆盖范围时，可以分别导出它们的描述符， "
+"再用仓库提供的脚本画在同一张图上。本例最终得到一张带边界线的描述符散点图，颜色表示每原子能量。"
+msgstr "To compare how several groups of structures (for example, the cubic, tetragonal, and orthorhombic phases of CsPbI3) cover descriptor space, export their descriptors separately and plot them together with the script in the repository. The result is a descriptor scatter plot with boundary lines, colored by energy per atom."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:5
-#: b68b26264e7d456383f246f0aa1b8218
-msgid "![Image](../_static/image/example/plot_descriptor/main_ui.png)"
-msgstr ""
+#: ../../source/example/Plot-descriptor.md:6 d84fb33b71e54b14be864761a2d1bf76
+msgid "![NEP 数据集查看中的描述符图](../_static/image/example/plot_descriptor/main_ui.png)"
+msgstr "![Descriptor plot in NEP Dataset Display](../_static/image/example/plot_descriptor/main_ui.png)"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:5
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:20
-#: 79eceed986a346a7a90f2b459b44dac5 4efb730e402c4479b8fbc1d3235b1603
-msgid "Image"
-msgstr ""
+#: ../../source/example/Plot-descriptor.md:6 d56c856abaaf4d088e776a61fb74b24b
+msgid "NEP 数据集查看中的描述符图"
+msgstr "Descriptor plot in NEP Dataset Display"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:5
-#: 79eceed986a346a7a90f2b459b44dac5
+#: ../../source/example/Plot-descriptor.md:6 d56c856abaaf4d088e776a61fb74b24b
 msgid ".. image:: ../_static/image/example/plot_descriptor/main_ui.png"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:7
-#: 605b9738f23d4141bf4ef47cae0660d7
-msgid "导出步骤"
-msgstr "Export the descriptors"
+#: ../../source/example/Plot-descriptor.md:8 975c79302bb6449ba2c5ee6f248427b0
+msgid "1. 分别导出每类结构的描述符"
+msgstr "1. Export descriptors for each group"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:9
-#: 7fb2fdf78546475f920e5e49b0cd4f92
+#: ../../source/example/Plot-descriptor.md:10 483314acc48c450da119b99a0d00ddfe
+msgid "在 `NEP 数据集查看` 中打开包含这些结构的数据，然后对每一类结构重复："
+msgstr "Open the data containing these structures in `NEP Dataset Display`, then repeat for each group:"
+
+#: ../../source/example/Plot-descriptor.md:12 7ed47c78b729448db5d2a7c5788bc938
+#
 msgid ""
-"选择结构：<img src=\"../_static/image/generated/show_nep_icons/pen.svg\" "
-"alt=\"pen\" width='30' height='30' />"
-msgstr ""
-"Select the structures: <img src=\"../_static/image/generated/show_nep_icons/"
-"pen.svg\" alt=\"pen\" width='30' height='30' />"
+"选中这一类结构：可以用工具栏 <img "
+"src=\"../_static/image/generated/show_nep_icons/pen.svg\" alt=\"鼠标选择\" "
+"width=\"24\" height=\"24\" /> `鼠标选择` 在描述符图上圈选，也可以用筛选栏按 `Config_type` 选中。"
+msgstr "Select the structures in this group: draw a selection on the descriptor plot with <img src=\"../_static/image/generated/show_nep_icons/pen.svg\" alt=\"Mouse Selection\" width=\"24\" height=\"24\" /> `Mouse Selection`, or select them by `Config_type` in the filter bar."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:9
-#: 350442f3039142408e663978177a6bdd
-msgid "pen"
-msgstr ""
+#: ../../source/example/Plot-descriptor.md:12 253746b4642d4e1798d2b84c25eb4571
+msgid "鼠标选择"
+msgstr "Mouse Selection"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:9
-#: 350442f3039142408e663978177a6bdd
+#: ../../source/example/Plot-descriptor.md:12 253746b4642d4e1798d2b84c25eb4571
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pen.svg"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:10
-#: 601b82c7329843819d753c8dc57c84e8
+#: ../../source/example/Plot-descriptor.md:13 2a104196c0664fa4a64d52882b7206a6
+#
 msgid ""
-"点击导出：<img src=\"../_static/image/generated/show_nep_icons/export.svg\" "
-"alt=\"export\" width='30' height='30' />"
-msgstr ""
-"Click Export descriptors: <img src=\"../_static/image/generated/"
-"show_nep_icons/export.svg\" alt=\"export\" width='30' height='30' />"
+"点击工具栏 <img src=\"../_static/image/generated/show_nep_icons/export.svg\" "
+"alt=\"导出结构描述符\" width=\"24\" height=\"24\" /> `导出结构描述符`。"
+msgstr "Click <img src=\"../_static/image/generated/show_nep_icons/export.svg\" alt=\"Export structure descriptor\" width=\"24\" height=\"24\" /> `Export structure descriptor` on the toolbar."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:10
-#: f682c3c3081f43b49776fcb09d490477
-msgid "export"
-msgstr ""
+#: ../../source/example/Plot-descriptor.md:13 afb72b5a12fa4653b8f5fcb1539fcf84
+msgid "导出结构描述符"
+msgstr "Export structure descriptor"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:10
-#: f682c3c3081f43b49776fcb09d490477
+#: ../../source/example/Plot-descriptor.md:13 afb72b5a12fa4653b8f5fcb1539fcf84
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export.svg"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:11
-#: df7692a1fbfa46108a86c3f37b71d6fc
-msgid "选择文件路径"
-msgstr "Choose the output path."
+#: ../../source/example/Plot-descriptor.md:14 ad36f2ec68ad49ddbfc2838316cc52c2
+msgid "选择保存路径，例如 `cubic_descriptor.out`。"
+msgstr "Choose a save path, for example `cubic_descriptor.out`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:13
-#: c89619c0b5814fce80745a4d56b41ab8
-msgid "绘图"
-msgstr "Plot the distribution"
-
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:15
-#: f595a6c0b1154854a87c35cb8eed0a0d
+#: ../../source/example/Plot-descriptor.md:16 ac1728d6368e4fc5983b3dd07d3894b9
 msgid ""
-"使用 [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/"
-"master/tools/plot_descriptor.py)， 配置 `config` 和 `method` 后执行："
-msgstr ""
-"Open [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/"
-"master/tools/plot_descriptor.py), set `config` and `method`, and then run:"
+"导出文件只包含**当前选中**的结构。每行对应一个结构：前两列是描述符图上的两个坐标； "
+"数据中有能量时，第三列是每原子能量。没有选中任何结构时不会生成文件。"
+msgstr "The exported file contains only the **currently selected** structures. Each row is one structure: the first two columns are its coordinates on the descriptor plot, and the third column is the energy per atom when energies are available. No file is written when nothing is selected."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:18
-#: d0aa5c860e1e4bfe923aaf7e4f930687
-msgid "`python plot_descriptor.py`"
-msgstr ""
+#: ../../source/example/Plot-descriptor.md:19 c18f54a006fd4e73a6c1926471889d3e
+msgid "2. 配置并运行绘图脚本"
+msgstr "2. Configure and run the plotting script"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:20
-#: d0104a68b2024a31b1183601fe1a404f
+#: ../../source/example/Plot-descriptor.md:21 1b09f3a8ebc540f7b2ed725c59a398ef
+#
 msgid ""
-"![Image](../_static/image/example/plot_descriptor/"
-"descriptor_scatter_plot.png)"
+"下载 [plot_descriptor.py](https://github.com/aboys-"
+"cb/NepTrainKit/blob/master/tools/plot_descriptor.py)， "
+"放在导出文件所在的目录，然后修改脚本开头的两项："
+msgstr "Download [plot_descriptor.py](https://github.com/aboys-cb/NepTrainKit/blob/master/tools/plot_descriptor.py), place it next to the exported files, and edit the two settings at the top of the script:"
+
+#: ../../source/example/Plot-descriptor.md:24 dd1ee95e503d4f698b8ce97567869a6f
+msgid ""
+"`config`：每类结构一行，依次写描述符文件路径、图例名称和标记符号，例如 `(\"./cubic_descriptor.out\", "
+"\"cubic\", \"*\")`。"
+msgstr "`config`: one row per group, giving the descriptor file path, legend label, and marker, for example `(\"./cubic_descriptor.out\", \"cubic\", \"*\")`."
+
+#: ../../source/example/Plot-descriptor.md:26 ba4cde13ff3f48ae9086f91d922b65b6
+msgid ""
+"`method`：边界线的画法。`alphashape` 需要先安装 `alphashape` 包；`dbscan` 需要先安装 `scikit-"
+"learn`。"
+msgstr "`method`: how boundary lines are drawn. `alphashape` requires the `alphashape` package; `dbscan` requires `scikit-learn`."
+
+#: ../../source/example/Plot-descriptor.md:28 5847151c591f44bd9708c20a02360d1a
+msgid "脚本使用第三列给散点上色，所以导出的数据需要带能量。运行："
+msgstr "The script colors points by the third column, so the exported data must include energies. Run:"
+
+#: ../../source/example/Plot-descriptor.md:30 5402a2fef6d04943b401421c2358055d
+msgid "python plot_descriptor.py\n"
 msgstr ""
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/Plot-descriptor.md:20
-#: 4efb730e402c4479b8fbc1d3235b1603
+#: ../../source/example/Plot-descriptor.md:34 72042893e1d742768573d11de3efd161
+msgid "结果保存为当前目录下的 `descriptor_scatter_plot.png`："
+msgstr "The result is saved as `descriptor_scatter_plot.png` in the current directory:"
+
+#: ../../source/example/Plot-descriptor.md:36 e58a935bfdb347c0bbc63d68b57d7c55
+msgid "![描述符散点图](../_static/image/example/plot_descriptor/descriptor_scatter_plot.png)"
+msgstr "![Descriptor scatter plot](../_static/image/example/plot_descriptor/descriptor_scatter_plot.png)"
+
+#: ../../source/example/Plot-descriptor.md:36 f4118e23e07d435796207ff4c5e6c362
+msgid "描述符散点图"
+msgstr "Descriptor scatter plot"
+
+#: ../../source/example/Plot-descriptor.md:36 f4118e23e07d435796207ff4c5e6c362
 msgid ""
-".. image:: ../_static/image/example/plot_descriptor/"
-"descriptor_scatter_plot.png"
+".. image:: "
+"../_static/image/example/plot_descriptor/descriptor_scatter_plot.png"
 msgstr ""
+
+#: ../../source/example/Plot-descriptor.md:38 78eccd1dc22f48c8b66eb3506b764207
+msgid "3. 怎么读这张图"
+msgstr "3. How to read the plot"
+
+#: ../../source/example/Plot-descriptor.md:40 e722714e1af3461499bb3e2696a47d62
+msgid "不同类别的点云明显分开，说明描述符能区分这些结构；大面积重叠时，模型可能难以区分它们。"
+msgstr "Clearly separated point clouds mean the descriptor distinguishes the groups; large overlaps suggest the model may struggle to tell them apart."
+
+#: ../../source/example/Plot-descriptor.md:41 05aa4f69b57e4d78a96587c8a308c009
+msgid "某一类只覆盖很小的区域，说明这类结构的采样还不够多样，可以回到 `构建数据集` 补充扰动或应变。"
+msgstr "A group that covers only a small region is not sampled diversely enough; return to `Make Dataset` to add perturbations or strains."
+
+#: ../../source/example/Plot-descriptor.md:42 0c51a3fb94a940a89dc4614c84c19080
+msgid "同一位置颜色差别很大，表示描述符相近但能量不同，值得在 `NEP 数据集查看` 中抽查这些结构。"
+msgstr "Very different colors at the same position mean similar descriptors with different energies; spot-check those structures in `NEP Dataset Display`."
+
+#~ msgid "Descriptor 绘图示例"
+#~ msgstr "Descriptor Plotting Example"
+
+#~ msgid "以 CsPbI3 为例，导出 descriptor 后绘制结构分布。"
+#~ msgstr ""
+#~ "This example exports descriptors for "
+#~ "CsPbI3 and plots the resulting "
+#~ "distribution of structures."
+
+#~ msgid "![Image](../_static/image/example/plot_descriptor/main_ui.png)"
+#~ msgstr ""
+
+#~ msgid "Image"
+#~ msgstr ""
+
+#~ msgid "导出步骤"
+#~ msgstr "Export the descriptors"
+
+#~ msgid "pen"
+#~ msgstr ""
+
+#~ msgid "export"
+#~ msgstr ""
+
+#~ msgid "选择文件路径"
+#~ msgstr "Choose the output path."
+
+#~ msgid "绘图"
+#~ msgstr "Plot the distribution"
+
+#~ msgid "`python plot_descriptor.py`"
+#~ msgstr ""
+
+#~ msgid "![Image](../_static/image/example/plot_descriptor/descriptor_scatter_plot.png)"
+#~ msgstr ""

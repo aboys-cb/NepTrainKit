@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 22:17+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,33 +20,30 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:3
-#: 7b294892a45644e993619e7363b79ee2
+#: f49052ce9c714f09b7cf5d94195287de
 msgid "FPS 代表性采样（FPS Sampling）"
 msgstr "FPS Representative Sampling"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:5
-#: fa1002dabdd641b8891f43ad82548af7
+#: a69c0168341d4474bcc35936d2a0b4fd
 msgid "**分类：** 筛选与采样"
 msgstr "**Category:** Filtering and sampling"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:7
-#: d4db257bf8a74a0d8be46ef905f1be9f
+#: 566e18605e40445eaafccd432f2793f2
 msgid "功能说明"
 msgstr "Purpose"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:9
-#: a851fed83e224a05ab88fb5b0d56479b
+#: 65269f27e3e6404abd0ea4dc19f01076
+#
 msgid ""
-"从候选池中选择描述符空间里的代表结构，输出数量不超过设定上限。它通常接在 `Geometry Filter` 后面：前者删除明确的几何异常，FPS"
-" 再减少相似结构，控制进入 DFT 或训练的数据量。"
-msgstr ""
-"Select structures that represent the candidate pool in descriptor space, "
-"up to a configured output limit. It usually follows `Geometry Filter`: "
-"the first card removes clear geometric anomalies, and FPS then reduces "
-"similar structures to control the number sent to DFT."
+"从候选池中选择描述符空间里的代表结构，输出数量不超过设定上限。它通常接在 `几何健全性过滤` 后面：前者删除明确的几何异常，FPS "
+"再减少相似结构，控制进入 DFT 或训练的数据量。"
+msgstr "Select structures that represent the candidate pool in descriptor space, up to a configured output limit. It usually follows `Geometry Sanity Filter`: the first card removes clear geometric anomalies, and FPS then reduces similar structures to control the number sent to DFT."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:11
-#: f8436a9b96664dfe990dc90309e9991a
+#: ec50ed7004aa4ac8870928d0cc12ba52
 msgid "“代表性”取决于所选 NEP 模型。模型改变后，描述符距离和入选结构也可能改变。"
 msgstr ""
 "What counts as representative depends on the selected NEP model. Changing"
@@ -54,7 +51,7 @@ msgstr ""
 "structures."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:13
-#: ba706c4df11d4043a1210a2d21a7b8ba
+#: fd7b29c983c2484baf5fb0bb1f90ad0c
 msgid ""
 "“结构与局域环境覆盖”适用于普通 NEP 和 spin 模型。卡片先保护元素集合与晶相代表，再根据结构和真实原子环境的覆盖缺口分配预算。只有 "
 "spin 模型才加入磁序和磁性特征；普通模型不需要磁矩数据。"
@@ -66,19 +63,19 @@ msgstr ""
 "magnetic features; ordinary models require no magnetic moments."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:15
-#: 6126378a20634ddab3ee245fb706ed01
+#: 54b78f52e23b4551bf8ed95b3f0a419f
 msgid "原理与公式"
 msgstr "Principles and Equations"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:17
-#: 51636b13765a45a699dc0346f9f4a4dc
+#: 120fa83e09374075a47b541c0c0b47c1
 msgid "全局和元素集合策略先把一个结构中 $N_i$ 个原子的 NEP 描述符取平均："
 msgstr ""
 "The global and element-set strategies first average the NEP descriptors "
 "of the $N_i$ atoms in a structure:"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:19
-#: 4455f3375c154affbfbc10b9701b8f82
+#: fc68e59496c5468faeb41b8ead64fcc6
 msgid ""
 "\n"
 "\\mathbf d_i=\\frac{1}{N_i}\\sum_{a=1}^{N_i}\\mathbf "
@@ -89,14 +86,14 @@ msgstr ""
 "d_{ia}^{\\mathrm{NEP}}.\n"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:23
-#: 3c425171f9b848588d97d631b487fe45
+#: b50a20a8ff0340b19f23d622bf3eac07
 msgid "FPS 每一步选择离当前已覆盖集合最远的候选："
 msgstr ""
 "At each step, FPS selects the candidate farthest from the currently "
 "covered set:"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:25
-#: adfe7ff712d3479eb4e94e6ff9b0b6f1
+#: ec738b0d399b498c8e574f8e40e6eff8
 msgid ""
 "\n"
 "i_t=\\arg\\max_j\\min_{i\\in S_{t-1}}\\lVert\\mathbf d_j-\\mathbf "
@@ -107,7 +104,7 @@ msgstr ""
 "d_i\\rVert_2.\n"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:29
-#: 911de94865834eeaabebdae00b3bac12
+#: 306858625c3d4cbb8049a5876c806b27
 msgid ""
 "此策略与主界面的固定数量采样共用后端和选择序列，同时检查结构平均描述符、周期性与密度、元素比例，以及真实逐原子描述符；spin "
 "模型另加磁性特征。结构特征块之间取最大距离，原子只匹配相同中心元素；选中一帧就加入其全部原子环境。因此一个特征的高覆盖不能抵消另一项的缺口，也不会仅凭相同结构均值认定原子环境相同。"
@@ -122,35 +119,35 @@ msgstr ""
 "structure means do not imply identical atomic environments."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:31
-#: 1bcf4a2b02ba4bffbd0fd06139efe939
+#: 78d73a55a5d042f4880d0cb767f49f3c
 msgid ""
 "采样不依赖 DFT 标签，也不使用 `Config_type` 或目录名分配名额。除模型描述符外，还按元素保留近邻距离分布；spin "
 "模型另保留磁矩大小、相对排列和相对键方向。输入中识别出的路径、联合网格和有限状态会转成范围、连续性和联合单元见证，每个已观察的物理分层也是一个见证；先用最少的帧满足见证，不锁定具体帧，剩余名额再按覆盖缺口补足。名额不随帧密度或重复帧变化。没有自旋的普通模型使用相同流程中的几何输入。"
 msgstr ""
-"Sampling does not depend on DFT labels and does not use `Config_type` or"
-" directory names to allocate the budget. Besides model descriptors, it "
-"keeps per-element neighbor-distance distributions; spin models also keep"
-" moment magnitudes, relative alignment, and orientation relative to "
-"bonds. Paths, joint grids, and finite state sets recognized in the "
-"inputs become range, continuity, and joint-cell witnesses, and every "
-"observed physical stratum is a witness as well. The fewest frames that "
-"satisfy the witnesses are selected first without pinning specific "
-"frames, and the remaining budget fills coverage gaps. Frame density and "
-"duplicate frames do not buy budget. Ordinary models without spin use the"
-" geometric inputs of the same procedure."
+"Sampling does not depend on DFT labels and does not use `Config_type` or "
+"directory names to allocate the budget. Besides model descriptors, it "
+"keeps per-element neighbor-distance distributions; spin models also keep "
+"moment magnitudes, relative alignment, and orientation relative to bonds."
+" Paths, joint grids, and finite state sets recognized in the inputs "
+"become range, continuity, and joint-cell witnesses, and every observed "
+"physical stratum is a witness as well. The fewest frames that satisfy the"
+" witnesses are selected first without pinning specific frames, and the "
+"remaining budget fills coverage gaps. Frame density and duplicate frames "
+"do not buy budget. Ordinary models without spin use the geometric inputs "
+"of the same procedure."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:33
-#: 66544dc2a01e46f5ab8f5a565d38ac0a
+#: a21e2a773a9e4ffe9717a670c6a4f399
 msgid "见证仍受总预算限制。达到上限时检查未覆盖数量；不能把输入覆盖当作未知能量或力的精度保证。验证抽样效果时，固定样本数和训练设置，并在同一份独立验证集上检查关键状态区间。"
 msgstr ""
 "Witnesses remain subject to the total budget. When the cap is reached, "
-"check the uncovered count; input coverage is not a guarantee of accuracy"
-" for unknown energies or forces. To validate a sampling, fix the sample "
+"check the uncovered count; input coverage is not a guarantee of accuracy "
+"for unknown energies or forces. To validate a sampling, fix the sample "
 "count and training settings and check key state ranges on the same "
 "independent validation set."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:35
-#: 259a7f8c89894ea1bec2ab42a1738e28
+#: b82e24563dd24a4fb3969a1d58848277
 msgid ""
 "尺度在完整可比较池上固定，去掉完全重复行的频数影响。描述符使用整块均方根尺度，保留原始距离比例；辅助结构特征才按各维单位缩放。晶相和可选磁序用于保护代表，不单独分配固定配额。手动模式在细尺度恢复精确原子距离，不会被自动覆盖分辨率提前截断。详情见[主界面采样说明"
 "](../../nep-main-tool-sparse-samples.md)。"
@@ -165,7 +162,7 @@ msgstr ""
 "](../../nep-main-tool-sparse-samples.md)."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:37
-#: a74e8ded169c4920a2ecbd754cd34755
+#: e406856cf99b44a1a398f53677c35fc4
 msgid ""
 "若选择“基于已有训练集补选”，已有训练集的同定义特征会成为初始覆盖集合 $S_0$。FPS "
 "在此基础上挑选离已有覆盖最远的新候选；已有训练集本身不进入本次输出。距离阈值大于 0 "
@@ -180,17 +177,17 @@ msgstr ""
 " than the limit."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:39
-#: 6d86307b4a1c41dc964aca747ed7c117
+#: 52cb3b1118414242a8a1a031cd148c7f
 msgid "操作示例"
 msgstr "Example"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:41
-#: 119c727634a146b5b7d94c9d8b08ee04
+#: 8640b094d26e429bae05c7d4abe08cf4
 msgid "场景：普通 NEP 的缺陷构型覆盖不足"
 msgstr "Scenario: insufficient defect coverage for an ordinary NEP model"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:43
-#: 2f90dfc10fb845c193ab4c940e8b2507
+#: 0b80b962d0ad46c7a49b597830bdb30e
 msgid "模型在完整晶体上的力误差较小，在含空位或较大应变的独立验证集上误差较大。候选池中大量相似的完整晶体可能掩盖数量较少的局域环境。"
 msgstr ""
 "Force errors are small for pristine crystals but larger on independent "
@@ -198,21 +195,21 @@ msgstr ""
 "candidates can obscure less common local environments."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:45
-#: bdcd11aee7a64517b9d0a8a88adc2e30
+#: 598f33fead73470ca35490f9e8e919c2
 msgid "**输入：** 混有完整晶体、应变和空位构型的普通 NEP 数据，不要求 spin 字段"
 msgstr ""
 "**Input:** Ordinary NEP data mixing pristine, strained, and vacancy "
 "structures; no spin field is required"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:46
-#: dfaba6d792f044e5b60333c3c0333855
+#: 4407ce6ed8754df2937ecd732ee7e246
 msgid "**目标：** 压缩重复帧，同时保留晶相代表和不同原子环境"
 msgstr ""
 "**Goal:** Reduce duplicate frames while retaining phase representatives "
 "and distinct atomic environments"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:47
-#: f434c7df4c514e4e9dcad95da6d2333f
+#: 778a1066dfc346759f4c8c063cb50535
 msgid "**参数设置：** 使用适合该化学体系的 `nep.txt`，选择“结构与局域环境覆盖”，设置最大输出和距离阈值"
 msgstr ""
 "**Settings:** Use a `nep.txt` suitable for the chemistry, choose "
@@ -220,14 +217,14 @@ msgstr ""
 "distance cutoff"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:48
-#: f3acbd88608e4b20b0eae0e3a5040185
+#: c5b2e7f79afa4b13b7427f20abce00b4
 msgid "**输出：** 所有已选结构的原子共同提供环境覆盖，其余预算持续补足最大缺口"
 msgstr ""
 "**Output:** Atoms from all selected structures jointly cover "
 "environments; remaining slots fill the largest gaps"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:49
-#: 7387fdb0fff147e797aa6e4e4cb3f22d
+#: de4d3f318ac74e54868f633c71441b94
 msgid ""
 "**验证：** 检查报告中的未覆盖数量、结构与局域距离的 P95/最大值；重训后分别比较完整晶体、应变和空位验证集的能量与力误差，不能只看总体 "
 "RMSE 或散点是否均匀"
@@ -238,17 +235,17 @@ msgstr ""
 " relying solely on overall RMSE or scatter uniformity"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:51
-#: 74fe518f453c46689db44fc8dc931254
+#: 1d94d1b4b2384e55a096787c514a7057
 msgid "参数说明"
 msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:53
-#: 4bac482cd3fa48028f65f6420398b7d0
+#: ef321cd11d414914a199053af6851a52
 msgid "描述符 NEP 模型（nep_path）"
 msgstr "nep_path"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:55
-#: 8b385f9e4ef745589794e42f014b191d
+#: c2170837318d4dd7be1128265536d9fe
 msgid "`str`，默认使用内置 `nep89.txt`。描述符距离由该模型决定；模型文件存在不等于一定覆盖候选元素，正式采样前应确认模型的化学体系。"
 msgstr ""
 "`str`, defaulting to the bundled `nep89.txt`. This model defines "
@@ -257,12 +254,12 @@ msgstr ""
 "production sampling."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:57
-#: ef12185a9c3c4bcba55b6a36111f95d1
+#: f0a042cff34d46c4bbf3cdbe7e7505a1
 msgid "最大输出（n_samples）"
 msgstr "Maximum Output (n_samples)"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:59
-#: ee6830f7e8ad4b7c86f3bd60ef832214
+#: a2c16050fee64cffa32f7f54b9faeb0c
 msgid "`int`，默认 `100`。本次最多保留的候选结构数。输入更少或距离阈值提前停止时，实际输出更少。"
 msgstr ""
 "`int`, default `100`. Maximum number of candidate structures retained in "
@@ -270,12 +267,12 @@ msgstr ""
 "structures or the distance cutoff stops selection early."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:61
-#: ef84a435593e44668d76193a50b97185
+#: 9ecf7df26dcb4a428ca7af04b5bbd8a7
 msgid "距离阈值（min_distance）"
 msgstr "Distance Cutoff (min_distance)"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:63
-#: 65773133bc7b4577bac60b0e9eca75b6
+#: 50a3757ad633475e87905dc43f1547bf
 msgid ""
 "`float`，默认 `0`。无物理单位，尺度依赖 NEP 模型。`0` 表示不启用距离阈值；物理模式仍会在所有不同几何候选耗尽时停止；大于 "
 "`0` 时用于提前停止近重复选择。"
@@ -286,59 +283,59 @@ msgstr ""
 "duplicate selection early."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:65
-#: 95c047ce929b41d7a2eb50d6f7a16df5
+#: b14a3dccc1f544c7b76609ded10255d5
 msgid "采样计划（strategy）"
 msgstr "Sampling Plan (strategy)"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:67
-#: cde64e0e0388453cb6f205e8a82252db
+#: d43a9041eee44dd589abdc9348a8ab7c
 msgid "`str`，默认 `\"global\"`："
 msgstr "`str`, default `\"global\"`:"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: 17b89e6c3cd34cd1ab5fe4c6b2176a23
+#: 682a7af78f644c9a86e665fc491244eb
 msgid "值"
 msgstr "Value"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: 06891280eb574b79bbd2d55f76d31d5b
+#: d1777efee04243a7a6ca1bb0f7ecac96
 msgid "界面名称"
 msgstr "Interface label"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: e73ec61fe6bb4a2d9e5cacd9faf375eb
+#: 58931d8e5a7a467e95876f424e2a5164
 msgid "行为"
 msgstr "Behavior"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: b0020bef08e2415bb4377cb3f8271c9f
+#: 3756b98b3e26432d9591bf3cbca5a07b
 msgid "`global`"
 msgstr "`global`"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: aefa71471db346a28f832e8e174ef1ab
+#: 9e536d61d1ee4fae81cada26ffb18a4b
 msgid "全局预算"
 msgstr "Global budget"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: 6d07ece84aa14f99b190dec26fba6531
+#: 617415b603714f778b160c81581184be
 msgid "全部候选共享一个预算；没有已有训练集时从输入第 1 帧开始"
 msgstr ""
 "All candidates share one budget; without an existing training set, "
 "selection starts from the first input frame"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: 804624de09c34d7ea75810eddd2dadc0
+#: 7cd4cca25af54857be3476a9db570a3a
 msgid "`element_set`"
 msgstr "`element_set`"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: 9e1d4481214547eb8806cf214d6df59d
+#: 37de998e01a24d569ecdd4b1cf7e7bb6
 msgid "按元素集合均衡"
 msgstr "Balance by element set"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: 166730ed7f724f10b892c1a28cdfd500
+#: 7e5c6d757e14444caa99d3ca3c796aa4
 msgid "每组先计划一个名额，其余按组大小平方根分配；组内从描述符中心开始"
 msgstr ""
 "Plan one slot for each group first, then allocate the remainder in "
@@ -346,17 +343,17 @@ msgstr ""
 "from the descriptor center"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: 589d2ea6ca4f4d3fa9867c102ce8f17b
+#: 7289e2348e9e42c783dc98716a4b17c0
 msgid "`physics`"
 msgstr "`physics`"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: b8ca4a4c40cb4ccaa7fec2ac690b110d
+#: ff708bb7a7a944648a1d780dcc1a0a08
 msgid "结构与局域环境覆盖"
 msgstr "Structure and local-environment coverage"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md
-#: ffc98a0156564cd0894451b843774591
+#: f1da523590ba4faa8558c4bbaab248dc
 msgid "先按元素集合和晶相分层；检测到 spin 模型后继续按磁序分层，保护类别代表后共享几何覆盖和总预算"
 msgstr ""
 "Classify element sets and phases, adding magnetic order for spin models; "
@@ -364,10 +361,11 @@ msgstr ""
 "total budget"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:75
-#: ab4013fc43c94d249cf5337915112141
+#: a2511cb0fa7146e4ad3e18932ef25d2b
+#
 msgid ""
-"`physics` 会使用与 Training Set Audit 相同的保守晶相和磁序识别；混合或无法确认的结构进入单独的 "
-"`mixed/unresolved` 分层，不会被强行猜成 BCC 或 "
+"`physics` 会使用与训练集评估相同的保守晶相和磁序识别；混合或无法确认的结构进入单独的 `mixed/unresolved` "
+"分层，不会被强行猜成 BCC 或 "
 "FCC。最大输出若小于尚无已有训练集代表的物理类别数，卡片会明确报错，因为此时无法兑现“每个已观察分层至少保留一帧”。类别代表先受保护，其余预算按几何缺口分配。达到上限不代表覆盖完成；运行结果会报告停止原因、未覆盖结构数和归一化分辨率。"
 msgstr ""
 "`physics` uses the conservative phase and magnetic classification from "
@@ -381,12 +379,12 @@ msgstr ""
 "reason, uncovered structure count and normalized resolution."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:77
-#: a00265dae030451fbd5037b75b888554
+#: 7f2df1774b7f4adb82bf157c817075e1
 msgid "已有训练集（existing_dataset_path）"
 msgstr "Existing Training Set (existing_dataset_path)"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:79
-#: fd9c14cb7de64702a910ecda57c77236
+#: 45bc5a8f86bc40819a91db0ca6722faf
 msgid ""
 "`str`，默认空。选择一个 `.xyz` 或 `.extxyz` "
 "训练集作为补选起点。全局模式从全部已有结构的覆盖范围继续选；元素集合模式只匹配相同元素集合；物理模式在相同元素集合内共享结构覆盖、在相同中心元素间共享原子覆盖，同时保护尚无已有代表的物理类别。输出只包含本轮新选中的候选，不重复包含已有训练集。"
@@ -399,7 +397,7 @@ msgstr ""
 " only newly selected candidates, not the existing training set."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:81
-#: a02193a7b9ab4796afa6e4f5cde7c8d2
+#: d9eba6b3986640f19ccff3734385cfb7
 msgid ""
 "spin 模型要求候选集和已有训练集都提供规范的 `spin:R:3`。`mforce` 或 `force_mag` 是监督标签，不会被当成 "
 "spin 输入替代。"
@@ -409,12 +407,12 @@ msgstr ""
 "and are never substituted for spin input."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:83
-#: 0b533c1b4fa84f9583b333452bf90f2b
+#: 92a6abdf9e1147cdb1bba03ec354a65f
 msgid "计算后端（backend）"
 msgstr "backend"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:85
-#: 0049cae6a5ee44f6a8a8ab2d013cf1a8
+#: 6e317e3b7fa541408a8d6bd1117f9f47
 msgid "`str`，默认 `\"auto\"`。由全局 NEP 计算设置管理，卡片界面不单独暴露；旧 JSON 中的值仍会恢复。"
 msgstr ""
 "`str`, default `\"auto\"`. Managed by the global NEP compute settings and"
@@ -422,12 +420,12 @@ msgstr ""
 "are still restored."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:87
-#: 7cffd7209ed14125a5663fd64c439599
+#: 3334b5295a584636a9a6a118453d52f7
 msgid "单批最大原子数（chunk_max_atoms）"
 msgstr "chunk_max_atoms"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:89
-#: cbd0a658b7c94ccf9bda8547b13bec31
+#: 028ff1aa69bd4c278e32dad1aa259523
 msgid "`int`，默认 `100000`。描述符计算的内存分块参数，由全局设置管理，不改变 FPS 选择规则。"
 msgstr ""
 "`int`, default `100000`. Memory-chunking parameter for descriptor "
@@ -435,19 +433,19 @@ msgstr ""
 "selection rule."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:91
-#: 01b7283e74a947abb07888a12b8ac579
+#: e1b0adc26a6c4b18b3cb110cf98b3428
 msgid "推荐预设"
 msgstr "Recommended preset"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:93
-#: d4cfa313b3914772b1350324cba5d53d
+#: fee6b0477f934f6cace438cc8add8840
 msgid "这组参数适用于普通或磁性 NEP 的代表性采样；按实际模型和候选池规模调整路径与数量："
 msgstr ""
 "These settings support representative sampling for ordinary or spin NEP "
 "models; adjust the path and count for your model and candidate-pool size:"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:95
-#: 772127e56b624ec684b91c0a1b5e65c8
+#: bb32905939684733866efc9f752f58cf
 #, python-brace-format
 msgid ""
 "{\n"
@@ -477,7 +475,7 @@ msgstr ""
 "}\n"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:110
-#: 6b02a916ba1a4552b3f972917721df53
+#: f8b7467148e140538ce410275808271a
 msgid ""
 "已有平衡训练集、只想从新候选池补结构时，保留相同策略并填写 "
 "`existing_dataset_path`。已有代表参与共享几何覆盖，但每个尚无代表的物理类别仍需从候选中保留一帧。"
@@ -488,36 +486,34 @@ msgstr ""
 "receives one candidate."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:112
-#: 01b7283e74a947abb07888a12b8ac579
+#: 3fcf92b9311e45b3b1b440ff4926f8b8
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:114
-#: 5f63eab2f3914841a72fd283c8d54e10
-msgid "生成或扰动卡 → `Geometry Filter` → `FPS Filter`"
-msgstr "Generation or perturbation card → `Geometry Filter` → `FPS Filter`"
+#: f3d993d0ea274a888f25630bc0c3904b
+msgid "生成或扰动卡 → `几何健全性过滤` → `FPS 代表性采样`"
+msgstr "Generation or perturbation card → `Geometry Sanity Filter` → `FPS Sampling`"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:115
-#: a83738135c4343529c6665d1c0afcc7c
-msgid "多分支汇总 → `FPS Filter` → 导出 DFT"
-msgstr "Merge multiple branches → `FPS Filter` → export for DFT"
+#: ad769c2085304cfdbf654b284d33a80a
+#
+msgid "多分支汇总 → `FPS 代表性采样` → 导出 DFT"
+msgstr "Merge multiple branches → `FPS Sampling` → export for DFT"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:116
-#: 7a56f8ee142c41529096211e4ac7b7c7
-msgid ""
-"`Training Set Audit` → 检查成分/晶相/磁序缺口 → `FPS Filter (physics)` → 分别验证 BCC 与"
-" FCC"
-msgstr ""
-"`Training Set Audit` → inspect composition/phase/magnetic-order gaps → "
-"`FPS Filter (physics)` → validate BCC and FCC separately"
+#: b920e8856f184ebb9011a2ed6e8aff05
+#
+msgid "`训练集评估` → 检查成分/晶相/磁序缺口 → `FPS 代表性采样 (physics)` → 分别验证 BCC 与 FCC"
+msgstr "`Training Set Audit` → inspect composition/phase/magnetic-order gaps → `FPS Sampling (physics)` → validate BCC and FCC separately"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:118
-#: 6a1ec7bcbbe14e4f9982c6e25c465b4e
+#: dbd8ca3a40724a818bfd7eb8a82dc161
 msgid "常见问题"
 msgstr "Troubleshooting"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:120
-#: 9e4433755b0549ad9b5f9b961f8a11db
+#: 5e3d9c7396ed46e987c5705c6384afe0
 msgid "**为什么输出少于最大值？** 输入数量不足，或距离阈值让选择提前停止。查看预览中的阈值状态和运行后的实际输出。"
 msgstr ""
 "**Why is the output smaller than the maximum?** The input contains fewer "
@@ -525,7 +521,7 @@ msgstr ""
 "cutoff status in the preview and the actual output after the run."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:122
-#: b3199372b2fe49509764fe8fc4f966b1
+#: ff46bd4c3a73445cb0e2268c86b40ec6
 msgid "**为什么均衡模式某组输出为 0？** 计划名额不是强制输出。已有训练集已提供类别代表，且其他结构共享的几何覆盖足够时，该类别可能不需要新增结构。"
 msgstr ""
 "**Why does a balanced group output zero structures?** Planned quotas are "
@@ -534,7 +530,7 @@ msgstr ""
 " may need no new structures."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:124
-#: e252af8f6d754b63979617ec265b2d47
+#: 916ba7053d1d49feb2ca8c09dac7478a
 msgid ""
 "**为什么 spin 模型在运行前就报缺少 spin？** 物理平衡策略只接受规范的逐原子 `spin:R:3` 作为磁状态。仅有 "
 "`mforce` 或 `force_mag` 不能说明输入磁序；请修复数据字段，而不是切回结构-only 抽样掩盖问题。"
@@ -546,7 +542,7 @@ msgstr ""
 " sampling and hiding the problem."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:126
-#: 461bb0dc6bf74363a91907fbbdd979be
+#: 3f5ad586d38e4cc49d7d63bcdc6b317e
 msgid ""
 "**为什么明明写着 BCC/FCC，结果里还有 unresolved？** 晶相判断依据当前坐标而不是 `Config_type` "
 "名称。热扰动、强应变或混相结构可能没有足够证据确认单一晶相；它们会被保守地单独保留。"
@@ -558,7 +554,7 @@ msgstr ""
 "are conservatively retained separately."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:128
-#: 3ca56895978e4febaa4c5f972eb7c834
+#: b2d6e64614c84419b9720ef63594aabb
 msgid "**为什么换模型后结果不同？** FPS 距离定义在模型产生的描述符空间中。不同模型对结构差异的表达不同。"
 msgstr ""
 "**Why does changing the model change the result?** FPS distance is "
@@ -566,12 +562,12 @@ msgstr ""
 "represent structural differences differently."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:130
-#: cead5fc7d4fc4344bdf6ebc0d5c7be91
+#: 58283776144a4b10924bbef60523d62f
 msgid "输出标签"
 msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:132
-#: 104448cd506e49778973115a7fc4fc4c
+#: fdcb51f00ee54b23bd9d64db00c3dc73
 msgid "输出保留原有 `Config_type`。全局模式按 FPS 选择顺序输出；元素集合和物理平衡模式保持入选帧在输入中的相对顺序。"
 msgstr ""
 "The output preserves the original `Config_type`. Global mode outputs "
@@ -579,12 +575,12 @@ msgstr ""
 " preserve the selected frames' relative order in the input."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:134
-#: 41212fac47cd424bbe66a95267edd4bd
+#: 149787c2bc07482eb83406be5e785f38
 msgid "可复现性"
 msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:136
-#: 3bafa1fb95244f2b881cd83218257c1d
+#: ee5b8028f4b34f96b66b7f267f8c5fb3
 msgid "本卡没有随机性。同一输入、模型和参数会得到相同结果；改变输入顺序可能改变全局模式的起点和选择顺序。"
 msgstr ""
 "This card has no randomness. The same input, model, and parameters "
@@ -592,12 +588,12 @@ msgstr ""
 "point and selection order in global mode."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:138
-#: 36800775e7e0429d8edba8ae7146f84f
+#: e953cc4c022741d0b68bebc1f849b4be
 msgid "算法迁移"
 msgstr "Algorithm migration"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:140
-#: 2e9428e41e5d4b738649d7136cb91c89
+#: ea389e5489f240cdbd1ca10325fdf1b4
 msgid ""
 "已有 JSON 参数无需修改。`global/element_set` 保持原规则；`physics` "
 "改为共享多视角覆盖，固定数量且无已有训练集、距离阈值为 0 "
@@ -605,10 +601,10 @@ msgid ""
 msgstr ""
 "Existing JSON parameters need no changes. `global/element_set` retain "
 "their rules; `physics` now uses shared multi-view coverage, and a fixed "
-"count without an existing training set and with a zero distance "
-"threshold satisfies region witnesses first, so previously saved "
-"workflows may select different structures. Recheck nonzero physics-mode "
-"distance thresholds because the normalized metric has changed."
+"count without an existing training set and with a zero distance threshold"
+" satisfies region witnesses first, so previously saved workflows may "
+"select different structures. Recheck nonzero physics-mode distance "
+"thresholds because the normalized metric has changed."
 
 #~ msgid "FPS 过滤（FPS Filter）"
 #~ msgstr "FPS Filter"

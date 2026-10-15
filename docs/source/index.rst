@@ -29,7 +29,7 @@ NepTrainKit 用于准备、检查和可视化 NEP 训练数据。它负责生成
       :link: workflows/clean-candidate-structures
       :link-type: doc
 
-      在 ``NEP Dataset Display`` 中检查异常，再做代表性采样并送去 DFT。
+      在 ``NEP 数据集查看`` 中检查异常，再做代表性采样并送去 DFT。
 
    .. grid-item-card:: 我想复盘训练结果
       :link: workflows/review-training-results
@@ -61,19 +61,19 @@ NepTrainKit 用于准备、检查和可视化 NEP 训练数据。它负责生成
    * - 软件页面
      - 什么时候查
      - 直接进入
-   * - ``NEP Dataset Display``
+   * - ``NEP 数据集查看``
      - 不会打开数据、看图、筛结构、改数据或导出
      - :doc:`module/NEP-dataset-display`
-   * - ``Training Set Audit``
+   * - ``训练集评估``
      - 不清楚训练数据覆盖、质量、结构相或磁类型
      - :doc:`module/training-set-assessment`
-   * - ``生成数据集``
+   * - ``构建数据集``
      - 不知道选哪张卡、参数怎么填或卡片如何串联
      - :doc:`module/make-dataset`
-   * - ``Data Management``
+   * - ``数据管理``
      - 不清楚项目、模型版本和结果路径如何管理
      - :doc:`module/data-management`
-   * - ``Settings``
+   * - ``设置``
      - 需要调整 NEP 后端、绘图、结构显示或更新行为
      - :doc:`module/settings`
 
@@ -84,12 +84,12 @@ NepTrainKit 在训练流程中的位置是：
 
 .. code-block:: text
 
-   生成数据集 生成候选结构
-   → NEP Dataset Display 检查并清洗异常结构
-   → FPS Filter 或其他方法选择代表结构
+   构建数据集：生成候选结构
+   → NEP 数据集查看：检查并清洗异常结构
+   → FPS 代表性采样或其他方法选择代表结构
    → DFT 标注能量、力、应力
    → GPUMD 训练 NEP
-   → NEP Dataset Display 回看误差并开始下一轮
+   → NEP 数据集查看：回看误差并开始下一轮
 
 如果你是在完成一整段工作，而不是查询单个按钮，进入 :doc:`workflows/index`。
 如果你已经知道具体目标，例如能量平移、最大误差筛选或 DFT-D3 修正，进入
@@ -98,23 +98,8 @@ NepTrainKit 在训练流程中的位置是：
 安装与引用
 ----------
 
-安装、运行时后端检查和第一次操作见 :doc:`quickstart`。
-
-如果你的研究使用了 NepTrainKit，请引用：
-
-.. code-block:: bibtex
-
-   @article{CHEN2025109859,
-   title = {NepTrain and NepTrainKit: Automated active learning and visualization toolkit for neuroevolution potentials},
-   journal = {Computer Physics Communications},
-   volume = {317},
-   pages = {109859},
-   year = {2025},
-   issn = {0010-4655},
-   doi = {https://doi.org/10.1016/j.cpc.2025.109859},
-   url = {https://www.sciencedirect.com/science/article/pii/S0010465525003613},
-   author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong Fan and Gang Tang and Zhiyong Wang},
-   }
+安装、运行时后端检查和第一次操作见 :doc:`quickstart`。如果你的研究使用了 NepTrainKit，
+请按 :doc:`reference/citation` 中的格式引用。
 
 .. toctree::
    :maxdepth: 1
@@ -136,18 +121,18 @@ NepTrainKit 在训练流程中的位置是：
    :hidden:
 
    功能总览 <module/index>
-   数据集查看（NEP Dataset Display） <module/NEP-dataset-display>
+   NEP 数据集查看（NEP Dataset Display） <module/NEP-dataset-display>
    训练集评估（Training Set Audit） <module/training-set-assessment>
-   生成数据集 <module/make-dataset>
+   构建数据集（Make Dataset） <module/make-dataset>
    数据管理（Data Management） <module/data-management>
    设置（Settings） <module/settings>
 
 .. toctree::
    :maxdepth: 3
-   :caption: 操作指南
+   :caption: 单步操作示例
    :hidden:
 
-   按具体任务操作 <example/index>
+   示例总览 <example/index>
 
 .. toctree::
    :maxdepth: 2
@@ -156,6 +141,7 @@ NepTrainKit 在训练流程中的位置是：
 
    参考资料总览 <reference/index>
    支持格式 <formats>
+   引用 NepTrainKit <reference/citation>
 
 .. toctree::
    :maxdepth: 2

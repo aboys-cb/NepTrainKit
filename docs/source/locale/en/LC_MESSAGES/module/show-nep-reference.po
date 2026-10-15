@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 22:46+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,49 +19,50 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/show-nep-reference.md:3 67146b92c8e24840b9ea85038a659aae
-msgid "NEP Dataset Display 详细参考"
+#: ../../source/module/show-nep-reference.md:3 a33620ce83734e71b48a58eda41bf3c5
+msgid "NEP 数据集查看详细参考"
 msgstr "NEP Dataset Display Reference"
 
-#: ../../source/module/show-nep-reference.md:5 c8ef2d6ad7434344860e7db3ef18877b
-msgid "详细说明已经并入 [NEP Dataset Display 功能指南](NEP-dataset-display.md)，并按软件页面顺序拆分："
+#: ../../source/module/show-nep-reference.md:5 5b99110ec96047e59d016cc2effc1ef0
+#
+msgid "详细说明已经并入 [NEP 数据集查看功能指南](NEP-dataset-display.md)，并按软件页面顺序拆分："
 msgstr ""
 "The detailed reference has been merged into the [NEP Dataset Display "
 "Feature Guide](NEP-dataset-display.md) and split in the order of the "
 "application pages:"
 
-#: ../../source/module/show-nep-reference.md:7 a6fda426cbcb42868889deeb59cb0720
+#: ../../source/module/show-nep-reference.md:7 7880af9de6f14ac3813b61571402f125
 msgid "[页面总览、打开数据与切换模型](nep-display-open-data.md)"
 msgstr ""
 "[Page overview, opening data, and switching models](nep-display-open-"
 "data.md)"
 
-#: ../../source/module/show-nep-reference.md:8 2f5b2d94cae04ec9888811def39ef144
+#: ../../source/module/show-nep-reference.md:8 d12ab5a4a9364d27bad0f370f2cc8b58
 msgid "[主图区：看图、选择与处理数据](nep-display-main-plot-tools.md)"
 msgstr ""
 "[Main plot: inspect, select, and process data](nep-display-main-plot-"
 "tools.md)"
 
-#: ../../source/module/show-nep-reference.md:9 3fdfa27fbcd4425cb73c0092bcbe63a6
+#: ../../source/module/show-nep-reference.md:9 a5fea4b0e0b64699a10fd40af1edab58
 msgid "[结构区：查看、标记与导出结构](nep-display-structure-tools.md)"
 msgstr ""
 "[Structure view: inspect, mark, and export structures](nep-display-"
 "structure-tools.md)"
 
 #: ../../source/module/show-nep-reference.md:10
-#: a3783980ca264dbdbfff9ee4b1dafe3d
+#: cfd1b52dbb974dacaed4384869bca7e1
 msgid "[筛选栏：按标签、元素和表达式找结构](nep-display-filter.md)"
 msgstr ""
 "[Filter bar: find structures by labels, elements, and expressions](nep-"
 "display-filter.md)"
 
 #: ../../source/module/show-nep-reference.md:11
-#: 72cabfc757f44a74b2c68afb66ff6d0d
+#: 2fde07f25f4645f599a2a4bf91708526
 msgid "[状态栏与常见提示](nep-display-status-and-errors.md)"
 msgstr "[Status bar and common messages](nep-display-status-and-errors.md)"
 
 #: ../../source/module/show-nep-reference.md:13
-#: 91f28b7090e44e2abdeb0dcef09226aa
+#: c1808eeebfc74a5b863185a91d4bdd78
 msgid "这份入口仅用于兼容旧链接。新文档不再把功能说明放到单独的“参考资料”目录。"
 msgstr ""
 "This entry is kept only for compatibility with old links. New "

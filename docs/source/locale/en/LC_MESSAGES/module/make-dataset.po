@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 17:12+0800\n"
+"POT-Creation-Date: 2026-10-15 16:29+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,28 +19,28 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/make-dataset.md:1 deafc05f84b146d190e2acee02164e2d
-msgid "生成数据集"
+#: ../../source/module/make-dataset.md:1 a440f5c9e02d46028c864cd962f738f1
+msgid "构建数据集（Make Dataset）"
 msgstr "Make Dataset"
 
-#: ../../source/module/make-dataset.md:3 58b0f97c527b4fb2abddc9df0569d8eb
-msgid "`生成数据集` 是候选训练结构的生产台。它把“扩胞、应变、扰动、缺陷、表面、掺杂、磁性设置” 这些操作拆成卡片，让你把一批可信初始结构扩展成候选池。"
+#: ../../source/module/make-dataset.md:3 03ebefcacef345838eb4ad4c045890fd
+msgid "`构建数据集` 是候选训练结构的生产台。它把“扩胞、应变、扰动、缺陷、表面、掺杂、磁性设置” 这些操作拆成卡片，让你把一批可信初始结构扩展成候选池。"
 msgstr ""
-"`Make Dataset` is the workbench for producing candidate training structures. It turns"
-" operations such as supercells, strain, perturbation, defects, surfaces, doping, and "
-"magnetic settings into cards, so that a set of trusted initial structures can be "
-"expanded into a candidate pool."
+"`Make Dataset` is the workbench for producing candidate training "
+"structures. It turns operations such as supercells, strain, perturbation,"
+" defects, surfaces, doping, and magnetic settings into cards, so that a "
+"set of trusted initial structures can be expanded into a candidate pool."
 
-#: ../../source/module/make-dataset.md:24 8c113388eb3249f1880eede3908188cc
+#: ../../source/module/make-dataset.md:24 da26bd7a61844346844926c73bf02041
 msgid "它的输出通常还不是最终训练集。更稳的路线是："
 msgstr "Its output is normally not a finished training set. A safer workflow is:"
 
-#: ../../source/module/make-dataset.md:26 d0aa59d22e9c407aae89613b4563fe76
+#: ../../source/module/make-dataset.md:26 d8ab8861a7b146a08b91d438e53700a4
 msgid ""
 "导入初始结构\n"
 "-> 用卡片生成候选结构\n"
 "-> 导出候选池\n"
-"-> 在 NEP Dataset Display 里清洗异常结构\n"
+"-> 在 NEP 数据集查看里清洗异常结构\n"
 "-> 采样后送去 DFT\n"
 msgstr ""
 "Import starting structures\n"
@@ -49,98 +49,99 @@ msgstr ""
 "-> Remove anomalous structures in NEP Dataset Display\n"
 "-> Sample representative structures and send them to DFT\n"
 
-#: ../../source/module/make-dataset.md:34 6266c350edb54cf7812fd68dd567defa
-msgid "生成数据集 workspace"
+#: ../../source/module/make-dataset.md:34 cba7d8f766054b838c7c6534535964a7
+msgid "构建数据集工作区"
 msgstr "Make Dataset workspace"
 
-#: ../../source/module/make-dataset.md:34 6266c350edb54cf7812fd68dd567defa
+#: ../../source/module/make-dataset.md:34 cba7d8f766054b838c7c6534535964a7
 msgid ".. image:: ../_static/image/generated/make_data_empty.png"
 msgstr ".. image:: ../_static/image/generated/make_data_empty.png"
 
-#: ../../source/module/make-dataset.md:39 510b7fc1f32842de9468ababd510fd9d
+#: ../../source/module/make-dataset.md:39 6159010f2fd9471a9e055a2b5ebb35dd
 msgid "基本操作顺序"
 msgstr "Basic workflow"
 
-#: ../../source/module/make-dataset.md:41 965fee270126463b8c86e9ad944a98e6
-msgid "用顶部 `Open` 导入初始结构。"
+#: ../../source/module/make-dataset.md:41 df0b1ddebc7641e1a0b9659e4a2561b4
+msgid "用顶部 `打开` 导入初始结构。"
 msgstr "Use `Open` in the top toolbar to import the starting structures."
 
-#: ../../source/module/make-dataset.md:42 aed51ccea2b14ced9e47e5753f171160
-msgid "点击 `Add new card` 添加生成或筛选卡片。"
+#: ../../source/module/make-dataset.md:42 39bf972525044a458f099720841758ed
+msgid "点击 `添加新卡片` 添加生成或筛选卡片。"
 msgstr "Click `Add new card` and choose a generation or filtering card."
 
-#: ../../source/module/make-dataset.md:43 4a28cf4e8e1f4a4c83765cf4e7e63e25
+#: ../../source/module/make-dataset.md:43 07840fe3a54541ff80263a413dc2d1b5
 msgid "展开卡片，只设置与当前物理目标直接相关的参数。"
 msgstr ""
-"Expand the card and set only the parameters required by the current physical "
-"objective."
+"Expand the card and set only the parameters required by the current "
+"physical objective."
 
-#: ../../source/module/make-dataset.md:44 3b7a90f4201b42ed8ce0d212544f21a7
+#: ../../source/module/make-dataset.md:44 52e98ec4f9a84e1a9df2226815c576be
 msgid "勾选要运行的卡片。"
 msgstr "Enable the cards that should run."
 
-#: ../../source/module/make-dataset.md:45 d951a71457e44897bfb3c0c36868a364
-msgid "点击 `Run`。"
+#: ../../source/module/make-dataset.md:45 5280442221a04be18bbbc1b982a99dfa
+msgid "点击 `运行`。"
 msgstr "Click `Run`."
 
-#: ../../source/module/make-dataset.md:46 09339781a4354f2599bf3207c85d7dba
+#: ../../source/module/make-dataset.md:46 4f86b1b6295d42bc8f8f1e74032067ba
 msgid "在卡片上检查输出数量并导出结果。"
 msgstr "Check the output count on each card, then export the result."
 
-#: ../../source/module/make-dataset.md:48 c92f4b12031b45279c8f5661f5bdcda6
+#: ../../source/module/make-dataset.md:48 d2498318e2904191bef87cec9eea5837
 msgid "不要跳过第一步。多数卡片需要已有结构作为输入；如果你想从晶体原型从零生成结构， 应该使用对应的生成型卡片，并单独检查输出是否符合材料体系。"
 msgstr ""
-"Do not skip the import step. Most cards require existing structures as input. To "
-"generate from a crystal prototype without input structures, use the appropriate "
-"generator card and independently verify that its outputs belong to the intended "
-"material system."
+"Do not skip the import step. Most cards require existing structures as "
+"input. To generate from a crystal prototype without input structures, use"
+" the appropriate generator card and independently verify that its outputs"
+" belong to the intended material system."
 
-#: ../../source/module/make-dataset.md:51 880a8b7daa0c4f23b99f6306d30d99a9
+#: ../../source/module/make-dataset.md:51 b39acf443a194f22b7e9a7737aacf6d2
 msgid "卡片怎么串"
 msgstr "Connect cards into a workflow"
 
-#: ../../source/module/make-dataset.md:53 2834dcada5324dbc9fa8e3a10ccc424b
+#: ../../source/module/make-dataset.md:53 9b97d825e41f499882eabcfe4ddcdc11
 msgid "最常见的是线性链："
 msgstr "The most common arrangement is a linear chain:"
 
-#: ../../source/module/make-dataset.md:55 6f3506e17b2c496087d1ea261f75055e
-msgid "Super Cell → Lattice Strain → Atomic Perturb\n"
+#: ../../source/module/make-dataset.md:55 761ef4b709c94395947181c8883c43f3
+msgid "扩胞 → 晶格应变 → 原子扰动\n"
 msgstr "Super Cell → Lattice Strain → Atomic Perturb\n"
 
-#: ../../source/module/make-dataset.md:59 8f50c89a9d4d4006898b347cfc0d62ca
+#: ../../source/module/make-dataset.md:59 e0f2a1c292ed4cb792de06c0154beb98
 msgid "每张卡会处理上一张卡的输出。一般原则是："
 msgstr "Each card processes the output of the preceding card. As a rule:"
 
-#: ../../source/module/make-dataset.md:61 a4f47ae0d0704316ac8166d0031ece1c
+#: ../../source/module/make-dataset.md:61 9f20dc38ac054d7c8b63cd84bacd4494
 msgid "先改晶胞，再改原子坐标。"
 msgstr "Modify the cell before modifying atomic coordinates."
 
-#: ../../source/module/make-dataset.md:62 a1815c184fe74ce2aed133ab6f6f1765
+#: ../../source/module/make-dataset.md:62 3f307ba4c3974ca0be2df425bf21d4c8
 msgid "先做确定性结构变换，再做随机扰动。"
 msgstr "Apply deterministic transformations before random perturbations."
 
-#: ../../source/module/make-dataset.md:63 ce3b4fa1036641ea9486cdfa8a3c2795
+#: ../../source/module/make-dataset.md:63 81c4576be62d45e0933473fb9aea8514
 msgid "先生成候选池，再做清洗和采样。"
 msgstr "Generate the candidate pool before cleaning and sampling it."
 
-#: ../../source/module/make-dataset.md:65 fdc3d7b5f1144c7b97668977f64b72e4
-msgid "如果同一个输入结构要走多条分支，例如一支做表面、一支做空位，可以用 `Branch Merge`（分支合并）。 组内卡片共享同一输入，输出再汇总。"
+#: ../../source/module/make-dataset.md:65 62c275202ef743c3b8b8c3f39d551e73
+msgid "如果同一个输入结构要走多条分支，例如一支做表面、一支做空位，可以用 `分支合并`（分支合并）。 组内卡片共享同一输入，输出再汇总。"
 msgstr ""
-"Use `Branch Merge` when the same input structure should follow several branches, such"
-" as one branch for surfaces and another for vacancies. Cards in the group receive the"
-" same input, and their outputs are merged afterward."
+"Use `Branch Merge` when the same input structure should follow several "
+"branches, such as one branch for surfaces and another for vacancies. "
+"Cards in the group receive the same input, and their outputs are merged "
+"afterward."
 
-#: ../../source/module/make-dataset.md:68 87519ab11c1e4138bb6651afe1a6142d
+#: ../../source/module/make-dataset.md:68 88f25ade13bb466aa3e6b93b445a35b7
 msgid "什么时候导出"
 msgstr "When to export intermediate results"
 
-#: ../../source/module/make-dataset.md:70 b12201a8551b4f56943075eaeaa17ead
+#: ../../source/module/make-dataset.md:70 cb64bfebcc1143119601c6558f8eea0d
 msgid "每张卡运行后都应该先看输出数量。数量符合预期，再导出为中间文件，例如："
 msgstr ""
 "Check the output count after every card runs. If it matches the intended "
 "combinatorics, export an intermediate file such as:"
 
-#: ../../source/module/make-dataset.md:72 17daa6746fba4530bbf3a90de4c771d5
+#: ../../source/module/make-dataset.md:72 51264c251f3f48ffa4c05940ac965f56
 msgid ""
 "candidate_pool.xyz\n"
 "candidate_pool_clean.xyz\n"
@@ -150,132 +151,95 @@ msgstr ""
 "candidate_pool_clean.xyz\n"
 "candidate_pool_fps.xyz\n"
 
-#: ../../source/module/make-dataset.md:78 031160618fdb49dfa13ad89b967b8647
+#: ../../source/module/make-dataset.md:78 40b56fc39c3c4b85ab5cc1070cefef80
 msgid "这样后续发现问题时，可以追溯到底是生成阶段、清洗阶段还是采样阶段引入的。"
 msgstr ""
-"These stage-specific files make it possible to trace a later problem to generation, "
-"cleaning, or sampling."
+"These stage-specific files make it possible to trace a later problem to "
+"generation, cleaning, or sampling."
 
-#: ../../source/module/make-dataset.md:80 be32fa8430804e9ab50a7215df4c24e4
+#: ../../source/module/make-dataset.md:80 cb9ca40139a14435bdbd0250dd199dbb
 msgid "使用工作流库和模板"
 msgstr "Use the workflow library and templates"
 
-#: ../../source/module/make-dataset.md:82 cfe8360c0a8c4e8a96b8b6b36b4d063d
+#: ../../source/module/make-dataset.md:82 af6c4fbb944f4839bee94c76ca3b1294
 msgid "左侧工作流库分为三类："
 msgstr "The workflow library on the left has three sections:"
 
-#: ../../source/module/make-dataset.md:84 d1de7852469b4bb89c409b06793cf9f5
-msgid "`My workflows`：已经命名并保存的工作流。"
-msgstr "`My workflows`: named workflows that you have saved."
+#: ../../source/module/make-dataset.md:84 4a23afa926494e178d2d653518bf1b45
+#
+msgid "`已保存`：已经命名并保存的工作流。"
+msgstr "`Saved`: named workflows that you have saved."
 
-#: ../../source/module/make-dataset.md:85 d891f9fa516f457e8ec7fceef3245e05
-msgid "`Built-in`：随软件提供的起始配方，只读。"
+#: ../../source/module/make-dataset.md:85 fb9ac3ab580f4a1b9e7c5202ed3428ed
+#
+msgid "`内置`：随软件提供的起始配方，只读。"
 msgstr "`Built-in`: read-only starter recipes shipped with the application."
 
-#: ../../source/module/make-dataset.md:86 503ac5fe2bc6467aa74532b31a031087
-msgid "`My templates`：你保存或导入的模板。"
-msgstr "`My templates`: templates that you saved or imported."
+#: ../../source/module/make-dataset.md:86 c37598fa6828496a826780ae49f94a7b
+#
+msgid "`我的模板`：你保存或导入的模板。"
+msgstr "`User`: templates that you saved or imported."
 
-#: ../../source/module/make-dataset.md:88 81e233082da1425ca6aaf9fec5ffb3f1
+#: ../../source/module/make-dataset.md:88 2d627e901b0b45f9ba1ca6be9dff97b5
+#
 msgid ""
 "双击模板只会打开**未修改的预览**，不会立刻算作新建工作流，也不会触发离开前的未保存提示。首次修改参数、卡片或顺序后，状态才变为“基于该模板”的未保存工作流；需要保留时，点击"
-" `Save as workflow` 另存自己的副本。模板始终不会被改写。"
-msgstr ""
-"Double-clicking a template opens an **unmodified preview**. It is not treated as a "
-"new workflow and leaving it does not trigger an unsaved-changes prompt. The first "
-"change to a parameter, card, or card order turns it into an unsaved workflow based on"
-" that template. Click `Save as workflow` to keep your own copy; the template itself "
-"is never overwritten."
+" `另存为工作流` 另存自己的副本。模板始终不会被改写。"
+msgstr "Double-clicking a template opens an **unmodified preview**. It is not treated as a new workflow and leaving it does not trigger an unsaved-changes prompt. The first change to a parameter, card, or card order turns it into an unsaved workflow based on that template. Click `Save as workflow` to keep your own copy; the template itself is never overwritten."
 
-#: ../../source/module/make-dataset.md:90 87caacc0a4de4888960f741d7929c1b1
+#: ../../source/module/make-dataset.md:90 70218fd7f80d4855b0ac6bab25344949
 msgid "当前内置模板只保留“结构扰动”。它从扩胞开始，将晶格应变和晶格随机扰动放入分支合并，再接原子扰动，适合作为结构采样工作流的起点。鼠标停在模板上会显示输入要求。"
 msgstr ""
-"The only built-in template currently provided is `Structure Perturbation`. It starts "
-"with supercell expansion, branches into lattice strain and random lattice "
-"perturbation, merges those results, and then applies atomic perturbation. It is "
-"intended as a starting point for structure-sampling workflows. Hover over the "
-"template to see its input requirements."
+"The only built-in template currently provided is `Structure "
+"Perturbation`. It starts with supercell expansion, branches into lattice "
+"strain and random lattice perturbation, merges those results, and then "
+"applies atomic perturbation. It is intended as a starting point for "
+"structure-sampling workflows. Hover over the template to see its input "
+"requirements."
 
-#: ../../source/module/make-dataset.md:92 2b912cf7a6e34c76ad7ec0d6167f583a
+#: ../../source/module/make-dataset.md:92 a543f981798b4120a26e4078e3f75946
 msgid ""
-"工作流和用户模板以独立 JSON 文件保存在用户配置目录的 `workflows/saved` 和 `workflows/templates` 下；它们不存入 "
-"`config.sqlite`。内置模板则打包在软件中，不写入用户目录。两类 JSON 都只保存卡片顺序、参数和启停状态，不保存输入结构、运行结果或运行状态。"
+"工作流和用户模板以独立 JSON 文件保存在用户配置目录的 `workflows/saved` 和 `workflows/templates` "
+"下；它们不存入 `config.sqlite`。内置模板则打包在软件中，不写入用户目录。两类 JSON "
+"都只保存卡片顺序、参数和启停状态，不保存输入结构、运行结果或运行状态。"
 msgstr ""
 "Workflows and user templates are stored as separate JSON files under "
-"`workflows/saved` and `workflows/templates` in the user configuration directory; they"
-" are not stored in `config.sqlite`. Built-in templates are packaged with the "
-"application and are not written to the user directory. Both JSON forms contain only "
-"card order, parameters, and enabled state, never input structures, run results, or "
-"run state."
+"`workflows/saved` and `workflows/templates` in the user configuration "
+"directory; they are not stored in `config.sqlite`. Built-in templates are"
+" packaged with the application and are not written to the user directory."
+" Both JSON forms contain only card order, parameters, and enabled state, "
+"never input structures, run results, or run state."
 
-#: ../../source/module/make-dataset.md:94 6b6c9fd8fb084d8d8627b9fd7836dcf1
+#: ../../source/module/make-dataset.md:94 48ecfbec335e42159eeca1a84a3e7438
 msgid "保存工作流不等于保存生成结构。结构结果仍需从卡片导出。"
 msgstr ""
-"Saving a workflow does not save generated structures. Export structure results from "
-"their cards."
+"Saving a workflow does not save generated structures. Export structure "
+"results from their cards."
 
-#: ../../source/module/make-dataset.md:96 b2bda6eb44bf4f77b452e791f233fb4e
+#: ../../source/module/make-dataset.md:96 25e484e535234c1f86b5435e281413e0
 msgid "从文档 JSON 直接创建卡片"
 msgstr "Create cards directly from documentation JSON"
 
-#: ../../source/module/make-dataset.md:98 7e9f5d61faef46e484adfb34142d20e6
+#: ../../source/module/make-dataset.md:98 0afd2662172f4047b5a2fce5ddd0bc88
 msgid ""
-"如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `生成数据集` 页面执行 `Load → "
-"Paste Card JSON`。"
+"如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `构建数据集` "
+"页面执行 `Load → Paste Card JSON`。"
 msgstr ""
-"If the documentation provides one card JSON object, an array of cards, or a complete "
-"`card_config.json`, copy the code block and then return to `Make Dataset` and run "
-"`Load → Paste Card JSON`."
+"If the documentation provides one card JSON object, an array of cards, or"
+" a complete `card_config.json`, copy the code block and then return to "
+"`Make Dataset` and run `Load → Paste Card JSON`."
 
-#: ../../source/module/make-dataset.md:100 8dbfa48cccb94ed684d9c26ac27aff40
+#: ../../source/module/make-dataset.md:100 7206222950864883925fabc2e14f7ffe
 msgid ""
-"这个入口不会清空当前工作区，只会把剪贴板里的卡片追加到末尾。需要完整替换工作区时，仍然使用 `Load → Import Card Config` 导入保存好的 JSON"
-" 文件。"
+"这个入口不会清空当前工作区，只会把剪贴板里的卡片追加到末尾。需要完整替换工作区时，仍然使用 `Load → Import Card Config`"
+" 导入保存好的 JSON 文件。"
 msgstr ""
-"This action appends the clipboard cards and does not clear the current workspace. To "
-"replace the entire workspace, use `Load → Import Card Config` and select a saved JSON"
-" file."
-
-#~ msgid "`Make Dataset` 是候选训练结构的生产台。它把“扩胞、应变、扰动、缺陷、表面、掺杂、磁性设置” 这些操作拆成卡片，让你把一批可信初始结构扩展成候选池。"
-#~ msgstr ""
-#~ "`Make Dataset` is the workspace for producing"
-#~ " candidate training structures. It represents "
-#~ "supercells, strain, perturbations, defects, surfaces, "
-#~ "doping, and magnetic initialization as cards "
-#~ "that expand trusted starting structures into a"
-#~ " candidate pool."
+"This action appends the clipboard cards and does not clear the current "
+"workspace. To replace the entire workspace, use `Load → Import Card "
+"Config` and select a saved JSON file."
 
 #~ msgid "补四方相变或 GSFE 路径"
 #~ msgstr "Sample a tetragonal transformation or GSFE path"
-
-#~ msgid "完整选择表见 [Related guide](make-dataset-cards/index.md)。"
-#~ msgstr ""
-#~ "See the [Make Dataset card manual](make-"
-#~ "dataset-cards/index.md) for the complete selection "
-#~ "table."
-
-#~ msgid "[Related guide](make-dataset-cards/index.md)：按目标选卡、易混卡片对比、每张卡的完整参数说明。"
-#~ msgstr ""
-#~ "[Card manual](make-dataset-cards/index.md): choose "
-#~ "cards by objective, compare similar cards, and"
-#~ " read complete parameter references."
-
-#~ msgid "[Related guide](custom-card-development.md)：把已有脚本封装成 Make Dataset 卡片。"
-#~ msgstr ""
-#~ "[Custom card development](custom-card-development.md): "
-#~ "package an existing script as a Make "
-#~ "Dataset card."
-
-#~ msgid ""
-#~ "如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 "
-#~ "`Make Dataset` 页面执行 `Load → Paste Card "
-#~ "JSON`。"
-#~ msgstr ""
-#~ "When the documentation provides one card "
-#~ "object, an array of cards, or a complete"
-#~ " `card_config.json`, copy the code block, return"
-#~ " to `Make Dataset`, and choose `Load → "
-#~ "Paste Card JSON`."
 
 #~ msgid "第一次选哪张卡"
 #~ msgstr "Choose a first card"
@@ -337,63 +301,11 @@ msgstr ""
 #~ msgid "`Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral`"
 #~ msgstr "`Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral`"
 
-#~ msgid "完整选择表见 [生成数据集卡片手册](make-dataset-cards/index.md)。"
-#~ msgstr ""
-#~ "See the complete selection table in the "
-#~ "[Make Dataset card manual](make-dataset-"
-#~ "cards/index.md)."
-
 #~ msgid "FPS Filter 放在哪里"
 #~ msgstr "Where to place FPS Filter"
 
-#~ msgid "`FPS Filter` 适合在候选结构已经基本干净后做代表性采样。它不负责判断结构是否物理合理。"
-#~ msgstr ""
-#~ "Use `FPS Filter` for representative sampling "
-#~ "after the candidate structures are reasonably "
-#~ "clean. It does not determine whether a "
-#~ "structure is physically sensible."
-
-#~ msgid ""
-#~ "如果候选池来自强扰动、随机缺陷、表面切片或随机占位，建议先导出候选结构， 到 `NEP Dataset "
-#~ "Display` 里清洗，再回来或继续使用 `FPS Filter` 采样。"
-#~ msgstr ""
-#~ "When a candidate pool comes from strong "
-#~ "perturbations, random defects, surface cutting, or"
-#~ " random occupation, export and clean it in"
-#~ " `NEP Dataset Display` before applying `FPS "
-#~ "Filter`."
-
-#~ msgid "完整流程见 [候选结构清洗后再进入 DFT](../workflows/clean-candidate-structures.md)。"
-#~ msgstr ""
-#~ "See [Clean candidate structures before "
-#~ "DFT](../workflows/clean-candidate-structures.md) for the"
-#~ " complete workflow."
-
 #~ msgid "文档入口"
 #~ msgstr "Related documentation"
-
-#~ msgid "[快速开始](../quickstart.md)：从安装到生成第一批候选结构。"
-#~ msgstr ""
-#~ "[Quickstart](../quickstart.md): install NepTrainKit and "
-#~ "generate a first candidate set."
-
-#~ msgid "[选择卡片与查看参考](make-dataset-cards/index.md)：按目标选卡、易混卡片对比，并按功能进入每张卡的参考页。"
-#~ msgstr ""
-#~ "[Choose cards and view references](make-dataset-"
-#~ "cards/index.md): choose by objective, compare easily"
-#~ " confused cards, and open each card's "
-#~ "reference page by function."
-
-#~ msgid "[配方示例](make-dataset-cards/recipes.md)：多卡组合示例。"
-#~ msgstr ""
-#~ "[Workflow recipes](make-dataset-cards/recipes.md): "
-#~ "examples that combine several cards."
-
-#~ msgid "[自定义卡片开发](custom-card-development.md)：把已有脚本封装成 生成数据集卡片。"
-#~ msgstr ""
-#~ "[Custom card development](custom-card-development.md): "
-#~ "package an existing script as a Make "
-#~ "Dataset card."
 
 #~ msgid "如何选择卡片"
 #~ msgstr ""
@@ -431,16 +343,5 @@ msgstr ""
 #~ msgid "容器"
 #~ msgstr ""
 
-#~ msgid ""
-#~ "第一批内置模板包括晶体应变、超胞原子扰动、合金成分与占位、超胞空位候选和已有磁矩扰动。鼠标停在模板上会显示输入要求。例如，“已有磁矩扰动”只读取结构中已有的 "
-#~ "`spin` 或 ASE 初始磁矩，不会为缺失磁矩的元素猜测数值。"
-#~ msgstr ""
-#~ "The first built-in set covers crystal "
-#~ "strain, supercell atomic perturbation, alloy "
-#~ "composition and occupancy, supercell vacancy "
-#~ "candidates, and existing-spin perturbation. Hover"
-#~ " over a template to read its input "
-#~ "requirement. For example, Existing-spin perturbation"
-#~ " reads existing `spin` data or ASE initial"
-#~ " magnetic moments; it does not guess "
-#~ "missing moment magnitudes."
+#~ msgid "构建数据集 workspace"
+#~ msgstr "Make Dataset workspace"

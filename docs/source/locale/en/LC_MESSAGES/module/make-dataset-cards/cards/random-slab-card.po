@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-28 20:36+0800\n"
+"POT-Creation-Date: 2026-10-15 16:00+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,98 +20,103 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:3
-#: d12242a94eb14629a2c925e80809aacd
+#: 26a1953646f145708ef049704351dd09
 msgid "表面薄层扫描（Surface Slab Scan）"
 msgstr "Surface Slab Scan"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:5
-#: 77476667e6354423bda499f1e10da2fe
+#: b70184b5ff4d4d4e8186a92f7a11f0d3
 msgid "**分类：** 表面"
 msgstr "**Category:** Surface"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:7
-#: eb7119af59184dc2b531aafbfd86449b
+#: 1131cbfacccb409981897228ac863e53
 msgid "功能说明"
 msgstr "Purpose"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:9
-#: 8051f39274cf4629bdd60954dab4a7c2
-msgid "从三维周期体相结构按明确的 Miller 晶面列表切出 slab，并扫描法向重复数与单侧真空厚度。它是确定性枚举：相同输入和参数会得到相同顺序的输出。"
+#: 9329518b9058400c85173436197bcd6d
+msgid ""
+"从三维周期体相结构按明确的 Miller 晶面列表切出 "
+"slab，并扫描法向重复数与单侧真空厚度。它是确定性枚举：相同输入和参数会得到相同顺序的输出。"
 msgstr ""
-"Cut slabs from a three-dimensionally periodic bulk structure using an explicit list "
-"of Miller planes, while scanning the number of repeats along the surface normal and "
-"the one-sided vacuum thickness. This is a deterministic enumeration: identical inputs"
-" and parameters produce outputs in the same order."
+"Cut slabs from a three-dimensionally periodic bulk structure using an "
+"explicit list of Miller planes, while scanning the number of repeats "
+"along the surface normal and the one-sided vacuum thickness. This is a "
+"deterministic enumeration: identical inputs and parameters produce "
+"outputs in the same order."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:11
-#: 59c908066e5c45dca7d6ed5a3c1921a2
+#: ec2af78a40a84ff5acfa985d3d64a18e
 msgid ""
 "Miller 指数 $(h,k,l)$ 使用**输入晶胞的倒易基矢**解释。若你希望 `(100)`、`(110)`、`(111)` "
 "具有常规晶体学含义，请输入对应的常规晶胞。"
 msgstr ""
-"The Miller index $(h,k,l)$ is interpreted in the **reciprocal basis of the input "
-"cell**. If `(100)`, `(110)`, and `(111)` should carry their conventional "
-"crystallographic meanings, provide the corresponding conventional cell."
+"The Miller index $(h,k,l)$ is interpreted in the **reciprocal basis of "
+"the input cell**. If `(100)`, `(110)`, and `(111)` should carry their "
+"conventional crystallographic meanings, provide the corresponding "
+"conventional cell."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:13
-#: 8ccd77b209bd440e99225121e1f4d922
+#: 6b9550bd32684a84ad3a392f5d1d49c6
 msgid "原理与公式"
 msgstr "Principles and Equations"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:15
-#: 1549fe03f056476eadc8c8872334b529
+#: c98a297c438743848d6313c1605a8eb5
 msgid "界面中的每一行表示一个晶面。程序先用"
 msgstr ""
-"Each row in the interface represents one crystallographic plane. The program first "
-"uses"
+"Each row in the interface represents one crystallographic plane. The "
+"program first uses"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:17
-#: 9b8789d98d6446d6bc362a6c35b80856
+#: 475d079f9ab94221bea1c5a45762adca
 msgid ""
 "\n"
 "g=\\gcd(|h|,|k|,|l|),\\qquad (h,k,l)\\rightarrow(h/g,k/g,l/g)\n"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:21
-#: a8f29d4f2713492ba1eaed95cead629e
+#: 36fe5f54821c4c44bcec82355e10e618
 msgid "约简比例相同的指数，再按约简结果去重；例如 `(002)` 会并入 `(001)`，但 `(00-1)` 保留为另一取向。"
 msgstr ""
-"to reduce proportionally equivalent indices, then removes duplicates based on the "
-"reduced result. For example, `(002)` is merged into `(001)`, whereas `(00-1)` is "
-"retained as the opposite orientation."
+"to reduce proportionally equivalent indices, then removes duplicates "
+"based on the reduced result. For example, `(002)` is merged into `(001)`,"
+" whereas `(00-1)` is retained as the opposite orientation."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:23
-#: 708b54e57fe7449b83ba0ad34b98c0d4
+#: c8746b708aa740e193b12301edf43f3a
 msgid ""
-"对每个晶面、法向重复数 $r$ 和单侧真空 $v$ 调用 ASE `surface`。若输入有 $N$ 个原子，该组合得到 $Nr$ 个原子。真空会同时加在 slab "
-"上下两侧，因此总真空间隔增加 $2v$。"
+"对每个晶面、法向重复数 $r$ 和单侧真空 $v$ 调用 ASE `surface`。若输入有 $N$ 个原子，该组合得到 $Nr$ "
+"个原子。真空会同时加在 slab 上下两侧，因此总真空间隔增加 $2v$。"
 msgstr ""
-"For every plane, normal repeat count $r$, and one-sided vacuum value $v$, the program"
-" calls ASE `surface`. An input containing $N$ atoms gives $Nr$ atoms for that "
-"combination. Vacuum is added above and below the slab, so the total vacuum separation"
-" increases by $2v$."
+"For every plane, normal repeat count $r$, and one-sided vacuum value $v$,"
+" the program calls ASE `surface`. An input containing $N$ atoms gives "
+"$Nr$ atoms for that combination. Vacuum is added above and below the "
+"slab, so the total vacuum separation increases by $2v$."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:25
-#: 8a56929a4d7b442095a46cd33e9af61a
+#: 8dac23c906d240ad810b963f01efbb00
 msgid ""
 "输出会重新定向，使表面法向沿笛卡尔 $z$，第一条面内晶格矢量沿 $x$，第二条位于 $xy$ 平面。每组参数只生成一种由输入晶胞原点决定的 "
 "termination；若需要比较不同 termination，应准备具有不同原点/切分位置的体相输入。"
 msgstr ""
-"The output is reoriented so that the surface normal lies along Cartesian $z$, the "
-"first in-plane lattice vector lies along $x$, and the second lies in the $xy$ plane. "
-"Each parameter combination produces only one termination, determined by the origin of"
-" the input cell. To compare different terminations, prepare bulk inputs with "
-"different origins or cleavage positions."
+"The output is reoriented so that the surface normal lies along Cartesian "
+"$z$, the first in-plane lattice vector lies along $x$, and the second "
+"lies in the $xy$ plane. Each parameter combination produces only one "
+"termination, determined by the origin of the input cell. To compare "
+"different terminations, prepare bulk inputs with different origins or "
+"cleavage positions."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:27
-#: 50e899ab0e544f1c894f631c70ebdaf8
+#: 34573d9120ed412ea91ab29d71a82aa6
 msgid "范围 `[start, stop, step]` 只取不超过 `stop` 的点，点数为"
 msgstr ""
-"A `[start, stop, step]` range includes only points that do not exceed `stop`; the "
-"number of points is"
+"A `[start, stop, step]` range includes only points that do not exceed "
+"`stop`; the number of points is"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:29
-#: fbb57c2796374987907730b56de34d8f
+#: e6d4c26f2ece4090a258c8ef0ed4a000
 #, python-brace-format
 msgid ""
 "\n"
@@ -119,14 +124,14 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:33
-#: 89f87baf2ae549b6bc84e4cdb25a4db8
+#: 456fa49aa9464432ae8bcce2e4ab49bd
 msgid "设约简去重后有 $n_h$ 个晶面、$n_r$ 个重复数和 $n_v$ 个真空值，则每个输入精确产生"
 msgstr ""
-"If reduction and deduplication leave $n_h$ planes, $n_r$ repeat counts, and $n_v$ "
-"vacuum values, each input produces exactly"
+"If reduction and deduplication leave $n_h$ planes, $n_r$ repeat counts, "
+"and $n_v$ vacuum values, each input produces exactly"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:35
-#: 62b1161a0834407d82031dfa52fedc26
+#: 5ceab7ee41bb4d5fbf1f285b9067effc
 #, python-brace-format
 msgid ""
 "\n"
@@ -134,12 +139,12 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:39
-#: cddb01632b0c4502bcb1e845d4332f66
+#: d07648a622f3415083b3141797e6747d
 msgid "总生成原子数为"
 msgstr "The total number of generated atoms is"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:41
-#: f457077b12ca4793b166f1ede0f58f93
+#: 50aef5c1600947d18f7cb928c539b8cd
 #, python-brace-format
 msgid ""
 "\n"
@@ -147,200 +152,210 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:45
-#: 33c7dfda7aa647088a7491dbd9d1d3be
+#: 9a34644a23c345d08bce4e13dfdbc01b
 msgid "界面预览和运行前预算校验使用同一套公式，不会为了计数提前构造 slab。"
 msgstr ""
-"The interface preview and pre-run budget check use the same formulas; slabs are not "
-"constructed early merely to count them."
+"The interface preview and pre-run budget check use the same formulas; "
+"slabs are not constructed early merely to count them."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:47
-#: 814dc24eb82d4cfa9c1a0e613e95b654
+#: e24c7ae2d20245979a2d908a4d195f2c
 msgid "操作示例"
 msgstr "Example"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:49
-#: 28e951856e234326b5d784450559384f
+#: a0ada718693744d2b08048732f8ede84
 msgid "场景：模型对低指数表面的力误差明显高于体相"
-msgstr "Scenario: force errors on low-index surfaces are much larger than in the bulk"
+msgstr ""
+"Scenario: force errors on low-index surfaces are much larger than in the "
+"bulk"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:51
-#: 38f07527a2fa4d60b5c7e286575d80e3
+#: 9147383e2a3640cb8f7c44ed45788275
 msgid "训练集主要是体相结构，表面低配位环境覆盖不足。"
 msgstr ""
-"The training set consists mainly of bulk structures and does not adequately cover "
-"undercoordinated surface environments."
+"The training set consists mainly of bulk structures and does not "
+"adequately cover undercoordinated surface environments."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:53
-#: f58aa6fc4ad0430a8bada5e71923ee6c
+#: 8d8f8f6eb1eb4333b1b9254b7b13d553
 msgid "**输入：** 8 原子的常规 Si 晶胞，三方向均为周期边界。"
-msgstr "**Input:** An eight-atom conventional Si cell, periodic in all three directions."
+msgstr ""
+"**Input:** An eight-atom conventional Si cell, periodic in all three "
+"directions."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:55
-#: dbeb73ecb5cc43a1b4f24bc9cd9f4992
+#: 4fd2d6031b2e4178a2df805a2eb54653
 msgid "**目标：** 覆盖 `(100)`、`(110)`、`(111)`，法向重复数 3–6，单侧真空 10 Å。"
 msgstr ""
-"**Goal:** Cover `(100)`, `(110)`, and `(111)`, with 3–6 repeats along the normal and "
-"10 Å of one-sided vacuum."
+"**Goal:** Cover `(100)`, `(110)`, and `(111)`, with 3–6 repeats along the"
+" normal and 10 Å of one-sided vacuum."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:57
-#: 780b52c12d5c4733b3cf06f1222493a2
+#: b750c7bc44564c358177f2285e17de01
 msgid ""
 "**参数设置：** "
 "`hkl_list=[[1,0,0],[1,1,0],[1,1,1]]`，`layer_range=[3,6,1]`，`vacuum_range=[10,10,1]`。"
 msgstr ""
-"**Parameters:** `hkl_list=[[1,0,0],[1,1,0],[1,1,1]]`, `layer_range=[3,6,1]`, and "
-"`vacuum_range=[10,10,1]`."
+"**Parameters:** `hkl_list=[[1,0,0],[1,1,0],[1,1,1]]`, "
+"`layer_range=[3,6,1]`, and `vacuum_range=[10,10,1]`."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:59
-#: 6e8bd29033f7410f837919b6b9722c6a
+#: 634f5818f95a4f598905dde6ce0662bc
 msgid "**输出：** 每个输入 12 个 slab，单个输出含 24–48 个原子，总计 432 个生成原子。"
 msgstr ""
-"**Output:** 12 slabs per input, each containing 24–48 atoms, for 432 generated atoms "
-"in total."
+"**Output:** 12 slabs per input, each containing 24–48 atoms, for 432 "
+"generated atoms in total."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:61
-#: f610c7159cd145f68c7d7609460d6d05
+#: 258eaea7d2344368b10f94f3e3040084
 msgid ""
-"**怎么验证训练集质量改善：** 先检查输出的晶面、cell 和上下真空是否符合预期；标注并重训后，对独立的 `(100)/(110)/(111)` "
-"表面验证集分别比较能量和力误差。"
+"**怎么验证训练集质量改善：** 先检查输出的晶面、cell 和上下真空是否符合预期；标注并重训后，对独立的 "
+"`(100)/(110)/(111)` 表面验证集分别比较能量和力误差。"
 msgstr ""
-"**How to verify that training-set quality improved:** First check that the output "
-"planes, cells, and vacuum above and below each slab match the intended setup. After "
-"labeling and retraining, compare energy and force errors separately on independent "
-"`(100)`, `(110)`, and `(111)` surface validation sets."
+"**How to verify that training-set quality improved:** First check that "
+"the output planes, cells, and vacuum above and below each slab match the "
+"intended setup. After labeling and retraining, compare energy and force "
+"errors separately on independent `(100)`, `(110)`, and `(111)` surface "
+"validation sets."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:63
-#: 623caf3c282948d1bdf376c412f15116
+#: eda23d8b6ddd4859b6e16bd8e2698298
 msgid "参数说明"
 msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:65
-#: 686a2ad96887489baabb9e69af705bfd
+#: 569a437498c6482d8b4be95d565faf13
 msgid "晶面列表（hkl_list）"
 msgstr "Plane List (hkl_list)"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:67
-#: 34e7f8b03e9d4855b1cb39d5c7e3cb85
+#: 98b5126481154e14a98a42e15c624c90
 msgid "嵌套整数列表，默认 `[[1,0,0],[1,1,0],[1,1,1]]`。每行直接填写一个 `(h,k,l)`；可用低指数预设起步，再增删行。"
 msgstr ""
-"Nested integer list, default `[[1,0,0],[1,1,0],[1,1,1]]`. Enter one `(h,k,l)` plane "
-"per row. Start from the low-index preset, then add or remove rows as needed."
+"Nested integer list, default `[[1,0,0],[1,1,0],[1,1,1]]`. Enter one "
+"`(h,k,l)` plane per row. Start from the low-index preset, then add or "
+"remove rows as needed."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:69
-#: 3dfadb90ce244144aaaa69cd0d0919f3
+#: 36c85119071a48fea2b6105035fe53bc
 msgid "指数相对输入晶胞的倒易基矢。程序自动约简并去重比例相同的行，`(0,0,0)` 会明确报错。"
 msgstr ""
-"Indices are relative to the reciprocal basis of the input cell. The program "
-"automatically reduces and deduplicates proportional rows, and reports `(0,0,0)` as an"
-" explicit error."
+"Indices are relative to the reciprocal basis of the input cell. The "
+"program automatically reduces and deduplicates proportional rows, and "
+"reports `(0,0,0)` as an explicit error."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:71
-#: 28450c259851484296bac2dda9b2c8ab
+#: f76420191de54ea2accdec377771a391
 msgid "法向等价重复范围（layer_range）"
 msgstr "Normal Repeat Range (layer_range)"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:73
-#: 8b846785bbcd4d3ea3970fdd92f3070e
+#: 04811c328c70459795c7b13b506c86a5
 msgid ""
 "三个整数，默认 `[3,6,1]`，依次为起点、终点、步长。这里的 `r` 是 ASE 将定向后的体相单元沿表面法向重复的次数，因此输出原子数是 "
 "$Nr$；它不保证等于肉眼数出的原子平面数。"
 msgstr ""
-"Three integers, default `[3,6,1]`, giving start, stop, and step. Here, `r` is the "
-"number of times ASE repeats the oriented bulk unit along the surface normal, so the "
-"output contains $Nr$ atoms. It is not guaranteed to equal the number of atomic planes"
-" seen by eye."
+"Three integers, default `[3,6,1]`, giving start, stop, and step. Here, "
+"`r` is the number of times ASE repeats the oriented bulk unit along the "
+"surface normal, so the output contains $Nr$ atoms. It is not guaranteed "
+"to equal the number of atomic planes seen by eye."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:75
-#: d7bfdca1cc4648de92123e285b1e4789
+#: 40fb75a47b564477b075dfe798273f28
 msgid "增加 `r` 会让 slab 更厚，也会线性增加单个输出的原子数。可用表面能或中心层局域环境随 `r` 的收敛情况选择范围。"
 msgstr ""
-"Increasing `r` makes the slab thicker and increases the atom count of each output "
-"linearly. Choose the range by checking convergence of the surface energy or the local"
-" environment in the central layers with respect to `r`."
+"Increasing `r` makes the slab thicker and increases the atom count of "
+"each output linearly. Choose the range by checking convergence of the "
+"surface energy or the local environment in the central layers with "
+"respect to `r`."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:77
-#: 97115592ba374cd68c3f6a515cf90646
+#: ec1004721b2d42339603c0b80133b6c6
 msgid "单侧真空范围（vacuum_range）"
 msgstr "One-Sided Vacuum Range (vacuum_range)"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:79
-#: 405a8ee9f1f94bdf9febcc8165699027
+#: d49f5afd780c4553bdb9521a51e7850e
 msgid "三个浮点数，默认 `[10,10,1]`，单位 Å。每个值分别加在 slab 上、下两侧，总真空间隔增加两倍。"
 msgstr ""
-"Three floating-point values, default `[10,10,1]`, in Å. Each value is added above and"
-" below the slab, so the total vacuum separation increases by twice that value."
+"Three floating-point values, default `[10,10,1]`, in Å. Each value is "
+"added above and below the slab, so the total vacuum separation increases "
+"by twice that value."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:81
-#: df963347775a4617b5882186a2ecc265
+#: 68cf87b3a3434d6aba1807ed06992435
 msgid "需要放置较高吸附物时可增大真空；是否足够应由体系尺寸和后续计算的真空收敛结果判断。"
 msgstr ""
-"Increase the vacuum when accommodating tall adsorbates. Whether it is sufficient "
-"should be determined from the system dimensions and a vacuum-convergence test for the"
-" subsequent calculation."
+"Increase the vacuum when accommodating tall adsorbates. Whether it is "
+"sufficient should be determined from the system dimensions and a vacuum-"
+"convergence test for the subsequent calculation."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:83
-#: d71a33a8f3f94b25850a7908a4834972
+#: eb0bec901a77479e9c5fa3bb9b38ea38
 msgid "法向周期边界（normal_pbc）"
 msgstr "Periodic Boundary along Normal (normal_pbc)"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:85
-#: 83a09aba28184871a09f928b1c3a6c3e
+#: 0411c0427beb4abe9a1e0bf712da5baa
 msgid "布尔值，默认 `true`。开启时输出三个方向均周期；关闭时只有面内周期，表面法向为非周期。"
 msgstr ""
-"Boolean, default `true`. When enabled, the output is periodic in all three "
-"directions. When disabled, only the in-plane directions are periodic and the surface "
-"normal is nonperiodic."
+"Boolean, default `true`. When enabled, the output is periodic in all "
+"three directions. When disabled, only the in-plane directions are "
+"periodic and the surface normal is nonperiodic."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:87
-#: bc6b040c2dca4cda96d53605dbbb7aef
+#: c3d5fe4bed4f43be823ad3b46769f535
 msgid "关闭时单侧真空必须大于 0，否则法向 cell 无法形成有效尺寸。"
 msgstr ""
-"When it is disabled, one-sided vacuum must be greater than zero; otherwise the cell "
-"cannot acquire a valid size along the normal."
+"When it is disabled, one-sided vacuum must be greater than zero; "
+"otherwise the cell cannot acquire a valid size along the normal."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:89
-#: c0954d8aebec4b71ad4eea7ec474d2a5
+#: 840f2287311b45069ad36c2f8f25cf7f
 msgid "每输入最大输出数（max_outputs）"
 msgstr "Maximum Outputs per Input (max_outputs)"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:91
-#: 3b5d388b96724630a1ca17a3d5072c33
+#: 8fd857fefc3643c18daaa035d78d59bc
 msgid "正整数，默认 200。若 $n_hn_rn_v$ 超过该值，运行会在构造第一个 slab 前停止并提示缩小扫描或主动提高上限。"
 msgstr ""
-"Positive integer, default 200. If $n_hn_rn_v$ exceeds this value, the run stops "
-"before constructing the first slab and asks you to narrow the scan or deliberately "
-"raise the limit."
+"Positive integer, default 200. If $n_hn_rn_v$ exceeds this value, the run"
+" stops before constructing the first slab and asks you to narrow the scan"
+" or deliberately raise the limit."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:93
-#: 1439ffd6af604d07bd2cc62691218827
+#: 93eae5d3532b4bf084595eb21196b2f9
 msgid "每输入生成原子预算（max_generated_atoms）"
 msgstr "Generated-Atom Budget per Input (max_generated_atoms)"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:95
-#: f47df9f17836463d9df41f7a5081d124
+#: 36c73a250cba44ee962500c0ef73307b
 msgid "正整数，默认 200000。它限制所有输出的原子数总和 $Nn_hn_v\\sum_r r$，用于避免一个大输入或宽扫描意外占满内存。"
 msgstr ""
-"Positive integer, default 200000. It limits the total atom count across all outputs, "
-"$Nn_hn_v\\sum_r r$, preventing a large input or broad scan from unexpectedly "
-"exhausting memory."
+"Positive integer, default 200000. It limits the total atom count across "
+"all outputs, $Nn_hn_v\\sum_r r$, preventing a large input or broad scan "
+"from unexpectedly exhausting memory."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:97
-#: b27f3e905c7a40f8946544f143161753
+#: 3ce0183751f7463ab3d2c56fcc5d246b
 msgid "推荐预设"
 msgstr "Recommended presets"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:99
-#: c3acaf816e3540159a09607d77f87f34
+#: 5480d187372f495dbad35f09d499aca6
 msgid "单个 `(111)` 收敛扫描"
 msgstr "Single `(111)` Convergence Scan"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:101
-#: 6da3d2d7330b48cd86508673c3448004
+#: d94ee38b2290477fa35813197d414951
 msgid "用于只比较 slab 厚度是否收敛，共 6 个输出。"
-msgstr "Use this to examine slab-thickness convergence alone; it produces six outputs."
+msgstr ""
+"Use this to examine slab-thickness convergence alone; it produces six "
+"outputs."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:103
-#: 041ca51ec0784783836b517c8ac6034f
+#: 0dc05162e78b4f76a91f495c36df65c3
 #, python-brace-format
 msgid ""
 "{\n"
@@ -358,19 +373,19 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:118
-#: e3d5f72f9e2141278012c6131b431293
+#: eec559c338aa487b801041492c567719
 msgid "三个低指数面覆盖"
 msgstr "Coverage of Three Low-Index Surfaces"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:120
-#: 82cbf15f935943828dd7dd558478928f
+#: 1be3b52faaa94c39befd24c693e3d149
 msgid "用于同时补充 `(100)`、`(110)`、`(111)`，并比较 10 Å 与 15 Å 单侧真空，共 24 个输出。"
 msgstr ""
-"Use this to add `(100)`, `(110)`, and `(111)` together and compare 10 Å with 15 Å of "
-"one-sided vacuum; it produces 24 outputs."
+"Use this to add `(100)`, `(110)`, and `(111)` together and compare 10 Å "
+"with 15 Å of one-sided vacuum; it produces 24 outputs."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:122
-#: 10ed6735de744de89d9e7bfc3811fa4c
+#: 3a1ea0defdf44c72b4fe47fa6e256f25
 #, python-brace-format
 msgid ""
 "{\n"
@@ -388,135 +403,109 @@ msgid ""
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:137
-#: 804571198e5542db89819a1bb1ef9921
+#: c090d3588976426ba9f9817557d00bc9
 msgid "推荐组合"
 msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:139
-#: 77095dee7e884093bd0aa3fff8d87980
-msgid "`Surface Slab Scan → Insert Defect`：先切出目标晶面，再生成表面吸附候选。"
-msgstr ""
-"`Surface Slab Scan → Insert Defect`: first cut the target surface, then generate "
-"candidate adsorption structures."
+#: 710dd37b9e7c4543bd999f54faa15cf8
+msgid "`表面薄层扫描 → 插隙与吸附`：先切出目标晶面，再生成表面吸附候选。"
+msgstr "`Surface Slab Scan → Interstitial & Adsorbate`: first cut the target surface, then generate candidate adsorption structures."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:140
-#: 96b6580b58254872babcb3c5d94ed225
-msgid "`Surface Slab Scan → Atomic Perturb`：在已确认正确的 slab 上加入小幅热扰动环境。"
-msgstr ""
-"`Surface Slab Scan → Atomic Perturb`: add small thermal-like perturbations to slabs "
-"whose construction has already been verified."
+#: 7f81027afeeb4d40b659071dfb5b2fa5
+msgid "`表面薄层扫描 → 原子扰动`：在已确认正确的 slab 上加入小幅热扰动环境。"
+msgstr "`Surface Slab Scan → Atomic Perturb`: add small thermal-like perturbations to slabs whose construction has already been verified."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:141
-#: 0e623ddc1403433b87212a719a08c5ae
-msgid "已有 slab 只需沿当前法向复制时，用 `Layer Stack`；需要从体相按 Miller 面重新定向时用本卡片。"
+#: fa58486060f0482d84115e906aa5311f
+#
+msgid "已有 slab 只需沿当前法向复制时，用 `分层堆叠`；需要从体相按 Miller 面重新定向时用本卡片。"
 msgstr ""
-"Use `Layer Stack` when an existing slab only needs replication along its current "
-"normal. Use this card when a bulk structure must be reoriented and cut by Miller "
-"plane."
+"Use `Layer Stack` when an existing slab only needs replication along its "
+"current normal. Use this card when a bulk structure must be reoriented "
+"and cut by Miller plane."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:143
-#: b735547316184b06a4b492d18a976cfb
+#: 0508fc9f5c384a6a860a5ed69160b1f8
 msgid "常见问题"
 msgstr "Troubleshooting"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:145
-#: ccbf38fc053446e3b6d560f861ae0ddf
+#: 4c7371e59b814ba0b6963b0c630ab84a
 msgid "**`(002)` 为什么没有单独输出？** 它与 `(001)` 比例相同，约简后自动去重。相反方向 `(00-1)` 不会合并。"
 msgstr ""
-"**Why is there no separate output for `(002)`?** It is proportional to `(001)` and is"
-" removed after reduction. The opposite orientation `(00-1)` is not merged."
+"**Why is there no separate output for `(002)`?** It is proportional to "
+"`(001)` and is removed after reduction. The opposite orientation `(00-1)`"
+" is not merged."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:147
-#: 1a50158d22ab44dab0b4f9c1b8013fbd
+#: a802b1eab420401ea1dd3d0dbcf9d4ce
 msgid ""
-"**重复数为什么不等于看到的原子层数？** 它重复的是 ASE 定向后的体相单元。用输出的实际原子平面与目标性质收敛情况判断 slab 厚度，不要把 `r` "
-"当作固定的原子平面计数。"
+"**重复数为什么不等于看到的原子层数？** 它重复的是 ASE 定向后的体相单元。用输出的实际原子平面与目标性质收敛情况判断 slab "
+"厚度，不要把 `r` 当作固定的原子平面计数。"
 msgstr ""
-"**Why does the repeat count differ from the visible number of atomic layers?** It "
-"repeats the bulk unit after ASE has oriented it. Judge slab thickness from the actual"
-" atomic planes in the output and convergence of the target property; do not treat `r`"
-" as a fixed count of atomic planes."
+"**Why does the repeat count differ from the visible number of atomic "
+"layers?** It repeats the bulk unit after ASE has oriented it. Judge slab "
+"thickness from the actual atomic planes in the output and convergence of "
+"the target property; do not treat `r` as a fixed count of atomic planes."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:149
-#: 0048fef494374cf7b84e254a4428bc75
+#: 21dea91d06eb4f3bafca7a95a1e630fe
 msgid "**为什么运行前就提示超限？** 精确输出数或总生成原子数超过安全参数。预览会给出当前数量；缩小晶面/范围，或在确认资源足够后提高对应上限。"
 msgstr ""
-"**Why is a limit reported before the run starts?** The exact output count or total "
-"generated-atom count exceeds a safety limit. The preview shows the current count. "
-"Reduce the plane list or scan ranges, or raise the corresponding limit after "
-"confirming that sufficient resources are available."
+"**Why is a limit reported before the run starts?** The exact output count"
+" or total generated-atom count exceeds a safety limit. The preview shows "
+"the current count. Reduce the plane list or scan ranges, or raise the "
+"corresponding limit after confirming that sufficient resources are "
+"available."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:151
-#: a3fa337713b348b0b5a5dc43c6873795
+#: f3df90e39d974f3794d5b3c058639b43
 msgid "输出标签"
 msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:153
-#: b77b853ef9d641a486bb257d2d73678e
+#: 3ea97959e033452294491de643b12eca
 msgid "`Slab(hkl=(h,k,l),R=重复数,vac=单侧真空,pz=0|1)`。`pz` 表示表面法向是否周期。"
 msgstr ""
-"`Slab(hkl=(h,k,l),R=repeat count,vac=one-sided vacuum,pz=0|1)`. `pz` indicates "
-"whether the surface normal is periodic."
+"`Slab(hkl=(h,k,l),R=repeat count,vac=one-sided vacuum,pz=0|1)`. `pz` "
+"indicates whether the surface normal is periodic."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:155
-#: 30e0485fe3bf46ca92884f92a9de7447
+#: dadeaf3a54b64224b2d4e7b60cfa28dd
 msgid "旧配置迁移"
 msgstr "Legacy Configuration Migration"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:157
-#: 61f6fe46cbb2447da9fd03a48c22fa6d
+#: 14d1ac81efb24e588044eb45e41fb6ff
 msgid ""
 "旧版 `h_range/k_range/l_range` "
 "会在加载时按旧范围展开，再约简、去重并显示成晶面表格。界面会给出迁移提示，请在运行前核对可见列表；范围步长不再产生超过终点的额外值。"
 msgstr ""
-"Legacy `h_range/k_range/l_range` values are expanded using the old ranges when "
-"loaded, then reduced, deduplicated, and displayed as a plane table. The interface "
-"shows a migration notice; verify the visible list before running. Range stepping no "
-"longer produces an extra value beyond the stop value."
+"Legacy `h_range/k_range/l_range` values are expanded using the old ranges"
+" when loaded, then reduced, deduplicated, and displayed as a plane table."
+" The interface shows a migration notice; verify the visible list before "
+"running. Range stepping no longer produces an extra value beyond the stop"
+" value."
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:159
-#: 7e0fe8829be34afbbb4ee7d89faadb4e
+#: a5275fa02d2a4a1b81c0597fe8777e21
 msgid "可复现性"
 msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/random-slab-card.md:161
-#: 5799d70b5ab54a1bbca1cd2832f9c0e7
+#: 23272df4600a4a42b4d5abb38374ea06
 msgid "无随机性。输出顺序固定为：晶面表格行 → 法向重复数 → 真空值。"
 msgstr ""
-"No randomness is involved. Output order is fixed as: plane-table row → normal repeat "
-"count → vacuum value."
+"No randomness is involved. Output order is fixed as: plane-table row → "
+"normal repeat count → vacuum value."
 
 #~ msgid "随机表面切片（Random Slab）"
 #~ msgstr "Random Surface Slabs (Random Slab)"
 
-#~ msgid "如果表面能预测仍不准，扩大 `l_range` 到 `[1, 5, 1]` 覆盖更多高指数面"
-#~ msgstr ""
-#~ "If surface-energy predictions remain inaccurate, "
-#~ "expand `l_range` to `[1, 5, 1]` to "
-#~ "include more orientations, while controlling the "
-#~ "total count."
-
-#~ msgid "如果 slab 太薄表面效应过强，增大 `layer_range` 的下限"
-#~ msgstr ""
-#~ "If the slabs are too thin and the "
-#~ "two surfaces interact strongly, raise the "
-#~ "lower bound of `layer_range`."
-
 #~ msgid "随机表面板层（Random Slab）"
 #~ msgstr "Random Slab"
-
-#~ msgid "从体相结构按 Miller 指数、层数和真空厚度范围批量切出 slab，覆盖不同表面取向和几何参数组合。"
-#~ msgstr ""
-#~ "Cut slabs from a bulk structure over "
-#~ "ranges of Miller indices, layer counts, and"
-#~ " vacuum thicknesses, covering multiple surface "
-#~ "orientations and geometries."
-
-#~ msgid "卡片对 Miller 指数、层数和真空厚度做笛卡尔积扫描："
-#~ msgstr ""
-#~ "The card scans the Cartesian product of "
-#~ "Miller indices, layer counts, and vacuum "
-#~ "thicknesses:"
 
 #~ msgid ""
 #~ "\n"
@@ -524,73 +513,11 @@ msgstr ""
 #~ "\\{(h,k,l,L,v): (h,k,l)\\ne(0,0,0)\\}.\n"
 #~ msgstr ""
 
-#~ msgid ""
-#~ "对每个组合调用周期表面构造，把 $(hkl)$ 平面作为表面法向，沿法向堆叠 $L$ 层； $v>0$"
-#~ " 时在法向加入对应 Å 数的真空，$v=0$ 时不额外加真空。输出数的理论上限是各扫描 点数的乘积减去 "
-#~ "$(0,0,0)$ 组合。失败的不可构造晶面会记录并跳过，因此实际输出可能更少。"
-#~ msgstr ""
-#~ "For each combination, it calls periodic "
-#~ "surface construction, uses the $(hkl)$ plane "
-#~ "as the surface normal, and stacks $L$ "
-#~ "layers along that normal. When $v>0$, it "
-#~ "adds the corresponding vacuum in Å; when "
-#~ "$v=0$, no extra vacuum is added. The "
-#~ "theoretical output limit is the product of "
-#~ "scan-point counts minus the $(0,0,0)$ "
-#~ "combination. Invalid or unconstructable planes are"
-#~ " recorded and skipped, so the actual output"
-#~ " may be smaller."
-
-#~ msgid "场景：模型在表面吸附能上系统性偏离 DFT"
-#~ msgstr "Scenario: model adsorption energies are systematically biased relative to DFT"
-
-#~ msgid ""
-#~ "你在体相 Pt 上训练了一个 NEP 模型，体相弹性和声子都很好。然后跑 Pt(111) "
-#~ "表面上的 CO 吸附能——模型预测的吸附能比 DFT 弱 0.5 eV，误差远超可接受范围。"
-#~ msgstr ""
-#~ "You trained an NEP model on bulk Pt "
-#~ "and obtained good elastic and phonon "
-#~ "properties. For CO adsorption on Pt(111), "
-#~ "however, the predicted adsorption is 0.5 eV"
-#~ " weaker than DFT, well outside the "
-#~ "acceptable error."
-
-#~ msgid ""
-#~ "**诊断思路：** 训练集里全是体相 Pt 结构，模型从来没见过表面的低配位原子。Pt(111) "
-#~ "表面的台阶位、平台位的局域环境与体相完全不同——配位数从 12 降到 9 甚至更低。模型需要见过多种表面取向和厚度的"
-#~ " slab 才能泛化到表面化学。"
-#~ msgstr ""
-#~ "**Diagnosis:** The training set contains only "
-#~ "bulk Pt, so the model has never seen "
-#~ "undercoordinated surface atoms. Terrace and step "
-#~ "environments on Pt(111) differ strongly from "
-#~ "bulk coordination, dropping from 12 neighbors "
-#~ "to 9 or fewer. Include slabs with "
-#~ "multiple orientations and thicknesses before "
-#~ "expecting transfer to surface chemistry."
-
 #~ msgid "**输入：** 一个体相 fcc Pt 单胞"
 #~ msgstr "**Input:** A bulk fcc Pt unit cell."
 
-#~ msgid "**目标：** 切出 (111) 面，3~6 层厚，10 Å 真空，覆盖多种 Miller 指数组合"
-#~ msgstr ""
-#~ "**Goal:** Generate slabs spanning several Miller-"
-#~ "index combinations, with 3–6 layers and 10 "
-#~ "Å of vacuum, including the (111) surface."
-
 #~ msgid "**参数设置：**"
 #~ msgstr "**Parameters:**"
-
-#~ msgid ""
-#~ "`Miller 指数 h 范围`（`h_range`） = `[0, 1, "
-#~ "1]`，`Miller 指数 k 范围`（`k_range`） = `[0, 1, "
-#~ "1]`，`Miller 指数 l 范围`（`l_range`） = `[1, 3, "
-#~ "1]`"
-#~ msgstr ""
-#~ "`Miller index h range` (`h_range`) = `[0, "
-#~ "1, 1]`, `Miller index k range` (`k_range`) "
-#~ "= `[0, 1, 1]`, `Miller index l range`"
-#~ " (`l_range`) = `[1, 3, 1]`"
 
 #~ msgid "`Layer Range` = `[3, 6, 1]`"
 #~ msgstr ""
@@ -598,49 +525,14 @@ msgstr ""
 #~ msgid "`真空层范围`（`vacuum_range`） = `[10, 10, 1]`"
 #~ msgstr "`Vacuum-layer range` (`vacuum_range`) = `[10, 10, 1]`"
 
-#~ msgid "**输出：** 多个 slab 结构，覆盖不同 hkl 组合、3~6 层厚度、10 Å 真空，带 `Slab(hkl=...,L=...,vac=...)` 标签"
-#~ msgstr ""
-#~ "**Output:** Slab structures over the selected "
-#~ "*hkl* combinations and 3–6 layer thicknesses "
-#~ "with 10 Å vacuum, labeled "
-#~ "`Slab(hkl=...,L=...,vac=...)`."
-
 #~ msgid "**怎么验证训练集质量改善：**"
 #~ msgstr "**How to verify that training-set quality improved:**"
-
-#~ msgid "重训后计算 Pt(111) 上的 CO 吸附能，应该接近 DFT 参考"
-#~ msgstr ""
-#~ "After DFT labeling and retraining, recalculate "
-#~ "CO adsorption on Pt(111) and compare it "
-#~ "with the DFT reference."
-
-#~ msgid "检查 slab 上下表面没有重叠，真空层足够隔离周期镜像"
-#~ msgstr ""
-#~ "Check that the two slab surfaces do not"
-#~ " overlap and that the vacuum separates "
-#~ "periodic images adequately."
-
-#~ msgid "如果表面能预测仍不准，扩大 `Miller 指数 l 范围`（`l_range`）到 `[1, 5, 1]` 覆盖更多高指数面"
-#~ msgstr ""
-#~ "If surface-energy predictions remain inaccurate, "
-#~ "extend `Miller index l range` (`l_range`) to"
-#~ " `[1, 5, 1]` to cover more high-index"
-#~ " surfaces."
-
-#~ msgid "如果 slab 太薄表面效应过强，增大 `层数范围`（`layer_range`）的下限"
-#~ msgstr ""
-#~ "If the slab is too thin and surface "
-#~ "effects are too strong, increase the lower "
-#~ "bound of `Layer-count range` (`layer_range`)."
 
 #~ msgid "什么时候加这张卡、什么时候不加"
 #~ msgstr "When to add this card"
 
 #~ msgid "**加：**"
 #~ msgstr "**Add it when:**"
-
-#~ msgid "模型在表面相关任务（吸附、表面能、表面反应）上预测差"
-#~ msgstr "The model is inaccurate for adsorption, surface energies, or surface reactions."
 
 #~ msgid "需要覆盖多种表面取向和厚度"
 #~ msgstr "You need to cover several surface orientations and thicknesses."
@@ -651,104 +543,14 @@ msgstr ""
 #~ msgid "**不加：**"
 #~ msgstr "**Do not add it when:**"
 
-#~ msgid "只做体相性质训练，不需要表面结构"
-#~ msgstr "The model targets bulk properties only and does not need surface structures."
-
-#~ msgid "已经手动切好了 slab，只需要做表面修饰"
-#~ msgstr ""
-#~ "The required slabs have already been prepared"
-#~ " and only surface modification is needed."
-
 #~ msgid "Miller 指数 h 范围（h_range）"
 #~ msgstr "h_range"
-
-#~ msgid "`Sequence[int]`，默认 (0, 1, 1)。`[最小值, 最大值, 步长]`，整数，定义切片的 Miller h 指数搜索空间。"
-#~ msgstr ""
-#~ "`Sequence[int]`, default: `(0, 1, 1)`. Integer "
-#~ "`[minimum, maximum, step]` range for the "
-#~ "Miller *h* index."
-
-#~ msgid ""
-#~ "hkl 为 (0,0,0) 的组合自动跳过。填参数之前先心算一下：输出总数 = (h 点数)"
-#~ " x (k 点数) x (l 点数) x (层数) x "
-#~ "(真空数)——别让五重循环悄悄把输出量炸了。"
-#~ msgstr ""
-#~ "The `(0, 0, 0)` combination is skipped. "
-#~ "Before running, estimate the output count as"
-#~ " `Nh × Nk × Nl × Nlayers × "
-#~ "Nvacuum`; the five nested ranges can grow "
-#~ "quickly."
 
 #~ msgid "Miller 指数 k 范围（k_range）"
 #~ msgstr "k_range"
 
-#~ msgid "`Sequence[int]`，默认 (0, 1, 1)。`[最小值, 最大值, 步长]`，和上面 h 一样用法。"
-#~ msgstr ""
-#~ "`Sequence[int]`, default: `(0, 1, 1)`. Integer "
-#~ "`[minimum, maximum, step]` range for the "
-#~ "Miller *k* index."
-
-#~ msgid "h/k 设 [0,1,1] 只出低指数面，[0,2,1] 覆盖中等取向，[0,3,1] 进入探索区——组合数增长很快，注意控制范围。"
-#~ msgstr ""
-#~ "Using `[0,1,1]` for *h* and *k* limits "
-#~ "the scan to low-index values; `[0,2,1]` "
-#~ "broadens it, while `[0,3,1]` is exploratory. "
-#~ "Control both ranges because their combinations "
-#~ "multiply."
-
 #~ msgid "Miller 指数 l 范围（l_range）"
 #~ msgstr "l_range"
-
-#~ msgid "`Sequence[int]`，默认 (1, 3, 1)。`[最小值, 最大值, 步长]`。注意 l 的默认起点不是 0，因为 (0,0,0) 没意义会直接跳过。"
-#~ msgstr ""
-#~ "`Sequence[int]`, default: `(1, 3, 1)`. Integer "
-#~ "`[minimum, maximum, step]` range for the "
-#~ "Miller *l* index. Its default starts at "
-#~ "1 because `(0, 0, 0)` is undefined and"
-#~ " would be skipped."
-
-#~ msgid "保守用 [1,1,1] 只切一个面；平衡用 [1,3,1] 覆盖 3 个不同 l 的面；探索用 [1,5,1] 但要准备好让输出数被五重循环放大。"
-#~ msgstr ""
-#~ "Use `[1,1,1]` for a single *l* value, "
-#~ "`[1,3,1]` for routine coverage, and `[1,5,1]` "
-#~ "for exploration, accounting for multiplication by"
-#~ " all other ranges."
-
-#~ msgid "`Sequence[int]`，默认 (3, 6, 1)。`[最小值, 最大值, 步长]`，整数，控制每个 slab 的厚度（层数）。"
-#~ msgstr ""
-#~ "`Sequence[int]`, default: `(3, 6, 1)`. Integer "
-#~ "`[minimum, maximum, step]` range for slab "
-#~ "thickness in atomic layers."
-
-#~ msgid ""
-#~ "3~6 层是标准 slab 厚度——上下表面的原子环境已经近似体相了，表面能收敛不会因为厚度不够而飘。1~2 "
-#~ "层的超薄 slab 量子尺寸效应明显，除非你有明确的物理原因，否则谨慎使用。8 层以上的厚 slab 对"
-#~ " DFT 预算不友好。"
-#~ msgstr ""
-#~ "Three to six layers is a practical "
-#~ "starting range, but convergence must be "
-#~ "checked for the material and property of "
-#~ "interest. One- or two-layer slabs can "
-#~ "show strong finite-size effects; slabs above"
-#~ " eight layers increase DFT cost substantially."
-
-#~ msgid "`Sequence[int]`，默认 (10, 10, 1)。`[最小值, 最大值, 步长]`，单位 Å。"
-#~ msgstr ""
-#~ "`Sequence[int]`, default: `(10, 10, 1)`. Vacuum-"
-#~ "thickness range in Å, expressed as `[minimum,"
-#~ " maximum, step]`."
-
-#~ msgid ""
-#~ "10 Å 对大多数场景是可靠的下限，足够隔断周期镜像之间的相互作用。如果你后续要在表面放吸附分子，拉高到 15-20 "
-#~ "Å 确保吸附物不碰到镜像 slab。低于 5 Å 不建议用——镜像 slab "
-#~ "的电子密度会穿透真空层。"
-#~ msgstr ""
-#~ "Ten Å is a common starting point, but"
-#~ " vacuum convergence remains system dependent. For"
-#~ " adsorbates, 15–20 Å may be needed to "
-#~ "avoid contact with the periodic image. Vacuum"
-#~ " below 5 Å is generally unsafe for "
-#~ "isolated-slab calculations."
 
 #~ msgid "低指数面（111，3~6 层，10 Å，少量输出）"
 #~ msgstr "Low-index surfaces ((111), 3–6 layers, 10 Å vacuum, few outputs)"
@@ -765,9 +567,6 @@ msgstr ""
 #~ "}\n"
 #~ msgstr ""
 
-#~ msgid "多取向覆盖（h/k 0-1, l 1-3，3~6 层，10-15 Å）"
-#~ msgstr "Multiple orientations (*h/k*: 0–1, *l*: 1–3; 3–6 layers; 10–15 Å vacuum)"
-
 #~ msgid ""
 #~ "{\n"
 #~ "  \"class\": \"RandomSlabCard\",\n"
@@ -779,9 +578,6 @@ msgstr ""
 #~ "  \"vacuum_range\": [10, 15, 5]\n"
 #~ "}\n"
 #~ msgstr ""
-
-#~ msgid "全取向探索（h/k 0-2, l 1-5，3~9 层，10-20 Å）"
-#~ msgstr "Broad orientation exploration (*h/k*: 0–2, *l*: 1–5; 3–9 layers; 10–20 Å vacuum)"
 
 #~ msgid ""
 #~ "{\n"
@@ -795,43 +591,5 @@ msgstr ""
 #~ "}\n"
 #~ msgstr ""
 
-#~ msgid "`Random Slab` → `Random Vacancy`：先切表面，再删表面原子构造空位"
-#~ msgstr ""
-#~ "`Random Slab` → `Random Vacancy`: cut "
-#~ "surfaces, then remove surface atoms to create"
-#~ " vacancies."
-
-#~ msgid "`Super Cell` → `Random Slab`：先扩胞到足够大面内尺寸，再切片"
-#~ msgstr "`Super Cell` → `Random Slab`: enlarge the in-plane dimensions before cutting slabs."
-
-#~ msgid "**输出为空。** 通常因为 (0,0,0) 被跳过后没有有效 hkl 组合，或者体相的 Miller 指数组合和晶格不兼容。"
-#~ msgstr ""
-#~ "**No structures are produced.** After `(0, 0,"
-#~ " 0)` is removed, the selected ranges may"
-#~ " contain no valid Miller combination, or "
-#~ "the bulk lattice may be incompatible with "
-#~ "the requested cut."
-
-#~ msgid ""
-#~ "**输出数量爆炸。** h_range、k_range、l_range、layer_range、vacuum_range "
-#~ "五重循环。先估算：Nh x Nk x Nl x Nlayer x "
-#~ "Nvacuum。如果数字太大，先收窄 l_range 和 layer_range。"
-#~ msgstr ""
-#~ "**The output count is unexpectedly large.** "
-#~ "The five ranges form a Cartesian product. "
-#~ "Estimate `Nh × Nk × Nl × Nlayer ×"
-#~ " Nvacuum`; if it is too large, narrow "
-#~ "`l_range` and `layer_range` first."
-
-#~ msgid "**Slab 上下表面重叠。** layer_range 下限太小时，slab 厚度可能小于 2 层原子间距。增大下限。"
-#~ msgstr ""
-#~ "**The upper and lower slab surfaces overlap"
-#~ " or interact too strongly.** The lower "
-#~ "bound of `layer_range` is too small. Increase"
-#~ " it and recheck thickness convergence."
-
 #~ msgid "`Slab(hkl={h}{k}{l},L={层数},vac={真空})`"
 #~ msgstr "`Slab(hkl={h}{k}{l},L={layer count},vac={vacuum})`"
-
-#~ msgid "无随机性。同参数同输入 → 严格一致输出。"
-#~ msgstr "Deterministic: identical inputs and parameters produce identical outputs."

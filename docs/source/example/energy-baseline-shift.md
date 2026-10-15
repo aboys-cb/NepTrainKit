@@ -6,14 +6,14 @@
 
 ## 1. 先看能量图
 
-在 `NEP Dataset Display` 中打开带 DFT 能量的数据和对应的 NEP 模型，然后看 `energy` 散点图。
+在 `NEP 数据集查看` 中打开带 DFT 能量的数据和对应的 NEP 模型，然后看 `energy` 散点图。
 
 ```{image} ../_static/image/generated/tutorials/energy_baseline_shift_entry.png
 :alt: 能量图和能量基线平移按钮
 :class: docs-screenshot
 ```
 
-确认是巨大的整体基线后，点击工具栏中的 `Energy baseline shift`。
+确认是巨大的整体基线后，点击工具栏中的 `能量基线平移`。
 
 > 平移会修改当前数据集里的 `energy`。程序会把第一次平移前的值记在 `energy_original`，但不会自动撤销后续平移。操作前仍建议先导出一份原始数据。
 
@@ -28,8 +28,8 @@
 
 1. `Use existing preset` 保持空白。
 2. 如果数据来自同一软件、同一套计算设置，把分组规则填写为 `.*`，让所有 `Config_type` 共用一套基线。
-3. `Alignment mode` 选择 `DFT to NEP`。它根据当前 NEP 预测，拟合每种元素的能量基线，并平移数据集中的 DFT 能量。
-4. `Max generations`、`Population size` 和 `Convergence tolerance` 先保留默认值。
+3. `对齐模式` 选择 `DFT 到 NEP`。它根据当前 NEP 预测，拟合每种元素的能量基线，并平移数据集中的 DFT 能量。
+4. `最大代数`、`种群大小` 和 `收敛容差` 先保留默认值。
 5. 点击 `OK`，等待能量图重新绘制。
 
 不要仅因为数据里有多个 `Config_type` 就逐组拟合。即使来自同一软件，每组单独拟合也可能把求解过程中的微小偏差吸收到基线里；同一计算来源使用 `.*` 更稳妥。
@@ -52,4 +52,4 @@
 
 能量基线不是给所有结构减去同一个常数。程序会根据结构中的元素个数，减去对应的逐元素基线。因此，包含不同元素或不同原子数的结构也可以放在同一数据集中处理。
 
-确认结果后，用 `Save` 导出新文件，不要覆盖原始训练集。以后需要处理同一类数据时，可以勾选 `Save baseline as preset` 保存本次基线；预设只适用于元素和 `Config_type` 分组方式相符的数据。
+确认结果后，用 `保存` 导出新文件，不要覆盖原始训练集。以后需要处理同一类数据时，可以勾选 `将基线保存为预设` 保存本次基线；预设只适用于元素和 `Config_type` 分组方式相符的数据。

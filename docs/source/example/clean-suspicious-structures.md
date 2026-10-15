@@ -4,14 +4,14 @@
 
 ## 运行两项检查
 
-在工具栏中依次使用 `Find non-physical structures` 和 `Check net force`：
+在工具栏中依次使用 `查找非物理结构` 和 `检查净力`：
 
 ```{image} ../_static/image/generated/tutorials/structure_quality_checks.png
 :alt: 非物理距离和净力检查入口
 :class: docs-screenshot
 ```
 
-短键检查使用 `Settings` 中的半径系数。默认 `0.7` 表示：两原子距离小于其共价半径之和的 `0.7` 倍时，结构会被选中。它适合发现明显碰撞，不是材料通用的成键判据。
+短键检查使用 `设置` 中的半径系数。默认 `0.7` 表示：两原子距离小于其共价半径之和的 `0.7` 倍时，结构会被选中。它适合发现明显碰撞，不是材料通用的成键判据。
 
 净力检查在弹窗中填写阈值，单位是 `eV/Å`：
 

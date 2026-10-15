@@ -1,218 +1,264 @@
 # English translations for NepTrainKit package.
 # Copyright (C) 2024, NepTrain Team
-# This file is distributed under the same license as the NepTrainKit package.
+# This file is distributed under the same license as the NepTrainKit
+# package.
 # Automatically generated, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:29+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Language-Team: none\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:1
-#: a34f2b212540457893653ea0cef52c60
+#: ../../source/module/nep-display-status-and-errors.md:1
+#: 65460b112dc749d7979d2f72b308c72e
 msgid "状态栏与常见提示"
 msgstr "Status bar and common messages"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:3
-#: 5e83f9b784dd428b94e2ccf0853abff3
+#: ../../source/module/nep-display-status-and-errors.md:3
+#: 5af77cac283f42d28842e0c1815db7e9
+#
 msgid ""
-"这一页对应软件底部状态栏和常见提示。操作前后先核对 `Orig / Now / Rm / Sel / "
-"Unsel / Rej`， 可以避免把“已选择”“已标记”和“已删除”混为一谈。"
-msgstr "This page covers the bottom status bar and common messages. Check `Orig / Now / Rm / Sel / Unsel / Rej` before and after an operation so that selected, tagged, and deleted structures are not confused."
+"这一页对应软件底部状态栏和常见提示。操作前后先核对 `原始 / 当前 / 删 / 选 / 坏`， "
+"可以避免把“已选择”“已标记”和“已删除”混为一谈。"
+msgstr "This page covers the bottom status bar and common messages. Check `Orig / Now / Rm / Sel / Rej` before and after an operation so that selected, marked, and deleted structures are not confused."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:5
-#: 1d03aa77b6ad4896bdba78cd1b387737
+#: ../../source/module/nep-display-status-and-errors.md:5
+#: 90a5676dfaba4b6ebf7643bc6fa405dc
 msgid "本页目录"
 msgstr "On this page"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:17643
-#: be7ff6bd1f9141cbaf27ce4b8903279a
+#: ../../source/module/nep-dataset-display-content.md:19931
+#: 219b23eae8c94def9404e9d0dc4b4132
 msgid "7. 状态与常见提示"
 msgstr "7. Status and common messages"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:17645
-#: e00b726fa8c04414a414358d20ea7f5b
-msgid "数据状态：`Orig / Now / Rm / Sel / Unsel / Rej`。"
-msgstr "Data status: `Orig / Now / Rm / Sel / Unsel / Rej`."
+#: ../../source/module/nep-dataset-display-content.md:19933
+#: 68cb1679ff1d48adab8f13e87201128f
+msgid ""
+"数据状态：`原始 / 当前 / 删 / 选 / "
+"坏`，分别是原始结构数、当前显示数、已删除数、已选中数和标记为坏点的数量；鼠标悬停时还会显示未选中数量。"
+msgstr "Dataset status: `Orig / Now / Rm / Sel / Rej` are the original, currently shown, removed, selected, and marked-bad counts; hovering also shows the unselected count."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:17646
-#: d218b85a98404d04be0b70ce67622c12
+#: ../../source/module/nep-dataset-display-content.md:19934
+#: 14c1473f22ee4e73b74627675e692118
 msgid "结构状态：最短键长异常会红字提示；净力显示 `|ΣF|`。"
-msgstr "Structure status: an anomalous shortest bond length is shown in red; net force is displayed as `|ΣF|`."
+msgstr ""
+"Structure status: an anomalous shortest bond length is shown in red; net "
+"force is displayed as `|ΣF|`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:17647
-#: 58d67fb9f83442038d78239d5ca6a64d
+#: ../../source/module/nep-dataset-display-content.md:19935
+#: 333770a794bb43608c5f442912dddf9b
 msgid ""
 "播放按钮：<img src=\"../_static/image/generated/show_nep_icons/play.svg\" "
-"width=\"18\" /> / <img src=\"../_static/image/generated/show_nep_icons/"
-"pause.svg\" width=\"18\" />。"
-msgstr "Play/pause button: <img src=\"../_static/image/generated/show_nep_icons/play.svg\" width=\"18\" /> / <img src=\"../_static/image/generated/show_nep_icons/pause.svg\" width=\"18\" />."
+"width=\"18\" /> / <img "
+"src=\"../_static/image/generated/show_nep_icons/pause.svg\" width=\"18\" "
+"/>。"
+msgstr ""
+"Play/pause button: <img "
+"src=\"../_static/image/generated/show_nep_icons/play.svg\" width=\"18\" "
+"/> / <img src=\"../_static/image/generated/show_nep_icons/pause.svg\" "
+"width=\"18\" />."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: 97dfaf29401e41b7b4ec7d2cdf4cf8dc
+#: ../../source/module/nep-dataset-display-content.md
+#: 0f3fd1e564834715ad190866debaac95
 msgid ".. image:: ../_static/image/generated/show_nep_icons/play.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/play.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-dataset-display-content.md:0
-#: c08245b7a6f84c7e9929da3ee6d0d070
+#: ../../source/module/nep-dataset-display-content.md
+#: cf123f1812a94f46a0460d1fd2772bc6
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pause.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/pause.svg"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 9106d1a674c14edaacc5c6afc687e03e
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 244f82219bad46999f943fb4b99a253d
 msgid "提示文本"
 msgstr "Message"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: c2dcb543cff4435eb5509b7b15009699
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: bc5b1fce17f54f0d9de7e2f1f89bf26b
 msgid "触发条件"
 msgstr "Trigger"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: d154fc7d21214450a5c4996532ef635e
-msgid "`unsupported file format`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: a55434b5d2154d548aa9ab6f67949e90
+msgid "`不支持的文件格式`"
 msgstr "`unsupported file format`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: c7edba76ff6a4e899d5801fe1ad91ab6
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 2c25a4ed418a4fcfa4f7b7ef08f792af
 msgid "导入路径不支持"
 msgstr "The import path is not supported"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: e7e2936f11cc4867b5714602edc5786a
-msgid "`NEP data has not been loaded yet!`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: b5a6b13c610e42efad336d98392d0c99
+msgid "`尚未加载 NEP 数据！`"
 msgstr "`NEP data has not been loaded yet!`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: bbc5bed563a5441999f0d2f113089578
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 3fb914fbaf2e4db59147e33d8ae4788c
 msgid "未加载数据即执行分析/导出"
 msgstr "Analysis or export was requested before data was loaded"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 63270bf7321f43dfb57ff795a48e37d6
-msgid "`Please select some structures first!`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 08b4f8ce21574322907be9adbc3a6364
+msgid "`请先选择一些结构！`"
 msgstr "`Please select some structures first!`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 52ad8c9c592b4281b563a86c33012998
-msgid "导出 selected 时无选择"
-msgstr "Nothing is selected when exporting selected structures"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: a8b2fb286299403fb785356822ab10a5
+msgid "导出已选择结构时没有选中任何结构"
+msgstr "Exporting selected structures with nothing selected"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 09dde5d1934141fa8bd12cdc8cc50427
-msgid "`No active structures to export.`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 4bd9f5c7cd744ff59a78f9f850403a52
+msgid "`没有可导出的保留结构。`"
 msgstr "`No active structures to export.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: dfff83cde225428588db4f4501829890
-msgid "导出 active 时为空"
-msgstr "There are no active structures to export"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 9ab4d1f60dbc48108873eb0858edcce9
+msgid "导出当前保留结构时数量为 0"
+msgstr "Exporting active structures when there are none"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 8f6b96ab03734eafbbf19a8b4da77f07
-msgid "`No removed structures to export.`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 7628b2f9ffc441b0a70804c54d01fb93
+msgid "`没有可导出的已移除结构。`"
 msgstr "`No removed structures to export.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 456402a321c34adebd9d20a6471666d6
-msgid "导出 removed 时为空"
-msgstr "There are no removed structures to export"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 47a0fc91fa6b4bbe8b3902157dc66b72
+msgid "导出已移除结构时数量为 0"
+msgstr "Exporting removed structures when there are none"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: d553bd90cf4c4d0da4b9473bc10ef750
-msgid "`No undoable deletion!`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 33a72d02df6548afae3dfc3561f09e57
+msgid "`没有可撤销的删除操作！`"
 msgstr "`No undoable deletion!`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: d25efb91f2564b33a55e0b38156cb35a
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 2c85728a0a6b4da99e3c160a40725adc
 msgid "无可撤销删除"
 msgstr "There is no deletion to undo"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 05590a4ab60c46c080e7450bb676e2c1
-msgid "`No vector data available`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 3be8e9b591cd4de5a1370e712958bdc8
+msgid "`没有可用的矢量数据`"
 msgstr "`No vector data available`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 4391cfc3c22e475c88248bec8b944e47
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 7310c5e1dbef4d40bd7dff6fd3f82e71
 msgid "箭头所需向量属性不存在"
 msgstr "The vector attribute required by the arrows is missing"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: da9c6a62e8414bdb80c477e0ba054392
-msgid "`Arrow overlay is unavailable...`"
-msgstr "`Arrow overlay is unavailable...`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: e822e05767d844eca9ad360f89046e2b
+msgid "`当前结构绘图后端不支持箭头叠加。`"
+msgstr "`Arrow overlay is unavailable for current structure canvas backend.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 247e61bbc86d4e73a4d9138cc134750f
-msgid "当前结构画布不支持箭头 API"
-msgstr "The current structure canvas does not support the arrow API"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 60f5a040bca54b66a2fa39be7367f384
+msgid "当前结构绘图后端不支持箭头，可在 `设置` 中切换到 `VisPy`"
+msgstr "The structure canvas backend does not support arrows; switch to `VisPy` in `Settings`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 2c7a869e234f407ca700c293d0f390bc
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: ad0a56406be84d4d9ea364fd49a4293f
 msgid "`Invalid regex pattern.`"
 msgstr "`Invalid regex pattern.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 453051b8d45e4a079775afbc58107955
-msgid "`tag/formula` 输入非法正则"
-msgstr "`tag/formula` contains an invalid regular expression"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 2be9981c769a4945bd18a8b2fe5fdca9
+msgid "`Config_type` 或 `化学式` 模式输入了非法正则"
+msgstr "Invalid regular expression in `Config_type` or `formula` mode"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 4d07034f1bd74d0295afecfeadbfacea
-msgid "`Unknown element symbol: Xx`"
-msgstr "`Unknown element symbol: Xx`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: a9e0bfe7872440de8a5f6edf7a562c55
+msgid "`未知元素符号：Xx。请使用标准大小写，例如 'Fe'。`"
+msgstr "`Unknown element symbol: Xx. Use standard capitalization, for example 'Fe'.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: d776f60782714449b703b32100a9c949
-msgid "`elements` 输入未知元素"
-msgstr "`elements` contains an unknown element"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: ec1a91c4027f45a29f52b0d824550dea
+msgid "`元素` 模式输入了未知元素"
+msgstr "Unknown element in `elements` mode"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: b35aaa16f9da422eba0e8c010edce808
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 278f038633424c318122c421f595f5ba
 msgid "`Unknown field in expression: xxx`"
 msgstr "`Unknown field in expression: xxx`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: ffe7673145b9401fbe0694994825acc3
-msgid "`expression` 使用了不存在的字段"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 26dab40353cc4c7b87e4dc297fd0a439
+#
+msgid "`表达式` 使用了不存在的字段"
 msgstr "`expression` refers to a field that does not exist"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: af049b19da464e488ad4009fd9dd2d3a
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 77f2023b242a4b908ea491c884476cb8
 msgid "`Numeric component suffixes are not supported in expressions.`"
 msgstr "`Numeric component suffixes are not supported in expressions.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: d5989afd84884bdba79a39b86fc274d3
-msgid "`expression` 使用了 `.1/.2/.3` 这类数字分量"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 63da29c6e486474e9f9eee9589547001
+#
+msgid "`表达式` 使用了 `.1/.2/.3` 这类数字分量"
 msgstr "`expression` uses numeric components such as `.1/.2/.3`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: a5f3b2fb7c594ac5830ae25425cfdde3
-msgid "`Expression contains unsupported syntax.`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 2286bf68eb3a4cbaaf602f6ed01f2693
+msgid "`表达式包含不支持的语法。`"
 msgstr "`Expression contains unsupported syntax.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 69962edfff214ba38ecf41225c920f7c
-msgid "`expression` 含有不支持的语法"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: b43d648ef8c84b1789b43051e87ae050
+#
+msgid "`表达式` 含有不支持的语法"
 msgstr "`expression` contains unsupported syntax"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: b06733707a134567b5df4dd9f8c48fa2
-msgid "`Invalid expression syntax.`"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 55465b0ed60d40f6b56908b4ce9fa91d
+msgid "`表达式语法无效。`"
 msgstr "`Invalid expression syntax.`"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/module/nep-display-status-and-errors.md:17647
-#: 0ccd4056ae124c94bf9acf787e8b95c6
-msgid "`expression` 语法不完整或无法解析"
+#: ../../source/module/nep-display-status-and-errors.md:19935
+#: 8f6ea8a1933341739a9999304a62e38b
+#
+msgid "`表达式` 语法不完整或无法解析"
 msgstr "`expression` is incomplete or cannot be parsed"
+
+#~ msgid "数据状态：`Orig / Now / Rm / Sel / Unsel / Rej`。"
+#~ msgstr "Data status: `Orig / Now / Rm / Sel / Unsel / Rej`."
+
+#~ msgid "导出 selected 时无选择"
+#~ msgstr "Nothing is selected when exporting selected structures"
+
+#~ msgid "导出 active 时为空"
+#~ msgstr "There are no active structures to export"
+
+#~ msgid "导出 removed 时为空"
+#~ msgstr "There are no removed structures to export"
+
+#~ msgid "当前结构画布不支持箭头 API"
+#~ msgstr "The current structure canvas does not support the arrow API"
+
+#~ msgid "`tag/formula` 输入非法正则"
+#~ msgstr "`tag/formula` contains an invalid regular expression"
+
+#~ msgid "`Unknown element symbol: Xx`"
+#~ msgstr "`Unknown element symbol: Xx`"
+
+#~ msgid "`elements` 输入未知元素"
+#~ msgstr "`elements` contains an unknown element"
+
+#~ msgid "`Expression contains unsupported syntax.`"
+#~ msgstr "`Expression contains unsupported syntax.`"
+
+#~ msgid "`Invalid expression syntax.`"
+#~ msgstr "`Invalid expression syntax.`"

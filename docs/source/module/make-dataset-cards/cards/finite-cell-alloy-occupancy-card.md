@@ -109,9 +109,9 @@ UI 只用数据集的**首个输入结构**计算位点数、可行整数组成�
 
 ## 推荐组合
 
-- `Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`：保留 L1₂、B2、L1₀ 等原型的子晶格划分，并在各子晶格内生成受约束的无序占位。
-- `Crystal Prototype Builder → Super Cell → Finite-Cell Alloy Occupancy`：先得到足够位点，再生成可实现的随机固溶体组成。
-- `Finite-Cell Alloy Occupancy → Atomic Perturb → Lattice Strain`：先确定占位，再补充坐标和晶格扰动。
+- `有序合金原型 → 有限晶胞合金占位`：保留 L1₂、B2、L1₀ 等原型的子晶格划分，并在各子晶格内生成受约束的无序占位。
+- `晶体原型构建 → 扩胞 → 有限晶胞合金占位`：先得到足够位点，再生成可实现的随机固溶体组成。
+- `有限晶胞合金占位 → 原子扰动 → 晶格应变`：先确定占位，再补充坐标和晶格扰动。
 
 ## 常见问题
 

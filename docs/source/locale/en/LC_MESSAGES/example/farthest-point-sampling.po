@@ -8,180 +8,183 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 19:40+0800\n"
+"POT-Creation-Date: 2026-10-15 16:32+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: en <LL@li.org>\n"
 "Language: en\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:1
-#: 371f30ab14a7466f8716abd1f530309a
+#: ../../source/example/farthest-point-sampling.md:1
+#: 88886f1a63814540b719585b744dd48e
 msgid "最远点采样：从候选池挑代表结构"
 msgstr "Farthest-Point Sampling: Select Representative Structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:3
-#: 748953f7d364417883892275f00900a1
+#: ../../source/example/farthest-point-sampling.md:3
+#: 7b06488883504c73a4e8ae2fe175c11b
 msgid ""
-"最远点采样（FPS）适合从大量相似候选结构中挑出一个更有代表性的子集。它只判断描"
-"述符距离，不判断结构是否合理；如果候选池里有原子重叠等坏结构，应先清洗，再做 "
-"FPS。"
+"最远点采样（FPS）适合从大量相似候选结构中挑出一个更有代表性的子集。它只判断描述符距离，不判断结构是否合理；如果候选池里有原子重叠等坏结构，应先清洗，再做"
+" FPS。"
 msgstr ""
-"Farthest-point sampling (FPS) selects a representative subset from a large "
-"pool of similar candidate structures. It only considers descriptor distance, "
-"not whether a structure is physically reasonable. Clean structures with "
-"overlapping atoms or other defects before running FPS."
+"Farthest-point sampling (FPS) selects a representative subset from a "
+"large pool of similar candidate structures. It only considers descriptor "
+"distance, not whether a structure is physically reasonable. Clean "
+"structures with overlapping atoms or other defects before running FPS."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:5
-#: 7aa3dd89e1cf46ab8ff66195c733cd13
+#: ../../source/example/farthest-point-sampling.md:5
+#: f39ef6a121ea42d7be748ed6f9c3e277
 msgid "1. 打开描述符图"
 msgstr "1. Open the descriptor plot"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:7
-#: 455f0b68bf0440a8af1fda6e29aa9601
+#: ../../source/example/farthest-point-sampling.md:7
+#: 0d6a2e9ad6274189ab2a9189758842a3
 msgid ""
-"在 `NEP Dataset Display` 中打开清洗后的候选结构和可用于计算描述符的 "
-"`nep.txt`。双击 `descriptor` 小图，把它切换到主图区，然后点击 `Sparse "
-"samples`。"
+"在 `NEP 数据集查看` 中打开清洗后的候选结构和可用于计算描述符的 `nep.txt`。双击 `descriptor` "
+"小图，把它切换到主图区，然后点击 `稀疏采样`。"
 msgstr ""
 "In `NEP Dataset Display`, open the cleaned candidate structures and a "
 "`nep.txt` that can calculate their descriptors. Double-click the "
 "`descriptor` thumbnail to move it into the main plot, then click `Sparse "
 "samples`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:9
-#: 38edfc70c17b4d50bea343cb09b27991
+#: ../../source/example/farthest-point-sampling.md:9
+#: c5a68c0d014e4e3d83ad221a907761be
 msgid "描述符图和最远点采样入口"
 msgstr "Descriptor plot and the farthest-point sampling action"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:9
-#: 38edfc70c17b4d50bea343cb09b27991
+#: ../../source/example/farthest-point-sampling.md:9
+#: c5a68c0d014e4e3d83ad221a907761be
 msgid ".. image:: ../_static/image/generated/tutorials/fps_sampling_entry.png"
 msgstr ".. image:: ../_static/image/generated/tutorials/fps_sampling_entry.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:14
-#: dee77c191f27496f9688ce20f623302d
+#: ../../source/example/farthest-point-sampling.md:14
+#: 030a3e8ec1834332ab170e43e70a746f
 msgid "2. 第一次这样设置"
 msgstr "2. Use these settings for your first run"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:16
-#: 88ad34370da448a1b7d40ec153a87e89
+#: ../../source/example/farthest-point-sampling.md:16
+#: 415b7fa492f14736baaf8cb8f16eaf6f
 msgid "下面的示例从 25 个同类结构中挑 8 个："
 msgstr ""
 "The following example selects 8 structures from a pool of 25 similar "
 "candidates:"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:18
-#: 9d907e2f0a1a4957ae486154a13bc7a6
+#: ../../source/example/farthest-point-sampling.md:18
+#: caf4d7bafb484ab9a90a7582ebd1ec1b
 msgid "最远点采样设置窗口"
 msgstr "Farthest-point sampling settings"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:18
-#: 9d907e2f0a1a4957ae486154a13bc7a6
+#: ../../source/example/farthest-point-sampling.md:18
+#: caf4d7bafb484ab9a90a7582ebd1ec1b
 msgid ""
-".. image:: ../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
 msgstr ""
-".. image:: ../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:23
-#: d250a284e9434fefa8633abda0e79282
-msgid "`Selection strategy` 选择 `Global FPS`。它适合同一元素集合的候选池。"
+#: ../../source/example/farthest-point-sampling.md:23
+#: 3bb1ada6b2774893b7e1e1f79894999c
+msgid "`选择策略` 选择 `全局 FPS（兼容模式）`。它适合同一元素集合的候选池。"
 msgstr ""
-"Set `Selection strategy` to `Global FPS`. This is suitable when all "
-"candidates have the same element set."
+"Set `Selection strategy` to `Global FPS (compatible)`. This is suitable "
+"when all candidates have the same element set."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:24
-#: c28e38ee7907431586d275ff211ef8dd
-msgid ""
-"`Sampling mode` 选择 `Fixed count (FPS)`，`Sample limit` 填计划保留的结构数，"
-"例如 `8`。"
+#: ../../source/example/farthest-point-sampling.md:24
+#: ca29ac7448ed41be8031c896f2d79e7b
+msgid "`采样模式` 选择 `固定数量（FPS）`，`样本上限` 填计划保留的结构数，例如 `8`。"
 msgstr ""
-"Set `Sampling mode` to `Fixed count (FPS)`, then enter the number of "
-"structures to retain in `Sample limit`, such as `8`."
+"Set `Sampling mode` to `Fixed count (FPS)` and enter the number of "
+"structures to keep in `Sample limit`, for example `8`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:25
-#: 3f230fb1eff9403d81021d219054d2ff
-msgid ""
-"`Min distance` 先用当前默认值 `0.01`。描述符尺度取决于模型；如果最终不足 8 "
-"个，说明距离条件过严，应调小后重试。"
+#: ../../source/example/farthest-point-sampling.md:25
+#: 915b99bc2ef940aab7441dffcc27c28a
+msgid "`最小距离` 先用当前默认值 `0.01`。描述符尺度取决于模型；如果最终不足 8 个，说明距离条件过严，应调小后重试。"
 msgstr ""
-"Start with the current `Min distance` default of `0.01`. Descriptor scales "
-"depend on the model. If fewer than 8 structures are selected, the distance "
-"threshold is too strict; reduce it and try again."
+"Start with the current `Min distance` default of `0.01`. Descriptor "
+"scales depend on the model. If fewer than 8 structures are selected, the "
+"distance threshold is too strict; reduce it and try again."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:26
-#: c4f0024136254239b8bfc68da8704db5
-msgid "`Descriptor source` 选择 `Reduced (PCA)`，其余高级选项先留空。"
+#: ../../source/example/farthest-point-sampling.md:26
+#: 7e32bf4526484fb6955507fc9a97b1ef
+msgid "`描述符来源` 选择 `降维后（PCA）`，其余高级选项先留空。"
 msgstr ""
 "Set `Descriptor source` to `Reduced (PCA)` and leave the other advanced "
-"options empty for now."
+"options empty."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:27
-#: 5c851b1127dd4217adc73e97885ebdfc
+#: ../../source/example/farthest-point-sampling.md:27
+#: 095e47cc32af4a28a58973be18973d10
 msgid "点击 `OK`。"
 msgstr "Click `OK`."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:29
-#: 94629cd203ad442fb2e81c1019318b2d
+#: ../../source/example/farthest-point-sampling.md:29
+#: 8151e3941d964c859a3ca50c7c4f0e4f
 msgid ""
-"如果候选池混合了不同元素集合，改用 `Element-set balanced FPS`。它会先给每个元"
-"素集合分配名额，因此 `Sample limit` 不能小于元素集合数量。`Training dataset` "
-"只在希望避开已有训练集覆盖区域时填写；第一次从单一候选池采样可以留空。"
+"如果候选池混合了不同元素集合，改用 `元素集合平衡 FPS`。它会先给每个元素集合分配名额，因此 `样本上限` "
+"不能小于元素集合数量。`训练数据集` 只在希望避开已有训练集覆盖区域时填写；第一次从单一候选池采样可以留空。"
 msgstr ""
 "If the candidate pool contains different element sets, use `Element-set "
-"balanced FPS`. It allocates a quota to each element set, so `Sample limit` "
-"must not be smaller than the number of element sets. Fill in `Training "
-"dataset` only when you want to avoid regions already covered by an existing "
-"training set. Leave it empty for a first pass over a single candidate pool."
+"balanced FPS`. It allocates a quota to each element set, so `Sample "
+"limit` must not be smaller than the number of element sets. Fill in "
+"`Training dataset` only when you want to avoid regions already covered by"
+" an existing training set. Leave it empty for a first pass over a single "
+"candidate pool."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:31
-#: 0cb7c5f52bc542559a35450835ce3641
+#: ../../source/example/farthest-point-sampling.md:31
+#: f3a967c3bbf04c559e34b7f5df6cd3c3
 msgid "3. 导出选中的代表结构"
 msgstr "3. Export the selected representative structures"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:33
-#: 9621540750ff4548a75af83796380e94
+#: ../../source/example/farthest-point-sampling.md:33
+#: daf812b75120477d80d34817bd6e84e1
 msgid "最远点采样选中的八个代表结构"
 msgstr "Eight representative structures selected by FPS"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:33
-#: 9621540750ff4548a75af83796380e94
+#: ../../source/example/farthest-point-sampling.md:33
+#: daf812b75120477d80d34817bd6e84e1
 msgid ".. image:: ../_static/image/generated/tutorials/fps_sampling_result.png"
-msgstr ""
-".. image:: ../_static/image/generated/tutorials/fps_sampling_result.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/fps_sampling_result.png"
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:38
-#: bf6e873db237449b9be98c97d0bf5207
+#: ../../source/example/farthest-point-sampling.md:38
+#: 79f6426cae964a33b0cfbb1940d73ff3
 msgid ""
-"运行后检查底部状态栏：本例应显示 `Sel: 8`、`Unsel: 17`。图中红色点是选中的代"
-"表结构。"
-msgstr ""
-"After the run, check the status bar. This example should show `Sel: 8` and "
-"`Unsel: 17`. The red points are the selected representative structures."
+"运行后检查底部状态栏：本例应显示 `选 8`；鼠标停在状态栏上，提示中的未选中数量应为 17。图中高亮显示的点就是选中的代表结构（高亮颜色可在 "
+"`设置` → `选中颜色` 中修改）。"
+msgstr "After the run, check the status bar. This example should show `Sel 8`; hovering over the status bar shows 17 unselected structures. The highlighted points are the selected representative structures (change the highlight color under `Settings` → `Selected color`)."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:40
-#: 6a1e720e986a4fb19b0a712b0e12ace7
-msgid ""
-"确认数量后，从顶部 `Save` 菜单选择 `Export Selected` 导出。不要点击 `Delete "
-"selected items`，否则删除的正是刚选出的代表结构。"
+#: ../../source/example/farthest-point-sampling.md:40
+#: ebf38517b85544fe9b999fc4ffbaa968
+msgid "确认数量后，从顶部 `保存` 菜单选择 `导出已选择结构` 导出。不要点击 `删除选中项`，否则删除的正是刚选出的代表结构。"
 msgstr ""
-"After confirming the count, choose `Export Selected` from the `Save` menu. "
-"Do not click `Delete selected items`, because that would delete the "
-"representative structures you just selected."
+"After confirming the count, choose `Export Selected` from the top `Save` "
+"menu. Do not click `Delete selected items`, because that would delete the"
+" representative structures you just selected."
 
-#: ../../../Users/superbing/Desktop/Workspace/NepTrainKit/docs/source/example/farthest-point-sampling.md:42
-#: 3727386cd9f0465db571ba88dec83e63
+#: ../../source/example/farthest-point-sampling.md:42
+#: 2159f5022b61456688e4960d602b301f
 msgid ""
-"`Use current selection as region` 会改变选择含义：程序只在当前选区中采样，并"
-"把保留下来的代表点从选区中取消。这个选项方便随后删除选区内的冗余结构，但第一"
-"次使用时建议不要勾选。"
+"`将当前选择作为区域` "
+"会改变选择含义：程序只在当前选区中采样，并把保留下来的代表点从选区中取消。这个选项方便随后删除选区内的冗余结构，但第一次使用时建议不要勾选。"
 msgstr ""
-"`Use current selection as region` changes the meaning of the selection: the "
-"program samples only within the current selection and then deselects the "
-"representative points it keeps. This is useful when you intend to delete the "
-"remaining redundant structures in that region, but leave it unchecked for "
-"your first run."
+"`Use current selection as region` changes the meaning of the selection: "
+"the program samples only within the current selection and then deselects "
+"the representative points it keeps. This is useful when you intend to "
+"delete the remaining redundant structures in that region, but leave it "
+"unchecked for your first run."
+
+#~ msgid "`Sampling mode` 选择 `Fixed count (FPS)`，`Sample limit` 填计划保留的结构数，例如 `8`。"
+#~ msgstr ""
+#~ "Set `Sampling mode` to `Fixed count "
+#~ "(FPS)`, then enter the number of "
+#~ "structures to retain in `Sample limit`,"
+#~ " such as `8`."
+
+#~ msgid "`Descriptor source` 选择 `Reduced (PCA)`，其余高级选项先留空。"
+#~ msgstr ""
+#~ "Set `Descriptor source` to `Reduced "
+#~ "(PCA)` and leave the other advanced "
+#~ "options empty for now."

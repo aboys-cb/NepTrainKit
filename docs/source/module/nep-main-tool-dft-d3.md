@@ -1,4 +1,4 @@
-# DFT-D3 修正
+# DFT-D3 修正（DFT D3）
 
 界面按钮：`DFT D3`。
 

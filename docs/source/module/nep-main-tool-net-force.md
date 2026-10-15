@@ -1,4 +1,4 @@
-# 检查净力（Check Net Force）
+# 检查净力（Check net force）
 
 ## 作用与适用场景
 

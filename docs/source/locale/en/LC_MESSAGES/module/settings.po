@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 16:56+0800\n"
+"POT-Creation-Date: 2026-10-15 16:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,313 +19,326 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/settings.md:1 b4a8485b2b1949feaeedc8075b650739
+#: ../../source/module/settings.md:1 36883caa221b41c29d84c67c6f8911f2
 msgid "设置（Settings）"
 msgstr "Settings"
 
-#: ../../source/module/settings.md:3 9de26f7dd2eb41299eb364f8b0737255
+#: ../../source/module/settings.md:3 f79815b335ea4150b1f1227e8aefb76e
+#
 msgid ""
-"`Settings` 用来调整显示、导入导出、NEP 后端和绘图样式。刚开始不需要全部改；只有当你遇到加载慢、显示卡顿、预测慢、导出格式不符合下游要求，或想切换 "
-"CPU/CUDA 后端时，再来这里。"
-msgstr ""
-"Use `Settings` to adjust rendering, import and export behavior, the NEP backend, and "
-"plot styles. You do not need to tune everything at first. Change a setting when you "
-"encounter slow loading or rendering, slow prediction, an incompatible export format, "
-"or a need to switch between CPU and CUDA."
+"`设置` 用来调整界面语言、显示、导入导出、NEP "
+"后端和绘图样式。刚开始不需要全部改；只有当你遇到加载慢、显示卡顿、预测慢、导出格式不符合下游要求，或想切换 CPU/CUDA 后端时，再来这里。"
+msgstr "Use `Settings` to adjust the interface language, rendering, import and export behavior, the NEP backend, and plot styles. You do not need to tune everything at first. Come here when loading is slow, rendering stutters, prediction is slow, exports do not match downstream requirements, or you need to switch between CPU and CUDA."
 
-#: ../../source/module/settings.md:5 d1fe25b5213243688f7946c6b94ecc70
+#: ../../source/module/settings.md:5 c3aa2399bd7c4116b49e450be5835cd5
 msgid "先改哪些"
 msgstr "Choose the relevant setting"
 
-#: ../../source/module/settings.md 8a7fce664e4745f4b8d9fba068ca2c88
+#: ../../source/module/settings.md bf327ffb74dd4361abacb0d8cc1b3ecc
 msgid "你遇到的问题"
 msgstr "What you observe"
 
-#: ../../source/module/settings.md d7a0ca6e74984e05be3f728256ec3371
+#: ../../source/module/settings.md 0f19744e645a4b1e975e1f7bd30db3fb
 msgid "可以看哪个设置"
 msgstr "Setting to check"
 
-#: ../../source/module/settings.md 4316c01573874378be8dab1ca0391010
+#: ../../source/module/settings.md e80ae8bbb86f4f3e9412faec4e19a10b
 msgid "影响"
 msgstr "Effect"
 
-#: ../../source/module/settings.md f79cbc0bb7204ffa9985c094876b566c
+#: ../../source/module/settings.md d9ba06bf3f8d40789ba5e86f46aad3fc
+msgid "想把界面换成中文或英文"
+msgstr "Switch the interface between English and Chinese"
+
+#: ../../source/module/settings.md ebde059242da472db41204cde387052e
+msgid "`语言`"
+msgstr "`Language`"
+
+#: ../../source/module/settings.md 241dc119a33f4fa4ac6d585b63cc2f7b
+#
+msgid "在 `Auto` / `English` / `中文` 间切换，重启后生效"
+msgstr "Choose `Auto`, `English`, or the Chinese option; takes effect after restart"
+
+#: ../../source/module/settings.md 398283e1f4ef442b9ec12cf0d2c09705
 msgid "大结构显示卡顿"
 msgstr "Large structures render slowly"
 
-#: ../../source/module/settings.md 8bf19f11c0e84ee79e3ffd8eaf36d89a
-msgid "`Canvas Engine`"
+#: ../../source/module/settings.md 459961a7e46c4011b62baa9075e838e8
+msgid "`绘图后端`"
 msgstr "`Canvas Engine`"
 
-#: ../../source/module/settings.md 4183f7de3048442090cfe08d69366f1f
+#: ../../source/module/settings.md 241dc119a33f4fa4ac6d585b63cc2f7b
 msgid "在 `Auto` / `PyQtGraph` / `VisPy` 间切换结构和散点渲染后端"
 msgstr ""
-"Switch the structure and scatter rendering backend among `Auto`, `PyQtGraph`, and "
-"`VisPy`"
+"Switch the structure and scatter rendering backend among `Auto`, "
+"`PyQtGraph`, and `VisPy`"
 
-#: ../../source/module/settings.md 8b4172fd03ef4839b5b4b82bcb0b3abb
+#: ../../source/module/settings.md 22cee334d1554dac901594df0002f75b
 msgid "力图数值不符合习惯"
 msgstr "Force plots use an unfamiliar scale"
 
-#: ../../source/module/settings.md 1976528dab5c4714aaef5a4e9708c077
-msgid "`Force data format`"
+#: ../../source/module/settings.md 7d6f38c6413f4aa39c6d66bdab045377
+msgid "`力数据格式`"
 msgstr "`Force data format`"
 
-#: ../../source/module/settings.md d087d68cb41c4f94af8130c75445c68e
+#: ../../source/module/settings.md acb8b6cccd0448c9816311ceee53c0ba
 msgid "在原始力和归一化显示之间切换"
 msgstr "Switch between raw-force and normalized display"
 
-#: ../../source/module/settings.md a52977283a604d8a905695f7e4229f96
+#: ../../source/module/settings.md 7887cdc60bca4034a9a658e78ba04a20
 msgid "打开目录时不想自动加载"
 msgstr "Opening a directory should not trigger automatic loading"
 
-#: ../../source/module/settings.md 7326437b243a46f7a47245f9bcff1443
-msgid "`Auto loading`"
+#: ../../source/module/settings.md 29aa561c599a47b084998ea0e4fd4f0b
+msgid "`自动加载`"
 msgstr "`Auto loading`"
 
-#: ../../source/module/settings.md 56b696e6185e46aea7386c58ac7b8dd8
+#: ../../source/module/settings.md 3de2d4cc27e04c6a8ef51c1dce850e48
 msgid "控制是否自动读取启动路径里的相关结果文件"
-msgstr "Control whether related result files in the startup path are loaded automatically"
+msgstr ""
+"Control whether related result files in the startup path are loaded "
+"automatically"
 
-#: ../../source/module/settings.md cd2b9ac9abde420295f0c4c3e430fa3b
+#: ../../source/module/settings.md 7db53c0bd6ba48ea99e64776eb550a18
 msgid "卡片处理时原子顺序影响观察"
 msgstr "Atom order makes card outputs difficult to inspect"
 
-#: ../../source/module/settings.md 0d5dd9bdbf2a448d9283c2339134496f
-msgid "`Sort atoms`"
+#: ../../source/module/settings.md 1d317489098a49e999f2d6a43f47c553
+msgid "`原子排序`"
 msgstr "`Sort atoms`"
 
-#: ../../source/module/settings.md d8fbac35dddf456f891d9a60deedc732
+#: ../../source/module/settings.md 584646719fcb4401a667c7120f52dc10
 msgid "处理结构时按元素顺序重排原子"
 msgstr "Sort atoms by element while processing structures"
 
-#: ../../source/module/settings.md d96b3ad18b3f4e68a064d095f4d40201
+#: ../../source/module/settings.md cf9369be847645d99fa1f2033fa9e951
 msgid "卡片菜单太拥挤"
 msgstr "The card menu is crowded"
 
-#: ../../source/module/settings.md ef21672fe01d49ae87d43d9f8032a128
-msgid "`Use card group menu`"
+#: ../../source/module/settings.md c83c15f020d54b4fa37458a54647f861
+msgid "`使用卡片分组菜单`"
 msgstr "`Use card group menu`"
 
-#: ../../source/module/settings.md dfb5205df5df412d96982361d7473eb9
-msgid "按卡片 `group` 分组显示 生成数据集 菜单"
+#: ../../source/module/settings.md 4e21819f798a45788ece3d88f51a89ad
+msgid "按卡片 `group` 分组显示构建数据集菜单"
 msgstr "Group the `Make Dataset` menu by card `group`."
 
-#: ../../source/module/settings.md d4009ad86c0b412a89c15421e6a1685d
+#: ../../source/module/settings.md 7d463922d2864d5ab06f57b12b2beac2
 msgid "反复打开同一批输出较慢"
 msgstr "Reopening the same outputs is slow"
 
-#: ../../source/module/settings.md b0d175b6130d40e3a36b00f1f3546160
-msgid "`Cache output files`"
+#: ../../source/module/settings.md 60f1cd90e2e94ea4a2a0d4300dc734a4
+msgid "`缓存输出文件`"
 msgstr "`Cache output files`"
 
-#: ../../source/module/settings.md c871fd967fb042bf8c712bf5bfdf0f99
+#: ../../source/module/settings.md ef49549f52aa494abf153fadbcfa3a39
 msgid "缓存 `*.out` 和 `descriptor.out`，减少重复解析"
 msgstr "Cache `*.out` and `descriptor.out` files to avoid repeated parsing"
 
-#: ../../source/module/settings.md 9baea05df7c74d4ba6dc2a959dc4f3ec
+#: ../../source/module/settings.md 3120969c570e4f33b45cdeb2a920bf2f
 msgid "导出小数位不合适"
 msgstr "Exported numeric precision is unsuitable"
 
-#: ../../source/module/settings.md b5a84653ccd5497c83e5eed149ea7307
-msgid "`Export significant digits`"
+#: ../../source/module/settings.md ba39dff5634b4b2bbc03b4a04c21b397
+msgid "`导出有效数字`"
 msgstr "`Export significant digits`"
 
-#: ../../source/module/settings.md d523e8f30101467a9a5ecd0ac4e2523f
+#: ../../source/module/settings.md 84a98f2c841a437db9258cb35ea7bbcd
 msgid "控制 `xyz` / `extxyz` 中逐原子数值的有效数字"
 msgstr "Set the significant digits for per-atom values in `xyz` and `extxyz`"
 
-#: ../../source/module/settings.md 069e2300b0bb411383991853cf64028a
+#: ../../source/module/settings.md 808608968f7145b3a912842c47b6d4db
 msgid "源文件没有 `Config_type`"
 msgstr "Source structures have no `Config_type`"
 
-#: ../../source/module/settings.md f9a42c3ae11f41f0bda04bed4d18eb93
-msgid "`Default Config_type`"
+#: ../../source/module/settings.md 808608968f7145b3a912842c47b6d4db
+#
+msgid "`默认 Config_type`"
 msgstr "`Default Config_type`"
 
-#: ../../source/module/settings.md d42ee47f1a3642138b5713025b99a63f
+#: ../../source/module/settings.md 3b1d32425d7a4f158240430a62921888
 msgid "给缺少标签的结构补默认来源标签"
 msgstr "Assign a default provenance label when one is missing"
 
-#: ../../source/module/settings.md e4ecba281eab42acab721c56f6d35870
+#: ../../source/module/settings.md 3d3665107ae34be08d1c5d11d00912f1
 msgid "非物理结构检测太松或太严"
 msgstr "Nonphysical-structure detection is too permissive or too strict"
 
-#: ../../source/module/settings.md bc0f9928820e45fd98b2058325566560
-msgid "`Covalent radius coefficient`"
+#: ../../source/module/settings.md 9d60d633afda4c41b7818f18e7b42b10
+msgid "`共价半径系数`"
 msgstr "`Covalent radius coefficient`"
 
-#: ../../source/module/settings.md d7fdc458d25b48e8af83e1ca34d8374f
+#: ../../source/module/settings.md c6dff77e2bf4405c8a663e9c37ddc251
 msgid "调整近邻距离判据"
 msgstr "Adjust the nearest-neighbor distance criterion"
 
-#: ../../source/module/settings.md:19 d39c7a4c857c40fda7fc3d46259a6208
+#: ../../source/module/settings.md:20 00b2eeb553a54fcfaf589cbe0e63666b
 msgid ""
-"DeepMD 的标准/Mixed 格式和标准 NPY 的 `Config_type`/化学式分组方式已移到 `NEP Dataset Display` "
+"DeepMD 的标准/Mixed 格式和标准 NPY 的 `Config_type`/化学式分组方式已移到 `NEP 数据集查看` "
 "的导出弹窗。程序会记住上次选择，但它们不再占用通用设置页。"
 msgstr ""
-"The standard/Mixed DeepMD format choice and the standard NPY grouping choice "
-"(`Config_type` or chemical formula) have moved to the `NEP Dataset Display` export "
-"dialog. The program remembers the last selections, but they no longer occupy the "
-"general Settings page."
+"The standard/Mixed DeepMD format choice and the standard NPY grouping "
+"choice (`Config_type` or chemical formula) have moved to the `NEP Dataset"
+" Display` export dialog. The program remembers the last selections, but "
+"they no longer occupy the general Settings page."
 
-#: ../../source/module/settings.md:22 b39300872d37439c923f26cbf2aa7c12
+#: ../../source/module/settings.md:23 22471dec30aa455cb7dbc502eb89fa3b
+msgid "界面语言"
+msgstr "Interface language"
+
+#: ../../source/module/settings.md:25 d2bf2f593690495ea8f5f8ab2aec9e1c
+msgid "在 `个性化` → `语言` 中选择："
+msgstr "Choose under `Personalization` → `Language`:"
+
+#: ../../source/module/settings.md:27 e66a702c07364a5bb3fb1aaca9bb38d9
+msgid "`Auto`：跟随系统语言；系统是中文时显示中文，其他情况显示英文。"
+msgstr "`Auto`: follows the system language; Chinese systems show Chinese and all others show English."
+
+#: ../../source/module/settings.md:28 a4f8130bba8746c8b7da13911b14ce7c
+msgid "`English` / `中文`：固定使用该语言。"
+msgstr "`English` or the Chinese option: always use that language."
+
+#: ../../source/module/settings.md:30 e49c48ad2b1e4b83a617bd86c2e8b8b8
+msgid ""
+"保存后需要重启 NepTrainKit 才会生效。本文档按中文界面的按钮名称编写；如果你使用英文界面， "
+"请切换到英文文档，按钮名称会与界面一致。在软件里点击卡片的文档链接时，也会按当前界面语言打开对应版本。"
+msgstr "Restart NepTrainKit for the change to take effect. This English documentation uses the English interface labels; if you use the Chinese interface, switch to the Chinese documentation so the button names match. Documentation links inside the application open the version that matches the current interface language."
+
+#: ../../source/module/settings.md:33 aba45e62e40c49be9499fe11318d70eb
 msgid "NEP 后端"
 msgstr "NEP backend"
 
-#: ../../source/module/settings.md:24 4e65d83b4b6942c68b7ab7e541f03011
-msgid "`NEP Backend` 控制预测时使用 CPU、CUDA，还是由程序自动选择。"
-msgstr ""
-"`NEP Backend` controls whether prediction uses CPU, CUDA, or automatic backend "
-"selection."
+#: ../../source/module/settings.md:35 4da3c1ec87c24f1eb0b3a20f43c614b1
+#
+msgid "`NEP 后端` 控制预测时使用 CPU、CUDA，还是由程序自动选择。"
+msgstr "`NEP Backend` controls whether prediction uses CPU, CUDA, or automatic backend selection."
 
-#: ../../source/module/settings.md:26 3ead8a38dc4a48b0aec2fdb3611a46f5
+#: ../../source/module/settings.md:37 ac08e03578744024b286ad712a461904
 msgid "`Auto`：默认路径；CUDA 可用且当前模型受支持时使用 CUDA，否则在任务开始前明确提示并使用 CPU。运行中不会静默切换后端。"
 msgstr ""
-"`Auto`: the default path. It uses CUDA when available and supported by the current "
-"model; otherwise it explains the decision before the task starts and uses CPU. It "
-"does not silently switch backend during execution."
+"`Auto`: the default path. It uses CUDA when available and supported by "
+"the current model; otherwise it explains the decision before the task "
+"starts and uses CPU. It does not silently switch backend during "
+"execution."
 
-#: ../../source/module/settings.md:27 05d9a494b1e8432d964dcfd2991a640a
+#: ../../source/module/settings.md:38 fa9f6fd0a2544ef0b301eb7169917558
 msgid "`CPU`：适合没有可用 GPU、驱动不匹配，或只是少量结构快速查看。"
 msgstr ""
-"`CPU`: use when no compatible GPU is available or when inspecting only a few "
-"structures."
+"`CPU`: use when no compatible GPU is available or when inspecting only a "
+"few structures."
 
-#: ../../source/module/settings.md:28 c979b8ecf3fa4b6aa5f9372ab22266a6
+#: ../../source/module/settings.md:39 ac9a23cbc9f54bc78dfb3e9b3457c72f
 msgid "`CUDA`：明确要求 NVIDIA CUDA 后端；不可用时直接报错并说明驱动或安装问题。"
 msgstr ""
-"`CUDA`: explicitly require the NVIDIA CUDA backend. If unavailable, the application "
-"reports the driver or installation problem instead of changing backend."
+"`CUDA`: explicitly require the NVIDIA CUDA backend. If unavailable, the "
+"application reports the driver or installation problem instead of "
+"changing backend."
 
-#: ../../source/module/settings.md:30 a8f93a888370441bb4cdaa85f4e73434
+#: ../../source/module/settings.md:41 d5823f91e8104bcaa42bafa5dd87451e
+#
 msgid ""
-"`NEP Chunk Max Atoms` 决定一次预测分块包含的总原子数，CPU 和 CUDA 使用相同语义。遇到显存或内存不足时调小；单个结构本身超过 CUDA "
-"可用规模时应改用 CPU，因为单结构不能安全拆分。"
-msgstr ""
-"`NEP Chunk Max Atoms` sets the total atom count allowed in one prediction chunk, with"
-" the same meaning on CPU and CUDA. Reduce it when device or host memory is "
-"insufficient. If one structure alone exceeds the CUDA capacity, use CPU because a "
-"single structure cannot be split safely."
+"`NEP 分块最大原子数` 决定一次预测分块包含的总原子数，CPU 和 CUDA 使用相同语义。遇到显存或内存不足时调小；单个结构本身超过 "
+"CUDA 可用规模时应改用 CPU，因为单结构不能安全拆分。"
+msgstr "`NEP Chunk Max Atoms` sets the total atom count allowed in one prediction chunk, with the same meaning on CPU and CUDA. Reduce it when device or host memory runs out. If a single structure exceeds what CUDA can handle, use the CPU instead, because one structure cannot be split safely."
 
-#: ../../source/module/settings.md:32 1d885540c61147aea05cb251bd97284a
-msgid "`Data Precision` 控制导入 DFT/结构数据后的存储精度。常规可保持默认；只有在内存压力明显或需要保留更高精度数值时再改。"
-msgstr ""
-"`Data Precision` controls the storage precision of imported DFT and structure data. "
-"Keep the default for normal work. Change it only to address clear memory pressure or "
-"a requirement to retain higher-precision values."
+#: ../../source/module/settings.md:43 1c29ec7ca29942c591166da2c21610fc
+#
+msgid "`数据精度` 控制导入 DFT/结构数据后的存储精度。常规可保持默认；只有在内存压力明显或需要保留更高精度数值时再改。"
+msgstr "`Data Precision` controls the storage precision of imported DFT and structure data. Keep the default for normal work; change it only for clear memory pressure or when higher precision must be preserved."
 
-#: ../../source/module/settings.md:34 0e788ed2989943268633300bff489bf4
+#: ../../source/module/settings.md:45 960cfe88d8084936975213f6d0155ce5
+#
 msgid ""
-"`NEP Settings` 中的运行时健康项会显示 NepTrainKit 原生辅助模块、`nep-adapters` 版本以及 CPU/CUDA 可用状态。点击 "
-"`NEP runtime updates` 可以从 PyPI "
-"手动检查兼容更新。每次打开软件后也会在后台执行一次运行时检查：没有更新或网络检查失败时保持静默，发现新版本时弹出安装提示。程序会校验 wheel 的 "
-"SHA256，并在独立进程中确认导入和 CPU 后端可用后才切换版本；更新在重启 NepTrainKit 后生效。验证失败时继续使用原版本。"
-msgstr ""
-"The runtime health section under `NEP Settings` reports NepTrainKit's native helper "
-"modules, the `nep-adapters` version, and CPU/CUDA availability. Use `NEP runtime "
-"updates` to check PyPI manually for a compatible update. The application also checks "
-"once in the background after startup: no-update and network-failure results remain "
-"silent, while an available version opens an installation prompt. Before activation, "
-"NepTrainKit verifies the wheel SHA256 and uses an isolated process to confirm that it"
-" imports and that the CPU backend is usable. The update takes effect after restarting"
-" NepTrainKit; a failed validation leaves the existing version active."
+"`NEP 设置` 中的 `运行环境状态`会显示 NepTrainKit 原生辅助模块、`nep-adapters` 版本以及 CPU/CUDA "
+"可用状态。点击 `NEP 运行时更新` 可以从 PyPI "
+"手动检查兼容更新。每次打开软件后也会在后台执行一次运行时检查：没有更新或网络检查失败时保持静默，发现新版本时弹出安装提示。程序会校验 wheel "
+"的 SHA256，并在独立进程中确认导入和 CPU 后端可用后才切换版本；更新在重启 NepTrainKit 后生效。验证失败时继续使用原版本。"
+msgstr "`Runtime health` under `NEP Settings` reports NepTrainKit's native helper modules, the `nep-adapters` version, and CPU/CUDA availability. Click `NEP runtime updates` to check PyPI for a compatible update manually. NepTrainKit also checks the runtime in the background each time it opens: it stays silent when there is no update or the network check fails, and shows an installation prompt when a new version is available. The wheel's SHA256 is verified and the import and CPU backend are confirmed in a separate process before the version is switched; the update takes effect after restart. If verification fails, the previous version stays in use."
 
-#: ../../source/module/settings.md:36 68a3c3b2067243afb260c0e2db0c730a
+#: ../../source/module/settings.md:47 19d04cfdb1214bd49396132881558efb
 msgid ""
-"通过 pip 安装 NepTrainKit 时，更新后的运行时保存在用户配置目录；Nuitka 独立版则保存在 `NepTrainKit.exe` 旁的 `runtime"
-"/nep-adapters/versions`，当前版和上一版会保留用于恢复。"
+"通过 pip 安装 NepTrainKit 时，更新后的运行时保存在用户配置目录；Nuitka 独立版则保存在 `NepTrainKit.exe`"
+" 旁的 `runtime/nep-adapters/versions`，当前版和上一版会保留用于恢复。"
 msgstr ""
-"For a pip installation, updated runtimes are stored in the user configuration "
-"directory. In a standalone Nuitka build, they are stored next to `NepTrainKit.exe` "
-"under `runtime/nep-adapters/versions`; the current and previous versions are retained"
-" for recovery."
+"For a pip installation, updated runtimes are stored in the user "
+"configuration directory. In a standalone Nuitka build, they are stored "
+"next to `NepTrainKit.exe` under `runtime/nep-adapters/versions`; the "
+"current and previous versions are retained for recovery."
 
-#: ../../source/module/settings.md:38 302fddf6ed234a638cc10db030b816f0
+#: ../../source/module/settings.md:49 741e3c7fd1a64040bc0cfcf51ad37b16
 msgid "绘图和结构显示"
 msgstr "Plots and structure rendering"
 
-#: ../../source/module/settings.md:40 8c65a744bd9843688ac6ead18e64c86a
-msgid "Plot Settings 只影响显示，不改变底层数据。"
-msgstr "Plot Settings affect presentation only; they do not alter the underlying data."
+#: ../../source/module/settings.md:51 81613bc4c95f4213bc81c98be78073a2
+#
+msgid "`绘图设置` 只影响显示，不改变底层数据。"
+msgstr "`Plot Settings` affect presentation only; they do not alter the underlying data."
 
-#: ../../source/module/settings.md:42 a45e23f474ba4d56aca6337ead22aaf9
-msgid "`Scatter edge color` / `Scatter face color` / `Face alpha`：散点默认颜色和透明度。"
-msgstr ""
-"`Scatter edge color`, `Scatter face color`, and `Face alpha`: default scatter colors "
-"and opacity."
+#: ../../source/module/settings.md:53 96567718daea4fb2b792fc9b94a4d09a
+msgid "`散点边缘颜色` / `散点填充颜色` / `填充透明度 (0-255)`：散点默认颜色和透明度。"
+msgstr "`Scatter edge color` / `Scatter face color` / `Face alpha (0-255)`: default scatter colors and transparency."
 
-#: ../../source/module/settings.md:43 8905023fbe514a00832a233648e2afb5
-msgid "`PyQtGraph scatter size` / `VisPy scatter size` / `VisPy antialias`：不同画布后端的点大小和抗锯齿。"
-msgstr ""
-"`PyQtGraph scatter size`, `VisPy scatter size`, and `VisPy antialias`: point size and"
-" antialiasing for each canvas backend."
+#: ../../source/module/settings.md:54 df4f10357b2f40248f7cddadf587461e
+#
+msgid "`PyQtGraph 散点大小` / `VisPy 散点大小` / `VisPy 抗锯齿`：不同画布后端的点大小和抗锯齿。"
+msgstr "`PyQtGraph scatter size` / `VisPy scatter size` / `VisPy antialias`: point size and antialiasing for each canvas backend."
 
-#: ../../source/module/settings.md:44 767edd6558494cf9965e145611ccccfa
-msgid "`Structure background` / `Lattice line color`：结构视图背景和晶格线颜色。"
-msgstr ""
-"`Structure background` and `Lattice line color`: background and cell-line colors in "
-"the structure view."
+#: ../../source/module/settings.md:55 888934b008704e218783e0a30fe89976
+msgid "`结构背景` / `晶格线颜色`：结构视图背景和晶格线颜色。"
+msgstr "`Structure background` / `Lattice line color`: structure-view background and lattice-line colors."
 
-#: ../../source/module/settings.md:45 c4f017ba91c641469e5ffa726180165c
-msgid ""
-"`Selected color` / `Show color` / `Current marker color` / `Current marker "
-"size`：选中点、高亮点和当前结构标记的显示样式。"
-msgstr ""
-"`Selected color`, `Show color`, `Current marker color`, and `Current marker size`: "
-"styles for selected points, highlighted points, and the current-structure marker."
+#: ../../source/module/settings.md:56 8d3ad69bf9234974a6ba1d7e96a8f7cb
+msgid "`选中颜色` / `显示颜色` / `当前标记颜色` / `当前标记大小`：选中点、高亮点和当前结构标记的显示样式。"
+msgstr "`Selected color` / `Show color` / `Current marker color` / `Current marker size`: styles for selected points, highlighted points, and the current-structure marker."
 
-#: ../../source/module/settings.md:47 31b443422d8e478fab30d28f30a7a151
+#: ../../source/module/settings.md:58 4ef56a7c72e34527bf582daf1e9ea1d1
 msgid "如果只是想判断结构是否异常，优先调整点大小和当前结构标记；不要为了配色反复改变数据筛选流程。"
 msgstr ""
-"When the goal is to spot anomalous structures, adjust point size and the current-"
-"structure marker first. Do not change the filtering workflow merely to compensate for"
-" plot colors."
+"When the goal is to spot anomalous structures, adjust point size and the "
+"current-structure marker first. Do not change the filtering workflow "
+"merely to compensate for plot colors."
 
-#: ../../source/module/settings.md:49 a2a37bc203c5442fb470d23e8fed6944
+#: ../../source/module/settings.md:60 4b3663f4f208490d91cf1afaef74b01f
 msgid "NEP89 和更新"
 msgstr "NEP89 and software updates"
 
-#: ../../source/module/settings.md:51 9c13cea99e5a42cd8b0d2b936aa5c744
+#: ../../source/module/settings.md:62 5c076fe1707847808e1f01500d0ac08d
+#
 msgid ""
-"`About NEP89` 会检查并更新内置 `nep89.txt`。NEP89 "
+"`关于 NEP89` 会检查并更新内置 `nep89.txt`。NEP89 "
 "可以用于某些候选结构的快速预筛，但它不是所有材料体系的可靠模型。使用时把它当作异常结构筛查工具，不要当作 DFT 标签来源。"
-msgstr ""
-"`About NEP89` checks for and updates the bundled `nep89.txt`. NEP89 can quickly "
-"prescreen candidates for some systems, but it is not reliable for every material. Use"
-" it to flag anomalies, never as a source of DFT labels."
+msgstr "`About NEP89` checks for and updates the bundled `nep89.txt`. NEP89 can quickly prescreen candidates for some systems, but it is not reliable for every material system. Treat it as a tool for spotting abnormal structures, not as a source of DFT labels."
 
-#: ../../source/module/settings.md:53 fad2428b89014dc89d163c754cbaf154
+#: ../../source/module/settings.md:64 5972570ecd6a4d6f85fbccf53b82d580
 msgid "如果你有当前体系自己的 NEP 模型，优先使用自己的模型做预筛。"
 msgstr ""
-"If a NEP model trained for the current system is available, prefer it for "
-"prescreening."
+"If a NEP model trained for the current system is available, prefer it for"
+" prescreening."
 
-#: ../../source/module/settings.md:55 48a260f27cdd45b0873cebcf06af8144
-msgid "`About` 里的 `Check for Updates` 用于检查 NepTrainKit 新版本。这个检查只影响软件版本提示，不会自动修改你的训练数据。"
-msgstr ""
-"`Check for Updates` under `About` checks for a newer NepTrainKit release. It only "
-"updates the version notification and never modifies training data automatically."
+#: ../../source/module/settings.md:66 a2aa0df785354930a1336d5ce8f3f68e
+#
+msgid "`关于` 里的 `检查更新` 用于检查 NepTrainKit 新版本。这个检查只影响软件版本提示，不会自动修改你的训练数据。"
+msgstr "`Check for Updates` under `About` checks for a newer NepTrainKit release. It only affects the version notification and never modifies your training data."
 
-#: ../../source/module/settings.md:57 b863b219e86c4e9abbe8d97a4ca7c7f5
+#: ../../source/module/settings.md:68 64a38ad2ef7c494f81198a42062bd590
 msgid "修改设置的原则"
 msgstr "Guidelines for changing settings"
 
-#: ../../source/module/settings.md:59 418920b47eee42cea80e6b6c177014a7
+#: ../../source/module/settings.md:70 3db2bebf62c24fd8a41d18c74e72785a
 msgid "先确认问题属于显示、读取、预测、导出还是卡片流程，再改对应设置。"
 msgstr ""
-"First determine whether the problem is in rendering, input, prediction, export, or "
-"the card workflow, then change only the corresponding setting."
+"First determine whether the problem is in rendering, input, prediction, "
+"export, or the card workflow, then change only the corresponding setting."
 
-#: ../../source/module/settings.md:60 f384c750b8be4d8e84abf8986041a364
+#: ../../source/module/settings.md:71 bb7ce5e284ea4ffdbbf49d8b92234b8b
 msgid "一次只改一个关键选项，方便判断影响。"
 msgstr "Change one important option at a time so its effect remains attributable."
 
-#: ../../source/module/settings.md:61 05b1fbc1c4a341edad5340bc1ad7f2c0
+#: ../../source/module/settings.md:72 9502c89ce85a493f9684b20bc6f43267
 msgid "涉及数据清洗阈值时，改完要抽查被选中的结构，而不是只看数量变化。"
 msgstr ""
-"After changing a data-cleaning threshold, inspect some of the selected structures "
-"rather than judging the change only by the count."
+"After changing a data-cleaning threshold, inspect some of the selected "
+"structures rather than judging the change only by the count."
 
 #~ msgid "按卡片 `group` 分组显示 Make Dataset 菜单"
 #~ msgstr "Group the Make Dataset menu by each card's `group`"
@@ -336,19 +349,55 @@ msgstr ""
 #~ msgid "`GPU`：适合批量预测或较大候选池。"
 #~ msgstr "`GPU`: use for batch prediction or a large candidate pool."
 
-#~ msgid "`GPU Batch Size` 决定一次送入 GPU 的结构数量。显存不足时调小；显存充足但吞吐低时可以调大。"
-#~ msgstr ""
-#~ "`GPU Batch Size` controls how many structures"
-#~ " are sent to the GPU at once. Reduce"
-#~ " it after an out-of-memory failure; "
-#~ "increase it when memory is available but "
-#~ "throughput is low."
-
 #~ msgid "DeepMD 导出不想丢目录层级"
 #~ msgstr "DeepMD export should preserve subdirectories"
 
 #~ msgid "`Keep DeepMD subfolders`"
 #~ msgstr "`Keep DeepMD subfolders`"
 
-#~ msgid "导出 `deepmd/npy` 时保留导入时的子目录结构"
-#~ msgstr "Preserve the imported subdirectory structure when exporting `deepmd/npy`"
+#~ msgid "`Canvas Engine`"
+#~ msgstr "`Canvas Engine`"
+
+#~ msgid "`Force data format`"
+#~ msgstr "`Force data format`"
+
+#~ msgid "`Auto loading`"
+#~ msgstr "`Auto loading`"
+
+#~ msgid "`Sort atoms`"
+#~ msgstr "`Sort atoms`"
+
+#~ msgid "`Use card group menu`"
+#~ msgstr "`Use card group menu`"
+
+#~ msgid "`Cache output files`"
+#~ msgstr "`Cache output files`"
+
+#~ msgid "`Export significant digits`"
+#~ msgstr "`Export significant digits`"
+
+#~ msgid "`Covalent radius coefficient`"
+#~ msgstr "`Covalent radius coefficient`"
+
+#~ msgid "`Scatter edge color` / `Scatter face color` / `Face alpha`：散点默认颜色和透明度。"
+#~ msgstr ""
+#~ "`Scatter edge color`, `Scatter face "
+#~ "color`, and `Face alpha`: default "
+#~ "scatter colors and opacity."
+
+#~ msgid "`Structure background` / `Lattice line color`：结构视图背景和晶格线颜色。"
+#~ msgstr ""
+#~ "`Structure background` and `Lattice line "
+#~ "color`: background and cell-line colors"
+#~ " in the structure view."
+
+#~ msgid ""
+#~ "`Selected color` / `Show color` / "
+#~ "`Current marker color` / `Current marker"
+#~ " size`：选中点、高亮点和当前结构标记的显示样式。"
+#~ msgstr ""
+#~ "`Selected color`, `Show color`, `Current "
+#~ "marker color`, and `Current marker "
+#~ "size`: styles for selected points, "
+#~ "highlighted points, and the current-"
+#~ "structure marker."

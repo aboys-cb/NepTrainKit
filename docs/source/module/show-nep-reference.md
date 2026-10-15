@@ -1,8 +1,8 @@
 :orphan:
 
-# NEP Dataset Display 详细参考
+# NEP 数据集查看详细参考
 
-详细说明已经并入 [NEP Dataset Display 功能指南](NEP-dataset-display.md)，并按软件页面顺序拆分：
+详细说明已经并入 [NEP 数据集查看功能指南](NEP-dataset-display.md)，并按软件页面顺序拆分：
 
 1. [页面总览、打开数据与切换模型](nep-display-open-data.md)
 2. [主图区：看图、选择与处理数据](nep-display-main-plot-tools.md)

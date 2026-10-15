@@ -1,6 +1,6 @@
-# 代表性采样（最远点采样）
+# 稀疏采样（Sparse samples）
 
-界面按钮：`代表性采样`（`Sparse samples`）。
+界面按钮：`稀疏采样`（`Sparse samples`）。
 
 ## 这个工具解决什么问题
 

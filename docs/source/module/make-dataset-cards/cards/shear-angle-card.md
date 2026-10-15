@@ -1,6 +1,6 @@
 <!-- card-schema: {"card_name": "Shear Angle Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_angle_card.py", "serialized_keys": ["params"]} -->
 
-# 晶格角应变（Shear Angle Strain）
+# 剪切角应变（Shear Angle Strain）
 
 **分类：** 晶格
 

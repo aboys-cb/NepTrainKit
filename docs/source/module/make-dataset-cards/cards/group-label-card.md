@@ -93,7 +93,7 @@ $$
 典型磁序流程：
 
 ```text
-Super Cell → Layer Groups → Magnetic Order
+扩胞 → 原子层分组 → 磁序
 ```
 
 新建或覆盖标签时，`Config_type` 会追加类似：

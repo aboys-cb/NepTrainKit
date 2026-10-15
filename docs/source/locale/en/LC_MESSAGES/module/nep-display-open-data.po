@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-30 17:32+0800\n"
+"POT-Creation-Date: 2026-10-15 16:29+0800\n"
 "PO-Revision-Date: 2026-07-30 19:40+0800\n"
 "Last-Translator: Automatically generated\n"
 "Language: en_US\n"
@@ -19,234 +19,325 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/module/nep-display-open-data.md:1 e799af6178d14dc2b00d12eec7ac68a5
+#: ../../source/module/nep-display-open-data.md:1
+#: 8942fa5105234f7a903476edb98fd43a
 msgid "页面总览、打开数据与切换模型"
 msgstr "Page overview, opening data, and switching models"
 
-#: ../../source/module/nep-display-open-data.md:3 458532715cd8430ba36691c3b463d4fd
+#: ../../source/module/nep-display-open-data.md:3
+#: 6e475105562544f4a0ddff37c316b8b3
 msgid ""
-"这一页对应软件顶部区域。第一次进入 `NEP Dataset Display` 时，先从这里确认页面布局、 输入类型、`Open` / `Save` 菜单和 NEP "
+"这一页对应软件顶部区域。第一次进入 `NEP 数据集查看` 时，先从这里确认页面布局、 输入类型、`打开` / `保存` 菜单和 NEP "
 "模型切换方式。"
 msgstr ""
-"This page covers the top area of the application. When you first open `NEP Dataset "
-"Display`, use it to understand the layout, input types, `Open` / `Save` menus, and "
-"how to switch NEP models."
+"This page covers the top area of the application. When you first open "
+"`NEP Dataset Display`, use it to understand the layout, input types, "
+"`Open` / `Save` menus, and how to switch NEP models."
 
-#: ../../source/module/nep-display-open-data.md:5 d857900d0ed0466f8e2e9a44987ca2d3
+#: ../../source/module/nep-display-open-data.md:5
+#: 0efc91bbd4334f0fbada2da3a43549ef
 msgid "本页目录"
 msgstr "On this page"
 
-#: ../../source/module/nep-dataset-display-content.md:154 a6542baf04b64bcdb3d58eff2fa04844
+#: ../../source/module/nep-dataset-display-content.md:143
+#: 5b9a847219074531b980acd2bf31e814
 msgid "1. 界面总览"
 msgstr "1. Interface overview"
 
-#: ../../source/module/nep-dataset-display-content.md:156 90591181a6f44317b5fa84dfd524cebd
-msgid "NEP Dataset Display 界面总览"
+#: ../../source/module/nep-dataset-display-content.md:145
+#: 5a5bbe282eaf45dfb00da256eda9f786
+msgid "NEP 数据集查看界面总览"
 msgstr "NEP Dataset Display overview"
 
-#: ../../source/module/nep-dataset-display-content.md:156 90591181a6f44317b5fa84dfd524cebd
+#: ../../source/module/nep-dataset-display-content.md:145
+#: 5a5bbe282eaf45dfb00da256eda9f786
 msgid ".. image:: ../_static/image/generated/show_nep_overview.png"
 msgstr ".. image:: ../_static/image/generated/show_nep_overview.png"
 
-#: ../../source/module/nep-dataset-display-content.md:161 ddec5a5af9394172852d1cbb1b0f0871
+#: ../../source/module/nep-dataset-display-content.md:150
+#: a82efca6c0924f30a1be54edc15bb92b
 msgid "左侧：误差散点主图区（descriptor / energy / force / pressure / potential energy 等子图）。"
-msgstr "Left: main error-scatter area, with descriptor, energy, force, pressure, potential-energy, and related plots."
+msgstr ""
+"Left: main error-scatter area, with descriptor, energy, force, pressure, "
+"potential-energy, and related plots."
 
-#: ../../source/module/nep-dataset-display-content.md:162 0901b293f8244df09f58697c8491df1b
+#: ../../source/module/nep-dataset-display-content.md:151
+#: 778a1092c1c741c7859e87637117758a
 msgid "右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。"
-msgstr "Right: structure area with the 3D view, structure information, shortest bond length, net force, index controls, and playback."
+msgstr ""
+"Right: structure area with the 3D view, structure information, shortest "
+"bond length, net force, index controls, and playback."
 
-#: ../../source/module/nep-dataset-display-content.md:163 4699ab9ddbc04acfa892b2c795722951
-msgid "底部：数据状态行 `Orig / Now / Rm / Sel / Unsel / Rej`。"
-msgstr "Bottom: dataset status row showing `Orig / Now / Rm / Sel / Unsel / Rej`."
+#: ../../source/module/nep-dataset-display-content.md:152
+#: 3ec39dcce35741a8936fd79b26f6e8e3
+#
+msgid "底部：数据状态行 `原始 / 当前 / 删 / 选 / 坏`。"
+msgstr "Bottom: dataset status row showing `Orig / Now / Rm / Sel / Rej`."
 
-#: ../../source/module/nep-dataset-display-content.md:164 321740f304304bc19b40f6f3a0eb22de
-msgid "顶部：`Open` / `Save` 分裂按钮（菜单动作会随页面显示动态注入）。"
-msgstr "Top: `Open` and `Save` split buttons; their menu actions are populated dynamically when the page is shown."
+#: ../../source/module/nep-dataset-display-content.md:153
+#: 002a9225b7904d2a985f9cf14553bf47
+msgid "顶部：`打开` / `保存` 分裂按钮（菜单动作会随页面显示动态注入）。"
+msgstr ""
+"Top: `Open` and `Save` split buttons; their menu actions are populated "
+"dynamically when the page is shown."
 
-#: ../../source/module/nep-display-open-data.md:16 009a30280b5448aeb4e6c13b4ec434f5
+#: ../../source/module/nep-display-open-data.md:16
+#: 0530193daa1a4c2dac5f39a4db899a6e
 msgid "顶部菜单"
 msgstr "Top menus"
 
-#: ../../source/module/nep-dataset-display-content.md:4248 918fc07c678945bfad7004610d63959a
+#: ../../source/module/nep-dataset-display-content.md:3779
+#: db8e8dd4fbc54fcfb9adc15ac75dd9c9
 msgid "2.3 顶部菜单动作"
 msgstr "2.3 Top-menu actions"
 
-#: ../../source/module/nep-display-open-data.md:18 5498afbfbe764499b3ee6de914eb93a5
+#: ../../source/module/nep-display-open-data.md:18
+#: 832ec46c0c7e404fa24d179e121f3e5e
 msgid "图标"
 msgstr "Icon"
 
-#: ../../source/module/nep-display-open-data.md:18 a4373a9c199942d5b7caa49782602c46
+#: ../../source/module/nep-display-open-data.md:18
+#: 4d3686f19e6b4597892659d514631c09
 msgid "菜单动作"
 msgstr "Menu action"
 
-#: ../../source/module/nep-display-open-data.md:18 4bf36bb0e5234a3da533e4c0dd932618
+#: ../../source/module/nep-display-open-data.md:18
+#: d8e44e6464054e04951ed5c07ccb388e
 msgid "是否打开设置"
 msgstr "Opens settings"
 
-#: ../../source/module/nep-display-open-data.md:18 1788338fba4f4ae99761d58c8b518b01
+#: ../../source/module/nep-display-open-data.md:18
+#: 343fe828b75c4db38dc88333e3b9005e
 msgid "说明"
 msgstr "Description"
 
 #: ../../source/module/nep-display-open-data.md:18
-#: ../../source/module/nep-display-open-data.md:4252 6b6d3a92639b4e9b8871f1ef4f90192f
-msgid "<img src=\"../_static/image/generated/show_nep_icons/open.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/open.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-open-data.md:3783
+#: 823eb4d4f0d245758cab9645fc85e1c3 c62734afac7c470c94ba39118c77f503
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/open.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/open.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 2365d954f3064205903f39bd070f103d
-#: b2f3202e1c804803ac485b076388643c
+#: ../../source/module/nep-dataset-display-content.md
+#: 0900b7d7ac094b90a940e16591406fca a9a830df676145d49a9512fd1b582084
 msgid ".. image:: ../_static/image/generated/show_nep_icons/open.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/open.svg"
 
-#: ../../source/module/nep-display-open-data.md:4252 fb371d88e07b422fb07069ddc794d52b
-msgid "`Open File...`"
-msgstr "`Open File...`"
+#: ../../source/module/nep-display-open-data.md:3783
+#: 6edf1b22cb4a469f858e65b8071eae59
+msgid "`打开文件…`"
+msgstr "`Open File…`"
 
-#: ../../source/module/nep-display-open-data.md:4252
-#: ../../source/module/nep-display-open-data.md:4253
-#: ../../source/module/nep-display-open-data.md:4254 04db256fe50e4f7c9d6aa114fc5e2620
+#: ../../source/module/nep-display-open-data.md:3783
+#: ../../source/module/nep-display-open-data.md:3784
+#: ../../source/module/nep-display-open-data.md:3785
+#: 37be8726d2e34711a6767106d654750a 4a44d533e11b4f8da688dd357dc7c3da
+#: f09f0bf03cb64aeb88979f1e4c47995d
 msgid "是"
 msgstr "Yes"
 
-#: ../../source/module/nep-display-open-data.md:4252 13d7d47038094ec2b81ca44fc1d38314
-msgid "选择 `*.xyz`"
-msgstr "Choose an `*.xyz` file"
+#: ../../source/module/nep-display-open-data.md:3783
+#: 9691c24f39a1420dbb91f5bf1ca2b80c
+msgid "选择 `xyz` / `extxyz` 等结构文件"
+msgstr "Choose an `xyz` / `extxyz` or other structure file"
 
-#: ../../source/module/nep-display-open-data.md:4253 fb9c2c82904646768c95c6cc291e6a5a
-msgid "`Open Folder...`"
-msgstr "`Open Folder...`"
+#: ../../source/module/nep-display-open-data.md:3784
+#: 249c8d4c8868477fb2f2f979b48c305b
+msgid "`打开文件夹…`"
+msgstr "`Open Folder…`"
 
-#: ../../source/module/nep-display-open-data.md:4253 e694085081de4972a7377279ae6686a4
-msgid "选择目录（常用于 `deepmd/npy`）"
-msgstr "Choose a directory (commonly used for `deepmd/npy`)"
+#: ../../source/module/nep-display-open-data.md:3784
+#: afa54448213b4aa69b197dfffbe9a520
+msgid "选择目录（常用于训练输出目录或 `deepmd/npy`）"
+msgstr "Choose a directory (commonly a training-output or `deepmd/npy` directory)"
 
-#: ../../source/module/nep-display-open-data.md:4253 c4b6d51505a0435da039cec1f7d63f8d
-msgid "<img src=\"../_static/image/generated/show_nep_icons/save.svg\" width=\"20\" />"
-msgstr "<img src=\"../_static/image/generated/show_nep_icons/save.svg\" width=\"20\" />"
+#: ../../source/module/nep-display-open-data.md:3784
+#: 4645550d2b9548ba92d3dbd2be2da769
+msgid ""
+"<img src=\"../_static/image/generated/show_nep_icons/save.svg\" "
+"width=\"20\" />"
+msgstr ""
+"<img src=\"../_static/image/generated/show_nep_icons/save.svg\" "
+"width=\"20\" />"
 
-#: ../../source/module/nep-dataset-display-content.md 4f5016ec78e24d75b5755e3c3a0862b8
+#: ../../source/module/nep-dataset-display-content.md
+#: e253de7bec1247cbbde8746a3ecf5e5f
 msgid ".. image:: ../_static/image/generated/show_nep_icons/save.svg"
 msgstr ".. image:: ../_static/image/generated/show_nep_icons/save.svg"
 
-#: ../../source/module/nep-display-open-data.md:4254 261da7d062cc4a2182af3ee2c7f88017
-msgid "`Export All...` 等导出菜单"
-msgstr "Use an export action such as `Export All...`"
+#: ../../source/module/nep-display-open-data.md:3785
+#: 103bfeb3caaf4264a147742d2acc719a
+msgid "`导出全部…` 等导出菜单"
+msgstr "`Export All…` and other export actions"
 
-#: ../../source/module/nep-display-open-data.md:4254 7e7e47a0e00d4cc796cbc6fe715e5ed8
-msgid "先选 `ExportFormat`，再选保存路径"
-msgstr "Choose `ExportFormat` first, then choose the save path"
+#: ../../source/module/nep-display-open-data.md:3785
+#: fae3e773568b4d2984e2b3fd725dd285
+msgid "先选导出格式，再选保存路径"
+msgstr "Choose the export format, then the save path"
 
-#: ../../source/module/nep-dataset-display-content.md:10668
-#: fd830aa685a74da0a76b60a1b2161b2d
+#: ../../source/module/nep-dataset-display-content.md:9871
+#: 18bdf4e1dd254b9c8c6779c72e9d79c6
 msgid "5. 导入导出与 NEP 模型切换"
 msgstr "5. Importing, exporting, and switching NEP models"
 
-#: ../../source/module/nep-dataset-display-content.md:10670
-#: a03cd89322424703b75a3fe3e72b7f3f
+#: ../../source/module/nep-dataset-display-content.md:9873
+#: 73f4041a230248028df1c4762e959cf6
 msgid "5.1 导入"
 msgstr "5.1 Import"
 
-#: ../../source/module/nep-dataset-display-content.md:10672
-#: 827f7183f1c64fdc8cce9166f499462c
-msgid "`Open File...`：选择 `*.xyz`。"
-msgstr "`Open File...`: choose `*.xyz`."
+#: ../../source/module/nep-dataset-display-content.md:9875
+#: 6e372637e3854a20b8aab2a824bf3db7
+msgid "`打开文件…`：选择 `xyz` / `extxyz` 等结构文件。"
+msgstr "`Open File…`: choose an `xyz` / `extxyz` or other structure file."
 
-#: ../../source/module/nep-dataset-display-content.md:10673
-#: 6777b819c6844a239582d38edaca30aa
-msgid "`Open Folder...`：选择目录（`deepmd/npy` 常见）。"
-msgstr "`Open Folder...`: choose a directory (commonly `deepmd/npy`)."
+#: ../../source/module/nep-dataset-display-content.md:9876
+#: c546d362d62c457ba60d46e000071b96
+msgid "`打开文件夹…`：选择训练输出目录或 `deepmd/npy` 目录。"
+msgstr "`Open Folder…`: choose a training-output or `deepmd/npy` directory."
 
-#: ../../source/module/nep-dataset-display-content.md:10674
-#: 37cd9171fbf3440da60306a5b4b044d8
-msgid "拖拽：仅接受 `matches_result_loader()` 支持的路径。"
-msgstr "Drag and drop: only paths supported by `matches_result_loader()` are accepted."
-
-#: ../../source/module/nep-dataset-display-content.md:10675
-#: 66e462c8129545d09333cc15d8de25dc
-msgid "若已有工作路径，切换前会二次确认。"
+#: ../../source/module/nep-dataset-display-content.md:9877
+#: ac404485c6f94c028d379360959c6a9c
+msgid "拖拽：把文件或目录直接拖进窗口；不支持的格式会提示 `不支持的文件格式`。"
 msgstr ""
-"If a working path is already loaded, the application asks for confirmation before "
-"switching."
+"Drag and drop: drop a file or directory onto the window; unsupported "
+"inputs show `unsupported file format`."
 
-#: ../../source/module/nep-dataset-display-content.md:10676
-#: dbb97350b37745a7b40020c5c701b7c2
-msgid "加载过程在后台线程执行；`StateToolTip` 可触发取消。"
-msgstr "Loading runs in a background thread; `StateToolTip` can trigger cancellation."
+#: ../../source/module/nep-dataset-display-content.md:9878
+#: 77ecebdc3513435ca9db27e2e979c8c7
+msgid "已经打开数据时再导入新数据，软件会先确认是否替换。"
+msgstr "If data is already open, NepTrainKit asks before replacing it."
 
-#: ../../source/module/nep-dataset-display-content.md:10678
-#: c9ebeab919624c18bc3e4852faeb4e1e
-msgid "5.2 导出菜单（顶栏 Save）"
-msgstr "5.2 Export menu (top-bar Save)"
-
-#: ../../source/module/nep-dataset-display-content.md:10680
-#: 15fcbd58ca80497195296a17c12e79c7
-msgid "动作：`Export All / Selected / Removed / Active`。"
-msgstr "Actions: `Export All / Selected / Removed / Active`."
-
-#: ../../source/module/nep-dataset-display-content.md:10681
-#: 0eab15276836432a8a996c40450c751e
-msgid "启用条件：数据已加载且非 busy；其中 `Selected/Removed/Active` 要求计数大于 0。"
+#: ../../source/module/nep-dataset-display-content.md:9879
+#: 00b52f47883545258d7bc2ce8a718fc3
+msgid "加载在后台进行，加载时显示的进度提示可以取消加载。"
 msgstr ""
-"Enabled when data is loaded and the application is not busy; "
-"`Selected/Removed/Active` also require a count greater than 0."
+"Loading runs in the background; the progress notification shown while "
+"loading can cancel it."
 
-#: ../../source/module/nep-dataset-display-content.md:10682
-#: 91aec8cb1ac1409cb85993792ed1a6f8
-msgid "统一先选 `ExportFormat`，再选路径。"
-msgstr "Always choose `ExportFormat` first, then choose the path."
+#: ../../source/module/nep-dataset-display-content.md:9881
+#: 3445d97fcd694765989dd5e9ad7658e8
+msgid "5.2 导出菜单（顶部 `保存`）"
+msgstr "5.2 Export menu (top `Save`)"
 
-#: ../../source/module/nep-dataset-display-content.md:10684
-#: c985725cdf9c4b539a9450b9b35b7755
-msgid "![Export Menu](../_static/image/show_nep/m_export_menu.png)"
-msgstr "![Export Menu](../_static/image/show_nep/m_export_menu.png)"
+#: ../../source/module/nep-display-open-data.md:23
+#: 6aeca743ee8a421e9bdb842ecf56f640
+msgid "菜单项"
+msgstr "Menu item"
 
-#: ../../source/module/nep-dataset-display-content.md:10684
-#: 20ea97392e974d819ac02d24b60f5bbb
-msgid "Export Menu"
-msgstr "Export Menu"
+#: ../../source/module/nep-display-open-data.md:23
+#: 86a82103cf9d46218875186dcdf4afcc
+msgid "导出内容"
+msgstr "Exports"
 
-#: ../../source/module/nep-dataset-display-content.md:10684
-#: 20ea97392e974d819ac02d24b60f5bbb
+#: ../../source/module/nep-display-open-data.md:23
+#: d693f1f8f84b40df93a790ce50383013
+msgid "`导出全部…`"
+msgstr "`Export All…`"
+
+#: ../../source/module/nep-display-open-data.md:23
+#: 8ed548ca96094c8d9e92a32e3bdf7f82
+msgid "当前打开的全部结构"
+msgstr "All open structures"
+
+#: ../../source/module/nep-display-open-data.md:23
+#: 4ec63f9aa42f493f8a2f1bcc5a1ec13c
+msgid "`导出已选择结构（N）…`"
+msgstr "`Export Selected (N)…`"
+
+#: ../../source/module/nep-display-open-data.md:23
+#: 6441b3762ede48ec8b242d910ecf1304
+msgid "当前选中的结构"
+msgstr "The currently selected structures"
+
+#: ../../source/module/nep-display-open-data.md:23
+#: 8d4928c60f724a36b0a94ba10c6ebcda
+msgid "`导出已移除结构（N）…`"
+msgstr "`Export Removed (N)…`"
+
+#: ../../source/module/nep-display-open-data.md:23
+#: c5459f187a4a4d959c07dbfd3ca54730
+msgid "已经删除的结构，便于留档"
+msgstr "Deleted structures, for record keeping"
+
+#: ../../source/module/nep-display-open-data.md:23
+#: e4eddcbfc66a460dafe0ad08eec6cfcb
+msgid "`导出当前保留结构（N）…`"
+msgstr "`Export Active (N)…`"
+
+#: ../../source/module/nep-display-open-data.md:23
+#: 14fd613ca7b342fda22814f22acdf16e
+msgid "删除后仍保留的结构，通常就是清洗后的数据集"
+msgstr "Structures kept after deletion, usually the cleaned dataset"
+
+#: ../../source/module/nep-dataset-display-content.md:9890
+#: c5314d2d2ae443a9ad4aac8abe19cb9f
+msgid "括号里的 N 是当前数量；数量为 0 或数据仍在加载时，对应菜单项不可用。"
+msgstr ""
+"N is the current count. An item is disabled when its count is 0 or while "
+"data is still loading."
+
+#: ../../source/module/nep-dataset-display-content.md:9891
+#: a285d4edbf8f414cb93eadd7a9218df1
+msgid "点击后先选择导出格式，再选择保存路径。"
+msgstr "After clicking, choose the export format and then the save path."
+
+#: ../../source/module/nep-dataset-display-content.md:9893
+#: 1cb112e5bffb4cfbae2b178e0eadc7e5
+msgid "![导出菜单](../_static/image/show_nep/m_export_menu.png)"
+msgstr "![Export menu](../_static/image/show_nep/m_export_menu.png)"
+
+#: ../../source/module/nep-dataset-display-content.md:9893
+#: ecc904b7a37046dea3ed51e0a5998a71
+msgid "导出菜单"
+msgstr "Export menu"
+
+#: ../../source/module/nep-dataset-display-content.md:9893
+#: ecc904b7a37046dea3ed51e0a5998a71
 msgid ".. image:: ../_static/image/show_nep/m_export_menu.png"
 msgstr ".. image:: ../_static/image/show_nep/m_export_menu.png"
 
-#: ../../source/module/nep-dataset-display-content.md:10686
-#: 2587f867b2044b53b2a55412ed74bfde
+#: ../../source/module/nep-dataset-display-content.md:9895
+#: d75972ea71c74e288f7e6b345854d7b4
 msgid "5.3 NEP 模型切换（路径栏右侧下拉框）"
 msgstr "5.3 Switching NEP models (drop-down at the right of the path bar)"
 
-#: ../../source/module/nep-dataset-display-content.md:10688
-#: 6739294644d949b2b9be9d6733d88efe
-msgid "文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。"
-msgstr "File discovery: scan the current directory for `*.txt` files whose names contain `nep`."
+#: ../../source/module/nep-dataset-display-content.md:9897
+#: 7525340e1e484194a1d5acbb496649f5
+msgid ""
+"可选模型：当前数据目录下文件名包含 `nep` 的 `*.txt` 文件，`nep.txt` 排在最前， 其余按字母顺序；列表末尾还可以选择内置的"
+" `nep89` 模型。"
+msgstr ""
+"Available models: `*.txt` files in the data directory whose names contain"
+" `nep`. `nep.txt` comes first and the rest are sorted alphabetically; the"
+" bundled `nep89` model can be chosen at the end of the list."
 
-#: ../../source/module/nep-dataset-display-content.md:10689
-#: a57917e700174ba0838535418195ccfb
-msgid "排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。"
-msgstr "Ordering: list `nep.txt` first, sort the remaining files alphabetically, and optionally append the bundled `nep89` model."
+#: ../../source/module/nep-dataset-display-content.md:9899
+#: 66f5b7708c20403e9e41c4ebcc2f61c0
+msgid "切换速度：切回已经计算过的模型时直接使用缓存结果；第一次切换到某个模型时会在后台重新计算。"
+msgstr ""
+"Speed: switching back to a model that has already been evaluated reuses "
+"cached results; the first switch to a model recomputes in the background."
 
-#: ../../source/module/nep-dataset-display-content.md:10690
-#: 9850bd7d7a254cae86c43a641e856178
-msgid "切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。"
-msgstr "Switching strategy: reuse `_nep_result_cache` when possible; otherwise reload asynchronously."
+#: ../../source/module/nep-dataset-display-content.md:9900
+#: aa95ebc7f0b44efcb368ca8ebc471683
+msgid "切换后保留当前的选中结构和坏点标记。"
+msgstr "The current selection and bad-structure marks are kept after switching."
 
-#: ../../source/module/nep-dataset-display-content.md:10691
-#: 39a71de38e7f48b7899c24e6c0cc8935
-msgid "状态保持：切换后恢复 `selected` 与 `reject`。"
-msgstr "State preservation: restore `selected` and `reject` after switching models."
+#: ../../source/module/nep-dataset-display-content.md:9902
+#: a66728099dcf4ad186c8152863fe8b4e
+msgid "![NEP 模型下拉框](../_static/image/show_nep/m_nep_combo.png)"
+msgstr "![NEP model drop-down](../_static/image/show_nep/m_nep_combo.png)"
 
-#: ../../source/module/nep-dataset-display-content.md:10693
-#: 33c9aef3d01a48aabf39500b55f1bd83
-msgid "![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)"
-msgstr "![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)"
+#: ../../source/module/nep-dataset-display-content.md:9902
+#: d75972ea71c74e288f7e6b345854d7b4
+msgid "NEP 模型下拉框"
+msgstr "NEP model drop-down"
 
-#: ../../source/module/nep-dataset-display-content.md:10693
-#: a44a3dab7591420bb9d7df9c48258a72
-msgid "NEP Model Combo"
-msgstr "NEP Model Combo"
-
-#: ../../source/module/nep-dataset-display-content.md:10693
-#: a44a3dab7591420bb9d7df9c48258a72
+#: ../../source/module/nep-dataset-display-content.md:9902
+#: d75972ea71c74e288f7e6b345854d7b4
 msgid ".. image:: ../_static/image/show_nep/m_nep_combo.png"
 msgstr ".. image:: ../_static/image/show_nep/m_nep_combo.png"
 
@@ -255,3 +346,86 @@ msgstr ".. image:: ../_static/image/show_nep/m_nep_combo.png"
 
 #~ msgid ".. image:: ../_static/image/example/display/main.png"
 #~ msgstr ".. image:: ../_static/image/example/display/main.png"
+
+#~ msgid "`Open File...`"
+#~ msgstr "`Open File...`"
+
+#~ msgid "选择 `*.xyz`"
+#~ msgstr "Choose an `*.xyz` file"
+
+#~ msgid "`Open Folder...`"
+#~ msgstr "`Open Folder...`"
+
+#~ msgid "`Export All...` 等导出菜单"
+#~ msgstr "Use an export action such as `Export All...`"
+
+#~ msgid "先选 `ExportFormat`，再选保存路径"
+#~ msgstr "Choose `ExportFormat` first, then choose the save path"
+
+#~ msgid "`Open File...`：选择 `*.xyz`。"
+#~ msgstr "`Open File...`: choose `*.xyz`."
+
+#~ msgid "`Open Folder...`：选择目录（`deepmd/npy` 常见）。"
+#~ msgstr "`Open Folder...`: choose a directory (commonly `deepmd/npy`)."
+
+#~ msgid "拖拽：仅接受 `matches_result_loader()` 支持的路径。"
+#~ msgstr ""
+#~ "Drag and drop: only paths supported "
+#~ "by `matches_result_loader()` are accepted."
+
+#~ msgid "若已有工作路径，切换前会二次确认。"
+#~ msgstr ""
+#~ "If a working path is already "
+#~ "loaded, the application asks for "
+#~ "confirmation before switching."
+
+#~ msgid "加载过程在后台线程执行；`StateToolTip` 可触发取消。"
+#~ msgstr ""
+#~ "Loading runs in a background thread; "
+#~ "`StateToolTip` can trigger cancellation."
+
+#~ msgid "动作：`Export All / Selected / Removed / Active`。"
+#~ msgstr "Actions: `Export All / Selected / Removed / Active`."
+
+#~ msgid "启用条件：数据已加载且非 busy；其中 `Selected/Removed/Active` 要求计数大于 0。"
+#~ msgstr ""
+#~ "Enabled when data is loaded and "
+#~ "the application is not busy; "
+#~ "`Selected/Removed/Active` also require a count"
+#~ " greater than 0."
+
+#~ msgid "统一先选 `ExportFormat`，再选路径。"
+#~ msgstr "Always choose `ExportFormat` first, then choose the path."
+
+#~ msgid "Export Menu"
+#~ msgstr "Export Menu"
+
+#~ msgid "文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。"
+#~ msgstr ""
+#~ "File discovery: scan the current "
+#~ "directory for `*.txt` files whose names"
+#~ " contain `nep`."
+
+#~ msgid "排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。"
+#~ msgstr ""
+#~ "Ordering: list `nep.txt` first, sort the"
+#~ " remaining files alphabetically, and "
+#~ "optionally append the bundled `nep89` "
+#~ "model."
+
+#~ msgid "切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。"
+#~ msgstr ""
+#~ "Switching strategy: reuse `_nep_result_cache` "
+#~ "when possible; otherwise reload "
+#~ "asynchronously."
+
+#~ msgid "状态保持：切换后恢复 `selected` 与 `reject`。"
+#~ msgstr ""
+#~ "State preservation: restore `selected` and "
+#~ "`reject` after switching models."
+
+#~ msgid "NEP Model Combo"
+#~ msgstr "NEP Model Combo"
+
+#~ msgid "加载在后台进行，右上角的进度提示可以取消加载。"
+#~ msgstr ""

@@ -1,0 +1,59 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit 3.0.1.dev29\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-15 16:17+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/reference/citation.md:1 e2e109e1c4784c8aa2dc5029f0882bab
+msgid "引用 NepTrainKit"
+msgstr "Cite NepTrainKit"
+
+#: ../../source/reference/citation.md:3 143712fac9d643a5911cbe168b6804ea
+msgid "如果 NepTrainKit 对你的研究有帮助，请引用下面的论文："
+msgstr "If NepTrainKit contributes to your research, please cite:"
+
+#: ../../source/reference/citation.md:5 2354b6a153014afa89c5d4cb98801d85
+msgid ""
+"Chengbing Chen, Yutong Li, Rui Zhao, Zhoulin Liu, Zheyong Fan, Gang Tang,"
+" Zhiyong Wang. NepTrain and NepTrainKit: Automated active learning and "
+"visualization toolkit for neuroevolution potentials. *Computer Physics "
+"Communications* **317**, 109859 (2025). "
+"[doi:10.1016/j.cpc.2025.109859](https://doi.org/10.1016/j.cpc.2025.109859)"
+msgstr ""
+
+#: ../../source/reference/citation.md:10 70a2211411164bddb9a3a2e8614a83d5
+msgid "BibTeX："
+msgstr ""
+
+#: ../../source/reference/citation.md:12 c224fd122e2544bd9ecb0f8a59b2efdf
+msgid ""
+"@article{CHEN2025109859,\n"
+"title = {NepTrain and NepTrainKit: Automated active learning and "
+"visualization toolkit for neuroevolution potentials},\n"
+"journal = {Computer Physics Communications},\n"
+"volume = {317},\n"
+"pages = {109859},\n"
+"year = {2025},\n"
+"issn = {0010-4655},\n"
+"doi = {https://doi.org/10.1016/j.cpc.2025.109859},\n"
+"url = "
+"{https://www.sciencedirect.com/science/article/pii/S0010465525003613},\n"
+"author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and "
+"Zheyong Fan and Gang Tang and Zhiyong Wang},\n"
+"}\n"
+msgstr ""

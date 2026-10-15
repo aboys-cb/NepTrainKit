@@ -255,6 +255,19 @@ class TestCanvasFactory(unittest.TestCase):
 
         canvas.grid.add_widget.assert_called_once_with(plot, row=0, col=0, row_span=6, col_span=1)
 
+    def test_vispy_axis_labels_can_be_cleared_after_being_shown(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        plot.set_full_detail(True)
+
+        plot.set_axis_labels("Reference energy (eV/atom)", "Predicted energy (eV/atom)")
+        self.assertGreater(plot.xaxis.height_min, 0)
+        plot.set_axis_labels(None, None)
+
+        self.assertEqual(plot.xaxis.height_min, 0)
+        self.assertEqual(plot.yaxis.width_min, 0)
+
     def test_vispy_init_axes_keeps_thumbnails_compact_until_selected(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
 

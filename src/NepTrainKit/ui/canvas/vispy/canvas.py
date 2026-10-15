@@ -556,6 +556,10 @@ class ViewBoxWidget(scene.Widget):
         self.yaxis.axis.axis_label_margin = 52
         x_height = (46 if x_label else 30) if full else 22
         y_width = (68 if y_label else 50) if full else 38
+        # VisPy asserts min <= max on every assignment: drop the minimum
+        # first so switching from a labelled to an unlabelled plot works.
+        self.xaxis.height_min = 0
+        self.yaxis.width_min = 0
         self.xaxis.height_max = x_height
         self.xaxis.height_min = x_height if x_label else 0
         self.yaxis.width_max = y_width

@@ -7,7 +7,6 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
 from qfluentwidgets import (
-    BodyLabel,
     CaptionLabel,
     InfoBadge,
     InfoLevel,

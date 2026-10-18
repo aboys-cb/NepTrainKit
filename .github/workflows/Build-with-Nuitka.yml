@@ -8,10 +8,14 @@ on:
         required: true
         default: 'dev'
       publish_release:
-        description: 'Upload the archive to the existing release named by ref_name'
+        description: 'Upload the archive to an existing release after verification'
         required: true
         type: boolean
         default: false
+      release_tag:
+        description: 'Existing release to rebuild from ref_name (blank requires ref_name to be the release tag)'
+        required: false
+        default: ''
 
 jobs:
   build:
@@ -28,6 +32,39 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ inputs.ref_name }}
+      - name: Verify release source tag
+        if: ${{ inputs.publish_release }}
+        shell: pwsh
+        env:
+          SOURCE_REF: ${{ inputs.ref_name }}
+          REBUILD_TAG: ${{ inputs.release_tag }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $releaseTag = if ($env:REBUILD_TAG) { $env:REBUILD_TAG } else { $env:SOURCE_REF }
+          $tagRef = "refs/tags/$releaseTag"
+          git show-ref --verify --quiet $tagRef
+          if ($LASTEXITCODE -ne 0) {
+            throw "Release publishing requires an existing tag: $tagRef"
+          }
+          gh release view $releaseTag --repo "$env:GITHUB_REPOSITORY" --json tagName
+          if ($LASTEXITCODE -ne 0) {
+            throw "Release $releaseTag does not exist."
+          }
+          $headCommit = git rev-parse HEAD
+          $tagCommit = git rev-list -n 1 $tagRef
+          if ($env:REBUILD_TAG) {
+            git merge-base --is-ancestor $tagCommit $headCommit
+            if ($LASTEXITCODE -ne 0) {
+              throw "Rebuild source $headCommit must descend from $releaseTag ($tagCommit)."
+            }
+            if ($releaseTag -notmatch '^v([0-9]+\.[0-9]+\.[0-9]+(?:b[0-9]+)?)$') {
+              throw "Cannot derive a package version from release tag $releaseTag."
+            }
+            "SETUPTOOLS_SCM_PRETEND_VERSION=$($Matches[1])" >> $env:GITHUB_ENV
+          } elseif ($headCommit -ne $tagCommit) {
+            throw "Checked-out commit $headCommit does not match release tag $tagRef ($tagCommit)."
+          }
+          Write-Host "Release $releaseTag will be built from source commit $headCommit."
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -57,6 +94,10 @@ jobs:
           python -c "import NepTrainKit._native._io, NepTrainKit._native._audit, NepTrainKit._native._phase, NepTrainKit._native._magnetism, NepTrainKit._native._sampling"
           if ($LASTEXITCODE -ne 0) {
             throw "Importing NepTrainKit native helpers failed with exit code $LASTEXITCODE."
+          }
+          python -c "from NepTrainKit.main import create_app; from qfluentwidgets import fontFamilies; app = create_app([]); assert fontFamilies() == app.font().families(); print('GUI imports and font configuration passed')"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Importing and configuring the application failed with exit code $LASTEXITCODE."
           }
 
 
@@ -165,6 +206,39 @@ jobs:
             throw "Packaged native helper health check failed with exit code $($process.ExitCode)."
           }
 
+      - name: Verify packaged GUI startup
+        shell: pwsh
+        run: |
+          $dist = "${{ github.workspace }}/src/build/main.dist"
+          $stdout = "$env:RUNNER_TEMP/neptrainkit-startup.stdout.log"
+          $stderr = "$env:RUNNER_TEMP/neptrainkit-startup.stderr.log"
+          $process = Start-Process -FilePath "$dist/NepTrainKit.exe" `
+            -WorkingDirectory $dist -PassThru `
+            -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          try {
+            $deadline = (Get-Date).AddSeconds(60)
+            do {
+              Start-Sleep -Milliseconds 500
+              $process.Refresh()
+              if ($process.HasExited) {
+                throw "Packaged GUI exited during startup with code $($process.ExitCode)."
+              }
+            } while ($process.MainWindowHandle -eq 0 -and (Get-Date) -lt $deadline)
+            if ($process.MainWindowHandle -eq 0) {
+              throw "Packaged GUI did not create a window within 60 seconds."
+            }
+            Write-Host "Packaged GUI opened: $($process.MainWindowTitle)"
+            if (-not $process.CloseMainWindow() -or -not $process.WaitForExit(15000)) {
+              throw "Packaged GUI did not close cleanly."
+            }
+            if ($process.ExitCode -ne 0) {
+              throw "Packaged GUI exited with code $($process.ExitCode)."
+            }
+          } finally {
+            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
+            Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
+          }
+
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -196,27 +270,10 @@ jobs:
           path: ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip
           if-no-files-found: error
 
-      - name: Verify release source tag
-        if: ${{ inputs.publish_release }}
-        shell: pwsh
-        env:
-          SOURCE_REF: ${{ inputs.ref_name }}
-        run: |
-          $tagRef = "refs/tags/$env:SOURCE_REF"
-          git show-ref --verify --quiet $tagRef
-          if ($LASTEXITCODE -ne 0) {
-            throw "Release publishing requires ref_name to be an existing tag: $tagRef"
-          }
-          $headCommit = git rev-parse HEAD
-          $tagCommit = git rev-list -n 1 $tagRef
-          if ($headCommit -ne $tagCommit) {
-            throw "Checked-out commit $headCommit does not match release tag $tagRef ($tagCommit)."
-          }
-
       - name: Upload Release
         if: ${{ inputs.publish_release }}
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || inputs.ref_name }}
         run: gh release upload "$env:RELEASE_TAG" "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip" --repo "$env:GITHUB_REPOSITORY" --clobber

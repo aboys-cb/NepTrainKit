@@ -155,7 +155,7 @@ def test_nuitka_branch_build_always_uploads_archive_and_release_is_optional():
     assert "path: ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip" in workflow
     assert "if: ${{ inputs.publish_release }}" in workflow
     assert 'SOURCE_REF: ${{ inputs.ref_name }}' in workflow
-    assert 'refs/tags/$env:SOURCE_REF' in workflow
+    assert 'refs/tags/$releaseTag' in workflow
 
 
 def test_nuitka_runtime_resources_are_resolved_from_binary_directory():
@@ -200,7 +200,7 @@ def test_release_assets_are_uploaded_without_updating_release_metadata():
     assert 'gh release upload "$RELEASE_TAG" dist/*' in publish_workflow
     assert '--repo "$GITHUB_REPOSITORY" --clobber' in publish_workflow
     assert "softprops/action-gh-release" not in nuitka_workflow
-    assert 'RELEASE_TAG: ${{ inputs.ref_name }}' in nuitka_workflow
+    assert 'RELEASE_TAG: ${{ inputs.release_tag || inputs.ref_name }}' in nuitka_workflow
     assert 'gh release upload "$env:RELEASE_TAG"' in nuitka_workflow
     assert '--repo "$env:GITHUB_REPOSITORY" --clobber' in nuitka_workflow
 

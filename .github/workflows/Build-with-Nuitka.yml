@@ -170,10 +170,16 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Importing and configuring the application failed with exit code $LASTEXITCODE."
           }
-          python -c "from NepTrainKit.core.dataset.catalog import load_dataset_catalog; load_dataset_catalog(); from pathlib import Path; from PySide6.QtCore import QLibraryInfo; dll = Path(QLibraryInfo.path(QLibraryInfo.LibraryPath.BinariesPath)) / 'opengl32sw.dll'; assert dll.is_file(), dll"
+          python -c "from NepTrainKit.core.dataset.catalog import load_dataset_catalog; load_dataset_catalog()"
           if ($LASTEXITCODE -ne 0) {
-            throw "Required catalog or Qt software OpenGL resource is missing before compilation."
+            throw "Required dataset catalog is invalid or missing before compilation."
           }
+          $qtOpenGl = python tools/ci/find_qt_software_opengl.py
+          if ($LASTEXITCODE -ne 0) { throw "Could not locate Qt software OpenGL DLL." }
+          python -c "import ctypes, sys; ctypes.WinDLL(sys.argv[1])" "$qtOpenGl"
+          if ($LASTEXITCODE -ne 0) { throw "Qt software OpenGL DLL could not be loaded before compilation." }
+          "QT_SOFTWARE_OPENGL_DLL=$qtOpenGl" >> $env:GITHUB_ENV
+          Write-Host "Qt software OpenGL DLL: $qtOpenGl"
 
 
       - name: Build with Nuitka
@@ -241,9 +247,8 @@ jobs:
 
           # Nuitka's Qt plugin only adds this fallback with QML/all enabled.
           # Widgets/VisPy also need it on Windows runners without a GPU driver.
-          $qtBin = python -c "from PySide6.QtCore import QLibraryInfo; print(QLibraryInfo.path(QLibraryInfo.LibraryPath.BinariesPath))"
-          if ($LASTEXITCODE -ne 0) { throw "Could not locate Qt binaries." }
-          Copy-Item -LiteralPath "$qtBin/opengl32sw.dll" -Destination "$dist/opengl32sw.dll" -ErrorAction Stop
+          # Reuse the exact DLL already located and loaded before compilation.
+          Copy-Item -LiteralPath $env:QT_SOFTWARE_OPENGL_DLL -Destination "$dist/opengl32sw.dll" -ErrorAction Stop
           python -c "import ctypes, sys; ctypes.WinDLL(sys.argv[1])" "$dist/opengl32sw.dll"
           if ($LASTEXITCODE -ne 0) { throw "Packaged software OpenGL DLL could not be loaded." }
 

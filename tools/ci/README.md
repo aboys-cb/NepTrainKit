@@ -40,6 +40,8 @@ Python 版本、已解析的依赖版本和 Nuitka compilation report。报告�
 数据集 catalog JSON 按包内路径包含，并在编译后校验内容与源码一致。
 软件 OpenGL DLL 取自同一套 PySide6 安装，GUI smoke 使用软件 OpenGL；
 编译前检查源资源，失败时上传启动日志，保留原有原生模块和运行时检查。
+Windows wheel 的 DLL 位于 PySide6 包目录，定位时优先检查该目录，再检查
+Qt 报告的 bin 目录；预检查加载成功后记录确切路径，打包复制复用该路径。
 
 参考：[GitHub 缓存作用域](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching#restrictions-for-accessing-a-cache)、
 [GITHUB_TOKEN 派发 workflow](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow)、

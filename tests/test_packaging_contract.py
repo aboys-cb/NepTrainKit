@@ -162,7 +162,9 @@ def test_nuitka_release_dispatches_tag_build_into_default_branch_cache_scope():
 
 def test_nuitka_ships_and_exercises_software_opengl_fallback():
     workflow = (ROOT / ".github/workflows/Build-with-Nuitka.yml").read_text()
-    assert 'Copy-Item -LiteralPath "$qtBin/opengl32sw.dll" -Destination "$dist/opengl32sw.dll"' in workflow
+    assert 'python tools/ci/find_qt_software_opengl.py' in workflow
+    assert '"QT_SOFTWARE_OPENGL_DLL=$qtOpenGl" >> $env:GITHUB_ENV' in workflow
+    assert 'Copy-Item -LiteralPath $env:QT_SOFTWARE_OPENGL_DLL -Destination "$dist/opengl32sw.dll"' in workflow
     assert "ctypes.WinDLL(sys.argv[1])" in workflow
     assert "QT_OPENGL: software" in workflow
     assert "name: Upload startup diagnostics" in workflow

@@ -119,7 +119,10 @@ def test_failed_card_discards_partial_output_and_stops_page_chain():
         "NepTrainKit.ui.pages.makedata.MessageManager.send_success_message"
     ) as success_message:
         page.run_card()
-        assert completion.count() or completion.wait(10000)
+        # QSignalSpy.wait() can hold the GIL while the Python worker needs it
+        # to emit completion. Pump Qt through the existing Python timer loop.
+        assert _wait_until(lambda: completion.count() > 0, timeout_ms=10000)
+        assert completion.count() == 1
         assert failing.run_outcome == "failed"
 
     assert failing.result_dataset == []

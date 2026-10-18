@@ -25,7 +25,9 @@ from numpy.testing import assert_allclose
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import CanvasMode, ForcesMode
 from NepTrainKit.config import  Config
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QCoreApplication, QEvent, QTimer
+from PySide6.QtTest import QSignalSpy
+from PySide6.QtWidgets import QApplication, QProgressDialog, QWidget
 from NepTrainKit.ui.widgets.dialog import ShiftEnergyDialogValues
 import NepTrainKit.ui.widgets.dialog as dialog_module
 import NepTrainKit.ui.views.nep as nep_view_module
@@ -1304,16 +1306,26 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
         widget = nep_view_module.NepResultPlotWidget.__new__(
             nep_view_module.NepResultPlotWidget
         )
+        QWidget.__init__(widget)
         widget._parent = None
         widget.canvas = SimpleNamespace(nep_result_data=data, select_index=MagicMock())
         task = BackgroundTask(show_tip=False)
-        progress_dialog = MagicMock()
+        progress_dialog = QProgressDialog()
+        accepted = QSignalSpy(progress_dialog.accepted)
+        deadline = QTimer(progress_dialog)
+        deadline.setSingleShot(True)
+        deadline.timeout.connect(progress_dialog.reject)
+        timed_out = QSignalSpy(deadline.timeout)
 
         def wait_for_worker():
-            # Bound the wait so a broken worker cannot hang the suite.
-            self.assertTrue(task.wait(10000), "FPS worker did not finish")
+            # Exercise the real queued finished -> accept connection instead
+            # of blocking the GUI thread and leaving its callbacks pending.
+            deadline.start(10000)
+            try:
+                return QProgressDialog.exec(progress_dialog)
+            finally:
+                deadline.stop()
 
-        progress_dialog.exec.side_effect = wait_for_worker
         values = {
             "sparse_selection_strategy": strategy,
             "sparse_physics_count_mode": count_mode,
@@ -1342,6 +1354,8 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
             ) as task_factory, patch.object(
                 nep_view_module, "QProgressDialog", return_value=progress_dialog,
             ), patch.object(
+                progress_dialog, "exec", side_effect=wait_for_worker,
+            ) as dialog_exec, patch.object(
                 nep_view_module.MessageManager, "send_info_message",
             ), patch.object(
                 nep_view_module.MessageManager, "send_warning_message",
@@ -1353,7 +1367,11 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
                     sample.side_effect = RuntimeError("sampling regression sentinel")
                 nep_view_module.NepResultPlotWidget.sparse_point(widget)
                 task_factory.assert_called_once_with(None, show_tip=False)
-                progress_dialog.exec.assert_called_once_with()
+                dialog_exec.assert_called_once_with()
+                self.assertEqual(timed_out.count(), 0, "FPS worker did not finish")
+                self.assertEqual(
+                    accepted.count(), 1, "Worker did not close the progress dialog"
+                )
                 sample.assert_called_once()
                 self.assertEqual(sample.call_args.kwargs["physics_count_mode"], count_mode)
                 self.assertEqual(sample.call_args.kwargs["selection_strategy"], strategy)
@@ -1378,7 +1396,12 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
                     widget.canvas.select_index.assert_called_once_with(expected, False)
         finally:
             task.requestInterruption()
-            task.wait()
+            # Join native thread-local cleanup after dispatching completion.
+            self.assertTrue(task.wait(10000), "FPS worker cleanup did not finish")
+            progress_dialog.close()
+            progress_dialog.deleteLater()
+            widget.deleteLater()
+            QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
     def test_sparse_point_runs_real_sampler_in_background_task(self):
         for strategy, count_mode in (

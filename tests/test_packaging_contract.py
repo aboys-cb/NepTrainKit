@@ -119,6 +119,55 @@ def test_nuitka_build_validates_flat_standalone_layout():
     assert 'Remove-Item -Path "$dist/NepTrainKit"' not in workflow
 
 
+def test_nuitka_includes_catalog_at_importlib_resource_path():
+    workflow = (ROOT / ".github/workflows/Build-with-Nuitka.yml").read_text()
+    package_data = tomllib.loads((ROOT / "pyproject.toml").read_text())["tool"]["setuptools"]["package-data"]
+
+    assert package_data["NepTrainKit.core.dataset"] == ["catalogs/*.json"]
+    assert "include-data-dir: NepTrainKit/core/dataset/catalogs=NepTrainKit/core/dataset/catalogs" in workflow
+    assert '$catalogDestination = "$dist/NepTrainKit/core/dataset/catalogs"' in workflow
+    assert "Get-FileHash $packagedCatalog" in workflow
+    assert "load_dataset_catalog()" in workflow
+
+
+def test_nuitka_preserves_compiler_cache_when_gui_verification_fails():
+    workflow = (ROOT / ".github/workflows/Build-with-Nuitka.yml").read_text()
+
+    assert "actions/cache/restore@" in workflow
+    assert "actions/cache/save@" in workflow
+    save = workflow.index("name: Save compiler cache before package verification")
+    verify = workflow.index("name: Verify packaged GUI startup")
+    assert workflow.index("name: Build with Nuitka") < save < verify
+    assert "!cancelled() && steps.nuitka.outcome == 'success'" in workflow[save:verify]
+    assert "key: ${{ steps.nuitka-cache.outputs.cache-primary-key }}" in workflow[save:verify]
+    assert "${{ github.run_id }}-${{ github.run_attempt }}" in workflow[:save]
+
+
+def test_nuitka_release_dispatches_tag_build_into_default_branch_cache_scope():
+    workflow = (ROOT / ".github/workflows/Build-with-Nuitka.yml").read_text()
+    dispatch, build = workflow.split("\n  build:\n", 1)
+
+    assert "release:\n    types: [published]" in dispatch
+    assert "if: github.event_name == 'release'" in dispatch
+    assert "actions: write" in dispatch
+    assert 'DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}' in dispatch
+    assert 'RELEASE_TAG: ${{ github.event.release.tag_name }}' in dispatch
+    assert '--ref "$DEFAULT_BRANCH"' in dispatch
+    assert '-f "ref_name=refs/tags/$RELEASE_TAG"' in dispatch
+    assert '-f "release_tag=$RELEASE_TAG"' in dispatch
+    assert '-F publish_release=true' in dispatch
+    assert "if: github.event_name == 'workflow_dispatch'" in build
+    assert "git merge-base --is-ancestor $tagCommit $headCommit" in build
+
+
+def test_nuitka_ships_and_exercises_software_opengl_fallback():
+    workflow = (ROOT / ".github/workflows/Build-with-Nuitka.yml").read_text()
+    assert 'Copy-Item -LiteralPath "$qtBin/opengl32sw.dll" -Destination "$dist/opengl32sw.dll"' in workflow
+    assert "ctypes.WinDLL(sys.argv[1])" in workflow
+    assert "QT_OPENGL: software" in workflow
+    assert "name: Upload startup diagnostics" in workflow
+
+
 def test_windows_standalone_name_matches_verified_x86_64_architecture():
     workflow = (
         ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"

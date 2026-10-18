@@ -1,6 +1,10 @@
 name: Build Windows Standalone with Nuitka
 
+# Dispatch this workflow on the default branch; ref_name selects the source.
+# GitHub caches created on one release tag cannot be restored by another tag.
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       ref_name:
@@ -17,16 +21,58 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: read
+
 jobs:
+  dispatch_release:
+    # Release runs are scoped to tags. Dispatch on the default branch so all
+    # releases can restore AND update the same compiler cache scope.
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch release build with shared cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh workflow run Build-with-Nuitka.yml --repo "$GITHUB_REPOSITORY" \
+            --ref "$DEFAULT_BRANCH" \
+            -f "ref_name=refs/tags/$RELEASE_TAG" \
+            -F publish_release=true \
+            -f "release_tag=$RELEASE_TAG"
+          echo "Windows build dispatched on $DEFAULT_BRANCH for release $RELEASE_TAG. Follow the workflow_dispatch run in Actions for the build and upload result." >> "$GITHUB_STEP_SUMMARY"
+
   build:
+    if: github.event_name == 'workflow_dispatch'
+    concurrency:
+      group: windows-standalone-${{ inputs.publish_release && (inputs.release_tag || inputs.ref_name) || github.run_id }}
+      cancel-in-progress: false
     strategy:
       matrix:
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
+    env:
+      # Exact Nuitka revision used by the successful v3.1.5 build (4.3.1).
+      NUITKA_VERSION: 8ba9ccdf78268aba8bb21b79ed72fc9a4d44887d
 
     steps:
+      - name: Require shared cache scope
+        shell: pwsh
+        env:
+          WORKFLOW_REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if ($env:WORKFLOW_REF -ne "refs/heads/$env:DEFAULT_BRANCH") {
+            throw "Run this workflow from $env:DEFAULT_BRANCH to share compiler caches. Select the source branch, tag or commit using ref_name."
+          }
+          "NUITKA_CACHE_DIR=$env:RUNNER_TEMP/nuitka-cache" >> $env:GITHUB_ENV
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -66,11 +112,24 @@ jobs:
           }
           Write-Host "Release $releaseTag will be built from source commit $headCommit."
       - name: Setup Python
+        id: python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           architecture: 'x64'
           cache: 'pip'
+
+      - name: Restore Nuitka compiler cache
+        id: nuitka-cache
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: ${{ env.NUITKA_CACHE_DIR }}
+          # A fresh key lets repeated builds enrich the immutable cache.
+          # Restore across source/dependency changes: clcache validates each
+          # object against its source, compiler and compiler options.
+          key: nuitka-windows-${{ runner.arch }}-py${{ steps.python.outputs.python-version }}-${{ env.NUITKA_VERSION }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            nuitka-windows-${{ runner.arch }}-py${{ steps.python.outputs.python-version }}-${{ env.NUITKA_VERSION }}-
 
       - name: Install dependencies
         run: |
@@ -81,6 +140,18 @@ jobs:
           pip install imageio
           python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
           python -m setuptools_scm  --force-write-version-files
+
+      - name: Record build environment
+        shell: pwsh
+        run: |
+          $diagnostics = "${{ runner.temp }}/nuitka-diagnostics"
+          New-Item -ItemType Directory -Force $diagnostics | Out-Null
+          git rev-parse HEAD | Set-Content "$diagnostics/source-commit.txt"
+          python --version | Set-Content "$diagnostics/python-version.txt"
+          python -m pip freeze | Set-Content "$diagnostics/requirements-resolved.txt"
+          "Nuitka revision: $env:NUITKA_VERSION" | Set-Content "$diagnostics/compiler.txt"
+          "Cache directory: $env:NUITKA_CACHE_DIR" >> $env:GITHUB_STEP_SUMMARY
+          "Compiler object hit/miss counts are reported by Nuitka-Scons in the build log; cache archive restoration alone does not prove object reuse." >> $env:GITHUB_STEP_SUMMARY
 
       - name: Build and verify native helpers
         shell: pwsh
@@ -99,12 +170,21 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Importing and configuring the application failed with exit code $LASTEXITCODE."
           }
+          python -c "from NepTrainKit.core.dataset.catalog import load_dataset_catalog; load_dataset_catalog(); from pathlib import Path; from PySide6.QtCore import QLibraryInfo; dll = Path(QLibraryInfo.path(QLibraryInfo.LibraryPath.BinariesPath)) / 'opengl32sw.dll'; assert dll.is_file(), dll"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Required catalog or Qt software OpenGL resource is missing before compilation."
+          }
 
 
       - name: Build with Nuitka
-        uses: Nuitka/Nuitka-Action@main
+        id: nuitka
+        uses: Nuitka/Nuitka-Action@bb65ca8023bef5f41a2114acd387b5f36d860145
         with:
-          nuitka-version: main
+          nuitka-version: ${{ env.NUITKA_VERSION }}
+          # Disable only the Action's cache wrapper. Nuitka's clcache/UPX
+          # caches remain enabled through NUITKA_CACHE_DIR above.
+          disable-cache: true
+          report: ${{ runner.temp }}/nuitka-diagnostics/compilation-report.xml
           script-name: NepTrainKit/main.py
           include-package: NepTrainKit
           include-module: NepTrainKit._native._io,NepTrainKit._native._audit,NepTrainKit._native._phase,NepTrainKit._native._magnetism,NepTrainKit._native._sampling
@@ -113,10 +193,26 @@ jobs:
           windows-console-mode: disable
           include-qt-plugins: sqldrivers
           include-package-data: vispy,ase
+          include-data-dir: NepTrainKit/core/dataset/catalogs=NepTrainKit/core/dataset/catalogs
           upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
           enable-plugins: pyside6,upx
           windows-icon-from-ico: NepTrainKit/src/images/logo.png
           working-directory: ${{ github.workspace }}/src/
+
+      - name: Save compiler cache before package verification
+        if: ${{ !cancelled() && steps.nuitka.outcome == 'success' }}
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: ${{ env.NUITKA_CACHE_DIR }}
+          key: ${{ steps.nuitka-cache.outputs.cache-primary-key }}
+
+      - name: Upload build diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nuitka-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/nuitka-diagnostics/
+          if-no-files-found: warn
 
       - name: Copy additional files
         shell: pwsh
@@ -129,6 +225,27 @@ jobs:
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/translations -Destination "$dist/translations" -Force
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/workflow_templates -Destination "$dist/workflow_templates" -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe "$dist/update.exe"
+
+          # importlib.resources resolves this path inside the compiled package.
+          $catalogSource = "${{ github.workspace }}/src/NepTrainKit/core/dataset/catalogs"
+          $catalogDestination = "$dist/NepTrainKit/core/dataset/catalogs"
+          foreach ($catalog in Get-ChildItem -LiteralPath $catalogSource -Filter "*.json" -File) {
+            $packagedCatalog = Join-Path $catalogDestination $catalog.Name
+            if (-not (Test-Path -LiteralPath $packagedCatalog -PathType Leaf)) {
+              throw "Dataset catalog missing from standalone package: $packagedCatalog"
+            }
+            if ((Get-FileHash $catalog.FullName).Hash -ne (Get-FileHash $packagedCatalog).Hash) {
+              throw "Packaged dataset catalog differs from source: $packagedCatalog"
+            }
+          }
+
+          # Nuitka's Qt plugin only adds this fallback with QML/all enabled.
+          # Widgets/VisPy also need it on Windows runners without a GPU driver.
+          $qtBin = python -c "from PySide6.QtCore import QLibraryInfo; print(QLibraryInfo.path(QLibraryInfo.LibraryPath.BinariesPath))"
+          if ($LASTEXITCODE -ne 0) { throw "Could not locate Qt binaries." }
+          Copy-Item -LiteralPath "$qtBin/opengl32sw.dll" -Destination "$dist/opengl32sw.dll" -ErrorAction Stop
+          python -c "import ctypes, sys; ctypes.WinDLL(sys.argv[1])" "$dist/opengl32sw.dll"
+          if ($LASTEXITCODE -ne 0) { throw "Packaged software OpenGL DLL could not be loaded." }
 
           if (-not (Test-Path "$dist/translations/neptrainkit_zh_CN.qm")) {
             throw "Chinese translation catalog is missing from the standalone package."
@@ -208,6 +325,8 @@ jobs:
 
       - name: Verify packaged GUI startup
         shell: pwsh
+        env:
+          QT_OPENGL: software
         run: |
           $dist = "${{ github.workspace }}/src/build/main.dist"
           $stdout = "$env:RUNNER_TEMP/neptrainkit-startup.stdout.log"
@@ -238,6 +357,16 @@ jobs:
             if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
             Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
           }
+
+      - name: Upload startup diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-startup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/neptrainkit-startup.*.log
+            src/build/main.dist/Log/
+          if-no-files-found: ignore
 
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'

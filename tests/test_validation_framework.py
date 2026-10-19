@@ -463,7 +463,10 @@ def test_viewer_captures_opened_model_and_never_raises(tmp_path, model_file, mon
 
     monkeypatch.setenv(library_module.ENV_VAR, str(tmp_path / "viewer-lib"))
     monkeypatch.setattr(Config, "getboolean", classmethod(lambda cls, s, o, fallback=None: True))
-    viewer = SimpleNamespace(nep_result_data=SimpleNamespace(nep_txt_path=model_file, data_xyz_path=tmp_path / "none"))
+    viewer = SimpleNamespace(
+        nep_result_data=SimpleNamespace(nep_txt_path=model_file, data_xyz_path=tmp_path / "none"),
+        refresh_validation_chip=lambda: None,
+    )
     ShowNepWidget._capture_model_version(viewer)
     assert ValidationService(Library(tmp_path / "viewer-lib")).find_model_by_file(model_file) is not None
     viewer.nep_result_data.nep_txt_path = tmp_path / "not-nep.txt"

@@ -841,6 +841,144 @@
     </message>
 </context>
 <context>
+    <name>BenchmarkImportDialog</name>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="41" />
+        <source>Import benchmark set</source>
+        <translation>导入基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="48" />
+        <source>Labelled EXTXYZ file</source>
+        <translation>带标签的 EXTXYZ 文件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="50" />
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="59" />
+        <source>Select...</source>
+        <translation>请选择...</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="60" />
+        <source>Other</source>
+        <translation>其他</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="60" />
+        <source>Demo</source>
+        <translation>演示</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="64" />
+        <source>e.g. VASP PBE, 520 eV cutoff, k-spacing 0.2</source>
+        <translation>例如 VASP PBE，截断能 520 eV，k 点间距 0.2</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="66" />
+        <source>Optional: add to a suite</source>
+        <translation>可选：加入一个套件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="72" />
+        <source>File</source>
+        <translation>文件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="73" />
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="74" />
+        <source>Protocol</source>
+        <translation>协议</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="75" />
+        <source>Reference source</source>
+        <translation>参考数据来源</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="76" />
+        <source>Conditions</source>
+        <translation>计算条件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="77" />
+        <source>Suite</source>
+        <translation>套件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="92" />
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="99" />
+        <source>Select benchmark set</source>
+        <translation>选择基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="123" />
+        <source>{title} (match {confidence:.0%})</source>
+        <translation>{title}（匹配度 {confidence:.0%}）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="141" />
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="141" />
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="144" />
+        <source>No issues found for {title}.</source>
+        <translation>{title}：未发现问题。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="152" />
+        <source>Choose a benchmark file.</source>
+        <translation>请选择基准文件。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="154" />
+        <source>The file cannot be read as EXTXYZ: {error}</source>
+        <translation>无法按 EXTXYZ 读取该文件：{error}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="156" />
+        <source>No validation protocol recognises this file.</source>
+        <translation>没有验证协议能识别该文件。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="158" />
+        <source>Fix the errors above before importing.</source>
+        <translation>请先修正上述错误再导入。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="160" />
+        <source>Enter a name for the set.</source>
+        <translation>请输入基准集名称。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="162" />
+        <source>Declare where the reference labels come from.</source>
+        <translation>请声明参考标签的来源。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="164" />
+        <source>Describe the reference calculation conditions.</source>
+        <translation>请填写参考计算的条件。</translation>
+    </message>
+</context>
+<context>
     <name>BuiltinWorkflowTemplates</name>
     <message>
         <source>Crystal strain</source>
@@ -8201,6 +8339,16 @@
         <source>Select a project before dropping a model folder</source>
         <translation>请先选择项目，再拖入模型文件夹</translation>
     </message>
+    <message>
+        <location filename="../ui/pages/data_manager.py" line="158" />
+        <source>Validation</source>
+        <translation>验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/data_manager.py" line="159" />
+        <source>Projects</source>
+        <translation>项目</translation>
+    </message>
 </context>
 <context>
     <name>DatasetSummaryMessageBox</name>
@@ -14391,6 +14539,129 @@ All child items will also be deleted.</source>
     </message>
 </context>
 <context>
+    <name>ModelLibraryWidget</name>
+    <message>
+        <location filename="../ui/views/model_library.py" line="279" />
+        <source>Suite</source>
+        <translation>套件</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="285" />
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="289" />
+        <source>Import benchmark</source>
+        <translation>导入基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="290" />
+        <source>Star</source>
+        <translation>收藏</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="291" />
+        <source>Set baseline</source>
+        <translation>设为基线</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="292" />
+        <source>Run all</source>
+        <translation>全部运行</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="333" />
+        <source>Green: better than the baseline · Red: worse · Grey: within tolerance. Ctrl+click cells to overlay several models.</source>
+        <translation>绿色：优于基线 · 红色：劣于基线 · 灰色：在容差内。按住 Ctrl 单击单元格可叠加多个模型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="365" />
+        <source>Cannot open the model library: {error}</source>
+        <translation>无法打开模型库：{error}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="390" />
+        <source>Import a benchmark set to create a suite and start validating models.</source>
+        <translation>导入基准集以创建套件并开始验证模型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="392" />
+        <source>This suite has no benchmark sets yet.</source>
+        <translation>该套件还没有基准集。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="394" />
+        <source>No model has been evaluated on this suite. Click Run all.</source>
+        <translation>尚无模型在该套件上评估。请点击“全部运行”。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="401" />
+        <source>No baseline: set one to judge regressions.</source>
+        <translation>未设置基线：设置基线后才能判断退化。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="403" />
+        <source>Baseline: {name}</source>
+        <translation>基线：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="433" />
+        <source>Unstar</source>
+        <translation>取消收藏</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="477" />
+        <source>Note for the new baseline of this suite (optional)</source>
+        <translation>该套件新基线的备注（可选）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="486" />
+        <source>Large benchmark file</source>
+        <translation>基准文件过大</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="487" />
+        <source>The file is {size:.1f} MB, above the {limit:.0f} MB limit. Copy it into the library anyway?</source>
+        <translation>该文件大小为 {size:.1f} MB，超过 {limit:.0f} MB 上限。仍要复制到模型库吗？</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="502" />
+        <source>Import failed: {error}</source>
+        <translation>导入失败：{error}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="506" />
+        <source>Imported benchmark set {name}</source>
+        <translation>已导入基准集 {name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="536" />
+        <source>No captured model covers the elements of this suite. Open a model in NEP Dataset Display to capture it.</source>
+        <translation>没有已记录的模型覆盖该套件的全部元素。请在 NEP 数据集展示中打开模型以记录它。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="547" />
+        <source>Running validation</source>
+        <translation>正在运行验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="551" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="559" />
+        <source>{done} / {total} evaluations</source>
+        <translation>已完成 {done} / {total} 项评估</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="567" />
+        <source>Validation failed: {error}</source>
+        <translation>验证失败：{error}</translation>
+    </message>
+</context>
+<context>
     <name>NepDipoleResultData</name>
     <message>
         <location filename="../core/io/nep.py" line="1189" />
@@ -17250,6 +17521,64 @@ All child items will also be deleted.</source>
     </message>
 </context>
 <context>
+    <name>RunDetailPanel</name>
+    <message>
+        <location filename="../ui/views/model_library.py" line="178" />
+        <source>Remove constant offset</source>
+        <translation>去除常数偏移</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="180" />
+        <source>Shift each model curve by its mean error, as the shape metrics do</source>
+        <translation>按平均误差平移每条模型曲线，与形状指标一致</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="206" />
+        <source>Click a cell to see its details</source>
+        <translation>单击单元格查看详情</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="213" />
+        <source>Reference: {source}, {conditions}</source>
+        <translation>参考：{source}，{conditions}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="216" />
+        <source>Mode: {mode}</source>
+        <translation>模式：{mode}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="220" />
+        <source>{name}: not run</source>
+        <translation>{name}：未运行</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="231" />
+        <source>Volume (Å³/atom)</source>
+        <translation>体积 (Å³/atom)</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="232" />
+        <source>Energy (eV/atom)</source>
+        <translation>能量 (eV/atom)</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="236" />
+        <source>Reference</source>
+        <translation>参考值</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="250" />
+        <source>Reference energy (eV/atom)</source>
+        <translation>参考能量 (eV/atom)</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="251" />
+        <source>Predicted energy (eV/atom)</source>
+        <translation>预测能量 (eV/atom)</translation>
+    </message>
+</context>
+<context>
     <name>RuntimeMessage</name>
     <message>
         <source>any/all requires at least one atomic field.</source>
@@ -18518,6 +18847,69 @@ All child items will also be deleted.</source>
     </message>
 </context>
 <context>
+    <name>ScorecardTableModel</name>
+    <message>
+        <location filename="../ui/views/model_library.py" line="85" />
+        <source>Model</source>
+        <translation>模型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="89" />
+        <source>{set} · {protocol}</source>
+        <translation>{set} · {protocol}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="100" />
+        <source>{name} (baseline)</source>
+        <translation>{name}（基线）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="107" />
+        <source>Baseline: other models are compared with this one</source>
+        <translation>基线：其他模型与它进行比较</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="108" />
+        <source>{count} regressions</source>
+        <translation>{count} 项退化</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="115" />
+        <source>n/a</source>
+        <translation>不适用</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="117" />
+        <source>not run</source>
+        <translation>未运行</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="118" />
+        <source>failed</source>
+        <translation>失败</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="119" />
+        <source>unsupported</source>
+        <translation>不支持</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="129" />
+        <source>Better than the baseline</source>
+        <translation>优于基线</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="130" />
+        <source>Worse than the baseline</source>
+        <translation>劣于基线</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="131" />
+        <source>Within tolerance of the baseline</source>
+        <translation>与基线相差在容差内</translation>
+    </message>
+</context>
+<context>
     <name>SetMagneticMomentsCard</name>
     <message>
         <source>Set Magnetic Moments</source>
@@ -19190,6 +19582,81 @@ All child items will also be deleted.</source>
         <location filename="../ui/pages/settings.py" line="691" />
         <source>New version available: v</source>
         <translation>发现新版本：v</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="98" />
+        <source>Model Validation</source>
+        <translation>模型验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="312" />
+        <source>Choose folder</source>
+        <translation>选择文件夹</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="314" />
+        <source>Library location</source>
+        <translation>模型库位置</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="319" />
+        <source>Clean up</source>
+        <translation>清理</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="321" />
+        <source>Clean up library</source>
+        <translation>清理模型库</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="322" />
+        <source>Forget auto-captured models unused for 30 days and delete unreferenced files; starred and baseline models are kept</source>
+        <translation>移除 30 天未使用的自动记录模型并删除未被引用的文件；收藏和基线模型会保留</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="622" />
+        <source>{path} · {size} used</source>
+        <translation>{path} · 已占用 {size}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="626" />
+        <source>Library unavailable: {error}</source>
+        <translation>模型库不可用：{error}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="628" />
+        <source>Overridden by the NEPTRAINKIT_LIBRARY environment variable</source>
+        <translation>已被 NEPTRAINKIT_LIBRARY 环境变量覆盖</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="636" />
+        <source>Choose an empty folder or an existing library</source>
+        <translation>选择一个空文件夹或已有的模型库</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="643" />
+        <source>Cannot use this folder: {error}</source>
+        <translation>无法使用该文件夹：{error}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="648" />
+        <source>Library location saved. The project list switches to it after a restart.</source>
+        <translation>模型库位置已保存。项目列表将在重启后切换到新位置。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="658" />
+        <source>The library is already clean.</source>
+        <translation>模型库无需清理。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="662" />
+        <source>Forget {models} stale auto-captured models and delete {objects} files and {results} results, freeing {size}?</source>
+        <translation>将移除 {models} 个过期的自动记录模型，并删除 {objects} 个文件和 {results} 个结果，释放 {size}。是否继续？</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="677" />
+        <source>Freed {size}</source>
+        <translation>已释放 {size}</translation>
     </message>
 </context>
 <context>
@@ -19947,6 +20414,31 @@ Do you want to continue?</source>
         <location filename="../ui/pages/show_nep.py" line="2417" />
         <source>Training Set Audit page is not available.</source>
         <translation>训练集评估页面不可用。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="903" />
+        <source>Open the validation scorecard for this model</source>
+        <translation>打开该模型的验证评分表</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1394" />
+        <source>Validation: {suite} · not run</source>
+        <translation>验证：{suite} · 未运行</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1396" />
+        <source>Validation: {suite} · baseline</source>
+        <translation>验证：{suite} · 基线</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1398" />
+        <source>Validation: {suite} · no baseline</source>
+        <translation>验证：{suite} · 无基线</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1400" />
+        <source>Validation: {suite} · {count} regressions</source>
+        <translation>验证：{suite} · {count} 项退化</translation>
     </message>
 </context>
 <context>

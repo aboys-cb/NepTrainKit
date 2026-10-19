@@ -6,7 +6,8 @@ import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QApplication, QSplitter, QStackedWidget
+from qfluentwidgets import SegmentedWidget
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset.seed import seed_nep_data_git
@@ -14,10 +15,11 @@ from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagS
 from NepTrainKit.core.validation.library import get_library
 
 from NepTrainKit.ui.views import ModelItemWidget, ProjectWidget
+from NepTrainKit.ui.views.model_library import ModelLibraryWidget
 
 
 class DataManagerWidget(QWidget):
-    """Coordinate project and model management widgets backed by the local database.
+    """Model library: validation scorecard plus the project and model registry.
 
     Parameters
     ----------
@@ -91,11 +93,23 @@ class DataManagerWidget(QWidget):
             )
             event.ignore()
             return
+        self.show_projects()
         self.data_item_widget.create_model(initial_path=paths[0])
         event.acceptProposedAction()
 
+    def show_projects(self):
+        """Switch to the project registry tab."""
+        self.tabs.setCurrentItem("projects")
+        self.stack.setCurrentWidget(self.splitter)
+
+    def open_scorecard(self, suite_id, model_id=None):
+        """Switch to the validation tab with ``suite_id`` and ``model_id`` selected."""
+        self.tabs.setCurrentItem("validation")
+        self.stack.setCurrentWidget(self.library_widget)
+        self.library_widget.open_scorecard(suite_id, model_id)
+
     def init_ui(self):
-        """Build the project and model split view.
+        """Build the validation scorecard and the project/model split view.
 
         Returns
         -------
@@ -136,6 +150,20 @@ class DataManagerWidget(QWidget):
         # self.splitter.setStretchFactor(2, 2)
 
 
-        self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
+        self.library_widget = ModelLibraryWidget(self)
+        self.stack = QStackedWidget(self)
+        self.stack.addWidget(self.library_widget)
+        self.stack.addWidget(self.splitter)
+        self.tabs = SegmentedWidget(self)
+        self.tabs.addItem("validation", self.tr("Validation"), lambda: self.stack.setCurrentWidget(self.library_widget))
+        self.tabs.addItem("projects", self.tr("Projects"), lambda: self.stack.setCurrentWidget(self.splitter))
+        self.tabs.setCurrentItem("validation")
+
+        tab_row = QHBoxLayout()
+        tab_row.setContentsMargins(8, 6, 8, 2)
+        tab_row.addWidget(self.tabs)
+        tab_row.addStretch(1)
+        self.gridLayout.addLayout(tab_row, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.stack, 1, 0, 1, 1)
 
         self.setLayout(self.gridLayout)

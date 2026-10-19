@@ -478,6 +478,11 @@ class NepTrainKitMainWindow(FluentWindow):
                 file_signatures.append(None)
         return tuple(versions), indices, tuple(file_signatures)
 
+    def open_model_scorecard(self, suite_id: int, model_id: int | None = None) -> None:
+        """Show the validation scorecard requested by the viewer status chip."""
+        self.switchTo(self.data_manager_interface)
+        self.data_manager_interface.open_scorecard(suite_id, model_id)
+
     def open_training_set_audit(
         self,
         result_data=None,

@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2024/10/21 19:44
 # @email    : 1747193328@qq.com
-
+import os
 
 from PySide6.QtCore import QUrl, Qt, Signal
 from PySide6.QtGui import QDesktopServices, QIcon
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QFileDialog, QWidget
  
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, OptionsConfigItem, \
-    OptionsValidator, EnumSerializer, SwitchSettingCard, FluentIcon, ScrollArea, SettingCard, ComboBox
+    OptionsValidator, EnumSerializer, SwitchSettingCard, FluentIcon, ScrollArea, SettingCard, ComboBox, \
+    MessageBox, PushSettingCard
 
 from NepTrainKit.config import Config
 from NepTrainKit import palette
@@ -46,6 +47,13 @@ from NepTrainKit.ui.update import (
     get_pending_update_version,
 )
 from NepTrainKit.version import FEEDBACK_URL, __version__, YEAR, AUTHOR
+
+
+def _format_bytes(size: int) -> str:
+    for unit in ("B", "KB", "MB", "GB"):
+        if size < 1024 or unit == "GB":
+            return f"{size:.0f} {unit}" if unit == "B" else f"{size:.1f} {unit}"
+        size /= 1024
 
 
 class SettingsWidget(ScrollArea):
@@ -86,6 +94,8 @@ class SettingsWidget(ScrollArea):
             self.tr('NEP Settings'), self.scrollWidget)
         self.plot_group = SettingCardGroup(
             self.tr('Plot Settings'), self.scrollWidget)
+        self.validation_group = SettingCardGroup(
+            self.tr('Model Validation'), self.scrollWidget)
 
         force_mode = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         default_forces = force_mode.value
@@ -298,6 +308,24 @@ class SettingsWidget(ScrollArea):
         self._runtime_health = inspect_runtime_health()
         self._refresh_runtime_health_content()
 
+        self.library_location_card = PushSettingCard(
+            self.tr("Choose folder"),
+            FluentIcon.FOLDER,
+            self.tr("Library location"),
+            "",
+            self.validation_group,
+        )
+        self.library_cleanup_card = PrimaryPushSettingCard(
+            self.tr("Clean up"),
+            FluentIcon.BROOM,
+            self.tr("Clean up library"),
+            self.tr(
+                "Forget auto-captured models unused for 30 days and delete unreferenced files; "
+                "starred and baseline models are kept"
+            ),
+            self.validation_group,
+        )
+
         # Plot settings defaults
         edge_color = Config.get("plot", "marker_edge_color", palette.PLOT_MARKER_EDGE)
         face_color = Config.get("plot", "marker_face_color", palette.PLOT_MARKER_FACE)
@@ -485,6 +513,9 @@ class SettingsWidget(ScrollArea):
         self.nep_group.addSettingCard(self.runtime_health_card)
         self.nep_group.addSettingCard(self.runtime_update_card)
 
+        self.validation_group.addSettingCard(self.library_location_card)
+        self.validation_group.addSettingCard(self.library_cleanup_card)
+
  
 
         self.about_group.addSettingCard(self.about_nep89_card)
@@ -515,6 +546,7 @@ class SettingsWidget(ScrollArea):
         self.expand_layout.addWidget(self.data_group)
         self.expand_layout.addWidget(self.make_dataset_group)
         self.expand_layout.addWidget(self.nep_group)
+        self.expand_layout.addWidget(self.validation_group)
 
         self.expand_layout.addWidget(self.about_group)
 
@@ -535,6 +567,8 @@ class SettingsWidget(ScrollArea):
         self.about_nep89_card.clicked.connect(self.check_update_nep89)
         self.runtime_health_card.clicked.connect(self.refresh_runtime_health)
         self.runtime_update_card.clicked.connect(self.check_runtime_update)
+        self.library_location_card.clicked.connect(self.choose_library_location)
+        self.library_cleanup_card.clicked.connect(self.clean_up_library)
 
         self.nep_backend_card.optionChanged.connect(lambda option: Config.set("nep", "backend", option))
         self.data_precision_card.optionChanged.connect(lambda option: Config.set("nep", "data_precision", option))
@@ -574,6 +608,75 @@ class SettingsWidget(ScrollArea):
         # self.about_card.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
         self.feedback_card.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.refresh_library_usage()
+
+    def refresh_library_usage(self) -> None:
+        """Show the library folder and how much disk space it uses."""
+        from NepTrainKit.core.validation.library import ENV_VAR, get_library
+
+        try:
+            library = get_library()
+            text = self.tr("{path} · {size} used").format(
+                path=library.root, size=_format_bytes(sum(library.usage().values()))
+            )
+        except Exception as error:  # noqa: BLE001 - show the problem instead of failing the page
+            text = self.tr("Library unavailable: {error}").format(error=error)
+        if os.environ.get(ENV_VAR):
+            text += "\n" + self.tr("Overridden by the NEPTRAINKIT_LIBRARY environment variable")
+        self.library_location_card.setContent(text)
+
+    def choose_library_location(self) -> None:
+        """Store ``validation/library_path``; the library is created there if needed."""
+        from NepTrainKit.core.validation.library import CONFIG_LIBRARY_PATH, CONFIG_SECTION, Library, get_library
+
+        path = QFileDialog.getExistingDirectory(
+            self, self.tr("Choose an empty folder or an existing library"), str(get_library().root)
+        )
+        if not path:
+            return
+        try:
+            Library(path)
+        except Exception as error:  # noqa: BLE001
+            MessageManager.send_error_message(self.tr("Cannot use this folder: {error}").format(error=error))
+            return
+        Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, path)
+        self.refresh_library_usage()
+        MessageManager.send_info_message(
+            self.tr("Library location saved. The project list switches to it after a restart.")
+        )
+
+    def clean_up_library(self) -> None:
+        """Preview garbage collection, then delete only after confirmation."""
+        from NepTrainKit.core.validation import ValidationService
+
+        service = ValidationService()
+        preview = service.collect_garbage(dry_run=True)
+        if not (preview["models"] or preview["objects"] or preview["results"]):
+            MessageManager.send_info_message(self.tr("The library is already clean."))
+            return
+        box = MessageBox(
+            self.tr("Clean up library"),
+            self.tr(
+                "Forget {models} stale auto-captured models and delete {objects} files and "
+                "{results} results, freeing {size}?"
+            ).format(
+                models=preview["models"],
+                objects=preview["objects"],
+                results=preview["results"],
+                size=_format_bytes(preview["bytes"]),
+            ),
+            self.window(),
+        )
+        if not box.exec():
+            return
+        done = service.collect_garbage(dry_run=False)
+        MessageManager.send_success_message(
+            self.tr("Freed {size}").format(size=_format_bytes(done["bytes"]))
+        )
+        self.refresh_library_usage()
 
     def _on_canvas_mode_changed(self, option: str) -> None:
         """Persist and broadcast canvas changes for live result-view switching."""

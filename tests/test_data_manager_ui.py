@@ -172,12 +172,14 @@ class TestDataManagerUi(unittest.TestCase):
         )
         page = SimpleNamespace(
             data_item_widget=model_widget,
+            show_projects=MagicMock(),
             tr=lambda text: text,
         )
         event = _DropEvent([_Url(folder)])
 
         data_manager_module.DataManagerWidget.dropEvent(page, event)
 
+        page.show_projects.assert_called_once_with()
         model_widget.create_model.assert_called_once_with(initial_path=folder)
         self.assertTrue(event.accepted)
         self.assertFalse(event.ignored)

@@ -17,7 +17,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QS
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget, \
-    PrimaryPushButton, SubtitleLabel
+    PrimaryPushButton, SubtitleLabel, TransparentPushButton
 
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask, run_in_thread
@@ -253,6 +253,9 @@ class ShowNepWidget(QWidget):
             except Exception:
                 logger.debug(traceback.format_exc())
 
+        if self._validation_model_id is not None:
+            # Evaluations may have run on the model library page meanwhile.
+            self.refresh_validation_chip()
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
@@ -896,8 +899,16 @@ class ShowNepWidget(QWidget):
         # Shown again once a dataset reports its available models.
         self.nep_model_combo.hide()
         
+        self.validation_chip = TransparentPushButton(FluentIcon.CERTIFICATE, "", self.path_container)
+        self.validation_chip.setToolTip(self.tr("Open the validation scorecard for this model"))
+        self.validation_chip.clicked.connect(self._open_validation_scorecard)
+        self.validation_chip.hide()
+        self._validation_model_id = None
+        self._validation_status = None
+
         self.path_container_layout.addWidget(self.path_label)
         self.path_container_layout.addWidget(self.nep_model_combo)
+        self.path_container_layout.addWidget(self.validation_chip)
         self.path_container_layout.addStretch()
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
@@ -1343,19 +1354,57 @@ class ShowNepWidget(QWidget):
         Capturing is content-addressed, so reopening the same model is free and a
         retrained ``nep.txt`` at the same path becomes a new version.
         """
+        self._validation_model_id = None
         data = self.nep_result_data
         model_path = getattr(data, "nep_txt_path", None)
         if data is None or model_path is None or not Path(model_path).is_file():
-            return
-        if not Config.getboolean("validation", "auto_capture", True):
+            self.refresh_validation_chip()
             return
         try:
             from NepTrainKit.core.validation import ValidationService
 
-            ValidationService().capture_model(model_path, dataset_path=getattr(data, "data_xyz_path", None))
+            service = ValidationService()
+            if Config.getboolean("validation", "auto_capture", True):
+                record = service.capture_model(model_path, dataset_path=getattr(data, "data_xyz_path", None))
+            else:
+                record = service.find_model_by_file(model_path)
+            self._validation_model_id = record["id"] if record else None
         except Exception:
             # Validation bookkeeping must never interrupt viewing a dataset.
             logger.debug(traceback.format_exc())
+        self.refresh_validation_chip()
+
+    def refresh_validation_chip(self) -> None:
+        """Show "Validation: <suite> · N regressions" when a suite covers the model."""
+        status = None
+        if self._validation_model_id is not None:
+            try:
+                from NepTrainKit.core.validation import ValidationService
+                from NepTrainKit.ui.views.model_library import CONFIG_SUITE, summarize_model_status
+
+                preferred = Config.getint("validation", CONFIG_SUITE, 0) or None
+                status = summarize_model_status(ValidationService(), self._validation_model_id, preferred)
+            except Exception:
+                logger.debug(traceback.format_exc())
+        self._validation_status = status
+        if status is None:
+            self.validation_chip.hide()
+            return
+        if not status["evaluated"]:
+            text = self.tr("Validation: {suite} · not run")
+        elif status["is_baseline"]:
+            text = self.tr("Validation: {suite} · baseline")
+        elif not status["has_baseline"]:
+            text = self.tr("Validation: {suite} · no baseline")
+        else:
+            text = self.tr("Validation: {suite} · {count} regressions")
+        self.validation_chip.setText(text.format(suite=status["suite_name"], count=status["regressions"]))
+        self.validation_chip.show()
+
+    def _open_validation_scorecard(self) -> None:
+        status = self._validation_status
+        if status is not None and hasattr(self._parent, "open_model_scorecard"):
+            self._parent.open_model_scorecard(status["suite_id"], status["model_id"])
 
     def _update_structure_filter_suggestions(self) -> None:
         """Reuse the loaded search caches in the composite filter editor."""

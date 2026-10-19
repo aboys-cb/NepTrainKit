@@ -7344,6 +7344,30 @@
       "rendered": "atomic.element 必须与带引号的元素符号比较，例如 'Fe'。",
       "review": "technical",
       "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/library.py",
+      "source": "Invalid object id: ⟦value⟧",
+      "context": null,
+      "rendered": "Invalid object id: ⟦value⟧",
+      "review": "hidden",
+      "reason": "对象 id 只来自数据库记录或 iter_objects（已过滤非哈希文件名），不来自用户输入；该异常表示模型库内部不一致，界面不会原样显示。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/service.py",
+      "source": "Not a NEP model file (the first line must start with 'nep').",
+      "context": null,
+      "rendered": "Not a NEP model file (the first line must start with 'nep').",
+      "review": "hidden",
+      "reason": "只有 ValidationService.capture_model 会抛出；界面唯一调用方 show_nep 自动收录模型时捕获异常、只写调试日志，不显示给用户；命令行 nepkit-validate 按设计输出英文。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/service.py",
+      "source": "The NEP model header does not list its elements.",
+      "context": null,
+      "rendered": "The NEP model header does not list its elements.",
+      "review": "hidden",
+      "reason": "只有 ValidationService.capture_model 会抛出；界面唯一调用方 show_nep 自动收录模型时捕获异常、只写调试日志，不显示给用户；命令行 nepkit-validate 按设计输出英文。"
     }
   ],
   "followup_fixes": [
@@ -7828,6 +7852,20 @@
       "source": "input_type must be int or float",
       "id": 1068,
       "template": "input_type must be int or float",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/library.py",
+      "source": "Library object ⟦value⟧ is missing from ⟦value⟧.",
+      "id": 1069,
+      "template": "Library object {value0} is missing from {value1}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/protocols/eos.py",
+      "source": "Prediction must contain one finite energy per reference frame.",
+      "id": 1070,
+      "template": "Prediction must contain one finite energy per reference frame.",
       "context": "RuntimeMessage"
     }
   ]

@@ -261,6 +261,13 @@ RUNTIME_ERROR_TEMPLATES = (
     ('RuntimeMessage', 'NEP cutoff line does not match the declared element count.'),
     ('RuntimeMessage', 'NEP cutoffs must be finite and positive.'),
     ('RuntimeMessage', 'NEP file does not exist: {model_path}'),
+    # Model validation run errors, shown in the scorecard.
+    ('RuntimeMessage', 'Library object {value0} is missing from {value1}.'),
+    ('RuntimeMessage', 'Library object {value} is corrupt.'),
+    ('RuntimeMessage', 'Prediction must contain one finite energy per reference frame.'),
+    ('RuntimeMessage', 'The model does not cover every element of this benchmark set.'),
+    ('RuntimeMessage', 'This model version has no snapshot; capture its nep.txt first.'),
+    ('RuntimeMessage', 'This protocol does not support spin models yet.'),
     ('RuntimeMessage', 'NEP model does not contain a cutoff line.'),
     ('RuntimeMessage', 'NEP model file is empty.'),
     ('RuntimeMessage', 'NEP model header does not match the declared element count.'),

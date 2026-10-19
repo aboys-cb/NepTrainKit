@@ -194,7 +194,8 @@ class Library:
 
     # -- objects --------------------------------------------------------------
     def object_path(self, digest: str) -> Path:
-        if len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+        # Ids come from the database or from iter_objects, never from user input.
+        if not _is_digest(digest):
             raise ValueError(f"Invalid object id: {digest!r}")
         return self.objects_dir / digest[:2] / digest
 
@@ -237,7 +238,8 @@ class Library:
     def iter_objects(self):
         if self.objects_dir.is_dir():
             for path in self.objects_dir.glob("??/*"):
-                if path.is_file() and len(path.name) == 64:
+                # Skip stray files so clean-up never trips over a foreign name.
+                if path.is_file() and _is_digest(path.name):
                     yield path.name, path
 
     def delete_object(self, digest: str) -> int:
@@ -273,6 +275,10 @@ class Library:
             "results": total(self.results_dir.glob("*.json")) if self.results_dir.exists() else 0,
             "database": db,
         }
+
+
+def _is_digest(name: str) -> bool:
+    return len(name) == 64 and all(c in "0123456789abcdef" for c in name)
 
 
 def _publish(temporary: Path, target: Path, *, read_only: bool) -> None:

@@ -492,3 +492,13 @@ def test_viewer_captures_opened_model_and_never_raises(tmp_path, model_file, mon
     viewer.nep_result_data.nep_txt_path = model_file
     ShowNepWidget._capture_model_version(viewer)
     assert ValidationService(Library(tmp_path / "viewer-lib")).find_model_by_file(model_file) is None
+
+
+def test_garbage_collection_ignores_foreign_files_in_objects(make_service):
+    service = make_service()
+    stray = service.library.objects_dir / "zz" / ("z" * 64)
+    stray.parent.mkdir(parents=True)
+    stray.write_text("not ours")
+    assert all(name != stray.name for name, _ in service.library.iter_objects())
+    assert service.collect_garbage(dry_run=False)["objects"] == 0
+    assert stray.exists()

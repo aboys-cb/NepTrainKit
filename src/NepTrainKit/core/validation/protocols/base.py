@@ -87,7 +87,7 @@ class ValidationProtocol(ABC):
     def supports(self, model: ModelCapabilities) -> str | None:
         """Return a reason when the model cannot be evaluated, else ``None``."""
         if model.is_spin and not self.supports_spin:
-            return f"{self.title or self.kind} does not support spin models yet."
+            return "This protocol does not support spin models yet."
         return None
 
     @abstractmethod

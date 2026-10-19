@@ -17577,6 +17577,21 @@ All child items will also be deleted.</source>
         <source>Predicted energy (eV/atom)</source>
         <translation>预测能量 (eV/atom)</translation>
     </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="224" />
+        <source>failed</source>
+        <translation>失败</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="224" />
+        <source>unsupported</source>
+        <translation>不支持</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="228" />
+        <source>{name}: {status} {error}</source>
+        <translation>{name}：{status} {error}</translation>
+    </message>
 </context>
 <context>
     <name>RuntimeMessage</name>
@@ -17774,6 +17789,30 @@ All child items will also be deleted.</source>
     <message>
         <source>NEP model file is empty.</source>
         <translation>NEP 模型文件为空。</translation>
+    </message>
+    <message>
+        <source>Library object {value0} is missing from {value1}.</source>
+        <translation>模型库对象 {value0} 不在 {value1} 中。</translation>
+    </message>
+    <message>
+        <source>Library object {value} is corrupt.</source>
+        <translation>模型库对象 {value} 已损坏。</translation>
+    </message>
+    <message>
+        <source>Prediction must contain one finite energy per reference frame.</source>
+        <translation>预测结果必须为每个参考构型给出一个有限的能量值。</translation>
+    </message>
+    <message>
+        <source>The model does not cover every element of this benchmark set.</source>
+        <translation>模型未覆盖此验证集中的全部元素。</translation>
+    </message>
+    <message>
+        <source>This model version has no snapshot; capture its nep.txt first.</source>
+        <translation>此模型版本没有快照，请先收录它的 nep.txt。</translation>
+    </message>
+    <message>
+        <source>This protocol does not support spin models yet.</source>
+        <translation>此验证协议暂不支持自旋模型。</translation>
     </message>
     <message>
         <source>The largest structure has {largest_structure} atoms, above the CUDA workspace estimate of {recommended}. Use CPU for this dataset; a single structure cannot be split safely.</source>

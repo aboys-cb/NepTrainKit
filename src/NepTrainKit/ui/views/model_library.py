@@ -23,6 +23,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.validation import SetRejectedError, SetTooLargeError, ValidationService
 from NepTrainKit.core.validation.protocols import get_protocol
+from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import GetStrMessageBox
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
@@ -124,7 +125,8 @@ class ScorecardTableModel(QAbstractTableModel):
             return int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         if role == Qt.ItemDataRole.ToolTipRole:
             if cell["error"]:
-                return cell["error"]
+                # Stored diagnostics keep their raw text when no template matches.
+                return translate_runtime_message(cell["error"])
             return {
                 "better": self.tr("Better than the baseline"),
                 "worse": self.tr("Worse than the baseline"),
@@ -219,7 +221,14 @@ class RunDetailPanel(QWidget):
             if run is None:
                 notes.append(self.tr("{name}: not run").format(name=name))
             elif run["status"] != "succeeded":
-                notes.append(f"{name}: {run['status']} {run['error']}".rstrip())
+                status = {"failed": self.tr("failed"), "unsupported": self.tr("unsupported")}.get(
+                    run["status"], run["status"]
+                )
+                notes.append(
+                    self.tr("{name}: {status} {error}")
+                    .format(name=name, status=status, error=translate_runtime_message(run["error"]))
+                    .rstrip()
+                )
         self.info_label.setText("\n".join(notes))
         renderer = {"eos": self._plot_eos, "efv": self._plot_efv}.get(protocol.kind)
         if renderer is not None:

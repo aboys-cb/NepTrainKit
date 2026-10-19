@@ -376,3 +376,38 @@ def test_settings_cleanup_previews_before_deleting(make_service, tmp_path, monke
         assert service.library.has_object(orphan) and "1 files" in answers[0]
         widget.clean_up_library()
     assert not service.library.has_object(orphan)
+
+
+# -- localisation -----------------------------------------------------------------
+
+def test_scorecard_translates_stored_run_errors_but_keeps_unknown_diagnostics():
+    from NepTrainKit import i18n
+
+    column = {"set_name": "EOS", "label": "RMSE", "unit": "meV/atom", "better": "lower", "protocol": "eos"}
+    errors = [
+        ("failed", "Library object 0123456789ab is missing from /lib."),
+        ("unsupported", "This protocol does not support spin models yet."),
+        ("failed", "native crash 0x1f"),
+    ]
+    cells = [{"value": None, "status": status, "error": error, "verdict": None} for status, error in errors]
+    card = {
+        "columns": [dict(column, set_id=f"s{i}") for i in range(len(cells))],
+        "rows": [
+            {"model_id": 1, "name": "v1", "starred": False, "is_baseline": False, "regressions": 0, "cells": cells}
+        ],
+    }
+    model = ScorecardTableModel()
+    model.set_scorecard(card)
+    app = QApplication.instance()
+
+    def tooltip(column_index):
+        return model.data(model.index(0, column_index), Qt.ItemDataRole.ToolTipRole)
+
+    i18n.install_translator(app, "zh_CN")
+    try:
+        assert tooltip(1) == "模型库对象 0123456789ab 不在 /lib 中。"
+        assert tooltip(2) == "此验证协议暂不支持自旋模型。"
+        assert tooltip(3) == "native crash 0x1f"  # unknown diagnostics stay readable, not hidden
+    finally:
+        i18n.install_translator(app, "en_US")
+    assert tooltip(1) == "Library object 0123456789ab is missing from /lib."

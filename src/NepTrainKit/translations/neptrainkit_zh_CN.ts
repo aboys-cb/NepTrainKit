@@ -1267,6 +1267,34 @@ Energy labels available. Forces: {forces}; virials: {virials}.</source>
         <source>Preview and confirm each checked group belongs to one phase and magnetic branch.</source>
         <translation>请逐组预览，并确认每个勾选组属于同一相和磁态分支。</translation>
     </message>
+    <message>
+        <source>Supplementary information (optional)</source>
+        <translation>补充信息（可选）</translation>
+    </message>
+    <message>
+        <source>Notes (optional)</source>
+        <translation>备注（可选）</translation>
+    </message>
+    <message>
+        <source>e.g. calculation settings or a description of this dataset</source>
+        <translation>例如计算参数或这份数据集的说明</translation>
+    </message>
+    <message>
+        <source>Reference curve</source>
+        <translation>参考曲线</translation>
+    </message>
+    <message>
+        <source>Group by field</source>
+        <translation>分组字段</translation>
+    </message>
+    <message>
+        <source>Fields are read from each structure's EXTXYZ comment line (its second line), e.g. config_type or eos_group.
+Example: config_type=B1 means field config_type, group B1. Use the same value for all volume points in that scan; use config_type=B3 for another scan.
+Every structure must have the chosen field. Each group must be one structure / magnetic branch. If the file contains only one scan, choose Single scan · whole file.</source>
+        <translation>字段来自 EXTXYZ 中每个构型的注释行（该构型的第二行），例如 config_type 或 eos_group。
+例如 config_type=B1：字段选 config_type，组名为 B1。该扫描的所有体积点都写相同值；另一组则写 config_type=B3。
+每个构型都须有该字段，同组须属于同一结构 / 磁态分支。文件只有一条扫描时，选“单组扫描 · 使用整个文件”。</translation>
+    </message>
 </context>
 <context>
     <name>BuiltinWorkflowTemplates</name>
@@ -18022,6 +18050,14 @@ All child items will also be deleted.</source>
         <location filename="../ui/views/model_library.py" line="237" />
         <source>Other</source>
         <translation>其他</translation>
+    </message>
+    <message>
+        <source>Notes: {notes}</source>
+        <translation>备注：{notes}</translation>
+    </message>
+    <message>
+        <source>Reference curve</source>
+        <translation>参考曲线</translation>
     </message>
 </context>
 <context>

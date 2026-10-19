@@ -105,8 +105,9 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     widget.table.setCurrentIndex(widget.model.index(rows[0], 1))
     widget.table.selectionModel().select(widget.model.index(rows[1], 1), QItemSelectionModel.SelectionFlag.Select)
     assert widget.detail.title_label.text() == "Reference dataset: eos"
+    assert "Reference: DFT, PBE" in widget.detail.info_label.text()
     names = [item.name() for item in widget.detail.plot.listDataItems()]
-    assert names == ["DFT reference", "old", "new"]
+    assert names == ["Reference curve", "old", "new"]
 
     widget.table.setCurrentIndex(widget.model.index(rows[1], 0))
     widget.toggle_star()
@@ -173,13 +174,11 @@ def test_import_dialog_requires_explicit_type_and_previews_reference(make_servic
     assert "v0" in dialog.reference_summary["fit"]
     assert "Å³/atom" in dialog.preview_summary.text()
     dialog.name_edit.setText("PbTe rocksalt EOS")
-    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("DFT"))
-    dialog.conditions_edit.setText("VASP PBE 520 eV")
     dialog.suite_combo.setText("PbTe daily validation")
     assert not dialog.yesButton.isEnabled()
     dialog.branch_confirm.setChecked(True)
     assert dialog.yesButton.isEnabled() and dialog.validate()
-    assert dialog.preview_title.text() == "DFT reference curve"
+    assert dialog.preview_title.text() == "Reference curve"
 
     shifted = eos_frames(minimum=1.2)
     _load_single_eos(dialog, write_xyz(tmp_path / "edge.xyz", shifted))
@@ -209,8 +208,7 @@ def test_import_preview_invalidates_on_file_edit_and_type_change(make_service, t
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
     path = write_xyz(tmp_path / "scan.xyz", eos_frames())
     _load_single_eos(dialog, path)
-    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("Demo"))
-    dialog.conditions_edit.setText("Synthetic test")
+    dialog.notes_edit.setText("Synthetic test")
     dialog.branch_confirm.setChecked(True)
     assert dialog.validate()
     dialog.path_edit.setText(str(tmp_path / "different.xyz"))
@@ -257,6 +255,12 @@ def test_eos_flow_chinese_labels_and_errors(make_service, tmp_path):
         host = QWidget()
         dialog = BenchmarkImportDialog(host, [], "PbTe 验证")
         assert dialog.titleLabel.text() == "导入参考基准集"
+        assert dialog.supplementary_button.text() == "补充信息（可选）"
+        assert dialog.group_field_label.text() == "分组字段"
+        assert "每个构型的注释行" in dialog.group_hint.text()
+        assert "config_type=B1" in dialog.group_hint.text()
+        assert "所有体积点都写相同值" in dialog.group_hint.text()
+        assert "单组扫描 · 使用整个文件" in dialog.group_hint.text()
         assert dialog.status_label.text() == "请先选择验证类型。"
         dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
         instructions = dialog.requirements_label.text()
@@ -266,8 +270,7 @@ def test_eos_flow_chinese_labels_and_errors(make_service, tmp_path):
         _load_single_eos(dialog, write_xyz(tmp_path / "few.xyz", eos_frames()[:3]))
         assert "EOS 至少需要 5 个" in dialog.issues_label.text()
         _load_single_eos(dialog, write_xyz(tmp_path / "scan.xyz", eos_frames()))
-        dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("DFT"))
-        assert dialog.preview_title.text() == "DFT 参考曲线"
+        assert dialog.preview_title.text() == "参考曲线"
         assert "参考拟合" in dialog.preview_summary.text()
         widget = ModelLibraryWidget(service=make_service())
         assert widget.import_button.text() == "导入参考基准集"
@@ -284,8 +287,7 @@ def test_import_dialog_asks_before_copying_large_files(make_service, tmp_path):
     dialog = BenchmarkImportDialog(host, [], "PbTe")
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
     _load_single_eos(dialog, write_xyz(tmp_path / "scan.xyz", eos_frames()))
-    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("DFT"))
-    dialog.conditions_edit.setText("VASP PBE")
+    dialog.notes_edit.setText("VASP PBE")
     dialog.branch_confirm.setChecked(True)
 
     asked = []
@@ -295,9 +297,54 @@ def test_import_dialog_asks_before_copying_large_files(make_service, tmp_path):
     records = dialog.import_into(service, lambda error: True)
     assert len(records) == 1
     record = records[0]
-    assert record["provenance"] == {"conditions": "VASP PBE", "source_kind": "DFT"}
+    assert record["provenance"] == {"notes": "VASP PBE"}
     suite = service.suites()[0]
     assert suite["name"] == "PbTe" and [s["id"] for s in service.suite_sets(suite["id"])] == [record["id"]]
+
+
+@pytest.mark.parametrize("protocol", ["eos", "efv"])
+@pytest.mark.parametrize("notes", ["", "PBE, 520 eV; same magnetic branch"])
+def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, notes):
+    service = make_service()
+    host = QWidget()
+    dialog = BenchmarkImportDialog(host, [], "Reference checks")
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData(protocol))
+    frames = eos_frames() if protocol == "eos" else efv_frames()
+    path = write_xyz(tmp_path / "reference.xyz", frames)
+    if protocol == "eos":
+        _load_single_eos(dialog, path)
+        dialog.branch_confirm.setChecked(True)
+    else:
+        dialog.load_file(path)
+    assert dialog.validate() and dialog.yesButton.isEnabled()
+    assert dialog.supplementary_panel.isHidden()
+    if notes:
+        dialog.supplementary_button.click()
+        assert not dialog.supplementary_panel.isHidden()
+        dialog.notes_edit.setText(f"  {notes}  ")
+        dialog.supplementary_button.click()
+        assert dialog.supplementary_panel.isHidden()
+        dialog.supplementary_button.click()
+        assert dialog.notes_edit.text().strip() == notes
+    record, = dialog.import_into(service, lambda _: True)
+    saved = service.get_set(record["id"])
+    assert saved["provenance"] == ({"notes": notes} if notes else {})
+    assert saved["source_ref"]["path"] == str(path)
+    assert len(service.set_frames(saved["id"])) == len(frames)
+    widget = ModelLibraryWidget(service=service)
+    widget.refresh(service.suites()[0]["id"])
+    widget.reference_combo.setCurrentIndex(widget.reference_combo.findData(saved["id"]))
+    info = widget.detail.info_label.text()
+    assert "Reference:" not in info and "DFT" not in info
+    if notes:
+        assert f"Notes: {notes}" in info
+    else:
+        assert "Notes:" not in info
+    if protocol == "eos":
+        assert widget.detail.plot.listDataItems()[0].name() == "Reference curve"
+    widget.deleteLater()
+    dialog.deleteLater()
+    host.deleteLater()
 
 
 # -- viewer chip ------------------------------------------------------------------
@@ -320,8 +367,6 @@ def test_grouped_eos_preview_confirmation_exclusion_and_batch_import(make_servic
     dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
     assert len(dialog.eos_groups) == 3
     assert dialog.eos_groups[2]["summary"] is None
-    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("Demo"))
-    dialog.conditions_edit.setText("Synthetic test")
     dialog.branch_confirm.setChecked(True)
     dialog.group_table.setCurrentCell(1, 0)
     assert not dialog.branch_confirm.isChecked()
@@ -337,6 +382,7 @@ def test_grouped_eos_preview_confirmation_exclusion_and_batch_import(make_servic
     assert [curve.name() for curve in dialog.preview_plot.listDataItems()] == ["A", "B"]
     records = dialog.import_into(service, lambda _: True)
     assert len(records) == 2
+    assert all(record["provenance"] == {} for record in records)
     suite = service.suites()[0]
     assert {r["id"] for r in service.suite_sets(suite["id"])} == {r["id"] for r in records}
     assert all(len(service.set_frames(r["id"])) == 7 for r in records)
@@ -359,6 +405,68 @@ def test_grouped_eos_missing_metadata_is_never_silently_dropped(tmp_path):
     assert "Frame 7" in dialog._group_error
     assert dialog.eos_groups == [] and not dialog.validate()
     assert not dialog.preview_plot.listDataItems()
+
+
+@pytest.mark.parametrize("language", ["en", "zh"])
+def test_import_dialog_resizes_without_squeezing_controls(tmp_path, language):
+    app = QApplication.instance()
+    translator = QTranslator(app)
+    if language == "zh":
+        translation = Path(__file__).parents[1] / "src/NepTrainKit/translations/neptrainkit_zh_CN.qm"
+        assert translator.load(str(translation))
+        app.installTranslator(translator)
+    host = QWidget()
+    host.resize(1280, 900)
+    host.show()
+    dialog = BenchmarkImportDialog(host, [], "EOS")
+    try:
+        dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+        frames = eos_frames()
+        for frame in frames:
+            frame.info["config_type"] = "B1"
+        dialog.load_file(write_xyz(tmp_path / "eos.xyz", frames))
+        dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
+        dialog.branch_confirm.setChecked(True)
+        dialog.supplementary_button.click()
+        dialog.show()
+        for width, height in [(1280, 900), (1000, 700), (800, 600), (1280, 900)]:
+            host.resize(width, height)
+            for _ in range(3):
+                app.processEvents()
+            assert host.rect().contains(dialog.widget.geometry())
+            for control in (
+                dialog.path_edit, dialog.browse_button, dialog.protocol_combo,
+                dialog.group_field_combo, dialog.name_edit,
+                dialog.notes_edit, dialog.suite_combo, dialog.branch_confirm,
+            ):
+                assert control.height() >= max(32, control.sizeHint().height())
+            assert dialog.preview_plot.height() >= 260
+            scroll = dialog.body_scroll
+            assert scroll.widget().width() <= scroll.viewport().width()
+            if width >= 1280:
+                assert dialog.fields_panel.x() < dialog.preview_panel.x()
+                assert dialog.fields_panel.y() == dialog.preview_panel.y()
+            else:
+                assert dialog.fields_panel.geometry().bottom() < dialog.preview_panel.y()
+                assert scroll.verticalScrollBar().maximum() > 0
+            # Scrolling can reach the final confirmation without moving the footer.
+            button_pos = dialog.yesButton.mapTo(host, dialog.yesButton.rect().topLeft())
+            scroll.ensureWidgetVisible(dialog.branch_confirm)
+            app.processEvents()
+            confirmation_pos = dialog.branch_confirm.mapTo(scroll.viewport(), dialog.branch_confirm.rect().center())
+            assert scroll.viewport().rect().contains(confirmation_pos)
+            assert dialog.yesButton.mapTo(host, dialog.yesButton.rect().topLeft()) == button_pos
+            assert host.rect().contains(dialog.yesButton.mapTo(host, dialog.yesButton.rect().bottomRight()))
+            assert dialog.branch_confirm.isChecked()
+            assert dialog.group_field_combo.currentData() == "config_type"
+    finally:
+        dialog.hide()
+        host.close()
+        dialog.deleteLater()
+        host.deleteLater()
+        if language == "zh":
+            app.removeTranslator(translator)
+
 
 def test_status_summary_counts_regressions_on_the_preferred_suite(scored):
     service = scored.service

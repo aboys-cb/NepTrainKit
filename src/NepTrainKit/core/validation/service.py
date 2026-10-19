@@ -305,7 +305,7 @@ class ValidationService:
         max_bytes: int = DEFAULT_MAX_SET_BYTES,
         allow_large: bool = False,
     ) -> dict:
-        """Seal an EXTXYZ and its declared conditions; never infer that labels are DFT."""
+        """Seal an EXTXYZ with optional provenance; never infer that labels are DFT."""
         return self._import_sets(
             path, name=name, provenance=provenance, protocol=protocol,
             max_bytes=max_bytes, allow_large=allow_large,
@@ -332,7 +332,7 @@ class ValidationService:
     ) -> list[dict]:
         if not name.strip():
             raise ValueError("A benchmark set needs a name.")
-        if provenance.get("source_kind") not in SOURCE_KINDS:
+        if provenance.get("source_kind") and provenance["source_kind"] not in SOURCE_KINDS:
             raise ValueError(f"Declare the reference source kind: one of {', '.join(SOURCE_KINDS)}.")
         path = Path(path).expanduser().resolve()
         size = path.stat().st_size

@@ -233,15 +233,19 @@ class RunDetailPanel(QWidget):
             return
         protocol = get_protocol(benchmark["protocol"])
         provenance = benchmark.get("provenance") or {}
-        source = provenance.get("source_kind", "?")
+        source = provenance.get("source_kind")
         source = {"Demo": self.tr("Demo"), "Other": self.tr("Other")}.get(source, source)
         self.title_label.setText(self.tr("Reference dataset: {name}").format(name=benchmark['name']))
-        notes = [
-            self.tr("Reference: {source}, {conditions}").format(
+        notes = []
+        if source:
+            notes.append(self.tr("Reference: {source}, {conditions}").format(
                 source=source, conditions=provenance.get("conditions", "-")
-            ),
-            self.tr("Fixed reference geometries") if protocol.mode == "fixed-geometry" else self.tr("Mode: {mode}").format(mode=protocol.mode),
-        ]
+            ))
+        elif provenance.get("conditions"):
+            notes.append(self.tr("Notes: {notes}").format(notes=provenance["conditions"]))
+        if provenance.get("notes"):
+            notes.append(self.tr("Notes: {notes}").format(notes=provenance["notes"]))
+        notes.append(self.tr("Fixed reference geometries") if protocol.mode == "fixed-geometry" else self.tr("Mode: {mode}").format(mode=protocol.mode))
         summary = benchmark.get("summary") or {}
         if protocol.kind == "eos" and summary.get("volumes"):
             notes.append(self.tr("{count} volumes · {low:.3f}–{high:.3f} Å³/atom").format(
@@ -277,7 +281,7 @@ class RunDetailPanel(QWidget):
             self.plot.plot(
                 summary["volumes"], summary["energies"], pen=pg.mkPen("k", width=2),
                 symbol="o", symbolBrush="k", symbolSize=7,
-                name=self.tr("DFT reference") if (benchmark.get("provenance") or {}).get("source_kind") == "DFT" else self.tr("Reference data"),
+                name=self.tr("Reference curve"),
             )
         aligned = self.offset_checkbox.isChecked()
         for index, (name, details) in enumerate(curves):

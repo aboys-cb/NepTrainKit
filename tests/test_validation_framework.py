@@ -465,11 +465,14 @@ def test_capture_is_deduplicated_and_retraining_makes_a_new_version(make_service
     assert [m["id"] for m in service.models()] == [second["id"], first["id"]]
 
 
-def test_import_requires_declared_source_and_rejects_bad_sets(make_service, tmp_path):
+def test_import_accepts_optional_provenance_and_rejects_bad_sets(make_service, tmp_path):
     service = make_service()
     path = write_xyz(tmp_path / "eos.xyz", eos_frames())
+    unlabelled = service.import_set(path, name="x", provenance={}, protocol="eos")
+    assert unlabelled["provenance"] == {}
+    assert service.get_set(unlabelled["id"])["provenance"] == {}
     with pytest.raises(ValueError, match="source kind"):
-        service.import_set(path, name="x", provenance={})
+        service.import_set(path, name="x", provenance={"source_kind": "invalid"})
     with pytest.raises(SetTooLargeError):
         service.import_set(path, name="x", provenance={"source_kind": "DFT"}, max_bytes=10)
     with pytest.raises(SetRejectedError):

@@ -7,19 +7,22 @@ import os
 from pathlib import Path
 from html import escape
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtWidgets import QAbstractItemView, QBoxLayout, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QTableWidgetItem, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
     CheckBox,
     ComboBox,
     EditableComboBox,
+    FluentIcon,
     LineEdit,
     MessageBoxBase,
     PushButton,
+    ScrollArea,
     SubtitleLabel,
     TableWidget,
+    TransparentPushButton,
 )
 
 from NepTrainKit import palette
@@ -28,7 +31,6 @@ from NepTrainKit.core.validation import Library, SetTooLargeError, ValidationSer
 from NepTrainKit.core.validation.library import ENV_VAR, CONFIG_LIBRARY_PATH, CONFIG_SECTION, sha256_bytes
 from NepTrainKit.core.validation.grouping import eos_frame_groups, eos_group_fields
 from NepTrainKit.core.validation.protocols import Issue, get_protocol, read_frames
-from NepTrainKit.core.validation.service import SOURCE_KINDS
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_message
 
@@ -109,11 +111,7 @@ def save_model_to_project(parent, service, draft, *, name=None):
 
 
 class BenchmarkImportDialog(MessageBoxBase):
-    """Choose a property, preview its reference data and declare provenance.
-
-    Labels are never assumed to be DFT, so the source kind and the calculation
-    conditions are required before the set can be sealed.
-    """
+    """Choose a property, preview its reference data and optionally add notes."""
 
     def __init__(self, parent=None, suites: list[dict] | tuple = (), suite_name: str = ""):
         super().__init__(parent)
@@ -127,16 +125,32 @@ class BenchmarkImportDialog(MessageBoxBase):
 
         self.titleLabel = SubtitleLabel(self.tr("Import reference dataset"), self)
         self.viewLayout.addWidget(self.titleLabel)
-        columns = QHBoxLayout()
+        self.body_scroll = ScrollArea(self.widget)
+        self.body_scroll.setWidgetResizable(True)
+        self.body_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.body_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        self.body_scroll.viewport().setStyleSheet("background: transparent;")
+        body = QWidget()
+        body.setObjectName("benchmarkImportBody")
+        body.setStyleSheet("#benchmarkImportBody { background: transparent; }")
+        columns = QBoxLayout(QBoxLayout.Direction.LeftToRight, body)
+        columns.setContentsMargins(0, 0, 12, 0)
         columns.setSpacing(24)
-        self.viewLayout.addLayout(columns)
-        fields = QVBoxLayout()
+        columns.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
+        self._columns = columns
+        self.body_scroll.setWidget(body)
+        self.viewLayout.addWidget(self.body_scroll, 1)
+        self.fields_panel = QWidget(body)
+        self.preview_panel = QWidget(body)
+        fields = QVBoxLayout(self.fields_panel)
+        fields.setContentsMargins(0, 0, 0, 0)
         fields.setSpacing(12)
-        preview = QVBoxLayout()
+        preview = QVBoxLayout(self.preview_panel)
+        preview.setContentsMargins(0, 0, 0, 0)
         preview.setSpacing(6)
         self._preview_layout = preview
-        columns.addLayout(fields, 1)
-        columns.addLayout(preview, 1)
+        columns.addWidget(self.fields_panel, 1)
+        columns.addWidget(self.preview_panel, 1)
 
         fields.addWidget(BodyLabel(self.tr("1 · Choose validation type"), self))
         self.protocol_combo = ComboBox(self)
@@ -164,13 +178,6 @@ class BenchmarkImportDialog(MessageBoxBase):
         file_layout.addWidget(self.browse_button)
 
         self.name_edit = LineEdit(self)
-        self.source_combo = ComboBox(self)
-        self.source_combo.addItem(self.tr("Select..."), userData=None)
-        source_labels = {"DFT": "DFT", "Other": self.tr("Other"), "Demo": self.tr("Demo")}
-        for kind in SOURCE_KINDS:
-            self.source_combo.addItem(source_labels.get(kind, kind), userData=kind)
-        self.conditions_edit = LineEdit(self)
-        self.conditions_edit.setPlaceholderText(self.tr("e.g. VASP PBE, 520 eV cutoff, k-spacing 0.2"))
         self.suite_combo = EditableComboBox(self)
         self.suite_combo.setPlaceholderText(self.tr("Choose a validation plan or type a new name"))
         for suite in suites:
@@ -178,22 +185,40 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.suite_combo.setText(suite_name)
 
         form = QFormLayout()
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         form.addRow(BodyLabel(self.tr("File"), self), file_row)
         self.group_field_combo = ComboBox(self)
-        self.group_field_label = BodyLabel(self.tr("EOS grouping"), self)
+        self.group_field_label = BodyLabel(self.tr("Group by field"), self)
         form.addRow(self.group_field_label, self.group_field_combo)
-        self.group_hint = CaptionLabel(self.tr("Choose a field that identifies each parent structure / scan. No automatic grouping is applied."), self)
+        self.group_hint = CaptionLabel(self.tr(
+            "Fields are read from each structure's EXTXYZ comment line (its second line), e.g. config_type or eos_group.\n"
+            "Example: config_type=B1 means field config_type, group B1. Use the same value for all volume points in that scan; use config_type=B3 for another scan.\n"
+            "Every structure must have the chosen field. Each group must be one structure / magnetic branch. If the file contains only one scan, choose Single scan · whole file."
+        ), self)
         self.group_hint.setWordWrap(True)
         form.addRow(self.group_hint)
         form.addRow(BodyLabel(self.tr("Name"), self), self.name_edit)
-        form.addRow(BodyLabel(self.tr("Reference source"), self), self.source_combo)
-        form.addRow(BodyLabel(self.tr("Conditions"), self), self.conditions_edit)
         fields.addLayout(form)
         fields.addWidget(BodyLabel(self.tr("3 · Add to a fixed validation plan"), self))
         fields.addWidget(self.suite_combo)
         plan_hint = CaptionLabel(self.tr("Future model versions reuse this reference dataset. Importing does not change the baseline model."), self)
         plan_hint.setWordWrap(True)
         fields.addWidget(plan_hint)
+        self.supplementary_button = TransparentPushButton(
+            FluentIcon.CARE_RIGHT_SOLID, self.tr("Supplementary information (optional)"), self
+        )
+        self.supplementary_button.setCheckable(True)
+        fields.addWidget(self.supplementary_button, 0, Qt.AlignmentFlag.AlignLeft)
+        self.supplementary_panel = QWidget(self)
+        supplementary_layout = QVBoxLayout(self.supplementary_panel)
+        supplementary_layout.setContentsMargins(0, 0, 0, 0)
+        supplementary_layout.addWidget(BodyLabel(self.tr("Notes (optional)"), self))
+        self.notes_edit = LineEdit(self)
+        self.notes_edit.setPlaceholderText(self.tr("e.g. calculation settings or a description of this dataset"))
+        supplementary_layout.addWidget(self.notes_edit)
+        fields.addWidget(self.supplementary_panel)
+        self.supplementary_panel.hide()
+        self.supplementary_button.toggled.connect(self._toggle_supplementary)
         fields.addStretch(1)
 
         self.preview_title = BodyLabel(self.tr("Reference curve preview"), self)
@@ -223,7 +248,7 @@ class BenchmarkImportDialog(MessageBoxBase):
         import pyqtgraph as pg
         self.preview_plot = pg.PlotWidget(self)
         self.preview_legend = self.preview_plot.addLegend(offset=(-10, 10))
-        self.preview_plot.setMinimumHeight(180)
+        self.preview_plot.setMinimumHeight(260)
         self.preview_plot.showGrid(x=True, y=True, alpha=0.2)
         preview.addWidget(self.preview_plot, 1)
         self.branch_confirm = CheckBox(self.tr("This group is one phase / magnetic branch"), self)
@@ -239,16 +264,19 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.status_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.viewLayout.addWidget(self.status_label)
 
-        for widget in (self.name_edit, self.conditions_edit):
-            widget.textChanged.connect(self._validate)
-        self.source_combo.currentIndexChanged.connect(self._validate)
+        self.name_edit.textChanged.connect(self._validate)
 
         self.yesButton.setText(self.tr("Save reference dataset"))
         self.cancelButton.setText(self.tr("Cancel"))
-        self.widget.setMinimumWidth(980)
+        for control in (
+            self.protocol_combo, self.path_edit, self.browse_button,
+            self.group_field_combo, self.name_edit, self.notes_edit,
+            self.suite_combo, self.overlay_groups,
+            self.branch_confirm,
+        ):
+            control.setMinimumHeight(max(32, control.sizeHint().height()))
         self.protocol_combo.currentIndexChanged.connect(self._protocol_changed)
         self.path_edit.textChanged.connect(self._invalidate_file)
-        self.source_combo.currentIndexChanged.connect(self._update_preview)
         self.suite_combo.textChanged.connect(self._validate)
         self.branch_confirm.stateChanged.connect(self._confirm_group)
         self.group_field_combo.currentIndexChanged.connect(self._check_protocol)
@@ -257,6 +285,33 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.overlay_groups.stateChanged.connect(self._update_preview)
         self._populate_group_fields()
         self._protocol_changed()
+        parent.installEventFilter(self)
+        self._fit_to_parent()
+
+    def _toggle_supplementary(self, expanded: bool):
+        self.supplementary_panel.setVisible(expanded)
+        self.supplementary_button.setIcon(FluentIcon.CARE_DOWN_SOLID if expanded else FluentIcon.CARE_RIGHT_SOLID)
+
+    def _fit_to_parent(self):
+        """Scroll the body instead of squeezing fields into the host window."""
+        parent = self.parentWidget()
+        self.resize(parent.size())
+        width = min(1120, max(0, parent.width() - 32))
+        height = min(840, max(0, parent.height() - 32))
+        self._columns.setDirection(
+            QBoxLayout.Direction.LeftToRight if width >= 1040
+            else QBoxLayout.Direction.TopToBottom
+        )
+        self.widget.setFixedSize(width, height)
+
+    def eventFilter(self, obj, event):
+        if obj is self.parentWidget() and event.type() == QEvent.Type.Resize and hasattr(self, "body_scroll"):
+            self._fit_to_parent()
+        return super().eventFilter(obj, event)
+
+    def showEvent(self, event):
+        self._fit_to_parent()
+        super().showEvent(event)
 
     # -- file and protocol ----------------------------------------------------
     def _browse(self) -> None:
@@ -418,8 +473,7 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.preview_plot.setVisible(is_eos)
         self._preview_layout.setStretch(self._preview_layout.count() - 1, 0 if is_eos else 1)
         self.preview_summary.setText(self.tr("Load a reference file to inspect its data before saving."))
-        source = self.source_combo.currentData()
-        self.preview_title.setText(self.tr("DFT reference curve") if source == "DFT" else self.tr("Reference data preview"))
+        self.preview_title.setText(self.tr("Reference curve") if is_eos else self.tr("Reference data preview"))
         group = None
         if is_eos:
             row = self.group_table.currentRow()
@@ -479,10 +533,6 @@ class BenchmarkImportDialog(MessageBoxBase):
             errors.append(self.tr("Fix the errors above before importing."))
         if not self.name_edit.text().strip():
             errors.append(self.tr("Enter a name for the set."))
-        if self.source_combo.currentData() is None:
-            errors.append(self.tr("Declare where the reference labels come from."))
-        if not self.conditions_edit.text().strip():
-            errors.append(self.tr("Describe the reference calculation conditions."))
         if not self.suite_combo.text().strip():
             errors.append(self.tr("Choose or name a validation plan."))
         if self.protocol_combo.currentData() == "eos":
@@ -520,10 +570,7 @@ class BenchmarkImportDialog(MessageBoxBase):
             "path": self.path_edit.text().strip(),
             "name": self.name_edit.text().strip(),
             "protocol": protocol.kind if protocol is not None else None,
-            "provenance": {
-                "source_kind": self.source_combo.currentData(),
-                "conditions": self.conditions_edit.text().strip(),
-            },
+            "provenance": {"notes": self.notes_edit.text().strip()} if self.notes_edit.text().strip() else {},
             "suite": self.suite_combo.text().strip(),
         }
 

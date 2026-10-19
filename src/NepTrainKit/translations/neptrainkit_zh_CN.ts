@@ -20440,6 +20440,66 @@ Do you want to continue?</source>
         <source>Validation: {suite} · {count} regressions</source>
         <translation>验证：{suite} · {count} 项退化</translation>
     </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="903" />
+        <source>Validation</source>
+        <translation>验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="906" />
+        <source>Star this version</source>
+        <translation>为此版本加星标</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="908" />
+        <source>Open scorecard</source>
+        <translation>打开打分表</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="910" />
+        <source>Import benchmark set…</source>
+        <translation>导入验证集…</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="917" />
+        <source>Validation actions</source>
+        <translation>验证操作</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1416" />
+        <source>Open a NEP model to validate it, or browse the validation scorecard</source>
+        <translation>打开 NEP 模型即可验证，也可以直接浏览验证打分表</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1418" />
+        <source>Validation: no matching set</source>
+        <translation>验证：无匹配的验证集</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1418" />
+        <source>Validation: not set up</source>
+        <translation>验证：未设置</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1419" />
+        <source>Import a DFT benchmark set to start validating this model</source>
+        <translation>导入 DFT 验证集，开始验证此模型</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1435" />
+        <source>Unstar this version</source>
+        <translation>取消此版本的星标</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1469" />
+        <source>Removed the star from this version</source>
+        <translation>已取消此版本的星标</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1472" />
+        <source>Starred this version; library clean-up will keep it</source>
+        <translation>已为此版本加星标，清理模型库时会保留它</translation>
+    </message>
 </context>
 <context>
     <name>SmallAngleSpinTiltCard</name>

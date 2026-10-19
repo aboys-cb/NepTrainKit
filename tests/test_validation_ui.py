@@ -217,58 +217,134 @@ def test_status_summary_counts_regressions_on_the_preferred_suite(scored):
     assert not summarize_model_status(service, scored.fresh["id"])["evaluated"]
 
 
-def _viewer_stub(model_id, opened):
+def _viewer_stub(model_id, opened, imported=None):
+    from qfluentwidgets import Action
+
     from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 
-    chip = TransparentPushButton("")
+    def import_benchmark_set():
+        if imported is not None:
+            imported.append(True)
+
     stub = SimpleNamespace(
-        validation_chip=chip,
+        validation_chip=TransparentPushButton(""),
+        validation_star_action=Action("star"),
         _validation_model_id=model_id,
         _validation_status=None,
-        _parent=SimpleNamespace(open_model_scorecard=lambda suite, model: opened.append((suite, model))),
+        _validation_starred=False,
+        _parent=SimpleNamespace(
+            open_model_scorecard=lambda suite, model: opened.append((suite, model)),
+            import_benchmark_set=import_benchmark_set,
+        ),
         tr=lambda text: text,
     )
-    stub.refresh_validation_chip = lambda: ShowNepWidget.refresh_validation_chip(stub)
-    return stub, ShowNepWidget
+    for name in (
+        "refresh_validation_chip",
+        "open_validation_scorecard",
+        "import_validation_benchmark",
+        "toggle_validation_star",
+    ):
+        setattr(stub, name, getattr(ShowNepWidget, name).__get__(stub))
+    stub.validation_chip.clicked.connect(lambda: ShowNepWidget._on_validation_chip_clicked(stub))
+    return stub
 
 
-def test_viewer_chip_shows_regressions_and_opens_scorecard(scored, tmp_path, monkeypatch):
+def test_viewer_chip_shows_regressions_and_opens_scorecard(scored, monkeypatch):
     monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
     opened = []
-    stub, viewer = _viewer_stub(scored.new["id"], opened)
-    viewer.refresh_validation_chip(stub)
-    assert not stub.validation_chip.isHidden()
+    stub = _viewer_stub(scored.new["id"], opened)
+    stub.refresh_validation_chip()
     count = summarize_model_status(scored.service, scored.new["id"])["regressions"]
     assert stub.validation_chip.text() == f"Validation: PbTe · {count} regressions"
-    stub.validation_chip.clicked.connect(lambda: viewer._open_validation_scorecard(stub))
     stub.validation_chip.click()
     assert opened == [(scored.suite["id"], scored.new["id"])]
 
     stub._validation_model_id = scored.old["id"]
-    viewer.refresh_validation_chip(stub)
+    stub.refresh_validation_chip()
     assert stub.validation_chip.text() == "Validation: PbTe · baseline"
     stub._validation_model_id = scored.fresh["id"]
-    viewer.refresh_validation_chip(stub)
+    stub.refresh_validation_chip()
     assert stub.validation_chip.text() == "Validation: PbTe · not run"
 
-    # Models outside every suite, or not captured at all, hide the chip.
+
+def test_viewer_chip_stays_visible_and_guides_first_import(scored, tmp_path, monkeypatch):
+    from NepTrainKit.core.validation import Library, ValidationService
+
+    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
+    opened, imported = [], []
+    # A model no suite covers: clicking guides to an import instead of hiding.
     nickel = tmp_path / "ni" / "nep.txt"
     nickel.parent.mkdir()
     nickel.write_text("nep4 1 Ni\ncutoff 8 4 74 10\n")
-    stub._validation_model_id = scored.service.capture_model(nickel)["id"]
-    viewer.refresh_validation_chip(stub)
-    assert stub.validation_chip.isHidden()
+    stub = _viewer_stub(scored.service.capture_model(nickel)["id"], opened, imported)
+    stub.validation_chip.show()
+    stub.refresh_validation_chip()
+    assert not stub.validation_chip.isHidden()  # refreshing never hides the entrance
+    assert stub.validation_chip.text() == "Validation: no matching set"
+    stub.validation_chip.click()
+    assert imported == [True] and opened == []
+
+    # No captured model: a plain entrance that opens the scorecard.
     stub._validation_model_id = None
-    viewer.refresh_validation_chip(stub)
-    assert stub.validation_chip.isHidden()
+    stub.refresh_validation_chip()
+    assert stub.validation_chip.text() == "Validation" and not stub.validation_star_action.isEnabled()
+    stub.validation_chip.click()
+    assert opened == [(None, None)] and not stub.validation_chip.isHidden()
+
+    # An empty library says it is not set up yet.
+    empty = ValidationService(Library(tmp_path / "empty-lib"))
+    monkeypatch.setenv(library_module.ENV_VAR, str(empty.library.root))
+    path = tmp_path / "first" / "nep.txt"
+    path.parent.mkdir()
+    path.write_text(MODEL_HEADER)
+    stub._validation_model_id = empty.capture_model(path)["id"]
+    stub.refresh_validation_chip()
+    assert stub.validation_chip.text() == "Validation: not set up"
+    stub.validation_chip.close()
+
+
+def test_viewer_menu_stars_the_current_version(scored, monkeypatch):
+    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
+    stub = _viewer_stub(scored.fresh["id"], [])
+    stub.refresh_validation_chip()
+    assert stub.validation_star_action.isEnabled()
+    assert stub.validation_star_action.text() == "Star this version"
+    with patch("NepTrainKit.ui.pages.show_nep.MessageManager"):
+        stub.toggle_validation_star()
+        assert scored.service.get_model(scored.fresh["id"])["starred"] is True
+        assert stub.validation_star_action.text() == "Unstar this version"
+        stub.toggle_validation_star()
+    assert scored.service.get_model(scored.fresh["id"])["starred"] is False
+
+
+def test_viewer_builds_chip_with_menu(monkeypatch, tmp_path):
+    monkeypatch.setenv(library_module.ENV_VAR, str(tmp_path / "lib"))
+    from NepTrainKit.config import Config
+    from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+
+    Config()
+    viewer = ShowNepWidget()
+    try:
+        assert not viewer.validation_chip.isHidden() and not viewer.validation_menu_button.isHidden()
+        assert viewer.validation_chip.text() == "Validation"
+        assert [action.text() for action in viewer.validation_menu.actions()] == [
+            "Star this version",
+            "Open scorecard",
+            "Import benchmark set…",
+        ]
+        assert not viewer.validation_star_action.isEnabled()
+    finally:
+        viewer.deleteLater()
 
 
 def test_viewer_capture_feeds_the_chip(scored, tmp_path, monkeypatch):
     monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
-    stub, viewer = _viewer_stub(None, [])
+    from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+
+    stub = _viewer_stub(None, [])
     model_path = tmp_path / "new" / "nep.txt"
     stub.nep_result_data = SimpleNamespace(nep_txt_path=model_path, data_xyz_path=None)
-    viewer._capture_model_version(stub)
+    ShowNepWidget._capture_model_version(stub)
     assert stub._validation_model_id == scored.new["id"]
     assert stub.validation_chip.text().startswith("Validation: PbTe")
 

@@ -410,8 +410,8 @@ class ModelLibraryWidget(QWidget):
         self._on_selection_changed()
         self.scorecardChanged.emit()
 
-    def open_scorecard(self, suite_id: int, model_id: int | None = None) -> None:
-        """Show ``suite_id`` with ``model_id`` selected; used by the viewer chip."""
+    def open_scorecard(self, suite_id: int | None, model_id: int | None = None) -> None:
+        """Show ``suite_id`` (``None``: the last used suite) with ``model_id`` selected."""
         self.refresh(suite_id, model_id)
 
     # -- selection and details --------------------------------------------------
@@ -491,22 +491,24 @@ class ModelLibraryWidget(QWidget):
         )
         return bool(box.exec())
 
-    def import_benchmark(self) -> None:
+    def import_benchmark(self) -> dict | None:
+        """Ask for a benchmark set and seal it; return the record, or ``None`` if nothing was imported."""
         service = self.service()
         dialog = BenchmarkImportDialog(self.window(), service.suites(), self.suite_combo.currentText())
         if not dialog.exec():
-            return
+            return None
         try:
             record = dialog.import_into(service, self._confirm_large_copy)
         except (SetRejectedError, ValueError, OSError) as error:
             MessageManager.send_error_message(self.tr("Import failed: {error}").format(error=error))
-            return
+            return None
         if record is None:
-            return
+            return None
         MessageManager.send_success_message(self.tr("Imported benchmark set {name}").format(name=record["name"]))
         suite_name = dialog.values()["suite"]
         suite = next((item for item in service.suites() if item["name"] == suite_name), None)
         self.refresh(suite["id"] if suite else None)
+        return record
 
     def run_jobs(self) -> list[tuple[int, str]]:
         """(model, set) pairs to evaluate: every captured model on the suite sets it covers."""

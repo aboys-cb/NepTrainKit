@@ -17,7 +17,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QS
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget, \
-    PrimaryPushButton, SubtitleLabel, TransparentPushButton
+    PrimaryPushButton, SubtitleLabel, TransparentPushButton, TransparentDropDownToolButton, RoundMenu
 
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask, run_in_thread
@@ -253,7 +253,7 @@ class ShowNepWidget(QWidget):
             except Exception:
                 logger.debug(traceback.format_exc())
 
-        if self._validation_model_id is not None:
+        if getattr(self, "_validation_model_id", None) is not None:
             # Evaluations may have run on the model library page meanwhile.
             self.refresh_validation_chip()
         auto_load_config = Config.getboolean("widget","auto_load",False)
@@ -899,16 +899,31 @@ class ShowNepWidget(QWidget):
         # Shown again once a dataset reports its available models.
         self.nep_model_combo.hide()
         
-        self.validation_chip = TransparentPushButton(FluentIcon.CERTIFICATE, "", self.path_container)
-        self.validation_chip.setToolTip(self.tr("Open the validation scorecard for this model"))
-        self.validation_chip.clicked.connect(self._open_validation_scorecard)
-        self.validation_chip.hide()
+        # Always visible: the chip is the viewer's entrance to model validation.
+        self.validation_chip = TransparentPushButton(FluentIcon.CERTIFICATE, self.tr("Validation"), self.path_container)
+        self.validation_chip.clicked.connect(self._on_validation_chip_clicked)
+        self.validation_menu = RoundMenu(parent=self.path_container)
+        self.validation_star_action = Action(FluentIcon.HEART, self.tr("Star this version"), self.validation_menu)
+        self.validation_star_action.triggered.connect(self.toggle_validation_star)
+        self.validation_scorecard_action = Action(FluentIcon.LIBRARY, self.tr("Open scorecard"), self.validation_menu)
+        self.validation_scorecard_action.triggered.connect(self.open_validation_scorecard)
+        self.validation_import_action = Action(FluentIcon.ADD, self.tr("Import benchmark set…"), self.validation_menu)
+        self.validation_import_action.triggered.connect(self.import_validation_benchmark)
+        self.validation_menu.addActions(
+            [self.validation_star_action, self.validation_scorecard_action, self.validation_import_action]
+        )
+        self.validation_menu_button = TransparentDropDownToolButton(self.path_container)
+        self.validation_menu_button.setMenu(self.validation_menu)
+        self.validation_menu_button.setToolTip(self.tr("Validation actions"))
         self._validation_model_id = None
         self._validation_status = None
+        self._validation_starred = False
+        self.refresh_validation_chip()
 
         self.path_container_layout.addWidget(self.path_label)
         self.path_container_layout.addWidget(self.nep_model_combo)
         self.path_container_layout.addWidget(self.validation_chip)
+        self.path_container_layout.addWidget(self.validation_menu_button)
         self.path_container_layout.addStretch()
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
@@ -1375,36 +1390,88 @@ class ShowNepWidget(QWidget):
         self.refresh_validation_chip()
 
     def refresh_validation_chip(self) -> None:
-        """Show "Validation: <suite> · N regressions" when a suite covers the model."""
-        status = None
+        """Say what validation can do next for the current model.
+
+        Without a captured model the chip opens the scorecard; when no suite
+        covers the model it guides the user to import a benchmark set; otherwise
+        it summarises the suite ("<suite> · N regressions").
+        """
+        status, has_sets, starred = None, False, False
         if self._validation_model_id is not None:
             try:
                 from NepTrainKit.core.validation import ValidationService
                 from NepTrainKit.ui.views.model_library import CONFIG_SUITE, summarize_model_status
 
+                service = ValidationService()
                 preferred = Config.getint("validation", CONFIG_SUITE, 0) or None
-                status = summarize_model_status(ValidationService(), self._validation_model_id, preferred)
+                status = summarize_model_status(service, self._validation_model_id, preferred)
+                has_sets = status is not None or bool(service.sets())
+                starred = bool(service.get_model(self._validation_model_id)["starred"])
             except Exception:
                 logger.debug(traceback.format_exc())
         self._validation_status = status
-        if status is None:
-            self.validation_chip.hide()
-            return
-        if not status["evaluated"]:
-            text = self.tr("Validation: {suite} · not run")
-        elif status["is_baseline"]:
-            text = self.tr("Validation: {suite} · baseline")
-        elif not status["has_baseline"]:
-            text = self.tr("Validation: {suite} · no baseline")
+        self._validation_starred = starred
+        if self._validation_model_id is None:
+            text = self.tr("Validation")
+            tip = self.tr("Open a NEP model to validate it, or browse the validation scorecard")
+        elif status is None:
+            text = self.tr("Validation: no matching set") if has_sets else self.tr("Validation: not set up")
+            tip = self.tr("Import a DFT benchmark set to start validating this model")
         else:
-            text = self.tr("Validation: {suite} · {count} regressions")
-        self.validation_chip.setText(text.format(suite=status["suite_name"], count=status["regressions"]))
-        self.validation_chip.show()
+            if not status["evaluated"]:
+                text = self.tr("Validation: {suite} · not run")
+            elif status["is_baseline"]:
+                text = self.tr("Validation: {suite} · baseline")
+            elif not status["has_baseline"]:
+                text = self.tr("Validation: {suite} · no baseline")
+            else:
+                text = self.tr("Validation: {suite} · {count} regressions")
+            text = text.format(suite=status["suite_name"], count=status["regressions"])
+            tip = self.tr("Open the validation scorecard for this model")
+        self.validation_chip.setText(text)
+        self.validation_chip.setToolTip(tip)
+        self.validation_star_action.setEnabled(self._validation_model_id is not None)
+        self.validation_star_action.setText(
+            self.tr("Unstar this version") if starred else self.tr("Star this version")
+        )
 
-    def _open_validation_scorecard(self) -> None:
+    def _on_validation_chip_clicked(self) -> None:
+        """Guide to an import when nothing covers the model, else show the scorecard."""
+        if self._validation_model_id is not None and self._validation_status is None:
+            self.import_validation_benchmark()
+        else:
+            self.open_validation_scorecard()
+
+    def open_validation_scorecard(self) -> None:
         status = self._validation_status
-        if status is not None and hasattr(self._parent, "open_model_scorecard"):
-            self._parent.open_model_scorecard(status["suite_id"], status["model_id"])
+        if hasattr(self._parent, "open_model_scorecard"):
+            suite_id = status["suite_id"] if status is not None else None
+            self._parent.open_model_scorecard(suite_id, self._validation_model_id)
+
+    def import_validation_benchmark(self) -> None:
+        """Import a benchmark set without leaving the viewer, then update the chip."""
+        if hasattr(self._parent, "import_benchmark_set"):
+            self._parent.import_benchmark_set()
+        self.refresh_validation_chip()
+
+    def toggle_validation_star(self) -> None:
+        """Star or unstar the opened version; starred versions survive library clean-up."""
+        if self._validation_model_id is None:
+            return
+        try:
+            from NepTrainKit.core.validation import ValidationService
+
+            ValidationService().star_model(self._validation_model_id, not self._validation_starred)
+        except Exception as error:
+            MessageManager.send_error_message(str(error))
+            return
+        if self._validation_starred:
+            MessageManager.send_info_message(self.tr("Removed the star from this version"))
+        else:
+            MessageManager.send_success_message(
+                self.tr("Starred this version; library clean-up will keep it")
+            )
+        self.refresh_validation_chip()
 
     def _update_structure_filter_suggestions(self) -> None:
         """Reuse the loaded search caches in the composite filter editor."""

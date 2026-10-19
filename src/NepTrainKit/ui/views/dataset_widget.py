@@ -152,8 +152,11 @@ class ModelItemWidget(QWidget, DatasetManager):
         index : QModelIndex
             Index provided by the view for the triggered row.
         """
+        if not index.isValid():
+            return
         item = index.internalPointer()
-        self.projectChangedSignal.emit(item.data(1))
+        model = self.model_item_dict[item.data(0)]
+        self.projectChangedSignal.emit(model.project_id)
 
     def create_menu(self) -> None:
         """Create and wire up the context menu for the model tree."""

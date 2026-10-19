@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 import unittest
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from PySide6.QtCore import QTranslator, Qt
+from PySide6.QtCore import QModelIndex, QTranslator, Qt
+from PySide6.QtTest import QSignalSpy
 from PySide6.QtWidgets import QApplication, QHeaderView, QWidget
 
 import NepTrainKit.ui.pages.data_manager as data_manager_module
@@ -14,6 +16,7 @@ import NepTrainKit.ui.views.project_view as project_view_module
 from NepTrainKit.ui.views.dataset_widget import ModelItemWidget
 from NepTrainKit.ui.views.project_view import ProjectWidget
 from NepTrainKit.ui.widgets.dialog import ModelInfoMessageBox
+from NepTrainKit.core.dataset.services import ModelItem
 
 
 class _Url:
@@ -102,6 +105,36 @@ class TestDataManagerUi(unittest.TestCase):
                 model_widget._model.headerData(7, Qt.Orientation.Horizontal)
             ),
         )
+
+    def test_model_row_click_emits_own_project_id_from_any_column(self):
+        model_widget = ModelItemWidget()
+        model_widget.model_item_dict = {}
+        model_widget.project = SimpleNamespace(project_id=7)
+        models = [
+            ModelItem(
+                model_id=model_id, model_type="NEP", name="PbTe-v2",
+                data_size=0, energy=0.0, force=0.0, virial=0.0,
+                parent_id=None, project_id=project_id, model_path="",
+                notes="", created_at=datetime(2026, 1, 1),
+            )
+            for model_id, project_id in ((11, 7), (12, 83))
+        ]
+        # Search results can include models outside the selected project.
+        model_widget.add_models_to_table(models)
+        spy = QSignalSpy(model_widget.projectChangedSignal)
+        expected_ids = []
+        for row, model in enumerate(models):
+            for column in range(model_widget._model.columnCount()):
+                index = model_widget._model.index(row, column)
+                model_widget._view.clicked.emit(index)
+                expected_ids.append(model.project_id)
+
+        self.assertEqual(spy.count(), len(expected_ids))
+        self.assertEqual(
+            [spy.at(i)[0] for i in range(spy.count())], expected_ids
+        )
+        model_widget._view.clicked.emit(QModelIndex())
+        self.assertEqual(spy.count(), len(expected_ids))
 
     def test_dropped_path_prefills_existing_model_editor(self):
         model_widget = ModelItemWidget()

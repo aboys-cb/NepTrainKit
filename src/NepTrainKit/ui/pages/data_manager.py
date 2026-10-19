@@ -52,14 +52,15 @@ class DataManagerWidget(QWidget):
     def toolbar_actions(self):
         """Expose validation defaults only while its tab is selected."""
         if self.stack.currentWidget() is self.library_widget:
-            return {"open": self.library_widget.import_action, "save": self.library_widget.save_action}
+            return {"open": self.library_widget.import_action, "save": self.library_widget.save_action,
+                    "save_menu": self.library_widget.export_package_action}
         return {}
 
     def _sync_toolbar_actions(self, *_args):
         active = self.isVisible() and self.stack.currentWidget() is self.library_widget
         for menu_name, actions in (
-            ("load_menu", (self.library_widget.import_action,)),
-            ("save_menu", (self.library_widget.save_action, self.library_widget.star_action)),
+            ("load_menu", (self.library_widget.import_action, self.library_widget.import_package_action,)),
+            ("save_menu", (self.library_widget.save_action, self.library_widget.star_action, self.library_widget.export_package_action)),
         ):
             menu = getattr(self._parent, menu_name, None)
             if menu is None:
@@ -219,5 +220,6 @@ class DataManagerWidget(QWidget):
         self.setLayout(self.gridLayout)
         self.stack.currentChanged.connect(self._sync_toolbar_actions)
         for action in (self.library_widget.import_action, self.library_widget.save_action,
-                       self.library_widget.star_action):
+                       self.library_widget.star_action, self.library_widget.import_package_action,
+                       self.library_widget.export_package_action):
             action.changed.connect(self.toolbarActionsChanged)

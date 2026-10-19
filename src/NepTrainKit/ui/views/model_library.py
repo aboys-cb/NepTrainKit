@@ -6,7 +6,7 @@ import re
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
-from PySide6.QtWidgets import QAbstractItemView, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QScrollArea, QSplitter, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QScrollArea, QSplitter, QVBoxLayout, QWidget
 from qfluentwidgets import (
     Action,
     BodyLabel,
@@ -697,6 +697,10 @@ class ModelLibraryWidget(QWidget):
         self.refresh_button.clicked.connect(lambda: self.refresh())
         self.import_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Import reference dataset"), self)
         self.import_action.setToolTip(self.tr("Import reference dataset"))
+        self.import_package_action = Action(FluentIcon.DOWNLOAD.icon(color=palette.ACCENT), self.tr("Import validation sharing package…"), self)
+        self.export_package_action = Action(FluentIcon.SHARE.icon(color=palette.ACCENT), self.tr("Export validation sharing package…"), self)
+        self.import_package_action.triggered.connect(lambda: self.import_validation_package())
+        self.export_package_action.triggered.connect(lambda: self.export_validation_package())
         self.star_action = Action(FluentIcon.HEART.icon(color=palette.PLOT_SELECTED), self.tr("Star"), self)
         self.star_action.setCheckable(True)
         self.save_action = Action(QIcon(':/images/src/images/save.svg'), self.tr("Save to project…"), self)
@@ -1048,6 +1052,7 @@ class ModelLibraryWidget(QWidget):
         row = self.current_model_row()
         has_suite = self.current_suite_id() is not None
         saved = row is not None and not row.get("temporary")
+        self.export_package_action.setEnabled(has_suite and bool(self.metrics_model.benchmarks) and self._run_task is None)
         self.save_action.setEnabled(row is not None and self._run_task is None)
         self.star_action.setEnabled(saved)
         self.star_action.setText(self.tr("Unstar") if row and row["starred"] else self.tr("Star"))
@@ -1189,6 +1194,40 @@ class ModelLibraryWidget(QWidget):
         )
         return bool(box.exec())
 
+    def export_validation_package(self):
+        from NepTrainKit.core.validation.package import export_package
+        from NepTrainKit.ui.widgets.validation_package_dialogs import ExportValidationPackageDialog
+        suite_id = self.current_suite_id()
+        if suite_id is None:
+            return
+        try:
+            dialog = ExportValidationPackageDialog(self.window(), self._view_service(), suite_id, self.selected_model_ids())
+            if not dialog.exec():
+                return
+            path, _ = QFileDialog.getSaveFileName(self, self.tr("Export validation sharing package…"), "validation.ntkpack", "NepTrainKit (*.ntkpack)")
+            if path:
+                if not path.lower().endswith(".ntkpack"):
+                    path += ".ntkpack"
+                export_package(dialog.preview, path)
+                MessageManager.send_info_message(self.tr("Validation sharing package exported."))
+        except (ValueError, OSError) as error:
+            MessageManager.send_error_message(str(error))
+
+    def import_validation_package(self):
+        from NepTrainKit.core.validation.package import import_package
+        from NepTrainKit.ui.widgets.validation_package_dialogs import ImportValidationPackageDialog
+        try:
+            service = self._view_service()
+            dialog = ImportValidationPackageDialog(self.window(), service)
+            if not dialog.exec():
+                return
+            suite = import_package(service, dialog.preview, name=dialog.name_edit.text(), project_name=dialog.project_combo.text())
+            self.open_scorecard(suite["id"], suite["baseline_model_id"])
+            self.scorecardChanged.emit()
+            MessageManager.send_info_message(self.tr("Sharing package imported as a new validation suite."))
+        except (ValueError, OSError) as error:
+            MessageManager.send_error_message(str(error))
+
     def import_benchmark(self) -> list[dict] | None:
         """Import one or more reference datasets and return their records."""
         service = self.service()
@@ -1276,6 +1315,7 @@ class ModelLibraryWidget(QWidget):
         self._run_task = task
         self.run_current_button.setEnabled(False)
         self.run_selected_button.setEnabled(False)
+        self.export_package_action.setEnabled(False)
         self.save_action.setEnabled(False)
         self.run_button.setText(self.tr("Cancel"))
         self.run_button.setIcon(QIcon(':/images/src/images/stop.svg'))

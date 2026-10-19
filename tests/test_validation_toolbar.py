@@ -65,8 +65,8 @@ def test_top_actions_dispatch_and_detach_on_page_and_tab_changes(toolbar, monkey
     toolbar.other.export_file = lambda: calls.append("other-save")
     assert not hasattr(library, "import_button") and not hasattr(library, "save_button")
     assert not hasattr(library, "star_button")
-    assert host.load_menu.actions() == [library.import_action]
-    assert host.save_menu.actions() == [library.save_action, library.star_action]
+    assert host.load_menu.actions() == [library.import_action, library.import_package_action]
+    assert host.save_menu.actions() == [library.save_action, library.star_action, library.export_package_action]
     host.open_dir_button.button.click()
     host.save_dir_button.button.click()
     library.import_action.trigger()
@@ -83,12 +83,12 @@ def test_top_actions_dispatch_and_detach_on_page_and_tab_changes(toolbar, monkey
         assert calls[-2:] == ["other-open", "other-save"]
         assert host.save_dir_button.toolTip() == "Save data from this page"
         host.stackedWidget.setCurrentWidget(page)
-        assert host.save_menu.actions() == [library.save_action, library.star_action]
+        assert host.save_menu.actions() == [library.save_action, library.star_action, library.export_package_action]
         page.show_projects()
         assert host.load_menu.actions() == [] and host.save_menu.actions() == []
         assert not host.open_dir_button.isEnabled() and not host.save_dir_button.isEnabled()
         page.open_scorecard(toolbar.scored.suite["id"], toolbar.scored.new["id"])
-        assert host.load_menu.actions() == [library.import_action]
+        assert host.load_menu.actions() == [library.import_action, library.import_package_action]
         assert host.save_dir_button.isEnabled()
 
 

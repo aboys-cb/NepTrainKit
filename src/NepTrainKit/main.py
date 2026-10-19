@@ -395,7 +395,10 @@ class NepTrainKitMainWindow(FluentWindow):
         can_open = open_action.isEnabled() if open_action is not None else callable(getattr(widget, "open_file", None))
         can_save = save_action.isEnabled() if save_action is not None else callable(getattr(widget, "export_file", None))
         self.open_dir_button.setEnabled(can_open)
-        self.save_dir_button.setEnabled(can_save)
+        menu_action = actions.get("save_menu")
+        can_save_menu = can_save or (menu_action is not None and menu_action.isEnabled())
+        self.save_dir_button.setEnabled(can_save_menu)
+        self.save_dir_button.button.setEnabled(can_save)
         self.open_dir_button.setToolTip(
             open_action.toolTip() if open_action is not None else (
                 self.tr("Open data for this page") if can_open

@@ -4,7 +4,7 @@
 # @email    : 1747193328@qq.com
 import os
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QApplication, QSplitter, QStackedWidget
 from qfluentwidgets import SegmentedWidget
@@ -27,6 +27,8 @@ class DataManagerWidget(QWidget):
         Optional owner widget that holds this page.
     """
 
+    toolbarActionsChanged = Signal()
+
     def __init__(self,parent=None):
         """Initialise database services and connect child widgets.
 
@@ -46,6 +48,36 @@ class DataManagerWidget(QWidget):
         self.tag_service = TagService(self._db)
         self.init_ui()
         seed_nep_data_git(self._db, self.project_service, self.model_service)
+
+    def toolbar_actions(self):
+        """Expose validation defaults only while its tab is selected."""
+        if self.stack.currentWidget() is self.library_widget:
+            return {"open": self.library_widget.import_action, "save": self.library_widget.save_action}
+        return {}
+
+    def _sync_toolbar_actions(self, *_args):
+        active = self.isVisible() and self.stack.currentWidget() is self.library_widget
+        for menu_name, actions in (
+            ("load_menu", (self.library_widget.import_action,)),
+            ("save_menu", (self.library_widget.save_action, self.library_widget.star_action)),
+        ):
+            menu = getattr(self._parent, menu_name, None)
+            if menu is None:
+                continue
+            for action in actions:
+                if action in menu.actions():
+                    menu.removeAction(action)
+                if active:
+                    menu.addAction(action)
+        self.toolbarActionsChanged.emit()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._sync_toolbar_actions()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self._sync_toolbar_actions()
 
     def dragEnterEvent(self, event):
         """Accept one or more local model directories.
@@ -185,3 +217,7 @@ class DataManagerWidget(QWidget):
         self.gridLayout.addWidget(self.stack, 1, 0, 1, 1)
 
         self.setLayout(self.gridLayout)
+        self.stack.currentChanged.connect(self._sync_toolbar_actions)
+        for action in (self.library_widget.import_action, self.library_widget.save_action,
+                       self.library_widget.star_action):
+            action.changed.connect(self.toolbarActionsChanged)

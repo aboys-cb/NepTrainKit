@@ -8,6 +8,7 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import QAbstractItemView, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QScrollArea, QSplitter, QVBoxLayout, QWidget
 from qfluentwidgets import (
+    Action,
     BodyLabel,
     CaptionLabel,
     CheckBox,
@@ -694,14 +695,12 @@ class ModelLibraryWidget(QWidget):
         self.refresh_button.setToolTip(self.tr("Refresh"))
         self.refresh_button.setAccessibleName(self.tr("Refresh"))
         self.refresh_button.clicked.connect(lambda: self.refresh())
-        self.import_button = TransparentPushButton(QIcon(':/images/src/images/open.svg'), self.tr("Import"), self)
-        self.import_button.setToolTip(self.tr("Import reference dataset"))
-        self.import_button.setAccessibleName(self.tr("Import reference dataset"))
-        self.star_button = TransparentToolButton(FluentIcon.HEART.colored(palette.PLOT_SELECTED, palette.PLOT_SELECTED), self)
-        self.star_button.setCheckable(True)
-        self.save_button = TransparentToolButton(QIcon(':/images/src/images/save.svg'), self)
-        self.save_button.setToolTip(self.tr("Save to project…"))
-        self.save_button.setAccessibleName(self.tr("Save to project…"))
+        self.import_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Import reference dataset"), self)
+        self.import_action.setToolTip(self.tr("Import reference dataset"))
+        self.star_action = Action(FluentIcon.HEART.icon(color=palette.PLOT_SELECTED), self.tr("Star"), self)
+        self.star_action.setCheckable(True)
+        self.save_action = Action(QIcon(':/images/src/images/save.svg'), self.tr("Save to project…"), self)
+        self.save_action.setToolTip(self.tr("Save to project…"))
         self.baseline_button = TransparentToolButton(FluentIcon.PIN.colored(palette.PLOT_CURRENT, palette.PLOT_CURRENT), self)
         self.baseline_button.setToolTip(self.tr("Set baseline model") + "\n" + self.tr("Set a saved version to compare model improvements and regressions."))
         self.baseline_button.setAccessibleName(self.tr("Set baseline model"))
@@ -717,8 +716,8 @@ class ModelLibraryWidget(QWidget):
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
         self.comparison_picker.selectionChanged.connect(self._on_selection_changed)
         for title, combo, buttons, stretch in (
-            (self.tr("Validation plan"), self.suite_combo, (self.refresh_button, self.import_button), 3),
-            (self.tr("Current model"), self.model_combo, (self.save_button, self.star_button, self.baseline_button), 4),
+            (self.tr("Validation plan"), self.suite_combo, (self.refresh_button,), 3),
+            (self.tr("Current model"), self.model_combo, (self.baseline_button,), 4),
             (self.tr("Compare with"), self.comparison_picker, (), 4),
         ):
             field = QVBoxLayout()
@@ -738,9 +737,9 @@ class ModelLibraryWidget(QWidget):
             field.addWidget(combo)
             fields.addLayout(field, stretch)
         controls.addLayout(fields)
-        self.import_button.clicked.connect(self.import_benchmark)
-        self.star_button.clicked.connect(self.toggle_star)
-        self.save_button.clicked.connect(self.save_current)
+        self.import_action.triggered.connect(lambda: self.import_benchmark())
+        self.star_action.triggered.connect(lambda: self.toggle_star())
+        self.save_action.triggered.connect(lambda: self.save_current())
         self.baseline_button.clicked.connect(self.set_baseline)
         self.run_button.clicked.connect(self._on_run_clicked)
         self.run_current_button.clicked.connect(self.run_current)
@@ -1049,11 +1048,11 @@ class ModelLibraryWidget(QWidget):
         row = self.current_model_row()
         has_suite = self.current_suite_id() is not None
         saved = row is not None and not row.get("temporary")
-        self.save_button.setEnabled(row is not None and self._run_task is None)
-        self.star_button.setEnabled(saved)
-        self.star_button.setToolTip(self.tr("Unstar") if row and row["starred"] else self.tr("Star"))
-        self.star_button.setAccessibleName(self.star_button.toolTip())
-        self.star_button.setChecked(bool(row and row["starred"]))
+        self.save_action.setEnabled(row is not None and self._run_task is None)
+        self.star_action.setEnabled(saved)
+        self.star_action.setText(self.tr("Unstar") if row and row["starred"] else self.tr("Star"))
+        self.star_action.setToolTip(self.star_action.text())
+        self.star_action.setChecked(bool(row and row["starred"]))
         self.baseline_button.setEnabled(saved and has_suite)
         self.run_current_button.setEnabled(row is not None and has_suite and self._run_task is None)
         self.run_selected_button.setEnabled(bool(self.selected_model_ids()) and has_suite and self._run_task is None)
@@ -1277,7 +1276,7 @@ class ModelLibraryWidget(QWidget):
         self._run_task = task
         self.run_current_button.setEnabled(False)
         self.run_selected_button.setEnabled(False)
-        self.save_button.setEnabled(False)
+        self.save_action.setEnabled(False)
         self.run_button.setText(self.tr("Cancel"))
         self.run_button.setIcon(QIcon(':/images/src/images/stop.svg'))
         task.start_work(evaluate_all)

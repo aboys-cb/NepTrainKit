@@ -214,6 +214,7 @@ class NepTrainKitMainWindow(FluentWindow):
             self.show_nep_interface.graph_widget.apply_canvas_mode
         )
         self.data_manager_interface = DataManagerWidget(self)
+        self.data_manager_interface.toolbarActionsChanged.connect(self._refresh_page_actions)
         self.data_manager_interface.library_widget.samplingWorkflowRequested.connect(
             self.open_eos_sampling_workflow
         )
@@ -347,6 +348,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def open_file_dialog(self) -> None:
         """Delegate to the current widget's ``open_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
+        action = getattr(widget, "toolbar_actions", lambda: {})().get("open")
+        if action is not None:
+            if action.isEnabled():
+                action.trigger()
+            return
         handler = getattr(widget, "open_file", None)
         if callable(handler):
             handler()
@@ -354,6 +360,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def export_file_dialog(self) -> None:
         """Delegate to the current widget's ``export_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
+        action = getattr(widget, "toolbar_actions", lambda: {})().get("save")
+        if action is not None:
+            if action.isEnabled():
+                action.trigger()
+            return
         handler = getattr(widget, "export_file", None)
         if callable(handler):
             handler()
@@ -379,19 +390,23 @@ class NepTrainKitMainWindow(FluentWindow):
     def _refresh_page_actions(self, *_args) -> None:
         """Enable global actions only when the active page implements them."""
         widget = self.stackedWidget.currentWidget()
-        can_open = callable(getattr(widget, "open_file", None))
-        can_save = callable(getattr(widget, "export_file", None))
+        actions = getattr(widget, "toolbar_actions", lambda: {})()
+        open_action, save_action = actions.get("open"), actions.get("save")
+        can_open = open_action.isEnabled() if open_action is not None else callable(getattr(widget, "open_file", None))
+        can_save = save_action.isEnabled() if save_action is not None else callable(getattr(widget, "export_file", None))
         self.open_dir_button.setEnabled(can_open)
         self.save_dir_button.setEnabled(can_save)
         self.open_dir_button.setToolTip(
-            self.tr("Open data for this page")
-            if can_open
-            else self.tr("Open is not available on this page")
+            open_action.toolTip() if open_action is not None else (
+                self.tr("Open data for this page") if can_open
+                else self.tr("Open is not available on this page")
+            )
         )
         self.save_dir_button.setToolTip(
-            self.tr("Save data from this page")
-            if can_save
-            else self.tr("Save is not available on this page")
+            save_action.toolTip() if save_action is not None else (
+                self.tr("Save data from this page") if can_save
+                else self.tr("Save is not available on this page")
+            )
         )
 
     def open_dataset_for_training_set_audit(self) -> None:

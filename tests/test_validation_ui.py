@@ -108,8 +108,8 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
 
     widget.toggle_star()
     assert service.get_model(scored.new["id"])["starred"]
-    assert widget.star_button.toolTip() == "Unstar"
-    assert widget.star_button.isChecked()
+    assert widget.star_action.toolTip() == "Unstar"
+    assert widget.star_action.isChecked()
 
     from NepTrainKit.ui.widgets import GetStrMessageBox
 
@@ -343,8 +343,8 @@ def test_eos_flow_chinese_labels_and_errors(make_service, tmp_path):
         assert dialog.preview_title.text() == "参考曲线"
         assert "参考拟合" in dialog.preview_summary.text()
         widget = ModelLibraryWidget(service=make_service())
-        assert widget.import_button.text() == "导入"
-        assert widget.import_button.toolTip() == "导入参考基准集"
+        assert widget.import_action.text() == "导入参考基准集"
+        assert widget.import_action.toolTip() == "导入参考基准集"
         assert widget.baseline_button.accessibleName() == "设为基准势版本"
         assert "设为基准势版本" in widget.baseline_button.toolTip()
     finally:
@@ -704,7 +704,7 @@ def test_unsaved_viewer_to_temporary_validation_then_save(scored, tmp_path, monk
     stub.open_validation_scorecard()
     assert widget.current_model_row()["model_id"] == 0
     assert len(service.models()) == original_count  # entering the scorecard is still read-only
-    assert not widget.baseline_button.isEnabled() and not widget.star_button.isEnabled()
+    assert not widget.baseline_button.isEnabled() and not widget.star_action.isEnabled()
     with patch.object(SaveModelDialog, "exec", return_value=0):
         widget.save_current()
     assert len(service.models()) == original_count  # cancelling Save leaves no project/version
@@ -818,7 +818,7 @@ def test_unsaved_model_is_visible_without_any_suites(make_service, model_file):
     widget = ModelLibraryWidget(service=service)
     widget.open_scorecard(None, draft=ModelDraft.from_file(model_file))
     assert widget.current_model_row()["model_id"] == 0
-    assert widget.save_button.isEnabled() and not widget.run_current_button.isEnabled()
+    assert widget.save_action.isEnabled() and not widget.run_current_button.isEnabled()
     assert service.models() == [] and service.projects() == []
 
     def accept(dialog):
@@ -839,7 +839,7 @@ def test_refresh_clears_stale_actions_when_library_cannot_open(scored):
     with patch.object(widget, "service", side_effect=OSError("unavailable")), patch("NepTrainKit.ui.views.model_library.MessageManager"):
         widget.refresh()
     assert widget.model.rowCount() == 0
-    assert not widget.save_button.isEnabled() and not widget.run_current_button.isEnabled()
+    assert not widget.save_action.isEnabled() and not widget.run_current_button.isEnabled()
 
 
 def test_partial_or_failed_suite_never_looks_complete(scored, monkeypatch):

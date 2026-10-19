@@ -5,6 +5,20 @@ callers which flatten exceptions to strings. Keep placeholders as opaque data.
 """
 
 RUNTIME_ERROR_TEMPLATES = (
+    ('RuntimeMessage', "Frame {index}: grouping field '{field}' is missing or not a non-empty scalar."),
+    ('RuntimeMessage', "Grouping field '{field}' has inconsistent value types."),
+    ('RuntimeMessage', 'Choose a grouping field and at least one distinct EOS group.'),
+    ('RuntimeMessage', 'A selected EOS group is no longer present in the file.'),
+    ('RuntimeMessage', 'EOS needs at least {count} labelled volume points.'),
+    ('RuntimeMessage', 'EOS frames must have identical atom counts and species order.'),
+    ('RuntimeMessage', 'EOS requires finite, fully periodic bulk structures.'),
+    ('RuntimeMessage', 'EOS volume must be positive.'),
+    ('RuntimeMessage', 'Duplicate volumes: import each phase / magnetic branch as a separate EOS set.'),
+    ('RuntimeMessage', 'Reference energy is not finite.'),
+    ('RuntimeMessage', 'Reference minimum is not bracketed; V₀/B₀ will not be compared.'),
+    ('RuntimeMessage', 'Every reference frame needs a total energy label in eV.'),
+    ('RuntimeMessage', 'The file contains no structures.'),
+    ('RuntimeMessage', 'No force labels; only energies will be compared.'),
     ('CardOperationError', 'At least one dopant ratio must be positive.'),
     ('CardOperationError', 'At least one replacement probability must be positive.'),
     ('CardOperationError', 'BainPath ca_range values must be positive.'),

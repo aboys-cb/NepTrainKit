@@ -919,7 +919,7 @@ class ShowNepWidget(QWidget):
         self.validation_star_action.triggered.connect(self.toggle_validation_star)
         self.validation_scorecard_action = Action(FluentIcon.LIBRARY, self.tr("Open scorecard"), self.validation_menu)
         self.validation_scorecard_action.triggered.connect(self.open_validation_scorecard)
-        self.validation_import_action = Action(FluentIcon.ADD, self.tr("Import benchmark set…"), self.validation_menu)
+        self.validation_import_action = Action(FluentIcon.ADD, self.tr("Import reference dataset…"), self.validation_menu)
         self.validation_import_action.triggered.connect(self.import_validation_benchmark)
         self.validation_menu.addAction(self.validation_status_action)
         self.validation_menu.addSeparator()
@@ -1501,7 +1501,7 @@ class ShowNepWidget(QWidget):
             hint = self.tr("Open a NEP model to validate it, or browse the validation scorecard")
         elif status is None:
             text = self.tr("Validation: no matching set") if has_sets else self.tr("Validation: not set up")
-            hint = self.tr("Import a DFT benchmark set to start validating this model")
+            hint = self.tr("Import a reference dataset and choose a validation type to start validating this model")
             badge = "dot"
         else:
             if not status["evaluated"] and not status["failed_sets"]:
@@ -1510,11 +1510,11 @@ class ShowNepWidget(QWidget):
                 text = self.tr("Validation: {suite} · {done}/{total} sets complete · {failed} failed")
                 badge = status["regressions"] or "dot"
             elif status["is_baseline"]:
-                text = self.tr("Validation: {suite} · baseline")
+                text = self.tr("Validation: {suite} · baseline model")
             elif not status["has_baseline"]:
-                text, badge = self.tr("Validation: {suite} · no baseline"), "dot"
+                text, badge = self.tr("Validation: {suite} · no baseline model"), "dot"
             elif not status["comparison_complete"]:
-                text, badge = self.tr("Validation: {suite} · baseline comparison incomplete"), status["regressions"] or "dot"
+                text, badge = self.tr("Validation: {suite} · baseline model comparison incomplete"), status["regressions"] or "dot"
             else:
                 text = self.tr("Validation: {suite} · {count} regressions")
                 badge = status["regressions"] or None

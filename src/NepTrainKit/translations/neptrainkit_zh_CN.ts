@@ -977,6 +977,296 @@
         <source>Describe the reference calculation conditions.</source>
         <translation>请填写参考计算的条件。</translation>
     </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="122" />
+        <source>Import reference dataset</source>
+        <translation>导入参考基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="135" />
+        <source>Select validation type…</source>
+        <translation>请选择验证类型…</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="136" />
+        <source>EOS · Energy–volume curve</source>
+        <translation>EOS · 能量–体积曲线</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="137" />
+        <source>Energy / force / virial errors</source>
+        <translation>能量 / 力 / 维里误差</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="142" />
+        <source>Phonons, elastic constants and spin properties are not supported yet.</source>
+        <translation>声子谱、弹性常数及自旋性质暂未支持。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="167" />
+        <source>Choose a validation plan or type a new name</source>
+        <translation>选择验证方案，或输入新方案名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="180" />
+        <source>Future model versions reuse this reference dataset. Importing does not change the baseline model.</source>
+        <translation>后续势版本复用这份参考数据。导入不会改变基准势版本。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="185" />
+        <source>Reference curve preview</source>
+        <translation>参考曲线预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="196" />
+        <source>Same phase and magnetic branch</source>
+        <translation>确认属于同一相和磁态分支</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="197" />
+        <source>Confirm these structures form one volume scan, not mixed phases or magnetic states.</source>
+        <translation>确认这些结构属于同一次体积扫描，未混入其他相或磁态。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="212" />
+        <source>Save reference dataset</source>
+        <translation>保存参考基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="213" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="264" />
+        <source>Each EOS group needs at least 5 distinct volume points from one phase / magnetic branch.
+Input: each structure's total energy in eV. Do not divide by the atom count beforehand.
+Comparison: E/N (eV/atom) and V/N (Å³/atom), normalized automatically.
+Fixed periodic reference structures; ordinary NEP models only.</source>
+        <translation>每组 EOS 至少需要 5 个不同体积点，属于同一相 / 磁态分支。
+输入：每个结构的总能量（eV），请勿提前除以原子数。
+比较：程序自动按原子数 N 归一化，使用 E/N（eV/atom）和 V/N（Å³/atom）。
+使用固定周期参考构型；目前仅支持普通 NEP 势。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="292" />
+        <source>Load a reference file to inspect its data before saving.</source>
+        <translation>加载参考文件后，在这里检查数据，再保存。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="133" />
+        <source>1 · Choose validation type</source>
+        <translation>1 · 选择验证类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="145" />
+        <source>2 · Load reference structures</source>
+        <translation>2 · 加载参考结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="178" />
+        <source>3 · Add to a fixed validation plan</source>
+        <translation>3 · 加入固定验证方案</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="266" />
+        <source>Labelled EXTXYZ structures with total energies; force and virial labels are optional. This compares prediction errors, not derived material properties.</source>
+        <translation>EXTXYZ 结构须有总能量标签，可选力和维里标签。此项比较预测误差，不计算材料性质。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="268" />
+        <source>Choose what to validate first. The file will not select a validation type for you.</source>
+        <translation>先选择要验证的性质。导入文件不会自动切换验证类型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="294" />
+        <source>DFT reference curve</source>
+        <translation>DFT 参考曲线</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="294" />
+        <source>Reference data preview</source>
+        <translation>参考数据预览</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="302" />
+        <source>Volume (Å³/atom)</source>
+        <translation>体积（Å³/atom）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="303" />
+        <source>Energy (eV/atom)</source>
+        <translation>能量（eV/atom）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="324" />
+        <source>Choose a validation type first.</source>
+        <translation>请先选择验证类型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="326" />
+        <source>Choose a reference file.</source>
+        <translation>请选择参考文件。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="340" />
+        <source>Choose or name a validation plan.</source>
+        <translation>请选择验证方案，或输入新方案名称。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="342" />
+        <source>Confirm that the EOS data belongs to one phase and magnetic branch.</source>
+        <translation>请确认 EOS 数据属于同一相和磁态分支。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="378" />
+        <source>The reference file changed. Load it again and review the new curve.</source>
+        <translation>参考文件已发生变化，请重新加载并检查新曲线。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="282" />
+        <source>Reference data checks passed.</source>
+        <translation>参考数据检查通过。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="306" />
+        <source>{formula} · {count} structures
+Volume: {low:.3f}–{high:.3f} Å³/atom</source>
+        <translation>{formula} · {count} 个结构
+体积范围：{low:.3f}–{high:.3f} Å³/atom</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="312" />
+        <source>Fit unavailable: compare the E–V curve only; V₀/B₀ will not be compared.</source>
+        <translation>无法有效拟合：仅比较 E–V 曲线，不比较 V₀ / B₀。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="314" />
+        <source>{count} structures · {atoms} atoms
+Energy labels available. Forces: {forces}; virials: {virials}.</source>
+        <translation>{count} 个结构 · {atoms} 个原子
+包含能量标签。力标签：{forces}；维里标签：{virials}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="316" />
+        <source>Yes</source>
+        <translation>有</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="316" />
+        <source>No</source>
+        <translation>无</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="330" />
+        <source>Load the file to refresh the reference preview.</source>
+        <translation>请加载文件以更新参考数据预览。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="310" />
+        <source>Reference fit: V₀ = {v0:.3f} Å³/atom · B₀ = {b0:.2f} GPa</source>
+        <translation>参考拟合：V₀ = {v0:.3f} Å³/atom · B₀ = {b0:.2f} GPa</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="182" />
+        <source>EOS grouping</source>
+        <translation>EOS 分组</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="184" />
+        <source>Choose a field that identifies each parent structure / scan. No automatic grouping is applied.</source>
+        <translation>选择能标识母结构 / 扫描组的字段，不会自动猜测分组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="213" />
+        <source>Overlay checked groups (no energy shifts)</source>
+        <translation>叠加勾选组的曲线（不平移能量）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="225" />
+        <source>This group is one phase / magnetic branch</source>
+        <translation>确认当前组属于同一相和磁态分支</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="296" />
+        <source>Choose grouping…</source>
+        <translation>请选择分组方式…</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="297" />
+        <source>Single scan · whole file</source>
+        <translation>单组扫描 · 使用整个文件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="366" />
+        <source>Excluded</source>
+        <translation>已排除</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="203" />
+        <source>Import / group</source>
+        <translation>导入 / 组名</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="203" />
+        <source>Frames</source>
+        <translation>结构数</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="203" />
+        <source>Status</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="370" />
+        <source>Review required</source>
+        <translation>待确认</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="481" />
+        <source>Choose a grouping field, or explicitly use the whole file as one scan.</source>
+        <translation>请选择分组字段，或明确将整个文件作为一组扫描。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="499" />
+        <source>Ready to import {count} EOS groups; {excluded} excluded.</source>
+        <translation>将导入 {count} 组 EOS 参考数据，排除 {excluded} 组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="372" />
+        <source>Confirmed · warning</source>
+        <translation>已确认 · 有警告</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="372" />
+        <source>Confirmed</source>
+        <translation>已确认</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="441" />
+        <source>Whole file</source>
+        <translation>整个文件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="487" />
+        <source>Select at least one EOS group to import.</source>
+        <translation>请至少勾选一组 EOS 数据。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="445" />
+        <source>Group: {name}</source>
+        <translation>当前组：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="489" />
+        <source>Some checked groups have errors. Fix them or explicitly uncheck them.</source>
+        <translation>勾选组中存在错误，请修正数据或明确取消勾选这些组。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/validation_dialogs.py" line="491" />
+        <source>Preview and confirm each checked group belongs to one phase and magnetic branch.</source>
+        <translation>请逐组预览，并确认每个勾选组属于同一相和磁态分支。</translation>
+    </message>
 </context>
 <context>
     <name>BuiltinWorkflowTemplates</name>
@@ -14676,6 +14966,86 @@ All child items will also be deleted.</source>
         <source>Saved to project</source>
         <translation>已保存到项目</translation>
     </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="322" />
+        <source>Import reference dataset</source>
+        <translation>导入参考基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="327" />
+        <source>Set baseline model</source>
+        <translation>设为基准势版本</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="354" />
+        <source>Fixed reference data · reused across model versions</source>
+        <translation>固定参考数据 · 各代势复用</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="387" />
+        <source>Green: better than the baseline model · Red: worse · Grey: within tolerance. Ctrl+click cells to overlay several models.</source>
+        <translation>相对基准势版本：绿色为改善，红色为退化，灰色为容差内。按住 Ctrl 点击单元格可叠加多个势版本。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="637" />
+        <source>Note for the baseline model (optional). This changes the comparison version only; reference datasets and original model files stay unchanged.</source>
+        <translation>基准势版本备注（可选）。仅更改比较所用的势版本，不修改参考基准集及原始势文件。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="312" />
+        <source>Validation plan</source>
+        <translation>验证方案</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="333" />
+        <source>Model versions</source>
+        <translation>势版本</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="349" />
+        <source>Reference dataset</source>
+        <translation>参考基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="463" />
+        <source>Energy / force / virial</source>
+        <translation>能量 / 力 / 维里</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="483" />
+        <source>Import a reference dataset into a validation plan to start validating models.</source>
+        <translation>导入参考基准集并加入验证方案，即可开始验证势。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="485" />
+        <source>This validation plan has no reference datasets yet.</source>
+        <translation>此验证方案尚未添加参考基准集。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="494" />
+        <source>Baseline model: not selected. Set a saved version to compare model improvements and regressions.</source>
+        <translation>基准势版本：未设置。选择一个已保存的势版本，用于比较新势的改善与退化。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="667" />
+        <source>Imported reference dataset {name}</source>
+        <translation>已导入参考基准集 {name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="487" />
+        <source>Open a compatible NEP model to validate this plan. Reference data can already be previewed below.</source>
+        <translation>打开兼容的 NEP 势以运行此验证方案。下方可先预览参考数据。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="496" />
+        <source>Baseline model: {name}</source>
+        <translation>基准势版本：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="680" />
+        <source>Imported {count} reference datasets</source>
+        <translation>已导入 {count} 个参考基准集</translation>
+    </message>
 </context>
 <context>
     <name>NepDipoleResultData</name>
@@ -17608,6 +17978,51 @@ All child items will also be deleted.</source>
         <source>{name}: {status} {error}</source>
         <translation>{name}：{status} {error}</translation>
     </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="230" />
+        <source>Fixed reference geometries</source>
+        <translation>固定参考构型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="225" />
+        <source>Reference dataset: {name}</source>
+        <translation>参考基准集：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="240" />
+        <source>Reference fit unavailable: E–V curve comparison only.</source>
+        <translation>参考数据无法有效拟合：仅比较 E–V 曲线。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="234" />
+        <source>{count} volumes · {low:.3f}–{high:.3f} Å³/atom</source>
+        <translation>{count} 个体积点 · {low:.3f}–{high:.3f} Å³/atom</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="267" />
+        <source>DFT reference</source>
+        <translation>DFT 参考数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="267" />
+        <source>Reference data</source>
+        <translation>参考数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="238" />
+        <source>Reference fit: V₀ = {v0:.3f} Å³/atom · B₀ = {b0:.2f} GPa</source>
+        <translation>参考拟合：V₀ = {v0:.3f} Å³/atom · B₀ = {b0:.2f} GPa</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="237" />
+        <source>Demo</source>
+        <translation>演示</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="237" />
+        <source>Other</source>
+        <translation>其他</translation>
+    </message>
 </context>
 <context>
     <name>RuntimeMessage</name>
@@ -18594,6 +19009,62 @@ All child items will also be deleted.</source>
         <source>Database schema is newer than this application.</source>
         <translation>数据库版本高于当前应用支持的版本。</translation>
     </message>
+    <message>
+        <source>EOS needs at least {count} labelled volume points.</source>
+        <translation>EOS 至少需要 {count} 个带能量标签的体积点。</translation>
+    </message>
+    <message>
+        <source>EOS frames must have identical atom counts and species order.</source>
+        <translation>EOS 各结构的原子数和元素排列顺序必须一致。</translation>
+    </message>
+    <message>
+        <source>EOS requires finite, fully periodic bulk structures.</source>
+        <translation>EOS 需要数值有效、三个方向均周期的体相结构。</translation>
+    </message>
+    <message>
+        <source>EOS volume must be positive.</source>
+        <translation>EOS 结构体积必须为正。</translation>
+    </message>
+    <message>
+        <source>Duplicate volumes: import each phase / magnetic branch as a separate EOS set.</source>
+        <translation>存在重复体积：请将不同相或磁态分支分别导入为独立的 EOS 参考基准集。</translation>
+    </message>
+    <message>
+        <source>Reference energy is not finite.</source>
+        <translation>参考能量含有无效数值（NaN 或无穷大）。</translation>
+    </message>
+    <message>
+        <source>Reference minimum is not bracketed; V₀/B₀ will not be compared.</source>
+        <translation>参考数据未形成有效的最低点拟合；不会比较 V₀ / B₀。</translation>
+    </message>
+    <message>
+        <source>Every reference frame needs a total energy label in eV.</source>
+        <translation>每个参考结构都需要以 eV 为单位的总能量标签。</translation>
+    </message>
+    <message>
+        <source>The file contains no structures.</source>
+        <translation>文件中没有结构。</translation>
+    </message>
+    <message>
+        <source>No force labels; only energies will be compared.</source>
+        <translation>没有力标签；将仅比较能量。</translation>
+    </message>
+    <message>
+        <source>Frame {index}: grouping field '{field}' is missing or not a non-empty scalar.</source>
+        <translation>第 {index} 帧的分组字段“{field}”缺失、为空或不是标量。</translation>
+    </message>
+    <message>
+        <source>Grouping field '{field}' has inconsistent value types.</source>
+        <translation>分组字段“{field}”的值类型不一致，请统一后再导入。</translation>
+    </message>
+    <message>
+        <source>Choose a grouping field and at least one distinct EOS group.</source>
+        <translation>请选择分组字段及至少一个不重复的 EOS 组。</translation>
+    </message>
+    <message>
+        <source>A selected EOS group is no longer present in the file.</source>
+        <translation>选中的 EOS 组已不在文件中，请重新加载并检查分组。</translation>
+    </message>
 </context>
 <context>
     <name>SOCTextureResponseCard</name>
@@ -19014,6 +19485,81 @@ All child items will also be deleted.</source>
     <message>
         <source>{name} (unsaved)</source>
         <translation>{name}（未保存）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="117" />
+        <source>Baseline model: other versions are compared with this model</source>
+        <translation>基准势版本：其他版本与此势进行比较</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="119" />
+        <source>Baseline model comparison incomplete</source>
+        <translation>与基准势版本的比较尚未完成</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="142" />
+        <source>Better than the baseline model</source>
+        <translation>优于基准势版本</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="143" />
+        <source>Worse than the baseline model</source>
+        <translation>差于基准势版本</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="144" />
+        <source>Within tolerance of the baseline model</source>
+        <translation>与基准势版本的差异在容差内</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="108" />
+        <source>{name} (baseline model)</source>
+        <translation>{name}（基准势版本）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="87" />
+        <source>Model version</source>
+        <translation>势版本</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="90" />
+        <source>Curve RMSE (offset removed)</source>
+        <translation>曲线 RMSE（去除常数偏移）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="91" />
+        <source>Max curve error</source>
+        <translation>最大曲线误差</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="92" />
+        <source>Raw RMSE</source>
+        <translation>原始 RMSE</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="93" />
+        <source>V₀ error</source>
+        <translation>V₀ 误差</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="94" />
+        <source>B₀ error</source>
+        <translation>B₀ 误差</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="95" />
+        <source>Energy RMSE</source>
+        <translation>能量 RMSE</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="96" />
+        <source>Force RMSE</source>
+        <translation>力 RMSE</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="97" />
+        <source>Virial RMSE</source>
+        <translation>维里 RMSE</translation>
     </message>
 </context>
 <context>
@@ -20655,6 +21201,31 @@ Do you want to continue?</source>
     <message>
         <source>Saved to project</source>
         <translation>已保存到项目</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="922" />
+        <source>Import reference dataset…</source>
+        <translation>导入参考基准集…</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1504" />
+        <source>Import a reference dataset and choose a validation type to start validating this model</source>
+        <translation>导入参考基准集并选择验证类型，即可开始验证当前势</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1513" />
+        <source>Validation: {suite} · baseline model</source>
+        <translation>验证：{suite} · 基准势版本</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1515" />
+        <source>Validation: {suite} · no baseline model</source>
+        <translation>验证：{suite} · 未设置基准势版本</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1517" />
+        <source>Validation: {suite} · baseline model comparison incomplete</source>
+        <translation>验证：{suite} · 与基准势版本的比较未完成</translation>
     </message>
 </context>
 <context>

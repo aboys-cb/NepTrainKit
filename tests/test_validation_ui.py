@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import time
 from types import SimpleNamespace
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from PySide6.QtCore import QItemSelectionModel, Qt
+from PySide6.QtCore import QItemSelectionModel, Qt, QTranslator
 from PySide6.QtWidgets import QApplication, QWidget
 
 from NepTrainKit.core.validation import SetTooLargeError
@@ -64,11 +65,11 @@ def test_scorecard_model_marks_baseline_and_colours_verdicts(scored):
     model = ScorecardTableModel()
     model.set_scorecard(card)
     assert model.columnCount() == 1 + len(card["columns"]) and model.rowCount() == 3
-    assert model.headerData(0, Qt.Orientation.Horizontal) == "Model"
+    assert model.headerData(0, Qt.Orientation.Horizontal) == "Model version"
     assert model.headerData(1, Qt.Orientation.Horizontal).startswith("eos\n")
 
     base = model.row_of_model(scored.old["id"])
-    assert model.data(model.index(base, 0)).endswith("(baseline)")
+    assert model.data(model.index(base, 0)).endswith("(baseline model)")
     assert model.data(model.index(base, 0), Qt.ItemDataRole.FontRole).bold()
     assert model.data(model.index(base, 1), Qt.ItemDataRole.BackgroundRole) is None
 
@@ -103,9 +104,9 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     rows = [widget.model.row_of_model(model["id"]) for model in (scored.old, scored.new)]
     widget.table.setCurrentIndex(widget.model.index(rows[0], 1))
     widget.table.selectionModel().select(widget.model.index(rows[1], 1), QItemSelectionModel.SelectionFlag.Select)
-    assert widget.detail.title_label.text().startswith("eos")
+    assert widget.detail.title_label.text() == "Reference dataset: eos"
     names = [item.name() for item in widget.detail.plot.listDataItems()]
-    assert names == ["Reference", "old", "new"]
+    assert names == ["DFT reference", "old", "new"]
 
     widget.table.setCurrentIndex(widget.model.index(rows[1], 0))
     widget.toggle_star()
@@ -143,46 +144,136 @@ def test_open_scorecard_selects_suite_and_model(scored):
     assert widget.current_model_row()["model_id"] == scored.new["id"]
 
 
+def _load_single_eos(dialog, path):
+    dialog.load_file(path)
+    dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData(""))
+
+
 # -- import dialog ----------------------------------------------------------------
 
-def test_import_dialog_requires_provenance_and_lists_issues(make_service, tmp_path):
+def test_import_dialog_requires_explicit_type_and_previews_reference(make_service, tmp_path):
     service = make_service()
     host = QWidget()
     dialog = BenchmarkImportDialog(host, service.suites())
-    assert not dialog.yesButton.isEnabled() and "Choose a benchmark file" in dialog.status_label.text()
-
-    dialog.load_file(write_xyz(tmp_path / "few.xyz", eos_frames()[:3]))
-    assert dialog.current_protocol().kind == "efv"  # too few points for EOS
-    dialog.protocol_combo.setCurrentIndex(0)
-
-    dialog.load_file(write_xyz(tmp_path / "scan.xyz", eos_frames()))
-    assert dialog.current_protocol().kind == "eos" and dialog.name_edit.text() == "few"
-    assert dialog.issues == [] and "No issues found" in dialog.issues_label.text()
-    dialog.name_edit.setText("PbTe rocksalt EOS")
-    assert dialog.validation_errors() == [
-        "Declare where the reference labels come from.",
-        "Describe the reference calculation conditions.",
-    ]
-    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("DFT"))
     assert not dialog.yesButton.isEnabled()
-    dialog.conditions_edit.setText("VASP PBE 520 eV")
-    assert dialog.yesButton.isEnabled() and dialog.validate()
+    assert "Choose a validation type" in dialog.status_label.text()
+    assert not dialog.browse_button.isEnabled()
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+    assert dialog.browse_button.isEnabled()
 
-    shifted = eos_frames(minimum=1.2)  # reference minimum outside the scan
-    dialog.load_file(write_xyz(tmp_path / "edge.xyz", shifted))
+    _load_single_eos(dialog, write_xyz(tmp_path / "few.xyz", eos_frames()[:3]))
+    assert dialog.current_protocol().kind == "eos"  # never silently falls back to EFV
+    assert any(issue.level == "error" for issue in dialog.issues)
+    assert dialog.reference_summary is None and not dialog.preview_plot.listDataItems()
+
+    _load_single_eos(dialog, write_xyz(tmp_path / "scan.xyz", eos_frames()))
+    assert dialog.current_protocol().kind == "eos"
+    assert dialog.issues == []
+    assert len(dialog.preview_plot.listDataItems()) == 1
+    assert "v0" in dialog.reference_summary["fit"]
+    assert "Å³/atom" in dialog.preview_summary.text()
+    dialog.name_edit.setText("PbTe rocksalt EOS")
+    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("DFT"))
+    dialog.conditions_edit.setText("VASP PBE 520 eV")
+    dialog.suite_combo.setText("PbTe daily validation")
+    assert not dialog.yesButton.isEnabled()
+    dialog.branch_confirm.setChecked(True)
+    assert dialog.yesButton.isEnabled() and dialog.validate()
+    assert dialog.preview_title.text() == "DFT reference curve"
+
+    shifted = eos_frames(minimum=1.2)
+    _load_single_eos(dialog, write_xyz(tmp_path / "edge.xyz", shifted))
     assert [issue.level for issue in dialog.issues] == ["warning"]
-    assert "Warning" in dialog.issues_label.text() and dialog.yesButton.isEnabled()
+    assert "Fit unavailable" in dialog.preview_summary.text()
+    assert len(dialog.preview_plot.listDataItems()) == 1
+    assert not dialog.branch_confirm.isChecked()
+    dialog.branch_confirm.setChecked(True)
+    assert dialog.yesButton.isEnabled()  # curve-only comparisons remain useful
 
     (tmp_path / "bad.xyz").write_text("not an xyz file\n")
-    dialog.load_file(tmp_path / "bad.xyz")
+    _load_single_eos(dialog, tmp_path / "bad.xyz")
     assert not dialog.yesButton.isEnabled() and "cannot be read" in dialog.status_label.text()
+    assert dialog.reference_summary is None and not dialog.preview_plot.listDataItems()
 
     broken = eos_frames()
     broken[2].info["_ref_energy"] = float("nan")
-    dialog.load_file(write_xyz(tmp_path / "nan.xyz", broken))
+    _load_single_eos(dialog, write_xyz(tmp_path / "nan.xyz", broken))
     assert dialog.current_protocol().kind == "eos"
-    assert [issue.level for issue in dialog.issues] == ["error"] and "Error" in dialog.issues_label.text()
-    assert not dialog.yesButton.isEnabled()
+    assert [issue.level for issue in dialog.issues] == ["error"]
+    assert not dialog.yesButton.isEnabled() and dialog.reference_summary is None
+
+
+def test_import_preview_invalidates_on_file_edit_and_type_change(make_service, tmp_path):
+    host = QWidget()
+    dialog = BenchmarkImportDialog(host, [], "PbTe")
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+    path = write_xyz(tmp_path / "scan.xyz", eos_frames())
+    _load_single_eos(dialog, path)
+    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("Demo"))
+    dialog.conditions_edit.setText("Synthetic test")
+    dialog.branch_confirm.setChecked(True)
+    assert dialog.validate()
+    dialog.path_edit.setText(str(tmp_path / "different.xyz"))
+    assert not dialog.validate() and dialog.reference_summary is None
+    assert not dialog.preview_plot.listDataItems()
+    _load_single_eos(dialog, path)
+    dialog.branch_confirm.setChecked(True)
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("efv"))
+    assert dialog.validate() and dialog.preview_plot.isHidden()
+    assert "frames" in dialog.reference_summary
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+    assert not dialog.branch_confirm.isChecked() and not dialog.validate()
+    dialog.branch_confirm.setChecked(True)
+    Path(path).write_text("changed after preview")
+    service = make_service()
+    with pytest.raises(ValueError, match="file changed"):
+        dialog.import_into(service, lambda error: True)
+    assert service.sets() == [] and dialog.reference_summary is None
+
+
+def test_reference_dataset_can_be_previewed_without_models(make_service, tmp_path):
+    service = make_service()
+    eos = _import(service, tmp_path, eos_frames(), "eos")
+    efv = _import(service, tmp_path, efv_frames(), "efv")
+    suite = service.create_suite("PbTe", [eos["id"], efv["id"]])
+    widget = ModelLibraryWidget(service=service)
+    widget.refresh(suite["id"])
+    assert widget.model.rowCount() == 0
+    widget.reference_combo.setCurrentIndex(widget.reference_combo.findData(eos["id"]))
+    assert widget.detail._args[0]["id"] == eos["id"]
+    assert len(widget.detail.plot.listDataItems()) == 1
+    widget.reference_combo.setCurrentIndex(widget.reference_combo.findData(efv["id"]))
+    assert widget.detail._args[0]["id"] == efv["id"]
+    assert not widget.detail.plot.listDataItems()
+
+
+def test_eos_flow_chinese_labels_and_errors(make_service, tmp_path):
+    app = QApplication.instance()
+    translator = QTranslator(app)
+    catalog = Path(__file__).resolve().parents[1] / "src/NepTrainKit/translations/neptrainkit_zh_CN.qm"
+    assert translator.load(str(catalog))
+    app.installTranslator(translator)
+    try:
+        host = QWidget()
+        dialog = BenchmarkImportDialog(host, [], "PbTe 验证")
+        assert dialog.titleLabel.text() == "导入参考基准集"
+        assert dialog.status_label.text() == "请先选择验证类型。"
+        dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+        instructions = dialog.requirements_label.text()
+        assert "每组 EOS 至少需要 5 个不同体积点" in instructions
+        assert "总能量（eV），请勿提前除以原子数" in instructions
+        assert "E/N（eV/atom）和 V/N（Å³/atom）" in instructions
+        _load_single_eos(dialog, write_xyz(tmp_path / "few.xyz", eos_frames()[:3]))
+        assert "EOS 至少需要 5 个" in dialog.issues_label.text()
+        _load_single_eos(dialog, write_xyz(tmp_path / "scan.xyz", eos_frames()))
+        dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("DFT"))
+        assert dialog.preview_title.text() == "DFT 参考曲线"
+        assert "参考拟合" in dialog.preview_summary.text()
+        widget = ModelLibraryWidget(service=make_service())
+        assert widget.import_button.text() == "导入参考基准集"
+        assert widget.baseline_button.text() == "设为基准势版本"
+    finally:
+        app.removeTranslator(translator)
 
 
 def test_import_dialog_asks_before_copying_large_files(make_service, tmp_path):
@@ -191,21 +282,83 @@ def test_import_dialog_asks_before_copying_large_files(make_service, tmp_path):
     service.import_set = lambda path, **kwargs: original(path, max_bytes=10, **kwargs)
     host = QWidget()
     dialog = BenchmarkImportDialog(host, [], "PbTe")
-    dialog.load_file(write_xyz(tmp_path / "scan.xyz", eos_frames()))
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+    _load_single_eos(dialog, write_xyz(tmp_path / "scan.xyz", eos_frames()))
     dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("DFT"))
     dialog.conditions_edit.setText("VASP PBE")
+    dialog.branch_confirm.setChecked(True)
 
     asked = []
     assert dialog.import_into(service, lambda error: asked.append(error) or False) is None
     assert isinstance(asked[0], SetTooLargeError) and service.sets() == []
 
-    record = dialog.import_into(service, lambda error: True)
+    records = dialog.import_into(service, lambda error: True)
+    assert len(records) == 1
+    record = records[0]
     assert record["provenance"] == {"conditions": "VASP PBE", "source_kind": "DFT"}
     suite = service.suites()[0]
     assert suite["name"] == "PbTe" and [s["id"] for s in service.suite_sets(suite["id"])] == [record["id"]]
 
 
 # -- viewer chip ------------------------------------------------------------------
+
+def test_grouped_eos_preview_confirmation_exclusion_and_batch_import(make_service, tmp_path):
+    service = make_service()
+    host = QWidget()
+    dialog = BenchmarkImportDialog(host, [], "Multi-phase validation")
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+    frames = []
+    for label, scan in (("A", eos_frames()), ("B", eos_frames(curvature=0.8)), ("short", eos_frames()[:3])):
+        for frame in scan:
+            frame.info["config_type"] = label
+            frame.info["all_scans"] = "mixed"
+        frames.extend(scan)
+    path = write_xyz(tmp_path / "mixed.xyz", frames)
+    dialog.load_file(path)
+    assert dialog.group_field_combo.currentData() is None
+    assert not dialog.preview_plot.listDataItems()
+    dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
+    assert len(dialog.eos_groups) == 3
+    assert dialog.eos_groups[2]["summary"] is None
+    dialog.source_combo.setCurrentIndex(dialog.source_combo.findData("Demo"))
+    dialog.conditions_edit.setText("Synthetic test")
+    dialog.branch_confirm.setChecked(True)
+    dialog.group_table.setCurrentCell(1, 0)
+    assert not dialog.branch_confirm.isChecked()
+    dialog.branch_confirm.setChecked(True)
+    assert not dialog.validate()
+    dialog.group_table.setCurrentCell(2, 0)
+    assert not dialog.branch_confirm.isEnabled()
+    dialog.group_table.item(2, 0).setCheckState(Qt.CheckState.Unchecked)
+    assert dialog.validate()  # an excluded invalid group does not block valid groups
+    dialog.group_table.setCurrentCell(0, 0)
+    assert dialog.branch_confirm.isChecked()
+    dialog.overlay_groups.setChecked(True)
+    assert [curve.name() for curve in dialog.preview_plot.listDataItems()] == ["A", "B"]
+    records = dialog.import_into(service, lambda _: True)
+    assert len(records) == 2
+    suite = service.suites()[0]
+    assert {r["id"] for r in service.suite_sets(suite["id"])} == {r["id"] for r in records}
+    assert all(len(service.set_frames(r["id"])) == 7 for r in records)
+    dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("all_scans"))
+    assert len(dialog.eos_groups) == 1 and not dialog.validate()
+    assert not dialog.branch_confirm.isChecked() and not dialog.preview_plot.listDataItems()
+    dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
+    assert not any(g["confirmed"] for g in dialog.eos_groups)
+
+
+def test_grouped_eos_missing_metadata_is_never_silently_dropped(tmp_path):
+    host = QWidget()
+    dialog = BenchmarkImportDialog(host, [], "EOS")
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+    frames = eos_frames()
+    for frame in frames[:-1]:
+        frame.info["scan_id"] = "A"
+    dialog.load_file(write_xyz(tmp_path / "missing.xyz", frames))
+    dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("scan_id"))
+    assert "Frame 7" in dialog._group_error
+    assert dialog.eos_groups == [] and not dialog.validate()
+    assert not dialog.preview_plot.listDataItems()
 
 def test_status_summary_counts_regressions_on_the_preferred_suite(scored):
     service = scored.service
@@ -282,7 +435,7 @@ def test_viewer_status_line_and_badge_follow_the_suite(scored, monkeypatch):
 
     stub._validation_model_id = scored.new["id"]
     stub.refresh_validation_chip()
-    assert stub.validation_status_action.text() == "Validation: PbTe · baseline" and _badge(stub) is None
+    assert stub.validation_status_action.text() == "Validation: PbTe · baseline model" and _badge(stub) is None
 
     # No regressions against the baseline: no badge at all.
     service.set_baseline(scored.suite["id"], scored.old["id"])
@@ -308,7 +461,7 @@ def test_viewer_entry_guides_first_import(scored, tmp_path, monkeypatch):
     stub = _viewer_stub(scored.service.capture_model(nickel)["id"], opened, imported)
     stub.refresh_validation_chip()
     assert stub.validation_status_action.text() == "Validation: no matching set" and _badge(stub) == "dot"
-    assert "Import a DFT benchmark set" in stub.validation_button.toolTip()
+    assert "Import a reference dataset" in stub.validation_button.toolTip()
     stub.import_validation_benchmark()
     assert imported == [True]
 
@@ -538,11 +691,11 @@ def test_missing_baseline_runs_never_looks_comparable(scored, monkeypatch):
     service.set_baseline(scored.suite["id"], scored.fresh["id"])
     stub = _viewer_stub(scored.new["id"], [])
     stub.refresh_validation_chip()
-    assert "baseline comparison incomplete" in stub.validation_status_action.text()
+    assert "baseline model comparison incomplete" in stub.validation_status_action.text()
     assert _badge(stub) == "dot"
     service.evaluate(scored.fresh["id"], scored.eos["id"])
     stub.refresh_validation_chip()
-    assert "baseline comparison incomplete" in stub.validation_status_action.text()
+    assert "baseline model comparison incomplete" in stub.validation_status_action.text()
 
 
 @pytest.mark.parametrize("action", ["refresh_validation_chip", "toggle_validation_star", "open_validation_scorecard"])
@@ -624,7 +777,7 @@ def test_viewer_footer_has_compact_validation_entry(viewer):
         "Save to project…",
         "Star this version",
         "Open scorecard",
-        "Import benchmark set…",
+        "Import reference dataset…",
     ]
     assert not viewer.validation_status_action.isEnabled()  # a status line, not a command
     assert not viewer.validation_star_action.isEnabled()

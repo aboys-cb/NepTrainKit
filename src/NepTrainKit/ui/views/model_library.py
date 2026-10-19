@@ -84,9 +84,20 @@ class ScorecardTableModel(QAbstractTableModel):
         column = self.column(section)
         if role == Qt.ItemDataRole.DisplayRole:
             if column is None:
-                return self.tr("Model")
+                return self.tr("Model version")
             unit = f" ({column['unit']})" if column["unit"] else ""
-            return f"{column['set_name']}\n{column['label']}{unit}"
+            labels = {
+                "shape_rmse": self.tr("Curve RMSE (offset removed)"),
+                "max_shape_error": self.tr("Max curve error"),
+                "raw_rmse": self.tr("Raw RMSE"),
+                "v0_error": self.tr("V₀ error"),
+                "b0_error": self.tr("B₀ error"),
+                "energy_rmse": self.tr("Energy RMSE"),
+                "force_rmse": self.tr("Force RMSE"),
+                "virial_rmse": self.tr("Virial RMSE"),
+            }
+            label = labels.get(column.get("metric"), column["label"])
+            return f"{column['set_name']}\n{label}{unit}"
         if role == Qt.ItemDataRole.ToolTipRole and column is not None:
             return self.tr("{set} · {protocol}").format(set=column["set_name"], protocol=column["protocol"])
         return None
@@ -105,7 +116,7 @@ class ScorecardTableModel(QAbstractTableModel):
                     name = self.tr("{name} (temporary)").format(name=name)
                 elif row.get("project_name"):
                     name = f"{row['project_name']} / {name}"
-                return self.tr("{name} (baseline)").format(name=name) if row["is_baseline"] else name
+                return self.tr("{name} (baseline model)").format(name=name) if row["is_baseline"] else name
             if role == Qt.ItemDataRole.FontRole and row["is_baseline"]:
                 font = QFont()
                 font.setBold(True)
@@ -114,9 +125,9 @@ class ScorecardTableModel(QAbstractTableModel):
                 if not row.get("complete", False):
                     return self.tr("Validation incomplete")
                 if row["is_baseline"]:
-                    return self.tr("Baseline: other models are compared with this one")
+                    return self.tr("Baseline model: other versions are compared with this model")
                 if not row.get("comparison_complete", False):
-                    return self.tr("Baseline comparison incomplete")
+                    return self.tr("Baseline model comparison incomplete")
                 return self.tr("{count} regressions").format(count=row["regressions"])
             return None
         cell = row["cells"][index.column() - 1]
@@ -139,9 +150,9 @@ class ScorecardTableModel(QAbstractTableModel):
                 # Stored diagnostics keep their raw text when no template matches.
                 return translate_runtime_message(cell["error"])
             return {
-                "better": self.tr("Better than the baseline"),
-                "worse": self.tr("Worse than the baseline"),
-                "same": self.tr("Within tolerance of the baseline"),
+                "better": self.tr("Better than the baseline model"),
+                "worse": self.tr("Worse than the baseline model"),
+                "same": self.tr("Within tolerance of the baseline model"),
             }.get(cell.get("verdict"))
         return None
 
@@ -222,13 +233,24 @@ class RunDetailPanel(QWidget):
             return
         protocol = get_protocol(benchmark["protocol"])
         provenance = benchmark.get("provenance") or {}
-        self.title_label.setText(f"{benchmark['name']} · {protocol.title}")
+        source = provenance.get("source_kind", "?")
+        source = {"Demo": self.tr("Demo"), "Other": self.tr("Other")}.get(source, source)
+        self.title_label.setText(self.tr("Reference dataset: {name}").format(name=benchmark['name']))
         notes = [
             self.tr("Reference: {source}, {conditions}").format(
-                source=provenance.get("source_kind", "?"), conditions=provenance.get("conditions", "-")
+                source=source, conditions=provenance.get("conditions", "-")
             ),
-            self.tr("Mode: {mode}").format(mode=protocol.mode),
+            self.tr("Fixed reference geometries") if protocol.mode == "fixed-geometry" else self.tr("Mode: {mode}").format(mode=protocol.mode),
         ]
+        summary = benchmark.get("summary") or {}
+        if protocol.kind == "eos" and summary.get("volumes"):
+            notes.append(self.tr("{count} volumes · {low:.3f}–{high:.3f} Å³/atom").format(
+                count=len(summary["volumes"]), low=summary["volumes"][0], high=summary["volumes"][-1]))
+            fit = summary.get("fit") or {}
+            if "v0" in fit:
+                notes.append(self.tr("Reference fit: V₀ = {v0:.3f} Å³/atom · B₀ = {b0:.2f} GPa").format(v0=fit["v0"], b0=fit["b0_gpa"]))
+            else:
+                notes.append(self.tr("Reference fit unavailable: E–V curve comparison only."))
         for name, run, _details in entries:
             if run is None:
                 notes.append(self.tr("{name}: not run").format(name=name))
@@ -254,7 +276,8 @@ class RunDetailPanel(QWidget):
         if summary.get("volumes"):
             self.plot.plot(
                 summary["volumes"], summary["energies"], pen=pg.mkPen("k", width=2),
-                symbol="o", symbolBrush="k", symbolSize=7, name=self.tr("Reference"),
+                symbol="o", symbolBrush="k", symbolSize=7,
+                name=self.tr("DFT reference") if (benchmark.get("provenance") or {}).get("source_kind") == "DFT" else self.tr("Reference data"),
             )
         aligned = self.offset_checkbox.isChecked()
         for index, (name, details) in enumerate(curves):
@@ -299,7 +322,7 @@ class ModelLibraryWidget(QWidget):
         toolbar = QHBoxLayout()
         toolbar.setContentsMargins(8, 8, 10, 4)
         toolbar.setSpacing(6)
-        toolbar.addWidget(BodyLabel(self.tr("Suite"), self))
+        toolbar.addWidget(BodyLabel(self.tr("Validation plan"), self))
         self.suite_combo = ComboBox(self)
         self.suite_combo.setMinimumWidth(200)
         self.suite_combo.currentIndexChanged.connect(self._on_suite_changed)
@@ -309,16 +332,21 @@ class ModelLibraryWidget(QWidget):
         self.refresh_button.clicked.connect(lambda: self.refresh())
         toolbar.addWidget(self.refresh_button)
         toolbar.addStretch(1)
-        self.import_button = PushButton(FluentIcon.ADD, self.tr("Import benchmark"), self)
+        self.import_button = PushButton(FluentIcon.ADD, self.tr("Import reference dataset"), self)
         self.star_button = PushButton(FluentIcon.HEART, self.tr("Star"), self)
         self.save_button = ToolButton(FluentIcon.SAVE, self)
         self.save_button.setToolTip(self.tr("Save to project…"))
         self.save_button.setAccessibleName(self.tr("Save to project…"))
-        self.baseline_button = PushButton(FluentIcon.PIN, self.tr("Set baseline"), self)
+        self.baseline_button = PushButton(FluentIcon.PIN, self.tr("Set baseline model"), self)
         self.run_current_button = PrimaryPushButton(FluentIcon.PLAY, self.tr("Validate current version"), self)
         self.run_button = PushButton(FluentIcon.PLAY, self.tr("Run all"), self)
-        for button in (self.import_button, self.save_button, self.star_button, self.baseline_button, self.run_current_button, self.run_button):
-            toolbar.addWidget(button)
+        toolbar.addWidget(self.import_button)
+        model_actions = QHBoxLayout()
+        model_actions.setContentsMargins(10, 4, 10, 4)
+        model_actions.addWidget(BodyLabel(self.tr("Model versions"), self))
+        model_actions.addStretch(1)
+        for button in (self.save_button, self.star_button, self.baseline_button, self.run_current_button, self.run_button):
+            model_actions.addWidget(button)
         self.import_button.clicked.connect(self.import_benchmark)
         self.star_button.clicked.connect(self.toggle_star)
         self.save_button.clicked.connect(self.save_current)
@@ -329,6 +357,15 @@ class ModelLibraryWidget(QWidget):
         self.baseline_label = CaptionLabel(self)
         self.baseline_label.setWordWrap(True)
         self.baseline_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
+        reference_row = QHBoxLayout()
+        reference_row.setContentsMargins(10, 4, 10, 4)
+        reference_row.addWidget(BodyLabel(self.tr("Reference dataset"), self))
+        self.reference_combo = ComboBox(self)
+        self.reference_combo.setMinimumWidth(240)
+        self.reference_combo.currentIndexChanged.connect(self._on_reference_changed)
+        reference_row.addWidget(self.reference_combo, 1)
+        reference_hint = CaptionLabel(self.tr("Fixed reference data · reused across model versions"), self)
+        reference_row.addWidget(reference_hint)
 
         self.model = ScorecardTableModel(self)
         self.table = TableView(self)
@@ -358,8 +395,9 @@ class ModelLibraryWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addLayout(toolbar)
+        layout.addLayout(model_actions)
         legend = CaptionLabel(
-            self.tr("Green: better than the baseline · Red: worse · Grey: within tolerance. "
+            self.tr("Green: better than the baseline model · Red: worse · Grey: within tolerance. "
                     "Ctrl+click cells to overlay several models."),
             self,
         )
@@ -367,6 +405,7 @@ class ModelLibraryWidget(QWidget):
         legend.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         layout.addWidget(legend)
         layout.addWidget(self.baseline_label)
+        layout.addLayout(reference_row)
         layout.addWidget(self.splitter, 1)
         self.baseline_label.setContentsMargins(10, 0, 10, 4)
 
@@ -407,6 +446,7 @@ class ModelLibraryWidget(QWidget):
             self.suite_combo.blockSignals(True)
             self.suite_combo.clear()
             self.suite_combo.blockSignals(False)
+            self.reference_combo.clear()
             self.model.set_scorecard(None)
             self._on_selection_changed()
             return
@@ -429,6 +469,17 @@ class ModelLibraryWidget(QWidget):
     def _load_scorecard(self, model_id: int | None = None) -> None:
         suite_id = self.current_suite_id()
         service = self.service()
+        previous_set = self.reference_combo.currentData()
+        self.reference_combo.blockSignals(True)
+        self.reference_combo.clear()
+        for benchmark in service.suite_sets(suite_id) if suite_id is not None else []:
+            kind = "EOS" if benchmark["protocol"] == "eos" else self.tr("Energy / force / virial")
+            self.reference_combo.addItem(f"{benchmark['name']} · {kind}", userData=benchmark["id"])
+        previous_index = self.reference_combo.findData(previous_set)
+        if previous_index >= 0:
+            self.reference_combo.setCurrentIndex(previous_index)
+        self.reference_combo.setEnabled(self.reference_combo.count() > 0)
+        self.reference_combo.blockSignals(False)
         if self._draft is not None:
             existing = service.find_model_by_hash(self._draft.content_hash)
             if existing:
@@ -442,20 +493,20 @@ class ModelLibraryWidget(QWidget):
             card = service.scorecard(suite_id, [row["model_id"] for row in card["rows"]] + [model_id], draft=self._draft)
         self.model.set_scorecard(card)
         if card is None:
-            self.empty_hint.setText(self.tr("Import a benchmark set to create a suite and start validating models."))
+            self.empty_hint.setText(self.tr("Import a reference dataset into a validation plan to start validating models."))
         elif not card["columns"]:
-            self.empty_hint.setText(self.tr("This suite has no benchmark sets yet."))
+            self.empty_hint.setText(self.tr("This validation plan has no reference datasets yet."))
         elif not card["rows"]:
-            self.empty_hint.setText(self.tr("Open a compatible NEP model to start validating this suite."))
+            self.empty_hint.setText(self.tr("Open a compatible NEP model to validate this plan. Reference data can already be previewed below."))
         self.empty_hint.setVisible(self.model.rowCount() == 0)
         suite = (card or {}).get("suite") or {}
         baseline = next((row for row in (card or {}).get("rows", []) if row["is_baseline"]), None)
         if suite_id is None:
-            self.baseline_label.setText(self.tr("Import a benchmark set to create a suite and start validating models."))
+            self.baseline_label.setText(self.tr("Import a reference dataset into a validation plan to start validating models."))
         elif baseline is None:
-            self.baseline_label.setText(self.tr("No baseline: set one to judge regressions."))
+            self.baseline_label.setText(self.tr("Baseline model: not selected. Set a saved version to compare model improvements and regressions."))
         else:
-            text = self.tr("Baseline: {name}").format(name=baseline["name"])
+            text = self.tr("Baseline model: {name}").format(name=baseline["name"])
             if suite.get("baseline_note"):
                 text += f" — {suite['baseline_note']}"
             self.baseline_label.setText(text)
@@ -511,8 +562,12 @@ class ModelLibraryWidget(QWidget):
         if column is None and current.isValid():
             column = self.model.column(1)
         if column is None:
-            self.detail.show_runs(None, [])
+            set_id = self.reference_combo.currentData()
+            self.detail.show_runs(self.service().get_set(set_id) if set_id else None, [])
             return
+        self.reference_combo.blockSignals(True)
+        self.reference_combo.setCurrentIndex(self.reference_combo.findData(column["set_id"]))
+        self.reference_combo.blockSignals(False)
         service = self.service()
         entries = []
         for row_index in self.selected_rows():
@@ -531,6 +586,19 @@ class ModelLibraryWidget(QWidget):
                 run = None
             entries.append((row["name"], run, details))
         self.detail.show_runs(service.get_set(column["set_id"]), entries)
+
+    def _on_reference_changed(self, _index: int) -> None:
+        set_id = self.reference_combo.currentData()
+        if set_id is None:
+            self.detail.show_runs(None, [])
+            return
+        column = self.model.first_column_of_set(set_id)
+        current = self.table.currentIndex()
+        if current.isValid() and column >= 0:
+            self.table.setCurrentIndex(self.model.index(current.row(), column))
+            self._update_detail()
+        else:
+            self.detail.show_runs(self.service().get_set(set_id), [])
 
     # -- actions --------------------------------------------------------------
     def save_current(self) -> None:
@@ -579,8 +647,8 @@ class ModelLibraryWidget(QWidget):
         suite_id = self.current_suite_id()
         if row is None or suite_id is None:
             return
-        box = GetStrMessageBox(self.window(), self.tr("Note for the new baseline of this suite (optional)"))
-        box.yesButton.setText(self.tr("Set baseline"))
+        box = GetStrMessageBox(self.window(), self.tr("Note for the baseline model (optional). This changes the comparison version only; reference datasets and original model files stay unchanged."))
+        box.yesButton.setText(self.tr("Set baseline model"))
         if not box.exec():
             return
         service.set_baseline(suite_id, row["model_id"], box.lineEdit.text())
@@ -596,24 +664,25 @@ class ModelLibraryWidget(QWidget):
         )
         return bool(box.exec())
 
-    def import_benchmark(self) -> dict | None:
-        """Ask for a benchmark set and seal it; return the record, or ``None`` if nothing was imported."""
+    def import_benchmark(self) -> list[dict] | None:
+        """Import one or more reference datasets and return their records."""
         service = self.service()
         dialog = BenchmarkImportDialog(self.window(), service.suites(), self.suite_combo.currentText())
         if not dialog.exec():
             return None
         try:
-            record = dialog.import_into(service, self._confirm_large_copy)
+            records = dialog.import_into(service, self._confirm_large_copy)
         except (SetRejectedError, ValueError, OSError) as error:
             MessageManager.send_error_message(self.tr("Import failed: {error}").format(error=error))
             return None
-        if record is None:
+        if not records:
             return None
-        MessageManager.send_success_message(self.tr("Imported benchmark set {name}").format(name=record["name"]))
+        MessageManager.send_success_message(self.tr("Imported {count} reference datasets").format(count=len(records)))
         suite_name = dialog.values()["suite"]
         suite = next((item for item in service.suites() if item["name"] == suite_name), None)
         self.refresh(suite["id"] if suite else None)
-        return record
+        self.reference_combo.setCurrentIndex(self.reference_combo.findData(records[0]["id"]))
+        return records
 
     def run_jobs(self, model_id: int | None = None) -> list[tuple[int, str]]:
         """Compatible suite jobs for one version, or all captured versions."""

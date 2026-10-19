@@ -137,6 +137,73 @@ def _import(service, tmp_path, frames, name, **kwargs):
 
 # -- library --------------------------------------------------------------------
 
+def test_eos_group_import_keeps_scans_separate_and_reuses_snapshot(make_service, tmp_path, model_file):
+    service = make_service()
+    groups = [eos_frames(), eos_frames(curvature=0.8)]
+    for group, name in zip(groups, ("phase A", "phase B")):
+        for frame in group:
+            frame.info["scan_id"] = name
+    # Interleave frames: grouping must follow the field, not file order/volumes.
+    path = write_xyz(tmp_path / "mixed.xyz", [frame for pair in zip(*groups) for frame in pair])
+    records = service.import_eos_groups(
+        path, name="EOS", provenance={"source_kind": "Demo"},
+        group_field="scan_id", group_names=["phase A", "phase B"],
+    )
+    assert len({item["id"] for item in records}) == 2
+    assert records[0]["object_hash"] == records[1]["object_hash"]
+    assert [item["name"] for item in records] == ["EOS / phase A", "EOS / phase B"]
+    for record, name in zip(records, ("phase A", "phase B")):
+        frames = service.set_frames(record["id"])
+        assert len(frames) == 7 and {frame.info["scan_id"] for frame in frames} == {name}
+        assert record["source_ref"]["path"] == str(path)
+        assert len(record["source_ref"]["eos_group"]["indices"]) == 7
+    repeated = service.import_eos_groups(
+        path, name="again", provenance={"source_kind": "Demo"},
+        group_field="scan_id", group_names=["phase B"],
+    )
+    assert repeated[0]["id"] == records[1]["id"] and len(service.sets()) == 2
+    model = service.capture_model(model_file)
+    suite = service.create_suite("Both scans", [item["id"] for item in records])
+    service.run_suite(model["id"], suite["id"])
+    for record in records:
+        run = service.latest_run(model["id"], record["id"])
+        assert run["status"] == "succeeded"
+        assert len(service.run_details(run)["details"]["volumes"]) == 7
+    assert len(service.scorecard(suite["id"])["columns"]) == 6
+
+
+def test_eos_group_import_rejects_invalid_batch_without_partial_records(make_service, tmp_path):
+    service = make_service()
+    first, second = eos_frames(), eos_frames()[:3]
+    for frames, label in ((first, "valid"), (second, "too short")):
+        for frame in frames:
+            frame.info["scan_id"] = label
+    path = write_xyz(tmp_path / "mixed.xyz", first + second)
+    kwargs = dict(name="EOS", provenance={"source_kind": "Demo"}, group_field="scan_id")
+    with pytest.raises(SetRejectedError):
+        service.import_eos_groups(path, **kwargs, group_names=["valid", "too short"])
+    assert service.sets() == []
+    with pytest.raises(ValueError, match="file changed"):
+        service.import_eos_groups(path, **kwargs, group_names=["valid"], expected_hash="stale")
+    assert service.sets() == []
+    imported = service.import_eos_groups(path, **kwargs, group_names=["valid"])
+    assert len(imported) == 1 and len(service.set_frames(imported[0]["id"])) == 7
+
+
+def test_eos_group_fields_reject_missing_or_inconsistent_values():
+    from NepTrainKit.core.validation.grouping import eos_frame_groups, eos_group_fields
+    frames = eos_frames()
+    frames[0].info["scan_id"] = "A"
+    assert "scan_id" in eos_group_fields(frames)
+    assert "_ref_energy" not in eos_group_fields(frames)
+    with pytest.raises(ValueError, match="Frame 2"):
+        eos_frame_groups(frames, "scan_id")
+    for frame in frames:
+        frame.info["scan_id"] = "1"
+    frames[-1].info["scan_id"] = 1
+    with pytest.raises(ValueError, match="inconsistent value types"):
+        eos_frame_groups(frames, "scan_id")
+
 def test_objects_are_content_addressed_read_only_and_verified(tmp_path):
     library = Library(tmp_path / "lib")
     digest = library.put_bytes(b"model")

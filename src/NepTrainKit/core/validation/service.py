@@ -27,6 +27,7 @@ from NepTrainKit.core.dataset.models import (
     StorageRef,
 )
 
+from .grouping import eos_frame_groups
 from .library import FileRef, Library, get_library, sha256_bytes
 from .protocols import ModelCapabilities, detect_protocol, get_protocol, read_frames
 
@@ -305,6 +306,30 @@ class ValidationService:
         allow_large: bool = False,
     ) -> dict:
         """Seal an EXTXYZ and its declared conditions; never infer that labels are DFT."""
+        return self._import_sets(
+            path, name=name, provenance=provenance, protocol=protocol,
+            max_bytes=max_bytes, allow_large=allow_large,
+        )[0]
+
+    def import_eos_groups(
+        self, path: str | Path, *, name: str, provenance: dict,
+        group_field: str, group_names: list[str],
+        max_bytes: int = DEFAULT_MAX_SET_BYTES, allow_large: bool = False,
+        expected_hash: str | None = None,
+    ) -> list[dict]:
+        """Seal selected scans atomically, keeping the original file and frame indices."""
+        if not group_field or not group_names or len(set(group_names)) != len(group_names):
+            raise ValueError("Choose a grouping field and at least one distinct EOS group.")
+        return self._import_sets(
+            path, name=name, provenance=provenance, protocol="eos",
+            max_bytes=max_bytes, allow_large=allow_large,
+            group_field=group_field, group_names=group_names, expected_hash=expected_hash,
+        )
+
+    def _import_sets(
+        self, path, *, name, provenance, protocol, max_bytes, allow_large,
+        group_field=None, group_names=None, expected_hash=None,
+    ) -> list[dict]:
         if not name.strip():
             raise ValueError("A benchmark set needs a name.")
         if provenance.get("source_kind") not in SOURCE_KINDS:
@@ -314,6 +339,8 @@ class ValidationService:
         if size > max_bytes and not allow_large:
             raise SetTooLargeError(size, max_bytes)
         data = path.read_bytes()
+        if expected_hash is not None and sha256_bytes(data) != expected_hash:
+            raise ValueError("The reference file changed. Load it again and review the new curve.")
         frames = read_frames(data)
         if protocol is None:
             ranked = detect_protocol(frames)
@@ -322,36 +349,51 @@ class ValidationService:
             chosen = ranked[0][1]
         else:
             chosen = get_protocol(protocol)
-        issues = chosen.check(frames)
-        if any(issue.level == "error" for issue in issues):
-            raise SetRejectedError([issue for issue in issues if issue.level == "error"])
+        if group_field is None:
+            selections = [(name.strip(), frames, None)]
+        else:
+            groups = eos_frame_groups(frames, group_field)
+            if any(group not in groups for group in group_names):
+                raise ValueError("A selected EOS group is no longer present in the file.")
+            selections = [
+                (f"{name.strip()} / {group}", [frames[i] for i in groups[group]],
+                 {"field": group_field, "value": group, "indices": groups[group]})
+                for group in group_names
+            ]
+        # Validate every selected group before writing any benchmark records.
+        prepared = []
+        for set_name, subset, selection in selections:
+            issues = chosen.check(subset)
+            if any(issue.level == "error" for issue in issues):
+                raise SetRejectedError([issue for issue in issues if issue.level == "error"])
+            summary = chosen.summarize_reference(subset)
+            summary["warnings"] = [issue.message for issue in issues if issue.level == "warning"]
+            elements = sorted({symbol for atoms in subset for symbol in atoms.get_chemical_symbols()})
+            prepared.append((set_name, summary, elements, selection))
         object_hash = self.library.put_bytes(data)
+        source_ref = FileRef.of(path).to_dict()
         clean_provenance = {key: value for key, value in sorted(provenance.items()) if value not in ("", None)}
-        key = sha256_bytes(
-            json.dumps(
-                [object_hash, chosen.kind, chosen.version, clean_provenance], sort_keys=True
-            ).encode()
-        )
-        summary = chosen.summarize_reference(frames)
-        summary["warnings"] = [issue.message for issue in issues if issue.level == "warning"]
-        elements = sorted({symbol for atoms in frames for symbol in atoms.get_chemical_symbols()})
         with self.db.session() as session:
-            row = session.get(BenchmarkSet, key)
-            if row is None:
-                row = BenchmarkSet(
-                    id=key,
-                    name=name.strip(),
-                    protocol=chosen.kind,
-                    protocol_version=chosen.version,
-                    object_hash=object_hash,
-                    source_ref=FileRef.of(path).to_dict(),
-                    elements=elements,
-                    provenance=clean_provenance,
-                    summary=summary,
-                )
-                session.add(row)
-                session.commit()
-            return _record(row)
+            records = []
+            for set_name, summary, elements, selection in prepared:
+                identity = [object_hash, chosen.kind, chosen.version, clean_provenance]
+                reference = dict(source_ref)
+                if selection is not None:
+                    identity.append(selection)
+                    reference["eos_group"] = selection
+                key = sha256_bytes(json.dumps(identity, sort_keys=True).encode())
+                row = session.get(BenchmarkSet, key)
+                if row is None:
+                    row = BenchmarkSet(
+                        id=key, name=set_name, protocol=chosen.kind,
+                        protocol_version=chosen.version, object_hash=object_hash,
+                        source_ref=reference, elements=elements,
+                        provenance=clean_provenance, summary=summary,
+                    )
+                    session.add(row)
+                records.append(row)
+            session.commit()
+            return [_record(row) for row in records]
 
     def get_set(self, set_id: str) -> dict:
         with self.db.session() as session:
@@ -371,7 +413,11 @@ class ValidationService:
 
     def set_frames(self, set_id: str):
         benchmark = self.get_set(set_id)
-        return read_frames(self.library.open_object(benchmark["object_hash"]).read_bytes())
+        frames = read_frames(self.library.open_object(benchmark["object_hash"]).read_bytes())
+        selection = (benchmark.get("source_ref") or {}).get("eos_group")
+        if selection is not None:
+            frames = [frames[index] for index in selection["indices"]]
+        return frames
 
     def matching_sets(self, model_id: int) -> list[dict]:
         """Return the sets whose elements the model covers."""

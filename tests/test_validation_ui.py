@@ -100,19 +100,16 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     assert task.outcome == "succeeded" and widget.run_button.text() == "Run all"
     assert widget.model.row_of_model(scored.fresh["id"]) >= 0
 
-    # Ctrl+click two cells of the EOS column: both curves are overlaid on the reference.
-    rows = [widget.model.row_of_model(model["id"]) for model in (scored.old, scored.new)]
-    widget.table.setCurrentIndex(widget.model.index(rows[0], 1))
-    widget.table.selectionModel().select(widget.model.index(rows[1], 1), QItemSelectionModel.SelectionFlag.Select)
-    assert widget.detail.title_label.text() == "Reference dataset: eos"
+    widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.new["id"]))
+    widget.comparison_picker.set_selected_ids([scored.old["id"]])
+    assert widget.detail.title_label.text() == "EOS · 1 groups"
     assert "Reference: DFT, PBE" in widget.detail.info_label.text()
-    names = [item.name() for item in widget.detail.plot.listDataItems()]
-    assert names == ["Reference curve", "old", "new"]
+    assert len(widget.detail.eos_plots[0].listDataItems()) == 3
 
-    widget.table.setCurrentIndex(widget.model.index(rows[1], 0))
     widget.toggle_star()
     assert service.get_model(scored.new["id"])["starred"]
-    assert widget.star_button.text() == "Unstar"
+    assert widget.star_button.toolTip() == "Unstar"
+    assert widget.star_button.isChecked()
 
     from NepTrainKit.ui.widgets import GetStrMessageBox
 
@@ -145,6 +142,86 @@ def test_open_scorecard_selects_suite_and_model(scored):
     assert widget.current_model_row()["model_id"] == scored.new["id"]
 
 
+def test_eos_overview_has_fixed_columns_and_normalizes_each_group(make_service, tmp_path):
+    import numpy as np
+
+    service = make_service()
+    sets = [_import(service, tmp_path, eos_frames(curvature=0.5 + i * 0.1), f"group-{i}") for i in range(10)]
+    suite = service.create_suite("Ten EOS groups", [item["id"] for item in sets])
+    widget = ModelLibraryWidget(service=service)
+    widget.refresh(suite["id"])
+    widget.resize(1180, 740)
+    widget.show()
+    QApplication.processEvents()
+    assert widget.table.isHidden()
+    assert not widget.metrics_button.isChecked()
+    assert widget.detail._grid_columns == 3
+    widget.metrics_button.click()
+    assert not widget.table.isHidden()
+    widget.metrics_button.click()
+    assert widget.table.isHidden()
+    assert widget.metrics_model.rowCount() == 10
+    assert widget.metrics_model.columnCount() == 5
+    assert len(widget.detail.eos_plots) == 10
+    assert widget.detail.relative_checkbox.isChecked()
+    assert widget.detail.offset_checkbox.isChecked()
+    for plot, benchmark in zip(widget.detail.eos_plots, sets):
+        x, y = plot.listDataItems()[0].getData()
+        summary = benchmark["summary"]
+        np.testing.assert_allclose(x, summary["volumes"])
+        np.testing.assert_allclose(y, (np.asarray(summary["energies"]) - min(summary["energies"])) * 1000)
+        assert min(y) == 0
+    # Each plot has its own scale; a broad scan cannot flatten another group.
+    assert widget.detail.eos_plots[0].viewRange()[1] != widget.detail.eos_plots[-1].viewRange()[1]
+    widget.detail.groupFocused.emit("G4")
+    assert len(widget.detail.eos_plots[0].listDataItems()) == 1
+    assert widget.detail._groups[0][0] == "G4"
+    widget.table.selectionModel().select(widget.metrics_model.index(5, 0), QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows)
+    assert [group[0] for group in widget.detail._groups] == ["G4", "G6"]
+    assert len(widget.detail.eos_plots) == 2
+    widget.all_groups_button.click()
+    assert len(widget.detail.eos_plots) == 10
+    widget.resize(800, 740)
+    QApplication.processEvents()
+    assert widget.detail._grid_columns == 2
+    assert widget.detail.grid_scroll.horizontalScrollBar().maximum() == 0
+    widget.deleteLater()
+
+
+def test_eos_relative_zero_preserves_model_offset_and_refresh_selection(make_service, tmp_path):
+    import numpy as np
+
+    service = make_service()
+    first = _import(service, tmp_path, eos_frames(), "first")
+    second = _import(service, tmp_path, eos_frames(curvature=0.8), "second")
+    model = _capture(service, tmp_path, "offset-model")
+    make_service(**{model["content_hash"]: (1.0, 0.7)})
+    suite = service.create_suite("EOS", [first["id"], second["id"]])
+    service.run_suite(model["id"], suite["id"])
+    service.set_baseline(suite["id"], model["id"])
+    widget = ModelLibraryWidget(service=service)
+    widget.open_scorecard(suite["id"], model["id"])
+    widget.comparison_picker.set_selected_ids([])
+    widget.table.selectRow(1)
+    widget.detail.offset_checkbox.setChecked(False)
+    ref, pred = widget.detail.eos_plots[0].listDataItems()
+    np.testing.assert_allclose(pred.getData()[1] - ref.getData()[1], 700)
+    assert widget.metrics_model.data(widget.metrics_model.index(1, 1), Qt.ItemDataRole.BackgroundRole) is None  # baseline itself
+    widget.detail.offset_checkbox.setChecked(True)
+    ref, pred = widget.detail.eos_plots[0].listDataItems()
+    np.testing.assert_allclose(pred.getData()[1], ref.getData()[1], atol=1e-12)
+    widget.detail.offset_checkbox.setChecked(False)
+    widget.detail.relative_checkbox.setChecked(False)
+    ref, pred = widget.detail.eos_plots[0].listDataItems()
+    np.testing.assert_allclose(ref.getData()[1], second["summary"]["energies"])
+    np.testing.assert_allclose(pred.getData()[1] - ref.getData()[1], 0.7)
+    widget.refresh()
+    assert widget.comparison_picker.selected_ids() == []
+    assert [i.row() for i in widget.table.selectionModel().selectedRows()] == [1]
+    assert len(widget.detail.eos_plots[0].listDataItems()) == 2
+    widget.deleteLater()
+
+
 def _load_single_eos(dialog, path):
     dialog.load_file(path)
     dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData(""))
@@ -175,8 +252,6 @@ def test_import_dialog_requires_explicit_type_and_previews_reference(make_servic
     assert "Å³/atom" in dialog.preview_summary.text()
     dialog.name_edit.setText("PbTe rocksalt EOS")
     dialog.suite_combo.setText("PbTe daily validation")
-    assert not dialog.yesButton.isEnabled()
-    dialog.branch_confirm.setChecked(True)
     assert dialog.yesButton.isEnabled() and dialog.validate()
     assert dialog.preview_title.text() == "Reference curve"
 
@@ -185,8 +260,6 @@ def test_import_dialog_requires_explicit_type_and_previews_reference(make_servic
     assert [issue.level for issue in dialog.issues] == ["warning"]
     assert "Fit unavailable" in dialog.preview_summary.text()
     assert len(dialog.preview_plot.listDataItems()) == 1
-    assert not dialog.branch_confirm.isChecked()
-    dialog.branch_confirm.setChecked(True)
     assert dialog.yesButton.isEnabled()  # curve-only comparisons remain useful
 
     (tmp_path / "bad.xyz").write_text("not an xyz file\n")
@@ -209,19 +282,16 @@ def test_import_preview_invalidates_on_file_edit_and_type_change(make_service, t
     path = write_xyz(tmp_path / "scan.xyz", eos_frames())
     _load_single_eos(dialog, path)
     dialog.notes_edit.setText("Synthetic test")
-    dialog.branch_confirm.setChecked(True)
     assert dialog.validate()
     dialog.path_edit.setText(str(tmp_path / "different.xyz"))
     assert not dialog.validate() and dialog.reference_summary is None
     assert not dialog.preview_plot.listDataItems()
     _load_single_eos(dialog, path)
-    dialog.branch_confirm.setChecked(True)
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("efv"))
     assert dialog.validate() and dialog.preview_plot.isHidden()
     assert "frames" in dialog.reference_summary
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
-    assert not dialog.branch_confirm.isChecked() and not dialog.validate()
-    dialog.branch_confirm.setChecked(True)
+    assert dialog.validate()
     Path(path).write_text("changed after preview")
     service = make_service()
     with pytest.raises(ValueError, match="file changed"):
@@ -237,10 +307,10 @@ def test_reference_dataset_can_be_previewed_without_models(make_service, tmp_pat
     widget = ModelLibraryWidget(service=service)
     widget.refresh(suite["id"])
     assert widget.model.rowCount() == 0
-    widget.reference_combo.setCurrentIndex(widget.reference_combo.findData(eos["id"]))
+    widget.property_combo.setCurrentIndex(widget.property_combo.findData("eos"))
     assert widget.detail._args[0]["id"] == eos["id"]
-    assert len(widget.detail.plot.listDataItems()) == 1
-    widget.reference_combo.setCurrentIndex(widget.reference_combo.findData(efv["id"]))
+    assert len(widget.detail.eos_plots[0].listDataItems()) == 1
+    widget.property_combo.setCurrentIndex(widget.property_combo.findData("efv"))
     assert widget.detail._args[0]["id"] == efv["id"]
     assert not widget.detail.plot.listDataItems()
 
@@ -273,8 +343,10 @@ def test_eos_flow_chinese_labels_and_errors(make_service, tmp_path):
         assert dialog.preview_title.text() == "参考曲线"
         assert "参考拟合" in dialog.preview_summary.text()
         widget = ModelLibraryWidget(service=make_service())
-        assert widget.import_button.text() == "导入参考基准集"
-        assert widget.baseline_button.text() == "设为基准势版本"
+        assert widget.import_button.text() == "导入"
+        assert widget.import_button.toolTip() == "导入参考基准集"
+        assert widget.baseline_button.accessibleName() == "设为基准势版本"
+        assert "设为基准势版本" in widget.baseline_button.toolTip()
     finally:
         app.removeTranslator(translator)
 
@@ -288,7 +360,6 @@ def test_import_dialog_asks_before_copying_large_files(make_service, tmp_path):
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
     _load_single_eos(dialog, write_xyz(tmp_path / "scan.xyz", eos_frames()))
     dialog.notes_edit.setText("VASP PBE")
-    dialog.branch_confirm.setChecked(True)
 
     asked = []
     assert dialog.import_into(service, lambda error: asked.append(error) or False) is None
@@ -313,7 +384,6 @@ def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, note
     path = write_xyz(tmp_path / "reference.xyz", frames)
     if protocol == "eos":
         _load_single_eos(dialog, path)
-        dialog.branch_confirm.setChecked(True)
     else:
         dialog.load_file(path)
     assert dialog.validate() and dialog.yesButton.isEnabled()
@@ -333,15 +403,15 @@ def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, note
     assert len(service.set_frames(saved["id"])) == len(frames)
     widget = ModelLibraryWidget(service=service)
     widget.refresh(service.suites()[0]["id"])
-    widget.reference_combo.setCurrentIndex(widget.reference_combo.findData(saved["id"]))
+    widget.property_combo.setCurrentIndex(widget.property_combo.findData(protocol))
     info = widget.detail.info_label.text()
-    assert "Reference:" not in info and "DFT" not in info
+    assert "Reference: ?" not in info and "DFT" not in info
     if notes:
         assert f"Notes: {notes}" in info
     else:
         assert "Notes:" not in info
     if protocol == "eos":
-        assert widget.detail.plot.listDataItems()[0].name() == "Reference curve"
+        assert widget.detail.eos_plots[0].listDataItems()[0].name() == "Reference"
     widget.deleteLater()
     dialog.deleteLater()
     host.deleteLater()
@@ -349,13 +419,13 @@ def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, note
 
 # -- viewer chip ------------------------------------------------------------------
 
-def test_grouped_eos_preview_confirmation_exclusion_and_batch_import(make_service, tmp_path):
+def test_grouped_eos_automatically_allows_warnings_and_blocks_errors(make_service, tmp_path):
     service = make_service()
     host = QWidget()
     dialog = BenchmarkImportDialog(host, [], "Multi-phase validation")
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
     frames = []
-    for label, scan in (("A", eos_frames()), ("B", eos_frames(curvature=0.8)), ("short", eos_frames()[:3])):
+    for label, scan in (("A", eos_frames()), ("B", eos_frames(minimum=1.2)), ("short", eos_frames()[:3])):
         for frame in scan:
             frame.info["config_type"] = label
             frame.info["all_scans"] = "mixed"
@@ -367,30 +437,28 @@ def test_grouped_eos_preview_confirmation_exclusion_and_batch_import(make_servic
     dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
     assert len(dialog.eos_groups) == 3
     assert dialog.eos_groups[2]["summary"] is None
-    dialog.branch_confirm.setChecked(True)
-    dialog.group_table.setCurrentCell(1, 0)
-    assert not dialog.branch_confirm.isChecked()
-    dialog.branch_confirm.setChecked(True)
     assert not dialog.validate()
-    dialog.group_table.setCurrentCell(2, 0)
-    assert not dialog.branch_confirm.isEnabled()
     dialog.group_table.item(2, 0).setCheckState(Qt.CheckState.Unchecked)
-    assert dialog.validate()  # an excluded invalid group does not block valid groups
+    assert dialog.validate() and dialog.yesButton.isEnabled()
+    assert dialog.group_table.currentRow() == 0  # other valid groups need no manual review
+    assert dialog.group_table.item(0, 3).text() == "Checks passed"
+    assert dialog.group_table.item(1, 3).text() == "Ready · warning"
     dialog.group_table.setCurrentCell(0, 0)
-    assert dialog.branch_confirm.isChecked()
     dialog.overlay_groups.setChecked(True)
     assert [curve.name() for curve in dialog.preview_plot.listDataItems()] == ["A", "B"]
     records = dialog.import_into(service, lambda _: True)
     assert len(records) == 2
     assert all(record["provenance"] == {} for record in records)
+    assert records[1]["summary"]["warnings"]  # warning retained after successful import
+    assert "v0" not in records[1]["summary"]["fit"]
     suite = service.suites()[0]
     assert {r["id"] for r in service.suite_sets(suite["id"])} == {r["id"] for r in records}
     assert all(len(service.set_frames(r["id"])) == 7 for r in records)
     dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("all_scans"))
     assert len(dialog.eos_groups) == 1 and not dialog.validate()
-    assert not dialog.branch_confirm.isChecked() and not dialog.preview_plot.listDataItems()
+    assert not dialog.preview_plot.listDataItems()
     dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
-    assert not any(g["confirmed"] for g in dialog.eos_groups)
+    assert not dialog.validate()  # the invalid short group is selected again
 
 
 def test_grouped_eos_missing_metadata_is_never_silently_dropped(tmp_path):
@@ -426,7 +494,6 @@ def test_import_dialog_resizes_without_squeezing_controls(tmp_path, language):
             frame.info["config_type"] = "B1"
         dialog.load_file(write_xyz(tmp_path / "eos.xyz", frames))
         dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
-        dialog.branch_confirm.setChecked(True)
         dialog.supplementary_button.click()
         dialog.show()
         for width, height in [(1280, 900), (1000, 700), (800, 600), (1280, 900)]:
@@ -437,7 +504,7 @@ def test_import_dialog_resizes_without_squeezing_controls(tmp_path, language):
             for control in (
                 dialog.path_edit, dialog.browse_button, dialog.protocol_combo,
                 dialog.group_field_combo, dialog.name_edit,
-                dialog.notes_edit, dialog.suite_combo, dialog.branch_confirm,
+                dialog.notes_edit, dialog.suite_combo,
             ):
                 assert control.height() >= max(32, control.sizeHint().height())
             assert dialog.preview_plot.height() >= 260
@@ -449,15 +516,14 @@ def test_import_dialog_resizes_without_squeezing_controls(tmp_path, language):
             else:
                 assert dialog.fields_panel.geometry().bottom() < dialog.preview_panel.y()
                 assert scroll.verticalScrollBar().maximum() > 0
-            # Scrolling can reach the final confirmation without moving the footer.
+            # Scrolling can reach the final check result without moving the footer.
             button_pos = dialog.yesButton.mapTo(host, dialog.yesButton.rect().topLeft())
-            scroll.ensureWidgetVisible(dialog.branch_confirm)
+            scroll.ensureWidgetVisible(dialog.issues_label)
             app.processEvents()
-            confirmation_pos = dialog.branch_confirm.mapTo(scroll.viewport(), dialog.branch_confirm.rect().center())
-            assert scroll.viewport().rect().contains(confirmation_pos)
+            result_pos = dialog.issues_label.mapTo(scroll.viewport(), dialog.issues_label.rect().center())
+            assert scroll.viewport().rect().contains(result_pos)
             assert dialog.yesButton.mapTo(host, dialog.yesButton.rect().topLeft()) == button_pos
             assert host.rect().contains(dialog.yesButton.mapTo(host, dialog.yesButton.rect().bottomRight()))
-            assert dialog.branch_confirm.isChecked()
             assert dialog.group_field_combo.currentData() == "config_type"
     finally:
         dialog.hide()
@@ -1035,3 +1101,159 @@ def test_scorecard_translates_stored_run_errors_but_keeps_unknown_diagnostics():
     finally:
         i18n.install_translator(app, "en_US")
     assert tooltip(1) == "Library object 0123456789ab is missing from /lib."
+
+
+def test_multi_comparison_search_and_shared_legend_keep_identity(scored, tmp_path):
+    service = scored.service
+    second = _import(service, tmp_path, eos_frames(curvature=0.8), "second-phase")
+    suite = service.create_suite("Two phases", [scored.eos["id"], second["id"]])
+    service.set_baseline(suite["id"], scored.old["id"])
+    for model in (scored.old, scored.new, scored.fresh):
+        service.run_suite(model["id"], suite["id"])
+    widget = ModelLibraryWidget(service=service)
+    widget.open_scorecard(suite["id"], scored.new["id"])
+    picker = widget.comparison_picker
+    picker.set_selected_ids([scored.old["id"], scored.fresh["id"], scored.new["id"]])
+    assert picker.selected_ids() == [scored.old["id"], scored.fresh["id"]]  # current is never duplicated
+    picker.search.setText("fresh")
+    visible = [picker.list.item(i) for i in range(picker.list.count()) if not picker.list.item(i).isHidden()]
+    assert len(visible) == 1 and "fresh" in visible[0].text()
+    visible[0].setCheckState(Qt.CheckState.Unchecked)
+    assert picker.selected_ids() == [scored.old["id"]]
+    visible[0].setCheckState(Qt.CheckState.Checked)
+    picker.search.clear()
+    from PySide6.QtTest import QTest
+    picker.open_popup()
+    QTest.keyClick(picker.search, Qt.Key.Key_Escape)
+    assert picker.popup.isHidden()
+    assert all(len(plot.listDataItems()) == 4 for plot in widget.detail.eos_plots)
+    keys = [None, scored.new["id"], scored.old["id"], scored.fresh["id"]]
+    assert list(widget.detail.legend_buttons) == keys
+    fresh_color = widget.detail._curves[scored.fresh["id"]][0].opts["pen"].color()
+    widget.detail.legend_buttons[scored.fresh["id"]].click()
+    assert all(not curve.isVisible() for curve in widget.detail._curves[scored.fresh["id"]])
+    widget.refresh()
+    assert picker.selected_ids() == [scored.old["id"], scored.fresh["id"]]
+    assert not widget.detail.legend_buttons[scored.fresh["id"]].isChecked()
+    widget.detail.comparisonRemoved.emit(scored.old["id"])
+    assert picker.selected_ids() == [scored.fresh["id"]]
+    assert widget.detail._curves[scored.fresh["id"]][0].opts["pen"].color() == fresh_color
+    assert service.get_suite(suite["id"])["baseline_model_id"] == scored.old["id"]
+    widget.detail.groupFocused.emit("G2")
+    assert not widget.detail._curves[scored.fresh["id"]][0].isVisible()
+    widget.detail.legend_buttons[scored.fresh["id"]].click()
+    assert widget.detail._curves[scored.fresh["id"]][0].isVisible()
+    widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.fresh["id"]))
+    assert picker.selected_ids() == []
+    assert len(widget.detail.eos_plots[0].listDataItems()) == 2
+    widget.deleteLater()
+
+
+def test_validate_selected_versions_includes_hidden_but_not_unselected(scored, tmp_path):
+    service = scored.service
+    outsider = _capture(service, tmp_path, "unselected")
+    widget = ModelLibraryWidget(service=service)
+    widget.open_scorecard(scored.suite["id"], scored.new["id"])
+    widget.comparison_picker.set_selected_ids([scored.fresh["id"]])
+    assert "Not run" in widget.detail.legend_buttons[scored.fresh["id"]].text()
+    widget.detail.legend_buttons[scored.fresh["id"]].click()
+    with patch.object(service, "evaluate", wraps=service.evaluate) as evaluate:
+        widget.run_selected_button.click()
+        assert not widget.run_selected_button.isEnabled()
+        assert _wait_until(lambda: widget._run_task is None)
+        assert {call.args for call in evaluate.call_args_list} == {
+            (model_id, set_id) for model_id in (scored.new["id"], scored.fresh["id"])
+            for set_id in (scored.eos["id"], scored.efv["id"])
+        }
+    assert service.latest_run(outsider["id"], scored.eos["id"]) is None
+    assert widget.comparison_picker.selected_ids() == [scored.fresh["id"]]
+    assert not widget.detail.legend_buttons[scored.fresh["id"]].isChecked()
+    assert "Not run" not in widget.detail.legend_buttons[scored.fresh["id"]].text()
+    assert service.get_suite(scored.suite["id"])["baseline_model_id"] == scored.old["id"]
+    assert widget.run_selected_button.isEnabled()
+    widget.deleteLater()
+
+
+def test_selected_validation_promotes_only_current_draft(scored):
+    from NepTrainKit.core.validation.service import ModelDraft
+
+    widget = ModelLibraryWidget(service=scored.service)
+    draft = ModelDraft((MODEL_HEADER + "new draft").encode(), "/tmp/new-draft.txt")
+    widget.open_scorecard(scored.suite["id"], draft=draft)
+    widget.comparison_picker.set_selected_ids([scored.old["id"]])
+    with patch.object(scored.service, "evaluate", wraps=scored.service.evaluate) as evaluate:
+        widget.run_selected_button.click()
+        assert _wait_until(lambda: widget._run_task is None)
+        current = widget.current_model_row()
+        assert current["temporary"] and current["model_id"] > 0
+        assert {call.args[0] for call in evaluate.call_args_list} == {current["model_id"], scored.old["id"]}
+    assert widget.comparison_picker.selected_ids() == [scored.old["id"]]
+    widget.deleteLater()
+
+
+def test_same_named_comparison_versions_are_independent(make_service, tmp_path):
+    service = make_service()
+    models = []
+    for i in range(3):
+        path = tmp_path / f"version-{i}.txt"
+        path.write_text(MODEL_HEADER + str(i))
+        models.append(service.capture_model(path, name="same"))
+    eos = _import(service, tmp_path, eos_frames(), "eos")
+    suite = service.create_suite("EOS", [eos["id"]])
+    for model in models:
+        service.run_suite(model["id"], suite["id"])
+    widget = ModelLibraryWidget(service=service)
+    widget.open_scorecard(suite["id"], models[0]["id"])
+    widget.comparison_picker.set_selected_ids([model["id"] for model in models[1:]])
+    assert len({entry[1] for entry in widget.detail._groups[0][2]}) == 3
+    widget.detail.legend_buttons[models[1]["id"]].click()
+    assert not widget.detail._curves[models[1]["id"]][0].isVisible()
+    assert widget.detail._curves[models[2]["id"]][0].isVisible()
+    widget.deleteLater()
+
+
+def test_eos_focus_button_returns_to_grid_and_reset_fits_visible_curves(scored, tmp_path):
+    import numpy as np
+    from qfluentwidgets import TransparentToolButton
+
+    service = scored.service
+    second = _import(service, tmp_path, eos_frames(curvature=0.8), "second")
+    suite = service.create_suite("Navigation", [scored.eos["id"], second["id"]])
+    for model in (scored.new, scored.old):
+        service.run_suite(model["id"], suite["id"])
+    widget = ModelLibraryWidget(service=service)
+    widget.resize(1180, 800)
+    widget.open_scorecard(suite["id"], scored.new["id"])
+    widget.comparison_picker.set_selected_ids([scored.old["id"]])
+    widget.show()
+    QApplication.processEvents()
+    widget.detail.legend_buttons[scored.old["id"]].click()
+    first, other = widget.detail.eos_plots
+    other.setRange(xRange=(0, 1), yRange=(1000, 2000), padding=0)
+    first.setRange(xRange=(0, 1), yRange=(1000, 2000), padding=0)
+    widget.detail.eos_cards[0].findChild(TransparentToolButton, "resetEosView").click()
+    QApplication.processEvents()
+    x_range, y_range = first.viewRange()
+    visible = [curve for curve in first.listDataItems() if curve.isVisible()]
+    for curve in visible:
+        x, y = curve.getData()
+        assert x_range[0] <= min(x) <= max(x) <= x_range[1]
+        assert y_range[0] <= min(y) <= max(y) <= y_range[1]
+    assert x_range[0] > 1 and y_range[1] < 1000
+    np.testing.assert_allclose(other.viewRange(), [[0, 1], [1000, 2000]])
+    assert not widget.detail._curves[scored.old["id"]][0].isVisible()
+    focus = widget.detail.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus")
+    focus.click()
+    assert len(widget.detail.eos_cards) == 1
+    assert widget.all_groups_button.text() == "Back to all groups"
+    restore = widget.detail.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus")
+    assert restore.toolTip() == "Back to all groups"
+    restore.click()
+    assert len(widget.detail.eos_cards) == 2
+    assert not widget.all_groups_button.isEnabled()
+    assert widget.comparison_picker.selected_ids() == [scored.old["id"]]
+    assert not widget.detail.legend_buttons[scored.old["id"]].isChecked()
+    single = service.create_suite("Single group", [second["id"]])
+    widget.open_scorecard(single["id"], scored.new["id"])
+    assert widget.detail.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus").isHidden()
+    widget.deleteLater()

@@ -1295,6 +1295,14 @@ Every structure must have the chosen field. Each group must be one structure / m
 例如 config_type=B1：字段选 config_type，组名为 B1。该扫描的所有体积点都写相同值；另一组则写 config_type=B3。
 每个构型都须有该字段，同组须属于同一结构 / 磁态分支。文件只有一条扫描时，选“单组扫描 · 使用整个文件”。</translation>
     </message>
+    <message>
+        <source>Ready · warning</source>
+        <translation>可导入 · 有警告</translation>
+    </message>
+    <message>
+        <source>Checks passed</source>
+        <translation>检查通过</translation>
+    </message>
 </context>
 <context>
     <name>BuiltinWorkflowTemplates</name>
@@ -15074,6 +15082,74 @@ All child items will also be deleted.</source>
         <source>Imported {count} reference datasets</source>
         <translation>已导入 {count} 个参考基准集</translation>
     </message>
+    <message>
+        <source>All groups share one plot. Click a row to focus; Ctrl+click to compare groups.</source>
+        <translation>全部组共用一张图。点击表格行看单组，Ctrl 多选对比。</translation>
+    </message>
+    <message>
+        <source>Show all groups</source>
+        <translation>显示全部组</translation>
+    </message>
+    <message>
+        <source>Metrics are for the current model. Green / red compare against the baseline model; choosing a comparison curve does not change the baseline.</source>
+        <translation>表格显示当前势的指标，绿 / 红表示相对基准势改善 / 退化；对比曲线不改变基准势。</translation>
+    </message>
+    <message>
+        <source>No comparison</source>
+        <translation>不叠加对比势</translation>
+    </message>
+    <message>
+        <source>Current model</source>
+        <translation>当前势</translation>
+    </message>
+    <message>
+        <source>Compare with</source>
+        <translation>对比势</translation>
+    </message>
+    <message>
+        <source>Reference preview only</source>
+        <translation>仅预览参考数据</translation>
+    </message>
+    <message>
+        <source>Each group has independent axes. Enlarge a chart or select rows in the error details to focus.</source>
+        <translation>各组独立坐标轴。点击图上放大按钮，或在误差详情中选中要查看的组。</translation>
+    </message>
+    <message>
+        <source>Error details</source>
+        <translation>误差详情</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <source>Set a saved version to compare model improvements and regressions.</source>
+        <translation>选择已保存的势版本作为基准，用于比较改善与退化。</translation>
+    </message>
+    <message>
+        <source>Baseline model: not selected</source>
+        <translation>基准势：未设置</translation>
+    </message>
+    <message>
+        <source>Validate selected versions</source>
+        <translation>验证所选版本</translation>
+    </message>
+    <message>
+        <source>Validate the current model and selected comparison models, including hidden curves.</source>
+        <translation>验证当前势和已选对比势，包括图例中暂时隐藏的曲线。</translation>
+    </message>
+    <message>
+        <source>Not run</source>
+        <translation>未运行</translation>
+    </message>
+    <message>
+        <source>{ready}/{total} validations completed</source>
+        <translation>{ready}/{total} 项验证已完成</translation>
+    </message>
+    <message>
+        <source>Back to all groups</source>
+        <translation>返回全部组</translation>
+    </message>
 </context>
 <context>
     <name>NepDipoleResultData</name>
@@ -18058,6 +18134,114 @@ All child items will also be deleted.</source>
     <message>
         <source>Reference curve</source>
         <translation>参考曲线</translation>
+    </message>
+    <message>
+        <source>Relative energy</source>
+        <translation>相对能量</translation>
+    </message>
+    <message>
+        <source>Subtract each group's reference minimum from both its reference and model energies (eV/atom).</source>
+        <translation>每组参考曲线与模型曲线减去同一个参考最低能量（eV/atom）。</translation>
+    </message>
+    <message>
+        <source>Reference: dots / dashed · Current model: solid · Comparison model: dash-dot</source>
+        <translation>参考数据：圆点虚线 · 当前势：实线 · 对比势：点划线</translation>
+    </message>
+    <message>
+        <source>Relative energy (eV/atom)</source>
+        <translation>相对能量 (eV/atom)</translation>
+    </message>
+    <message>
+        <source>Each group uses its reference minimum as zero; the same zero is applied to model curves.</source>
+        <translation>已按原子数归一化；每组以参考最低能量为零点，模型使用相同零点。</translation>
+    </message>
+    <message>
+        <source>EOS · {count} groups</source>
+        <translation>EOS · {count} 组</translation>
+    </message>
+    <message>
+        <source>Independent axes per group · Reference: dots / dashed · Current: blue solid · Comparison: orange dash-dot</source>
+        <translation>各组独立坐标轴 · 参考：圆点虚线 · 当前势：蓝色实线 · 对比势：橙色点划线</translation>
+    </message>
+    <message>
+        <source>Energy per atom; each reference minimum is zero. Model curves use the same zero.</source>
+        <translation>已按原子数归一化；每组以参考最低能量为零点，势曲线使用相同零点。</translation>
+    </message>
+    <message>
+        <source>Enlarge this group</source>
+        <translation>放大这一组</translation>
+    </message>
+    <message>
+        <source>Fit warning</source>
+        <translation>拟合警告</translation>
+    </message>
+    <message>
+        <source>Relative energy (meV/atom)</source>
+        <translation>相对能量 (meV/atom)</translation>
+    </message>
+    <message>
+        <source>{count} volume points</source>
+        <translation>{count} 个体积点</translation>
+    </message>
+    <message>
+        <source>Current model</source>
+        <translation>当前势</translation>
+    </message>
+    <message>
+        <source>Comparison model</source>
+        <translation>对比势</translation>
+    </message>
+    <message>
+        <source>{name}: unavailable</source>
+        <translation>{name}：暂无曲线</translation>
+    </message>
+    <message>
+        <source>Shape comparison: model curves are shifted by their mean energy difference from the reference.</source>
+        <translation>形状比较：已移除势与参考之间的平均能量差，仅竖直平移。</translation>
+    </message>
+    <message>
+        <source>Independent axes per group; enlarge a chart to inspect its curves.</source>
+        <translation>各组独立坐标轴；点击卡片右上角可放大查看。</translation>
+    </message>
+    <message>
+        <source>Independent axes · Energy per atom</source>
+        <translation>各组独立坐标轴 · 能量已按原子数归一化</translation>
+    </message>
+    <message>
+        <source>Reference minimum = 0</source>
+        <translation>参考最低能量为零</translation>
+    </message>
+    <message>
+        <source>Constant offset removed; shape comparison</source>
+        <translation>已去除常数偏移，比较曲线形状</translation>
+    </message>
+    <message>
+        <source>Click to hide or show this curve in every chart.</source>
+        <translation>点击可在所有图中隐藏或显示这条曲线。</translation>
+    </message>
+    <message>
+        <source>Remove comparison model</source>
+        <translation>移除这个对比势</translation>
+    </message>
+    <message>
+        <source>{ready}/{total} curves ready</source>
+        <translation>{ready}/{total} 组曲线可用</translation>
+    </message>
+    <message>
+        <source>Not run</source>
+        <translation>未运行</translation>
+    </message>
+    <message>
+        <source>Reset view: fit all visible curves</source>
+        <translation>重置视图：恢复当前可见曲线的完整范围</translation>
+    </message>
+    <message>
+        <source>Reset view</source>
+        <translation>重置视图</translation>
+    </message>
+    <message>
+        <source>Back to all groups</source>
+        <translation>返回全部组</translation>
     </message>
 </context>
 <context>
@@ -29575,6 +29759,94 @@ Magnetic: {magnetic}</source>
     <message>
         <source>Cancel</source>
         <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>GroupMetricsTableModel</name>
+    <message>
+        <source>Curve RMSE
+(meV/atom)</source>
+        <translation>曲线形状误差
+(meV/atom)</translation>
+    </message>
+    <message>
+        <source>V₀ error (%)</source>
+        <translation>V₀ 误差 (%)</translation>
+    </message>
+    <message>
+        <source>B₀ error (%)</source>
+        <translation>B₀ 误差 (%)</translation>
+    </message>
+    <message>
+        <source>Energy RMSE
+(meV/atom)</source>
+        <translation>能量误差
+(meV/atom)</translation>
+    </message>
+    <message>
+        <source>Force RMSE
+(meV/Å)</source>
+        <translation>力误差
+(meV/Å)</translation>
+    </message>
+    <message>
+        <source>Reference group</source>
+        <translation>参考组</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <source>Reference only</source>
+        <translation>仅参考数据</translation>
+    </message>
+    <message>
+        <source>Not run</source>
+        <translation>未运行</translation>
+    </message>
+    <message>
+        <source>Completed</source>
+        <translation>已完成</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation>失败</translation>
+    </message>
+    <message>
+        <source>Unsupported</source>
+        <translation>不支持</translation>
+    </message>
+    <message>
+        <source>Fit warning</source>
+        <translation>拟合警告</translation>
+    </message>
+</context>
+<context>
+    <name>ComparisonPicker</name>
+    <message>
+        <source>Search project or version</source>
+        <translation>搜索项目或版本</translation>
+    </message>
+    <message>
+        <source>Select multiple versions; uncheck to remove.</source>
+        <translation>可多选，取消勾选即可移除。</translation>
+    </message>
+    <message>
+        <source>Clear selection</source>
+        <translation>清空选择</translation>
+    </message>
+    <message>
+        <source>Select comparison models…</source>
+        <translation>选择对比势…</translation>
+    </message>
+    <message>
+        <source>Select multiple saved versions to compare.</source>
+        <translation>可选择多个已保存的势版本进行比较。</translation>
+    </message>
+    <message>
+        <source>{count} comparison models selected</source>
+        <translation>已选 {count} 个对比势</translation>
     </message>
 </context>
 </TS>

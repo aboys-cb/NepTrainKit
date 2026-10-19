@@ -251,9 +251,6 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.preview_plot.setMinimumHeight(260)
         self.preview_plot.showGrid(x=True, y=True, alpha=0.2)
         preview.addWidget(self.preview_plot, 1)
-        self.branch_confirm = CheckBox(self.tr("This group is one phase / magnetic branch"), self)
-        self.branch_confirm.setToolTip(self.tr("Confirm these structures form one volume scan, not mixed phases or magnetic states."))
-        preview.addWidget(self.branch_confirm)
 
         self.issues_label = CaptionLabel(self)
         self.issues_label.setWordWrap(True)
@@ -272,13 +269,11 @@ class BenchmarkImportDialog(MessageBoxBase):
             self.protocol_combo, self.path_edit, self.browse_button,
             self.group_field_combo, self.name_edit, self.notes_edit,
             self.suite_combo, self.overlay_groups,
-            self.branch_confirm,
         ):
             control.setMinimumHeight(max(32, control.sizeHint().height()))
         self.protocol_combo.currentIndexChanged.connect(self._protocol_changed)
         self.path_edit.textChanged.connect(self._invalidate_file)
         self.suite_combo.textChanged.connect(self._validate)
-        self.branch_confirm.stateChanged.connect(self._confirm_group)
         self.group_field_combo.currentIndexChanged.connect(self._check_protocol)
         self.group_table.currentCellChanged.connect(self._update_preview)
         self.group_table.itemChanged.connect(self._include_group)
@@ -362,7 +357,6 @@ class BenchmarkImportDialog(MessageBoxBase):
         kind = self.protocol_combo.currentData()
         self.path_edit.setEnabled(bool(kind))
         self.browse_button.setEnabled(bool(kind))
-        self.branch_confirm.setVisible(kind == "eos")
         self.group_field_label.setVisible(kind == "eos")
         self.group_field_combo.setVisible(kind == "eos")
         self.group_hint.setVisible(kind == "eos")
@@ -400,7 +394,7 @@ class BenchmarkImportDialog(MessageBoxBase):
                             issues = protocol.check(frames)
                             summary = None if any(i.level == "error" for i in issues) else protocol.summarize_reference(frames)
                             self.eos_groups.append(dict(key=key, indices=indices, issues=issues,
-                                                        summary=summary, include=True, confirmed=False))
+                                                        summary=summary, include=True))
                         self.group_table.setRowCount(len(self.eos_groups))
                         for row, group in enumerate(self.eos_groups):
                             name = QTableWidgetItem(group["key"] or self.tr("Whole file"))
@@ -430,10 +424,8 @@ class BenchmarkImportDialog(MessageBoxBase):
             text = self.tr("Excluded")
         elif group["summary"] is None:
             text = self.tr("Error")
-        elif not group["confirmed"]:
-            text = self.tr("Review required")
         else:
-            text = self.tr("Confirmed · warning") if group["issues"] else self.tr("Confirmed")
+            text = self.tr("Ready · warning") if group["issues"] else self.tr("Checks passed")
         self.group_table.setItem(row, 3, QTableWidgetItem(text))
 
     def _include_group(self, item):
@@ -443,13 +435,6 @@ class BenchmarkImportDialog(MessageBoxBase):
         group["include"] = item.checkState() == Qt.CheckState.Checked
         self._set_group_status(item.row())
         self._update_preview()
-        self._validate()
-
-    def _confirm_group(self, *_args):
-        row = self.group_table.currentRow()
-        if 0 <= row < len(self.eos_groups):
-            self.eos_groups[row]["confirmed"] = self.branch_confirm.isChecked()
-            self._set_group_status(row)
         self._validate()
 
     def _show_issues(self):
@@ -479,10 +464,6 @@ class BenchmarkImportDialog(MessageBoxBase):
             row = self.group_table.currentRow()
             group = self.eos_groups[row] if 0 <= row < len(self.eos_groups) else None
             self.issues = group["issues"] if group else []
-            self.branch_confirm.blockSignals(True)
-            self.branch_confirm.setChecked(bool(group and group["confirmed"]))
-            self.branch_confirm.setEnabled(bool(group and group["summary"] and group["include"]))
-            self.branch_confirm.blockSignals(False)
             self.reference_summary = group["summary"] if group else None
         elif protocol is not None and self.frames is not None and not any(i.level == "error" for i in self.issues):
             self.reference_summary = protocol.summarize_reference(self.frames)
@@ -546,8 +527,6 @@ class BenchmarkImportDialog(MessageBoxBase):
                     errors.append(self.tr("Select at least one EOS group to import."))
                 elif any(group["summary"] is None for group in selected):
                     errors.append(self.tr("Some checked groups have errors. Fix them or explicitly uncheck them."))
-                elif any(not group["confirmed"] for group in selected):
-                    errors.append(self.tr("Preview and confirm each checked group belongs to one phase and magnetic branch."))
         return errors
 
     def _validate(self, *_args) -> None:

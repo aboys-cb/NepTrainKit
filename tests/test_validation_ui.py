@@ -9,7 +9,6 @@ from unittest.mock import patch
 import pytest
 from PySide6.QtCore import QItemSelectionModel, Qt
 from PySide6.QtWidgets import QApplication, QWidget
-from qfluentwidgets import TransparentPushButton
 
 from NepTrainKit.core.validation import SetTooLargeError
 from NepTrainKit.core.validation import library as library_module
@@ -218,7 +217,7 @@ def test_status_summary_counts_regressions_on_the_preferred_suite(scored):
 
 
 def _viewer_stub(model_id, opened, imported=None):
-    from qfluentwidgets import Action
+    from qfluentwidgets import Action, DotInfoBadge, InfoBadge, TransparentDropDownToolButton
 
     from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 
@@ -227,8 +226,11 @@ def _viewer_stub(model_id, opened, imported=None):
             imported.append(True)
 
     stub = SimpleNamespace(
-        validation_chip=TransparentPushButton(""),
+        validation_button=TransparentDropDownToolButton(),
+        validation_status_action=Action("status"),
         validation_star_action=Action("star"),
+        validation_count_badge=InfoBadge.error("0"),
+        validation_dot_badge=DotInfoBadge.info(),
         _validation_model_id=model_id,
         _validation_status=None,
         _validation_starred=False,
@@ -240,56 +242,75 @@ def _viewer_stub(model_id, opened, imported=None):
     )
     for name in (
         "refresh_validation_chip",
+        "_show_validation_badge",
         "open_validation_scorecard",
         "import_validation_benchmark",
         "toggle_validation_star",
     ):
         setattr(stub, name, getattr(ShowNepWidget, name).__get__(stub))
-    stub.validation_chip.clicked.connect(lambda: ShowNepWidget._on_validation_chip_clicked(stub))
     return stub
 
 
-def test_viewer_chip_shows_regressions_and_opens_scorecard(scored, monkeypatch):
-    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
-    opened = []
-    stub = _viewer_stub(scored.new["id"], opened)
-    stub.refresh_validation_chip()
-    count = summarize_model_status(scored.service, scored.new["id"])["regressions"]
-    assert stub.validation_chip.text() == f"Validation: PbTe · {count} regressions"
-    stub.validation_chip.click()
-    assert opened == [(scored.suite["id"], scored.new["id"])]
+def _badge(stub):
+    """What the footer shows next to the icon: a count, a dot, or nothing."""
+    if not stub.validation_count_badge.isHidden():
+        return int(stub.validation_count_badge.text())
+    return "dot" if not stub.validation_dot_badge.isHidden() else None
 
-    stub._validation_model_id = scored.old["id"]
+
+def test_viewer_status_line_and_badge_follow_the_suite(scored, monkeypatch):
+    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
+    service, opened = scored.service, []
+    # With the newer model as baseline, the old one regresses: a red count.
+    service.set_baseline(scored.suite["id"], scored.new["id"])
+    stub = _viewer_stub(scored.old["id"], opened)
     stub.refresh_validation_chip()
-    assert stub.validation_chip.text() == "Validation: PbTe · baseline"
+    count = summarize_model_status(service, scored.old["id"])["regressions"]
+    assert count > 0 and _badge(stub) == count
+    assert stub.validation_status_action.text() == f"Validation: PbTe · {count} regressions"
+    assert stub.validation_button.toolTip() == stub.validation_status_action.text()
+    stub.open_validation_scorecard()
+    assert opened == [(scored.suite["id"], scored.old["id"])]
+
+    stub._validation_model_id = scored.new["id"]
+    stub.refresh_validation_chip()
+    assert stub.validation_status_action.text() == "Validation: PbTe · baseline" and _badge(stub) is None
+
+    # No regressions against the baseline: no badge at all.
+    service.set_baseline(scored.suite["id"], scored.old["id"])
+    stub.refresh_validation_chip()
+    assert stub.validation_status_action.text() == "Validation: PbTe · 0 regressions" and _badge(stub) is None
+
     stub._validation_model_id = scored.fresh["id"]
     stub.refresh_validation_chip()
-    assert stub.validation_chip.text() == "Validation: PbTe · not run"
+    assert stub.validation_status_action.text() == "Validation: PbTe · not run" and _badge(stub) == "dot"
+    for widget in (stub.validation_count_badge, stub.validation_dot_badge):
+        widget.close()
 
 
-def test_viewer_chip_stays_visible_and_guides_first_import(scored, tmp_path, monkeypatch):
+def test_viewer_entry_guides_first_import(scored, tmp_path, monkeypatch):
     from NepTrainKit.core.validation import Library, ValidationService
 
     monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
     opened, imported = [], []
-    # A model no suite covers: clicking guides to an import instead of hiding.
+    # A model no suite covers: the menu says so, the dot asks for attention.
     nickel = tmp_path / "ni" / "nep.txt"
     nickel.parent.mkdir()
     nickel.write_text("nep4 1 Ni\ncutoff 8 4 74 10\n")
     stub = _viewer_stub(scored.service.capture_model(nickel)["id"], opened, imported)
-    stub.validation_chip.show()
     stub.refresh_validation_chip()
-    assert not stub.validation_chip.isHidden()  # refreshing never hides the entrance
-    assert stub.validation_chip.text() == "Validation: no matching set"
-    stub.validation_chip.click()
-    assert imported == [True] and opened == []
+    assert stub.validation_status_action.text() == "Validation: no matching set" and _badge(stub) == "dot"
+    assert "Import a DFT benchmark set" in stub.validation_button.toolTip()
+    stub.import_validation_benchmark()
+    assert imported == [True]
 
-    # No captured model: a plain entrance that opens the scorecard.
+    # No captured model: a neutral status, nothing to star.
     stub._validation_model_id = None
     stub.refresh_validation_chip()
-    assert stub.validation_chip.text() == "Validation" and not stub.validation_star_action.isEnabled()
-    stub.validation_chip.click()
-    assert opened == [(None, None)] and not stub.validation_chip.isHidden()
+    assert stub.validation_status_action.text() == "Validation: no NEP model open" and _badge(stub) is None
+    assert not stub.validation_star_action.isEnabled()
+    stub.open_validation_scorecard()
+    assert opened == [(None, None)]
 
     # An empty library says it is not set up yet.
     empty = ValidationService(Library(tmp_path / "empty-lib"))
@@ -299,8 +320,9 @@ def test_viewer_chip_stays_visible_and_guides_first_import(scored, tmp_path, mon
     path.write_text(MODEL_HEADER)
     stub._validation_model_id = empty.capture_model(path)["id"]
     stub.refresh_validation_chip()
-    assert stub.validation_chip.text() == "Validation: not set up"
-    stub.validation_chip.close()
+    assert stub.validation_status_action.text() == "Validation: not set up" and _badge(stub) == "dot"
+    for widget in (stub.validation_count_badge, stub.validation_dot_badge):
+        widget.close()
 
 
 def test_viewer_menu_stars_the_current_version(scored, monkeypatch):
@@ -315,29 +337,61 @@ def test_viewer_menu_stars_the_current_version(scored, monkeypatch):
         assert stub.validation_star_action.text() == "Unstar this version"
         stub.toggle_validation_star()
     assert scored.service.get_model(scored.fresh["id"])["starred"] is False
+    for widget in (stub.validation_count_badge, stub.validation_dot_badge):
+        widget.close()
 
 
-def test_viewer_builds_chip_with_menu(monkeypatch, tmp_path):
+@pytest.fixture
+def viewer(monkeypatch, tmp_path):
     monkeypatch.setenv(library_module.ENV_VAR, str(tmp_path / "lib"))
     from NepTrainKit.config import Config
     from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 
     Config()
-    viewer = ShowNepWidget()
-    try:
-        assert not viewer.validation_chip.isHidden() and not viewer.validation_menu_button.isHidden()
-        assert viewer.validation_chip.text() == "Validation"
-        assert [action.text() for action in viewer.validation_menu.actions()] == [
-            "Star this version",
-            "Open scorecard",
-            "Import benchmark set…",
-        ]
-        assert not viewer.validation_star_action.isEnabled()
-    finally:
-        viewer.deleteLater()
+    widget = ShowNepWidget()
+    yield widget
+    widget.deleteLater()
 
 
-def test_viewer_capture_feeds_the_chip(scored, tmp_path, monkeypatch):
+def test_viewer_footer_has_compact_validation_entry(viewer):
+    assert not viewer.validation_button.isHidden()
+    actions = [action.text() for action in viewer.validation_menu.actions() if not action.isSeparator()]
+    assert actions == [
+        "Validation: no NEP model open",
+        "Star this version",
+        "Open scorecard",
+        "Import benchmark set…",
+    ]
+    assert not viewer.validation_status_action.isEnabled()  # a status line, not a command
+    assert not viewer.validation_star_action.isEnabled()
+    assert viewer.validation_count_badge.isHidden() and viewer.validation_dot_badge.isHidden()
+    # Counts keep their natural width; only the left side stretches.
+    layout = viewer.plot_widget_layout
+    assert (layout.columnStretch(0), layout.columnStretch(1)) == (1, 0)
+
+
+def test_viewer_elides_only_the_file_name(viewer):
+    from PySide6.QtGui import QResizeEvent
+
+    label = viewer.path_label
+    name = "FeNiCoCrMn_high_entropy_alloy_train_v14.xyz"
+    viewer._set_path_label_text("Current file: {file_name}", file_name=name)
+    assert label.toolTip() == f"Current file: {name}"
+
+    def at_width(width):
+        label.resize(width, 30)
+        QApplication.sendEvent(label, QResizeEvent(label.size(), label.size()))
+        return label.text()
+
+    metrics = label.fontMetrics()
+    assert at_width(label.maximumWidth()) == f"Current file: {name}"
+    roomy = at_width(metrics.horizontalAdvance("Current file: ") * 3)
+    assert roomy.startswith("Current file: ") and "…" in roomy and roomy.endswith(".xyz")
+    tight = at_width(metrics.horizontalAdvance("Current file: ") + 20)
+    assert not tight.startswith("Current file") and tight  # the wording yields to the name
+
+
+def test_viewer_capture_feeds_the_badge(scored, tmp_path, monkeypatch):
     monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
     from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 
@@ -346,7 +400,9 @@ def test_viewer_capture_feeds_the_chip(scored, tmp_path, monkeypatch):
     stub.nep_result_data = SimpleNamespace(nep_txt_path=model_path, data_xyz_path=None)
     ShowNepWidget._capture_model_version(stub)
     assert stub._validation_model_id == scored.new["id"]
-    assert stub.validation_chip.text().startswith("Validation: PbTe")
+    assert stub.validation_status_action.text().startswith("Validation: PbTe")
+    for widget in (stub.validation_count_badge, stub.validation_dot_badge):
+        widget.close()
 
 
 # -- settings ---------------------------------------------------------------------

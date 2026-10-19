@@ -11,13 +11,14 @@ from pathlib import Path
 from loguru import logger
 
 import numpy as np
-from PySide6.QtCore import QObject, QUrl, QTimer, Qt, QThread, Slot
+from PySide6.QtCore import QEvent, QObject, QUrl, QTimer, Qt, QThread, Slot
 from PySide6.QtGui import QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget, \
-    PrimaryPushButton, SubtitleLabel, TransparentPushButton, TransparentDropDownToolButton, RoundMenu
+    PrimaryPushButton, SubtitleLabel, TransparentDropDownToolButton, RoundMenu, \
+    InfoBadge, DotInfoBadge
 
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask, run_in_thread
@@ -125,6 +126,11 @@ def _set_loading_tip_content(tip, message: str) -> None:
     close_button.move(target_width - 24, 19)
     if tip.x() > 0:
         tip.move(max(0, old_right - target_width), tip.y())
+
+
+
+# Room for the label's own margins when eliding the dataset name.
+_PATH_LABEL_PADDING = 12
 
 
 class _LoadCompletionRelay(QObject):
@@ -888,7 +894,8 @@ class ShowNepWidget(QWidget):
         # Create a container for path label and NEP model selector
         self.path_container = QWidget(self.plot_widget)
         self.path_container_layout = QHBoxLayout(self.path_container)
-        self.path_container_layout.setContentsMargins(0, 0, 0, 0)
+        # Keep a gap before the counts even when the footer is tight.
+        self.path_container_layout.setContentsMargins(0, 0, 12, 0)
         self.path_container_layout.setSpacing(5)
         
         self.nep_model_combo = ComboBox(self.path_container)
@@ -899,31 +906,43 @@ class ShowNepWidget(QWidget):
         # Shown again once a dataset reports its available models.
         self.nep_model_combo.hide()
         
-        # Always visible: the chip is the viewer's entrance to model validation.
-        self.validation_chip = TransparentPushButton(FluentIcon.CERTIFICATE, self.tr("Validation"), self.path_container)
-        self.validation_chip.clicked.connect(self._on_validation_chip_clicked)
+        # Always visible but compact: an icon with a status badge beside the model switcher.
+        # The full status is the menu's first line and the tooltip.
+        self.validation_button = TransparentDropDownToolButton(FluentIcon.CERTIFICATE, self.path_container)
+        self.validation_button.installEventFilter(ToolTipFilter(self.validation_button, 300, ToolTipPosition.TOP))
         self.validation_menu = RoundMenu(parent=self.path_container)
+        self.validation_status_action = Action(FluentIcon.CERTIFICATE, "", self.validation_menu)
+        self.validation_status_action.setEnabled(False)
         self.validation_star_action = Action(FluentIcon.HEART, self.tr("Star this version"), self.validation_menu)
         self.validation_star_action.triggered.connect(self.toggle_validation_star)
         self.validation_scorecard_action = Action(FluentIcon.LIBRARY, self.tr("Open scorecard"), self.validation_menu)
         self.validation_scorecard_action.triggered.connect(self.open_validation_scorecard)
         self.validation_import_action = Action(FluentIcon.ADD, self.tr("Import benchmark set…"), self.validation_menu)
         self.validation_import_action.triggered.connect(self.import_validation_benchmark)
+        self.validation_menu.addAction(self.validation_status_action)
+        self.validation_menu.addSeparator()
         self.validation_menu.addActions(
             [self.validation_star_action, self.validation_scorecard_action, self.validation_import_action]
         )
-        self.validation_menu_button = TransparentDropDownToolButton(self.path_container)
-        self.validation_menu_button.setMenu(self.validation_menu)
-        self.validation_menu_button.setToolTip(self.tr("Validation actions"))
+        self.validation_button.setMenu(self.validation_menu)
+        # Inline badges: a corner badge would be clipped by the 30 px footer.
+        self.validation_count_badge = InfoBadge.error("0", parent=self.path_container)
+        self.validation_count_badge.hide()
+        self.validation_dot_badge = DotInfoBadge.info(parent=self.path_container)
+        self.validation_dot_badge.hide()
         self._validation_model_id = None
         self._validation_status = None
         self._validation_starred = False
         self.refresh_validation_chip()
 
-        self.path_container_layout.addWidget(self.path_label)
+        # The file name gives way first: it is elided, up to its full width.
+        self.path_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        self.path_label.installEventFilter(self)
+        self.path_container_layout.addWidget(self.path_label, 1)
         self.path_container_layout.addWidget(self.nep_model_combo)
-        self.path_container_layout.addWidget(self.validation_chip)
-        self.path_container_layout.addWidget(self.validation_menu_button)
+        self.path_container_layout.addWidget(self.validation_button)
+        self.path_container_layout.addWidget(self.validation_count_badge)
+        self.path_container_layout.addWidget(self.validation_dot_badge)
         self.path_container_layout.addStretch()
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
@@ -934,6 +953,9 @@ class ShowNepWidget(QWidget):
         self.plot_widget_layout.addWidget(self.empty_hint, 2, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.path_container, 3, 0, 1, 1)
         self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
+        # Counts keep their natural width; the left side takes the rest.
+        self.plot_widget_layout.setColumnStretch(0, 1)
+        self.plot_widget_layout.setColumnStretch(1, 0)
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
         self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
@@ -1389,12 +1411,43 @@ class ShowNepWidget(QWidget):
             logger.debug(traceback.format_exc())
         self.refresh_validation_chip()
 
-    def refresh_validation_chip(self) -> None:
-        """Say what validation can do next for the current model.
+    def _set_path_label_text(self, template: str, **values: str) -> None:
+        """Show the translated label, eliding only the dataset name when the footer is narrow."""
+        self._path_label_template = (template, values)
+        full = template.format(**values)
+        self.path_label.setToolTip(full)
+        # Slack beyond the eliding margin so a name that fits is never shortened by rounding.
+        self.path_label.setMaximumWidth(self.path_label.fontMetrics().horizontalAdvance(full) + 2 * _PATH_LABEL_PADDING)
+        self._elide_path_label()
 
-        Without a captured model the chip opens the scorecard; when no suite
-        covers the model it guides the user to import a benchmark set; otherwise
-        it summarises the suite ("<suite> · N regressions").
+    def _elide_path_label(self) -> None:
+        template, values = getattr(self, "_path_label_template", ("", {}))
+        metrics = self.path_label.fontMetrics()
+        width = max(0, self.path_label.width() - _PATH_LABEL_PADDING)
+        full = template.format(**values)
+        if metrics.horizontalAdvance(full) <= width:
+            self.path_label.setText(full)
+            return
+        wording = metrics.horizontalAdvance(template.format(**{key: "" for key in values}))
+        if values and width - wording < wording:
+            # Too tight for the wording too: the name matters more (the tooltip keeps both).
+            name = " ".join(values.values())
+            self.path_label.setText(metrics.elidedText(name, Qt.TextElideMode.ElideMiddle, width))
+            return
+        room = max(0, width - wording)
+        elided = {key: metrics.elidedText(value, Qt.TextElideMode.ElideMiddle, room) for key, value in values.items()}
+        self.path_label.setText(template.format(**elided))
+
+    def eventFilter(self, watched, event):
+        if watched is getattr(self, "path_label", None) and event.type() == QEvent.Type.Resize:
+            self._elide_path_label()
+        return super().eventFilter(watched, event)
+
+    def refresh_validation_chip(self) -> None:
+        """Update the validation badge, tooltip and the menu's status line.
+
+        Badge: a red count for regressions, a grey dot when something is left
+        to do (not set up, not run, no baseline), nothing when all is well.
         """
         status, has_sets, starred = None, False, False
         if self._validation_model_id is not None:
@@ -1411,36 +1464,41 @@ class ShowNepWidget(QWidget):
                 logger.debug(traceback.format_exc())
         self._validation_status = status
         self._validation_starred = starred
+        hint = ""
+        badge: int | str | None = None
         if self._validation_model_id is None:
-            text = self.tr("Validation")
-            tip = self.tr("Open a NEP model to validate it, or browse the validation scorecard")
+            text = self.tr("Validation: no NEP model open")
+            hint = self.tr("Open a NEP model to validate it, or browse the validation scorecard")
         elif status is None:
             text = self.tr("Validation: no matching set") if has_sets else self.tr("Validation: not set up")
-            tip = self.tr("Import a DFT benchmark set to start validating this model")
+            hint = self.tr("Import a DFT benchmark set to start validating this model")
+            badge = "dot"
         else:
             if not status["evaluated"]:
-                text = self.tr("Validation: {suite} · not run")
+                text, badge = self.tr("Validation: {suite} · not run"), "dot"
             elif status["is_baseline"]:
                 text = self.tr("Validation: {suite} · baseline")
             elif not status["has_baseline"]:
-                text = self.tr("Validation: {suite} · no baseline")
+                text, badge = self.tr("Validation: {suite} · no baseline"), "dot"
             else:
                 text = self.tr("Validation: {suite} · {count} regressions")
+                badge = status["regressions"] or None
             text = text.format(suite=status["suite_name"], count=status["regressions"])
-            tip = self.tr("Open the validation scorecard for this model")
-        self.validation_chip.setText(text)
-        self.validation_chip.setToolTip(tip)
+        self.validation_status_action.setText(text)
+        self.validation_button.setToolTip(f"{text}\n{hint}" if hint else text)
+        self._show_validation_badge(badge)
         self.validation_star_action.setEnabled(self._validation_model_id is not None)
         self.validation_star_action.setText(
             self.tr("Unstar this version") if starred else self.tr("Star this version")
         )
 
-    def _on_validation_chip_clicked(self) -> None:
-        """Guide to an import when nothing covers the model, else show the scorecard."""
-        if self._validation_model_id is not None and self._validation_status is None:
-            self.import_validation_benchmark()
-        else:
-            self.open_validation_scorecard()
+    def _show_validation_badge(self, badge: int | str | None) -> None:
+        count = isinstance(badge, int)
+        if count:
+            self.validation_count_badge.setText(str(badge))
+            self.validation_count_badge.adjustSize()
+        self.validation_count_badge.setVisible(count)
+        self.validation_dot_badge.setVisible(badge == "dot")
 
     def open_validation_scorecard(self) -> None:
         status = self._validation_status
@@ -1587,14 +1645,10 @@ class ShowNepWidget(QWidget):
         self.nep_result_data.set_cache_outputs_override(cache_outputs)
 
         if in_memory:
-            self.path_label.setText(
-                self.tr("Current dataset: {name}").format(name=file_name)
-            )
+            self._set_path_label_text(self.tr("Current dataset: {name}"), name=file_name)
             self.path_label.setUrl(QUrl())
         else:
-            self.path_label.setText(
-                self.tr("Current file: {file_name}").format(file_name=file_name)
-            )
+            self._set_path_label_text(self.tr("Current file: {file_name}"), file_name=file_name)
             self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         
         # Detect and populate NEP model files for combo box

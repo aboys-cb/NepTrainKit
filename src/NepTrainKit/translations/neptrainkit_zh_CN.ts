@@ -20520,6 +20520,11 @@ Do you want to continue?</source>
         <translation>验证：未设置</translation>
     </message>
     <message>
+        <location filename="../ui/pages/show_nep.py" line="1470" />
+        <source>Validation: no NEP model open</source>
+        <translation>验证：未打开 NEP 模型</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/show_nep.py" line="1419" />
         <source>Import a DFT benchmark set to start validating this model</source>
         <translation>导入 DFT 验证集，开始验证此模型</translation>

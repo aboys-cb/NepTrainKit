@@ -8,11 +8,10 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
 
-from NepTrainKit.paths import get_user_config_path
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.dataset.database import Database
 from NepTrainKit.core.dataset.seed import seed_nep_data_git
 from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagService
+from NepTrainKit.core.validation.library import get_library
 
 from NepTrainKit.ui.views import ModelItemWidget, ProjectWidget
 
@@ -38,8 +37,8 @@ class DataManagerWidget(QWidget):
         self._parent = parent
         self.setObjectName("DataManagerWidget")
         self.setAcceptDrops(True)
-        user_path = get_user_config_path()
-        self._db = Database(user_path / "mlpman.db")
+        # The data manager and model validation share the library database.
+        self._db = get_library().database
         self.model_service = ModelService(self._db)
         self.project_service = ProjectService(self._db)
         self.tag_service = TagService(self._db)

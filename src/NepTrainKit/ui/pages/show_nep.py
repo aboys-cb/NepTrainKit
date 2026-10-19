@@ -1335,6 +1335,27 @@ class ShowNepWidget(QWidget):
         if callable(reset_camera_fit):
             reset_camera_fit()
         self.struct_index_spinbox.valueChanged.emit(0)
+        self._capture_model_version()
+
+    def _capture_model_version(self) -> None:
+        """Silently record the opened NEP model in the validation library.
+
+        Capturing is content-addressed, so reopening the same model is free and a
+        retrained ``nep.txt`` at the same path becomes a new version.
+        """
+        data = self.nep_result_data
+        model_path = getattr(data, "nep_txt_path", None)
+        if data is None or model_path is None or not Path(model_path).is_file():
+            return
+        if not Config.getboolean("validation", "auto_capture", True):
+            return
+        try:
+            from NepTrainKit.core.validation import ValidationService
+
+            ValidationService().capture_model(model_path, dataset_path=getattr(data, "data_xyz_path", None))
+        except Exception:
+            # Validation bookkeeping must never interrupt viewing a dataset.
+            logger.debug(traceback.format_exc())
 
     def _update_structure_filter_suggestions(self) -> None:
         """Reuse the loaded search caches in the composite filter editor."""

@@ -71,6 +71,7 @@ Issues = "https://github.com/aboys-cb/NepTrainKit/issues"
 [project.scripts]
 NepTrainKit = "NepTrainKit.main:main"
 nepkit = "NepTrainKit.main:main"
+nepkit-validate = "NepTrainKit.core.validation.cli:main"
 
 [tool.setuptools]
 include-package-data = false

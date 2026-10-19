@@ -337,9 +337,9 @@ class ModelItemWidget(QWidget, DatasetManager):
             box.model_note_edit.setText(current_model.notes)
             box.train_path_edit.setText(current_model.model_path)
             box.model_type_combox.setText(current_model.model_type)
-            box.energy_spinBox.setText(str(current_model.energy))
-            box.force_spinBox.setText(str(current_model.force))
-            box.virial_spinBox.setText(str(current_model.virial))
+            box.energy_spinBox.setText("" if current_model.energy is None else str(current_model.energy))
+            box.force_spinBox.setText("" if current_model.force is None else str(current_model.force))
+            box.virial_spinBox.setText("" if current_model.virial is None else str(current_model.virial))
             for tag in current_model.tags:
                 box.add_tag(tag.name)
 

@@ -16,6 +16,8 @@ if str(SRC_PATH) not in sys.path:
 LOCALAPPDATA_PATH = Path(__file__).resolve().parent / "_localappdata"
 LOCALAPPDATA_PATH.mkdir(parents=True, exist_ok=True)
 os.environ["LOCALAPPDATA"] = str(LOCALAPPDATA_PATH)
+# Viewer tests auto-capture models; keep that away from the developer's library.
+os.environ["NEPTRAINKIT_LIBRARY"] = str(LOCALAPPDATA_PATH / "library")
 
 
 _TEST_QAPPLICATION: QApplication | None = None

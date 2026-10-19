@@ -62,10 +62,11 @@ class ModelVersion(Base):
         index=True
     )
     model_type: Mapped[str] = mapped_column(String(20))  # NEP | DeepMD | ...
-    data_size: Mapped[int] = mapped_column(Integer)
-    energy: Mapped[float] = mapped_column(Float)
-    force: Mapped[float] = mapped_column(Float)
-    virial: Mapped[float] = mapped_column(Float)
+    # Training metrics are unknown for models captured from the viewer.
+    data_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    energy: Mapped[float | None] = mapped_column(Float, nullable=True)
+    force: Mapped[float | None] = mapped_column(Float, nullable=True)
+    virial: Mapped[float | None] = mapped_column(Float, nullable=True)
     model_path: Mapped[str] = mapped_column(Text, nullable=False)
     notes: Mapped[str] = mapped_column(Text, default="")
     parent_id: Mapped[int | None] = mapped_column(
@@ -73,6 +74,15 @@ class ModelVersion(Base):
         index=True
     )
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
+    # Validation library: immutable snapshot (library object) of the model file.
+    content_hash: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
+    model_kind: Mapped[str] = mapped_column(String(40), default="")  # nep4, nep4_zbl, nep4_spin ...
+    elements: Mapped[list] = mapped_column(JSON, default=list)
+    source_path: Mapped[str] = mapped_column(Text, default="")
+    dataset_ref: Mapped[dict] = mapped_column(JSON, default=dict)  # FileRef of the training data
+    starred: Mapped[bool] = mapped_column(Boolean, default=False)
+    auto_captured: Mapped[bool] = mapped_column(Boolean, default=False)
+    last_seen_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
     project: Mapped["Project"] = relationship(
         back_populates="model_versions",
         foreign_keys=[project_id],
@@ -150,3 +160,66 @@ class Event(Base):
     payload_json: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
     actor: Mapped[str] = mapped_column(String(80), default="system")
+
+
+class BenchmarkSet(Base):
+    """A sealed reference data set evaluated by one validation protocol."""
+
+    __tablename__ = "benchmark_sets"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(Text)
+    protocol: Mapped[str] = mapped_column(String(40), index=True)
+    protocol_version: Mapped[int] = mapped_column(Integer)
+    object_hash: Mapped[str] = mapped_column(String(64))  # library object holding the frames
+    source_ref: Mapped[dict] = mapped_column(JSON, default=dict)  # FileRef of the imported file
+    elements: Mapped[list] = mapped_column(JSON, default=list)
+    provenance: Mapped[dict] = mapped_column(JSON, default=dict)
+    summary: Mapped[dict] = mapped_column(JSON, default=dict)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
+
+
+class BenchmarkSuite(Base):
+    """A named group of benchmark sets that is evaluated together."""
+
+    __tablename__ = "benchmark_suites"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(200), unique=True)
+    notes: Mapped[str] = mapped_column(Text, default="")
+    baseline_model_id: Mapped[int | None] = mapped_column(
+        ForeignKey("model_versions.id", ondelete="SET NULL"), nullable=True
+    )
+    baseline_note: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
+
+
+class BenchmarkSuiteSet(Base):
+    __tablename__ = "benchmark_suite_sets"
+    suite_id: Mapped[int] = mapped_column(
+        ForeignKey("benchmark_suites.id", ondelete="CASCADE"), primary_key=True
+    )
+    set_id: Mapped[str] = mapped_column(
+        ForeignKey("benchmark_sets.id", ondelete="CASCADE"), primary_key=True
+    )
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class BenchmarkRun(Base):
+    """One evaluation of a model snapshot on a benchmark set; failures are kept."""
+
+    __tablename__ = "benchmark_runs"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    model_id: Mapped[int] = mapped_column(
+        ForeignKey("model_versions.id", ondelete="CASCADE"), index=True
+    )
+    set_id: Mapped[str] = mapped_column(
+        ForeignKey("benchmark_sets.id", ondelete="CASCADE"), index=True
+    )
+    protocol_version: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20))  # succeeded | failed
+    metrics: Mapped[dict] = mapped_column(JSON, default=dict)
+    result_path: Mapped[str] = mapped_column(Text, default="")  # relative to the library root
+    error: Mapped[str] = mapped_column(Text, default="")
+    environment: Mapped[dict] = mapped_column(JSON, default=dict)
+    elapsed_seconds: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)

@@ -95,6 +95,13 @@ from .distribution import DistributionExplorerWidget, DistributionInspectorMessa
 from .periodic_table import PeriodicTableDialog
 
 
+
+def _optional_float(text: str) -> float | None:
+    """Training metrics are optional for models captured from the viewer."""
+    text = text.strip()
+    return float(text) if text else None
+
+
 class GetIntMessageBox(MessageBoxBase):
     """Custom message box"""
 
@@ -1504,9 +1511,9 @@ class ModelInfoMessageBox(MessageBoxBase):
             # model_file=path.joinpath("nep.txt"),
             # data_file=data_file,
             data_size=data_size,
-            energy=float(self.energy_spinBox.text().strip()),
-            force=float(self.force_spinBox.text().strip()),
-            virial=float(self.virial_spinBox.text().strip()),
+            energy=_optional_float(self.energy_spinBox.text()),
+            force=_optional_float(self.force_spinBox.text()),
+            virial=_optional_float(self.virial_spinBox.text()),
             notes=self.model_note_edit.toPlainText(),
             tags=list(self.tag_group.tags.keys()),
             parent_id=self.parent_combox.currentData(),

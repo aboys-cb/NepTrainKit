@@ -19765,6 +19765,14 @@ All child items will also be deleted.</source>
         <source>Freed {size}</source>
         <translation>已释放 {size}</translation>
     </message>
+    <message>
+        <source>Choose a library for models and validation results. Existing files stay in their original library.</source>
+        <translation>选择用于保存模型和验证结果的模型库。已有文件保留在原库中。</translation>
+    </message>
+    <message>
+        <source>Library switched. Reopen the project list or scorecard to refresh; reopen the NEP model to associate it with this library.</source>
+        <translation>模型库已切换。重新进入项目列表或评分表即可刷新；重新打开 NEP 模型可关联当前库。</translation>
+    </message>
 </context>
 <context>
     <name>ShareCheckableHeaderCardWidget</name>

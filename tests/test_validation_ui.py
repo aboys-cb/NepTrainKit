@@ -681,6 +681,10 @@ def test_settings_cleanup_previews_before_deleting(make_service, tmp_path, monke
     widget.refresh_library_usage()
     content = widget.library_location_card.contentLabel.text()
     assert str(service.library.root) in content and "used" in content and "NEPTRAINKIT_LIBRARY" in content
+    assert not widget.library_location_card.button.isEnabled()
+    with patch.object(settings_module.QFileDialog, "getExistingDirectory") as chooser:
+        widget.choose_library_location()
+    chooser.assert_not_called()
 
     answers = []
 
@@ -696,6 +700,45 @@ def test_settings_cleanup_previews_before_deleting(make_service, tmp_path, monke
         assert service.library.has_object(orphan) and "1 files" in answers[0]
         widget.clean_up_library()
     assert not service.library.has_object(orphan)
+
+
+def test_settings_switches_library_and_keeps_old_files(make_service, tmp_path, monkeypatch):
+    from NepTrainKit.config import Config
+    from NepTrainKit.core.validation import ValidationService
+    import NepTrainKit.ui.pages.settings as settings_module
+
+    monkeypatch.delenv(library_module.ENV_VAR, raising=False)
+    service = make_service()
+    model = _capture(service, tmp_path, "original")
+    previous = Config.get("validation", "library_path", "")
+    Config.set("validation", "library_path", str(service.library.root))
+    target = tmp_path / "new-library"
+    target.mkdir()
+    try:
+        widget = settings_module.SettingsWidget(None)
+        widget.refresh_library_usage()
+        assert widget.library_location_card.button.isEnabled()
+        with patch.object(settings_module.QFileDialog, "getExistingDirectory", return_value=str(target)), patch.object(settings_module, "MessageManager") as messages:
+            widget.choose_library_location()
+        assert Config.get("validation", "library_path") == str(target.resolve())
+        assert ValidationService().library.root == target.resolve()
+        assert ValidationService().models() == []
+        assert service.model_file(model["id"]).exists()
+        assert str(target.resolve()) in widget.library_location_card.contentLabel.text()
+        assert "restart" not in messages.send_info_message.call_args.args[0]
+
+        with patch.object(settings_module.QFileDialog, "getExistingDirectory", return_value=""):
+            widget.choose_library_location()
+        assert Config.get("validation", "library_path") == str(target.resolve())
+        broken = tmp_path / "broken-library"
+        broken.mkdir()
+        (broken / "library.db").write_bytes(b"not a database")
+        with patch.object(settings_module.QFileDialog, "getExistingDirectory", return_value=str(broken)), patch.object(settings_module, "MessageManager") as messages:
+            widget.choose_library_location()
+        messages.send_error_message.assert_called_once()
+        assert Config.get("validation", "library_path") == str(target.resolve())
+    finally:
+        Config.set("validation", "library_path", previous)
 
 
 # -- localisation -----------------------------------------------------------------

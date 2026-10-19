@@ -626,26 +626,34 @@ class SettingsWidget(ScrollArea):
             text = self.tr("Library unavailable: {error}").format(error=error)
         if os.environ.get(ENV_VAR):
             text += "\n" + self.tr("Overridden by the NEPTRAINKIT_LIBRARY environment variable")
+        else:
+            text += "\n" + self.tr("Choose a library for models and validation results. Existing files stay in their original library.")
+        self.library_location_card.button.setEnabled(not bool(os.environ.get(ENV_VAR)))
         self.library_location_card.setContent(text)
 
     def choose_library_location(self) -> None:
         """Store ``validation/library_path``; the library is created there if needed."""
-        from NepTrainKit.core.validation.library import CONFIG_LIBRARY_PATH, CONFIG_SECTION, Library, get_library
+        from NepTrainKit.core.validation.library import CONFIG_LIBRARY_PATH, CONFIG_SECTION, ENV_VAR, Library, resolve_library_root
+
+        if os.environ.get(ENV_VAR):
+            self.refresh_library_usage()
+            return
 
         path = QFileDialog.getExistingDirectory(
-            self, self.tr("Choose an empty folder or an existing library"), str(get_library().root)
+            self, self.tr("Choose an empty folder or an existing library"), str(resolve_library_root())
         )
         if not path:
             return
         try:
-            Library(path)
+            library = Library(path)
+            library.database  # Validate/create the database before changing the active location.
         except Exception as error:  # noqa: BLE001
             MessageManager.send_error_message(self.tr("Cannot use this folder: {error}").format(error=error))
             return
-        Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, path)
+        Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, str(library.root))
         self.refresh_library_usage()
         MessageManager.send_info_message(
-            self.tr("Library location saved. The project list switches to it after a restart.")
+            self.tr("Library switched. Reopen the project list or scorecard to refresh; reopen the NEP model to associate it with this library.")
         )
 
     def clean_up_library(self) -> None:

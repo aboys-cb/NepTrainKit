@@ -22,11 +22,12 @@ from NepTrainKit import palette
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.validation import SetRejectedError, SetTooLargeError, ValidationService
+from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
 from NepTrainKit.core.validation.protocols import get_protocol
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import GetStrMessageBox
-from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
+from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog, save_model_to_project
 
 CONFIG_SUITE = "suite"
 VERDICT_COLORS = {
@@ -98,14 +99,24 @@ class ScorecardTableModel(QAbstractTableModel):
         if column is None:
             if role == Qt.ItemDataRole.DisplayRole:
                 name = f"★ {row['name']}" if row["starred"] else row["name"]
+                if row["model_id"] == 0:
+                    name = self.tr("{name} (unsaved)").format(name=name)
+                elif row.get("temporary"):
+                    name = self.tr("{name} (temporary)").format(name=name)
+                elif row.get("project_name"):
+                    name = f"{row['project_name']} / {name}"
                 return self.tr("{name} (baseline)").format(name=name) if row["is_baseline"] else name
             if role == Qt.ItemDataRole.FontRole and row["is_baseline"]:
                 font = QFont()
                 font.setBold(True)
                 return font
             if role == Qt.ItemDataRole.ToolTipRole:
+                if not row.get("complete", False):
+                    return self.tr("Validation incomplete")
                 if row["is_baseline"]:
                     return self.tr("Baseline: other models are compared with this one")
+                if not row.get("comparison_complete", False):
+                    return self.tr("Baseline comparison incomplete")
                 return self.tr("{count} regressions").format(count=row["regressions"])
             return None
         cell = row["cells"][index.column() - 1]
@@ -159,6 +170,7 @@ def summarize_model_status(service, model_id: int, preferred_suite_id: int | Non
             "has_baseline": suite["baseline_model_id"] is not None,
             "evaluated": any(cell["status"] == "succeeded" for cell in row["cells"]),
             "regressions": row["regressions"],
+            **{key: row[key] for key in ("total_sets", "completed_sets", "failed_sets", "complete", "comparison_complete")},
         }
     return None
 
@@ -281,6 +293,8 @@ class ModelLibraryWidget(QWidget):
         self._service = service
         self._run_task: BackgroundTask | None = None
         self._run_total = 0
+        self._library_root = None
+        self._draft: ModelDraft | None = None
 
         toolbar = QHBoxLayout()
         toolbar.setContentsMargins(8, 8, 10, 4)
@@ -297,14 +311,20 @@ class ModelLibraryWidget(QWidget):
         toolbar.addStretch(1)
         self.import_button = PushButton(FluentIcon.ADD, self.tr("Import benchmark"), self)
         self.star_button = PushButton(FluentIcon.HEART, self.tr("Star"), self)
+        self.save_button = ToolButton(FluentIcon.SAVE, self)
+        self.save_button.setToolTip(self.tr("Save to project…"))
+        self.save_button.setAccessibleName(self.tr("Save to project…"))
         self.baseline_button = PushButton(FluentIcon.PIN, self.tr("Set baseline"), self)
-        self.run_button = PrimaryPushButton(FluentIcon.PLAY, self.tr("Run all"), self)
-        for button in (self.import_button, self.star_button, self.baseline_button, self.run_button):
+        self.run_current_button = PrimaryPushButton(FluentIcon.PLAY, self.tr("Validate current version"), self)
+        self.run_button = PushButton(FluentIcon.PLAY, self.tr("Run all"), self)
+        for button in (self.import_button, self.save_button, self.star_button, self.baseline_button, self.run_current_button, self.run_button):
             toolbar.addWidget(button)
         self.import_button.clicked.connect(self.import_benchmark)
         self.star_button.clicked.connect(self.toggle_star)
+        self.save_button.clicked.connect(self.save_current)
         self.baseline_button.clicked.connect(self.set_baseline)
         self.run_button.clicked.connect(self._on_run_clicked)
+        self.run_current_button.clicked.connect(self.run_current)
 
         self.baseline_label = CaptionLabel(self)
         self.baseline_label.setWordWrap(True)
@@ -364,15 +384,32 @@ class ModelLibraryWidget(QWidget):
             self.refresh()
 
     def refresh(self, suite_id: int | None = None, model_id: int | None = None) -> None:
-        if suite_id is None:
-            suite_id = self.current_suite_id()
-            if suite_id is None:
-                suite_id = Config.getint("validation", CONFIG_SUITE, 0) or None
         try:
-            suites = self.service().suites()
+            service = self.service()
+            if self._library_root is not None and self._library_root != service.library.root:
+                suite_id, model_id = None, None
+                self._draft = None
+                self.suite_combo.blockSignals(True)
+                self.suite_combo.clear()
+                self.suite_combo.blockSignals(False)
+                self.model.set_scorecard(None)
+            elif model_id is None:
+                current = self.current_model_row()
+                model_id = current["model_id"] if current else None
+            self._library_root = service.library.root
+            if suite_id is None:
+                suite_id = self.current_suite_id()
+                if suite_id is None:
+                    suite_id = Config.getint("validation", CONFIG_SUITE, 0) or None
+            suites = service.suites()
         except Exception as error:  # noqa: BLE001 - a broken library must not break the page
             MessageManager.send_error_message(self.tr("Cannot open the model library: {error}").format(error=error))
-            suites = []
+            self.suite_combo.blockSignals(True)
+            self.suite_combo.clear()
+            self.suite_combo.blockSignals(False)
+            self.model.set_scorecard(None)
+            self._on_selection_changed()
+            return
         self.suite_combo.blockSignals(True)
         self.suite_combo.clear()
         for suite in suites:
@@ -391,21 +428,30 @@ class ModelLibraryWidget(QWidget):
 
     def _load_scorecard(self, model_id: int | None = None) -> None:
         suite_id = self.current_suite_id()
-        card = None
-        if suite_id is not None:
-            card = self.service().scorecard(suite_id)
+        service = self.service()
+        if self._draft is not None:
+            existing = service.find_model_by_hash(self._draft.content_hash)
+            if existing:
+                model_id = existing["id"]
+                self._draft = None
+        if suite_id is None:
+            card = service.scorecard(None, [model_id] if model_id else [], draft=self._draft) if model_id or self._draft else None
+        else:
+            card = service.scorecard(suite_id, draft=self._draft)
+        if card is not None and model_id and all(row["model_id"] != model_id for row in card["rows"]):
+            card = service.scorecard(suite_id, [row["model_id"] for row in card["rows"]] + [model_id], draft=self._draft)
         self.model.set_scorecard(card)
         if card is None:
             self.empty_hint.setText(self.tr("Import a benchmark set to create a suite and start validating models."))
         elif not card["columns"]:
             self.empty_hint.setText(self.tr("This suite has no benchmark sets yet."))
         elif not card["rows"]:
-            self.empty_hint.setText(self.tr("No model has been evaluated on this suite. Click Run all."))
+            self.empty_hint.setText(self.tr("Open a compatible NEP model to start validating this suite."))
         self.empty_hint.setVisible(self.model.rowCount() == 0)
         suite = (card or {}).get("suite") or {}
         baseline = next((row for row in (card or {}).get("rows", []) if row["is_baseline"]), None)
-        if card is None:
-            self.baseline_label.setText("")
+        if suite_id is None:
+            self.baseline_label.setText(self.tr("Import a benchmark set to create a suite and start validating models."))
         elif baseline is None:
             self.baseline_label.setText(self.tr("No baseline: set one to judge regressions."))
         else:
@@ -419,8 +465,19 @@ class ModelLibraryWidget(QWidget):
         self._on_selection_changed()
         self.scorecardChanged.emit()
 
-    def open_scorecard(self, suite_id: int | None, model_id: int | None = None) -> None:
+    def open_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft: ModelDraft | None = None) -> None:
         """Show ``suite_id`` (``None``: the last used suite) with ``model_id`` selected."""
+        if self._library_root != self.service().library.root:
+            self.refresh()
+        self._draft = draft
+        if draft is not None:
+            model_id = 0
+            if suite_id is None:
+                elements = set(parse_model_header(draft.data)[1])
+                service = self.service()
+                suite_id = next((suite["id"] for suite in service.suites() if any(
+                    set(item["elements"]) <= elements for item in service.suite_sets(suite["id"])
+                )), None)
         self.refresh(suite_id, model_id)
 
     # -- selection and details --------------------------------------------------
@@ -438,9 +495,12 @@ class ModelLibraryWidget(QWidget):
     def _on_selection_changed(self) -> None:
         row = self.current_model_row()
         has_suite = self.current_suite_id() is not None
-        self.star_button.setEnabled(row is not None)
+        saved = row is not None and not row.get("temporary")
+        self.save_button.setEnabled(row is not None and self._run_task is None)
+        self.star_button.setEnabled(saved)
         self.star_button.setText(self.tr("Unstar") if row and row["starred"] else self.tr("Star"))
-        self.baseline_button.setEnabled(row is not None and has_suite)
+        self.baseline_button.setEnabled(saved and has_suite)
+        self.run_current_button.setEnabled(row is not None and has_suite and self._run_task is None)
         if self._run_task is None:
             self.run_button.setEnabled(has_suite)
         self._update_detail()
@@ -459,6 +519,8 @@ class ModelLibraryWidget(QWidget):
             row = self.model.row(row_index)
             cell = row["cells"][self.model.first_column_of_set(column["set_id"]) - 1]
             run = service.latest_run(row["model_id"], column["set_id"], protocol_version=column["protocol_version"])
+            if run is not None and run["status"] != cell["status"]:
+                run = dict(run, status=cell["status"], error=cell["error"])
             details = {}
             if run is not None and run["status"] == "succeeded":
                 try:
@@ -471,14 +533,48 @@ class ModelLibraryWidget(QWidget):
         self.detail.show_runs(service.get_set(column["set_id"]), entries)
 
     # -- actions --------------------------------------------------------------
+    def save_current(self) -> None:
+        service = self._view_service()
+        row = self.current_model_row()
+        if service is None or row is None:
+            return
+        try:
+            if row["model_id"] == 0:
+                draft = self._draft
+            else:
+                model = service.get_model(row["model_id"])
+                draft = ModelDraft(service.model_file(model["id"]).read_bytes(), model["source_path"])
+            if draft is None:
+                return
+            saved = save_model_to_project(self.window(), service, draft, name=row["name"])
+            if saved is not None:
+                self._draft = None
+                self.open_scorecard(None, saved["id"])
+                MessageManager.send_success_message(self.tr("Saved to project"))
+        except Exception as error:
+            MessageManager.send_error_message(str(error))
+
+    def _view_service(self):
+        service = self.service()
+        if self._library_root != service.library.root:
+            self.refresh()
+            return None
+        return service
+
     def toggle_star(self) -> None:
+        service = self._view_service()
+        if service is None:
+            return
         row = self.current_model_row()
         if row is None:
             return
-        self.service().star_model(row["model_id"], not row["starred"])
+        service.star_model(row["model_id"], not row["starred"])
         self.refresh(model_id=row["model_id"])
 
     def set_baseline(self) -> None:
+        service = self._view_service()
+        if service is None:
+            return
         row = self.current_model_row()
         suite_id = self.current_suite_id()
         if row is None or suite_id is None:
@@ -487,7 +583,7 @@ class ModelLibraryWidget(QWidget):
         box.yesButton.setText(self.tr("Set baseline"))
         if not box.exec():
             return
-        self.service().set_baseline(suite_id, row["model_id"], box.lineEdit.text())
+        service.set_baseline(suite_id, row["model_id"], box.lineEdit.text())
         self.refresh(suite_id, row["model_id"])
 
     def _confirm_large_copy(self, error: SetTooLargeError) -> bool:
@@ -519,8 +615,8 @@ class ModelLibraryWidget(QWidget):
         self.refresh(suite["id"] if suite else None)
         return record
 
-    def run_jobs(self) -> list[tuple[int, str]]:
-        """(model, set) pairs to evaluate: every captured model on the suite sets it covers."""
+    def run_jobs(self, model_id: int | None = None) -> list[tuple[int, str]]:
+        """Compatible suite jobs for one version, or all captured versions."""
         suite_id = self.current_suite_id()
         if suite_id is None:
             return []
@@ -529,6 +625,7 @@ class ModelLibraryWidget(QWidget):
         return [
             (model["id"], benchmark["id"])
             for model in service.models()
+            if model_id is None or model["id"] == model_id
             for benchmark in sets
             if set(benchmark["elements"]) <= set(model["elements"] or ())
         ]
@@ -541,14 +638,35 @@ class ModelLibraryWidget(QWidget):
         self.run_all()
 
     def run_all(self) -> BackgroundTask | None:
-        jobs = self.run_jobs()
+        return self._run_validation()
+
+    def run_current(self) -> BackgroundTask | None:
+        row = self.current_model_row()
+        return self._run_validation(row["model_id"]) if row else None
+
+    def _run_validation(self, model_id: int | None = None) -> BackgroundTask | None:
+        if self._run_task is not None or self.current_suite_id() is None:
+            return None
+        service = self._view_service()
+        if service is None:
+            return None
+        if self._draft is not None and model_id in (None, 0):
+            try:
+                record = service.capture_model(self._draft, temporary=True)
+            except Exception as error:
+                MessageManager.send_error_message(str(error))
+                return None
+            self._draft = None
+            self.refresh(model_id=record["id"])
+            if model_id == 0:
+                model_id = record["id"]
+        jobs = self.run_jobs(model_id)
         if not jobs:
             MessageManager.send_info_message(
                 self.tr("No captured model covers the elements of this suite. "
                         "Open a model in NEP Dataset Display to capture it.")
             )
             return None
-        service = self.service()
 
         def evaluate_all():
             for model_id, set_id in jobs:
@@ -559,6 +677,8 @@ class ModelLibraryWidget(QWidget):
         task.progressSignal.connect(self._on_run_progress)
         task.finished.connect(self._on_run_finished)
         self._run_task = task
+        self.run_current_button.setEnabled(False)
+        self.save_button.setEnabled(False)
         self.run_button.setText(self.tr("Cancel"))
         self.run_button.setIcon(FluentIcon.CLOSE)
         task.start_work(evaluate_all)

@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import os
 from pathlib import Path
 
-from PySide6.QtWidgets import QFormLayout, QHBoxLayout, QWidget
+from PySide6.QtWidgets import QFileDialog, QFormLayout, QHBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
@@ -18,10 +19,88 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit import palette
-from NepTrainKit.core.validation import SetTooLargeError
+from NepTrainKit.config import Config
+from NepTrainKit.core.validation import Library, SetTooLargeError, ValidationService
+from NepTrainKit.core.validation.library import ENV_VAR, CONFIG_LIBRARY_PATH, CONFIG_SECTION
 from NepTrainKit.core.validation.protocols import Issue, detect_protocol, read_frames
 from NepTrainKit.core.validation.service import SOURCE_KINDS
 from NepTrainKit.ui.dialogs import call_path_dialog
+from NepTrainKit.ui.messages import translate_runtime_message
+
+
+class SaveModelDialog(MessageBoxBase):
+    """Choose an existing/new project and a version name before writing a snapshot."""
+
+    def __init__(self, parent, service, name: str):
+        super().__init__(parent)
+        self.service = service
+        self.viewLayout.addWidget(SubtitleLabel(self.tr("Save model to project"), self))
+        self.location_label = BodyLabel(self.tr("Library: {path}").format(path=service.library.root), self)
+        self.location_label.setWordWrap(True)
+        location_row = QHBoxLayout()
+        location_row.addWidget(self.location_label, 1)
+        self.location_button = PushButton(self.tr("Change…"), self)
+        self.location_button.clicked.connect(self._choose_library)
+        if os.environ.get(ENV_VAR):
+            self.location_button.setEnabled(False)
+            self.location_button.setToolTip(self.tr("Library location is controlled by NEPTRAINKIT_LIBRARY"))
+        location_row.addWidget(self.location_button)
+        self.viewLayout.addLayout(location_row)
+        self.project_combo = EditableComboBox(self)
+        self.project_combo.setPlaceholderText(self.tr("Choose a project or type a new name"))
+        projects = service.projects()
+        for project in projects:
+            self.project_combo.addItem(project["name"])
+        previous = Config.get("validation", "last_save_project", "")
+        self.project_combo.setText(previous if any(p["name"] == previous for p in projects) else "")
+        self.name_edit = LineEdit(self)
+        self.name_edit.setMaxLength(80)
+        self.name_edit.setText(name)
+        form = QFormLayout()
+        form.addRow(BodyLabel(self.tr("Project"), self), self.project_combo)
+        form.addRow(BodyLabel(self.tr("Version name"), self), self.name_edit)
+        self.viewLayout.addLayout(form)
+        self.yesButton.setText(self.tr("Save"))
+        self.cancelButton.setText(self.tr("Cancel"))
+        self.project_combo.textChanged.connect(self._validate)
+        self.name_edit.textChanged.connect(self._validate)
+        self._validate()
+        self.widget.setMinimumWidth(480)
+
+    def _choose_library(self):
+        folder = QFileDialog.getExistingDirectory(self, self.tr("Choose model library"), str(self.service.library.root))
+        if not folder:
+            return
+        try:
+            service = ValidationService(Library(folder))
+            projects = service.projects()
+        except Exception as error:
+            from NepTrainKit.core import MessageManager
+            MessageManager.send_error_message(str(error))
+            return
+        self.service = service
+        self.location_label.setText(self.tr("Library: {path}").format(path=service.library.root))
+        self.project_combo.clear()
+        for project in projects:
+            self.project_combo.addItem(project["name"])
+        self.project_combo.setText("")
+        self._validate()
+
+    def _validate(self, *_args):
+        project = self.project_combo.text().strip()
+        self.yesButton.setEnabled(bool(project and len(project) <= 200 and self.name_edit.text().strip()))
+
+
+def save_model_to_project(parent, service, draft, *, name=None):
+    dialog = SaveModelDialog(parent, service, name or draft.name)
+    if not dialog.exec():
+        return None
+    record = dialog.service.save_model(draft, project_name=dialog.project_combo.text(), name=dialog.name_edit.text())
+    if dialog.service.library.root != service.library.root:
+        Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, str(dialog.service.library.root))
+    Config.set("validation", "last_save_project", dialog.project_combo.text().strip())
+    record["library_root"] = str(dialog.service.library.root)
+    return record
 
 
 class BenchmarkImportDialog(MessageBoxBase):
@@ -139,7 +218,7 @@ class BenchmarkImportDialog(MessageBoxBase):
         for issue in self.issues:
             color = palette.PLOT_REJECT if issue.level == "error" else palette.PLOT_SELECTED
             label = self.tr("Error") if issue.level == "error" else self.tr("Warning")
-            lines.append(f'<span style="color:{color};">{label}:</span> {issue.message}')
+            lines.append(f'<span style="color:{color};">{label}:</span> {translate_runtime_message(issue.message)}')
         if protocol is not None and not self.issues:
             lines.append(self.tr("No issues found for {title}.").format(title=protocol.title))
         self.issues_label.setText("<br>".join(lines))

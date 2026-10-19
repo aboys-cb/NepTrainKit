@@ -11,7 +11,7 @@ from .models import Base
 
 # Bump together with a new entry in ``_MIGRATIONS``. Migrations are frozen SQL:
 # never edit one that has shipped, add a new step instead.
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
@@ -80,7 +80,53 @@ def _migrate_1_model_snapshots(conn: sqlite3.Connection) -> None:
     )
 
 
-_MIGRATIONS = {1: _migrate_1_model_snapshots}
+def _migrate_2_temporary_models(conn: sqlite3.Connection) -> None:
+    """Allow validation snapshots without assigning a project; preserve all IDs."""
+    if not _columns(conn, "model_versions"):
+        return
+    _execute_all(conn, """
+        CREATE TABLE model_versions_new (
+            id INTEGER NOT NULL,
+            name VARCHAR(80) NOT NULL,
+            project_id INTEGER,
+            model_type VARCHAR(20) NOT NULL,
+            data_size INTEGER,
+            energy FLOAT,
+            force FLOAT,
+            virial FLOAT,
+            model_path TEXT NOT NULL,
+            notes TEXT NOT NULL,
+            parent_id INTEGER,
+            created_at DATETIME NOT NULL,
+            content_hash VARCHAR(64),
+            model_kind VARCHAR(40) NOT NULL,
+            elements JSON NOT NULL,
+            source_path TEXT NOT NULL,
+            dataset_ref JSON NOT NULL,
+            starred BOOLEAN NOT NULL,
+            auto_captured BOOLEAN NOT NULL,
+            last_seen_at DATETIME NOT NULL,
+            PRIMARY KEY (id),
+            FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE,
+            FOREIGN KEY(parent_id) REFERENCES model_versions (id) ON DELETE CASCADE
+        );
+        INSERT INTO model_versions_new (
+            id, name, project_id, model_type, data_size, energy, force, virial,
+            model_path, notes, parent_id, created_at, content_hash, model_kind,
+            elements, source_path, dataset_ref, starred, auto_captured, last_seen_at
+        ) SELECT id, name, project_id, model_type, data_size, energy, force, virial,
+                 model_path, notes, parent_id, created_at, content_hash, model_kind,
+                 elements, source_path, dataset_ref, starred, auto_captured, last_seen_at
+          FROM model_versions;
+        DROP TABLE model_versions;
+        ALTER TABLE model_versions_new RENAME TO model_versions;
+        CREATE INDEX ix_model_versions_project_id ON model_versions (project_id);
+        CREATE INDEX ix_model_versions_parent_id ON model_versions (parent_id);
+        CREATE INDEX ix_model_versions_content_hash ON model_versions (content_hash);
+        """)
+
+
+_MIGRATIONS = {1: _migrate_1_model_snapshots, 2: _migrate_2_temporary_models}
 
 
 def migrate(path: str | Path) -> None:
@@ -95,7 +141,9 @@ def migrate(path: str | Path) -> None:
     conn = sqlite3.connect(path, isolation_level=None)
     try:
         version = conn.execute("PRAGMA user_version").fetchone()[0]
-        if version >= SCHEMA_VERSION:
+        if version > SCHEMA_VERSION:
+            raise RuntimeError("Database schema is newer than this application.")
+        if version == SCHEMA_VERSION:
             return
         conn.execute("PRAGMA foreign_keys=OFF")
         for step in range(version + 1, SCHEMA_VERSION + 1):

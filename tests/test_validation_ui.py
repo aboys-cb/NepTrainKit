@@ -19,7 +19,8 @@ from NepTrainKit.ui.views.model_library import (
     summarize_model_status,
 )
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
-from test_validation_framework import MODEL_HEADER, _import, efv_frames, eos_frames, make_service, write_xyz  # noqa: F401
+from test_validation_framework import MODEL_HEADER, _import, efv_frames, eos_frames, write_xyz
+from test_validation_framework import make_service as make_service, model_file as model_file
 
 
 def _wait_until(predicate, timeout=10.0):
@@ -88,7 +89,7 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     service = scored.service
     widget = ModelLibraryWidget(service=service)
     widget.refresh(scored.suite["id"])
-    assert widget.model.rowCount() == 2
+    assert widget.model.rowCount() == 3
     assert "first production model" in widget.baseline_label.text()
     assert (scored.fresh["id"], scored.eos["id"]) in widget.run_jobs()
 
@@ -229,23 +230,30 @@ def _viewer_stub(model_id, opened, imported=None):
         validation_button=TransparentDropDownToolButton(),
         validation_status_action=Action("status"),
         validation_star_action=Action("star"),
+        validation_save_action=Action("save"),
         validation_count_badge=InfoBadge.error("0"),
         validation_dot_badge=DotInfoBadge.info(),
         _validation_model_id=model_id,
+        _validation_draft=None,
+        _validation_library_root=library_module.resolve_library_root(),
+        _validation_library_changed=False,
         _validation_status=None,
         _validation_starred=False,
         _parent=SimpleNamespace(
-            open_model_scorecard=lambda suite, model: opened.append((suite, model)),
+            open_model_scorecard=lambda suite, model=None, **kwargs: opened.append((suite, model, kwargs["draft"]) if kwargs else (suite, model)),
             import_benchmark_set=import_benchmark_set,
         ),
         tr=lambda text: text,
+        window=lambda: QWidget(),
     )
     for name in (
+        "_validation_service",
         "refresh_validation_chip",
         "_show_validation_badge",
         "open_validation_scorecard",
         "import_validation_benchmark",
         "toggle_validation_star",
+        "save_validation_model",
     ):
         setattr(stub, name, getattr(ShowNepWidget, name).__get__(stub))
     return stub
@@ -319,10 +327,265 @@ def test_viewer_entry_guides_first_import(scored, tmp_path, monkeypatch):
     path.parent.mkdir()
     path.write_text(MODEL_HEADER)
     stub._validation_model_id = empty.capture_model(path)["id"]
+    stub._validation_library_root = empty.library.root
     stub.refresh_validation_chip()
     assert stub.validation_status_action.text() == "Validation: not set up" and _badge(stub) == "dot"
     for widget in (stub.validation_count_badge, stub.validation_dot_badge):
         widget.close()
+
+
+def test_fresh_model_is_selected_and_can_be_validated_alone(scored):
+    service = scored.service
+    widget = ModelLibraryWidget(service=service)
+    widget.open_scorecard(scored.suite["id"], scored.fresh["id"])
+    row = widget.current_model_row()
+    assert row["model_id"] == scored.fresh["id"]
+    assert all(cell["status"] == "missing" for cell in row["cells"])
+    assert widget.run_current_button.isEnabled()
+    widget.refresh()  # Refresh/showEvent must retain the newly opened version.
+    assert widget.current_model_row()["model_id"] == scored.fresh["id"]
+    with patch.object(service, "evaluate", wraps=service.evaluate) as evaluate:
+        widget.run_current_button.click()
+        assert not widget.run_current_button.isEnabled()
+        assert _wait_until(lambda: widget._run_task is None)
+        assert {call.args for call in evaluate.call_args_list} == {
+            (scored.fresh["id"], scored.eos["id"]), (scored.fresh["id"], scored.efv["id"]),
+        }
+    row = widget.current_model_row()
+    assert row["model_id"] == scored.fresh["id"] and row["comparison_complete"]
+    assert widget.run_current_button.isEnabled()
+
+
+def test_unsaved_viewer_to_temporary_validation_then_save(scored, tmp_path, monkeypatch):
+    from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+    from NepTrainKit.ui.widgets.validation_dialogs import SaveModelDialog
+
+    service = scored.service
+    monkeypatch.setenv(library_module.ENV_VAR, str(service.library.root))
+    path = tmp_path / "unsaved.txt"
+    path.write_text(MODEL_HEADER + "unsaved")
+    stub = _viewer_stub(None, [])
+    stub.nep_result_data = SimpleNamespace(nep_txt_path=path, data_xyz_path=None)
+    ShowNepWidget._associate_model_version(stub)
+    original_count = len(service.models())
+    assert stub._validation_model_id is None and stub.validation_save_action.isEnabled()
+    assert not stub.validation_star_action.isEnabled()
+    assert "unsaved" in stub.validation_status_action.text()
+
+    widget = ModelLibraryWidget(service=service)
+    stub._parent.open_model_scorecard = widget.open_scorecard
+    stub.open_validation_scorecard()
+    assert widget.current_model_row()["model_id"] == 0
+    assert len(service.models()) == original_count  # entering the scorecard is still read-only
+    assert not widget.baseline_button.isEnabled() and not widget.star_button.isEnabled()
+    with patch.object(SaveModelDialog, "exec", return_value=0):
+        widget.save_current()
+    assert len(service.models()) == original_count  # cancelling Save leaves no project/version
+    old_bytes = path.read_bytes()
+    path.write_text(MODEL_HEADER + "changed while viewing")
+    widget.run_current_button.click()
+    assert _wait_until(lambda: widget._run_task is None)
+    row = widget.current_model_row()
+    temporary_id = row["model_id"]
+    assert row["temporary"] and row["complete"] and temporary_id > 0
+    assert service.get_model(temporary_id)["project_id"] is None
+    assert service.model_file(temporary_id).read_bytes() == old_bytes
+    stub.refresh_validation_chip()
+    assert stub._validation_model_id == temporary_id
+    assert stub.validation_status_action.text().startswith("Temporary")
+
+    def accept(dialog):
+        dialog.project_combo.setText("New project")
+        dialog.name_edit.setText("v1")
+        return 1
+
+    with patch.object(SaveModelDialog, "exec", accept), patch("NepTrainKit.ui.views.model_library.MessageManager"):
+        widget.save_current()
+    saved = service.get_model(temporary_id)
+    assert saved["name"] == "v1" and saved["project_id"] is not None
+    assert saved["dataset_ref"] == {} and not saved["auto_captured"]
+    assert widget.current_model_row()["model_id"] == temporary_id
+    assert widget.current_model_row()["complete"] and widget.baseline_button.isEnabled()
+    stub.refresh_validation_chip()
+    assert not stub.validation_status_action.text().startswith("Temporary")
+
+
+def test_save_dialog_requires_explicit_project_and_version(make_service):
+    from NepTrainKit.ui.widgets.validation_dialogs import SaveModelDialog
+
+    host = QWidget()
+    dialog = SaveModelDialog(host, make_service(), "v1")
+    assert not dialog.yesButton.isEnabled()
+    dialog.project_combo.setText("FeRh")
+    assert dialog.yesButton.isEnabled()
+    dialog.name_edit.clear()
+    assert not dialog.yesButton.isEnabled()
+
+
+@pytest.mark.parametrize("accept", [False, True])
+def test_save_dialog_can_choose_library_without_retargeting_on_cancel(make_service, model_file, tmp_path, monkeypatch, accept):
+    from NepTrainKit.config import Config
+    from NepTrainKit.core.validation import Library, ValidationService
+    from NepTrainKit.core.validation.service import ModelDraft
+    from NepTrainKit.ui.widgets.validation_dialogs import SaveModelDialog, save_model_to_project
+
+    monkeypatch.delenv(library_module.ENV_VAR, raising=False)
+    service = make_service()
+    target = tmp_path / "chosen-library"
+    previous = Config.get("validation", "library_path", "")
+    Config.set("validation", "library_path", str(service.library.root))
+    monkeypatch.setattr("NepTrainKit.ui.widgets.validation_dialogs.QFileDialog.getExistingDirectory", lambda *args: str(target))
+
+    def choose(dialog):
+        assert dialog.location_button.isEnabled()
+        dialog._choose_library()
+        dialog.project_combo.setText("Chosen project")
+        dialog.name_edit.setText("v2")
+        return int(accept)
+
+    try:
+        with patch.object(SaveModelDialog, "exec", choose):
+            record = save_model_to_project(QWidget(), service, ModelDraft.from_file(model_file))
+        destination = ValidationService(Library(target))
+        assert service.models() == [] and service.projects() == []
+        if accept:
+            assert record["library_root"] == str(target.resolve())
+            assert destination.get_model(record["id"])["name"] == "v2"
+            assert Config.get("validation", "library_path") == str(target.resolve())
+        else:
+            assert record is None and destination.models() == [] and destination.projects() == []
+            assert Config.get("validation", "library_path") == str(service.library.root)
+    finally:
+        Config.set("validation", "library_path", previous)
+
+
+def test_viewer_save_can_add_a_second_project_without_reopening(model_file, make_service, monkeypatch):
+    from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+    from NepTrainKit.ui.widgets.validation_dialogs import SaveModelDialog
+
+    service = make_service()
+    monkeypatch.setenv(library_module.ENV_VAR, str(service.library.root))
+    stub = _viewer_stub(None, [])
+    stub.nep_result_data = SimpleNamespace(nep_txt_path=model_file, data_xyz_path=None)
+    ShowNepWidget._associate_model_version(stub)
+
+    def accept(dialog):
+        dialog.project_combo.setText("A" if not service.projects() else "B")
+        dialog.name_edit.setText("v1")
+        return 1
+
+    with patch.object(SaveModelDialog, "exec", accept), patch("NepTrainKit.ui.pages.show_nep.MessageManager"):
+        stub.save_validation_model()
+        first = stub._validation_model_id
+        stub.save_validation_model()
+    assert first != stub._validation_model_id
+    assert len(service.models()) == 2 and len(service.projects()) == 2
+    assert service.get_model(first)["content_hash"] == service.get_model(stub._validation_model_id)["content_hash"]
+
+
+def test_unsaved_model_is_visible_without_any_suites(make_service, model_file):
+    from NepTrainKit.core.validation.service import ModelDraft
+    from NepTrainKit.ui.widgets.validation_dialogs import SaveModelDialog
+
+    service = make_service()
+    widget = ModelLibraryWidget(service=service)
+    widget.open_scorecard(None, draft=ModelDraft.from_file(model_file))
+    assert widget.current_model_row()["model_id"] == 0
+    assert widget.save_button.isEnabled() and not widget.run_current_button.isEnabled()
+    assert service.models() == [] and service.projects() == []
+
+    def accept(dialog):
+        dialog.project_combo.setText("First project")
+        dialog.name_edit.setText("v1")
+        return 1
+
+    with patch.object(SaveModelDialog, "exec", accept), patch("NepTrainKit.ui.views.model_library.MessageManager"):
+        widget.save_current()
+    assert widget.current_model_row()["name"] == "v1"
+    assert not widget.current_model_row()["temporary"]
+    assert not widget.run_current_button.isEnabled()
+
+
+def test_refresh_clears_stale_actions_when_library_cannot_open(scored):
+    widget = ModelLibraryWidget(service=scored.service)
+    widget.open_scorecard(scored.suite["id"], scored.new["id"])
+    with patch.object(widget, "service", side_effect=OSError("unavailable")), patch("NepTrainKit.ui.views.model_library.MessageManager"):
+        widget.refresh()
+    assert widget.model.rowCount() == 0
+    assert not widget.save_button.isEnabled() and not widget.run_current_button.isEnabled()
+
+
+def test_partial_or_failed_suite_never_looks_complete(scored, monkeypatch):
+    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
+    service = scored.service
+    stub = _viewer_stub(scored.fresh["id"], [])
+    service.evaluate(scored.fresh["id"], scored.eos["id"])
+    stub.refresh_validation_chip()
+    assert "1/2 sets complete" in stub.validation_status_action.text()
+    assert _badge(stub) == "dot"
+    with patch.object(service, "predictor_factory", side_effect=ValueError("test failure")):
+        service.evaluate(scored.fresh["id"], scored.efv["id"])
+    stub.refresh_validation_chip()
+    assert "1 failed" in stub.validation_status_action.text() and _badge(stub) == "dot"
+    service.evaluate(scored.fresh["id"], scored.efv["id"])
+    stub.refresh_validation_chip()
+    assert "0 regressions" in stub.validation_status_action.text() and _badge(stub) is None
+
+
+def test_missing_baseline_runs_never_looks_comparable(scored, monkeypatch):
+    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
+    service = scored.service
+    service.set_baseline(scored.suite["id"], scored.fresh["id"])
+    stub = _viewer_stub(scored.new["id"], [])
+    stub.refresh_validation_chip()
+    assert "baseline comparison incomplete" in stub.validation_status_action.text()
+    assert _badge(stub) == "dot"
+    service.evaluate(scored.fresh["id"], scored.eos["id"])
+    stub.refresh_validation_chip()
+    assert "baseline comparison incomplete" in stub.validation_status_action.text()
+
+
+@pytest.mark.parametrize("action", ["refresh_validation_chip", "toggle_validation_star", "open_validation_scorecard"])
+def test_library_switch_invalidates_viewer_ids(scored, tmp_path, monkeypatch, action):
+    from NepTrainKit.core.validation import Library, ValidationService
+
+    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
+    opened = []
+    stub = _viewer_stub(scored.old["id"], opened)
+    stub.refresh_validation_chip()
+    other_service = ValidationService(Library(tmp_path / "other-lib"))
+    other = _capture(other_service, tmp_path, "unrelated")
+    assert other["id"] == scored.old["id"]
+    monkeypatch.setenv(library_module.ENV_VAR, str(other_service.library.root))
+    with patch("NepTrainKit.ui.pages.show_nep.MessageManager"):
+        getattr(stub, action)()
+    assert not other_service.get_model(other["id"])["starred"]
+    assert stub._validation_model_id is None and not stub.validation_star_action.isEnabled()
+    assert stub.validation_status_action.text() == "Validation: library changed"
+    if action == "open_validation_scorecard":
+        assert opened == [(None, None)]
+    from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+
+    stub.nep_result_data = SimpleNamespace(nep_txt_path=scored.old["source_path"], data_xyz_path=None)
+    ShowNepWidget._associate_model_version(stub)
+    assert not stub._validation_library_changed
+    assert stub._validation_model_id is None
+    assert stub._validation_draft.content_hash == scored.old["content_hash"]
+    assert len(other_service.models()) == 1  # reopening does not save into the new library
+
+
+def test_library_switch_does_not_star_an_old_scorecard_id(scored, tmp_path, monkeypatch):
+    from NepTrainKit.core.validation import Library, ValidationService
+
+    monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
+    widget = ModelLibraryWidget()
+    widget.open_scorecard(scored.suite["id"], scored.old["id"])
+    other_service = ValidationService(Library(tmp_path / "other-lib"))
+    other = _capture(other_service, tmp_path, "unrelated")
+    monkeypatch.setenv(library_module.ENV_VAR, str(other_service.library.root))
+    widget.toggle_star()
+    assert not other_service.get_model(other["id"])["starred"]
+    assert widget.current_model_row() is None
 
 
 def test_viewer_menu_stars_the_current_version(scored, monkeypatch):
@@ -358,6 +621,7 @@ def test_viewer_footer_has_compact_validation_entry(viewer):
     actions = [action.text() for action in viewer.validation_menu.actions() if not action.isSeparator()]
     assert actions == [
         "Validation: no NEP model open",
+        "Save to project…",
         "Star this version",
         "Open scorecard",
         "Import benchmark set…",
@@ -398,7 +662,7 @@ def test_viewer_capture_feeds_the_badge(scored, tmp_path, monkeypatch):
     stub = _viewer_stub(None, [])
     model_path = tmp_path / "new" / "nep.txt"
     stub.nep_result_data = SimpleNamespace(nep_txt_path=model_path, data_xyz_path=None)
-    ShowNepWidget._capture_model_version(stub)
+    ShowNepWidget._associate_model_version(stub)
     assert stub._validation_model_id == scored.new["id"]
     assert stub.validation_status_action.text().startswith("Validation: PbTe")
     for widget in (stub.validation_count_badge, stub.validation_dot_badge):

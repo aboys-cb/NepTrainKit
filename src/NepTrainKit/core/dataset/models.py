@@ -57,9 +57,9 @@ class ModelVersion(Base):
     __tablename__ = "model_versions"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(80))
-    project_id: Mapped[int] = mapped_column(
+    project_id: Mapped[int | None] = mapped_column(
         ForeignKey("projects.id", ondelete="CASCADE"),
-        index=True
+        index=True, nullable=True  # NULL: temporary validation snapshot, not a project version
     )
     model_type: Mapped[str] = mapped_column(String(20))  # NEP | DeepMD | ...
     # Training metrics are unknown for models captured from the viewer.
@@ -79,11 +79,11 @@ class ModelVersion(Base):
     model_kind: Mapped[str] = mapped_column(String(40), default="")  # nep4, nep4_zbl, nep4_spin ...
     elements: Mapped[list] = mapped_column(JSON, default=list)
     source_path: Mapped[str] = mapped_column(Text, default="")
-    dataset_ref: Mapped[dict] = mapped_column(JSON, default=dict)  # FileRef of the training data
+    dataset_ref: Mapped[dict] = mapped_column(JSON, default=dict)  # Explicitly supplied training data only
     starred: Mapped[bool] = mapped_column(Boolean, default=False)
     auto_captured: Mapped[bool] = mapped_column(Boolean, default=False)
     last_seen_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
-    project: Mapped["Project"] = relationship(
+    project: Mapped["Project | None"] = relationship(
         back_populates="model_versions",
         foreign_keys=[project_id],
         passive_deletes=True,

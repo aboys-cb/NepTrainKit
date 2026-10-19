@@ -14660,6 +14660,22 @@ All child items will also be deleted.</source>
         <source>Validation failed: {error}</source>
         <translation>验证失败：{error}</translation>
     </message>
+    <message>
+        <source>Validate current version</source>
+        <translation>验证当前版本</translation>
+    </message>
+    <message>
+        <source>Open a compatible NEP model to start validating this suite.</source>
+        <translation>打开适用的 NEP 模型，即可开始验证此套件。</translation>
+    </message>
+    <message>
+        <source>Save to project…</source>
+        <translation>保存到项目…</translation>
+    </message>
+    <message>
+        <source>Saved to project</source>
+        <translation>已保存到项目</translation>
+    </message>
 </context>
 <context>
     <name>NepDipoleResultData</name>
@@ -18542,6 +18558,42 @@ All child items will also be deleted.</source>
         <source>The filter condition has no value.</source>
         <translation>该筛选条件尚未填写值。</translation>
     </message>
+    <message>
+        <source>Validation metrics must be finite.</source>
+        <translation>验证指标必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Reference energies must be finite.</source>
+        <translation>参考能量必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Reference forces must be finite.</source>
+        <translation>参考力必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Reference virials must be finite.</source>
+        <translation>参考维里必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Prediction shapes do not match the reference structures.</source>
+        <translation>预测数组的形状与参考结构不匹配。</translation>
+    </message>
+    <message>
+        <source>Predicted energies, forces and virials must be finite.</source>
+        <translation>预测能量、力和维里必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Save this temporary model to a project first.</source>
+        <translation>请先将此临时模型保存到项目。</translation>
+    </message>
+    <message>
+        <source>Choose a project and a version name (up to 80 characters).</source>
+        <translation>请选择项目并填写版本名（最多 80 个字符）。</translation>
+    </message>
+    <message>
+        <source>Database schema is newer than this application.</source>
+        <translation>数据库版本高于当前应用支持的版本。</translation>
+    </message>
 </context>
 <context>
     <name>SOCTextureResponseCard</name>
@@ -18946,6 +18998,22 @@ All child items will also be deleted.</source>
         <location filename="../ui/views/model_library.py" line="131" />
         <source>Within tolerance of the baseline</source>
         <translation>与基线相差在容差内</translation>
+    </message>
+    <message>
+        <source>Validation incomplete</source>
+        <translation>验证尚未完成</translation>
+    </message>
+    <message>
+        <source>Baseline comparison incomplete</source>
+        <translation>与基准的比较尚未完成</translation>
+    </message>
+    <message>
+        <source>{name} (temporary)</source>
+        <translation>{name}（临时验证）</translation>
+    </message>
+    <message>
+        <source>{name} (unsaved)</source>
+        <translation>{name}（未保存）</translation>
     </message>
 </context>
 <context>
@@ -20543,6 +20611,42 @@ Do you want to continue?</source>
         <location filename="../ui/pages/show_nep.py" line="1472" />
         <source>Starred this version; library clean-up will keep it</source>
         <translation>已为此版本加星标，清理模型库时会保留它</translation>
+    </message>
+    <message>
+        <source>Validation: library changed</source>
+        <translation>验证：模型库已切换</translation>
+    </message>
+    <message>
+        <source>Reopen the NEP model to associate it with the current library</source>
+        <translation>重新打开 NEP 模型，以关联当前模型库</translation>
+    </message>
+    <message>
+        <source>Validation: {suite} · {done}/{total} sets complete · {failed} failed</source>
+        <translation>验证：{suite} · 已完成 {done}/{total} 个验证集 · {failed} 个失败</translation>
+    </message>
+    <message>
+        <source>Validation: {suite} · baseline comparison incomplete</source>
+        <translation>验证：{suite} · 与基准的比较尚未完成</translation>
+    </message>
+    <message>
+        <source>Save to project…</source>
+        <translation>保存到项目…</translation>
+    </message>
+    <message>
+        <source>Validation: unsaved model</source>
+        <translation>验证：模型尚未保存</translation>
+    </message>
+    <message>
+        <source>Save to a project, or open the scorecard for temporary validation</source>
+        <translation>保存到项目，或打开评分表进行临时验证</translation>
+    </message>
+    <message>
+        <source>Temporary · {status}</source>
+        <translation>临时验证 · {status}</translation>
+    </message>
+    <message>
+        <source>Saved to project</source>
+        <translation>已保存到项目</translation>
     </message>
 </context>
 <context>
@@ -28813,6 +28917,49 @@ Magnetic: {magnetic}</source>
     <message>
         <source>(periodic image)</source>
         <translation>（周期像）</translation>
+    </message>
+</context>
+<context>
+    <name>SaveModelDialog</name>
+    <message>
+        <source>Save model to project</source>
+        <translation>保存模型到项目</translation>
+    </message>
+    <message>
+        <source>Library: {path}</source>
+        <translation>模型库：{path}</translation>
+    </message>
+    <message>
+        <source>Change…</source>
+        <translation>更改…</translation>
+    </message>
+    <message>
+        <source>Library location is controlled by NEPTRAINKIT_LIBRARY</source>
+        <translation>模型库位置由 NEPTRAINKIT_LIBRARY 环境变量指定</translation>
+    </message>
+    <message>
+        <source>Choose model library</source>
+        <translation>选择模型库</translation>
+    </message>
+    <message>
+        <source>Choose a project or type a new name</source>
+        <translation>选择项目或输入新项目名</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>项目</translation>
+    </message>
+    <message>
+        <source>Version name</source>
+        <translation>版本名</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
     </message>
 </context>
 </TS>

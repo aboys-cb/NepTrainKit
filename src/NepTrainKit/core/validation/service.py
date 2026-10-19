@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import math
 import time
 import uuid
 from collections.abc import Callable, Iterable
@@ -98,7 +99,7 @@ def compare(
     Differences within ``tolerance`` of the baseline, or within ``abs_tolerance``
     in the metric's own unit, are ``same``.
     """
-    if value is None or baseline is None:
+    if value is None or baseline is None or not math.isfinite(value) or not math.isfinite(baseline):
         return None
     if better == "closer-to-zero":
         value, baseline, better = abs(value), abs(baseline), "lower"
@@ -107,6 +108,34 @@ def compare(
         return "same"
     improved = value < baseline if better == "lower" else value > baseline
     return "better" if improved else "worse"
+
+
+def _finite_metrics(metrics: dict) -> bool:
+    return all(value is None or math.isfinite(value) for value in metrics.values())
+
+
+@dataclass(frozen=True)
+class ModelDraft:
+    """Opened model bytes, kept in memory until Save or Run is requested."""
+
+    data: bytes
+    source_path: str
+
+    @classmethod
+    def from_file(cls, path: str | Path):
+        path = Path(path).expanduser().resolve()
+        data = path.read_bytes()
+        parse_model_header(data)
+        return cls(data, str(path))
+
+    @property
+    def content_hash(self) -> str:
+        return sha256_bytes(self.data)
+
+    @property
+    def name(self) -> str:
+        path = Path(self.source_path)
+        return (path.parent.name if path.stem == "nep" else path.stem)[:80]
 
 
 @dataclass
@@ -124,38 +153,54 @@ class ValidationService:
     def _inbox_project_id(self, session) -> int:
         project = session.scalars(select(Project).where(Project.name == INBOX_PROJECT)).first()
         if project is None:
-            project = Project(name=INBOX_PROJECT, notes="Models captured automatically from the viewer.")
+            project = Project(name=INBOX_PROJECT, notes="Models captured without an explicit project.")
             session.add(project)
             session.flush()
         return project.id
 
     def capture_model(
         self,
-        path: str | Path,
+        path: str | Path | ModelDraft,
         *,
         name: str = "",
         dataset_path: str | Path | None = None,
         auto: bool = True,
         project_id: int | None = None,
         notes: str = "",
+        temporary: bool = False,
     ) -> dict:
-        """Snapshot a model file; capturing identical bytes again returns the same version."""
-        path = Path(path).expanduser().resolve()
-        data = path.read_bytes()
+        """Deduplicate bytes globally, version records within the chosen project.
+
+        Temporary validation has no project and can reuse any saved association.
+        """
+        draft = path if isinstance(path, ModelDraft) else ModelDraft.from_file(path)
+        path = Path(draft.source_path)
+        data = draft.data
         kind, elements = parse_model_header(data)
         digest = self.library.put_bytes(data)
         dataset_ref = {}
         if dataset_path and Path(dataset_path).is_file():
             dataset_ref = FileRef.of(dataset_path).to_dict()
         with self.db.session() as session:
-            row = session.scalars(
-                select(ModelVersion).where(ModelVersion.content_hash == digest).order_by(ModelVersion.id)
-            ).first()
+            if project_id is not None and session.get(Project, project_id) is None:
+                raise ValueError(f"Project {project_id} not found")
+            target_project = None if temporary else (project_id or self._inbox_project_id(session))
+            query = select(ModelVersion).where(ModelVersion.content_hash == digest)
+            if not temporary:
+                query = query.where(ModelVersion.project_id == target_project)
+            row = session.scalars(query.order_by(ModelVersion.project_id.is_(None), ModelVersion.id)).first()
+            if row is None and not temporary:
+                # Promote the temporary record in place so existing runs keep their identity.
+                row = session.scalars(select(ModelVersion).where(
+                    ModelVersion.content_hash == digest, ModelVersion.project_id.is_(None)
+                )).first()
+                if row is not None:
+                    row.project_id = target_project
             if row is None:
                 default_name = path.parent.name if path.stem == "nep" else path.stem
                 row = ModelVersion(
                     name=(name.strip() or default_name or path.name)[:80],
-                    project_id=project_id or self._inbox_project_id(session),
+                    project_id=target_project,
                     model_type="NEP",
                     model_path=str(path),
                     notes=notes,
@@ -164,19 +209,43 @@ class ValidationService:
                     elements=list(elements),
                     source_path=str(path),
                     dataset_ref=dataset_ref,
-                    auto_captured=auto,
+                    auto_captured=True if temporary else auto,
                 )
                 session.add(row)
             else:
                 row.last_seen_at = _now()
-                if not auto:
+                if not auto and not temporary:
                     row.auto_captured = False
-                if name.strip():
+                if name.strip() and not temporary:
                     row.name = name.strip()[:80]
                 if dataset_ref and not row.dataset_ref:
                     row.dataset_ref = dataset_ref
             session.commit()
             return _record(row)
+
+    def save_model(self, draft: ModelDraft, *, project_name: str, name: str) -> dict:
+        """Explicitly save to a chosen project; other project associations stay unchanged."""
+        project_name, name = project_name.strip(), name.strip()
+        if not project_name or not name or len(project_name) > 200 or len(name) > 80:
+            raise ValueError("Choose a project and a version name (up to 80 characters).")
+        with self.db.session() as session:
+            project = session.scalars(select(Project).where(Project.name == project_name)).first()
+            if project is None:
+                project = Project(name=project_name)
+                session.add(project)
+                session.commit()
+            project_id = project.id
+        return self.capture_model(draft, project_id=project_id, name=name, auto=False)
+
+    def projects(self) -> list[dict]:
+        with self.db.session() as session:
+            return [_record(row) for row in session.scalars(select(Project).order_by(Project.name))]
+
+    def find_model_by_hash(self, digest: str) -> dict | None:
+        with self.db.session() as session:
+            row = session.scalars(select(ModelVersion).where(ModelVersion.content_hash == digest)
+                                  .order_by(ModelVersion.project_id.is_(None), ModelVersion.id)).first()
+            return _record(row) if row is not None else None
 
     def find_model_by_file(self, path: str | Path) -> dict | None:
         """Return the captured version whose bytes equal ``path`` right now, if any."""
@@ -184,9 +253,7 @@ class ValidationService:
             digest = sha256_bytes(Path(path).read_bytes())
         except OSError:
             return None
-        with self.db.session() as session:
-            row = session.scalars(select(ModelVersion).where(ModelVersion.content_hash == digest)).first()
-            return _record(row) if row is not None else None
+        return self.find_model_by_hash(digest)
 
     def get_model(self, model_id: int) -> dict:
         with self.db.session() as session:
@@ -208,6 +275,8 @@ class ValidationService:
             row = session.get(ModelVersion, model_id)
             if row is None:
                 raise ValueError(f"Unknown model version: {model_id}")
+            if row.project_id is None:
+                raise ValueError("Save this temporary model to a project first.")
             row.starred = starred
             if starred:
                 row.auto_captured = False
@@ -364,6 +433,8 @@ class ValidationService:
                 raise ValueError(f"Unknown benchmark suite: {suite_id}")
             if model_id is not None and session.get(ModelVersion, model_id) is None:
                 raise ValueError(f"Unknown model version: {model_id}")
+            if model_id is not None and session.get(ModelVersion, model_id).project_id is None:
+                raise ValueError("Save this temporary model to a project first.")
             suite.baseline_model_id = model_id
             suite.baseline_note = note.strip()
             if model_id is not None:
@@ -373,7 +444,11 @@ class ValidationService:
     # -- evaluation -----------------------------------------------------------
     def latest_run(self, model_id: int, set_id: str, *, protocol_version: int | None = None) -> dict | None:
         with self.db.session() as session:
-            query = select(BenchmarkRun).where(BenchmarkRun.model_id == model_id, BenchmarkRun.set_id == set_id)
+            model = session.get(ModelVersion, model_id)
+            query = select(BenchmarkRun).join(ModelVersion, BenchmarkRun.model_id == ModelVersion.id).where(
+                BenchmarkRun.set_id == set_id,
+                ModelVersion.content_hash == model.content_hash if model and model.content_hash else BenchmarkRun.model_id == model_id,
+            )
             if protocol_version is not None:
                 query = query.where(BenchmarkRun.protocol_version == protocol_version)
             row = session.scalars(query.order_by(BenchmarkRun.created_at.desc())).first()
@@ -386,7 +461,8 @@ class ValidationService:
         protocol = get_protocol(benchmark["protocol"])
         if not force:
             cached = self.latest_run(model_id, set_id, protocol_version=protocol.version)
-            if cached is not None and cached["status"] in ("succeeded", "unsupported"):
+            if cached is not None and (cached["status"] == "unsupported" or
+                                       cached["status"] == "succeeded" and _finite_metrics(cached["metrics"])):
                 return cached
         run_id = uuid.uuid4().hex
         start = time.monotonic()
@@ -412,6 +488,8 @@ class ValidationService:
                 predictor = self.predictor_factory(model_path, self.backend)
                 environment["backend"] = str(getattr(predictor, "backend", self.backend))
                 evaluation = protocol.evaluate(predictor, frames)
+                if not _finite_metrics(evaluation.metrics):
+                    raise ValueError("Validation metrics must be finite.")
                 metrics = evaluation.metrics
                 result_path = self.library.write_result(
                     run_id, {"details": evaluation.details, "warnings": evaluation.warnings}
@@ -454,14 +532,15 @@ class ValidationService:
 
     # -- scorecard ------------------------------------------------------------
     def scorecard(
-        self, suite_id: int, model_ids: Iterable[int] | None = None, *, tolerance: float = DEFAULT_TOLERANCE
+        self, suite_id: int | None, model_ids: Iterable[int] | None = None, *, tolerance: float = DEFAULT_TOLERANCE,
+        draft: ModelDraft | None = None,
     ) -> dict:
         """Headline metrics of each model on each set, compared with the suite baseline.
 
         Only cached runs are read; call :meth:`run_suite` first to fill gaps.
         """
-        suite = self.get_suite(suite_id)
-        sets = self.suite_sets(suite_id)
+        suite = self.get_suite(suite_id) if suite_id is not None else None
+        sets = self.suite_sets(suite_id) if suite_id is not None else []
         columns = []
         for benchmark in sets:
             protocol = get_protocol(benchmark["protocol"])
@@ -479,7 +558,7 @@ class ValidationService:
                         "abs_tolerance": metric.abs_tolerance,
                     }
                 )
-        baseline_id = suite["baseline_model_id"]
+        baseline_id = suite["baseline_model_id"] if suite else None
         if model_ids is None:
             with self.db.session() as session:
                 set_ids = [benchmark["id"] for benchmark in sets]
@@ -488,6 +567,11 @@ class ValidationService:
                         select(BenchmarkRun.model_id).where(BenchmarkRun.set_id.in_(set_ids)).distinct()
                     )
                 )
+            # Show compatible snapshots before their first run, including newly opened models.
+            model_ids.extend(
+                model["id"] for model in self.models()
+                if any(set(benchmark["elements"]) <= set(model["elements"] or ()) for benchmark in sets)
+            )
         model_ids = list(dict.fromkeys([*(model_ids or [])] + ([baseline_id] if baseline_id else [])))
 
         def cells_for(model_id):
@@ -497,6 +581,10 @@ class ValidationService:
                 key = column["set_id"]
                 if key not in runs:
                     runs[key] = self.latest_run(model_id, key, protocol_version=column["protocol_version"])
+                    run = runs[key]
+                    if run and run["status"] == "succeeded" and not _finite_metrics(run["metrics"]):
+                        # Old libraries may contain successful runs with NaN/Inf metrics.
+                        runs[key] = dict(run, status="failed", error="Validation metrics must be finite.")
                 run = runs[key]
                 value = None
                 if run is not None and run["status"] == "succeeded":
@@ -512,6 +600,7 @@ class ValidationService:
             return cells
 
         baseline_cells = cells_for(baseline_id) if baseline_id else None
+        project_names = {project["id"]: project["name"] for project in self.projects()}
         rows = []
         for model_id in model_ids:
             model = self.get_model(model_id)
@@ -523,16 +612,40 @@ class ValidationService:
                     cell["value"], base, columns[index]["better"], tolerance, columns[index]["abs_tolerance"]
                 )
                 cells[index] = cell
+            set_statuses = {column["set_id"]: cell["status"] for column, cell in zip(columns, cells)}
+            complete = bool(sets) and all(status == "succeeded" for status in set_statuses.values())
+            comparable = complete and baseline_cells is not None and all(
+                base["status"] == "succeeded" and (
+                    model_id == baseline_id or cell["verdict"] is not None or
+                    cell["value"] is None and base["value"] is None
+                )
+                for cell, base in zip(cells, baseline_cells or [])
+            )
             rows.append(
                 {
                     "model_id": model_id,
                     "name": model["name"],
+                    "project_name": project_names.get(model["project_id"], ""),
+                    "temporary": model["project_id"] is None,
                     "is_baseline": model_id == baseline_id,
                     "starred": model["starred"],
                     "cells": cells,
                     "regressions": sum(1 for cell in cells if cell.get("verdict") == "worse"),
+                    "total_sets": len(sets),
+                    "completed_sets": sum(status == "succeeded" for status in set_statuses.values()),
+                    "failed_sets": sum(status == "failed" for status in set_statuses.values()),
+                    "complete": complete,
+                    "comparison_complete": comparable,
                 }
             )
+        if draft is not None:
+            rows.append({
+                "model_id": 0, "name": draft.name, "project_name": "", "temporary": True,
+                "is_baseline": False, "starred": False, "regressions": 0,
+                "cells": [{"value": None, "status": "missing", "error": "", "run_id": None, "verdict": None} for _ in columns],
+                "total_sets": len(sets), "completed_sets": 0, "failed_sets": 0,
+                "complete": False, "comparison_complete": False,
+            })
         return {"suite": suite, "columns": columns, "rows": rows, "tolerance": tolerance}
 
     # -- housekeeping ---------------------------------------------------------

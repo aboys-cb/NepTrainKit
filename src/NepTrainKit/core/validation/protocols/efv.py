@@ -43,6 +43,12 @@ class EnergyForceVirialProtocol(ValidationProtocol):
         issues = []
         if not np.isfinite(labels.energy_per_atom).all():
             issues.append(Issue("error", "Reference energies must be finite."))
+        # Check present labels even when another frame lacks that quantity.
+        per_frame = [reference_labels([frame]) for frame in frames]
+        if any(item.forces is not None and not np.isfinite(item.forces).all() for item in per_frame):
+            issues.append(Issue("error", "Reference forces must be finite."))
+        if any(item.virial_per_atom is not None and not np.isfinite(item.virial_per_atom).all() for item in per_frame):
+            issues.append(Issue("error", "Reference virials must be finite."))
         if labels.forces is None:
             issues.append(Issue("warning", "No force labels; only energies will be compared."))
         return issues
@@ -57,9 +63,20 @@ class EnergyForceVirialProtocol(ValidationProtocol):
         }
 
     def evaluate(self, predictor, frames) -> Evaluation:
+        errors = [issue.message for issue in self.check(frames) if issue.level == "error"]
+        if errors:
+            raise ValueError("; ".join(errors))
         labels = reference_labels(frames)
         prediction = predictor.predict(unlabelled_copies(frames))
-        energy = np.asarray(prediction.energy, dtype=float) / labels.atom_counts
+        energy = np.asarray(prediction.energy, dtype=float)
+        forces = np.asarray(prediction.forces, dtype=float)
+        virials = np.asarray(prediction.structure_virials, dtype=float).reshape(-1, 9)
+        if (energy.shape != labels.energy_per_atom.shape or
+                forces.shape != (int(labels.atom_counts.sum()), 3) or virials.shape != (len(frames), 9)):
+            raise ValueError("Prediction shapes do not match the reference structures.")
+        if not all(np.isfinite(values).all() for values in (energy, forces, virials)):
+            raise ValueError("Predicted energies, forces and virials must be finite.")
+        energy = energy / labels.atom_counts
         de = (energy - labels.energy_per_atom) * 1000
         metrics: dict[str, float | None] = {
             "energy_rmse": rmse(de),
@@ -70,10 +87,9 @@ class EnergyForceVirialProtocol(ValidationProtocol):
         }
         details = {"energy": {"reference": labels.energy_per_atom.tolist(), "predicted": energy.tolist()}}
         if labels.forces is not None:
-            df = (np.asarray(prediction.forces, dtype=float) - labels.forces) * 1000
+            df = (forces - labels.forces) * 1000
             metrics["force_rmse"] = rmse(df)
             metrics["force_mae"] = mae(df)
         if labels.virial_per_atom is not None:
-            predicted_virial = np.asarray(prediction.structure_virials, dtype=float).reshape(-1, 9)
-            metrics["virial_rmse"] = rmse((predicted_virial - labels.virial_per_atom) * 1000)
+            metrics["virial_rmse"] = rmse((virials - labels.virial_per_atom) * 1000)
         return Evaluation(metrics=metrics, details=details)

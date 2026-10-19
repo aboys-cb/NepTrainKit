@@ -99,14 +99,32 @@ class DataManagerWidget(QWidget):
 
     def show_projects(self):
         """Switch to the project registry tab."""
+        database = get_library().database
+        if database.path != self._db.path:
+            self._db = database
+            self.model_service = ModelService(database)
+            self.project_service = ProjectService(database)
+            self.tag_service = TagService(database)
+            for widget in (self.project_widget, self.data_item_widget):
+                widget.db = database
+                widget.model_service = self.model_service
+                widget.project_service = self.project_service
+                widget.tag_service = self.tag_service
+            self.data_item_widget.project = None
+            self.data_item_widget._model.clear()
+            self.data_item_widget._update_action_state()
         self.tabs.setCurrentItem("projects")
         self.stack.setCurrentWidget(self.splitter)
+        self.project_widget.load_all_projects()
+        project = getattr(self.data_item_widget, "project", None)
+        if project is not None:
+            self.data_item_widget.load_models_by_project(project)
 
-    def open_scorecard(self, suite_id, model_id=None):
+    def open_scorecard(self, suite_id, model_id=None, *, draft=None):
         """Switch to the validation tab with ``suite_id`` and ``model_id`` selected."""
         self.tabs.setCurrentItem("validation")
         self.stack.setCurrentWidget(self.library_widget)
-        self.library_widget.open_scorecard(suite_id, model_id)
+        self.library_widget.open_scorecard(suite_id, model_id, draft=draft)
 
     def init_ui(self):
         """Build the validation scorecard and the project/model split view.
@@ -156,7 +174,7 @@ class DataManagerWidget(QWidget):
         self.stack.addWidget(self.splitter)
         self.tabs = SegmentedWidget(self)
         self.tabs.addItem("validation", self.tr("Validation"), lambda: self.stack.setCurrentWidget(self.library_widget))
-        self.tabs.addItem("projects", self.tr("Projects"), lambda: self.stack.setCurrentWidget(self.splitter))
+        self.tabs.addItem("projects", self.tr("Projects"), self.show_projects)
         self.tabs.setCurrentItem("validation")
 
         tab_row = QHBoxLayout()

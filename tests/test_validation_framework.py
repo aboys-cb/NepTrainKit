@@ -31,6 +31,7 @@ from NepTrainKit.core.validation.cli import main as cli_main
 from NepTrainKit.core.validation.protocols import detect_protocol, get_protocol
 from NepTrainKit.core.validation.protocols.eos import fit_eos, summarize_curve
 from NepTrainKit.core.validation.service import compare
+from NepTrainKit.core.validation.service import ModelDraft
 
 DATA = Path(__file__).parent / "data" / "nep"
 MODEL_HEADER = "nep4 2 Te Pb\ncutoff 8 4 74 10\n"
@@ -249,6 +250,73 @@ def test_new_database_starts_at_latest_schema(tmp_path):
         assert conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
 
 
+def test_v1_migration_preserves_models_and_allows_temporary_snapshots(tmp_path):
+    from NepTrainKit.core.dataset.database import _migrate_1_model_snapshots
+
+    path = tmp_path / "v1.db"
+    with sqlite3.connect(path) as conn:
+        conn.executescript(LEGACY_SCHEMA)
+        _migrate_1_model_snapshots(conn)
+        conn.execute("PRAGMA user_version=1")
+    db = Database(path)
+    with db.session() as session:
+        assert session.get(ModelVersion, 1).name == "v1"
+        assert session.get(ModelVersion, 2).parent_id == 1
+        assert [tag.name for tag in session.get(ModelVersion, 2).tags] == ["good"]
+        session.add(ModelVersion(name="temporary", project_id=None, model_type="NEP", model_path="/tmp/nep.txt"))
+        session.commit()
+    Database(path)
+    with sqlite3.connect(path) as conn:
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+        assert conn.execute("SELECT COUNT(*) FROM model_versions").fetchone()[0] == 3
+
+
+def test_temporary_validation_promotes_and_shares_across_projects(make_service, model_file, tmp_path):
+    service = make_service()
+    draft = ModelDraft.from_file(model_file)
+    temporary = service.capture_model(draft, temporary=True)
+    assert temporary["project_id"] is None and temporary["dataset_ref"] == {}
+    assert service.projects() == []
+    benchmark = _import(service, tmp_path, efv_frames(), "efv")
+    suite = service.create_suite("PbTe", [benchmark["id"]])
+    run = service.evaluate(temporary["id"], benchmark["id"])
+    with pytest.raises(ValueError, match="Save this temporary model"):
+        service.set_baseline(suite["id"], temporary["id"])
+    with pytest.raises(ValueError, match="Save this temporary model"):
+        service.star_model(temporary["id"])
+    first = service.save_model(draft, project_name="Project A", name="production")
+    assert first["id"] == temporary["id"] and not first["auto_captured"]
+    second = service.save_model(draft, project_name="Project B", name="candidate")
+    assert first["id"] != second["id"] and first["project_id"] != second["project_id"]
+    assert first["content_hash"] == second["content_hash"]
+    assert service.model_file(first["id"]) == service.model_file(second["id"])
+    assert service.get_model(first["id"])["name"] == "production"
+    assert len(service.models()) == 2
+    assert len(ModelService(service.db).get_models_by_project_id(first["project_id"])) == 1
+    assert len(ModelService(service.db).get_models_by_project_id(second["project_id"])) == 1
+    assert service.evaluate(second["id"], benchmark["id"])["id"] == run["id"]
+    assert service.save_model(draft, project_name="Project B", name="candidate")["id"] == second["id"]
+    # Neither a different source path nor an overwritten training file changes the captured bytes.
+    model_file.write_text(MODEL_HEADER + "retrained")
+    assert service.model_file(first["id"]).read_bytes() == draft.data
+
+
+def test_schema_upgrade_preserves_validation_runs_and_baselines(make_service, model_file, tmp_path):
+    service = make_service()
+    model = service.capture_model(model_file)
+    benchmark = _import(service, tmp_path, efv_frames(), "efv")
+    suite = service.create_suite("PbTe", [benchmark["id"]])
+    service.set_baseline(suite["id"], model["id"])
+    run = service.evaluate(model["id"], benchmark["id"])
+    service.db.engine.dispose()
+    with sqlite3.connect(service.library.db_path) as conn:
+        conn.execute("PRAGMA user_version=1")
+    upgraded = ValidationService(Library(service.library.root))
+    assert upgraded.get_suite(suite["id"])["baseline_model_id"] == model["id"]
+    assert upgraded.latest_run(model["id"], benchmark["id"])["id"] == run["id"]
+    assert upgraded.run_details(run) == service.run_details(run)
+
+
 # -- protocols --------------------------------------------------------------------
 
 def test_eos_fit_and_curve_metrics():
@@ -408,6 +476,101 @@ def test_scorecard_compares_with_baseline(make_service, tmp_path):
     assert service.get_model(old["id"])["auto_captured"] is False  # baselines are protected
 
 
+@pytest.mark.parametrize("field", ["energy", "forces", "structure_virials"])
+@pytest.mark.parametrize("value", [float("nan"), float("inf")])
+def test_nonfinite_predictions_fail_and_are_retried(make_service, model_file, tmp_path, field, value):
+    service = make_service()
+    model = service.capture_model(model_file)
+    benchmark = _import(service, tmp_path, efv_frames(), "efv")
+
+    class InvalidPredictor(FakePredictor):
+        def predict(self, frames):
+            result = super().predict(frames)
+            getattr(result, field).flat[0] = value
+            return result
+
+    service.predictor_factory = lambda *args: InvalidPredictor()
+    run = service.evaluate(model["id"], benchmark["id"])
+    assert run["status"] == "failed" and "finite" in run["error"]
+    assert run["metrics"] == {} and not run["result_path"]
+    service.predictor_factory = lambda *args: FakePredictor()
+    retry = service.evaluate(model["id"], benchmark["id"])
+    assert retry["status"] == "succeeded" and retry["id"] != run["id"]
+
+
+@pytest.mark.parametrize("field", ["forces", "virial"])
+@pytest.mark.parametrize("partial", [False, True])
+def test_nonfinite_reference_labels_are_rejected(make_service, tmp_path, field, partial):
+    frames = efv_frames()
+    if field == "forces":
+        frames[0].arrays["_ref_forces"][0, 0] = np.nan
+    else:
+        for frame in frames:
+            frame.info["virial"] = np.zeros(9)
+        frames[0].info["virial"][0] = np.inf
+    path = write_xyz(tmp_path / "invalid.xyz", frames)
+    if partial:
+        from ase.io import read
+        labelled = read(path, index=":")
+        if field == "forces":
+            del labelled[-1].calc.results["forces"]
+        else:
+            del labelled[-1].info["virial"]
+        write(path, labelled, format="extxyz")
+    with pytest.raises(SetRejectedError, match="finite"):
+        make_service().import_set(path, name="invalid", protocol="efv", provenance={"source_kind": "DFT", "conditions": "PBE"})
+
+
+def test_finite_predictions_with_overflowed_metrics_fail(make_service, model_file, tmp_path):
+    service = make_service()
+    model = service.capture_model(model_file)
+    benchmark = _import(service, tmp_path, efv_frames(), "efv")
+    service.predictor_factory = lambda *args: FakePredictor(scale=1e200)
+    with np.errstate(over="ignore"):
+        run = service.evaluate(model["id"], benchmark["id"])
+    assert run["status"] == "failed" and run["error"] == "Validation metrics must be finite."
+    assert run["metrics"] == {}
+
+
+def test_energy_only_suite_can_complete_without_force_metrics(make_service, model_file, tmp_path):
+    service = make_service()
+    baseline = service.capture_model(model_file)
+    model_file.write_text(MODEL_HEADER + "new")
+    candidate = service.capture_model(model_file)
+    frames = efv_frames()
+    for frame in frames:
+        frame.calc = SinglePointCalculator(frame, energy=frame.info["_ref_energy"])
+    path = tmp_path / "energies.xyz"
+    write(path, frames, format="extxyz")
+    benchmark = service.import_set(path, name="energies", protocol="efv", provenance={"source_kind": "DFT", "conditions": "PBE"})
+    suite = service.create_suite("E", [benchmark["id"]])
+    service.set_baseline(suite["id"], baseline["id"])
+    for model in (baseline, candidate):
+        assert service.evaluate(model["id"], benchmark["id"])["status"] == "succeeded"
+    rows = service.scorecard(suite["id"])["rows"]
+    assert all(row["complete"] and row["comparison_complete"] for row in rows)
+
+
+def test_old_nonfinite_success_is_not_compared_or_reused(make_service, model_file, tmp_path):
+    from NepTrainKit.core.dataset.models import BenchmarkRun
+
+    service = make_service()
+    model = service.capture_model(model_file)
+    benchmark = _import(service, tmp_path, efv_frames(), "efv")
+    suite = service.create_suite("EFV", [benchmark["id"]])
+    run = service.evaluate(model["id"], benchmark["id"])
+    with service.db.session() as session:
+        row = session.get(BenchmarkRun, run["id"])
+        row.metrics = {**row.metrics, "energy_rmse": float("nan")}
+        session.commit()
+    card = service.scorecard(suite["id"])
+    assert not card["rows"][0]["complete"]
+    assert all(cell["status"] == "failed" for cell in card["rows"][0]["cells"])
+    assert compare(float("nan"), 0.0, "lower", 0.05) is None
+    assert compare(0.0, float("inf"), "lower", 0.05) is None
+    assert service.evaluate(model["id"], benchmark["id"])["id"] != run["id"]
+
+
 def test_garbage_collection_keeps_starred_and_baseline_models(make_service, tmp_path):
     service = make_service()
     paths = {}
@@ -472,7 +635,7 @@ def test_cli_round_trip(tmp_path, model_file, capsys, monkeypatch):
     assert json.loads(capsys.readouterr().out)["root"] == str(library.resolve())
 
 
-def test_viewer_captures_opened_model_and_never_raises(tmp_path, model_file, monkeypatch):
+def test_viewer_open_does_not_capture_model_or_dataset(tmp_path, model_file, monkeypatch):
     from NepTrainKit.config import Config
     from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 
@@ -482,15 +645,22 @@ def test_viewer_captures_opened_model_and_never_raises(tmp_path, model_file, mon
         nep_result_data=SimpleNamespace(nep_txt_path=model_file, data_xyz_path=tmp_path / "none"),
         refresh_validation_chip=lambda: None,
     )
-    ShowNepWidget._capture_model_version(viewer)
-    assert ValidationService(Library(tmp_path / "viewer-lib")).find_model_by_file(model_file) is not None
+    ShowNepWidget._associate_model_version(viewer)
+    service = ValidationService(Library(tmp_path / "viewer-lib"))
+    assert service.find_model_by_file(model_file) is None
+    assert service.models() == [] and service.projects() == []
+    assert not list(service.library.objects_dir.glob("*/*"))
+    viewer.nep_result_data.data_xyz_path = tmp_path / "different-data.xyz"
+    viewer.nep_result_data.data_xyz_path.write_text("dataset contents are not read on model open")
+    ShowNepWidget._associate_model_version(viewer)
+    assert service.models() == [] and viewer._validation_draft is not None
     viewer.nep_result_data.nep_txt_path = tmp_path / "not-nep.txt"
     viewer.nep_result_data.nep_txt_path.write_text("deepmd\n")
-    ShowNepWidget._capture_model_version(viewer)  # logged, not raised
+    ShowNepWidget._associate_model_version(viewer)  # logged, not raised
     monkeypatch.setattr(Config, "getboolean", classmethod(lambda cls, s, o, fallback=None: False))
     model_file.write_text(MODEL_HEADER + "disabled")
     viewer.nep_result_data.nep_txt_path = model_file
-    ShowNepWidget._capture_model_version(viewer)
+    ShowNepWidget._associate_model_version(viewer)
     assert ValidationService(Library(tmp_path / "viewer-lib")).find_model_by_file(model_file) is None
 
 

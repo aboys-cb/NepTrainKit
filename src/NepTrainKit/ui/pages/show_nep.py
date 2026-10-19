@@ -259,7 +259,7 @@ class ShowNepWidget(QWidget):
             except Exception:
                 logger.debug(traceback.format_exc())
 
-        if getattr(self, "_validation_model_id", None) is not None:
+        if getattr(self, "_validation_model_id", None) is not None or getattr(self, "_validation_draft", None) is not None:
             # Evaluations may have run on the model library page meanwhile.
             self.refresh_validation_chip()
         auto_load_config = Config.getboolean("widget","auto_load",False)
@@ -914,6 +914,8 @@ class ShowNepWidget(QWidget):
         self.validation_status_action = Action(FluentIcon.CERTIFICATE, "", self.validation_menu)
         self.validation_status_action.setEnabled(False)
         self.validation_star_action = Action(FluentIcon.HEART, self.tr("Star this version"), self.validation_menu)
+        self.validation_save_action = Action(FluentIcon.SAVE, self.tr("Save to project…"), self.validation_menu)
+        self.validation_save_action.triggered.connect(self.save_validation_model)
         self.validation_star_action.triggered.connect(self.toggle_validation_star)
         self.validation_scorecard_action = Action(FluentIcon.LIBRARY, self.tr("Open scorecard"), self.validation_menu)
         self.validation_scorecard_action.triggered.connect(self.open_validation_scorecard)
@@ -922,7 +924,7 @@ class ShowNepWidget(QWidget):
         self.validation_menu.addAction(self.validation_status_action)
         self.validation_menu.addSeparator()
         self.validation_menu.addActions(
-            [self.validation_star_action, self.validation_scorecard_action, self.validation_import_action]
+            [self.validation_save_action, self.validation_star_action, self.validation_scorecard_action, self.validation_import_action]
         )
         self.validation_button.setMenu(self.validation_menu)
         # Inline badges: a corner badge would be clipped by the 30 px footer.
@@ -931,6 +933,9 @@ class ShowNepWidget(QWidget):
         self.validation_dot_badge = DotInfoBadge.info(parent=self.path_container)
         self.validation_dot_badge.hide()
         self._validation_model_id = None
+        self._validation_draft = None
+        self._validation_library_root = None
+        self._validation_library_changed = False
         self._validation_status = None
         self._validation_starred = False
         self.refresh_validation_chip()
@@ -1383,15 +1388,14 @@ class ShowNepWidget(QWidget):
         if callable(reset_camera_fit):
             reset_camera_fit()
         self.struct_index_spinbox.valueChanged.emit(0)
-        self._capture_model_version()
+        self._associate_model_version()
 
-    def _capture_model_version(self) -> None:
-        """Silently record the opened NEP model in the validation library.
-
-        Capturing is content-addressed, so reopening the same model is free and a
-        retrained ``nep.txt`` at the same path becomes a new version.
-        """
+    def _associate_model_version(self) -> None:
+        """Associate opened bytes with an existing version without saving anything."""
         self._validation_model_id = None
+        self._validation_draft = None
+        self._validation_library_root = None
+        self._validation_library_changed = False
         data = self.nep_result_data
         model_path = getattr(data, "nep_txt_path", None)
         if data is None or model_path is None or not Path(model_path).is_file():
@@ -1399,13 +1403,13 @@ class ShowNepWidget(QWidget):
             return
         try:
             from NepTrainKit.core.validation import ValidationService
+            from NepTrainKit.core.validation.service import ModelDraft
 
             service = ValidationService()
-            if Config.getboolean("validation", "auto_capture", True):
-                record = service.capture_model(model_path, dataset_path=getattr(data, "data_xyz_path", None))
-            else:
-                record = service.find_model_by_file(model_path)
+            self._validation_draft = ModelDraft.from_file(model_path)
+            record = service.find_model_by_hash(self._validation_draft.content_hash)
             self._validation_model_id = record["id"] if record else None
+            self._validation_library_root = service.library.root
         except Exception:
             # Validation bookkeeping must never interrupt viewing a dataset.
             logger.debug(traceback.format_exc())
@@ -1443,30 +1447,56 @@ class ShowNepWidget(QWidget):
             self._elide_path_label()
         return super().eventFilter(watched, event)
 
+    def _validation_service(self):
+        """Resolve the library without carrying database-local IDs across libraries."""
+        from NepTrainKit.core.validation import ValidationService
+
+        service = ValidationService()
+        if self._validation_library_root is not None and self._validation_library_root != service.library.root:
+            self._validation_model_id = None
+            self._validation_draft = None
+            self._validation_status = None
+            self._validation_starred = False
+            self._validation_library_changed = True
+        return service
+
     def refresh_validation_chip(self) -> None:
         """Update the validation badge, tooltip and the menu's status line.
 
         Badge: a red count for regressions, a grey dot when something is left
         to do (not set up, not run, no baseline), nothing when all is well.
         """
-        status, has_sets, starred = None, False, False
-        if self._validation_model_id is not None:
+        status, has_sets, starred, saved = None, False, False, False
+        if self._validation_model_id is not None or self._validation_draft is not None:
             try:
-                from NepTrainKit.core.validation import ValidationService
                 from NepTrainKit.ui.views.model_library import CONFIG_SUITE, summarize_model_status
 
-                service = ValidationService()
+                service = self._validation_service()
+                if self._validation_draft is not None and self._validation_model_id is None:
+                    record = service.find_model_by_hash(self._validation_draft.content_hash)
+                    self._validation_model_id = record["id"] if record else None
                 preferred = Config.getint("validation", CONFIG_SUITE, 0) or None
-                status = summarize_model_status(service, self._validation_model_id, preferred)
-                has_sets = status is not None or bool(service.sets())
-                starred = bool(service.get_model(self._validation_model_id)["starred"])
+                if self._validation_model_id is not None:
+                    status = summarize_model_status(service, self._validation_model_id, preferred)
+                    has_sets = status is not None or bool(service.sets())
+                    record = service.get_model(self._validation_model_id)
+                    starred = bool(record["starred"])
+                    saved = record["project_id"] is not None
             except Exception:
                 logger.debug(traceback.format_exc())
         self._validation_status = status
         self._validation_starred = starred
         hint = ""
         badge: int | str | None = None
-        if self._validation_model_id is None:
+        if self._validation_library_changed:
+            text = self.tr("Validation: library changed")
+            hint = self.tr("Reopen the NEP model to associate it with the current library")
+            badge = "dot"
+        elif self._validation_model_id is None and self._validation_draft is not None:
+            text = self.tr("Validation: unsaved model")
+            hint = self.tr("Save to a project, or open the scorecard for temporary validation")
+            badge = "dot"
+        elif self._validation_model_id is None:
             text = self.tr("Validation: no NEP model open")
             hint = self.tr("Open a NEP model to validate it, or browse the validation scorecard")
         elif status is None:
@@ -1474,20 +1504,29 @@ class ShowNepWidget(QWidget):
             hint = self.tr("Import a DFT benchmark set to start validating this model")
             badge = "dot"
         else:
-            if not status["evaluated"]:
+            if not status["evaluated"] and not status["failed_sets"]:
                 text, badge = self.tr("Validation: {suite} · not run"), "dot"
+            elif not status["complete"]:
+                text = self.tr("Validation: {suite} · {done}/{total} sets complete · {failed} failed")
+                badge = status["regressions"] or "dot"
             elif status["is_baseline"]:
                 text = self.tr("Validation: {suite} · baseline")
             elif not status["has_baseline"]:
                 text, badge = self.tr("Validation: {suite} · no baseline"), "dot"
+            elif not status["comparison_complete"]:
+                text, badge = self.tr("Validation: {suite} · baseline comparison incomplete"), status["regressions"] or "dot"
             else:
                 text = self.tr("Validation: {suite} · {count} regressions")
                 badge = status["regressions"] or None
-            text = text.format(suite=status["suite_name"], count=status["regressions"])
+            text = text.format(suite=status["suite_name"], count=status["regressions"],
+                               done=status["completed_sets"], total=status["total_sets"], failed=status["failed_sets"])
+        if self._validation_model_id is not None and not saved:
+            text = self.tr("Temporary · {status}").format(status=text)
         self.validation_status_action.setText(text)
         self.validation_button.setToolTip(f"{text}\n{hint}" if hint else text)
         self._show_validation_badge(badge)
-        self.validation_star_action.setEnabled(self._validation_model_id is not None)
+        self.validation_save_action.setEnabled(self._validation_draft is not None)
+        self.validation_star_action.setEnabled(saved)
         self.validation_star_action.setText(
             self.tr("Unstar this version") if starred else self.tr("Star this version")
         )
@@ -1501,10 +1540,32 @@ class ShowNepWidget(QWidget):
         self.validation_dot_badge.setVisible(badge == "dot")
 
     def open_validation_scorecard(self) -> None:
+        self.refresh_validation_chip()
         status = self._validation_status
         if hasattr(self._parent, "open_model_scorecard"):
             suite_id = status["suite_id"] if status is not None else None
-            self._parent.open_model_scorecard(suite_id, self._validation_model_id)
+            if self._validation_model_id is None and self._validation_draft is not None:
+                self._parent.open_model_scorecard(suite_id, draft=self._validation_draft)
+            else:
+                self._parent.open_model_scorecard(suite_id, self._validation_model_id)
+
+    def save_validation_model(self) -> None:
+        from NepTrainKit.ui.widgets.validation_dialogs import save_model_to_project
+
+        try:
+            service = self._validation_service()
+            if self._validation_draft is None:
+                self.refresh_validation_chip()
+                return
+            record = save_model_to_project(self.window(), service, self._validation_draft)
+            if record is None:
+                return
+            self._validation_library_root = Path(record["library_root"])
+            self._validation_model_id = record["id"]
+            self.refresh_validation_chip()
+            MessageManager.send_success_message(self.tr("Saved to project"))
+        except Exception as error:
+            MessageManager.send_error_message(str(error))
 
     def import_validation_benchmark(self) -> None:
         """Import a benchmark set without leaving the viewer, then update the chip."""
@@ -1514,12 +1575,12 @@ class ShowNepWidget(QWidget):
 
     def toggle_validation_star(self) -> None:
         """Star or unstar the opened version; starred versions survive library clean-up."""
-        if self._validation_model_id is None:
-            return
         try:
-            from NepTrainKit.core.validation import ValidationService
-
-            ValidationService().star_model(self._validation_model_id, not self._validation_starred)
+            service = self._validation_service()
+            if self._validation_model_id is None:
+                self.refresh_validation_chip()
+                return
+            service.star_model(self._validation_model_id, not self._validation_starred)
         except Exception as error:
             MessageManager.send_error_message(str(error))
             return

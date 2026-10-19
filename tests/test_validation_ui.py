@@ -239,7 +239,7 @@ def test_viewer_chip_shows_regressions_and_opens_scorecard(scored, tmp_path, mon
     viewer.refresh_validation_chip(stub)
     assert not stub.validation_chip.isHidden()
     count = summarize_model_status(scored.service, scored.new["id"])["regressions"]
-    assert count > 0 and stub.validation_chip.text() == f"Validation: PbTe · {count} regressions"
+    assert stub.validation_chip.text() == f"Validation: PbTe · {count} regressions"
     stub.validation_chip.clicked.connect(lambda: viewer._open_validation_scorecard(stub))
     stub.validation_chip.click()
     assert opened == [(scored.suite["id"], scored.new["id"])]

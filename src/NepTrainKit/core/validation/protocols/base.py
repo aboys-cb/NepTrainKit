@@ -31,6 +31,9 @@ class Metric:
     unit: str
     better: str = "lower"  # lower | higher | closer-to-zero
     headline: bool = False
+    # Differences up to this many ``unit`` count as unchanged; relative
+    # tolerance alone turns noise into verdicts when the baseline is near zero.
+    abs_tolerance: float = 0.0
 
 
 @dataclass(frozen=True)

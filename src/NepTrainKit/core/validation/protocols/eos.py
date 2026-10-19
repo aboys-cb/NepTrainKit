@@ -66,8 +66,10 @@ class EquationOfStateProtocol(ValidationProtocol):
         Metric("shape_rmse", "Curve RMSE (offset removed)", "meV/atom", headline=True),
         Metric("max_shape_error", "Max curve error", "meV/atom"),
         Metric("raw_rmse", "Raw RMSE", "meV/atom"),
-        Metric("v0_error", "V₀ error", "%", better="closer-to-zero", headline=True),
-        Metric("b0_error", "B₀ error", "%", better="closer-to-zero", headline=True),
+        # Floors sit at the precision of a Birch-Murnaghan fit on a 5-10 point
+        # scan: V₀ is pinned to ~0.1 %, while B₀ (a curvature) wobbles by ~1 %.
+        Metric("v0_error", "V₀ error", "%", better="closer-to-zero", headline=True, abs_tolerance=0.1),
+        Metric("b0_error", "B₀ error", "%", better="closer-to-zero", headline=True, abs_tolerance=1.0),
     )
 
     def detect(self, frames) -> float:

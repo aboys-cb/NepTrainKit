@@ -90,14 +90,20 @@ def _nep_predictor(model_path: Path, backend: str):
     return NepCalculator(model_path, backend=backend)
 
 
-def compare(value: float | None, baseline: float | None, better: str, tolerance: float) -> str | None:
-    """``better`` / ``worse`` / ``same`` relative to the baseline value."""
+def compare(
+    value: float | None, baseline: float | None, better: str, tolerance: float, abs_tolerance: float = 0.0
+) -> str | None:
+    """``better`` / ``worse`` / ``same`` relative to the baseline value.
+
+    Differences within ``tolerance`` of the baseline, or within ``abs_tolerance``
+    in the metric's own unit, are ``same``.
+    """
     if value is None or baseline is None:
         return None
     if better == "closer-to-zero":
         value, baseline, better = abs(value), abs(baseline), "lower"
     scale = max(abs(baseline), 1e-12)
-    if abs(value - baseline) <= tolerance * scale:
+    if abs(value - baseline) <= max(tolerance * scale, abs_tolerance):
         return "same"
     improved = value < baseline if better == "lower" else value > baseline
     return "better" if improved else "worse"
@@ -470,6 +476,7 @@ class ValidationService:
                         "label": metric.label,
                         "unit": metric.unit,
                         "better": metric.better,
+                        "abs_tolerance": metric.abs_tolerance,
                     }
                 )
         baseline_id = suite["baseline_model_id"]
@@ -513,7 +520,7 @@ class ValidationService:
                 cell = dict(cell)
                 base = baseline_cells[index]["value"] if baseline_cells else None
                 cell["verdict"] = None if model_id == baseline_id else compare(
-                    cell["value"], base, columns[index]["better"], tolerance
+                    cell["value"], base, columns[index]["better"], tolerance, columns[index]["abs_tolerance"]
                 )
                 cells[index] = cell
             rows.append(

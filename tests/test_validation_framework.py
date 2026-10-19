@@ -295,6 +295,18 @@ def test_compare_respects_metric_direction():
     assert compare(None, 1.0, "lower", 0.05) is None
 
 
+def test_compare_absolute_floor_absorbs_noise_near_zero():
+    # A ~0 % baseline makes any relative tolerance vanish.
+    assert compare(0.004, 1e-6, "closer-to-zero", 0.05) == "worse"
+    assert compare(0.004, 1e-6, "closer-to-zero", 0.05, abs_tolerance=0.1) == "same"
+    assert compare(-0.09, 0.0, "closer-to-zero", 0.05, abs_tolerance=0.1) == "same"
+    assert compare(0.5, 0.0, "closer-to-zero", 0.05, abs_tolerance=0.1) == "worse"
+    assert compare(0.0, 0.5, "closer-to-zero", 0.05, abs_tolerance=0.1) == "better"
+    # Far from zero the relative tolerance still governs.
+    assert compare(10.4, 10.0, "lower", 0.05, abs_tolerance=0.1) == "same"
+    assert compare(11.0, 10.0, "lower", 0.05, abs_tolerance=0.1) == "worse"
+
+
 # -- service ----------------------------------------------------------------------
 
 def test_header_parsing():
@@ -390,6 +402,9 @@ def test_scorecard_compares_with_baseline(make_service, tmp_path):
     assert rows[old["id"]]["is_baseline"] and rows[old["id"]]["regressions"] == 0
     verdicts = {c["metric"]: cell["verdict"] for c, cell in zip(card["columns"], rows[new["id"]]["cells"])}
     assert verdicts["energy_rmse"] == "better" and verdicts["force_rmse"] == "better"
+    # Both V₀ errors are fit noise around 0 %, which must not read as a regression.
+    assert verdicts["v0_error"] == "same"
+    assert {c["metric"]: c["abs_tolerance"] for c in card["columns"]}["v0_error"] == 0.1
     assert service.get_model(old["id"])["auto_captured"] is False  # baselines are protected
 
 

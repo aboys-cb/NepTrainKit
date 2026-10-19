@@ -14472,6 +14472,14 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>
+    <message>
+      <source>EOS sampling · {name}</source>
+      <translation>EOS 采样 · {name}</translation>
+    </message>
+    <message>
+        <source>{count} structures repeat the reference. Adjust the range or point count and run again.</source>
+        <translation>有 {count} 个结构与参考数据重复，请调整范围或点数后重新运行。</translation>
+    </message>
 </context>
 <context>
     <name>MakeWorkflowArea</name>
@@ -15555,6 +15563,10 @@ All child items will also be deleted.</source>
         <location filename="../main.py" line="709" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
+    </message>
+    <message>
+      <source>EOS supplementary sampling</source>
+      <translation>EOS 补充采样</translation>
     </message>
 </context>
 <context>
@@ -18242,6 +18254,14 @@ All child items will also be deleted.</source>
     <message>
         <source>Back to all groups</source>
         <translation>返回全部组</translation>
+    </message>
+    <message>
+      <source>Supplementary sampling…</source>
+      <translation>补充采样…</translation>
+    </message>
+    <message>
+        <source>Create sampling workflow</source>
+        <translation>创建采样工作流</translation>
     </message>
 </context>
 <context>
@@ -29847,6 +29867,108 @@ Magnetic: {magnetic}</source>
     <message>
         <source>{count} comparison models selected</source>
         <translation>已选 {count} 个对比势</translation>
+    </message>
+</context>
+<context>
+    <name>MakeDataWorkspace</name>
+    <message>
+        <source>Original workflow</source>
+        <translation>原工作流</translation>
+    </message>
+    <message>
+        <source>EOS sampling · {name}</source>
+        <translation>EOS 采样 · {name}</translation>
+    </message>
+    <message>
+        <source>Stop the running workflow before closing this draft.</source>
+        <translation>请先停止运行中的工作流，再关闭此草稿。</translation>
+    </message>
+</context>
+<context>
+    <name>EOSSamplingPanel</name>
+    <message>
+        <source>EOS sampling range</source>
+        <translation>EOS 体积采样</translation>
+    </message>
+    <message>
+        <source>Reset view</source>
+        <translation>重置视图</translation>
+    </message>
+    <message>
+        <source>No current-model result; choose an interval manually.</source>
+        <translation>当前势尚无验证结果，可手动选择体积范围。</translation>
+    </message>
+    <message>
+        <source>Constant offset only: check the energy reference before adding data.</source>
+        <translation>主要差异为常数能量偏移，建议先核对能量基准。</translation>
+    </message>
+    <message>
+        <source>Reference minimum is not bracketed; complete the reference scan first.</source>
+        <translation>参考曲线未包围能量最低点，建议先补齐参考扫描。</translation>
+    </message>
+    <message>
+        <source>Suggested near the largest shape residual: {peak:.2f} meV/atom.</source>
+        <translation>建议采样最大曲线偏差附近：{peak:.2f} meV/atom。</translation>
+    </message>
+    <message>
+        <source>Volume (Å³/atom)</source>
+        <translation>体积（Å³/atom）</translation>
+    </message>
+    <message>
+        <source>Relative energy (meV/atom)</source>
+        <translation>相对能量（meV/atom）</translation>
+    </message>
+    <message>
+        <source>DFT reference</source>
+        <translation>DFT 参考</translation>
+    </message>
+    <message>
+        <source>Current model · offset removed</source>
+        <translation>当前势 · 已去除常数偏移</translation>
+    </message>
+    <message>
+        <source>Drag edges to resize; drag the shaded band to move. Triangles mark volumes, not energies.</source>
+        <translation>拖动两侧边界调整范围，拖动色带整体平移。三角仅标记采样体积。</translation>
+    </message>
+    <message>
+        <source>Start (Å³/atom)</source>
+        <translation>起始体积（Å³/atom）</translation>
+    </message>
+    <message>
+        <source>End (Å³/atom)</source>
+        <translation>终止体积（Å³/atom）</translation>
+    </message>
+    <message>
+        <source>Points</source>
+        <translation>点数</translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation>序号</translation>
+    </message>
+    <message>
+        <source>Lattice strain (%)</source>
+        <translation>晶格应变（%）</translation>
+    </message>
+    <message>
+        <source>Volume point details</source>
+        <translation>体积点明细</translation>
+    </message>
+    <message>
+        <source>Choose an increasing positive range and 2–100 resolvable points.</source>
+        <translation>请设置递增的正体积范围和 2–100 个可分辨的采样点。</translation>
+    </message>
+    <message>
+        <source>EOS preview needs isotropic strain, 2–100 points and molecular handling disabled.</source>
+        <translation>EOS 预览需使用各向同性应变、2–100 个点，并关闭分子刚性处理。</translation>
+    </message>
+    <message>
+        <source>{count} planned points · Run the workflow to generate structures. Equal lattice-scale steps.</source>
+        <translation>计划 {count} 个点 · 点击“运行”生成结构，按晶格缩放等间隔采样。</translation>
+    </message>
+    <message>
+        <source>{count} unlabelled structures generated by the card. Use its output and export actions.</source>
+        <translation>卡片已生成 {count} 个待标注结构，可通过卡片输出查看和导出。</translation>
     </message>
 </context>
 </TS>

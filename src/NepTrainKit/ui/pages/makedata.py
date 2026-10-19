@@ -94,6 +94,10 @@ class MakeDataWidget(QWidget):
         self._active_workflow_name: str | None = None
         self._source_template_name: str | None = None
         self._workflow_dirty = False
+        self._sampling_panel = None
+        self._sampling_revision = 0
+        self._sampling_run_revision = -1
+        self._sampling_attached = False
         self.init_action()
         self.init_ui()
         self.dataset=None
@@ -434,6 +438,10 @@ class MakeDataWidget(QWidget):
         if callable(refresh):
             refresh()
         self._mark_workflow_dirty()
+        if self._sampling_attached and not self._sampling_panel._updating:
+            if card is self._sampling_card:
+                self._sampling_panel.sync_from_card()
+            self._invalidate_sampling_results()
 
     def _confirm_discard_workflow_changes(self) -> bool:
         if not self._workflow_dirty or not self.workspace_card_widget.cards:
@@ -452,6 +460,85 @@ class MakeDataWidget(QWidget):
             return
         self.workspace_card_widget.clear_cards()
         self._set_active_workflow(None, dirty=False)
+
+    def load_sampling_draft(self, payload: dict) -> None:
+        """Load a validation handoff into a fresh editor, never replace a workflow."""
+        if self.workspace_card_widget.cards or self.dataset:
+            raise ValueError("Sampling drafts must be opened in a fresh workflow tab.")
+        cards = self._normalise_card_config_payload(payload["workflow"])
+        self.dataset = [atoms.copy() for atoms in payload["structures"]]
+        self._add_card_configs(cards, notify=False)
+        self._set_active_workflow(None, dirty=True,
+                                  display_name=self.tr("EOS sampling · {name}").format(name=payload["name"]))
+        self.dataset_info_label.setText(self.tr("Success load {count} structures.").format(count=len(self.dataset)))
+        self._refresh_input_count_previews()
+        if payload.get("eos_context"):
+            from NepTrainKit.ui.widgets.eos_sampling import EOSSamplingPanel
+            area = self.workspace_card_widget
+            self._sampling_card = area.cards[0]
+            self._sampling_parent = self.dataset[0]
+            self._sampling_panel = EOSSamplingPanel(area.canvas_column, card=self._sampling_card,
+                                                    atoms=self._sampling_parent, context=payload["eos_context"])
+            self._sampling_attached = True
+            area.canvas_column_layout.addWidget(self._sampling_panel, 3)
+            area.scroll_area.setMinimumHeight(110)
+            area.selectedCardChanged.connect(self._select_sampling_context)
+            area.workflowChanged.connect(self._refresh_sampling_context)
+            self._sampling_panel.parametersChanged.connect(self._invalidate_sampling_results)
+
+    def _select_sampling_context(self, card):
+        self._sampling_panel.setVisible(self._sampling_attached and card is self._sampling_card)
+
+    def _refresh_sampling_context(self):
+        if not self._sampling_attached:
+            return
+        if (not self.dataset or len(self.dataset) != 1 or self.dataset[0] is not self._sampling_parent
+                or not self.workspace_card_widget.cards
+                or self.workspace_card_widget.cards[0] is not self._sampling_card):
+            self._invalidate_sampling_results()
+            self._sampling_attached = False
+            self._sampling_panel.hide()
+
+    def _lock_sampling_controls(self, locked):
+        if self._sampling_attached:
+            self._sampling_panel.set_editing_enabled(not locked)
+            self._sampling_card.setting_widget.setEnabled(not locked)
+
+    def _invalidate_sampling_results(self):
+        if not self._sampling_attached:
+            return
+        self._sampling_revision += 1
+        self.stop_run_card()
+        for node in self.workspace_card_widget.all_cards():
+            node.result_dataset = []
+            node.set_output_available(False)
+            if hasattr(node, "run_outcome") and not self._card_is_running(node):
+                node.run_outcome = "idle"
+                node._set_card_status("idle")
+        self._last_completed_card_index = None
+        self.setting_group.set_output_available(False)
+        self._lock_sampling_controls(False)
+
+    def _on_sampling_output_finished(self, card):
+        if not self._sampling_attached:
+            return
+        if self._sampling_run_revision != self._sampling_revision:
+            card.result_dataset = []
+            card.run_outcome = "canceled"
+            card.set_output_available(False)
+            return
+        if card is self._sampling_card and card.run_outcome == "succeeded":
+            from NepTrainKit.core.validation.sampling import reference_overlaps
+            repeats = sum(reference_overlaps(card.result_dataset, self._sampling_panel.context["references"]))
+            if repeats:
+                card.result_dataset = []
+                card.run_outcome = "failed"
+                card.set_output_available(False)
+                card._set_card_status("failed")
+                self._sampling_panel.status_label.setText(self.tr("{count} structures repeat the reference. Adjust the range or point count and run again.").format(count=repeats))
+                self._lock_sampling_controls(False)
+            else:
+                self._sampling_panel.show_outputs(card.result_dataset)
 
     def save_workflow(self) -> None:
         if self._active_workflow_id is None:
@@ -670,6 +757,7 @@ class MakeDataWidget(QWidget):
         if len(structures_list)==0:
             return
         self.dataset=structures_list
+        self._refresh_sampling_context()
         self._refresh_input_count_previews()
         MessageManager.send_success_message(
             self.tr("success load {count} structures.").format(count=len(structures_list))
@@ -722,6 +810,8 @@ class MakeDataWidget(QWidget):
 
     def _cards_for_export(self, include_all: bool):
         """Return available outputs for the requested workflow export scope."""
+        if self._sampling_attached and self._sampling_run_revision != self._sampling_revision:
+            return []
         enabled_cards = [
             card
             for card in self.workspace_card_widget.cards
@@ -859,6 +949,9 @@ class MakeDataWidget(QWidget):
                 self.tr("Cards are still running. Please wait for the current run to finish.")
             )
             return
+        if self._sampling_attached and not self._sampling_panel.valid:
+            MessageManager.send_info_message(self._sampling_panel.status_label.text())
+            return
         self.stop_run_card()
         self._last_completed_card_index = None
         self.setting_group.set_output_available(False)
@@ -888,6 +981,9 @@ class MakeDataWidget(QWidget):
                 )
                 return
             first_card.set_dataset(self.dataset or [])
+
+            self._sampling_run_revision = self._sampling_revision
+            self._lock_sampling_controls(True)
 
             first_card.runFinishedSignal.connect(self._run_next_card)
             self.setting_group.set_running(True)
@@ -960,6 +1056,7 @@ class MakeDataWidget(QWidget):
         current_card=cards[current_card_index]
         current_card.runFinishedSignal.disconnect(self._run_next_card)
         if getattr(current_card, "run_outcome", "succeeded") != "succeeded":
+            self._lock_sampling_controls(False)
             self.setting_group.set_running(False)
             self._last_completed_card_index = None
             self.setting_group.set_output_available(
@@ -976,6 +1073,7 @@ class MakeDataWidget(QWidget):
             next_card.runFinishedSignal.connect(self._run_next_card)
             next_card.run()
         else:
+            self._lock_sampling_controls(False)
             self.setting_group.set_running(False)
             self.setting_group.set_output_available(
                 bool(self._cards_for_export(include_all=True))
@@ -1018,6 +1116,7 @@ class MakeDataWidget(QWidget):
     def _connect_card_output_actions(self, card) -> None:
         """Connect output actions for a card and any nested group cards."""
         if getattr(card, "_output_actions_owner", None) is not self:
+            card.runFinishedSignal.connect(lambda *_args, node=card: self._on_sampling_output_finished(node))
             card.viewOutputSignal.connect(self.request_card_output)
             card.state_checkbox.stateChanged.connect(
                 self._refresh_selected_output_available
@@ -1059,6 +1158,7 @@ class MakeDataWidget(QWidget):
         import warnings
 
         self.setting_group.set_running(False)
+        self._lock_sampling_controls(False)
         for card in self.workspace_card_widget.cards:
             try:
                 with warnings.catch_warnings():

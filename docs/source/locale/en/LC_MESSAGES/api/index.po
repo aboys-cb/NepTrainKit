@@ -3090,3 +3090,6 @@ msgstr ""
 
 #~ msgid "Return a stable element-set key for ASE or NepTrainKit structures."
 #~ msgstr ""
+
+msgid "Empty the selection and its undo history, notifying listeners."
+msgstr ""

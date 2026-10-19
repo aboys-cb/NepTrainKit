@@ -180,7 +180,7 @@ class NepTrainKitMainWindow(FluentWindow):
             self.tr('Training Set Audit'),
         )
         self.addSubInterface(
-            self.make_data_interface,
+            self.make_data_workspace,
             QIcon(':/images/src/images/make.svg'),
             self.tr('Make Dataset'),
         )
@@ -206,12 +206,17 @@ class NepTrainKitMainWindow(FluentWindow):
         )
         self.training_set_audit_host.attach(self.training_set_audit_interface)
         self.training_set_audit_window = TrainingSetAuditWindow(self)
-        self.make_data_interface = MakeDataWidget(self)
+        from NepTrainKit.ui.pages.makedata_workspace import MakeDataWorkspace
+        self.make_data_workspace = MakeDataWorkspace(self)
+        self.make_data_interface = self.make_data_workspace.primary_editor
         self.setting_interface = SettingsWidget(self)
         self.setting_interface.canvasModeChanged.connect(
             self.show_nep_interface.graph_widget.apply_canvas_mode
         )
         self.data_manager_interface = DataManagerWidget(self)
+        self.data_manager_interface.library_widget.samplingWorkflowRequested.connect(
+            self.open_eos_sampling_workflow
+        )
         self._audited_result_data = None
         self._audited_result_signature = None
         self._audited_result = None
@@ -221,9 +226,14 @@ class NepTrainKitMainWindow(FluentWindow):
         self._make_dataset_handoff_thread = None
         self._make_dataset_handoff_token = None
         self._connect_training_set_audit_signals()
-        self.make_data_interface.finalOutputRequestedSignal.connect(
+        self.make_data_workspace.finalOutputRequestedSignal.connect(
             self.open_make_dataset_output
         )
+
+    def open_eos_sampling_workflow(self, payload: dict) -> None:
+        """Open the sampling draft within the third module, preserving other tabs."""
+        self.make_data_workspace.open_sampling(payload)
+        self.switchTo(self.make_data_workspace)
 
     def _connect_training_set_audit_signals(self) -> None:
         """Wire Training Set Audit page actions back into the main window."""

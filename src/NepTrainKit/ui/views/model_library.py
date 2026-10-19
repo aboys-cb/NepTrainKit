@@ -271,6 +271,7 @@ class RunDetailPanel(QWidget):
     groupFocused = Signal(str)
     allGroupsRequested = Signal()
     comparisonRemoved = Signal(int)
+    samplingRequested = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -470,7 +471,7 @@ class RunDetailPanel(QWidget):
             button.toggled.connect(lambda checked, series=key: self._set_series_visible(series, checked))
             row.addWidget(button)
             if key is not None and key != self._current_key:
-                remove = TransparentToolButton(FluentIcon.CLOSE, holder)
+                remove = TransparentToolButton(FluentIcon.CLOSE.colored(palette.PLOT_REJECT, palette.PLOT_REJECT), holder)
                 remove.setToolTip(self.tr("Remove comparison model"))
                 remove.setAccessibleName(self.tr("Remove comparison model"))
                 remove.clicked.connect(lambda _checked=False, series=key: self.comparisonRemoved.emit(series))
@@ -560,13 +561,14 @@ class RunDetailPanel(QWidget):
             title.setWordWrap(True)
             title.setToolTip(benchmark["name"])
             heading.addWidget(title, 1)
-            reset = TransparentToolButton(FluentIcon.SYNC, card)
+            reset = TransparentToolButton(FluentIcon.SYNC.colored(palette.ACCENT, palette.ACCENT), card)
             reset.setObjectName("resetEosView")
             reset.setToolTip(self.tr("Reset view: fit all visible curves"))
             reset.setAccessibleName(self.tr("Reset view"))
             heading.addWidget(reset)
             focused = len(self._groups) == 1 and self._total_groups > 1
-            focus = TransparentToolButton(FluentIcon.ZOOM_OUT if focused else FluentIcon.ZOOM_IN, card)
+            focus = TransparentToolButton((FluentIcon.ZOOM_OUT if focused else FluentIcon.ZOOM_IN).colored(
+                palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY), card)
             focus.setObjectName("toggleEosGroupFocus")
             focus.setToolTip(self.tr("Back to all groups") if focused else self.tr("Enlarge this group"))
             focus.setAccessibleName(focus.toolTip())
@@ -576,6 +578,12 @@ class RunDetailPanel(QWidget):
                 focus.clicked.connect(lambda _checked=False, group=tag: self.groupFocused.emit(group))
             focus.setVisible(self._total_groups > 1)
             heading.addWidget(focus)
+            sample = TransparentToolButton(QIcon(':/images/src/images/make.svg'), card)
+            sample.setObjectName("eosSamplingButton")
+            sample.setToolTip(self.tr("Create sampling workflow"))
+            sample.setAccessibleName(sample.toolTip())
+            sample.clicked.connect(lambda _checked=False, set_id=benchmark["id"]: self.samplingRequested.emit(set_id))
+            heading.addWidget(sample)
             card_layout.addLayout(heading)
             status = [self.tr("{count} volume points").format(count=len(summary["volumes"]))]
             if formula and name.startswith(formula + "_"):
@@ -660,6 +668,7 @@ class ModelLibraryWidget(QWidget):
     """Suite selector, scorecard table and per-set details for captured models."""
 
     scorecardChanged = Signal()
+    samplingWorkflowRequested = Signal(object)
 
     def __init__(self, parent=None, service: ValidationService | None = None):
         super().__init__(parent)
@@ -681,24 +690,24 @@ class ModelLibraryWidget(QWidget):
         self.suite_combo = ComboBox(self)
         self.suite_combo.setMinimumWidth(190)
         self.suite_combo.currentIndexChanged.connect(self._on_suite_changed)
-        self.refresh_button = TransparentToolButton(FluentIcon.SYNC, self)
+        self.refresh_button = TransparentToolButton(FluentIcon.SYNC.colored(palette.ACCENT, palette.ACCENT), self)
         self.refresh_button.setToolTip(self.tr("Refresh"))
         self.refresh_button.setAccessibleName(self.tr("Refresh"))
         self.refresh_button.clicked.connect(lambda: self.refresh())
-        self.import_button = TransparentPushButton(FluentIcon.ADD, self.tr("Import"), self)
+        self.import_button = TransparentPushButton(QIcon(':/images/src/images/open.svg'), self.tr("Import"), self)
         self.import_button.setToolTip(self.tr("Import reference dataset"))
         self.import_button.setAccessibleName(self.tr("Import reference dataset"))
-        self.star_button = TransparentToolButton(FluentIcon.HEART, self)
+        self.star_button = TransparentToolButton(FluentIcon.HEART.colored(palette.PLOT_SELECTED, palette.PLOT_SELECTED), self)
         self.star_button.setCheckable(True)
-        self.save_button = TransparentToolButton(FluentIcon.SAVE, self)
+        self.save_button = TransparentToolButton(QIcon(':/images/src/images/save.svg'), self)
         self.save_button.setToolTip(self.tr("Save to project…"))
         self.save_button.setAccessibleName(self.tr("Save to project…"))
-        self.baseline_button = TransparentToolButton(FluentIcon.PIN, self)
+        self.baseline_button = TransparentToolButton(FluentIcon.PIN.colored(palette.PLOT_CURRENT, palette.PLOT_CURRENT), self)
         self.baseline_button.setToolTip(self.tr("Set baseline model") + "\n" + self.tr("Set a saved version to compare model improvements and regressions."))
         self.baseline_button.setAccessibleName(self.tr("Set baseline model"))
         self.run_current_button = PrimaryPushButton(FluentIcon.PLAY, self.tr("Validate current version"), self)
-        self.run_button = PushButton(FluentIcon.PLAY, self.tr("Run all"), self)
-        self.run_selected_button = PushButton(FluentIcon.PLAY, self.tr("Validate selected versions"), self)
+        self.run_button = PushButton(QIcon(':/images/src/images/run.svg'), self.tr("Run all"), self)
+        self.run_selected_button = PushButton(QIcon(':/images/src/images/run.svg'), self.tr("Validate selected versions"), self)
         self.run_selected_button.setToolTip(self.tr("Validate the current model and selected comparison models, including hidden curves."))
         self.run_selected_button.clicked.connect(self.run_selected)
         self.model_combo = ComboBox(self)
@@ -782,7 +791,8 @@ class ModelLibraryWidget(QWidget):
         self.detail.comparisonRemoved.connect(self.comparison_picker.remove_id)
         self.detail.allGroupsRequested.connect(self._select_all_groups)
         self.detail.groupFocused.connect(lambda tag: self.table.selectRow(int(tag[1:]) - 1))
-        self.metrics_button = PushButton(FluentIcon.CHEVRON_RIGHT, self.tr("Error details"), self)
+        self.detail.samplingRequested.connect(self.open_sampling)
+        self.metrics_button = PushButton(FluentIcon.CHEVRON_RIGHT.colored(palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY), self.tr("Error details"), self)
         self.metrics_button.setCheckable(True)
         self.metrics_button.toggled.connect(self._toggle_metrics)
         self.table.hide()
@@ -818,7 +828,8 @@ class ModelLibraryWidget(QWidget):
 
     def _toggle_metrics(self, expanded):
         self.table.setVisible(expanded)
-        self.metrics_button.setIcon(FluentIcon.CHEVRON_DOWN_MED if expanded else FluentIcon.CHEVRON_RIGHT)
+        self.metrics_button.setIcon((FluentIcon.CHEVRON_DOWN_MED if expanded else FluentIcon.CHEVRON_RIGHT).colored(
+            palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY))
         if expanded:
             self.splitter.setSizes([max(260, self.splitter.height() - 180), 180])
 
@@ -1059,7 +1070,8 @@ class ModelLibraryWidget(QWidget):
         focused = len(selected) < len(benchmarks)
         self.all_groups_button.setEnabled(focused)
         self.all_groups_button.setText(self.tr("Back to all groups") if focused else self.tr("Show all groups"))
-        self.all_groups_button.setIcon(FluentIcon.RETURN if focused else None)
+        self.all_groups_button.setIcon(FluentIcon.RETURN.colored(
+            palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY) if focused else None)
         rows = []
         for model_id in self.selected_model_ids():
             row = self.model.row(self.model.row_of_model(model_id))
@@ -1094,6 +1106,27 @@ class ModelLibraryWidget(QWidget):
             self.detail.show_runs(None, [])
 
     # -- actions --------------------------------------------------------------
+    def open_sampling(self, set_id):
+        from NepTrainKit.core.validation.sampling import sampling_payload
+        service = self._view_service()
+        if service is None:
+            return None
+        try:
+            benchmark = service.get_set(set_id)
+            if benchmark["protocol"] != "eos":
+                return None
+            row = self.current_model_row()
+            model = service.get_model(row["model_id"]) if row and row["model_id"] else None
+            run = service.latest_run(model["id"], set_id, protocol_version=get_protocol("eos").version) if model else None
+            details = service.run_details(run).get("details", {}) if run and run["status"] == "succeeded" else None
+            payload = sampling_payload(service.set_frames(set_id), benchmark, details=details,
+                                       model=model, run=run if details else None)
+            self.samplingWorkflowRequested.emit(payload)
+            return payload
+        except Exception as error:
+            MessageManager.send_error_message(str(error))
+            return None
+
     def save_current(self) -> None:
         service = self._view_service()
         row = self.current_model_row()
@@ -1246,7 +1279,7 @@ class ModelLibraryWidget(QWidget):
         self.run_selected_button.setEnabled(False)
         self.save_button.setEnabled(False)
         self.run_button.setText(self.tr("Cancel"))
-        self.run_button.setIcon(FluentIcon.CLOSE)
+        self.run_button.setIcon(QIcon(':/images/src/images/stop.svg'))
         task.start_work(evaluate_all)
         return task
 
@@ -1258,7 +1291,7 @@ class ModelLibraryWidget(QWidget):
     def _on_run_finished(self) -> None:
         task, self._run_task = self._run_task, None
         self.run_button.setText(self.tr("Run all"))
-        self.run_button.setIcon(FluentIcon.PLAY)
+        self.run_button.setIcon(QIcon(':/images/src/images/run.svg'))
         self.run_button.setEnabled(True)
         if task is not None and task.outcome == "failed":
             MessageManager.send_error_message(self.tr("Validation failed: {error}").format(error=task.error_message))

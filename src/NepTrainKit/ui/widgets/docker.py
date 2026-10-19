@@ -694,6 +694,7 @@ class MakeWorkflowArea(QWidget):
     """Single-canvas vertical accordion with optional permanent fork nodes."""
 
     workflowChanged = Signal()
+    selectedCardChanged = Signal(object)
 
     _CARD_MAX_WIDTH = 520
     _FORK_MAX_WIDTH = 920
@@ -1192,6 +1193,7 @@ class MakeWorkflowArea(QWidget):
         self._configure_node_presentation(card)
         self._connect_guidance_refresh(card)
         self._selected_card = card
+        self.selectedCardChanged.emit(card)
         self._update_selection_style(card)
         if not expand:
             self.guidance_panel.set_card(card)

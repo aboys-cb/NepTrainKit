@@ -150,6 +150,32 @@ class TestDataManagerUi(unittest.TestCase):
 
         box.train_path_edit.setText.assert_called_once_with("/tmp/training-run")
 
+    def test_open_folder_opens_model_parent_or_existing_directory(self):
+        model_widget = ModelItemWidget()
+        index = MagicMock()
+        index.internalPointer.return_value.data.return_value = 11
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            folder = Path(tmp_dir) / "模型 files #1"
+            folder.mkdir()
+            model_file = folder / "nep.txt"
+            model_file.write_text("test model", encoding="utf-8")
+            with patch.object(model_widget, "_current_index", return_value=index), patch(
+                "NepTrainKit.ui.views.dataset_widget.QDesktopServices.openUrl"
+            ) as open_url:
+                for model_path in (model_file, folder):
+                    with self.subTest(model_path=model_path):
+                        model_widget.model_item_dict = {
+                            11: SimpleNamespace(model_path=str(model_path))
+                        }
+                        open_url.reset_mock()
+
+                        model_widget.open_folder()
+
+                        open_url.assert_called_once()
+                        url = open_url.call_args.args[0]
+                        self.assertTrue(url.isLocalFile())
+                        self.assertEqual(url.toLocalFile(), str(folder))
+
     def test_chinese_catalog_translates_visible_data_manager_actions(self):
         catalog = (
             Path(__file__).resolve().parents[1]

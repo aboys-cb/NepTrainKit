@@ -412,7 +412,10 @@ class ModelItemWidget(QWidget, DatasetManager):
             QDesktopServices.openUrl(QUrl(path))
         else:
             if os.path.exists(path):
-                QDesktopServices.openUrl(QUrl("file:///" + path))
+                folder = os.path.abspath(path)
+                if os.path.isfile(folder):
+                    folder = os.path.dirname(folder)
+                QDesktopServices.openUrl(QUrl.fromLocalFile(folder))
             else:
                 MessageManager.send_info_message(
                     self.tr("Model folder does not exist: {path}").format(path=path)

@@ -184,6 +184,11 @@ class TestDumpImportDialog(unittest.TestCase):
         self.assertEqual(holder.get("value"), "ok")
         self.assertIs(seen.get("thread"), app.thread())
 
+    def test_dialog_is_a_real_window(self):
+        dialog = DumpImportDialog(ElementSuggestion(_probe(), {1: "Fe", 2: "Co"}, ()), self.parent)
+
+        self.assertTrue(dialog.isWindow())
+
     def test_summary_reports_cell_and_frames(self):
         dialog = DumpImportDialog(ElementSuggestion(_probe(), {}, (1, 2)), self.parent)
 

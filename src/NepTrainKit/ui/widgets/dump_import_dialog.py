@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 import numpy as np
-from PySide6.QtCore import QCoreApplication, QObject, Qt, QThread, Signal, Slot
+from PySide6.QtCore import QCoreApplication, QObject, QPoint, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
     QApplication,
     QCompleter,
@@ -57,6 +57,30 @@ class _CustomRow:
     columns: LineEdit
     widget: QWidget
     preview: CaptionLabel
+
+
+class _WindowMaskDialog(MessageBoxBase):
+    """A mask dialog that behaves as a real modal window.
+
+    ``MessageBoxBase`` normally turns itself into a child overlay, which can
+    end up behind page widgets or stay disabled after a previous import.  A
+    frameless ``Qt.Dialog`` window over the parent window is independent of
+    that stacking and stays clickable.
+    """
+
+    def __init__(self, parent=None):
+        """Create the dialog and make it a frameless window."""
+        super().__init__(parent)
+        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
+
+    def showEvent(self, event) -> None:
+        """Cover the parent window and raise the dialog above other windows."""
+        parent = self.parentWidget()
+        if parent is not None:
+            origin = parent.mapToGlobal(QPoint(0, 0))
+            self.setGeometry(origin.x(), origin.y(), parent.width(), parent.height())
+        super().showEvent(event)
+        self.raise_()
 
 
 @dataclass(frozen=True)
@@ -163,7 +187,7 @@ def _auto_overrides(columns: tuple[str, ...]) -> ColumnOverrides:
     )
 
 
-class DumpFieldMappingDialog(MessageBoxBase):
+class DumpFieldMappingDialog(_WindowMaskDialog):
     """Edit coordinates, forces, spin and extra columns for a dump."""
 
     def __init__(self, columns, overrides: ColumnOverrides | None, probe: DumpProbe, parent=None):
@@ -633,12 +657,14 @@ class DumpFieldMappingDialog(MessageBoxBase):
     ) -> tuple[bool, ColumnOverrides | None]:
         """Show the editor; return ``(accepted, overrides)``."""
         dialog = cls(columns, overrides, probe, parent)
-        if dialog.exec():
-            return True, dialog.result_overrides()
-        return False, None
+        accepted = bool(dialog.exec())
+        overrides_result = dialog.result_overrides() if accepted else None
+        dialog.hide()
+        dialog.deleteLater()
+        return accepted, overrides_result
 
 
-class DumpImportDialog(MessageBoxBase):
+class DumpImportDialog(_WindowMaskDialog):
     """Preview a dump and confirm the element mapping for numeric atom types.
 
     Field roles are detected automatically; the "adjust field mapping" button
@@ -907,13 +933,20 @@ class DumpImportDialog(MessageBoxBase):
         if parent is None:
             parent = QApplication.activeWindow()
         if parent is None:
+            parent = next(
+                (widget for widget in QApplication.topLevelWidgets() if widget.isVisible()),
+                None,
+            )
+        if parent is None:
             # No window to mask over (for example a headless import): treat it
             # as a cancellation instead of crashing the loader.
             return None
         dialog = cls(suggestion, parent, overrides)
-        if dialog.exec():
-            return dialog.options()
-        return None
+        accepted = bool(dialog.exec())
+        options = dialog.options() if accepted else None
+        dialog.hide()
+        dialog.deleteLater()
+        return options
 
     @classmethod
     def ask_on_gui_thread(

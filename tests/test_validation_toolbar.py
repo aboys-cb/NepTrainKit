@@ -273,3 +273,96 @@ def test_deleting_selected_project_clears_stale_models_and_actions(toolbar):
     assert not page.data_item_widget.model_item_dict
     assert project_id not in page.project_widget.project_item_dict
     assert library.model_combo.findData(toolbar.scored.new['id']) == -1
+
+
+def test_navigation_reuses_scorecard_and_plot_without_evaluation(toolbar):
+    from unittest.mock import patch
+    from PySide6.QtWidgets import QApplication
+    host, page, library = toolbar.host, toolbar.page, toolbar.library
+    service = toolbar.scored.service
+    plot = library.detail.eos_plots[0]
+    plot.setRange(xRange=(1, 2), yRange=(3, 4), padding=0)
+    QApplication.processEvents()
+    with patch.object(service, 'evaluate') as evaluate, patch.object(service, 'predictor_factory') as predictor, \
+         patch.object(service, 'scorecard', wraps=service.scorecard) as scorecard, \
+         patch.object(service, 'snapshot_registered_models', wraps=service.snapshot_registered_models) as snapshots, \
+         patch.object(library, '_update_detail', wraps=library._update_detail) as render:
+        for _ in range(3):
+            host.stackedWidget.setCurrentWidget(toolbar.other)
+            host.stackedWidget.setCurrentWidget(page)
+            page.show_projects()
+            page.tabs.setCurrentItem('validation')
+            page.stack.setCurrentWidget(library)
+            QApplication.processEvents()
+        evaluate.assert_not_called()
+        predictor.assert_not_called()
+        scorecard.assert_not_called()
+        snapshots.assert_not_called()
+        render.assert_not_called()
+        assert library.detail.eos_plots[0] is plot
+        assert plot.viewRange() == [[1, 2], [3, 4]]
+        # Manual refresh remains available and rebuilds the detail only once.
+        library.refresh_button.click()
+        assert scorecard.call_count == snapshots.call_count == render.call_count == 1
+        evaluate.assert_not_called()
+        predictor.assert_not_called()
+
+
+def test_navigation_does_not_close_diagnostic_editor(toolbar):
+    from unittest.mock import patch
+    from PySide6.QtWidgets import QApplication
+    library, host = toolbar.library, toolbar.host
+    library.show_diagnostic_editor()
+    library.diagnostic_editor.name.setText('Keep editing')
+    with patch.object(library, '_update_detail', wraps=library._update_detail) as render:
+        host.stackedWidget.setCurrentWidget(toolbar.other)
+        QApplication.processEvents()
+        host.stackedWidget.setCurrentWidget(toolbar.page)
+        QApplication.processEvents()
+        assert library.diagnostic_editor.isVisible()
+        assert library.editor_scroll.isVisible() and library.controls_panel.isHidden()
+        assert library.diagnostic_editor.name.text() == 'Keep editing'
+        render.assert_not_called()
+        library.diagnostic_editor.hide()  # Explicit return still restores the workbench.
+        assert library.controls_panel.isVisible() and library.editor_scroll.isHidden()
+        assert render.call_count == 1
+
+
+def test_first_load_and_explicit_viewer_handoff_read_results_once(scored):
+    from unittest.mock import patch
+    from PySide6.QtWidgets import QApplication
+    from NepTrainKit.core.validation.service import ModelDraft
+    service = scored.service
+    for handoff in (False, True):
+        widget = ModelLibraryWidget(service=service)
+        with patch.object(service, 'evaluate') as evaluate, patch.object(service, 'predictor_factory') as predictor, \
+             patch.object(service, 'scorecard', wraps=service.scorecard) as scorecard, \
+             patch.object(widget, '_update_detail', wraps=widget._update_detail) as render:
+            if handoff:
+                draft = ModelDraft(service.model_file(scored.new['id']).read_bytes() + b'\nnew', '/test/nep.txt')
+                widget.open_scorecard(scored.suite['id'], draft=draft)
+            widget.show()
+            QApplication.processEvents()
+            assert scorecard.call_count == render.call_count == 1
+            if handoff:
+                assert widget.current_model_row()['model_id'] == 0
+            assert widget.current_suite_id() == scored.suite['id']
+            evaluate.assert_not_called()
+            predictor.assert_not_called()
+        widget.close()
+
+
+def test_navigation_loads_changed_library_without_reusing_old_rows(toolbar, tmp_path):
+    from NepTrainKit.core.validation import Library, ValidationService
+    from unittest.mock import patch
+    from PySide6.QtWidgets import QApplication
+    library, host = toolbar.library, toolbar.host
+    host.stackedWidget.setCurrentWidget(toolbar.other)
+    service = ValidationService(Library(tmp_path / 'new-library'))
+    library._service = service
+    with patch.object(service, 'evaluate') as evaluate:
+        host.stackedWidget.setCurrentWidget(toolbar.page)
+        QApplication.processEvents()
+        assert library._library_root == service.library.root
+        assert library.current_suite_id() is None and library.current_model_row() is None
+        evaluate.assert_not_called()

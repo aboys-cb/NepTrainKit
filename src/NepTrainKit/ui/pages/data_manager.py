@@ -155,9 +155,9 @@ class DataManagerWidget(QWidget):
 
     def open_scorecard(self, suite_id, model_id=None, *, draft=None):
         """Switch to the validation tab with ``suite_id`` and ``model_id`` selected."""
+        self.library_widget.open_scorecard(suite_id, model_id, draft=draft)
         self.tabs.setCurrentItem("validation")
         self.stack.setCurrentWidget(self.library_widget)
-        self.library_widget.open_scorecard(suite_id, model_id, draft=draft)
 
     def _on_registry_changed(self, model_id=None):
         """Keep the project counts and validation selectors in sync after edits."""

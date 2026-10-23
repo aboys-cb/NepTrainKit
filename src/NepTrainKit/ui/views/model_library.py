@@ -701,6 +701,7 @@ class ModelLibraryWidget(QWidget):
         self._run_task: BackgroundTask | None = None
         self._run_total = 0
         self._library_root = None
+        self._loaded = False
         self._displayed_suite_id = None
         self._draft: ModelDraft | None = None
 
@@ -888,9 +889,16 @@ class ModelLibraryWidget(QWidget):
     def showEvent(self, event):
         super().showEvent(event)
         if self._run_task is None:
-            self.refresh()
+            # Navigation reuses the existing view; it is not a data-change event.
+            try:
+                needs_load = not self._loaded or self._library_root != self.service().library.root
+            except Exception:
+                needs_load = True  # Let refresh report an unavailable library.
+            if needs_load:
+                self.refresh()
 
     def refresh(self, suite_id: int | None = None, model_id: int | None = None) -> None:
+        self._loaded = False
         try:
             service = self.service()
             if self._library_root is not None and self._library_root != service.library.root:
@@ -938,6 +946,7 @@ class ModelLibraryWidget(QWidget):
             self.suite_combo.setCurrentIndex(ids.index(suite_id) if suite_id in ids else 0)
         self.suite_combo.blockSignals(False)
         self._load_scorecard(model_id)
+        self._loaded = True
 
     def _on_suite_changed(self, _index: int) -> None:
         suite_id = self.current_suite_id()
@@ -1004,13 +1013,13 @@ class ModelLibraryWidget(QWidget):
             self.model_combo.setCurrentIndex(selected)
         self.model_combo.blockSignals(False)
         self._update_comparison_options(comparison_ids)
-        self._load_groups()
+        self._load_groups(update_detail=False)
         self._on_selection_changed()
         self.scorecardChanged.emit()
 
     def open_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft: ModelDraft | None = None) -> None:
         """Show ``suite_id`` (``None``: the last used suite) with ``model_id`` selected."""
-        if self._library_root != self.service().library.root:
+        if self._library_root is not None and self._library_root != self.service().library.root:
             self.refresh()
         self._draft = draft
         if draft is not None:
@@ -1055,10 +1064,10 @@ class ModelLibraryWidget(QWidget):
 
     def _on_model_changed(self, *_args):
         self._update_comparison_options()
-        self._load_groups()
+        self._load_groups(update_detail=False)
         self._on_selection_changed()
 
-    def _load_groups(self):
+    def _load_groups(self, *, update_detail=True):
         kind = self.property_combo.currentData() or "eos"
         self.property_combo.setVisible(self.property_combo.count() > 1)
         selected = {self.metrics_model.benchmarks[i.row()]["id"] for i in self.table.selectionModel().selectedRows()}
@@ -1066,25 +1075,24 @@ class ModelLibraryWidget(QWidget):
         selection = self.table.selectionModel()
         selection.blockSignals(True)
         self.metrics_model.set_groups(benchmarks, self.model.row_of_model(self.model_combo.currentData()), kind)
-        selection.blockSignals(False)
         if kind in ("eos", "diagnostic"):
             self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
             if selected and selected < {b["id"] for b in benchmarks}:
                 from PySide6.QtCore import QItemSelectionModel
-                selection.blockSignals(True)
                 for i, benchmark in enumerate(benchmarks):
                     if benchmark["id"] in selected:
                         selection.select(self.metrics_model.index(i, 0), QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows)
-                selection.blockSignals(False)
             else:
                 self.table.selectAll()
         else:
             self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
             if benchmarks:
                 self.table.selectRow(next((i for i, b in enumerate(benchmarks) if b["id"] in selected), 0))
+        selection.blockSignals(False)
         self.all_groups_button.setVisible(kind in ("eos", "diagnostic"))
         self.metrics_button.setText("响应与运行详情" if kind == "diagnostic" else self.tr("Error details"))
-        self._update_detail()
+        if update_detail:
+            self._update_detail()
 
     def _select_all_groups(self):
         self.table.selectAll()
@@ -1163,7 +1171,8 @@ class ModelLibraryWidget(QWidget):
 
     def eventFilter(self, watched, event):
         from PySide6.QtCore import QEvent
-        if watched is getattr(self, "diagnostic_editor", None) and event.type() == QEvent.Type.Hide:
+        if (watched is getattr(self, "diagnostic_editor", None)
+                and event.type() == QEvent.Type.Hide and watched.isHidden()):
             self.editor_scroll.hide()
             self.splitter.show()
             self.metrics_button.show()

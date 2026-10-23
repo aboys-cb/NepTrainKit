@@ -214,6 +214,7 @@ class NepTrainKitMainWindow(FluentWindow):
             self.show_nep_interface.graph_widget.apply_canvas_mode
         )
         self.data_manager_interface = DataManagerWidget(self)
+        self.show_nep_interface.modelRegistryChanged.connect(self.data_manager_interface._on_registry_changed)
         self.data_manager_interface.toolbarActionsChanged.connect(self._refresh_page_actions)
         self.data_manager_interface.library_widget.samplingWorkflowRequested.connect(
             self.open_eos_sampling_workflow
@@ -508,9 +509,9 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def open_model_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft=None, seeds=None) -> None:
         """Show the validation scorecard requested by the viewer status chip."""
-        self.switchTo(self.data_manager_interface)
         self.data_manager_interface.open_scorecard(suite_id, model_id, draft=draft)
         self.data_manager_interface.library_widget.set_diagnostic_seeds(seeds or [])
+        self.switchTo(self.data_manager_interface)
 
     def import_benchmark_set(self) -> list[dict] | None:
         """Import a benchmark set from the viewer chip, staying on the viewer."""

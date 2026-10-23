@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 from types import SimpleNamespace
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from PySide6.QtCore import QItemSelectionModel, Qt, QTranslator
@@ -566,6 +566,7 @@ def _viewer_stub(model_id, opened, imported=None):
         _validation_library_changed=False,
         _validation_status=None,
         _validation_starred=False,
+        modelRegistryChanged=Mock(),
         _parent=SimpleNamespace(
             open_model_scorecard=lambda suite, model=None, **kwargs: opened.append((suite, model, kwargs["draft"]) if kwargs else (suite, model)),
             import_benchmark_set=import_benchmark_set,
@@ -806,6 +807,7 @@ def test_viewer_save_can_add_a_second_project_without_reopening(model_file, make
         first = stub._validation_model_id
         stub.save_validation_model()
     assert first != stub._validation_model_id
+    assert stub.modelRegistryChanged.emit.call_args_list == [((first,),), ((stub._validation_model_id,),)]
     assert len(service.models()) == 2 and len(service.projects()) == 2
     assert service.get_model(first)["content_hash"] == service.get_model(stub._validation_model_id)["content_hash"]
 

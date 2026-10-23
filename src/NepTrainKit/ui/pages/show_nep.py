@@ -11,7 +11,7 @@ from pathlib import Path
 from loguru import logger
 
 import numpy as np
-from PySide6.QtCore import QEvent, QObject, QUrl, QTimer, Qt, QThread, Slot
+from PySide6.QtCore import QEvent, QObject, QUrl, QTimer, Qt, QThread, Slot, Signal
 from PySide6.QtGui import QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
@@ -175,6 +175,8 @@ class ShowNepWidget(QWidget):
     parent : QWidget | None
         Optional owner widget that embeds this viewer.
     """
+    modelRegistryChanged = Signal(int)
+
     def __init__(self,parent=None):
         """Initialise plotting widgets, actions, and viewer state.
 
@@ -1570,6 +1572,7 @@ class ShowNepWidget(QWidget):
             self._validation_library_root = Path(record["library_root"])
             self._validation_model_id = record["id"]
             self.refresh_validation_chip()
+            self.modelRegistryChanged.emit(record["id"])
             MessageManager.send_success_message(self.tr("Saved to project"))
         except Exception as error:
             MessageManager.send_error_message(str(error))
@@ -1588,6 +1591,7 @@ class ShowNepWidget(QWidget):
                 self.refresh_validation_chip()
                 return
             service.star_model(self._validation_model_id, not self._validation_starred)
+            self.modelRegistryChanged.emit(self._validation_model_id)
         except Exception as error:
             MessageManager.send_error_message(str(error))
             return

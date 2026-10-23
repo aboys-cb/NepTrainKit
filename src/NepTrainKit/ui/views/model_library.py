@@ -779,6 +779,10 @@ class ModelLibraryWidget(QWidget):
         actions = QHBoxLayout()
         actions.setSpacing(8)
         actions.addWidget(self.baseline_label, 1)
+        self.curves_button = PushButton(FluentIcon.VIEW, "查看曲线", self)
+        self.curves_button.setCheckable(True)
+        self.curves_button.toggled.connect(self._toggle_curves)
+        actions.addWidget(self.curves_button)
         actions.addWidget(self.run_button)
         actions.addWidget(self.run_selected_button)
         actions.addWidget(self.run_current_button)
@@ -859,11 +863,43 @@ class ModelLibraryWidget(QWidget):
         self.diagnostic_editor.installEventFilter(self)
         layout.addWidget(self.editor_scroll, 1)
         layout.addWidget(self.splitter, 1)
+        self.curves_placeholder = QWidget(self)
+        placeholder = QVBoxLayout(self.curves_placeholder)
+        placeholder.addStretch()
+        hint = BodyLabel("曲线默认收起", self.curves_placeholder)
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        placeholder.addWidget(hint)
+        hint = CaptionLabel("选择方案和势版本后，点击“查看曲线”读取已有结果；验证计算需手动运行。", self.curves_placeholder)
+        hint.setWordWrap(True)
+        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        placeholder.addWidget(hint)
+        placeholder.addStretch()
+        layout.addWidget(self.curves_placeholder, 1)
         metrics_footer = QHBoxLayout()
         metrics_footer.setContentsMargins(12, 4, 12, 8)
         metrics_footer.addWidget(self.metrics_button)
         metrics_footer.addStretch(1)
         layout.addLayout(metrics_footer)
+        self._sync_curve_visibility()
+
+    def _sync_curve_visibility(self):
+        expanded = self.curves_button.isChecked()
+        editing = not self.editor_scroll.isHidden()
+        self.curves_button.setText("收起曲线" if expanded else "查看曲线")
+        self.splitter.setVisible(expanded and not editing)
+        self.metrics_button.setVisible(expanded and not editing)
+        self.curves_placeholder.setVisible(not expanded and not editing)
+
+    def _toggle_curves(self, expanded):
+        self._sync_curve_visibility()
+        if expanded:
+            self._update_detail()
+
+    def _expand_curves(self):
+        self.curves_button.blockSignals(True)
+        self.curves_button.setChecked(True)
+        self.curves_button.blockSignals(False)
+        self._sync_curve_visibility()
 
     def _toggle_metrics(self, expanded):
         self.table.setVisible(expanded)
@@ -1030,6 +1066,8 @@ class ModelLibraryWidget(QWidget):
                 suite_id = next((suite["id"] for suite in service.suites() if any(
                     set(item["elements"]) <= elements for item in service.suite_sets(suite["id"])
                 )), None)
+        # Explicit viewer/history handoffs request a preview; plain navigation does not.
+        self._expand_curves()
         self.refresh(suite_id, model_id)
 
     # -- selection and details --------------------------------------------------
@@ -1108,6 +1146,7 @@ class ModelLibraryWidget(QWidget):
         self.edit_diagnostic_action.setEnabled(diagnostic and self._run_task is None and not editing)
         self.save_plan_action.setEnabled(temporary_plan and self._run_task is None and not editing)
         self.diagnostic_action.setEnabled(self._run_task is None)
+        self.curves_button.setEnabled(bool(self._benchmarks))
         self.export_package_action.setEnabled(has_suite and not diagnostic and bool(self.metrics_model.benchmarks) and self._run_task is None)
         self.export_package_action.setToolTip("无参考诊断分享将在下一阶段支持；当前可保存本地方案。" if diagnostic else self.export_package_action.text())
         self.save_action.setEnabled(row is not None and self._run_task is None)
@@ -1123,6 +1162,8 @@ class ModelLibraryWidget(QWidget):
         self._update_detail()
 
     def _update_detail(self) -> None:
+        if not self.curves_button.isChecked():
+            return  # Do not read result files or instantiate charts for an overview.
         benchmarks = self.metrics_model.benchmarks
         if not benchmarks:
             self.detail.show_runs(None, [])
@@ -1174,8 +1215,7 @@ class ModelLibraryWidget(QWidget):
         if (watched is getattr(self, "diagnostic_editor", None)
                 and event.type() == QEvent.Type.Hide and watched.isHidden()):
             self.editor_scroll.hide()
-            self.splitter.show()
-            self.metrics_button.show()
+            self._sync_curve_visibility()
             self.controls_panel.setEnabled(True)
             self.controls_panel.show()
             self._on_selection_changed()
@@ -1191,6 +1231,7 @@ class ModelLibraryWidget(QWidget):
         self.export_package_action.setEnabled(False)
         self.splitter.hide()
         self.metrics_button.hide()
+        self.curves_placeholder.hide()
         self.editor_scroll.show()
         self.diagnostic_editor.show()
 
@@ -1217,6 +1258,7 @@ class ModelLibraryWidget(QWidget):
             if not temporary:
                 Config.set("validation", CONFIG_SUITE, suite["id"])
             self.diagnostic_editor.hide()
+            self._expand_curves()
             self.refresh(suite["id"])
             if not temporary:
                 MessageManager.send_success_message("诊断方案已保存，重启后可继续使用；运行结果将自动保存。")
@@ -1464,6 +1506,11 @@ class ModelLibraryWidget(QWidget):
 
     def _on_run_finished(self) -> None:
         task, self._run_task = self._run_task, None
+        if getattr(getattr(self.window(), "_thread_shutdown", None), "closing", False):
+            # Workers still finish safely, but shutdown must not rebuild result views.
+            if task is not None:
+                task.deleteLater()
+            return
         self.diagnostic_editor.setEnabled(True)
         self.suite_combo.setEnabled(True)
         self.run_button.setText(self.tr("Run all"))
@@ -1472,6 +1519,7 @@ class ModelLibraryWidget(QWidget):
         if task is not None and task.outcome == "failed":
             MessageManager.send_error_message(self.tr("Validation failed: {error}").format(error=task.error_message))
         current = self.current_model_row()
+        self._expand_curves()
         self.refresh(model_id=current["model_id"] if current else None)
         if task is not None:
             task.deleteLater()

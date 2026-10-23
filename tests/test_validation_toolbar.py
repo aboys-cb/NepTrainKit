@@ -366,3 +366,51 @@ def test_navigation_loads_changed_library_without_reusing_old_rows(toolbar, tmp_
         assert library._library_root == service.library.root
         assert library.current_suite_id() is None and library.current_model_row() is None
         evaluate.assert_not_called()
+
+
+def test_plain_entry_defers_result_files_and_charts_until_requested(scored):
+    from unittest.mock import patch
+    from PySide6.QtWidgets import QApplication
+    service = scored.service
+    widget = ModelLibraryWidget(service=service)
+    with patch.object(service, 'run_details', wraps=service.run_details) as details, \
+         patch.object(service, 'evaluate') as evaluate, patch.object(service, 'predictor_factory') as predictor, \
+         patch.object(widget.detail, 'show_groups', wraps=widget.detail.show_groups) as plot:
+        widget.show()
+        QApplication.processEvents()
+        assert widget.current_suite_id() == scored.suite['id']
+        assert widget.curves_placeholder.isVisible() and widget.splitter.isHidden()
+        assert not widget.curves_button.isChecked() and not widget.detail.eos_plots
+        widget.refresh_button.click()
+        widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.new['id']))
+        details.assert_not_called()
+        plot.assert_not_called()
+        widget.curves_button.click()
+        assert details.call_count > 0 and plot.call_count == 1
+        assert widget.detail.eos_plots and widget.curves_placeholder.isHidden()
+        assert widget.splitter.isVisible()
+        widget.curves_button.click()
+        details.reset_mock();plot.reset_mock()
+        widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.old['id']))
+        widget.hide();widget.show()
+        QApplication.processEvents()
+        assert widget.curves_placeholder.isVisible()
+        details.assert_not_called()
+        plot.assert_not_called()
+        evaluate.assert_not_called()
+        predictor.assert_not_called()
+    widget.close()
+
+
+def test_finished_validation_does_not_refresh_during_shutdown(toolbar):
+    from unittest.mock import Mock, patch
+    library, host = toolbar.library, toolbar.host
+    host._thread_shutdown = SimpleNamespace(closing=True)
+    task = Mock()
+    library._run_task = task
+    with patch.object(library, 'refresh') as refresh, patch.object(library, '_update_detail') as render:
+        library._on_run_finished()
+        assert library._run_task is None
+        task.deleteLater.assert_called_once()
+        refresh.assert_not_called()
+        render.assert_not_called()

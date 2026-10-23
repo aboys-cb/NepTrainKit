@@ -505,6 +505,8 @@ def test_default_creation_and_results_survive_a_new_service_and_widget(service, 
         recovered = reopened.latest_run(model_id, key)
         assert recovered['id'] == run['id']
         assert reopened.run_details(recovered) == details[key]
+    assert not restored.detail.eos_plots  # Restart restores the plan without opening charts.
+    restored.curves_button.click()
     assert len(restored.detail.eos_plots) == 3
     restored.close()
 

@@ -149,7 +149,7 @@ def test_eos_overview_has_fixed_columns_and_normalizes_each_group(make_service, 
     sets = [_import(service, tmp_path, eos_frames(curvature=0.5 + i * 0.1), f"group-{i}") for i in range(10)]
     suite = service.create_suite("Ten EOS groups", [item["id"] for item in sets])
     widget = ModelLibraryWidget(service=service)
-    widget.refresh(suite["id"])
+    widget.open_scorecard(suite["id"])
     widget.resize(1180, 740)
     widget.show()
     QApplication.processEvents()
@@ -305,7 +305,7 @@ def test_reference_dataset_can_be_previewed_without_models(make_service, tmp_pat
     efv = _import(service, tmp_path, efv_frames(), "efv")
     suite = service.create_suite("PbTe", [eos["id"], efv["id"]])
     widget = ModelLibraryWidget(service=service)
-    widget.refresh(suite["id"])
+    widget.open_scorecard(suite["id"])
     assert widget.model.rowCount() == 0
     widget.property_combo.setCurrentIndex(widget.property_combo.findData("eos"))
     assert widget.detail._args[0]["id"] == eos["id"]
@@ -402,7 +402,7 @@ def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, note
     assert saved["source_ref"]["path"] == str(path)
     assert len(service.set_frames(saved["id"])) == len(frames)
     widget = ModelLibraryWidget(service=service)
-    widget.refresh(service.suites()[0]["id"])
+    widget.open_scorecard(service.suites()[0]["id"])
     widget.property_combo.setCurrentIndex(widget.property_combo.findData(protocol))
     info = widget.detail.info_label.text()
     assert "Reference: ?" not in info and "DFT" not in info

@@ -68,6 +68,7 @@ fast_float_header = "src/native/io/fast_float.h"
 setup(
     ext_modules=[
         native_extension("_io", "src/native/io/module.cpp", depends=(fast_float_header,)),
+        native_extension("_dump", "src/native/dump/module.cpp", depends=(fast_float_header,)),
         native_extension("_audit", "src/native/audit/module.cpp", depends=(neighbor_header,)),
         native_extension("_phase", "src/native/phase/module.cpp", depends=(neighbor_header,)),
         native_extension("_magnetism", "src/native/magnetism/module.cpp", depends=(neighbor_header,)),

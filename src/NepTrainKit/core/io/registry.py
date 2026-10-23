@@ -255,24 +255,77 @@ class OtherLoader(ResultLoader):
         imp_mod = importlib.import_module('.importers', __package__)
         lmp_imp = getattr(imp_mod, 'LammpsDumpImporter', None)
         if lmp_imp is not None and lmp_imp().matches(candidate):
-            from PySide6.QtWidgets import QInputDialog
-
-            prompt = (
-                "Please enter a list of elements (corresponding to type 1..N), separated by commas or spaces. \\n"
-                "For example: Si O or Si,O"
+            from .lammps_dump import (
+                DumpImportCancelled,
+                ElementSuggestion,
+                LammpsDumpError,
+                remember_dump_settings,
+                remembered_dump_settings,
+                suggest_element_mapping,
             )
-            text, ok = QInputDialog.getText(None, "Element Mapping", prompt)
 
-            if ok and text:
-                raw = [t.strip() for t in str(text).replace(',', ' ').split() if t.strip()]
-                if raw:
-                    element_map = {i + 1: raw[i] for i in range(len(raw))}
+            try:
+                suggestion = suggest_element_mapping(candidate)
+            except (LammpsDumpError, OSError):
+                # Leave the detailed frame/IO error to the importer itself.
+                suggestion = None
+            if suggestion is not None:
+                types = tuple(int(value) for value in suggestion.probe.types)
+                natoms = suggestion.probe.atom_counts[0] if suggestion.probe.atom_counts else None
+                signature = suggestion.probe.signatures[0] if suggestion.probe.signatures else ()
+                saved = remembered_dump_settings(
+                    candidate.parent, types, natoms=natoms, signature=signature
+                )
+                overrides = None
+                if saved:
+                    suggestion = ElementSuggestion(suggestion.probe, saved.element_map, ())
+                    overrides = saved.overrides
+                mapping = dict(suggestion.mapping)
+                options = None
+                if suggestion.missing:
+                    options = self._prompt_element_mapping(suggestion)
+                    if options is None:
+                        raise DumpImportCancelled("LAMMPS dump import cancelled by user")
+                    mapping.update(options.element_map)
+                    overrides = options.overrides
+                    if options.remember:
+                        remember_dump_settings(
+                            candidate.parent,
+                            types,
+                            mapping,
+                            natoms=natoms,
+                            signature=signature,
+                            overrides=overrides,
+                        )
+                if mapping or options is not None or overrides is not None:
+                    values = {"element_map": mapping}
+                    if overrides is not None:
+                        values["column_overrides"] = overrides
+                    if options is not None:
+                        values.update(
+                            unwrap=bool(options.unwrap),
+                            keep_extra=bool(options.keep_extra),
+                            strict=bool(options.strict),
+                        )
                     existing = getattr(inst, '_import_options', {})
-                    setattr(inst, '_import_options', {**existing, 'element_map': element_map})
-            else:
-                return None
+                    setattr(inst, '_import_options', {**existing, **values})
 
         return inst
+
+    @staticmethod
+    def _prompt_element_mapping(suggestion):
+        """Open the dump import dialog for unresolved atom types."""
+        from PySide6.QtWidgets import QApplication
+
+        from NepTrainKit.ui.widgets.dump_import_dialog import DumpImportDialog
+
+        parent = QApplication.activeWindow()
+        if parent is None:
+            parent = next(
+                (widget for widget in QApplication.topLevelWidgets() if widget.isVisible()),
+                None,
+            )
+        return DumpImportDialog.ask(suggestion, parent)
 
 
 register_result_loader(DeepmdFolderLoader())

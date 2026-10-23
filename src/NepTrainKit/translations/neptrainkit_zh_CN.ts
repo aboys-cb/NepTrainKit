@@ -17599,6 +17599,10 @@ All child items will also be deleted.</source>
         <translation>LAMMPS 第 {timestep} 帧缺少 ITEM: BOX BOUNDS 标记。</translation>
     </message>
     <message>
+        <source>LAMMPS frame {timestep} contains more atom rows than the declared {n_atoms}</source>
+        <translation>LAMMPS 第 {timestep} 帧的原子行数超过声明的 {n_atoms}。</translation>
+    </message>
+    <message>
         <source>LAMMPS frame {timestep} does not declare three BOX BOUNDS boundary flags</source>
         <translation>LAMMPS 第 {timestep} 帧未声明三个 BOX BOUNDS 边界标志。</translation>
     </message>
@@ -17611,8 +17615,8 @@ All child items will also be deleted.</source>
         <translation>LAMMPS 第 {timestep} 帧缺少 ITEM: ATOMS 标记。</translation>
     </message>
     <message>
-        <source>LAMMPS frame {timestep} must contain one complete coordinate triplet: xs/ys/zs, x/y/z, or xu/yu/zu</source>
-        <translation>LAMMPS 第 {timestep} 帧必须包含一组完整的坐标列：xs/ys/zs、x/y/z 或 xu/yu/zu。</translation>
+        <source>LAMMPS frame {timestep} must contain one complete coordinate triplet: xs/ys/zs, x/y/z, xu/yu/zu, or xsu/ysu/zsu</source>
+        <translation>LAMMPS 第 {timestep} 帧必须包含一组完整的坐标列：xs/ys/zs、x/y/z、xu/yu/zu 或 xsu/ysu/zsu。</translation>
     </message>
     <message>
         <source>LAMMPS frame {timestep} must contain an element or type column</source>
@@ -19614,6 +19618,11 @@ All child items will also be deleted.</source>
 </context>
 <context>
     <name>ShowNepWidget</name>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1436" />
+        <source>LAMMPS dump import cancelled.</source>
+        <translation>已取消导入 LAMMPS dump。</translation>
+    </message>
     <message>
         <source>No dataset loaded</source>
         <translation>尚未加载数据</translation>
@@ -28217,6 +28226,367 @@ Magnetic: {magnetic}</source>
     <message>
         <source>(periodic image)</source>
         <translation>（周期像）</translation>
+    </message>
+</context>
+<context>
+    <name>LammpsDumpImport</name>
+    <message>
+        <location filename="../core/io/registry.py" line="296" />
+        <source>This dump stores numeric atom types. Enter one element for each type: {types}</source>
+        <translation>该 dump 使用数值原子类型。请按顺序为每个类型输入一个元素：{types}</translation>
+    </message>
+    <message>
+        <location filename="../core/io/registry.py" line="300" />
+        <source>LAMMPS dump: element mapping</source>
+        <translation>LAMMPS dump：原子类型到元素映射</translation>
+    </message>
+    <message>
+        <location filename="../core/io/registry.py" line="301" />
+        <source>One valid element symbol per type is required. Types: {types}</source>
+        <translation>每个类型需要一个有效的元素符号。类型：{types}</translation>
+    </message>
+</context>
+<context>
+    <name>DumpImportDialog</name>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Keep extra columns</source>
+        <translation>保留额外列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Velocity, charge, per-atom energy and similar columns.</source>
+        <translation>速度、电荷、逐原子能量等列。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Element</source>
+        <translation>元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Element or atomic number</source>
+        <translation>元素或原子序数</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Multiple columns are merged into one multi-column field, in the order you list them.</source>
+        <translation>多个列按填写顺序合并成一个多列字段。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Custom fields</source>
+        <translation>自定义字段</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Multiple columns are combined into one field.</source>
+        <translation>多个列会合并成一个字段。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Add field</source>
+        <translation>添加字段</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Columns (comma separated)</source>
+        <translation>列（逗号分隔）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Remove field</source>
+        <translation>删除字段</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Custom fields need a unique name and at least one unused column.</source>
+        <translation>自定义字段需要唯一名称，且至少使用一个未被占用的列。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Magnitude</source>
+        <translation>模长</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Direction X</source>
+        <translation>方向 X</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Direction Y</source>
+        <translation>方向 Y</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Direction Z</source>
+        <translation>方向 Z</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>4 columns (magnitude + direction) → 3-component spin vector</source>
+        <translation>4 列（模长 + 方向）→ 3 分量自旋向量</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>3 columns → 3-component spin vector</source>
+        <translation>3 列 → 3 分量自旋向量</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>No spin columns detected</source>
+        <translation>未找到自旋列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Keep this column</source>
+        <translation>保留此列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Field name</source>
+        <translation>字段名</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Extra column names must be unique, non-empty, free of spaces or &#x27;:&#x27;, and not reuse species/pos/forces/spin.</source>
+        <translation>额外列名称必须唯一、非空，不能包含空格或“:”，也不能与内置字段重名。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Adjust field mapping…</source>
+        <translation>调整字段映射…</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Field mapping</source>
+        <translation>字段映射</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Set how the columns are read.</source>
+        <translation>设置各列如何解读。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Element symbol or atomic number</source>
+        <translation>元素符号或原子序数</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Reset to automatic</source>
+        <translation>恢复自动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Adjust field mapping</source>
+        <translation>调整字段映射</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Hide field mapping</source>
+        <translation>收起字段映射</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Read forces (fx, fy, fz)</source>
+        <translation>读取力</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Automatic</source>
+        <translation>自动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Magnitude + direction</source>
+        <translation>模长 + 方向</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Vector (3 columns)</source>
+        <translation>三列向量</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Ignore spin</source>
+        <translation>忽略自旋</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Detected automatically</source>
+        <translation>自动识别</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>First column is the magnitude, the next three are the direction.</source>
+        <translation>第 1 列为模长，后 3 列为方向分量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>The first three columns are the vector components.</source>
+        <translation>前 3 列为向量分量。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Spin is ignored.</source>
+        <translation>不读取自旋。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Extra columns</source>
+        <translation>额外列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>No extra columns</source>
+        <translation>没有额外列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Detected</source>
+        <translation>已识别</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Coordinates</source>
+        <translation>坐标</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Forces</source>
+        <translation>力</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Spin</source>
+        <translation>自旋</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Extras</source>
+        <translation>额外列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Choose from the periodic table</source>
+        <translation>从元素周期表选择</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>LAMMPS dump: atom type mapping</source>
+        <translation>LAMMPS：原子类型映射</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Frames</source>
+        <translation>帧数</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Atoms per frame</source>
+        <translation>每帧原子数</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Cell</source>
+        <translation>晶胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Columns</source>
+        <translation>列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>orthorhombic</source>
+        <translation>正交</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>triclinic</source>
+        <translation>三斜</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>general triclinic</source>
+        <translation>通用三斜</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Atom types</source>
+        <translation>原子类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Some elements were pre-filled from matching files in this folder.</source>
+        <translation>已从同目录匹配的文件预填部分元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Every atom type needs an element before importing.</source>
+        <translation>导入前需要为每个原子类型选择元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Type</source>
+        <translation>类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Element</source>
+        <translation>元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Select an element</source>
+        <translation>选择元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Import options</source>
+        <translation>导入选项</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Unwrap image flags (ix/iy/iz)</source>
+        <translation>按镜像标志展开坐标</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>This dump has no image-flag columns</source>
+        <translation>该文件没有镜像标志列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Keep extra columns (vel, q, c_pe, ...)</source>
+        <translation>保留额外列（速度、电荷、逐原子能量等）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Fail on damaged frames</source>
+        <translation>损坏帧直接报错</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Remember this mapping for this folder</source>
+        <translation>记住此文件夹的映射</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Cancel</source>
+        <translation>取消</translation>
     </message>
 </context>
 </TS>

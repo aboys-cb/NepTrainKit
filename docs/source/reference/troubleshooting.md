@@ -40,9 +40,16 @@ python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.bac
 
 ### LAMMPS dump 提示缺少元素映射
 
-只有数值 `type` 的 dump 不能自动知道真实元素。导入时提供完整的“类型编号 → 元素”映射，
-或者在 dump 中直接写出 `element` 列。坐标还必须完整使用 `xs/ys/zs`、`x/y/z`
-或 `xu/yu/zu` 中的一组。
+导入器会先尝试 dump 自带的 `element` / `typelabel` 列，以及同目录 data 文件的
+`Atom Type Labels`、`Masses` 段和 `in.*` 里的 `labelmap` / `mass` 命令。只有这些都没有
+给出确定答案时才会弹窗；弹窗会列出实际出现的类型编号，并预填已识别到的元素。多个文件的
+映射互相矛盾时不会猜测。为避免共享目录里其他体系“借”元素，data 文件还必须声明相同的
+原子数（或与 dump 同名），`in.*` 脚本必须提到该 dump 文件名（或与 dump 同名）。弹窗是
+一个类型表格，可逐个输入/选择元素，并可以记住该文件夹的映射，下次导入同一体系时不再
+询问。“调整字段映射”还可以手动指定坐标、力、自旋和额外列；例如把
+`c_mag[1]` 当模长、`c_mag[2..4]` 当方向（4 列重建成 3 分量自旋向量），并给额外列
+重命名。确认映射后仍失败时，检查坐标是否完整使用了 `xs/ys/zs`、
+`x/y/z`、`xu/yu/zu` 或 `xsu/ysu/zsu` 中的一组。
 
 ### 打开结构后没有能量、力或 virial 图
 

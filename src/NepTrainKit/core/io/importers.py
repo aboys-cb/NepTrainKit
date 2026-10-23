@@ -602,16 +602,26 @@ class OutcarImporter:
 register_importer(OutcarImporter())
 # LAMMPS dump importer
 class LammpsDumpImporter:
-    """Importer for LAMMPS dump trajectory files."""
+    """Importer for LAMMPS dump trajectory files.
+
+    Header parsing, column plans, tolerant frame reading and element
+    resolution live in :mod:`NepTrainKit.core.io.lammps_dump`; this class only
+    handles format detection and forwards reader options.
+    """
+
     name = "lammps_dump"
+
+    _SUFFIXES = (".dump", ".lammpstrj", ".lammpstraj")
+
     def matches(self, path: PathLike) -> bool:
         """Return ``True`` when ``path`` appears to be a LAMMPS dump file."""
         candidate = as_path(path)
-        ext = candidate.suffix.lower()
         if not candidate.is_file():
             return False
-        # Check dump signature/extension
-        if ext in {".dump", ".lammpstrj", ".lammpstraj"} or candidate.name.lower().endswith(".dump"):
+        name = candidate.name.lower()
+        if name.endswith(".gz"):
+            return name[:-3].endswith(self._SUFFIXES)
+        if name.endswith(self._SUFFIXES):
             return True
         try:
             with candidate.open("r", encoding="utf8", errors="ignore") as f:
@@ -619,308 +629,23 @@ class LammpsDumpImporter:
             return head.strip().startswith("ITEM: TIMESTEP")
         except Exception:
             return False
+
     def iter_structures(self, path: PathLike, **kwargs):
-        """Iterate over LAMMPS dump trajectory frames."""
-        candidate = as_path(path)
-        cancel_event = kwargs.get("cancel_event")
-        element_resolver = kwargs.get(
-            "element_resolver")  # Optional callable(missing_types:list[int], context:dict)->dict[int,str]
-        element_map_arg = kwargs.get("element_map")  # Optional pre-supplied {type:int -> element:str}
-        def cancelled():
-            """Return ``True`` if an optional cancellation event is set."""
-            return cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set()
-        # Build element mapping from LAMMPS in-file or referenced data file (Masses section)
-        source_dir = candidate.parent
-        input_files: list[Path] = []
-        try:
-            for child in source_dir.iterdir():
-                lower = child.name.lower()
-                if child.is_file() and (lower.startswith("in") or lower.endswith("in") or lower.endswith(".in")):
-                    input_files.append(child)
-        except Exception:
-            pass
-        type_to_elem: dict[int, str] = {}
-        if isinstance(element_map_arg, dict):
-            # seed with user-provided mapping first
-            for k, v in element_map_arg.items():
-                try:
-                    type_to_elem[int(k)] = str(v)
-                except Exception:
-                    pass
-        with candidate.open("r", encoding="utf8", errors="ignore") as f:
-            while True:
-                if cancelled():
-                    return
-                line = f.readline()
-                if not line:
-                    break
-                line = line.strip()
-                if not line:
-                    continue
-                if not line.startswith("ITEM: TIMESTEP"):
-                    continue
-                # TIMESTEP
-                ts_line = f.readline()
-                if not ts_line:
-                    raise ValueError("Truncated LAMMPS dump: missing timestep value")
-                try:
-                    timestep = int(ts_line.strip().split()[0])
-                except (IndexError, ValueError) as exc:
-                    raise ValueError(
-                        f"Invalid LAMMPS timestep value: {ts_line.strip()!r}"
-                    ) from exc
-                # NUMBER OF ATOMS
-                hdr = f.readline()  # ITEM: NUMBER OF ATOMS
-                if not hdr or not hdr.strip().startswith("ITEM: NUMBER OF ATOMS"):
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} is missing 'ITEM: NUMBER OF ATOMS'"
-                    )
-                nat_line = f.readline()
-                if not nat_line:
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} is missing the atom count"
-                    )
-                try:
-                    n_atoms = int(nat_line.strip().split()[0])
-                except (IndexError, ValueError) as exc:
-                    raise ValueError(
-                        f"Invalid LAMMPS atom count in frame {timestep}: "
-                        f"{nat_line.strip()!r}"
-                    ) from exc
-                if n_atoms <= 0:
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} has invalid atom count {n_atoms}"
-                    )
-                # BOX BOUNDS
-                bounds_hdr = f.readline()
-                if not bounds_hdr or not bounds_hdr.strip().startswith("ITEM: BOX BOUNDS"):
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} is missing 'ITEM: BOX BOUNDS'"
-                    )
-                bounds_tokens = bounds_hdr.strip().split()
-                tilt_flags = {t for t in bounds_tokens if t in {"xy", "xz", "yz"}}
-                boundary_tokens = [
-                    token
-                    for token in bounds_tokens[3:]
-                    if len(token) == 2
-                    and all(char in {"p", "f", "s", "m"} for char in token.lower())
-                ]
-                if len(boundary_tokens) != 3:
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} does not declare three BOX BOUNDS "
-                        "boundary flags"
-                    )
-                pbc = [token.lower() == "pp" for token in boundary_tokens]
-                def _read_bounds_line():
-                    """Read a bounds line from the dump header and return floats."""
-                    l = f.readline()
-                    return [float(x) for x in l.strip().split()] if l else []
-                b1 = _read_bounds_line(); b2 = _read_bounds_line(); b3 = _read_bounds_line()
-                if not b1 or not b2 or not b3:
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} has truncated BOX BOUNDS"
-                    )
-                if tilt_flags:
-                    # triclinic: xlo xhi xy; ylo yhi xz; zlo zhi yz
-                    if len(b1) < 3 or len(b2) < 3 or len(b3) < 3:
-                        raise ValueError(
-                            f"LAMMPS frame {timestep} has incomplete triclinic BOX BOUNDS"
-                        )
-                    xlo_bound, xhi_bound, xy = b1[0], b1[1], b1[2]
-                    ylo_bound, yhi_bound, xz = b2[0], b2[1], b2[2]
-                    zlo, zhi, yz = b3[0], b3[1], b3[2]
-                    xlo = xlo_bound - min(0.0, xy, xz, xy + xz)
-                    xhi = xhi_bound - max(0.0, xy, xz, xy + xz)
-                    ylo = ylo_bound - min(0.0, yz)
-                    yhi = yhi_bound - max(0.0, yz)
-                else:
-                    if len(b1) < 2 or len(b2) < 2 or len(b3) < 2:
-                        raise ValueError(
-                            f"LAMMPS frame {timestep} has incomplete orthogonal BOX BOUNDS"
-                        )
-                    xlo, xhi = b1[0], b1[1]
-                    ylo, yhi = b2[0], b2[1]
-                    zlo, zhi = b3[0], b3[1]
-                    xy = xz = yz = 0.0
-                lx = float(xhi - xlo)
-                ly = float(yhi - ylo)
-                lz = float(zhi - zlo)
-                cell_values = np.asarray(
-                    [lx, ly, lz, xy, xz, yz, xlo, ylo, zlo],
-                    dtype=np.float64,
-                )
-                if not np.all(np.isfinite(cell_values)) or min(lx, ly, lz) <= 0.0:
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} has invalid BOX BOUNDS"
-                    )
-                a = np.array([lx, 0.0, 0.0], dtype=get_storage_float_dtype())
-                b = np.array([xy, ly, 0.0], dtype=get_storage_float_dtype())
-                c = np.array([xz, yz, lz], dtype=get_storage_float_dtype())
-                lattice = np.vstack([a, b, c]).reshape(3, 3)
-                # ATOMS header
-                atoms_hdr = f.readline()
-                if not atoms_hdr or not atoms_hdr.strip().startswith("ITEM: ATOMS"):
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} is missing 'ITEM: ATOMS'"
-                    )
-                cols = atoms_hdr.strip().split()[2:]
-                idx = {name: i for i, name in enumerate(cols)}
-                has_scaled = all(k in idx for k in ("xs", "ys", "zs"))
-                has_cart = all(k in idx for k in ("x", "y", "z"))
-                has_unwrapped = all(k in idx for k in ("xu", "yu", "zu"))
-                if not (has_scaled or has_cart or has_unwrapped):
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} must contain one complete coordinate "
-                        "triplet: xs/ys/zs, x/y/z, or xu/yu/zu"
-                    )
-                has_forces = all(k in idx for k in ("fx", "fy", "fz"))
-                spin_columns = tuple(f"c_spin[{column}]" for column in range(1, 5))
-                has_spin = all(column in idx for column in spin_columns)
-                species_col = "element" if "element" in idx else ("type" if "type" in idx else None)
-                if species_col is None:
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} must contain an element or type column"
-                    )
-                positions = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype())
-                forces = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype()) if has_forces else None
-                spins = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype()) if has_spin else None
-                species_list: list[str] = []
-                types_buffer = np.zeros((n_atoms,), dtype=np.int32) if species_col == "type" else None
-                for i in range(n_atoms):
-                    if cancelled():
-                        return
-                    l = f.readline()
-                    if not l:
-                        raise ValueError(
-                            f"LAMMPS frame {timestep} is truncated: expected "
-                            f"{n_atoms} atom rows, found {i}"
-                        )
-                    parts = l.split()
-                    if len(parts) < len(cols):
-                        raise ValueError(
-                            f"LAMMPS frame {timestep}, atom row {i + 1} has "
-                            f"{len(parts)} columns; expected {len(cols)}"
-                        )
-                    # species
-                    val = parts[idx[species_col]]
-                    if species_col == "type":
-                        try:
-                            tnum = int(val)
-                        except ValueError as exc:
-                            raise ValueError(
-                                f"LAMMPS frame {timestep}, atom row {i + 1} has "
-                                f"invalid integer type {val!r}"
-                            ) from exc
-                        if tnum <= 0:
-                            raise ValueError(
-                                f"LAMMPS frame {timestep}, atom row {i + 1} has "
-                                f"invalid atom type {tnum}"
-                            )
-                        if types_buffer is not None:
-                            types_buffer[i] = tnum
-                        # Placeholder; resolve after reading all atoms.
-                        species_list.append("")
-                    else:
-                        species_list.append(val)
-                    # fractional
-                    if has_scaled:
-                        fx = float(parts[idx["xs"]]); fy = float(parts[idx["ys"]]); fz = float(parts[idx["zs"]])
-                        pos = fx * a + fy * b + fz * c
-                    elif has_cart:
-                        x = float(parts[idx["x"]]); y = float(parts[idx["y"]]); z = float(parts[idx["z"]])
-                        pos = np.asarray(
-                            [x - xlo, y - ylo, z - zlo],
-                            dtype=get_storage_float_dtype(),
-                        )
-                    else:
-                        x = float(parts[idx["xu"]]); y = float(parts[idx["yu"]]); z = float(parts[idx["zu"]])
-                        pos = np.asarray(
-                            [x - xlo, y - ylo, z - zlo],
-                            dtype=get_storage_float_dtype(),
-                        )
-                    if not np.all(np.isfinite(pos)):
-                        raise ValueError(
-                            f"LAMMPS frame {timestep}, atom row {i + 1} has "
-                            "non-finite coordinates"
-                        )
-                    positions[i, :] = pos
-                    if has_forces and forces is not None:
-                        forces[i, 0] = float(parts[idx["fx"]])
-                        forces[i, 1] = float(parts[idx["fy"]])
-                        forces[i, 2] = float(parts[idx["fz"]])
-                    if has_spin and spins is not None:
-                        magnitude = float(parts[idx["c_spin[1]"]])
-                        spins[i, 0] = magnitude * float(parts[idx["c_spin[2]"]])
-                        spins[i, 1] = magnitude * float(parts[idx["c_spin[3]"]])
-                        spins[i, 2] = magnitude * float(parts[idx["c_spin[4]"]])
-                # Resolve missing type->element mapping if needed
-                if species_col == "type" and types_buffer is not None:
-                    missing = sorted({int(t) for t in types_buffer.tolist() if int(t) >= 1 and int(t) not in type_to_elem})
-                    if missing and callable(element_resolver):
-                        try:
-                            ctx = {
-                                "path": path,
-                                "n_atoms": n_atoms,
-                                "timestep": timestep,
-                                "present_types": missing,
-                            }
-                            ret = element_resolver(missing, ctx)
-                            if isinstance(ret, dict):
-                                for k, v in ret.items():
-                                    try:
-                                        type_to_elem[int(k)] = str(v)
-                                    except Exception:
-                                        pass
-                        except Exception as exc:
-                            raise ValueError(
-                                f"Failed to resolve LAMMPS atom types {missing}: {exc}"
-                            ) from exc
-                    unresolved = sorted(
-                        {
-                            int(t)
-                            for t in types_buffer.tolist()
-                            if int(t) not in type_to_elem
-                        }
-                    )
-                    if unresolved:
-                        raise ValueError(
-                            "LAMMPS numeric atom types require an explicit element "
-                            f"mapping; unresolved types: {unresolved}"
-                        )
-                    for i in range(n_atoms):
-                        t = int(types_buffer[i])
-                        species_list[i] = type_to_elem[t]
-                invalid_species = sorted(
-                    {symbol for symbol in species_list if symbol not in atomic_numbers}
-                )
-                if invalid_species:
-                    raise ValueError(
-                        f"LAMMPS frame {timestep} contains invalid element symbols: "
-                        f"{invalid_species}"
-                    )
-                species_arr = np.array(species_list, dtype=np.str_)
-                properties = [
-                    {"name": "species", "type": "S", "count": 1},
-                    {"name": "pos", "type": "R", "count": 3},
-                ]
-                atom_props = {
-                    "species": species_arr,
-                    "pos": positions,
-                }
-                if has_forces and forces is not None:
-                    properties.append({"name": "forces", "type": "R", "count": 3})
-                    atom_props["forces"] = forces
-                if has_spin and spins is not None:
-                    properties.append({"name": "spin", "type": "R", "count": 3})
-                    atom_props["spin"] = spins
-                additional_fields = {
-                    "Config_type": f"LAMMPS_{timestep}",
-                    "pbc": " ".join("T" if periodic else "F" for periodic in pbc),
-                }
-                yield Structure(lattice=lattice,
-                                atomic_properties=atom_props,
-                                properties=properties,
-                                additional_fields=additional_fields)
+        """Yield structures parsed from a LAMMPS dump file."""
+        from NepTrainKit.core.io.lammps_dump import iter_dump_structures
+
+        options = {
+            "element_map": kwargs.get("element_map"),
+            "element_resolver": kwargs.get("element_resolver"),
+            "column_overrides": kwargs.get("column_overrides"),
+            "keep_extra": kwargs.get("keep_extra", True),
+            "unwrap": kwargs.get("unwrap", False),
+            "strict": kwargs.get("strict", False),
+            "search_neighbours": kwargs.get("search_neighbours", True),
+            "cancel_event": kwargs.get("cancel_event"),
+            "max_workers": kwargs.get("max_workers", -1),
+        }
+        yield from iter_dump_structures(path, **options)
 register_importer(LammpsDumpImporter())
 # Skeleton for CP2K output importer (optional)
 class Cp2kOutputImporter:

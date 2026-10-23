@@ -70,6 +70,7 @@ def test_native_health_command_imports_all_helpers(monkeypatch) -> None:
     assert run_native_health_command([NATIVE_HEALTH_CHECK_FLAG]) == 0
     assert imported == [
         "NepTrainKit._native._io",
+        "NepTrainKit._native._dump",
         "NepTrainKit._native._audit",
         "NepTrainKit._native._phase",
         "NepTrainKit._native._magnetism",

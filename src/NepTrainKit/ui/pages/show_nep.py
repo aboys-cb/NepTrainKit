@@ -40,6 +40,7 @@ from NepTrainKit.core.io import (
     matches_result_loader,
 )
 
+from NepTrainKit.core.io.lammps_dump import DumpImportCancelled
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import write_structures_extxyz_atomic
 from NepTrainKit.core.structure_inspection import inspect_structure
@@ -1429,6 +1430,10 @@ class ShowNepWidget(QWidget):
                     nep_txt_path=get_bundled_nep89_path(),
                     cache_outputs=cache_outputs,
                 )
+        except DumpImportCancelled:
+            self._initial_loading = False
+            MessageManager.send_info_message(self.tr("LAMMPS dump import cancelled."))
+            return
         except Exception as error:
             load_error = error
             logger.debug(traceback.format_exc())

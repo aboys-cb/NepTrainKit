@@ -271,31 +271,31 @@ class OtherLoader(ResultLoader):
                 suggestion = None
             if suggestion is not None:
                 types = tuple(int(value) for value in suggestion.probe.types)
-                natoms = suggestion.probe.atom_counts[0] if suggestion.probe.atom_counts else None
                 signature = suggestion.probe.signatures[0] if suggestion.probe.signatures else ()
-                saved = remembered_dump_settings(
-                    candidate.parent, types, natoms=natoms, signature=signature
-                )
+                needs_prompt = bool(suggestion.missing)
                 overrides = None
-                if saved:
-                    suggestion = ElementSuggestion(suggestion.probe, saved.element_map, ())
+                saved = remembered_dump_settings(types, signature=signature)
+                if saved is not None and needs_prompt:
                     overrides = saved.overrides
+                    merged = dict(suggestion.mapping)
+                    for type_id, symbol in saved.element_map.items():
+                        merged.setdefault(type_id, symbol)
+                    suggestion = ElementSuggestion(
+                        suggestion.probe,
+                        merged,
+                        tuple(type_id for type_id in types if type_id not in merged),
+                    )
                 mapping = dict(suggestion.mapping)
                 options = None
-                if suggestion.missing:
-                    options = self._prompt_element_mapping(suggestion)
+                if needs_prompt:
+                    options = self._prompt_element_mapping(suggestion, overrides)
                     if options is None:
                         raise DumpImportCancelled("LAMMPS dump import cancelled by user")
                     mapping.update(options.element_map)
                     overrides = options.overrides
                     if options.remember:
                         remember_dump_settings(
-                            candidate.parent,
-                            types,
-                            mapping,
-                            natoms=natoms,
-                            signature=signature,
-                            overrides=overrides,
+                            mapping, signature=signature, overrides=overrides
                         )
                 if mapping or options is not None or overrides is not None:
                     values = {"element_map": mapping}
@@ -313,19 +313,11 @@ class OtherLoader(ResultLoader):
         return inst
 
     @staticmethod
-    def _prompt_element_mapping(suggestion):
-        """Open the dump import dialog for unresolved atom types."""
-        from PySide6.QtWidgets import QApplication
-
+    def _prompt_element_mapping(suggestion, overrides=None):
+        """Open the dump import dialog on the GUI thread for unresolved types."""
         from NepTrainKit.ui.widgets.dump_import_dialog import DumpImportDialog
 
-        parent = QApplication.activeWindow()
-        if parent is None:
-            parent = next(
-                (widget for widget in QApplication.topLevelWidgets() if widget.isVisible()),
-                None,
-            )
-        return DumpImportDialog.ask(suggestion, parent)
+        return DumpImportDialog.ask_on_gui_thread(suggestion, overrides)
 
 
 register_result_loader(DeepmdFolderLoader())

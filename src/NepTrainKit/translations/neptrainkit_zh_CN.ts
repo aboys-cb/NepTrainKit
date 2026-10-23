@@ -28250,6 +28250,11 @@ Magnetic: {magnetic}</source>
     <name>DumpImportDialog</name>
     <message>
         <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
+        <source>Remember this mapping</source>
+        <translation>记住这次的映射</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dump_import_dialog.py" line="0" />
         <source>Keep extra columns</source>
         <translation>保留额外列</translation>
     </message>

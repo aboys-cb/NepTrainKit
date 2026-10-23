@@ -152,6 +152,38 @@ class TestDumpImportDialog(unittest.TestCase):
 
         self.assertIn("c_spin[1] × (c_spin[2], c_spin[3], c_spin[4])", text)
 
+    def test_ask_on_gui_thread_marshals_worker_calls(self):
+        import time
+        from unittest.mock import patch
+
+        from PySide6.QtCore import QThread
+
+        app = QApplication.instance()
+        seen: dict = {}
+        holder: dict = {}
+
+        def fake_ask(cls, suggestion, parent=None, overrides=None):
+            seen["thread"] = QThread.currentThread()
+            return "ok"
+
+        worker = QThread()
+
+        def run():
+            holder["value"] = DumpImportDialog.ask_on_gui_thread(object())
+
+        worker.started.connect(run)
+        with patch.object(DumpImportDialog, "ask", classmethod(fake_ask)):
+            worker.start()
+            deadline = time.monotonic() + 5
+            while "value" not in holder and time.monotonic() < deadline:
+                app.processEvents()
+                time.sleep(0.01)
+            worker.quit()
+            worker.wait(2000)
+
+        self.assertEqual(holder.get("value"), "ok")
+        self.assertIs(seen.get("thread"), app.thread())
+
     def test_summary_reports_cell_and_frames(self):
         dialog = DumpImportDialog(ElementSuggestion(_probe(), {}, (1, 2)), self.parent)
 

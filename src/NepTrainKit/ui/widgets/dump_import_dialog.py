@@ -5,14 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 
 import numpy as np
-from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtGui import QAction
+from PySide6.QtCore import QCoreApplication, QObject, Qt, QThread, Signal, Slot
 from PySide6.QtWidgets import (
+    QApplication,
     QCompleter,
     QFrame,
     QGridLayout,
     QHBoxLayout,
-    QLineEdit,
     QScrollArea,
     QVBoxLayout,
     QWidget,
@@ -646,7 +645,7 @@ class DumpImportDialog(MessageBoxBase):
     opens :class:`DumpFieldMappingDialog` without resizing this window.
     """
 
-    def __init__(self, suggestion: ElementSuggestion, parent=None):
+    def __init__(self, suggestion: ElementSuggestion, parent=None, overrides=None):
         """Build the preview, element rows and import options."""
         super().__init__(parent)
         self._suggestion = suggestion
@@ -657,7 +656,7 @@ class DumpImportDialog(MessageBoxBase):
             if self._probe.signatures
             else tuple(str(name) for name in self._probe.columns)
         )
-        self._overrides: ColumnOverrides | None = None
+        self._overrides: ColumnOverrides | None = overrides
         self._edits: list[LineEdit] = []
 
         self.titleLabel = StrongBodyLabel(self.tr("LAMMPS dump: atom type mapping"), self)
@@ -730,7 +729,9 @@ class DumpImportDialog(MessageBoxBase):
         layout.setContentsMargins(0, 4, 0, 0)
         layout.setSpacing(2)
         layout.addWidget(StrongBodyLabel(self.tr("Atom types"), container))
-        self.detectedLabel = CaptionLabel(_describe_plan(self._probe, self.tr), container)
+        self.detectedLabel = CaptionLabel(
+            _describe_plan(self._probe, self.tr, self._overrides), container
+        )
         self.detectedLabel.setWordWrap(True)
         self.detectedLabel.setTextColor("#8a8a8a", "#9a9a9a")
         layout.addWidget(self.detectedLabel)
@@ -789,7 +790,7 @@ class DumpImportDialog(MessageBoxBase):
 
         edit = LineEdit(row)
         edit.setPlaceholderText(self.tr("Element"))
-        edit.setFixedWidth(86)
+        edit.setFixedWidth(60)
         edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         completer = QCompleter(list(_ELEMENT_SYMBOLS), edit)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -801,12 +802,13 @@ class DumpImportDialog(MessageBoxBase):
             edit.setText(known)
         edit.textChanged.connect(self._sync_accept_state)
         edit.editingFinished.connect(lambda e=edit: self._normalise_element(e))
-        action = QAction(FluentIcon.EDIT.icon(), "", edit)
-        action.setToolTip(self.tr("Choose from the periodic table"))
-        action.triggered.connect(lambda _checked=False, e=edit: self._pick_element(e))
-        edit.addAction(action, QLineEdit.ActionPosition.TrailingPosition)
         self._edits.append(edit)
-        layout.addWidget(edit, 1)
+        layout.addWidget(edit)
+        picker = TransparentToolButton(FluentIcon.EDIT, row)
+        picker.setFixedSize(22, 22)
+        picker.setToolTip(self.tr("Choose from the periodic table"))
+        picker.clicked.connect(lambda _checked=False, e=edit: self._pick_element(e))
+        layout.addWidget(picker)
         return row
 
     def _build_options(self) -> SimpleCardWidget:
@@ -829,7 +831,7 @@ class DumpImportDialog(MessageBoxBase):
         self.keepExtraCheck.setChecked(True)
         self.strictCheck = CheckBox(self.tr("Fail on damaged frames"), card)
         self.rememberCheck = CheckBox(
-            self.tr("Remember this mapping for this folder"), card
+            self.tr("Remember this mapping"), card
         )
         self.rememberCheck.setChecked(True)
         grid = QGridLayout()
@@ -895,17 +897,55 @@ class DumpImportDialog(MessageBoxBase):
         )
 
     @classmethod
-    def ask(cls, suggestion: ElementSuggestion, parent=None) -> DumpImportOptions | None:
+    def ask(
+        cls,
+        suggestion: ElementSuggestion,
+        parent=None,
+        overrides: ColumnOverrides | None = None,
+    ) -> DumpImportOptions | None:
         """Show the dialog and return the chosen options, or ``None`` on cancel."""
         if parent is None:
-            from PySide6.QtWidgets import QApplication
-
             parent = QApplication.activeWindow()
         if parent is None:
             # No window to mask over (for example a headless import): treat it
             # as a cancellation instead of crashing the loader.
             return None
-        dialog = cls(suggestion, parent)
+        dialog = cls(suggestion, parent, overrides)
         if dialog.exec():
             return dialog.options()
         return None
+
+    @classmethod
+    def ask_on_gui_thread(
+        cls,
+        suggestion: ElementSuggestion,
+        overrides: ColumnOverrides | None = None,
+    ) -> DumpImportOptions | None:
+        """Show the dialog on the GUI thread even when called from a worker."""
+        app = QApplication.instance()
+        if app is None or QThread.currentThread() is app.thread():
+            return cls.ask(suggestion, overrides=overrides)
+        bridge = _DialogBridge()
+        bridge.moveToThread(app.thread())
+        bridge.request.connect(bridge.show, Qt.ConnectionType.BlockingQueuedConnection)
+        bridge.request.emit(suggestion, overrides)
+        bridge.request.disconnect(bridge.show)
+        result = bridge.result
+        bridge.deleteLater()
+        return result
+
+
+class _DialogBridge(QObject):
+    """Carry one dialog request from a worker thread to the GUI thread."""
+
+    request = Signal(object, object)
+
+    def __init__(self):
+        """Create the bridge with no result yet."""
+        super().__init__()
+        self.result = None
+
+    @Slot(object, object)
+    def show(self, suggestion, overrides) -> None:
+        """Run the modal dialog in the thread that owns this object."""
+        self.result = DumpImportDialog.ask(suggestion, overrides=overrides)

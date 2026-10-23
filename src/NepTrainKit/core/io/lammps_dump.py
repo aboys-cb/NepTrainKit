@@ -1542,16 +1542,7 @@ def suggest_element_mapping(
 
 _MAPPING_SECTION = "lammps"
 _MAPPING_OPTION = "element_maps"
-_MAPPING_ENTRY_LIMIT = 32
-
-
-def _mapping_store_key(directory: Path, types: Sequence[int], natoms: int | None) -> str:
-    try:
-        root = str(Path(directory).expanduser().resolve())
-    except OSError:
-        root = str(directory)
-    width = "" if natoms is None else str(int(natoms))
-    return f"{root}\x1f{width}\x1f{','.join(str(int(value)) for value in sorted(types))}"
+_MAPPING_LAST_KEY = "last"
 
 
 def _read_mapping_store() -> dict[str, Any]:
@@ -1587,27 +1578,27 @@ class DumpSettings:
 
 
 def remembered_dump_settings(
-    directory: Path,
     types: Sequence[int],
     *,
-    natoms: int | None = None,
     signature: Sequence[str] = (),
 ) -> DumpSettings | None:
-    """Return a previously confirmed mapping for this folder and type set."""
-    key = _mapping_store_key(Path(directory), types, natoms)
-    entry = _read_mapping_store().get(key)
+    """Return the last confirmed mapping, filtered to the requested types."""
+    entry = _read_mapping_store().get(_MAPPING_LAST_KEY)
     if not isinstance(entry, dict):
         return None
     raw_map = entry.get("map")
     if not isinstance(raw_map, dict):
         return None
+    wanted = {int(type_id) for type_id in types}
     mapping: dict[int, str] = {}
     for raw_type, symbol in raw_map.items():
         try:
-            mapping[int(raw_type)] = str(symbol)
+            type_id = int(raw_type)
         except (TypeError, ValueError):
-            return None
-    if any(int(type_id) not in mapping for type_id in types):
+            continue
+        if not wanted or type_id in wanted:
+            mapping[type_id] = str(symbol)
+    if not mapping:
         return None
     stored_signature = entry.get("signature")
     overrides = None
@@ -1617,23 +1608,17 @@ def remembered_dump_settings(
 
 
 def remember_dump_settings(
-    directory: Path,
-    types: Sequence[int],
     mapping: Mapping[int, str],
     *,
-    natoms: int | None = None,
     signature: Sequence[str] = (),
     overrides: ColumnOverrides | None = None,
 ) -> None:
-    """Persist a confirmed mapping and column roles for later imports."""
-    key = _mapping_store_key(Path(directory), types, natoms)
-    store = _read_mapping_store()
-    store[key] = {
-        "types": [int(type_id) for type_id in sorted(types)],
-        "map": {str(int(type_id)): str(mapping[int(type_id)]) for type_id in sorted(mapping)},
-        "signature": [str(name) for name in signature],
-        "overrides": overrides.to_dict() if overrides is not None else None,
+    """Remember this mapping as the default for the next dump import."""
+    store = {
+        _MAPPING_LAST_KEY: {
+            "map": {str(int(type_id)): str(mapping[int(type_id)]) for type_id in sorted(mapping)},
+            "signature": [str(name) for name in signature],
+            "overrides": overrides.to_dict() if overrides is not None else None,
+        }
     }
-    while len(store) > _MAPPING_ENTRY_LIMIT:
-        store.pop(next(iter(store)))
     _write_mapping_store(store)

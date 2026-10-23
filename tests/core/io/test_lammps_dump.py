@@ -299,16 +299,18 @@ def test_missing_coordinate_triplet_is_rejected(tmp_path):
         import_structures(path)
 
 
-def _load_with(monkeypatch, path, answer):
+def _load_with(monkeypatch, path, answer, *, saved=None):
     """Run ``OtherLoader.load`` with a stub result object and a scripted dialog."""
     from types import SimpleNamespace
 
+    import NepTrainKit.core.io.lammps_dump as lammps
     from NepTrainKit.core.io import registry
 
+    monkeypatch.setattr(lammps, "remembered_dump_settings", lambda *args, **kwargs: saved)
     monkeypatch.setattr(registry.NepTrainResultData, "from_path", staticmethod(lambda _path: SimpleNamespace()))
     calls: list[object] = []
 
-    def fake_prompt(suggestion):
+    def fake_prompt(suggestion, overrides=None):
         calls.append(suggestion)
         return answer
 
@@ -358,19 +360,28 @@ def test_loader_prefills_the_dialog_and_applies_its_options(tmp_path, monkeypatc
     }
 
 
-def test_loader_uses_a_remembered_mapping_without_a_prompt(tmp_path, monkeypatch):
+def test_loader_prefills_from_the_last_mapping_and_still_prompts(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
     import NepTrainKit.core.io.lammps_dump as module
 
     path = _write(tmp_path / "typed.dump", _frame("id type x y z", ["1 1 0 0 0", "2 2 1 1 1"]))
-    monkeypatch.setattr(
-        module,
-        "remembered_dump_settings",
-        lambda *args, **kwargs: module.DumpSettings({1: "Fe", 2: "Co"}),
+    answer = SimpleNamespace(
+        element_map={1: "Fe", 2: "Co"},
+        overrides=None,
+        unwrap=False,
+        keep_extra=True,
+        strict=False,
+        remember=False,
     )
 
-    instance, calls = _load_with(monkeypatch, path, None)
+    instance, calls = _load_with(
+        monkeypatch, path, answer, saved=module.DumpSettings({1: "Fe", 2: "Co"})
+    )
 
-    assert calls == []
+    assert len(calls) == 1
+    assert calls[0].mapping == {1: "Fe", 2: "Co"}
+    assert calls[0].missing == ()
     assert instance._import_options["element_map"] == {1: "Fe", 2: "Co"}
 
 
@@ -385,7 +396,7 @@ def test_loader_remembers_the_confirmed_mapping(tmp_path, monkeypatch):
     monkeypatch.setattr(
         module,
         "remember_dump_settings",
-        lambda directory, types, mapping, **kwargs: remembered.append((directory, types, mapping)),
+        lambda mapping, **kwargs: remembered.append((mapping, kwargs)),
     )
     answer = SimpleNamespace(
         element_map={1: "Fe", 2: "Co"},
@@ -399,10 +410,9 @@ def test_loader_remembers_the_confirmed_mapping(tmp_path, monkeypatch):
     _load_with(monkeypatch, path, answer)
 
     assert remembered
-    directory, types, mapping = remembered[0]
-    assert directory == tmp_path
-    assert types == (1, 2)
+    mapping, kwargs = remembered[0]
     assert mapping == {1: "Fe", 2: "Co"}
+    assert kwargs["signature"] == ("id", "type", "x", "y", "z")
 
 
 def test_loader_raises_a_dedicated_cancellation(tmp_path, monkeypatch):
@@ -524,7 +534,7 @@ def test_matching_atom_count_data_file_is_used_even_with_another_stem(tmp_path):
     assert import_structures(path)[0].elements.tolist() == ["Fe", "Co"]
 
 
-def test_remembered_settings_round_trip(tmp_path, monkeypatch):
+def test_last_mapping_round_trip(monkeypatch):
     import NepTrainKit.core.io.lammps_dump as module
 
     store: dict = {}
@@ -538,24 +548,16 @@ def test_remembered_settings_round_trip(tmp_path, monkeypatch):
         spin_names=("c_spin[1]", "c_spin[2]", "c_spin[3]", "c_spin[4]"),
     )
 
-    module.remember_dump_settings(
-        tmp_path,
-        (1, 2),
-        {1: "Fe", 2: "Co"},
-        natoms=16,
-        signature=signature,
-        overrides=overrides,
-    )
+    module.remember_dump_settings({1: "Fe", 2: "Co"}, signature=signature, overrides=overrides)
 
-    saved = module.remembered_dump_settings(tmp_path, (1, 2), natoms=16, signature=signature)
+    saved = module.remembered_dump_settings((1, 2), signature=signature)
     assert saved is not None
     assert dict(saved.element_map) == {1: "Fe", 2: "Co"}
     assert saved.overrides == overrides
-    assert module.remembered_dump_settings(tmp_path, (2, 1), natoms=16, signature=signature) is not None
-    assert module.remembered_dump_settings(tmp_path, (1, 2), natoms=32, signature=signature) is None
-    assert module.remembered_dump_settings(tmp_path, (1, 3), natoms=16, signature=signature) is None
-    assert module.remembered_dump_settings(tmp_path / "other", (1, 2), natoms=16, signature=signature) is None
-    changed = module.remembered_dump_settings(tmp_path, (1, 2), natoms=16, signature=("a", "b"))
+    partial = module.remembered_dump_settings((1, 3), signature=signature)
+    assert partial is not None and dict(partial.element_map) == {1: "Fe"}
+    assert module.remembered_dump_settings((3,), signature=signature) is None
+    changed = module.remembered_dump_settings((1, 2), signature=("a", "b"))
     assert changed is not None and dict(changed.element_map) == {1: "Fe", 2: "Co"}
     assert changed.overrides is None
 
@@ -664,9 +666,7 @@ def test_loader_persists_column_overrides_when_remembered(tmp_path, monkeypatch)
     monkeypatch.setattr(
         module,
         "remember_dump_settings",
-        lambda directory, types, mapping, **kwargs: captured.update(
-            directory=directory, types=types, mapping=mapping, **kwargs
-        ),
+        lambda mapping, **kwargs: captured.update(mapping=mapping, **kwargs),
     )
     answer = SimpleNamespace(
         element_map={1: "Fe"},

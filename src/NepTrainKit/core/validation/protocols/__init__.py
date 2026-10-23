@@ -18,6 +18,7 @@ from .base import (
 )
 from .efv import EnergyForceVirialProtocol
 from .eos import EquationOfStateProtocol
+from .diagnostic import DiagnosticProtocol
 
 _REGISTRY: dict[str, ValidationProtocol] = {}
 
@@ -48,6 +49,7 @@ def detect_protocol(frames) -> list[tuple[float, ValidationProtocol]]:
 
 register(EnergyForceVirialProtocol())
 register(EquationOfStateProtocol())
+register(DiagnosticProtocol())
 
 __all__ = [
     "FIXED_GEOMETRY",

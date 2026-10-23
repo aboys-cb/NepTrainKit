@@ -1544,10 +1544,17 @@ class ShowNepWidget(QWidget):
         status = self._validation_status
         if hasattr(self._parent, "open_model_scorecard"):
             suite_id = status["suite_id"] if status is not None else None
+            seed_args = {}
+            data = getattr(self, "nep_result_data", None)
+            if data is not None and getattr(data, "load_flag", False):
+                indices = sorted(data.select_index)
+                if not indices:
+                    indices = [self.struct_index_spinbox.value()]
+                seed_args["seeds"] = [data.get_atoms(index).copy() for index in indices]
             if self._validation_model_id is None and self._validation_draft is not None:
-                self._parent.open_model_scorecard(suite_id, draft=self._validation_draft)
+                self._parent.open_model_scorecard(suite_id, draft=self._validation_draft, **seed_args)
             else:
-                self._parent.open_model_scorecard(suite_id, self._validation_model_id)
+                self._parent.open_model_scorecard(suite_id, self._validation_model_id, **seed_args)
 
     def save_validation_model(self) -> None:
         from NepTrainKit.ui.widgets.validation_dialogs import save_model_to_project

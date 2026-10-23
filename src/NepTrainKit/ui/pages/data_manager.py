@@ -53,14 +53,14 @@ class DataManagerWidget(QWidget):
         """Expose validation defaults only while its tab is selected."""
         if self.stack.currentWidget() is self.library_widget:
             return {"open": self.library_widget.import_action, "save": self.library_widget.save_action,
-                    "save_menu": self.library_widget.export_package_action}
+                    "save_menu": self.library_widget.save_plan_action if self.library_widget.save_plan_action.isEnabled() else self.library_widget.export_package_action}
         return {}
 
     def _sync_toolbar_actions(self, *_args):
         active = self.isVisible() and self.stack.currentWidget() is self.library_widget
         for menu_name, actions in (
-            ("load_menu", (self.library_widget.import_action, self.library_widget.import_package_action,)),
-            ("save_menu", (self.library_widget.save_action, self.library_widget.star_action, self.library_widget.export_package_action)),
+            ("load_menu", (self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.import_action, self.library_widget.import_package_action,)),
+            ("save_menu", (self.library_widget.save_action, self.library_widget.star_action, self.library_widget.save_plan_action, self.library_widget.export_package_action)),
         ):
             menu = getattr(self._parent, menu_name, None)
             if menu is None:
@@ -206,7 +206,7 @@ class DataManagerWidget(QWidget):
         self.stack.addWidget(self.library_widget)
         self.stack.addWidget(self.splitter)
         self.tabs = SegmentedWidget(self)
-        self.tabs.addItem("validation", self.tr("Validation"), lambda: self.stack.setCurrentWidget(self.library_widget))
+        self.tabs.addItem("validation", "验证与诊断", lambda: self.stack.setCurrentWidget(self.library_widget))
         self.tabs.addItem("projects", self.tr("Projects"), self.show_projects)
         self.tabs.setCurrentItem("validation")
 
@@ -221,5 +221,5 @@ class DataManagerWidget(QWidget):
         self.stack.currentChanged.connect(self._sync_toolbar_actions)
         for action in (self.library_widget.import_action, self.library_widget.save_action,
                        self.library_widget.star_action, self.library_widget.import_package_action,
-                       self.library_widget.export_package_action):
+                       self.library_widget.export_package_action, self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.save_plan_action):
             action.changed.connect(self.toolbarActionsChanged)

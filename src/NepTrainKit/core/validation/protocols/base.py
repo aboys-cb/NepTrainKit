@@ -29,7 +29,7 @@ class Metric:
     key: str
     label: str
     unit: str
-    better: str = "lower"  # lower | higher | closer-to-zero
+    better: str = "lower"  # lower | higher | closer-to-zero | none (descriptive, no ranking)
     headline: bool = False
     # Differences up to this many ``unit`` count as unchanged; relative
     # tolerance alone turns noise into verdicts when the baseline is near zero.

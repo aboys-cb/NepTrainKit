@@ -180,7 +180,7 @@ class GroupMetricsTableModel(QAbstractTableModel):
         self.benchmarks = list(benchmarks)
         self.model_row = model_row
         self.kind = kind
-        keys = ("shape_rmse", "v0_error", "b0_error") if kind == "eos" else ("energy_rmse", "force_rmse")
+        keys = {"eos": ("shape_rmse", "v0_error", "b0_error"), "diagnostic": ("energy_span", "check_failures")}.get(kind, ("energy_rmse", "force_rmse"))
         self.metric_columns = [
             [next((i + 1 for i, col in enumerate(self.scorecard._columns)
                    if col["set_id"] == benchmark["id"] and col["metric"] == key), -1) for key in keys]
@@ -199,6 +199,8 @@ class GroupMetricsTableModel(QAbstractTableModel):
             return None
         metrics = [self.tr("Curve RMSE\n(meV/atom)"), self.tr("V₀ error (%)"), self.tr("B₀ error (%)")] if self.kind == "eos" else [
             self.tr("Energy RMSE\n(meV/atom)"), self.tr("Force RMSE\n(meV/Å)")]
+        if self.kind == "diagnostic":
+            return ["诊断实验", "能量跨度 (meV/atom)", "检查异常数", "运行状态"][section]
         return [self.tr("Reference group"), *metrics, self.tr("Status")][section]
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -289,6 +291,7 @@ class RunDetailPanel(QWidget):
         self.legend_buttons = {}
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(6)
         header = QHBoxLayout()
         self.header_layout = header
         self.title_label = BodyLabel(self)
@@ -301,6 +304,14 @@ class RunDetailPanel(QWidget):
         self.relative_checkbox.setToolTip(self.tr("Subtract each group's reference minimum from both its reference and model energies (eV/atom)."))
         self.relative_checkbox.stateChanged.connect(lambda _state: self._redraw())
         header.addWidget(self.title_label, 1)
+        self.diagnostic_mode = ComboBox(self)
+        self.diagnostic_mode.addItem("能量响应", userData="relative_energy")
+        self.diagnostic_mode.addItem("能量导数", userData="derivative")
+        self.diagnostic_mode.setToolTip("统一切换所有诊断图；导数使用总能量。")
+        self._diagnostic_charts = []
+        from NepTrainKit.ui.widgets.diagnostic_plot import set_response_metric
+        self.diagnostic_mode.currentIndexChanged.connect(lambda *_: set_response_metric(self))
+        header.addWidget(self.diagnostic_mode)
         header.addWidget(self.relative_checkbox)
         header.addWidget(self.offset_checkbox)
         layout.addLayout(header)
@@ -329,6 +340,8 @@ class RunDetailPanel(QWidget):
         self.grid_layout.setSpacing(14)
         self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.grid_scroll.setWidget(self.grid_container)
+        self.grid_container.setAutoFillBackground(False)
+        self.grid_scroll.viewport().setAutoFillBackground(False)
         layout.addWidget(self.grid_scroll, 1)
         self.eos_cards = []
         self.eos_plots = []
@@ -339,7 +352,7 @@ class RunDetailPanel(QWidget):
         """``entries`` are ``(model id, label, run or None, run details)`` in overlay order."""
         self._args = (benchmark, entries)
         self._total_groups = 1 if benchmark else 0
-        self._groups = [("G1", benchmark, entries)] if benchmark and benchmark["protocol"] == "eos" else None
+        self._groups = [("G1", benchmark, entries)] if benchmark and benchmark["protocol"] in ("eos", "diagnostic") else None
         self._redraw()
 
     def show_groups(self, groups, *, total_groups=None):
@@ -351,11 +364,18 @@ class RunDetailPanel(QWidget):
 
     def _redraw(self) -> None:
         groups = self._groups if self._groups is not None else [("", *self._args)] if self._args[0] else []
+        self._diagnostic_charts = []
+        diagnostic = bool(groups and groups[0][1]["protocol"] == "diagnostic")
+        self.diagnostic_mode.setVisible(diagnostic)
         self._rebuild_legend(groups)
         self.relative_checkbox.setVisible(self._groups is not None)
         self.grid_scroll.setVisible(self._groups is not None)
         self.plot.setVisible(self._groups is None)
         if self._groups is not None:
+            if self._groups and self._groups[0][1]["protocol"] == "diagnostic":
+                from NepTrainKit.ui.widgets.diagnostic_plot import redraw_diagnostics
+                redraw_diagnostics(self)
+                return
             self._redraw_eos()
             return
         benchmark, entries = self._args
@@ -429,8 +449,9 @@ class RunDetailPanel(QWidget):
         self._curves = {}
         self.legend_buttons = {}
         entries = groups[0][2] if groups else []
+        diagnostic = bool(groups and groups[0][1]["protocol"] == "diagnostic")
         self._current_key = entries[0][0] if entries else None
-        keys = [None] + [entry[0] for entry in entries]
+        keys = ([] if groups and groups[0][1]["protocol"] == "diagnostic" else [None]) + [entry[0] for entry in entries]
         self._hidden_series.intersection_update(keys)
         self.legend_panel.setVisible(bool(groups))
         for key in keys if groups else []:
@@ -463,6 +484,8 @@ class RunDetailPanel(QWidget):
             button = PushButton(QIcon(swatch), self.fontMetrics().elidedText(label, Qt.TextElideMode.ElideMiddle, 280), holder)
             button.setIconSize(QSize(32, 16))
             button.setStyleSheet(button.styleSheet() + "\nPushButton[hasIcon=true] { padding: 5px 12px 6px 52px; }")
+            if diagnostic:
+                button.setStyleSheet(button.styleSheet() + f"\nPushButton {{border:0;background:transparent;color:{palette.TEXT_PRIMARY};border-radius:6px;}} PushButton:hover {{background:{palette.ACCENT_SOFT};}}")
             button.setCheckable(True)
             button.setChecked(key not in self._hidden_series)
             font = button.font()
@@ -472,7 +495,7 @@ class RunDetailPanel(QWidget):
             button.toggled.connect(lambda checked, series=key: self._set_series_visible(series, checked))
             row.addWidget(button)
             if key is not None and key != self._current_key:
-                remove = TransparentToolButton(FluentIcon.CLOSE.colored(palette.PLOT_REJECT, palette.PLOT_REJECT), holder)
+                remove = TransparentToolButton(FluentIcon.CLOSE.colored(palette.TEXT_SECONDARY if diagnostic else palette.PLOT_REJECT, palette.TEXT_SECONDARY if diagnostic else palette.PLOT_REJECT), holder)
                 remove.setToolTip(self.tr("Remove comparison model"))
                 remove.setAccessibleName(self.tr("Remove comparison model"))
                 remove.clicked.connect(lambda _checked=False, series=key: self.comparisonRemoved.emit(series))
@@ -501,7 +524,8 @@ class RunDetailPanel(QWidget):
         self._layout_cards()
 
     def _layout_cards(self):
-        columns = min(3, max(1, (self.width() - 30) // 360), max(1, len(self.eos_cards)))
+        limit = 2 if self._groups and self._groups[0][1]["protocol"] == "diagnostic" else 3
+        columns = min(limit, max(1, (self.width() - 30) // 360), max(1, len(self.eos_cards)))
         if columns == self._grid_columns:
             return
         self._grid_columns = columns
@@ -684,17 +708,26 @@ class ModelLibraryWidget(QWidget):
         self.controls_panel.setObjectName("validationControls")
         self.controls_panel.setStyleSheet(f"#validationControls {{ background: {palette.SURFACE}; border: 1px solid {palette.BORDER}; border-radius: 10px; }}")
         controls = QVBoxLayout(self.controls_panel)
-        controls.setContentsMargins(14, 10, 14, 12)
-        controls.setSpacing(12)
+        controls.setContentsMargins(12, 10, 12, 10)
+        controls.setSpacing(8)
         fields = QHBoxLayout()
-        fields.setSpacing(20)
+        fields.setSpacing(14)
         self.suite_combo = ComboBox(self)
-        self.suite_combo.setMinimumWidth(190)
+        self.suite_combo.setMinimumWidth(150)
         self.suite_combo.currentIndexChanged.connect(self._on_suite_changed)
         self.refresh_button = TransparentToolButton(FluentIcon.SYNC.colored(palette.ACCENT, palette.ACCENT), self)
         self.refresh_button.setToolTip(self.tr("Refresh"))
         self.refresh_button.setAccessibleName(self.tr("Refresh"))
         self.refresh_button.clicked.connect(lambda: self.refresh())
+        self.diagnostic_action = Action(FluentIcon.ADD.icon(color=palette.ACCENT), "新建无参考诊断…", self)
+        self.edit_diagnostic_action = Action(FluentIcon.EDIT.icon(color=palette.ACCENT), "编辑所选诊断实验的副本…", self)
+        self.edit_diagnostic_action.triggered.connect(self.edit_diagnostic_plan)
+        self.save_plan_action = Action(FluentIcon.SAVE.icon(color=palette.ACCENT), "保存诊断方案…", self)
+        self.diagnostic_action.triggered.connect(self.show_diagnostic_editor)
+        self.save_plan_action.triggered.connect(self.save_diagnostic_plan)
+        self.new_diagnostic_button = TransparentToolButton(FluentIcon.ADD.colored(palette.ACCENT, palette.ACCENT), self)
+        self.new_diagnostic_button.setToolTip("新建无参考诊断 · 无需 DFT")
+        self.new_diagnostic_button.clicked.connect(self.show_diagnostic_editor)
         self.import_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Import reference dataset"), self)
         self.import_action.setToolTip(self.tr("Import reference dataset"))
         self.import_package_action = Action(FluentIcon.DOWNLOAD.icon(color=palette.ACCENT), self.tr("Import validation sharing package…"), self)
@@ -714,31 +747,25 @@ class ModelLibraryWidget(QWidget):
         self.run_selected_button.setToolTip(self.tr("Validate the current model and selected comparison models, including hidden curves."))
         self.run_selected_button.clicked.connect(self.run_selected)
         self.model_combo = ComboBox(self)
-        self.model_combo.setMinimumWidth(160)
+        self.model_combo.setMinimumWidth(130)
         self.comparison_picker = ComparisonPicker(self)
-        self.comparison_picker.setMinimumWidth(150)
+        self.comparison_picker.setMinimumWidth(130)
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
         self.comparison_picker.selectionChanged.connect(self._on_selection_changed)
         for title, combo, buttons, stretch in (
-            (self.tr("Validation plan"), self.suite_combo, (self.refresh_button,), 3),
-            (self.tr("Current model"), self.model_combo, (self.baseline_button,), 4),
-            (self.tr("Compare with"), self.comparison_picker, (), 4),
+            (self.tr("Validation plan"), self.suite_combo, (self.new_diagnostic_button, self.refresh_button), 4),
+            (self.tr("Current model"), self.model_combo, (self.baseline_button,), 5),
+            (self.tr("Compare with"), self.comparison_picker, (), 3),
         ):
-            field = QVBoxLayout()
-            field.setSpacing(4)
-            caption_row = QHBoxLayout()
-            caption_row.setSpacing(2)
+            field = QHBoxLayout()
+            field.setSpacing(6)
             caption = CaptionLabel(title, self)
             caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
-            caption_row.addWidget(caption)
-            caption_row.addStretch(1)
+            field.addWidget(caption)
+            field.addWidget(combo, 1)
             for button in buttons:
-                button.setFixedHeight(28)
-                caption_row.addWidget(button)
-            # Match the caption height in fields without actions.
-            caption.setMinimumHeight(28)
-            field.addLayout(caption_row)
-            field.addWidget(combo)
+                button.setFixedSize(28, 28)
+                field.addWidget(button)
             fields.addLayout(field, stretch)
         controls.addLayout(fields)
         self.import_action.triggered.connect(lambda: self.import_benchmark())
@@ -822,6 +849,17 @@ class ModelLibraryWidget(QWidget):
         legend.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.table.setToolTip(legend.text() + "\n" + self.group_hint.text())
         legend.hide()
+        from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor
+        self.diagnostic_editor = DiagnosticEditor(self)
+        self.diagnostic_editor.prepared.connect(self._prepare_diagnostic_plan)
+        self.editor_scroll = QScrollArea(self)
+        self.editor_scroll.setWidgetResizable(True)
+        self.editor_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.editor_scroll.setWidget(self.diagnostic_editor)
+        self.editor_scroll.hide()
+        self.diagnostic_editor.hide()
+        self.diagnostic_editor.installEventFilter(self)
+        layout.addWidget(self.editor_scroll, 1)
         layout.addWidget(self.splitter, 1)
         metrics_footer = QHBoxLayout()
         metrics_footer.setContentsMargins(12, 4, 12, 8)
@@ -838,8 +876,14 @@ class ModelLibraryWidget(QWidget):
 
     # -- data -----------------------------------------------------------------
     def service(self) -> ValidationService:
-        # A new service follows a changed library location without a restart.
-        return self._service or ValidationService()
+        if self._service is not None:
+            return self._service
+        from NepTrainKit.core.validation.library import get_library
+        library = get_library()
+        cached = getattr(self, "_session_service", None)
+        if cached is None or cached.library.root != library.root:
+            self._session_service = ValidationService(library=library)
+        return self._session_service
 
     def current_suite_id(self) -> int | None:
         return self.suite_combo.currentData()
@@ -899,7 +943,7 @@ class ModelLibraryWidget(QWidget):
 
     def _on_suite_changed(self, _index: int) -> None:
         suite_id = self.current_suite_id()
-        if suite_id is not None:
+        if suite_id is not None and suite_id > 0:
             Config.set("validation", CONFIG_SUITE, suite_id)
         self._load_scorecard()
 
@@ -913,7 +957,7 @@ class ModelLibraryWidget(QWidget):
         self.property_combo.blockSignals(True)
         self.property_combo.clear()
         for kind in kinds:
-            self.property_combo.addItem("EOS" if kind == "eos" else self.tr("Energy / force / virial"), userData=kind)
+            self.property_combo.addItem({"eos": "EOS", "diagnostic": "无参考诊断"}.get(kind, self.tr("Energy / force / virial")), userData=kind)
         previous_index = self.property_combo.findData(previous_kind)
         if previous_index >= 0:
             self.property_combo.setCurrentIndex(previous_index)
@@ -931,7 +975,7 @@ class ModelLibraryWidget(QWidget):
             card = service.scorecard(suite_id, [row["model_id"] for row in card["rows"]] + [model_id], draft=self._draft)
         self.model.set_scorecard(card)
         if card is None:
-            self.empty_hint.setText(self.tr("Import a reference dataset into a validation plan to start validating models."))
+            self.empty_hint.setText("新建无参考诊断，或导入参考基准集；先看模型响应，有参考时再评估准确性。")
         elif not card["columns"]:
             self.empty_hint.setText(self.tr("This validation plan has no reference datasets yet."))
         elif not card["rows"]:
@@ -940,7 +984,7 @@ class ModelLibraryWidget(QWidget):
         suite = (card or {}).get("suite") or {}
         baseline = next((row for row in (card or {}).get("rows", []) if row["is_baseline"]), None)
         if suite_id is None:
-            self.baseline_label.setText(self.tr("Import a reference dataset into a validation plan to start validating models."))
+            self.baseline_label.setText("新建无参考诊断，或导入参考基准集；先看模型响应，有参考时再评估准确性。")
         elif baseline is None:
             self.baseline_label.setText(self.tr("Baseline model: not selected"))
         else:
@@ -956,7 +1000,7 @@ class ModelLibraryWidget(QWidget):
             label = self._model_label(index)
             self.model_combo.addItem(label, userData=row["model_id"])
         if not self.model._rows:
-            self.model_combo.addItem(self.tr("Reference preview only"), userData=None)
+            self.model_combo.addItem("选择势版本后运行" if any(b["protocol"] == "diagnostic" for b in self._benchmarks) else self.tr("Reference preview only"), userData=None)
         self.model_combo.setEnabled(bool(self.model._rows))
         selected = self.model_combo.findData(model_id)
         if selected >= 0:
@@ -1026,7 +1070,7 @@ class ModelLibraryWidget(QWidget):
         selection.blockSignals(True)
         self.metrics_model.set_groups(benchmarks, self.model.row_of_model(self.model_combo.currentData()), kind)
         selection.blockSignals(False)
-        if kind == "eos":
+        if kind in ("eos", "diagnostic"):
             self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
             if selected and selected < {b["id"] for b in benchmarks}:
                 from PySide6.QtCore import QItemSelectionModel
@@ -1041,7 +1085,8 @@ class ModelLibraryWidget(QWidget):
             self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
             if benchmarks:
                 self.table.selectRow(next((i for i, b in enumerate(benchmarks) if b["id"] in selected), 0))
-        self.all_groups_button.setVisible(kind == "eos")
+        self.all_groups_button.setVisible(kind in ("eos", "diagnostic"))
+        self.metrics_button.setText("响应与运行详情" if kind == "diagnostic" else self.tr("Error details"))
         self._update_detail()
 
     def _select_all_groups(self):
@@ -1052,7 +1097,15 @@ class ModelLibraryWidget(QWidget):
         row = self.current_model_row()
         has_suite = self.current_suite_id() is not None
         saved = row is not None and not row.get("temporary")
-        self.export_package_action.setEnabled(has_suite and bool(self.metrics_model.benchmarks) and self._run_task is None)
+        diagnostic = any(b["protocol"] == "diagnostic" for b in self._benchmarks)
+        temporary_plan = has_suite and self.current_suite_id() < 0
+        editing = not self.editor_scroll.isHidden()
+        self.edit_diagnostic_action.setEnabled(diagnostic and self._run_task is None and not editing)
+        self.save_plan_action.setEnabled(temporary_plan and self._run_task is None and not editing)
+        self.diagnostic_action.setEnabled(self._run_task is None)
+        self.new_diagnostic_button.setEnabled(self._run_task is None)
+        self.export_package_action.setEnabled(has_suite and not diagnostic and bool(self.metrics_model.benchmarks) and self._run_task is None)
+        self.export_package_action.setToolTip("无参考诊断分享将在下一阶段支持；当前可保存本地方案。" if diagnostic else self.export_package_action.text())
         self.save_action.setEnabled(row is not None and self._run_task is None)
         self.star_action.setEnabled(saved)
         self.star_action.setText(self.tr("Unstar") if row and row["starred"] else self.tr("Star"))
@@ -1073,6 +1126,7 @@ class ModelLibraryWidget(QWidget):
         selected = sorted(index.row() for index in self.table.selectionModel().selectedRows())
         focused = len(selected) < len(benchmarks)
         self.all_groups_button.setEnabled(focused)
+        self.all_groups_button.setVisible(focused or self.metrics_model.kind == "eos")
         self.all_groups_button.setText(self.tr("Back to all groups") if focused else self.tr("Show all groups"))
         self.all_groups_button.setIcon(FluentIcon.RETURN.colored(
             palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY) if focused else None)
@@ -1102,12 +1156,73 @@ class ModelLibraryWidget(QWidget):
                         pass
                 entries.append((row["model_id"], self._model_label(self.model.row_of_model(row["model_id"])), run, details))
             groups.append((f"G{index + 1}", benchmark, entries))
-        if self.metrics_model.kind == "eos":
+        if not groups:
+            self.detail.show_runs(None, [])
+        elif self.metrics_model.kind in ("eos", "diagnostic"):
             self.detail.show_groups(groups, total_groups=len(benchmarks))
         elif groups:
             self.detail.show_runs(groups[0][1], groups[0][2])
         else:
             self.detail.show_runs(None, [])
+
+    def eventFilter(self, watched, event):
+        from PySide6.QtCore import QEvent
+        if watched is getattr(self, "diagnostic_editor", None) and event.type() == QEvent.Type.Hide:
+            self.editor_scroll.hide()
+            self.splitter.show()
+            self.metrics_button.show()
+            self.controls_panel.setEnabled(True)
+            self._on_selection_changed()
+        return super().eventFilter(watched, event)
+
+    def show_diagnostic_editor(self):
+        if self._run_task is not None:
+            return
+        self.controls_panel.setEnabled(False)
+        self.save_plan_action.setEnabled(False)
+        self.edit_diagnostic_action.setEnabled(False)
+        self.export_package_action.setEnabled(False)
+        self.splitter.hide()
+        self.metrics_button.hide()
+        self.editor_scroll.show()
+        self.diagnostic_editor.show()
+
+    def edit_diagnostic_plan(self):
+        from NepTrainKit.core.validation.protocols.diagnostic import experiment
+        if self._run_task is not None:
+            return
+        try:
+            selected = [self.metrics_model.benchmarks[index.row()] for index in self.table.selectionModel().selectedRows()]
+            experiments = [experiment(self.service().set_frames(item["id"])) for item in selected if item["protocol"] == "diagnostic"]
+            if not experiments:
+                raise ValueError("请先选择或放大一项无参考诊断实验。")
+            self.diagnostic_editor.load_experiments(self.suite_combo.currentText(), experiments)
+            self.show_diagnostic_editor()
+        except ValueError as exc:
+            MessageManager.send_error_message(str(exc))
+
+    def set_diagnostic_seeds(self, seeds):
+        self.diagnostic_editor.set_seeds(seeds)
+
+    def _prepare_diagnostic_plan(self, name, experiments):
+        try:
+            suite = self.service().create_diagnostic_plan(name, experiments)
+            self.diagnostic_editor.hide()
+            self.refresh(suite["id"])
+        except Exception as exc:
+            MessageManager.send_error_message(str(exc))
+
+    def save_diagnostic_plan(self):
+        if self._run_task is not None or self.current_suite_id() is None or self.current_suite_id() >= 0:
+            return
+        box = GetStrMessageBox(self.window(), "保存为新的诊断方案；不会覆盖已有方案或基准势。")
+        if not box.exec():
+            return
+        try:
+            suite = self.service().save_diagnostic_plan(self.current_suite_id(), box.lineEdit.text())
+            self.refresh(suite["id"])
+        except Exception as exc:
+            MessageManager.send_error_message(str(exc))
 
     # -- actions --------------------------------------------------------------
     def open_sampling(self, set_id):
@@ -1231,7 +1346,7 @@ class ModelLibraryWidget(QWidget):
     def import_benchmark(self) -> list[dict] | None:
         """Import one or more reference datasets and return their records."""
         service = self.service()
-        dialog = BenchmarkImportDialog(self.window(), service.suites(), self.suite_combo.currentText())
+        dialog = BenchmarkImportDialog(self.window(), [s for s in service.suites() if s["id"] > 0], self.suite_combo.currentText() if (self.current_suite_id() or 0) > 0 else "")
         if not dialog.exec():
             return None
         try:
@@ -1317,6 +1432,12 @@ class ModelLibraryWidget(QWidget):
         self.run_selected_button.setEnabled(False)
         self.export_package_action.setEnabled(False)
         self.save_action.setEnabled(False)
+        self.save_plan_action.setEnabled(False)
+        self.diagnostic_action.setEnabled(False)
+        self.edit_diagnostic_action.setEnabled(False)
+        self.new_diagnostic_button.setEnabled(False)
+        self.diagnostic_editor.setEnabled(False)
+        self.suite_combo.setEnabled(False)
         self.run_button.setText(self.tr("Cancel"))
         self.run_button.setIcon(QIcon(':/images/src/images/stop.svg'))
         task.start_work(evaluate_all)
@@ -1329,6 +1450,8 @@ class ModelLibraryWidget(QWidget):
 
     def _on_run_finished(self) -> None:
         task, self._run_task = self._run_task, None
+        self.diagnostic_editor.setEnabled(True)
+        self.suite_combo.setEnabled(True)
         self.run_button.setText(self.tr("Run all"))
         self.run_button.setIcon(QIcon(':/images/src/images/run.svg'))
         self.run_button.setEnabled(True)

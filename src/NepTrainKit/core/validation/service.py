@@ -100,7 +100,7 @@ def compare(
     Differences within ``tolerance`` of the baseline, or within ``abs_tolerance``
     in the metric's own unit, are ``same``.
     """
-    if value is None or baseline is None or not math.isfinite(value) or not math.isfinite(baseline):
+    if better == "none" or value is None or baseline is None or not math.isfinite(value) or not math.isfinite(baseline):
         return None
     if better == "closer-to-zero":
         value, baseline, better = abs(value), abs(baseline), "lower"
@@ -149,6 +149,11 @@ class ValidationService:
         self.library = self.library or get_library()
         self.db = self.library.database
         self.predictor_factory = self.predictor_factory or _nep_predictor
+        self._temporary_suites = {}
+        self._temporary_sets = {}
+        self._temporary_data = {}
+        self._temporary_runs = {}
+        self._temporary_results = {}
 
     # -- models ---------------------------------------------------------------
     def _inbox_project_id(self, session) -> int:
@@ -396,6 +401,8 @@ class ValidationService:
             return [_record(row) for row in records]
 
     def get_set(self, set_id: str) -> dict:
+        if set_id in self._temporary_sets:
+            return dict(self._temporary_sets[set_id])
         with self.db.session() as session:
             row = session.get(BenchmarkSet, set_id)
             if row is None:
@@ -412,6 +419,8 @@ class ValidationService:
             return [_record(row) for row in session.scalars(query.order_by(BenchmarkSet.created_at.desc()))]
 
     def set_frames(self, set_id: str):
+        if set_id in self._temporary_data:
+            return read_frames(self._temporary_data[set_id])
         benchmark = self.get_set(set_id)
         frames = read_frames(self.library.open_object(benchmark["object_hash"]).read_bytes())
         selection = (benchmark.get("source_ref") or {}).get("eos_group")
@@ -423,6 +432,70 @@ class ValidationService:
         """Return the sets whose elements the model covers."""
         elements = set(self.get_model(model_id)["elements"] or ())
         return [item for item in self.sets() if set(item["elements"]) <= elements]
+
+    def create_diagnostic_plan(self, name, experiments):
+        """Prepare a session-only plan. Opening or previewing never inserts library rows."""
+        from .protocols.diagnostic import encode_experiment
+        if not name.strip() or not experiments:
+            raise ValueError("请填写方案名称并选择至少一项实验。")
+        prepared = []
+        protocol = get_protocol("diagnostic")
+        for seed, spec in experiments:
+            data = encode_experiment(seed, spec)
+            frames = read_frames(data)
+            digest = sha256_bytes(data)
+            summary = protocol.summarize_reference(frames)
+            key = "temporary:" + digest
+            record = dict(id=key, name=summary["formula"] + " / " + summary["title"],
+                          protocol="diagnostic", protocol_version=protocol.version,
+                          object_hash=digest, source_ref={}, provenance={}, summary=summary,
+                          elements=sorted(set(seed.get_chemical_symbols())), archived=False)
+            prepared.append((record, data))
+        suite_id = min([0, *self._temporary_suites]) - 1
+        suite = dict(id=suite_id, name=name.strip() + " · 临时", notes="无参考诊断", baseline_model_id=None,
+                     baseline_note="", temporary=True, set_ids=list(dict.fromkeys(r["id"] for r, _ in prepared)))
+        for record, data in prepared:
+            self._temporary_sets[record["id"]] = record
+            self._temporary_data[record["id"]] = data
+        self._temporary_suites[suite_id] = suite
+        return dict(suite)
+
+    def save_diagnostic_plan(self, suite_id, name):
+        """Save as a new plan atomically; existing plans and baselines are never overwritten."""
+        if suite_id not in self._temporary_suites or not name.strip():
+            raise ValueError("请选择临时诊断方案并填写新名称。")
+        records = self.suite_sets(suite_id)
+        with self.db.session() as session:
+            if session.scalars(select(BenchmarkSuite).where(BenchmarkSuite.name == name.strip())).first():
+                raise ValueError("已有同名方案，请使用新名称。")
+            baseline_id = self._temporary_suites[suite_id]["baseline_model_id"]
+            suite = BenchmarkSuite(name=name.strip(), notes="无参考诊断", baseline_model_id=baseline_id,
+                                   baseline_note=self._temporary_suites[suite_id]["baseline_note"])
+            if baseline_id is not None:
+                session.get(ModelVersion, baseline_id).auto_captured = False
+            session.add(suite)
+            session.flush()
+            for index, item in enumerate(records):
+                digest = self.library.put_bytes(self._temporary_data[item["id"]])
+                key = sha256_bytes(json.dumps([digest, "diagnostic", item["protocol_version"]]).encode())
+                if session.get(BenchmarkSet, key) is None:
+                    session.add(BenchmarkSet(id=key, name=item["name"], protocol="diagnostic",
+                        protocol_version=item["protocol_version"], object_hash=digest, source_ref={},
+                        provenance={}, summary=item["summary"], elements=item["elements"]))
+                    session.flush()
+                session.add(BenchmarkSuiteSet(suite_id=suite.id, set_id=key, position=index))
+                # Keep already computed results when an explicitly saved experiment has the same bytes.
+                for (model_id, set_id), run in self._temporary_runs.items():
+                    if set_id != item["id"]:
+                        continue
+                    run_id = uuid.uuid4().hex
+                    result_path = self.library.write_result(run_id, self.run_details(run)) if run["status"] == "succeeded" else ""
+                    session.add(BenchmarkRun(id=run_id, model_id=model_id, set_id=key,
+                        protocol_version=run["protocol_version"], status=run["status"], metrics=run["metrics"],
+                        error=run["error"], environment=run["environment"], result_path=result_path,
+                        elapsed_seconds=run["elapsed_seconds"]))
+            session.commit()
+            return _record(suite)
 
     # -- suites ---------------------------------------------------------------
     def create_suite(self, name: str, set_ids: Iterable[str] = (), *, notes: str = "") -> dict:
@@ -452,6 +525,8 @@ class ValidationService:
             session.commit()
 
     def get_suite(self, suite_id: int) -> dict:
+        if suite_id in self._temporary_suites:
+            return dict(self._temporary_suites[suite_id])
         with self.db.session() as session:
             suite = session.get(BenchmarkSuite, suite_id)
             if suite is None:
@@ -460,9 +535,11 @@ class ValidationService:
 
     def suites(self) -> list[dict]:
         with self.db.session() as session:
-            return [_record(row) for row in session.scalars(select(BenchmarkSuite).order_by(BenchmarkSuite.name))]
+            return [*map(dict, self._temporary_suites.values()), *[_record(row) for row in session.scalars(select(BenchmarkSuite).order_by(BenchmarkSuite.name))]]
 
     def suite_sets(self, suite_id: int) -> list[dict]:
+        if suite_id in self._temporary_suites:
+            return [self.get_set(key) for key in self._temporary_suites[suite_id]["set_ids"]]
         with self.db.session() as session:
             rows = session.execute(
                 select(BenchmarkSet)
@@ -473,6 +550,11 @@ class ValidationService:
             return [_record(row) for row in rows]
 
     def set_baseline(self, suite_id: int, model_id: int | None, note: str = "") -> None:
+        if suite_id in self._temporary_suites:
+            if model_id is not None and self.get_model(model_id)["project_id"] is None:
+                raise ValueError("Save this temporary model to a project first.")
+            self._temporary_suites[suite_id].update(baseline_model_id=model_id, baseline_note=note.strip())
+            return
         with self.db.session() as session:
             suite = session.get(BenchmarkSuite, suite_id)
             if suite is None:
@@ -489,6 +571,11 @@ class ValidationService:
 
     # -- evaluation -----------------------------------------------------------
     def latest_run(self, model_id: int, set_id: str, *, protocol_version: int | None = None) -> dict | None:
+        if set_id in self._temporary_sets:
+            run = self._temporary_runs.get((model_id, set_id))
+            if run and (protocol_version is None or run["protocol_version"] == protocol_version):
+                return dict(run)
+            return None
         with self.db.session() as session:
             model = session.get(ModelVersion, model_id)
             query = select(BenchmarkRun).join(ModelVersion, BenchmarkRun.model_id == ModelVersion.id).where(
@@ -505,15 +592,17 @@ class ValidationService:
         model = self.get_model(model_id)
         benchmark = self.get_set(set_id)
         protocol = get_protocol(benchmark["protocol"])
+        cached = None
         if not force:
             cached = self.latest_run(model_id, set_id, protocol_version=protocol.version)
-            if cached is not None and (cached["status"] == "unsupported" or
+            if cached is not None and protocol.kind != "diagnostic" and (cached["status"] == "unsupported" or
                                        cached["status"] == "succeeded" and _finite_metrics(cached["metrics"])):
                 return cached
         run_id = uuid.uuid4().hex
         start = time.monotonic()
         environment = {
             "protocol": protocol.kind,
+            "requested_backend": self.backend,
             "mode": protocol.mode,
             "neptrainkit": _package_version("NepTrainKit"),
             "nep_adapters": _package_version("nep-adapters"),
@@ -533,20 +622,36 @@ class ValidationService:
                 frames = self.set_frames(set_id)
                 predictor = self.predictor_factory(model_path, self.backend)
                 environment["backend"] = str(getattr(predictor, "backend", self.backend))
+                if protocol.kind == "diagnostic":
+                    environment["model_capabilities"] = sorted(getattr(getattr(predictor, "model_info", None), "capability_names", ()))
+                    # Resolve Auto before cache reuse: CPU and CUDA are different experiments.
+                    if cached and cached["status"] == "succeeded" and _finite_metrics(cached["metrics"]) and cached["environment"] == environment:
+                        return cached
                 evaluation = protocol.evaluate(predictor, frames)
                 if not _finite_metrics(evaluation.metrics):
                     raise ValueError("Validation metrics must be finite.")
                 metrics = evaluation.metrics
-                result_path = self.library.write_result(
-                    run_id, {"details": evaluation.details, "warnings": evaluation.warnings}
-                )
+                result = {"details": evaluation.details, "warnings": evaluation.warnings}
+                if set_id in self._temporary_sets:
+                    self._temporary_results[run_id] = result
+                else:
+                    result_path = self.library.write_result(run_id, result)
                 status = "succeeded"
             except Exception as exc:
+                from .protocols.diagnostic import UnsupportedDiagnostic
+                if isinstance(exc, UnsupportedDiagnostic):
+                    status = "unsupported"
                 error = str(exc) or type(exc).__name__
             finally:
                 close = getattr(predictor, "close", None)
                 if callable(close):
                     close()
+        if set_id in self._temporary_sets:
+            run = dict(id=run_id, model_id=model_id, set_id=set_id, protocol_version=protocol.version,
+                       status=status, metrics=metrics, result_path="", error=error, environment=environment,
+                       elapsed_seconds=time.monotonic() - start)
+            self._temporary_runs[(model_id, set_id)] = run
+            return dict(run)
         with self.db.session() as session:
             row = BenchmarkRun(
                 id=run_id,
@@ -574,6 +679,8 @@ class ValidationService:
         return runs
 
     def run_details(self, run: dict) -> dict:
+        if run["id"] in self._temporary_results:
+            return self._temporary_results[run["id"]]
         return self.library.read_result(run.get("result_path", ""))
 
     # -- scorecard ------------------------------------------------------------

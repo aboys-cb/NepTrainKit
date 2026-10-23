@@ -66,6 +66,8 @@ def build_package(service, suite_id: int, model_ids=()) -> PackagePreview:
     refs, models, objects = [], [], {}
     baseline = None
     for row in service.suite_sets(suite_id):
+        if row["protocol"] == "diagnostic":
+            raise ValueError("无参考诊断方案暂不支持 v1 分享包，请先保存到本地；旧参考验证方案仍可分享。")
         data = service.library.open_object(row["object_hash"]).read_bytes()
         group = row["source_ref"].get("eos_group")
         if group:
@@ -162,6 +164,8 @@ def _inspect_checked(data):
         summaries, warnings = [], []
         for row in refs:
             _text(row["name"], "reference name")
+            if row["protocol"] == "diagnostic":
+                raise ValueError("v1 分享包不支持无参考诊断协议。")
             protocol = get_protocol(row["protocol"])
             if row["protocol_version"] != protocol.version:
                 raise ValueError(f"Unsupported protocol version: {protocol.kind} {row['protocol_version']}")

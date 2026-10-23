@@ -15,6 +15,29 @@ from NepTrainKit.core.validation.protocols import read_frames
 from NepTrainKit.core.validation.protocols.diagnostic import DiagnosticSpec, DiagnosticProtocol, UnsupportedDiagnostic, encode_experiment, experiment, scan_frames
 
 
+@pytest.fixture(autouse=True)
+def editor_preferences(monkeypatch):
+    """Do not read or overwrite the developer's remembered experiment settings."""
+    from NepTrainKit.ui.widgets.diagnostic_editor import Config, PARAMETERS_OPTION
+    original_get, original_set = Config.get, Config.set
+    stored = {}
+
+    def get(section, option, fallback=None):
+        if (section, option) == ('validation', PARAMETERS_OPTION):
+            return stored.get('value', fallback)
+        return original_get(section, option, fallback)
+
+    def set_value(section, option, value):
+        if (section, option) == ('validation', PARAMETERS_OPTION):
+            stored['value'] = value
+        else:
+            original_set(section, option, value)
+
+    monkeypatch.setattr(Config, 'get', get)
+    monkeypatch.setattr(Config, 'set', set_value)
+    return stored
+
+
 @pytest.fixture
 def seed():
     atoms = Atoms('Fe2', positions=[[0,0,0],[1.2,.4,.1]], cell=[5,5,5], pbc=True)
@@ -129,7 +152,7 @@ def counts(service):
 
 def test_temporary_plan_save_roundtrip_and_cache_identity(service,seed):
     spec=DiagnosticSpec(kind='displacement',low=-.1,high=.1,derivative_step=.01)
-    suite=service.create_diagnostic_plan('Fe',[(seed,spec)])
+    suite=service.create_diagnostic_plan('Fe',[(seed,spec)],temporary=True)
     benchmark=service.suite_sets(suite['id'])[0]
     assert counts(service)==(0,0,0)
     model=service.capture_model(ModelDraft(b'nep4_spin3 1 Fe\n','/test/nep.txt'),temporary=True)
@@ -137,7 +160,7 @@ def test_temporary_plan_save_roundtrip_and_cache_identity(service,seed):
     assert run['status']=='succeeded',run
     assert counts(service)==(0,0,0)
     assert service.evaluate(model['id'],benchmark['id'])['id']==run['id']
-    changed=service.create_diagnostic_plan('changed',[(seed,replace(spec,high=.2))])
+    changed=service.create_diagnostic_plan('changed',[(seed,replace(spec,high=.2))],temporary=True)
     assert service.suite_sets(changed['id'])[0]['id']!=benchmark['id']
     saved=service.save_diagnostic_plan(suite['id'],'Fe saved')
     assert counts(service)==(1,1,1)
@@ -154,7 +177,7 @@ def test_temporary_plan_save_roundtrip_and_cache_identity(service,seed):
 
 
 def test_unsupported_run_is_reported_without_hiding_other_experiments(service,seed):
-    suite=service.create_diagnostic_plan('mixed',[(seed,DiagnosticSpec()),(seed,DiagnosticSpec(kind='spin_magnitude',low=.8,high=1.2))])
+    suite=service.create_diagnostic_plan('mixed',[(seed,DiagnosticSpec()),(seed,DiagnosticSpec(kind='spin_magnitude',low=.8,high=1.2))],temporary=True)
     model=service.capture_model(ModelDraft(b'nep4_spin3 1 Fe\n','/test/nep.txt'),temporary=True)
     assert [r['status'] for r in service.run_suite(model['id'],suite['id'])]==['succeeded','unsupported']
 
@@ -163,7 +186,7 @@ def test_saved_plan_keeps_explicit_baseline_and_old_plans(service,seed):
     model=service.capture_model(ModelDraft(b'nep4_spin3 1 Fe\n','/test/nep.txt'),auto=False)
     old=service.create_suite('old')
     service.set_baseline(old['id'],model['id'],'original')
-    suite=service.create_diagnostic_plan('new',[(seed,DiagnosticSpec())])
+    suite=service.create_diagnostic_plan('new',[(seed,DiagnosticSpec())],temporary=True)
     service.set_baseline(suite['id'],model['id'],'explicit')
     saved=service.save_diagnostic_plan(suite['id'],'new saved')
     assert saved['baseline_model_id']==model['id'] and saved['baseline_note']=='explicit'
@@ -192,7 +215,7 @@ def test_workbench_editor_draft_run_overlays_focus_and_save(service,seed,tmp_pat
     assert editor.use_button.isEnabled() and not widget.controls_panel.isEnabled()
     assert widget.controls_panel.isHidden()
     editor.rows['spin_angle'][0].setChecked(True)
-    editor.use_button.click()
+    editor.temporary_button.click()
     assert widget.current_suite_id()<0 and counts(service)==(0,0,0)
     assert not widget.editor_scroll.isVisible() and widget.controls_panel.isEnabled()
     assert not widget.controls_panel.isHidden()
@@ -249,7 +272,7 @@ def test_editor_replacement_clears_stale_preview(seed,monkeypatch):
 
 
 def test_resolved_backend_and_runtime_change_invalidate_cache(service,seed):
-    suite=service.create_diagnostic_plan('cache',[(seed,DiagnosticSpec())])
+    suite=service.create_diagnostic_plan('cache',[(seed,DiagnosticSpec())],temporary=True)
     model=service.capture_model(ModelDraft(b'nep4_spin3 1 Fe\n','/test/nep.txt'),temporary=True)
     key=service.suite_sets(suite['id'])[0]['id']
     before=service.evaluate(model['id'],key)
@@ -276,7 +299,7 @@ def test_viewer_passes_selected_structures_without_copying_labels_into_plan(seed
 def test_edit_saved_experiment_creates_copy_and_preserves_original(service,seed):
     from NepTrainKit.ui.views.model_library import ModelLibraryWidget
     spec=DiagnosticSpec(kind='displacement',low=-.2,high=.2,derivative_step=.01)
-    suite=service.create_diagnostic_plan('original',[(seed,spec)])
+    suite=service.create_diagnostic_plan('original',[(seed,spec)],temporary=True)
     saved=service.save_diagnostic_plan(suite['id'],'original')
     original_set=service.suite_sets(saved['id'])[0]
     widget=ModelLibraryWidget(service=service)
@@ -286,7 +309,7 @@ def test_edit_saved_experiment_creates_copy_and_preserves_original(service,seed)
     assert editor.isVisible() and editor.rows['displacement'][2].value()==.2
     editor.rows['displacement'][2].setValue(.3)
     editor.use_button.click()
-    assert widget.current_suite_id()<0
+    assert widget.current_suite_id()>0
     assert service.suite_sets(widget.current_suite_id())[0]['id']!=original_set['id']
     assert service.suite_sets(saved['id'])[0]==original_set
     widget.close()
@@ -299,7 +322,7 @@ def test_global_response_mode_preserves_hidden_curves_and_evidence(service,seed)
     from NepTrainKit.ui.widgets.style_lifetime import keep_created_styles_alive
     keep_created_styles_alive()
     model=service.capture_model(ModelDraft(b'nep4_spin3 1 Fe\n','/test/nep.txt'),temporary=True)
-    suite=service.create_diagnostic_plan('response',[(seed,DiagnosticSpec()),(seed,DiagnosticSpec(kind='displacement',low=-.1,high=.1,derivative_step=.01))])
+    suite=service.create_diagnostic_plan('response',[(seed,DiagnosticSpec()),(seed,DiagnosticSpec(kind='displacement',low=-.1,high=.1,derivative_step=.01))],temporary=True)
     service.run_suite(model['id'],suite['id'])
     widget=ModelLibraryWidget(service=service);widget.show();widget.open_scorecard(suite['id'],model['id'])
     panel=widget.detail
@@ -435,3 +458,209 @@ def test_seed_reader_preserves_supported_standard_formats(seed, tmp_path, filena
         np.testing.assert_allclose(actual.cell, seed.cell)
     if format == 'extxyz':
         np.testing.assert_allclose(existing_moment_vectors(actual), existing_moment_vectors(seed))
+
+
+def test_default_creation_and_results_survive_a_new_service_and_widget(service, seed, monkeypatch):
+    from NepTrainKit.ui.views import model_library as module
+    from test_validation_ui import _wait_until
+    selected = {}
+    monkeypatch.setattr(module.Config, 'set', lambda section, key, value: selected.update({(section, key): value}))
+    monkeypatch.setattr(module.Config, 'getint', lambda section, key, fallback=0: selected.get((section, key), fallback))
+    widget = module.ModelLibraryWidget(service=service)
+    widget.show()
+    widget.open_scorecard(None, draft=ModelDraft(b'nep4_spin3 1 Fe\nrestart','/missing/source/nep.txt'))
+    widget.set_diagnostic_seeds([seed])
+    widget.show_diagnostic_editor()
+    editor = widget.diagnostic_editor
+    editor.name.setText('Saved by default')
+    editor.rows['displacement'][1].setValue(-.23)
+    editor.rows['spin_angle'][0].setChecked(True)
+    expected_specs = [spec for _, spec in editor.experiments()]
+    assert counts(service) == (0, 0, 0)  # Editing still does not persist anything.
+    editor.use_button.click()
+    suite_id = widget.current_suite_id()
+    assert suite_id > 0 and counts(service) == (1, 3, 0)
+    assert not editor.isVisible() and not widget.save_plan_action.isEnabled()
+    assert not service._temporary_suites and not service._temporary_sets
+    assert selected[('validation', module.CONFIG_SUITE)] == suite_id
+    assert widget.run_current() and _wait_until(lambda: widget._run_task is None)
+    assert counts(service) == (1, 3, 3)
+    model_id = widget.current_model_row()['model_id']
+    before = [(item['id'], service.latest_run(model_id, item['id'])) for item in service.suite_sets(suite_id)]
+    assert all(run['status'] == 'succeeded' for _, run in before)
+    details = {key: service.run_details(run) for key, run in before}
+    widget.close()
+
+    reopened = ValidationService(Library(service.library.root))
+    restored = module.ModelLibraryWidget(service=reopened)
+    restored.show()
+    assert restored.current_suite_id() == suite_id
+    assert restored.suite_combo.currentText() == 'Saved by default'
+    for item, spec in zip(reopened.suite_sets(suite_id), expected_specs):
+        atoms, saved_spec = experiment(reopened.set_frames(item['id']))
+        assert replace(saved_spec, axis=tuple(saved_spec.axis)) == spec
+        np.testing.assert_allclose(atoms.positions, seed.positions)
+        np.testing.assert_allclose(existing_moment_vectors(atoms), existing_moment_vectors(seed))
+    for key, run in before:
+        recovered = reopened.latest_run(model_id, key)
+        assert recovered['id'] == run['id']
+        assert reopened.run_details(recovered) == details[key]
+    assert len(restored.detail.eos_plots) == 3
+    restored.close()
+
+
+def test_creation_save_failure_keeps_editor_and_other_trials_intact(service, seed, monkeypatch):
+    from NepTrainKit.ui.views.model_library import ModelLibraryWidget
+    from NepTrainKit.core.validation.protocols.diagnostic import encode_experiment
+    original = service.create_diagnostic_plan('Original', [(seed, DiagnosticSpec())])
+    trial = service.create_diagnostic_plan('Trial', [(seed, DiagnosticSpec())], temporary=True)
+    original_sets = service.suite_sets(original['id'])
+    trial_data = {item['id']: encode_experiment(*experiment(service.set_frames(item['id']))) for item in service.suite_sets(trial['id'])}
+    widget = ModelLibraryWidget(service=service)
+    widget.show()
+    widget.open_scorecard(original['id'])
+    widget.set_diagnostic_seeds([seed])
+    widget.show_diagnostic_editor()
+    editor = widget.diagnostic_editor
+    editor.name.setText('Original')
+    editor.use_button.click()
+    assert editor.isVisible() and '同名' in editor.preview.text()
+    assert counts(service) == (1, 1, 0)
+    assert list(service._temporary_suites) == [trial['id']]
+    assert service.suite_sets(original['id']) == original_sets
+    for key, data in trial_data.items():
+        assert service._temporary_data[key] == data
+    editor.name.setText('Retry after disk failure')
+    with monkeypatch.context() as context:
+        context.setattr(service.library, 'put_bytes', lambda *_: (_ for _ in ()).throw(OSError('disk full')))
+        editor.use_button.click()
+    assert editor.isVisible() and 'disk full' in editor.preview.text()
+    assert counts(service) == (1, 1, 0)
+    assert list(service._temporary_suites) == [trial['id']]
+    editor.use_button.click()
+    assert widget.current_suite_id() > 0 and widget.current_suite_id() != original['id']
+    assert not editor.isVisible()
+    assert counts(service) == (2, 3, 0)  # Existing volume set plus the two default experiments.
+    widget.close()
+
+
+def test_editor_remembers_numeric_parameters_without_structure_conditions(seed, editor_preferences):
+    import json
+    from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor
+    widget = DiagnosticEditor()
+    widget.set_seeds([seed])
+    widget.name.setText('Do not reuse this structure name')
+    widget.atom.setValue(2)
+    widget.axis.setCurrentIndex(1)
+    for index, row in enumerate(widget.rows.values()):
+        enabled, low, high, points, step = row
+        enabled.setChecked(True)
+        low.setValue(low.value() * .7)
+        high.setValue(high.value() * 1.3)
+        points.setValue(25 + index * 2)
+        step.setValue(step.value() * .5)
+    widget.atol.setValue(.0000345)
+    widget.rtol.setValue(.045)
+    for box in (widget.variable, widget.zero_field, widget.no_soc):
+        box.setChecked(True)
+    expected = widget._parameter_values()
+    widget.close()  # No plan creation is needed to remember edited controls.
+    assert json.loads(editor_preferences['value']) == expected
+    restored = DiagnosticEditor()
+    assert restored._parameter_values() == expected
+    assert not restored._seeds and restored.name.text() == '结构响应诊断'
+    assert restored.atom.value() == 1
+    assert not any(box.isChecked() for box in (restored.variable, restored.zero_field, restored.no_soc))
+    restored.set_seeds([seed])
+    assert restored._parameter_values() == expected
+    assert restored.use_button.isEnabled()
+    restored.close()
+
+
+def test_editor_structure_change_rechecks_atom_moments_and_conditions(seed):
+    from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor
+    widget = DiagnosticEditor()
+    zero = seed[:1]
+    zero.set_chemical_symbols(['Ni'])
+    set_initial_magmoms_safe(zero, [[0, 0, 0]])
+    widget.set_seeds([seed, zero])
+    widget.rows['spin_angle'][0].setChecked(True)
+    widget.rows['spin_magnitude'][0].setChecked(True)
+    widget.rows['volume'][1].setValue(-12)
+    widget.atom.setValue(2)
+    for box in (widget.variable, widget.zero_field, widget.no_soc):
+        box.setChecked(True)
+    expected = widget._parameter_values()
+    widget.seed_combo.setCurrentIndex(1)
+    assert widget.atom.value() == 1 and widget.atom.maximum() == 1
+    assert widget.atom_hint.text().startswith('Ni')
+    assert not any(box.isChecked() for box in (widget.variable, widget.zero_field, widget.no_soc))
+    assert widget._parameter_values() == expected
+    assert not widget.use_button.isEnabled() and '不能为零' in widget.preview.text()
+    widget.seed_combo.setCurrentIndex(0)
+    assert widget.use_button.isEnabled() and not widget.variable.isChecked()
+    for box in (widget.variable, widget.zero_field, widget.no_soc):
+        box.setChecked(True)
+    plain = Atoms('Co', positions=[[0, 0, 0]], cell=[4]*3, pbc=True)
+    widget.set_seeds([plain])
+    assert widget._parameter_values() == expected
+    assert widget.atom.value() == 1 and widget.atom_hint.text() == 'Co'
+    assert not any(box.isChecked() for box in (widget.variable, widget.zero_field, widget.no_soc))
+    assert not widget.use_button.isEnabled() and not widget.temporary_button.isEnabled()
+    assert '未提供矢量磁矩' in widget.seed_hint.text()
+    widget.rows['spin_angle'][0].setChecked(False)
+    widget.rows['spin_magnitude'][0].setChecked(False)
+    assert widget.use_button.isEnabled()
+    widget.close()
+
+
+def test_editor_reset_defaults_preserves_structure_and_persists(seed, editor_preferences):
+    import json
+    from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor
+    widget = DiagnosticEditor()
+    defaults = widget._parameter_values()
+    widget.set_seeds([seed])
+    widget.name.setText('Keep this plan name')
+    widget.rows['volume'][1].setValue(-19)
+    widget.rows['spin_magnitude'][0].setChecked(True)
+    widget.axis.setCurrentIndex(2)
+    widget.atom.setValue(2)
+    widget.variable.setChecked(True)
+    widget.zero_field.setChecked(True)
+    widget.no_soc.setChecked(True)
+    widget.advanced_button.setChecked(True)
+    widget.reset_button.click()
+    assert widget._parameter_values() == defaults
+    assert widget.name.text() == 'Keep this plan name'
+    np.testing.assert_allclose(widget._seeds[0].positions, seed.positions)
+    assert widget.atom.value() == 1 and not widget.advanced_button.isChecked()
+    assert not any(box.isChecked() for box in (widget.variable, widget.zero_field, widget.no_soc))
+    assert json.loads(editor_preferences['value']) == defaults
+    widget.close()
+    reopened = DiagnosticEditor()
+    assert reopened._parameter_values() == defaults
+    reopened.close()
+
+
+@pytest.mark.parametrize('raw', ['broken JSON', 'null', '[]', '{"values": null, "experiments": 4}',
+    '{"values": {"volume.points": 9.5, "volume.low": "oops", "rel_tolerance": NaN}, "axis": 99}'])
+def test_editor_ignores_malformed_preferences(raw, editor_preferences):
+    from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor
+    editor_preferences['value'] = raw
+    widget = DiagnosticEditor()
+    assert widget._parameter_values() == widget._default_parameters
+    widget.close()
+
+
+def test_editor_reports_preference_write_failure_without_losing_inputs(seed, monkeypatch):
+    from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor, Config
+    widget = DiagnosticEditor()
+    widget.set_seeds([seed])
+    with monkeypatch.context() as context:
+        context.setattr(Config, 'set', lambda *_: (_ for _ in ()).throw(OSError('disk full')))
+        widget.rows['volume'][1].setValue(-12)
+    assert widget.rows['volume'][1].value() == -12 and widget.use_button.isEnabled()
+    assert '保存失败' in widget.parameters_hint.text()
+    widget.rows['volume'][1].setValue(-13)
+    assert '自动记忆' in widget.parameters_hint.text()
+    widget.close()

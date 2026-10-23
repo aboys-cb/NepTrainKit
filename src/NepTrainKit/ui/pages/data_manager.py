@@ -120,7 +120,7 @@ class DataManagerWidget(QWidget):
         if not paths:
             event.ignore()
             return
-        if not hasattr(self.data_item_widget, "project"):
+        if getattr(self.data_item_widget, "project", None) is None:
             MessageManager.send_info_message(
                 self.tr("Select a project before dropping a model folder")
             )
@@ -158,6 +158,22 @@ class DataManagerWidget(QWidget):
         self.tabs.setCurrentItem("validation")
         self.stack.setCurrentWidget(self.library_widget)
         self.library_widget.open_scorecard(suite_id, model_id, draft=draft)
+
+    def _on_registry_changed(self, model_id=None):
+        """Keep the project counts and validation selectors in sync after edits."""
+        self.project_widget.load_all_projects()
+        current = self.data_item_widget.project
+        if current is not None:
+            updated = self.project_widget.project_item_dict.get(current.project_id)
+            if updated is None:
+                self.data_item_widget.load_models_by_project(None)
+            else:
+                self.data_item_widget.project = updated
+        if self.library_widget._run_task is None:
+            self.library_widget.refresh()
+            reason = getattr(self.library_widget, "_unavailable_models", {}).get(model_id)
+            if reason:
+                MessageManager.send_info_message("模型已登记，但暂不能用于验证：" + reason)
 
     def init_ui(self):
         """Build the validation scorecard and the project/model split view.
@@ -202,6 +218,8 @@ class DataManagerWidget(QWidget):
 
 
         self.library_widget = ModelLibraryWidget(self)
+        self.data_item_widget.modelsChanged.connect(self._on_registry_changed)
+        self.project_widget.projectsChanged.connect(self._on_registry_changed)
         self.stack = QStackedWidget(self)
         self.stack.addWidget(self.library_widget)
         self.stack.addWidget(self.splitter)

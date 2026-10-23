@@ -912,7 +912,10 @@ def test_library_switch_does_not_star_an_old_scorecard_id(scored, tmp_path, monk
     monkeypatch.setenv(library_module.ENV_VAR, str(other_service.library.root))
     widget.toggle_star()
     assert not other_service.get_model(other["id"])["starred"]
-    assert widget.current_model_row() is None
+    # The refreshed selector lists saved models even without a validation plan,
+    # but the stale click must not act on an equal numeric id in another library.
+    assert widget._library_root == other_service.library.root
+    assert widget.current_model_row()["name"] == "unrelated"
 
 
 def test_viewer_menu_stars_the_current_version(scored, monkeypatch):

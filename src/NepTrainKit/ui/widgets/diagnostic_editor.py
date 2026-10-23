@@ -1,21 +1,29 @@
 """Inline experiment setup for the existing validation workbench."""
+import json
+import math
+
+from sqlalchemy.exc import SQLAlchemyError
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QGridLayout, QFileDialog, QWidget, QSizePolicy
-from qfluentwidgets import BodyLabel, CaptionLabel, LineEdit, ComboBox, SpinBox, DoubleSpinBox, CheckBox, PushButton, PrimaryPushButton, TransparentToolButton, FluentIcon, SubtitleLabel, ScrollArea
+from qfluentwidgets import BodyLabel, CaptionLabel, LineEdit, ComboBox, SpinBox, DoubleSpinBox, CheckBox, PushButton, PrimaryPushButton, TransparentToolButton, TransparentPushButton, FluentIcon, SubtitleLabel, ScrollArea
 
 from NepTrainKit.ui.widgets.input import AdaptiveCompactDoubleSpinBox, AdaptiveCompactSpinBox
 from NepTrainKit import palette
+from NepTrainKit.config import Config
 from NepTrainKit.core.validation.protocols.diagnostic import DiagnosticSpec, KINDS, clean_seed, read_seed_structures
+
+PARAMETERS_OPTION = "diagnostic_editor_parameters"
 
 
 class DiagnosticEditor(QFrame):
-    prepared = Signal(str, object)
+    prepared = Signal(str, object, bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("diagnosticEditor")
         self.setStyleSheet(f"#diagnosticEditor {{background:{palette.SURFACE}; border:1px solid {palette.BORDER}; border-radius:10px;}}")
         self._seeds = []
+        self._restoring_parameters = False
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(14)
@@ -55,7 +63,7 @@ class DiagnosticEditor(QFrame):
         self.seed_combo = ComboBox(self)
         self.seed_combo.setAccessibleName("初始构型")
         self.seed_combo.setMinimumWidth(180)
-        self.seed_combo.currentIndexChanged.connect(self.update_preview)
+        self.seed_combo.currentIndexChanged.connect(self._seed_changed)
         source.addWidget(self.name, 1, 0)
         source.addWidget(self.seed_combo, 1, 1)
         source.addWidget(self.load_button, 1, 2)
@@ -65,7 +73,17 @@ class DiagnosticEditor(QFrame):
         self.seed_hint = CaptionLabel(self)
         self.seed_hint.setWordWrap(True)
         content.addWidget(self.seed_hint)
-        content.addWidget(BodyLabel("2  选择实验与扫描范围", self))
+        parameters_heading = QHBoxLayout()
+        parameters_heading.addWidget(BodyLabel("2  选择实验与扫描范围", self))
+        parameters_heading.addStretch()
+        self.reset_button = TransparentPushButton(FluentIcon.SYNC, "恢复默认", self)
+        self.reset_button.setToolTip("恢复默认实验和参数，清除物理条件勾选；保留方案名称和已导入结构。")
+        self.reset_button.clicked.connect(self.reset_parameters)
+        parameters_heading.addWidget(self.reset_button)
+        content.addLayout(parameters_heading)
+        self.parameters_hint = CaptionLabel("参数自动记忆；更换结构后，目标原子和物理条件需重新检查。", self)
+        self.parameters_hint.setWordWrap(True)
+        content.addWidget(self.parameters_hint)
 
         self.rows = {}
         self.experiment_panels = {}
@@ -201,25 +219,98 @@ class DiagnosticEditor(QFrame):
         self.preview = CaptionLabel(self)
         self.preview.setWordWrap(True)
         summary.addWidget(self.preview)
-        summary.addWidget(CaptionLabel("先创建并查看实验，再选择势运行；保存仍在顶部菜单。", self))
+        persistence_hint = CaptionLabel("创建后保存结构、参数和运行结果；仅临时试用的方案会在重启后清除。", self)
+        persistence_hint.setWordWrap(True)
+        summary.addWidget(persistence_hint)
         bottom.addLayout(summary, 1)
-        self.use_button = PrimaryPushButton(FluentIcon.ADD, "创建临时方案", self)
+        self.temporary_button = PushButton("仅临时试用", self)
+        self.temporary_button.setToolTip("仅本次会话有效，重启后方案和结果会清除；可稍后从顶部菜单保存。")
+        self.temporary_button.setEnabled(False)
+        self.temporary_button.clicked.connect(lambda: self.prepare(temporary=True))
+        bottom.addWidget(self.temporary_button)
+        self.use_button = PrimaryPushButton(FluentIcon.SAVE, "创建并保存", self)
         self.use_button.setEnabled(False)
-        self.use_button.clicked.connect(self.prepare)
+        self.use_button.clicked.connect(lambda: self.prepare())
         bottom.addWidget(self.use_button)
         layout.addLayout(bottom)
         for widget in (self.atom, self.atol, self.rtol):
             widget.valueChanged.connect(self.update_preview)
         self.axis.currentIndexChanged.connect(self.update_preview)
         self.name.textChanged.connect(self.update_preview)
-        tab_order = [close, self.name, self.seed_combo, self.load_button]
+        tab_order = [close, self.name, self.seed_combo, self.load_button, self.reset_button]
         for enabled, lo, hi, count, _h in self.rows.values():
             tab_order.extend((enabled, lo, hi, count))
         tab_order.extend((self.atom, self.axis, self.variable, self.zero_field, self.no_soc, self.advanced_button))
         tab_order.extend(row[4] for row in self.rows.values())
-        tab_order.extend((self.atol, self.rtol, self.use_button))
+        tab_order.extend((self.atol, self.rtol, self.temporary_button, self.use_button))
         for before, after in zip(tab_order, tab_order[1:]):
             QWidget.setTabOrder(before, after)
+        self._numeric_parameters = {"abs_tolerance": self.atol, "rel_tolerance": self.rtol}
+        for kind, (_, lo, hi, count, h) in self.rows.items():
+            self._numeric_parameters.update(zip(
+                (f"{kind}.{key}" for key in ("low", "high", "points", "step")), (lo, hi, count, h)
+            ))
+        self._default_parameters = self._parameter_values()
+        try:
+            stored = json.loads(Config.get("validation", PARAMETERS_OPTION) or "{}")
+        except (ValueError, TypeError):
+            stored = {}
+        self._apply_parameters(stored)
+        for widget in self._numeric_parameters.values():
+            widget.valueChanged.connect(self._remember_parameters)
+        for enabled, *_ in self.rows.values():
+            enabled.toggled.connect(self._remember_parameters)
+        self.axis.currentIndexChanged.connect(self._remember_parameters)
+
+    def _parameter_values(self):
+        # Structure/model-specific declarations and atom indices are never preferences.
+        return dict(values={key: widget.value() for key, widget in self._numeric_parameters.items()},
+                    experiments={kind: row[0].isChecked() for kind, row in self.rows.items()},
+                    axis=self.axis.currentIndex())
+
+    def _apply_parameters(self, parameters):
+        self._restoring_parameters = True
+        try:
+            if isinstance(parameters, dict):
+                values = parameters.get("values", {})
+                for key, widget in self._numeric_parameters.items():
+                    value = values.get(key) if isinstance(values, dict) else None
+                    if type(value) not in (int, float) or not math.isfinite(value):
+                        continue
+                    if type(widget.value()) is int and type(value) is not int:
+                        continue
+                    if widget.minimum() <= value <= widget.maximum():
+                        widget.setValue(value)
+                enabled = parameters.get("experiments", {})
+                for kind, row in self.rows.items():
+                    value = enabled.get(kind) if isinstance(enabled, dict) else None
+                    if type(value) is bool:
+                        row[0].setChecked(value)
+                axis = parameters.get("axis")
+                if type(axis) is int and 0 <= axis < self.axis.count():
+                    self.axis.setCurrentIndex(axis)
+        finally:
+            self._restoring_parameters = False
+        self.update_preview()
+
+    def _remember_parameters(self, *_args):
+        if not self._restoring_parameters:
+            try:
+                Config.set("validation", PARAMETERS_OPTION, json.dumps(self._parameter_values()))
+                self.parameters_hint.setText("参数自动记忆；更换结构后，目标原子和物理条件需重新检查。")
+            except (SQLAlchemyError, OSError):
+                self.parameters_hint.setText("参数记忆保存失败，当前填写仍可使用，但重启后可能无法恢复。")
+
+    def reset_parameters(self):
+        self._apply_parameters(self._default_parameters)
+        self.advanced_button.setChecked(False)
+        self._seed_changed()
+        self._remember_parameters()
+
+    def _seed_changed(self, *_args):
+        self.atom.setValue(1)
+        for box in (self.variable, self.zero_field, self.no_soc):
+            box.setChecked(False)
         self.update_preview()
 
     def load_experiments(self, name, experiments):
@@ -275,7 +366,7 @@ class DiagnosticEditor(QFrame):
         for index, seed in enumerate(self._seeds):
             self.seed_combo.addItem(f"{index + 1} · {seed.get_chemical_formula()} · {len(seed)} 原子")
         self.seed_combo.blockSignals(False)
-        self.update_preview()
+        self._seed_changed()
 
     def experiments(self):
         if not self.name.text().strip() or not self._seeds:
@@ -338,12 +429,14 @@ class DiagnosticEditor(QFrame):
                 note += "；幅值实验尚未声明适用条件，运行时将跳过"
             self.preview.setText(note)
             self.use_button.setEnabled(True)
+            self.temporary_button.setEnabled(True)
         except ValueError as exc:
             self.preview.setText(str(exc))
             self.use_button.setEnabled(False)
+            self.temporary_button.setEnabled(False)
 
-    def prepare(self):
+    def prepare(self, *, temporary=False):
         try:
-            self.prepared.emit(self.name.text().strip(), self.experiments())
+            self.prepared.emit(self.name.text().strip(), self.experiments(), temporary)
         except ValueError as exc:
             self.preview.setText(str(exc))

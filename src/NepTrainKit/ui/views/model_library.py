@@ -912,6 +912,7 @@ class ModelLibraryWidget(QWidget):
                 if suite_id is None:
                     suite_id = Config.getint("validation", CONFIG_SUITE, 0) or None
             suites = service.suites()
+            self._unavailable_models = service.snapshot_registered_models()
         except Exception as error:  # noqa: BLE001 - a broken library must not break the page
             MessageManager.send_error_message(self.tr("Cannot open the model library: {error}").format(error=error))
             self.suite_combo.blockSignals(True)
@@ -964,14 +965,13 @@ class ModelLibraryWidget(QWidget):
             if existing:
                 model_id = existing["id"]
                 self._draft = None
-        if suite_id is None:
-            card = service.scorecard(None, [model_id] if model_id else [], draft=self._draft) if model_id or self._draft else None
-        else:
-            card = service.scorecard(suite_id, draft=self._draft)
-        if card is not None and model_id and all(row["model_id"] != model_id for row in card["rows"]):
+        card = service.scorecard(suite_id, draft=self._draft)
+        if model_id and all(row["model_id"] != model_id for row in card["rows"]) and any(
+            model["id"] == model_id for model in service.models()
+        ):
             card = service.scorecard(suite_id, [row["model_id"] for row in card["rows"]] + [model_id], draft=self._draft)
         self.model.set_scorecard(card)
-        if card is None:
+        if suite_id is None:
             self.empty_hint.setText("从顶部打开菜单新建无参考诊断，或导入参考基准集。")
         elif not card["columns"]:
             self.empty_hint.setText(self.tr("This validation plan has no reference datasets yet."))
@@ -1202,23 +1202,31 @@ class ModelLibraryWidget(QWidget):
     def set_diagnostic_seeds(self, seeds):
         self.diagnostic_editor.set_seeds(seeds)
 
-    def _prepare_diagnostic_plan(self, name, experiments):
+    def _prepare_diagnostic_plan(self, name, experiments, temporary=False):
         try:
-            suite = self.service().create_diagnostic_plan(name, experiments)
+            suite = self.service().create_diagnostic_plan(name, experiments, temporary=temporary)
+            if not temporary:
+                Config.set("validation", CONFIG_SUITE, suite["id"])
             self.diagnostic_editor.hide()
             self.refresh(suite["id"])
+            if not temporary:
+                MessageManager.send_success_message("诊断方案已保存，重启后可继续使用；运行结果将自动保存。")
         except Exception as exc:
+            self.diagnostic_editor.preview.setText(str(exc))
             MessageManager.send_error_message(str(exc))
 
     def save_diagnostic_plan(self):
         if self._run_task is not None or self.current_suite_id() is None or self.current_suite_id() >= 0:
             return
         box = GetStrMessageBox(self.window(), "保存为新的诊断方案；不会覆盖已有方案或基准势。")
+        box.lineEdit.setText(self.suite_combo.currentText().removesuffix(" · 临时"))
         if not box.exec():
             return
         try:
             suite = self.service().save_diagnostic_plan(self.current_suite_id(), box.lineEdit.text())
+            Config.set("validation", CONFIG_SUITE, suite["id"])
             self.refresh(suite["id"])
+            MessageManager.send_success_message("诊断方案及已有运行结果已保存。")
         except Exception as exc:
             MessageManager.send_error_message(str(exc))
 

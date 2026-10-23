@@ -135,3 +135,141 @@ def test_top_favourite_and_save_state_follow_model_and_validation(toolbar, monke
     assert not host.save_dir_button.isEnabled() and not library.star_action.isEnabled()
     host.export_file_dialog()
     assert calls == ["save"]
+
+
+def _project_index(widget, project_id, parent=None):
+    from PySide6.QtCore import QModelIndex
+    parent = QModelIndex() if parent is None else parent
+    for row in range(widget._model.rowCount(parent)):
+        index = widget._model.index(row, 0, parent)
+        if index.internalPointer().data(1) == project_id:
+            return index
+        child = _project_index(widget, project_id, index)
+        if child.isValid():
+            return child
+    return QModelIndex()
+
+
+def test_project_model_mutations_update_counts_and_validation_without_losing_selection(toolbar, tmp_path, monkeypatch):
+    from unittest.mock import MagicMock
+    from NepTrainKit.ui.views import dataset_widget as model_module
+    from test_validation_framework import MODEL_HEADER
+    page, library = toolbar.page, toolbar.library
+    parent = page.project_service.create_project('family')
+    project = page.project_service.create_project('child', parent_id=parent.id)
+    page.show_projects()
+    tree, models = page.project_widget, page.data_item_widget
+    parent_index = _project_index(tree, parent.id)
+    selected = _project_index(tree, project.id)
+    tree._view.setExpanded(parent_index, True)
+    tree._view.setCurrentIndex(selected)
+    tree.item_clicked(selected)
+    current = library.model_combo.currentData()
+    comparisons = library.comparison_picker.selected_ids()
+    path = tmp_path / 'registered' / 'nep.txt'
+    path.parent.mkdir()
+    path.write_text(MODEL_HEADER + 'registered model')
+    payload = dict(name='registered', model_type='NEP', model_path=str(path.parent), parent_id=None)
+    box = MagicMock()
+    box.exec_.return_value = True
+    box.get_dict.side_effect = lambda: dict(payload)
+    monkeypatch.setattr(model_module, 'ModelInfoMessageBox', lambda *_: box)
+    models.create_model()
+    model_id = next(iter(models.model_item_dict))
+    assert tree.project_item_dict[project.id].model_num == 1
+    assert tree.project_item_dict[parent.id].model_num == 1
+    assert _project_index(tree, project.id).internalPointer().data(2) == 1
+    assert tree._view.currentIndex().internalPointer().data(1) == project.id
+    assert tree._view.isExpanded(_project_index(tree, parent.id))
+    assert library.model_combo.findData(model_id) >= 0
+    assert library.model_combo.currentData() == current
+    assert library.comparison_picker.selected_ids() == comparisons
+    assert library.service().model_file(model_id).read_bytes() == path.read_bytes()
+
+    models._view.setCurrentIndex(models._model.index(0, 0))
+    payload['name'] = 'renamed model'
+    models.create_model(modify=True)
+    assert 'renamed model' in library.model_combo.itemText(library.model_combo.findData(model_id))
+    assert tree.project_item_dict[project.id].model_num == 1
+
+    models._view.setCurrentIndex(models._model.index(0, 0))
+    confirmation = MagicMock()
+    confirmation.result.return_value = 1
+    monkeypatch.setattr(model_module, 'MessageBox', lambda *_: confirmation)
+    models.remove_model()
+    assert library.model_combo.findData(model_id) == -1
+    assert tree.project_item_dict[project.id].model_num == 0
+    assert tree.project_item_dict[parent.id].model_num == 0
+    assert model_id not in models.model_item_dict
+    assert models.project.project_id == project.id
+    assert library.model_combo.currentData() == current
+
+
+def test_registered_models_are_listed_without_a_validation_plan(make_service, tmp_path):
+    from NepTrainKit.core.dataset.services import ModelService, ProjectService
+    from test_validation_framework import MODEL_HEADER
+    service = make_service()
+    project = ProjectService(service.db).create_project('saved')
+    models = ModelService(service.db)
+    path = tmp_path / 'standalone.txt'
+    path.write_text(MODEL_HEADER + 'standalone')
+    first = models.add_version(project_id=project.id, name='first', model_type='NEP', model_path=path)
+    widget = ModelLibraryWidget(service=service)
+    widget.refresh()
+    assert widget.model_combo.findData(first.id) >= 0
+    second = models.add_version(project_id=project.id, name='second', model_type='NEP', model_path=path)
+    widget.refresh()
+    assert widget.model_combo.findData(second.id) >= 0
+    assert widget.model_combo.currentData() == first.id
+    assert service.get_model(first.id)['content_hash'] == service.get_model(second.id)['content_hash']
+    assert len(service.models()) == 2  # Reuse object bytes, not another registry record.
+    path.unlink()
+    widget.refresh()
+    assert widget.model_combo.findData(first.id) >= 0  # Snapshots survive source removal.
+    widget.close()
+
+
+def test_registry_sync_does_not_replace_snapshots_or_duplicate_records(make_service, tmp_path):
+    from NepTrainKit.core.dataset.services import ModelService, ProjectService
+    from test_validation_framework import MODEL_HEADER
+    service = make_service()
+    project = ProjectService(service.db).create_project('registered')
+    registry = ModelService(service.db)
+    path = tmp_path / 'nep.txt'
+    original = (MODEL_HEADER + 'first snapshot').encode()
+    path.write_bytes(original)
+    saved = registry.add_version(project_id=project.id, name='named version', model_type='NEP', model_path=path, notes='keep notes', energy=2.3, tags=['keep tag'])
+    missing = registry.add_version(project_id=project.id, name='missing', model_type='NEP', model_path=tmp_path / 'missing.txt')
+    remote = registry.add_version(project_id=project.id, name='remote', model_type='NEP', model_path='https://example.com/nep.txt')
+    broken = tmp_path / 'broken.txt'
+    broken.write_text('not a potential')
+    invalid = registry.add_version(project_id=project.id, name='invalid', model_type='NEP', model_path=broken)
+    errors = service.snapshot_registered_models()
+    assert set(errors) == {missing.id, remote.id, invalid.id}
+    assert [row['id'] for row in service.models()] == [saved.id]
+    captured = service.get_model(saved.id)
+    assert captured['name'] == 'named version' and captured['notes'] == 'keep notes'
+    assert captured['energy'] == 2.3 and captured['project_id'] == project.id
+    assert registry.get_models_by_project_id(project.id)[0].tags[0].name == 'keep tag'
+    path.write_text(MODEL_HEADER + 'changed at source')
+    service.snapshot_registered_models()
+    assert service.model_file(saved.id).read_bytes() == original
+    assert service.get_model(saved.id)['content_hash'] == captured['content_hash']
+    assert ProjectService(service.db).get_project_by_id(project.id).model_num == 4
+
+
+def test_deleting_selected_project_clears_stale_models_and_actions(toolbar):
+    page, library = toolbar.page, toolbar.library
+    project_id = toolbar.scored.new['project_id']
+    page.show_projects()
+    index = _project_index(page.project_widget, project_id)
+    page.project_widget._view.setCurrentIndex(index)
+    page.project_widget.item_clicked(index)
+    page.project_service.remove_project(project_id)
+    page.project_widget.projectsChanged.emit()
+    assert page.data_item_widget.project is None
+    assert not page.data_item_widget.new_model_button.isEnabled()
+    assert page.data_item_widget._model.rowCount() == 0
+    assert not page.data_item_widget.model_item_dict
+    assert project_id not in page.project_widget.project_item_dict
+    assert library.model_combo.findData(toolbar.scored.new['id']) == -1

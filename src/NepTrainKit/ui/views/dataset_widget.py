@@ -44,12 +44,14 @@ class ModelItemWidget(QWidget, DatasetManager):
 
     model_item_dict: dict[int, ModelItem] = {}
     projectChangedSignal = Signal(int)
+    modelsChanged = Signal(int)
 
     def __init__(self, parent=None):
         """Configure the backing model, view, shortcuts, and context menu."""
         super().__init__(parent)
         self._parent = parent
-        self.project: ProjectItem
+        self.project: ProjectItem | None = None
+        self.model_item_dict = {}
 
         self._view = TreeView()
         self._view.clicked.connect(self.item_clicked)
@@ -208,7 +210,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         return self._view.currentIndex()
 
     def _update_action_state(self, *_args) -> None:
-        has_project = hasattr(self, "project")
+        has_project = self.project is not None
         has_selection = self._current_index().isValid()
         self.new_model_button.setEnabled(has_project)
         for button in (
@@ -258,7 +260,7 @@ class ModelItemWidget(QWidget, DatasetManager):
             self._build_tree(item, child)
         return child
 
-    def load_models_by_project(self, project: ProjectItem) -> None:
+    def load_models_by_project(self, project: ProjectItem | None) -> None:
         """Refresh the tree with models that belong to the given project.
 
         Parameters
@@ -267,8 +269,12 @@ class ModelItemWidget(QWidget, DatasetManager):
             Project whose models will be displayed in the tree.
         """
         self._model.clear()
+        self.model_item_dict.clear()
         self.project = project
         self._update_action_state()
+        if project is None:
+            self._refresh_empty_hint()
+            return
         models = self.model_service.get_models_by_project_id(project.project_id)
         self.add_models_to_table(models)
 
@@ -284,6 +290,8 @@ class ModelItemWidget(QWidget, DatasetManager):
                     "or drag a model folder here."
                 )
             )
+        else:
+            self.empty_hint.setText(self.tr("Select a project on the left to list its models, or drag a model folder here."))
         self.empty_hint.show()
 
     def add_models_to_table(self, models: list[ModelItem]) -> None:
@@ -309,7 +317,7 @@ class ModelItemWidget(QWidget, DatasetManager):
             When ``True`` the selected model is updated; otherwise a new
             version entry is inserted.
         """
-        if not hasattr(self, "project"):
+        if self.project is None:
             MessageManager.send_info_message(self.tr("Select a project first"))
             return
         box = ModelInfoMessageBox(self._parent)
@@ -363,6 +371,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         if modify:
             self.model_service.modify_model(current_model.model_id, **data)
             self.load_models_by_project(self.project)
+            self.modelsChanged.emit(current_model.model_id)
             MessageManager.send_success_message(self.tr("Model modified successfully"))
             return
 
@@ -372,6 +381,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         else:
             MessageManager.send_success_message(self.tr("Model created successfully"))
             self.load_models_by_project(self.project)
+            self.modelsChanged.emit(project.id)
 
     def remove_model(self) -> None:
         """Delete the currently highlighted model after confirmation."""
@@ -395,6 +405,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         self.model_service.remove_model(model_id=model_id)
         MessageManager.send_success_message(self.tr("Model deleted successfully"))
         self.load_models_by_project(self.project)
+        self.modelsChanged.emit(model_id)
 
     def open_folder(self) -> None:
         """Open the directory or URL associated with the selected model."""
@@ -431,6 +442,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         """
         models = self.model_service.search_models_advanced(**params)
         self._model.clear()
+        self.model_item_dict.clear()
         self.add_models_to_table(models)
 
     def show_search_dialog(self) -> None:

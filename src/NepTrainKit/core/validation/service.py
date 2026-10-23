@@ -276,6 +276,40 @@ class ValidationService:
             query = query.order_by(ModelVersion.last_seen_at.desc(), ModelVersion.id.desc())
             return [_record(row) for row in session.scalars(query)]
 
+    def snapshot_registered_models(self) -> dict[int, str]:
+        """Attach snapshots to explicitly registered local NEP entries in place.
+
+        Existing snapshots remain immutable. A missing/remote/invalid path remains
+        a project entry, with a reason it cannot yet appear in validation.
+        """
+        unavailable = {}
+        with self.db.session() as session:
+            rows = session.scalars(select(ModelVersion).where(
+                ModelVersion.content_hash.is_(None), ModelVersion.project_id.is_not(None)
+            )).all()
+            for row in rows:
+                try:
+                    if row.model_type.upper() != "NEP":
+                        raise ValueError("验证目前仅支持 NEP 模型。")
+                    source = row.model_path or ""
+                    if not source or "://" in source:
+                        raise ValueError("请提供本地 NEP 文件或包含 nep.txt 的目录。")
+                    path = Path(source).expanduser()
+                    if path.is_dir():
+                        path = path / "nep.txt"
+                    draft = ModelDraft.from_file(path)
+                    kind, elements = parse_model_header(draft.data)
+                    digest = self.library.put_bytes(draft.data)
+                except (OSError, ValueError) as error:
+                    unavailable[row.id] = str(error)
+                    continue
+                row.content_hash = digest
+                row.model_kind = kind
+                row.elements = list(elements)
+                row.source_path = str(path.resolve())
+            session.commit()
+        return unavailable
+
     def star_model(self, model_id: int, starred: bool = True) -> None:
         with self.db.session() as session:
             row = session.get(ModelVersion, model_id)
@@ -433,8 +467,8 @@ class ValidationService:
         elements = set(self.get_model(model_id)["elements"] or ())
         return [item for item in self.sets() if set(item["elements"]) <= elements]
 
-    def create_diagnostic_plan(self, name, experiments):
-        """Prepare a session-only plan. Opening or previewing never inserts library rows."""
+    def create_diagnostic_plan(self, name, experiments, *, temporary=False):
+        """Create a saved plan by default; session-only trials require explicit opt-in."""
         from .protocols.diagnostic import encode_experiment
         if not name.strip() or not experiments:
             raise ValueError("请填写方案名称并选择至少一项实验。")
@@ -454,11 +488,23 @@ class ValidationService:
         suite_id = min([0, *self._temporary_suites]) - 1
         suite = dict(id=suite_id, name=name.strip() + " · 临时", notes="无参考诊断", baseline_model_id=None,
                      baseline_note="", temporary=True, set_ids=list(dict.fromkeys(r["id"] for r, _ in prepared)))
+        existing_keys = set(self._temporary_sets)
         for record, data in prepared:
             self._temporary_sets[record["id"]] = record
             self._temporary_data[record["id"]] = data
         self._temporary_suites[suite_id] = suite
-        return dict(suite)
+        if temporary:
+            return dict(suite)
+        try:
+            return self.save_diagnostic_plan(suite_id, name)
+        finally:
+            # Failed saves leave the editor available to retry, not a ghost draft
+            # in the selector. Shared data belonging to other trials is untouched.
+            self._temporary_suites.pop(suite_id, None)
+            for key in suite["set_ids"]:
+                if key not in existing_keys:
+                    self._temporary_sets.pop(key, None)
+                    self._temporary_data.pop(key, None)
 
     def save_diagnostic_plan(self, suite_id, name):
         """Save as a new plan atomically; existing plans and baselines are never overwritten."""
@@ -723,7 +769,7 @@ class ValidationService:
             # Show compatible snapshots before their first run, including newly opened models.
             model_ids.extend(
                 model["id"] for model in self.models()
-                if any(set(benchmark["elements"]) <= set(model["elements"] or ()) for benchmark in sets)
+                if not sets or any(set(benchmark["elements"]) <= set(model["elements"] or ()) for benchmark in sets)
             )
         model_ids = list(dict.fromkeys([*(model_ids or [])] + ([baseline_id] if baseline_id else [])))
 

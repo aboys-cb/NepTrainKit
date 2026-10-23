@@ -6,7 +6,7 @@ import io
 import json
 
 import numpy as np
-from ase.io import write
+from ase.io import read, write
 
 from NepTrainKit.core.magnetism import existing_moment_vectors, set_initial_magmoms_safe
 from NepTrainKit.core.magnetic_response import MagneticResponseScanOperation, LocalMagneticResponseParams
@@ -75,6 +75,48 @@ class DiagnosticSpec:
                 raise ValueError("旋转轴与目标磁矩平行，请更换旋转轴。")
         if self.kind == "spin_magnitude" and (self.low < 0 or self.derivative_step >= 1):
             raise ValueError("磁矩幅值缩放须非负，差分步长须小于 1。")
+
+
+def read_seed_structures(path):
+    """Read initial geometries, including identity-only CIF exports from ABACUS."""
+    from ase.spacegroup.spacegroup import SpacegroupValueError
+
+    try:
+        return read(path, index=":")
+    except SpacegroupValueError:
+        if not str(path).lower().endswith(".cif"):
+            raise
+
+    from ase.io.cif import CIFBlock, parse_cif
+
+    images = []
+    for block in parse_cif(str(path)):
+        if not block.has_structure():
+            continue
+        try:
+            atoms = block.get_atoms()
+        except SpacegroupValueError:
+            identifiers = (
+                "_space_group.it_number", "_space_group_it_number", "_symmetry_int_tables_number",
+                "_space_group_name_h-m_alt", "_symmetry_space_group_name_h-m",
+                "_space_group.patterson_name_h-m",
+            )
+            operations = next((block[key] for key in (
+                "_space_group_symop_operation_xyz", "_space_group_symop.operation_xyz",
+                "_symmetry_equiv_pos_as_xyz",
+            ) if key in block), [])
+            if isinstance(operations, str):
+                operations = [operations]
+            identity_only = operations and all("".join(op.lower().split()) == "x,y,z" for op in operations)
+            if any(block.get(key) is not None for key in identifiers) or not identity_only:
+                raise ValueError("CIF 空间群信息不完整或无效，不能安全补全；请提供空间群编号或名称。") from None
+            # Only the identity is explicitly supplied. Do not guess a group for
+            # other operations, drop symmetry, or modify the user's source file.
+            tags = dict(block)
+            tags["_space_group_it_number"] = 1
+            atoms = CIFBlock(block.name, tags).get_atoms()
+        images.append(atoms)
+    return images
 
 
 def clean_seed(atoms):

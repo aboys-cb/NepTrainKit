@@ -725,9 +725,6 @@ class ModelLibraryWidget(QWidget):
         self.save_plan_action = Action(FluentIcon.SAVE.icon(color=palette.ACCENT), "保存诊断方案…", self)
         self.diagnostic_action.triggered.connect(self.show_diagnostic_editor)
         self.save_plan_action.triggered.connect(self.save_diagnostic_plan)
-        self.new_diagnostic_button = TransparentToolButton(FluentIcon.ADD.colored(palette.ACCENT, palette.ACCENT), self)
-        self.new_diagnostic_button.setToolTip("新建无参考诊断 · 无需 DFT")
-        self.new_diagnostic_button.clicked.connect(self.show_diagnostic_editor)
         self.import_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Import reference dataset"), self)
         self.import_action.setToolTip(self.tr("Import reference dataset"))
         self.import_package_action = Action(FluentIcon.DOWNLOAD.icon(color=palette.ACCENT), self.tr("Import validation sharing package…"), self)
@@ -753,7 +750,7 @@ class ModelLibraryWidget(QWidget):
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
         self.comparison_picker.selectionChanged.connect(self._on_selection_changed)
         for title, combo, buttons, stretch in (
-            (self.tr("Validation plan"), self.suite_combo, (self.new_diagnostic_button, self.refresh_button), 4),
+            (self.tr("Validation plan"), self.suite_combo, (self.refresh_button,), 4),
             (self.tr("Current model"), self.model_combo, (self.baseline_button,), 5),
             (self.tr("Compare with"), self.comparison_picker, (), 3),
         ):
@@ -975,7 +972,7 @@ class ModelLibraryWidget(QWidget):
             card = service.scorecard(suite_id, [row["model_id"] for row in card["rows"]] + [model_id], draft=self._draft)
         self.model.set_scorecard(card)
         if card is None:
-            self.empty_hint.setText("新建无参考诊断，或导入参考基准集；先看模型响应，有参考时再评估准确性。")
+            self.empty_hint.setText("从顶部打开菜单新建无参考诊断，或导入参考基准集。")
         elif not card["columns"]:
             self.empty_hint.setText(self.tr("This validation plan has no reference datasets yet."))
         elif not card["rows"]:
@@ -984,7 +981,7 @@ class ModelLibraryWidget(QWidget):
         suite = (card or {}).get("suite") or {}
         baseline = next((row for row in (card or {}).get("rows", []) if row["is_baseline"]), None)
         if suite_id is None:
-            self.baseline_label.setText("新建无参考诊断，或导入参考基准集；先看模型响应，有参考时再评估准确性。")
+            self.baseline_label.setText("从顶部打开菜单新建无参考诊断，或导入参考基准集。")
         elif baseline is None:
             self.baseline_label.setText(self.tr("Baseline model: not selected"))
         else:
@@ -1103,7 +1100,6 @@ class ModelLibraryWidget(QWidget):
         self.edit_diagnostic_action.setEnabled(diagnostic and self._run_task is None and not editing)
         self.save_plan_action.setEnabled(temporary_plan and self._run_task is None and not editing)
         self.diagnostic_action.setEnabled(self._run_task is None)
-        self.new_diagnostic_button.setEnabled(self._run_task is None)
         self.export_package_action.setEnabled(has_suite and not diagnostic and bool(self.metrics_model.benchmarks) and self._run_task is None)
         self.export_package_action.setToolTip("无参考诊断分享将在下一阶段支持；当前可保存本地方案。" if diagnostic else self.export_package_action.text())
         self.save_action.setEnabled(row is not None and self._run_task is None)
@@ -1172,6 +1168,7 @@ class ModelLibraryWidget(QWidget):
             self.splitter.show()
             self.metrics_button.show()
             self.controls_panel.setEnabled(True)
+            self.controls_panel.show()
             self._on_selection_changed()
         return super().eventFilter(watched, event)
 
@@ -1179,6 +1176,7 @@ class ModelLibraryWidget(QWidget):
         if self._run_task is not None:
             return
         self.controls_panel.setEnabled(False)
+        self.controls_panel.hide()
         self.save_plan_action.setEnabled(False)
         self.edit_diagnostic_action.setEnabled(False)
         self.export_package_action.setEnabled(False)
@@ -1435,7 +1433,6 @@ class ModelLibraryWidget(QWidget):
         self.save_plan_action.setEnabled(False)
         self.diagnostic_action.setEnabled(False)
         self.edit_diagnostic_action.setEnabled(False)
-        self.new_diagnostic_button.setEnabled(False)
         self.diagnostic_editor.setEnabled(False)
         self.suite_combo.setEnabled(False)
         self.run_button.setText(self.tr("Cancel"))

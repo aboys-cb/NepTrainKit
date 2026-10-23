@@ -67,6 +67,10 @@ def test_top_actions_dispatch_and_detach_on_page_and_tab_changes(toolbar, monkey
     assert not hasattr(library, "star_button")
     assert host.load_menu.actions() == [library.diagnostic_action, library.edit_diagnostic_action, library.import_action, library.import_package_action]
     assert host.save_menu.actions() == [library.save_action, library.star_action, library.save_plan_action, library.export_package_action]
+    library.diagnostic_action.trigger()
+    assert library.diagnostic_editor.isVisible()
+    library.diagnostic_editor.hide()
+    assert library.controls_panel.isVisible()
     host.open_dir_button.button.click()
     host.save_dir_button.button.click()
     library.import_action.trigger()

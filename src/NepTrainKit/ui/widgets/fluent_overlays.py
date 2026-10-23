@@ -20,6 +20,7 @@ no tip of the application reaches outside its own translucent window either.
 from __future__ import annotations
 
 import sys
+from weakref import WeakSet
 
 import shiboken6
 from PySide6.QtCore import QEvent, QObject, Qt
@@ -107,19 +108,67 @@ class _FluentToolTipRouter(QObject):
         super().__init__(app)
         self._tooltip: ToolTip | None = None
         self._owner: QWidget | None = None
+        self._filters = WeakSet()
+        self._tips = WeakSet()
         app.installEventFilter(self)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         """Replace Qt's native tooltip by the fluent one."""
         event_type = event.type()
+        # Observe local Fluent filters before their Enter/help events start a delay.
+        # Item-view delegates belong to the view but also filter its viewport.
+        if event_type in (QEvent.Type.Enter, QEvent.Type.ToolTip) and isinstance(watched, QWidget):
+            owners = [watched]
+            if isinstance(watched.parent(), QAbstractItemView):
+                owners.append(watched.parent())
+            for owner in owners:
+                self._filters.update(child for child in owner.children() if isinstance(child, ToolTipFilter))
+        if event_type == QEvent.Type.ApplicationDeactivate or (
+            event_type == QEvent.Type.ApplicationStateChange
+            and QApplication.applicationState() != Qt.ApplicationState.ApplicationActive
+        ):
+            self._dismiss_tooltips()
+        elif isinstance(watched, QWidget) and not isinstance(watched, ToolTip):
+            # Some Qt platforms report a temporary activation of the Tool window
+            # itself, even though Fluent sets WA_ShowWithoutActivating.
+            tooltip_activation = event_type == QEvent.Type.WindowDeactivate and isinstance(QApplication.activeWindow(), ToolTip)
+            if not tooltip_activation and (event_type == QEvent.Type.Hide or (
+                watched.isWindow() and event_type in (
+                    QEvent.Type.Move, QEvent.Type.WindowDeactivate, QEvent.Type.Close,
+                    QEvent.Type.WindowStateChange,
+                )
+            )):
+                self._dismiss_tooltips(watched)
         if event_type == QEvent.Type.ToolTip:
             return self._show_tooltip(watched, event)
         if event_type in (QEvent.Type.Show, QEvent.Type.Resize):
             if isinstance(watched, ToolTip):
                 keep_tooltip_inside_its_window(watched)
+                if event_type == QEvent.Type.Show:
+                    self._tips.add(watched)
+                    # Upstream navigation filters default to an infinite duration.
+                    # Set the cap before ToolTip.showEvent starts its hide timer.
+                    duration = watched.duration()
+                    watched.setDuration(min(duration, _TOOLTIP_DURATION) if duration > 0 else _TOOLTIP_DURATION)
         elif event_type in (QEvent.Type.Leave, QEvent.Type.MouseButtonPress) and watched is self._owner:
             self.hide_tooltip()
         return False
+
+    def _dismiss_tooltips(self, scope: QWidget | None = None) -> None:
+        """Cancel pending tips as well as visible ones, without touching other popups."""
+        def belongs(widget):
+            return widget is not None and shiboken6.isValid(widget) and (
+                scope is None or widget is scope or scope.isAncestorOf(widget)
+            )
+
+        for tooltip_filter in list(self._filters):
+            if shiboken6.isValid(tooltip_filter) and belongs(tooltip_filter.parent()):
+                tooltip_filter.hideToolTip()
+        if scope is None or belongs(self._owner):
+            self.hide_tooltip()
+        for tooltip in list(self._tips):
+            if shiboken6.isValid(tooltip) and (scope is None or belongs(tooltip.parentWidget())):
+                tooltip.hide()
 
     def hide_tooltip(self) -> None:
         """Hide the tooltip this router is showing."""

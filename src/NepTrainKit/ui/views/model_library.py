@@ -17,6 +17,8 @@ from qfluentwidgets import (
     FlowLayout,
     MessageBox,
     PrimaryPushButton,
+    PrimarySplitPushButton,
+    RoundMenu,
     PushButton,
     TableView,
     ToolButton,
@@ -294,6 +296,7 @@ class RunDetailPanel(QWidget):
         layout.setSpacing(6)
         header = QHBoxLayout()
         self.header_layout = header
+        header.setSpacing(16)
         self.title_label = BodyLabel(self)
         self.offset_checkbox = CheckBox(self.tr("Remove constant offset"), self)
         self.offset_checkbox.setChecked(True)
@@ -521,6 +524,9 @@ class RunDetailPanel(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        # Native macOS checkbox size hints can undercount translated text.
+        for checkbox in (self.relative_checkbox, self.offset_checkbox):
+            checkbox.setMinimumWidth(checkbox.fontMetrics().horizontalAdvance(checkbox.text()) + 40)
         self._layout_cards()
 
     def _layout_cards(self):
@@ -693,6 +699,7 @@ class ModelLibraryWidget(QWidget):
     """Suite selector, scorecard table and per-set details for captured models."""
 
     scorecardChanged = Signal()
+    toolbarContextChanged = Signal()
     samplingWorkflowRequested = Signal(object)
 
     def __init__(self, parent=None, service: ValidationService | None = None):
@@ -700,6 +707,9 @@ class ModelLibraryWidget(QWidget):
         self._service = service
         self._run_task: BackgroundTask | None = None
         self._run_total = 0
+        self._run_records = []
+        self._failed_jobs = []
+        self._failed_context = None
         self._library_root = None
         self._loaded = False
         self._displayed_suite_id = None
@@ -734,16 +744,31 @@ class ModelLibraryWidget(QWidget):
         self.export_package_action.triggered.connect(lambda: self.export_validation_package())
         self.star_action = Action(FluentIcon.HEART.icon(color=palette.PLOT_SELECTED), self.tr("Star"), self)
         self.star_action.setCheckable(True)
-        self.save_action = Action(QIcon(':/images/src/images/save.svg'), self.tr("Save to project…"), self)
-        self.save_action.setToolTip(self.tr("Save to project…"))
+        self.save_action = Action(QIcon(':/images/src/images/save.svg'), "保存势版本到项目…", self)
+        self.save_action.setToolTip("保存势版本到项目；不会保存诊断方案")
         self.baseline_button = TransparentToolButton(FluentIcon.PIN.colored(palette.PLOT_CURRENT, palette.PLOT_CURRENT), self)
         self.baseline_button.setToolTip(self.tr("Set baseline model") + "\n" + self.tr("Set a saved version to compare model improvements and regressions."))
         self.baseline_button.setAccessibleName(self.tr("Set baseline model"))
-        self.run_current_button = PrimaryPushButton(FluentIcon.PLAY, self.tr("Validate current version"), self)
-        self.run_button = PushButton(QIcon(':/images/src/images/run.svg'), self.tr("Run all"), self)
-        self.run_selected_button = PushButton(QIcon(':/images/src/images/run.svg'), self.tr("Validate selected versions"), self)
-        self.run_selected_button.setToolTip(self.tr("Validate the current model and selected comparison models, including hidden curves."))
-        self.run_selected_button.clicked.connect(self.run_selected)
+        self.run_selected_button = PrimarySplitPushButton(FluentIcon.PLAY, "验证所选势", self)
+        self.run_selected_button.setToolTip("运行当前势和勾选的对比势；隐藏曲线不会取消选择。")
+        self.run_selected_button.clicked.connect(self._on_run_clicked)
+        self.run_menu = RoundMenu(parent=self)
+        self.run_current_action = Action(FluentIcon.PLAY, "仅验证当前势", self)
+        self.run_all_action = Action(FluentIcon.PLAY, "验证全库兼容势（含其他项目）", self)
+        self.run_current_action.triggered.connect(self.run_current)
+        self.run_all_action.triggered.connect(self.run_all)
+        self.run_menu.addAction(self.run_current_action)
+        self.run_menu.addSeparator()
+        self.run_menu.addAction(self.run_all_action)
+        self.run_selected_button.setFlyout(self.run_menu)
+        self.scope_combo = ComboBox(self)
+        for label, scope in (("当前性质 · 全部组", "property"), ("当前性质 · 选中组", "selection"), ("整个方案 · 所有性质", "suite")):
+            self.scope_combo.addItem(label, userData=scope)
+        self.scope_combo.setAccessibleName("验证范围")
+        self.scope_combo.setToolTip("此范围同时用于验证所选势、当前势和全库势。选中组可通过放大子图或在详情表中选择。")
+        self.scope_combo.currentIndexChanged.connect(self._update_run_scope)
+        self.scope_hint = CaptionLabel(self)
+        self.scope_hint.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.model_combo = ComboBox(self)
         self.model_combo.setMinimumWidth(130)
         self.comparison_picker = ComparisonPicker(self)
@@ -770,8 +795,6 @@ class ModelLibraryWidget(QWidget):
         self.star_action.triggered.connect(lambda: self.toggle_star())
         self.save_action.triggered.connect(lambda: self.save_current())
         self.baseline_button.clicked.connect(self.set_baseline)
-        self.run_button.clicked.connect(self._on_run_clicked)
-        self.run_current_button.clicked.connect(self.run_current)
 
         self.baseline_label = CaptionLabel(self)
         self.baseline_label.setWordWrap(True)
@@ -782,10 +805,10 @@ class ModelLibraryWidget(QWidget):
         self.curves_button = PushButton(FluentIcon.VIEW, "查看曲线", self)
         self.curves_button.setCheckable(True)
         self.curves_button.toggled.connect(self._toggle_curves)
+        actions.addWidget(self.scope_combo)
+        actions.addWidget(self.scope_hint)
         actions.addWidget(self.curves_button)
-        actions.addWidget(self.run_button)
         actions.addWidget(self.run_selected_button)
-        actions.addWidget(self.run_current_button)
         controls.addLayout(actions)
         self.property_combo = ComboBox(self)
         self.property_combo.currentIndexChanged.connect(lambda *_: self._load_groups())
@@ -809,7 +832,7 @@ class ModelLibraryWidget(QWidget):
         self.table.setColumnWidth(0, 420)
         self.table.verticalHeader().setDefaultSectionSize(30)
         self.table.setMinimumHeight(130)
-        self.table.selectionModel().selectionChanged.connect(lambda *_: self._update_detail())
+        self.table.selectionModel().selectionChanged.connect(self._on_group_selection_changed)
         self.empty_hint = CaptionLabel(self.table.viewport())
         self.empty_hint.setWordWrap(True)
         self.empty_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -818,7 +841,9 @@ class ModelLibraryWidget(QWidget):
         hint_layout.addWidget(self.empty_hint, 0, Qt.AlignmentFlag.AlignCenter)
 
         self.detail = RunDetailPanel(self)
-        self.detail.header_layout.insertWidget(0, self.property_combo)
+        # Property selection remains available while plots are collapsed.
+        actions.insertWidget(1, self.property_combo)
+        self.property_combo.setAccessibleName("验证性质")
         self.detail.header_layout.insertWidget(2, self.all_groups_button)
         self.detail.comparisonRemoved.connect(self.comparison_picker.remove_id)
         self.detail.allGroupsRequested.connect(self._select_all_groups)
@@ -843,6 +868,17 @@ class ModelLibraryWidget(QWidget):
         panel_row.setContentsMargins(12, 10, 12, 4)
         panel_row.addWidget(self.controls_panel)
         layout.addLayout(panel_row)
+        status_row = QHBoxLayout()
+        status_row.setContentsMargins(16, 2, 16, 4)
+        self.run_summary = CaptionLabel(self)
+        self.run_summary.setWordWrap(True)
+        self.run_summary.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.retry_button = TransparentPushButton(FluentIcon.SYNC, "重试失败项", self)
+        self.retry_button.clicked.connect(self.retry_failed)
+        self.retry_button.hide()
+        status_row.addWidget(self.run_summary, 1)
+        status_row.addWidget(self.retry_button)
+        layout.addLayout(status_row)
         legend = CaptionLabel(
             self.tr("Metrics are for the current model. Green / red compare against the baseline model; choosing a comparison curve does not change the baseline."),
             self,
@@ -854,6 +890,7 @@ class ModelLibraryWidget(QWidget):
         from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor
         self.diagnostic_editor = DiagnosticEditor(self)
         self.diagnostic_editor.prepared.connect(self._prepare_diagnostic_plan)
+        self.diagnostic_editor.readinessChanged.connect(self._sync_save_context)
         self.editor_scroll = QScrollArea(self)
         self.editor_scroll.setWidgetResizable(True)
         self.editor_scroll.setFrameShape(QFrame.Shape.NoFrame)
@@ -866,9 +903,10 @@ class ModelLibraryWidget(QWidget):
         self.curves_placeholder = QWidget(self)
         placeholder = QVBoxLayout(self.curves_placeholder)
         placeholder.addStretch()
-        hint = BodyLabel("曲线默认收起", self.curves_placeholder)
-        hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        placeholder.addWidget(hint)
+        self.overview_label = BodyLabel("选择方案与势版本", self.curves_placeholder)
+        self.overview_label.setWordWrap(True)
+        self.overview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        placeholder.addWidget(self.overview_label)
         hint = CaptionLabel("选择方案和势版本后，点击“查看曲线”读取已有结果；验证计算需手动运行。", self.curves_placeholder)
         hint.setWordWrap(True)
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -934,6 +972,8 @@ class ModelLibraryWidget(QWidget):
                 self.refresh()
 
     def refresh(self, suite_id: int | None = None, model_id: int | None = None) -> None:
+        if self._run_task is not None:
+            return
         self._loaded = False
         try:
             service = self.service()
@@ -1055,6 +1095,9 @@ class ModelLibraryWidget(QWidget):
 
     def open_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft: ModelDraft | None = None) -> None:
         """Show ``suite_id`` (``None``: the last used suite) with ``model_id`` selected."""
+        if self._run_task is not None:
+            MessageManager.send_info_message("验证正在运行，请完成或停止后再切换方案与势版本。")
+            return
         if self._library_root is not None and self._library_root != self.service().library.root:
             self.refresh()
         self._draft = draft
@@ -1129,37 +1172,41 @@ class ModelLibraryWidget(QWidget):
         selection.blockSignals(False)
         self.all_groups_button.setVisible(kind in ("eos", "diagnostic"))
         self.metrics_button.setText("响应与运行详情" if kind == "diagnostic" else self.tr("Error details"))
+        self._update_run_scope()
         if update_detail:
             self._update_detail()
+
+    def _on_group_selection_changed(self, *_args):
+        self._update_run_scope()
+        self._update_detail()
 
     def _select_all_groups(self):
         self.table.selectAll()
         self._update_detail()
 
-    def _on_selection_changed(self) -> None:
+    def _on_selection_changed(self, *, update_detail=True) -> None:
         row = self.current_model_row()
         has_suite = self.current_suite_id() is not None
         saved = row is not None and not row.get("temporary")
         diagnostic = any(b["protocol"] == "diagnostic" for b in self._benchmarks)
-        temporary_plan = has_suite and self.current_suite_id() < 0
         editing = not self.editor_scroll.isHidden()
         self.edit_diagnostic_action.setEnabled(diagnostic and self._run_task is None and not editing)
-        self.save_plan_action.setEnabled(temporary_plan and self._run_task is None and not editing)
-        self.diagnostic_action.setEnabled(self._run_task is None)
+        self._sync_save_context()
+        self.diagnostic_action.setEnabled(self._run_task is None and not editing)
+        self.import_action.setEnabled(self._run_task is None and not editing)
+        self.import_package_action.setEnabled(self._run_task is None and not editing)
         self.curves_button.setEnabled(bool(self._benchmarks))
         self.export_package_action.setEnabled(has_suite and not diagnostic and bool(self.metrics_model.benchmarks) and self._run_task is None)
         self.export_package_action.setToolTip("无参考诊断分享将在下一阶段支持；当前可保存本地方案。" if diagnostic else self.export_package_action.text())
-        self.save_action.setEnabled(row is not None and self._run_task is None)
-        self.star_action.setEnabled(saved)
+        self.save_action.setEnabled(row is not None and self._run_task is None and not editing)
+        self.star_action.setEnabled(saved and self._run_task is None and not editing)
         self.star_action.setText(self.tr("Unstar") if row and row["starred"] else self.tr("Star"))
         self.star_action.setToolTip(self.star_action.text())
         self.star_action.setChecked(bool(row and row["starred"]))
-        self.baseline_button.setEnabled(saved and has_suite)
-        self.run_current_button.setEnabled(row is not None and has_suite and self._run_task is None)
-        self.run_selected_button.setEnabled(bool(self.selected_model_ids()) and has_suite and self._run_task is None)
-        if self._run_task is None:
-            self.run_button.setEnabled(has_suite)
-        self._update_detail()
+        self.baseline_button.setEnabled(saved and has_suite and self._run_task is None)
+        self._update_run_scope()
+        if update_detail:
+            self._update_detail()
 
     def _update_detail(self) -> None:
         if not self.curves_button.isChecked():
@@ -1218,6 +1265,7 @@ class ModelLibraryWidget(QWidget):
             self._sync_curve_visibility()
             self.controls_panel.setEnabled(True)
             self.controls_panel.show()
+            self.run_summary.show()
             self._on_selection_changed()
         return super().eventFilter(watched, event)
 
@@ -1234,6 +1282,19 @@ class ModelLibraryWidget(QWidget):
         self.curves_placeholder.hide()
         self.editor_scroll.show()
         self.diagnostic_editor.show()
+        self._on_selection_changed()
+        self.run_summary.hide()
+        self.retry_button.hide()
+
+    def _sync_save_context(self, *_args):
+        if not hasattr(self, "editor_scroll"):
+            return
+        editing = not self.editor_scroll.isHidden()
+        temporary = self.current_suite_id() is not None and self.current_suite_id() < 0
+        ready = self.diagnostic_editor.use_button.isEnabled() if editing else temporary
+        self.save_plan_action.setEnabled(ready and self._run_task is None)
+        self.save_plan_action.setToolTip("保存当前编辑的诊断方案（结构与参数）" if editing else "保存临时诊断方案及已有结果")
+        self.toolbarContextChanged.emit()
 
     def edit_diagnostic_plan(self):
         from NepTrainKit.core.validation.protocols.diagnostic import experiment
@@ -1267,6 +1328,10 @@ class ModelLibraryWidget(QWidget):
             MessageManager.send_error_message(str(exc))
 
     def save_diagnostic_plan(self):
+        if not self.editor_scroll.isHidden():
+            if self._run_task is None and self.diagnostic_editor.use_button.isEnabled():
+                self.diagnostic_editor.prepare()
+            return
         if self._run_task is not None or self.current_suite_id() is None or self.current_suite_id() >= 0:
             return
         box = GetStrMessageBox(self.window(), "保存为新的诊断方案；不会覆盖已有方案或基准势。")
@@ -1338,8 +1403,15 @@ class ModelLibraryWidget(QWidget):
         row = self.current_model_row()
         if row is None:
             return
-        service.star_model(row["model_id"], not row["starred"])
-        self.refresh(model_id=row["model_id"])
+        starred = not row["starred"]
+        service.star_model(row["model_id"], starred)
+        row["starred"] = starred
+        index = self.model.index(self.model.row_of_model(row["model_id"]), 0)
+        self.model.dataChanged.emit(index, index)
+        self.star_action.setChecked(starred)
+        self.star_action.setText(self.tr("Unstar") if starred else self.tr("Star"))
+        self.star_action.setToolTip(self.star_action.text())
+        self.scorecardChanged.emit()
 
     def set_baseline(self) -> None:
         service = self._view_service()
@@ -1420,104 +1492,167 @@ class ModelLibraryWidget(QWidget):
         self.property_combo.setCurrentIndex(self.property_combo.findData(records[0]["protocol"]))
         return records
 
-    def run_jobs(self, model_id: int | None = None) -> list[tuple[int, str]]:
-        """Compatible suite jobs for one version, or all captured versions."""
-        suite_id = self.current_suite_id()
-        if suite_id is None:
-            return []
-        service = self.service()
-        sets = service.suite_sets(suite_id)
-        return [
-            (model["id"], benchmark["id"])
-            for model in service.models()
-            if model_id is None or model["id"] == model_id
-            for benchmark in sets
-            if set(benchmark["elements"]) <= set(model["elements"] or ())
-        ]
+    def selected_benchmarks(self):
+        scope = self.scope_combo.currentData()
+        if scope == "suite":
+            return list(self._benchmarks)
+        benchmarks = list(self.metrics_model.benchmarks)
+        if scope == "selection":
+            indexes = {index.row() for index in self.table.selectionModel().selectedRows()}
+            return [item for i, item in enumerate(benchmarks) if i in indexes]
+        return benchmarks
 
-    def _on_run_clicked(self) -> None:
+    def _update_run_scope(self, *_args):
+        if not hasattr(self, "metrics_model") or not hasattr(self, "overview_label"):
+            return
+        benchmarks = self.selected_benchmarks()
+        ids = self.selected_model_ids()
+        all_jobs = self.run_jobs()
+        jobs = [job for job in all_jobs if job[0] in ids]
+        self.scope_hint.setText(f"{len(ids)} 个势 · {len(benchmarks)} 项 · {len(jobs)} 次验证")
+        self.scope_hint.setToolTip("当前势 + 勾选的对比势；仅生成元素兼容的任务。范围不随曲线隐藏而改变。")
+        idle = self._run_task is None
+        self.run_selected_button.setEnabled(bool(jobs) if idle else True)
+        self.run_current_action.setEnabled(idle and any(job[0] == self.model_combo.currentData() for job in all_jobs))
+        self.run_all_action.setEnabled(idle and bool(all_jobs))
+        self.run_all_action.setText(f"验证全库兼容势（{len(all_jobs)} 次，含其他项目）")
+        self.scope_combo.setEnabled(idle)
+        self.refresh_button.setEnabled(idle)
+        self.model_combo.setEnabled(idle and bool(self.model._rows))
+        self.comparison_picker.setEnabled(idle)
+        self.property_combo.setEnabled(idle)
+        self.table.setEnabled(idle)
+        self.retry_button.setVisible(idle and bool(self._failed_jobs) and self._failed_context == (self._library_root, self.current_suite_id()) and self.editor_scroll.isHidden())
+        counts = dict(succeeded=0, failed=0, unsupported=0, missing=0)
+        allowed = set(jobs)
+        seen = set()
+        for row in self.model._rows:
+            for col, cell in zip(self.model._columns, row["cells"]):
+                key = (row["model_id"], col["set_id"])
+                if key in allowed and key not in seen:
+                    seen.add(key)
+                    status = cell["status"]
+                    counts[status if status in counts else "missing"] += 1
+        self.overview_label.setText(
+            f"所选范围 · {len(jobs)} 次验证\n"
+            f"已有结果 {counts['succeeded']}    待运行 {counts['missing']}    失败 {counts['failed']}    不支持 {counts['unsupported']}"
+            if self._benchmarks else "从顶部打开菜单新建诊断方案，或导入参考基准集"
+        )
+
+    def run_jobs(self, model_id=None, *, model_ids=None):
+        """One explicit experiment scope, shared by every model-selection action."""
+        if self.current_suite_id() is None:
+            return []
+        if model_ids is None and model_id is not None:
+            model_ids = [model_id]
+        rows = self.service().models()
+        if self._draft is not None:
+            rows.append({"id": 0, "elements": parse_model_header(self._draft.data)[1]})
+        return [(model["id"], benchmark["id"])
+                for model in rows if model_ids is None or model["id"] in model_ids
+                for benchmark in self.selected_benchmarks()
+                if set(benchmark["elements"]) <= set(model["elements"] or ())]
+
+    def _on_run_clicked(self):
         if self._run_task is not None:
             self._run_task.stop_work()
-            self.run_button.setEnabled(False)
+            self.run_selected_button.setText("正在停止…")
+            self.run_selected_button.setEnabled(False)
             return
-        self.run_all()
+        self.run_selected()
 
-    def run_all(self) -> BackgroundTask | None:
+    def run_all(self):
         return self._run_validation()
 
-    def run_current(self) -> BackgroundTask | None:
+    def run_current(self):
         row = self.current_model_row()
         return self._run_validation([row["model_id"]]) if row else None
 
-    def run_selected(self) -> BackgroundTask | None:
+    def run_selected(self):
         return self._run_validation(self.selected_model_ids())
 
-    def _run_validation(self, model_ids: list[int] | None = None) -> BackgroundTask | None:
+    def retry_failed(self):
+        if self._failed_context == (self._library_root, self.current_suite_id()):
+            return self._run_validation(jobs=list(self._failed_jobs))
+
+    def _run_validation(self, model_ids=None, *, jobs=None):
         if self._run_task is not None or self.current_suite_id() is None:
             return None
         service = self._view_service()
         if service is None:
             return None
-        if self._draft is not None and (model_ids is None or 0 in model_ids):
+        # Freeze the visible scope before capture/refresh can change selections.
+        jobs = list(jobs if jobs is not None else self.run_jobs(model_ids=model_ids))
+        if not jobs:
+            MessageManager.send_info_message("所选范围没有可运行的任务，请选择势版本和元素兼容的实验。")
+            return None
+        if self._draft is not None and any(model_id == 0 for model_id, _ in jobs):
             try:
                 record = service.capture_model(self._draft, temporary=True)
             except Exception as error:
                 MessageManager.send_error_message(str(error))
                 return None
             self._draft = None
+            jobs = [(record["id"] if model_id == 0 else model_id, set_id) for model_id, set_id in jobs]
             self.refresh(model_id=record["id"])
-            if model_ids is not None:
-                model_ids = list(dict.fromkeys(record["id"] if key == 0 else key for key in model_ids))
-        jobs = [job for job in self.run_jobs() if model_ids is None or job[0] in model_ids]
-        if not jobs:
-            MessageManager.send_info_message(
-                self.tr("No captured model covers the elements of this suite. "
-                        "Open a model in NEP Dataset Display to capture it.")
-            )
-            return None
+        self._run_records = []
+        self._run_names = {
+            job: f"{service.get_model(job[0])['name']} · {service.get_set(job[1])['name']}" for job in jobs
+        }
+        self._failed_jobs = []
+        self._failed_context = (self._library_root, self.current_suite_id())
+        self._run_total = len(jobs)
+        self._run_label = f"{self.suite_combo.currentText()} · {len({m for m, _ in jobs})} 个势 × {len({s for _, s in jobs})} 项实验"
 
         def evaluate_all():
             for model_id, set_id in jobs:
-                yield service.evaluate(model_id, set_id)
+                if task.isInterruptionRequested():
+                    break
+                run = service.evaluate(model_id, set_id)
+                self._run_records.append(((model_id, set_id), run))
+                yield run
 
-        self._run_total = len(jobs)
-        task = BackgroundTask(self, show_tip=True, title=self.tr("Running validation"))
+        # Completion of a worker is not a successful scientific evaluation.
+        task = BackgroundTask(self, show_tip=False, title=self.tr("Running validation"))
         task.progressSignal.connect(self._on_run_progress)
         task.finished.connect(self._on_run_finished)
         self._run_task = task
-        self.run_current_button.setEnabled(False)
-        self.run_selected_button.setEnabled(False)
-        self.export_package_action.setEnabled(False)
-        self.save_action.setEnabled(False)
-        self.save_plan_action.setEnabled(False)
-        self.diagnostic_action.setEnabled(False)
-        self.edit_diagnostic_action.setEnabled(False)
+        self._on_selection_changed(update_detail=False)
         self.diagnostic_editor.setEnabled(False)
         self.suite_combo.setEnabled(False)
-        self.run_button.setText(self.tr("Cancel"))
-        self.run_button.setIcon(QIcon(':/images/src/images/stop.svg'))
+        self.run_selected_button.setText("停止验证")
+        self.run_selected_button.setIcon(FluentIcon.PAUSE)
+        self.run_selected_button.dropButton.setEnabled(False)
+        self.run_summary.setText(f"正在验证 · {self._run_label} · 0 / {len(jobs)}")
         task.start_work(evaluate_all)
         return task
 
-    def _on_run_progress(self, index: int) -> None:
-        tip = getattr(self._run_task, "tip", None)
-        if tip is not None:
-            tip.setContent(self.tr("{done} / {total} evaluations").format(done=index + 1, total=self._run_total))
+    def _on_run_progress(self, index):
+        self.run_summary.setText(f"正在验证 · {self._run_label} · {index + 1} / {self._run_total}")
 
-    def _on_run_finished(self) -> None:
+    def _on_run_finished(self):
         task, self._run_task = self._run_task, None
         if getattr(getattr(self.window(), "_thread_shutdown", None), "closing", False):
-            # Workers still finish safely, but shutdown must not rebuild result views.
             if task is not None:
                 task.deleteLater()
             return
+        counts = {status: sum(run["status"] == status for _, run in self._run_records)
+                  for status in ("succeeded", "failed", "unsupported")}
+        self._failed_jobs = [job for job, run in self._run_records if run["status"] == "failed"]
+        heading = "已停止" if task and task.outcome == "canceled" else "运行结束"
+        summary = (f"{heading} · {self._run_label} · 完成 {len(self._run_records)}/{self._run_total} · "
+                   f"计算成功 {counts['succeeded']} / 失败 {counts['failed']} / 不支持 {counts['unsupported']}")
+        errors = [f"{self._run_names[job]}: {translate_runtime_message(run['error'])}"
+                  for job, run in self._run_records if run['status'] != 'succeeded']
+        if task and task.outcome == "failed":
+            errors.append(task.error_message)
+        self.run_summary.setText(summary + ("\n" + errors[0] if errors else " · 计算成功不代表诊断通过"))
+        self.run_summary.setToolTip("\n".join(errors))
         self.diagnostic_editor.setEnabled(True)
         self.suite_combo.setEnabled(True)
-        self.run_button.setText(self.tr("Run all"))
-        self.run_button.setIcon(QIcon(':/images/src/images/run.svg'))
-        self.run_button.setEnabled(True)
-        if task is not None and task.outcome == "failed":
-            MessageManager.send_error_message(self.tr("Validation failed: {error}").format(error=task.error_message))
+        self.run_selected_button.setText("验证所选势")
+        self.run_selected_button.setIcon(FluentIcon.PLAY)
+        self.run_selected_button.dropButton.setEnabled(True)
         current = self.current_model_row()
         self._expand_curves()
         self.refresh(model_id=current["model_id"] if current else None)

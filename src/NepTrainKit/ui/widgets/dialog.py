@@ -1373,6 +1373,9 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.addWidget(browse, 0)
 
         path.addRow(CaptionLabel(self.tr("Path"), self), structureRow)
+        version_hint = CaptionLabel("编辑已保存的势：相同内容只更新路径；内容变化会创建新版本，保留原版本及结果。", pathCard)
+        version_hint.setWordWrap(True)
+        path.addRow(version_hint)
 
         root.addWidget(pathCard)
 

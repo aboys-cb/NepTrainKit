@@ -52,8 +52,12 @@ class DataManagerWidget(QWidget):
     def toolbar_actions(self):
         """Expose validation defaults only while its tab is selected."""
         if self.stack.currentWidget() is self.library_widget:
-            return {"open": self.library_widget.import_action, "save": self.library_widget.save_action,
-                    "save_menu": self.library_widget.save_plan_action if self.library_widget.save_plan_action.isEnabled() else self.library_widget.export_package_action}
+            library = self.library_widget
+            editing = not library.editor_scroll.isHidden()
+            temporary = library.current_suite_id() is not None and library.current_suite_id() < 0
+            return {"open": library.import_action,
+                    "save": library.save_plan_action if editing or temporary else library.save_action,
+                    "save_menu": library.save_action if temporary else library.export_package_action}
         return {}
 
     def _sync_toolbar_actions(self, *_args):
@@ -237,6 +241,7 @@ class DataManagerWidget(QWidget):
 
         self.setLayout(self.gridLayout)
         self.stack.currentChanged.connect(self._sync_toolbar_actions)
+        self.library_widget.toolbarContextChanged.connect(self.toolbarActionsChanged)
         for action in (self.library_widget.import_action, self.library_widget.save_action,
                        self.library_widget.star_action, self.library_widget.import_package_action,
                        self.library_widget.export_package_action, self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.save_plan_action):

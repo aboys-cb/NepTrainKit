@@ -77,7 +77,7 @@ def test_top_actions_dispatch_and_detach_on_page_and_tab_changes(toolbar, monkey
     library.save_action.trigger()
     assert calls == ["import", "save", "import", "save"]
     assert host.open_dir_button.toolTip() == "Import reference dataset"
-    assert host.save_dir_button.toolTip() == "Save to project…"
+    assert host.save_dir_button.toolTip() == "保存势版本到项目；不会保存诊断方案"
 
     for _ in range(3):
         host.stackedWidget.setCurrentWidget(toolbar.other)

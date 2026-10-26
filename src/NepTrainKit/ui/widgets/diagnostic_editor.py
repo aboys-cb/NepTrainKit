@@ -17,6 +17,7 @@ PARAMETERS_OPTION = "diagnostic_editor_parameters"
 
 class DiagnosticEditor(QFrame):
     prepared = Signal(str, object, bool)
+    readinessChanged = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -434,6 +435,8 @@ class DiagnosticEditor(QFrame):
             self.preview.setText(str(exc))
             self.use_button.setEnabled(False)
             self.temporary_button.setEnabled(False)
+
+        self.readinessChanged.emit()
 
     def prepare(self, *, temporary=False):
         try:

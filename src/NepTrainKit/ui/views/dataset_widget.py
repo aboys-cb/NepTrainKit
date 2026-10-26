@@ -369,10 +369,26 @@ class ModelItemWidget(QWidget, DatasetManager):
         data["project_id"] = self.project.project_id
 
         if modify:
-            self.model_service.modify_model(current_model.model_id, **data)
+            try:
+                saved = self.model_service.modify_model(current_model.model_id, **data)
+            except (OSError, ValueError) as error:
+                MessageManager.send_error_message(str(error))
+                return
             self.load_models_by_project(self.project)
-            self.modelsChanged.emit(current_model.model_id)
-            MessageManager.send_success_message(self.tr("Model modified successfully"))
+            self.modelsChanged.emit(saved.id)
+            matches = self._model.match(self._model.index(0, 0), Qt.ItemDataRole.DisplayRole,
+                                        saved.id, 1, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
+            if matches:
+                self._view.setCurrentIndex(matches[0])
+                parent = matches[0].parent()
+                while parent.isValid():
+                    self._view.expand(parent)
+                    parent = parent.parent()
+                self._view.scrollTo(matches[0])
+            if saved.id != current_model.model_id:
+                MessageManager.send_success_message("模型内容已变化，已创建新版本；旧版本、基准势和历史结果保持不变。")
+            else:
+                MessageManager.send_success_message(self.tr("Model modified successfully"))
             return
 
         project = self.model_service.add_version(**data)

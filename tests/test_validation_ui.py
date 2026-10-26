@@ -94,10 +94,11 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     assert "first production model" in widget.baseline_label.text()
     assert (scored.fresh["id"], scored.eos["id"]) in widget.run_jobs()
 
+    widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
     task = widget.run_all()
-    assert widget.run_button.text() == "Cancel"
+    assert widget.run_selected_button.text() == "停止验证"
     assert _wait_until(lambda: widget._run_task is None)
-    assert task.outcome == "succeeded" and widget.run_button.text() == "Run all"
+    assert task.outcome == "succeeded" and widget.run_selected_button.text() == "验证所选势"
     assert widget.model.row_of_model(scored.fresh["id"]) >= 0
 
     widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.new["id"]))
@@ -669,19 +670,20 @@ def test_fresh_model_is_selected_and_can_be_validated_alone(scored):
     row = widget.current_model_row()
     assert row["model_id"] == scored.fresh["id"]
     assert all(cell["status"] == "missing" for cell in row["cells"])
-    assert widget.run_current_button.isEnabled()
+    assert widget.run_current_action.isEnabled()
     widget.refresh()  # Refresh/showEvent must retain the newly opened version.
     assert widget.current_model_row()["model_id"] == scored.fresh["id"]
     with patch.object(service, "evaluate", wraps=service.evaluate) as evaluate:
-        widget.run_current_button.click()
-        assert not widget.run_current_button.isEnabled()
+        widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
+        widget.run_current_action.trigger()
+        assert not widget.run_current_action.isEnabled()
         assert _wait_until(lambda: widget._run_task is None)
         assert {call.args for call in evaluate.call_args_list} == {
             (scored.fresh["id"], scored.eos["id"]), (scored.fresh["id"], scored.efv["id"]),
         }
     row = widget.current_model_row()
     assert row["model_id"] == scored.fresh["id"] and row["comparison_complete"]
-    assert widget.run_current_button.isEnabled()
+    assert widget.run_current_action.isEnabled()
 
 
 def test_unsaved_viewer_to_temporary_validation_then_save(scored, tmp_path, monkeypatch):
@@ -711,7 +713,8 @@ def test_unsaved_viewer_to_temporary_validation_then_save(scored, tmp_path, monk
     assert len(service.models()) == original_count  # cancelling Save leaves no project/version
     old_bytes = path.read_bytes()
     path.write_text(MODEL_HEADER + "changed while viewing")
-    widget.run_current_button.click()
+    widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
+    widget.run_current_action.trigger()
     assert _wait_until(lambda: widget._run_task is None)
     row = widget.current_model_row()
     temporary_id = row["model_id"]
@@ -820,7 +823,7 @@ def test_unsaved_model_is_visible_without_any_suites(make_service, model_file):
     widget = ModelLibraryWidget(service=service)
     widget.open_scorecard(None, draft=ModelDraft.from_file(model_file))
     assert widget.current_model_row()["model_id"] == 0
-    assert widget.save_action.isEnabled() and not widget.run_current_button.isEnabled()
+    assert widget.save_action.isEnabled() and not widget.run_current_action.isEnabled()
     assert service.models() == [] and service.projects() == []
 
     def accept(dialog):
@@ -832,7 +835,7 @@ def test_unsaved_model_is_visible_without_any_suites(make_service, model_file):
         widget.save_current()
     assert widget.current_model_row()["name"] == "v1"
     assert not widget.current_model_row()["temporary"]
-    assert not widget.run_current_button.isEnabled()
+    assert not widget.run_current_action.isEnabled()
 
 
 def test_refresh_clears_stale_actions_when_library_cannot_open(scored):
@@ -841,7 +844,7 @@ def test_refresh_clears_stale_actions_when_library_cannot_open(scored):
     with patch.object(widget, "service", side_effect=OSError("unavailable")), patch("NepTrainKit.ui.views.model_library.MessageManager"):
         widget.refresh()
     assert widget.model.rowCount() == 0
-    assert not widget.save_action.isEnabled() and not widget.run_current_button.isEnabled()
+    assert not widget.save_action.isEnabled() and not widget.run_current_action.isEnabled()
 
 
 def test_partial_or_failed_suite_never_looks_complete(scored, monkeypatch):
@@ -1162,9 +1165,10 @@ def test_validate_selected_versions_includes_hidden_but_not_unselected(scored, t
     widget.comparison_picker.set_selected_ids([scored.fresh["id"]])
     assert "Not run" in widget.detail.legend_buttons[scored.fresh["id"]].text()
     widget.detail.legend_buttons[scored.fresh["id"]].click()
+    widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
     with patch.object(service, "evaluate", wraps=service.evaluate) as evaluate:
-        widget.run_selected_button.click()
-        assert not widget.run_selected_button.isEnabled()
+        widget.run_selected_button.button.click()
+        assert widget.run_selected_button.text() == "停止验证"
         assert _wait_until(lambda: widget._run_task is None)
         assert {call.args for call in evaluate.call_args_list} == {
             (model_id, set_id) for model_id in (scored.new["id"], scored.fresh["id"])
@@ -1186,8 +1190,9 @@ def test_selected_validation_promotes_only_current_draft(scored):
     draft = ModelDraft((MODEL_HEADER + "new draft").encode(), "/tmp/new-draft.txt")
     widget.open_scorecard(scored.suite["id"], draft=draft)
     widget.comparison_picker.set_selected_ids([scored.old["id"]])
+    widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
     with patch.object(scored.service, "evaluate", wraps=scored.service.evaluate) as evaluate:
-        widget.run_selected_button.click()
+        widget.run_selected_button.button.click()
         assert _wait_until(lambda: widget._run_task is None)
         current = widget.current_model_row()
         assert current["temporary"] and current["model_id"] > 0

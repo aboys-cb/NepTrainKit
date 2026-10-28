@@ -7344,6 +7344,26 @@
       "rendered": "atomic.element 必须与带引号的元素符号比较，例如 'Fe'。",
       "review": "technical",
       "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Pair selection must be all or selected (got {value}).",
+      "rendered": [
+        "元素对选择须为 all 或 selected（当前为 {value}）。"
+      ],
+      "review": "technical",
+      "reason": "中文句子已完整；all/selected 和 random/equal 为界面与参数校验使用的枚举值，{value} 占位符保持一致。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Pair distribution must be random or equal (got {value}).",
+      "rendered": [
+        "交换分配须为 random 或 equal（当前为 {value}）。"
+      ],
+      "review": "technical",
+      "reason": "中文句子已完整；all/selected 和 random/equal 为界面与参数校验使用的枚举值，{value} 占位符保持一致。"
     }
   ],
   "followup_fixes": [

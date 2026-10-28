@@ -5789,6 +5789,54 @@
         <location filename="../core/cards/solvation.py" line="251" /><location filename="../core/cards/solvation.py" line="253" /><source>{prefix}: {key} must be a finite number.</source>
         <translation>{prefix}：{key} 必须是有限值。</translation>
     </message>
+    <message>
+        <source>Layer pair counts must be comma-separated non-negative integers.</source>
+        <translation>逐层交换对数须为逗号分隔的非负整数。</translation>
+    </message>
+    <message>
+        <source>Pair selection must be all or selected (got {value}).</source>
+        <translation>元素对选择须为 all 或 selected（当前为 {value}）。</translation>
+    </message>
+    <message>
+        <source>Pair distribution must be random or equal (got {value}).</source>
+        <translation>交换分配须为 random 或 equal（当前为 {value}）。</translation>
+    </message>
+    <message>
+        <source>Layer pair counts must be a sequence of non-negative integers.</source>
+        <translation>逐层交换对数须为非负整数序列。</translation>
+    </message>
+    <message>
+        <source>Exchange pairs must be unique unlike L-R element pairs, for example Si-P and Si-Ga.</source>
+        <translation>交换元素对须为不重复的异种 L-R 元素对，例如 Si-P 和 Si-Ga。</translation>
+    </message>
+    <message>
+        <source>Select at least one L-R element pair, for example Si-P or Si-Ga.</source>
+        <translation>请至少选择一个 L-R 元素对，例如 Si-P 或 Si-Ga。</translation>
+    </message>
+    <message>
+        <source>Explicit layer pair counts require the fixed mixing schedule.</source>
+        <translation>指定逐层交换对数时须使用固定互混模式。</translation>
+    </message>
+    <message>
+        <source>Explicit layer pair counts require equal L/R layer counts and one count per paired layer (nearest interface first).</source>
+        <translation>逐层配额要求 L/R 两侧层数相同，且每对对应层填写一个配额（由近到远）。</translation>
+    </message>
+    <message>
+        <source>Equal pair allocation requires each exchange count to be divisible by the number of element pairs ({pairs}); got {count}.</source>
+        <translation>等量分配要求每个交换配额都能被元素对种类数 {pairs} 整除；当前配额为 {count}。</translation>
+    </message>
+    <message>
+        <source>Requested {count} exchanges exceed the available element-pair capacity {capacity} in a selected region. Reduce the quota or select other elements/layers.</source>
+        <translation>选区要求交换 {count} 对，超过所选元素对的容量 {capacity}；请降低配额或调整元素和层数。</translation>
+    </message>
+    <message>
+        <source>Selected pair {left}-{right} is unavailable: its first element must occur in the L region and its second in the R region.</source>
+        <translation>选区中不存在元素对 {left}-{right}：第一个元素须位于 L 侧，第二个元素须位于 R 侧。</translation>
+    </message>
+    <message>
+        <source>Internal selected-species matching failed. Check the selected pairs and quotas.</source>
+        <translation>内部指定元素配对失败，请检查所选元素对和配额。</translation>
+    </message>
 </context>
 <context>
     <name>CardOperationField</name>
@@ -11338,6 +11386,78 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     <message>
         <source>{axis}-axis interface @ {pos}; L={l_layers} ({left_formula}) &lt;-&gt; R={r_layers} ({right_formula}); c_max={c_max}; outputs: {count}</source>
         <translation type="vanished">沿{axis}轴界面@{pos}；L={l_layers}（{left_formula}）↔R={r_layers}（{right_formula}）；最大浓度{c_max}；输出：{count}</translation>
+    </message>
+    <message>
+        <source>All unlike element pairs</source>
+        <translation>全部异种元素对</translation>
+    </message>
+    <message>
+        <source>Selected element pairs</source>
+        <translation>指定元素对</translation>
+    </message>
+    <message>
+        <source>Exchange elements</source>
+        <translation>互混元素</translation>
+    </message>
+    <message>
+        <source>For example: Si-P,Si-Ga</source>
+        <translation>例如：Si-P,Si-Ga</translation>
+    </message>
+    <message>
+        <source>Allowed L-R pairs</source>
+        <translation>允许交换的 L-R 元素对</translation>
+    </message>
+    <message>
+        <source>Choose the L-side element first and the R-side element second. One pair selects a single exchange channel.</source>
+        <translation>每对先选 L 侧元素，再选 R 侧元素；只填一对即可进行单种元素交换。</translation>
+    </message>
+    <message>
+        <source>Random pair counts</source>
+        <translation>随机分配交换对数</translation>
+    </message>
+    <message>
+        <source>Exactly equal pair counts</source>
+        <translation>各元素对严格等量</translation>
+    </message>
+    <message>
+        <source>Exchange allocation</source>
+        <translation>交换数量分配</translation>
+    </message>
+    <message>
+        <source>Equal allocation divides exchange pairs, not the overall mixing concentration.</source>
+        <translation>等量分配指各元素对的交换次数各半或均分，互混总浓度另行计算。</translation>
+    </message>
+    <message>
+        <source>Optional, for example: 40,38,38,38,38</source>
+        <translation>可选，例如：40,38,38,38,38</translation>
+    </message>
+    <message>
+        <source>Pairs per corresponding layer</source>
+        <translation>每对对应层的交换对数</translation>
+    </message>
+    <message>
+        <source>Leave empty to use concentration. Otherwise list counts from the nearest layer outward; both sides must have that many layers.</source>
+        <translation>留空时使用浓度；填写时按距界面由近到远列出配额，两侧层数须与配额数一致。</translation>
+    </message>
+    <message>
+        <source>Exchange selection</source>
+        <translation>选择交换方式</translation>
+    </message>
+    <message>
+        <source>Each allowed element pair receives exactly the same number of exchanges.</source>
+        <translation>各允许元素对的交换次数严格相等。</translation>
+    </message>
+    <message>
+        <source>Allowed exchanges: {pairs}.</source>
+        <translation>允许交换：{pairs}。</translation>
+    </message>
+    <message>
+        <source>Layer quotas (nearest first): {counts}; concentration is derived from these counts.</source>
+        <translation>逐层配额（由近到远）：{counts}；互混浓度由这些配额计算。</translation>
+    </message>
+    <message>
+        <source>Set optional per-layer quotas</source>
+        <translation>设置逐层配额（可选）</translation>
     </message>
 </context>
 <context>

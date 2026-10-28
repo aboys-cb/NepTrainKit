@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
-from qfluentwidgets import CheckBox, ComboBox
+from qfluentwidgets import CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import InterfaceLayerMixOperation, InterfaceLayerMixParams
@@ -13,6 +13,7 @@ from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
     CompactField,
+    ElementPairLineEdit,
     InspectorSection,
     MakeDataCard,
     ResponsiveFormGrid,
@@ -125,6 +126,37 @@ class InterfaceLayerMixCard(MakeDataCard):
         layer_grid.add_field(self.layer_tolerance_field, span=2)
         layer_section.addWidget(layer_grid)
 
+        self.pair_selection_combo = ComboBox(self.setting_widget)
+        self.pair_selection_combo.addItem(self.tr("All unlike element pairs"), userData="all")
+        self.pair_selection_combo.addItem(self.tr("Selected element pairs"), userData="selected")
+        self.pair_selection_field = CompactField(
+            self.tr("Exchange elements"), self.pair_selection_combo, self.setting_widget
+        )
+        self.exchange_pairs_edit = ElementPairLineEdit(self.setting_widget, multiple=True)
+        self.exchange_pairs_edit.setPlaceholderText(self.tr("For example: Si-P,Si-Ga"))
+        self.exchange_pairs_field = CompactField(
+            self.tr("Allowed L-R pairs"), self.exchange_pairs_edit, self.setting_widget,
+            self.tr("Choose the L-side element first and the R-side element second. One pair selects a single exchange channel."),
+        )
+        self.pair_distribution_combo = ComboBox(self.setting_widget)
+        self.pair_distribution_combo.addItem(self.tr("Random pair counts"), userData="random")
+        self.pair_distribution_combo.addItem(self.tr("Exactly equal pair counts"), userData="equal")
+        self.pair_distribution_field = CompactField(
+            self.tr("Exchange allocation"), self.pair_distribution_combo, self.setting_widget,
+            self.tr("Equal allocation divides exchange pairs, not the overall mixing concentration."),
+        )
+        self.layer_counts_checkbox = CheckBox(self.tr("Set optional per-layer quotas"), self.setting_widget)
+        self.layer_pair_counts_edit = LineEdit(self.setting_widget)
+        self.layer_pair_counts_edit.setPlaceholderText(self.tr("Optional, for example: 40,38,38,38,38"))
+        self.layer_pair_counts_field = CompactField(
+            self.tr("Pairs per corresponding layer"), self.layer_pair_counts_edit, self.setting_widget,
+            self.tr("Leave empty to use concentration. Otherwise list counts from the nearest layer outward; both sides must have that many layers."),
+        )
+        exchange_section = InspectorSection(self.tr("Exchange selection"), self.setting_widget)
+        for field in (self.pair_selection_field, self.exchange_pairs_field,
+                      self.pair_distribution_field, self.layer_counts_checkbox, self.layer_pair_counts_field):
+            exchange_section.addWidget(field)
+
         self.mode_combo = ComboBox(self.setting_widget)
         add_translated_items(self, self.mode_combo, [("fixed", "Fixed"), ("gradient", "Gradient")])
         set_combo_value(self.mode_combo, "fixed")
@@ -194,13 +226,19 @@ class InterfaceLayerMixCard(MakeDataCard):
 
         self.settingLayout.addWidget(interface_section, 0, 0, 1, 3)
         self.settingLayout.addWidget(layer_section, 1, 0, 1, 3)
-        self.settingLayout.addWidget(schedule_section, 2, 0, 1, 3)
-        self.settingLayout.addWidget(random_section, 3, 0, 1, 3)
+        self.settingLayout.addWidget(exchange_section, 2, 0, 1, 3)
+        self.settingLayout.addWidget(schedule_section, 3, 0, 1, 3)
+        self.settingLayout.addWidget(random_section, 4, 0, 1, 3)
 
         self.axis_combo.currentIndexChanged.connect(self.refresh_compact_presentation)
         self.position_mode_combo.currentIndexChanged.connect(self._update_position_visibility)
         self.mode_combo.currentIndexChanged.connect(self._update_mode_visibility)
         self.seed_checkbox.toggled.connect(self._update_seed_visibility)
+        self.pair_selection_combo.currentIndexChanged.connect(self._update_exchange_visibility)
+        self.pair_distribution_combo.currentIndexChanged.connect(self.refresh_compact_presentation)
+        self.exchange_pairs_edit.textChanged.connect(self.refresh_compact_presentation)
+        self.layer_pair_counts_edit.textChanged.connect(self._on_layer_counts_changed)
+        self.layer_counts_checkbox.toggled.connect(self._toggle_layer_counts)
         for frame in (
             self.interface_position_frame,
             self.left_layers_frame,
@@ -216,6 +254,7 @@ class InterfaceLayerMixCard(MakeDataCard):
         self._update_position_visibility()
         self._update_mode_visibility()
         self._update_seed_visibility(False)
+        self._update_exchange_visibility()
 
     def _integer_frame(self, minimum: int, maximum: int, value: int):
         frame = SpinBoxUnitInputFrame(self.setting_widget)
@@ -242,6 +281,29 @@ class InterfaceLayerMixCard(MakeDataCard):
         self.gradient_start_field.setVisible(is_gradient)
         self.gradient_end_field.setVisible(is_gradient)
         self.refresh_compact_presentation()
+
+    def _update_exchange_visibility(self, *_args) -> None:
+        selected = combo_value(self.pair_selection_combo, "all") == "selected"
+        self.exchange_pairs_field.setVisible(selected)
+        self.layer_pair_counts_field.setVisible(self.layer_counts_checkbox.isChecked())
+        has_counts = bool(self.layer_pair_counts_edit.text().strip())
+        self.mode_field.setEnabled(not has_counts)
+        self.concentration_field.setEnabled(not has_counts)
+        self.gradient_start_field.setEnabled(not has_counts)
+        self.gradient_end_field.setEnabled(not has_counts)
+        if has_counts:
+            set_combo_value(self.mode_combo, "fixed")
+        self.refresh_compact_presentation()
+
+    def _toggle_layer_counts(self, checked: bool) -> None:
+        if not checked:
+            self.layer_pair_counts_edit.clear()
+        self._update_exchange_visibility()
+
+    def _on_layer_counts_changed(self, *_args) -> None:
+        if self.layer_pair_counts_edit.text().strip():
+            self.layer_counts_checkbox.setChecked(True)
+        self._update_exchange_visibility()
 
     def _update_seed_visibility(self, checked: bool) -> None:
         self.seed_field.setVisible(bool(checked))
@@ -297,16 +359,21 @@ class InterfaceLayerMixCard(MakeDataCard):
             return self.tr("Preview unavailable: {reason}").format(reason=translate_runtime_message(exc))
         if summary is None:
             return self.tr("Select one interface · {count} output(s)/input").format(
-                count=self.get_params().num_structures
+                count=int(self.num_structures_frame.get_input_value()[0])
             )
         amount = self._format_amount(summary["requested_concentrations"], summary["effective_concentrations"])
-        return self.tr("fractional {axis} @ {pos} · L {left}/{right} R sites · {amount}").format(
+        text = self.tr("fractional {axis} @ {pos} · L {left}/{right} R sites · {amount}").format(
             axis=summary["axis"],
             pos=f"{summary['position']:.3f}",
             left=summary["n_left"],
             right=summary["n_right"],
             amount=amount,
         )
+        if self.get_params().pair_selection == "selected":
+            text += " · " + ", ".join(
+                f"{left}↔{right}" for left, right in self.get_params().exchange_pairs
+            )
+        return text
 
     def get_guidance_text(self) -> str:
         parts: list[str] = []
@@ -315,7 +382,7 @@ class InterfaceLayerMixCard(MakeDataCard):
             input_count = self._dataset_count(getattr(self, "dataset", None)) or None
         elif input_count == 0:
             input_count = None
-        outputs = self.get_params().num_structures
+        outputs = int(self.num_structures_frame.get_input_value()[0])
         if input_count is None:
             parts.append(self.tr("Outputs/input: {outputs}.").format(outputs=outputs))
         else:
@@ -330,6 +397,17 @@ class InterfaceLayerMixCard(MakeDataCard):
             parts.append(translate_runtime_message(exc))
             return " ".join(parts)
         if summary is not None:
+            params = self.get_params()
+            if params.pair_selection == "selected":
+                parts.append(self.tr("Allowed exchanges: {pairs}.").format(
+                    pairs=", ".join(f"{left}↔{right}" for left, right in params.exchange_pairs)
+                ))
+            if params.pair_distribution == "equal":
+                parts.append(self.tr("Each allowed element pair receives exactly the same number of exchanges."))
+            if params.layer_pair_counts:
+                parts.append(self.tr("Layer quotas (nearest first): {counts}; concentration is derived from these counts.").format(
+                    counts=", ".join(map(str, params.layer_pair_counts))
+                ))
             parts.append(
                 self.tr(
                     "First input: L {left_layers} layer(s) {left_formula}, R {right_layers} layer(s) {right_formula}; at most {pairs} unlike pairs."
@@ -364,7 +442,9 @@ class InterfaceLayerMixCard(MakeDataCard):
         def pct(value):
             return f"{100.0 * float(value):.3g}%"
 
-        if len(requested) == 1:
+        if len(requested) == 1 or (
+            np.allclose(requested, requested[0]) and np.allclose(effective, effective[0])
+        ):
             if np.isclose(requested[0], effective[0]):
                 return self.tr("realized {value}").format(value=pct(effective[0]))
             return self.tr("target {target} → realized {actual}").format(
@@ -392,9 +472,37 @@ class InterfaceLayerMixCard(MakeDataCard):
             num_structures=int(self.num_structures_frame.get_input_value()[0]),
             use_seed=self.seed_checkbox.isChecked(),
             seed=int(self.seed_frame.get_input_value()[0]),
+            pair_selection=combo_value(self.pair_selection_combo, "all"),
+            exchange_pairs=tuple(
+                tuple(part.strip() for part in token.split("-"))
+                for token in self._tokens(self.exchange_pairs_edit.text())
+            ),
+            pair_distribution=combo_value(self.pair_distribution_combo, "random"),
+            layer_pair_counts=self._layer_counts(),
         )
 
+    @staticmethod
+    def _tokens(text: str) -> list[str]:
+        return [token.strip() for token in text.replace("，", ",").replace(";", ",").split(",") if token.strip()]
+
+    def _layer_counts(self) -> tuple[int, ...]:
+        try:
+            return tuple(int(token) for token in self._tokens(self.layer_pair_counts_edit.text()))
+        except ValueError:
+            raise CardOperationError(
+                "interface.layer_counts_input",
+                "Layer pair counts must be comma-separated non-negative integers.",
+            ) from None
+
     def set_params(self, params: InterfaceLayerMixParams) -> None:
+        if params.layer_pair_counts and params.mode != "fixed":
+            raise CardOperationError(
+                "interface.layer_counts_gradient",
+                "Explicit layer pair counts require the fixed mixing schedule.",
+            )
+        # Restore the quota editor last: its signal selects the fixed schedule.
+        self.layer_pair_counts_edit.clear()
+        self.layer_counts_checkbox.setChecked(bool(params.layer_pair_counts))
         set_combo_value(self.axis_combo, params.axis)
         set_combo_value(self.position_mode_combo, "auto" if params.auto_position else "manual")
         self.interface_position_frame.set_input_value([float(params.interface_position)])
@@ -408,13 +516,20 @@ class InterfaceLayerMixCard(MakeDataCard):
         self.num_structures_frame.set_input_value([int(params.num_structures)])
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
+        set_combo_value(self.pair_selection_combo, params.pair_selection)
+        self.exchange_pairs_edit.setText(",".join("-".join(pair) for pair in params.exchange_pairs))
+        set_combo_value(self.pair_distribution_combo, params.pair_distribution)
+        self.layer_pair_counts_edit.setText(",".join(map(str, params.layer_pair_counts)))
         self._update_position_visibility()
         self._update_mode_visibility()
         self._update_seed_visibility(bool(params.use_seed))
+        self._update_exchange_visibility()
 
     def to_dict(self):
         data = super().to_dict()
         data["params"] = params_to_dict(self.get_params())
+        data["params"]["exchange_pairs"] = [list(pair) for pair in data["params"]["exchange_pairs"]]
+        data["params"]["layer_pair_counts"] = list(data["params"]["layer_pair_counts"])
         return data
 
     def from_dict(self, data_dict):
@@ -423,6 +538,8 @@ class InterfaceLayerMixCard(MakeDataCard):
         if raw_params:
             normalized = dict(raw_params)
             normalized.setdefault("layer_tolerance", 0.25)
+            normalized["exchange_pairs"] = tuple(tuple(pair) for pair in normalized.get("exchange_pairs", ()))
+            normalized["layer_pair_counts"] = tuple(normalized.get("layer_pair_counts", ()))
             params = InterfaceLayerMixParams(**normalized)
         else:
             params = InterfaceLayerMixParams()

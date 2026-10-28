@@ -369,5 +369,116 @@ class TestSelectiveInterfaceMix(unittest.TestCase):
         np.testing.assert_array_equal(atoms.numbers, original)
 
 
+class TestCompoundInterfaceMix(unittest.TestCase):
+    @staticmethod
+    def _gap_bn(*, axis=2, alternating=False, sheared=False):
+        symbols, positions, layers = [], [], []
+        for layer in range(14):
+            elements = ("Ga", "P") if layer < 7 else ("B", "N")
+            for site in range(16):
+                positions.append([(site % 4) / 4, (site // 4) / 4, (layer + 0.5) / 14])
+                symbols.append(elements[(layer if layer < 7 else layer - 7) % 2] if alternating else elements[site % 2])
+                layers.append(layer)
+        scaled = np.asarray(positions)
+        if axis != 2:
+            scaled[:, [axis, 2]] = scaled[:, [2, axis]]
+        cell = np.array([[12, 1, 0], [2, 16, 2], [4, 3, 50]], float) if sheared else np.diag([40, 40, 50])
+        pbc = [True, True, True]
+        pbc[axis] = False
+        atoms = Atoms(symbols, scaled_positions=scaled, cell=cell, pbc=pbc)
+        atoms.new_array("group", np.asarray(layers, dtype=int))
+        return atoms
+
+    def test_gap_bn_channels_with_shared_pools_and_nonorthogonal_cells(self):
+        all_pairs = (("Ga", "B"), ("Ga", "N"), ("P", "B"), ("P", "N"))
+        cases = [("all", distribution, (), 0.2) for distribution in ("random", "equal")]
+        cases += [("selected", "random", (pair,), 0.2) for pair in all_pairs]
+        for pairs in (
+            (("Ga", "B"), ("P", "N")),
+            (("Ga", "N"), ("P", "B")),
+            (("Ga", "B"), ("Ga", "N")),
+            (("Ga", "B"), ("P", "B")),
+        ):
+            cases += [("selected", distribution, pairs, 0.2) for distribution in ("random", "equal")]
+        restricted = (("Ga", "B"), ("Ga", "N"), ("P", "B"))
+        cases += [("selected", "random", restricted, 0.2), ("selected", "equal", restricted, 0.3)]
+        operation = InterfaceLayerMixOperation()
+        for axis, sheared in ((2, False), (2, True), (0, True)):
+            atoms = self._gap_bn(axis=axis, sheared=sheared)
+            original = np.asarray(atoms.get_chemical_symbols())
+            for selection, allocation, pairs, concentration in cases:
+                with self.subTest(axis=axis, sheared=sheared, selection=selection, allocation=allocation, pairs=pairs):
+                    params = _params(
+                        axis=("a", "b", "c")[axis], pair_selection=selection,
+                        pair_distribution=allocation, exchange_pairs=pairs, concentration=concentration,
+                    )
+                    summary = operation.interface_summary(atoms, params)
+                    self.assertEqual((summary["n_left"], summary["n_right"]), (80, 80))
+                    expected_count = 16 if concentration == 0.2 else 24
+                    allowed = set(all_pairs if selection == "all" else pairs)
+                    for seed in range(20):
+                        output = operation.run_structure(atoms, replace(params, seed=seed))[0]
+                        left, right = _side_changes(atoms, output, axis)
+                        changed = np.concatenate([left, right])
+                        after = np.asarray(output.get_chemical_symbols())
+                        self.assertEqual((len(left), len(right)), (expected_count, expected_count))
+                        transitions = Counter(zip(original[left], after[left]))
+                        self.assertEqual(transitions, Counter(zip(after[right], original[right])))
+                        self.assertTrue(set(transitions).issubset(allowed))
+                        if allocation == "equal":
+                            self.assertEqual(transitions, Counter({pair: expected_count // len(allowed) for pair in allowed}))
+                        self.assertTrue(np.all((atoms.arrays["group"][changed] >= 2) & (atoms.arrays["group"][changed] <= 11)))
+                        self.assertEqual(Counter(after), Counter(original))
+                        np.testing.assert_array_equal(output.positions, atoms.positions)
+                        np.testing.assert_array_equal(output.cell.array, atoms.cell.array)
+                        np.testing.assert_array_equal(output.pbc, atoms.pbc)
+                        np.testing.assert_array_equal(output.arrays["group"], atoms.arrays["group"])
+                    repeated = operation.run_structure(atoms, replace(params, seed=19))[0]
+                    np.testing.assert_array_equal(repeated.numbers, output.numbers)
+                    self.assertEqual(repeated.info["Config_type"], output.info["Config_type"])
+
+    def test_alternating_compound_planes_use_actual_window_compositions(self):
+        atoms = self._gap_bn(alternating=True)
+        operation = InterfaceLayerMixOperation()
+        params = _params(pair_selection="all", exchange_pairs=(), pair_distribution="equal")
+        summary = operation.interface_summary(atoms, params)
+        # Five pure planes give a 3:2 population in each selected region.
+        self.assertEqual(summary["pair_capacity"], 64)
+        self.assertAlmostEqual(summary["c_max"], 0.8)
+        self.assertEqual(summary["pair_counts"], [16])
+        output = operation.run_structure(atoms, params)[0]
+        self.assertEqual(_left_transitions(atoms, output), Counter({
+            ("Ga", "B"): 4, ("Ga", "N"): 4, ("P", "B"): 4, ("P", "N"): 4,
+        }))
+        self.assertAlmostEqual(operation.interface_summary(atoms, replace(params, pair_distribution="random"))["c_max"], 1.0)
+        quotas = (4, 4, 4, 4, 0)
+        # Every individual pure-plane pair lacks three of the four channels.
+        with mock.patch("NepTrainKit.core.cards.alloy.np.random.default_rng", side_effect=AssertionError("RNG called")):
+            with self.assertRaises(CardOperationError):
+                operation.run_structure(atoms, replace(params, layer_pair_counts=quotas))
+        random_output = operation.run_structure(atoms, replace(params, pair_distribution="random", layer_pair_counts=quotas))[0]
+        left, right = _side_changes(atoms, random_output)
+        self.assertEqual(Counter(atoms.arrays["group"][left]), Counter({6: 4, 5: 4, 4: 4, 3: 4}))
+        self.assertEqual(Counter(atoms.arrays["group"][right]), Counter({7: 4, 8: 4, 9: 4, 10: 4}))
+
+    def test_four_channel_equal_rejects_indivisible_fixed_and_gradient_counts_before_rng(self):
+        atoms = self._gap_bn()
+        operation = InterfaceLayerMixOperation()
+        params = _params(pair_selection="all", exchange_pairs=(), pair_distribution="equal")
+        invalid = (
+            replace(params, concentration=0.225),  # 18 pairs cannot be shared by four channels.
+            replace(params, mode="gradient", gradient_start=0.2, gradient_end=0.225, num_structures=2),
+        )
+        for values in invalid:
+            with self.subTest(mode=values.mode):
+                with mock.patch("NepTrainKit.core.cards.alloy.np.random.default_rng", side_effect=AssertionError("RNG called")):
+                    with self.assertRaisesRegex(CardOperationError, "divisible"):
+                        operation.run_structure(atoms, values)
+        valid = replace(params, mode="gradient", gradient_start=0.2, gradient_end=0.3, num_structures=3)
+        self.assertEqual(operation.interface_summary(atoms, valid)["pair_counts"], [16, 20, 24])
+        for output, pairs in zip(operation.run_structure(atoms, valid), (16, 20, 24)):
+            self.assertEqual(set(_left_transitions(atoms, output).values()), {pairs // 4})
+
+
 if __name__ == "__main__":
     unittest.main()

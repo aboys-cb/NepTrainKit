@@ -110,11 +110,11 @@ class ElementLineEdit(LineEdit):
         self.elementPicked.emit(symbol)
 
 
-def _pair_key(pair: str) -> tuple[str, str] | None:
+def _pair_key(pair: str, *, ordered: bool = False) -> tuple[str, str] | None:
     parts = [part.strip() for part in str(pair).split("-", 1)]
     if len(parts) != 2 or not all(parts):
         return None
-    return tuple(sorted(parts, key=str.casefold))
+    return tuple(parts) if ordered else tuple(sorted(parts, key=str.casefold))
 
 
 def _choose_element(parent: QWidget, *, heading: str, initial: str = "") -> str | None:
@@ -161,10 +161,11 @@ class ElementPairLineEdit(LineEdit):
 
     pairPicked = Signal(str)
 
-    def __init__(self, parent=None, *, multiple: bool = True):
-        """Create a manually editable single- or multi-pair input."""
+    def __init__(self, parent=None, *, multiple: bool = True, ordered: bool = False):
+        """Create a pair input, optionally preserving the first/second roles."""
         super().__init__(parent)
         self.multiple = bool(multiple)
+        self.ordered = bool(ordered)
         self.picker_action = QAction(FluentIcon.TILES.icon(), "", self)
         self.addAction(self.picker_action, QLineEdit.ActionPosition.TrailingPosition)
         self.picker_action.setToolTip(self.tr("Choose an element pair"))
@@ -178,7 +179,7 @@ class ElementPairLineEdit(LineEdit):
 
     def _apply_pair(self, pair: str) -> None:
         pair = str(pair).strip()
-        key = _pair_key(pair)
+        key = _pair_key(pair, ordered=self.ordered)
         if key is None:
             return
         if not self.multiple:
@@ -186,10 +187,10 @@ class ElementPairLineEdit(LineEdit):
         else:
             tokens = [
                 token.strip()
-                for token in self.text().replace(";", ",").split(",")
+                for token in self.text().replace("，", ",").replace(";", ",").split(",")
                 if token.strip()
             ]
-            if key not in {_pair_key(token) for token in tokens}:
+            if key not in {_pair_key(token, ordered=self.ordered) for token in tokens}:
                 self.setText(",".join([*tokens, pair]))
         self.pairPicked.emit(pair)
 

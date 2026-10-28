@@ -56,6 +56,63 @@ def test_selected_pairs_from_controls_run_the_actual_branch(pair_text, expected)
     _dispose(card)
 
 
+def test_pair_picker_preserves_both_l_r_directions_through_json_and_operation():
+    atoms = _silicon_gap()
+    atoms.set_chemical_symbols(["Ga" if i % 2 else "P" for i in range(len(atoms))])
+    card = InterfaceLayerMixCard()
+    card.set_params(InterfaceLayerMixParams(
+        axis="c", auto_position=False, interface_position=0.5, concentration=0.2,
+        pair_selection="selected", pair_distribution="equal", use_seed=True, seed=11,
+    ))
+    card.exchange_pairs_edit._apply_pair("Ga-P")
+    card.exchange_pairs_edit._apply_pair("P-Ga")
+    card.exchange_pairs_edit._apply_pair("Ga-P")
+    assert card.exchange_pairs_edit.text() == "Ga-P,P-Ga"
+    assert card.get_params().exchange_pairs == (("Ga", "P"), ("P", "Ga"))
+
+    restored = InterfaceLayerMixCard()
+    restored.from_dict(json.loads(json.dumps(card.to_dict())))
+    assert restored.get_params() == card.get_params()
+    for candidate in (card, restored):
+        output = candidate.create_operation().run_structure(atoms, candidate.get_params())[0]
+        transitions = Counter(
+            (old, new) for old, new in zip(atoms.get_chemical_symbols()[:40], output.get_chemical_symbols()[:40])
+            if old != new
+        )
+        assert transitions == Counter({("Ga", "P"): 4, ("P", "Ga"): 4})
+        assert Counter(output.get_chemical_symbols()) == Counter(atoms.get_chemical_symbols())
+    _dispose(restored)
+    _dispose(card)
+
+
+def test_gap_bn_picker_handles_chinese_commas_and_all_four_exchange_channels():
+    atoms = _silicon_gap()
+    atoms.set_chemical_symbols([
+        ("Ga" if i % 2 else "P") if i < 40 else ("B" if i % 2 else "N")
+        for i in range(len(atoms))
+    ])
+    card = InterfaceLayerMixCard()
+    card.set_params(InterfaceLayerMixParams(
+        axis="c", auto_position=False, interface_position=0.5, concentration=0.2,
+        pair_selection="selected", pair_distribution="equal", use_seed=True, seed=11,
+    ))
+    card.exchange_pairs_edit.setText("Ga-B，P-N")
+    card.exchange_pairs_edit._apply_pair("Ga-B")
+    assert card.get_params().exchange_pairs == (("Ga", "B"), ("P", "N"))
+    card.exchange_pairs_edit._apply_pair("Ga-N")
+    card.exchange_pairs_edit._apply_pair("P-B")
+    assert card.get_params().exchange_pairs == (("Ga", "B"), ("P", "N"), ("Ga", "N"), ("P", "B"))
+    output = card.create_operation().run_structure(atoms, card.get_params())[0]
+    transitions = Counter(
+        (old, new) for old, new in zip(atoms.get_chemical_symbols()[:40], output.get_chemical_symbols()[:40])
+        if old != new
+    )
+    assert transitions == Counter({("Ga", "B"): 2, ("Ga", "N"): 2, ("P", "B"): 2, ("P", "N"): 2})
+    assert Counter(output.get_chemical_symbols()) == Counter(atoms.get_chemical_symbols())
+    np.testing.assert_array_equal(output.positions, atoms.positions)
+    _dispose(card)
+
+
 @pytest.mark.parametrize("selection", ["all", "selected"])
 @pytest.mark.parametrize("allocation", ["random", "equal"])
 def test_new_json_preserves_tuple_contract_and_every_enum(selection, allocation):

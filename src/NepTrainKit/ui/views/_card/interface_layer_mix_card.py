@@ -132,7 +132,7 @@ class InterfaceLayerMixCard(MakeDataCard):
         self.pair_selection_field = CompactField(
             self.tr("Exchange elements"), self.pair_selection_combo, self.setting_widget
         )
-        self.exchange_pairs_edit = ElementPairLineEdit(self.setting_widget, multiple=True)
+        self.exchange_pairs_edit = ElementPairLineEdit(self.setting_widget, multiple=True, ordered=True)
         self.exchange_pairs_edit.setPlaceholderText(self.tr("For example: Si-P,Si-Ga"))
         self.exchange_pairs_field = CompactField(
             self.tr("Allowed L-R pairs"), self.exchange_pairs_edit, self.setting_widget,

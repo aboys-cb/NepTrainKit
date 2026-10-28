@@ -3260,6 +3260,10 @@ class InterfaceLayerMixParams:
     num_structures: int = 1
     use_seed: bool = False
     seed: int = 0
+    pair_selection: str = "all"
+    exchange_pairs: tuple[tuple[str, str], ...] = ()
+    pair_distribution: str = "random"
+    layer_pair_counts: tuple[int, ...] = ()
 
 
 class InterfaceLayerMixOperation(StructureOperation):
@@ -3267,7 +3271,7 @@ class InterfaceLayerMixOperation(StructureOperation):
 
     def run_structure(self, structure, params: InterfaceLayerMixParams) -> list:
         resolved = self._resolve(structure, params)
-        c_schedule = self._concentration_schedule(params, resolved["c_max"])
+        c_schedule, pair_counts = self._validated_schedule(params, resolved)
         outputs = []
         base_seed = (
             self._validated_integer(params.seed, "Random seed")
@@ -3284,9 +3288,10 @@ class InterfaceLayerMixOperation(StructureOperation):
                 rng = np.random.default_rng(derived_seed)
                 seed_tag = f",s={derived_seed}"
             atoms = structure.copy()
-            pair_count = self._pair_count(
-                c, resolved["n_total"], resolved["pair_capacity"]
-            )
+            # Legacy files may contain a large per-pair audit in the XYZ header.
+            # New outputs keep only the compact Config_type provenance tag.
+            atoms.info.pop("interface_mix_audit", None)
+            pair_count = pair_counts[sample_idx]
             c_effective = 2.0 * pair_count / resolved["n_total"]
             changed = self._swap_atoms(atoms, resolved, pair_count, rng)
             if changed:
@@ -3299,7 +3304,7 @@ class InterfaceLayerMixOperation(StructureOperation):
             append_config_tag(
                 atoms,
                 f"IfaceMix(L={int(params.left_layers)},R={int(params.right_layers)},"
-                f"c={c_effective:.3g}{target_tag}{seed_tag})",
+                f"c={c_effective:.3g}{target_tag}{seed_tag}{resolved['selection_tag']})",
             )
             outputs.append(atoms)
         return outputs
@@ -3307,12 +3312,9 @@ class InterfaceLayerMixOperation(StructureOperation):
     def interface_summary(self, structure, params: InterfaceLayerMixParams) -> dict:
         """Deterministic geometry summary for the preview panel (no RNG)."""
         resolved = self._resolve(structure, params)
-        requested = self._concentration_schedule(params, resolved["c_max"])
+        requested, pair_counts = self._validated_schedule(params, resolved)
         effective = [
-            2.0
-            * self._pair_count(c, resolved["n_total"], resolved["pair_capacity"])
-            / resolved["n_total"]
-            for c in requested
+            2.0 * count / resolved["n_total"] for count in pair_counts
         ]
         return {
             "axis": resolved["axis"],
@@ -3332,6 +3334,11 @@ class InterfaceLayerMixOperation(StructureOperation):
             "effective_concentrations": effective,
             "num_structures": int(params.num_structures),
             "mode": str(params.mode).strip(),
+            "pair_selection": resolved["pair_selection"],
+            "exchange_pairs": resolved["exchange_pairs"],
+            "pair_distribution": resolved["pair_distribution"],
+            "layer_pair_counts": resolved["layer_pair_counts"],
+            "pair_counts": pair_counts,
         }
 
     # ------------------------------------------------------------------
@@ -3510,8 +3517,83 @@ class InterfaceLayerMixOperation(StructureOperation):
                 element=next(iter(l_elements & r_elements), "the same element"),
             )
 
+        pair_selection = str(params.pair_selection).strip()
+        if pair_selection not in {"all", "selected"}:
+            raise CardOperationError(
+                "interface.invalid_pair_selection",
+                "Pair selection must be all or selected (got {value}).",
+                value=params.pair_selection,
+            )
+        pair_distribution = str(params.pair_distribution).strip()
+        if pair_distribution not in {"random", "equal"}:
+            raise CardOperationError(
+                "interface.invalid_pair_distribution",
+                "Pair distribution must be random or equal (got {value}).",
+                value=params.pair_distribution,
+            )
+        if pair_selection == "selected":
+            pairs = self._validated_exchange_pairs(params.exchange_pairs)
+            if not pairs:
+                raise CardOperationError(
+                    "interface.empty_exchange_pairs",
+                    "Select at least one L-R element pair, for example Si-P or Si-Ga.",
+                )
+            for left, right in pairs:
+                if left not in l_elements or right not in r_elements:
+                    raise CardOperationError(
+                        "interface.missing_pair_element",
+                        "Selected pair {left}-{right} is unavailable: its first element must occur in the L region and its second in the R region.",
+                        left=left, right=right,
+                    )
+        else:
+            pairs = tuple((left, right) for left in sorted(l_elements) for right in sorted(r_elements) if left != right)
+        try:
+            layer_pair_counts = tuple(
+                self._validated_integer(value, "Layer pair count")
+                for value in params.layer_pair_counts
+            )
+        except TypeError:
+            raise CardOperationError(
+                "interface.invalid_layer_counts",
+                "Layer pair counts must be a sequence of non-negative integers.",
+            ) from None
+        if any(value < 0 for value in layer_pair_counts):
+            raise CardOperationError(
+                "interface.invalid_layer_counts",
+                "Layer pair counts must be a sequence of non-negative integers.",
+            )
+        if layer_pair_counts:
+            if str(params.mode).strip() != "fixed":
+                raise CardOperationError(
+                    "interface.layer_counts_gradient",
+                    "Explicit layer pair counts require the fixed mixing schedule.",
+                )
+            if len(layer_pair_counts) != left_layers or left_layers != right_layers:
+                raise CardOperationError(
+                    "interface.layer_counts_length",
+                    "Explicit layer pair counts require equal L/R layer counts and one count per paired layer (nearest interface first).",
+                )
+        left_regions = [l_idx]
+        right_regions = [r_idx]
+        if layer_pair_counts:
+            left_regions = [idx[l_mask][l_layer_id == n_left_avail - 1 - i] for i in range(left_layers)]
+            right_regions = [idx[r_mask][r_layer_id == i] for i in range(right_layers)]
+        if pair_selection != "all" or pair_distribution != "random":
+            pair_capacity = self._restricted_capacity(symbols[l_idx], symbols[r_idx], pairs, pair_distribution)
+        if layer_pair_counts:
+            pair_capacity = sum(
+                self._restricted_capacity(symbols[left], symbols[right], pairs, pair_distribution)
+                for left, right in zip(left_regions, right_regions)
+            )
         n_total = n_left + n_right
         c_max = 2.0 * pair_capacity / n_total
+        selection_tag = ""
+        if pair_selection == "selected":
+            selection_tag += ",pairs=" + "+".join(f"{left}-{right}" for left, right in pairs)
+        if pair_distribution != "random":
+            selection_tag += f",allocation={pair_distribution}"
+        if layer_pair_counts:
+            selection_tag += ",layers=" + "+".join(map(str, layer_pair_counts))
         return {
             "axis": axis_key,
             "position": pos,
@@ -3526,7 +3608,132 @@ class InterfaceLayerMixOperation(StructureOperation):
             "right_index": r_idx,
             "c_max": float(c_max),
             "pair_capacity": int(pair_capacity),
+            "pair_selection": pair_selection,
+            "exchange_pairs": pairs,
+            "pair_distribution": pair_distribution,
+            "layer_pair_counts": layer_pair_counts,
+            "left_regions": left_regions,
+            "right_regions": right_regions,
+            "symbols": symbols,
+            "selection_tag": selection_tag,
         }
+
+    @staticmethod
+    def _validated_exchange_pairs(raw_pairs) -> tuple[tuple[str, str], ...]:
+        if isinstance(raw_pairs, (str, bytes)):
+            raw_pairs = None
+        try:
+            pairs = tuple(tuple(pair) for pair in raw_pairs)
+        except TypeError:
+            pairs = ()
+        if not pairs and raw_pairs is not None:
+            return ()
+        if not pairs or any(
+            len(pair) != 2 or any(not isinstance(value, str) or value not in atomic_numbers for value in pair)
+            or pair[0] == pair[1] for pair in pairs
+        ) or len(set(pairs)) != len(pairs):
+            raise CardOperationError(
+                "interface.invalid_exchange_pairs",
+                "Exchange pairs must be unique unlike L-R element pairs, for example Si-P and Si-Ga.",
+            )
+        return pairs
+
+    def _validated_schedule(self, params, resolved) -> tuple[list[float], list[int]]:
+        quotas = resolved["layer_pair_counts"]
+        if quotas:
+            total = sum(quotas)
+            requested = [2.0 * total / resolved["n_total"]] * int(params.num_structures)
+            counts = [total] * int(params.num_structures)
+            region_counts = quotas
+        else:
+            requested = self._concentration_schedule(params, resolved["c_max"])
+            counts = [self._pair_count(c, resolved["n_total"], resolved["pair_capacity"]) for c in requested]
+            region_counts = sorted(set(counts))
+        symbols = resolved["symbols"]
+        if quotas:
+            regions = zip(resolved["left_regions"], resolved["right_regions"], region_counts)
+        else:
+            regions = ((resolved["left_index"], resolved["right_index"], count) for count in region_counts)
+        for left, right, count in regions:
+            if resolved["pair_distribution"] == "equal" and count % len(resolved["exchange_pairs"]):
+                raise CardOperationError(
+                    "interface.unequal_pair_quota",
+                    "Equal pair allocation requires each exchange count to be divisible by the number of element pairs ({pairs}); got {count}.",
+                    pairs=len(resolved["exchange_pairs"]), count=count,
+                )
+            capacity = self._restricted_capacity(
+                symbols[left], symbols[right], resolved["exchange_pairs"], resolved["pair_distribution"]
+            )
+            if count > capacity:
+                raise CardOperationError(
+                    "interface.pair_quota_exceeds_capacity",
+                    "Requested {count} exchanges exceed the available element-pair capacity {capacity} in a selected region. Reduce the quota or select other elements/layers.",
+                    count=count, capacity=capacity,
+                )
+        return requested, counts
+
+    @classmethod
+    def _restricted_capacity(cls, left_symbols, right_symbols, pairs, distribution) -> int:
+        left = Counter(left_symbols.tolist())
+        right = Counter(right_symbols.tolist())
+        if distribution == "equal":
+            left_demands = Counter(pair[0] for pair in pairs)
+            right_demands = Counter(pair[1] for pair in pairs)
+            per_pair = min(
+                [left[element] // degree for element, degree in left_demands.items()]
+                + [right[element] // degree for element, degree in right_demands.items()],
+                default=0,
+            )
+            return int(per_pair * len(pairs))
+        return cls._restricted_flow(left, right, pairs, min(len(left_symbols), len(right_symbols)))[0]
+
+    @staticmethod
+    def _restricted_flow(left, right, pairs, target):
+        """Small species-level max flow; never constructs an atom-by-atom graph."""
+        left_species = list(left)
+        right_species = list(right)
+        lo, ro = 1, 1 + len(left_species)
+        sink = ro + len(right_species)
+        capacity = np.zeros((sink + 1, sink + 1), dtype=int)
+        for i, element in enumerate(left_species):
+            capacity[0, lo + i] = left[element]
+        for j, element in enumerate(right_species):
+            capacity[ro + j, sink] = right[element]
+        allowed = set(pairs)
+        for i, le in enumerate(left_species):
+            for j, re in enumerate(right_species):
+                if (le, re) in allowed:
+                    capacity[lo + i, ro + j] = target
+        flow = np.zeros_like(capacity)
+        total = 0
+        while total < target:
+            parent = np.full(sink + 1, -1, dtype=int)
+            parent[0] = 0
+            queue = [0]
+            for node in queue:
+                for nxt in range(sink + 1):
+                    if parent[nxt] < 0 and capacity[node, nxt] - flow[node, nxt] > 0:
+                        parent[nxt] = node
+                        queue.append(nxt)
+                        if nxt == sink:
+                            break
+                if parent[sink] >= 0:
+                    break
+            if parent[sink] < 0:
+                break
+            amount, node = target - total, sink
+            while node:
+                prev = int(parent[node])
+                amount = min(amount, int(capacity[prev, node] - flow[prev, node]))
+                node = prev
+            node = sink
+            while node:
+                prev = int(parent[node])
+                flow[prev, node] += amount
+                flow[node, prev] -= amount
+                node = prev
+            total += amount
+        return total, {(le, re): int(flow[lo + i, ro + j]) for i, le in enumerate(left_species) for j, re in enumerate(right_species) if flow[lo + i, ro + j] > 0}
 
     def _concentration_schedule(self, params: InterfaceLayerMixParams, c_max: float) -> list[float]:
         num = int(params.num_structures)
@@ -3586,22 +3793,20 @@ class InterfaceLayerMixOperation(StructureOperation):
             uniq_hist[:, s] = np.bincount(inv[sym_idx == s], minlength=n_uniq)
         cum_hist = np.cumsum(uniq_hist, axis=0)
         cum_count = np.cumsum(uniq_hist.sum(axis=1))
-        total = int(cum_count[-1])
-        best_contrast = 0.0
-        best_pos = None
-        for i in range(n_uniq - 1):
-            n_left = int(cum_count[i])
-            n_right = total - n_left
-            if n_left == 0 or n_right == 0:
-                continue
-            hist_l = cum_hist[i] / n_left
-            hist_r = (cum_hist[-1] - cum_hist[i]) / n_right
-            contrast = 1.0 - self._cosine(hist_l, hist_r)
-            pos = 0.5 * (float(uniq_vals[i]) + float(uniq_vals[i + 1]))
-            if contrast > best_contrast:
-                best_contrast = contrast
-                best_pos = pos
-        return float(best_contrast), best_pos
+        # Evaluate all gaps together. Relaxed structures can have one distinct
+        # coordinate per atom, so a Python loop here blocks interactive previews.
+        hist_l = cum_hist[:-1] / cum_count[:-1, None]
+        hist_r = (cum_hist[-1] - cum_hist[:-1]) / (cum_count[-1] - cum_count[:-1, None])
+        dot = np.einsum("ij,ij->i", hist_l, hist_r)
+        norm_l = np.einsum("ij,ij->i", hist_l, hist_l)
+        norm_r = np.einsum("ij,ij->i", hist_r, hist_r)
+        contrast = 1.0 - dot / np.sqrt(norm_l * norm_r)
+        # argmax keeps the earliest gap on exact ties, as the scalar search did.
+        best = int(np.argmax(contrast))
+        best_contrast = float(contrast[best])
+        if best_contrast <= 0.0:
+            return 0.0, None
+        return best_contrast, 0.5 * (float(uniq_vals[best]) + float(uniq_vals[best + 1]))
 
     @staticmethod
     def _cosine(a: np.ndarray, b: np.ndarray) -> float:
@@ -3682,18 +3887,34 @@ class InterfaceLayerMixOperation(StructureOperation):
 
     @classmethod
     def _swap_atoms(
-        cls, atoms, resolved: dict, pair_count: int, rng: np.random.Generator
+        cls, atoms, resolved: dict, pair_count: int, rng: np.random.Generator,
     ) -> bool:
-        if pair_count <= 0:
-            return False
         symbols = np.asarray(atoms.get_chemical_symbols(), dtype=object)
         l_idx = resolved["left_index"]
         r_idx = resolved["right_index"]
-        lp, rp = cls._sample_unlike_pairs(symbols, l_idx, r_idx, pair_count, rng)
+        quotas = resolved["layer_pair_counts"]
+        legacy = resolved["pair_selection"] == "all" and resolved["pair_distribution"] == "random" and not quotas
+        if pair_count <= 0:
+            return False
+        elif legacy:
+            lp, rp = cls._sample_unlike_pairs(symbols, l_idx, r_idx, pair_count, rng)
+        else:
+            left_parts, right_parts = [], []
+            region_counts = quotas or (pair_count,)
+            # Separate layer streams keep a shared L-element subset paired across
+            # selective chemistries, irrespective of R-pool traversal length.
+            region_seeds = rng.integers(0, np.iinfo(np.int64).max, size=len(region_counts))
+            for left, right, count, region_seed in zip(resolved["left_regions"], resolved["right_regions"], region_counts, region_seeds):
+                left_part, right_part = cls._sample_selected_pairs(
+                    symbols, left, right, count, resolved["exchange_pairs"], resolved["pair_distribution"], np.random.default_rng(int(region_seed))
+                )
+                left_parts.append(left_part)
+                right_parts.append(right_part)
+            lp, rp = np.concatenate(left_parts), np.concatenate(right_parts)
         old_l = symbols[lp].copy()
         symbols[lp] = symbols[rp]
         symbols[rp] = old_l
-        for name in ("spin", "initial_magmoms", "initial_charges"):
+        for name in ("spin", "initial_magmoms", "initial_charges", "masses"):
             values = atoms.arrays.get(name)
             if values is None:
                 continue
@@ -3703,9 +3924,11 @@ class InterfaceLayerMixOperation(StructureOperation):
         atoms.set_chemical_symbols(symbols.tolist())
         return True
 
-    @staticmethod
-    def _sample_unlike_pairs(symbols, l_idx, r_idx, count, rng):
-        """Return exactly ``count`` cross-interface pairs with unlike species."""
+    @classmethod
+    def _sample_selected_pairs(cls, symbols, l_idx, r_idx, count, pairs, distribution, rng):
+        """Draw atom sites randomly, subject to species and capacity constraints."""
+        if count <= 0:
+            return np.empty(0, dtype=int), np.empty(0, dtype=int)
         left_groups = {
             element: list(rng.permutation(l_idx[symbols[l_idx] == element]))
             for element in sorted(set(symbols[l_idx].tolist()))
@@ -3714,64 +3937,76 @@ class InterfaceLayerMixOperation(StructureOperation):
             element: list(rng.permutation(r_idx[symbols[r_idx] == element]))
             for element in sorted(set(symbols[r_idx].tolist()))
         }
-        left_species = list(rng.permutation(list(left_groups)))
-        right_species = list(rng.permutation(list(right_groups)))
-
-        source = 0
-        left_offset = 1
-        right_offset = left_offset + len(left_species)
-        sink = right_offset + len(right_species)
-        capacity = np.zeros((sink + 1, sink + 1), dtype=int)
-        for i, element in enumerate(left_species):
-            capacity[source, left_offset + i] = len(left_groups[element])
-        for j, element in enumerate(right_species):
-            capacity[right_offset + j, sink] = len(right_groups[element])
-        for i, left_element in enumerate(left_species):
-            for j, right_element in enumerate(right_species):
-                if left_element != right_element:
-                    capacity[left_offset + i, right_offset + j] = count
-
-        flow = np.zeros_like(capacity)
-        total_flow = 0
-        while total_flow < count:
-            parent = np.full(sink + 1, -1, dtype=int)
-            parent[source] = source
-            queue = [source]
-            for node in queue:
-                for nxt in range(sink + 1):
-                    if parent[nxt] < 0 and capacity[node, nxt] - flow[node, nxt] > 0:
-                        parent[nxt] = node
-                        queue.append(nxt)
-                        if nxt == sink:
-                            break
-                if parent[sink] >= 0:
-                    break
-            if parent[sink] < 0:
-                raise RuntimeError("Internal unlike-species matching failed.")
-            amount = count - total_flow
-            node = sink
-            while node != source:
-                prev = int(parent[node])
-                amount = min(amount, int(capacity[prev, node] - flow[prev, node]))
-                node = prev
-            node = sink
-            while node != source:
-                prev = int(parent[node])
-                flow[prev, node] += amount
-                flow[node, prev] -= amount
-                node = prev
-            total_flow += amount
-
-        left_pairs: list[int] = []
-        right_pairs: list[int] = []
-        for i, left_element in enumerate(left_species):
-            for j, right_element in enumerate(right_species):
-                amount = int(flow[left_offset + i, right_offset + j])
+        if distribution == "equal":
+            allocations = {pair: count // len(pairs) for pair in pairs}
+            left_pairs, right_pairs = [], []
+            for (left_element, right_element), amount in allocations.items():
                 for _ in range(amount):
                     left_pairs.append(left_groups[left_element].pop())
                     right_pairs.append(right_groups[right_element].pop())
-        order = rng.permutation(len(left_pairs))
-        return (
-            np.asarray(left_pairs, dtype=int)[order],
-            np.asarray(right_pairs, dtype=int)[order],
+            order = rng.permutation(count)
+            return np.asarray(left_pairs, dtype=int)[order], np.asarray(right_pairs, dtype=int)[order]
+
+        allowed = set(pairs)
+        left_elements = [element for element in left_groups if any(pair[0] == element for pair in pairs)]
+        right_elements = [element for element in right_groups if any(pair[1] == element for pair in pairs)]
+        if all((left, right) in allowed for left in left_elements for right in right_elements):
+            # Complete cross-pools (including Si / GaP): sample atom sites, not
+            # species edges. This gives hypergeometric Ga/P counts rather than
+            # saturating whichever species edge a max-flow visits first.
+            def sample_pool(groups, elements):
+                pool = np.asarray([site for element in elements for site in groups[element]], dtype=int)
+                if len(elements) > 1:
+                    pool = rng.permutation(pool)
+                return pool[-count:]
+
+            return sample_pool(left_groups, left_elements), sample_pool(right_groups, right_elements)
+
+        # Constrained pair graphs need to retain enough capacity for later
+        # exchanges. Draw a feasible species edge with atom-pair weights, then
+        # consume random sites from its two pools. The sequential distribution
+        # is stochastic, but does not claim uniformity over all full matchings.
+        left_counts = Counter({element: len(sites) for element, sites in left_groups.items()})
+        right_counts = Counter({element: len(sites) for element, sites in right_groups.items()})
+        left_pairs, right_pairs = [], []
+        for step in range(count):
+            candidates, weights = [], []
+            remaining = count - step - 1
+            for left, right in pairs:
+                if left_counts[left] <= 0 or right_counts[right] <= 0:
+                    continue
+                left_counts[left] -= 1
+                right_counts[right] -= 1
+                feasible = not remaining or cls._restricted_flow(
+                    left_counts, right_counts, pairs, remaining
+                )[0] >= remaining
+                left_counts[left] += 1
+                right_counts[right] += 1
+                if feasible:
+                    candidates.append((left, right))
+                    weights.append(float(left_counts[left] * right_counts[right]))
+            if not candidates:
+                raise CardOperationError(
+                    "interface.selected_matching_failed",
+                    "Internal selected-species matching failed. Check the selected pairs and quotas.",
+                )
+            probabilities = np.asarray(weights, dtype=float)
+            probabilities /= probabilities.sum()
+            left, right = candidates[int(rng.choice(len(candidates), p=probabilities))]
+            left_pairs.append(left_groups[left].pop())
+            right_pairs.append(right_groups[right].pop())
+            left_counts[left] -= 1
+            right_counts[right] -= 1
+        order = rng.permutation(count)
+        return np.asarray(left_pairs, dtype=int)[order], np.asarray(right_pairs, dtype=int)[order]
+
+    @classmethod
+    def _sample_unlike_pairs(cls, symbols, l_idx, r_idx, count, rng):
+        """Return exactly ``count`` random cross-interface unlike atom pairs."""
+        pairs = tuple(
+            (left, right)
+            for left in sorted(set(symbols[l_idx].tolist()))
+            for right in sorted(set(symbols[r_idx].tolist()))
+            if left != right
         )
+        return cls._sample_selected_pairs(symbols, l_idx, r_idx, count, pairs, "random", rng)

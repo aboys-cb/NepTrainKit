@@ -12,6 +12,7 @@ prune tools
 prune .idea
 prune .github
 global-exclude *.log
+global-exclude *.qm
 global-exclude *upx.exe
 global-exclude *update.exe
 global-exclude *.so

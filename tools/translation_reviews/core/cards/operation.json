@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/cards/operation.py",
+      "source": "Unsupported params type: ⟦value⟧",
+      "id": 205,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ]
+}

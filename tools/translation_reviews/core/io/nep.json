@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/io/nep.py",
+      "source": "Unsupported ⟦value⟧ schema. Move the manifest aside to treat the .out files as external results.",
+      "id": 306,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported {value0} schema. Move the manifest aside to treat the .out files as external results.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/nep.py",
+      "source": "Cannot validate ⟦value⟧: ⟦value⟧. Move the manifest aside to treat the .out files as external results.",
+      "id": 307,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Cannot validate {value0}: {reason}. Move the manifest aside to treat the .out files as external results.",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/io/nep.py",
+      "source": "Unsupported ⟦value⟧ schema. Move the manifest aside to treat the .out files as external results.",
+      "context": null,
+      "rendered": "不支持的 ⟦value⟧ 数据模式。请移开清单文件，以将 .out 文件视为外部结果。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/nep.py",
+      "source": "Cannot validate ⟦value⟧: ⟦value⟧. Move the manifest aside to treat the .out files as external results.",
+      "context": null,
+      "rendered": "无法验证 ⟦value⟧：操作失败，详细信息已写入日志。请移开清单文件，以将 .out 文件视为外部结果。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

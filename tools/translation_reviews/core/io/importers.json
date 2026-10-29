@@ -1,0 +1,577 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "Failed to import structures from ⟦value⟧: ⟦value⟧",
+      "id": 269,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Failed to import structures from {candidate}: {value1}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "CP2K output is missing complete CELL vectors; NepTrainKit will not invent a unit cell.",
+      "id": 270,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "CP2K output is missing complete CELL vectors; NepTrainKit will not invent a unit cell.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "CP2K output contains an invalid or singular cell.",
+      "id": 271,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "CP2K output contains an invalid or singular cell.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "CP2K force count does not match the imported coordinate count.",
+      "id": 272,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "CP2K force count does not match the imported coordinate count.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "n2p2 block ⟦value⟧ is missing its closing 'end'.",
+      "id": 273,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "n2p2 block {block_idx} is missing its closing 'end'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory cell must be a finite 3 x 3 matrix.",
+      "id": 274,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory cell must be a finite 3 x 3 matrix.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory positions must be finite N x 3 values.",
+      "id": 275,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory positions must be finite N x 3 values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory PBC must contain exactly three logical values.",
+      "id": 276,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory PBC must contain exactly three logical values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "n2p2 block ⟦value⟧ must contain zero or three lattice rows.",
+      "id": 277,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "n2p2 block {block_idx} must contain zero or three lattice rows.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory per-atom array ⟦value⟧ must have shape N or N x M.",
+      "id": 278,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory per-atom array {name} must have shape N or N x M.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory per-atom array ⟦value⟧ is empty.",
+      "id": 279,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory per-atom array {name} is empty.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory ⟦value⟧ must contain nine finite tensor values.",
+      "id": 280,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory {tensor_name} must contain nine finite tensor values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory ⟦value⟧ must contain nine finite tensor values.",
+      "id": 281,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory {tensor_name} must contain nine finite tensor values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "Failed to read ASE trajectory ⟦value⟧: ⟦value⟧",
+      "id": 282,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Failed to read ASE trajectory {candidate}: {reason}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "Provided species length does not match counts in XDATCAR",
+      "id": 283,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Provided species length does not match counts in XDATCAR",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "Truncated LAMMPS dump: missing timestep value",
+      "id": 284,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Truncated LAMMPS dump: missing timestep value",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ is missing 'ITEM: NUMBER OF ATOMS'",
+      "id": 285,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} is missing 'ITEM: NUMBER OF ATOMS'",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ is missing the atom count",
+      "id": 286,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} is missing the atom count",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ has invalid atom count ⟦value⟧",
+      "id": 287,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} has invalid atom count {n_atoms}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ is missing 'ITEM: BOX BOUNDS'",
+      "id": 288,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} is missing 'ITEM: BOX BOUNDS'",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ does not declare three BOX BOUNDS boundary flags",
+      "id": 289,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} does not declare three BOX BOUNDS boundary flags",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ has invalid BOX BOUNDS",
+      "id": 290,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} has invalid BOX BOUNDS",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ is missing 'ITEM: ATOMS'",
+      "id": 291,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} is missing 'ITEM: ATOMS'",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ must contain one complete coordinate triplet: xs/ys/zs, x/y/z, or xu/yu/zu",
+      "id": 292,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} must contain one complete coordinate triplet: xs/ys/zs, x/y/z, or xu/yu/zu",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ must contain an element or type column",
+      "id": 293,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} must contain an element or type column",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ contains invalid element symbols: ⟦value⟧",
+      "id": 294,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} contains invalid element symbols: {invalid_species}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "Invalid LAMMPS timestep value: ⟦value⟧",
+      "id": 295,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid LAMMPS timestep value: {value0}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "Invalid LAMMPS atom count in frame ⟦value⟧: ⟦value⟧",
+      "id": 296,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid LAMMPS atom count in frame {timestep}: {value1}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ is truncated: expected ⟦value⟧ atom rows, found ⟦value⟧",
+      "id": 297,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep} is truncated: expected {n_atoms} atom rows, found {i}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧, atom row ⟦value⟧ has ⟦value⟧ columns; expected ⟦value⟧",
+      "id": 298,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep}, atom row {value1} has {value2} columns; expected {value3}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS numeric atom types require an explicit element mapping; unresolved types: ⟦value⟧",
+      "id": 299,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS numeric atom types require an explicit element mapping; unresolved types: {unresolved}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "n2p2 line ⟦value⟧ has ⟦value⟧ atom columns; expected 10.",
+      "id": 300,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "n2p2 line {line_number} has {value1} atom columns; expected 10.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "n2p2 line ⟦value⟧ has unsupported element ⟦value⟧.",
+      "id": 301,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "n2p2 line {line_number} has unsupported element {elem}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧, atom row ⟦value⟧ has invalid atom type ⟦value⟧",
+      "id": 302,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep}, atom row {value1} has invalid atom type {tnum}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "ASE trajectory per-atom array ⟦value⟧ has unsupported dtype ⟦value⟧.",
+      "id": 303,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "ASE trajectory per-atom array {name} has unsupported dtype {value1}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧, atom row ⟦value⟧ has invalid integer type ⟦value⟧",
+      "id": 304,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "LAMMPS frame {timestep}, atom row {value1} has invalid integer type {val}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "Failed to resolve LAMMPS atom types ⟦value⟧: ⟦value⟧",
+      "id": 305,
+      "review": "fix",
+      "review_note": "用户数据文件/预测缓存的解析校验错误；模型数据加载或导入失败会保留原异常文本，外层中文不足以翻译内部原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/importers.py:78",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414"
+      ],
+      "resolution": "whole_message",
+      "template": "Failed to resolve LAMMPS atom types {missing}: {reason}",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "n2p2 block ⟦value⟧ is missing its closing 'end'.",
+      "context": null,
+      "rendered": "n2p2 数据块 ⟦value⟧ 缺少结束标记 end。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/importers.py",
+      "source": "LAMMPS frame ⟦value⟧ must contain one complete coordinate triplet: xs/ys/zs, x/y/z, or xu/yu/zu",
+      "context": null,
+      "rendered": "LAMMPS 第 ⟦value⟧ 帧必须包含一组完整的坐标列：xs/ys/zs、x/y/z 或 xu/yu/zu。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/alloy_site_rules.py",
+      "source": "site_rules must be a non-empty JSON object.",
+      "id": 443,
+      "review": "fix",
+      "review_note": "旧卡片 JSON 或位点规则配置载入失败经过卡片配置错误显示路径；原文存在英文残句。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:1236",
+        "src/NepTrainKit/ui/widgets/alloy_site_rules.py:780"
+      ],
+      "resolution": "whole_message",
+      "template": "site_rules must be a non-empty JSON object.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/alloy_site_rules.py",
+      "source": "'all' cannot be combined with explicit sublattice labels.",
+      "id": 444,
+      "review": "fix",
+      "review_note": "旧卡片 JSON 或位点规则配置载入失败经过卡片配置错误显示路径；原文存在英文残句。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:1236",
+        "src/NepTrainKit/ui/widgets/alloy_site_rules.py:780"
+      ],
+      "resolution": "whole_message",
+      "template": "'all' cannot be combined with explicit sublattice labels.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/alloy_site_rules.py",
+      "source": "Site-set labels must be non-empty.",
+      "id": 445,
+      "review": "fix",
+      "review_note": "旧卡片 JSON 或位点规则配置载入失败经过卡片配置错误显示路径；原文存在英文残句。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:1236",
+        "src/NepTrainKit/ui/widgets/alloy_site_rules.py:780"
+      ],
+      "resolution": "whole_message",
+      "template": "Site-set labels must be non-empty.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/alloy_site_rules.py",
+      "source": "Rule for ⟦value⟧ must be an object.",
+      "id": 446,
+      "review": "fix",
+      "review_note": "旧卡片 JSON 或位点规则配置载入失败经过卡片配置错误显示路径；原文存在英文残句。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:1236",
+        "src/NepTrainKit/ui/widgets/alloy_site_rules.py:780"
+      ],
+      "resolution": "whole_message",
+      "template": "Rule for {label} must be an object.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/alloy_site_rules.py",
+      "source": "Rule for ⟦value⟧ contains unsupported fields: ⟦value⟧.",
+      "id": 447,
+      "review": "fix",
+      "review_note": "旧卡片 JSON 或位点规则配置载入失败经过卡片配置错误显示路径；原文存在英文残句。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:1236",
+        "src/NepTrainKit/ui/widgets/alloy_site_rules.py:780"
+      ],
+      "resolution": "whole_message",
+      "template": "Rule for {label} contains unsupported fields: {value1}.",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/alloy_site_rules.py",
+      "source": "'all' cannot be combined with explicit sublattice labels.",
+      "context": null,
+      "rendered": "all 不能与显式子晶格标签同时使用。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

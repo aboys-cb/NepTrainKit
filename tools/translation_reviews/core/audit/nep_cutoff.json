@@ -1,0 +1,121 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "NEP model header does not match the declared element count.",
+      "id": 59,
+      "review": "fix",
+      "review_note": "非法模型文件的 ValueError 被写入审计维度 reason，页面只翻译固定通用原因，其他原因原样返回。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4181",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "NEP model header does not match the declared element count.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "NEP cutoff line does not match the declared element count.",
+      "id": 60,
+      "review": "fix",
+      "review_note": "非法模型文件的 ValueError 被写入审计维度 reason，页面只翻译固定通用原因，其他原因原样返回。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4181",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "NEP cutoff line does not match the declared element count.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "NEP cutoffs must be finite and positive.",
+      "id": 61,
+      "review": "fix",
+      "review_note": "非法模型文件的 ValueError 被写入审计维度 reason，页面只翻译固定通用原因，其他原因原样返回。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4181",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "NEP cutoffs must be finite and positive.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "A NEP angular cutoff cannot exceed its radial cutoff.",
+      "id": 62,
+      "review": "fix",
+      "review_note": "非法模型文件的 ValueError 被写入审计维度 reason，页面只翻译固定通用原因，其他原因原样返回。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4181",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "A NEP angular cutoff cannot exceed its radial cutoff.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "NEP model does not contain a cutoff line.",
+      "id": 63,
+      "review": "fix",
+      "review_note": "非法模型文件的 ValueError 被写入审计维度 reason，页面只翻译固定通用原因，其他原因原样返回。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4181",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "NEP model does not contain a cutoff line.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "NEP model header has an invalid element count.",
+      "id": 64,
+      "review": "fix",
+      "review_note": "非法模型文件的 ValueError 被写入审计维度 reason，页面只翻译固定通用原因，其他原因原样返回。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4181",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "NEP model header has an invalid element count.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "NEP model file is empty.",
+      "id": 65,
+      "review": "fix",
+      "review_note": "非法模型文件的 ValueError 被写入审计维度 reason，页面只翻译固定通用原因，其他原因原样返回。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4181",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "NEP model file is empty.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/nep_cutoff.py",
+      "source": "NEP cutoff scope must be 'radial' or 'angular'.",
+      "id": 66,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ]
+}

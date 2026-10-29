@@ -1,0 +1,146 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Preset name cannot be empty.",
+      "id": 238,
+      "review": "hidden",
+      "review_note": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。",
+      "evidence": [
+        "src/NepTrainKit/core/filter_presets.py:132",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:898",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:927"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Preset name cannot exceed ⟦value⟧ characters.",
+      "id": 239,
+      "review": "hidden",
+      "review_note": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。",
+      "evidence": [
+        "src/NepTrainKit/core/filter_presets.py:132",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:898",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:927"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Unsupported structure-filter preset version.",
+      "id": 240,
+      "review": "hidden",
+      "review_note": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。",
+      "evidence": [
+        "src/NepTrainKit/core/filter_presets.py:132",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:898",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:927"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid structure-filter preset condition.",
+      "id": 241,
+      "review": "hidden",
+      "review_note": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。",
+      "evidence": [
+        "src/NepTrainKit/core/filter_presets.py:132",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:898",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:927"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid structure-filter preset flags.",
+      "id": 242,
+      "review": "hidden",
+      "review_note": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。",
+      "evidence": [
+        "src/NepTrainKit/core/filter_presets.py:132",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:898",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:927"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid structure-filter preset values.",
+      "id": 243,
+      "review": "hidden",
+      "review_note": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。",
+      "evidence": [
+        "src/NepTrainKit/core/filter_presets.py:132",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:898",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:927"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid match mode for structure-filter field.",
+      "id": 244,
+      "review": "hidden",
+      "review_note": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。",
+      "evidence": [
+        "src/NepTrainKit/core/filter_presets.py:132",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:898",
+        "src/NepTrainKit/ui/widgets/structure_filter_bar.py:927"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Preset name cannot be empty.",
+      "context": null,
+      "rendered": "Preset name cannot be empty.",
+      "review": "hidden",
+      "reason": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。"
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Preset name cannot exceed ⟦value⟧ characters.",
+      "context": null,
+      "rendered": "Preset name cannot exceed ⟦value⟧ characters.",
+      "review": "hidden",
+      "reason": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。"
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Unsupported structure-filter preset version.",
+      "context": null,
+      "rendered": "Unsupported structure-filter preset version.",
+      "review": "hidden",
+      "reason": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。"
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid structure-filter preset condition.",
+      "context": null,
+      "rendered": "Invalid structure-filter preset condition.",
+      "review": "hidden",
+      "reason": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。"
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid structure-filter preset flags.",
+      "context": null,
+      "rendered": "Invalid structure-filter preset flags.",
+      "review": "hidden",
+      "reason": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。"
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid structure-filter preset values.",
+      "context": null,
+      "rendered": "Invalid structure-filter preset values.",
+      "review": "hidden",
+      "reason": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。"
+    },
+    {
+      "path": "src/NepTrainKit/core/filter_presets.py",
+      "source": "Invalid match mode for structure-filter field.",
+      "context": null,
+      "rendered": "Invalid match mode for structure-filter field.",
+      "review": "hidden",
+      "reason": "载入预设时吞掉非法记录并返回 None；保存/重命名的 ValueError 使用现成中文通用提示，不原样展示异常。"
+    }
+  ]
+}

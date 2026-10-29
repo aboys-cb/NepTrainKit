@@ -1,0 +1,831 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ pbc must contain exactly three logical values.",
+      "id": 370,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ pbc must contain exactly three logical values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "'species' not found in atomic_properties and no usable 'species_id'/'type_map'",
+      "id": 371,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "'species' not found in atomic_properties and no usable 'species_id'/'type_map'",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD dataset ⟦value⟧ is missing type_map.raw; chemical species cannot be reconstructed safely.",
+      "id": 372,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD dataset {folder_path} is missing type_map.raw; chemical species cannot be reconstructed safely.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD export requires explicit PBC metadata.",
+      "id": 373,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD export requires explicit PBC metadata.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD structure has an invalid cell.",
+      "id": 374,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD structure has an invalid cell.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD structure has invalid positions.",
+      "id": 375,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD structure has invalid positions.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD periodic structures require a nonsingular cell.",
+      "id": 376,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD periodic structures require a nonsingular cell.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD mixed atom_numb_pad must be positive or None.",
+      "id": 377,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD mixed atom_numb_pad must be positive or None.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Cannot export an empty DeepMD dataset.",
+      "id": 378,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Cannot export an empty DeepMD dataset.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD type_map must contain unique element symbols.",
+      "id": 379,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD type_map must contain unique element symbols.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Unsupported DeepMD NPY format: ⟦value⟧",
+      "id": 380,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported DeepMD NPY format: {format}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Invalid EXTXYZ logical value: ⟦value⟧",
+      "id": 381,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid EXTXYZ logical value: {value}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "scale_factor must be an array-like of length 3",
+      "id": 382,
+      "review": "diagnostic",
+      "review_note": "Structure.supercell 的三维数组入参由卡片/UI 构造，属于底层编程接口契约。",
+      "evidence": [
+        "src/NepTrainKit/core/structure.py:763"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Incomplete EXTXYZ frame: atom count and header are required.",
+      "id": 383,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Incomplete EXTXYZ frame: atom count and header are required.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ atom count must be non-negative.",
+      "id": 384,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ atom count must be non-negative.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ Lattice must contain exactly nine finite values.",
+      "id": 385,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ Lattice must contain exactly nine finite values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ Properties is required.",
+      "id": 386,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ Properties is required.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ Properties must include species and pos.",
+      "id": 387,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ Properties must include species and pos.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ species must use species:S:1.",
+      "id": 388,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ species must use species:S:1.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ pos must use pos:R:3.",
+      "id": 389,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ pos must use pos:R:3.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ Lattice must contain exactly nine finite values.",
+      "id": 390,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ Lattice must contain exactly nine finite values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ pos must be a finite N x 3 array.",
+      "id": 391,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ pos must be a finite N x 3 array.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD dataset ⟦value⟧, frame ⟦value⟧ has an invalid box.",
+      "id": 392,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD dataset {folder_path}, frame {index} has an invalid box.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD dataset ⟦value⟧, frame ⟦value⟧ has invalid coordinates.",
+      "id": 393,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD dataset {folder_path}, frame {index} has invalid coordinates.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD export cannot represent partial PBC.",
+      "id": 394,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD export cannot represent partial PBC.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD per-atom field ⟦value⟧ has shape ⟦value⟧, expected ⟦value⟧.",
+      "id": 395,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD per-atom field {source_name} has shape {value1}, expected {expected_shape}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD structure has an invalid virial.",
+      "id": 396,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD structure has an invalid virial.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD mixed export cannot contain empty structures.",
+      "id": 397,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD mixed export cannot contain empty structures.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD NPY (Mixed) structures in the same padded atom-count group must share PBC mode, per-atom fields, and label coverage.",
+      "id": 398,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD NPY (Mixed) structures in the same padded atom-count group must share PBC mode, per-atom fields, and label coverage.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD export requires explicit PBC metadata for Config_type ⟦value⟧.",
+      "id": 399,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD export requires explicit PBC metadata for Config_type {config_key}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD Config_type ⟦value⟧ has an invalid cell.",
+      "id": 400,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD Config_type {config_key} has an invalid cell.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD Config_type ⟦value⟧ has invalid positions.",
+      "id": 401,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD Config_type {config_key} has invalid positions.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD periodic Config_type ⟦value⟧ requires a nonsingular cell.",
+      "id": 402,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD periodic Config_type {config_key} requires a nonsingular cell.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Structures in DeepMD Config_type ⟦value⟧ must share atom types, PBC mode, per-atom fields, and label coverage.",
+      "id": 403,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Structures in DeepMD Config_type {config_key} must share atom types, PBC mode, per-atom fields, and label coverage.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Invalid EXTXYZ atom count.",
+      "id": 404,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid EXTXYZ atom count.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Malformed EXTXYZ atom row ⟦value⟧: expected ⟦value⟧ columns, found ⟦value⟧.",
+      "id": 405,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Malformed EXTXYZ atom row {row_index}: expected {expected_columns} columns, found {value2}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ property names must be non-empty and unique.",
+      "id": 406,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ property names must be non-empty and unique.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Unsupported EXTXYZ property type ⟦value⟧.",
+      "id": 407,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported EXTXYZ property type {dtype}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ property ⟦value⟧ must have a positive column count.",
+      "id": 408,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ property {name} must have a positive column count.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ property ⟦value⟧ is missing from atom rows.",
+      "id": 409,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ property {name} is missing from atom rows.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ property ⟦value⟧ has shape ⟦value⟧, expected ⟦value⟧.",
+      "id": 410,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ property {name} has shape {value1}, expected {expected_shape}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ species data is missing.",
+      "id": 411,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ species data is missing.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ ⟦value⟧ must be a finite scalar.",
+      "id": 412,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ {key} must be a finite scalar.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ ⟦value⟧ must be a finite scalar.",
+      "id": 413,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ {key} must be a finite scalar.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ ⟦value⟧ must contain six or nine finite values.",
+      "id": 414,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "EXTXYZ {key} must contain six or nine finite values.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD export cannot represent partial PBC for Config_type ⟦value⟧.",
+      "id": 415,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD export cannot represent partial PBC for Config_type {config_key}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD per-atom field ⟦value⟧ has shape ⟦value⟧, expected ⟦value⟧.",
+      "id": 416,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD per-atom field {name} has shape {value1}, expected {expected_shape}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD Config_type ⟦value⟧ has an invalid virial.",
+      "id": 417,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD Config_type {config_key} has an invalid virial.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "Invalid EXTXYZ column count for property ⟦value⟧.",
+      "id": 418,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid EXTXYZ column count for property {name}.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD export failed and the previous dataset could not be restored automatically. The previous dataset is retained at: ⟦value⟧",
+      "id": 419,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD export failed and the previous dataset could not be restored automatically. The previous dataset is retained at: {retained}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD per-atom field ⟦value⟧ has unsupported dtype ⟦value⟧.",
+      "id": 420,
+      "review": "fix",
+      "review_note": "EXTXYZ/DeepMD 的用户文件、结构标签或导出契约错误；读取、模型结果加载及导出失败会携带这些原因。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/core/io/base.py:2219",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "DeepMD per-atom field {key} has unsupported dtype {value1}.",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "'species' not found in atomic_properties and no usable 'species_id'/'type_map'",
+      "context": null,
+      "rendered": "原子属性中缺少 species，且没有可用的 species_id/type_map。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD dataset ⟦value⟧ is missing type_map.raw; chemical species cannot be reconstructed safely.",
+      "context": null,
+      "rendered": "DeepMD 数据集 ⟦value⟧ 缺少 type_map.raw，无法安全还原元素种类。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ Properties must include species and pos.",
+      "context": null,
+      "rendered": "EXTXYZ 的 Properties 必须包含 species 和 pos。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ species must use species:S:1.",
+      "context": null,
+      "rendered": "EXTXYZ 的 species 必须使用 species:S:1 格式。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ pos must use pos:R:3.",
+      "context": null,
+      "rendered": "EXTXYZ 的 pos 必须使用 pos:R:3 格式。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "EXTXYZ pos must be a finite N x 3 array.",
+      "context": null,
+      "rendered": "EXTXYZ 的 pos 必须是有限的 N×3 数组。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "DeepMD set_size must be positive.",
+      "id": 1064,
+      "template": "DeepMD set_size must be positive.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/structure.py",
+      "source": "scale_factor must be >= 1",
+      "id": 1065,
+      "template": "scale_factor must be >= 1",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

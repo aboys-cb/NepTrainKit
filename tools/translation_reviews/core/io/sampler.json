@@ -1,0 +1,88 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/io/sampler.py",
+      "source": "Raw structure descriptors are required for physics-aware recommendations.",
+      "id": 308,
+      "review": "fix",
+      "review_note": "FPS 的原始描述符、训练集或 spin 字段前提不满足会向采样任务/提示框报错。",
+      "evidence": [
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Raw structure descriptors are required for physics-aware recommendations.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampler.py",
+      "source": "the detected spin model requires canonical spin:R:3 in every candidate; first missing structure: ⟦value⟧",
+      "id": 309,
+      "review": "fix",
+      "review_note": "FPS 的原始描述符、训练集或 spin 字段前提不满足会向采样任务/提示框报错。",
+      "evidence": [
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "the detected spin model requires canonical spin:R:3 in every candidate; first missing structure: {first}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampler.py",
+      "source": "the detected spin model requires canonical spin:R:3 in the existing training set; first missing structure: ⟦value⟧",
+      "id": 310,
+      "review": "fix",
+      "review_note": "FPS 的原始描述符、训练集或 spin 字段前提不满足会向采样任务/提示框报错。",
+      "evidence": [
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "the detected spin model requires canonical spin:R:3 in the existing training set; first missing structure: {first}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampler.py",
+      "source": "Raw structure descriptors do not align with the active dataset.",
+      "id": 311,
+      "review": "fix",
+      "review_note": "FPS 的原始描述符、训练集或 spin 字段前提不满足会向采样任务/提示框报错。",
+      "evidence": [
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Raw structure descriptors do not align with the active dataset.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampler.py",
+      "source": "Structured balanced FPS requires a positive sample limit.",
+      "id": 312,
+      "review": "fix",
+      "review_note": "FPS 的原始描述符、训练集或 spin 字段前提不满足会向采样任务/提示框报错。",
+      "evidence": [
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Structured balanced FPS requires a positive sample limit.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampler.py",
+      "source": "the detected spin model requires canonical spin:R:3 in every candidate; first missing structure: ⟦value⟧",
+      "id": 313,
+      "review": "fix",
+      "review_note": "FPS 的原始描述符、训练集或 spin 字段前提不满足会向采样任务/提示框报错。",
+      "evidence": [
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "the detected spin model requires canonical spin:R:3 in every candidate; first missing structure: {first}",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

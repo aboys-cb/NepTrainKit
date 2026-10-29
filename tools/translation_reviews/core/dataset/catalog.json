@@ -1,0 +1,160 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "⟦value⟧.⟦value⟧ must be a non-empty string",
+      "id": 223,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "catalog root must be a JSON object",
+      "id": 224,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "unsupported catalog schema_version=⟦value⟧; expected ⟦value⟧",
+      "id": 225,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "project must be a JSON object",
+      "id": 226,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "source must be a JSON object",
+      "id": 227,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "models must be a JSON array",
+      "id": 228,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "Project already exists or could not be created: ⟦value⟧",
+      "id": 229,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "⟦value⟧ must be a JSON object",
+      "id": 230,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "⟦value⟧.id must be a unique non-negative integer",
+      "id": 231,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "⟦value⟧.tags must be a JSON array",
+      "id": 232,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "model ⟦value⟧ references missing parent ⟦value⟧",
+      "id": 233,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "model ⟦value⟧ cannot be its own parent",
+      "id": 234,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "invalid catalog JSON: ⟦value⟧",
+      "id": 235,
+      "review": "diagnostic",
+      "review_note": "数据目录解析目前用于内置种子目录及测试/API；启动页调用固定随包目录，没有用户导入目录 JSON 的界面入口。这是打包/数据契约诊断，不能直接计为操作弹窗缺陷。",
+      "evidence": [
+        "src/NepTrainKit/core/dataset/seed.py:16",
+        "src/NepTrainKit/ui/pages/data_manager.py:47"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ]
+}

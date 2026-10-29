@@ -1,0 +1,317 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Interface axis must be auto, a, b, or c (got {axis}).",
+      "id": 1,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Concentration mode must be fixed or gradient (got {mode}).",
+      "id": 2,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Stacking Fault hkl must contain exactly three integers.",
+      "id": 3,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "The third cell vector must be normal to the current ab fault plane.",
+      "id": 4,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "RandomOccupancy: group_filter must contain at least one non-empty group label.",
+      "id": 5,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.",
+      "id": 6,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Invalid param '{chunk}', expected name=value",
+      "id": 7,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Interface axis must be auto, a, b, or c (got {axis}).",
+      "context": "CardOperationError",
+      "rendered": [
+        "界面方向必须是 auto、a、b 或 c（当前为 {axis}）。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Concentration mode must be fixed or gradient (got {mode}).",
+      "context": "CardOperationError",
+      "rendered": [
+        "互混模式必须是 fixed 或 gradient（当前为 {mode}）。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Stacking Fault hkl must contain exactly three integers.",
+      "context": "CardOperationError",
+      "rendered": [
+        "堆垛层错的 hkl 必须包含三个整数。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "The third cell vector must be normal to the current ab fault plane.",
+      "context": "CardOperationError",
+      "rendered": [
+        "第三晶胞矢量必须垂直于当前 ab 层错面。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "RandomOccupancy: group_filter must contain at least one non-empty group label.",
+      "context": "CardOperationError",
+      "rendered": [
+        "随机占位：占位分组至少需要一个非空 group 标签。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "RandomOccupancy group_filter requires atoms.arrays['group'] on the input structure.",
+      "context": "CardOperationError",
+      "rendered": [
+        "随机占位的分组限制要求输入结构包含 atoms.arrays['group']。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Invalid param '{chunk}', expected name=value",
+      "context": "CardOperationError",
+      "rendered": [
+        "参数“{chunk}”无效，应采用 name=value 格式。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Dopant ratio_type must be 'atom' or 'mass'.",
+      "context": "CardOperationError",
+      "rendered": [
+        "掺杂比例类型必须是原子比例（atom）或质量比例（mass）。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Finite-Cell Alloy Occupancy: atoms.arrays['sublattice'] must be one label per atom.",
+      "context": "CardOperationError",
+      "rendered": [
+        "有限晶胞合金占位：sublattice 数组必须为每个原子提供一个标签。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Composition Gradient target mode must be all or listed.",
+      "context": "CardOperationError",
+      "rendered": [
+        "成分梯度的目标模式必须是全部元素（all）或指定元素（listed）。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "MagneticOrder: AFM group mode requires atoms.arrays['group']; add Layer Groups upstream or choose k-vector mode.",
+      "context": "CardOperationError",
+      "rendered": [
+        "磁序设置：反铁磁分组模式需要 group 原子数组；请在上游添加层分组卡片，或选择波矢模式。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "SmallAngleSpinTilt group-pair mode requires atoms.arrays['group'].",
+      "context": "CardOperationError",
+      "rendered": [
+        "小角度自旋倾斜的分组对模式需要 group 原子数组。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Solvent Box Fill: sampling_mode must be one of auto, general, water, loose, dense.",
+      "context": "CardOperationError",
+      "rendered": [
+        "周期溶剂盒：采样模式必须是 auto、general、water、loose 或 dense。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "dz expression is empty",
+      "context": "CardOperationError",
+      "rendered": [
+        "dz 表达式为空。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "dz expression returned shape {value0}, expected {value1}",
+      "context": "CardOperationError",
+      "rendered": [
+        "dz 表达式返回的形状为 {value0}，预期为 {value1}。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "LayerCopy: dz expression is empty.",
+      "context": "CardOperationError",
+      "rendered": [
+        "分层堆叠：dz 表达式为空。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "count_mode must be fixed or random.",
+      "context": "CardOperationError",
+      "rendered": [
+        "数量模式必须是固定数量（fixed）或随机数量（random）。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "FPS Filter: backend must be auto, cpu, or cuda.",
+      "context": "CardOperationError",
+      "rendered": [
+        "FPS 代表性采样：后端必须是 auto、cpu 或 cuda。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group'].",
+      "context": "CardOperationError",
+      "rendered": [
+        "小角度自旋倾斜的分组对筛选需要 group 原子数组。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Solvent Box Fill: count_mode must be 'fixed' or 'density'.",
+      "context": "CardOperationError",
+      "rendered": [
+        "周期溶剂盒：用量模式必须是固定数量（fixed）或密度（density）。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Pair selection must be all or selected (got {value}).",
+      "rendered": [
+        "元素对选择须为 all 或 selected（当前为 {value}）。"
+      ],
+      "review": "technical",
+      "reason": "中文句子已完整；all/selected 和 random/equal 为界面与参数校验使用的枚举值，{value} 占位符保持一致。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "CardOperationError",
+      "source": "Pair distribution must be random or equal (got {value}).",
+      "rendered": [
+        "交换分配须为 random 或 equal（当前为 {value}）。"
+      ],
+      "review": "technical",
+      "reason": "中文句子已完整；all/selected 和 random/equal 为界面与参数校验使用的枚举值，{value} 占位符保持一致。"
+    }
+  ]
+}

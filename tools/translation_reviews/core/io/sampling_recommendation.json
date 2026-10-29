@@ -1,0 +1,179 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "points must be two dimensional",
+      "id": 325,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "target_coverage must be in (0, 1]",
+      "id": 326,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "physics plan groups must cover each descriptor row exactly once",
+      "id": 327,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "candidate sampling feature blocks must not be empty",
+      "id": 328,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "existing feature blocks and existing plan must be supplied together",
+      "id": 329,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "unsupported sampling coverage policy: ⟦value⟧",
+      "id": 330,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "unsupported sampling recommendation policy: ⟦value⟧",
+      "id": 331,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "descriptors must be a finite two-dimensional array",
+      "id": 332,
+      "review": "fix",
+      "review_note": "采样使用的原始/已有训练集描述符存在不匹配或非有限值时，这些校验错误可向采样任务传播；应在用户可见失败说明中完整本地化。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_features.py:48",
+        "src/NepTrainKit/core/io/sampler.py",
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "descriptors must be a finite two-dimensional array",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "existing_descriptors and existing_plan must be supplied together",
+      "id": 333,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "points and selected_data must have the same feature dimension",
+      "id": 334,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "selected_data must contain at least one row",
+      "id": 335,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "existing descriptors must be finite and match the candidate feature dimension",
+      "id": 336,
+      "review": "fix",
+      "review_note": "采样使用的原始/已有训练集描述符存在不匹配或非有限值时，这些校验错误可向采样任务传播；应在用户可见失败说明中完整本地化。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_features.py:48",
+        "src/NepTrainKit/core/io/sampler.py",
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "existing descriptors must be finite and match the candidate feature dimension",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "n_samples must be positive",
+      "id": 1061,
+      "template": "n_samples must be positive",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "min_distance must be non-negative",
+      "id": 1062,
+      "template": "min_distance must be non-negative",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_recommendation.py",
+      "source": "sample_cap_per_stratum must be positive",
+      "id": 1063,
+      "template": "sample_cap_per_stratum must be positive",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

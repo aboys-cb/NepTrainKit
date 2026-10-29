@@ -141,6 +141,9 @@ jobs:
           python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
           python -m setuptools_scm  --force-write-version-files
 
+      - name: Compile Qt translations
+        run: python tools/update_translations.py --no-lupdate
+
       - name: Record build environment
         shell: pwsh
         run: |

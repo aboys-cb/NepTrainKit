@@ -51,6 +51,9 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -e ".[test]"
 
+    - name: Compile Qt translations
+      run: python tools/update_translations.py --no-lupdate
+
     - name: Verify packaged runtimes
       run: |
         python -c "from NepTrainKit._native import _io, _audit, _phase, _magnetism, _sampling"

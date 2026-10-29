@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import ast
 import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -279,7 +280,8 @@ def main(argv: list[str] | None = None) -> int:
         _normalize_helper_contexts(TS)
 
     if not args.no_lrelease:
-        subprocess.run([_tool("pyside6-lrelease"), str(TS)], check=True)
+        compile_catalog = runpy.run_path(str(SRC / "translation_catalog.py"))["compile_catalog"]
+        compile_catalog(TS, force=True)
 
     return 0
 

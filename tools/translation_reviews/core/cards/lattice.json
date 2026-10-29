@@ -1,0 +1,342 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "⟦value⟧ values must be finite.",
+      "id": 159,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} values must be finite.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "⟦value⟧ step must be positive.",
+      "id": 160,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} step must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "BainPath ca_range values must be positive.",
+      "id": 161,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "BainPath ca_range values must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "BainPath volume_scale_range values must be positive.",
+      "id": 162,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "BainPath volume_scale_range values must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "BainPath mode must be constant_volume, scale_volume, or free_c.",
+      "id": 163,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "CellScaling: max_scaling must be finite and non-negative.",
+      "id": 164,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "CellScaling: max_scaling must be finite and non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "ShearMatrix requires a finite, right-handed 3x3 cell.",
+      "id": 165,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "ShearMatrix requires a finite, right-handed 3x3 cell.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "ShearAngle requires a finite, right-handed 3x3 cell.",
+      "id": 166,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "ShearAngle requires a finite, right-handed 3x3 cell.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "Perturb: max_distance values must be finite and non-negative.",
+      "id": 167,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "Perturb: max_distance values must be finite and non-negative.",
+      "id": 168,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Perturb: max_distance values must be finite and non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "Perturb: max_distance values must be finite and non-negative.",
+      "id": 169,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Perturb: max_distance values must be finite and non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: mode must be scale, cell, or max_atoms.",
+      "id": 170,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: output_mode must be single or enumerate.",
+      "id": 171,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: super_scale values must be positive integers.",
+      "id": 172,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SuperCell: super_scale values must be positive integers.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: target_cell values must be positive.",
+      "id": 173,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SuperCell: target_cell values must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: fixed_axis_scale values must be positive integers.",
+      "id": 174,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SuperCell: fixed_axis_scale values must be positive integers.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: ⟦value⟧ must contain three finite values.",
+      "id": 175,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SuperCell: {name} must contain three finite values.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: mode must be scale, cell, or max_atoms.",
+      "id": 176,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "BainPath mode must be constant_volume, scale_volume, or free_c.",
+      "context": null,
+      "rendered": "BainPath：mode 必须是 constant_volume、scale_volume 或 free_c。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "⟦value⟧ must contain exactly three values: start, stop, step.",
+      "id": 1025,
+      "template": "{label} must contain exactly three values: start, stop, step.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "BainPath coordinate_mode must be relative_ca or axis_scale.",
+      "id": 1026,
+      "template": "BainPath coordinate_mode must be relative_ca or axis_scale.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "BainPath requires a nonsingular 3x3 cell.",
+      "id": 1027,
+      "template": "BainPath requires a nonsingular 3x3 cell.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "CellStrain requires a nonsingular 3x3 cell.",
+      "id": 1028,
+      "template": "CellStrain requires a nonsingular 3x3 cell.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "CellScaling: engine_type must be 0 (Sobol) or 1 (Uniform).",
+      "id": 1029,
+      "template": "CellScaling: engine_type must be 0 (Sobol) or 1 (Uniform).",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "Perturb: engine_type must be 0 (Sobol) or 1 (Uniform).",
+      "id": 1030,
+      "template": "Perturb: engine_type must be 0 (Sobol) or 1 (Uniform).",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: mode must be scale, cell, or max_atoms.",
+      "id": 1031,
+      "template": "SuperCell: mode must be scale, cell, or max_atoms.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: output_mode must be single or enumerate.",
+      "id": 1032,
+      "template": "SuperCell: output_mode must be single or enumerate.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: target_policy must be at_least or at_most.",
+      "id": 1033,
+      "template": "SuperCell: target_policy must be at_least or at_most.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "BainPath coordinate_mode must be relative_ca or axis_scale.",
+      "id": 1034,
+      "template": "BainPath coordinate_mode must be relative_ca or axis_scale.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/lattice.py",
+      "source": "SuperCell: mode must be scale, cell, or max_atoms.",
+      "id": 1035,
+      "template": "SuperCell: mode must be scale, cell, or max_atoms.",
+      "context": "CardOperationError"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Audit UI catalogs and late-bound messages without modifying repository files.
+"""Audit UI catalogs and late-bound messages, refreshing generated QM if needed.
 
 Run ``python tools/audit_translations.py --check --json /tmp/i18n.json``.
 Errors fail --check; candidates need human review and never fail it. See
@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path
 import re
+import runpy
 from string import Formatter
 import sys
 import tempfile
@@ -186,10 +187,9 @@ def audit_source(path: Path, catalog: dict, translate: Callable[[str], str]) -> 
 
 def annotate_review(root: Path, issues: list[dict]) -> None:
     """Recognize only the exact reviewed source AND rendered result."""
-    path = root / 'tools/translation_review.json'
-    if not path.exists():
-        return
-    approved = json.loads(path.read_text(encoding='utf-8')).get('retained_candidates', [])
+    approved = []
+    for path in sorted((root / 'tools/translation_reviews').rglob('*.json')):
+        approved.extend(json.loads(path.read_text(encoding='utf-8')).get('retained_candidates', []))
     for issue in issues:
         if issue['severity'] != 'candidate':
             continue
@@ -253,7 +253,10 @@ def main(argv: list[str] | None = None) -> int:
 
     app = QApplication.instance() or QApplication([])
     translator = QTranslator(app)
-    loaded = translator.load(str(ROOT / 'src/NepTrainKit/translations/neptrainkit_zh_CN.qm'))
+    ts = ROOT / 'src/NepTrainKit/translations/neptrainkit_zh_CN.ts'
+    compile_catalog = runpy.run_path(str(ROOT / 'src/NepTrainKit/translation_catalog.py'))['compile_catalog']
+    qm = compile_catalog(ts)
+    loaded = translator.load(str(qm))
     app.installTranslator(translator)
     try:
         report = audit(ROOT, translate_runtime_message)

@@ -1,0 +1,195 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "⟦value⟧ must not be empty.",
+      "id": 142,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} must not be empty.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "⟦value⟧ minimum must be <= maximum.",
+      "id": 143,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} minimum must be <= maximum.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "Range values must be finite.",
+      "id": 144,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Range values must be finite.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "Range step must be positive.",
+      "id": 145,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Range step must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "⟦value⟧ must contain one or two values.",
+      "id": 146,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} must contain one or two values.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "InsertDefect: weight for ⟦value⟧ must be finite and positive.",
+      "id": 147,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "InsertDefect: weight for {symbol} must be finite and positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "StackingFault step must contain exactly three values: start, stop, step.",
+      "id": 148,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "StackingFault layers must be >= 1.",
+      "id": 149,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "InsertDefect: invalid weight for element ⟦value⟧.",
+      "id": 150,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "InsertDefect: invalid weight for element {value0}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "InsertDefect: could not place atom ⟦value⟧ of ⟦value⟧ for output ⟦value⟧ after ⟦value⟧ attempts (⟦value⟧); reduce the minimum distance or insertion count.",
+      "id": 151,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "InsertDefect: could not place atom {value0} of {count} for output {value2} after {max_attempts} attempts ({mode_name}); reduce the minimum distance or insertion count.",
+      "context": "CardOperationError"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "Range must contain exactly three values: start, stop, step.",
+      "id": 1010,
+      "template": "Range must contain exactly three values: start, stop, step.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "StackingFault step must contain exactly three values: start, stop, step.",
+      "id": 1011,
+      "template": "StackingFault step must contain exactly three values: start, stop, step.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "StackingFault layers must be >= 1.",
+      "id": 1012,
+      "template": "StackingFault layers must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "StackingFault requires at least one atom.",
+      "id": 1013,
+      "template": "StackingFault requires at least one atom.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "InsertDefect: ⟦value⟧ must be an integer.",
+      "id": 1014,
+      "template": "InsertDefect: {label} must be an integer.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "InsertDefect: ⟦value⟧ must be >= 1.",
+      "id": 1015,
+      "template": "InsertDefect: {label} must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/defect.py",
+      "source": "InsertDefect: ⟦value⟧ must be an integer.",
+      "id": 1016,
+      "template": "InsertDefect: {label} must be an integer.",
+      "context": "CardOperationError"
+    }
+  ]
+}

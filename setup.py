@@ -8,10 +8,38 @@ dependency and are intentionally not built in this package.
 from __future__ import annotations
 
 import os
+from pathlib import Path
+import runpy
 import sys
 
 import pybind11
 from setuptools import Extension, setup
+from setuptools.command.build_py import build_py
+
+
+# Load the stdlib-only helper without importing NepTrainKit and its GUI runtime.
+_compile_catalog = runpy.run_path(
+    str(Path(__file__).parent / "src/NepTrainKit/translation_catalog.py")
+)["compile_catalog"]
+
+
+class BuildPyWithTranslations(build_py):
+    """Ship freshly compiled catalogs in wheels, including builds from sdists."""
+
+    def run(self):
+        super().run()
+        package = Path(self.get_package_dir("NepTrainKit")) if self.editable_mode else Path(self.build_lib) / "NepTrainKit"
+        for ts in (package / "translations").glob("*.ts"):
+            _compile_catalog(ts, force=not self.editable_mode)
+
+    def get_outputs(self, include_bytecode=1):
+        outputs = super().get_outputs(include_bytecode)
+        package = Path(self.build_lib) / "NepTrainKit"
+        for ts in (package / "translations").glob("*.ts"):
+            qm = str(ts.with_suffix(".qm"))
+            if qm not in outputs:
+                outputs.append(qm)
+        return outputs
 
 
 extra_compile_args: list[str] = []
@@ -66,6 +94,7 @@ neighbor_header = "src/native/include/neptrainkit/native/periodic_neighbors.hpp"
 fast_float_header = "src/native/io/fast_float.h"
 
 setup(
+    cmdclass={"build_py": BuildPyWithTranslations},
     ext_modules=[
         native_extension("_io", "src/native/io/module.cpp", depends=(fast_float_header,)),
         native_extension("_dump", "src/native/dump/module.cpp", depends=(fast_float_header,)),

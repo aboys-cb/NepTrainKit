@@ -1,0 +1,42 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/torsion_guard_pbc.py",
+      "source": "TorsionGuard: pbc_mode must be auto, yes, or no.",
+      "id": 421,
+      "review": "fix",
+      "review_note": "分子周期扭转操作输入前提错误可以经卡片失败路径显示。",
+      "evidence": [
+        "src/NepTrainKit/core/torsion_guard_pbc.py:440",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "TorsionGuard: pbc_mode must be auto, yes, or no.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/torsion_guard_pbc.py",
+      "source": "TorsionGuard: pbc=yes requires a finite, nonsingular 3x3 cell.",
+      "id": 422,
+      "review": "fix",
+      "review_note": "分子周期扭转操作输入前提错误可以经卡片失败路径显示。",
+      "evidence": [
+        "src/NepTrainKit/core/torsion_guard_pbc.py:440",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "TorsionGuard: pbc=yes requires a finite, nonsingular 3x3 cell.",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/torsion_guard_pbc.py",
+      "source": "TorsionGuard: pbc_mode must be auto, yes, or no.",
+      "context": null,
+      "rendered": "扭转保护：周期边界模式必须是 auto、yes 或 no。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

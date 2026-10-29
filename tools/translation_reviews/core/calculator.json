@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/calculator.py",
+      "source": "prediction parts must not be empty",
+      "id": 88,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/calculator.py",
+      "source": "The largest structure has ⟦value⟧ atoms, above the CUDA workspace estimate of ⟦value⟧. Use CPU for this dataset; a single structure cannot be split safely.",
+      "id": 89,
+      "review": "fix",
+      "review_note": "非物理结构扫描或 NEP 计算失败会向上层传递；缺失模块、元素不受支持、CUDA 单结构超预算是用户可见的失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:2498",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "The largest structure has {largest_structure} atoms, above the CUDA workspace estimate of {recommended}. Use CPU for this dataset; a single structure cannot be split safely.",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/calculator.py",
+      "source": "chunk_max_atoms must be positive",
+      "id": 1002,
+      "template": "chunk_max_atoms must be positive",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

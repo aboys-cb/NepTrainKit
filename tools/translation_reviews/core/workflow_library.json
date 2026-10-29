@@ -1,0 +1,153 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Workflow configuration must be a JSON object.",
+      "id": 423,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Workflow configuration must be a JSON object.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Workflow configuration must contain a card list.",
+      "id": 424,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Workflow configuration must contain a card list.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Invalid workflow identifier.",
+      "id": 425,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid workflow identifier.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Invalid workflow kind.",
+      "id": 426,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid workflow kind.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Built-in workflow templates cannot be modified.",
+      "id": 427,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Built-in workflow templates cannot be modified.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Workflow name cannot be empty.",
+      "id": 428,
+      "review": "hidden",
+      "review_note": "保存/改名输入框会先拒绝空名称；该分支目前主要保护直接 API 调用。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:479",
+        "src/NepTrainKit/core/workflow_library.py:236"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Built-in workflow templates cannot be renamed.",
+      "id": 429,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Built-in workflow templates cannot be renamed.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Built-in workflow templates cannot be deleted.",
+      "id": 430,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Built-in workflow templates cannot be deleted.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Built-in workflow templates cannot be modified.",
+      "id": 431,
+      "review": "fix",
+      "review_note": "工作流导入/保存/打开/改名的异常被 makedata 页面直接 str(exc) 送给消息框。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:465",
+        "src/NepTrainKit/ui/pages/makedata.py:520",
+        "src/NepTrainKit/ui/pages/makedata.py:539",
+        "src/NepTrainKit/ui/pages/makedata.py:598"
+      ],
+      "resolution": "whole_message",
+      "template": "Built-in workflow templates cannot be modified.",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/workflow_library.py",
+      "source": "Workflow name cannot be empty.",
+      "context": null,
+      "rendered": "Workflow name cannot be empty.",
+      "review": "hidden",
+      "reason": "保存/改名输入框会先拒绝空名称；该分支目前主要保护直接 API 调用。"
+    }
+  ]
+}

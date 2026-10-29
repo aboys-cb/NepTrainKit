@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "StrictGSFEPathCard",
+      "source": "The current cell's ab plane is the fault plane (stored as 001); the third cell vector must be normal to it.",
+      "id": 11,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "StrictGSFEPathCard",
+      "source": "Indices use the current oriented cell. The third cell vector must be normal to the ab fault plane.",
+      "id": 12,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "The current cell's ab plane is the fault plane (stored as 001); the third cell vector must be normal to it.",
+      "context": "StrictGSFEPathCard",
+      "rendered": [
+        "当前晶胞的 ab 面就是层错面（保存为 001）；第三晶胞矢量必须垂直于该平面。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Indices use the current oriented cell. The third cell vector must be normal to the ab fault plane.",
+      "context": "StrictGSFEPathCard",
+      "rendered": [
+        "方向指数基于当前已定向晶胞；第三晶胞矢量必须垂直于 ab 层错面。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

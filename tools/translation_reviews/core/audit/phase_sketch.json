@@ -1,0 +1,199 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "failed to recover the requested periodic neighbors",
+      "id": 75,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "neighbors must be positive",
+      "id": 76,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "periodic cell must be invertible",
+      "id": 77,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "translational order requires at least one atom",
+      "id": 78,
+      "review": "hidden",
+      "review_note": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_sketch.py:491",
+        "src/NepTrainKit/core/audit/phase_sketch.py:629"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "values must be a non-empty atom-by-feature matrix",
+      "id": 79,
+      "review": "hidden",
+      "review_note": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_sketch.py:491",
+        "src/NepTrainKit/core/audit/phase_sketch.py:629"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "each atom must have at least one valid neighbor",
+      "id": 80,
+      "review": "hidden",
+      "review_note": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_sketch.py:491",
+        "src/NepTrainKit/core/audit/phase_sketch.py:629"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "overlapping atoms cannot be fingerprinted",
+      "id": 81,
+      "review": "hidden",
+      "review_note": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_sketch.py:491",
+        "src/NepTrainKit/core/audit/phase_sketch.py:629"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "values and labels must contain a non-empty aligned matrix",
+      "id": 82,
+      "review": "hidden",
+      "review_note": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_sketch.py:491",
+        "src/NepTrainKit/core/audit/phase_sketch.py:629"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "prototype bank must be fitted before prediction",
+      "id": 83,
+      "review": "hidden",
+      "review_note": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_sketch.py:491",
+        "src/NepTrainKit/core/audit/phase_sketch.py:629"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "prototype bank must be fitted before prediction",
+      "id": 84,
+      "review": "hidden",
+      "review_note": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_sketch.py:491",
+        "src/NepTrainKit/core/audit/phase_sketch.py:629"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "failed to recover the requested periodic neighbors",
+      "context": null,
+      "rendered": "failed to recover the requested periodic neighbors",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "neighbors must be positive",
+      "context": null,
+      "rendered": "neighbors must be positive",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "periodic cell must be invertible",
+      "context": null,
+      "rendered": "periodic cell must be invertible",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "translational order requires at least one atom",
+      "context": null,
+      "rendered": "translational order requires at least one atom",
+      "review": "hidden",
+      "reason": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "values must be a non-empty atom-by-feature matrix",
+      "context": null,
+      "rendered": "values must be a non-empty atom-by-feature matrix",
+      "review": "hidden",
+      "reason": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "each atom must have at least one valid neighbor",
+      "context": null,
+      "rendered": "each atom must have at least one valid neighbor",
+      "review": "hidden",
+      "reason": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "overlapping atoms cannot be fingerprinted",
+      "context": null,
+      "rendered": "overlapping atoms cannot be fingerprinted",
+      "review": "hidden",
+      "reason": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "values and labels must contain a non-empty aligned matrix",
+      "context": null,
+      "rendered": "values and labels must contain a non-empty aligned matrix",
+      "review": "hidden",
+      "reason": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "prototype bank must be fitted before prediction",
+      "context": null,
+      "rendered": "prototype bank must be fitted before prediction",
+      "review": "hidden",
+      "reason": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_sketch.py",
+      "source": "prototype bank must be fitted before prediction",
+      "context": null,
+      "rendered": "prototype bank must be fitted before prediction",
+      "review": "hidden",
+      "reason": "phase_sketch 特征/PrototypeBank 训练预测接口当前没有产品界面调用；用于参考/实验接口。"
+    }
+  ]
+}

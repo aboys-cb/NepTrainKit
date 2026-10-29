@@ -11,6 +11,8 @@
 /src/NepTrainKit/?.py
 /src/NepTrainKit/_version.py
 /src/NepTrainKit/Log/*.log
+/src/NepTrainKit/translations/*.qm
+/src/NepTrainKit/translations/.qm-build-*/
 .pytest_cache/
 .superpowers/
 tests/_sandbox_tmp/

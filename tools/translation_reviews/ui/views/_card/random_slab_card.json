@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/ui/views/_card/random_slab_card.py",
+      "source": "⟦value⟧ must contain start, stop, and step",
+      "id": 442,
+      "review": "fix",
+      "review_note": "旧卡片 JSON 或位点规则配置载入失败经过卡片配置错误显示路径；原文存在英文残句。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/makedata.py:1236",
+        "src/NepTrainKit/ui/widgets/alloy_site_rules.py:780"
+      ],
+      "resolution": "whole_message",
+      "template": "{key} must contain start, stop, and step",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

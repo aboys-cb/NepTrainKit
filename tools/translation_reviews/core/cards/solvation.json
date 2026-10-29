@@ -1,0 +1,208 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvation: solvent_xyz is empty.",
+      "id": 206,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Solvation: solvent_xyz is empty.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: density must be positive.",
+      "id": 207,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: solvent mass must be positive.",
+      "id": 208,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Solvent Box Fill: solvent mass must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvation: solvent_xyz is empty.",
+      "id": 209,
+      "review": "hidden",
+      "review_note": "_validate_common 在当前 src 中没有调用点；现行校验使用新的参数处理路径，不能算作当前可见 UI 文案。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/solvation.py:580"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvation: structures must be >= 1.",
+      "id": 210,
+      "review": "hidden",
+      "review_note": "_validate_common 在当前 src 中没有调用点；现行校验使用新的参数处理路径，不能算作当前可见 UI 文案。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/solvation.py:580"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: count_mode must be 'fixed' or 'density'.",
+      "id": 211,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: density must be positive.",
+      "id": 212,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: fill_packing must be greater than 0 and at most 1.",
+      "id": 213,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Solvent Box Fill: fill_packing must be greater than 0 and at most 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: sampling_mode must be one of auto, general, water, loose, dense.",
+      "id": 214,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Solvent Box Fill: sampling_mode must be one of auto, general, water, loose, dense.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvation: cannot parse solvent_xyz: ⟦value⟧",
+      "id": 215,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Solvation: cannot parse solvent_xyz: {reason}",
+      "context": "CardOperationError"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvation: flex_pool must be >= 1.",
+      "id": 1048,
+      "template": "Solvation: flex_pool must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: density must be positive.",
+      "id": 1049,
+      "template": "Solvent Box Fill: density must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvation: solvent_count must be >= 1.",
+      "id": 1050,
+      "template": "Solvation: solvent_count must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: count_mode must be 'fixed' or 'density'.",
+      "id": 1051,
+      "template": "Solvent Box Fill: count_mode must be 'fixed' or 'density'.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "Solvent Box Fill: density must be positive.",
+      "id": 1052,
+      "template": "Solvent Box Fill: density must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "⟦value⟧: ⟦value⟧ must be an integer.",
+      "id": 1053,
+      "template": "{prefix}: {key} must be an integer.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "⟦value⟧: ⟦value⟧ must be >= ⟦value⟧.",
+      "id": 1054,
+      "template": "{prefix}: {key} must be >= {minimum}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "⟦value⟧: ⟦value⟧ must be a finite number.",
+      "id": 1055,
+      "template": "{prefix}: {key} must be a finite number.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "⟦value⟧: ⟦value⟧ must be >= ⟦value⟧.",
+      "id": 1056,
+      "template": "{prefix}: {key} must be >= {minimum}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "⟦value⟧: ⟦value⟧ must be an integer.",
+      "id": 1057,
+      "template": "{prefix}: {key} must be an integer.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/solvation.py",
+      "source": "⟦value⟧: ⟦value⟧ must be a finite number.",
+      "id": 1058,
+      "template": "{prefix}: {key} must be a finite number.",
+      "context": "CardOperationError"
+    }
+  ]
+}

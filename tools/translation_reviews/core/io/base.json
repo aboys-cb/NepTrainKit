@@ -1,0 +1,373 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported expression syntax.",
+      "id": 249,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported expression syntax.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "ResultData must be moved from its current owner thread",
+      "id": 250,
+      "review": "diagnostic",
+      "review_note": "线程归属、构造时分组数组、内部选择模式或解析器已筛选的运算符保护，属于开发接口契约。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:972",
+        "src/NepTrainKit/core/io/base.py:210",
+        "src/NepTrainKit/core/io/base.py:1732"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Field '⟦value⟧' requires an explicit component or '.norm'.",
+      "id": 251,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Field '{label}' requires an explicit component or '.norm'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Builtin field '⟦value⟧' does not support attribute '⟦value⟧'.",
+      "id": 252,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Builtin field '{base}' does not support attribute '{value1}'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Expression contains unsupported syntax.",
+      "id": 253,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Expression contains unsupported syntax.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Expression must reference at least one structure field.",
+      "id": 254,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Expression must reference at least one structure field.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Expression must be a condition. Add a comparison, for example: natoms > 100.",
+      "id": 255,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Expression must be a condition. Add a comparison, for example: natoms > 100.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Expression result shape does not match active structures.",
+      "id": 256,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Expression result shape does not match active structures.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Failed to read dataset '⟦value⟧'.",
+      "id": 257,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Failed to read dataset '{value0}'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Field '⟦value⟧' does not support '.⟦value⟧'.",
+      "id": 258,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Field '{value0}' does not support '.{view}'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Atomic expression fields must use 'atomic.<name>'.",
+      "id": 259,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Atomic expression fields must use 'atomic.<name>'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Atomic field 'atomic.⟦value⟧' does not support value views.",
+      "id": 260,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Atomic field 'atomic.{alias}' does not support value views.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported suffix for atomic field 'atomic.⟦value⟧'.",
+      "id": 261,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported suffix for atomic field 'atomic.{alias}'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported suffix for field '⟦value⟧'.",
+      "id": 262,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported suffix for field '{base}'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Invalid expression syntax.",
+      "id": 263,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid expression syntax.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "group_list must be one dimensional",
+      "id": 264,
+      "review": "diagnostic",
+      "review_note": "线程归属、构造时分组数组、内部选择模式或解析器已筛选的运算符保护，属于开发接口契约。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:972",
+        "src/NepTrainKit/core/io/base.py:210",
+        "src/NepTrainKit/core/io/base.py:1732"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported suffix for field '⟦value⟧'.",
+      "id": 265,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported suffix for field '{base}'.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Field '⟦value⟧' does not support value views.",
+      "id": 266,
+      "review": "fix",
+      "review_note": "结构筛选表达式解析/字段访问错误经过 FunctionWorker 发给搜索失败提示；当前仅外层翻译，原因保留英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/show_nep.py:1601",
+        "src/NepTrainKit/ui/pages/show_nep.py:1616",
+        "src/NepTrainKit/ui/threads.py:260"
+      ],
+      "resolution": "whole_message",
+      "template": "Field '{base}' does not support value views.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported selection mode: ⟦value⟧",
+      "id": 267,
+      "review": "diagnostic",
+      "review_note": "线程归属、构造时分组数组、内部选择模式或解析器已筛选的运算符保护，属于开发接口契约。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:972",
+        "src/NepTrainKit/core/io/base.py:210",
+        "src/NepTrainKit/core/io/base.py:1732"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported comparison operator.",
+      "id": 268,
+      "review": "diagnostic",
+      "review_note": "线程归属、构造时分组数组、内部选择模式或解析器已筛选的运算符保护，属于开发接口契约。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:972",
+        "src/NepTrainKit/core/io/base.py:210",
+        "src/NepTrainKit/core/io/base.py:1732"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Field '⟦value⟧' requires an explicit component or '.norm'.",
+      "context": null,
+      "rendered": "字段“⟦value⟧”需要指定分量或使用 .norm。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Expression must be a condition. Add a comparison, for example: natoms > 100.",
+      "context": null,
+      "rendered": "表达式必须是条件。请添加比较，例如 natoms > 100。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Atomic expression fields must use 'atomic.<name>'.",
+      "context": null,
+      "rendered": "原子表达式字段必须使用 atomic.<name> 格式。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Atomic field 'atomic.⟦value⟧' does not support value views.",
+      "context": null,
+      "rendered": "原子字段“atomic.⟦value⟧”不支持数值视图。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported suffix for atomic field 'atomic.⟦value⟧'.",
+      "context": null,
+      "rendered": "原子字段“atomic.⟦value⟧”的后缀不受支持。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "any/all requires at least one atomic field.",
+      "rendered": "any/all 条件中必须包含至少一个原子字段。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "atomic.element requires == or != with a quoted element symbol inside any/all.",
+      "rendered": "atomic.element 只能在 any/all 条件内使用 == 或 != 与带引号的元素符号比较。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Atomic fields in any/all must refer to the same atoms; row counts do not align.",
+      "rendered": "any/all 中的原子字段必须对应相同的原子；当前字段行数不一致。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "atomic.element is only available inside any/all and does not support suffixes.",
+      "rendered": "atomic.element 只能在 any/all 条件内使用，且不支持后缀。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
+      "source": "atomic.element must be compared with a quoted element symbol, for example 'Fe'.",
+      "rendered": "atomic.element 必须与带引号的元素符号比较，例如 'Fe'。",
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    }
+  ]
+}

@@ -154,10 +154,11 @@ def test_extractor_recovers_translation_lupdate_marked_obsolete(tmp_path, monkey
 
 def test_review_requires_both_source_and_rendered_text(tmp_path):
     import json
-    (tmp_path / 'tools').mkdir()
+    directory = tmp_path / 'tools/translation_reviews/core'
+    directory.mkdir(parents=True)
     entry = dict(path='src/a.py', source='field', context=None, rendered='字段 field',
                  review='technical', reason='Field identifier')
-    (tmp_path / 'tools/translation_review.json').write_text(
+    (directory / 'example.json').write_text(
         json.dumps({'retained_candidates': [entry]}))
     original = dict(severity='candidate', path='src/a.py', source='field', rendered='字段 field')
     changed_source = dict(original, source='new field')
@@ -183,3 +184,22 @@ def test_runtime_registry_templates_survive_lupdate_obsoletion(tmp_path, monkeyp
     translation = root.find('.//translation')
     assert translation.text == '名称 {name} 无效'
     assert translation.get('type') is None
+
+
+def test_review_loads_multiple_modules_and_does_not_approve_new_candidates(tmp_path):
+    import json
+
+    directory = tmp_path / 'tools/translation_reviews'
+    entries = [dict(path=f'src/{name}.py', source='field', context=None,
+                    rendered='字段 field', review='technical', reason='Field identifier')
+               for name in ('first', 'second')]
+    for folder, entry in zip(('core', 'ui'), entries):
+        target = directory / folder / 'example.json'
+        target.parent.mkdir(parents=True)
+        target.write_text(json.dumps({'retained_candidates': [entry]}))
+    issues = [dict(entry, severity='candidate') for entry in entries]
+    for issue in issues:
+        del issue['review']
+    issues.append(dict(issues[0], path='src/new.py'))
+    audit.annotate_review(tmp_path, issues)
+    assert [issue.get('review') for issue in issues] == ['technical', 'technical', None]

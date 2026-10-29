@@ -1,0 +1,12 @@
+{
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/dump_import_dialog.py",
+      "source": "→ ⟦value⟧:R:⟦value⟧",
+      "context": null,
+      "rendered": null,
+      "review": "technical",
+      "reason": "字段合并预览（名称 + 列数），由运行时值组成，不参与界面翻译。"
+    }
+  ]
+}

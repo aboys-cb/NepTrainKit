@@ -294,6 +294,8 @@ def _use_english_screenshots(app, docname, source):
         '2. 识别原子层': '2. Identify atomic layers',
         '3. 只交换异种元素': '3. Exchange unlike elements only',
         '4. 输出与标签': '4. Output and labels',
+        '4. 选择交换元素与分层配额': '4. Select exchange pairs and layer quotas',
+        '5. 输出与标签': '5. Output and labels',
         '示例配置：BCC Fe 晶格扫描': 'Example configuration: BCC Fe lattice scan',
         '示例配置：L1₂ Cu₃Au 基础晶胞': 'Example configuration: L1₂ Cu₃Au primitive cell',
         '示例配置：0.10 Å Sobol 微扰': 'Example configuration: 0.10 Å Sobol perturbation',

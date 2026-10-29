@@ -1,0 +1,28 @@
+{
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/io/lammps_dump.py",
+      "source": "LAMMPS frame ⟦value⟧ must contain one complete coordinate triplet: xs/ys/zs, x/y/z, xu/yu/zu, or xsu/ysu/zsu",
+      "context": null,
+      "rendered": "LAMMPS 第 ⟦value⟧ 帧必须包含一组完整的坐标列：xs/ys/zs、x/y/z、xu/yu/zu 或 xsu/ysu/zsu。",
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/lammps_dump.py",
+      "source": "⟦value⟧ does not contain a LAMMPS 'ITEM: TIMESTEP' header",
+      "context": null,
+      "rendered": "⟦value⟧ does not contain a LAMMPS 'ITEM: TIMESTEP' header",
+      "review": "technical",
+      "reason": "内部探测诊断，仅在文件已被识别为 dump 候选后触发；技术标识原样保留。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/lammps_dump.py",
+      "source": "⟦value⟧ does not contain a readable LAMMPS frame header",
+      "context": null,
+      "rendered": "⟦value⟧ does not contain a readable LAMMPS frame header",
+      "review": "technical",
+      "reason": "内部探测诊断，仅在 dump 候选文件的帧头无法解析时触发；技术标识原样保留。"
+    }
+  ]
+}

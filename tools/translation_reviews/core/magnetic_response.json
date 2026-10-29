@@ -1,0 +1,347 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "response scan requires at least ⟦value⟧ distinct coordinates",
+      "id": 337,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "response scan requires at least {minimum_points} distinct coordinates",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "response scan coordinates must be finite",
+      "id": 338,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "response scan coordinates must be finite",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "response scan coordinates must be unique",
+      "id": 339,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "response scan coordinates must be unique",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "unsupported magnetic response params: ⟦value⟧",
+      "id": 340,
+      "review": "diagnostic",
+      "review_note": "operation 参数类型、生成 task_id 唯一性及生成响应组的一致性属于内部契约。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:282",
+        "src/NepTrainKit/core/magnetic_response.py:380"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "at least three response coordinates are required for a tangent",
+      "id": 341,
+      "review": "hidden",
+      "review_note": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:173",
+        "src/NepTrainKit/core/magnetic_response.py:889"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "response coordinates must be unique",
+      "id": 342,
+      "review": "hidden",
+      "review_note": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:173",
+        "src/NepTrainKit/core/magnetic_response.py:889"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "manifest task_id values must be unique",
+      "id": 343,
+      "review": "diagnostic",
+      "review_note": "operation 参数类型、生成 task_id 唯一性及生成响应组的一致性属于内部契约。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:282",
+        "src/NepTrainKit/core/magnetic_response.py:380"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "task_id ⟦value⟧ does not map to exactly one manifest record",
+      "id": 344,
+      "review": "hidden",
+      "review_note": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:173",
+        "src/NepTrainKit/core/magnetic_response.py:889"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "task_id ⟦value⟧ atom identity/order does not match its manifest record",
+      "id": 345,
+      "review": "hidden",
+      "review_note": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:173",
+        "src/NepTrainKit/core/magnetic_response.py:889"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "task_id ⟦value⟧ DFT result must contain final vector spin moments",
+      "id": 346,
+      "review": "hidden",
+      "review_note": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:173",
+        "src/NepTrainKit/core/magnetic_response.py:889"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "generated invalid magnetic response groups: ⟦value⟧",
+      "id": 347,
+      "review": "diagnostic",
+      "review_note": "operation 参数类型、生成 task_id 唯一性及生成响应组的一致性属于内部契约。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:282",
+        "src/NepTrainKit/core/magnetic_response.py:380"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "rotation response scan must include a zero-coordinate reference",
+      "id": 348,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "rotation response scan must include a zero-coordinate reference",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "unsupported texture response kind: ⟦value⟧",
+      "id": 349,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "unsupported texture response kind: {value0}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "q response scan must include q=0",
+      "id": 350,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "q response scan must include q=0",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "cone_component must be in [-1, 1]",
+      "id": 351,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "cone_component must be in [-1, 1]",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "magnetoelastic structural and spin scans must include zero",
+      "id": 352,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "magnetoelastic structural and spin scans must include zero",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "invalid response coordinate ⟦value⟧",
+      "id": 353,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "invalid response coordinate {token}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "moment scale factors must be non-negative",
+      "id": 354,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "moment scale factors must be non-negative",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "moment magnitude response must include scale factor 1.0",
+      "id": 355,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "moment magnitude response must include scale factor 1.0",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "global anisotropy scan must include a zero-coordinate reference",
+      "id": 356,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "global anisotropy scan must include a zero-coordinate reference",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "unsupported local response kind: ⟦value⟧",
+      "id": 357,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "unsupported local response kind: {value0}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "surface normal must not be parallel to q for a cycloidal spiral",
+      "id": 358,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "surface normal must not be parallel to q for a cycloidal spiral",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "unsupported structural response mode: ⟦value⟧",
+      "id": 359,
+      "review": "fix",
+      "review_note": "磁响应卡片的用户扫描范围/磁构型参数校验，run_structure 路径直接报错。",
+      "evidence": [
+        "src/NepTrainKit/core/magnetic_response.py:284",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "unsupported structural response mode: {value0}",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "at least three response coordinates are required for a tangent",
+      "context": null,
+      "rendered": "at least three response coordinates are required for a tangent",
+      "review": "hidden",
+      "reason": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "response coordinates must be unique",
+      "context": null,
+      "rendered": "response coordinates must be unique",
+      "review": "hidden",
+      "reason": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "task_id ⟦value⟧ does not map to exactly one manifest record",
+      "context": null,
+      "rendered": "task_id ⟦value⟧ does not map to exactly one manifest record",
+      "review": "hidden",
+      "reason": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "task_id ⟦value⟧ atom identity/order does not match its manifest record",
+      "context": null,
+      "rendered": "task_id ⟦value⟧ atom identity/order does not match its manifest record",
+      "review": "hidden",
+      "reason": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetic_response.py",
+      "source": "task_id ⟦value⟧ DFT result must contain final vector spin moments",
+      "context": null,
+      "rendered": "task_id ⟦value⟧ DFT result must contain final vector spin moments",
+      "review": "hidden",
+      "reason": "响应清单重挂接/曲线写出为 API 辅助流程，当前 src 中没有相应界面调用；不计为现行 GUI 漏译。"
+    }
+  ]
+}

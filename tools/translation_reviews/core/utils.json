@@ -1,0 +1,11 @@
+{
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/utils.py",
+      "source": "Missing DFT ⟦value⟧; using NEP ⟦value⟧ instead.",
+      "id": 1066,
+      "template": "Missing DFT {quantity}; using NEP {quantity2} instead.",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

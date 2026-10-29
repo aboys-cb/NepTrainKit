@@ -1,0 +1,823 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Unsupported coordinate shape: ⟦value⟧",
+      "id": 90,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "⟦value⟧ must not be empty.",
+      "id": 91,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} must not be empty.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "⟦value⟧ values must be finite.",
+      "id": 92,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} values must be finite.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "⟦value⟧ minimum must be <= maximum.",
+      "id": 93,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} minimum must be <= maximum.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Dopant ratios must be finite and non-negative.",
+      "id": 94,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Dopant ratios must be finite and non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Dopant ratio_type must be 'atom' or 'mass'.",
+      "id": 95,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Dopant ratio_type must be 'atom' or 'mass'.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "At least one dopant ratio must be positive.",
+      "id": 96,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "At least one dopant ratio must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Dopant item count must be non-negative.",
+      "id": 97,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "RandomDoping rule use must be atomic_percent, mass_percent, or count.",
+      "id": 98,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "RandomDoping rule use must be atomic_percent, mass_percent, or count.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "RandomDoping rule use must be atomic_percent, mass_percent, or count.",
+      "id": 99,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "RandomDoping rule use must be atomic_percent, mass_percent, or count.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Composition Space Sampling budget allocation must be Equal+Reflow, Capacity-weighted, or Equal (legacy).",
+      "id": 100,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition Space Sampling budget allocation must be Equal+Reflow, Capacity-weighted, or Equal (legacy).",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Ordered Alloy Prototype: unsupported prototype ⟦value⟧; choose one of ⟦value⟧.",
+      "id": 101,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Ordered Alloy Prototype: unsupported prototype {text}; choose one of {supported}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Ordered Alloy Prototype: a_range values must be finite and positive.",
+      "id": 102,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Ordered Alloy Prototype: a_range values must be finite and positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Replacement probabilities must be finite and non-negative.",
+      "id": 103,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Replacement probabilities must be finite and non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "At least one replacement probability must be positive.",
+      "id": 104,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "At least one replacement probability must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "⟦value⟧ must contain one or two values.",
+      "id": 105,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "{label} must contain one or two values.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Composition Space Sampling method must be Grid or Sobol.",
+      "id": 106,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition Space Sampling method must be Grid or Sobol.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Minimum element fraction must be between 0 and 1.",
+      "id": 107,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Minimum element fraction must be between 0 and 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Ordered Alloy Prototype: c/a must be finite and positive.",
+      "id": 108,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Ordered Alloy Prototype: c/a must be finite and positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: seed must be >= 0 when use_seed is enabled.",
+      "id": 109,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: seed must be >= 0 when use_seed is enabled.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: atoms.arrays['sublattice'] must be one label per atom.",
+      "id": 110,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: atoms.arrays['sublattice'] must be one label per atom.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: sublattice labels must be non-empty.",
+      "id": 111,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: sublattice labels must be non-empty.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: site_rules must be a non-empty JSON object.",
+      "id": 112,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: site_rules must be a non-empty JSON object.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: rule for ⟦value⟧ must be an object.",
+      "id": 113,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: rule for {label} must be an object.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: ⟦value⟧ for ⟦value⟧ must be an object.",
+      "id": 114,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: {field_name} for {label} must be an object.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: ⟦value⟧ keys for ⟦value⟧ must exactly match its allowed elements.",
+      "id": 115,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: {field_name} keys for {label} must exactly match its allowed elements.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: ⟦value⟧ for ⟦value⟧ must be an object.",
+      "id": 116,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: {field_name} for {label} must be an object.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: ⟦value⟧ keys for ⟦value⟧ must exactly match its allowed elements.",
+      "id": 117,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: {field_name} keys for {label} must exactly match its allowed elements.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Composition Gradient requires valid start and end compositions.",
+      "id": 118,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition Gradient requires valid start and end compositions.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Composition Gradient axis must be one of a, b, or c.",
+      "id": 119,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition Gradient axis must be one of a, b, or c.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Composition Gradient target mode must be all or listed.",
+      "id": 120,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition Gradient target mode must be all or listed.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Composition Gradient requires a non-singular 3D cell to use lattice directions a, b, or c.",
+      "id": 121,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition Gradient requires a non-singular 3D cell to use lattice directions a, b, or c.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Unsupported coordinate shape: ⟦value⟧",
+      "id": 122,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Cartesian position filter returned an invalid shape.",
+      "id": 123,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Replacement JSON must be an object.",
+      "id": 124,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Replacement JSON must be an object.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Replacement ratios must be finite and non-negative.",
+      "id": 125,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Replacement ratios must be finite and non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "percent must be within [0, 100].",
+      "id": 126,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "percent must be within [0, 100].",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "count values must be integers.",
+      "id": 127,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "count values must be integers.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "count values must be >= 0.",
+      "id": 128,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "count values must be >= 0.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "count_mode must be fixed or random.",
+      "id": 129,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Ordered Alloy Prototype: sublattice_elements JSON must be an object.",
+      "id": 130,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Ordered Alloy Prototype: sublattice_elements JSON must be an object.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-cell composition unranking failed.",
+      "id": 131,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: elements for ⟦value⟧ must be a list or string.",
+      "id": 132,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: elements for {label} must be a list or string.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: fixed composition for ⟦value⟧ is invalid.",
+      "id": 133,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: fixed composition for {label} is invalid.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: fixed fractions for ⟦value⟧ must sum to 1.",
+      "id": 134,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: fixed fractions for {label} must sum to 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: unsupported mode ⟦value⟧ for ⟦value⟧; use fixed_fraction, fraction_range, or count_range.",
+      "id": 135,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: unsupported mode {mode} for {label}; use fixed_fraction, fraction_range, or count_range.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: invalid range for ⟦value⟧.⟦value⟧.",
+      "id": 136,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: invalid range for {label}.{element}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: count bounds for ⟦value⟧.⟦value⟧ must be integers.",
+      "id": 137,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Finite-Cell Alloy Occupancy: count bounds for {label}.{element} must be integers.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Invalid replacement JSON: ⟦value⟧",
+      "id": 138,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid replacement JSON: {reason}",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Replacement ratios must be finite and non-negative.",
+      "id": 139,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Replacement ratios must be finite and non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Internal unlike-species matching failed.",
+      "id": 140,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "⟦value⟧ replacement count must be >= 0.",
+      "id": 141,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Composition Space Sampling seed must be non-negative.",
+      "id": 1003,
+      "template": "Composition Space Sampling seed must be non-negative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Ordered Alloy Prototype: max_outputs must be >= 1.",
+      "id": 1004,
+      "template": "Ordered Alloy Prototype: max_outputs must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: arrangements_per_composition must be >= 1.",
+      "id": 1005,
+      "template": "Finite-Cell Alloy Occupancy: arrangements_per_composition must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: max_outputs must be >= 1.",
+      "id": 1006,
+      "template": "Finite-Cell Alloy Occupancy: max_outputs must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "count_mode must be fixed or random.",
+      "id": 1007,
+      "template": "count_mode must be fixed or random.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Finite-Cell Alloy Occupancy: invalid site_rules JSON: ⟦value⟧.",
+      "id": 1008,
+      "template": "Finite-Cell Alloy Occupancy: invalid site_rules JSON: {value0}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/alloy.py",
+      "source": "Ordered Alloy Prototype: invalid sublattice_elements JSON: ⟦value⟧.",
+      "id": 1009,
+      "template": "Ordered Alloy Prototype: invalid sublattice_elements JSON: {value0}.",
+      "context": "CardOperationError"
+    }
+  ]
+}

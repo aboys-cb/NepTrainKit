@@ -9,7 +9,7 @@ python -m pytest tests/test_translation_audit.py tests/test_i18n.py -q
 
 Windows PowerShell 可先设置 `$env:QT_QPA_PLATFORM = "offscreen"`，再执行 Python 命令。
 
-工具只读取源码及翻译目录；只有 `--json` 指定的报告会被写入。报告包含文件、行号、原文、规则，以及适用时的模拟中文结果。默认扫描整个 `src` 下的 Python 文件，不把中英文文档、注释、测试数据、模型文件和第三方源码当作界面文案。
+工具不修改源码或 TS 翻译；若生成的 QM 缺失或早于 TS，会先编译 QM。`--json` 可另存检查报告。报告包含文件、行号、原文、规则，以及适用时的模拟中文结果。默认扫描整个 `src` 下的 Python 文件，不把中英文文档、注释、测试数据、模型文件和第三方源码当作界面文案。
 
 ## 错误与候选
 
@@ -44,9 +44,23 @@ python tools/audit_translations.py --check --json /tmp/neptrainkit-text-audit.js
 
 更新工具还会通过 AST 提取结构化卡片异常及 `self.tr`、`_tr`、显式上下文翻译调用，补充 Qt lupdate 漏掉的 f-string 内部调用。CI 会运行检查并保存完整 JSON 报告；未解决候选仍保留在报告中。
 
+### QM 的生成与分发
+
+Git 只跟踪 `.ts` 翻译源文件，`src/NepTrainKit/translations/*.qm` 是忽略的编译产物：
+
+- 源码开发：加载中文界面时，如果 QM 缺失或 TS 更新，自动调用当前 Python 环境的 Qt 编译工具；未变化时不启动编译器。翻译审计也会执行同样的过期检查。
+- wheel：setuptools 的 `build_py` 在构建目录中编译 QM 并装入 wheel。构建隔离环境通过 `PySide6-Essentials` 获得编译器，版本与应用使用的 PySide6 一致。
+- sdist：包含 TS 和编译代码，排除 QM；从 sdist 构建 wheel 时重新生成。
+- Windows 独立包：Nuitka 工作流在编译前生成 QM，再将翻译目录复制到分发目录。
+- 安装后的 wheel 和独立包：直接加载随包的 QM，不在用户安装目录编译。
+
+手动强制重编译用 `python tools/update_translations.py --no-lupdate`。编译失败会保留原 QM；构建和审计会失败并报告编译错误，源码 GUI 会记录警告。不要将 QM 再次加入 Git，也不要用“始终选择一侧”处理 TS 的真实翻译冲突。
+
 ## 已核实清单与回归门禁
 
-`tools/translation_review.json` 保存原始 454 条候选的分类依据、整句模板及后续补修记录。`retained_candidates` 保留经过复核的技术标识和已有兜底的异常，不删除原始扫描结果。
+`tools/translation_reviews/` 按模块保存候选的分类依据、整句模板及后续补修记录。源码记录采用对应模块路径，例如 `core/io/lammps_dump.json`；仅属于 TS 的记录放在 `catalog/<翻译上下文>.json`。检查工具递归读取各模块的 `retained_candidates`，保留经过复核的技术标识和已有兜底的异常。
+
+拆分保留原始 454 条 `items`、125 条 `retained_candidates` 和 69 条 `followup_fixes`，包括原有 ID、理由和证据；这些数量只描述迁移时的记录，不限制后续新增。新增记录写到所属模块文件，不再追加到集中式 JSON。已有 ID 不重编号，新记录无需分配全局连续 ID；审计匹配不依赖 ID。审查记录是开发维护数据，不是运行时翻译，也不是可删除的临时报告。
 
 ```sh
 python tools/audit_translations.py --check --require-reviewed --json /tmp/neptrainkit-text-audit.json

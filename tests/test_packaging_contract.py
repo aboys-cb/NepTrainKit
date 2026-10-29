@@ -80,6 +80,7 @@ def test_nuitka_build_copies_and_verifies_chinese_translation_catalog():
     workflow = (
         ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
     ).read_text(encoding="utf-8")
+    assert workflow.index("python tools/update_translations.py --no-lupdate") < workflow.index("name: Build with Nuitka")
 
     assert "src/NepTrainKit/translations" in workflow
     assert '$dist/translations/neptrainkit_zh_CN.qm' in workflow

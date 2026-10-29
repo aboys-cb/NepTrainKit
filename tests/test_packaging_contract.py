@@ -10,6 +10,24 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_packaging_tests_declare_the_build_tools_they_import():
+    from packaging.requirements import Requirement
+
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    test_requirements = {
+        Requirement(value).name: Requirement(value)
+        for value in data["project"]["optional-dependencies"]["test"]
+    }
+    build_requirements = {
+        Requirement(value).name: Requirement(value)
+        for value in data["build-system"]["requires"]
+    }
+    # Isolated PEP 517 build dependencies are not installed in the pytest env.
+    for name in ("setuptools", "pybind11"):
+        assert name in test_requirements
+        assert test_requirements[name].specifier == build_requirements[name].specifier
+
+
 def test_pyproject_declares_nep_adapters_runtime_dependency():
     data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     dependencies = data["project"]["dependencies"]

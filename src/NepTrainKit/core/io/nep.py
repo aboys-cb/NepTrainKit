@@ -702,8 +702,8 @@ class NepTrainResultData(ResultData):
         reference = self._reference_spin_forces()
         if values.shape != (reference.shape[0], 6):
             raise ValueError(
-                f"{self.spin_force_out_path.name} has shape {values.shape}, "
-                f"expected ({reference.shape[0]}, 6)"
+                f"Cached magnetic-force output {self.spin_force_out_path.name} has shape {values.shape}, "
+                f"expected ({reference.shape[0]}, 6)."
             )
         labelled = np.isfinite(reference)
         if labelled.any():

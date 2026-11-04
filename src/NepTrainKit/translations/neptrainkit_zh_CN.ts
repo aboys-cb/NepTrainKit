@@ -17372,6 +17372,10 @@ All child items will also be deleted.</source>
 <context>
     <name>RuntimeMessage</name>
     <message>
+        <source>Cached magnetic-force output {file} has shape {shape}, expected ({rows}, 6).</source>
+        <translation>缓存的磁力输出 {file} 形状为 {shape}，预期为 ({rows}, 6)。</translation>
+    </message>
+    <message>
         <source>any/all requires at least one atomic field.</source>
         <translation>any/all 条件中必须包含至少一个原子字段。</translation>
     </message>

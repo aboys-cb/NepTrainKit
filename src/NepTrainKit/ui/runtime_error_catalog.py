@@ -352,6 +352,7 @@ RUNTIME_ERROR_TEMPLATES = (
     ('RuntimeMessage', 'MagneticOrder: the selected k-vector produces only one AFM sign on magnetic atoms; expand the cell or choose another vector.'),
     ('RuntimeMessage', 'LayerCopy: unsupported apply_mode {mode}.'),
     ('RuntimeMessage', 'Failed to load dataset: {reason}. If official NEP .out files already exist, keep a complete set of energy, force, virial, and stress or mforce outputs in the dataset directory.'),
+    ('RuntimeMessage', 'Cached magnetic-force output {file} has shape {shape}, expected ({rows}, 6).'),
     ('RuntimeMessage', 'Loading existing official NEP .out files without opening the model. descriptor.out is missing, so descriptor plots and FPS are unavailable. Install a nep-adapters version that supports this model to generate descriptors.'),
     ('RuntimeMessage', 'NEP Auto selected CPU because CUDA is unavailable ({reason}). The calculation will continue on CPU. To enable CUDA, install a Linux CPU+CUDA nep-adapters wheel with a compatible NVIDIA driver.'),
     ('RuntimeMessage', 'Spin Disorder requires vector magnetic moments or liftable scalar magmoms.'),

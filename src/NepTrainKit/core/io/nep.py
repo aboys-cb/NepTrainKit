@@ -462,6 +462,7 @@ class NepTrainResultData(ResultData):
             stress_array = read_nep_out_file(self.stress_out_path, dtype=storage_dtype, ndmin=2)
             if self.spin_force_out_path:
                 spin_force_array = read_nep_out_file(self.spin_force_out_path, dtype=storage_dtype, ndmin=2)
+                spin_force_array = self._restore_cached_spin_force_reference(spin_force_array)
             if getattr(self, "is_charge_model", False):
                 if self.charge_out_path:
                     charge_array = read_nep_out_file(self.charge_out_path, dtype=storage_dtype, ndmin=2)
@@ -680,16 +681,38 @@ class NepTrainResultData(ResultData):
             np.savetxt(self.bec_out_path, bec_array, fmt='%.17g')
         return bec_array
 
-    def _save_spin_force_data(self, mforces: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
-        """Persist magnetic force comparisons in the official ``mforce_*.out`` format."""
-        reference = np.vstack(
+    def _reference_spin_forces(self) -> npt.NDArray[np.float64]:
+        """Read DFT magnetic forces from either supported EXTXYZ label."""
+        return np.vstack(
             [
-                np.asarray(structure.atomic_properties["force_mag"], dtype=np.float64)
-                if "force_mag" in structure.atomic_properties
+                np.asarray(
+                    structure.atomic_properties[
+                        "force_mag" if "force_mag" in structure.atomic_properties else "mforce"
+                    ],
+                    dtype=np.float64,
+                )
+                if "force_mag" in structure.atomic_properties or "mforce" in structure.atomic_properties
                 else np.full((len(structure), 3), np.nan, dtype=np.float64)
                 for structure in self.structure.now_data
             ]
         )
+
+    def _restore_cached_spin_force_reference(self, values: npt.NDArray[Any]) -> npt.NDArray[Any]:
+        """Use EXTXYZ labels when cached mforce DFT columns contain fallback predictions."""
+        reference = self._reference_spin_forces()
+        if values.shape != (reference.shape[0], 6):
+            raise ValueError(
+                f"{self.spin_force_out_path.name} has shape {values.shape}, "
+                f"expected ({reference.shape[0]}, 6)"
+            )
+        labelled = np.isfinite(reference)
+        if labelled.any():
+            values[:, 3:][labelled] = reference[labelled]
+        return values
+
+    def _save_spin_force_data(self, mforces: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
+        """Persist magnetic force comparisons in the official ``mforce_*.out`` format."""
+        reference = self._reference_spin_forces()
         values = concat_nep_dft_array(
             np.asarray(mforces, dtype=np.float64),
             reference,

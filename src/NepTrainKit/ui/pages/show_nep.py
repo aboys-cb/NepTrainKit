@@ -1865,6 +1865,8 @@ class ShowNepWidget(QWidget):
         props = getattr(structure, "atomic_properties", {}) or {}
         force_mag = props.get("force_mag")
         if force_mag is None:
+            force_mag = props.get("mforce")
+        if force_mag is None:
             return None
         try:
             mag = np.asarray(force_mag, dtype=np.float32).reshape(atom_count, 3)

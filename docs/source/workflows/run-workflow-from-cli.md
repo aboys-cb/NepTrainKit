@@ -249,7 +249,7 @@ except (WorkflowError, CardOperationError) as exc:
 **软件自带的模型（`nep89`）是可移植的。** 导出时不会写死某台机器上的绝对路径，而是写成标记
 `bundled:nep89`：
 
-```json
+```text
 "params": { "nep_path": "bundled:nep89", ... }
 ```
 
@@ -259,7 +259,7 @@ except (WorkflowError, CardOperationError) as exc:
 **你自己选的模型文件保留绝对路径。** 这类文件只存在于你指定的位置，软件无法替你在别的机器上
 找到它，所以原样记录：
 
-```json
+```text
 "params": { "nep_path": "/opt/models/my_custom.nep", ... }
 ```
 

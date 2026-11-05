@@ -100,9 +100,9 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
 
     widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
     task = widget.run_all()
-    assert widget.run_selected_button.text() == "停止验证"
+    assert widget.run_selected_button.text() == "Stop validation"
     assert _wait_until(lambda: widget._run_task is None)
-    assert task.outcome == "succeeded" and widget.run_selected_button.text() == "验证所选势"
+    assert task.outcome == "succeeded" and widget.run_selected_button.text() == "Validate selected models"
     assert widget.model.row_of_model(scored.fresh["id"]) >= 0
 
     widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.new["id"]))
@@ -1259,7 +1259,7 @@ def test_validate_selected_versions_includes_hidden_but_not_unselected(scored, t
     widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
     with patch.object(service, "evaluate", wraps=service.evaluate) as evaluate:
         widget.run_selected_button.button.click()
-        assert widget.run_selected_button.text() == "停止验证"
+        assert widget.run_selected_button.text() == "Stop validation"
         assert _wait_until(lambda: widget._run_task is None)
         assert {call.args for call in evaluate.call_args_list} == {
             (model_id, set_id) for model_id in (scored.new["id"], scored.fresh["id"])

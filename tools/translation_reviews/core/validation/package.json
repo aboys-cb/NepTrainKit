@@ -1,0 +1,77 @@
+{
+  "items": [],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Invalid package ⟦value⟧.",
+      "context": null,
+      "rendered": "Invalid package ⟦value⟧.",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Invalid EXTXYZ frame.",
+      "context": null,
+      "rendered": "Invalid EXTXYZ frame.",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Invalid validation package: ⟦value⟧",
+      "context": null,
+      "rendered": "Invalid validation package: ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Unsupported validation package format/version.",
+      "context": null,
+      "rendered": "Unsupported validation package format/version.",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Invalid suite notes.",
+      "context": null,
+      "rendered": "Invalid suite notes.",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Package baseline model is missing.",
+      "context": null,
+      "rendered": "Package baseline model is missing.",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Invalid object checksum.",
+      "context": null,
+      "rendered": "Invalid object checksum.",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Unsupported protocol version: ⟦value⟧ ⟦value⟧",
+      "context": null,
+      "rendered": "Unsupported protocol version: ⟦value⟧ ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/validation/package.py",
+      "source": "Invalid reference metadata.",
+      "context": null,
+      "rendered": "Invalid reference metadata.",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "items": [],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Each EOS group needs at least 5 distinct volume points from one phase / magnetic branch.\nInput: each structure's total energy in eV. Do not divide by the atom count beforehand.\nComparison: E/N (eV/atom) and V/N (Å³/atom), normalized automatically.\nFixed periodic reference structures; ordinary NEP models only.",
+      "context": "BenchmarkImportDialog",
+      "rendered": [
+        "每组 EOS 至少需要 5 个不同体积点，属于同一相 / 磁态分支。\n输入：每个结构的总能量（eV），请勿提前除以原子数。\n比较：程序自动按原子数 N 归一化，使用 E/N（eV/atom）和 V/N（Å³/atom）。\n使用固定周期参考构型；目前仅支持普通 NEP 势。"
+      ],
+      "review": "technical",
+      "reason": "中文句子已完整；余下为 E/N、V/N、eV/atom 等物理量与单位记号，以及 EOS、NEP 等专有名词，须保持原样。"
+    }
+  ]
+}

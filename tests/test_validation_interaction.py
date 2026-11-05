@@ -72,7 +72,7 @@ def test_scope_matches_visible_counts_and_each_run_action(scored, tmp_path):
     # Zoom/focus is a view operation; default scope explicitly says all EOS groups.
     ids = w.selected_model_ids()
     assert len(w.run_jobs(model_ids=ids)) == 4
-    assert '2 个势 · 2 项 · 4 次验证' == w.scope_hint.text()
+    assert '2 models · 2 items · 4 validations' == w.scope_hint.text()
     w.scope_combo.setCurrentIndex(w.scope_combo.findData('selection'))
     assert len(w.run_jobs(model_ids=ids)) == 2
     with patch.object(s, 'evaluate', wraps=s.evaluate) as evaluate:
@@ -128,7 +128,7 @@ def test_top_save_targets_editor_then_temporary_plan_then_model(toolbar, monkeyp
     host.save_dir_button.button.click()
     assert w.editor_scroll.isHidden() and w.current_suite_id() > 0
     assert calls == []
-    assert '势版本' in host.save_dir_button.toolTip()
+    assert 'model version' in host.save_dir_button.toolTip()
     w.show_diagnostic_editor()
     w.diagnostic_editor.name.setText('trial plan')
     w.diagnostic_editor.temporary_button.click()
@@ -143,7 +143,7 @@ def test_overview_no_result_reads_and_property_selector_is_available(scored):
     w = ModelLibraryWidget(service=scored.service)
     with patch.object(scored.service, 'run_details') as details, patch.object(scored.service, 'evaluate') as evaluate:
         w.refresh(scored.suite['id'], scored.new['id'])
-        assert '已有结果' in w.overview_label.text()
+        assert 'Done' in w.overview_label.text()
         assert w.property_combo.parent() is w.controls_panel
         w.property_combo.setCurrentIndex(w.property_combo.findData('efv'))
         assert len(w.run_jobs(scored.new['id'])) == 1

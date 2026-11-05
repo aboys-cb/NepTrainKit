@@ -1,0 +1,77 @@
+{
+  "items": [],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "workflow JSON does not contain a workflow object",
+      "context": null,
+      "rendered": "workflow JSON does not contain a workflow object",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "workflow JSON does not contain any cards",
+      "context": null,
+      "rendered": "workflow JSON does not contain any cards",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "each card entry must be an object, got ⟦value⟧",
+      "context": null,
+      "rendered": "each card entry must be an object, got ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "a card entry is missing its class name",
+      "context": null,
+      "rendered": "a card entry is missing its class name",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "'params' must be an object",
+      "context": null,
+      "rendered": "'params' must be an object",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "child card list must be an array",
+      "context": null,
+      "rendered": "child card list must be an array",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "unsupported operation type ⟦value⟧",
+      "context": null,
+      "rendered": "unsupported operation type ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "cannot load its implementation: ⟦value⟧",
+      "context": null,
+      "rendered": "cannot load its implementation: ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    },
+    {
+      "path": "src/NepTrainKit/core/workflow.py",
+      "source": "expected a path, JSON text, or mapping, got ⟦value⟧",
+      "context": null,
+      "rendered": "expected a path, JSON text, or mapping, got ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    }
+  ]
+}

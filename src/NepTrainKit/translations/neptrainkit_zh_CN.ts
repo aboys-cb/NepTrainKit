@@ -22,6 +22,21 @@
         <source>Magnitude</source>
         <translation>模长</translation>
     </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_plot.py" line="94" />
+        <source>Reset the axes to fit the visible curves</source>
+        <translation>重置坐标轴：适应可见曲线</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_plot.py" line="159" />
+        <source>Summarises the checks for the selected model versions; expand a version for detail.</source>
+        <translation>汇总所选势版本的检查条目；详情按版本展开。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_plot.py" line="165" />
+        <source>View the check results, applicability conditions, and numeric evidence by model version</source>
+        <translation>按势版本查看检查结果、适用条件和数值依据</translation>
+    </message>
     </context>
 <context>
     <name>AdvancedModelSearchDialog</name>
@@ -9057,6 +9072,54 @@ Every structure must have the chosen field. Each group must be one structure / m
     </message>
 </context>
 <context>
+    <name>DiagnosticEditor</name>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="33" />
+        <source>Back to the workbench, keeping what you entered</source>
+        <translation>返回工作台，保留本次填写</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="60" />
+        <source>For example: Fe lattice and magnetism</source>
+        <translation>例如：Fe 晶格与磁性</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="61" />
+        <source>Structural response diagnostic</source>
+        <translation>结构响应诊断</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="81" />
+        <source>Restore the default experiment and parameters and clear the physics ticks; the plan name and imported structures are kept.</source>
+        <translation>恢复默认实验和参数，清除物理条件勾选；保留方案名称和已导入结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="228" />
+        <source>Valid for this session only; the plan and its results are cleared on restart. You can still save it from the menu above.</source>
+        <translation>仅本次会话有效，重启后方案和结果会清除；可稍后从顶部菜单保存。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="301" />
+        <source>Parameters are remembered automatically; after changing the structure, re-check the target atoms and physics conditions.</source>
+        <translation>参数自动记忆；更换结构后，目标原子和物理条件需重新检查。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="303" />
+        <source>Saving the remembered parameters failed. What you entered still works, but it may not survive a restart.</source>
+        <translation>参数记忆保存失败，当前填写仍可使用，但重启后可能无法恢复。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="419" />
+        <source>Loaded {count} structures · {moments} · existing energy and force labels are not used</source>
+        <translation>已载入 {count} 个构型 · {moments} · 不使用已有能量 / 力标签</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_editor.py" line="423" />
+        <source>Use the structures brought in from show_nep, or import XYZ / POSCAR / CIF; energy and force labels are not required.</source>
+        <translation>可直接使用 show_nep 带入的结构，或导入 XYZ / POSCAR / CIF；无需能量和力标签。</translation>
+    </message>
+</context>
+<context>
     <name>DirectionInput</name>
     <message>
         <location filename="../ui/widgets/parameter_inputs.py" line="324" />
@@ -16109,7 +16172,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">没有已记录的模型覆盖该套件的全部元素。请在 NEP 数据集展示中打开模型以记录它。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1673" />
+        <location filename="../ui/views/model_library.py" line="1675" />
         <source>Running validation</source>
         <translation>正在运行验证</translation>
     </message>
@@ -16312,6 +16375,27 @@ All child items will also be deleted.</source>
         <translation>导出验证分享包…</translation>
     </message>
     <message>
+        <location filename="../ui/views/model_library.py" line="748" />
+        <source>Saves the model version to the project; the diagnostic plan is not saved</source>
+        <translation>保存势版本到项目；不会保存诊断方案</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="753" />
+        <source>Runs the current model and the ticked comparison models; hiding a curve does not untick it.</source>
+        <translation>运行当前势和勾选的对比势；隐藏曲线不会取消选择。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="768" />
+        <source>This scope applies to the selected, current, and library-wide runs alike. Focus a group by enlarging its chart or by selecting rows in the detail table.</source>
+        <translation>此范围同时用于验证所选势、当前势和全库势。选中组可通过放大子图或在详情表中选择。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1065" />
+        <location filename="../ui/views/model_library.py" line="1075" />
+        <source>Open the menu above to start a reference-free diagnostic, or to import reference data.</source>
+        <translation>从顶部打开菜单新建无参考诊断，或导入参考基准集。</translation>
+    </message>
+    <message>
         <location filename="../ui/views/model_library.py" line="1086" />
         <source>Worse = beyond {percent}% of the baseline, or beyond a metric's own tolerance</source>
         <translation>劣于基线 = 超出基线 {percent}%，或超出该指标自身的容差</translation>
@@ -16345,6 +16429,63 @@ All child items will also be deleted.</source>
         <location filename="../ui/views/model_library.py" line="1528" />
         <source>Sharing package imported as a new validation suite.</source>
         <translation>分享包已导入为新验证方案。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1569" />
+        <source>{models} models · {items} items · {runs} validations</source>
+        <translation>{models} 个势 · {items} 项 · {runs} 次验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1570" />
+        <source>Current model plus the ticked comparison models; only element-compatible jobs are created. The scope does not change when curves are hidden.</source>
+        <translation>当前势 + 勾选的对比势；仅生成元素兼容的任务。范围不随曲线隐藏而改变。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1575" />
+        <source>Validate every compatible model in the library ({runs} runs, other projects included)</source>
+        <translation>验证全库兼容势（{runs} 次，含其他项目）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1594" />
+        <source>Selected scope · {jobs} validations
+Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}</source>
+        <translation>所选范围 · {jobs} 次验证
+已有结果 {done}    待运行 {pending}    失败 {failed}    不支持 {unsupported}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1598" />
+        <source>Open the menu above to start a diagnostic plan, or to import reference data.</source>
+        <translation>从顶部打开菜单新建诊断方案，或导入参考基准集</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1618" />
+        <source>Stopping…</source>
+        <translation>正在停止…</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1646" />
+        <source>Nothing in this scope can run. Pick a model version and an experiment with compatible elements.</source>
+        <translation>所选范围没有可运行的任务，请选择势版本和元素兼容的实验。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1682" />
+        <source>Stop validation</source>
+        <translation>停止验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1685" />
+        <source>Validating · {label} · 0 / {total}</source>
+        <translation>正在验证 · {label} · 0 / {total}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1690" />
+        <source>Validating · {label} · {done} / {total}</source>
+        <translation>正在验证 · {label} · {done} / {total}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1712" />
+        <source>Validate selected models</source>
+        <translation>验证所选势</translation>
     </message>
 </context>
 <context>
@@ -19222,6 +19363,11 @@ All child items will also be deleted.</source>
         <location filename="../ui/views/model_library.py" line="303" />
         <source>Shift each model curve by its mean error, as the shape metrics do</source>
         <translation>按平均误差平移每条模型曲线，与形状指标一致</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="313" />
+        <source>Switches every diagnostic chart at once; the derivative view uses total energy.</source>
+        <translation>统一切换所有诊断图；导数使用总能量。</translation>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="389" />
@@ -30877,6 +31023,24 @@ Baseline model: {baseline}</source>
         <location filename="../ui/widgets/structure_filter_bar.py" line="786" />
         <source>Cancel</source>
         <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>panel</name>
+    <message>
+        <location filename="../ui/widgets/diagnostic_plot.py" line="60" />
+        <source>Model response  ·  {count} experiments</source>
+        <translation>模型响应  ·  {count} 项实验</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_plot.py" line="61" />
+        <source>Reference-free diagnostic  ·  Relative to the initial state per atom  ·  Accuracy not verified</source>
+        <translation>无参考诊断  ·  相对初始态 / 原子  ·  准确性尚未验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/diagnostic_plot.py" line="62" />
+        <source>Curves are model predictions. Passing an internal consistency check does not imply external accuracy, and a negative curvature is not automatically an error.</source>
+        <translation>曲线是模型预测；内部一致性检查通过不代表外部准确，负曲率也不自动判错。</translation>
     </message>
 </context>
 <context>

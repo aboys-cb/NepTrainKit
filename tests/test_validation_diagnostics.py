@@ -611,7 +611,7 @@ def test_editor_remembers_numeric_parameters_without_structure_conditions(seed, 
     assert json.loads(editor_preferences['value']) == expected
     restored = DiagnosticEditor()
     assert restored._parameter_values() == expected
-    assert not restored._seeds and restored.name.text() == '结构响应诊断'
+    assert not restored._seeds and restored.name.text() == 'Structural response diagnostic'
     assert restored.atom.value() == 1
     assert not any(box.isChecked() for box in (restored.variable, restored.zero_field, restored.no_soc))
     restored.set_seeds([seed])
@@ -703,7 +703,7 @@ def test_editor_reports_preference_write_failure_without_losing_inputs(seed, mon
         context.setattr(Config, 'set', lambda *_: (_ for _ in ()).throw(OSError('disk full')))
         widget.rows['volume'][1].setValue(-12)
     assert widget.rows['volume'][1].value() == -12 and widget.use_button.isEnabled()
-    assert '保存失败' in widget.parameters_hint.text()
+    assert 'failed' in widget.parameters_hint.text()
     widget.rows['volume'][1].setValue(-13)
-    assert '自动记忆' in widget.parameters_hint.text()
+    assert 'remembered automatically' in widget.parameters_hint.text()
     widget.close()

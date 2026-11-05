@@ -30,7 +30,7 @@ class DiagnosticEditor(QFrame):
         layout.setSpacing(14)
         heading = QHBoxLayout()
         close = TransparentToolButton(FluentIcon.RETURN, self)
-        close.setToolTip("返回工作台，保留本次填写")
+        close.setToolTip(self.tr("Back to the workbench, keeping what you entered"))
         close.setAccessibleName("返回工作台")
         close.clicked.connect(self.hide)
         heading.addWidget(close)
@@ -57,8 +57,8 @@ class DiagnosticEditor(QFrame):
         source.addWidget(CaptionLabel("选择一个构型作为扫描起点", self), 0, 1)
         self.name = LineEdit(self)
         self.name.setAccessibleName("方案名称")
-        self.name.setPlaceholderText("例如：Fe 晶格与磁性")
-        self.name.setText("结构响应诊断")
+        self.name.setPlaceholderText(self.tr("For example: Fe lattice and magnetism"))
+        self.name.setText(self.tr("Structural response diagnostic"))
         self.load_button = PushButton(FluentIcon.FOLDER, "导入结构…", self)
         self.load_button.clicked.connect(self.load_file)
         self.seed_combo = ComboBox(self)
@@ -78,7 +78,7 @@ class DiagnosticEditor(QFrame):
         parameters_heading.addWidget(BodyLabel("2  选择实验与扫描范围", self))
         parameters_heading.addStretch()
         self.reset_button = TransparentPushButton(FluentIcon.SYNC, "恢复默认", self)
-        self.reset_button.setToolTip("恢复默认实验和参数，清除物理条件勾选；保留方案名称和已导入结构。")
+        self.reset_button.setToolTip(self.tr("Restore the default experiment and parameters and clear the physics ticks; the plan name and imported structures are kept."))
         self.reset_button.clicked.connect(self.reset_parameters)
         parameters_heading.addWidget(self.reset_button)
         content.addLayout(parameters_heading)
@@ -225,7 +225,7 @@ class DiagnosticEditor(QFrame):
         summary.addWidget(persistence_hint)
         bottom.addLayout(summary, 1)
         self.temporary_button = PushButton("仅临时试用", self)
-        self.temporary_button.setToolTip("仅本次会话有效，重启后方案和结果会清除；可稍后从顶部菜单保存。")
+        self.temporary_button.setToolTip(self.tr("Valid for this session only; the plan and its results are cleared on restart. You can still save it from the menu above."))
         self.temporary_button.setEnabled(False)
         self.temporary_button.clicked.connect(lambda: self.prepare(temporary=True))
         bottom.addWidget(self.temporary_button)
@@ -298,9 +298,9 @@ class DiagnosticEditor(QFrame):
         if not self._restoring_parameters:
             try:
                 Config.set("validation", PARAMETERS_OPTION, json.dumps(self._parameter_values()))
-                self.parameters_hint.setText("参数自动记忆；更换结构后，目标原子和物理条件需重新检查。")
+                self.parameters_hint.setText(self.tr("Parameters are remembered automatically; after changing the structure, re-check the target atoms and physics conditions."))
             except (SQLAlchemyError, OSError):
-                self.parameters_hint.setText("参数记忆保存失败，当前填写仍可使用，但重启后可能无法恢复。")
+                self.parameters_hint.setText(self.tr("Saving the remembered parameters failed. What you entered still works, but it may not survive a restart."))
 
     def reset_parameters(self):
         self._apply_parameters(self._default_parameters)
@@ -416,11 +416,11 @@ class DiagnosticEditor(QFrame):
             self.atom.setMaximum(max(1, len(seed)))
             moments = existing_moment_vectors(seed, lift_scalar=False)
             moment_note = "含矢量磁矩，可配置磁性实验" if moments is not None else "未提供矢量磁矩；磁性实验需要带 spin / magmom 的结构"
-            self.seed_hint.setText(f"已载入 {len(self._seeds)} 个构型 · {moment_note} · 不使用已有能量 / 力标签")
+            self.seed_hint.setText(self.tr("Loaded {count} structures · {moments} · existing energy and force labels are not used").format(count=len(self._seeds), moments=moment_note))
             index = self.atom.value() - 1
             self.atom_hint.setText((seed[index].symbol + (f" · 磁矩 ({moments[index][0]:.2f}, {moments[index][1]:.2f}, {moments[index][2]:.2f})" if moments is not None else "")) if len(seed) else "空结构")
         else:
-            self.seed_hint.setText("可直接使用 show_nep 带入的结构，或导入 XYZ / POSCAR / CIF；无需能量和力标签。")
+            self.seed_hint.setText(self.tr("Use the structures brought in from show_nep, or import XYZ / POSCAR / CIF; energy and force labels are not required."))
             self.atom_hint.clear()
         try:
             experiments = self.experiments()

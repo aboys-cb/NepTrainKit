@@ -310,7 +310,7 @@ class RunDetailPanel(QWidget):
         self.diagnostic_mode = ComboBox(self)
         self.diagnostic_mode.addItem("能量响应", userData="relative_energy")
         self.diagnostic_mode.addItem("能量导数", userData="derivative")
-        self.diagnostic_mode.setToolTip("统一切换所有诊断图；导数使用总能量。")
+        self.diagnostic_mode.setToolTip(self.tr("Switches every diagnostic chart at once; the derivative view uses total energy."))
         self._diagnostic_charts = []
         from NepTrainKit.ui.widgets.diagnostic_plot import set_response_metric
         self.diagnostic_mode.currentIndexChanged.connect(lambda *_: set_response_metric(self))
@@ -745,12 +745,12 @@ class ModelLibraryWidget(QWidget):
         self.star_action = Action(FluentIcon.HEART.icon(color=palette.PLOT_SELECTED), self.tr("Star"), self)
         self.star_action.setCheckable(True)
         self.save_action = Action(QIcon(':/images/src/images/save.svg'), "保存势版本到项目…", self)
-        self.save_action.setToolTip("保存势版本到项目；不会保存诊断方案")
+        self.save_action.setToolTip(self.tr("Saves the model version to the project; the diagnostic plan is not saved"))
         self.baseline_button = TransparentToolButton(FluentIcon.PIN.colored(palette.PLOT_CURRENT, palette.PLOT_CURRENT), self)
         self.baseline_button.setToolTip(self.tr("Set baseline model") + "\n" + self.tr("Set a saved version to compare model improvements and regressions."))
         self.baseline_button.setAccessibleName(self.tr("Set baseline model"))
         self.run_selected_button = PrimarySplitPushButton(FluentIcon.PLAY, "验证所选势", self)
-        self.run_selected_button.setToolTip("运行当前势和勾选的对比势；隐藏曲线不会取消选择。")
+        self.run_selected_button.setToolTip(self.tr("Runs the current model and the ticked comparison models; hiding a curve does not untick it."))
         self.run_selected_button.clicked.connect(self._on_run_clicked)
         self.run_menu = RoundMenu(parent=self)
         self.run_current_action = Action(FluentIcon.PLAY, "仅验证当前势", self)
@@ -765,7 +765,7 @@ class ModelLibraryWidget(QWidget):
         for label, scope in (("当前性质 · 全部组", "property"), ("当前性质 · 选中组", "selection"), ("整个方案 · 所有性质", "suite")):
             self.scope_combo.addItem(label, userData=scope)
         self.scope_combo.setAccessibleName("验证范围")
-        self.scope_combo.setToolTip("此范围同时用于验证所选势、当前势和全库势。选中组可通过放大子图或在详情表中选择。")
+        self.scope_combo.setToolTip(self.tr("This scope applies to the selected, current, and library-wide runs alike. Focus a group by enlarging its chart or by selecting rows in the detail table."))
         self.scope_combo.currentIndexChanged.connect(self._update_run_scope)
         self.scope_hint = CaptionLabel(self)
         self.scope_hint.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
@@ -1062,7 +1062,7 @@ class ModelLibraryWidget(QWidget):
             card = service.scorecard(suite_id, [row["model_id"] for row in card["rows"]] + [model_id], draft=self._draft)
         self.model.set_scorecard(card)
         if suite_id is None:
-            self.empty_hint.setText("从顶部打开菜单新建无参考诊断，或导入参考基准集。")
+            self.empty_hint.setText(self.tr("Open the menu above to start a reference-free diagnostic, or to import reference data."))
         elif not card["columns"]:
             self.empty_hint.setText(self.tr("This validation plan has no reference datasets yet."))
         elif not card["rows"]:
@@ -1072,7 +1072,7 @@ class ModelLibraryWidget(QWidget):
         baseline = next((row for row in (card or {}).get("rows", []) if row["is_baseline"]), None)
         tolerance = (card or {}).get("tolerance")
         if suite_id is None:
-            self.baseline_label.setText("从顶部打开菜单新建无参考诊断，或导入参考基准集。")
+            self.baseline_label.setText(self.tr("Open the menu above to start a reference-free diagnostic, or to import reference data."))
         elif baseline is None:
             self.baseline_label.setText(self.tr("Baseline model: not selected"))
         else:
@@ -1566,13 +1566,13 @@ class ModelLibraryWidget(QWidget):
         ids = self.selected_model_ids()
         all_jobs = self.run_jobs()
         jobs = [job for job in all_jobs if job[0] in ids]
-        self.scope_hint.setText(f"{len(ids)} 个势 · {len(benchmarks)} 项 · {len(jobs)} 次验证")
-        self.scope_hint.setToolTip("当前势 + 勾选的对比势；仅生成元素兼容的任务。范围不随曲线隐藏而改变。")
+        self.scope_hint.setText(self.tr("{models} models · {items} items · {runs} validations").format(models=len(ids), items=len(benchmarks), runs=len(jobs)))
+        self.scope_hint.setToolTip(self.tr("Current model plus the ticked comparison models; only element-compatible jobs are created. The scope does not change when curves are hidden."))
         idle = self._run_task is None
         self.run_selected_button.setEnabled(bool(jobs) if idle else True)
         self.run_current_action.setEnabled(idle and any(job[0] == self.model_combo.currentData() for job in all_jobs))
         self.run_all_action.setEnabled(idle and bool(all_jobs))
-        self.run_all_action.setText(f"验证全库兼容势（{len(all_jobs)} 次，含其他项目）")
+        self.run_all_action.setText(self.tr("Validate every compatible model in the library ({runs} runs, other projects included)").format(runs=len(all_jobs)))
         self.scope_combo.setEnabled(idle)
         self.refresh_button.setEnabled(idle)
         self.model_combo.setEnabled(idle and bool(self.model._rows))
@@ -1591,9 +1591,11 @@ class ModelLibraryWidget(QWidget):
                     status = cell["status"]
                     counts[status if status in counts else "missing"] += 1
         self.overview_label.setText(
-            f"所选范围 · {len(jobs)} 次验证\n"
-            f"已有结果 {counts['succeeded']}    待运行 {counts['missing']}    失败 {counts['failed']}    不支持 {counts['unsupported']}"
-            if self._benchmarks else "从顶部打开菜单新建诊断方案，或导入参考基准集"
+            self.tr("Selected scope · {jobs} validations\nDone {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}").format(
+                jobs=len(jobs), done=counts["succeeded"], pending=counts["missing"],
+                failed=counts["failed"], unsupported=counts["unsupported"],
+            )
+            if self._benchmarks else self.tr("Open the menu above to start a diagnostic plan, or to import reference data.")
         )
 
     def run_jobs(self, model_id=None, *, model_ids=None):
@@ -1613,7 +1615,7 @@ class ModelLibraryWidget(QWidget):
     def _on_run_clicked(self):
         if self._run_task is not None:
             self._run_task.stop_work()
-            self.run_selected_button.setText("正在停止…")
+            self.run_selected_button.setText(self.tr("Stopping…"))
             self.run_selected_button.setEnabled(False)
             return
         self.run_selected()
@@ -1641,7 +1643,7 @@ class ModelLibraryWidget(QWidget):
         # Freeze the visible scope before capture/refresh can change selections.
         jobs = list(jobs if jobs is not None else self.run_jobs(model_ids=model_ids))
         if not jobs:
-            MessageManager.send_info_message("所选范围没有可运行的任务，请选择势版本和元素兼容的实验。")
+            MessageManager.send_info_message(self.tr("Nothing in this scope can run. Pick a model version and an experiment with compatible elements."))
             return None
         if self._draft is not None and any(model_id == 0 for model_id, _ in jobs):
             try:
@@ -1677,15 +1679,15 @@ class ModelLibraryWidget(QWidget):
         self._on_selection_changed(update_detail=False)
         self.diagnostic_editor.setEnabled(False)
         self.suite_combo.setEnabled(False)
-        self.run_selected_button.setText("停止验证")
+        self.run_selected_button.setText(self.tr("Stop validation"))
         self.run_selected_button.setIcon(FluentIcon.PAUSE)
         self.run_selected_button.dropButton.setEnabled(False)
-        self.run_summary.setText(f"正在验证 · {self._run_label} · 0 / {len(jobs)}")
+        self.run_summary.setText(self.tr("Validating · {label} · 0 / {total}").format(label=self._run_label, total=len(jobs)))
         task.start_work(evaluate_all)
         return task
 
     def _on_run_progress(self, index):
-        self.run_summary.setText(f"正在验证 · {self._run_label} · {index + 1} / {self._run_total}")
+        self.run_summary.setText(self.tr("Validating · {label} · {done} / {total}").format(label=self._run_label, done=index + 1, total=self._run_total))
 
     def _on_run_finished(self):
         task, self._run_task = self._run_task, None
@@ -1707,7 +1709,7 @@ class ModelLibraryWidget(QWidget):
         self.run_summary.setToolTip("\n".join(errors))
         self.diagnostic_editor.setEnabled(True)
         self.suite_combo.setEnabled(True)
-        self.run_selected_button.setText("验证所选势")
+        self.run_selected_button.setText(self.tr("Validate selected models"))
         self.run_selected_button.setIcon(FluentIcon.PLAY)
         self.run_selected_button.dropButton.setEnabled(True)
         current = self.current_model_row()

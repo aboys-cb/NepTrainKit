@@ -16033,8 +16033,8 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="745" />
-        <location filename="../ui/views/model_library.py" line="1246" />
-        <location filename="../ui/views/model_library.py" line="1455" />
+        <location filename="../ui/views/model_library.py" line="1260" />
+        <location filename="../ui/views/model_library.py" line="1469" />
         <source>Star</source>
         <translation>收藏</translation>
     </message>
@@ -16051,7 +16051,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">绿色：优于基线 · 红色：劣于基线 · 灰色：在容差内。按住 Ctrl 单击单元格可叠加多个模型。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1001" />
+        <location filename="../ui/views/model_library.py" line="1006" />
         <source>Cannot open the model library: {error}</source>
         <translation>无法打开模型库：{error}</translation>
     </message>
@@ -16076,8 +16076,8 @@ All child items will also be deleted.</source>
         <translation type="vanished">基线：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1246" />
-        <location filename="../ui/views/model_library.py" line="1455" />
+        <location filename="../ui/views/model_library.py" line="1260" />
+        <location filename="../ui/views/model_library.py" line="1469" />
         <source>Unstar</source>
         <translation>取消收藏</translation>
     </message>
@@ -16086,17 +16086,17 @@ All child items will also be deleted.</source>
         <translation type="vanished">该套件新基线的备注（可选）</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1476" />
+        <location filename="../ui/views/model_library.py" line="1490" />
         <source>Large benchmark file</source>
         <translation>基准文件过大</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1477" />
+        <location filename="../ui/views/model_library.py" line="1491" />
         <source>The file is {size:.1f} MB, above the {limit:.0f} MB limit. Copy it into the library anyway?</source>
         <translation>该文件大小为 {size:.1f} MB，超过 {limit:.0f} MB 上限。仍要复制到模型库吗？</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1527" />
+        <location filename="../ui/views/model_library.py" line="1541" />
         <source>Import failed: {error}</source>
         <translation>导入失败：{error}</translation>
     </message>
@@ -16109,7 +16109,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">没有已记录的模型覆盖该套件的全部元素。请在 NEP 数据集展示中打开模型以记录它。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1659" />
+        <location filename="../ui/views/model_library.py" line="1673" />
         <source>Running validation</source>
         <translation>正在运行验证</translation>
     </message>
@@ -16138,7 +16138,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">保存到项目…</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1431" />
+        <location filename="../ui/views/model_library.py" line="1445" />
         <source>Saved to project</source>
         <translation>已保存到项目</translation>
     </message>
@@ -16151,7 +16151,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/views/model_library.py" line="750" />
         <location filename="../ui/views/model_library.py" line="751" />
-        <location filename="../ui/views/model_library.py" line="1468" />
+        <location filename="../ui/views/model_library.py" line="1482" />
         <source>Set baseline model</source>
         <translation>设为基准势版本</translation>
     </message>
@@ -16164,7 +16164,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">相对基准势版本：绿色为改善，红色为退化，灰色为容差内。按住 Ctrl 点击单元格可叠加多个势版本。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1467" />
+        <location filename="../ui/views/model_library.py" line="1481" />
         <source>Note for the baseline model (optional). This changes the comparison version only; reference datasets and original model files stay unchanged.</source>
         <translation>基准势版本备注（可选）。仅更改比较所用的势版本，不修改参考基准集及原始势文件。</translation>
     </message>
@@ -16182,7 +16182,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">参考基准集</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1043" />
+        <location filename="../ui/views/model_library.py" line="1048" />
         <source>Energy / force / virial</source>
         <translation>能量 / 力 / 维里</translation>
     </message>
@@ -16191,7 +16191,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">导入参考基准集并加入验证方案，即可开始验证势。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1062" />
+        <location filename="../ui/views/model_library.py" line="1067" />
         <source>This validation plan has no reference datasets yet.</source>
         <translation>此验证方案尚未添加参考基准集。</translation>
     </message>
@@ -16204,17 +16204,17 @@ All child items will also be deleted.</source>
         <translation type="vanished">已导入参考基准集 {name}</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1064" />
+        <location filename="../ui/views/model_library.py" line="1069" />
         <source>Open a compatible NEP model to validate this plan. Reference data can already be previewed below.</source>
         <translation>打开兼容的 NEP 势以运行此验证方案。下方可先预览参考数据。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1073" />
+        <location filename="../ui/views/model_library.py" line="1079" />
         <source>Baseline model: {name}</source>
         <translation>基准势版本：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1531" />
+        <location filename="../ui/views/model_library.py" line="1545" />
         <source>Imported {count} reference datasets</source>
         <translation>已导入 {count} 个参考基准集</translation>
     </message>
@@ -16223,13 +16223,13 @@ All child items will also be deleted.</source>
         <translation type="vanished">全部组共用一张图。点击表格行看单组，Ctrl 多选对比。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="817" />
-        <location filename="../ui/views/model_library.py" line="1265" />
+        <location filename="../ui/views/model_library.py" line="822" />
+        <location filename="../ui/views/model_library.py" line="1279" />
         <source>Show all groups</source>
         <translation>显示全部组</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="883" />
+        <location filename="../ui/views/model_library.py" line="888" />
         <source>Metrics are for the current model. Green / red compare against the baseline model; choosing a comparison curve does not change the baseline.</source>
         <translation>表格显示当前势的指标，绿 / 红表示相对基准势改善 / 退化；对比曲线不改变基准势。</translation>
     </message>
@@ -16248,18 +16248,18 @@ All child items will also be deleted.</source>
         <translation>对比势</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1139" />
+        <location filename="../ui/views/model_library.py" line="1153" />
         <source>Reference preview only</source>
         <translation>仅预览参考数据</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="815" />
+        <location filename="../ui/views/model_library.py" line="820" />
         <source>Each group has independent axes. Enlarge a chart or select rows in the error details to focus.</source>
         <translation>各组独立坐标轴。点击图上放大按钮，或在误差详情中选中要查看的组。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="852" />
-        <location filename="../ui/views/model_library.py" line="1217" />
+        <location filename="../ui/views/model_library.py" line="857" />
+        <location filename="../ui/views/model_library.py" line="1231" />
         <source>Error details</source>
         <translation>误差详情</translation>
     </message>
@@ -16273,7 +16273,7 @@ All child items will also be deleted.</source>
         <translation>选择已保存的势版本作为基准，用于比较改善与退化。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1071" />
+        <location filename="../ui/views/model_library.py" line="1077" />
         <source>Baseline model: not selected</source>
         <translation>基准势：未设置</translation>
     </message>
@@ -16286,17 +16286,17 @@ All child items will also be deleted.</source>
         <translation type="vanished">验证当前势和已选对比势，包括图例中暂时隐藏的曲线。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1180" />
+        <location filename="../ui/views/model_library.py" line="1194" />
         <source>Not run</source>
         <translation>未运行</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1180" />
+        <location filename="../ui/views/model_library.py" line="1194" />
         <source>{ready}/{total} validations completed</source>
         <translation>{ready}/{total} 项验证已完成</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1265" />
+        <location filename="../ui/views/model_library.py" line="1279" />
         <source>Back to all groups</source>
         <translation>返回全部组</translation>
     </message>
@@ -16307,37 +16307,42 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="742" />
-        <location filename="../ui/views/model_library.py" line="1494" />
+        <location filename="../ui/views/model_library.py" line="1508" />
         <source>Export validation sharing package…</source>
         <translation>导出验证分享包…</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1138" />
+        <location filename="../ui/views/model_library.py" line="1086" />
+        <source>Worse = beyond {percent}% of the baseline, or beyond a metric's own tolerance</source>
+        <translation>劣于基线 = 超出基线 {percent}%，或超出该指标自身的容差</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1152" />
         <source>No compatible model · {count} hidden</source>
         <translation>无兼容势 · {count} 个已隐藏</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1148" /><location filename="../ui/views/model_library.py" line="1149" />
+        <location filename="../ui/views/model_library.py" line="1162" /><location filename="../ui/views/model_library.py" line="1163" />
         <source>{count} model(s) were left out because their elements do not cover this plan ({elements}). Switch plan, or validate them against a plan covering their elements.</source>
         <translation>{count} 个势未显示，因为其元素不覆盖本方案（{elements}）。可切换方案，或用覆盖其元素的方案来验证。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1153" />
+        <location filename="../ui/views/model_library.py" line="1167" />
         <source>No model has been captured yet. Open a NEP model to associate it.</source>
         <translation>还没有捕获任何势。打开一个 NEP 模型即可关联。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1154" />
+        <location filename="../ui/views/model_library.py" line="1168" />
         <source>The model whose metrics this page shows.</source>
         <translation>本页展示其指标的势。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1499" />
+        <location filename="../ui/views/model_library.py" line="1513" />
         <source>Validation sharing package exported.</source>
         <translation>验证分享包已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1514" />
+        <location filename="../ui/views/model_library.py" line="1528" />
         <source>Sharing package imported as a new validation suite.</source>
         <translation>分享包已导入为新验证方案。</translation>
     </message>

@@ -799,9 +799,14 @@ class ModelLibraryWidget(QWidget):
         self.baseline_label = CaptionLabel(self)
         self.baseline_label.setWordWrap(True)
         self.baseline_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
+        self.tolerance_label = CaptionLabel(self)
+        self.tolerance_label.setWordWrap(True)
+        self.tolerance_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
+        self.tolerance_label.hide()
         actions = QHBoxLayout()
         actions.setSpacing(8)
         actions.addWidget(self.baseline_label, 1)
+        actions.addWidget(self.tolerance_label, 1)
         self.curves_button = PushButton(FluentIcon.VIEW, "查看曲线", self)
         self.curves_button.setCheckable(True)
         self.curves_button.toggled.connect(self._toggle_curves)
@@ -1065,6 +1070,7 @@ class ModelLibraryWidget(QWidget):
         self.empty_hint.setVisible(not self._benchmarks)
         suite = (card or {}).get("suite") or {}
         baseline = next((row for row in (card or {}).get("rows", []) if row["is_baseline"]), None)
+        tolerance = (card or {}).get("tolerance")
         if suite_id is None:
             self.baseline_label.setText("从顶部打开菜单新建无参考诊断，或导入参考基准集。")
         elif baseline is None:
@@ -1074,6 +1080,14 @@ class ModelLibraryWidget(QWidget):
             if suite.get("baseline_note"):
                 text += f" — {suite['baseline_note']}"
             self.baseline_label.setText(text)
+        # Say what "worse" means; otherwise the red cells state a verdict whose
+        # threshold the user has to guess.
+        self.tolerance_label.setText(
+            self.tr("Worse = beyond {percent}% of the baseline, or beyond a metric's own tolerance").format(
+                percent=f"{tolerance * 100:.0f}"
+            ) if isinstance(tolerance, (int, float)) else ""
+        )
+        self.tolerance_label.setVisible(bool(self.tolerance_label.text()) and baseline is not None)
         comparison_ids = self.comparison_picker.selected_ids() if self._displayed_suite_id == suite_id else [suite.get("baseline_model_id")]
         self._displayed_suite_id = suite_id
         self.model_combo.blockSignals(True)

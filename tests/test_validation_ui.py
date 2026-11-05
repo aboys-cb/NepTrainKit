@@ -92,6 +92,10 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     widget.refresh(scored.suite["id"])
     assert widget.model.rowCount() == 3
     assert "first production model" in widget.baseline_label.text()
+    # The red cells carry a verdict, so the page must state the threshold that
+    # produced it instead of leaving the user to guess.
+    assert not widget.tolerance_label.isHidden()
+    assert "5%" in widget.tolerance_label.text()
     assert (scored.fresh["id"], scored.eos["id"]) in widget.run_jobs()
 
     widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))

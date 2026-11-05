@@ -425,6 +425,67 @@ class TestCli:
         path.write_text(json.dumps(document), encoding="utf-8")
         return path
 
+    def test_stdout_survives_a_non_utf8_console(self, tmp_path, capsys):
+        """Windows Chinese consoles decode stdout as cp936.
+
+        A single arrow character made the summary unreadable there and in any
+        pipeline that stored the raw bytes, so the printed text must stay ASCII.
+        """
+        from NepTrainKit.cli import run_cli
+
+        path = self._write(tmp_path, _workflow(
+            {"class": "SuperCellCard", "check_state": True, "params": _supercell_params()},
+        ))
+        assert run_cli(["run", str(path), "-i", str(SI2), "-o", str(tmp_path / "o.xyz")]) == 0
+        out = capsys.readouterr().out
+        out.encode("cp936")  # raises UnicodeEncodeError if non-ASCII sneaks in
+        assert out.isascii()
+
+    def test_summary_shows_each_card_in_and_out(self, tmp_path, capsys):
+        """Per-card input and output counts are the useful part of the log."""
+        from NepTrainKit.cli import run_cli
+
+        path = self._write(tmp_path, _workflow(
+            {"class": "SuperCellCard", "check_state": True, "params": _supercell_params()},
+            {"class": "CellStrainCard", "check_state": True, "params": {
+                "axes": "uniaxial", "x_range": [-2.0, 2.0, 2.0],
+                "y_range": [-5.0, 5.0, 1.0], "z_range": [-5.0, 5.0, 1.0],
+                "identify_organic": False,
+            }},
+        ))
+        assert run_cli(["run", str(path), "-i", str(SI2), "-o", str(tmp_path / "o.xyz")]) == 0
+        lines = capsys.readouterr().out.splitlines()
+
+        assert "SuperCellCard" in lines[0]
+        assert lines[0].split()[-4:] == ["1", "in", "1", "out"]
+        assert "CellStrainCard" in lines[1]
+        assert lines[1].split()[-4:] == ["1", "in", "23", "out"]
+        assert lines[-2].startswith("total:")
+        assert lines[-1].startswith("written:")
+
+    def test_summary_is_field_parseable(self, tmp_path, capsys):
+        """A shell can split the rows without guessing column widths."""
+        from NepTrainKit.cli import run_cli
+
+        path = self._write(tmp_path, _workflow(
+            {"class": "SuperCellCard", "check_state": True, "params": _supercell_params()},
+            {"class": "CellStrainCard", "check_state": True, "params": {
+                "axes": "uniaxial", "x_range": [-2.0, 2.0, 2.0],
+                "y_range": [-5.0, 5.0, 1.0], "z_range": [-5.0, 5.0, 1.0],
+                "identify_organic": False,
+            }},
+        ))
+        assert run_cli(["run", str(path), "-i", str(SI2), "-o", str(tmp_path / "o.xyz")]) == 0
+        rows = [
+            line.split()
+            for line in capsys.readouterr().out.splitlines()
+            if len(line.split()) == 5 and line.split()[2] == "in"
+        ]
+        assert [(row[0], int(row[1]), int(row[3])) for row in rows] == [
+            ("SuperCellCard", 1, 1),
+            ("CellStrainCard", 1, 23),
+        ]
+
     def test_preview_lists_stages_without_writing(self, tmp_path, capsys):
         from NepTrainKit.cli import run_cli
 

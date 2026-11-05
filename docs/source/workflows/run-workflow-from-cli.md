@@ -69,14 +69,30 @@ nepkit workflow run flow.json -i input.xyz -o two_stages.xyz \
 
 ```
 $ nepkit workflow run flow.json -i input.xyz -o out.xyz
-1 in → 24 out | SuperCellCard 1 → CellStrainCard 23
+SuperCellCard        1 in       1 out
+CellStrainCard       1 in      23 out
+total: 1 in, 24 out
 written: out.xyz
 ```
 
-一行里依次是：输入结构数、总输出数、每张卡各自的输出数量。卡片按执行顺序排列，箭头跟着流程
-走向，所以粘日志时一行就能看出每一步扩增了多少。
+每张卡一行，按执行顺序排列，`in` 是这张卡收到多少结构，`out` 是它产出多少。这样能直接看出
+哪一步在扩增、哪一步在过滤：
 
-左边那个总输出数是全部卡片输出之和，通常大于最后一级；只想看某一级时用 `--card`。
+```
+SuperCellCard         1 in       1 out
+CellStrainCard        1 in    1331 out
+CardGroup             1 in    1381 out
+PerturbCard        1381 in   69050 out
+```
+
+最后一行的 `total` 里，输入数是整条流程的输入，输出数是全部卡片输出之和，通常大于最后一级；
+只想看某一级时用 `--card`。
+
+输出只用 ASCII 字符，所以在 Windows 中文终端（cp936）里不会乱码，也可以直接按空白列拆开：
+
+```bash
+nepkit workflow run flow.json -i input.xyz -o out.xyz | awk '$3=="in" {print $1, $5}'
+```
 
 默认情况下标准错误只会出现错误信息，不会混入库内部的计时和调试日志——即使界面里把日志级别
 设成了「调试」也一样，因为命令行不以界面设置为准。

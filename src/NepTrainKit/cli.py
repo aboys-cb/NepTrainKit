@@ -192,13 +192,31 @@ def _run(namespace: argparse.Namespace) -> int:
         _write_structures(namespace.output, selected)
 
     if not namespace.quiet:
-        chain = " → ".join(
-            f"{name} {len(result.outputs(name))}" for name in result.card_names()
-        )
-        print(f"{len(structures)} in → {len(selected)} out | {chain}")
-        if namespace.output:
-            print(f"written: {namespace.output}")
+        _print_summary(result, len(structures), len(selected), namespace.output)
     return 0
+
+
+def _print_summary(
+    result: Any,
+    input_count: int,
+    output_count: int,
+    destination: str | None,
+) -> None:
+    """Print one alignment-friendly row per card, then the totals.
+
+    Everything here is plain ASCII on purpose: a Windows Chinese console decodes
+    stdout as cp936, where an arrow character becomes mojibake and breaks both
+    the terminal and any pipeline that stores the output.
+    """
+    width = max((len(output.card_class) for output in result.card_outputs), default=0)
+    for output in result.card_outputs:
+        print(
+            f"{output.card_class:<{width}}  "
+            f"{output.input_count:>6} in  {len(output):>6} out"
+        )
+    print(f"total: {input_count} in, {output_count} out")
+    if destination:
+        print(f"written: {destination}")
 
 
 def _read_structures(path: str) -> list[Any]:

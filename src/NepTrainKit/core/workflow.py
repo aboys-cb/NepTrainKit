@@ -314,6 +314,8 @@ class CardOutput:
     index: int
     card_class: str
     structures: list[Any]
+    #: How many structures reached this card. Generators start from zero.
+    input_count: int = 0
 
     def __len__(self) -> int:
         return len(self.structures)
@@ -555,6 +557,7 @@ def _run_spec(
             index=len(outputs) + 1,
             card_class=spec.card_class,
             structures=produced,
+            input_count=len(incoming),
         )
     )
     return produced
@@ -619,6 +622,7 @@ def _run_group(
             index=len(outputs) + 1,
             card_class=spec.card_class,
             structures=merged,
+            input_count=len(incoming),
         )
     )
     return merged
@@ -645,6 +649,7 @@ def _run_fork(
                 index=len(outputs) + 1,
                 card_class=spec.card_class,
                 structures=list(terminal),
+                input_count=len(incoming),
             )
         )
         return list(terminal)
@@ -657,6 +662,7 @@ def _run_fork(
             index=len(outputs) + 1,
             card_class=spec.card_class,
             structures=merged,
+            input_count=len(incoming),
         )
     )
     return merged

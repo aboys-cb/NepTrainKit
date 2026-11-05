@@ -14,6 +14,7 @@ _console_handler_id: int | None = None
 _file_handler_id: int | None = None
 _file_sink: str | None = None
 _configured_level = DEFAULT_LOG_LEVEL
+_pinned_level: str | None = None
 _initialized = False
 
 
@@ -71,6 +72,30 @@ def set_log_level(level: object) -> str:
     _install_handlers(normalized)
     _configured_level = normalized
     return normalized
+
+
+def pin_log_level(level: object) -> str:
+    """Apply a level that later imports must not overwrite.
+
+    ``NepTrainKit.config`` re-applies the saved application level when it is
+    imported. A command line caller that deliberately runs at ``INFO`` should
+    not lose that setting the moment a card imports configuration, so pinning
+    records the level as owned by the caller.
+    """
+    global _pinned_level
+    _pinned_level = set_log_level(level)
+    return _pinned_level
+
+
+def release_log_level() -> None:
+    """Stop pinning, so :func:`set_log_level` calls from imports take effect."""
+    global _pinned_level
+    _pinned_level = None
+
+
+def get_pinned_level() -> str | None:
+    """Return the level a caller pinned, or ``None`` when unpinned."""
+    return _pinned_level
 
 
 def get_log_level() -> str:

@@ -292,6 +292,11 @@ class WorkflowPlan:
         for spec in specs:
             if not spec.enabled:
                 continue
+            # A container's own output only exists after its children have run,
+            # so list children first to keep preview order identical to run order
+            # (and the same numbering as ``WorkflowResult.outputs(index=...)``).
+            if spec.is_container:
+                self._collect(spec.children, stages)
             stages.append(
                 CardStage(
                     index=len(stages) + 1,
@@ -300,8 +305,6 @@ class WorkflowPlan:
                     kind=spec.kind,
                 )
             )
-            if spec.is_container:
-                self._collect(spec.children, stages)
 
 
 @dataclass

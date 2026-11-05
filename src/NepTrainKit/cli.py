@@ -43,6 +43,8 @@ def run_cli(argv: list[str] | None = None) -> int:
     except SystemExit as exc:  # argparse already printed usage/help
         return int(exc.code or 0)
 
+    _configure_logging(getattr(namespace, "verbose", False))
+
     try:
         if namespace.command == "preview":
             return _preview(namespace)
@@ -112,7 +114,32 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="only report errors",
     )
+
+    for subparser in (preview, run):
+        subparser.add_argument(
+            "-v",
+            "--verbose",
+            action="store_true",
+            help="also print library diagnostics (card timing, backend details)",
+        )
     return parser
+
+
+def _configure_logging(verbose: bool) -> None:
+    """Keep stderr usable in pipelines unless diagnostics were requested.
+
+    The package initializes logging from the user's saved preference, which is
+    often ``DEBUG`` while working in the GUI. A command line run should not
+    inherit that: stdout carries the result summary and stderr should carry
+    errors, so scripts can read both without filtering.
+
+    ``NepTrainKit.config`` re-applies the saved level as an import side effect,
+    so the first card that needs configuration would turn DEBUG back on. Pinning
+    the level keeps the caller's choice in charge.
+    """
+    from .logging_config import pin_log_level
+
+    pin_log_level("DEBUG" if verbose else "INFO")
 
 
 def _preview(namespace: argparse.Namespace) -> int:
@@ -150,6 +177,8 @@ def _run(namespace: argparse.Namespace) -> int:
         _fail(f"{namespace.input} contains no structures")
         return 2
 
+    # Cards pull in NepTrainKit.config, which re-applies the saved level.
+    _configure_logging(getattr(namespace, "verbose", False))
     result = run.run(structures)
 
     if namespace.card:

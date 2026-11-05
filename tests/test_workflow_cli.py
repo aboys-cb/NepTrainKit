@@ -266,6 +266,50 @@ class TestExecution:
         with pytest.raises(WorkflowError):
             result.outputs("CellStrainCard")
 
+    def test_preview_order_matches_run_order(self):
+        """A container runs after its children, so preview must list it last.
+
+        Preview is what users check before a long run; listing CardGroup before
+        the cards it contains made the plan read backwards.
+        """
+        run = load_workflow(_workflow(
+            {"class": "SuperCellCard", "check_state": True, "params": _supercell_params()},
+            {"class": "CardGroup", "check_state": True, "card_list": [
+                {"class": "CellStrainCard", "check_state": True, "params": {
+                    "axes": "uniaxial", "x_range": [-2.0, 2.0, 2.0],
+                    "y_range": [-5.0, 5.0, 1.0], "z_range": [-5.0, 5.0, 1.0],
+                    "identify_organic": False,
+                }},
+                {"class": "CellScalingCard", "check_state": True, "params": {
+                    "engine_type": 1, "max_scaling": 0.04, "max_num": 3,
+                    "perturb_angle": True, "identify_organic": False,
+                    "use_seed": True, "seed": 0,
+                }},
+            ]},
+        ))
+        preview = [stage.card_class for stage in run.preview()]
+        assert preview == [
+            "SuperCellCard", "CellStrainCard", "CellScalingCard", "CardGroup",
+        ]
+        assert run.run([_si2()]).card_names() == preview
+
+    def test_preview_index_matches_result_index(self):
+        """``preview`` numbering and ``outputs(index=...)`` must agree."""
+        run = load_workflow(_workflow(
+            {"class": "SuperCellCard", "check_state": True, "params": _supercell_params()},
+            {"class": "CardGroup", "check_state": True, "card_list": [
+                {"class": "CellStrainCard", "check_state": True, "params": {
+                    "axes": "uniaxial", "x_range": [-2.0, 2.0, 2.0],
+                    "y_range": [-5.0, 5.0, 1.0], "z_range": [-5.0, 5.0, 1.0],
+                    "identify_organic": False,
+                }},
+            ]},
+        ))
+        result = run.run([_si2()])
+        for stage in run.preview():
+            by_index = result.outputs(index=stage.index)
+            assert by_index == result.outputs(stage.card_class), stage.card_class
+
     def test_generator_card_produces_without_input(self):
         run = load_workflow(_workflow({
             "class": "OrderedAlloyPrototypeCard",
@@ -502,6 +546,70 @@ class TestFPSModelPath:
         err = capsys.readouterr().err
         assert stale in err, "the missing model path must appear in the message"
         assert "None" not in err
+
+
+class TestLogQuieting:
+    """stderr is an error channel for a CLI, whatever the GUI preference is."""
+
+    def test_cli_level_survives_config_import(self):
+        """``config`` re-applies the saved level; a pinned level must win."""
+        from NepTrainKit.logging_config import (
+            get_log_level,
+            get_pinned_level,
+            pin_log_level,
+            release_log_level,
+            set_log_level,
+        )
+
+        previous = get_log_level()
+        try:
+            pin_log_level("INFO")
+            import NepTrainKit.config  # noqa: F401 - re-applies the saved level
+
+            assert get_pinned_level() == "INFO"
+            assert get_log_level() == "INFO", "import of config must not override a pinned level"
+        finally:
+            release_log_level()
+            set_log_level(previous)
+
+    def test_without_pin_config_import_still_applies_saved_level(self):
+        """The desktop path must keep honouring the saved preference."""
+        from NepTrainKit.logging_config import (
+            get_log_level,
+            get_pinned_level,
+            release_log_level,
+            set_log_level,
+        )
+
+        previous = get_log_level()
+        try:
+            release_log_level()
+            assert get_pinned_level() is None
+        finally:
+            set_log_level(previous)
+
+    def test_run_stderr_is_clean_and_verbose_shows_diagnostics(self, tmp_path):
+        from NepTrainKit.cli import run_cli
+        from NepTrainKit.logging_config import get_log_level
+
+        path = tmp_path / "flow.json"
+        path.write_text(json.dumps(_workflow(
+            {"class": "SuperCellCard", "check_state": True, "params": _supercell_params()},
+        )), encoding="utf-8")
+
+        previous = get_log_level()
+        try:
+            run_cli(["run", str(path), "-i", str(SI2), "-o", str(tmp_path / "a.xyz")])
+            default_level = get_log_level()
+            assert default_level == "INFO", "a plain run reports only real problems"
+
+            run_cli(["run", str(path), "-i", str(SI2), "-o", str(tmp_path / "b.xyz"), "-v"])
+            assert get_log_level() == "DEBUG", "-v opts into library diagnostics"
+        finally:
+            from NepTrainKit.logging_config import release_log_level, set_log_level
+
+            release_log_level()
+            set_log_level(previous)
 
 
 class TestShippedTemplate:

@@ -63,6 +63,34 @@ nepkit workflow run flow.json -i input.xyz -o two_stages.xyz \
 
 输出格式为 extxyz，与界面导出保持一致。`-q` 只打印错误，适合放进脚本。
 
+## 输出分两路
+
+结果摘要走标准输出，错误走标准错误，脚本可以直接分开读：
+
+```
+$ nepkit workflow run flow.json -i input.xyz -o out.xyz
+input: 1 structure(s) from input.xyz          ← stdout
+  SuperCellCard: 1
+  CellStrainCard: 23
+total: 24 structure(s)
+written: out.xyz
+```
+
+默认情况下标准错误只会出现错误信息，不会混入库内部的计时和调试日志——即使界面里把日志级别
+设成了「调试」也一样，因为命令行不以界面设置为准。
+
+需要看库内部的诊断信息（例如某张卡的耗时）时加 `-v`：
+
+```bash
+nepkit workflow run flow.json -i input.xyz -o out.xyz -v
+```
+
+此时标准错误会出现类似这样的内容：
+
+```
+2026-11-05 16:05:01 | DEBUG | NepTrainKit.utils:wrapper:35 - Function 'descriptors' executed in 0.0017 seconds
+```
+
 ## 退出码
 
 | 退出码 | 含义 |

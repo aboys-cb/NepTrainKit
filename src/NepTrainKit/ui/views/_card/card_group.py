@@ -318,6 +318,9 @@ class CardGroup(MakeDataCardWidget):
         self.filter_hint.setVisible(expanded)
         self.filter_widget.setVisible(expanded)
         self.summary_label.setVisible(not expanded)
+        sync_body = getattr(self, "_sync_empty_body_visibility", None)
+        if callable(sync_body):
+            sync_body()
     def set_dataset(self,dataset):
         """Store the shared dataset reference and clear accumulated results.
         
@@ -534,6 +537,9 @@ class CardGroup(MakeDataCardWidget):
             )
         self.summary_label.setText(summary)
         self.summary_label.setVisible(self.window_state != "expand")
+        sync_body = getattr(self, "_sync_empty_body_visibility", None)
+        if callable(sync_body):
+            sync_body()
         self.branch_hint.setText(
             self.tr("Common input · {count} structures").format(count=input_count)
             if input_count is not None

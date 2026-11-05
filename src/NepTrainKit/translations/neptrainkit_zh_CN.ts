@@ -7579,14 +7579,10 @@
     </message>
     <message>
         <location filename="../ui/views/cards.py" line="86" />
-        <location filename="../ui/views/cards.py" line="102" />
-        <source>View selected outputs</source>
-        <translation>查看勾选输出</translation>
-    </message>
-    <message>
         <location filename="../ui/views/cards.py" line="97" />
-        <source>View output</source>
-        <translation>查看输出</translation>
+        <location filename="../ui/views/cards.py" line="102" />
+        <source>View all outputs</source>
+        <translation>查看全部输出</translation>
     </message>
     <message>
         <location filename="../ui/views/cards.py" line="90" />

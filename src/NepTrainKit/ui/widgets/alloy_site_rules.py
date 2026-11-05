@@ -24,7 +24,7 @@ from NepTrainKit.core.alloy import fractions_to_counts_exact
 from NepTrainKit import palette
 
 from .compact_form import SegmentedControl
-from .input import AdaptiveCompactSpinBox, AdaptiveInlineDoubleSpinBox
+from .input import AdaptiveCompactDoubleSpinBox, AdaptiveCompactSpinBox
 from .parameter_inputs import ElementLineEdit
 
 
@@ -61,7 +61,7 @@ class AlloyElementRuleRow(QWidget):
         self.element_edit.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.element_edit.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
-        self.fixed_fraction_spin = AdaptiveInlineDoubleSpinBox(self)
+        self.fixed_fraction_spin = AdaptiveCompactDoubleSpinBox(self)
         self.fixed_fraction_spin.setRange(0.0, 1.0)
         self.fixed_fraction_spin.setDecimals(6)
         self.fixed_fraction_spin.setSingleStep(0.05)
@@ -70,8 +70,8 @@ class AlloyElementRuleRow(QWidget):
         self.fixed_fraction_spin.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.fixed_fraction_spin.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
-        self.fraction_min_spin = AdaptiveInlineDoubleSpinBox(self)
-        self.fraction_max_spin = AdaptiveInlineDoubleSpinBox(self)
+        self.fraction_min_spin = AdaptiveCompactDoubleSpinBox(self)
+        self.fraction_max_spin = AdaptiveCompactDoubleSpinBox(self)
         for spin in (self.fraction_min_spin, self.fraction_max_spin):
             spin.setRange(0.0, 1.0)
             spin.setDecimals(6)

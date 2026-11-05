@@ -132,10 +132,10 @@ class TestMakeDataExportScope(unittest.TestCase):
                 widget.export_all_outputs_action.text(), "导出全部可用卡片输出"
             )
             self.assertEqual(
-                widget.setting_group.view_output_button.text(), "查看输出"
+                widget.setting_group.view_output_button.text(), "查看全部输出"
             )
             self.assertEqual(
-                widget.setting_group.view_output_action.text(), "查看勾选输出"
+                widget.setting_group.view_output_action.text(), "查看全部输出"
             )
         finally:
             self._app.removeTranslator(translator)

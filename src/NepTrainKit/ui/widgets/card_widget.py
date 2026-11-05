@@ -851,6 +851,7 @@ class MakeDataCard(MakeDataCardWidget):
             self.summary_label.setToolTip(summary)
         self.summary_label.setVisible(show_summary)
         self.status_label.setVisible(not compact)
+        self._sync_empty_body_visibility()
 
     def _compact_detail_text(self) -> str:
         """Return the stable single-line settings summary for the canvas."""
@@ -870,7 +871,42 @@ class MakeDataCard(MakeDataCardWidget):
     def refresh_compact_presentation(self) -> None:
         """Refresh the canvas summary after parameters or inspector state change."""
         self._refresh_collapsed_summary()
+        self._sync_empty_body_visibility()
         self.presentationChanged.emit()
+
+    def _sync_empty_body_visibility(self) -> None:
+        """Hide a body that holds no visible content so collapsed cards stay tight.
+
+        Parameter editors live in the right inspector, so a card whose
+        parameters are inspector-hosted keeps an empty ``view`` container and
+        a divider between the header and that empty space. Both are pure
+        whitespace once nothing inside ``view`` is visible.
+        """
+        if not hasattr(self, "view") or not hasattr(self, "separator"):
+            return
+        # The portrait group tile owns its own header and deliberately hides
+        # both the body and the divider; never re-show them from here.
+        if getattr(self, "_group_tile_enabled", False):
+            return
+        if getattr(self, "window_state", "collapse") == "expand":
+            self.view.show()
+            self.separator.show()
+            return
+        layout = self.view.layout()
+        has_visible_content = False
+        if layout is not None:
+            for index in range(layout.count()):
+                item = layout.itemAt(index)
+                widget = item.widget() if item is not None else None
+                if widget is not None and not widget.isHidden():
+                    has_visible_content = True
+                    break
+                child_layout = item.layout() if item is not None else None
+                if child_layout is not None and child_layout.count():
+                    has_visible_content = True
+                    break
+        self.view.setVisible(has_visible_content)
+        self.separator.setVisible(has_visible_content)
 
     @staticmethod
     def _safe_count(value) -> int:

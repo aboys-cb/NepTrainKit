@@ -83,7 +83,7 @@ class ConsoleWidget(QWidget):
 
         self.view_output_action = QAction(
             QIcon(r":/images/src/images/show_nep.svg"),
-            self.tr("View selected outputs"),
+            self.tr("View all outputs"),
             self,
         )
         self.view_output_action.setToolTip(
@@ -94,12 +94,12 @@ class ConsoleWidget(QWidget):
         self.view_output_button = self.setting_command.addAction(
             self.view_output_action
         )
-        self.view_output_button.setText(self.tr("View output"))
+        self.view_output_button.setText(self.tr("View all outputs"))
         self.view_output_button.setToolButtonStyle(
             Qt.ToolButtonStyle.ToolButtonTextBesideIcon
         )
         self.view_output_button.adjustSize()
-        self.view_output_button.setAccessibleName(self.tr("View selected outputs"))
+        self.view_output_button.setAccessibleName(self.tr("View all outputs"))
 
         self.run_button = PushButton(
             QIcon(r":/images/src/images/run.svg"),

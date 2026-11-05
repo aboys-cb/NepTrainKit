@@ -471,9 +471,9 @@ msgstr "The view and export actions on a card operate only on that card's output
 
 #: ../../source/example/card-system-workflow.md:95
 #: 57fbfd758ea64e24929dec5c4ebdb512
-msgid "中间工具栏的 `查看输出`：合并查看所有已勾选且已经产生结果的卡片，包含中间步骤。"
+msgid "中间工具栏的 `查看全部输出`：合并查看所有已勾选且已经产生结果的卡片，包含中间步骤。"
 msgstr ""
-"`View output` in the center toolbar combines the outputs of all checked "
+"`View all outputs` in the center toolbar combines the outputs of all checked "
 "cards that already have results, including intermediate steps."
 
 #: ../../source/example/card-system-workflow.md:96

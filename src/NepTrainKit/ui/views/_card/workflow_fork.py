@@ -656,6 +656,9 @@ class WorkflowFork(MakeDataCardWidget):
         self.body_widget.setVisible(self.window_state == "expand")
         self.collapsed_summary.setText(self.get_summary_text())
         self.collapsed_summary.setVisible(self.window_state != "expand")
+        sync_body = getattr(self, "_sync_empty_body_visibility", None)
+        if callable(sync_body):
+            sync_body()
 
     def _set_merge_enabled(self, enabled: bool) -> None:
         self.merge_enabled = bool(enabled)

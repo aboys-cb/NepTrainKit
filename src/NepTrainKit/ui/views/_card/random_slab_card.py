@@ -6,7 +6,7 @@ import itertools
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QAbstractItemView, QHBoxLayout, QHeaderView, QVBoxLayout, QWidget
-from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, PushButton, SpinBox, TableWidget
+from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, PushButton, TableWidget
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.defect import RandomSlabOperation, RandomSlabParams
@@ -14,6 +14,7 @@ from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import MessageManager, translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
+    AdaptiveCompactSpinBox,
     CompactField,
     InspectorSection,
     MakeDataCard,
@@ -97,9 +98,13 @@ class MillerIndexTableInput(QWidget):
         row = self.table.rowCount()
         self.table.insertRow(row)
         for column, value in enumerate(plane):
-            editor = SpinBox(self.table)
+            # Compact (single flyout button) keeps a narrow Miller cell fully
+            # readable; the inline variant reserved two 31 px buttons and left
+            # about 6 px for the value.
+            editor = AdaptiveCompactSpinBox(self.table)
             editor.setRange(-20, 20)
             editor.setValue(value)
+            editor.setFixedHeight(self.table.verticalHeader().defaultSectionSize())
             editor.setAlignment(Qt.AlignmentFlag.AlignCenter)
             editor.setAccessibleName(
                 self.tr("Miller index {axis}, row {row}").format(axis=("h", "k", "l")[column], row=row + 1)

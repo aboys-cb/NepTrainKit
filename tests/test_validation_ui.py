@@ -559,6 +559,7 @@ def _viewer_stub(model_id, opened, imported=None):
         validation_status_action=Action("status"),
         validation_star_action=Action("star"),
         validation_save_action=Action("save"),
+        validation_scorecard_action=Action("scorecard"),
         validation_count_badge=InfoBadge.error("0"),
         validation_dot_badge=DotInfoBadge.info(),
         _validation_model_id=model_id,
@@ -580,7 +581,6 @@ def _viewer_stub(model_id, opened, imported=None):
         "refresh_validation_chip",
         "_show_validation_badge",
         "open_validation_scorecard",
-        "import_validation_benchmark",
         "toggle_validation_star",
         "save_validation_model",
     ):
@@ -627,6 +627,7 @@ def test_viewer_status_line_and_badge_follow_the_suite(scored, monkeypatch):
 
 def test_viewer_entry_guides_first_import(scored, tmp_path, monkeypatch):
     from NepTrainKit.core.validation import Library, ValidationService
+    from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 
     monkeypatch.setenv(library_module.ENV_VAR, str(scored.service.library.root))
     opened, imported = [], []
@@ -634,20 +635,26 @@ def test_viewer_entry_guides_first_import(scored, tmp_path, monkeypatch):
     nickel = tmp_path / "ni" / "nep.txt"
     nickel.parent.mkdir()
     nickel.write_text("nep4 1 Ni\ncutoff 8 4 74 10\n")
-    stub = _viewer_stub(scored.service.capture_model(nickel)["id"], opened, imported)
+    model_id = scored.service.capture_model(nickel)["id"]
+    stub = _viewer_stub(model_id, opened, imported)
     stub.refresh_validation_chip()
     assert stub.validation_status_action.text() == "Validation: no matching set" and _badge(stub) == "dot"
-    assert "Import a reference dataset" in stub.validation_button.toolTip()
-    stub.import_validation_benchmark()
-    assert imported == [True]
+    # Importing is not offered from here. The hint points at the scorecard,
+    # which is where reference datasets are imported next to the data they join.
+    assert not hasattr(ShowNepWidget, "import_validation_benchmark")
+    assert "Open the scorecard to import a reference dataset" in stub.validation_button.toolTip()
+    assert stub.validation_scorecard_action.isEnabled()
+    stub.open_validation_scorecard()
+    assert opened == [(None, model_id)]
 
-    # No captured model: a neutral status, nothing to star.
+    # No captured model: a neutral status, nothing to star or open.
     stub._validation_model_id = None
     stub.refresh_validation_chip()
     assert stub.validation_status_action.text() == "Validation: no NEP model open" and _badge(stub) is None
     assert not stub.validation_star_action.isEnabled()
+    assert not stub.validation_scorecard_action.isEnabled()
     stub.open_validation_scorecard()
-    assert opened == [(None, None)]
+    assert opened[-1] == (None, None)
 
     # An empty library says it is not set up yet.
     empty = ValidationService(Library(tmp_path / "empty-lib"))
@@ -954,15 +961,19 @@ def viewer(monkeypatch, tmp_path):
 def test_viewer_footer_has_compact_validation_entry(viewer):
     assert not viewer.validation_button.isHidden()
     actions = [action.text() for action in viewer.validation_menu.actions() if not action.isSeparator()]
+    # Every entry acts on the model the viewer is showing. Importing reference
+    # datasets writes to the library rather than this model, so it lives on the
+    # validation page next to the datasets it adds to.
     assert actions == [
         "Validation: no NEP model open",
         "Save to project…",
         "Star this version",
         "Open scorecard",
-        "Import reference dataset…",
     ]
     assert not viewer.validation_status_action.isEnabled()  # a status line, not a command
     assert not viewer.validation_star_action.isEnabled()
+    # Nothing is open, so the scorecard would show an unrelated plan.
+    assert not viewer.validation_scorecard_action.isEnabled()
     assert viewer.validation_count_badge.isHidden() and viewer.validation_dot_badge.isHidden()
     # Counts keep their natural width; only the left side stretches.
     layout = viewer.plot_widget_layout

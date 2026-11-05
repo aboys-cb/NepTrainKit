@@ -512,10 +512,6 @@ class NepTrainKitMainWindow(FluentWindow):
         self.data_manager_interface.open_scorecard(suite_id, model_id, draft=draft)
         self.switchTo(self.data_manager_interface)
 
-    def import_benchmark_set(self) -> list[dict] | None:
-        """Import a benchmark set from the viewer chip, staying on the viewer."""
-        return self.data_manager_interface.library_widget.import_benchmark()
-
     def open_training_set_audit(
         self,
         result_data=None,

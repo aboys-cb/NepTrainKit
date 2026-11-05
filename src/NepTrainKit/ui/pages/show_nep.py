@@ -922,12 +922,13 @@ class ShowNepWidget(QWidget):
         self.validation_star_action.triggered.connect(self.toggle_validation_star)
         self.validation_scorecard_action = Action(FluentIcon.LIBRARY, self.tr("Open scorecard"), self.validation_menu)
         self.validation_scorecard_action.triggered.connect(self.open_validation_scorecard)
-        self.validation_import_action = Action(FluentIcon.ADD, self.tr("Import reference dataset…"), self.validation_menu)
-        self.validation_import_action.triggered.connect(self.import_validation_benchmark)
+        # Importing reference datasets belongs to the validation page, where it
+        # sits beside the datasets it adds to. Keeping a second copy here mixed a
+        # library-wide write into a menu that otherwise only acts on this model.
         self.validation_menu.addAction(self.validation_status_action)
         self.validation_menu.addSeparator()
         self.validation_menu.addActions(
-            [self.validation_save_action, self.validation_star_action, self.validation_scorecard_action, self.validation_import_action]
+            [self.validation_save_action, self.validation_star_action, self.validation_scorecard_action]
         )
         self.validation_button.setMenu(self.validation_menu)
         # Inline badges: a corner badge would be clipped by the 30 px footer.
@@ -1504,7 +1505,7 @@ class ShowNepWidget(QWidget):
             hint = self.tr("Open a NEP model to validate it, or browse the validation scorecard")
         elif status is None:
             text = self.tr("Validation: no matching set") if has_sets else self.tr("Validation: not set up")
-            hint = self.tr("Import a reference dataset and choose a validation type to start validating this model")
+            hint = self.tr("Open the scorecard to import a reference dataset and choose a validation type")
             badge = "dot"
         else:
             if not status["evaluated"] and not status["failed_sets"]:
@@ -1532,6 +1533,11 @@ class ShowNepWidget(QWidget):
         self.validation_star_action.setEnabled(saved)
         self.validation_star_action.setText(
             self.tr("Unstar this version") if starred else self.tr("Star this version")
+        )
+        # With nothing open the scorecard would land on whichever plan was used
+        # last, which has no relation to what the viewer is showing.
+        self.validation_scorecard_action.setEnabled(
+            self._validation_model_id is not None or self._validation_draft is not None
         )
 
     def _show_validation_badge(self, badge: int | str | None) -> None:
@@ -1571,12 +1577,6 @@ class ShowNepWidget(QWidget):
             MessageManager.send_success_message(self.tr("Saved to project"))
         except Exception as error:
             MessageManager.send_error_message(str(error))
-
-    def import_validation_benchmark(self) -> None:
-        """Import a benchmark set without leaving the viewer, then update the chip."""
-        if hasattr(self._parent, "import_benchmark_set"):
-            self._parent.import_benchmark_set()
-        self.refresh_validation_chip()
 
     def toggle_validation_star(self) -> None:
         """Star or unstar the opened version; starred versions survive library clean-up."""

@@ -120,43 +120,115 @@ nepkit workflow run flow.json -i input.xyz -o out.xyz -v
 
 ## 在 Python 脚本里调用
 
+界面和命令行的能力，脚本里都能用。三个入口按需要选一个：
+
+| 用途 | 入口 |
+| --- | --- |
+| 一次跑完，拿到结果 | `run_workflow(payload, structures)` |
+| 先看计划、再决定是否执行 | `load_workflow(payload)` 返回的 `WorkflowRun` |
+| 同一份流程反复跑 | 复用一个 `WorkflowRun`，省去重复解析 |
+
+`payload` 可以是 JSON 文件路径、JSON 文本，或已经解析好的 dict。
+
+### 最小例子
+
+```python
+from ase.io import read
+from NepTrainKit.core.workflow import run_workflow
+from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
+from ase.io import write
+
+# 读入结构，执行整条流程，取最后一级结果
+structures = read("input.xyz", index=":")
+result = run_workflow("flow.json", structures)
+final = result.final()
+
+print(len(final), "structures")
+write("out.xyz", [prepare_magnetic_extxyz_export(a) for a in final], format="extxyz")
+```
+
+`run_workflow` 只负责计算，**不写文件**。要保存时自己写，这样结果可以直接交给后续处理，不必
+先落盘再读回来。写 extxyz 时用 `prepare_magnetic_extxyz_export` 包装一下，磁矩信息才会正确
+写成 extxyz 的标准字段，和界面导出的文件一致。
+
+### 先看计划再执行
+
 ```python
 from NepTrainKit.core.workflow import load_workflow
-from ase.io import read
 
 run = load_workflow("flow.json")
 
-# 只看执行计划，不运行
+# 每一步：序号、卡片类名、显示名、类型（structure / dataset / generator / group / fork）
 for stage in run.preview():
     print(stage.index, stage.card_class, stage.kind)
 
-result = run.run(read("input.xyz", index=":"))
-
-# 全部卡片输出
-result.all()
-
-# 只取最后一级
-result.final()
-
-# 只取某张卡片（类名），或按执行序号（从 1 开始）
-result.outputs("PerturbCard")
-result.outputs(index=1)
-
-# 每张卡各自的输出，键为卡片类名
-for output in result.card_outputs:
-    print(output.index, output.card_class, len(output.structures))
+if run.requires_input():
+    print("这条流程需要输入结构")
 ```
 
-`run()` 接受任意可迭代的结构对象，返回结果对象本身不写文件；写文件由调用方决定，这样便于
-先把结果交给后续处理，而不是先写入磁盘再读取。
+`preview()` 只解析 JSON，不执行任何卡片。生成型流程（例如原型构建卡）的 `requires_input()`
+是 `False`，`run()` 时可以不传结构。
 
-批量重跑时复用同一个 `load_workflow` 结果可以省去重复解析：
+### 按卡片取结果
+
+`WorkflowResult` 保留每一级的输出，不是只有最后一级：
+
+```python
+result = run.run(read("input.xyz", index=":"))
+
+result.all()                      # 全部卡片输出拼接在一起（等同命令行默认导出）
+result.final()                     # 最后一级
+
+result.outputs("SuperCellCard")    # 按卡片类名
+result.outputs(index=2)            # 按执行序号，从 1 开始
+
+# 遍历每一级，看清楚数据怎么扩增的
+for output in result.card_outputs:
+    print(output.index, output.card_class, output.input_count, "->", len(output))
+```
+
+指定了不存在的卡片或序号时抛 `WorkflowError`，错误信息里会列出所有可用的级别。
+
+### 只导出某张卡
+
+想复现 `--card` 的效果，取那一级的结果自己写：
+
+```python
+from ase.io import write
+
+structures = read("input.xyz", index=":")
+result = run_workflow("flow.json", structures)
+
+write("only_supercell.xyz", result.outputs("SuperCellCard"), format="extxyz")
+```
+
+### 批量重跑
+
+复用同一个 `run` 对象，避免每次都重新解析 JSON：
 
 ```python
 run = load_workflow("flow.json")
+
 for path in ("a.xyz", "b.xyz", "c.xyz"):
     structures = read(path, index=":")
     print(path, len(run.run(structures).final()))
+```
+
+`run.run()` 每次调用都是独立的，不会累积上一次的结果。
+
+### 在自己的脚本里处理错误
+
+`WorkflowError` 覆盖 JSON 格式、未知卡片、取不到结果这几类问题；某张卡执行失败时抛的是
+`CardOperationError` 子类（例如模型文件不存在是 `FileNotFoundError`）。要一次抓住所有情况：
+
+```python
+from NepTrainKit.core.workflow import WorkflowError, load_workflow
+from NepTrainKit.core.cards.errors import CardOperationError
+
+try:
+    result = load_workflow("flow.json").run(read("input.xyz", index=":"))
+except (WorkflowError, CardOperationError) as exc:
+    print("workflow failed:", exc)
 ```
 
 ## 与界面执行的差别

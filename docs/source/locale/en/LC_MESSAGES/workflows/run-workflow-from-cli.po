@@ -1,0 +1,802 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit 3.0.1.dev29\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-05 16:38+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:1
+#: 9f4dbfbfb2fb45df9491ac90268608da
+msgid "命令行与脚本运行工作流"
+msgstr "Run Workflows from the Command Line or a Script"
+
+#: ../../source/workflows/run-workflow-from-cli.md:3
+#: d007b7f3a4e44bc880340b4fd896879f
+msgid "在「生成数据集」页把工作流导出为 JSON 后，可以不开图形界面直接复现整条流程。适合批量重跑、 写进流水线、或者在服务器上生成训练集。"
+msgstr ""
+"After exporting a workflow as JSON from the Make Dataset page, you can "
+"reproduce the whole pipeline without opening the graphical interface. "
+"Useful for batch reruns, CI pipelines, or generating training sets on a "
+"server."
+
+#: ../../source/workflows/run-workflow-from-cli.md:6
+#: b71908ad12f7447b87eed1addfb8a36f
+msgid "前提"
+msgstr "Requirements"
+
+#: ../../source/workflows/run-workflow-from-cli.md:8
+#: 1c8ceb19e6344e928d0fbd9fd5ac36ed
+msgid ""
+"工作流必须是当前版本导出的 JSON，也就是每张卡片带有 `params` 对象。旧版本导出的扁平格式 "
+"（参数直接写在卡片顶层）不支持命令行读取，需要先在界面里打开并重新导出一次。遇到这种文件时 命令行会明确报错，不会静默按默认值运行。"
+msgstr ""
+"The workflow must be JSON exported by the current version, meaning every "
+"card carries a `params` object. The flat layout written by older versions"
+" (with parameters at the card's top level) cannot be read from the "
+"command line; open it once in the interface and export it again. Such a "
+"file produces a clear error instead of silently running with default "
+"values."
+
+#: ../../source/workflows/run-workflow-from-cli.md:12
+#: c2e5ed69006b488cad0667268ea06bd3
+msgid "先看会做什么"
+msgstr "Preview What Will Happen"
+
+#: ../../source/workflows/run-workflow-from-cli.md:14
+#: fcbe528b69fe474189fd427592350af6
+msgid "执行前建议先 `preview`。它只解析 JSON，不产生任何结构："
+msgstr ""
+"Before running, use `preview`. It only parses the JSON and produces no "
+"structures:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:16
+#: a0cdb2e08a5048adbb7d2615642bedaa
+msgid "nepkit workflow preview flow.json\n"
+msgstr "nepkit workflow preview flow.json\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:20
+#: 633df7d9d87c4d4ea380d698315dff32
+msgid "输出示例："
+msgstr "Example output:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:22
+#: 6fde674569ef4d72b897d2c3169ca09e
+msgid ""
+"workflow: flow.json\n"
+"saved by: 3.0.1 (schema 2)\n"
+"cards: 5\n"
+"\n"
+"   1. SuperCellCard    structure\n"
+"   2. CardGroup        group\n"
+"   3. CellStrainCard   structure\n"
+"   4. CellScalingCard  structure\n"
+"   5. PerturbCard      structure\n"
+"\n"
+"input: required\n"
+"no structures were produced; use 'run' to execute\n"
+msgstr ""
+"workflow: flow.json\n"
+"saved by: 3.0.1 (schema 2)\n"
+"cards: 5\n"
+"\n"
+"   1. SuperCellCard    structure\n"
+"   2. CardGroup        group\n"
+"   3. CellStrainCard   structure\n"
+"   4. CellScalingCard  structure\n"
+"   5. PerturbCard      structure\n"
+"\n"
+"input: required\n"
+"no structures were produced; use 'run' to execute\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:37
+#: 7155ea3d3a634ea5924ae7e407f98c66
+msgid "加上 `-i` 可以看到输入结构数量："
+msgstr "Add `-i` to see the input structure count:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:39
+#: 89af6860a301474f84796b7691d1e63a
+msgid "nepkit workflow preview flow.json -i input.xyz\n"
+msgstr "nepkit workflow preview flow.json -i input.xyz\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:43
+#: a87ab4f091bf41bc971dcd7b7fdb97c7
+msgid "如果工作流是生成型的（例如原型构建卡），`input` 会显示 `not required`，此时 `run` 不需要 `-i`。"
+msgstr ""
+"If the workflow generates its own structures (for example a prototype "
+"builder card), `input` shows `not required` and `run` does not need `-i`."
+
+#: ../../source/workflows/run-workflow-from-cli.md:45
+#: 85875bc37b96444aaf3b0e6ea2e97ff7
+msgid "执行并导出"
+msgstr "Run and Export"
+
+#: ../../source/workflows/run-workflow-from-cli.md:47
+#: 75a80aa38a2b41de9f899797974c7a20
+msgid "nepkit workflow run flow.json -i input.xyz -o output.xyz\n"
+msgstr "nepkit workflow run flow.json -i input.xyz -o output.xyz\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:51
+#: aa3077e6119b4966b9383673dbb2fe9d
+msgid "默认导出**全部卡片**的输出，也就是每一级的结果都会写进同一个文件。这和在界面里用 「查看全部输出」导出的范围一致。"
+msgstr ""
+"By default every **card** output is exported, so each stage's result "
+"lands in the same file. This matches the \"View all outputs\" scope in "
+"the interface."
+
+#: ../../source/workflows/run-workflow-from-cli.md:54
+#: 810df67c013649868859c2fde628c546
+msgid "按需只导出某张卡片的结果，用 `--card` 指定卡片类名，可以重复多次："
+msgstr ""
+"To export only one card's result, pass its class name with `--card`; "
+"repeat it for several cards:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:56
+#: d4a71d951aa54f5d9501736c3e20abbd
+msgid ""
+"nepkit workflow run flow.json -i input.xyz -o only_supercell.xyz --card "
+"SuperCellCard\n"
+"nepkit workflow run flow.json -i input.xyz -o two_stages.xyz \\\n"
+"    --card SuperCellCard --card PerturbCard\n"
+msgstr ""
+"nepkit workflow run flow.json -i input.xyz -o only_supercell.xyz --card "
+"SuperCellCard\n"
+"nepkit workflow run flow.json -i input.xyz -o two_stages.xyz \\\n"
+"    --card SuperCellCard --card PerturbCard\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:62
+#: ffaab84f62fa4f3dbc4b0f7c5d89a31a
+msgid "卡片类名就是 JSON 里的 `class` 字段，和界面中卡片对应的类一致。"
+msgstr ""
+"The card class name is the `class` field in the JSON, the same class the "
+"card uses in the interface."
+
+#: ../../source/workflows/run-workflow-from-cli.md:64
+#: dfe8eadcb0ac4952b4c4ed7dd4313817
+msgid "输出格式为 extxyz，与界面导出保持一致。`-q` 只打印错误，适合放进脚本。"
+msgstr ""
+"The output format is extxyz, consistent with the interface. `-q` prints "
+"errors only, which suits scripts."
+
+#: ../../source/workflows/run-workflow-from-cli.md:66
+#: 0373b053b5e44abc952e7f0e1e03ae27
+msgid "输出分两路"
+msgstr "Two Separate Streams"
+
+#: ../../source/workflows/run-workflow-from-cli.md:68
+#: 3de5d54ea9ed47c4bc362cd54537df23
+msgid "结果摘要走标准输出，错误走标准错误，脚本可以直接分开读："
+msgstr ""
+"The result summary goes to standard output and errors go to standard "
+"error, so a script can read each separately:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:70
+#: bea713f286e84fc8b0edf36b41995024
+msgid ""
+"$ nepkit workflow run flow.json -i input.xyz -o out.xyz\n"
+"SuperCellCard        1 in       1 out\n"
+"CellStrainCard       1 in      23 out\n"
+"total: 1 in, 24 out\n"
+"written: out.xyz\n"
+msgstr ""
+"$ nepkit workflow run flow.json -i input.xyz -o out.xyz\n"
+"SuperCellCard        1 in       1 out\n"
+"CellStrainCard       1 in      23 out\n"
+"total: 1 in, 24 out\n"
+"written: out.xyz\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:78
+#: 6f030116fab8475f96f1314704cab686
+msgid "每张卡一行，按执行顺序排列，`in` 是这张卡收到多少结构，`out` 是它产出多少。这样能直接看出 哪一步在扩增、哪一步在过滤："
+msgstr ""
+"One row per card in execution order: `in` is how many structures the card"
+" received and `out` is how many it produced. This shows directly which "
+"step expands and which one filters:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:81
+#: 0de2df20f5dc4445a0c4bb094e4b883a
+msgid ""
+"SuperCellCard         1 in       1 out\n"
+"CellStrainCard        1 in    1331 out\n"
+"CardGroup             1 in    1381 out\n"
+"PerturbCard        1381 in   69050 out\n"
+msgstr ""
+"SuperCellCard         1 in       1 out\n"
+"CellStrainCard        1 in    1331 out\n"
+"CardGroup             1 in    1381 out\n"
+"PerturbCard        1381 in   69050 out\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:88
+#: 8657d9376483438e84ec39573b6706c8
+msgid "最后一行的 `total` 里，输入数是整条流程的输入，输出数是全部卡片输出之和，通常大于最后一级； 只想看某一级时用 `--card`。"
+msgstr ""
+"In the closing `total` row the input is the workflow input and the output"
+" is the sum of every card output, usually larger than the final stage; "
+"use `--card` to see a single stage."
+
+#: ../../source/workflows/run-workflow-from-cli.md:91
+#: f2269747657b49609e30e6956cbfdfa5
+msgid "输出只用 ASCII 字符，所以在 Windows 中文终端（cp936）里不会乱码，也可以直接按空白列拆开："
+msgstr ""
+"The output uses ASCII only, so it is not garbled in a Windows Chinese "
+"console (cp936) and can be split on whitespace:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:93
+#: bb3f0fa31bdc49e1b09faf967ae72077
+#, python-brace-format
+msgid ""
+"nepkit workflow run flow.json -i input.xyz -o out.xyz | awk '$3==\"in\" "
+"{print $1, $5}'\n"
+msgstr ""
+"nepkit workflow run flow.json -i input.xyz -o out.xyz | awk '$3==\"in\" "
+"{print $1, $5}'\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:97
+#: f3201e26200d4a97aa904e15b30a91a2
+msgid "默认情况下标准错误只会出现错误信息，不会混入库内部的计时和调试日志——即使界面里把日志级别 设成了「调试」也一样，因为命令行不以界面设置为准。"
+msgstr ""
+"By default standard error carries only errors and never the library's "
+"timing or debug logs, even when the interface log level is set to "
+"\"Debug\": the command line does not follow the interface setting."
+
+#: ../../source/workflows/run-workflow-from-cli.md:100
+#: c6105e19dba749fbad88238f05fee564
+msgid "需要看库内部的诊断信息（例如某张卡的耗时）时加 `-v`："
+msgstr "Add `-v` to see library diagnostics such as per-card timings:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:102
+#: a8a7a92dfb2a48d4aca919eccbc9c44b
+msgid "nepkit workflow run flow.json -i input.xyz -o out.xyz -v\n"
+msgstr "nepkit workflow run flow.json -i input.xyz -o out.xyz -v\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:106
+#: 92469743dac94c158b856da31aa3cb0a
+msgid "此时标准错误会出现类似这样的内容："
+msgstr "Standard error then contains lines such as:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:108
+#: a949a9bc17514d84b72e3a18354ca382
+msgid ""
+"2026-11-05 16:05:01 | DEBUG | NepTrainKit.utils:wrapper:35 - Function "
+"'descriptors' executed in 0.0017 seconds\n"
+msgstr ""
+"2026-11-05 16:05:01 | DEBUG | NepTrainKit.utils:wrapper:35 - Function "
+"'descriptors' executed in 0.0017 seconds\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: ../../source/workflows/run-workflow-from-cli.md:112
+#: 1085bd72d9a6448e8a23d481b5a6aeef 981a39c5711e4a4fb7830c7157406112
+msgid "退出码"
+msgstr "Exit Codes"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: f504cdadde2f41b99ccde4d061f5971e
+msgid "含义"
+msgstr "Meaning"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: f9befb027e0942b9808b25812d5240f1
+msgid "`0`"
+msgstr "`0`"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 7d5ad8ea675948aaa68b6bfd5f9b2f2d
+msgid "成功"
+msgstr "Succeeded"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: fbf39ee27ab04981bffd6398d5f13bfa
+msgid "`2`"
+msgstr "`2`"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 4141f741bb994ca7a5cc06eb95be3400
+msgid "JSON 无法读取、卡片类未知、输入文件不存在，或某张卡片执行失败"
+msgstr ""
+"The JSON cannot be read, the card class is unknown, the input file does "
+"not exist, or a card failed."
+
+#: ../../source/workflows/run-workflow-from-cli.md:119
+#: a1bd41a442a741969f52843df905411d
+msgid "任何一张卡片失败都会立即中止整条流程，并在错误信息里指明是哪张卡，不会输出半成品结果。"
+msgstr ""
+"Any card failure aborts the whole pipeline immediately and the message "
+"names the failing card; no partial results are written."
+
+#: ../../source/workflows/run-workflow-from-cli.md:121
+#: 986f0166e8524380825b72f9fbfc4b2a
+msgid "在 Python 脚本里调用"
+msgstr "Call It From a Python Script"
+
+#: ../../source/workflows/run-workflow-from-cli.md:123
+#: 7de845815b074b0b9b66bb2e08812c93
+msgid "界面和命令行的能力，脚本里都能用。三个入口按需要选一个："
+msgstr ""
+"Everything the interface and command line can do is available from a "
+"script. Pick one of three entry points:"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 62ca12fad442492999ed0580429e2275
+msgid "用途"
+msgstr "Goal"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: b3ae10c47bc1457db047d18a42f867d0
+msgid "入口"
+msgstr "Entry point"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 90731f3bb26a4f8183f3bc9692fc61f6
+msgid "一次跑完，拿到结果"
+msgstr "Run once and take the result"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 6a2a9f5c0927481da8ef63db42a484ca
+msgid "`run_workflow(payload, structures)`"
+msgstr "`run_workflow(payload, structures)`"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 6252f2a90ea64b14a4303f9fc6c5cac4
+msgid "先看计划、再决定是否执行"
+msgstr "Inspect the plan before deciding to run"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 0a6bde5c11984d12bbff9d43221850cb
+msgid "`load_workflow(payload)` 返回的 `WorkflowRun`"
+msgstr "The `WorkflowRun` returned by `load_workflow(payload)`"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: eb5340f79eb844e68ad450198b2e09a4
+msgid "同一份流程反复跑"
+msgstr "Run the same workflow repeatedly"
+
+#: ../../source/workflows/run-workflow-from-cli.md
+#: 35c8d677c3be4faa99cbd538a02f6705
+msgid "复用一个 `WorkflowRun`，省去重复解析"
+msgstr ""
+"When rerunning in batch, reuse one `load_workflow` result to skip "
+"repeated parsing:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:131
+#: 2b7a741dad99490c824a337a08ef8f3f
+msgid "`payload` 可以是 JSON 文件路径、JSON 文本，或已经解析好的 dict。"
+msgstr ""
+"`payload` may be a path to a JSON file, JSON text, or an already parsed "
+"dict."
+
+#: ../../source/workflows/run-workflow-from-cli.md:133
+#: 64c3ca4868e645a8bc48e4c750c4e2c4
+msgid "最小例子"
+msgstr "Minimal example"
+
+#: ../../source/workflows/run-workflow-from-cli.md:135
+#: 8c8a274073164abbb758e5fa8b0f40e7
+msgid ""
+"from ase.io import read\n"
+"from NepTrainKit.core.workflow import run_workflow\n"
+"from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export\n"
+"from ase.io import write\n"
+"\n"
+"# 读入结构，执行整条流程，取最后一级结果\n"
+"structures = read(\"input.xyz\", index=\":\")\n"
+"result = run_workflow(\"flow.json\", structures)\n"
+"final = result.final()\n"
+"\n"
+"print(len(final), \"structures\")\n"
+"write(\"out.xyz\", [prepare_magnetic_extxyz_export(a) for a in final], "
+"format=\"extxyz\")\n"
+msgstr ""
+"from ase.io import read\n"
+"from NepTrainKit.core.workflow import run_workflow\n"
+"from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export\n"
+"from ase.io import write\n"
+"\n"
+"# Read structures, run the whole workflow, take the final stage\n"
+"structures = read(\"input.xyz\", index=\":\")\n"
+"result = run_workflow(\"flow.json\", structures)\n"
+"final = result.final()\n"
+"\n"
+"print(len(final), \"structures\")\n"
+"write(\"out.xyz\", [prepare_magnetic_extxyz_export(a) for a in final], "
+"format=\"extxyz\")\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:150
+#: 33ccb9e0007e481893e6502035f81f36
+msgid ""
+"`run_workflow` 只负责计算，**不写文件**。要保存时自己写，这样结果可以直接交给后续处理，不必 先落盘再读回来。写 extxyz "
+"时用 `prepare_magnetic_extxyz_export` 包装一下，磁矩信息才会正确 写成 extxyz "
+"的标准字段，和界面导出的文件一致。"
+msgstr ""
+"`run_workflow` only computes and **writes no files**. Write them yourself"
+" when you need to, so results can flow straight into further processing "
+"instead of a disk round trip. When writing extxyz, wrap each structure in"
+" `prepare_magnetic_extxyz_export` so magnetic moments land in the "
+"standard extxyz fields exactly as the interface export does."
+
+#: ../../source/workflows/run-workflow-from-cli.md:154
+#: 927b7b665b6a4e26b4f48e2c0b3ba9c6
+msgid "先看计划再执行"
+msgstr "Inspect the plan before running"
+
+#: ../../source/workflows/run-workflow-from-cli.md:156
+#: 47819a4b92214a81a3b57a6e779aa66e
+msgid ""
+"from NepTrainKit.core.workflow import load_workflow\n"
+"\n"
+"run = load_workflow(\"flow.json\")\n"
+"\n"
+"# 每一步：序号、卡片类名、显示名、类型（structure / dataset / generator / group / fork）\n"
+"for stage in run.preview():\n"
+"    print(stage.index, stage.card_class, stage.kind)\n"
+"\n"
+"if run.requires_input():\n"
+"    print(\"这条流程需要输入结构\")\n"
+msgstr ""
+"from NepTrainKit.core.workflow import load_workflow\n"
+"\n"
+"run = load_workflow(\"flow.json\")\n"
+"\n"
+"# Each step: index, card class, display label, kind (structure / dataset "
+"/ generator / group / fork)\n"
+"for stage in run.preview():\n"
+"    print(stage.index, stage.card_class, stage.kind)\n"
+"\n"
+"if run.requires_input():\n"
+"    print(\"this workflow needs input structures\")\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:169
+#: 4ca5c06b86524f6bae6a00e6b4cd71eb
+msgid ""
+"`preview()` 只解析 JSON，不执行任何卡片。生成型流程（例如原型构建卡）的 `requires_input()` 是 "
+"`False`，`run()` 时可以不传结构。"
+msgstr ""
+"`preview()` only parses the JSON and executes no cards. A generating "
+"workflow (such as a prototype builder card) reports `requires_input()` as"
+" `False`, and `run()` needs no structures."
+
+#: ../../source/workflows/run-workflow-from-cli.md:172
+#: 7ef327e50de34e4e90c07580811d0011
+msgid "按卡片取结果"
+msgstr "Take results per card"
+
+#: ../../source/workflows/run-workflow-from-cli.md:174
+#: 1613e044b9674b94841e1293219f972c
+msgid "`WorkflowResult` 保留每一级的输出，不是只有最后一级："
+msgstr "`WorkflowResult` keeps every stage's output, not just the final one:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:176
+#: bdedc31f0a904b03bc6483f527d4a4d4
+msgid ""
+"result = run.run(read(\"input.xyz\", index=\":\"))\n"
+"\n"
+"result.all()                      # 全部卡片输出拼接在一起（等同命令行默认导出）\n"
+"result.final()                     # 最后一级\n"
+"\n"
+"result.outputs(\"SuperCellCard\")    # 按卡片类名\n"
+"result.outputs(index=2)            # 按执行序号，从 1 开始\n"
+"\n"
+"# 遍历每一级，看清楚数据怎么扩增的\n"
+"for output in result.card_outputs:\n"
+"    print(output.index, output.card_class, output.input_count, \"->\", "
+"len(output))\n"
+msgstr ""
+"result = run.run(read(\"input.xyz\", index=\":\"))\n"
+"\n"
+"result.all()                      # every card output concatenated (the "
+"CLI default export)\n"
+"result.final()                     # the final stage\n"
+"\n"
+"result.outputs(\"SuperCellCard\")    # by card class name\n"
+"result.outputs(index=2)            # by execution index, 1-based\n"
+"\n"
+"# Walk every stage to see how the data grows\n"
+"for output in result.card_outputs:\n"
+"    print(output.index, output.card_class, output.input_count, \"->\", "
+"len(output))\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:190
+#: 6e79acda9c3b4f5f868fa67d251c794d
+msgid "指定了不存在的卡片或序号时抛 `WorkflowError`，错误信息里会列出所有可用的级别。"
+msgstr ""
+"An unknown card or index raises `WorkflowError`, and the message lists "
+"every available stage."
+
+#: ../../source/workflows/run-workflow-from-cli.md:192
+#: ffc3dd6c479b49da9efeb545be809765
+msgid "只导出某张卡"
+msgstr "Export a single card"
+
+#: ../../source/workflows/run-workflow-from-cli.md:194
+#: 908848c2f5d84a68ab371ce50f87b4b8
+msgid "想复现 `--card` 的效果，取那一级的结果自己写："
+msgstr "To reproduce `--card`, take that stage's result and write it yourself:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:196
+#: e328d1646c9a4f95ab5fc3e1764c4931
+msgid ""
+"from ase.io import write\n"
+"\n"
+"structures = read(\"input.xyz\", index=\":\")\n"
+"result = run_workflow(\"flow.json\", structures)\n"
+"\n"
+"write(\"only_supercell.xyz\", result.outputs(\"SuperCellCard\"), "
+"format=\"extxyz\")\n"
+msgstr ""
+"from ase.io import write\n"
+"\n"
+"structures = read(\"input.xyz\", index=\":\")\n"
+"result = run_workflow(\"flow.json\", structures)\n"
+"\n"
+"write(\"only_supercell.xyz\", result.outputs(\"SuperCellCard\"), "
+"format=\"extxyz\")\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:205
+#: ee4f8ee27ded4a88b9c00eb69e9b5063
+msgid "批量重跑"
+msgstr "Batch reruns"
+
+#: ../../source/workflows/run-workflow-from-cli.md:207
+#: 1d87c3be1d4944da927f92bc2dfa63bb
+msgid "复用同一个 `run` 对象，避免每次都重新解析 JSON："
+msgstr "Reuse one `run` object to avoid reparsing the JSON every time:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:209
+#: bb9748fed3f444e69d5da68ad593c52f
+#, fuzzy
+msgid ""
+"run = load_workflow(\"flow.json\")\n"
+"\n"
+"for path in (\"a.xyz\", \"b.xyz\", \"c.xyz\"):\n"
+"    structures = read(path, index=\":\")\n"
+"    print(path, len(run.run(structures).final()))\n"
+msgstr ""
+"run = load_workflow(\"flow.json\")\n"
+"for path in (\"a.xyz\", \"b.xyz\", \"c.xyz\"):\n"
+"    structures = read(path, index=\":\")\n"
+"    print(path, len(run.run(structures).final()))\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:217
+#: 551e28eef80c4eb4b9d14b2ecc924403
+msgid "`run.run()` 每次调用都是独立的，不会累积上一次的结果。"
+msgstr ""
+"Each `run.run()` call is independent and never accumulates the previous "
+"result."
+
+#: ../../source/workflows/run-workflow-from-cli.md:219
+#: c46f76dd92b644448523c2575a0e5827
+msgid "在自己的脚本里处理错误"
+msgstr "Handle failures in your own script"
+
+#: ../../source/workflows/run-workflow-from-cli.md:221
+#: 465825a30de8451a85d75bb0ce078776
+msgid ""
+"`WorkflowError` 覆盖 JSON 格式、未知卡片、取不到结果这几类问题；某张卡执行失败时抛的是 "
+"`CardOperationError` 子类（例如模型文件不存在是 `FileNotFoundError`）。要一次抓住所有情况："
+msgstr ""
+"`WorkflowError` covers JSON format problems, unknown cards, and missing "
+"results; a failing card raises a `CardOperationError` subclass (a missing"
+" model file, for example, is `FileNotFoundError`). To catch everything at"
+" once:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:224
+#: ddbc05c368e84060b7568078783c3a98
+msgid ""
+"from NepTrainKit.core.workflow import WorkflowError, load_workflow\n"
+"from NepTrainKit.core.cards.errors import CardOperationError\n"
+"\n"
+"try:\n"
+"    result = load_workflow(\"flow.json\").run(read(\"input.xyz\", "
+"index=\":\"))\n"
+"except (WorkflowError, CardOperationError) as exc:\n"
+"    print(\"workflow failed:\", exc)\n"
+msgstr ""
+"from NepTrainKit.core.workflow import WorkflowError, load_workflow\n"
+"from NepTrainKit.core.cards.errors import CardOperationError\n"
+"\n"
+"try:\n"
+"    result = load_workflow(\"flow.json\").run(read(\"input.xyz\", "
+"index=\":\"))\n"
+"except (WorkflowError, CardOperationError) as exc:\n"
+"    print(\"workflow failed:\", exc)\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:234
+#: ccf8b824f0e74145845b55d56ea7099a
+msgid "与界面执行的差别"
+msgstr "Differences From the Interface"
+
+#: ../../source/workflows/run-workflow-from-cli.md:236
+#: 34c12e5459ad4dd5b14e2b05c0d4cbb4
+msgid "命令行复现的是同一套卡片逻辑，但以下几点不同："
+msgstr "The command line reproduces the same card logic, with these differences:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:238
+#: 017a7359bf994a80a02c9a776619de29
+msgid "**不读取软件设置**。界面里的「排序原子」等全局开关不会影响命令行结果。"
+msgstr ""
+"**Application settings are not read.** Global switches such as \"Sort "
+"atoms\" in the interface do not affect command line results."
+
+#: ../../source/workflows/run-workflow-from-cli.md:239
+#: 72e431583f204b359427d0be3de6abd3
+msgid "**不写运行状态**。工作流库只保存配置，命令行同样不产生 `run_outcome` 之类的运行记录。"
+msgstr ""
+"**No run state is written.** The workflow library stores configuration "
+"only, and the command line likewise records nothing like `run_outcome`."
+
+#: ../../source/workflows/run-workflow-from-cli.md:240
+#: 4f1b1194d5744aaeb97dd8b9b3016966
+msgid "**失败即中止**，与界面一致；不会跳过错过的卡片继续执行。"
+msgstr ""
+"**A failure stops the run**, as in the interface; a failed card is never "
+"skipped."
+
+#: ../../source/workflows/run-workflow-from-cli.md:242
+#: 3501ce1e13da40c8b5e3fa60336ee3e8
+msgid "如果命令行结果和界面不一致，先确认两边用的是同一个导出的 JSON，并检查是否依赖了界面里的 全局设置。"
+msgstr ""
+"If command line results differ from the interface, first confirm both use"
+" the same exported JSON, then check for a dependency on interface "
+"settings."
+
+#: ../../source/workflows/run-workflow-from-cli.md:245
+#: 53668eb60863412c99431ead27e75905
+msgid "换机器运行时的模型路径"
+msgstr "Model Paths When Running on Another Machine"
+
+#: ../../source/workflows/run-workflow-from-cli.md:247
+#: fa1f912bffed4b6fa8358f6357487e4e
+msgid "模型路径分两种情况，行为不同。"
+msgstr "Model paths behave differently in two cases."
+
+#: ../../source/workflows/run-workflow-from-cli.md:249
+#: ca03f5e48f314b6ab7cc6e95b6a85a91
+msgid "**软件自带的模型（`nep89`）是可移植的。** 导出时不会写死某台机器上的绝对路径，而是写成标记 `bundled:nep89`："
+msgstr ""
+"**The bundled model (`nep89`) is portable.** The export does not hardcode"
+" one machine's absolute path but writes the token `bundled:nep89`:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:252
+#: 41c444d907c84a9b8e011b189592a9b6
+#, python-brace-format
+msgid "\"params\": { \"nep_path\": \"bundled:nep89\", ... }\n"
+msgstr "\"params\": { \"nep_path\": \"bundled:nep89\", ... }\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:256
+#: e5d7a7d9264844eaa4819f6e4d45ea2b
+msgid ""
+"运行时会解析成当前机器上真实的模型文件，所以在别的机器、别的安装位置或换了 Python 环境都能 "
+"直接跑。界面上显示的仍然是完整路径，标记只存在于数据里。"
+msgstr ""
+"At run time it resolves to the real model file on the current machine, so"
+" it runs directly on another machine, another install location, or a "
+"different Python environment. The interface still shows the full path; "
+"the token exists only in the data."
+
+#: ../../source/workflows/run-workflow-from-cli.md:259
+#: d22a8d8d2692494aa37c0e432d6dc185
+msgid "**你自己选的模型文件保留绝对路径。** 这类文件只存在于你指定的位置，软件无法替你在别的机器上 找到它，所以原样记录："
+msgstr ""
+"**A model file you chose keeps its absolute path.** Such a file exists "
+"only where you put it and the application cannot find it on another "
+"machine, so it is recorded as-is:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:262
+#: 6e4fa67372c4404b971c7ba3ecd7c3bc
+#, python-brace-format
+msgid "\"params\": { \"nep_path\": \"/opt/models/my_custom.nep\", ... }\n"
+msgstr "\"params\": { \"nep_path\": \"/opt/models/my_custom.nep\", ... }\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:266
+#: 53e98c824089428ab7985146c8dc6f0f
+msgid "换机器运行这类工作流时，需要把 `nep_path` 改成目标机器上的真实路径。路径不存在时命令行会明确 报出找不到的文件："
+msgstr ""
+"To run such a workflow elsewhere, change `nep_path` to a real path on the"
+" target machine. When the path does not exist the command line names the "
+"missing file:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:269
+#: f9e26b5d478f4460a6cd384a07261c6a
+msgid "error: NEP file does not exist: /opt/models/my_custom.nep\n"
+msgstr "error: NEP file does not exist: /opt/models/my_custom.nep\n"
+
+#: ../../source/workflows/run-workflow-from-cli.md:273
+#: fb8dd44cf15245d68df60ea368ec222f
+msgid ""
+"旧版本导出的 JSON 里 `nep_path` 是绝对路径，这类文件仍然可以正常加载；如果你希望它在其他机器 上也能用，把它改成 "
+"`bundled:nep89` 即可。"
+msgstr ""
+"JSON exported by older versions stores an absolute `nep_path`; those "
+"files still load normally. To use one on another machine, change it to "
+"`bundled:nep89`."
+
+#: ../../source/workflows/run-workflow-from-cli.md:276
+#: 1bde16f412dc48cf8629ac4a588c771e
+msgid "需要知道当前机器上自带模型的真实路径时："
+msgstr "To find the bundled model's real path on the current machine:"
+
+#: ../../source/workflows/run-workflow-from-cli.md:278
+#: c492e8132cdc45f2bfa4aefeab8208d0
+msgid ""
+"python -c \"from NepTrainKit.paths import get_bundled_nep89_path; "
+"print(get_bundled_nep89_path())\"\n"
+msgstr ""
+"python -c \"from NepTrainKit.paths import get_bundled_nep89_path; "
+"print(get_bundled_nep89_path())\"\n"
+
+#~ msgid ""
+#~ "from NepTrainKit.core.workflow import load_workflow\n"
+#~ "from ase.io import read\n"
+#~ "\n"
+#~ "run = load_workflow(\"flow.json\")\n"
+#~ "\n"
+#~ "# 只看执行计划，不运行\n"
+#~ "for stage in run.preview():\n"
+#~ "    print(stage.index, stage.card_class, stage.kind)\n"
+#~ "\n"
+#~ "result = run.run(read(\"input.xyz\", index=\":\"))\n"
+#~ "\n"
+#~ "# 全部卡片输出\n"
+#~ "result.all()\n"
+#~ "\n"
+#~ "# 只取最后一级\n"
+#~ "result.final()\n"
+#~ "\n"
+#~ "# 只取某张卡片（类名），或按执行序号（从 1 开始）\n"
+#~ "result.outputs(\"PerturbCard\")\n"
+#~ "result.outputs(index=1)\n"
+#~ "\n"
+#~ "# 每张卡各自的输出，键为卡片类名\n"
+#~ "for output in result.card_outputs:\n"
+#~ "    print(output.index, output.card_class, len(output.structures))\n"
+#~ msgstr ""
+#~ "from NepTrainKit.core.workflow import load_workflow\n"
+#~ "from ase.io import read\n"
+#~ "\n"
+#~ "run = load_workflow(\"flow.json\")\n"
+#~ "\n"
+#~ "# Preview the plan without running anything\n"
+#~ "for stage in run.preview():\n"
+#~ "    print(stage.index, stage.card_class, stage.kind)\n"
+#~ "\n"
+#~ "result = run.run(read(\"input.xyz\", index=\":\"))\n"
+#~ "\n"
+#~ "# Every card's output\n"
+#~ "result.all()\n"
+#~ "\n"
+#~ "# Only the final stage\n"
+#~ "result.final()\n"
+#~ "\n"
+#~ "# One card by class name, or by execution index (1-based)\n"
+#~ "result.outputs(\"PerturbCard\")\n"
+#~ "result.outputs(index=1)\n"
+#~ "\n"
+#~ "# Each card's own output, keyed by card class\n"
+#~ "for output in result.card_outputs:\n"
+#~ "    print(output.index, output.card_class, len(output.structures))\n"
+
+#~ msgid ""
+#~ "`run()` 接受任意可迭代的结构对象，返回结果对象本身不写文件；写文件由调用方决定，这样便于 "
+#~ "先把结果交给后续处理，而不是先写入磁盘再读取。"
+#~ msgstr ""
+#~ "`run()` accepts any iterable of "
+#~ "structure objects and the result object"
+#~ " does not write files itself; the "
+#~ "caller decides what to write, which "
+#~ "lets results flow into further "
+#~ "processing instead of a disk round "
+#~ "trip."
+

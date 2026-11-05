@@ -132,6 +132,10 @@ def run_commands(commands: list[list[str]], cwd: Path) -> int:
     env = os.environ.copy()
     src_path = str(cwd / "src")
     env["PYTHONPATH"] = src_path if not env.get("PYTHONPATH") else src_path + os.pathsep + env["PYTHONPATH"]
+    # Match CI so layout assertions measure the requested size instead of the
+    # host screen. A native desktop platform clamps window geometry, which
+    # makes width-dependent UI checks pass or fail per machine.
+    env.setdefault("QT_QPA_PLATFORM", "offscreen")
     for cmd in commands:
         print(f"[run] {' '.join(cmd)}")
         result = subprocess.run(cmd, cwd=cwd, env=env)

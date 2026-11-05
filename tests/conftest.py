@@ -17,6 +17,14 @@ LOCALAPPDATA_PATH = Path(__file__).resolve().parent / "_localappdata"
 LOCALAPPDATA_PATH.mkdir(parents=True, exist_ok=True)
 os.environ["LOCALAPPDATA"] = str(LOCALAPPDATA_PATH)
 
+# CI pins the headless plugin; a developer desktop does not. Without this the
+# native platform clamps window sizes to the real screen, so a test that asks
+# for a 1600 px canvas silently receives the display width and layout
+# assertions fail depending on the machine. Keep local runs identical to CI
+# unless a caller explicitly selects another platform (for example to debug
+# rendering by hand).
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
 
 _TEST_QAPPLICATION: QApplication | None = None
 

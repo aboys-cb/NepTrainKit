@@ -121,6 +121,67 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     assert widget.model.row(widget.model.row_of_model(scored.new["id"]))["is_baseline"]
 
 
+def test_incompatible_models_explain_why_the_list_is_empty(tmp_path, monkeypatch):
+    """An empty model list must say why, not read as a failed load.
+
+    A model only appears when its elements cover a set in the plan, so a saved
+    project can legitimately have nothing to show here.
+    """
+    from ase.build import bulk
+
+    from NepTrainKit.core.validation import Library, ValidationService
+    from NepTrainKit.core.validation.protocols.diagnostic import DiagnosticSpec
+
+    monkeypatch.setenv(library_module.ENV_VAR, str(tmp_path / "lib"))
+    service = ValidationService(Library(tmp_path / "lib"))
+    root = service.library.root
+
+    def capture(name, element):
+        path = root / name / "nep.txt"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"nep4 1 {element}\ncutoff 8 4 74 10\n# {name}\n")
+        return service.capture_model(path)["id"]
+
+    capture("fe", "Fe")
+    widget = ModelLibraryWidget(service=service)
+    widget.refresh()
+    assert widget.model.rowCount() == 1
+    assert "hidden" not in widget.model_combo.currentText().lower()
+    widget.close()
+
+    # A plan whose set is Ni: neither captured Fe model can cover it.
+    capture("ni", "Ni")
+    plan = service.create_diagnostic_plan(
+        "Ni only",
+        [(bulk("Ni", "fcc", a=3.52), DiagnosticSpec(kind="volume", low=-.05, high=.05, points=5))],
+        temporary=False,
+    )
+    widget = ModelLibraryWidget(service=service)
+    widget.refresh(plan["id"])
+    # Only the Ni model covers this plan; the Fe ones are hidden, and the page
+    # must say so rather than looking like nothing loaded.
+    assert widget.model.rowCount() == 1
+    assert widget.model_combo.currentText().endswith("ni")
+    # The tooltip names the count and why they are missing.
+    assert "1 model(s) were left out" in widget.model_combo.toolTip()
+    widget.close()
+
+    # With nothing compatible at all, the placeholder names the reason.
+    plan = service.create_diagnostic_plan(
+        "Mg only",
+        [(bulk("Mg", "hcp", a=3.21), DiagnosticSpec(kind="volume", low=-.05, high=.05, points=5))],
+        temporary=False,
+    )
+    widget = ModelLibraryWidget(service=service)
+    widget.refresh(plan["id"])
+    assert widget.model.rowCount() == 0
+    assert "hidden" in widget.model_combo.currentText().lower()
+    assert not widget.model_combo.isEnabled()
+    # The comparison picker must not invite a choice that does not exist.
+    assert widget.comparison_picker.text() == "No other model to compare"
+    widget.close()
+
+
 def test_library_run_all_can_be_cancelled(scored):
     widget = ModelLibraryWidget(service=scored.service)
     widget.refresh(scored.suite["id"])

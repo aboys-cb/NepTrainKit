@@ -1082,8 +1082,9 @@ class ModelLibraryWidget(QWidget):
             label = self._model_label(index)
             self.model_combo.addItem(label, userData=row["model_id"])
         if not self.model._rows:
-            self.model_combo.addItem("选择势版本后运行" if any(b["protocol"] == "diagnostic" for b in self._benchmarks) else self.tr("Reference preview only"), userData=None)
+            self.model_combo.addItem(self._empty_model_placeholder(), userData=None)
         self.model_combo.setEnabled(bool(self.model._rows))
+        self.model_combo.setToolTip(self._model_combo_hint())
         selected = self.model_combo.findData(model_id)
         if selected >= 0:
             self.model_combo.setCurrentIndex(selected)
@@ -1124,6 +1125,48 @@ class ModelLibraryWidget(QWidget):
         if sum(item["name"] == row["name"] and item.get("project_name") == row.get("project_name") for item in self.model._rows) > 1:
             label += f" · #{row['model_id']}"
         return label
+
+    def _empty_model_placeholder(self) -> str:
+        """Say why the model list is empty, not just that it is.
+
+        A saved project can hold models that this plan cannot use, because a
+        model only appears when its elements cover a set in the plan. Showing a
+        generic prompt there reads as "your model failed to load".
+        """
+        hidden = self._hidden_model_count()
+        if hidden:
+            return self.tr("No compatible model · {count} hidden").format(count=hidden)
+        return "选择势版本后运行" if any(b["protocol"] == "diagnostic" for b in self._benchmarks) else self.tr("Reference preview only")
+
+    def _model_combo_hint(self) -> str:
+        """Explain the model list, so an empty list is never a dead end."""
+        hidden = self._hidden_model_count()
+        if hidden:
+            elements = "、".join(
+                "/".join(item["elements"]) for item in self._benchmarks if item["elements"]
+            )
+            return self.tr(
+                "{count} model(s) were left out because their elements do not cover this plan ({elements}). "
+                "Switch plan, or validate them against a plan covering their elements."
+            ).format(count=hidden, elements=elements)
+        if not self.model._rows:
+            return self.tr("No model has been captured yet. Open a NEP model to associate it.")
+        return self.tr("The model whose metrics this page shows.")
+
+    def _hidden_model_count(self) -> int:
+        """Models left out of the scorecard because no set in the plan matches."""
+        try:
+            service = self.service()
+            rows = {row["model_id"] for row in self.model._rows}
+            wanted = [set(item["elements"]) for item in self._benchmarks]
+            return sum(
+                1 for model in service.models()
+                if model["id"] not in rows
+                and wanted
+                and not any(need <= set(model["elements"] or ()) for need in wanted)
+            )
+        except Exception:
+            return 0  # A count is decoration; never break the page over it.
 
     def _update_comparison_options(self, selected_ids=None):
         if selected_ids is None:

@@ -98,8 +98,16 @@ class ComparisonPicker(PushButton):
             item.setHidden(query not in item.text().casefold())
 
     def _update_text(self):
-        self.setText(self.tr("{count} comparison models selected").format(count=len(self._selected)) if self._selected else self.tr("Select comparison models…"))
-        self.setToolTip("\n".join(label for key, label, _status in self._options if key in self._selected) or self.tr("Select multiple saved versions to compare."))
+        if self._selected:
+            self.setText(self.tr("{count} comparison models selected").format(count=len(self._selected)))
+            self.setToolTip("\n".join(label for key, label, _status in self._options if key in self._selected))
+        elif self._options:
+            self.setText(self.tr("Select comparison models…"))
+            self.setToolTip(self.tr("Select multiple saved versions to compare."))
+        else:
+            # Disabled, but the prompt still invites a choice: say there is none.
+            self.setText(self.tr("No other model to compare"))
+            self.setToolTip(self.tr("This plan needs a second model with compatible elements to compare against."))
 
     def open_popup(self):
         self.search.clear()

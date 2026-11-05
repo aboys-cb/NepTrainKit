@@ -7386,17 +7386,27 @@ Every structure must have the chosen field. Each group must be one structure / m
         <translation>清空选择</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/comparison_picker.py" line="101" />
+        <location filename="../ui/widgets/comparison_picker.py" line="105" />
         <source>Select comparison models…</source>
         <translation>选择对比势…</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/comparison_picker.py" line="102" />
+        <location filename="../ui/widgets/comparison_picker.py" line="106" />
         <source>Select multiple saved versions to compare.</source>
         <translation>可选择多个已保存的势版本进行比较。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/comparison_picker.py" line="101" />
+        <location filename="../ui/widgets/comparison_picker.py" line="109" />
+        <source>No other model to compare</source>
+        <translation>没有可对比的其他势</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/comparison_picker.py" line="110" />
+        <source>This plan needs a second model with compatible elements to compare against.</source>
+        <translation>该方案需要另一个元素兼容的势才能对比。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/comparison_picker.py" line="102" />
         <source>{count} comparison models selected</source>
         <translation>已选 {count} 个对比势</translation>
     </message>
@@ -16023,8 +16033,8 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="745" />
-        <location filename="../ui/views/model_library.py" line="1203" />
-        <location filename="../ui/views/model_library.py" line="1412" />
+        <location filename="../ui/views/model_library.py" line="1246" />
+        <location filename="../ui/views/model_library.py" line="1455" />
         <source>Star</source>
         <translation>收藏</translation>
     </message>
@@ -16066,8 +16076,8 @@ All child items will also be deleted.</source>
         <translation type="vanished">基线：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1203" />
-        <location filename="../ui/views/model_library.py" line="1412" />
+        <location filename="../ui/views/model_library.py" line="1246" />
+        <location filename="../ui/views/model_library.py" line="1455" />
         <source>Unstar</source>
         <translation>取消收藏</translation>
     </message>
@@ -16076,17 +16086,17 @@ All child items will also be deleted.</source>
         <translation type="vanished">该套件新基线的备注（可选）</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1433" />
+        <location filename="../ui/views/model_library.py" line="1476" />
         <source>Large benchmark file</source>
         <translation>基准文件过大</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1434" />
+        <location filename="../ui/views/model_library.py" line="1477" />
         <source>The file is {size:.1f} MB, above the {limit:.0f} MB limit. Copy it into the library anyway?</source>
         <translation>该文件大小为 {size:.1f} MB，超过 {limit:.0f} MB 上限。仍要复制到模型库吗？</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1484" />
+        <location filename="../ui/views/model_library.py" line="1527" />
         <source>Import failed: {error}</source>
         <translation>导入失败：{error}</translation>
     </message>
@@ -16099,7 +16109,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">没有已记录的模型覆盖该套件的全部元素。请在 NEP 数据集展示中打开模型以记录它。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1616" />
+        <location filename="../ui/views/model_library.py" line="1659" />
         <source>Running validation</source>
         <translation>正在运行验证</translation>
     </message>
@@ -16128,7 +16138,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">保存到项目…</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1388" />
+        <location filename="../ui/views/model_library.py" line="1431" />
         <source>Saved to project</source>
         <translation>已保存到项目</translation>
     </message>
@@ -16141,7 +16151,7 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/views/model_library.py" line="750" />
         <location filename="../ui/views/model_library.py" line="751" />
-        <location filename="../ui/views/model_library.py" line="1425" />
+        <location filename="../ui/views/model_library.py" line="1468" />
         <source>Set baseline model</source>
         <translation>设为基准势版本</translation>
     </message>
@@ -16154,7 +16164,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">相对基准势版本：绿色为改善，红色为退化，灰色为容差内。按住 Ctrl 点击单元格可叠加多个势版本。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1424" />
+        <location filename="../ui/views/model_library.py" line="1467" />
         <source>Note for the baseline model (optional). This changes the comparison version only; reference datasets and original model files stay unchanged.</source>
         <translation>基准势版本备注（可选）。仅更改比较所用的势版本，不修改参考基准集及原始势文件。</translation>
     </message>
@@ -16204,7 +16214,7 @@ All child items will also be deleted.</source>
         <translation>基准势版本：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1488" />
+        <location filename="../ui/views/model_library.py" line="1531" />
         <source>Imported {count} reference datasets</source>
         <translation>已导入 {count} 个参考基准集</translation>
     </message>
@@ -16214,7 +16224,7 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="817" />
-        <location filename="../ui/views/model_library.py" line="1222" />
+        <location filename="../ui/views/model_library.py" line="1265" />
         <source>Show all groups</source>
         <translation>显示全部组</translation>
     </message>
@@ -16238,7 +16248,7 @@ All child items will also be deleted.</source>
         <translation>对比势</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1085" />
+        <location filename="../ui/views/model_library.py" line="1139" />
         <source>Reference preview only</source>
         <translation>仅预览参考数据</translation>
     </message>
@@ -16249,7 +16259,7 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="852" />
-        <location filename="../ui/views/model_library.py" line="1174" />
+        <location filename="../ui/views/model_library.py" line="1217" />
         <source>Error details</source>
         <translation>误差详情</translation>
     </message>
@@ -16276,17 +16286,17 @@ All child items will also be deleted.</source>
         <translation type="vanished">验证当前势和已选对比势，包括图例中暂时隐藏的曲线。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1137" />
+        <location filename="../ui/views/model_library.py" line="1180" />
         <source>Not run</source>
         <translation>未运行</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1137" />
+        <location filename="../ui/views/model_library.py" line="1180" />
         <source>{ready}/{total} validations completed</source>
         <translation>{ready}/{total} 项验证已完成</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1222" />
+        <location filename="../ui/views/model_library.py" line="1265" />
         <source>Back to all groups</source>
         <translation>返回全部组</translation>
     </message>
@@ -16297,17 +16307,37 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="742" />
-        <location filename="../ui/views/model_library.py" line="1451" />
+        <location filename="../ui/views/model_library.py" line="1494" />
         <source>Export validation sharing package…</source>
         <translation>导出验证分享包…</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1456" />
+        <location filename="../ui/views/model_library.py" line="1138" />
+        <source>No compatible model · {count} hidden</source>
+        <translation>无兼容势 · {count} 个已隐藏</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1148" /><location filename="../ui/views/model_library.py" line="1149" />
+        <source>{count} model(s) were left out because their elements do not cover this plan ({elements}). Switch plan, or validate them against a plan covering their elements.</source>
+        <translation>{count} 个势未显示，因为其元素不覆盖本方案（{elements}）。可切换方案，或用覆盖其元素的方案来验证。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1153" />
+        <source>No model has been captured yet. Open a NEP model to associate it.</source>
+        <translation>还没有捕获任何势。打开一个 NEP 模型即可关联。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1154" />
+        <source>The model whose metrics this page shows.</source>
+        <translation>本页展示其指标的势。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/model_library.py" line="1499" />
         <source>Validation sharing package exported.</source>
         <translation>验证分享包已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/views/model_library.py" line="1471" />
+        <location filename="../ui/views/model_library.py" line="1514" />
         <source>Sharing package imported as a new validation suite.</source>
         <translation>分享包已导入为新验证方案。</translation>
     </message>
@@ -22231,7 +22261,7 @@ All child items will also be deleted.</source>
 <context>
     <name>ShowNepWidget</name>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1696" />
+        <location filename="../ui/pages/show_nep.py" line="1701" />
         <source>LAMMPS dump import cancelled.</source>
         <translation>已取消导入 LAMMPS dump。</translation>
     </message>
@@ -22251,12 +22281,12 @@ All child items will also be deleted.</source>
         <translation>打开数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2798" /><location filename="../ui/pages/show_nep.py" line="2799" />
+        <location filename="../ui/pages/show_nep.py" line="2803" /><location filename="../ui/pages/show_nep.py" line="2804" />
         <source>Orig {orig} | Now {now} | Rm {removed} | Sel {selected} | Rej {rejected}</source>
         <translation>原始 {orig} | 当前 {now} | 删 {removed} | 选 {selected} | 坏 {rejected}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2803" /><location filename="../ui/pages/show_nep.py" line="2804" />
+        <location filename="../ui/pages/show_nep.py" line="2808" /><location filename="../ui/pages/show_nep.py" line="2809" />
         <source>Original structures: {orig}
 Currently shown: {now}
 Removed: {removed}
@@ -22352,8 +22382,8 @@ Marked bad: {rejected}</source>
     <message>
         <location filename="../ui/pages/show_nep.py" line="837" />
         <location filename="../ui/pages/show_nep.py" line="838" />
-        <location filename="../ui/pages/show_nep.py" line="1973" />
-        <location filename="../ui/pages/show_nep.py" line="1974" />
+        <location filename="../ui/pages/show_nep.py" line="1978" />
+        <location filename="../ui/pages/show_nep.py" line="1979" />
         <source>Play structures</source>
         <translation>连续播放结构</translation>
     </message>
@@ -22368,8 +22398,8 @@ Marked bad: {rejected}</source>
         <translation>/ {count:,} 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1968" />
-        <location filename="../ui/pages/show_nep.py" line="1969" />
+        <location filename="../ui/pages/show_nep.py" line="1973" />
+        <location filename="../ui/pages/show_nep.py" line="1974" />
         <source>Pause structures</source>
         <translation>暂停播放结构</translation>
     </message>
@@ -22416,7 +22446,7 @@ Marked bad: {rejected}</source>
     <message>
         <location filename="../ui/pages/show_nep.py" line="1120" />
         <location filename="../ui/pages/show_nep.py" line="1314" />
-        <location filename="../ui/pages/show_nep.py" line="1713" />
+        <location filename="../ui/pages/show_nep.py" line="1718" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
@@ -22434,8 +22464,8 @@ Marked bad: {rejected}</source>
         <location filename="../ui/pages/show_nep.py" line="1181" />
         <location filename="../ui/pages/show_nep.py" line="1228" />
         <location filename="../ui/pages/show_nep.py" line="1265" />
-        <location filename="../ui/pages/show_nep.py" line="2008" />
-        <location filename="../ui/pages/show_nep.py" line="2438" />
+        <location filename="../ui/pages/show_nep.py" line="2013" />
+        <location filename="../ui/pages/show_nep.py" line="2443" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
@@ -22456,7 +22486,7 @@ Marked bad: {rejected}</source>
     </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="1326" />
-        <location filename="../ui/pages/show_nep.py" line="2448" />
+        <location filename="../ui/pages/show_nep.py" line="2453" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
@@ -22473,70 +22503,70 @@ Do you want to load the new working path?</source>
         <translation>打开评分表即可导入参考基准集并选择验证类型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1719" />
+        <location filename="../ui/pages/show_nep.py" line="1724" />
         <source>Current dataset: {name}</source>
         <translation>当前数据集：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1722" />
+        <location filename="../ui/pages/show_nep.py" line="1727" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1759" />
+        <location filename="../ui/pages/show_nep.py" line="1764" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1759" />
+        <location filename="../ui/pages/show_nep.py" line="1764" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1862" />
+        <location filename="../ui/pages/show_nep.py" line="1867" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1901" />
-        <location filename="../ui/pages/show_nep.py" line="2651" />
+        <location filename="../ui/pages/show_nep.py" line="1906" />
+        <location filename="../ui/pages/show_nep.py" line="2656" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2002" />
+        <location filename="../ui/pages/show_nep.py" line="2007" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2190" />
+        <location filename="../ui/pages/show_nep.py" line="2195" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2201" />
+        <location filename="../ui/pages/show_nep.py" line="2206" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2443" />
+        <location filename="../ui/pages/show_nep.py" line="2448" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2449" />
+        <location filename="../ui/pages/show_nep.py" line="2454" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2460" />
+        <location filename="../ui/pages/show_nep.py" line="2465" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2548" />
+        <location filename="../ui/pages/show_nep.py" line="2553" />
         <source>Filter failed: {message}</source>
         <translation>筛选失败：{message}</translation>
     </message>
@@ -22549,8 +22579,8 @@ Do you want to continue?</source>
         <translation type="vanished">原子间距过小，结构可能不合理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2677" />
-        <location filename="../ui/pages/show_nep.py" line="2765" />
+        <location filename="../ui/pages/show_nep.py" line="2682" />
+        <location filename="../ui/pages/show_nep.py" line="2770" />
         <source>Please enter a search query.</source>
         <translation>请输入搜索内容。</translation>
     </message>
@@ -22567,14 +22597,14 @@ Do you want to continue?</source>
         <translation type="vanished">检查当前数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2689" />
-        <location filename="../ui/pages/show_nep.py" line="2703" />
+        <location filename="../ui/pages/show_nep.py" line="2694" />
+        <location filename="../ui/pages/show_nep.py" line="2708" />
         <source>Please load a dataset before running Training Set Audit.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2696" />
-        <location filename="../ui/pages/show_nep.py" line="2713" />
+        <location filename="../ui/pages/show_nep.py" line="2701" />
+        <location filename="../ui/pages/show_nep.py" line="2718" />
         <source>Training Set Audit page is not available.</source>
         <translation>训练集评估页面不可用。</translation>
     </message>
@@ -22653,12 +22683,12 @@ Do you want to continue?</source>
         <translation>取消此版本的星标</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1594" />
+        <location filename="../ui/pages/show_nep.py" line="1599" />
         <source>Removed the star from this version</source>
         <translation>已取消此版本的星标</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1597" />
+        <location filename="../ui/pages/show_nep.py" line="1602" />
         <source>Starred this version; library clean-up will keep it</source>
         <translation>已为此版本加星标，清理模型库时会保留它</translation>
     </message>
@@ -22702,7 +22732,7 @@ Do you want to continue?</source>
         <translation>临时验证 · {status}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1577" />
+        <location filename="../ui/pages/show_nep.py" line="1582" />
         <source>Saved to project</source>
         <translation>已保存到项目</translation>
     </message>

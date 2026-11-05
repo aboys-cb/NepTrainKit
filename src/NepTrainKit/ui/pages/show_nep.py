@@ -1534,6 +1534,11 @@ class ShowNepWidget(QWidget):
         self.validation_star_action.setText(
             self.tr("Unstar this version") if starred else self.tr("Star this version")
         )
+        # A starred version is a state the user chose to keep, so show it as a
+        # filled red heart instead of relying on the label alone.
+        self.validation_star_action.setIcon(
+            FluentIcon.HEART.icon(color=palette.FAVOURITE) if starred else FluentIcon.HEART.icon()
+        )
         # With nothing open the scorecard would land on whichever plan was used
         # last, which has no relation to what the viewer is showing.
         self.validation_scorecard_action.setEnabled(

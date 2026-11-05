@@ -12,6 +12,9 @@ from __future__ import annotations
 ACCENT = "#009FAA"
 ACCENT_SOFT = "#E0F4F5"
 
+# Marks state the user chose to keep, such as a starred model version.
+FAVOURITE = "#E03131"
+
 TEXT_PRIMARY = "#1B1F23"
 # Captions, helper text and collapsed summaries (4.9:1 on white).
 TEXT_SECONDARY = "#66737B"

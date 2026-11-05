@@ -936,12 +936,24 @@ def test_viewer_menu_stars_the_current_version(scored, monkeypatch):
     stub.refresh_validation_chip()
     assert stub.validation_star_action.isEnabled()
     assert stub.validation_star_action.text() == "Star this version"
+    def heart_is_red():
+        """Compare the rendered heart against the plain one."""
+        from qfluentwidgets import FluentIcon
+
+        filled = stub.validation_star_action.icon().pixmap(16, 16).toImage()
+        plain = FluentIcon.HEART.icon().pixmap(16, 16).toImage()
+        return filled != plain
+
+    assert not heart_is_red()
     with patch("NepTrainKit.ui.pages.show_nep.MessageManager"):
         stub.toggle_validation_star()
         assert scored.service.get_model(scored.fresh["id"])["starred"] is True
         assert stub.validation_star_action.text() == "Unstar this version"
+        # A starred version must look starred, not only read as starred.
+        assert heart_is_red()
         stub.toggle_validation_star()
     assert scored.service.get_model(scored.fresh["id"])["starred"] is False
+    assert not heart_is_red()
     for widget in (stub.validation_count_badge, stub.validation_dot_badge):
         widget.close()
 

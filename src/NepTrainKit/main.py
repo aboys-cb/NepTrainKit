@@ -507,10 +507,9 @@ class NepTrainKitMainWindow(FluentWindow):
                 file_signatures.append(None)
         return tuple(versions), indices, tuple(file_signatures)
 
-    def open_model_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft=None, seeds=None) -> None:
+    def open_model_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft=None) -> None:
         """Show the validation scorecard requested by the viewer status chip."""
         self.data_manager_interface.open_scorecard(suite_id, model_id, draft=draft)
-        self.data_manager_interface.library_widget.set_diagnostic_seeds(seeds or [])
         self.switchTo(self.data_manager_interface)
 
     def import_benchmark_set(self) -> list[dict] | None:

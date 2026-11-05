@@ -317,7 +317,14 @@ def test_resolved_backend_and_runtime_change_invalidate_cache(service,seed):
     assert service.evaluate(model['id'],key)['id']==after['id']
 
 
-def test_viewer_passes_selected_structures_without_copying_labels_into_plan(seed):
+def test_opening_the_scorecard_does_not_push_viewer_structures_into_the_editor(seed):
+    """Opening a scorecard is navigation; it must not seed a hidden editor.
+
+    The viewer used to hand its selected structures to the diagnostic editor,
+    which neither showed them nor cleared them, so a later experiment could
+    silently inherit structures from whatever was on screen earlier. Seeds are
+    chosen explicitly in the editor instead.
+    """
     from NepTrainKit.ui.pages.show_nep import ShowNepWidget
     captured=[]
     stub=SimpleNamespace(refresh_validation_chip=lambda:None,_validation_status=None,
@@ -326,8 +333,8 @@ def test_viewer_passes_selected_structures_without_copying_labels_into_plan(seed
         nep_result_data=SimpleNamespace(load_flag=True,select_index={2,1},get_atoms=lambda i:seed),
         struct_index_spinbox=SimpleNamespace(value=lambda:0))
     ShowNepWidget.open_validation_scorecard(stub)
-    assert len(captured[0][1]['seeds'])==2 and captured[0][1]['seeds'][0] is not seed
-    assert captured[0][1]['draft'] is stub._validation_draft
+    assert captured[0][1].get('draft') is stub._validation_draft
+    assert 'seeds' not in captured[0][1], 'navigation must not seed the editor'
 
 
 def test_edit_saved_experiment_creates_copy_and_preserves_original(service,seed):

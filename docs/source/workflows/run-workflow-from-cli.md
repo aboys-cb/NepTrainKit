@@ -69,12 +69,14 @@ nepkit workflow run flow.json -i input.xyz -o two_stages.xyz \
 
 ```
 $ nepkit workflow run flow.json -i input.xyz -o out.xyz
-input: 1 structure(s) from input.xyz          ← stdout
-  SuperCellCard: 1
-  CellStrainCard: 23
-total: 24 structure(s)
+1 in → 24 out | SuperCellCard 1 → CellStrainCard 23
 written: out.xyz
 ```
+
+一行里依次是：输入结构数、总输出数、每张卡各自的输出数量。卡片按执行顺序排列，箭头跟着流程
+走向，所以粘日志时一行就能看出每一步扩增了多少。
+
+左边那个总输出数是全部卡片输出之和，通常大于最后一级；只想看某一级时用 `--card`。
 
 默认情况下标准错误只会出现错误信息，不会混入库内部的计时和调试日志——即使界面里把日志级别
 设成了「调试」也一样，因为命令行不以界面设置为准。
@@ -152,23 +154,39 @@ for path in ("a.xyz", "b.xyz", "c.xyz"):
 如果命令行结果和界面不一致，先确认两边用的是同一个导出的 JSON，并检查是否依赖了界面里的
 全局设置。
 
-## 换机器运行时注意模型路径
+## 换机器运行时的模型路径
 
-导出的 JSON 里，卡片引用的模型文件写的是**导出时那台机器上的绝对路径**。默认值是软件自带的
-`Config/nep89.txt`，在界面里改成自定义路径时也一样，都是具体位置。
+模型路径分两种情况，行为不同。
 
-同一台机器上直接运行没有问题。把 JSON 拿到别的机器、别的位置的安装，或者换了 Python 环境时，
-这个路径通常已经失效，命令行会明确报出找不到的文件：
+**软件自带的模型（`nep89`）是可移植的。** 导出时不会写死某台机器上的绝对路径，而是写成标记
+`bundled:nep89`：
+
+```json
+"params": { "nep_path": "bundled:nep89", ... }
+```
+
+运行时会解析成当前机器上真实的模型文件，所以在别的机器、别的安装位置或换了 Python 环境都能
+直接跑。界面上显示的仍然是完整路径，标记只存在于数据里。
+
+**你自己选的模型文件保留绝对路径。** 这类文件只存在于你指定的位置，软件无法替你在别的机器上
+找到它，所以原样记录：
+
+```json
+"params": { "nep_path": "/opt/models/my_custom.nep", ... }
+```
+
+换机器运行这类工作流时，需要把 `nep_path` 改成目标机器上的真实路径。路径不存在时命令行会明确
+报出找不到的文件：
 
 ```
-error: NEP file does not exist: /Users/xxx/miniconda3/lib/python3.10/site-packages/NepTrainKit/Config/nep89.txt
+error: NEP file does not exist: /opt/models/my_custom.nep
 ```
 
-此时把 JSON 里的 `nep_path` 改成当前机器上的真实路径即可。自带模型的路径可以用：
+旧版本导出的 JSON 里 `nep_path` 是绝对路径，这类文件仍然可以正常加载；如果你希望它在其他机器
+上也能用，把它改成 `bundled:nep89` 即可。
+
+需要知道当前机器上自带模型的真实路径时：
 
 ```bash
 python -c "from NepTrainKit.paths import get_bundled_nep89_path; print(get_bundled_nep89_path())"
 ```
-
-涉及模型路径的卡片（例如全局多样性筛选）在流水线里复用时，建议导出后直接把 `nep_path`
-替换成目标环境的路径，而不要依赖导出时写入的值。

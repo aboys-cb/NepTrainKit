@@ -29,6 +29,7 @@ from NepTrainKit.core.io.sampling_features import (
 from NepTrainKit.core.io.sampling_recommendation import select_physics_budget
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure
 from NepTrainKit.core.types import parse_nep_backend
+from NepTrainKit.paths import resolve_model_path
 
 from .errors import CardOperationError
 from .operation import DatasetOperation
@@ -157,7 +158,7 @@ class FPSFilterOperation(DatasetOperation):
                 f"FPS Filter: input structure {empty_indices[0] + 1} contains no atoms."
             )
 
-        model_path = Path(str(params.nep_path)).expanduser()
+        model_path = resolve_model_path(params.nep_path)
         if require_model and not model_path.is_file():
             raise FileNotFoundError(f"NEP file does not exist: {model_path}")
         existing_text = str(params.existing_dataset_path).strip()

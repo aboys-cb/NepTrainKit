@@ -192,10 +192,10 @@ def _run(namespace: argparse.Namespace) -> int:
         _write_structures(namespace.output, selected)
 
     if not namespace.quiet:
-        print(f"input: {len(structures)} structure(s) from {namespace.input}")
-        for name in result.card_names():
-            print(f"  {name}: {len(result.outputs(name))}")
-        print(f"total: {len(selected)} structure(s)")
+        chain = " → ".join(
+            f"{name} {len(result.outputs(name))}" for name in result.card_names()
+        )
+        print(f"{len(structures)} in → {len(selected)} out | {chain}")
         if namespace.output:
             print(f"written: {namespace.output}")
     return 0

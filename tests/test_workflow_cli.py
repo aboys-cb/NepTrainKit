@@ -509,29 +509,71 @@ class TestFPSModelPath:
             },
         })
 
-    def test_exported_nep_path_is_a_concrete_existing_file(self):
-        """The desktop export never leaves ``nep_path`` empty."""
+    def test_bundled_model_is_exported_as_a_portable_token(self):
+        """The bundled model must survive a move to another machine."""
         import dataclasses
 
         from PySide6.QtWidgets import QApplication
+
+        from NepTrainKit.paths import BUNDLED_NEP89_TOKEN, resolve_model_path
 
         QApplication.instance() or QApplication([])
         import NepTrainKit.ui.views._card  # noqa: F401 - registers every card
         from NepTrainKit.core import CardManager
 
         params = CardManager.card_info_dict["FPSFilterDataCard"]().get_params()
-        assert params.nep_path, "export must carry the bundled default path"
-        assert Path(params.nep_path).is_file()
-        exported = json.loads(json.dumps(dataclasses.asdict(params)))
-        assert exported["nep_path"] == params.nep_path
+        assert params.nep_path == BUNDLED_NEP89_TOKEN
+        assert not Path(params.nep_path).is_absolute(), "no machine-local path in the export"
+        assert resolve_model_path(params.nep_path).is_file()
 
-    def test_bundled_model_path_runs_headlessly(self):
+        exported = json.loads(json.dumps(dataclasses.asdict(params)))
+        assert exported["nep_path"] == BUNDLED_NEP89_TOKEN
+
+    def test_custom_model_path_stays_absolute(self):
+        """A user-chosen model cannot be resolved elsewhere, so keep it explicit."""
+        from PySide6.QtWidgets import QApplication
+
+        QApplication.instance() or QApplication([])
+        import NepTrainKit.ui.views._card  # noqa: F401 - registers every card
+        from NepTrainKit.core import CardManager
+
+        card = CardManager.card_info_dict["FPSFilterDataCard"]()
+        card.nep_path_lineedit.setText("/opt/models/my_custom.nep")
+        assert card.get_params().nep_path == "/opt/models/my_custom.nep"
+
+    def test_set_params_shows_a_real_path_for_the_token(self):
+        """The interface must never display the token to the user."""
+        from PySide6.QtWidgets import QApplication
+
+        from NepTrainKit.core.cards.filter import FPSFilterParams
+        from NepTrainKit.paths import BUNDLED_NEP89_TOKEN
+
+        QApplication.instance() or QApplication([])
+        import NepTrainKit.ui.views._card  # noqa: F401 - registers every card
+        from NepTrainKit.core import CardManager
+
+        card = CardManager.card_info_dict["FPSFilterDataCard"]()
+        card.set_params(FPSFilterParams(nep_path=BUNDLED_NEP89_TOKEN))
+        shown = card.nep_path_lineedit.text()
+        assert shown != BUNDLED_NEP89_TOKEN
+        assert Path(shown).is_file()
+
+    def test_legacy_absolute_export_still_loads(self):
+        """Older exports stored the absolute bundled path; they must keep working."""
         from NepTrainKit.paths import get_bundled_nep89_path
 
         model = get_bundled_nep89_path()
         if not model.is_file():
             pytest.skip("bundled nep89 model is not present in this checkout")
         result = load_workflow(self._fps_workflow(str(model))).run([_si2()])
+        assert len(result.final()) == 1
+
+    def test_bundled_model_path_runs_headlessly(self):
+        from NepTrainKit.paths import BUNDLED_NEP89_TOKEN, get_bundled_nep89_path
+
+        if not get_bundled_nep89_path().is_file():
+            pytest.skip("bundled nep89 model is not present in this checkout")
+        result = load_workflow(self._fps_workflow(BUNDLED_NEP89_TOKEN)).run([_si2()])
         assert len(result.final()) == 1
 
     def test_stale_machine_path_names_the_file_it_could_not_find(self, tmp_path, capsys):

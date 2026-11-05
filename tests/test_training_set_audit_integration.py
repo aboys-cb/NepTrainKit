@@ -791,6 +791,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
         window.open_dir_button = ActionProbe()
         window.save_dir_button = ActionProbe()
+        window.save_dir_button.button = ActionProbe()
         current_page = SimpleNamespace(open_file=lambda: None)
         window.stackedWidget = SimpleNamespace(currentWidget=lambda: current_page)
 

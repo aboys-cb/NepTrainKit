@@ -386,8 +386,7 @@ class ModelService:
         to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
         if to_create:
             session.add_all(to_create)
-            session.flush()  # obtain generated primary keys
-            session.commit()
+            session.flush()  # caller owns the transaction
         return existing + to_create
     def _build_tree(self, node: ModelVersion) -> ModelItem:
         """Recursively map ORM model hierarchy into ``ModelItem`` objects."""
@@ -535,21 +534,56 @@ class ModelService:
             # session.add(event)
             session.commit()
             return version
-    def modify_model(self,model_id:int,**kwargs):
+    def modify_model(self, model_id: int, **kwargs) -> ModelVersion:
+        """Edit metadata; different model bytes create a new immutable version."""
         with self.db.session() as session:
-            mv = session.get(ModelVersion, model_id)  # Load the model version
-            if not mv:
+            original = session.get(ModelVersion, model_id)
+            if original is None:
                 raise ValueError(f"ModelVersion {model_id} not found")
-            tag_objs = self._get_or_create_tags_simple(kwargs.pop("tags", []) or [],session)
-
-            # Update basic scalar fields
-            for key, value in kwargs.items():
-                setattr(mv, key, value)
-
-            # Update relationship fields
-            if tag_objs:
+            mv = original
+            path_value = str(kwargs.get("model_path", original.model_path))
+            if original.content_hash:
+                if kwargs.get("model_type", original.model_type).upper() != original.model_type.upper():
+                    raise ValueError("已有快照的势版本不能修改模型类型，请新建模型。")
+                path = Path(path_value).expanduser()
+                if path.is_dir():
+                    path = path / "nep.txt"
+                # Metadata edits still work when an unchanged source is offline.
+                if path_value != original.model_path or path.is_file():
+                    from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
+                    from NepTrainKit.core.validation.library import Library
+                    draft = ModelDraft.from_file(path)
+                    if draft.content_hash != original.content_hash:
+                        library = Library(self.db.path.parent, create=False)
+                        kind, elements = parse_model_header(draft.data)
+                        digest = library.put_bytes(draft.data)
+                        mv = ModelVersion(
+                            name=original.name, project_id=original.project_id,
+                            model_type=original.model_type, model_path=path_value,
+                            notes=original.notes, parent_id=original.id,
+                            content_hash=digest, model_kind=kind, elements=list(elements),
+                            source_path=draft.source_path, tags=set(original.tags),
+                        )
+                        session.add(mv)
+                        # Never carry measurements from the old model to new bytes.
+                        for key in ("energy", "force", "virial", "data_size"):
+                            if kwargs.get(key) == getattr(original, key):
+                                kwargs.pop(key, None)
+                        kwargs.pop("parent_id", None)
+                        if kwargs.get("name", original.name) == original.name:
+                            kwargs["name"] = original.name[:70] + " · 新版本"
+                    else:
+                        mv.source_path = draft.source_path
+            tags = kwargs.pop("tags", None)
+            if tags is not None:
+                # This helper flushes rather than committing a partial model edit.
+                tag_objs = self._get_or_create_tags_simple(tags, session)
                 mv.tags = set(tag_objs)
+            for key, value in kwargs.items():
+                setattr(mv, key, str(value) if key == "model_path" else value)
             session.commit()
+            return mv
+
     def remove_model(self, model_id: int) :
         with self.db.session() as session:
             session.query(ModelVersion).filter_by(id=model_id).delete()

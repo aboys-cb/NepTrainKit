@@ -4,27 +4,30 @@
 # @email    : 1747193328@qq.com
 import os
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QApplication, QSplitter, QStackedWidget
+from qfluentwidgets import SegmentedWidget
 
-from NepTrainKit.paths import get_user_config_path
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.dataset.database import Database
 from NepTrainKit.core.dataset.seed import seed_nep_data_git
 from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagService
+from NepTrainKit.core.validation.library import get_library
 
 from NepTrainKit.ui.views import ModelItemWidget, ProjectWidget
+from NepTrainKit.ui.views.model_library import ModelLibraryWidget
 
 
 class DataManagerWidget(QWidget):
-    """Coordinate project and model management widgets backed by the local database.
+    """Model library: validation scorecard plus the project and model registry.
 
     Parameters
     ----------
     parent : QWidget | None
         Optional owner widget that holds this page.
     """
+
+    toolbarActionsChanged = Signal()
 
     def __init__(self,parent=None):
         """Initialise database services and connect child widgets.
@@ -38,13 +41,48 @@ class DataManagerWidget(QWidget):
         self._parent = parent
         self.setObjectName("DataManagerWidget")
         self.setAcceptDrops(True)
-        user_path = get_user_config_path()
-        self._db = Database(user_path / "mlpman.db")
+        # The data manager and model validation share the library database.
+        self._db = get_library().database
         self.model_service = ModelService(self._db)
         self.project_service = ProjectService(self._db)
         self.tag_service = TagService(self._db)
         self.init_ui()
         seed_nep_data_git(self._db, self.project_service, self.model_service)
+
+    def toolbar_actions(self):
+        """Expose validation defaults only while its tab is selected."""
+        if self.stack.currentWidget() is self.library_widget:
+            library = self.library_widget
+            editing = not library.editor_scroll.isHidden()
+            temporary = library.current_suite_id() is not None and library.current_suite_id() < 0
+            return {"open": library.import_action,
+                    "save": library.save_plan_action if editing or temporary else library.save_action,
+                    "save_menu": library.save_action if temporary else library.export_package_action}
+        return {}
+
+    def _sync_toolbar_actions(self, *_args):
+        active = self.isVisible() and self.stack.currentWidget() is self.library_widget
+        for menu_name, actions in (
+            ("load_menu", (self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.import_action, self.library_widget.import_package_action,)),
+            ("save_menu", (self.library_widget.save_action, self.library_widget.star_action, self.library_widget.save_plan_action, self.library_widget.export_package_action)),
+        ):
+            menu = getattr(self._parent, menu_name, None)
+            if menu is None:
+                continue
+            for action in actions:
+                if action in menu.actions():
+                    menu.removeAction(action)
+                if active:
+                    menu.addAction(action)
+        self.toolbarActionsChanged.emit()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._sync_toolbar_actions()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self._sync_toolbar_actions()
 
     def dragEnterEvent(self, event):
         """Accept one or more local model directories.
@@ -86,17 +124,63 @@ class DataManagerWidget(QWidget):
         if not paths:
             event.ignore()
             return
-        if not hasattr(self.data_item_widget, "project"):
+        if getattr(self.data_item_widget, "project", None) is None:
             MessageManager.send_info_message(
                 self.tr("Select a project before dropping a model folder")
             )
             event.ignore()
             return
+        self.show_projects()
         self.data_item_widget.create_model(initial_path=paths[0])
         event.acceptProposedAction()
 
+    def show_projects(self):
+        """Switch to the project registry tab."""
+        database = get_library().database
+        if database.path != self._db.path:
+            self._db = database
+            self.model_service = ModelService(database)
+            self.project_service = ProjectService(database)
+            self.tag_service = TagService(database)
+            for widget in (self.project_widget, self.data_item_widget):
+                widget.db = database
+                widget.model_service = self.model_service
+                widget.project_service = self.project_service
+                widget.tag_service = self.tag_service
+            self.data_item_widget.project = None
+            self.data_item_widget._model.clear()
+            self.data_item_widget._update_action_state()
+        self.tabs.setCurrentItem("projects")
+        self.stack.setCurrentWidget(self.splitter)
+        self.project_widget.load_all_projects()
+        project = getattr(self.data_item_widget, "project", None)
+        if project is not None:
+            self.data_item_widget.load_models_by_project(project)
+
+    def open_scorecard(self, suite_id, model_id=None, *, draft=None):
+        """Switch to the validation tab with ``suite_id`` and ``model_id`` selected."""
+        self.library_widget.open_scorecard(suite_id, model_id, draft=draft)
+        self.tabs.setCurrentItem("validation")
+        self.stack.setCurrentWidget(self.library_widget)
+
+    def _on_registry_changed(self, model_id=None):
+        """Keep the project counts and validation selectors in sync after edits."""
+        self.project_widget.load_all_projects()
+        current = self.data_item_widget.project
+        if current is not None:
+            updated = self.project_widget.project_item_dict.get(current.project_id)
+            if updated is None:
+                self.data_item_widget.load_models_by_project(None)
+            else:
+                self.data_item_widget.project = updated
+        if self.library_widget._run_task is None:
+            self.library_widget.refresh()
+            reason = getattr(self.library_widget, "_unavailable_models", {}).get(model_id)
+            if reason:
+                MessageManager.send_info_message("模型已登记，但暂不能用于验证：" + reason)
+
     def init_ui(self):
-        """Build the project and model split view.
+        """Build the validation scorecard and the project/model split view.
 
         Returns
         -------
@@ -137,6 +221,28 @@ class DataManagerWidget(QWidget):
         # self.splitter.setStretchFactor(2, 2)
 
 
-        self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
+        self.library_widget = ModelLibraryWidget(self)
+        self.data_item_widget.modelsChanged.connect(self._on_registry_changed)
+        self.project_widget.projectsChanged.connect(self._on_registry_changed)
+        self.stack = QStackedWidget(self)
+        self.stack.addWidget(self.library_widget)
+        self.stack.addWidget(self.splitter)
+        self.tabs = SegmentedWidget(self)
+        self.tabs.addItem("validation", "验证与诊断", lambda: self.stack.setCurrentWidget(self.library_widget))
+        self.tabs.addItem("projects", self.tr("Projects"), self.show_projects)
+        self.tabs.setCurrentItem("validation")
+
+        tab_row = QHBoxLayout()
+        tab_row.setContentsMargins(8, 6, 8, 2)
+        tab_row.addWidget(self.tabs)
+        tab_row.addStretch(1)
+        self.gridLayout.addLayout(tab_row, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.stack, 1, 0, 1, 1)
 
         self.setLayout(self.gridLayout)
+        self.stack.currentChanged.connect(self._sync_toolbar_actions)
+        self.library_widget.toolbarContextChanged.connect(self.toolbarActionsChanged)
+        for action in (self.library_widget.import_action, self.library_widget.save_action,
+                       self.library_widget.star_action, self.library_widget.import_package_action,
+                       self.library_widget.export_package_action, self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.save_plan_action):
+            action.changed.connect(self.toolbarActionsChanged)

@@ -225,3 +225,21 @@ msgstr ""
 #~ "-> GPUMD trains the model\n"
 #~ "-> NEP Dataset Display reviews the result\n"
 #~ "-> Data Management records the iteration\n"
+
+msgid "数据管理和模型验证共用一个**库目录**，默认在用户配置目录下："
+msgstr "Data management and model validation share a **library directory**, located in the user configuration directory by default:"
+
+msgid "Windows：`C:\\Users\\<You>\\AppData\\Local\\NepTrainKit\\library\\`"
+msgstr "Windows: `C:\\Users\\<You>\\AppData\\Local\\NepTrainKit\\library\\`"
+
+msgid "macOS / Linux：`~/.config/NepTrainKit/library/`"
+msgstr "macOS / Linux: `~/.config/NepTrainKit/library/`"
+
+msgid "库目录里有索引数据库 `library.db`、按内容哈希保存的模型与验证集快照（`objects/`） 和评估结果（`results/`）。数据库中只存相对路径，整个文件夹拷走即可备份或迁移。 设置环境变量 `NEPTRAINKIT_LIBRARY` 可以改用其他位置（集群或命令行常用）。"
+msgstr "The library contains the index database `library.db`, content-addressed model and benchmark snapshots (`objects/`), and evaluation results (`results/`). The database stores relative paths, so copying the entire folder backs up or migrates it. Set `NEPTRAINKIT_LIBRARY` to use another location, for example on a cluster or the command line."
+
+msgid "首次启动时，旧版的 `mlpman.db` 会被**复制**到库目录，原文件保留不动。"
+msgstr "On first launch, the legacy `mlpman.db` is **copied** into the library directory. The original file is preserved."
+
+msgid "库目录只复制体积小、结果依赖的文件（`nep.txt`、验证集）。训练集等大文件只记录路径和 指纹；文件被移动或修改后会标记出来，不会自动复制你的训练数据。"
+msgstr "The library copies only small files needed to reproduce results (`nep.txt` and benchmark sets). Large files such as training datasets are tracked by path and fingerprint. Moved or modified files are flagged; training data is not copied automatically."

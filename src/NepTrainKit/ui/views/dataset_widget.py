@@ -44,12 +44,14 @@ class ModelItemWidget(QWidget, DatasetManager):
 
     model_item_dict: dict[int, ModelItem] = {}
     projectChangedSignal = Signal(int)
+    modelsChanged = Signal(int)
 
     def __init__(self, parent=None):
         """Configure the backing model, view, shortcuts, and context menu."""
         super().__init__(parent)
         self._parent = parent
-        self.project: ProjectItem
+        self.project: ProjectItem | None = None
+        self.model_item_dict = {}
 
         self._view = TreeView()
         self._view.clicked.connect(self.item_clicked)
@@ -152,8 +154,11 @@ class ModelItemWidget(QWidget, DatasetManager):
         index : QModelIndex
             Index provided by the view for the triggered row.
         """
+        if not index.isValid():
+            return
         item = index.internalPointer()
-        self.projectChangedSignal.emit(item.data(1))
+        model = self.model_item_dict[item.data(0)]
+        self.projectChangedSignal.emit(model.project_id)
 
     def create_menu(self) -> None:
         """Create and wire up the context menu for the model tree."""
@@ -205,7 +210,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         return self._view.currentIndex()
 
     def _update_action_state(self, *_args) -> None:
-        has_project = hasattr(self, "project")
+        has_project = self.project is not None
         has_selection = self._current_index().isValid()
         self.new_model_button.setEnabled(has_project)
         for button in (
@@ -255,7 +260,7 @@ class ModelItemWidget(QWidget, DatasetManager):
             self._build_tree(item, child)
         return child
 
-    def load_models_by_project(self, project: ProjectItem) -> None:
+    def load_models_by_project(self, project: ProjectItem | None) -> None:
         """Refresh the tree with models that belong to the given project.
 
         Parameters
@@ -264,8 +269,12 @@ class ModelItemWidget(QWidget, DatasetManager):
             Project whose models will be displayed in the tree.
         """
         self._model.clear()
+        self.model_item_dict.clear()
         self.project = project
         self._update_action_state()
+        if project is None:
+            self._refresh_empty_hint()
+            return
         models = self.model_service.get_models_by_project_id(project.project_id)
         self.add_models_to_table(models)
 
@@ -281,6 +290,8 @@ class ModelItemWidget(QWidget, DatasetManager):
                     "or drag a model folder here."
                 )
             )
+        else:
+            self.empty_hint.setText(self.tr("Select a project on the left to list its models, or drag a model folder here."))
         self.empty_hint.show()
 
     def add_models_to_table(self, models: list[ModelItem]) -> None:
@@ -306,7 +317,7 @@ class ModelItemWidget(QWidget, DatasetManager):
             When ``True`` the selected model is updated; otherwise a new
             version entry is inserted.
         """
-        if not hasattr(self, "project"):
+        if self.project is None:
             MessageManager.send_info_message(self.tr("Select a project first"))
             return
         box = ModelInfoMessageBox(self._parent)
@@ -337,9 +348,9 @@ class ModelItemWidget(QWidget, DatasetManager):
             box.model_note_edit.setText(current_model.notes)
             box.train_path_edit.setText(current_model.model_path)
             box.model_type_combox.setText(current_model.model_type)
-            box.energy_spinBox.setText(str(current_model.energy))
-            box.force_spinBox.setText(str(current_model.force))
-            box.virial_spinBox.setText(str(current_model.virial))
+            box.energy_spinBox.setText("" if current_model.energy is None else str(current_model.energy))
+            box.force_spinBox.setText("" if current_model.force is None else str(current_model.force))
+            box.virial_spinBox.setText("" if current_model.virial is None else str(current_model.virial))
             for tag in current_model.tags:
                 box.add_tag(tag.name)
 
@@ -358,9 +369,26 @@ class ModelItemWidget(QWidget, DatasetManager):
         data["project_id"] = self.project.project_id
 
         if modify:
-            self.model_service.modify_model(current_model.model_id, **data)
+            try:
+                saved = self.model_service.modify_model(current_model.model_id, **data)
+            except (OSError, ValueError) as error:
+                MessageManager.send_error_message(str(error))
+                return
             self.load_models_by_project(self.project)
-            MessageManager.send_success_message(self.tr("Model modified successfully"))
+            self.modelsChanged.emit(saved.id)
+            matches = self._model.match(self._model.index(0, 0), Qt.ItemDataRole.DisplayRole,
+                                        saved.id, 1, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
+            if matches:
+                self._view.setCurrentIndex(matches[0])
+                parent = matches[0].parent()
+                while parent.isValid():
+                    self._view.expand(parent)
+                    parent = parent.parent()
+                self._view.scrollTo(matches[0])
+            if saved.id != current_model.model_id:
+                MessageManager.send_success_message("模型内容已变化，已创建新版本；旧版本、基准势和历史结果保持不变。")
+            else:
+                MessageManager.send_success_message(self.tr("Model modified successfully"))
             return
 
         project = self.model_service.add_version(**data)
@@ -369,6 +397,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         else:
             MessageManager.send_success_message(self.tr("Model created successfully"))
             self.load_models_by_project(self.project)
+            self.modelsChanged.emit(project.id)
 
     def remove_model(self) -> None:
         """Delete the currently highlighted model after confirmation."""
@@ -392,6 +421,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         self.model_service.remove_model(model_id=model_id)
         MessageManager.send_success_message(self.tr("Model deleted successfully"))
         self.load_models_by_project(self.project)
+        self.modelsChanged.emit(model_id)
 
     def open_folder(self) -> None:
         """Open the directory or URL associated with the selected model."""
@@ -409,7 +439,10 @@ class ModelItemWidget(QWidget, DatasetManager):
             QDesktopServices.openUrl(QUrl(path))
         else:
             if os.path.exists(path):
-                QDesktopServices.openUrl(QUrl("file:///" + path))
+                folder = os.path.abspath(path)
+                if os.path.isfile(folder):
+                    folder = os.path.dirname(folder)
+                QDesktopServices.openUrl(QUrl.fromLocalFile(folder))
             else:
                 MessageManager.send_info_message(
                     self.tr("Model folder does not exist: {path}").format(path=path)
@@ -425,6 +458,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         """
         models = self.model_service.search_models_advanced(**params)
         self._model.clear()
+        self.model_item_dict.clear()
         self.add_models_to_table(models)
 
     def show_search_dialog(self) -> None:

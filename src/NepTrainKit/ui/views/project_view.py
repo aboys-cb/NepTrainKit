@@ -36,11 +36,13 @@ class ProjectWidget(QWidget, DatasetManager):
 
     project_item_dict: dict[int, ProjectItem] = {}
     projectChangedSignal = Signal(ProjectItem)
+    projectsChanged = Signal()
 
     def __init__(self, parent=None):
         """Configure the project tree view, model, menus, and load trigger."""
         super().__init__(parent)
         self._parent = parent
+        self.project_item_dict = {}
 
         self._view = TreeView()
         self._view.clicked.connect(self.item_clicked)
@@ -191,6 +193,7 @@ class ProjectWidget(QWidget, DatasetManager):
                 parent_id=parent_id,
             )
             self.load_all_projects()
+            self.projectsChanged.emit()
             MessageManager.send_success_message(self.tr("Project modified successfully"))
             return
 
@@ -204,6 +207,7 @@ class ProjectWidget(QWidget, DatasetManager):
         else:
             MessageManager.send_success_message(self.tr("Project created successfully"))
             self.load_all_projects()
+            self.projectsChanged.emit()
 
     def remove_project(self) -> None:
         """Remove the selected project after user confirmation."""
@@ -226,6 +230,7 @@ class ProjectWidget(QWidget, DatasetManager):
         self.project_service.remove_project(project_id=project_id)
         MessageManager.send_success_message(self.tr("Project deleted successfully"))
         self.load_all_projects()
+        self.projectsChanged.emit()
 
     def load(self) -> None:
         """Defer initial loading until the widget is shown."""
@@ -256,10 +261,28 @@ class ProjectWidget(QWidget, DatasetManager):
         return child
 
     def load_all_projects(self) -> None:
-        """Reload the entire project tree from the data source."""
-        self._model.clear()
+        """Refresh counts and names without losing the selected or expanded projects."""
+        def indexes(parent=QModelIndex()):
+            for row in range(self._model.rowCount(parent)):
+                index = self._model.index(row, 0, parent)
+                yield index
+                yield from indexes(index)
+
+        current = self._view.currentIndex()
+        selected_id = current.internalPointer().data(1) if current.isValid() else None
+        expanded = {index.internalPointer().data(1) for index in indexes() if self._view.isExpanded(index)}
+        scroll = self._view.verticalScrollBar().value()
         all_projects = self.project_service.search_projects(parent_id=None)
         self._model.beginResetModel()
+        self._model.clear()
+        self.project_item_dict.clear()
         for project in all_projects:
             self._build_tree(project, self._model.rootItem)
         self._model.endResetModel()
+        for index in indexes():
+            project_id = index.internalPointer().data(1)
+            if project_id in expanded:
+                self._view.setExpanded(index, True)
+            if project_id == selected_id:
+                self._view.setCurrentIndex(index)
+        self._view.verticalScrollBar().setValue(scroll)

@@ -180,7 +180,7 @@ class NepTrainKitMainWindow(FluentWindow):
             self.tr('Training Set Audit'),
         )
         self.addSubInterface(
-            self.make_data_interface,
+            self.make_data_workspace,
             QIcon(':/images/src/images/make.svg'),
             self.tr('Make Dataset'),
         )
@@ -206,12 +206,19 @@ class NepTrainKitMainWindow(FluentWindow):
         )
         self.training_set_audit_host.attach(self.training_set_audit_interface)
         self.training_set_audit_window = TrainingSetAuditWindow(self)
-        self.make_data_interface = MakeDataWidget(self)
+        from NepTrainKit.ui.pages.makedata_workspace import MakeDataWorkspace
+        self.make_data_workspace = MakeDataWorkspace(self)
+        self.make_data_interface = self.make_data_workspace.primary_editor
         self.setting_interface = SettingsWidget(self)
         self.setting_interface.canvasModeChanged.connect(
             self.show_nep_interface.graph_widget.apply_canvas_mode
         )
         self.data_manager_interface = DataManagerWidget(self)
+        self.show_nep_interface.modelRegistryChanged.connect(self.data_manager_interface._on_registry_changed)
+        self.data_manager_interface.toolbarActionsChanged.connect(self._refresh_page_actions)
+        self.data_manager_interface.library_widget.samplingWorkflowRequested.connect(
+            self.open_eos_sampling_workflow
+        )
         self._audited_result_data = None
         self._audited_result_signature = None
         self._audited_result = None
@@ -221,9 +228,14 @@ class NepTrainKitMainWindow(FluentWindow):
         self._make_dataset_handoff_thread = None
         self._make_dataset_handoff_token = None
         self._connect_training_set_audit_signals()
-        self.make_data_interface.finalOutputRequestedSignal.connect(
+        self.make_data_workspace.finalOutputRequestedSignal.connect(
             self.open_make_dataset_output
         )
+
+    def open_eos_sampling_workflow(self, payload: dict) -> None:
+        """Open the sampling draft within the third module, preserving other tabs."""
+        self.make_data_workspace.open_sampling(payload)
+        self.switchTo(self.make_data_workspace)
 
     def _connect_training_set_audit_signals(self) -> None:
         """Wire Training Set Audit page actions back into the main window."""
@@ -337,6 +349,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def open_file_dialog(self) -> None:
         """Delegate to the current widget's ``open_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
+        action = getattr(widget, "toolbar_actions", lambda: {})().get("open")
+        if action is not None:
+            if action.isEnabled():
+                action.trigger()
+            return
         handler = getattr(widget, "open_file", None)
         if callable(handler):
             handler()
@@ -344,6 +361,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def export_file_dialog(self) -> None:
         """Delegate to the current widget's ``export_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
+        action = getattr(widget, "toolbar_actions", lambda: {})().get("save")
+        if action is not None:
+            if action.isEnabled():
+                action.trigger()
+            return
         handler = getattr(widget, "export_file", None)
         if callable(handler):
             handler()
@@ -369,19 +391,26 @@ class NepTrainKitMainWindow(FluentWindow):
     def _refresh_page_actions(self, *_args) -> None:
         """Enable global actions only when the active page implements them."""
         widget = self.stackedWidget.currentWidget()
-        can_open = callable(getattr(widget, "open_file", None))
-        can_save = callable(getattr(widget, "export_file", None))
+        actions = getattr(widget, "toolbar_actions", lambda: {})()
+        open_action, save_action = actions.get("open"), actions.get("save")
+        can_open = open_action.isEnabled() if open_action is not None else callable(getattr(widget, "open_file", None))
+        can_save = save_action.isEnabled() if save_action is not None else callable(getattr(widget, "export_file", None))
         self.open_dir_button.setEnabled(can_open)
-        self.save_dir_button.setEnabled(can_save)
+        menu_action = actions.get("save_menu")
+        can_save_menu = can_save or (menu_action is not None and menu_action.isEnabled())
+        self.save_dir_button.setEnabled(can_save_menu)
+        self.save_dir_button.button.setEnabled(can_save)
         self.open_dir_button.setToolTip(
-            self.tr("Open data for this page")
-            if can_open
-            else self.tr("Open is not available on this page")
+            open_action.toolTip() if open_action is not None else (
+                self.tr("Open data for this page") if can_open
+                else self.tr("Open is not available on this page")
+            )
         )
         self.save_dir_button.setToolTip(
-            self.tr("Save data from this page")
-            if can_save
-            else self.tr("Save is not available on this page")
+            save_action.toolTip() if save_action is not None else (
+                self.tr("Save data from this page") if can_save
+                else self.tr("Save is not available on this page")
+            )
         )
 
     def open_dataset_for_training_set_audit(self) -> None:
@@ -477,6 +506,16 @@ class NepTrainKitMainWindow(FluentWindow):
             except Exception:
                 file_signatures.append(None)
         return tuple(versions), indices, tuple(file_signatures)
+
+    def open_model_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft=None, seeds=None) -> None:
+        """Show the validation scorecard requested by the viewer status chip."""
+        self.data_manager_interface.open_scorecard(suite_id, model_id, draft=draft)
+        self.data_manager_interface.library_widget.set_diagnostic_seeds(seeds or [])
+        self.switchTo(self.data_manager_interface)
+
+    def import_benchmark_set(self) -> list[dict] | None:
+        """Import a benchmark set from the viewer chip, staying on the viewer."""
+        return self.data_manager_interface.library_widget.import_benchmark()
 
     def open_training_set_audit(
         self,

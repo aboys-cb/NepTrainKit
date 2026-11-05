@@ -16,6 +16,37 @@ from NepTrainKit.ui.widgets import (
 )
 
 
+class _StrainRangeFrame(RangeTripletInputFrame):
+    """Stack high-precision strain values when the inspector is narrow."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._labels = [self.layout().itemAtPosition(0, i).widget() for i in range(3)]
+        self._stacked = None
+        for control in self.object_list:
+            control.valueChanged.connect(self._reflow)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._reflow()
+
+    def _reflow(self, *_args):
+        if not hasattr(self, "_labels"):
+            return
+        stacked = self.width() < 3 * max(c.readable_width_hint() for c in self.object_list) + 12
+        if stacked == self._stacked:
+            return
+        self._stacked = stacked
+        layout = self.layout()
+        for widget in self._labels + self.object_list:
+            layout.removeWidget(widget)
+        for i, (label, control) in enumerate(zip(self._labels, self.object_list)):
+            layout.addWidget(label, i if stacked else 0, 0 if stacked else i)
+            layout.addWidget(control, i if stacked else 1, 1 if stacked else i)
+            layout.setColumnStretch(i, int(i == 1) if stacked else 1)
+        self.updateGeometry()
+
+
 @CardManager.register_card
 class CellStrainCard(MakeDataCard):
     """Generate de-duplicated normal-strain paths and grids."""
@@ -117,10 +148,11 @@ class CellStrainCard(MakeDataCard):
         self._on_mode_changed()
 
     def _range_frame(self) -> RangeTripletInputFrame:
-        frame = RangeTripletInputFrame(self)
+        frame = _StrainRangeFrame(self)
+        frame.setDecimals(6)
         frame.object_list[0].setRange(-99.0, 100.0)
         frame.object_list[1].setRange(-99.0, 100.0)
-        frame.object_list[2].setRange(0.001, 199.0)
+        frame.object_list[2].setRange(0.000001, 199.0)
         frame.set_input_value([-5.0, 5.0, 1.0])
         return frame
 

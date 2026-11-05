@@ -64,9 +64,16 @@ Project: TiH2 surface defects
 
 ## 存储位置
 
-本地数据库默认放在用户配置目录：
+数据管理和模型验证共用一个**库目录**，默认在用户配置目录下：
 
-- Windows：`C:\Users\<You>\AppData\Local\NepTrainKit\mlpman.db`
-- Linux：`~/.config/NepTrainKit/mlpman.db`
+- Windows：`C:\Users\<You>\AppData\Local\NepTrainKit\library\`
+- macOS / Linux：`~/.config/NepTrainKit/library/`
 
-这个数据库只记录管理信息，不会自动复制你的大体积训练数据。移动训练目录后，记得更新记录里的路径。
+库目录里有索引数据库 `library.db`、按内容哈希保存的模型与验证集快照（`objects/`）
+和评估结果（`results/`）。数据库中只存相对路径，整个文件夹拷走即可备份或迁移。
+设置环境变量 `NEPTRAINKIT_LIBRARY` 可以改用其他位置（集群或命令行常用）。
+
+首次启动时，旧版的 `mlpman.db` 会被**复制**到库目录，原文件保留不动。
+
+库目录只复制体积小、结果依赖的文件（`nep.txt`、验证集）。训练集等大文件只记录路径和
+指纹；文件被移动或修改后会标记出来，不会自动复制你的训练数据。

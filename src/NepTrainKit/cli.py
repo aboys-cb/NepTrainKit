@@ -52,7 +52,16 @@ def run_cli(argv: list[str] | None = None) -> int:
         _fail(str(exc))
         return 2
     except FileNotFoundError as exc:
-        _fail(f"file not found: {exc.filename}")
+        # A card may raise this for a missing model file with its own wording and
+        # no ``filename``, while a missing input surfaces as a plain errno text.
+        detail = str(exc)
+        if exc.filename and str(exc.filename) not in detail:
+            detail = f"file not found: {exc.filename}" if detail.startswith("[Errno") else (
+                f"{detail}: {exc.filename}"
+            )
+        elif detail.startswith("[Errno"):
+            detail = f"file not found: {detail.split(': ', 1)[-1]}"
+        _fail(detail or "a required file is missing")
         return 2
     except OSError as exc:
         _fail(f"{exc.strerror or exc}")

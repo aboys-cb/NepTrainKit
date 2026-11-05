@@ -117,26 +117,49 @@ class TestParamsFromDict:
         """Every registered card's JSON form rebuilds, and rebuilding is stable."""
         import dataclasses
 
+        from PySide6.QtWidgets import QApplication
+
+        QApplication.instance() or QApplication([])
+        import NepTrainKit.ui.views._card  # noqa: F401 - registers every card
+        from NepTrainKit.core import CardManager
+
+        covered = 0
         for card_class, (_, _, params_module, params_name, _) in CARD_REGISTRY.items():
             module = __import__(params_module, fromlist=[params_name])
             params_type = getattr(module, params_name)
+
+            # The desktop serializer always writes every field, including ones
+            # without a dataclass default such as FPS's bundled ``nep_path``.
+            widget_class = CardManager.card_info_dict.get(card_class)
+            if widget_class is not None:
+                widget_params = widget_class().get_params()
+                if widget_params is not None:
+                    exported = json.loads(json.dumps(dataclasses.asdict(widget_params)))
+                    once = params_from_dict(params_type, exported)
+                    twice = params_from_dict(
+                        params_type, json.loads(json.dumps(dataclasses.asdict(once)))
+                    )
+                    assert once == twice, card_class
+                    assert once == widget_params, card_class
+                    covered += 1
+                    continue
+
             defaults = {
                 field.name: field.default
                 for field in dataclasses.fields(params_type)
                 if field.default is not dataclasses.MISSING
             }
             if len(defaults) != len(dataclasses.fields(params_type)):
-                # Fields without defaults need a real input path (e.g. a model
-                # file); the serializer cross-check below covers those cards.
-                continue
+                pytest.fail(f"{card_class} has required params but no widget to supply them")
             exported = json.loads(json.dumps(defaults))
             once = params_from_dict(params_type, exported)
             twice = params_from_dict(
                 params_type, json.loads(json.dumps(dataclasses.asdict(once)))
             )
             assert once == twice, card_class
-            for name in defaults:
-                assert hasattr(once, name), card_class
+            covered += 1
+
+        assert covered == len(CARD_REGISTRY)
 
     def test_all_registered_cards_match_the_desktop_serializer(self):
         """Core parsing must agree with what the UI writes for every card."""
@@ -422,6 +445,63 @@ class TestCli:
         ))
         assert run_cli(["run", str(path), "-i", str(tmp_path / "nope.xyz")]) == 2
         assert "not found" in capsys.readouterr().err
+
+
+class TestFPSModelPath:
+    """FPS writes a concrete model path, so exports carry a machine-local value."""
+
+    def _fps_workflow(self, nep_path):
+        return _workflow({
+            "class": "FPSFilterDataCard",
+            "check_state": True,
+            "params": {
+                "nep_path": nep_path,
+                "n_samples": 1,
+                "min_distance": 0.0,
+                "backend": "cpu",
+                "chunk_max_atoms": 100000,
+                "strategy": "global",
+                "existing_dataset_path": "",
+            },
+        })
+
+    def test_exported_nep_path_is_a_concrete_existing_file(self):
+        """The desktop export never leaves ``nep_path`` empty."""
+        import dataclasses
+
+        from PySide6.QtWidgets import QApplication
+
+        QApplication.instance() or QApplication([])
+        import NepTrainKit.ui.views._card  # noqa: F401 - registers every card
+        from NepTrainKit.core import CardManager
+
+        params = CardManager.card_info_dict["FPSFilterDataCard"]().get_params()
+        assert params.nep_path, "export must carry the bundled default path"
+        assert Path(params.nep_path).is_file()
+        exported = json.loads(json.dumps(dataclasses.asdict(params)))
+        assert exported["nep_path"] == params.nep_path
+
+    def test_bundled_model_path_runs_headlessly(self):
+        from NepTrainKit.paths import get_bundled_nep89_path
+
+        model = get_bundled_nep89_path()
+        if not model.is_file():
+            pytest.skip("bundled nep89 model is not present in this checkout")
+        result = load_workflow(self._fps_workflow(str(model))).run([_si2()])
+        assert len(result.final()) == 1
+
+    def test_stale_machine_path_names_the_file_it_could_not_find(self, tmp_path, capsys):
+        """Exporting from another machine must not produce a bare "None" error."""
+        from NepTrainKit.cli import run_cli
+
+        stale = str(tmp_path / "other-machine" / "nep89.txt")
+        path = tmp_path / "fps.json"
+        path.write_text(json.dumps(self._fps_workflow(stale)), encoding="utf-8")
+
+        assert run_cli(["run", str(path), "-i", str(SI2)]) == 2
+        err = capsys.readouterr().err
+        assert stale in err, "the missing model path must appear in the message"
+        assert "None" not in err
 
 
 class TestShippedTemplate:

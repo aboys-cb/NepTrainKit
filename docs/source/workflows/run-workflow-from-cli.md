@@ -123,3 +123,24 @@ for path in ("a.xyz", "b.xyz", "c.xyz"):
 
 如果命令行结果和界面不一致，先确认两边用的是同一个导出的 JSON，并检查是否依赖了界面里的
 全局设置。
+
+## 换机器运行时注意模型路径
+
+导出的 JSON 里，卡片引用的模型文件写的是**导出时那台机器上的绝对路径**。默认值是软件自带的
+`Config/nep89.txt`，在界面里改成自定义路径时也一样，都是具体位置。
+
+同一台机器上直接运行没有问题。把 JSON 拿到别的机器、别的位置的安装，或者换了 Python 环境时，
+这个路径通常已经失效，命令行会明确报出找不到的文件：
+
+```
+error: NEP file does not exist: /Users/xxx/miniconda3/lib/python3.10/site-packages/NepTrainKit/Config/nep89.txt
+```
+
+此时把 JSON 里的 `nep_path` 改成当前机器上的真实路径即可。自带模型的路径可以用：
+
+```bash
+python -c "from NepTrainKit.paths import get_bundled_nep89_path; print(get_bundled_nep89_path())"
+```
+
+涉及模型路径的卡片（例如全局多样性筛选）在流水线里复用时，建议导出后直接把 `nep_path`
+替换成目标环境的路径，而不要依赖导出时写入的值。

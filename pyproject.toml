@@ -72,8 +72,8 @@ Issues = "https://github.com/aboys-cb/NepTrainKit/issues"
 
 
 [project.scripts]
-NepTrainKit = "NepTrainKit.main:main"
-nepkit = "NepTrainKit.main:main"
+NepTrainKit = "NepTrainKit.__main__:main"
+nepkit = "NepTrainKit.__main__:main"
 
 [tool.setuptools]
 include-package-data = false

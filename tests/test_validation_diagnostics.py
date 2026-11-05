@@ -114,6 +114,40 @@ def test_unconverged_difference_is_undetermined(seed):
     assert ev.details['checks'][0]['status']=='undetermined'
 
 
+def test_seeds_are_cleaned_whether_they_arrive_as_ase_or_structure(seed):
+    """The viewer passes its own Structure; files pass ASE Atoms.
+
+    Structure has no calc, arrays or set_constraint, so the two entry points
+    must both end up with clean ASE atoms instead of raising AttributeError.
+    """
+    from NepTrainKit.core.structure import Structure
+    from NepTrainKit.core.validation.protocols.diagnostic import as_ase_atoms, clean_seed
+
+    viewer_style = Structure(
+        lattice=np.asarray(seed.cell.array, dtype=float),
+        atomic_properties={
+            "pos": np.asarray(seed.get_positions(), dtype=float),
+            "numbers": np.asarray(seed.numbers, dtype=int),
+        },
+        properties=[
+            {"name": "pos", "type": "R", "count": 3},
+            {"name": "numbers", "type": "I", "count": 1},
+        ],
+        additional_fields={},
+    )
+
+    for candidate in (seed, viewer_style):
+        cleaned = clean_seed(candidate)
+        assert isinstance(cleaned, Atoms), type(cleaned).__name__
+        assert cleaned.get_chemical_formula() == seed.get_chemical_formula()
+        assert len(cleaned) == len(seed)
+        np.testing.assert_allclose(cleaned.get_positions(), seed.get_positions())
+        np.testing.assert_allclose(cleaned.cell.array, seed.cell.array)
+
+    # ASE atoms must pass straight through without being rebuilt.
+    assert as_ase_atoms(seed) is seed
+
+
 def test_unsupported_inputs_and_no_fake_labels(seed):
     seed.calc=SinglePointCalculator(seed,energy=123,forces=np.zeros((2,3)))
     seed.info['energy']=123

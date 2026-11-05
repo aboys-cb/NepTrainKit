@@ -119,8 +119,45 @@ def read_seed_structures(path):
     return images
 
 
+def as_ase_atoms(frame):
+    """Return ``frame`` as an ASE ``Atoms`` object.
+
+    Seeds reach the diagnostics from two directions: files, which ``ase.io.read``
+    already returns as ``Atoms``, and the viewer, which hands over NepTrainKit's
+    own :class:`~NepTrainKit.core.structure.Structure`. That class is a plain
+    container with no ``calc``, ``arrays`` or ``set_constraint``, so everything
+    below in this module must work on atoms and not on whichever object happened
+    to arrive.
+
+    Parameters
+    ----------
+    frame : ase.Atoms or NepTrainKit.core.structure.Structure
+        Frame to normalize.
+
+    Returns
+    -------
+    ase.Atoms
+        The same geometry as ASE atoms, so callers can rely on the ASE API.
+    """
+    if hasattr(frame, "set_constraint") and hasattr(frame, "arrays"):
+        return frame
+    # Imported here so this module stays usable without the structure package.
+    from ase import Atoms
+
+    positions = np.asarray(frame.atomic_properties["pos"], dtype=float)
+    numbers = np.asarray(frame.atomic_properties["numbers"]).astype(int)
+    pbc = frame.additional_fields.get("pbc", True)
+    return Atoms(
+        positions=positions,
+        numbers=numbers,
+        cell=np.asarray(frame.lattice, dtype=float).reshape(3, 3),
+        pbc=bool(np.all(pbc)),
+    )
+
+
 def clean_seed(atoms):
     """Keep geometry and explicitly supplied moments; never turn predictions into labels."""
+    atoms = as_ase_atoms(atoms)
     seed = atoms.copy()
     seed.calc = None
     seed.set_constraint()

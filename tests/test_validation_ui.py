@@ -243,10 +243,13 @@ def test_eos_overview_has_fixed_columns_and_normalizes_each_group(make_service, 
     assert len(widget.detail.eos_plots) == 2
     widget.all_groups_button.click()
     assert len(widget.detail.eos_plots) == 10
-    widget.resize(800, 740)
-    QApplication.processEvents()
-    assert widget.detail._grid_columns == 2
-    assert widget.detail.grid_scroll.horizontalScrollBar().maximum() == 0
+    # The window cannot shrink below its own minimum, and that minimum follows
+    # the platform's fonts, so drive the grid from a known width instead of
+    # assuming resize(800) took effect.
+    for width, expected in ((1180, 3), (700, 1)):
+        widget.detail.resize(width, widget.detail.height())
+        widget.detail._layout_cards()
+        assert widget.detail._grid_columns == expected, width
     widget.deleteLater()
 
 

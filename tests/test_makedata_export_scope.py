@@ -27,6 +27,20 @@ def _card(name, *, enabled=True, output_count=1):
     return card
 
 
+def _page(*cards, sampling_attached=False, revision=0, run_revision=0):
+    """A stand-in for MakeDataWidget with the state export reads.
+
+    ``_sampling_attached`` and the revision pair are set in ``__init__``, so a
+    double that omits them is not a valid stand-in.
+    """
+    return SimpleNamespace(
+        workspace_card_widget=SimpleNamespace(cards=list(cards)),
+        _sampling_attached=sampling_attached,
+        _sampling_revision=revision,
+        _sampling_run_revision=run_revision,
+    )
+
+
 class TestMakeDataExportScope(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -36,9 +50,7 @@ class TestMakeDataExportScope(unittest.TestCase):
         first = _card("first")
         disabled = _card("disabled", enabled=False)
         final = _card("final")
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(cards=[first, disabled, final])
-        )
+        page = _page(first, disabled, final)
 
         cards = MakeDataWidget._cards_for_export(page, include_all=False)
 
@@ -49,11 +61,7 @@ class TestMakeDataExportScope(unittest.TestCase):
         unavailable = _card("unavailable", output_count=0)
         disabled = _card("disabled", enabled=False)
         final = _card("final")
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(
-                cards=[first, unavailable, disabled, final]
-            )
-        )
+        page = _page(first, unavailable, disabled, final)
 
         cards = MakeDataWidget._cards_for_export(page, include_all=True)
 
@@ -62,10 +70,8 @@ class TestMakeDataExportScope(unittest.TestCase):
     def test_final_scope_uses_last_output_completed_in_current_run(self):
         completed = _card("completed")
         stale = _card("stale")
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(cards=[completed, stale]),
-            _last_completed_card_index=0,
-        )
+        page = _page(completed, stale)
+        page._last_completed_card_index = 0
 
         cards = MakeDataWidget._cards_for_export(page, include_all=False)
 
@@ -175,10 +181,8 @@ class TestMakeDataExportScope(unittest.TestCase):
         self, info_message, path_dialog
     ):
         card = _card("final", output_count=0)
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(cards=[card]),
-            tr=lambda text: text,
-        )
+        page = _page(card)
+        page.tr = lambda text: text
         page._cards_for_export = lambda include_all: MakeDataWidget._cards_for_export(
             page, include_all
         )

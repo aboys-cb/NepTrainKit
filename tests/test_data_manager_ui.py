@@ -174,7 +174,9 @@ class TestDataManagerUi(unittest.TestCase):
                         open_url.assert_called_once()
                         url = open_url.call_args.args[0]
                         self.assertTrue(url.isLocalFile())
-                        self.assertEqual(url.toLocalFile(), str(folder))
+                        # QUrl renders separators as "/" on every platform, so
+                        # compare resolved paths rather than raw strings.
+                        self.assertEqual(Path(url.toLocalFile()), folder)
 
     def test_chinese_catalog_translates_visible_data_manager_actions(self):
         catalog = (

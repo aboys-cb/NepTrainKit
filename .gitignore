@@ -34,4 +34,6 @@ tests/pytest-cache-files-*/
 /tests/data/**/descriptor.pca2.npy
 /tests/data/**/nep.in
 /tests/data/nep/*.out
+/tests/data/dipole/*.out
+/tests/data/polarizability/*.out
 /tests/data/nep/prediction.meta.json

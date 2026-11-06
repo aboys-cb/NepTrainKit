@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import sys
 from pathlib import Path
 
@@ -113,56 +114,13 @@ class TestParamsFromDict:
             params_from_dict(SuperCellParams, {"super_scale": [2, 2, 2], "bogus": 1})
         assert "bogus" in str(excinfo.value)
 
-    def test_every_registered_card_rebuilds_idempotently(self):
-        """Every registered card's JSON form rebuilds, and rebuilding is stable."""
-        import dataclasses
+    def test_every_registered_card_round_trips_its_desktop_params(self):
+        """Every card's JSON form rebuilds, is stable, and matches the UI.
 
-        from PySide6.QtWidgets import QApplication
-
-        QApplication.instance() or QApplication([])
-        import NepTrainKit.ui.views._card  # noqa: F401 - registers every card
-        from NepTrainKit.core import CardManager
-
-        covered = 0
-        for card_class, (_, _, params_module, params_name, _) in CARD_REGISTRY.items():
-            module = __import__(params_module, fromlist=[params_name])
-            params_type = getattr(module, params_name)
-
-            # The desktop serializer always writes every field, including ones
-            # without a dataclass default such as FPS's bundled ``nep_path``.
-            widget_class = CardManager.card_info_dict.get(card_class)
-            if widget_class is not None:
-                widget_params = widget_class().get_params()
-                if widget_params is not None:
-                    exported = json.loads(json.dumps(dataclasses.asdict(widget_params)))
-                    once = params_from_dict(params_type, exported)
-                    twice = params_from_dict(
-                        params_type, json.loads(json.dumps(dataclasses.asdict(once)))
-                    )
-                    assert once == twice, card_class
-                    assert once == widget_params, card_class
-                    covered += 1
-                    continue
-
-            defaults = {
-                field.name: field.default
-                for field in dataclasses.fields(params_type)
-                if field.default is not dataclasses.MISSING
-            }
-            if len(defaults) != len(dataclasses.fields(params_type)):
-                pytest.fail(f"{card_class} has required params but no widget to supply them")
-            exported = json.loads(json.dumps(defaults))
-            once = params_from_dict(params_type, exported)
-            twice = params_from_dict(
-                params_type, json.loads(json.dumps(dataclasses.asdict(once)))
-            )
-            assert once == twice, card_class
-            covered += 1
-
-        assert covered == len(CARD_REGISTRY)
-
-    def test_all_registered_cards_match_the_desktop_serializer(self):
-        """Core parsing must agree with what the UI writes for every card."""
+        These were three separate walks over CARD_REGISTRY, each instantiating
+        all 42 card widgets (~1.8s per pass). The assertions are independent and
+        cheap once the params exist, so one pass covers all of them.
+        """
         import dataclasses
 
         from PySide6.QtWidgets import QApplication
@@ -173,16 +131,34 @@ class TestParamsFromDict:
 
         checked = 0
         for card_class, (_, _, params_module, params_name, _) in CARD_REGISTRY.items():
-            widget_class = CardManager.card_info_dict.get(card_class)
-            if widget_class is None:
-                continue
-            params = widget_class().get_params()
-            if params is None:
-                continue
             module = __import__(params_module, fromlist=[params_name])
-            exported = json.loads(json.dumps(dataclasses.asdict(params)))
-            assert params_from_dict(getattr(module, params_name), exported) == params, card_class
+            params_type = getattr(module, params_name)
+            widget_class = CardManager.card_info_dict.get(card_class)
+            widget_params = None
+            if widget_class is not None:
+                widget_params = widget_class().get_params()
+
+            if widget_params is not None:
+                # The desktop serializer writes every field, including ones with
+                # no dataclass default such as FPS's bundled ``nep_path``.
+                exported = json.loads(json.dumps(dataclasses.asdict(widget_params)))
+                once = params_from_dict(params_type, exported)
+                assert once == widget_params, card_class
+            else:
+                defaults = {
+                    field.name: field.default
+                    for field in dataclasses.fields(params_type)
+                    if field.default is not dataclasses.MISSING
+                }
+                if len(defaults) != len(dataclasses.fields(params_type)):
+                    pytest.fail(f"{card_class} has required params but no widget to supply them")
+                once = params_from_dict(params_type, json.loads(json.dumps(defaults)))
+
+            twice = params_from_dict(params_type, json.loads(json.dumps(dataclasses.asdict(once))))
+            assert once == twice, card_class
             checked += 1
+
+        assert checked == len(CARD_REGISTRY)
         assert checked >= 40
 
 
@@ -717,9 +693,25 @@ class TestLogQuieting:
 
 class TestShippedTemplate:
     def test_structure_perturbation_template_runs_headlessly(self):
-        run = load_workflow(TEMPLATE)
-        stages = run.preview()
-        assert [stage.card_class for stage in stages][:1] == ["SuperCellCard"]
-        result = run.run([_si2()])
-        assert result.card_names()[-1] == "PerturbCard"
-        assert len(result.final()) > 0
+        """The shipped template executes end to end, cards and branches included.
+
+        The template itself samples a 11x11x11 strain grid under 50 random
+        perturbations (~69k structures, ~30s). That volume is the point of the
+        template, not of this test, so the strain grid is narrowed here: the
+        card chain, the branch merge, and the final step stay identical.
+        """
+        document = json.loads(TEMPLATE.read_text(encoding="utf-8"))
+        # First card of the branch group: narrow its three strain ranges.
+        branch = document["workflow"]["cards"][1]
+        branch["card_list"][0]["params"].update(
+            x_range=[-5.0, 5.0, 5.0], y_range=[-5.0, 5.0, 5.0], z_range=[-5.0, 5.0, 5.0]
+        )
+        with tempfile.TemporaryDirectory() as workdir:
+            narrowed = Path(workdir) / "narrowed.json"
+            narrowed.write_text(json.dumps(document), encoding="utf-8")
+            run = load_workflow(narrowed)
+            stages = run.preview()
+            assert [stage.card_class for stage in stages][:1] == ["SuperCellCard"]
+            result = run.run([_si2()])
+            assert result.card_names()[-1] == "PerturbCard"
+            assert len(result.final()) > 0

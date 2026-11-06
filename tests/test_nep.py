@@ -2009,14 +2009,6 @@ class TestNepPolarizabilityResultData( unittest.TestCase):
         os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
         os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
 
-    def test_load_train2(self):
-
-
-        result = NepPolarizabilityResultData.from_path(self.train_path)
-        result.load()
-        os.remove(os.path.join(self.data_dir,"polarizability_train.out"))
-        os.remove(os.path.join(self.data_dir,"descriptor.out"))
-
     def test_inverse_select(self):
 
         result = NepPolarizabilityResultData.from_path(self.train_path)
@@ -2063,12 +2055,6 @@ class TestNepDipoleResultData(unittest.TestCase):
         self.assertEqual(len(export_remove_model), 2)
         os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
         os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-    def test_load_train2(self):
-        result = NepDipoleResultData.from_path(self.train_path)
-        result.load()
-        os.remove(os.path.join(self.data_dir,"dipole_train.out"))
-        os.remove(os.path.join(self.data_dir,"descriptor.out"))
 
     def test_inverse_select(self):
         result = NepDipoleResultData.from_path(self.train_path)

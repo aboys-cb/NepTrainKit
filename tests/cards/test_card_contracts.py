@@ -4,7 +4,7 @@ from dataclasses import fields, is_dataclass
 from unittest.mock import patch
 import time
 
-from PySide6.QtCore import QEvent, QPoint, QPointF, Qt, qInstallMessageHandler
+from PySide6.QtCore import QCoreApplication, QEvent, QPoint, QPointF, Qt, qInstallMessageHandler
 from PySide6.QtGui import QMouseEvent
 
 from NepTrainKit.core.cards.operation import (
@@ -15,6 +15,29 @@ from NepTrainKit.core.cards.operation import (
 from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.ui.threads import DataProcessingThread
 from NepTrainKit.ui.widgets import FilterDataCard, adapt_legacy_inspector_form
+
+
+def _dispose_card(card) -> None:
+    """Release a card widget so a loop over 42 classes does not pile them up.
+
+    ``deleteLater`` alone only queues; flushing DeferredDelete is what actually
+    drops the C++ side. Sending the posted events (without processEvents, which
+    re-enters the loop) is enough here and keeps the object graph consistent.
+    """
+    widget = getattr(card, "setting_widget", None)
+    if widget is not None:
+        widget.close()
+        widget.deleteLater()
+    parent = card.parent() if hasattr(card, "parent") else None
+    for target in (card, parent):
+        if target is None:
+            continue
+        try:
+            target.close()
+            target.deleteLater()
+        except RuntimeError:
+            pass
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 class TestCardContracts(BaseCardTest):
@@ -230,6 +253,7 @@ class TestCardContracts(BaseCardTest):
                 BASE_CARD_KEYS,
                 f"{class_name} should write only current params format",
             )
+            _dispose_card(card)
 
     def test_operation_card_params_roundtrip_through_current_schema(self):
         for class_name, card_cls in CardManager.card_info_dict.items():
@@ -246,6 +270,8 @@ class TestCardContracts(BaseCardTest):
                 card.get_params(),
                 f"{class_name} should preserve params through to_dict/from_dict",
             )
+            _dispose_card(card)
+            _dispose_card(restored)
 
     def test_inspector_reflow_preserves_builtin_card_json_and_params(self):
         for class_name, card_cls in CardManager.card_info_dict.items():
@@ -272,6 +298,10 @@ class TestCardContracts(BaseCardTest):
                     card.get_params(),
                     f"{class_name} old JSON no longer restores the same params",
                 )
+            # Every card class builds a full inspector here; without this the
+            # loop leaves ~14k widgets alive for the rest of the session.
+            _dispose_card(card)
+            _dispose_card(restored)
 
     def test_builtin_operation_cards_expose_complete_frozen_params_contract(self):
         operation_types = (StructureOperation, DatasetOperation, GeneratorOperation)
@@ -314,6 +344,7 @@ class TestCardContracts(BaseCardTest):
                 not needs_input,
                 f"{class_name} generator/input-dataset contract is inconsistent",
             )
+            _dispose_card(card)
 
         self.assertGreaterEqual(audited, 30)
 

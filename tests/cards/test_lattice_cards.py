@@ -240,6 +240,7 @@ class TestLatticeCards(BaseCardTest):
             card = SuperCellCard()
             card.from_dict(payload)
             modes.append(card.get_params().mode)
+            dispose_card(card)
 
         self.assertEqual(modes, ["scale", "cell", "max_atoms"])
 
@@ -1131,6 +1132,7 @@ class TestLatticeCards(BaseCardTest):
                 restored = card_cls()
                 restored.from_dict(card.to_dict())
                 self.assertEqual(restored.get_params(), params)
+                dispose_card(card, restored)
 
     def test_shear_angle_operation_matches_ase_cellpar_for_skewed_cell(self):
         structure = self.structure.copy()

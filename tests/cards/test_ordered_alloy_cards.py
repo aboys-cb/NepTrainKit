@@ -638,6 +638,7 @@ class TestOrderedAlloyCards(BaseCardTest):
                 self.assertEqual(not row.fixed_fraction_spin.isHidden(), mode == "fixed_fraction")
                 self.assertEqual(not row.fraction_min_spin.isHidden(), mode == "fraction_range")
                 self.assertEqual(not row.count_min_spin.isHidden(), mode == "count_range")
+                dispose_card(card, restored)
 
     def test_site_rule_modes_expose_real_userdata_and_matching_column_headers(self):
         card = FiniteCellAlloyOccupancyCard()
@@ -691,6 +692,7 @@ class TestOrderedAlloyCards(BaseCardTest):
                 maxima = [row.count_max_spin.value() for row in editor.element_rows]
                 self.assertEqual(minima, maxima)
                 self.assertEqual(sum(minima), 3)
+                dispose_card(card)
 
     def test_hidden_template_controls_do_not_replace_partition_switching(self):
         card = FiniteCellAlloyOccupancyCard()

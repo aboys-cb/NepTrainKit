@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 from ase.build import bulk
 from ase.io import read, write
+from PySide6.QtCore import QCoreApplication, QEvent
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_PATH = PROJECT_ROOT / "src"
@@ -136,7 +137,14 @@ class TestParamsFromDict:
             widget_class = CardManager.card_info_dict.get(card_class)
             widget_params = None
             if widget_class is not None:
-                widget_params = widget_class().get_params()
+                widget = widget_class()
+                try:
+                    widget_params = widget.get_params()
+                finally:
+                    # One widget per registered card; left alive they pile up on
+                    # the session QApplication until teardown.
+                    widget.close()
+                    widget.deleteLater()
 
             if widget_params is not None:
                 # The desktop serializer writes every field, including ones with
@@ -158,6 +166,7 @@ class TestParamsFromDict:
             assert once == twice, card_class
             checked += 1
 
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
         assert checked == len(CARD_REGISTRY)
         assert checked >= 40
 

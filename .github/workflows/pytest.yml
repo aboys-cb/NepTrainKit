@@ -60,8 +60,16 @@ jobs:
         python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
 
     - name: Run tests with pytest
+      # Coverage instruments every executed line and only the ubuntu 3.10 job
+      # uploads its report, so the other five matrix legs would pay that cost
+      # for a file nobody reads.
+      shell: bash
       run: |
-        python -m pytest tests/ --cov=./src/NepTrainKit --junitxml=junit.xml -o junit_family=legacy
+        COV=""
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ] && [ "${{ matrix.python }}" = "3.10" ]; then
+          COV="--cov=./src/NepTrainKit"
+        fi
+        python -m pytest tests/ $COV --junitxml=junit.xml -o junit_family=legacy
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5

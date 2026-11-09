@@ -48,9 +48,15 @@ def _wait_until(predicate, timeout_ms=3000):
     loop = QEventLoop()
     timer = QTimer()
 
+    # Back off between polls. A flat 10ms timer re-enters Python 100x/s and
+    # competes with the worker thread for the GIL; on a saturated 4-core CI
+    # runner that starved the very signal this waits for, and the timeout fired
+    # on a test that passes in milliseconds when run alone.
     def poll():
         if predicate():
             loop.quit()
+            return
+        timer.setInterval(min(timer.interval() * 2, 250))
 
     timer.timeout.connect(poll)
     timer.start(10)

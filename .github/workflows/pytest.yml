@@ -69,7 +69,12 @@ jobs:
         if [ "${{ matrix.os }}" = "ubuntu-latest" ] && [ "${{ matrix.python }}" = "3.10" ]; then
           COV="--cov=./src/NepTrainKit"
         fi
-        python -m pytest tests/ $COV --junitxml=junit.xml -o junit_family=legacy
+        # Runners have 4 cores. `--dist loadfile` keeps a whole test module on
+        # one worker: these tests share a session-wide QApplication, so letting
+        # pytest-xdist scatter one file across workers makes Qt state collide.
+        # It also measured faster here than the default `load` (97s vs 108s).
+        python -m pytest tests/ $COV -n 4 --dist loadfile \
+          --junitxml=junit.xml -o junit_family=legacy
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5

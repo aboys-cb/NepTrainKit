@@ -56,6 +56,7 @@ test = [
     "pytest>=7.0",
     "pytest-qt>=4.2.0",
     "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.5.0",
     "codecov>=2.0.0",
     "dpdata>=1.1.0",
     "ruff>=0.12.0",

@@ -37,3 +37,7 @@ tests/pytest-cache-files-*/
 /tests/data/dipole/*.out
 /tests/data/polarizability/*.out
 /tests/data/nep/prediction.meta.json
+
+# Coverage data written by local `pytest --cov` runs
+.coverage
+.coverage.*

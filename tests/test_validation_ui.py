@@ -186,20 +186,38 @@ def test_incompatible_models_explain_why_the_list_is_empty(tmp_path, monkeypatch
     widget.close()
 
 
-def test_library_run_all_can_be_cancelled(scored):
-    widget = ModelLibraryWidget(service=scored.service)
+def test_library_run_all_can_be_cancelled(scored, monkeypatch):
+    service = scored.service
+    widget = ModelLibraryWidget(service=service)
     widget.refresh(scored.suite["id"])
     total = len(widget.run_jobs())
+    assert total >= 3
+
+    # Cancelling is checked between items, so an item already in flight still
+    # finishes. Evaluation is pure CPU work that completes in milliseconds, so
+    # without this delay the whole batch can finish before the request lands and
+    # the assertions below would be racing the worker instead of testing it.
+    # Slow each call just enough that cancel has a boundary to land on.
+    real_evaluate = service.evaluate
+    started = []
+
+    def slow_evaluate(*args, **kwargs):
+        started.append(args[:2])
+        time.sleep(0.2)
+        return real_evaluate(*args, **kwargs)
+
+    monkeypatch.setattr(service, "evaluate", slow_evaluate)
+
     task = widget.run_all()
+    assert _wait_until(lambda: len(started) >= 1)
     widget._on_run_clicked()  # the Run button becomes Cancel while running
     assert _wait_until(lambda: widget._run_task is None)
+
     assert task.outcome == "canceled"
-    # Cancelling stops the loop between items, but it cannot recall an item
-    # already in flight. On a fast runner all three can finish before the
-    # request lands, so "fewer than total" is not something the code promises:
-    # a third item that completed before the cancel is correct behaviour too.
-    runs = [scored.service.latest_run(m, s) for m, s in widget.run_jobs()]
-    assert len(runs) == total
+    # The point of the delay: the cancel landed *during* the run, so some queued
+    # jobs were never started. Without it this is a coin flip on how fast the
+    # machine evaluates, which is what made the test flake on macOS.
+    assert len(started) < total
 
 
 def test_open_scorecard_selects_suite_and_model(scored):

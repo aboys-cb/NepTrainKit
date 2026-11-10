@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
+
+import pytest
 import numpy as np
 from pathlib import Path
 import os
@@ -64,47 +66,34 @@ class TestNepTrainResultData( unittest.TestCase):
                 )
 
     def test_load_train(self):
-        """测试结构加载功能"""
+        """Load, select, delete and export a train.xyz with all four targets."""
         tmp_dir = self._make_nep_workdir()
-        local_train = os.path.join(tmp_dir, "train.xyz")
-        result = NepTrainResultData.from_path(local_train)
-
-
+        result = NepTrainResultData.from_path(os.path.join(tmp_dir, "train.xyz"))
         result.load()
+
+        # Energy/stress/virial are per structure; force is per atom.
         self.assertEqual(result.energy.num, 25)
-        self.assertEqual(result.force.num, 6250)
         self.assertEqual(result.stress.num, 25)
         self.assertEqual(result.virial.num, 25)
-        result.select([0,1,3])
-        self.assertEqual(len(result.select_index),3)
-        result.uncheck(0)
-        self.assertEqual(len(result.select_index),2)
+        self.assertEqual(result.force.num, 6250)
 
-        self.assertEqual(result.select_index , {1,3})
+        result.select([0, 1, 3])
+        self.assertEqual(result.select_index, {0, 1, 3})
+        result.uncheck(0)
+        self.assertEqual(result.select_index, {1, 3})
+
         result.delete_selected()
-        self.assertEqual(len(result.select_index) , 0)
+        self.assertEqual(result.select_index, set())
         self.assertEqual(result.energy.num, 23)
-        self.assertEqual(result.force.num, 5750)
         self.assertEqual(result.stress.num, 23)
         self.assertEqual(result.virial.num, 23)
+        self.assertEqual(result.force.num, 5750)
+
         result.export_model_xyz(tmp_dir)
-        export_good_model = Structure.read_multiple(
-            os.path.join(tmp_dir,"export_good_model.xyz"))
-        export_remove_model = Structure.read_multiple(
-            os.path.join(tmp_dir,"export_remove_model.xyz"))
-
-        self.assertEqual(len(export_good_model), 23)
-        self.assertEqual(len(export_remove_model), 2)
-
-    def test_load_train2(self):
-        tmp_dir = self._make_nep_workdir()
-        local_train = os.path.join(tmp_dir, "train.xyz")
-        result = NepTrainResultData.from_path(local_train)
-        result.load()
-        self.assertEqual(result.energy.num, 25)
-        self.assertEqual(result.force.num, 6250)
-        self.assertEqual(result.stress.num, 25)
-        self.assertEqual(result.virial.num, 25)
+        good = Structure.read_multiple(os.path.join(tmp_dir, "export_good_model.xyz"))
+        removed = Structure.read_multiple(os.path.join(tmp_dir, "export_remove_model.xyz"))
+        self.assertEqual(len(good), 23)
+        self.assertEqual(len(removed), 2)
 
     def test_export_model_npy_skips_empty_removed_dataset_and_clears_stale_output(self):
         tmp_dir = self._make_nep_workdir()
@@ -1970,101 +1959,66 @@ class TestStructurePlotWidgetInteraction(unittest.TestCase):
             app.processEvents()
 
 
-class TestNepPolarizabilityResultData( unittest.TestCase):
-    def setUp(self):
+# Polarizability and dipole share the whole select/export flow; only the
+# dataset attribute and the fixture directory differ. One parametrized test
+# covers both instead of a copy per class.
+PARALLEL_RESULT_CASES = [
+    pytest.param(
+        NepPolarizabilityResultData,
+        "polarizability",
+        ("polarizability_diagonal", "polarizability_no_diagonal"),
+        5768,
+        id="polarizability",
+    ),
+    pytest.param(NepDipoleResultData, "dipole", ("dipole",), 5768, id="dipole"),
+]
 
 
-        self.test_dir = Path(__file__).parent
-        self.data_dir=os.path.join(self.test_dir,"data/polarizability")
-        self.train_path=os.path.join(self.data_dir,"train.xyz")
+@pytest.mark.parametrize("result_cls, fixture, datasets, total", PARALLEL_RESULT_CASES)
+def test_parallel_dataset_result_loads_selects_deletes_and_exports(
+    tmp_path, result_cls, fixture, datasets, total
+):
+    """Structure loading, selection bookkeeping, delete and xyz export."""
+    data_dir = tmp_path / fixture
+    shutil.copytree(Path(__file__).parent / "data" / fixture, data_dir)
+    result = result_cls.from_path(str(data_dir / "train.xyz"))
+    result.load()
 
-    def tearDown(self):
-        pass
-    def test_load_train(self):
+    for name in datasets:
+        assert getattr(result, name).num == total
 
+    result.select([0, 1, 3])
+    assert result.select_index == {0, 1, 3}
+    result.uncheck(0)
+    assert result.select_index == {1, 3}
 
-        """测试结构加载功能"""
-        result = NepPolarizabilityResultData.from_path(self.train_path)
-        result.load()
-        self.assertEqual(result.polarizability_diagonal.num, 5768)
-        self.assertEqual(result.polarizability_no_diagonal.num, 5768)
+    result.delete_selected()
+    assert result.select_index == set()
+    for name in datasets:
+        assert getattr(result, name).num == total - 2
 
-        result.select([0,1,3])
-        self.assertEqual(len(result.select_index),3)
-        result.uncheck(0)
-        self.assertEqual(len(result.select_index),2)
-
-        self.assertEqual(result.select_index , {1,3})
-        result.delete_selected()
-        self.assertEqual(len(result.select_index) , 0)
-        self.assertEqual(result.polarizability_diagonal.num, 5766)
-        self.assertEqual(result.polarizability_no_diagonal.num, 5766)
-
-        result.export_model_xyz(self.data_dir)
-        export_good_model = Structure.read_multiple(os.path.join(self.data_dir,"export_good_model.xyz"))
-        export_remove_model = Structure.read_multiple(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-        self.assertEqual(len(export_good_model), 5766)
-        self.assertEqual(len(export_remove_model), 2)
-        os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
-        os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-    def test_inverse_select(self):
-
-        result = NepPolarizabilityResultData.from_path(self.train_path)
-        result.load()
-        result.select([0,1,3])
-        result.uncheck(0)
-        result.inverse_select()
-        self.assertEqual(len(result.select_index), result.num-2)
-        self.assertNotIn(1, result.select_index)
-        self.assertNotIn(3, result.select_index)
-
-class TestNepDipoleResultData(unittest.TestCase):
-    def setUp(self):
+    result.export_model_xyz(str(data_dir))
+    good = Structure.read_multiple(str(data_dir / "export_good_model.xyz"))
+    removed = Structure.read_multiple(str(data_dir / "export_remove_model.xyz"))
+    assert len(good) == total - 2
+    assert len(removed) == 2
 
 
-        self.test_dir = Path(__file__).parent
-        self.data_dir=os.path.join(self.test_dir,"data/dipole")
-        self.train_path=os.path.join(self.data_dir,"train.xyz")
+@pytest.mark.parametrize("result_cls, fixture, datasets, total", PARALLEL_RESULT_CASES)
+def test_parallel_dataset_result_inverse_select(tmp_path, result_cls, fixture, datasets, total):
+    """Inverse select keeps everything except the two unchecked indices."""
+    data_dir = tmp_path / fixture
+    shutil.copytree(Path(__file__).parent / "data" / fixture, data_dir)
+    result = result_cls.from_path(str(data_dir / "train.xyz"))
+    result.load()
 
-    def tearDown(self):
-        pass
-    def test_load_train(self):
-        """测试结构加载功能"""
-        result = NepDipoleResultData.from_path(self.train_path)
-        result.load()
-        self.assertEqual(result.dipole.num, 5768)
+    result.select([0, 1, 3])
+    result.uncheck(0)
+    result.inverse_select()
 
-        result.select([0,1,3])
-        self.assertEqual(len(result.select_index),3)
-        result.uncheck(0)
-        self.assertEqual(len(result.select_index),2)
-
-        self.assertEqual(result.select_index , {1,3})
-        result.delete_selected()
-        self.assertEqual(len(result.select_index) , 0)
-        self.assertEqual(result.dipole.num, 5766)
-
-
-        result.export_model_xyz(self.data_dir)
-        export_good_model = Structure.read_multiple(os.path.join(self.data_dir,"export_good_model.xyz"))
-        export_remove_model = Structure.read_multiple(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-        self.assertEqual(len(export_good_model), 5766)
-        self.assertEqual(len(export_remove_model), 2)
-        os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
-        os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-    def test_inverse_select(self):
-        result = NepDipoleResultData.from_path(self.train_path)
-        result.load()
-        result.select([0,1,3])
-        result.uncheck(0)
-        result.inverse_select()
-        self.assertEqual(len(result.select_index), result.num-2)
-        self.assertNotIn(1, result.select_index)
-        self.assertNotIn(3, result.select_index)
+    assert len(result.select_index) == result.num - 2
+    assert 1 not in result.select_index
+    assert 3 not in result.select_index
 
 
 if __name__ == "__main__":

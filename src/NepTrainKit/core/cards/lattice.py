@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import warnings
 from dataclasses import dataclass
 from itertools import combinations
@@ -960,13 +961,22 @@ class SuperCellOperation(StructureOperation):
         self,
         scale_factors: tuple[int, int, int],
         params: SuperCellParams,
-    ) -> tuple[list[int], list[int], list[int]]:
+    ) -> tuple[range | list[int], range | list[int], range | list[int]]:
         axis_values = []
         for axis, limit in enumerate(scale_factors):
             if params.fixed_axis_flags[axis]:
                 axis_values.append([int(params.fixed_axis_scale[axis])])
             else:
-                axis_values.append(list(range(1, max(int(limit), 1) + 1)))
+                axis_values.append(range(1, max(int(limit), 1) + 1))
+        count = math.prod(len(values) for values in axis_values)
+        if count > self.MAX_ENUMERATED_OUTPUTS:
+            raise CardOperationError(
+                "supercell_too_many_outputs",
+                "Supercell enumeration would create {count} structures; the limit is {limit}. "
+                "Use single-output mode or reduce the requested size.",
+                count=count,
+                limit=self.MAX_ENUMERATED_OUTPUTS,
+            )
         return axis_values[0], axis_values[1], axis_values[2]
 
     def _get_scale_factors(self, params: SuperCellParams) -> list[tuple[int, int, int]]:

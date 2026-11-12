@@ -5,7 +5,6 @@
 import json
 import os.path
 import re
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -29,6 +28,7 @@ from ase import Atoms, Atom
 from qfluentwidgets import FluentIcon, HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.ui.messages import translate_runtime_error
+from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.core.workflow_library import WorkflowEntry, WorkflowLibrary
 from NepTrainKit.core.config_type import append_config_tag
@@ -403,6 +403,7 @@ class MakeDataWidget(QWidget):
 
     def _track_card_parameter_changes(self, card) -> None:
         """Mark named workflows dirty when an editable card control changes."""
+        card._tracked_workflow_params = self._card_parameter_snapshot(card)
         widgets = [card, *card.findChildren(QWidget)]
         editor = getattr(card, "setting_widget", None)
         if editor is not None and editor not in widgets:
@@ -437,11 +438,23 @@ class MakeDataWidget(QWidget):
         refresh = getattr(card, "refresh_compact_presentation", None)
         if callable(refresh):
             refresh()
+        params = self._card_parameter_snapshot(card)
+        if params == getattr(card, "_tracked_workflow_params", None):
+            return
+        card._tracked_workflow_params = params
         self._mark_workflow_dirty()
         if self._sampling_attached and not self._sampling_panel._updating:
             if card is self._sampling_card:
                 self._sampling_panel.sync_from_card()
             self._invalidate_sampling_results()
+        elif not self._sampling_attached:
+            self._invalidate_workflow_results()
+
+    @staticmethod
+    def _card_parameter_snapshot(card):
+        getter = getattr(card, "get_params", None)
+        params = getter() if callable(getter) else None
+        return params if params is not None else card.to_dict()
 
     def _confirm_discard_workflow_changes(self) -> bool:
         if not self._workflow_dirty or not self.workspace_card_widget.cards:
@@ -508,8 +521,15 @@ class MakeDataWidget(QWidget):
         if not self._sampling_attached:
             return
         self._sampling_revision += 1
+        self._invalidate_workflow_results()
+
+    def _invalidate_workflow_results(self):
+        nodes = self.workspace_card_widget.all_cards()
+        for node in nodes:
+            # A worker may finish after stop() returns; its old output stays invalid.
+            node._results_invalidated = True
         self.stop_run_card()
-        for node in self.workspace_card_widget.all_cards():
+        for node in nodes:
             node.result_dataset = []
             node.set_output_available(False)
             if hasattr(node, "run_outcome") and not self._card_is_running(node):
@@ -860,27 +880,9 @@ class MakeDataWidget(QWidget):
         None
             Serialises the provided card outputs into a single dataset file.
         """
-        destination = Path(path)
-        temporary_path = None
-        try:
-            with tempfile.NamedTemporaryFile(
-                mode="w",
-                encoding="utf8",
-                dir=destination.parent,
-                prefix=f".{destination.name}.",
-                suffix=".tmp",
-                delete=False,
-            ) as file:
-                temporary_path = Path(file.name)
-                for index, card in enumerate(cards):
-                    card.write_result_dataset(file, append=index > 0)
-                file.flush()
-                os.fsync(file.fileno())
-            os.replace(temporary_path, destination)
-            temporary_path = None
-        finally:
-            if temporary_path is not None:
-                temporary_path.unlink(missing_ok=True)
+        with atomic_text_output(path) as file:
+            for index, card in enumerate(cards):
+                card.write_result_dataset(file, append=index > 0)
 
 
     def export_file(self):

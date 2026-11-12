@@ -8,9 +8,7 @@ argument names the ``workflow`` subcommand does this module take over, so
 from __future__ import annotations
 
 import argparse
-import os
 import sys
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -230,28 +228,17 @@ def _read_structures(path: str) -> list[Any]:
 def _write_structures(path: str, structures: list[Any]) -> None:
     from ase.io import write
 
+    from .core.io.atomic import atomic_text_output
     from .core.magnetism import prepare_magnetic_extxyz_export
 
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary_path = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", dir=destination.parent,
-            prefix=f".{destination.name}.", suffix=".tmp", delete=False,
-        ) as handle:
-            temporary_path = Path(handle.name)
-            write(
-                handle,
-                [prepare_magnetic_extxyz_export(atoms) for atoms in structures],
-                format=OUTPUT_FORMAT,
-            )
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary_path, destination)
-    finally:
-        if temporary_path is not None:
-            temporary_path.unlink(missing_ok=True)
+    with atomic_text_output(destination) as handle:
+        write(
+            handle,
+            [prepare_magnetic_extxyz_export(atoms) for atoms in structures],
+            format=OUTPUT_FORMAT,
+        )
 
 
 def _fail(message: str) -> None:

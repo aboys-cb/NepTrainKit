@@ -15,6 +15,7 @@ from qfluentwidgets import CaptionLabel, StrongBodyLabel
 from shiboken6 import isValid
 
 from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import FilterDataCard, MakeDataCard, MakeDataCardWidget
@@ -922,18 +923,15 @@ class CardGroup(MakeDataCardWidget):
             self._finish_branches()
 
     def write_result_dataset(self, file,**kwargs):
-        if self.filter_card and isValid(self.filter_card) and  self.filter_card.check_state:
-            self.filter_card.write_result_dataset(file,**kwargs)
-            return
-
-        for index,card in enumerate(self.card_list):
-            if index==0:
-                if "append" not in kwargs:
-                    kwargs["append"] = False
-            else:
-                kwargs["append"] = True
-            if card.check_state:
-                card.write_result_dataset(file,**kwargs)
+        with atomic_text_output(file, append=kwargs.get("append", False)) as handle:
+            if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
+                self.filter_card.write_result_dataset(handle, **kwargs)
+                return
+            enabled = [card for card in self.card_list if card.check_state]
+            for index, card in enumerate(enabled):
+                options = dict(kwargs)
+                options["append"] = kwargs.get("append", False) if index == 0 else True
+                card.write_result_dataset(handle, **options)
 
     def export_data(self):
         if self.dataset is not None:

@@ -18,6 +18,7 @@ from qfluentwidgets import ScrollBarHandleDisplayMode
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import StructureOperation
+from NepTrainKit.core.workflow import load_workflow
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
 from NepTrainKit.ui.views._card.bain_path_card import BainPathCard
 from NepTrainKit.ui.views._card.card_group import CardGroup
@@ -1405,6 +1406,32 @@ def test_explicit_merge_concatenates_in_stable_branch_order():
     assert fork.available_output_cards() == [fork]
     assert fork.status_badge.state() == "succeeded"
     assert fork.output_terminal_detail.text() == "A 1 + B 1 → 2 merged"
+    _dispose(fork)
+
+
+def test_gui_and_headless_forks_share_input_and_chain_branch_outputs():
+    def repeat(n):
+        return {"class": "SuperCellCard", "check_state": True,
+                "params": {"mode": "scale", "super_scale": [n, 1, 1]}}
+
+    config = {
+        "class": "WorkflowFork", "check_state": True, "merge": True,
+        "branches": [
+            {"id": "A", "enabled": True, "cards": [repeat(2), repeat(3)]},
+            {"id": "B", "enabled": True, "cards": [repeat(4)]},
+        ],
+    }
+    seed = Atoms("Fe", cell=[[3, 0, 0], [.4, 4, 0], [.2, .3, 5]], pbc=[True, False, True])
+    fork = WorkflowFork()
+    fork.from_dict(config)
+    fork.set_dataset([seed])
+    fork.run()
+    assert _wait_until(lambda: fork.run_outcome == "succeeded")
+    headless = load_workflow({"workflow_schema": 2, "cards": [config]}).run([seed]).final()
+    assert [len(a) for a in fork.result_dataset] == [6, 4]
+    for actual, expected in zip(fork.result_dataset, headless):
+        assert actual == expected
+    assert len(seed) == 1
     _dispose(fork)
 
 

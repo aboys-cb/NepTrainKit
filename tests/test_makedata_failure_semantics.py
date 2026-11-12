@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import threading
 from unittest.mock import patch
 
 import pytest
@@ -10,6 +11,7 @@ from PySide6.QtTest import QSignalSpy
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.core.cards.operation import DatasetOperation, StructureOperation
+from NepTrainKit.core.cards.lattice import SuperCellOperation, SuperCellParams
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
 from NepTrainKit.ui.views._card.card_group import CardGroup
 from NepTrainKit.ui.widgets.card_widget import FilterDataCard, MakeDataCard
@@ -93,6 +95,85 @@ def _wait_until(predicate, timeout_ms=3000):
     loop.exec()
     timer.stop()
     return predicate()
+
+
+def test_parameter_edit_invalidates_completed_outputs_and_downstream():
+    page = MakeDataWidget()
+    first = page.add_card("SuperCellCard", at_workflow_root=True)
+    following = page.add_card("SuperCellCard", at_workflow_root=True)
+    first.set_params(SuperCellParams(super_scale=(2, 1, 1)))
+    following.set_params(SuperCellParams(super_scale=(3, 1, 1)))
+    page.dataset = [Atoms("Fe", cell=[3, 3, 3], pbc=True)]
+    page.run_card()
+    assert _wait_until(lambda: following.run_outcome == "succeeded")
+    assert len(following.result_dataset[0]) == 6
+    first.collapse_button.click()
+    assert len(following.result_dataset[0]) == 6, "presentation controls must not invalidate outputs"
+    first.super_scale_condition_frame.set_input_value([4, 1, 1])
+    assert first.result_dataset == following.result_dataset == []
+    assert first.run_outcome == following.run_outcome == "idle"
+    assert not first.export_button.isEnabled()
+    assert page._cards_for_export(include_all=True) == []
+    page.run_card()
+    assert _wait_until(lambda: following.run_outcome == "succeeded")
+    assert len(following.result_dataset[0]) == 12
+    page.close()
+
+
+@pytest.mark.parametrize("container", [None, "CardGroup", "WorkflowFork"])
+@pytest.mark.parametrize("worker_fails", [False, True])
+def test_parameter_edit_during_worker_cannot_restore_stale_output(container, worker_fails, monkeypatch):
+    page = MakeDataWidget()
+    root = page.add_card(container, at_workflow_root=True) if container else None
+    child = page.add_card("SuperCellCard", at_workflow_root=True)
+    if container:
+        page.workspace_card_widget.remove_card(child, close=False)
+        if container == "CardGroup":
+            root.add_card(child)
+        else:
+            root.add_card(child, root.branches[0])
+    started, release = threading.Event(), threading.Event()
+    class BlockingOperation(SuperCellOperation):
+        def run_structure(self, structure, params):
+            started.set()
+            assert release.wait(5), "test must release the worker"
+            if worker_fails:
+                raise ValueError("failure from obsolete parameters")
+            return [structure.copy()]
+    monkeypatch.setattr(child, "create_operation", lambda: BlockingOperation())
+    child.set_dataset([Atoms("Fe", cell=[3, 3, 3])])
+    child.run()
+    try:
+        assert started.wait(2)
+        child.super_scale_condition_frame.set_input_value([3, 1, 1])
+        assert child.result_dataset == []
+        assert not child.export_button.isEnabled()
+    finally:
+        release.set()
+    assert _wait_until(lambda: not hasattr(child, "worker_thread"))
+    assert child.result_dataset == []
+    assert child.run_outcome != "succeeded"
+    assert page._cards_for_export(include_all=True) == []
+    page.close()
+
+
+def test_queued_completion_from_previous_run_cannot_finish_new_worker():
+    page = MakeDataWidget()
+    card = page.add_card("SuperCellCard", at_workflow_root=True)
+    card.set_dataset([Atoms("Fe", cell=[3, 3, 3])])
+    card.set_params(SuperCellParams(super_scale=(2, 1, 1)))
+    card.run()
+    previous = card.worker_thread
+    assert previous.wait(2000), "complete worker without delivering queued UI callbacks"
+    card.super_scale_condition_frame.set_input_value([3, 1, 1])
+    card.run()
+    current = card.worker_thread
+    previous.finishSignal.emit()
+    assert card.worker_thread is current
+    assert card.run_outcome == "running"
+    assert _wait_until(lambda: card.run_outcome == "succeeded")
+    assert len(card.result_dataset[0]) == 3
+    page.close()
 
 
 def test_card_header_icon_actions_have_accessible_names():

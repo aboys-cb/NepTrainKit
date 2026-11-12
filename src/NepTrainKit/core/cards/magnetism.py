@@ -47,14 +47,23 @@ def parse_angle_list(text: str) -> list[float]:
         try:
             value = float(token)
         except ValueError:
-            continue
-        if value <= 0:
-            continue
+            value = float("nan")
+        if not np.isfinite(value) or value <= 0:
+            raise CardOperationError(
+                "small_angle_spin_tilt.invalid_angle",
+                "Small-angle Spin Tilt angles must be finite positive numbers; got '{value}'.",
+                value=token,
+            )
         rounded = float(np.round(value, 12))
         if rounded in seen:
             continue
         seen.add(rounded)
-        values.append(rounded)
+        values.append(value)
+    if not values:
+        raise CardOperationError(
+            "small_angle_spin_tilt.empty_angles",
+            "Small-angle Spin Tilt requires at least one positive angle.",
+        )
     return values
 
 
@@ -1260,7 +1269,7 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 "Small-angle Spin Tilt found no nonzero magnetic moments to tilt.",
             )
 
-        angles = parse_angle_list(params.angle_list) or [1.0, 2.0, 5.0, 10.0]
+        angles = parse_angle_list(params.angle_list)
         outputs = []
         reached_limit = False
 
@@ -1574,6 +1583,11 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         group_values = [str(g) for g in np.asarray(structure.arrays["group"])]
         group_a = (params.group_a or "A").strip()
         group_b = (params.group_b or "B").strip()
+        if group_a == group_b:
+            raise CardOperationError(
+                "small_angle_spin_tilt.identical_groups",
+                "Small-angle Spin Tilt group A and B labels must be different.",
+            )
         norms = np.linalg.norm(base_moments, axis=1)
         left = [idx for idx, (g, mag) in enumerate(zip(group_values, norms)) if g == group_a and mag > 1e-10]
         right = [idx for idx, (g, mag) in enumerate(zip(group_values, norms)) if g == group_b and mag > 1e-10]

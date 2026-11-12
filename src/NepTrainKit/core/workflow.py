@@ -235,6 +235,7 @@ class CardSpec:
     enabled: bool = True
     params: dict[str, Any] = field(default_factory=dict)
     children: tuple["CardSpec", ...] = ()
+    branches: tuple[tuple["CardSpec", ...], ...] = ()
     filter_card: "CardSpec | None" = None
     merge_enabled: bool = False
 
@@ -259,6 +260,12 @@ class CardSpec:
     def requires_input(self) -> bool:
         """Report whether the card cannot produce output without an input set."""
         if self.is_container:
+            if self.kind == "fork":
+                return any(
+                    child.requires_input()
+                    for branch in self.branches
+                    for child in branch if child.enabled
+                )
             return any(child.requires_input() for child in self.children if child.enabled)
         return self.kind != "generator"
 
@@ -297,6 +304,10 @@ class WorkflowPlan:
             # (and the same numbering as ``WorkflowResult.outputs(index=...)``).
             if spec.is_container:
                 self._collect(spec.children, stages)
+                for branch in spec.branches:
+                    self._collect(branch, stages)
+                if spec.filter_card is not None:
+                    self._collect((spec.filter_card,), stages)
             stages.append(
                 CardStage(
                     index=len(stages) + 1,
@@ -494,18 +505,18 @@ def _parse_card(entry: Any) -> CardSpec:
 
     if card_class == "WorkflowFork":
         branches = entry.get("branches", [])
-        children: list[CardSpec] = []
+        parsed_branches = []
         if isinstance(branches, list):
             for branch in branches:
                 if not isinstance(branch, dict):
                     continue
                 if not bool(branch.get("enabled", True)):
                     continue
-                children.extend(_parse_children(branch.get("cards", []), card_class))
+                parsed_branches.append(_parse_children(branch.get("cards", []), card_class))
         return CardSpec(
             card_class=card_class,
             enabled=bool(entry.get("check_state", True)),
-            children=tuple(children),
+            branches=tuple(parsed_branches),
             merge_enabled=bool(entry.get("merge", entry.get("merge_enabled", False))),
         )
 
@@ -614,8 +625,7 @@ def _run_group(
         merged.extend(_run_spec(child, list(incoming), outputs))
 
     if spec.filter_card is not None and spec.filter_card.enabled:
-        filtered = _run_spec(spec.filter_card, merged, outputs)
-        return filtered
+        merged = _run_spec(spec.filter_card, merged, outputs)
 
     outputs.append(
         CardOutput(
@@ -635,10 +645,14 @@ def _run_fork(
 ) -> list[Any]:
     """Run each branch independently; merge only when the fork asks for it."""
     branch_outputs: list[list[Any]] = []
-    for child in spec.children:
-        if not child.enabled:
+    for branch in spec.branches:
+        enabled = [child for child in branch if child.enabled]
+        if not enabled:
             continue
-        branch_outputs.append(_run_spec(child, list(incoming), outputs))
+        terminal = list(incoming)
+        for child in enabled:
+            terminal = _run_spec(child, terminal, outputs)
+        branch_outputs.append(terminal)
 
     if not spec.merge_enabled:
         # Keep the fork's own record equal to the last branch, matching the

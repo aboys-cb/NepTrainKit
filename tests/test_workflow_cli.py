@@ -49,7 +49,7 @@ def test_cli_export_failure_preserves_existing_input(tmp_path, monkeypatch, fail
     if fail_at == "write":
         monkeypatch.setattr(ase.io, "write", fail_write)
     else:
-        monkeypatch.setattr(cli.os, "replace", lambda *args: (_ for _ in ()).throw(OSError("publish failed")))
+        monkeypatch.setattr("NepTrainKit.core.io.atomic.os.replace", lambda *args: (_ for _ in ()).throw(OSError("publish failed")))
     with pytest.raises(OSError):
         cli._write_structures(str(path), structures)
     assert path.read_bytes() == before
@@ -360,6 +360,47 @@ class TestExecution:
 
 
 class TestGroupAndFork:
+    @pytest.mark.parametrize("merge", [True, False])
+    def test_fork_chains_cards_within_each_branch(self, merge):
+        def repeat(n, enabled=True):
+            return {"class": "SuperCellCard", "check_state": enabled,
+                    "params": _supercell_params(super_scale=[n, 1, 1])}
+
+        fork = {
+            "class": "WorkflowFork", "merge": merge,
+            "branches": [
+                {"cards": [repeat(2), repeat(99, False), repeat(3)]},
+                {"cards": [repeat(4)]},
+                {"enabled": False, "cards": [repeat(99)]},
+            ],
+        }
+        run = load_workflow(_workflow(fork))
+        seed = _si2()
+        result = run.run([seed])
+        assert [len(a) for a in result.final()] == ([12, 8] if merge else [8])
+        assert [len(item.structures[0]) for item in result.card_outputs[:-1]] == [4, 12, 8]
+        assert [stage.card_class for stage in run.plan.stages()] == [
+            "SuperCellCard", "SuperCellCard", "SuperCellCard", "WorkflowFork"
+        ]
+        assert len(seed) == 2
+
+    @pytest.mark.parametrize("filter_enabled", [True, False])
+    def test_group_records_post_filter_output_in_preview_order(self, filter_enabled):
+        run = load_workflow(_workflow(self._group(
+            [{"class": "SuperCellCard", "params": _supercell_params()}],
+            {"class": "GeometryFilterCard", "check_state": filter_enabled,
+             "params": {"min_pair_distance": 0.0}},
+        )))
+        result = run.run([_si2()])
+        classes = ["SuperCellCard"]
+        if filter_enabled:
+            classes.append("GeometryFilterCard")
+        classes.append("CardGroup")
+        assert [stage.card_class for stage in run.plan.stages()] == classes
+        for index, name in enumerate(classes, 1):
+            assert len(result.outputs(name, index=index)) == 1
+        assert result.outputs("CardGroup") == result.final()
+
     def _group(self, children, filter_card=None):
         entry = {"class": "CardGroup", "check_state": True, "card_list": children}
         if filter_card is not None:

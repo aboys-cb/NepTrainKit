@@ -54,6 +54,8 @@ def _invalidate_species_change_labels(
     array_keys = [
         "forces",
         "force",
+        "force_mag",
+        "mforce",
         "energies",
         "atomic_energy",
         "magmoms",
@@ -1744,6 +1746,9 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
                     symbols[site_indices[space.label]] = np.asarray(assigned, dtype=object)
                 atoms.set_chemical_symbols(symbols.tolist())
 
+                if atoms.get_chemical_symbols() != structure.get_chemical_symbols():
+                    _invalidate_species_change_labels(atoms)
+
                 arrangement_id = self._arrangement_id(assignments, spaces)
                 metadata = {
                     "composition_id": composition_id,
@@ -2298,6 +2303,8 @@ class CompositionGradientOperation(StructureOperation):
                 assigned = self._exact_layer_assignment(elements, comp, len(indices), rng)
                 symbols[np.asarray(indices, dtype=int)] = assigned
             atoms.set_chemical_symbols(symbols.tolist())
+            if atoms.get_chemical_symbols() != structure.get_chemical_symbols():
+                _invalidate_species_change_labels(atoms)
             append_config_tag(atoms, f"CompGrad(ax={self._axis_name(axis_idx)},b={len(groups)}{seed_tag})")
             outputs.append(atoms)
         return outputs
@@ -3215,6 +3222,8 @@ def replace_atoms_with_conditions(
     for idx, elem in zip(shuffled.tolist(), sampled.tolist()):
         new_symbols[int(idx)] = str(elem)
     new_structure.set_chemical_symbols(new_symbols)
+    if new_symbols != list(symbols):
+        _invalidate_species_change_labels(new_structure)
     return new_structure, len(shuffled)
 
 

@@ -24,6 +24,7 @@ from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleC
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
+from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.i18n import localized_docs_url
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -809,6 +810,7 @@ class MakeDataCard(MakeDataCardWidget):
         self._last_elapsed_seconds: float | None = None
         self.run_outcome = "idle"
         self._cancel_requested = False
+        self._results_invalidated = False
         self.index = 0
         self.setting_widget = QWidget(self)
         self.viewLayout.setContentsMargins(3, 6, 3, 6)
@@ -974,7 +976,8 @@ class MakeDataCard(MakeDataCardWidget):
             prepare_magnetic_extxyz_export(atoms)
             for atoms in self.result_dataset
         ]
-        ase_write(file, export_dataset, format="extxyz", **kwargs)
+        with atomic_text_output(file, append=kwargs.get("append", False)) as handle:
+            ase_write(handle, export_dataset, format="extxyz", **kwargs)
 
     def export_data(self):
         """Prompt the user for an export path and dump results if available."""
@@ -1062,10 +1065,12 @@ class MakeDataCard(MakeDataCardWidget):
         return was_running, was_running
 
     def _wait_for_worker_thread(self):
-        """Wait for a worker that just emitted completion before deleting it."""
+        """Ignore obsolete completion signals and wait before deleting a worker."""
         if not hasattr(self, "worker_thread"):
             return None
         thread = self.worker_thread
+        if self.sender() is not thread:
+            return None
         if thread.isRunning():
             thread.wait()
         return thread
@@ -1083,6 +1088,7 @@ class MakeDataCard(MakeDataCardWidget):
                 return
             self.run_outcome = "running"
             self._cancel_requested = False
+            self._results_invalidated = False
             self.result_dataset = []
             self._last_elapsed_seconds = None
             self.set_output_available(False)
@@ -1145,9 +1151,13 @@ class MakeDataCard(MakeDataCardWidget):
         worker_thread = self._wait_for_worker_thread()
         if worker_thread is None:
             return
-        self.result_dataset = worker_thread.result_dataset
+        self.result_dataset = [] if self._results_invalidated else worker_thread.result_dataset
         self._last_elapsed_seconds = worker_thread.elapsed_seconds
-        if self._cancel_requested or getattr(worker_thread, "outcome", "") == "canceled":
+        if (
+            self._results_invalidated
+            or self._cancel_requested
+            or getattr(worker_thread, "outcome", "") == "canceled"
+        ):
             del self.worker_thread
             self._apply_canceled_state()
             self.runFinishedSignal.emit(self.index)
@@ -1174,6 +1184,11 @@ class MakeDataCard(MakeDataCardWidget):
         if worker_thread is None:
             return
         self.result_dataset = []
+        if self._results_invalidated:
+            del self.worker_thread
+            self._apply_canceled_state()
+            self.runFinishedSignal.emit(self.index)
+            return
         self._last_elapsed_seconds = getattr(worker_thread, "elapsed_seconds", None)
         del self.worker_thread
         self.run_outcome = "failed"

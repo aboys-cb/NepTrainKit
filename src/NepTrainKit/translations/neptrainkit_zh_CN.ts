@@ -6559,6 +6559,18 @@ Every structure must have the chosen field. Each group must be one structure / m
         <location filename="../core/cards/alloy.py" line="3989" /><source>Internal selected-species matching failed. Check the selected pairs and quotas.</source>
         <translation>内部指定元素配对失败，请检查所选元素对和配额。</translation>
     </message>
+    <message>
+        <source>Small-angle Spin Tilt angles must be finite positive numbers; got '{value}'.</source>
+        <translation>小角度自旋倾斜的角度必须是有限正数；当前值为“{value}”。</translation>
+    </message>
+    <message>
+        <source>Small-angle Spin Tilt requires at least one positive angle.</source>
+        <translation>小角度自旋倾斜至少需要一个正角度。</translation>
+    </message>
+    <message>
+        <source>Small-angle Spin Tilt group A and B labels must be different.</source>
+        <translation>小角度自旋倾斜的 A 组和 B 组标签必须不同。</translation>
+    </message>
 </context>
 <context>
     <name>CardOperationField</name>

@@ -25,6 +25,7 @@ from qfluentwidgets import CaptionLabel, StrongBodyLabel
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
+from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets.card_widget import MakeDataCardWidget
@@ -854,7 +855,8 @@ class WorkflowFork(MakeDataCardWidget):
         export_dataset = [
             prepare_magnetic_extxyz_export(atoms) for atoms in self.result_dataset
         ]
-        ase_write(file, export_dataset, format="extxyz", **kwargs)
+        with atomic_text_output(file, append=kwargs.get("append", False)) as handle:
+            ase_write(handle, export_dataset, format="extxyz", **kwargs)
 
     def export_data(self) -> None:
         if not self.merge_enabled or not self.result_dataset:

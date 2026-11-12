@@ -156,5 +156,15 @@
       ],
       "resolution": "localized_diagnostic"
     }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/dataset/catalog.py",
+      "source": "Catalog services must use the same database.",
+      "context": null,
+      "rendered": "Catalog services must use the same database.",
+      "review": "diagnostic",
+      "reason": "目录导入的服务注入契约：项目服务与模型服务必须连接同一数据库。正常界面共用 DatasetManager 的数据库，仅调用方错误配置会触发，保留英文便于诊断。"
+    }
   ]
 }

@@ -74,7 +74,8 @@ class _FilterCard(FilterDataCard):
         return _KeepFirstOperation()
 
 
-def _wait_until(predicate, timeout_ms=3000):
+def _wait_until(predicate, timeout_ms=10000):
+    # Four CI workers share the runner; completion is a state check, not a 3 s performance limit.
     app = QApplication.instance() or QApplication([])
     loop = QEventLoop()
     timer = QTimer()

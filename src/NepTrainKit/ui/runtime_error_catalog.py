@@ -5,6 +5,7 @@ callers which flatten exceptions to strings. Keep placeholders as opaque data.
 """
 
 RUNTIME_ERROR_TEMPLATES = (
+    ('MakeDataWidget', 'A permanent fork without Merge must be the final workflow node. Insert an explicit Merge before adding a shared downstream card.'),
     ('RuntimeMessage', "Frame {index}: grouping field '{field}' is missing or not a non-empty scalar."),
     ('RuntimeMessage', "Grouping field '{field}' has inconsistent value types."),
     ('RuntimeMessage', 'Choose a grouping field and at least one distinct EOS group.'),

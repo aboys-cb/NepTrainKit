@@ -296,6 +296,14 @@
   "retained_candidates": [
     {
       "path": "src/NepTrainKit/core/io/base.py",
+      "source": "Unsupported export scope: ⟦value⟧",
+      "context": null,
+      "rendered": "Unsupported export scope: ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "prepare_export 的内部 API 参数保护；界面操作只传入固定支持的 scope，不接收用户自由输入。保留原始参数和值供开发诊断。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/base.py",
       "source": "Field '⟦value⟧' requires an explicit component or '.norm'.",
       "context": null,
       "rendered": "字段“⟦value⟧”需要指定分量或使用 .norm。",

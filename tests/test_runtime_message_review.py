@@ -156,6 +156,20 @@ def test_project_cycle_error_is_localized(chinese_app, tmp_path):
     assert translate_runtime_error(caught.value) == '项目不能以自身或其子项目作为父项目。'
 
 
+def test_unmerged_fork_error_reuses_workflow_ui_translation(chinese_app):
+    from NepTrainKit.core.workflow import WorkflowError, load_workflow
+
+    card = {"class": "SuperCellCard", "params": {}}
+    fork = {"class": "WorkflowFork", "branches": [{"cards": [card]}]}
+    with pytest.raises(WorkflowError) as caught:
+        load_workflow({"cards": [fork, card]})
+    assert translate_runtime_error(caught.value) == (
+        '未合并的永久分叉必须是工作流终点。添加共同下游卡片前，请先插入显式合并。'
+    )
+    i18n.install_translator(chinese_app, 'en_US')
+    assert translate_runtime_error(caught.value) == str(caught.value)
+
+
 def test_background_failure_localizes_inner_reason(chinese_app):
     from NepTrainKit.ui.threads import BackgroundTask
     contents = []

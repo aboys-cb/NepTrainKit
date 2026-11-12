@@ -5,9 +5,13 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import shutil
+import tempfile
 import time
 import traceback
+from pathlib import Path
 from typing import Any, Callable
 
 from PySide6.QtCore import QObject, QUrl, Signal, QCoreApplication
@@ -18,6 +22,7 @@ from qfluentwidgets import CaptionLabel, MessageBox, MessageBoxBase, TextEdit
 from NepTrainKit import is_nuitka_compiled, managed_runtime_root, module_path
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
+from NepTrainKit.core.adapter_api import inspect_model
 from NepTrainKit.runtime_package import (
     MANAGED_RUNTIME_SPEC,
     NEP_ADAPTERS_SPEC,
@@ -686,22 +691,37 @@ class UpdateNEP89Woker(QObject):
             "https://raw.githubusercontent.com/brucefan1983/GPUMD/master/"
             f"potentials/nep/nep89_{latest_date}/nep89_{latest_date}.txt"
         )
-        response = requests.get(raw_url, stream=True, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-
         nep89_path = module_path / "Config/nep89.txt"
-        with nep89_path.open("wb") as target:
-            for chunk in response.iter_content(1024):
-                if chunk:
-                    target.write(chunk)
-
-        MessageManager.send_success_message(_tr("Update large model completed!"))
         nep_json_path = module_path / "Config/nep.json"
         with nep_json_path.open("r", encoding="utf-8") as config_file:
             local_nep_info = json.load(config_file)
         local_nep_info["date"] = latest_date
-        with nep_json_path.open("w", encoding="utf-8") as config_file:
-            json.dump(local_nep_info, config_file)
+        with tempfile.TemporaryDirectory(prefix=".nep89-", dir=nep89_path.parent) as staging:
+            staging = Path(staging)
+            candidate = staging / "nep89.txt"
+            metadata = staging / "nep.json"
+            with requests.get(raw_url, stream=True, timeout=REQUEST_TIMEOUT) as response:
+                response.raise_for_status()
+                with candidate.open("wb") as target:
+                    for chunk in response.iter_content(1024 * 1024):
+                        if chunk:
+                            target.write(chunk)
+                    target.flush()
+                    os.fsync(target.fileno())
+            inspect_model(candidate)
+            with metadata.open("w", encoding="utf-8") as config_file:
+                json.dump(local_nep_info, config_file)
+                config_file.flush()
+                os.fsync(config_file.fileno())
+            backup = staging / "previous.txt"
+            shutil.copy2(nep89_path, backup)
+            os.replace(candidate, nep89_path)
+            try:
+                os.replace(metadata, nep_json_path)
+            except OSError:
+                os.replace(backup, nep89_path)
+                raise
+        MessageManager.send_success_message(_tr("Update large model completed!"))
 
     def _check_update(self) -> None:
         """Check the remote repository for a newer ``nep89`` dataset."""

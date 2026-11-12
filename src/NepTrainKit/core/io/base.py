@@ -2342,18 +2342,14 @@ class ResultData(DistributionAnalysisMixin, QObject):
     def export_selected_xyz(self, save_file_path: str | Path) -> None:
         """Write the currently selected structures to ``save_file_path``."""
         indices = list(self.select_index)
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            mapped = self.structure.convert_index(indices)
-            write_structures_extxyz_atomic(
-                save_file_path,
-                self.structure.all_data[mapped],
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_file_path}")
-        except Exception:
-            MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
-            logger.error(traceback.format_exc())
+        atomic_float_digits = get_export_significant_digits()
+        mapped = self.structure.convert_index(indices)
+        write_structures_extxyz_atomic(
+            save_file_path,
+            self.structure.all_data[mapped],
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_file_path}")
 
     def export_selected_npy(
         self,
@@ -2364,48 +2360,36 @@ class ResultData(DistributionAnalysisMixin, QObject):
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export selected structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            selected = self.get_selected_structures()
-            if not selected:
-                MessageManager.send_info_message("Please select some structures first!")
-                return
-            target = Path(save_path).joinpath("export_selected_model")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                selected,
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        selected = self.get_selected_structures()
+        if not selected:
+            MessageManager.send_info_message("Please select some structures first!")
+            return
+        target = Path(save_path).joinpath("export_selected_model")
+        all_structures = self.structure.all_data.tolist()
+        type_map = get_type_map(all_structures) if all_structures else None
+        save_npy_structure(
+            str(target),
+            selected,
+            type_map=type_map,
+            format=npy_format,
+            group_by_config_type=group_by_config_type,
+            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        )
+        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_active_xyz(self, save_file_path: str | Path) -> None:
         """Write active (non-removed) structures to ``save_file_path``."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            active = self.structure.now_data
-            if getattr(active, "size", 0) == 0:
-                MessageManager.send_info_message("No active structures to export.")
-                return
-            write_structures_extxyz_atomic(
-                save_file_path,
-                active,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_file_path}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        atomic_float_digits = get_export_significant_digits()
+        active = self.structure.now_data
+        if getattr(active, "size", 0) == 0:
+            MessageManager.send_info_message("No active structures to export.")
+            return
+        write_structures_extxyz_atomic(
+            save_file_path,
+            active,
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_file_path}")
 
     def export_active_npy(
         self,
@@ -2416,48 +2400,36 @@ class ResultData(DistributionAnalysisMixin, QObject):
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export active (non-removed) structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            active = self.structure.now_data.tolist()
-            if not active:
-                MessageManager.send_info_message("No active structures to export.")
-                return
-            target = Path(save_path).joinpath("export_active_model")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                active,
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        active = self.structure.now_data.tolist()
+        if not active:
+            MessageManager.send_info_message("No active structures to export.")
+            return
+        target = Path(save_path).joinpath("export_active_model")
+        all_structures = self.structure.all_data.tolist()
+        type_map = get_type_map(all_structures) if all_structures else None
+        save_npy_structure(
+            str(target),
+            active,
+            type_map=type_map,
+            format=npy_format,
+            group_by_config_type=group_by_config_type,
+            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        )
+        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_removed_xyz(self, save_file_path: str | Path) -> None:
         """Write removed structures (if any) to ``save_file_path``."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            removed = self.structure.remove_data
-            if getattr(removed, "size", 0) == 0:
-                MessageManager.send_info_message("No removed structures to export.")
-                return
-            write_structures_extxyz_atomic(
-                save_file_path,
-                removed,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_file_path}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        atomic_float_digits = get_export_significant_digits()
+        removed = self.structure.remove_data
+        if getattr(removed, "size", 0) == 0:
+            MessageManager.send_info_message("No removed structures to export.")
+            return
+        write_structures_extxyz_atomic(
+            save_file_path,
+            removed,
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_file_path}")
 
     def export_removed_npy(
         self,
@@ -2468,28 +2440,22 @@ class ResultData(DistributionAnalysisMixin, QObject):
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export removed structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            removed = self.structure.remove_data.tolist()
-            if not removed:
-                MessageManager.send_info_message("No removed structures to export.")
-                return
-            target = Path(save_path).joinpath("export_remove_model")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                removed,
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        removed = self.structure.remove_data.tolist()
+        if not removed:
+            MessageManager.send_info_message("No removed structures to export.")
+            return
+        target = Path(save_path).joinpath("export_remove_model")
+        all_structures = self.structure.all_data.tolist()
+        type_map = get_type_map(all_structures) if all_structures else None
+        save_npy_structure(
+            str(target),
+            removed,
+            type_map=type_map,
+            format=npy_format,
+            group_by_config_type=group_by_config_type,
+            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        )
+        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_current_npy(
         self,
@@ -2501,49 +2467,37 @@ class ResultData(DistributionAnalysisMixin, QObject):
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export a single structure as DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            mapped = self.structure.convert_index(index)
-            structure = self.structure.all_data[mapped][0]
-            target = Path(save_path).joinpath(f"structure_{int(index)}")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                [structure],
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        mapped = self.structure.convert_index(index)
+        structure = self.structure.all_data[mapped][0]
+        target = Path(save_path).joinpath(f"structure_{int(index)}")
+        all_structures = self.structure.all_data.tolist()
+        type_map = get_type_map(all_structures) if all_structures else None
+        save_npy_structure(
+            str(target),
+            [structure],
+            type_map=type_map,
+            format=npy_format,
+            group_by_config_type=group_by_config_type,
+            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        )
+        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_model_extxyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder as extxyz."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            good_path = Path(save_path).joinpath("export_good_model.xyz")
-            write_structures_extxyz_atomic(
-                good_path,
-                self.structure.now_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            write_structures_extxyz_atomic(
-                removed_path,
-                self.structure.remove_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_path}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        atomic_float_digits = get_export_significant_digits()
+        good_path = Path(save_path).joinpath("export_good_model.xyz")
+        write_structures_extxyz_atomic(
+            good_path,
+            self.structure.now_data,
+            atomic_float_digits=atomic_float_digits,
+        )
+        removed_path = Path(save_path).joinpath("export_remove_model.xyz")
+        write_structures_extxyz_atomic(
+            removed_path,
+            self.structure.remove_data,
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_path}")
 
     def export_model_npy(
         self,
@@ -2554,67 +2508,45 @@ class ResultData(DistributionAnalysisMixin, QObject):
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export active and removed structures into ``save_path`` folder as deepmd/npy."""
-        try:
-            target = Path(save_path)
-            good_target = target / "export_good_model"
-            removed_target = target / "export_remove_model"
-            all_structures = self.structure.all_data.tolist()
-            active_structures = self.structure.now_data.tolist()
-            removed_structures = self.structure.remove_data.tolist()
-            if not active_structures and not removed_structures:
-                MessageManager.send_info_message("No structures to export.")
-                return
-            type_map = get_type_map(all_structures) if all_structures else None
-            exports = (
-                (good_target, active_structures),
-                (removed_target, removed_structures),
+        target = Path(save_path)
+        good_target = target / "export_good_model"
+        removed_target = target / "export_remove_model"
+        all_structures = self.structure.all_data.tolist()
+        active_structures = self.structure.now_data.tolist()
+        removed_structures = self.structure.remove_data.tolist()
+        if not active_structures and not removed_structures:
+            MessageManager.send_info_message("No structures to export.")
+            return
+        type_map = get_type_map(all_structures) if all_structures else None
+        exports = (
+            (good_target, active_structures),
+            (removed_target, removed_structures),
+        )
+        for export_target, structures in exports:
+            if not structures:
+                continue
+            save_npy_structure(
+                str(export_target),
+                structures,
+                type_map=type_map,
+                format=npy_format,
+                group_by_config_type=group_by_config_type,
+                mixed_atom_numb_pad=mixed_atom_numb_pad,
             )
-            for export_target, structures in exports:
-                if not structures:
-                    continue
-                save_npy_structure(
-                    str(export_target),
-                    structures,
-                    type_map=type_map,
-                    format=npy_format,
-                    group_by_config_type=group_by_config_type,
-                    mixed_atom_numb_pad=mixed_atom_numb_pad,
+        for export_target, structures in exports:
+            if structures or not export_target.exists():
+                continue
+            if export_target.is_symlink() or not export_target.is_dir():
+                raise FileExistsError(
+                    "Empty DeepMD export target is not a removable directory: "
+                    f"{export_target}"
                 )
-            for export_target, structures in exports:
-                if structures or not export_target.exists():
-                    continue
-                if export_target.is_symlink() or not export_target.is_dir():
-                    raise FileExistsError(
-                        "Empty DeepMD export target is not a removable directory: "
-                        f"{export_target}"
-                    )
-                shutil.rmtree(export_target)
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+            shutil.rmtree(export_target)
+        MessageManager.send_info_message(f"File exported to: {target}")
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            good_path = Path(save_path).joinpath("export_good_model.xyz")
-            write_structures_extxyz_atomic(
-                good_path,
-                self.structure.now_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            write_structures_extxyz_atomic(
-                removed_path,
-                self.structure.remove_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_path}")
-        except Exception:
-            MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
-            logger.error(traceback.format_exc())
+        self.export_model_extxyz(save_path)
+
     def get_atoms(self, index: int):
         """Return the ASE atoms object for the original ``index``."""
         mapped = self.structure.convert_index(index)

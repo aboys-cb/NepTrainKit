@@ -32,6 +32,40 @@ SI2 = PROJECT_ROOT / "tests" / "data" / "Si2.vasp"
 TEMPLATE = PROJECT_ROOT / "src" / "NepTrainKit" / "workflow_templates" / "01_structure_perturbation.json"
 
 
+@pytest.mark.parametrize("fail_at", ["write", "replace"])
+def test_cli_export_failure_preserves_existing_input(tmp_path, monkeypatch, fail_at):
+    import ase.io
+    import NepTrainKit.cli as cli
+
+    path = tmp_path / "input.xyz"
+    write(path, bulk("Si"), format="extxyz")
+    before = path.read_bytes()
+    structures = read(path, index=":")
+
+    def fail_write(handle, *args, **kwargs):
+        handle.write("partial output")
+        raise OSError("disk full")
+
+    if fail_at == "write":
+        monkeypatch.setattr(ase.io, "write", fail_write)
+    else:
+        monkeypatch.setattr(cli.os, "replace", lambda *args: (_ for _ in ()).throw(OSError("publish failed")))
+    with pytest.raises(OSError):
+        cli._write_structures(str(path), structures)
+    assert path.read_bytes() == before
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_cli_export_replaces_input_after_success(tmp_path):
+    from NepTrainKit.cli import _write_structures
+
+    path = tmp_path / "input.xyz"
+    path.write_text("old output")
+    _write_structures(str(path), [bulk("Si")])
+    assert read(path).get_chemical_formula() == "Si2"
+    assert list(tmp_path.iterdir()) == [path]
+
+
 def _supercell_params(**overrides):
     params = {
         "mode": "scale",

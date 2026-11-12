@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 from ase import Atoms
 from PySide6.QtCore import QCoreApplication, QTranslator
 from PySide6.QtGui import QCloseEvent
@@ -51,6 +52,67 @@ class _Menu:
     def removeAction(self, action):
         if action in self.actions:
             self.actions.remove(action)
+
+
+@pytest.mark.parametrize("completion", ["result", "error"])
+def test_audit_ignores_superseded_background_jobs(monkeypatch, completion):
+    window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+    data = SimpleNamespace(data_xyz_path="train.xyz")
+    window.show_nep_interface = SimpleNamespace(
+        nep_result_data=data, run_distribution_analysis=MagicMock(), apply_distribution_selection=MagicMock(),
+    )
+    window.training_set_audit_interface = SimpleNamespace(
+        set_loading=MagicMock(), set_result=MagicMock(), set_distribution_context=MagicMock(),
+    )
+    window._show_training_set_audit_surface = MagicMock()
+    window._schedule_training_set_structure_evidence = MagicMock()
+    jobs = []
+
+    def launch(*args, **kwargs):
+        jobs.append(kwargs)
+        return len(jobs)
+
+    monkeypatch.setattr(main_module, "run_in_thread", launch)
+    window.open_training_set_audit(data, force=True)
+    window.open_training_set_audit(data, force=True)
+    if completion == "result":
+        jobs[0]["on_finished"](object())
+    else:
+        with patch.object(main_module.MessageManager, "send_warning_message") as warning:
+            jobs[0]["on_error"]("old failure")
+        warning.assert_not_called()
+    assert window._training_set_audit_thread == 2
+    window.training_set_audit_interface.set_result.assert_not_called()
+    latest = object()
+    jobs[1]["on_finished"](latest)
+    window.training_set_audit_interface.set_result.assert_called_once_with(latest)
+
+
+def test_audit_restarts_when_data_changes_during_analysis(monkeypatch):
+    window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+    data = SimpleNamespace(data_xyz_path="train.xyz", structure=SimpleNamespace(
+        data=SimpleNamespace(version=0), now_indices=np.array([0, 1]),
+    ))
+    window.show_nep_interface = SimpleNamespace(
+        nep_result_data=data, run_distribution_analysis=MagicMock(), apply_distribution_selection=MagicMock(),
+    )
+    window.training_set_audit_interface = SimpleNamespace(
+        set_loading=MagicMock(), set_result=MagicMock(), set_distribution_context=MagicMock(),
+    )
+    window._show_training_set_audit_surface = MagicMock()
+    window._schedule_training_set_structure_evidence = MagicMock()
+    jobs = []
+    monkeypatch.setattr(main_module, "run_in_thread", lambda *args, **kwargs: jobs.append(kwargs))
+    window.open_training_set_audit(data)
+    data.structure.data.version += 1
+    data.structure.now_indices = np.array([1])
+    jobs[0]["on_finished"](object())
+    window.training_set_audit_interface.set_result.assert_not_called()
+    assert len(jobs) == 2
+    current = object()
+    jobs[1]["on_finished"](current)
+    window.training_set_audit_interface.set_result.assert_called_once_with(current)
+    assert window._audited_result_signature == window._training_set_audit_signature(data)
 
 
 class TestTrainingSetAuditIntegration(unittest.TestCase):
@@ -356,6 +418,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window._audited_result_data = data
         window._audited_result_signature = signature
         window._audited_result = cached_result
+        window._training_set_audit_thread = object()
         window._start_training_set_phase_analysis = MagicMock()
         scheduled = []
 
@@ -371,6 +434,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             main_module.NepTrainKitMainWindow.open_training_set_audit(window, data)
 
         thread_mock.assert_not_called()
+        self.assertIsNone(window._training_set_audit_thread)
         window.training_set_audit_interface.set_loading.assert_not_called()
         window.training_set_audit_interface.set_result.assert_called_once_with(cached_result)
         window.switchTo.assert_called_once_with(

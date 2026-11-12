@@ -8,6 +8,11 @@ import pytest
 
 SCRIPT = r'''
 import sys, threading, time
+import os
+from pathlib import Path
+import NepTrainKit.paths as paths
+paths.get_user_config_path = lambda **kwargs: paths.ensure_directory(
+    Path(os.environ['NEPTRAINKIT_LIBRARY']).parent / 'config')
 try:
     import resource
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))

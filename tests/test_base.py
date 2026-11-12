@@ -352,6 +352,62 @@ def test_export_model_xyz_reads_export_digits_once(tmp_path):
             Config.set("io", "export_significant_digits", previous_digits)
 
 
+@pytest.mark.parametrize("method,args,writer", [
+    ("export_selected_xyz", (), "write_structures_extxyz_atomic"),
+    ("export_active_xyz", (), "write_structures_extxyz_atomic"),
+    ("export_removed_xyz", (), "write_structures_extxyz_atomic"),
+    ("export_model_extxyz", (), "write_structures_extxyz_atomic"),
+    ("export_model_xyz", (), "write_structures_extxyz_atomic"),
+    ("export_selected_npy", (), "save_npy_structure"),
+    ("export_active_npy", (), "save_npy_structure"),
+    ("export_removed_npy", (), "save_npy_structure"),
+    ("export_current_npy", (0,), "save_npy_structure"),
+    ("export_model_npy", (), "save_npy_structure"),
+])
+def test_export_errors_reach_background_task(tmp_path, method, args, writer):
+    from NepTrainKit.ui.threads import BackgroundTask
+
+    data = _build_dummy_result()
+    data.structure.remove(1)
+    data.select_index = {0}
+    task = BackgroundTask(show_tip=False)
+    succeeded, failed = [], []
+    task.succeeded.connect(succeeded.append)
+    task.failed.connect(failed.append)
+    with patch(f"NepTrainKit.core.io.base.{writer}", side_effect=OSError("disk full")):
+        task.start_work(getattr(data, method), tmp_path / "export", *args)
+        assert task.wait(3000)
+    from PySide6.QtWidgets import QApplication
+    QApplication.processEvents()
+    assert task.outcome == "failed"
+    assert task.error_message == "disk full"
+    assert failed == ["disk full"] and not succeeded
+
+
+def test_legacy_extxyz_export_delegates_to_shared_implementation(tmp_path):
+    data = _build_dummy_result()
+    with patch.object(data, "export_model_extxyz") as export:
+        data.export_model_xyz(tmp_path)
+    export.assert_called_once_with(tmp_path)
+
+
+def test_legacy_deepmd_export_propagates_io_failure(tmp_path):
+    from NepTrainKit.core.io.deepmd import DeepmdResultData
+
+    data = _build_dummy_result()
+    with patch("NepTrainKit.core.io.deepmd.save_npy_structure", side_effect=OSError("disk full")):
+        with pytest.raises(OSError, match="disk full"):
+            DeepmdResultData.export_model_xyz(data, tmp_path)
+
+
+def test_single_structure_descriptor_projection_is_available(tmp_path):
+    data = _build_dummy_result()
+    data.descriptor_path = tmp_path / "descriptor.out"
+    data.set_cache_outputs_override(False)
+    reduced = data._load_or_compute_descriptor_pca(np.ones((1, 4), dtype=np.float32))
+    np.testing.assert_array_equal(reduced, np.zeros((1, 2)))
+
+
 def test_discover_atomic_numeric_fields_excludes_blacklist_and_classifies():
     data = _build_dummy_result()
     fields = data.discover_atomic_numeric_fields(scope="active")

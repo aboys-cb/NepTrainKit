@@ -447,12 +447,6 @@ class DeepmdResultData(ResultData):
             ``export_remove_model`` folders.
         """
         target = as_path(save_path)
-        try:
-            save_npy_structure(str(target / 'export_good_model'), self.structure.now_data)
-            save_npy_structure(str(target / 'export_remove_model'), self.structure.remove_data)
-            MessageManager.send_info_message(f'File exported to: {target}')
-        except Exception:
-            MessageManager.send_info_message(
-                'An unknown error occurred while saving. The error message has been output to the log!'
-            )
-            logger.error(traceback.format_exc())
+        save_npy_structure(str(target / 'export_good_model'), self.structure.now_data)
+        save_npy_structure(str(target / 'export_remove_model'), self.structure.remove_data)
+        MessageManager.send_info_message(f'File exported to: {target}')

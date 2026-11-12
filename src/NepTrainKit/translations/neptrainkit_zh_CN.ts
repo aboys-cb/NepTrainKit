@@ -20471,6 +20471,10 @@ All child items will also be deleted.</source>
         <translation>未找到项目 {project}。</translation>
     </message>
     <message>
+        <source>A project cannot be its own ancestor.</source>
+        <translation>项目不能以自身或其子项目作为父项目。</translation>
+    </message>
+    <message>
         <source>ModelVersion {model_id} not found</source>
         <translation>未找到模型版本 {model_id}。</translation>
     </message>

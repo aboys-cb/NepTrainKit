@@ -484,7 +484,7 @@ def test_import_accepts_optional_provenance_and_rejects_bad_sets(make_service, t
     assert len(service.set_frames(sealed["id"])) == 7
 
 
-def test_evaluation_is_cached_per_model_and_failures_are_kept(make_service, model_file, tmp_path):
+def test_evaluation_is_cached_per_model_and_failures_are_kept(make_service, model_file, tmp_path, monkeypatch):
     service = make_service()
     model = service.capture_model(model_file)
     benchmark = _import(service, tmp_path, efv_frames(), "efv")
@@ -492,7 +492,9 @@ def test_evaluation_is_cached_per_model_and_failures_are_kept(make_service, mode
     run = service.evaluate(model["id"], benchmark["id"])
     assert run["status"] == "succeeded" and run["metrics"]["energy_rmse"] == pytest.approx(0)
     assert service.run_details(run)["details"]["energy"]["predicted"]
-    assert service.evaluate(model["id"], benchmark["id"])["id"] == run["id"] and FakePredictor.calls == 1
+    with monkeypatch.context() as cached:
+        cached.setattr(service, "set_frames", lambda *args: pytest.fail("cache hit must not reload reference frames"))
+        assert service.evaluate(model["id"], benchmark["id"])["id"] == run["id"] and FakePredictor.calls == 1
     assert service.evaluate(model["id"], benchmark["id"], force=True)["id"] != run["id"]
 
     def broken(model_path, backend):
@@ -501,6 +503,38 @@ def test_evaluation_is_cached_per_model_and_failures_are_kept(make_service, mode
     service.predictor_factory = broken
     failed = service.evaluate(model["id"], benchmark["id"], force=True)
     assert failed["status"] == "failed" and "native crash" in failed["error"]
+
+
+@pytest.mark.parametrize("protocol,frames", [("efv", efv_frames), ("eos", eos_frames)])
+@pytest.mark.parametrize("change", ["requested_backend", "resolved_backend", "runtime"])
+def test_reference_cache_requires_matching_environment(make_service, model_file, tmp_path, monkeypatch, protocol, frames, change):
+    import NepTrainKit.core.validation.service as service_module
+
+    service = make_service()
+    model = service.capture_model(model_file)
+    benchmark = _import(service, tmp_path, frames(), protocol, protocol=protocol)
+    resolved = "cpu"
+    created = []
+
+    def factory(*args):
+        predictor = FakePredictor()
+        predictor.backend = resolved
+        created.append(predictor)
+        return predictor
+
+    service.predictor_factory = factory
+    before = service.evaluate(model["id"], benchmark["id"])
+    if change == "requested_backend":
+        service.backend = "cpu"
+    elif change == "resolved_backend":
+        resolved = "cuda"
+    else:
+        original = service_module._package_version
+        monkeypatch.setattr(service_module, "_package_version", lambda name: "new-runtime" if name == "nep-adapters" else original(name))
+    after = service.evaluate(model["id"], benchmark["id"])
+    assert after["status"] == "succeeded" and after["id"] != before["id"]
+    assert service.evaluate(model["id"], benchmark["id"])["id"] == after["id"]
+    assert all(predictor.closed for predictor in created)
 
 
 def test_unsupported_models_are_reported_not_evaluated(make_service, tmp_path):

@@ -152,9 +152,19 @@ class ProjectWidget(QWidget, DatasetManager):
         """
         box = ProjectInfoMessageBox(self._parent)
         index = self._current_index()
+        excluded = set()
+        if modify and index.isValid():
+            pending = [self.project_item_dict[index.internalPointer().data(1)]]
+            while pending:
+                project = pending.pop()
+                if project.project_id in excluded:
+                    continue
+                excluded.add(project.project_id)
+                pending.extend(project.children)
         box.parent_combox.addItem(self.tr("Top project"), userData=None)
         for project in self.project_item_dict.values():
-            box.parent_combox.addItem(project.name, userData=project.project_id)
+            if project.project_id not in excluded:
+                box.parent_combox.addItem(project.name, userData=project.project_id)
 
         if index.row() != -1:
             item = index.internalPointer()
@@ -186,12 +196,16 @@ class ProjectWidget(QWidget, DatasetManager):
         parent_id = box.parent_combox.currentData()
 
         if modify:
-            self.project_service.modify_project(
-                current_project.project_id,
-                name=name,
-                notes=note,
-                parent_id=parent_id,
-            )
+            try:
+                self.project_service.modify_project(
+                    current_project.project_id,
+                    name=name,
+                    notes=note,
+                    parent_id=parent_id,
+                )
+            except ValueError as error:
+                MessageManager.send_error_message(str(error))
+                return
             self.load_all_projects()
             self.projectsChanged.emit()
             MessageManager.send_success_message(self.tr("Project modified successfully"))

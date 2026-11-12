@@ -634,16 +634,13 @@ class ValidationService:
             return _record(row) if row is not None else None
 
     def evaluate(self, model_id: int, set_id: str, *, force: bool = False) -> dict:
-        """Evaluate once per (model bytes, set, protocol version); failures are recorded."""
+        """Reuse results only for matching model, set, protocol and runtime; keep failures."""
         model = self.get_model(model_id)
         benchmark = self.get_set(set_id)
         protocol = get_protocol(benchmark["protocol"])
         cached = None
         if not force:
             cached = self.latest_run(model_id, set_id, protocol_version=protocol.version)
-            if cached is not None and protocol.kind != "diagnostic" and (cached["status"] == "unsupported" or
-                                       cached["status"] == "succeeded" and _finite_metrics(cached["metrics"])):
-                return cached
         run_id = uuid.uuid4().hex
         start = time.monotonic()
         environment = {
@@ -665,14 +662,18 @@ class ValidationService:
             predictor = None
             try:
                 model_path = self.model_file(model_id)
-                frames = self.set_frames(set_id)
                 predictor = self.predictor_factory(model_path, self.backend)
                 environment["backend"] = str(getattr(predictor, "backend", self.backend))
                 if protocol.kind == "diagnostic":
                     environment["model_capabilities"] = sorted(getattr(getattr(predictor, "model_info", None), "capability_names", ()))
-                    # Resolve Auto before cache reuse: CPU and CUDA are different experiments.
-                    if cached and cached["status"] == "succeeded" and _finite_metrics(cached["metrics"]) and cached["environment"] == environment:
-                        return cached
+                # Resolve Auto before cache reuse: CPU and CUDA are different experiments.
+                if (
+                    cached and cached["status"] == "succeeded"
+                    and _finite_metrics(cached["metrics"])
+                    and cached["environment"] == environment
+                ):
+                    return cached
+                frames = self.set_frames(set_id)
                 evaluation = protocol.evaluate(predictor, frames)
                 if not _finite_metrics(evaluation.metrics):
                     raise ValueError("Validation metrics must be finite.")

@@ -19,6 +19,31 @@ from NepTrainKit.ui.widgets.dialog import ModelInfoMessageBox
 from NepTrainKit.core.dataset.services import ModelItem
 
 
+def test_project_parent_picker_excludes_self_and_descendants(tmp_path):
+    from qfluentwidgets import ComboBox
+    from NepTrainKit.core.dataset.database import Database
+    from NepTrainKit.core.dataset.services import ProjectService
+
+    service = ProjectService(Database(tmp_path / "projects.db"))
+    root = service.create_project("root")
+    child = service.create_project("child", parent_id=root.id)
+    service.create_project("grandchild", parent_id=child.id)
+    other = service.create_project("other")
+    with patch.object(project_view_module.QTimer, "singleShot"):
+        widget = ProjectWidget()
+    widget.project_service = service
+    widget.load_all_projects()
+    widget._view.setCurrentIndex(widget._model.index(0, 0))
+    dialog = MagicMock()
+    dialog.parent_combox = ComboBox()
+    dialog.exec_.return_value = False
+    with patch.object(project_view_module, "ProjectInfoMessageBox", return_value=dialog):
+        widget.create_project(modify=True)
+    choices = [dialog.parent_combox.itemData(index) for index in range(dialog.parent_combox.count())]
+    assert choices == [None, other.id]
+    widget.close()
+
+
 class _Url:
     def __init__(self, path: str):
         self._path = path

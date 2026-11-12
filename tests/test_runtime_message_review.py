@@ -144,6 +144,18 @@ def test_update_http_failure(chinese_app, monkeypatch):
     assert translate_runtime_message(caught.value) == '检查更新失败，HTTP 状态码为 503'
 
 
+def test_project_cycle_error_is_localized(chinese_app, tmp_path):
+    from NepTrainKit.core.dataset.database import Database
+    from NepTrainKit.core.dataset.services import ProjectService
+
+    service = ProjectService(Database(tmp_path / 'projects.db'))
+    root = service.create_project('root')
+    child = service.create_project('child', parent_id=root.id)
+    with pytest.raises(ValueError) as caught:
+        service.modify_project(root.id, 'root', parent_id=child.id)
+    assert translate_runtime_error(caught.value) == '项目不能以自身或其子项目作为父项目。'
+
+
 def test_background_failure_localizes_inner_reason(chinese_app):
     from NepTrainKit.ui.threads import BackgroundTask
     contents = []

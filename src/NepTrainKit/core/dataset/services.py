@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import datetime
-import hashlib
-import shutil
 from pathlib import Path
 
 from typing import Iterable
@@ -14,16 +12,12 @@ from sqlalchemy import select, func, distinct
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 
-from NepTrainKit.utils import sha256_file
-from NepTrainKit.paths import get_user_config_path, ensure_directory
-
 from .database import Database
 from .models import (
 
     Tag,ModelVersionTag,
     Project,
     ModelVersion,
-    StorageRef,
 )
 from NepTrainKit.core.utils import read_nep_in, read_nep_out_file, get_rmse, get_xyz_nframe
 
@@ -113,48 +107,6 @@ class TagService:
             )
             return [TagItem(name=t.name, tag_id=t.id, color=t.color, notes=t.notes) for t in tags]
 
-def _hash_file(path: str) -> str:
-    """Return the SHA256 hash of a file."""
-    h = hashlib.sha256()
-    with open(path, "rb") as f:  # pragma: no cover - simple
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
-def _stat_path(p: Path) -> tuple[int | None, datetime.datetime | None, bool]:
-    """Return size, modification time, and existence flag for a path."""
-    try:
-        st = p.stat()
-        return st.st_size, datetime.datetime.fromtimestamp(st.st_mtime), True
-    except FileNotFoundError:
-        return None, None, False
-
-def _create_storage(session, path: str, scheme: str = "file") -> StorageRef:
-    """Persist a storage reference for the given filesystem path."""
-    p = Path(path).expanduser().resolve()
-    size, mtime, ok = _stat_path(p)
-
-    if scheme == "file":
-        uri =  str(p)
-        content_hash = sha256_file(p)
-    else:
-        # Persist content-addressable storage copy under the user cache directory.
-        content_hash = sha256_file(p)
-        cas_dir = ensure_directory(get_user_config_path() / 'cas')
-        dst = cas_dir / content_hash
-        if not dst.exists():
-            shutil.copy2(p, dst)
-        uri = content_hash
-    storage = StorageRef(
-        scheme=f"{scheme}://",
-        uri=uri,
-        size=size,
-        content_hash=content_hash,
-        mtime=mtime,
-        exist_flag=True
-    )
-    session.add(storage)
-    session.flush()
-    return storage
 @dataclass
 class ProjectService:
     """Manage creation and traversal of project hierarchies."""
@@ -207,14 +159,22 @@ class ProjectService:
             return None
     def modify_project(self, project_id: int, name: str, notes: str = "", parent_id: int = None ) -> Project|None:
         """Update project attributes and persist the changes."""
-
-
         with self.db.session() as session:
-
+            if session.get(Project, project_id) is None:
+                raise ValueError(f"Project {project_id} not found")
+            seen = {project_id}
+            ancestor_id = parent_id
+            while ancestor_id is not None:
+                if ancestor_id in seen:
+                    raise ValueError("A project cannot be its own ancestor.")
+                seen.add(ancestor_id)
+                ancestor = session.get(Project, ancestor_id)
+                if ancestor is None:
+                    raise ValueError(f"Project {ancestor_id} not found")
+                ancestor_id = ancestor.parent_id
             session.query(Project).filter_by(id=project_id).update(
                 {"name":name,"notes":notes,"parent_id":parent_id}
             )
-
             session.commit()
 
 
@@ -489,12 +449,6 @@ class ModelService:
             project = session.get(Project, project_id)
             if project is None:
                 raise ValueError(f"Project {project} not found")
-            # data_sr =   None
-            # model_sr =   None
-            # if model_file:
-            #     model_sr  = _create_storage(session,model_file )
-            # if data_file:
-            #     data_sr  = _create_storage(session,data_file)
 
             # if parent_id is None:
             #     parent_id = project.active_model_version_id

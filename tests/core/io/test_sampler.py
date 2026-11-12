@@ -443,3 +443,13 @@ def test_incremental_fps_r2_measures_nearest_center_residual_coverage():
 def test_pca_rejects_non_matrix_input():
     with np.testing.assert_raises(ValueError):
         pca(np.arange(3, dtype=np.float32))
+
+
+@pytest.mark.parametrize("count", [0, 1])
+@pytest.mark.parametrize("components,width", [(None, 4), (2, 2), (8, 4)])
+def test_pca_handles_empty_and_single_sample(count, components, width):
+    with np.errstate(all="raise"):
+        result = pca(np.ones((count, 4), dtype=np.float32), components)
+    assert result.shape == (count, width)
+    assert result.dtype == np.float32
+    np.testing.assert_array_equal(result, np.zeros((count, width)))

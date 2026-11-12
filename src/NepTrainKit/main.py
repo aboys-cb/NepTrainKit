@@ -222,6 +222,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self._audited_result_data = None
         self._audited_result_signature = None
         self._audited_result = None
+        self._training_set_audit_token = None
         self._training_set_phase_thread = None
         self._training_set_phase_result = None
         self._training_set_phase_token = None
@@ -530,6 +531,8 @@ class NepTrainKitMainWindow(FluentWindow):
             return
         dataset_id = str(getattr(data, "data_xyz_path", self.tr("current dataset")))
         signature = self._training_set_audit_signature(data)
+        token = object()
+        self._training_set_audit_token = token
         cached_result = getattr(self, "_audited_result", None)
         if (
             not force
@@ -537,6 +540,7 @@ class NepTrainKitMainWindow(FluentWindow):
             and getattr(self, "_audited_result_data", None) is data
             and getattr(self, "_audited_result_signature", None) == signature
         ):
+            self._training_set_audit_thread = None
             self.training_set_audit_interface.set_result(cached_result)
             if getattr(cached_result, "phase_inventory", None) is not None:
                 self.show_nep_interface.set_phase_inventory(
@@ -558,11 +562,16 @@ class NepTrainKitMainWindow(FluentWindow):
         self._show_training_set_audit_surface()
 
         def apply_result(result) -> None:
+            if token is not self._training_set_audit_token:
+                return
             self._training_set_audit_thread = None
             if getattr(self.show_nep_interface, "nep_result_data", None) is not data:
                 return
+            if self._training_set_audit_signature(data) != signature:
+                self.open_training_set_audit(data, initial_section=initial_section, force=True)
+                return
             self._audited_result_data = data
-            self._audited_result_signature = self._training_set_audit_signature(data)
+            self._audited_result_signature = signature
             self._audited_result = result
             self.training_set_audit_interface.set_result(result)
             self.training_set_audit_interface.set_distribution_context(
@@ -576,6 +585,8 @@ class NepTrainKitMainWindow(FluentWindow):
             self._schedule_training_set_structure_evidence()
 
         def report_error(message: str) -> None:
+            if token is not self._training_set_audit_token:
+                return
             self._training_set_audit_thread = None
             MessageManager.send_warning_message(
                 self.tr("Training Set Audit failed: {message}").format(message=message)

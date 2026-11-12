@@ -71,18 +71,17 @@ def pca(
     if X.ndim != 2:
         raise ValueError('pca expects a two-dimensional array')
     n_samples, n_features = X.shape
+    if n_components is None or n_components > n_features:
+        n_components = n_features
+    if n_samples <= 1:
+        return np.zeros((n_samples, n_components), dtype=np.float32)
     mean = np.mean(X, axis=0)
     X_centered = X - mean
-    # X_centered = X
     cov_matrix = np.dot(X_centered.T, X_centered) / (n_samples - 1)
     eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
     idx = np.argsort(eigenvalues)[::-1]
     eigenvalues = eigenvalues[idx]
     eigenvectors = eigenvectors[:, idx]
-    if n_components is None:
-        n_components = n_features
-    elif n_components > n_features:
-        n_components = n_features
     X_pca = np.dot(X_centered, eigenvectors[:, :n_components])
     return X_pca.astype(np.float32)
 
